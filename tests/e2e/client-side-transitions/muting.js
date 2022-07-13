@@ -274,6 +274,7 @@ describe('Muting', () => {
         await commonElements.syncNative();
       } catch (err) {
         // sometimes sync happens by itself, on timeout
+        console.err('Error when trying to sync', err);
       } finally {
         await utils.refreshToGetNewSettings();
       }
