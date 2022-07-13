@@ -206,11 +206,12 @@ const getAndroidAppVersion = () => {
 };
 
 const isUsingChtAndroidV1 = () => {
-  if (!isUsingChtAndroid()) {
+  const androidAppVersion = getAndroidAppVersion();
+  if (!isUsingChtAndroid() || typeof androidAppVersion !== 'string') {
     return false;
   }
 
-  return getAndroidAppVersion().startsWith('v1.');
+  return androidAppVersion.startsWith('v1.');
 };
 
 const checkUnsupportedBrowser = () => {
