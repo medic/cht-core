@@ -272,11 +272,12 @@ describe('Muting', () => {
       await setBrowserOnline();
       try {
         await commonElements.syncNative();
+        await utils.refreshToGetNewSettings();
       } catch (err) {
         // sometimes sync happens by itself, on timeout
-        console.err('Error when trying to sync', err);
-      } finally {
+        console.error('Error when trying to sync', err);
         await utils.refreshToGetNewSettings();
+        await commonElements.syncNative();
       }
     };
 

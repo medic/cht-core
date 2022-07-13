@@ -263,22 +263,15 @@ const closeReloadModal = () => {
 
 const setUserContactDoc = (attempt=0) => {
   const {
-    DB_NAME: dbName,
     USER_CONTACT_ID: docId,
     DEFAULT_USER_CONTACT_DOC: defaultDoc
   } = constants;
 
-  return module.exports.getDoc(docId)
+  return db
+    .get(docId)
     .catch(() => ({}))
-    .then(existing => {
-      const rev = _.pick(existing, '_rev');
-      return Object.assign(defaultDoc, rev);
-    })
-    .then(newDoc => request({
-      path: `/${dbName}/${docId}`,
-      body: newDoc,
-      method: 'PUT',
-    }))
+    .then(existing => Object.assign(defaultDoc, { _rev: existing && existing._rev }))
+    .then(newDoc => db.put(newDoc))
     .catch(err => {
       if (attempt > 3) {
         throw err;
@@ -813,8 +806,14 @@ module.exports = {
    }
    */
   currentSpecReporter: {
-    specStarted: result => (jasmine.currentSpec = result),
-    specDone: result => (jasmine.currentSpec = result),
+    specStarted: result => {
+      jasmine.currentSpec = result;
+      return module.exports.requestOnTestDb(`/?start=${result}`);
+    },
+    specDone: result => {
+      jasmine.currentSpec = result;
+      return module.exports.requestOnTestDb(`/?end=${result}`);
+    },
   },
 
 
@@ -851,24 +850,11 @@ module.exports = {
     return request(options, { debug: debug });
   },
 
-  saveDoc: doc => {
-    return module.exports.requestOnTestDb({
-      path: '/', // so audit picks this up
-      method: 'POST',
-      headers: {
-        'Content-Length': JSON.stringify(doc).length,
-      },
-      body: doc,
-    });
-  },
+  saveDoc: doc => doc._id ? db.put(doc) : db.post(doc),
 
   saveDocs: docs => {
-    return module.exports
-      .requestOnTestDb({
-        path: '/_bulk_docs',
-        method: 'POST',
-        body: { docs: docs }
-      })
+    return db
+      .bulkDocs(docs)
       .then(results => {
         if (results.find(r => !r.ok)) {
           throw Error(JSON.stringify(results, null, 2));
@@ -894,18 +880,7 @@ module.exports = {
       });
   },
 
-  getDoc: (id, rev) => {
-    const params = {};
-    if (rev) {
-      params.rev = rev;
-    }
-
-    return module.exports.requestOnTestDb({
-      path: `/${id}`,
-      method: 'GET',
-      params,
-    });
-  },
+  getDoc: (id, rev) => db.get(id, { rev }),
 
   getDocs: (ids, fullResponse = false) => {
     return module.exports
