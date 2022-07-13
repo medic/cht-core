@@ -34,7 +34,7 @@ const updateBranding = async (doc) => {
     try {
       await utils.deleteDoc('branding');
     } catch(err) {
-      if (err.status === 404) {
+      if (err.statusCode === 404) {
         return; // already not there - success!
       }
       throw err;
@@ -56,7 +56,7 @@ const getBrandingDoc = async () => {
   try {
     return await utils.getDoc('branding');
   } catch (e) {
-    if (e.status === 404) {
+    if (e.statusCode === 404) {
       return { _id: 'branding' };
     }
     throw e;

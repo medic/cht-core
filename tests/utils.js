@@ -850,11 +850,21 @@ module.exports = {
     return request(options, { debug: debug });
   },
 
-  saveDoc: doc => doc._id ? db.put(doc) : db.post(doc),
+  saveDoc: doc => {
+    return module.exports.requestOnTestDb({
+      path: '/', // so audit picks this up
+      method: 'POST',
+      body: doc,
+    });
+  },
 
   saveDocs: docs => {
-    return db
-      .bulkDocs(docs)
+    return module.exports
+      .requestOnTestDb({
+        path: '/_bulk_docs',
+        method: 'POST',
+        body: { docs: docs }
+      })
       .then(results => {
         if (results.find(r => !r.ok)) {
           throw Error(JSON.stringify(results, null, 2));
@@ -880,7 +890,18 @@ module.exports = {
       });
   },
 
-  getDoc: (id, rev) => db.get(id, { rev }),
+  getDoc: (id, rev) => {
+    const params = {};
+    if (rev) {
+      params.rev = rev;
+    }
+
+    return module.exports.requestOnTestDb({
+      path: `/${id}`,
+      method: 'GET',
+      params,
+    });
+  },
 
   getDocs: (ids, fullResponse = false) => {
     return module.exports
