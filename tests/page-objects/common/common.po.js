@@ -141,6 +141,7 @@ module.exports = {
   },
 
   goToAnalytics: async () => {
+    await helper.waitElementToBeVisibleNative(analyticsTab);
     await analyticsTab.click();
   },
 
