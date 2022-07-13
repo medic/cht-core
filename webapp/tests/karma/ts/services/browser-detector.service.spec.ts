@@ -9,11 +9,27 @@ import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 type StoreSelectFn = Store['select'];
 type StubbedStore = { select: sinon.SinonStub<any, ReturnType<StoreSelectFn>> };
 
+const baseUserAgent = navigator.userAgent;
+
+const spoofUserAgent = (userAgent: string) => {
+  Object.defineProperty(window.navigator, 'userAgent', {
+    get: () => userAgent,
+    configurable: true,
+  });
+};
+
+const restoreUserAgent = () => spoofUserAgent(baseUserAgent);
+
+const getChtAndroidUserAgent = (androidAppVersion: string, webviewVersion = '53.0.2785.124') =>
+  'Mozilla/5.0 (Linux; Android 5.1.1; One S Build/LMY49J; wv) ' +
+  'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 ' +
+  `Chrome/${webviewVersion} Mobile Safari/537.36 ` +
+  `org.medicmobile.webapp.mobile/${androidAppVersion}`;
+
 describe('Browser Detector Service', () => {
   let service: BrowserDetectorService;
   let store: StubbedStore;
   let androidAppVersion: Subject<string>;
-  const baseUserAgent = navigator.userAgent;
 
   beforeEach(() => {
     androidAppVersion = new Subject();
@@ -77,22 +93,4 @@ describe('Browser Detector Service', () => {
     expect(service.isUsingChtAndroid()).to.be.false;
     expect(service.isUsingChtAndroidV1()).to.be.false;
   });
-
-  function spoofUserAgent(userAgent: string) {
-    Object.defineProperty(window.navigator, 'userAgent', {
-      get: () => userAgent,
-      configurable: true,
-    });
-  }
-
-  function restoreUserAgent() {
-    spoofUserAgent(baseUserAgent);
-  }
-
-  function getChtAndroidUserAgent(androidAppVersion: string, webviewVersion = '53.0.2785.124') {
-    return 'Mozilla/5.0 (Linux; Android 5.1.1; One S Build/LMY49J; wv) ' +
-      'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 ' +
-      `Chrome/${webviewVersion} Mobile Safari/537.36 ` +
-      `org.medicmobile.webapp.mobile/${androidAppVersion}`;
-  }
 });
