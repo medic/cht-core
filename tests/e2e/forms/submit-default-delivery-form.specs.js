@@ -21,6 +21,7 @@ describe('Submit Default Delivery Report', () => {
   });
 
   it('open and submit default delivery form', async () => {
+    await common.hideSnackbar();
     await common.goToReportsNative();
 
     await genericForm.selectFormNative('DD');
