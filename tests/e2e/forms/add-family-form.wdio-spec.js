@@ -35,7 +35,7 @@ describe('Family form', () => {
     await familyForm.registerWomenOption();
     await genericForm.nextPage();
     await familyForm.finalSurvey(0, 0, 0, 0);
-    await genericForm.submitReports();
+    await reportsPage.submitForm();
     await familyForm.reportCheck('test Family', 'boreholes', 'true', 'true', 'ucid');
     await genericForm.editForm();
     await familyForm.fillPrimaryCaregiver('modified');
