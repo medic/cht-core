@@ -41,7 +41,7 @@ describe('Family form', () => {
     await familyForm.fillPrimaryCaregiver('modified');
     await genericForm.nextPage(8);
     await familyForm.finalSurvey(1, 1, 1, 1);
-    await genericForm.submitReports();
+    await reportsPage.submitForm();
     await familyForm.reportCheck(
       'modified Family',
       'boreholes spring',
@@ -49,7 +49,7 @@ describe('Family form', () => {
       'false',
       'ucid condoms'
     );
-    await genericForm.reportApprove();
+    await genericForm.validatedReport();
     await genericForm.invalidateReport();
     const reportId = await reportsPage.getCurrentReportId();
     const invalidatedReport = await utils.getDoc(reportId);
