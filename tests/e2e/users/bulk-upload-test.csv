@@ -1,0 +1,2 @@
+import.status:excluded,import.message:excluded,import.username:excluded,contact.username,contact.first_name,contact.last_name,contact.sex,contact.phone,email,contact.meta.created_by,token_login,contact.role,contact.geolocalized,contact.type,contact.contact_type,contact.name,username,password,phone,place.name,place.type,place.contact_type,type,fullname
+,,,testuser,test,user,male,12345678,test@testing.com,,,chw,false,contact,person,test user,testuser,DweXTHv9173,12345678,Site Kona,contact,district_hospital,contact,test user
