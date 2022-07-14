@@ -693,8 +693,15 @@ const stopServices = async (removeOrphans) => {
   await saveLogs();
   //return dockerComposeCmd('stop');
 };
-const startService = (service) => dockerComposeCmd('start', `cht-${service}`);
-const stopService = (service) => dockerComposeCmd('stop', '-t', 0, `cht-${service}`);
+const startService = async (service) => {
+  await dockerComposeCmd('start', `cht-${service}`);
+  await module.exports.delayPromise(() => Promise.resolve(), 500);
+};
+
+const stopService = async (service) => {
+  await dockerComposeCmd('stop', '-t', 0, `cht-${service}`);
+  await module.exports.delayPromise(() => Promise.resolve(), 500);
+};
 
 const protractorLogin = async (browser, timeout = 20) => {
   await browser.driver.get(getLoginUrl());
