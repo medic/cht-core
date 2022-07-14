@@ -8,23 +8,24 @@ describe('Bulk User Creation ->', () => {
 
   beforeEach(async () => {
     await browser.execute(function() {
-      this.localStorage.setItem('dbName', 'medic-test');
+      this.localStorage.setItem('isTestEnv', true);
     });
     await usersAdminPage.goToAdminUser();
     await usersAdminPage.openUploadUsersDialog();
   });
+
   afterEach(() => {
     browser.execute(function() {
-      this.localStorage.removeItem('dbName');
+      this.localStorage.removeItem('isTestEnv');
     });
   });
   
-  it('should show an upload summary with a successful upload', async () => {
+  it('should show an upload summary with a successful upload and a failed upload', async () => {
     const path = require('path');
     const filePath = path.join(__dirname, 'bulk-upload-test.csv');
     await usersAdminPage.inputUploadUsersFields(filePath);
     await usersAdminPage.uploadUsers();
-    await usersAdminPage.uploadSummary();
+    await usersAdminPage.waitForUploadSummary();
     const successfulUploads = await usersAdminPage.getSuccessfulyUploadedUsers();
     const previouslyUploadedUsers = await usersAdminPage.getPreviouslyUploadedUsers();
     const failedUploads = await usersAdminPage.getFailedUploadedUsers();
@@ -37,7 +38,7 @@ describe('Bulk User Creation ->', () => {
     await usersAdminPage.openUploadUsersDialog();
     await usersAdminPage.inputUploadUsersFields(filePath);
     await usersAdminPage.uploadUsers();
-    await usersAdminPage.uploadSummary();
+    await usersAdminPage.waitForUploadSummary();
     const successfulUploadsSecondTime = await usersAdminPage.getSuccessfulyUploadedUsers();
     const previouslyUploadedUsersSecondTime = await usersAdminPage.getPreviouslyUploadedUsers();
     const failedUploadsSecondTime = await usersAdminPage.getFailedUploadedUsers();

@@ -161,7 +161,7 @@ const openUploadUsersDialog = async () => {
   await browser.pause(500);
 };
 
-const uploadSummary = async () => {
+const waitForUploadSummary = async () => {
   await (await uploadSummaryDialog()).waitForDisplayed();
 };
 
@@ -181,7 +181,7 @@ module.exports = {
   openUploadUsersDialog,
   inputUploadUsersFields,
   uploadUsers,
-  uploadSummary,
+  waitForUploadSummary,
   getSuccessfulyUploadedUsers,
   getPreviouslyUploadedUsers,
   getFailedUploadedUsers,
