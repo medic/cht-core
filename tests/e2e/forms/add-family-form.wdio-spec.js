@@ -39,7 +39,7 @@ describe('Family form', () => {
     await familyForm.reportCheck('test Family', 'boreholes', 'true', 'true', 'ucid');
     await genericForm.editForm();
     await familyForm.fillPrimaryCaregiver('modified');
-    await genericForm.nextPage(8);
+    await genericForm.nextPage(7);
     await familyForm.finalSurvey(1, 1, 1, 1);
     await reportsPage.submitForm();
     await familyForm.reportCheck(
@@ -49,16 +49,9 @@ describe('Family form', () => {
       'false',
       'ucid condoms'
     );
-    await genericForm.validatedReport();
-    await genericForm.invalidateReport();
-    const reportId = await reportsPage.getCurrentReportId();
-    const invalidatedReport = await utils.getDoc(reportId);
-    expect(invalidatedReport.verified).to.be.false;
-    expect(invalidatedReport.contact).to.equal({ _id: 'e2e_contact_test_id' });
 
-    await genericForm.validateReport();
-    const validatedReport = await utils.getDoc(reportId);
-    expect(validatedReport.verified).to.be.true;
-    expect(validatedReport.contact).to.equal({ _id: 'e2e_contact_test_id' });
+    const reportId = await reportsPage.getCurrentReportId();
+    const report = await utils.getDoc(reportId);
+    expect(report.contact).to.deep.equal({ _id: 'e2e_contact_test_id' });
   });
 });
