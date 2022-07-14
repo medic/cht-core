@@ -92,11 +92,11 @@ const reportCheck =  async (
   const savedParameters = await $$('.details>ul>li');
 
   // Primary Caregiver
-  expect(await savedParameters[2].getText()).replace(/[\n]/g, '').to.equal(
+  expect(await savedParameters[2].getText().replace(/[\n]/g, '')).to.equal(
     'report.any.clinic.name' + caregiverName
   );
   // Source of water
-  expect(await savedParameters[6].getText()).replace(/[\n]/g, '').to.equal(
+  expect(await savedParameters[6].getText().replace(/[\n]/g, '')).to.equal(
     'report.any.clinic.household_survey.source_of_drinking_water' +
       sourceOfWater
   );
@@ -105,11 +105,11 @@ const reportCheck =  async (
     'report.any.clinic.household_survey.mosquito_nets' + mosquitoNet
   );
   // Hygeinic toilet
-  expect(await savedParameters[8].getText()).replace(/[\n]/g, '').to.equal(
+  expect(await savedParameters[8].getText().replace(/[\n]/g, '')).to.equal(
     'report.any.clinic.household_survey.hygeinic_toilet' + hygeinicToilet
   );
   // Planning method
-  expect(await savedParameters[9].getText()).replace(/[\n]/g, '').to.equal(
+  expect(await savedParameters[9].getText().replace(/[\n]/g, '')).to.equal(
     'report.any.clinic.household_survey.family_planning_method' +
       planningMethod
   );
