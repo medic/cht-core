@@ -89,7 +89,8 @@ describe('Muting', () => {
       _id: 'fixture:user:offline',
       name: 'Offline'
     },
-    roles: ['district_admin']
+    roles: ['district_admin'],
+    known: true,
   };
 
   const onlineUser = {
@@ -100,7 +101,8 @@ describe('Muting', () => {
       _id: 'fixture:user:online',
       name: 'Offline'
     },
-    roles: ['national_admin']
+    roles: ['national_admin'],
+    known: true,
   };
 
   const settings = {
