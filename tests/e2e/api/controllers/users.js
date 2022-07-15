@@ -1030,6 +1030,8 @@ describe('Users API', () => {
           contact: { id: user.contact._id },
         })));
 
+        await utils.delayPromise(500);
+
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
           const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
@@ -1139,6 +1141,8 @@ describe('Users API', () => {
           });
           chai.expect(responseUser.token_login).to.have.keys('expiration_date');
         });
+
+        await utils.delayPromise(500);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);

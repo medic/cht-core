@@ -272,7 +272,7 @@ const baseConfig = {
     testTile = test.title;
     const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
     fs.appendFileSync(browserLogPath, title);
-    await utils.requestOnTestDb(`/?start=${testTile}`);
+    await utils.requestOnTestDb(`/?start=${testTile.replace(/\s/g, '_')}`);
   },
   /**
    * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
@@ -299,9 +299,9 @@ const baseConfig = {
       passed = false;
     }
     if (passed === false) {
-      browser.takeScreenshot();
+      await browser.takeScreenshot();
     }
-    await utils.requestOnTestDb(`/?end=${testTile}`);
+    await utils.requestOnTestDb(`/?end=${testTile.replace(/\s/g, '_')}`);
   },
 
   /**

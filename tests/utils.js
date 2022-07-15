@@ -351,7 +351,7 @@ const createUsers = async (users, meta = false) => {
     await request(Object.assign({ body: user }, createUserOpts));
   }
 
-  await module.exports.delayPromise(() => Promise.resolve(), 500);
+  await module.exports.delayPromise(500);
 
   if (!meta) {
     return;
@@ -695,12 +695,10 @@ const stopServices = async (removeOrphans) => {
 };
 const startService = async (service) => {
   await dockerComposeCmd('start', `cht-${service}`);
-  await module.exports.delayPromise(() => Promise.resolve(), 500);
 };
 
 const stopService = async (service) => {
   await dockerComposeCmd('stop', '-t', 0, `cht-${service}`);
-  await module.exports.delayPromise(() => Promise.resolve(), 500);
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
@@ -815,11 +813,11 @@ module.exports = {
   currentSpecReporter: {
     specStarted: result => {
       jasmine.currentSpec = result;
-      return module.exports.requestOnTestDb(`/?start=${jasmine.currentSpec.fullName}`);
+      return module.exports.requestOnTestDb(`/?start=${jasmine.currentSpec.fullName.replace(/\s/g, '_')}`);
     },
     specDone: result => {
       jasmine.currentSpec = result;
-      return module.exports.requestOnTestDb(`/?end=${jasmine.currentSpec.fullName}`);
+      return module.exports.requestOnTestDb(`/?end=${jasmine.currentSpec.fullName.replace(/\s/g, '_')}`);
     },
   },
 
@@ -1115,6 +1113,11 @@ module.exports = {
 
   // delays executing a function that returns a promise with the provided interval (in ms)
   delayPromise: (promiseFn, interval) => {
+    if (typeof promiseFn === 'number') {
+      interval = promiseFn;
+      promiseFn = () => Promise.resolve();
+    }
+
     return new Promise((resolve, reject) => {
       setTimeout(() => promiseFn().then(resolve).catch(reject), interval);
     });

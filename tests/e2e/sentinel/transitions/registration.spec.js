@@ -1250,7 +1250,7 @@ describe('registration', () => {
       .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDoc(createPlace))
       // Sentinel won't process these, so we can't wait for a metadata update, but let's give it 5 seconds just in case
-      .then(() => utils.delayPromise(() => Promise.resolve(), 5000))
+      .then(() => utils.delayPromise(5000))
       .then(() => sentinelUtils.getInfoDocs(createPlace._id))
       .then(infos => {
         chai.expect(infos[0].transitions).to.equal(undefined);
