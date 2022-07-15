@@ -90,6 +90,7 @@ DB.query('medic-conflicts/conflicts', {reduce:false})
               const conflictDoc = results.find(r => r.ok._rev === conflictDocId).ok;
               //Generate Json Diff
               const jsonDiff = jsondiff.diff(mainDoc, conflictDoc);
+              console.log(jsonDiff);
 
               //Write conflict doc to the drive
               writeToFile(path.join(conflictDirectoryPath, `${conflictDocId}.json`), conflictDoc);
