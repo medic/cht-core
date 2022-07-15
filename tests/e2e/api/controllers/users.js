@@ -1142,7 +1142,7 @@ describe('Users API', () => {
           chai.expect(responseUser.token_login).to.have.keys('expiration_date');
         });
 
-        await utils.delayPromise(500);
+        await utils.delayPromise(1000);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
@@ -1172,6 +1172,7 @@ describe('Users API', () => {
             },
           ]);
 
+          console.log(`testing user ${user.username}`);
           await expectSendableSms(loginTokenDoc, user.phone);
           await expectPasswordLoginToFail(user);
           await expectTokenLoginToSucceed(tokenUrl);
