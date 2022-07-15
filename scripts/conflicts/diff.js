@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const //_ = require('underscore'),
   parseArgs = require('minimist');
 const jsondiff = require('json-diff');
@@ -13,6 +14,8 @@ const server = argv._[2] || argv.server || process.env.COUCH_URL;
 
 //Example Usage
 //node diff.js 'https://user:pass@medic-bhaktapur.com/medic'
+
+
 
 if (!server || argv.h || argv.help) {
   console.log(`You need to provide a Medic CouchDB url with baisc authentication 
@@ -37,19 +40,23 @@ const writeToFile = function(path, content) {
   });
 };
 
+const createDirectory = function(conflictDirectoryPath) {
+  if (!fs.existsSync(conflictDirectoryPath)){
+    try {
+      fs.mkdirSync(conflictDirectoryPath);
+    } catch(err){
+      console.log(err);
+    }
+  }
+};
+
 DB.query('medic-conflicts/conflicts', {reduce:false})
   .then(conflicts => {
     console.log(`Found ${conflicts.rows.length} conflicts`);
 
     const mainConflictFilesDirectory = './doc-conflicts';
     let ps = Promise.resolve();
-    if (!fs.existsSync(mainConflictFilesDirectory)){
-      try {
-        fs.mkdirSync(mainConflictFilesDirectory);
-      }catch(err){
-        console.log(`Error while creating main conflict folder: ${err}`);
-      }
-    }
+    createDirectory(mainConflictFilesDirectory);
     conflicts.rows.forEach(r => {
       ps = ps.then(() => {
         const docId = r.id;
@@ -76,31 +83,19 @@ DB.query('medic-conflicts/conflicts', {reduce:false})
             // Reverse this process to search for doc in DB.
             conflictDirectoryName = conflictDirectoryName.replace(/[/\\?%*:|"<>]/g, ' ');
             const conflictDirectoryPath = `${mainConflictFilesDirectory}/${conflictDirectoryName}`; 
-            if (!fs.existsSync(conflictDirectoryPath)){
-              try {
-                fs.mkdirSync(conflictDirectoryPath);
-              } catch(err){
-                console.log(err);
-              }
-            }
+            createDirectory(conflictDirectoryPath);
 
-            writeToFile(conflictDirectoryPath + '/' + 'mainDocument.json', mainDoc);
+            writeToFile(path.join(conflictDirectoryPath, 'mainDocument.json'), mainDoc);
             r.key.forEach( conflictDocId => {
               const conflictDoc = results.find(r => r.ok._rev === conflictDocId).ok;
               //Generate Json Diff
               const jsonDiff = jsondiff.diff(mainDoc, conflictDoc);
-              //Generate String Diff
-              const stringJsonDiff = jsondiff.diffString(mainDoc, conflictDoc);
-              console.log(stringJsonDiff);
-
-              //Write JSON diff between the conflict files
-              writeToFile(conflictDirectoryPath +'/diff_' +conflictDocId +'.json', jsonDiff);
 
               //Write conflict doc to the drive
-              writeToFile(conflictDirectoryPath +'/'+ conflictDocId + '.json', conflictDoc);
+              writeToFile(path.join(conflictDirectoryPath, `${conflictDocId}.json`), conflictDoc);
 
-              //Write string diff between the conflict files
-              writeToFile(conflictDirectoryPath + '/string_diff_' + conflictDocId + '.txt', stringJsonDiff);
+              //Write JSON diff between the conflict files
+              writeToFile(path.join(conflictDirectoryPath, `diff_${conflictDocId}.json`), jsonDiff);
             }
             );
 
