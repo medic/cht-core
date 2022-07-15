@@ -6,6 +6,7 @@ import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Component({
   selector: 'mm-reports-sidebar-filter',
@@ -38,6 +39,7 @@ export class ReportsSidebarFilterComponent implements AfterViewInit {
 
   constructor(
     private store: Store,
+    private telemetryService: TelemetryService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -50,6 +52,7 @@ export class ReportsSidebarFilterComponent implements AfterViewInit {
       this.toDateFilter,
       this.statusFilter,
     ];
+    this.resetFilters();
   }
 
   applyFilters(force?) {
@@ -87,8 +90,9 @@ export class ReportsSidebarFilterComponent implements AfterViewInit {
     this.applyFilters();
   }
 
-  toggleSidebarFilter(open) {
-    this.isOpen = open;
+  toggleSidebarFilter(open?) {
+    this.isOpen = open === undefined ? !this.isOpen : open;
     this.globalActions.setSidebarFilter({ isOpen: !!this.isOpen });
+    this.telemetryService.record('sidebar_filter:reports');
   }
 }

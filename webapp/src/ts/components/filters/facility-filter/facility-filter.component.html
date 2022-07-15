@@ -28,12 +28,33 @@
   </ul>
 </div>
 
-<ng-template #facilityTemplate let-facility="facility" let-facilityDepth="facilityDepth" let-parent="parent" let-selectedParent="selectedParent" let-filter="filter">
-  <li role="presentation" [class.selected]="filter?.selected.has(facility)" [class.disabled]="selectedParent">
-    <a role="menuitem" tabindex="-1" [attr.data-value]="facility?.doc?._id" (click)="!selectedParent && toggle(facility)">
+<ng-template
+  #facilityTemplate
+  let-facility="facility"
+  let-facilityDepth="facilityDepth"
+  let-parent="parent"
+  let-selectedParent="selectedParent"
+  let-filter="filter">
+  <li
+    role="presentation"
+    [class.selected]="filter?.selected.has(facility)"
+    [class.disabled]="selectedParent"
+    [class.accordion-list]="inline"
+    [class.accordion-list-expand]="facility.toggle"
+    [class.accordion-caret]="facility?.children?.length">
+    <span
+      class="fa accordion-check"
+      [ngClass]="filter?.selected.has(facility) ? 'fa-check-square' : 'fa-square-o'"
+      (click)="select(selectedParent, facility, filter)">
+    </span>
+    <a
+      role="menuitem"
+      tabindex="-1"
+      [attr.data-value]="facility?.doc?._id"
+      (click)="inline ? facility.toggle = !facility.toggle : select(selectedParent, facility, filter)">
       {{ facility.label | async }}
     </a>
-    <ul class="mm-dropdown-submenu">
+    <ul class="mm-dropdown-submenu" *ngIf="facility?.children?.length">
       <ng-container
         *ngFor="let child of facility?.children; trackBy: trackByFn"
         [ngTemplateOutlet]="facilityTemplate"

@@ -1,8 +1,8 @@
 import { Component, EventEmitter, OnDestroy, Input, Output, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
-import { Selectors } from '../../../selectors';
+import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
@@ -16,9 +16,8 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   subscription: Subscription = new Subscription();
   inputText;
 
-  currentTab;
-
   @Input() disabled;
+  @Input() mobileDropdown;
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   constructor(
@@ -28,16 +27,9 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   ngOnInit() {
-    const subscription = combineLatest(
-      this.store.select(Selectors.getCurrentTab),
-      this.store.select(Selectors.getFilters),
-    ).subscribe(([
-      currentTab,
-      filters,
-    ]) => {
-      this.currentTab = currentTab;
-      this.inputText = filters?.search;
-    });
+    const subscription = this.store
+      .select(Selectors.getFilters)
+      .subscribe(filters => this.inputText = filters?.search);
     this.subscription.add(subscription);
   }
 

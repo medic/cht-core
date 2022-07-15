@@ -1,7 +1,7 @@
 <div class="reports-action-bar">
   <mm-freetext-filter class="filter" (search)="this.search.emit($event)" [disabled]="disabled"></mm-freetext-filter>
 
-  <button class="btn open-filter" (click)="openFilter.emit(true)">
+  <button class="btn open-filter" (click)="openFilter.emit()">
     <span class="fa fa-sliders"></span>
     <span>{{ 'reports.actions_bar.filter.label' | translate }}</span>
     <span class="filter-counter" *ngIf="filterCount?.total">{{ filterCount?.total | translate }}</span>

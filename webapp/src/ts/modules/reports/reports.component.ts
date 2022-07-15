@@ -1,5 +1,6 @@
 import { find as _find, cloneDeep as _cloneDeep } from 'lodash-es';
 import {
+  AfterViewInit,
   Component,
   NgZone,
   OnDestroy,
@@ -23,13 +24,15 @@ import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
+import { AuthService } from '@mm-services/auth.service';
 
+export const SIDEBAR_FILTER_PERMISSION:string = 'can_view_sidebar_filter';
 const PAGE_SIZE = 50;
 
 @Component({
   templateUrl: './reports.component.html'
 })
-export class ReportsComponent implements OnInit, OnDestroy {
+export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription: Subscription = new Subscription();
   @ViewChild(ReportsSidebarFilterComponent)
   reportsSidebarFilter: ReportsSidebarFilterComponent;
@@ -59,16 +62,17 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   constructor(
     private store:Store,
-    private route: ActivatedRoute,
+    private route:ActivatedRoute,
     private router:Router,
+    private authService:AuthService,
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
-    private tourService: TourService,
+    private tourService:TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
     private ngZone:NgZone,
-    private scrollLoaderProvider: ScrollLoaderProvider,
+    private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -140,9 +144,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
 
     this.tourService.startIfNeeded(this.route.snapshot);
-
-    this.search();
     this.setActionBarData();
+  }
+
+  ngAfterViewInit() {
+    this.enableSidebarFilter();
   }
 
   ngOnDestroy() {
@@ -297,6 +303,14 @@ export class ReportsComponent implements OnInit, OnDestroy {
     exportService.export('reports', exportFilters, { humanReadable: true });
   }
 
+  private async enableSidebarFilter() {
+    this.showSidebarFilter = await this.authService.has(SIDEBAR_FILTER_PERMISSION);
+    // SidebarFilter component starts the initial search.
+    if (!this.showSidebarFilter) {
+      this.search();
+    }
+  }
+
   toggleSelected(report) {
     if (!this.selectMode) {
       // let the routerLink handle navigation
@@ -318,7 +332,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   }
 
   openFilter() {
-    this.reportsSidebarFilter?.toggleSidebarFilter(true);
+    this.reportsSidebarFilter?.toggleSidebarFilter();
   }
 
   resetFilter() {

@@ -176,10 +176,13 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     return facilities;
   }
 
-  toggle(facility) {
-    const filter = this.inline ? this.inlineFilter : this.dropdownFilter;
+  private toggle(facility, filter) {
     const recursiveFacilities = this.getFacilitiesRecursive(facility);
-    recursiveFacilities.forEach(facility => filter.toggle(facility));
+    const newToggleValue = !filter.selected.has(facility);
+    // Exclude places with already correct toggle state, then toggle the rest.
+    recursiveFacilities
+      .filter(place => filter.selected.has(place) !== newToggleValue)
+      .forEach(place => filter.toggle(place));
   }
 
   itemLabel(facility) {
@@ -200,5 +203,12 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
   countSelected() {
     return this.inline && this.inlineFilter?.countSelected();
+  }
+
+  select(selectedParent, facility, filter) {
+    if (selectedParent) {
+      return;
+    }
+    this.toggle(facility, filter);
   }
 }

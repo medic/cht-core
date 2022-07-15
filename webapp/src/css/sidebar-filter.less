@@ -12,12 +12,17 @@
   padding: 0;
 }
 
+.accordion-check {
+  display: none;
+}
+
 .sidebar-filter {
   height: 100%;
   width: 100%;
 
   * {
     outline: none !important;
+    text-decoration: none !important;
   }
 
   .hidden {
@@ -42,7 +47,7 @@
 
     .sidebar-header,
     .sidebar-footer,
-    .panel-group .accordion-toggle {
+    .panel-group .panel-heading .accordion-toggle {
       width: 100%;
       height: 60px;
       display: flex;
@@ -80,12 +85,10 @@
           font-weight: bold;
           padding: 0;
           border: none;
-          &, &:hover {
-            text-decoration: none;
-          }
 
           .title {
             display: inline-block;
+            margin: 0;
           }
         }
 
@@ -124,6 +127,10 @@
       label {
         display: block;
         margin-left: 5px;
+
+        &:not(:first-child) {
+          margin-top: 10px;
+        }
       }
 
       .filter {
@@ -152,15 +159,10 @@
       }
 
       .filter-options {
-        padding: 0px 5px;
+        padding: 0px 5px 10px 5px;
+
         li {
-          text-overflow: ellipsis;
-          overflow: hidden;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          white-space: normal;
-          padding-left: 25px;
+          position: relative;
 
           &.group-header {
             font-size: @font-medium;
@@ -172,23 +174,85 @@
             }
           }
 
+          a {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            white-space: normal;
+            color: @gray-ultra-dark;
+            font-size: @font-medium;
+            padding-left: 30px;
+
+            &:before {
+              content: '\f096'; // http://fontawesome.io/icon/square-o/
+              font-family: FontAwesome;
+              font-size: @font-extra-extra-large;
+              color: @gray-medium;
+              vertical-align: middle;
+              margin: 5px 5px 5px -30px;
+            }
+          }
+
           &.selected a:before {
             content: '\f14a'; // https://fontawesome.com/v4/icon/check-square
             color: @blue-dark;
           }
 
-          a {
-            color: @gray-ultra-dark;
-            font-size: @font-medium;
-            text-decoration: none;
+          &.disabled * {
+            color: @gray-medium !important;
+          }
+        }
 
-            &:before {
-              content: '\f096'; // http://fontawesome.io/icon/square-o/
+        li.accordion-list {
+          padding-left: 25px;
+
+          a {
+            padding: 0 10px 0 0;
+          }
+
+          a:before,
+          .mm-dropdown-submenu {
+            display: none;
+          }
+
+          &.accordion-caret {
+            &:after {
+              content: '\f0d7'; // https://fontawesome.com/v4/icon/caret-down
               font-family: FontAwesome;
-              font-size: @font-extra-large;
+              font-size: @font-large;
               color: @gray-medium;
-              vertical-align: middle;
-              margin: 5px 5px 5px -25px;
+              position: absolute;
+              right: 0px;
+              top: 0px;
+            }
+
+            &.accordion-list-expand {
+              &:after {
+                content: '\f0d8'; // https://fontawesome.com/v4/icon/caret-up
+              }
+
+              & > .mm-dropdown-submenu {
+                display: block;
+
+                li {
+                  margin-top: 10px;
+                }
+              }
+            }
+          }
+
+          .accordion-check {
+            font-size: @font-extra-extra-large;
+            color: @gray-medium;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            &.fa-check-square {
+              color: @blue-dark;
             }
           }
         }
@@ -196,6 +260,7 @@
     }
 
     .sidebar-footer {
+      display: none;
       box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.24);
 
       .btn {
@@ -245,6 +310,10 @@
       top: 0;
       right: 0;
       box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.24);
+
+      .sidebar-footer {
+        display: flex;
+      }
     }
   }
 }

@@ -8,12 +8,13 @@ import { AnalyticsModulesService } from '@mm-services/analytics-modules.service'
 import { SessionService } from '@mm-services/session.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { SIDEBAR_FILTER_PERMISSION } from '@mm-modules/reports/reports.component';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TourService {
-
+  canViewSidebar;
   current: {
     tour: any;
     name: any;
@@ -27,7 +28,11 @@ export class TourService {
     private translateService: TranslateService,
     private router: Router,
     private responsiveService:ResponsiveService,
-  ) { }
+  ) {
+    this.authService
+      .has(SIDEBAR_FILTER_PERMISSION)
+      .then(canViewSidebar => this.canViewSidebar = canViewSidebar);
+  }
 
   private mmScroll(container, elem) {
     container = $(container);
@@ -403,7 +408,7 @@ export class TourService {
         }
       ]
     }
-  ]
+  ];
 
   private createTemplate() {
     return  `<div class="popover tour">
@@ -509,20 +514,34 @@ export class TourService {
     return this.tours.find(t => t.name === name) || this.tours[0];
   }
 
-  private getSettings(name) {
+  private getSkipSettings() {
+    return {
+      reports: {
+        condition: () => this.canViewSidebar,
+        steps:[
+          'mm-form-type-filter',
+          'mm-facility-filter',
+          'mm-date-filter',
+          'mm-status-filter',
+        ]
+      }
+    };
+  }
 
+  private getSettings(name) {
     const settings = this.getTour(name);
+    const skipSettings = this.getSkipSettings()[settings.name];
     settings.autoscroll = false;
+    settings.steps = settings.steps.filter(step => {
+      return !(skipSettings?.condition() && skipSettings.steps.includes(step.element));
+    });
 
     if (!settings.transmogrified) {
-
       settings.template = this.createTemplate();
-
-      const mobile = this.responsiveService.isMobile();
       settings.steps.forEach(step => {
         step.title = this.translateService.instant(step.title);
         step.content = this.translateService.instant(step.content);
-        if (mobile) {
+        if (this.responsiveService.isMobile()) {
           // there's no room to show steps to the left or right on a mobile device
           if (step.mobileElement) {
             step.element = step.mobileElement;
@@ -538,7 +557,6 @@ export class TourService {
       });
 
       settings.transmogrified = true;
-
     }
 
     return settings;
