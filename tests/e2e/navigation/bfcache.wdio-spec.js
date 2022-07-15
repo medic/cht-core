@@ -2,7 +2,6 @@ const commonPage = require('../../page-objects/common/common.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const usersAdminPage = require('../../page-objects/admin/user.wdio.page');
 const auth = require('../../auth')();
-const utils = require('../../utils');
 
 describe('bfcache', async () => {
   beforeEach(async () => {
