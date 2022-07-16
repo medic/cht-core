@@ -302,6 +302,7 @@ const baseConfig = {
     if (passed === false) {
       await browser.takeScreenshot();
     }
+
     await utils.apiLogTestEnd(test.title);
   },
 
