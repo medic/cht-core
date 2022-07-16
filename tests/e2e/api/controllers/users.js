@@ -1321,6 +1321,7 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
+          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1399,6 +1400,7 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
+          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
