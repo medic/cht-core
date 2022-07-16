@@ -1434,6 +1434,7 @@ describe('Users API', () => {
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
+            return utils.delayPromise(500);
           })
           .then(() => expectPasswordLoginToFail(user))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
