@@ -813,11 +813,11 @@ module.exports = {
   currentSpecReporter: {
     specStarted: result => {
       jasmine.currentSpec = result;
-      return module.exports.requestOnTestDb(`/?start=${jasmine.currentSpec.fullName.replace(/\s/g, '_')}`);
+      return module.exports.apiLogTestStart(jasmine.currentSpec.fullName);
     },
     specDone: result => {
       jasmine.currentSpec = result;
-      return module.exports.requestOnTestDb(`/?end=${jasmine.currentSpec.fullName.replace(/\s/g, '_')}`);
+      return module.exports.apiLogTestEnd(jasmine.currentSpec.fullName);
     },
   },
 
@@ -1230,5 +1230,12 @@ module.exports = {
       }
     };
     return request(options);
+  },
+
+  apiLogTestStart: (name) => {
+    return module.exports.requestOnTestDb(`/?start=${name.replace(/\s/g, '_')}`);
+  },
+  apiLogTestEnd: (name) => {
+    return module.exports.requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
   },
 };
