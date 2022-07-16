@@ -351,7 +351,7 @@ const createUsers = async (users, meta = false) => {
     await request(Object.assign({ body: user }, createUserOpts));
   }
 
-  await module.exports.delayPromise(500);
+  await module.exports.delayPromise(1000);
 
   if (!meta) {
     return;

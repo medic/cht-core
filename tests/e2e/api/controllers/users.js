@@ -1030,7 +1030,7 @@ describe('Users API', () => {
           contact: { id: user.contact._id },
         })));
 
-        await utils.delayPromise(500);
+        await utils.delayPromise(1000);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
@@ -1142,7 +1142,7 @@ describe('Users API', () => {
           chai.expect(responseUser.token_login).to.have.keys('expiration_date');
         });
 
-        await utils.delayPromise(500);
+        await utils.delayPromise(1000);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
@@ -1434,7 +1434,7 @@ describe('Users API', () => {
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
-            return utils.delayPromise(500);
+            return utils.delayPromise(1000);
           })
           .then(() => expectPasswordLoginToFail(user))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
