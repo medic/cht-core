@@ -252,6 +252,7 @@ describe('Muting', () => {
       await utils.createUsers([offlineUser]);
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative(offlineUser.username, password);
+      await commonElements.calmNative();
       await utils.closeTour();
     });
 
