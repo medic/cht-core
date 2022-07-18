@@ -7,7 +7,6 @@ const commonElements = require('../page-objects/common/common.po.js');
 const messagesElements = require('../page-objects/messages/messages.po');
 const reportsElements = require('../page-objects/reports/reports.po');
 const helper = require('../helper');
-const constants = require('../constants');
 const utils = require('../utils');
 
 // Mock rapidpro server
