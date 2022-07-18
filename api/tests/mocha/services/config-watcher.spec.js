@@ -22,6 +22,7 @@ describe('Configuration', () => {
     on = sinon.stub();
     on.returns({ on: on });
 
+    sinon.stub(db, 'createVault');
     sinon.stub(db.medic, 'get');
     sinon.stub(db.medic, 'query');
     sinon.stub(db.medic, 'changes').returns({ on: on });
