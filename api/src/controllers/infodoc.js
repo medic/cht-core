@@ -13,13 +13,7 @@ module.exports = {
       let body = Buffer.from('');
       proxyRes.on('data', data => (body = Buffer.concat([body, data])));
       proxyRes.on('end', () => {
-        try {
-          body = JSON.parse(body.toString());
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error(body.toString());
-          throw err;
-        }
+        body = JSON.parse(body.toString());
 
         if (body.id && body.ok && !req.body._deleted) {
           // Single successful write

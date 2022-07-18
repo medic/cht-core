@@ -250,7 +250,7 @@ describe('Settings Shared Library', () => {
       const derivedKey = Buffer.from('encrypted');
       environment.COUCH_URL = 'http://user:pass@localhost:6929/medic';
       sinon.stub(request, 'put').resolves('-pbkdf2-8266a0adb');
-      sinon.stub(request, 'get').resolves({ all_nodes: ['a', 'b', 'c'] });
+      sinon.stub(request, 'get').resolves({ cluster_nodes: ['a', 'b', 'c'] });
       sinon.stub(crypto, 'randomBytes').returns(salt);
       sinon.stub(crypto, 'pbkdf2').callsArgWith(5, null, derivedKey);
 

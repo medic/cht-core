@@ -115,7 +115,7 @@ const getCouchConfig = (param, nodeName) => {
 const getCouchNodes = async () => {
   const serverUrl = getServerUrl();
   const membership = await request.get({ url: `${serverUrl}/_membership`, json: true });
-  return membership.all_nodes;
+  return membership.cluster_nodes;
 };
 
 const getPasswordHash = (password) => {
