@@ -298,6 +298,17 @@ module.exports = function(grunt) {
           )
           .join(' && '),
       },
+      'build-images': {
+        cmd: () => buildVersions.INFRASTRUCTURE
+          .map(service =>
+            [
+              `cd ${service}`,
+              `docker build -f ./Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
+              'cd ../',
+            ].join(' && ')
+          )
+          .join(' && '),
+      },
       'save-service-images': {
         cmd: () => buildVersions.SERVICES
           .map(service =>
@@ -309,7 +320,7 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'push-service-images': {
-        cmd: () => buildVersions.SERVICES
+        cmd: () => [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]
           .map(service => `docker push ${buildVersions.getImageTag(service)}`)
           .join(' && '),
       },
@@ -384,7 +395,7 @@ module.exports = function(grunt) {
       },
       'start-webdriver-ci': {
         cmd:
-          'scripts/e2e/start_webdriver.sh'
+          'tests/scripts/start_webdriver.sh'
       },
       'check-env-vars':
         'if [ -z $COUCH_URL ]; then ' +
@@ -653,7 +664,7 @@ module.exports = function(grunt) {
             suite: 'mobile',
             capabilities: {
               chromeOptions: {
-                'args': ['headless','disable-gpu'],
+                'args': ['headless', 'disable-gpu'],
                 mobileEmulation: { 'deviceName': 'Nexus 5' }
               }
             }
@@ -863,6 +874,7 @@ module.exports = function(grunt) {
     'cssmin:api',
     'env:version',
     'exec:build-service-images',
+    'exec:build-images',
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [

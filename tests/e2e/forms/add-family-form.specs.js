@@ -3,6 +3,7 @@ const genericForm = require('../../page-objects/forms/generic-form.po');
 const common = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
 const userData = require('../../page-objects/forms/data/user.po.data');
+const reportsPage = require('../../page-objects/reports/reports.po');
 
 describe('Family form', () => {
   const contactId = userData.contactId;
@@ -22,6 +23,7 @@ describe('Family form', () => {
   });
 
   it('Submit Add Family form', async () => {
+    await common.hideSnackbar();
     await common.goToReportsNative(true);
     await genericForm.selectFormNative('any');
     await familyForm.fillPrimaryCaregiver('test');

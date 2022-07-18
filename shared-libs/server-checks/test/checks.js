@@ -138,7 +138,12 @@ describe('Server Checks service', () => {
         exit: sinon.stub(),
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
-      sinon.stub(request, 'get').resolves({ version: '2' });
+      sinon.stub(request, 'get');
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' })).resolves({
+        all_nodes: ['a'],
+        cluster_nodes: ['a'],
+      });
       await service.check('http://admin:pass@localhost:5984/medic');
 
       chai.expect(http.get.args[0][0]).to.equal('http://localhost:5984/');
@@ -152,20 +157,28 @@ describe('Server Checks service', () => {
         exit: sinon.stub(),
       };
 
-      sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
-      sinon.stub(request, 'get').rejects({ an: 'error' });
+      sinon.stub(http, 'get').onCall(0).callsArgWith(1, { statusCode: 200 });
+      sinon.stub(request, 'get');
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      const unfinishedCluster = { all_nodes: ['a', 'b'], cluster_nodes: ['a'] };
+      const finishedCluster = { all_nodes: ['a', 'b'], cluster_nodes: ['a', 'b'] };
+      const membershipQuery = request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' }));
+      membershipQuery.resolves(unfinishedCluster);
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_users' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_replicator' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_global_changes' })).resolves();
 
-      request.get.onCall(70).resolves({ version: '2' });
-      request.get.onCall(71).resolves({ version: '2' });
-      request.get.onCall(72).resolves({ version: '2' });
-      http.get.onCall(2).callsArgWith(1, { statusCode: 401 });
+      membershipQuery.onCall(70).resolves(finishedCluster);
+      membershipQuery.onCall(71).resolves(finishedCluster);
+      membershipQuery.onCall(72).resolves(finishedCluster);
+      http.get.callsArgWith(1, { statusCode: 401 });
 
       const promise = service.check('http://admin:pass@localhost:5984/medic');
       Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
       await promise;
 
-      chai.expect(request.get.callCount).to.equal(73);
-      chai.expect(http.get.callCount).to.deep.equal(3);
+      chai.expect(request.get.callCount).to.equal(146);
+      chai.expect(http.get.callCount).to.deep.equal(72);
     });
 
 
@@ -177,13 +190,20 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 401 });
       sinon.stub(request, 'get').rejects({ an: 'error' });
-      request.get.onCall(100).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).onCall(100).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' })).resolves({
+        cluster_nodes: ['1', '2'],
+        all_nodes: ['1', '2'],
+      });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_users' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_replicator' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_global_changes' })).resolves();
 
       const promise = service.check('http://admin:pass@localhost:5984/medic');
       // request will be retried 100 times
       Array.from({ length: 100 }).map(() => originalSetTimeout(() => clock.tick(1000)));
       await promise;
-      chai.expect(request.get.callCount).to.equal(101);
+      chai.expect(request.get.callCount).to.equal(105);
     });
 
     it('couchdb in admin party', async () => {
@@ -194,12 +214,20 @@ describe('Server Checks service', () => {
       };
       sinon.stub(http, 'get').callsArgWith(1, { statusCode: 200 });
       http.get.onCall(300).callsArgWith(1, { statusCode: 401 });
-      sinon.stub(request, 'get').resolves({ version: '2' });
+      sinon.stub(request, 'get');
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/' })).resolves({ version: '2' });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_membership' })).resolves({
+        cluster_nodes: ['1', '2'],
+        all_nodes: ['1', '2'],
+      });
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_users' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_replicator' })).resolves();
+      request.get.withArgs(sinon.match({ url: 'http://admin:pass@localhost:5984/_global_changes' })).resolves();
 
       const promise = service.check('http://admin:pass@localhost:5984/medic');
       Array.from({ length: 300 }).map(() => originalSetTimeout(() => clock.tick(1000)));
       await promise;
-      chai.expect(request.get.callCount).to.equal(301);
+      chai.expect(request.get.callCount).to.equal(305);
     });
 
     it('invalid server', () => {

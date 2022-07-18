@@ -72,6 +72,8 @@ describe('Configuration', () => {
 
         chai.expect(config.setTranslationCache.callCount).to.equal(1);
         chai.expect(config.setTranslationCache.args[0]).to.deep.equal([{}]);
+
+        chai.expect(db.createVault.callCount).to.equal(1);
       });
     });
 

@@ -43,7 +43,7 @@ describe('generate service worker', () => {
     db.medic.put.resolves();
     clock.tick(2500);
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
 
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
@@ -98,7 +98,7 @@ describe('generate service worker', () => {
     getServiceWorkerHash.onCall(0).resolves('same');
     getServiceWorkerHash.onCall(1).resolves('same');
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(db.medic.get.callCount).to.equal(0);
@@ -112,7 +112,7 @@ describe('generate service worker', () => {
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(db.medic.get.callCount).to.equal(1);
@@ -131,7 +131,7 @@ describe('generate service worker', () => {
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(db.medic.get.callCount).to.equal(0);
@@ -145,7 +145,7 @@ describe('generate service worker', () => {
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(db.medic.get.callCount).to.equal(0);
@@ -158,7 +158,7 @@ describe('generate service worker', () => {
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
 
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
@@ -214,7 +214,7 @@ describe('generate service worker', () => {
     swPrecache.write.rejects({ an: 'error' });
 
     return generateServiceWorker
-      .run()
+      .run(true)
       .then(() => chai.expect.fail('should have thrown'))
       .catch(err => {
         chai.expect(err).to.deep.equal({ an: 'error' });
@@ -231,7 +231,7 @@ describe('generate service worker', () => {
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(logger.error.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(1);
       chai.expect(db.medic.put.callCount).to.equal(1);
@@ -249,7 +249,7 @@ describe('generate service worker', () => {
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(db.medic.get.callCount).to.equal(1);
       chai.expect(db.medic.put.callCount).to.equal(1);
     });
@@ -261,7 +261,7 @@ describe('generate service worker', () => {
     swPrecache.write.resolves();
     sinon.stub(logger, 'error');
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(logger.error.args[0][1]).to.deep.equal({ status: 500 });
       chai.expect(db.medic.put.callCount).to.equal(0);
     });
@@ -274,7 +274,7 @@ describe('generate service worker', () => {
     swPrecache.write.resolves();
     sinon.stub(logger, 'error');
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(logger.error.args[0][1]).to.deep.equal({ status: 502 });
     });
   });
