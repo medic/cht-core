@@ -57,7 +57,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   verifyingReport;
   showContent;
   enketoEdited;
-  showSidebarFilter = false;
+  useSidebarFilter = false;
   sidebarFilter;
 
   constructor(
@@ -304,9 +304,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private async enableSidebarFilter() {
-    this.showSidebarFilter = await this.authService.has(SIDEBAR_FILTER_PERMISSION);
+    this.useSidebarFilter = await this.authService.has(SIDEBAR_FILTER_PERMISSION);
     // SidebarFilter component starts the initial search.
-    if (!this.showSidebarFilter) {
+    if (!this.useSidebarFilter) {
       this.search();
     }
   }

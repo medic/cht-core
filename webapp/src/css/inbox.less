@@ -483,7 +483,9 @@ body {
   background-color: @background-color;
 }
 
+.content .item-content .empty-selection,
 .content .item-content.empty-selection {
+  height: 100%;
   text-align: center;
   color: #c2c2c2;
   text-shadow: 1px 1px 4px rgba(255, 255, 255, 1);
@@ -733,7 +735,8 @@ body {
     word-break: break-word;
     margin: 0;
   }
-  > div {
+  > div,
+  .report-wrap > div {
     margin-bottom: 10px;
   }
   .padding {

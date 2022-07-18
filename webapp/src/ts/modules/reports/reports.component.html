@@ -1,13 +1,13 @@
 <div class="filters">
   <div class="inner">
     <reports-filters
-      *ngIf="!showSidebarFilter"
+      *ngIf="!useSidebarFilter"
       (search)="search($event)"
       [disabled]="selectMode && selectedReports?.length">
     </reports-filters>
     <mm-navigation></mm-navigation>
     <mm-reports-actions-bar
-      *ngIf="showSidebarFilter"
+      *ngIf="useSidebarFilter"
       (openFilter)="openFilter()"
       (resetFilter)="resetFilter()"
       (search)="search($event)"
@@ -79,12 +79,12 @@
     </div>
 
     <div class="content-pane right-pane">
-      <div [ngClass]="{ 'col-sm-6': sidebarFilter.isOpen, 'col-sm-8': !sidebarFilter.isOpen }">
+      <div class="item-content" [ngClass]="{ 'col-sm-6': sidebarFilter.isOpen, 'col-sm-8': !sidebarFilter.isOpen }">
         <router-outlet></router-outlet>
       </div>
       <mm-reports-sidebar-filter
         class="col-sm-3 sidebar-filter-wrapper"
-        *ngIf="showSidebarFilter"
+        *ngIf="useSidebarFilter"
         (search)="search($event)"
         [disabled]="selectMode && selectedReports?.length">
       </mm-reports-sidebar-filter>

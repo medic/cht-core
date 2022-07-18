@@ -1,15 +1,22 @@
 @import 'variables';
 
+.sidebar-filter-wrapper {
+  height: 100%;
+  padding: 0;
+  position: fixed;
+  right: -500px;
+}
+
 .sidebar-filter-active {
   .inbox.page,
   mm-actionbar .inner {
     max-width: calc(100vw - @content-margin) !important;
   }
-}
 
-.sidebar-filter-wrapper {
-  height: 100%;
-  padding: 0;
+  .sidebar-filter-wrapper {
+    position: static;
+    right: 0;
+  }
 }
 
 .accordion-check {
