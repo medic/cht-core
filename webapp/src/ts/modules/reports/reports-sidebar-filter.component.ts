@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
@@ -12,7 +12,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
   selector: 'mm-reports-sidebar-filter',
   templateUrl: './reports-sidebar-filter.component.html'
 })
-export class ReportsSidebarFilterComponent implements AfterViewInit {
+export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
 
@@ -52,11 +52,9 @@ export class ReportsSidebarFilterComponent implements AfterViewInit {
       this.toDateFilter,
       this.statusFilter,
     ];
-    this.resetFilters();
   }
 
   applyFilters(force?) {
-    // Todo what happens to the search if just one date is set
     if (this.isResettingFilters) {
       return;
     }
@@ -94,5 +92,10 @@ export class ReportsSidebarFilterComponent implements AfterViewInit {
     this.isOpen = open === undefined ? !this.isOpen : open;
     this.globalActions.setSidebarFilter({ isOpen: !!this.isOpen });
     this.telemetryService.record('sidebar_filter:reports');
+  }
+
+  ngOnDestroy() {
+    this.globalActions.clearSidebarFilter();
+    this.globalActions.clearFilters();
   }
 }

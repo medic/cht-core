@@ -103,6 +103,9 @@ const _globalReducer = createReducer(
       sidebarFilter: { ...state.sidebarFilter, ...sidebarFilter }
     };
   }),
+  on(Actions.clearSidebarFilter, (state) => {
+    return { ...state, sidebarFilter: {} };
+  }),
   on(Actions.setIsAdmin, (state, { payload: { isAdmin } }) => {
     return { ...state, isAdmin };
   }),

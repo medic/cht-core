@@ -13,9 +13,10 @@ export class ReportsActionsBarComponent implements OnInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();
   @Output() openFilter: EventEmitter<any> = new EventEmitter();
   @Output() resetFilter: EventEmitter<any> = new EventEmitter();
-  @Input() filterCount:any = {};
   @Input() disabled;
+
   private subscription: Subscription = new Subscription();
+  activeFilters: number = 0;
 
   @ViewChild(FreetextFilterComponent)
   freetextFilter: FreetextFilterComponent;
@@ -27,7 +28,7 @@ export class ReportsActionsBarComponent implements OnInit, OnDestroy {
   ngOnInit() {
     const subscription = this.store
       .select(Selectors.getSidebarFilter)
-      .subscribe(({ filterCount }) => this.filterCount = filterCount);
+      .subscribe(({ filterCount }) => this.activeFilters = filterCount?.total || 0);
     this.subscription.add(subscription);
   }
 

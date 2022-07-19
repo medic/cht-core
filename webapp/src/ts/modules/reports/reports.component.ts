@@ -58,7 +58,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   showContent;
   enketoEdited;
   useSidebarFilter = false;
-  sidebarFilter;
+  isSidebarFilterOpen = false;
 
   constructor(
     private store:Store,
@@ -87,7 +87,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.store.select(Selectors.listContains),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getFilters),
-      this.store.select(Selectors.getSidebarFilter),
       this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getEnketoEditedStatus),
       this.store.select(Selectors.getSelectMode),
@@ -97,7 +96,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       listContains,
       forms,
       filters,
-      sidebarFilter,
       showContent,
       enketoEdited,
       selectMode,
@@ -112,7 +110,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.listContains = listContains;
       this.forms = forms;
       this.filters = filters;
-      this.sidebarFilter = sidebarFilter;
       this.showContent = showContent;
       this.enketoEdited = enketoEdited;
       this.selectMode = selectMode;
@@ -142,13 +139,23 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.verifyingReport = false;
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
-
     this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
   }
 
-  ngAfterViewInit() {
-    this.enableSidebarFilter();
+  async ngAfterViewInit() {
+    const enable = await this.authService.has(SIDEBAR_FILTER_PERMISSION);
+    this.useSidebarFilter = enable;
+    this.search();
+
+    if (!this.useSidebarFilter) {
+      return;
+    }
+
+    const subscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
+    this.subscription.add(subscription);
   }
 
   ngOnDestroy() {
@@ -254,7 +261,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   search(force = false) {
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
-    if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
+    if ((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
       this.router.navigate(['reports']);
       this.reportsActions.clearSelection();
     }
@@ -301,14 +308,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     exportService.export('reports', exportFilters, { humanReadable: true });
-  }
-
-  private async enableSidebarFilter() {
-    this.useSidebarFilter = await this.authService.has(SIDEBAR_FILTER_PERMISSION);
-    // SidebarFilter component starts the initial search.
-    if (!this.useSidebarFilter) {
-      this.search();
-    }
   }
 
   toggleSelected(report) {

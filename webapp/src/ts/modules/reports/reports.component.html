@@ -22,7 +22,7 @@
     <div
       id="reports-list"
       class="inbox-items left-pane"
-      [ngClass]="{ 'col-sm-3': sidebarFilter.isOpen, 'col-sm-4': !sidebarFilter.isOpen }">
+      [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen }">
 
       <div class="selection-count" *ngIf="selectMode">
         <span *ngIf="selectedReports?.length === 1">{{'select.mode.count.singular' | translate}}</span>
@@ -79,7 +79,7 @@
     </div>
 
     <div class="content-pane right-pane">
-      <div class="item-content" [ngClass]="{ 'col-sm-6': sidebarFilter.isOpen, 'col-sm-8': !sidebarFilter.isOpen }">
+      <div class="item-content" [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
         <router-outlet></router-outlet>
       </div>
       <mm-reports-sidebar-filter
