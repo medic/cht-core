@@ -1307,7 +1307,14 @@ a.fa:hover {
       }
     }
     h2 {
-      display: initial;
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      :hover {
+        overflow: visible;
+      }
     }
     .dropdown,
     .navigation .mm-button {
