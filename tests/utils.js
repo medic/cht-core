@@ -1228,19 +1228,6 @@ module.exports = {
   collectSentinelLogs: (...regex) => collectLogs(CONTAINER_NAMES.sentinel, ...regex),
   collectApiLogs: (...regex) => collectLogs(CONTAINER_NAMES.api, ...regex),
 
-  saveCredentials: (key, password) => {
-    const options = {
-      path: `/api/v1/credentials/${key}`,
-      method: 'PUT',
-      body: password,
-      json: false,
-      headers: {
-        'Content-Type': 'text/plain'
-      }
-    };
-    return request(options);
-  },
-
   apiLogTestStart: (name) => {
     return module.exports.requestOnTestDb(`/?start=${name.replace(/\s/g, '_')}`);
   },
