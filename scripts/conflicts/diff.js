@@ -15,8 +15,6 @@ const server = argv._[2] || argv.server || process.env.COUCH_URL;
 //Example Usage
 //node diff.js 'https://user:pass@medic-bhaktapur.com/medic'
 
-
-
 if (!server || argv.h || argv.help) {
   console.log(`You need to provide a Medic CouchDB url with baisc authentication 
              (usename and password. Check 1password`);
@@ -27,7 +25,6 @@ if (!server || argv.h || argv.help) {
 }
 
 console.log(`Generating diffs for conflicts on ${server}`);
-
 
 const DB = new PouchDB(server);
 
@@ -50,39 +47,51 @@ const createDirectory = function(conflictDirectoryPath) {
   }
 };
 
+const isDiectoryEmpty = function isEmpty(path) {
+  return fs.readdirSync(path).length === 0;
+};
+
+const getConflictDirectoryPath = function (r, mainConflictFilesDirectory) {
+  let conflictDirectoryName = r.id;
+  if (r.id.includes('target')) {
+    conflictDirectoryName = r.id.split(':')[0];
+  } else { // if it is just a contact doc use the doc Id to create folder
+    conflictDirectoryName = r.id;
+  }
+  //The doc id that is used for foldername might have characters that cannot 
+  // be used to create folders. Hence we are replacing illegeal characters with space. 
+  // Reverse this process to search for doc in DB.
+  conflictDirectoryName = conflictDirectoryName.replace(/[/\\?%*:|"<>]/g, ' ');
+  const conflictDirectoryPath = `${mainConflictFilesDirectory}/${conflictDirectoryName}`;
+  return conflictDirectoryPath;
+};
+
 DB.query('medic-conflicts/conflicts', {reduce:false})
   .then(conflicts => {
     console.log(`Found ${conflicts.rows.length} conflicts`);
 
-    const mainConflictFilesDirectory = './doc-conflicts';
+    const mainConflictFilesDirectory = './doc-conflicts';  
     let ps = Promise.resolve();
     createDirectory(mainConflictFilesDirectory);
+    if(!isDiectoryEmpty(mainConflictFilesDirectory)){
+      console.log('Conflict Directory is not empty, exiting');
+      process.exit();
+    }
     conflicts.rows.forEach(r => {
       ps = ps.then(() => {
         const docId = r.id;
         const conflictingRevs = r.key;
         return DB.get(docId, { open_revs: 'all' })
           .then(results => {
-
             // Get the main_doc. Maindoc is the doc that isn't in the conflict list
             const mainDoc = results.filter(r => !conflictingRevs.includes(r.ok._rev))[0].ok; 
 
-            //Now we are going to put each doc, its conflicts and thier diff 
+            //Now we are going to write each doc, their conflicts and their diffs 
             //in one file for manual inspection if required.
             // Main goal  is to have folder name that contains substring of document ID
             //of document of couch db so that it is easily searchable with file name
             // copy and paste.
-            let conflictDirectoryName = r.id;
-            if(r.id.includes('target')){
-              conflictDirectoryName = r.id.split(':')[0];
-            } else {  // if it is just a contact doc use the doc Id to create folder
-              conflictDirectoryName = r.id;
-            }
-            //The doc id that is used for foldername might have characters that cannot 
-            // be used to create folders. Hence we are replacing illegeal characters with space. 
-            // Reverse this process to search for doc in DB.
-            conflictDirectoryName = conflictDirectoryName.replace(/[/\\?%*:|"<>]/g, ' ');
-            const conflictDirectoryPath = `${mainConflictFilesDirectory}/${conflictDirectoryName}`; 
+            const conflictDirectoryPath = getConflictDirectoryPath(r, mainConflictFilesDirectory); 
             createDirectory(conflictDirectoryPath);
 
             writeToFile(path.join(conflictDirectoryPath, 'mainDocument.json'), mainDoc);
