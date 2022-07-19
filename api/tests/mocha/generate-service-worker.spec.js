@@ -36,6 +36,10 @@ describe('generate service worker', () => {
     sinon.restore();
   });
 
+  it('should not generate if locked', () => {
+    generateServiceWorker.run();
+  });
+
   it('should generate the service worker file and update the service worker meta doc', () => {
     loginController.renderLogin.resolves('loginpage html');
     swPrecache.write.resolves();

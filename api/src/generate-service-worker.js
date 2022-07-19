@@ -128,14 +128,13 @@ const writeServiceWorkerMetaDoc = async (hash) => {
   }
 };
 
-let generationLocked = true;
-
+let generate = false;
 module.exports = {
   run: async (unlock) => {
     if (unlock) {
-      generationLocked = false;
+      generate = true;
     }
-    if (generationLocked) {
+    if (!generate) {
       return;
     }
 
