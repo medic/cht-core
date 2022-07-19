@@ -97,9 +97,7 @@ DB.query('medic-conflicts/conflicts', {reduce:false})
 
               //Write JSON diff between the conflict files
               writeToFile(path.join(conflictDirectoryPath, `diff_${conflictDocId}.json`), jsonDiff);
-            }
-            );
-
+            });
             console.log('=====================');             
             console.log('=====================');
 
