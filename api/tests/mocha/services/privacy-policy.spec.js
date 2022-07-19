@@ -92,6 +92,37 @@ describe('Privacy Policy service', () => {
         chai.expect(response).to.equal('test');
       });
     });
+
+    it('defaults to en if requested locale not configured', () => {
+      sinon.stub(db.medic, 'get').resolves(doc);
+      return service.get('sw').then(response => {
+        chai.expect(response).to.equal('englishpp');
+      });
+    });
+
+    it('defaults to first policy if requested locale and en not configured', () => {
+
+      const noEnglish = {
+        privacy_policies: {
+          'fr': 'french.html',
+          'ne': 'html.html'
+        },
+        _attachments: {
+          'french.html': {
+            data: Buffer.from('frenchpp').toString('base64')
+          },
+          'html.html': {
+            data: Buffer.from('test<script>alert("hax")</script>').toString('base64')
+          }
+        }
+      };
+
+      sinon.stub(db.medic, 'get').resolves(noEnglish);
+      return service.get('sw').then(response => {
+        chai.expect(response).to.equal('frenchpp');
+      });
+    });
+
   });
 
 });

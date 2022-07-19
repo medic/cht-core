@@ -7,7 +7,7 @@ const PRIVACY_POLICY_DOC_ID = 'privacy-policies';
 
 const getAttachmentName = (doc, locale) => {
   const policies = doc.privacy_policies;
-  return policies[locale] || Object.values(policies)[0];
+  return policies[locale] || policies.en || Object.values(policies)[0];
 };
 
 const getAttachment = (doc, locale) => {
@@ -25,6 +25,12 @@ const getDoc = (options=({})) => {
         throw new Error(`Invalid ${PRIVACY_POLICY_DOC_ID} doc: missing required "privacy_policies" property`);
       }
       return doc;
+    })
+    .catch(err => {
+      if (err.status !== 404) {
+        logger.error('Error retrieving privacy policies: %o', err);
+      }
+      throw err;
     });
 };
 
@@ -32,13 +38,7 @@ module.exports = {
   get: (locale) => {
     locale = locale || config.get('locale');
     return getDoc({ attachments: true })
-      .then(doc => getAttachment(doc, locale))
-      .catch(err => {
-        if (err.status !== 404) {
-          logger.error('Error retrieving privacy policies: %o', err);
-        }
-        throw err;
-      });
+      .then(doc => getAttachment(doc, locale));
   },
   exists: () => {
     return getDoc()

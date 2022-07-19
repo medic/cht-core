@@ -26,6 +26,13 @@
   </head>
   <body>
     <div>
+      <% if(showBackButton) { %>
+      <a id="back-button" href="#">{{ translations.back }}</a>
+      <% } else { %>
+      <a href="/">{{ translations.login }}</a>
+      <% } %>
+    </div>
+    <div>
       <h1>{{ translations.title }}</h1>
     </div>
     <div>
