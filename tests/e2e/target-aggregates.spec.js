@@ -92,7 +92,8 @@ const updateSettings = async (targetsConfig, user, contactSummary) => {
   tasks.targets.items = targetsConfig;
   const permissions = settings.permissions;
   permissions.can_aggregate_targets = user.roles;
-  await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary }, false);
+  await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary }, true);
+  await utils.refreshToGetNewSettings();
 };
 
 const clickOnTargetAggregateListItem = async (contactId) => {
