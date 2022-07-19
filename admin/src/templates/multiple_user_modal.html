@@ -1,22 +1,21 @@
 <mm-modal
     cancel-key="''"
-    id="'edit-users-bulk'"
+    id="'bulk-user-upload'"
     status="status"
     titleKey=""
     on-cancel="onCancel()"
   >
       <div ng-if="displayAddMultipleModal">
-        <div>
         <form id="users-upload" >
           <div class="text-center">
             <h3>
-              <span translate>Import from file</span>
+              <span translate>users.import.title</span>
             </h3>
-            <p translate>To add multiple users, please upload the appropriate spreadsheet.</p>
-            <p><strong translate>Only .csv file are accepted.</strong></p>
+            <p translate>users.import.instructions</p>
+            <p><strong translate>users.import.accepted-types</strong></p>
             <div class="form-actions">
               <a class="btn btn-primary choose" ng-disabled="status.uploading">
-                <span translate>Upload .csv</span>
+                <span translate>users.import.upload-button</span>
               </a>
               <div class="loader small inline" ng-show="status.uploading"></div>
               <div class="hide">
@@ -25,32 +24,31 @@
             </div>
           </div>
         </form>
-        </div>
       </div>
 
       <div id="upload-confirm" ng-if="displayUploadConfirm">
-        <h3 class="text-center"><p><span translate>Are you sure you want to upload</span> {{usersFilename}} ?</p></h3>
+        <h3 class="text-center"><p><span translate>users.import.confirm-upload-text</span> {{usersFilename}} ?</p></h3>
         <p class="text-center"><a id="upload-btn" class="btn btn-primary" ng-click="processUpload()">
-          <span translate>Yes, upload</span>
+          <span translate>users.import.confirm-upload</span>
         </a></p>
-        <p class="text-center"><a class="btn cancel" id="cancel-btn"  ng-click="onCancel()" translate>Cancel</a></p>
+        <p class="text-center"><a class="btn cancel" id="cancel-btn"  ng-click="onCancel()" translate>users.import.cancel-upload</a></p>
       </div>
 
       <div id="processing-status" ng-if="displayProcessingStatus">
         <div class="loader" ></div>
-        <h3 class="text-center"><p><span translate>Processing users</span>...</p></h3>
+        <h3 class="text-center"><p><span translate>users.import.processing.title</span>...</p></h3>
         <p  class="text-center">
-          <small translate>This process can take a long time, if you're uploading a lot of users, please be patient.</small>
+          <small translate>users.import.processing.instructions</small>
         </p>
       </div>
 
       <div ng-if="displayUnavailableModal" class="window-center">
           <div class="text-center">
             <h3>
-              <span translate>Currently unavailable</span>
+              <span translate>users.import.unavailable.title</span>
             </h3>
-            <p translate>Someone else in the system is currently in the process of adding multiple users.</p>
-            <p><strong translate>Please try again later</strong></p>
+            <p translate>users.import.unavailable.instructions</p>
+            <p><strong translate>users.import.unavailable.retry</strong></p>
           </div>
       </div>
 
@@ -58,33 +56,33 @@
         <div class="row text-center summary-box">
           <div class="col-sm-4">
             <p class="text-success summary-number">{{successUsersNumber}}</p>
-            <strong translate>users added</strong>
+            <strong translate>users.import.summary.added-users</strong>
           </div>
           <div class="col-sm-4">
             <p class="text-muted summary-number">{{ignoredUsersNumber}}</p>
-            <strong translate>previously imported</strong>
+            <strong translate>users.import.summary.previously-added-users</strong>
           </div>
           <div class="col-sm-4">
             <p class="text-danger summary-number">{{failedUsersNumber}}</p>
-            <strong translate>contained errors</strong>
+            <strong translate>users.import.summary.failed-users</strong>
           </div>
         </div>
         <div>
           <p class="text-center">
-            <span translate>Click</span> <a ng-href="{{outputFileUrl}}" download="cht-imported-users.csv" translate>here</a> <span translate>to download your status file.</span>
+            <span translate>users.import.summary.click</span> <a ng-href="{{outputFileUrl}}" download="cht-imported-users.csv" translate>users.import.summary.here</a> <span translate>users.import.summary.download-status-file</span>
           </p>
           <hr />
         </div>
-        <p class="text-center" style="margin-bottom: 0px;"><strong translate>To resubmit the users containing errors :</strong></p>
+        <p class="text-center" style="margin-bottom: 0px;"><strong translate>users.import.summary.resubmit.instructions</strong></p>
         <p class="row col-xs-10 col-xs-offset-1">
-          <span translate>1. Open the downloaded status file</span> <br />
-          <span translate>2. Cross-reference the errors against your formatted spreadsheet</span> <br />
-          <span translate>3. Correct rows with errors and export to .csv</span> <br />
-          <span translate>4. Reupload updated spreadsheet</span>
+          <span translate>users.import.summary.resubmit.step1</span> <br />
+          <span translate>users.import.summary.resubmit.step2</span> <br />
+          <span translate>users.import.summary.resubmit.step3</span> <br />
+          <span translate>users.import.summary.resubmit.step4</span>
         </p>
         <p class="text-center">
           <a id="back-to-app-btn" class="btn btn-primary" ng-click="backToAppManagement()" ui-sref="users" translate>
-            Back to user list
+            users.manage.back
           </a>
         </p>
       </div>

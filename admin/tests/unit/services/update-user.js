@@ -78,7 +78,7 @@ describe('CreateUser service', function() {
   });
 
   it('POSTs new users via changes to the api', () =>
-    service({username: 'user', some: 'updates'})
+    service.createSingleUser({username: 'user', some: 'updates'})
       .then(() => {
         chai.expect($http.callCount).to.equal(1);
         chai.expect($http.args[0][0]).to.deep.equal({

@@ -2,7 +2,7 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   $scope,
   $uibModalInstance,
   $window,
-  CreateMultipleUser,
+  CreateUser,
   DB
 ) {
 
@@ -77,23 +77,27 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
     $scope.displayProcessingStatus = true;
     $scope.uploadedData
       .text()
-      .then(data => CreateMultipleUser(data))
+      .then(data => CreateUser.createMultipleUsers(data))
       .then(() => getLogsByType(USER_LOG_DOC_ID))
       .then(docs => {
-        $scope.uploadProcessLog = docs[0];
-        // eslint-disable-next-line no-console
-        console.log(docs[0]);
-        $scope.processTotal = $scope.uploadProcessLog.progress.parsing.total;
-        $scope.successUsersNumber = $scope.uploadProcessLog.progress.saving.successful;
-        $scope.ignoredUsersNumber = $scope.uploadProcessLog.progress.saving.ignored;
-        $scope.failedUsersNumber = $scope.uploadProcessLog.progress.saving.failed;
-        $scope.$apply();
-        $scope.outputFileUrl = convertToCSV( $scope.uploadProcessLog);
-        $scope.showFinishSummary();
+        if (!docs || !docs.length) {
+          // eslint-disable-next-line no-console
+          console.error('CreateMultipleUser : Error getting logs by type');
+          $scope.setError('CreateMultipleUser : Error getting logs by type');
+        } else {
+          $scope.uploadProcessLog = docs[0];
+          $scope.processTotal = $scope.uploadProcessLog.progress.parsing.total;
+          $scope.successUsersNumber = $scope.uploadProcessLog.progress.saving.successful;
+          $scope.ignoredUsersNumber = $scope.uploadProcessLog.progress.saving.ignored;
+          $scope.failedUsersNumber = $scope.uploadProcessLog.progress.saving.failed;
+          $scope.$apply();
+          $scope.outputFileUrl = convertToCSV( $scope.uploadProcessLog);
+          $scope.showFinishSummary();
+        }
       })
       .catch(error => {
         // eslint-disable-next-line no-console
-        console.warn(error, 'CreateMultipleUser : Error processing data after upload');
+        console.error(error, 'CreateMultipleUser : Error processing data after upload');
         $scope.setError(error, 'CreateMultipleUser : Error processing data after upload');
       });
   };
@@ -137,10 +141,6 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   };
 
   angular.element(function () {
-  /* $('.modal-dialog ').modal({
-      backdrop: 'static',
-      keyboard: false
-    });*/
     $('#users-upload .uploader').on('change', upload);
     $('#users-upload .choose').on('click', function(e) {
       e.preventDefault();

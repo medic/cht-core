@@ -24,7 +24,9 @@ describe('EditUserCtrl controller', () => {
     translationsDbQuery = sinon.stub();
     translationsDbQuery.resolves({ rows: [{ value: { code: 'en' } }, { value: { code: 'fr' } }]});
     UpdateUser = sinon.stub().resolves();
-    CreateUser = sinon.stub().resolves();
+    CreateUser = {
+      createSingleUser: sinon.stub().resolves()
+    };
     UserSettings = sinon.stub();
     Settings = sinon.stub().resolves({
       roles: {
@@ -659,8 +661,8 @@ describe('EditUserCtrl controller', () => {
           return scope.editUser();
         })
         .then(() => {
-          chai.expect(CreateUser.callCount).to.equal(1);
-          chai.expect(CreateUser.args[0][0]).to.deep.include({
+          chai.expect(CreateUser.createSingleUser.callCount).to.equal(1);
+          chai.expect(CreateUser.createSingleUser.args[0][0]).to.deep.include({
             username: 'newuser',
             phone: '+40755696969',
             roles: ['data-entry'],

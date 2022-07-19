@@ -12,21 +12,19 @@
       'ngInject';
 
       /**
-         * Creates a user from a collection of updates
-         *
-         * Updates are in the style of the /api/v1/users/{username} service, see
-         * its documentation for more details.
-         *
-         * @param      {Object}  updates        Updates you wish to make
-         */
-      return function (updates) {
-        //const url = '/api/v1/users';
-
+       * Creates a user from a collection of updates
+       *
+       * Updates are in the style of the /api/v1/users/{username} service, see
+       * its documentation for more details.
+       *
+       * @param      {Object}  updates        Updates you wish to make
+       */
+      const createSingleUser = (updates) => {
         if (!updates.username) {
           return $q.reject('You must provide a username to create a user');
         }
 
-        $log.debug('CreateUser', url, updates);
+        $log.debug('CreateSingleUser', url, updates);
 
         return $http({
           method: 'POST',
@@ -38,27 +36,16 @@
           }
         });
       };
-    }
-  );
-
-  angular.module('services').factory('CreateMultipleUser',
-    function (
-      $http,
-      $log
-    ) {
-      'ngInject';
 
       /**
-             * Creates a list of users from a formatted csv file
-             *
-             * data is the content of the csv file
-             *
-             * @param      {Object}  data        content of the csv file
-             */
-      return function (data) {
-        //const url = '/api/v1/users';
-
-        $log.debug('CreateMultipleUser', url, data);
+       * Creates a user from a collection of updates
+       * 
+       * data is the content of the csv file
+       *
+       * @param      {Object}  data        content of the csv file
+       */
+      const createMultipleUsers = (data) => {
+        $log.debug('CreateMultipleUsers', url, data);
 
         return $http({
           method: 'POST',
@@ -69,6 +56,11 @@
             'Accept': 'application/json'
           }
         });
+      };
+
+      return {
+        createSingleUser,
+        createMultipleUsers
       };
     }
   );

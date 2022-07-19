@@ -55,13 +55,14 @@ const compression = require('compression');
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
 const cookie = require('./services/cookie');
 const app = express();
+const MAX_REQUEST_SIZE = '32mb';
 
 // requires content-type application/x-www-form-urlencoded header
-const formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
+const formParser = bodyParser.urlencoded({ limit: MAX_REQUEST_SIZE, extended: false });
 // requires content-type text/plain or application/xml header
-const textParser = bodyParser.text({ limit: '32mb', type: [ 'text/plain', 'application/xml', 'text/csv' ] });
+const textParser = bodyParser.text({ limit: MAX_REQUEST_SIZE, type: [ 'text/plain', 'application/xml', 'text/csv' ] });
 // requires content-type application/json header
-const jsonParser = bodyParser.json({ limit: '32mb' });
+const jsonParser = bodyParser.json({ limit: MAX_REQUEST_SIZE });
 const jsonQueryParser = require('./middleware/query-parser').json;
 const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
