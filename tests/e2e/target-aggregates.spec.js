@@ -21,10 +21,10 @@ const randomNumber = (max) => Math.floor(Math.random() * max);
 const expectTargets = async (targets) => {
   expect(await element.all(by.css(`#target-aggregates-list li`)).count()).toEqual(targets.length);
   for (const target of targets) {
-    const lineItem = element(by.css(`#target-aggregates-list li[data-record-id=${target.id}]`));
-    expect(await lineItem.isPresent()).toBe(true);
-    expect(await lineItem.element(by.css('h4')).getText()).toEqual(target.title);
-    expect(await lineItem.element(by.css('.aggregate-status span')).getText()).toEqual(target.counter);
+    const lineItem = () => element(by.css(`#target-aggregates-list li[data-record-id=${target.id}]`));
+    expect(await lineItem().isPresent()).toBe(true);
+    expect(await lineItem().element(by.css('h4')).getText()).toEqual(target.title);
+    expect(await lineItem().element(by.css('.aggregate-status span')).getText()).toEqual(target.counter);
   }
 };
 
