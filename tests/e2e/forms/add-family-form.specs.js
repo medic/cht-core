@@ -22,6 +22,7 @@ describe('Family form', () => {
   });
 
   it('Submit Add Family form', async () => {
+    await common.hideSnackbar();
     await common.goToReportsNative(true);
     await genericForm.selectFormNative('any');
     await familyForm.fillPrimaryCaregiver('test');

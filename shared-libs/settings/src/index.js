@@ -7,8 +7,6 @@ const CRYPTO_ALGO = 'aes-256-cbc';
 
 const getCredentialId = id => `credential:${id}`;
 
-const getCouchNodeName = () => process.env.COUCH_NODE_NAME;
-
 const getCouchUrl = () => {
   const couchUrl = process.env.COUCH_URL;
   return couchUrl && couchUrl.replace(/\/$/, '');
@@ -96,33 +94,57 @@ const setCredentials = (id, password) => {
     });
 };
 
-const getCouchConfigUrl = () => {
+const getCouchConfigUrl = (nodeName = '_local') => {
   const serverUrl = getServerUrl();
   if (!serverUrl) {
     throw new Error('Failed to find the CouchDB server');
   }
 
-  const nodeName = getCouchNodeName();
-  if (!nodeName) {
-    throw new Error('Failed to find the CouchDB node name');
-  }
-
   return `${serverUrl}/_node/${nodeName}/_config`;
 };
 
-const getCouchConfig = (param) => {
+const getCouchConfig = (param, nodeName) => {
   try {
-    const couchConfigUrl = getCouchConfigUrl();
+    const couchConfigUrl = getCouchConfigUrl(nodeName);
     return request.get({ url: `${couchConfigUrl}/${param}`, json: true });
   } catch (error) {
     return Promise.reject(error);
   }
 };
 
-const updateAdminPassword = (userName, password) => {
+const getCouchNodes = async () => {
+  const serverUrl = getServerUrl();
+  const membership = await request.get({ url: `${serverUrl}/_membership`, json: true });
+  return membership.cluster_nodes;
+};
+
+const getPasswordHash = (password) => {
+  const encoding = 'hex';
+  const iterations = 10;
+  const keylen = 20;
+
+  const salt = crypto.randomBytes(keylen).toString(encoding);
+  return new Promise((resolve, reject) => {
+    crypto.pbkdf2(password, salt, iterations, keylen, 'SHA1', (err, buffer) => {
+      if (err) {
+        return reject(err);
+      }
+      const derivedKey = buffer.toString(encoding);
+      const raw = `-pbkdf2-${derivedKey},${salt},${iterations}`;
+      return resolve(raw);
+    });
+  });
+};
+
+const updateAdminPassword = async (userName, password) => {
+
   try {
-    const couchConfigUrl = getCouchConfigUrl();
-    return request.put({ url: `${couchConfigUrl}/admins/${userName}`, body: `"${password}"` });
+    const hash = await getPasswordHash(password);
+    const nodes = await getCouchNodes();
+    for (const nodeName of nodes) {
+      const couchConfigUrl = getCouchConfigUrl(nodeName);
+      await request.put({ url: `${couchConfigUrl}/admins/${userName}?raw=true`, body: `"${hash}"` });
+    }
   } catch (error) {
     return Promise.reject(error);
   }

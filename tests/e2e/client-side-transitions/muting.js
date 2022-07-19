@@ -89,7 +89,8 @@ describe('Muting', () => {
       _id: 'fixture:user:offline',
       name: 'Offline'
     },
-    roles: ['district_admin']
+    roles: ['district_admin'],
+    known: true,
   };
 
   const onlineUser = {
@@ -100,7 +101,8 @@ describe('Muting', () => {
       _id: 'fixture:user:online',
       name: 'Offline'
     },
-    roles: ['national_admin']
+    roles: ['national_admin'],
+    known: true,
   };
 
   const settings = {
@@ -185,6 +187,13 @@ describe('Muting', () => {
     expect(doc.muting_history).to.be.undefined;
   };
 
+  const setBrowserOffline = () => {
+    return browser.driver.setNetworkConditions({ offline: true, latency: 0, throughput: 0 });
+  };
+  const setBrowserOnline = () => {
+    return browser.driver.setNetworkConditions({ latency: 0, throughput: 1000 * 1000 }, 'No throttling');
+  };
+
   beforeAll(async () => {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
@@ -243,6 +252,7 @@ describe('Muting', () => {
       await utils.createUsers([offlineUser]);
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative(offlineUser.username, password);
+      await commonElements.calmNative();
       await utils.closeTour();
     });
 
@@ -252,15 +262,26 @@ describe('Muting', () => {
 
     afterEach(async () => {
       await commonElements.syncNative();
+      await setBrowserOffline();
       await utils.revertSettings(true);
       await unmuteContacts();
+      await setBrowserOnline();
       await utils.refreshToGetNewSettings();
     });
 
     const updateSettings = async (settings) => {
+      await setBrowserOffline();
       await utils.updateSettings(settings, true);
-      await commonElements.syncNative();
-      await utils.refreshToGetNewSettings();
+      await setBrowserOnline();
+      try {
+        await commonElements.syncNative();
+        await utils.refreshToGetNewSettings();
+      } catch (err) {
+        // sometimes sync happens by itself, on timeout
+        console.error('Error when trying to sync', err);
+        await utils.refreshToGetNewSettings();
+        await commonElements.syncNative();
+      }
     };
 
     const unmuteContacts = () => {

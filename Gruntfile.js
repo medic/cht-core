@@ -298,6 +298,17 @@ module.exports = function(grunt) {
           )
           .join(' && '),
       },
+      'build-images': {
+        cmd: () => buildVersions.INFRASTRUCTURE
+          .map(service =>
+            [
+              `cd ${service}`,
+              `docker build -f ./Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
+              'cd ../',
+            ].join(' && ')
+          )
+          .join(' && '),
+      },
       'save-service-images': {
         cmd: () => buildVersions.SERVICES
           .map(service =>
@@ -309,7 +320,7 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'push-service-images': {
-        cmd: () => buildVersions.SERVICES
+        cmd: () => [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]
           .map(service => `docker push ${buildVersions.getImageTag(service)}`)
           .join(' && '),
       },
@@ -338,14 +349,8 @@ module.exports = function(grunt) {
       'setup-test-database': {
         cmd: [
           `docker run -d -p 4984:5984 -p 4986:5986 -e COUCHDB_PASSWORD=pass -e COUCHDB_USER=admin --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data medicmobile/cht-couchdb:clustered-test4`,
-          'sh scripts/e2e/wait_for_response_code.sh 4984 401 couch',
+          'sh tests/scripts/wait_for_response_code.sh 4984 401 couch',
         ].join('&& ')
-      },
-      'wait_for_api_down': {
-        cmd: [
-          'sh scripts/e2e/wait_for_response_code.sh 4988 000 api',
-        ].join('&& '),
-        exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'clean-test-database': {
         cmd: [
@@ -384,7 +389,7 @@ module.exports = function(grunt) {
       },
       'start-webdriver-ci': {
         cmd:
-          'scripts/e2e/start_webdriver.sh'
+          'tests/scripts/start_webdriver.sh'
       },
       'check-env-vars':
         'if [ -z $COUCH_URL ]; then ' +
@@ -653,7 +658,7 @@ module.exports = function(grunt) {
             suite: 'mobile',
             capabilities: {
               chromeOptions: {
-                'args': ['headless','disable-gpu'],
+                'args': ['headless', 'disable-gpu'],
                 mobileEmulation: { 'deviceName': 'Nexus 5' }
               }
             }
@@ -863,6 +868,7 @@ module.exports = function(grunt) {
     'cssmin:api',
     'env:version',
     'exec:build-service-images',
+    'exec:build-images',
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [

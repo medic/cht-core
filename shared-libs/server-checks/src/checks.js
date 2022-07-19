@@ -68,6 +68,27 @@ const couchDbNoAdminPartyModeCheck = (couchUrl) => {
   });
 };
 
+const difference = (arr1, arr2) => [
+  ...arr1.filter(item => !arr2.includes(item)),
+  ...arr2.filter(item => !arr1.includes(item)),
+];
+
+const checkCluster = async (couchUrl) => {
+  const membership = await request.get({ url: `${couchUrl}_membership`, json: true });
+  const differentNodes = difference(membership.all_nodes, membership.cluster_nodes);
+  if (differentNodes.length) {
+    throw new Error('Cluster not ready');
+  }
+  try {
+    await request.get({ url: `${couchUrl}_users`, json: true });
+    await request.get({ url: `${couchUrl}_replicator`, json: true });
+    await request.get({ url: `${couchUrl}_global_changes`, json: true });
+  } catch (err) {
+    throw new Error('System databases do not exist');
+  }
+
+};
+
 const getCouchDbVersion = (couchUrl) => {
   return request.get({ url: couchUrl, json: true }).then(response => response.version);
 };
@@ -76,6 +97,14 @@ const couchDbVersionCheck = (couchUrl) => {
   return getCouchDbVersion(couchUrl).then(version => {
     console.log(`CouchDB Version: ${version}`);
   });
+};
+
+const logRequestError = (error, message) => {
+  delete error.options;
+  delete error.request;
+  delete error.response;
+
+  console.error(message, error);
 };
 
 const couchDbCheck = async (couchUrl) => {
@@ -87,9 +116,10 @@ const couchDbCheck = async (couchUrl) => {
     try {
       await couchDbVersionCheck(serverUrl.toString());
       await couchDbNoAdminPartyModeCheck(serverUrl.toString());
+      await checkCluster(serverUrl.toString());
       return;
     } catch (err) {
-      console.log('CouchDb check failed', err);
+      logRequestError(err);
       await retryTimeout();
     }
     // eslint-disable-next-line no-constant-condition

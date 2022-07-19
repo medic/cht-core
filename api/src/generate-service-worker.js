@@ -128,8 +128,16 @@ const writeServiceWorkerMetaDoc = async (hash) => {
   }
 };
 
+let generate = false;
 module.exports = {
-  run: async () => {
+  run: async (unlock) => {
+    if (unlock) {
+      generate = true;
+    }
+    if (!generate) {
+      return;
+    }
+
     const initialHash = await getServiceWorkerHash();
     await writeServiceWorkerFile();
     const updatedHash = await getServiceWorkerHash();

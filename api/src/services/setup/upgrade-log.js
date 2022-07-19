@@ -118,7 +118,7 @@ const pushState = (upgradeLog, state, date = new Date().getTime()) => {
  * @param {string} username
  * @return {Promise<UpgradeLog>}
  */
-const createUpgradeLog = async (action, toBuild , fromBuild , username = '') => {
+const createUpgradeLog = async (action, toBuild, fromBuild, username = '') => {
   logger.info(`Staging ${toBuild.build}`);
   const startDate = new Date().getTime();
 
