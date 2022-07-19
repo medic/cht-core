@@ -5,11 +5,10 @@ const _ = require('lodash');
 const serverUtils = require('../server-utils');
 const privacyPolicyService = require('../services/privacy-policy');
 const config = require('../config');
+const cookie = require('../services/cookie');
 
 let template;
 
-// TODO replace with template service in this PR
-//      https://github.com/medic/cht-core/pull/7588
 const getTemplate = () => {
   if (template) {
     return template;
@@ -29,10 +28,8 @@ const getHtml = (policy, showBackButton, translations) => {
     }));
 };
 
-// TODO do magic here - make library out of changes in this PR
-//      https://github.com/medic/cht-core/pull/7588
-const getLocale = () => {
-  return 'en';
+const getLocale = (req) => {
+  return cookie.get(req, 'locale'); // if cookie is not set, config.translate will pick the default
 };
 
 const getTranslations = (locale) => {
@@ -45,7 +42,7 @@ const getTranslations = (locale) => {
 
 module.exports.get = (req, res) => {
   const showBackButton = !!req.query.back;
-  const locale = getLocale();
+  const locale = getLocale(req);
   const translations = getTranslations(locale);
   return privacyPolicyService
     .get(locale)

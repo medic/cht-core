@@ -2,6 +2,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 const service = require('../../../src/services/privacy-policy');
 const db = require('../../../src/db');
+const config = require('../../../src/config');
 
 describe('Privacy Policy service', () => {
 
@@ -84,6 +85,13 @@ describe('Privacy Policy service', () => {
       });
     });
 
+    it('defaults to configured default locale', () => {
+      sinon.stub(config, 'get').returns('ne');
+      sinon.stub(db.medic, 'get').resolves(doc);
+      return service.get().then(response => {
+        chai.expect(response).to.equal('test');
+      });
+    });
   });
 
 });

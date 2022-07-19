@@ -1,6 +1,7 @@
 const sanitizeHtml = require('sanitize-html');
 const db = require('../db');
 const logger = require('../logger');
+const config = require('../config');
 
 const PRIVACY_POLICY_DOC_ID = 'privacy-policies';
 
@@ -29,6 +30,7 @@ const getDoc = (options=({})) => {
 
 module.exports = {
   get: (locale) => {
+    locale = locale || config.get('locale');
     return getDoc({ attachments: true })
       .then(doc => getAttachment(doc, locale))
       .catch(err => {
