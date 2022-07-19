@@ -1,6 +1,9 @@
+const utils = require('../../utils');
+const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const submitButton = () => $('.enketo .submit');
 const nextButton = () => $('button.btn.btn-primary.next-page');
 const nameField = () => $('#report-form form [name="/data/name"]');
+
 
 const nextPage = async (numberOfPages = 1) => {
   for (let i = 0; i < numberOfPages; i++) {
@@ -38,6 +41,24 @@ const selectContact = async (inputName, contactName) => {
   await contact.click();
 };
 
+const verifyReport = async () => {
+  const reportId = await reportsPage.getCurrentReportId();
+  const initialReport = await utils.getDoc(reportId);
+  expect(initialReport.verified).to.be.undefined;
+
+  await openReportReviewMenu();
+  await invalidateReport();
+
+  const invalidatedReport = await utils.getDoc(reportId);
+  expect(invalidatedReport.verified).to.be.false;
+  expect(invalidatedReport.patient).to.be.undefined;
+
+  await validateReport();
+  const validatedReport = await utils.getDoc(reportId);
+  expect(validatedReport.verified).to.be.true;
+  expect(validatedReport.patient).to.be.undefined;
+};
+
 module.exports = {
   submitButton,
   nextPage,
@@ -46,4 +67,5 @@ module.exports = {
   validateReport,
   nameField,
   selectContact,
+  verifyReport
 };

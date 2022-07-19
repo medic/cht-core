@@ -42,6 +42,10 @@ const checkCss = 'input[type="checkbox"]';
 const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
 const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
+const patientName = () => $('.subject .name');
+const reportType = () => $('div[test-id="form-title"]');
+
+
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
   await browser.waitUntil(async () => await (await unreadCount()).waitForDisplayed());
@@ -56,6 +60,7 @@ const getTaskState = async (first, second) => {
 };
 
 const openForm = async (name) => {
+  await (await submitReportButton()).waitForClickable();
   await (await submitReportButton()).click();
   // this is annoying but there's a race condition where the click could end up on another form if we don't
   // wait for the animation to finish
@@ -84,7 +89,7 @@ const setBikDateInput = async (name, date) => {
   const dateWidget = await input.nextElement();
   await (await dateWidget.$('input[name="day"]')).setValue(date.day);
   await (await dateWidget.$('.dropdown-toggle')).click();
-  await (await (await dateWidget.$$('.dropdown-menu li'))[date.month -1]).click();
+  await (await (await dateWidget.$$('.dropdown-menu li'))[date.month - 1]).click();
   await (await dateWidget.$('input[name="year"]')).setValue(date.year);
   await (await formTitle()).click();
 };
@@ -141,7 +146,7 @@ const deleteSelectedReports = async () => {
   await (await deleteAllButton()).click();
   await (await confirmButton()).click();
   await (await completeButton()).click();
-  await (await completeButton()).waitForDisplayed({reverse:true});
+  await (await completeButton()).waitForDisplayed({ reverse: true });
   await (await firstReport()).waitForDisplayed();
   return await $$(reportBody);
 };
@@ -150,7 +155,7 @@ const deselectAll = async () => {
   const deselectAllButton = await $('.action-container .deselect-all');
   await deselectAllButton.click();
   const count = await $('#reports-content .selection-count > span');
-  await count.waitForExist({reverse: true});
+  await count.waitForExist({ reverse: true });
   return await $$(reportBody);
 };
 
@@ -182,7 +187,7 @@ const startSelectMode = async (savedUuids) => {
 const stopSelectMode = async (savedUuids) => {
   await (await $('.action-container .select-mode-stop')).click();
   const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
-  await  checkbox.waitForDisplayed({reverse: true});
+  await checkbox.waitForDisplayed({ reverse: true });
 };
 
 
@@ -223,6 +228,17 @@ const getReportDetailFieldValueByLabel = async (label) => {
   }
 };
 
+const getReportSubject = async () => {
+  await patientName().waitForDisplayed();
+  return (await patientName()).getText();
+};
+
+const getReportType = async () => {
+  await reportType().waitForDisplayed();
+  return (await reportType()).getText();
+};
+
+
 
 module.exports = {
   getCurrentReportId,
@@ -262,5 +278,8 @@ module.exports = {
   allReports,
   reportsByUUID,
   getAllReportsText,
-  getReportDetailFieldValueByLabel
+  getReportDetailFieldValueByLabel,
+  getReportSubject,
+  getReportType,
+  getListReportInfo
 };
