@@ -9,7 +9,6 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   'use strict';
   'ngInject';
 
-  // $scope.hideFooter = true;
   $scope.status = { uploading: false };
   $scope.displayAddMultipleModal = true;
   $scope.displayUnavailableModal = false;

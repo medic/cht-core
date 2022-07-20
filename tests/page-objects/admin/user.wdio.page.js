@@ -22,7 +22,7 @@ const passwordErrorMessage = () => $('#edit-password ~ .help-block');
 const placeErrorMessage = () => $('#facilitySelect ~ .help-block');
 const contactErrorMessage = () => $('#contactSelect ~ .help-block');
 const uploadUsersButton = () => $('a#add-users');
-const uploadUsersDialog = () => $('div#edit-users-bulk');
+const uploadUsersDialog = () => $('div#bulk-user-upload');
 const confirmUploadUsersButton = () => $('a#upload-btn');
 const uploadSummaryDialog = () => $('#finish-summary');
 const successfulyUploadedUsers = () => $('p.text-success');
