@@ -551,7 +551,14 @@ const validateUserContact = (data, user, userSettings) => {
   }
 };
 
-const createUserEntities = async (user, appUrl, preservePrimaryContact) => {
+const createUserEntities = async (user, appUrl) => {
+  // preserve the place's primary contact only if it's an existing one
+  // => if we're creating the place alongside the user, set the contact as the place's primary contact
+  const isCreatingNewPlace = typeof user.place !== 'undefined' &&
+    typeof user.place === 'object' &&
+    ['type', 'contact_type', 'name'].every(property => property in user.place);
+  const preservePrimaryContact = !isCreatingNewPlace;
+
   const response = {};
   await validateNewUsername(user.username);
   await createPlace(user);
@@ -745,9 +752,8 @@ module.exports = {
    * @param {(Object|string)=} users[].contact Can either be a contact object or an existing place id.
    * @param {string=} users[].type Deprecated. Used to infer user's roles
    * @param {string} appUrl request protocol://hostname
-   * @param {boolean} preservePrimaryContact Default false. Prevent updating the place's primary contact.
    */
-  async createUsers(users, appUrl, ignoredUsers, logId, preservePrimaryContact) {
+  async createUsers(users, appUrl, ignoredUsers, logId) {
     if (!Array.isArray(users)) {
       return module.exports.createUser(users, appUrl);
     }
@@ -792,7 +798,7 @@ module.exports = {
           throw passwordError;
         }
 
-        response = await createUserEntities(user, appUrl, preservePrimaryContact);
+        response = await createUserEntities(user, appUrl);
         progress.saving.successful++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
       } catch(error) {
