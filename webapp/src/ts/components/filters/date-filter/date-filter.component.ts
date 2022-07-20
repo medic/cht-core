@@ -35,7 +35,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
 
   constructor(
     private store: Store,
-    private responsiveService:ResponsiveService,
+    private responsiveService: ResponsiveService,
     private datePipe: DatePipe,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -100,8 +100,13 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     }
   }
 
-  applyFilter(date) {
+  applyFilter(date, skipSearch?) {
     this.globalActions.setFilter({ date });
+    if (skipSearch) {
+      // ToDo: Backward compatibility with the "reports-filters" component, remove this "skipSearch"
+      //  once we delete that component. The new "mm-reports-sidebar-filter" doesn't need it.
+      return;
+    }
     this.search.emit();
   }
 
@@ -117,8 +122,8 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     return { ...this.date, to };
   }
 
-  clear() {
-    this.applyFilter({ from: undefined, to: undefined });
+  clear(skipSearch?) {
+    this.applyFilter({ from: undefined, to: undefined }, skipSearch);
   }
 
   countSelected() {

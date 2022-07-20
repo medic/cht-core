@@ -4,7 +4,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { of, Subject } from 'rxjs';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
 import { AppComponent } from '../../../src/ts/app.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
@@ -42,11 +42,13 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
+import { Selectors } from '@mm-selectors/index';
 
 describe('AppComponent', () => {
   let getComponent;
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
+  let store;
   let clock;
 
   // Services
@@ -156,6 +158,10 @@ describe('AppComponent', () => {
     telemetryService = { record: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
 
+    const mockedSelectors = [
+      { selector: Selectors.getSidebarFilter, value: {} },
+    ];
+
     TestBed.configureTestingModule({
       declarations: [
         AppComponent,
@@ -167,7 +173,7 @@ describe('AppComponent', () => {
         RouterTestingModule,
       ],
       providers: [
-        provideMockStore(),
+        provideMockStore({ selectors: mockedSelectors }),
         { provide: DBSyncService, useValue: dbSyncService },
         { provide: TranslateService, useValue: translateService },
         { provide: LanguageService, useValue: languageService },
@@ -210,6 +216,7 @@ describe('AppComponent', () => {
           fixture = TestBed.createComponent(AppComponent);
           component = fixture.componentInstance;
           fixture.detectChanges();
+          store = TestBed.inject(MockStore);
         });
     };
   }));
@@ -252,6 +259,14 @@ describe('AppComponent', () => {
 
     expect(globalActions.setIsAdmin.callCount).to.equal(1);
     expect(globalActions.setIsAdmin.args[0][0]).to.equal(true);
+    expect(component.isSidebarFilterOpen).to.be.false;
+  });
+
+  it('should set isSidebarFilterOpen true when filter state is open', () => {
+    store.overrideSelector(Selectors.getSidebarFilter, { isOpen: true });
+    store.refreshState();
+
+    expect(component.isSidebarFilterOpen).to.be.true;
   });
 
   it('should subscribe to xmlFormService when initing forms', async () => {

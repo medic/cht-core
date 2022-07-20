@@ -1,28 +1,31 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { DatePipe } from '@angular/common';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
+import { provideMockStore } from '@ngrx/store/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import * as moment from 'moment';
 
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
-import { provideMockStore } from '@ngrx/store/testing';
 import { GlobalActions } from '@mm-actions/global';
 import { Selectors } from '@mm-selectors/index';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 describe('Date Filter Component', () => {
   let component:DateFilterComponent;
   let fixture:ComponentFixture<DateFilterComponent>;
   let dateRangePicker;
+  let datePipe;
   let clock;
 
   beforeEach(waitForAsync(() => {
     const mockedSelectors = [
-      { selector: Selectors.getCurrentTab, value: 'reports' },
+      { selector: Selectors.getFilters, value: {} },
     ];
-
+    datePipe = { transform: sinon.stub() };
     dateRangePicker = (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
 
     return TestBed
@@ -38,6 +41,8 @@ describe('Date Filter Component', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
+          ResponsiveService,
+          { provide: DatePipe, useValue: datePipe },
         ]
       })
       .compileComponents()
@@ -59,7 +64,10 @@ describe('Date Filter Component', () => {
 
   it('ngAfterViewInit should initialize daterangepicker', () => {
     clock = sinon.useFakeTimers(moment().valueOf());
+    component.isRange = true;
+
     component.ngAfterViewInit();
+
     // value is 2 here because the component was already initialized
     expect(dateRangePicker.callCount).to.equal(2);
     expect(dateRangePicker.args[1][0]).to.deep.include({
@@ -80,15 +88,21 @@ describe('Date Filter Component', () => {
   });
 
   it('clear should clear the value', () => {
+    const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
     component.date = { from: 1, to: 2 };
+
     component.clear();
-    expect(component.date).to.deep.equal({ from: undefined, to: undefined });
+
+    expect(setFilter.callCount).to.equal(1);
+    expect(setFilter.args[0]).to.deep.equal([{ date: { from: undefined, to: undefined } }]);
   });
 
   it('should apply filter correctly', () => {
     const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
-    component.date = { from: 'yesterday', to: 'tomorrow' };
-    component.applyFilter();
+    const date = { from: 'yesterday', to: 'tomorrow' };
+
+    component.applyFilter(date);
+
     expect(setFilter.callCount).to.equal(1);
     expect(setFilter.args[0]).to.deep.equal([{ date: { from: 'yesterday', to: 'tomorrow' } }]);
   });

@@ -271,7 +271,9 @@ describe('Facility Filter Component', () => {
         { _id: 'child2' },
       ]
     };
-    component.toggle(facility);
+
+    component.select(null, facility, component.dropdownFilter);
+
     expect(dropdownFilterToggleSpy.callCount).to.equal(5);
     expect(dropdownFilterToggleSpy.args).to.deep.equal([
       [facility],

@@ -55,7 +55,7 @@ export class ReportsFiltersComponent implements AfterViewInit, OnDestroy {
 
     this.formTypeFilter?.clear();
     this.facilityFilter?.clear();
-    this.dateFilter?.clear();
+    this.dateFilter?.clear(true);
     this.statusFilter?.clear();
     this.freetextFilter?.clear();
 
