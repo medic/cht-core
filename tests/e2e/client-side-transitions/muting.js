@@ -253,7 +253,14 @@ describe('Muting', () => {
       await utils.createUsers([offlineUser]);
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative(offlineUser.username, password);
-      await commonElements.calmNative();
+      try {
+        await commonElements.calmNative();
+      } catch (err) {
+        console.warn('Error when expecting page load', err);
+        await browser.driver.navigate().refresh();
+        await commonElements.calmNative();
+      }
+
       await utils.closeTour();
     });
 
