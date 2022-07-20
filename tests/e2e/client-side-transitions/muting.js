@@ -175,6 +175,7 @@ describe('Muting', () => {
   const restartSentinel = async (sync = false) => {
     await utils.startSentinel();
     await sentinelUtils.waitForSentinel();
+    await utils.resetBrowserNative();
     sync && await commonElements.syncNative();
   };
 
