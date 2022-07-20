@@ -23,14 +23,13 @@ const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
 // set by init()
 let logger;
 
-
 class OutboundError extends Error {}
 
 const fetchPassword = key => {
   return secureSettings.getCredentials(key).then(password => {
     if (!password) {
       throw new OutboundError(
-        `CouchDB config key 'medic-credentials/${key}' has not been populated. See the Outbound documentation.`
+        `Credentials for '${key}' have not been configured. See the Outbound documentation.`
       );
     }
     return password;
