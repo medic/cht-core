@@ -472,6 +472,7 @@ const collectLogs = (container, ...regex) => {
   return firstLineReceivedPromise.then(() => collect);
 };
 
+
 /**
  * Watches a docker log until at least one line matches one of the given regular expressions.
  * Watch expires after 10 seconds.
