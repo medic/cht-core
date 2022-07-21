@@ -16,8 +16,6 @@ services:
       - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
     restart: always
-    ports:
-      - 13100:5984
     networks:
       {{ network }}:
 
@@ -35,8 +33,6 @@ services:
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
       - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
     restart: always
-    ports:
-      - 13101:5984
     networks:
       {{ network }}:
 
@@ -54,8 +50,6 @@ services:
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
       - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
     restart: always
-    ports:
-      - 13102:5984
     networks:
       {{ network }}:
 
