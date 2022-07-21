@@ -11,9 +11,9 @@ COPY --chown=couchdb:couchdb set-up-cluster.sh /opt/couchdb/etc/set-up-cluster.s
 RUN chmod +x /opt/couchdb/etc/set-up-cluster.sh
 
 RUN apt install -y apt-transport-https gnupg
-RUN curl https://couchdb.apache.org/repo/keys.asc | gpg --dearmor | tee /usr/share/keyrings/couchdb-archive-keyring.gpg >/dev/null 2>&1
-RUN echo "deb https://apache.jfrog.io/artifactory/couchdb-deb/ bionic main" > /etc/apt/sources.list.d/couchdb.list
-RUN cat /etc/apt/sources.list.d/couchdb.list
+#RUN curl https://couchdb.apache.org/repo/keys.asc | gpg --dearmor | tee /usr/share/keyrings/couchdb-archive-keyring.gpg >/dev/null 2>&1
+#RUN echo "deb https://apache.jfrog.io/artifactory/couchdb-deb/ bionic main" > /etc/apt/sources.list.d/couchdb.list
+#RUN cat /etc/apt/sources.list.d/couchdb.list
 RUN apt-get update && apt-get install -y jq
 
 VOLUME /opt/couchdb/data

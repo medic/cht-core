@@ -68,17 +68,32 @@ const couchDbNoAdminPartyModeCheck = (couchUrl) => {
   });
 };
 
-const difference = (arr1, arr2) => [
+const arrayEqual = (arr1, arr2) => ![
   ...arr1.filter(item => !arr2.includes(item)),
   ...arr2.filter(item => !arr1.includes(item)),
-];
+].length;
+
+const sameMembershipResult = (result1, result2) => {
+  return arrayEqual(result1.all_nodes, result1.cluster_nodes) &&
+         arrayEqual(result2.all_nodes, result2.cluster_nodes) &&
+         arrayEqual(result1.all_nodes, result2.all_nodes);
+};
 
 const checkCluster = async (couchUrl) => {
-  const membership = await request.get({ url: `${couchUrl}_membership`, json: true });
-  const differentNodes = difference(membership.all_nodes, membership.cluster_nodes);
-  if (differentNodes.length) {
+  const membershipResults = [
+    await request.get({ url: `${couchUrl}_membership`, json: true }),
+    await request.get({ url: `${couchUrl}_membership`, json: true }),
+    await request.get({ url: `${couchUrl}_membership`, json: true }),
+  ];
+
+  const consistentMembership =
+          sameMembershipResult(membershipResults[0], membershipResults[1]) &&
+          sameMembershipResult(membershipResults[0], membershipResults[2]);
+
+  if (!consistentMembership) {
     throw new Error('Cluster not ready');
   }
+
   try {
     await request.get({ url: `${couchUrl}_users`, json: true });
     await request.get({ url: `${couchUrl}_replicator`, json: true });
@@ -87,6 +102,7 @@ const checkCluster = async (couchUrl) => {
     throw new Error('System databases do not exist');
   }
 
+  console.log('CouchDb Cluster ready');
 };
 
 const getCouchDbVersion = (couchUrl) => {
@@ -99,12 +115,12 @@ const couchDbVersionCheck = (couchUrl) => {
   });
 };
 
-const logRequestError = (error, message) => {
+const logRequestError = (error) => {
   delete error.options;
   delete error.request;
   delete error.response;
 
-  console.error(message, error);
+  console.error(error);
 };
 
 const couchDbCheck = async (couchUrl) => {
