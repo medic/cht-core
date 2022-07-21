@@ -53,8 +53,6 @@ module.exports = {
       .then(() => {
         const replace = req.query && req.query.replace;
         const overwrite = req.query && req.query.overwrite;
-        // eslint-disable-next-line no-console
-        console.log(JSON.stringify(req.body, null, 2));
         return settingsService.update(req.body, replace, overwrite);
       })
       .then(result => {
