@@ -4,7 +4,7 @@
   <button class="btn open-filter" (click)="openFilter.emit()">
     <span class="fa fa-sliders"></span>
     <span>{{ 'reports.actions_bar.filter.label' | translate }}</span>
-    <span class="filter-counter" *ngIf="activeFilters">{{ activeFilters }}</span>
+    <span class="filter-counter" *ngIf="activeFilters">{{ activeFilters.toString() | translate }}</span>
   </button>
 
   <reset-filters (resetFilters)="reset()" [disabled]="disabled"></reset-filters>
