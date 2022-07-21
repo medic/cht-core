@@ -31,7 +31,7 @@ function construct(element) {
   const Select2Search = window.CHTCore.Select2Search;
 
   const $textInput = $question.find('input');
-  const $proxyInput = $textInput.clone();
+  const $proxyInput = $('<select></select>');
 
   const $option = $('<option></option>');
   const setOptionValue = value => $option.attr('value', value).text(value);
@@ -40,11 +40,7 @@ function construct(element) {
 
   $textInput.hide();
   $textInput.after($proxyInput);
-  $proxyInput.replaceWith(
-    $proxyInput[0].outerHTML
-      .replace(/^<input /, '<select ')
-      .replace(/<\/input>/, '</select>')
-  );
+  $proxyInput.attr('name', $textInput.attr('name'));
 
   const $selectInput = $question.find('select');
   $selectInput.append($option);
@@ -57,7 +53,7 @@ function construct(element) {
   if (!$question.hasClass('or-appearance-bind-id-only')) {
     $selectInput.on('change.dbobjectwidget', changeHandler);
   }
-  const contactTypes = getContactTypes($question, $selectInput);
+  const contactTypes = getContactTypes($question, $textInput);
   const allowNew = $question.hasClass('or-appearance-allow-new');
   Select2Search.init($selectInput, contactTypes, { allowNew }).then(function() {
     // select2 doesn't understand readonly
