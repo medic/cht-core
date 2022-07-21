@@ -172,7 +172,12 @@ const sendPayload = (payload, config) => {
   return auth().then(() => {
     if (logger.isDebugEnabled()) {
       logger.debug('About to send outbound request');
-      logger.debug(JSON.stringify(sendOptions, null, 2));
+      const clone = JSON.parse(JSON.stringify(sendOptions));
+      if (clone.auth && clone.auth.password) {
+        // mask password before logging
+        clone.auth.password = '*****';
+      }
+      logger.debug(JSON.stringify(clone, null, 2));
     }
 
     return request.post(sendOptions)
