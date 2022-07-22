@@ -11,6 +11,7 @@ env:
   INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
   DOCKERHUB_USERNAME: 'dockermedic'
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
+  COUCHDB_LOG_LEVEL: 'debug'
 
 jobs:
 
@@ -54,7 +55,7 @@ jobs:
       run: ./scripts/ci/couch-start
     - name: Create logs directory
       run: mkdir tests/logs
-    - run: npm ci
+    - run: npm ci --legacy-peer-deps
     - name: Grunt Install
       run: npm install -g grunt-cli
     - name: Grunt CI-Compile

@@ -1,15 +1,15 @@
 const allure = require('allure-commandline');
 const fs = require('fs');
-const constants = require('../../constants');
-const utils = require('../../utils');
+const constants = require('./constants');
+const utils = require('./utils');
 const path = require('path');
 
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 
 const ALLURE_OUTPUT = 'allure-results';
-const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
-const browserUtils = require('../../utils/browser');
+const browserLogPath = path.join(__dirname, 'logs', 'browser.console.log');
+const browserUtils = require('./utils/browser');
 const existingFeedBackDocIds = [];
 const logLevels = ['error', 'warning', 'debug'];
 let testTile;
@@ -40,7 +40,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    './tests/e2e/default/**/*.wdio-spec.js',
+    './tests/e2e/**/*.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
@@ -162,12 +162,13 @@ const baseConfig = {
     }],
     'spec',
   ],
+
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: 120000,
+    timeout: 90000,
   },
   //
   // =====
@@ -268,10 +269,11 @@ const baseConfig = {
   /**
    * Function to be executed before a test (in Mocha/Jasmine) starts.
    */
-  beforeTest: (test) => {
+  beforeTest: async (test) => {
     testTile = test.title;
     const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
     fs.appendFileSync(browserLogPath, title);
+    await utils.apiLogTestStart(testTile);
   },
   /**
    * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
@@ -300,6 +302,7 @@ const baseConfig = {
     if (passed === false) {
       await browser.takeScreenshot();
     }
+    await utils.apiLogTestEnd(test.title);
   },
 
   /**

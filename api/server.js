@@ -59,7 +59,7 @@ process
     logger.info('Database migrations completed successfully');
 
     logger.info('Generating service worker');
-    await generateServiceWorker.run();
+    await generateServiceWorker.run(true);
     logger.info('Service worker generated successfully');
 
     logger.info('Updating xforms…');

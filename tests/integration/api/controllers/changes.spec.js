@@ -291,7 +291,7 @@ describe('changes handler', () => {
         });
     });
 
-    it('should send heartbeats at specified intervals for all types of _changes requests', () => {
+    xit('should send heartbeats at specified intervals for all types of _changes requests', () => {
       const heartRateMonitor = options => {
         options = options || {};
         options.hostname = constants.API_HOST;

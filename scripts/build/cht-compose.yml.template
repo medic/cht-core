@@ -1,27 +1,88 @@
 version: '3.9'
 
 services:
-  couchdb:
-    image: {{{ couchdb_image }}}
-    container_name: {{ couchdb_container_name }}
+  couchdb.1:
+    image: {{{ repo }}}/cht-couchdb:{{ tag }}
+    container_name: {{ couch1_container_name }}
+    volumes:
+      - ${DB1_DATA:-./srv1}:/opt/couchdb/data
+      - cht-credentials:/opt/couchdb/etc/local.d/
     environment:
-      - COUCHDB_USER=$COUCHDB_USER
-      - COUCHDB_PASSWORD=$COUCHDB_PASSWORD
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=${SVC1_NAME:-couchdb.1}"
+      - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
     restart: always
-    ports:
-      - "${COUCH_PORT:-5984}:5984"
     networks:
-      - {{ network }}
+      {{ network }}:
+
+  couchdb.2:
+    image: {{{ repo }}}/cht-couchdb:{{ tag }}
+    container_name: {{ couch2_container_name }}
+    volumes:
+      - ${DB2_DATA:-./srv2}:/opt/couchdb/data
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=${SVC2_NAME:-couchdb.2}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    restart: always
+    networks:
+      {{ network }}:
+
+  couchdb.3:
+    image: {{{ repo }}}/cht-couchdb:{{ tag }}
+    container_name: {{ couch3_container_name }}
+    volumes:
+      - ${DB3_DATA:-./srv3}:/opt/couchdb/data
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=${SVC3_NAME:-couchdb.3}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    restart: always
+    networks:
+      {{ network }}:
+
+  haproxy:
+    image: {{{ repo }}}/cht-haproxy:{{ tag }}
+    container_name: {{ haproxy_container_name }}
+    hostname: haproxy
+    depends_on:
+      - couchdb.1
+      - couchdb.2
+      - couchdb.3
+    environment:
+      - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
+      - "COUCHDB1_SERVER=${COUCHDB1_SERVER:-{{ couch1_container_name }}}"
+      - "COUCHDB2_SERVER=${COUCHDB2_SERVER:-{{ couch2_container_name }}}"
+      - "COUCHDB3_SERVER=${COUCHDB3_SERVER:-{{ couch3_container_name }}}"
+      - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
+    networks:
+      {{ network }}:
+    ports:
+      - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
 
   cht-api:
     image: {{{ repo }}}/cht-api:{{ tag }}
     container_name: {{ api_container_name }}
     depends_on:
-      - couchdb
+      - haproxy
     ports:
       - "${API_PORT:-5988}:5988"
     environment:
-      - COUCH_URL=http://$COUCHDB_USER:$COUCHDB_PASSWORD@couchdb:5984/{{ db_name }}
+      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
       - BUILDS_URL=${MARKET_URL_READ:-https://staging.dev.medicmobile.org}/${BUILDS_SERVER:-_couch/builds}
       - UPGRADE_SERVICE_URL=${UPGRADE_SERVICE_URL:-http://localhost:5100}
     networks:
@@ -31,12 +92,15 @@ services:
     image: {{{ repo }}}/cht-sentinel:{{ tag }}
     container_name: {{ sentinel_container_name }}
     depends_on:
-      - couchdb
+      - haproxy
     environment:
-      - COUCH_URL=http://$COUCHDB_USER:$COUCHDB_PASSWORD@couchdb:5984/{{ db_name }}
+      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
       - API_HOST=cht-api
     networks:
       - {{ network }}
+
+volumes:
+  cht-credentials:
 
 networks:
   {{ network }}:
