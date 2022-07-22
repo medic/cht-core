@@ -33,8 +33,8 @@ const getCredentials = () => {
   // Supports self-hosted RapidPro instances, but defaults to textit.in
   const smsSettings = config.get('sms');
   const host = smsSettings &&
-                      smsSettings.rapidpro &&
-                      smsSettings.rapidpro.url;
+               smsSettings.rapidpro &&
+               smsSettings.rapidpro.url;
 
   if (!host) {
     return Promise.reject('No RapidPro URL configured. Refer to the RapidPro configuration documentation.');
