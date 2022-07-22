@@ -1,6 +1,5 @@
 const allure = require('allure-commandline');
 const fs = require('fs');
-
 const constants = require('./constants');
 const utils = require('./utils');
 const path = require('path');
@@ -9,14 +8,11 @@ const chai = require('chai');
 chai.use(require('chai-exclude'));
 
 const ALLURE_OUTPUT = 'allure-results';
-const getSpecName = (specs) => specs[0].split('/').slice(-1)[0].split('.wdio-spec')[0];
-const getBrowserLogFilePath = (specs) => {
-  const specName = getSpecName(specs);
-  return path.join(__dirname, 'logs', 'browser.' + specName + '.log');
-};
 const browserLogPath = path.join(__dirname, 'logs', 'browser.console.log');
 const browserUtils = require('./utils/browser');
 const existingFeedBackDocIds = [];
+const logLevels = ['error', 'warning', 'debug'];
+let testTile;
 
 const baseConfig = {
   //
@@ -44,7 +40,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    './tests/e2e/**/*.wdio-spec.js'
+    './tests/e2e/**/*.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
@@ -82,7 +78,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu', '--enable-logging', '--deny-permission-prompts']
+      args: ['--headless', '--disable-gpu', '--deny-permission-prompts']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -137,7 +133,7 @@ const baseConfig = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  // services: [],
+  services: ['devtools'],
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -166,12 +162,13 @@ const baseConfig = {
     }],
     'spec',
   ],
+
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: 70000,
+    timeout: 90000,
   },
   //
   // =====
@@ -220,9 +217,8 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that are to be run
    */
-  beforeSession: function (config, capabilities, specs) {
-    process.env.CHROME_LOG_FILE = getBrowserLogFilePath(specs);
-  },
+  // beforeSession: function (config, capabilities, specs) {
+  // },
   /**
    * Gets executed before test execution begins. At this point you can access to all global
    * variables like `browser`. It is the perfect place to define custom commands.
@@ -233,6 +229,29 @@ const baseConfig = {
   before: async function () {
     global.expect = chai.expect;
     await browser.url('/');
+    await browser.cdp('Log', 'enable');
+    await browser.cdp('Runtime', 'enable');
+    // dedupe the messages to work around to known issue: https://github.com/webdriverio/webdriverio/issues/6347
+    let lastMessage = '';
+    browser.on('Runtime.consoleAPICalled', (data) => {
+      if (data && logLevels.indexOf(data.type) >= 0) {
+        const logEntry = `[${data.type}] Console Api Event: ${JSON.stringify(data.args)}\n`;
+        if (logEntry !== lastMessage) {
+          fs.appendFileSync(browserLogPath, logEntry);
+          lastMessage = logEntry;
+        }
+      }
+    });
+    browser.on('Log.entryAdded', (params) => {
+      if(params && params.entry) {
+        const entry = params.entry;
+        const logEntry = `[${entry.level}]: ${entry.source} ${entry.text} url: ${entry.url} at ${entry.timestamp}\n`;
+        if (logEntry !== lastMessage) {
+          fs.appendFileSync(browserLogPath, logEntry);
+          lastMessage = logEntry;
+        }
+      }
+    });
   },
   /**
    * Runs before a WebdriverIO command gets executed.
@@ -251,10 +270,10 @@ const baseConfig = {
    * Function to be executed before a test (in Mocha/Jasmine) starts.
    */
   beforeTest: async (test) => {
-    await browser.execute(`
-      console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-      console.log("~~~~~~~~~~~~~~~~~~~ ${test.title} ~~~~~~~~~~~~~~~~~~~~");
-    `);
+    testTile = test.title;
+    const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
+    fs.appendFileSync(browserLogPath, title);
+    await utils.apiLogTestStart(testTile);
   },
   /**
    * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
@@ -272,7 +291,7 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
-    const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`,existingFeedBackDocIds);
+    const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
     existingFeedBackDocIds.push(feedBackDocs);
     if(feedBackDocs){
       if(passed){
@@ -283,6 +302,7 @@ const baseConfig = {
     if (passed === false) {
       await browser.takeScreenshot();
     }
+    await utils.apiLogTestEnd(test.title);
   },
 
   /**
@@ -322,13 +342,8 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that ran
    */
-  afterSession: (config, capabilities, specs) => {
-    // coalesce logs into main log file
-    const specLogPath = getBrowserLogFilePath(specs);
-    const logEntries = fs.readFileSync(specLogPath, 'utf-8');
-    fs.appendFileSync(browserLogPath, logEntries);
-    fs.unlinkSync(specLogPath);
-  },
+  // afterSession: (config, capabilities, specs) => {
+  // },
   /**
    * Gets executed after all workers got shut down and the process is about to exit. An error
    * thrown in the onComplete hook will result in the test run failing.
@@ -342,6 +357,7 @@ const baseConfig = {
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');
     const generation = allure(['generate', 'allure-results', '--clean']);
+
     return new Promise((resolve, reject) => {
       const generationTimeout = setTimeout(
         () => reject(timeoutError),

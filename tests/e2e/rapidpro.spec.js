@@ -7,7 +7,6 @@ const commonElements = require('../page-objects/common/common.po.js');
 const messagesElements = require('../page-objects/messages/messages.po');
 const reportsElements = require('../page-objects/reports/reports.po');
 const helper = require('../helper');
-const constants = require('../constants');
 const utils = require('../utils');
 
 // Mock rapidpro server
@@ -45,21 +44,11 @@ const INCOMING_KEY = 'thecakeisalie';
 const OUTGOING_KEY = 'ermahgerd';
 
 const setIncomingKey = () => {
-  return utils.request({
-    port: constants.COUCH_PORT,
-    method: 'PUT',
-    path: `/_node/_local/_config/medic-credentials/rapidpro:incoming`,
-    body: `${INCOMING_KEY}`
-  });
+  return utils.saveCredentials('rapidpro:incoming', INCOMING_KEY);
 };
 
 const setOutgoingKey = () => {
-  return utils.request({
-    port: constants.COUCH_PORT,
-    method: 'PUT',
-    path: `/_node/_local/_config/medic-credentials/rapidpro:outgoing`,
-    body: `${OUTGOING_KEY}`
-  });
+  return utils.saveCredentials('rapidpro:outgoing', OUTGOING_KEY);
 };
 
 describe('RapidPro SMS Gateway', () => {

@@ -120,7 +120,8 @@ const load = () => {
   loadViewMaps();
   return loadTranslations()
     .then(() => loadSettings())
-    .then(() => initTransitionLib());
+    .then(() => initTransitionLib())
+    .then(() => db.createVault());
 };
 
 const listen = () => {

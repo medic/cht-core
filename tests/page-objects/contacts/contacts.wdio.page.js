@@ -54,7 +54,6 @@ const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
   await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
-  await (await emptySelection()).waitForDisplayed();
 };
 
 const findRowByText = async (text) => {
@@ -66,6 +65,7 @@ const findRowByText = async (text) => {
 };
 
 const selectLHSRowByText = async (text, executeSearch= true) => {
+  await commonElements.waitForLoaderToDisappear();
   if (executeSearch) {
     await search(text);
   }

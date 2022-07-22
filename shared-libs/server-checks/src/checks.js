@@ -68,6 +68,43 @@ const couchDbNoAdminPartyModeCheck = (couchUrl) => {
   });
 };
 
+const arrayEqual = (arr1, arr2) => ![
+  ...arr1.filter(item => !arr2.includes(item)),
+  ...arr2.filter(item => !arr1.includes(item)),
+].length;
+
+const sameMembershipResult = (result1, result2) => {
+  return arrayEqual(result1.all_nodes, result1.cluster_nodes) &&
+         arrayEqual(result2.all_nodes, result2.cluster_nodes) &&
+         arrayEqual(result1.all_nodes, result2.all_nodes);
+};
+
+const checkCluster = async (couchUrl) => {
+  const membershipResults = [
+    await request.get({ url: `${couchUrl}_membership`, json: true }),
+    await request.get({ url: `${couchUrl}_membership`, json: true }),
+    await request.get({ url: `${couchUrl}_membership`, json: true }),
+  ];
+
+  const consistentMembership =
+          sameMembershipResult(membershipResults[0], membershipResults[1]) &&
+          sameMembershipResult(membershipResults[0], membershipResults[2]);
+
+  if (!consistentMembership) {
+    throw new Error('Cluster not ready');
+  }
+
+  try {
+    await request.get({ url: `${couchUrl}_users`, json: true });
+    await request.get({ url: `${couchUrl}_replicator`, json: true });
+    await request.get({ url: `${couchUrl}_global_changes`, json: true });
+  } catch (err) {
+    throw new Error('System databases do not exist');
+  }
+
+  console.log('CouchDb Cluster ready');
+};
+
 const getCouchDbVersion = (couchUrl) => {
   return request.get({ url: couchUrl, json: true }).then(response => response.version);
 };
@@ -76,6 +113,14 @@ const couchDbVersionCheck = (couchUrl) => {
   return getCouchDbVersion(couchUrl).then(version => {
     console.log(`CouchDB Version: ${version}`);
   });
+};
+
+const logRequestError = (error) => {
+  delete error.options;
+  delete error.request;
+  delete error.response;
+
+  console.error(error);
 };
 
 const couchDbCheck = async (couchUrl) => {
@@ -87,9 +132,10 @@ const couchDbCheck = async (couchUrl) => {
     try {
       await couchDbVersionCheck(serverUrl.toString());
       await couchDbNoAdminPartyModeCheck(serverUrl.toString());
+      await checkCluster(serverUrl.toString());
       return;
     } catch (err) {
-      console.log('CouchDb check failed', err);
+      logRequestError(err);
       await retryTimeout();
     }
     // eslint-disable-next-line no-constant-condition

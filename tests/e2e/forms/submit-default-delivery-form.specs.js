@@ -21,6 +21,7 @@ describe('Submit Default Delivery Report', () => {
   });
 
   it('open and submit default delivery form', async () => {
+    await common.hideSnackbar();
     await common.goToReportsNative();
 
     await genericForm.selectFormNative('DD');
@@ -87,6 +88,6 @@ describe('Submit Default Delivery Report', () => {
     }
 
     assert.equal(_.uniq(deadBabyUUIds).length, noOfDeadBabies);
-    assert.equal(_.uniq(aliveBabyUUIds).length,noOfAliveBabies);
+    assert.equal(_.uniq(aliveBabyUUIds).length, noOfAliveBabies);
   });
 });

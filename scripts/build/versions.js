@@ -34,7 +34,7 @@ const getVersion = (release) => {
 
 const getImageTag = (service, repo = ECR_REPO, release = false) => {
   const version = getVersion(release);
-  const tag = version.replace(/\//g, '-');
+  const tag = version.replace(/\/|_/g, '-');
   return service ? `${getRepo(repo)}/cht-${service}:${tag}` : tag;
 };
 
@@ -43,4 +43,5 @@ module.exports = {
   getVersion,
   getRepo,
   SERVICES: ['api', 'sentinel'],
+  INFRASTRUCTURE: ['couchdb', 'haproxy'],
 };

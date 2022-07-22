@@ -291,7 +291,9 @@ describe('Tasks group landing page', () => {
     });
 
     it('should not show page when there are no more household tasks', async () => {
+      await browser.refresh();
       await tasksPage.goToTasksTab();
+      await (await commonPage.waitForPageLoaded());
       await tasksPage.getTasks();
       const task = await tasksPage.getTaskByContactAndForm('Napoleon Bonaparte', 'person_create');
       await task.click();

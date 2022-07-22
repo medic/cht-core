@@ -47,6 +47,19 @@ const waitForLoaderToDisappear = async (timeout = 10000) => {
   }
 };
 
+const hideSnackbar = () => {
+  // snackbar appears in the bottom of the page for 5 seconds when certain actions are made
+  // for example when filling a form, or creating a contact
+  // and intercepts all clicks in the actionbar
+  // this action is temporary, and will be undone with a refresh
+  return browser.executeAsyncScript(() => {
+    const callback = arguments[arguments.length - 1];
+    // eslint-disable-next-line no-undef
+    window.jQuery('.snackbar-content').hide();
+    callback();
+  });
+};
+
 module.exports = {
   snackBarContent,
   messagesList,
@@ -141,6 +154,7 @@ module.exports = {
   },
 
   goToAnalytics: async () => {
+    await helper.waitElementToBeVisibleNative(analyticsTab);
     await analyticsTab.click();
   },
 
@@ -278,6 +292,8 @@ module.exports = {
   getReportsButtonLabel: () => element(by.css('#reports-tab .button-label')),
   getMessagesButtonLabel: () => element(by.css('#messages-tab .button-label')),
   getTasksButtonLabel: () => element(by.css('#tasks-tab .button-label')),
+
+  hideSnackbar: hideSnackbar,
 };
 
 function openSubmenu(menuName) {

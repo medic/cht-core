@@ -22,11 +22,11 @@
             <li ng-class="{'active-nav': checkActive('targets')}" mm-auth="can_configure"><a ui-sref="targets" translate>analytics.targets</a></li>
             <li ng-class="{'active-nav': checkActive('images')}" mm-auth="can_configure"><a ui-sref="images.icons" translate>images</a></li>
             <li ng-class="{'active-nav': checkActive('message-queue')}" mm-auth="can_view_outgoing_messages"><a ui-sref="message-queue.due" translate>admin.message.queue</a></li>
-            <li ui-sref-active="active-nav" mm-auth="can_configure"><a ui-sref="upgrade" translate>instance.upgrade</a></li>
+            <li ui-sref-active="active-nav" mm-auth="can_upgrade"><a ui-sref="upgrade" translate>instance.upgrade</a></li>
             <li ng-class="{'active-nav': checkActive('export')}" mm-auth="can_export_all"><a ui-sref="export.messages" translate>import.export</a></li>
             <li ui-sref-active="active-nav" mm-auth="can_configure"><a ui-sref="backup" translate>settings.backuprestore</a></li>
           </ul>
-        </div>        
+        </div>
         <div class="content" ui-view></div>
       </div>
     </div>
