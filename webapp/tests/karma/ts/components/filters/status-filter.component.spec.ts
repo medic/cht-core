@@ -70,21 +70,21 @@ describe('Status Filter Component', () => {
       component.applyFilter(['valid']);
       expect(setFilter.args).to.deep.equal([
         [{ valid: true }],
-        [{ verified: [] }],
+        [{ verified: undefined }],
       ]);
 
       setFilter.reset();
       component.applyFilter(['invalid']);
       expect(setFilter.args).to.deep.equal([
         [{ valid: false }],
-        [{ verified: [] }],
+        [{ verified: undefined }],
       ]);
 
       setFilter.reset();
       component.applyFilter(['valid', 'invalid']);
       expect(setFilter.args).to.deep.equal([
         [{ valid: undefined }],
-        [{ verified: [] }],
+        [{ verified: undefined }],
       ]);
     });
 

@@ -15,7 +15,7 @@ export class ReportsActionsBarComponent implements OnInit, OnDestroy {
   @Output() resetFilter: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
 
-  private subscription: Subscription = new Subscription();
+  subscription: Subscription = new Subscription();
   activeFilters: number = 0;
 
   @ViewChild(FreetextFilterComponent)

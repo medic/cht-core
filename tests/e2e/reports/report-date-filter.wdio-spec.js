@@ -6,6 +6,7 @@ const loginPage = require('../../page-objects/login/login.wdio.page');
 
 
 describe('Filters reports', () => {
+  const savedUuids = [];
   const reports = [
     // one registration half an hour before the start date
     {
@@ -84,15 +85,21 @@ describe('Filters reports', () => {
       hidden_fields: []
     },
   ];
+  const updatePermission = async () => {
+    const settings = await utils.getSettings();
+    settings.permissions.can_view_sidebar_filter = [];
+    await utils.revertSettings(true);
+    await utils.updateSettings({ permissions: settings.permissions }, true);
+  };
 
-  const savedUuids = [];
   beforeEach(async () => {
+    await updatePermission();
     await loginPage.cookieLogin();
     const results = await utils.saveDocs(reports);
     results.forEach(result => savedUuids.push(result.id));
   });
 
-  it('by date', async () => {
+  it('should filter by date', async () => {
     await commonElements.goToReports();
     await (await reportsTab.firstReport()).waitForDisplayed();
 

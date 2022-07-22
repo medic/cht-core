@@ -94,7 +94,7 @@ describe('Date Filter Component', () => {
     component.clear();
 
     expect(setFilter.callCount).to.equal(1);
-    expect(setFilter.args[0]).to.deep.equal([{ date: { from: undefined, to: undefined } }]);
+    expect(setFilter.args[0]).to.deep.equal([{ date: undefined }]);
   });
 
   it('should apply filter correctly', () => {
