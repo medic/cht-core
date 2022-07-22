@@ -123,7 +123,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   }
 
   clear(skipSearch?) {
-    this.applyFilter({ from: undefined, to: undefined }, skipSearch);
+    this.applyFilter(undefined, skipSearch);
   }
 
   countSelected() {

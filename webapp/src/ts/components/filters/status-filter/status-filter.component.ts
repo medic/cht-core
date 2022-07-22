@@ -49,6 +49,8 @@ export class StatusFilterComponent implements AbstractFilter {
     if (!valid && invalid) {
       return false;
     }
+    // Return undefined if nothing was selected, to log telemetry properly.
+    return;
   }
 
   private getVerifiedStatus(statuses) {
@@ -62,13 +64,13 @@ export class StatusFilterComponent implements AbstractFilter {
     if (statuses.includes('correct')) {
       verified.push(true);
     }
-    return verified;
+    // Return undefined if nothing was selected, to log telemetry properly.
+    return verified.length ? verified : undefined;
   }
 
   applyFilter(statuses) {
     this.globalActions.setFilter({ valid: this.getValidStatus(statuses) });
     this.globalActions.setFilter({ verified: this.getVerifiedStatus(statuses) });
-
     this.search.emit();
   }
 

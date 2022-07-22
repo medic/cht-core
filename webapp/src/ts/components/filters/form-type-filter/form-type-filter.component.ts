@@ -52,7 +52,13 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   applyFilter(forms) {
-    this.globalActions.setFilter({ forms: { selected: forms } });
+    let selectedForms;
+
+    if (forms.length) {
+      selectedForms = { selected: forms };
+    }
+
+    this.globalActions.setFilter({ forms: selectedForms });
     this.search.emit();
   }
 

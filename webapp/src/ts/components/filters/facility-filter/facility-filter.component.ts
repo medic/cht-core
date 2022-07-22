@@ -160,7 +160,13 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
   applyFilter(facilities) {
     const facilityIds = facilities.map(facility => facility.doc?._id);
-    this.globalActions.setFilter({ facilities: { selected: facilityIds } });
+    let selectedFacilities;
+
+    if (facilityIds.length) {
+      selectedFacilities = { selected: facilityIds };
+    }
+
+    this.globalActions.setFilter({ facilities: selectedFacilities });
     this.search.emit();
   }
 
