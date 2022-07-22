@@ -16,6 +16,7 @@ process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
+const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 
 const PROJECT_NAME = 'cht-e2e';
 const NETWORK = 'cht-net-e2e';
@@ -30,8 +31,8 @@ const CONTAINERS = {
   haproxy_healthcheck: 'haproxy-healthcheck',
 };
 const CONTAINER_NAMES = {};
-const auth = { username: constants.USERNAME, password: constants.PASSWORD };
-let dockerVersion = 2;
+let dockerVersion;
+
 const updateContainerNames = () => {
   const separator = dockerVersion === 2 ? '-' : '_';
   Object.entries(CONTAINERS).forEach(([key, service]) => {
@@ -49,6 +50,7 @@ const medicLogs = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`,
 let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
 const buildVersions = require('../scripts/build/versions');
+const {contactList} = require("./page-objects/default/contacts/contacts.wdio.page");
 
 let originalSettings;
 const originalTranslations = {};
@@ -790,10 +792,11 @@ const getDockerVersion = () => {
   try {
     const response = execSync('docker-compose -v').toString();
     const version = response.match(semver.re[3])[1];
+    console.log(response, version);
     return semver.major(version);
   } catch (err) {
     console.error(err);
-    return 2;
+    return 1;
   }
 };
 
