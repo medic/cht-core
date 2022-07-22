@@ -22,6 +22,7 @@ describe('Configuration', () => {
     on = sinon.stub();
     on.returns({ on: on });
 
+    sinon.stub(db, 'createVault');
     sinon.stub(db.medic, 'get');
     sinon.stub(db.medic, 'query');
     sinon.stub(db.medic, 'changes').returns({ on: on });
@@ -72,6 +73,8 @@ describe('Configuration', () => {
 
         chai.expect(config.setTranslationCache.callCount).to.equal(1);
         chai.expect(config.setTranslationCache.args[0]).to.deep.equal([{}]);
+
+        chai.expect(db.createVault.callCount).to.equal(1);
       });
     });
 

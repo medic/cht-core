@@ -17,7 +17,11 @@ process.env.COUCHDB_USER = auth.username;
 process.env.COUCHDB_PASSWORD = auth.password;
 
 const CONTAINER_NAMES = {
-  couch: 'cht-couch-e2e',
+  haproxy: 'cht-haproxy-e2e',
+  couch1: 'cht-couchdb.1-e2e',
+  couch2: 'cht-couchdb.2-e2e',
+  couch3: 'cht-couchdb.3-e2e',
+
   api: 'cht-api-e2e',
   sentinel: 'cht-sentinel-e2e',
 };
@@ -25,9 +29,9 @@ const CONTAINER_NAMES = {
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
-const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`, { auth });
-const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
-const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
+const db = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}`, { auth });
+const sentinel = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}-sentinel`, { auth });
+const medicLogs = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}-logs`, { auth });
 let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
 const buildVersions = require('../scripts/build/versions');
@@ -256,24 +260,23 @@ const closeReloadModal = () => {
     .then(() => dialog.click());
 };
 
-const setUserContactDoc = () => {
+const setUserContactDoc = (attempt=0) => {
   const {
-    DB_NAME: dbName,
     USER_CONTACT_ID: docId,
     DEFAULT_USER_CONTACT_DOC: defaultDoc
   } = constants;
 
-  return module.exports.getDoc(docId)
+  return db
+    .get(docId)
     .catch(() => ({}))
-    .then(existing => {
-      const rev = _.pick(existing, '_rev');
-      return Object.assign(defaultDoc, rev);
-    })
-    .then(newDoc => request({
-      path: `/${dbName}/${docId}`,
-      body: newDoc,
-      method: 'PUT',
-    }));
+    .then(existing => Object.assign(defaultDoc, { _rev: existing && existing._rev }))
+    .then(newDoc => db.put(newDoc))
+    .catch(err => {
+      if (attempt > 3) {
+        throw err;
+      }
+      return setUserContactDoc(attempt + 1);
+    });
 };
 
 const revertDb = async (except, ignoreRefresh) => {
@@ -298,11 +301,16 @@ const revertDb = async (except, ignoreRefresh) => {
 const getCreatedUsers = async () => {
   const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
-  return users.rows.filter(user => user.id !== adminUserId)
+  return users.rows
+    .filter(user => user.id !== adminUserId)
     .map((user) => ({ ...user, username: user.id.replace(COUCH_USER_ID_PREFIX, '') }));
 };
 
 const deleteUsers = async (users, meta = false) => {
+  if (!users.length) {
+    return;
+  }
+
   const usernames = users.map(user => COUCH_USER_ID_PREFIX + user.username);
   const userDocs = await request({ path: '/_users/_all_docs', method: 'POST', body: { keys: usernames } });
   const medicDocs = await request({
@@ -341,6 +349,8 @@ const createUsers = async (users, meta = false) => {
   for (const user of users) {
     await request(Object.assign({ body: user }, createUserOpts));
   }
+
+  await module.exports.delayPromise(1000);
 
   if (!meta) {
     return;
@@ -441,7 +451,8 @@ const collectLogs = (container, ...regex) => {
     receivedFirstLine();
     data = data.toString();
     logs += data;
-    regex.forEach(r => r.test(data) && matches.push(data));
+    const lines = data.split('\n');
+    lines.forEach(line => regex.forEach(r => r.test(line) && matches.push(line)));
   });
   proc.stderr.on('err', err => {
     receivedFirstLine();
@@ -460,6 +471,7 @@ const collectLogs = (container, ...regex) => {
 
   return firstLineReceivedPromise.then(() => collect);
 };
+
 
 /**
  * Watches a docker log until at least one line matches one of the given regular expressions.
@@ -498,7 +510,8 @@ const waitForDockerLogs = (container, ...regex) => {
 
       data = data.toString();
       logs += data;
-      if (regex.find(r => r.test(data))) {
+      const lines = data.split('\n');
+      if (lines.find(line => regex.find(r => r.test(line)))) {
         resolve();
         clearTimeout(timeout);
         killSpawnedProcess(proc);
@@ -583,11 +596,13 @@ const saveBrowserLogs = () => {
 
 const generateComposeFile = async () => {
   const view = {
-    couchdb_image: 'medicmobile/cht-couchdb:clustered-test4',
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
     network: 'cht-net-e2e',
-    couchdb_container_name: CONTAINER_NAMES.couch,
+    couch1_container_name: CONTAINER_NAMES.couch1,
+    couch2_container_name: CONTAINER_NAMES.couch2,
+    couch3_container_name: CONTAINER_NAMES.couch3,
+    haproxy_container_name: CONTAINER_NAMES.haproxy,
     api_container_name: CONTAINER_NAMES.api,
     sentinel_container_name: CONTAINER_NAMES.sentinel,
     db_name: 'medic-test',
@@ -655,7 +670,10 @@ const getDockerLogs = (container) => {
 const saveLogs = async () => {
   await getDockerLogs(CONTAINER_NAMES.api);
   await getDockerLogs(CONTAINER_NAMES.sentinel);
-  await getDockerLogs(CONTAINER_NAMES.couch);
+  await getDockerLogs(CONTAINER_NAMES.haproxy);
+  await getDockerLogs(CONTAINER_NAMES.couch1);
+  await getDockerLogs(CONTAINER_NAMES.couch2);
+  await getDockerLogs(CONTAINER_NAMES.couch3);
 };
 
 const startServices = async () => {
@@ -668,13 +686,17 @@ const startServices = async () => {
 
 const stopServices = async (removeOrphans) => {
   if (removeOrphans) {
-    return dockerComposeCmd('down', '--remove-orphans');
+    return dockerComposeCmd('down', '--remove-orphans', '--volumes');
   }
   await saveLogs();
-  return dockerComposeCmd('stop');
 };
-const startService = (service) => dockerComposeCmd('start', `cht-${service}`);
-const stopService = (service) => dockerComposeCmd('stop', '-t', 0, `cht-${service}`);
+const startService = async (service) => {
+  await dockerComposeCmd('start', `cht-${service}`);
+};
+
+const stopService = async (service) => {
+  await dockerComposeCmd('stop', '-t', 0, `cht-${service}`);
+};
 
 const protractorLogin = async (browser, timeout = 20) => {
   await browser.driver.get(getLoginUrl());
@@ -786,8 +808,14 @@ module.exports = {
    }
    */
   currentSpecReporter: {
-    specStarted: result => (jasmine.currentSpec = result),
-    specDone: result => (jasmine.currentSpec = result),
+    specStarted: result => {
+      jasmine.currentSpec = result;
+      return module.exports.apiLogTestStart(jasmine.currentSpec.fullName);
+    },
+    specDone: result => {
+      jasmine.currentSpec = result;
+      return module.exports.apiLogTestEnd(jasmine.currentSpec.fullName);
+    },
   },
 
 
@@ -828,9 +856,6 @@ module.exports = {
     return module.exports.requestOnTestDb({
       path: '/', // so audit picks this up
       method: 'POST',
-      headers: {
-        'Content-Length': JSON.stringify(doc).length,
-      },
       body: doc,
     });
   },
@@ -913,12 +938,15 @@ module.exports = {
 
   deleteDocs: ids => {
     return module.exports.getDocs(ids).then(docs => {
-      docs.forEach(doc => doc._deleted = true);
-      return module.exports.requestOnTestDb({
-        path: '/_bulk_docs',
-        method: 'POST',
-        body: { docs },
-      });
+      docs = docs.filter(doc => !!doc);
+      if (docs.length) {
+        docs.forEach(doc => doc._deleted = true);
+        return module.exports.requestOnTestDb({
+          path: '/_bulk_docs',
+          method: 'POST',
+          body: { docs },
+        });
+      }
     });
   },
 
@@ -1080,8 +1108,26 @@ module.exports = {
   stopSentinel: () => stopService('sentinel'),
   startSentinel: () => startService('sentinel'),
 
+  saveCredentials: (key, password) => {
+    const options = {
+      path: `/api/v1/credentials/${key}`,
+      method: 'PUT',
+      body: password,
+      json: false,
+      headers: {
+        'Content-Type': 'text/plain'
+      }
+    };
+    return request(options);
+  },
+
   // delays executing a function that returns a promise with the provided interval (in ms)
   delayPromise: (promiseFn, interval) => {
+    if (typeof promiseFn === 'number') {
+      interval = promiseFn;
+      promiseFn = () => Promise.resolve();
+    }
+
     return new Promise((resolve, reject) => {
       setTimeout(() => promiseFn().then(resolve).catch(reject), interval);
     });
@@ -1181,4 +1227,12 @@ module.exports = {
   waitForApiLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.api, ...regex),
   waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.sentinel, ...regex),
   collectSentinelLogs: (...regex) => collectLogs(CONTAINER_NAMES.sentinel, ...regex),
+  collectApiLogs: (...regex) => collectLogs(CONTAINER_NAMES.api, ...regex),
+
+  apiLogTestStart: (name) => {
+    return module.exports.requestOnTestDb(`/?start=${name.replace(/\s/g, '_')}`);
+  },
+  apiLogTestEnd: (name) => {
+    return module.exports.requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
+  },
 };

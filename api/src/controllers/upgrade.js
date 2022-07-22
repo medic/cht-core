@@ -4,7 +4,7 @@ const serverUtils = require('../server-utils');
 const service = require('../services/setup/upgrade');
 const configWatcher = require('../services/config-watcher');
 
-const REQUIRED_PERMISSIONS = ['can_configure'];
+const REQUIRED_PERMISSIONS = ['can_upgrade'];
 const checkAuth = (req) => auth.check(req, REQUIRED_PERMISSIONS);
 
 const upgrade = (req, res, stageOnly) => {
