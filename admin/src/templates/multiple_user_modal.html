@@ -12,10 +12,10 @@
               <span translate>users.import.title</span>
             </h3>
             <p translate>users.import.instructions</p>
-            <p><strong translate>users.import.accepted-types</strong></p>
+            <p><strong translate>users.import.accepted_types</strong></p>
             <div class="form-actions">
               <a class="btn btn-primary choose" ng-disabled="status.uploading">
-                <span translate>users.import.upload-button</span>
+                <span translate>users.import.upload_button</span>
               </a>
               <div class="loader small inline" ng-show="status.uploading"></div>
               <div class="hide">
@@ -27,11 +27,11 @@
       </div>
 
       <div id="upload-confirm" ng-if="displayUploadConfirm">
-        <h3 class="text-center"><p><span translate>users.import.confirm-upload-text</span> {{usersFilename}} ?</p></h3>
+        <h3 class="text-center"><p><span translate>users.import.confirm_upload_text</span> {{usersFilename}} ?</p></h3>
         <p class="text-center"><a id="upload-btn" class="btn btn-primary" ng-click="processUpload()">
-          <span translate>users.import.confirm-upload</span>
+          <span translate>users.import.confirm_upload</span>
         </a></p>
-        <p class="text-center"><a class="btn cancel" id="cancel-btn"  ng-click="onCancel()" translate>users.import.cancel-upload</a></p>
+        <p class="text-center"><a class="btn cancel" id="cancel-btn"  ng-click="onCancel()" translate>users.import.cancel_upload</a></p>
       </div>
 
       <div id="processing-status" ng-if="displayProcessingStatus">
@@ -56,20 +56,20 @@
         <div class="row text-center summary-box">
           <div class="col-sm-4">
             <p class="text-success summary-number">{{successUsersNumber}}</p>
-            <strong translate>users.import.summary.added-users</strong>
+            <strong translate>users.import.summary.added_users</strong>
           </div>
           <div class="col-sm-4">
             <p class="text-muted summary-number">{{ignoredUsersNumber}}</p>
-            <strong translate>users.import.summary.previously-added-users</strong>
+            <strong translate>users.import.summary.previously_added_users</strong>
           </div>
           <div class="col-sm-4">
             <p class="text-danger summary-number">{{failedUsersNumber}}</p>
-            <strong translate>users.import.summary.failed-users</strong>
+            <strong translate>users.import.summary.failed_users</strong>
           </div>
         </div>
         <div>
           <p class="text-center">
-            <span translate>users.import.summary.click</span> <a ng-href="{{outputFileUrl}}" download="cht-imported-users.csv" translate>users.import.summary.here</a> <span translate>users.import.summary.download-status-file</span>
+            <span translate>users.import.summary.click</span> <a ng-href="{{outputFileUrl}}" download="cht-imported-users.csv" translate>users.import.summary.here</a> <span translate>users.import.summary.download_status_file</span>
           </p>
           <hr />
         </div>

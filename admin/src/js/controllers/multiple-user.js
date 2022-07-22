@@ -74,7 +74,7 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   $scope.processUpload = function () {
     $scope.clearScreen();
     $scope.displayProcessingStatus = true;
-    $scope.uploadedData
+    return $scope.uploadedData
       .text()
       .then(data => CreateUser.createMultipleUsers(data))
       .then(() => getLogsByType(USER_LOG_DOC_ID))

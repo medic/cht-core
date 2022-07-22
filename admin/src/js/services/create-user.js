@@ -1,7 +1,7 @@
 (function () {
 
   'use strict';
-  const url = '/api/v2/users';
+  const URL = '/api/v2/users';
 
   angular.module('services').factory('CreateUser',
     function (
@@ -14,7 +14,7 @@
       /**
        * Creates a user from a collection of updates
        *
-       * Updates are in the style of the /api/v1/users/{username} service, see
+       * Updates are in the style of the /api/v2/users/{username} service, see
        * its documentation for more details.
        *
        * @param      {Object}  updates        Updates you wish to make
@@ -24,11 +24,11 @@
           return $q.reject('You must provide a username to create a user');
         }
 
-        $log.debug('CreateSingleUser', url, updates);
+        $log.debug('CreateSingleUser', URL, updates);
 
         return $http({
           method: 'POST',
-          url: url,
+          url: URL,
           data: updates,
           headers: {
             'Content-Type': 'application/json',
@@ -39,17 +39,15 @@
 
       /**
        * Creates a user from a collection of updates
-       * 
-       * data is the content of the csv file
        *
        * @param      {Object}  data        content of the csv file
        */
       const createMultipleUsers = (data) => {
-        $log.debug('CreateMultipleUsers', url, data);
+        $log.debug('CreateMultipleUsers', URL, data);
 
         return $http({
           method: 'POST',
-          url: url,
+          url: URL,
           data: data,
           headers: {
             'Content-Type': 'text/csv',
