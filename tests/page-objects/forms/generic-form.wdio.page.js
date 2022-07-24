@@ -40,6 +40,10 @@ const selectContact = async (inputName, contactName) => {
   await contact.waitForDisplayed();
   await contact.click();
 };
+const editForm = async () => {
+  const editFormBtn = await $('[href^="#/reports/edit"]>.fa-pencil');
+  await editFormBtn.click();
+};
 
 const verifyReport = async () => {
   const reportId = await reportsPage.getCurrentReportId();
@@ -67,5 +71,6 @@ module.exports = {
   validateReport,
   nameField,
   selectContact,
-  verifyReport
+  verifyReport,
+  editForm
 };
