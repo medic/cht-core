@@ -18,8 +18,6 @@ const languagePreferenceHeading = () => $('#language-preference-heading');
 const selectedPreferenceHeading = () => $('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)');
 const messagesLanguage = () => $('.locale a.selected span');
 const defaultLanguage = () => $('.locale-outgoing a.selected span');
-
-
 const activeSnackbar = () => $('#snackbar.active');
 const inactiveSnackbar = () => $('#snackbar:not(.active)');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
@@ -72,6 +70,7 @@ const navigateToLogoutModal = async () => {
 const logout = async () => {
   await navigateToLogoutModal();
   await (await modal.confirm()).click();
+  await browser.pause(100); // wait for login page js to execute
 };
 
 const getLogoutMessage = async () => {

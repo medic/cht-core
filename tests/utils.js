@@ -739,12 +739,15 @@ module.exports = {
 
   deleteDocs: ids => {
     return module.exports.getDocs(ids).then(docs => {
-      docs.forEach(doc => doc._deleted = true);
-      return module.exports.requestOnTestDb({
-        path: '/_bulk_docs',
-        method: 'POST',
-        body: { docs },
-      });
+      docs = docs.filter(doc => !!doc);
+      if (docs.length) {
+        docs.forEach(doc => doc._deleted = true);
+        return module.exports.requestOnTestDb({
+          path: '/_bulk_docs',
+          method: 'POST',
+          body: { docs },
+        });
+      }
     });
   },
 
@@ -944,6 +947,19 @@ module.exports = {
 
       return Promise.resolve(lines);
     };
+  },
+
+  saveCredentials: (key, password) => {
+    const options = {
+      path: `/api/v1/credentials/${key}`,
+      method: 'PUT',
+      body: password,
+      json: false,
+      headers: {
+        'Content-Type': 'text/plain'
+      }
+    };
+    return request(options);
   },
 
   /**

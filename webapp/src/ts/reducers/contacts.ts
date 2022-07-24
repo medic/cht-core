@@ -1,6 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
-import { UniqueSortedList } from './utils';
 
+import { UniqueSortedList } from '@mm-reducers/utils';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Actions } from '@mm-actions/contacts';
 

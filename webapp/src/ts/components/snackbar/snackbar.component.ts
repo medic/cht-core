@@ -42,22 +42,24 @@ export class SnackbarComponent implements OnInit {
 
   ngOnInit() {
     this.changeDetectorRef.detach();
-    const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe((snackbarContent) => {
-      if (!snackbarContent?.message) {
-        this.hide();
+    const reduxSubscription = this.store
+      .select(Selectors.getSnackbarContent)
+      .subscribe((snackbarContent) => {
+        if (!snackbarContent?.message) {
+          this.hide();
 
-        return;
-      }
+          return;
+        }
 
-      const { message, action } = snackbarContent;
-      if (this.active) {
-        this.queueShowMessage(message, action);
+        const { message, action } = snackbarContent;
+        if (this.active) {
+          this.queueShowMessage(message, action);
 
-        return;
-      }
+          return;
+        }
 
-      this.show(message, action);
-    });
+        this.show(message, action);
+      });
     this.subscription.add(reduxSubscription);
     this.hide();
   }

@@ -27,6 +27,10 @@ const goToAdminUser = async () => {
   await browser.url('/admin/#/users');
 };
 
+const goToAdminUpgrade = async () => {
+  await browser.url('/admin/#/upgrade');
+};
+
 const openAddUserDialog = async () => {
   await (await addUserButton()).waitForDisplayed();
   await (await addUserButton()).click();
@@ -114,6 +118,7 @@ const getContactErrorText = async () => {
 
 module.exports = {
   goToAdminUser,
+  goToAdminUpgrade,
   openAddUserDialog,
   closeUserDialog,
   inputAddUserFields,

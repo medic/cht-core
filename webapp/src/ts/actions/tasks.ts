@@ -1,5 +1,5 @@
 import { Store, createAction } from '@ngrx/store';
-import { createSingleValueAction } from './actionUtils';
+import { createSingleValueAction } from '@mm-actions/actionUtils';
 
 export const Actions = {
   setTasksList: createSingleValueAction('SET_TASKS_LIST', 'tasks'),

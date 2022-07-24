@@ -1,6 +1,6 @@
 import { createAction, Store } from '@ngrx/store';
 
-import { createSingleValueAction, createMultiValueAction } from './actionUtils';
+import { createSingleValueAction, createMultiValueAction } from '@mm-actions/actionUtils';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),

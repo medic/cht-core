@@ -2,7 +2,7 @@ import { createReducer, on } from '@ngrx/store';
 
 import { Actions } from '@mm-actions/reports';
 import { Actions as GlobalActions } from '@mm-actions/global';
-import { UniqueSortedList } from './utils';
+import { UniqueSortedList } from '@mm-reducers/utils';
 
 const initialState = {
   reports: [],

@@ -1,0 +1,166 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+    <h:head>
+        <h:title>Cascading select example</h:title>
+        <model>
+            <itext>
+                <translation lang="en">
+                    <text id="static_instance-cities-0">
+                        <value>Brownsville</value>
+                    </text>
+                    <text id="static_instance-cities-1">
+                        <value>Harlingen</value>
+                    </text>
+                    <text id="static_instance-cities-2">
+                        <value>Seattle</value>
+                    </text>
+                    <text id="static_instance-cities-3">
+                        <value>Redmond</value>
+                    </text>
+                    <text id="static_instance-cities-4">
+                        <value>Tacoma</value>
+                    </text>
+                    <text id="static_instance-cities-5">
+                        <value>Puyallup</value>
+                    </text>
+                    <text id="static_instance-counties-0">
+                        <value>King</value>
+                    </text>
+                    <text id="static_instance-counties-1">
+                        <value>Pierce</value>
+                    </text>
+                    <text id="static_instance-counties-2">
+                        <value>Brewster</value>
+                    </text>
+                    <text id="static_instance-counties-3">
+                        <value>Cameron</value>
+                    </text>
+                    <text id="static_instance-states-0">
+                        <value>Texas</value>
+                    </text>
+                    <text id="static_instance-states-1">
+                        <value>Washington</value>
+                    </text>
+                </translation>
+            </itext>
+            <instance>
+                <cascading_select id="cascading_select" prefix="J1!cascading_select!" delimiter="#">
+                    <selected_state/>
+                    <selected_county/>
+                    <selected_city/>
+                    <meta tag="hidden">
+                        <instanceID/>
+                    </meta>
+                </cascading_select>
+            </instance>
+            <instance id="contact-summary"/>
+            <instance id="states">
+                <root>
+                    <item>
+                        <itextId>static_instance-states-0</itextId>
+                        <name>texas</name>
+                    </item>
+                    <item>
+                        <itextId>static_instance-states-1</itextId>
+                        <name>washington</name>
+                    </item>
+                </root>
+            </instance>
+            <instance id="counties">
+                <root>
+                    <item>
+                        <itextId>static_instance-counties-0</itextId>
+                        <state>washington</state>
+                        <name>king</name>
+                    </item>
+                    <item>
+                        <itextId>static_instance-counties-1</itextId>
+                        <state>washington</state>
+                        <name>pierce</name>
+                    </item>
+                    <item>
+                        <itextId>static_instance-counties-2</itextId>
+                        <state>texas</state>
+                        <name>brewster</name>
+                    </item>
+                    <item>
+                        <itextId>static_instance-counties-3</itextId>
+                        <state>texas</state>
+                        <name>cameron</name>
+                    </item>
+                </root>
+            </instance>
+            <instance id="cities">
+                <root>
+                    <item>
+                        <itextId>static_instance-cities-0</itextId>
+                        <name>brownsville</name>
+                        <county>cameron</county>
+                        <state>texas</state>
+                    </item>
+                    <item>
+                        <itextId>static_instance-cities-1</itextId>
+                        <name>harlingen</name>
+                        <county>cameron</county>
+                        <state>texas</state>
+                    </item>
+                    <item>
+                        <itextId>static_instance-cities-2</itextId>
+                        <name>seattle</name>
+                        <county>king</county>
+                        <state>washington</state>
+                    </item>
+                    <item>
+                        <itextId>static_instance-cities-3</itextId>
+                        <name>redmond</name>
+                        <county>king</county>
+                        <state>washington</state>
+                    </item>
+                    <item>
+                        <itextId>static_instance-cities-4</itextId>
+                        <name>tacoma</name>
+                        <county>pierce</county>
+                        <state>washington</state>
+                    </item>
+                    <item>
+                        <itextId>static_instance-cities-5</itextId>
+                        <name>puyallup</name>
+                        <county>pierce</county>
+                        <state>washington</state>
+                    </item>
+                </root>
+            </instance>
+            <bind nodeset="/cascading_select/selected_state" type="select1"/>
+            <bind nodeset="/cascading_select/selected_county" type="select1"/>
+            <bind nodeset="/cascading_select/selected_city" type="select1"/>
+            <bind nodeset="/cascading_select/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+        </model>
+    </h:head>
+    <h:body>
+        <select1 ref="/cascading_select/selected_state">
+            <label>Select a state</label>
+            <item>
+                <label>Texas</label>
+                <value>texas</value>
+            </item>
+            <item>
+                <label>Washington</label>
+                <value>washington</value>
+            </item>
+        </select1>
+        <select1 ref="/cascading_select/selected_county">
+            <label>Select a county</label>
+            <itemset nodeset="instance('counties')/root/item[state= /cascading_select/selected_state ]">
+                <value ref="name"/>
+                <label ref="jr:itext(itextId)"/>
+            </itemset>
+        </select1>
+        <select1 ref="/cascading_select/selected_city">
+            <label>Select a city</label>
+            <itemset nodeset="instance('cities')/root/item[county= /cascading_select/selected_county ]">
+                <value ref="name"/>
+                <label ref="jr:itext(itextId)"/>
+            </itemset>
+        </select1>
+    </h:body>
+</h:html>

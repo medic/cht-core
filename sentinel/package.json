@@ -8,11 +8,11 @@
     "npm": ">=6.4.1"
   },
   "dependencies": {
-    "async": "^3.2.1",
+    "async": "^3.2.3",
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
     "epi-week": "^0.0.1",
-    "google-libphonenumber": "^3.2.25",
+    "google-libphonenumber": "^3.2.27",
     "gsm": "^0.1.4",
     "later": "^1.2.0",
     "lodash": "4.17.19",
@@ -27,7 +27,7 @@
     "request-promise-native": "^1.0.9",
     "url-join": "^4.0.1",
     "uuid": "^8.3.2",
-    "winston": "^3.3.3"
+    "winston": "^3.6.0"
   },
   "devDependencies": {
     "jsverify": "^0.8.4"
