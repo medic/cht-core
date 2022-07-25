@@ -1,4 +1,4 @@
-describe('MultipleUserCtrl controller', () => {
+describe.only('MultipleUserCtrl controller', () => {
   'use strict';
 
   let dbGet;
@@ -21,7 +21,6 @@ describe('MultipleUserCtrl controller', () => {
     CreateUser = {
       createMultipleUsers: sinon.stub().resolves()
     };
-    window.onbeforeunload = sinon.stub();
 
     module($provide => {
       $provide.factory(
@@ -129,6 +128,19 @@ describe('MultipleUserCtrl controller', () => {
       chai.expect(scope.showFinishSummary.callCount).to.equal(1);
     });
 
+    it('$scope.processUpload catches errors', async () => {
+      mockMultipleUserUpload();
+      scope.uploadedData.text.resolves('text');
+      scope.setError = sinon.stub();
+      allDocs.rejects({
+        error: 'some error'
+      });
+      await scope.processUpload();
+
+      chai.expect(scope.setError.callCount).to.equal(1);
+      chai.expect(scope.setError.args[0][0].error).to.equal('some error');
+    });
+
     it('$scope.noCancel call clearScreen and closes the modal', async () => {
       mockMultipleUserUpload();
       scope.clearScreen = sinon.stub();
@@ -136,15 +148,6 @@ describe('MultipleUserCtrl controller', () => {
 
       chai.expect(scope.clearScreen.callCount).to.equal(1);
       chai.expect(uibModalInstance.dismiss.callCount).to.equal(1);
-    });
-
-    it('$scope.backToAppManagement navigates correctly', async () => {
-      mockMultipleUserUpload();
-      scope.clearScreen = sinon.stub();
-      await scope.backToAppManagement();
-
-      chai.expect(scope.clearScreen.callCount).to.equal(1);
-      chai.expect(window.onbeforeunload.callCount).to.equal(2);
     });
 
     it('$scope.showFinishSummary sets the correct variables', async () => {
