@@ -59,7 +59,7 @@ describe('MultipleUserCtrl controller', () => {
     sinon.restore();
   });
 
-  describe('targets edit', () => {
+  describe('$scope functions', () => {
     it('$scope.processUpload sets othe $scope values correctly', async () => {
       const logDoc = {
         _id: 'bulk-user-upload-1656964534839',
@@ -127,19 +127,6 @@ describe('MultipleUserCtrl controller', () => {
       chai.expect(scope.failedUsersNumber).to.equal(1);
       chai.expect(scope.clearScreen.callCount).to.equal(1);
       chai.expect(scope.showFinishSummary.callCount).to.equal(1);
-    });
-
-    it('$scope.processUpload catches errors', async () => {
-      mockMultipleUserUpload();
-      scope.uploadedData.text.resolves('text');
-      scope.setError = sinon.stub();
-      allDocs.rejects({
-        error: 'some error'
-      });
-      await scope.processUpload();
-
-      chai.expect(scope.setError.callCount).to.equal(1);
-      chai.expect(scope.setError.args[0][0].error).to.equal('some error');
     });
 
     it('$scope.noCancel call clearScreen and closes the modal', async () => {
