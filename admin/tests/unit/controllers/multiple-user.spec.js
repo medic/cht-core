@@ -59,7 +59,7 @@ describe('MultipleUserCtrl controller', () => {
   });
 
   describe('$scope functions', () => {
-    it('$scope.processUpload sets othe $scope values correctly', async () => {
+    it('$scope.processUpload sets the $scope values correctly', async () => {
       const logDoc = {
         _id: 'bulk-user-upload-1656964534839',
         bulk_uploaded_on: '2022-07-04T19:55:34.839Z',
