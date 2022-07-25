@@ -21,6 +21,7 @@ angular.module('inboxServices').factory('ValidateForm',
       return $http
         .post('/api/v1/forms/validate', xmlForm, config)
         .catch(err => {
+          console.error('Error validating form', err);
           const errorMsg = err.data && err.data.error ? err.data.error : '' + err;
           throw new Error('Error validating form - ' + errorMsg);
         });
