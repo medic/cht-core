@@ -800,7 +800,6 @@ module.exports = {
         progress.saving.successful++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
       } catch(error) {
-        console.log("error", error);
         response = { error: error.message };
         progress.saving.failed++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.ERROR, error));
