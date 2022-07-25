@@ -1,4 +1,4 @@
-describe.only('MultipleUserCtrl controller', () => {
+describe('MultipleUserCtrl controller', () => {
   'use strict';
 
   let dbGet;
