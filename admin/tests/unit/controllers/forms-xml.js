@@ -1,8 +1,6 @@
 describe('FormsXmlCtrl controller', () => {
   'use strict';
 
-  const NOW = moment('2000-01-15').valueOf();
-
   let jQuery;
   let createController;
   let scope;
@@ -220,7 +218,8 @@ describe('FormsXmlCtrl controller', () => {
 
   describe('saves the doc', () => {
 
-    let clock;
+    const NOW = moment('2000-01-15').valueOf();
+    let clock;    
 
     beforeEach(() => {
       clock = sinon.useFakeTimers(NOW);
