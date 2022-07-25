@@ -554,9 +554,7 @@ const validateUserContact = (data, user, userSettings) => {
 const createUserEntities = async (user, appUrl) => {
   // preserve the place's primary contact only if it's an existing one
   // => if we're creating the place alongside the user, set the contact as the place's primary contact
-  const isCreatingNewPlace = typeof user.place !== 'undefined' &&
-    typeof user.place === 'object' &&
-    ['type', 'contact_type', 'name'].every(property => property in user.place);
+  const isCreatingNewPlace = typeof user.place === 'object' && typeof user.place._id === 'undefined';
   const preservePrimaryContact = !isCreatingNewPlace;
 
   const response = {};
@@ -802,6 +800,7 @@ module.exports = {
         progress.saving.successful++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
       } catch(error) {
+        console.log("error", error);
         response = { error: error.message };
         progress.saving.failed++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.ERROR, error));
