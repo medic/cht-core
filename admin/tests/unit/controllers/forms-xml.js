@@ -219,7 +219,7 @@ describe('FormsXmlCtrl controller', () => {
   describe('saves the doc', () => {
 
     const NOW = moment('2000-01-15').valueOf();
-    let clock;    
+    let clock;
 
     beforeEach(() => {
       clock = sinon.useFakeTimers(NOW);
