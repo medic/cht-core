@@ -224,7 +224,7 @@ describe('FormsXmlCtrl controller', () => {
 
     beforeEach(() => {
       clock = sinon.useFakeTimers(NOW);
-    })
+    });
 
     afterEach(() => {
       clock.restore();
@@ -267,7 +267,8 @@ describe('FormsXmlCtrl controller', () => {
           chai.expect(doc.title).to.equal('my form title');
           chai.expect(doc.internalId).to.equal('editcontact');
           chai.expect(doc.icon).to.equal('pic');
-          chai.expect(doc.xmlVersion.sha256).to.equal('20a6dcd658bf49b6b03dc5c1d76055c3a0f28ffc60376beea3c628f5b4f0173f');
+          chai.expect(doc.xmlVersion.sha256)
+            .to.equal('20a6dcd658bf49b6b03dc5c1d76055c3a0f28ffc60376beea3c628f5b4f0173f');
           chai.expect(doc.xmlVersion.time).to.equal(NOW.valueOf());
           chai.expect(AddAttachment.callCount).to.equal(1);
           chai.expect(AddAttachment.args[0][0]).to.deep.equal(doc);
