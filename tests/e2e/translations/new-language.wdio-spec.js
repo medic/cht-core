@@ -51,7 +51,7 @@ describe('Adding new language', () => {
     await commonPo.openUserSettingsAndFetchProperties();
     await userSettingsElements.openEditSettings();
 
-    // change language
+    // change user language
     await userSettingsElements.selectLanguage(NEW_LANG_CODE);
     await browser.waitUntil(async () => await (await commonPo.analyticsTab()).getText() === 'Analytiks');
 
