@@ -10,7 +10,7 @@
     <div class="sidebar-body">
       <accordion [closeOthers]="true" [isAnimated]="true">
         <!-- 1. Form Type -->
-        <accordion-group>
+        <accordion-group id="form-filter-accordion">
           <ng-container
             accordion-heading
             [ngTemplateOutlet]="headerTemplate"
@@ -30,7 +30,7 @@
         </accordion-group>
 
         <!-- 2. Place -->
-        <accordion-group>
+        <accordion-group id="place-filter-accordion">
           <ng-container
             accordion-heading
             [ngTemplateOutlet]="headerTemplate"
@@ -50,7 +50,7 @@
         </accordion-group>
 
         <!-- 3. Date -->
-        <accordion-group>
+        <accordion-group id="date-filter-accordion">
           <ng-container
             accordion-heading
             [ngTemplateOutlet]="headerTemplate"
@@ -81,7 +81,7 @@
         </accordion-group>
 
         <!-- 4. Status -->
-        <accordion-group>
+        <accordion-group id="status-filter-accordion">
           <ng-container
             accordion-heading
             [ngTemplateOutlet]="headerTemplate"
