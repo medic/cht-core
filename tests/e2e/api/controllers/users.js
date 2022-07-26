@@ -899,7 +899,7 @@ describe('Users API', () => {
         ]);
       });
 
-      it('should fail to create many users with invalid fields w/o token_login', async () => {
+      it('should create many users where many fail to be created w/o token_login', async () => {
         const users = [
           {
             username: 'offline5',
@@ -950,19 +950,24 @@ describe('Users API', () => {
         await utils.updateSettings(settings, true);
         await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
 
-        try {
-          await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
-          chai.assert.fail('Should have thrown');
-        } catch (error) {
-          const response = error.responseBody;
-          chai.expect(response.code).to.equal(400);
-          chai.expect(response.error).include('Missing fields password for user at index 1');
-          chai.expect(response.details).to.deep.equal({
-            failingIndexes: [
-              { fields: ['password'], index: 1 },
-            ],
-          });
-        }
+        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+        chai.expect(response).to.shallowDeepEqual([
+          {
+            error: {
+              message:
+                  'The password is too easy to guess. Include a range of types of characters to increase the score.',
+              translationKey: 'password.weak'
+            },
+          },
+          {
+            error: 'Missing required fields: password'
+          },
+          {
+            user: { id: getUserId(users[2].username) },
+            'user-settings': { id: getUserId(users[2].username) },
+            contact: { id: users[2].contact._id },
+          },
+        ]);
       });
 
       it('should create and update many users correctly w/o token_login', async () => {

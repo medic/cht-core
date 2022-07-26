@@ -40,6 +40,9 @@ angular.module('controllers').controller('UpgradeCtrl',
       return DB().get('_design/medic')
         .then(function(ddoc) {
           $scope.currentDeploy = ddoc.deploy_info;
+
+          const currentVersion = Version.currentVersion($scope.currentDeploy);
+          $scope.isUsingFeatureRelease = !!currentVersion && typeof currentVersion.featureRelease !== 'undefined';
         });
     };
 
@@ -94,7 +97,21 @@ angular.module('controllers').controller('UpgradeCtrl',
             endkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
             descending: true,
             limit: 50
-          })
+          }),
+          featureReleases: !$scope.isUsingFeatureRelease ? builds({
+            startkey: [minVersion.featureRelease, 'medic', 'medic', {}],
+            endkey: [
+              minVersion.featureRelease,
+              'medic',
+              'medic',
+              minVersion.major,
+              minVersion.minor,
+              minVersion.patch,
+              minVersion.beta,
+            ],
+            descending: true,
+            limit: 50,
+          }) : [],
         }).then(function(results) {
           $scope.versions = results;
         });

@@ -70,6 +70,8 @@ if (UNIT_TEST_ENV) {
   module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
   module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
+  module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
+  module.exports.vault.info(); // create the db if it doesn't exist
   module.exports.users = new PouchDB(getDbUrl('/_users'));
 
   // Get the DB with the given name
