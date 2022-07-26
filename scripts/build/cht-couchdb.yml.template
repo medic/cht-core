@@ -53,6 +53,46 @@ services:
     networks:
       {{ network }}:
 
+  haproxy:
+    image: {{{ repo }}}/cht-haproxy:{{ tag }}
+    container_name: {{ haproxy_container_name }}
+    hostname: haproxy
+    environment:
+      - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
+      - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-couchdb.1,couchdb.2,couchdb.3}"
+      - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
+    networks:
+      {{ network }}:
+    ports:
+      - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
+
+  cht-api:
+    image: {{{ repo }}}/cht-api:{{ tag }}
+    container_name: {{ api_container_name }}
+    depends_on:
+      - haproxy
+    ports:
+      - "${API_PORT:-5988}:5988"
+    environment:
+      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
+      - BUILDS_URL=${MARKET_URL_READ:-https://staging.dev.medicmobile.org}/${BUILDS_SERVER:-_couch/builds}
+      - UPGRADE_SERVICE_URL=${UPGRADE_SERVICE_URL:-http://localhost:5100}
+    networks:
+      - {{ network }}
+
+  cht-sentinel:
+    image: {{{ repo }}}/cht-sentinel:{{ tag }}
+    container_name: {{ sentinel_container_name }}
+    depends_on:
+      - haproxy
+    environment:
+      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
+      - API_HOST=cht-api
+    networks:
+      - {{ network }}
+
 volumes:
   cht-credentials:
 
