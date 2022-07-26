@@ -41,6 +41,7 @@ tests/integration/results/
 allure*
 tests/config-temp
 .eslintcache
-tests/cht-compose-test.yml
+tests/cht-services-test.yml
+tests/cht-couchdb-test.yml
 couchdb/srv*
 tests/scalability/jmeter/
