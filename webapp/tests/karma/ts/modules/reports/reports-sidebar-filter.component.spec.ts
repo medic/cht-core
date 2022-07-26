@@ -163,7 +163,7 @@ describe('Reports Sidebar Filter Component', () => {
     expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ isOpen: true });
     expect(globalActions.setSidebarFilter.args[1][0]).to.deep.equal({ isOpen: true });
     expect(globalActions.setSidebarFilter.args[2][0]).to.deep.equal({ isOpen: false });
-    expect(telemetryService.record.calledThrice).to.be.true;
+    expect(telemetryService.record.calledTwice).to.be.true;
   });
 
   it('should clear filters in the store on component destroy', () => {
