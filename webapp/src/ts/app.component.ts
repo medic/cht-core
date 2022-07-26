@@ -44,7 +44,7 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
-import { SIDEBAR_FILTER_PERMISSION } from '@mm-modules/reports/reports.component';
+import { SIDEBAR_FILTER_PERMISSION } from '@mm-modules/reports/reports-sidebar-filter.component';
 
 const SYNC_STATUS = {
   inProgress: {

@@ -1324,7 +1324,7 @@ a.fa:hover {
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: @media-mobile) {
   #mobile-detection {
     display: inline;
   }
@@ -1404,6 +1404,12 @@ a.fa:hover {
         .search-pane {
           padding: 10px;
         }
+      }
+
+      &.legacy {
+        // ToDo: Remove when upgrading contact's search design
+        display: inline-block;
+        width: auto;
       }
     }
     .reset-filter {

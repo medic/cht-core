@@ -22,8 +22,8 @@ const initialState = {
     error: null
   },
   facilities: [],
-  filters: {},
-  sidebarFilter: {},
+  filters: {}, // Selected criteria to filter data.
+  sidebarFilter: {}, // Component state.
   forms: null,
   isAdmin: false,
   lastChangedDoc: false,

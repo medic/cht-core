@@ -8,7 +8,7 @@ import { AnalyticsModulesService } from '@mm-services/analytics-modules.service'
 import { SessionService } from '@mm-services/session.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { SIDEBAR_FILTER_PERMISSION } from '@mm-modules/reports/reports.component';
+import { SIDEBAR_FILTER_PERMISSION } from '@mm-modules/reports/reports-sidebar-filter.component';
 
 @Injectable({
   providedIn: 'root'
