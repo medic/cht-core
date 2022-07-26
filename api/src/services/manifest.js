@@ -7,8 +7,8 @@ const _ = require('lodash');
 const environment = require('../environment');
 const brandingService = require('./branding');
 
-const EXTRACTED_RESOURCES_PATH = environment.getExtractedResourcesPath();
-const MANIFEST_OUTPUT_PATH = path.join(EXTRACTED_RESOURCES_PATH, 'manifest.json');
+const webappPath = environment.webappPath;
+const MANIFEST_OUTPUT_PATH = path.join(webappPath, 'manifest.json');
 const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'manifest.json');
 
 const writeJson = async (branding) => {
@@ -23,7 +23,7 @@ const writeIcon = async (doc) => {
   const attachment = name && doc._attachments[name];
   if (attachment) {
     const contents = Buffer.from(attachment.data, 'base64');
-    const outputPath = path.join(EXTRACTED_RESOURCES_PATH, 'img', name);
+    const outputPath = path.join(webappPath, 'img', name);
     await promisify(fs.writeFile)(outputPath, contents);
   }
 };

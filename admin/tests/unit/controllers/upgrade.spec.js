@@ -22,6 +22,7 @@ describe('UpgradeCtrl controller', () => {
       parse: sinon.stub(),
       compare: sinon.stub(),
       minimumNextRelease: sinon.stub(),
+      currentVersion: sinon.stub(),
     };
 
     buildsDb = {
@@ -130,6 +131,7 @@ describe('UpgradeCtrl controller', () => {
       branches: [{ version: 'branch1' }, { version: 'branch2' }],
       betas: [{ version: 'beta1' }, { version: 'beta2' }],
       releases: [{ version: 'release1' }, { version: 'release2' }],
+      featureReleases: [],
     });
     expect(buildsDb.query.callCount).to.equal(3);
     expect(buildsDb.query.args[0]).to.deep.equal([
