@@ -1,10 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 
+set -e
 # Make sure service is running
 service rsyslog start
 
 # Place environment variables into config
-envsubst < /usr/local/etc/haproxy/haproxy.cfg
+CONFIG="/usr/local/etc/haproxy/haproxy.cfg"
+for COUCHDB_SERVER in ${COUCHDB_SERVERS//,/ }
+do
+  printf "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check inter 2s\n" >> $CONFIG
+done
+envsubst < $CONFIG
 
 #Write pw for healthcheck subshell to work
 mkdir -p /srv/storage/haproxy/passwd
