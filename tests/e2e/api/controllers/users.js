@@ -328,12 +328,12 @@ describe('Users API', () => {
       const membership = await utils.request({ path: '/_membership' });
       const nodes = membership.all_nodes;
       for (const nodeName of nodes) {
-      await utils.request({
-        port: constants.COUCH_PORT,
-        method: 'PUT',
+        await utils.request({
+          port: constants.COUCH_PORT,
+          method: 'PUT',
           path: `/_node/${nodeName}/_config/admins/${otherAdmin.username}`,
-        body: `"${otherAdmin.password}"`,
-      });
+          body: `"${otherAdmin.password}"`,
+        });
       }
 
       // Update password with new value.
