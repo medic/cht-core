@@ -112,8 +112,8 @@ angular.module('controllers').controller('UpgradeCtrl',
             startkey: [ 'release', 'medic', 'medic', {}],
             endkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
           }),
-          !$scope.isUsingFeatureRelease ? getBuilds(buildsDb, {
-            startkey: [minVersion.featureRelease, 'medic', 'medic', {}],
+          $scope.isUsingFeatureRelease ? getBuilds(buildsDb, {
+            startkey: [ minVersion.featureRelease, 'medic', 'medic', {} ],
             endkey: [
               minVersion.featureRelease,
               'medic',

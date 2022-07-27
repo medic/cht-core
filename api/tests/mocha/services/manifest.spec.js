@@ -37,7 +37,7 @@ describe('manifest service', () => {
     chai.expect(readFile.callCount).to.equal(1);
     chai.expect(readFile.args[0][0]).to.equal(baseDir + '/src/templates/manifest.json');
     chai.expect(writeFile.callCount).to.equal(1);
-    chai.expect(writeFile.args[0][0]).to.equal(baseDir + '/extracted-resources/manifest.json');
+    chai.expect(writeFile.args[0][0]).to.equal(baseDir + '/build/static/webapp/manifest.json');
     chai.expect(writeFile.args[0][1]).to.equal('{"name":"CHT","icon":"logo.png"}');
   });
 
@@ -69,9 +69,9 @@ describe('manifest service', () => {
     chai.expect(readFile.callCount).to.equal(1);
     chai.expect(readFile.args[0][0]).to.equal(baseDir + '/src/templates/manifest.json');
     chai.expect(writeFile.callCount).to.equal(2);
-    chai.expect(writeFile.args[0][0]).to.equal(baseDir + '/extracted-resources/manifest.json');
+    chai.expect(writeFile.args[0][0]).to.equal(baseDir + '/build/static/webapp/manifest.json');
     chai.expect(writeFile.args[0][1]).to.equal('{"name":"CHT","icon":"logo.png"}');
-    chai.expect(writeFile.args[1][0]).to.equal(baseDir + '/extracted-resources/img/logo.png');
+    chai.expect(writeFile.args[1][0]).to.equal(baseDir + '/build/static/webapp/img/logo.png');
     chai.expect(writeFile.args[1][1]).to.equal('base64xyz');
   });
 
