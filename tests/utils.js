@@ -42,8 +42,9 @@ let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
-const COMPOSE_FILE = path.resolve(__dirname, 'cht-compose-test.yml');
-const COMPOSE_FILE_TEMPLATE = path.resolve(__dirname, '..', 'scripts', 'build', 'cht-compose.yml.template');
+const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
+const getTemplateComposeFilePath = file => path.resolve(__dirname, '..', 'scripts', 'build', `${file}.yml.template`);
+const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml`);
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -594,7 +595,7 @@ const saveBrowserLogs = () => {
     });
 };
 
-const generateComposeFile = async () => {
+const generateComposeFiles = async () => {
   const view = {
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
@@ -608,13 +609,17 @@ const generateComposeFile = async () => {
     db_name: 'medic-test',
   };
 
-  const template = await fs.promises.readFile(COMPOSE_FILE_TEMPLATE, 'utf-8');
-  const output = mustache.render(template, view);
-  await fs.promises.writeFile(COMPOSE_FILE, output);
+  for (const file of COMPOSE_FILES) {
+    const templatePath = getTemplateComposeFilePath(file);
+    const testComposePath = getTestComposeFilePath(file);
+
+    const template = await fs.promises.readFile(templatePath, 'utf-8');
+    await fs.promises.writeFile(testComposePath, mustache.render(template, view));
+  }
 };
 
 const prepServices = async (defaultSettings) => {
-  await generateComposeFile();
+  await generateComposeFiles();
 
   await stopServices(true);
   await startServices();
@@ -626,8 +631,12 @@ const prepServices = async (defaultSettings) => {
 };
 
 const dockerComposeCmd = (...params) => {
+  const composeFilesParam = COMPOSE_FILES
+    .map(file => ['-f', getTestComposeFilePath(file)])
+    .flat();
+
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', [ '-f', COMPOSE_FILE, ...params ]);
+    const cmd = spawn('docker-compose', [ ...composeFilesParam, ...params ]);
     const output = [];
     const log = (data, error) => {
       data = data.toString();

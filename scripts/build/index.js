@@ -85,7 +85,7 @@ const populateStagingDoc = () => {
 
   // the validate_doc_update from staging.dev requires full build info in the staging document.
   copyBuildInfoToStagingDoc();
-  saveDockerComposeFile();
+  saveDockerComposeFiles();
   saveServiceTags();
 };
 
@@ -101,27 +101,37 @@ const copyBuildInfoToStagingDoc = () => {
   });
 };
 
-const saveDockerComposeFile = () => {
-  const templatePath = path.resolve(__dirname, 'cht-compose.yml.template');
-  const template = fs.readFileSync(templatePath, 'utf-8');
+const saveDockerComposeFiles = () => {
+  const servicesTemplatePath = path.resolve(__dirname, 'cht-core.yml.template');
+  const couchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb.yml.template');
+
+  const servicesTemplate = fs.readFileSync(servicesTemplatePath, 'utf-8');
+  const couchDbTemplate = fs.readFileSync(couchDbTemplatePath, 'utf-8');
 
   const view = {
-    couchdb_image: 'medicmobile/cht-couchdb:clustered-test4',
     repo: versions.getRepo(),
     tag: versions.getImageTag(undefined, undefined, true),
     network: 'cht-net',
-    couchdb_container_name: 'cht-couch',
+    couch1_container_name: 'cht-couchdb.1',
+    couch2_container_name: 'cht-couchdb.2',
+    couch3_container_name: 'cht-couchdb.3',
+    haproxy_container_name: 'cht-haproxy',
     api_container_name: 'cht-api',
     sentinel_container_name: 'cht-sentinel',
     db_name: 'medic',
   };
 
-  const output = mustache.render(template, view);
+  const compiledServicesDockerCompose = mustache.render(servicesTemplate, view);
+  const compiledCouchDbDockerCompose = mustache.render(couchDbTemplate, view);
 
   const dockerComposeFolder = path.resolve(stagingAttachmentsPath, 'docker-compose');
   mkdirSync(dockerComposeFolder);
-  const dockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-compose.yml');
-  fs.writeFileSync(dockerComposeFilePath, output);
+
+  const servicesDockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-core.yml');
+  fs.writeFileSync(servicesDockerComposeFilePath, compiledServicesDockerCompose);
+
+  const couchDbDockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-couchdb.yml');
+  fs.writeFileSync(couchDbDockerComposeFilePath, compiledCouchDbDockerCompose);
 };
 
 const saveServiceTags = () => {
