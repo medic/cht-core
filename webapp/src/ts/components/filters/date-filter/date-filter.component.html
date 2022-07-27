@@ -9,4 +9,7 @@
     <span class="mm-button-text" *ngIf="inputLabel">{{ inputLabel }}</span>
     <span class="mm-button-text" *ngIf="!inputLabel">{{ 'Any date' | translate }}</span>
   </a>
+  <p class="date-filter-error" *ngIf="!isRange && showError">
+    {{ (isStartDate ? 'date_filter.error.from_date' : 'date_filter.error.to_date') | translate }}
+  </p>
 </div>

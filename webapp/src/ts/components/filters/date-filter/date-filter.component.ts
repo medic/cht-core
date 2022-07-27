@@ -22,7 +22,8 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   private globalActions;
   subscription: Subscription = new Subscription();
   inputLabel;
-  date = {
+  showError;
+  dateRange = {
     from: undefined,
     to: undefined,
   };
@@ -45,8 +46,9 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     const subscription = this.store
       .select(Selectors.getFilters)
       .subscribe(({ date }) => {
-        this.date = { ...date };
-        this.setLabel();
+        this.dateRange = { ...date };
+        this.validateDateRange(this.dateRange);
+        this.setLabel(this.dateRange);
       });
     this.subscription.add(subscription);
   }
@@ -68,9 +70,6 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
       },
       (from, to) => {
         const dateRange = this.createDateRange(from, to);
-        if (dateRange.from && dateRange.to && dateRange.to < dateRange.from) {
-          return;
-        }
         this.applyFilter(dateRange);
       }
     );
@@ -100,13 +99,29 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     }
   }
 
-  applyFilter(date, skipSearch?) {
-    this.globalActions.setFilter({ date });
+  private validateDateRange(dateRange) {
+    if (dateRange?.from && dateRange?.to && dateRange.to < dateRange.from) {
+      this.showError = true;
+      return false;
+    }
+
+    this.showError = false;
+    return true;
+  }
+
+  applyFilter(dateRange, skipSearch?) {
+    if (!this.validateDateRange(dateRange)) {
+      return;
+    }
+
+    this.globalActions.setFilter({ date: dateRange });
+
     if (skipSearch) {
       // ToDo: Backward compatibility with the "reports-filters" component, remove this "skipSearch"
       //  once we delete that component. The new "mm-reports-sidebar-filter" doesn't need it.
       return;
     }
+
     this.search.emit();
   }
 
@@ -116,10 +131,10 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     }
 
     if (this.isStartDate) {
-      return { ...this.date, from };
+      return { ...this.dateRange, from };
     }
 
-    return { ...this.date, to };
+    return { ...this.dateRange, to };
   }
 
   clear(skipSearch?) {
@@ -127,17 +142,17 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   }
 
   countSelected() {
-    const date = this.isStartDate ? this.date.from : this.date.to;
+    const date = this.isStartDate ? this.dateRange.from : this.dateRange.to;
     return date ? 1 : 0;
   }
 
-  setLabel() {
+  setLabel(dateRange) {
     this.inputLabel = '';
     const divider = ' - ';
     const format = 'd MMM';
     const dates = {
-      from: this.date.from ? this.datePipe.transform(this.date.from, format) : undefined,
-      to: this.date.to ? this.datePipe.transform(this.date.to, format) : undefined,
+      from: dateRange.from ? this.datePipe.transform(dateRange.from, format) : undefined,
+      to: dateRange.to ? this.datePipe.transform(dateRange.to, format) : undefined,
     };
 
     if (dates.from && (this.isRange || this.isStartDate)) {
@@ -154,6 +169,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   }
 
   ngOnDestroy() {
+    this.showError = false;
     this.subscription.unsubscribe();
     const datePicker:any = $(`#${this.fieldId}`).data('daterangepicker');
 
