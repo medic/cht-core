@@ -29,7 +29,7 @@ const addAttachment = async (doc, label, path, name, type) => {
 };
 
 const updateBranding = async (doc) => {
-  const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
+  const waitForLogs = await utils.waitForApiLogs(SW_SUCCESSFUL_REGEX);
   if (!doc) {
     try {
       await utils.deleteDoc('branding');
@@ -54,7 +54,7 @@ const assertIconsExist = async (manifest) => {
 
 const getBrandingDoc = async () => {
   try {
-    await utils.getDoc('branding');
+    return await utils.getDoc('branding');
   } catch (e) {
     if (e.statusCode === 404) {
       return { _id: 'branding' };
