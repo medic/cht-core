@@ -129,6 +129,39 @@ describe('Global Reducer', () => {
     expect(state).to.deep.equal({ filters: { search: 'aaaaa', forms: [{ id: 'f2' }, { id: 'f3' }] } });
   });
 
+  it('should clear sidebarFilter', () => {
+    state = {
+      sidebarFilter: {
+        isOpen: false,
+        filterCount: {
+          total: 5,
+          placeFilter: 3,
+          formFilter: 2
+        },
+      },
+    };
+
+    state = globalReducer(state, Actions.clearSidebarFilter());
+
+    expect(state).to.deep.equal({ sidebarFilter: {} });
+  });
+
+  it('should set sidebarFilter', () => {
+    state = {};
+    state = globalReducer(state, Actions.setSidebarFilter({ isOpen: true }));
+    expect(state).to.deep.equal({ sidebarFilter: { isOpen: true } });
+
+    state = globalReducer(state, Actions.setSidebarFilter({
+      filterCount: { total: 5, placeFilter: 3, formFilter: 2 }
+    }));
+    expect(state).to.deep.equal({
+      sidebarFilter: {
+        isOpen: true,
+        filterCount: { total: 5, placeFilter: 3, formFilter: 2 }
+      }
+    });
+  });
+
   it('should set is Admin', () => {
     expect(globalReducer(state, Actions.setIsAdmin(true))).to.deep.equal({ isAdmin: true });
     expect(globalReducer(state, Actions.setIsAdmin(false))).to.deep.equal({ isAdmin: false });

@@ -92,9 +92,35 @@ describe('Form Type Filter Component', () => {
 
   it('clear should clear dropdown filter', () => {
     const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
+
     component.clear();
+
     expect(dropdownFilterClearSpy.callCount).to.equal(1);
     expect(dropdownFilterClearSpy.args[0]).to.deep.equal([false]);
+  });
+
+  it('should clear inline filter', () => {
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
+    component.inlineFilter.selected.add('form-1');
+    component.inlineFilter.selected.add('form-2');
+    component.inline = true;
+
+    component.clear();
+
+    expect(inlineFilterClearSpy.calledOnce).to.be.true;
+    expect(component.inlineFilter.selected.size).to.equal(0);
+  });
+
+  it('should count selected items in inline filter', () => {
+    const inlineFilterCountSelectedSpy = sinon.spy(component.inlineFilter, 'countSelected');
+    component.inlineFilter.selected.add('form-1');
+    component.inlineFilter.selected.add('form-2');
+    component.inline = true;
+
+    const result = component.countSelected();
+
+    expect(inlineFilterCountSelectedSpy.calledOnce).to.be.true;
+    expect(result).to.equal(2);
   });
 
   it('should sort forms by title', fakeAsync(() => {

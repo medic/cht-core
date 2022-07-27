@@ -89,7 +89,7 @@ describe('Date Filter Component', () => {
 
   it('clear should clear the value', () => {
     const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
-    component.date = { from: 1, to: 2 };
+    component.dateRange = { from: 1, to: 2 };
 
     component.clear();
 
@@ -98,12 +98,37 @@ describe('Date Filter Component', () => {
   });
 
   it('should apply filter correctly', () => {
+    clock = sinon.useFakeTimers(moment().valueOf());
     const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
-    const date = { from: 'yesterday', to: 'tomorrow' };
+    const from = moment().subtract(2, 'days');
+    const to = moment();
+    const dateRange = { from, to };
 
-    component.applyFilter(date);
+    component.applyFilter(dateRange);
 
     expect(setFilter.callCount).to.equal(1);
-    expect(setFilter.args[0]).to.deep.equal([{ date: { from: 'yesterday', to: 'tomorrow' } }]);
+    expect(setFilter.args[0]).to.deep.equal([{ date: { from, to } }]);
+  });
+
+  it('should not apply filter if date range is invalid', () => {
+    const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+    const from = moment();
+    const to = moment().subtract(2, 'days');
+    const dateRange = { from, to };
+
+    component.applyFilter(dateRange);
+
+    expect(setFilter.callCount).to.equal(0);
+  });
+
+  it('should count if a date has value', () => {
+    component.dateRange = { from: new Date(), to: undefined };
+    component.isStartDate = true;
+    const result1 = component.countSelected();
+    expect(result1).to.equal(1);
+
+    component.isStartDate = false;
+    const result2 = component.countSelected();
+    expect(result2).to.equal(0);
   });
 });

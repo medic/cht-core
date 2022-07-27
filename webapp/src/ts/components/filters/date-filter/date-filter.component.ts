@@ -125,7 +125,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     this.search.emit();
   }
 
-  createDateRange(from, to) {
+  private createDateRange(from, to) {
     if (this.isRange) {
       return { from, to };
     }

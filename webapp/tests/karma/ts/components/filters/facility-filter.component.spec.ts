@@ -284,6 +284,50 @@ describe('Facility Filter Component', () => {
     ]);
   });
 
+  it('should toggle all children when toggling parent in inline filter', () => {
+    const inlineFilterToggleSpy = sinon.spy(component.inlineFilter, 'toggle');
+    const facility = {
+      _id: 'parent',
+      children: [
+        { _id: 'child1', children: [{ _id: 'child3', children: [{ _id: 'child4' }] }] },
+        { _id: 'child2' },
+      ]
+    };
+
+    component.select(null, facility, component.inlineFilter);
+
+    expect(inlineFilterToggleSpy.callCount).to.equal(5);
+    expect(inlineFilterToggleSpy.args).to.deep.equal([
+      [facility],
+      [{ _id: 'child1', children: [{ _id: 'child3', children: [{ _id: 'child4' }] }] }],
+      [{ _id: 'child3', children: [{ _id: 'child4' }] }],
+      [{ _id: 'child4' }],
+      [{ _id: 'child2' }],
+    ]);
+  });
+
+  it('should toggle unselected children when toggling parent in inline filter', () => {
+    const inlineFilterToggleSpy = sinon.spy(component.inlineFilter, 'toggle');
+    const facility = {
+      _id: 'parent',
+      children: [
+        { _id: 'child1', children: [{ _id: 'child3', children: [{ _id: 'child4' }] }] },
+        { _id: 'child2' },
+      ]
+    };
+    component.inlineFilter.selected.add(facility.children[0].children[0]);
+    component.inlineFilter.selected.add(facility.children[1]);
+
+    component.select(null, facility, component.inlineFilter);
+
+    expect(inlineFilterToggleSpy.callCount).to.equal(3);
+    expect(inlineFilterToggleSpy.args).to.deep.equal([
+      [facility],
+      [{ _id: 'child1', children: [{ _id: 'child3', children: [{ _id: 'child4' }] }] }],
+      [{ _id: 'child4' }],
+    ]);
+  });
+
   describe('getLabel', () => {
     it('should return the facility name, if existent', async () => {
       const facility = { doc: { name: 'fancy' } };
@@ -309,6 +353,30 @@ describe('Facility Filter Component', () => {
     component.clear();
     expect(dropdownFilterClearSpy.callCount).to.equal(1);
     expect(dropdownFilterClearSpy.args[0]).to.deep.equal([false]);
+  });
+
+  it('should clear inline filter', () => {
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
+    component.inlineFilter.selected.add('place-1');
+    component.inlineFilter.selected.add('place-2');
+    component.inline = true;
+
+    component.clear();
+
+    expect(inlineFilterClearSpy.calledOnce).to.be.true;
+    expect(component.inlineFilter.selected.size).to.equal(0);
+  });
+
+  it('should count selected items in inline filter', () => {
+    const inlineFilterCountSelectedSpy = sinon.spy(component.inlineFilter, 'countSelected');
+    component.inlineFilter.selected.add('place-1');
+    component.inlineFilter.selected.add('place-2');
+    component.inline = true;
+
+    const result = component.countSelected();
+
+    expect(inlineFilterCountSelectedSpy.calledOnce).to.be.true;
+    expect(result).to.equal(2);
   });
 
   it('applyFilter should set correct selected facility ids', () => {
