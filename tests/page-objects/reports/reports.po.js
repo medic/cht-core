@@ -16,7 +16,18 @@ const reportsByUUID = (uuid) => {
 
 const reportListID = '#reports-list';
 
+const getCurrentReportId = async () => {
+  const currentUrl = await browser.getCurrentUrl();
+  const reportBaseUrl = utils.getBaseUrl() + 'reports/';
+  if (!currentUrl.startsWith(reportBaseUrl)) {
+    return;
+  }
+
+  return currentUrl.slice(reportBaseUrl.length);
+};
+
 module.exports = {
+  getCurrentReportId,
   relativeDate: () => element(by.css('#reports-content .item-summary .relative-date-content')),
   firstForm,
   submitReport,
@@ -69,7 +80,7 @@ module.exports = {
   },
 
   collapseSelection: () => {
-    utils.deprecated('collapseSelection','collapseSelectionNative');
+    utils.deprecated('collapseSelection', 'collapseSelectionNative');
     element(by.css(itemSummary)).click();
     expect(element(by.css(reportBodyDetails)).isDisplayed()).toBeFalsy();
   },
@@ -80,7 +91,7 @@ module.exports = {
   },
 
   deleteSelectedReports: (savedUuids) => {
-    utils.deprecated('deleteSelectedReports','deleteSelectedReportsNative');
+    utils.deprecated('deleteSelectedReports', 'deleteSelectedReportsNative');
     element(by.css('.action-container .detail-actions .delete-all')).click();
     const confirmButton = element(by.css('.btn.submit.btn-danger'));
     helper.waitElementToBeClickable(confirmButton, 5000);
@@ -104,7 +115,7 @@ module.exports = {
 
 
   deselectAll: () => {
-    utils.deprecated('deselectAll','deselectAllNative');
+    utils.deprecated('deselectAll', 'deselectAllNative');
     element(by.css('.action-container .deselect-all')).click();
     expect(element(by.css('#reports-content .selection-count > span:first-child')).isDisplayed()).toBeFalsy();
     expect(element.all(by.css(reportBody)).count()).toBe(0);
@@ -127,7 +138,7 @@ module.exports = {
   },
 
   selectAll: () => {
-    utils.deprecated('selectall','selectAllNative');
+    utils.deprecated('selectall', 'selectAllNative');
     element(by.css('.action-container .select-all')).click();
     helper.waitElementToBeVisible(element(by.css('#reports-content .selection-count > span:nth-child(2)')), 3000);
     expect(element.all(by.css(reportBody)).count()).toBe(3);
@@ -176,8 +187,8 @@ module.exports = {
     expect(await element(by.css(reportBodyDetails)).isPresent()).toBeFalsy();
   },
 
-  startSelectMode: (savedUuids)=> {
-    utils.deprecated('startSelectMode','startSelectModeNative');
+  startSelectMode: (savedUuids) => {
+    utils.deprecated('startSelectMode', 'startSelectModeNative');
     const selectModeButton = element(by.css('.action-container .select-mode-start'));
     helper.waitElementToPresent(selectModeButton, 1000);
     selectModeButton.click();
@@ -185,27 +196,27 @@ module.exports = {
       .toBeTruthy();
   },
 
-  startSelectModeNative: async (savedUuids)=> {
+  startSelectModeNative: async (savedUuids) => {
     const selectModeButton = element(by.css('.action-container .select-mode-start'));
     await helper.clickElementNative(selectModeButton);
     const checkbox = reportsByUUID(savedUuids[0]).first().element(by.css('input[type="checkbox"]'));
     await helper.waitUntilReadyNative(checkbox);
   },
 
-  stopSelectMode: (savedUuids)=> {
-    utils.deprecated('stopSelectMode','stopSelectModeNative');
+  stopSelectMode: (savedUuids) => {
+    utils.deprecated('stopSelectMode', 'stopSelectModeNative');
     element(by.css('.action-container .select-mode-stop')).click();
     expect(element(by.css(`#reports-list li[data-record-id="${savedUuids[0]}"] input[type="checkbox"]`)).isDisplayed())
       .toBeFalsy();
   },
 
-  stopSelectModeNative: async (savedUuids)=> {
+  stopSelectModeNative: async (savedUuids) => {
     await helper.clickElementNative(element(by.css('.action-container .select-mode-stop')));
     const checkbox = reportsByUUID(savedUuids[0]).first().element(by.css('input[type="checkbox"]'));
     await helper.waitElementToDisappear(checkbox.locator());
   },
 
-  waitForReportToAppear: ()=> {
+  waitForReportToAppear: () => {
     browser.refresh();
     browser.wait(
       () => element(by.css('#reports-list li:first-child')).isPresent(),

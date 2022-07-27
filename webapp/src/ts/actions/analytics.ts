@@ -1,6 +1,6 @@
 import { Store } from '@ngrx/store';
 
-import { createSingleValueAction } from '@mm-actions/./actionUtils';
+import { createSingleValueAction } from '@mm-actions/actionUtils';
 
 export const Actions = {
   setAnalyticsModules: createSingleValueAction('SET_ANALYTICS_MODULES', 'analyticsModules'),

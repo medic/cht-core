@@ -272,7 +272,7 @@ describe('MessageQueueCtrl controller', () => {
       });
     });
 
-    it('does not display last updated date for scheduled tab', () =>{
+    it('does not display last updated date for scheduled tab', () => {
       MessageQueue.loadTranslations.resolves();
       Settings.resolves({});
       MessageQueue.query.resolves({

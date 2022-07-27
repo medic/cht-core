@@ -139,7 +139,8 @@ describe('processDocs', () => {
       { _id: '1', from: 1, patient: 'a' },
       { _id: '2', from: 2, patient: 'b' },
       { _id: '3', from: 3, patient: 'c' },
-      { _id: '4', from: 4, patient: 'd' }];
+      { _id: '4', from: 4, patient: 'd' },
+    ];
     const infoDocs = [
       { _id: '1-info', doc_id: '1' },
       { _id: '2-info', doc_id: '2' },

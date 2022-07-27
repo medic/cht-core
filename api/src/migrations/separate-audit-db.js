@@ -38,7 +38,7 @@ const batchMoveAuditDocs = function(auditDb, callback) {
     //     (ie we can't use it to show progress)
     logger.info(`Migrating ${doclist.rows.length} audit docs`);
 
-    const auditDocIds = doclist.rows.map(function(row) { return row.id;});
+    const auditDocIds = doclist.rows.map((row) => row.id);
 
     db.medic.replicate.to(auditDb, { doc_ids: auditDocIds })
       .on('complete', () => {

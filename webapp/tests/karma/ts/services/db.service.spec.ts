@@ -285,13 +285,13 @@ describe('Db Service', () => {
         { args: ['design/view', { reduce: false, include_docs: true }] },
         {
           args: [
-            { map: function(doc) { return doc.type; }, reduce: function(doc) { return doc.reduce; } },
+            { map: (doc) => doc.type, reduce: (doc) => doc.reduce },
             { reduce: true, include_docs: true },
           ],
         },
         {
           args: [
-            function(doc) { return doc.count; },
+            (doc) => doc.count,
             { start_key: 'aaa', end_key: 'bbb' },
           ],
         },

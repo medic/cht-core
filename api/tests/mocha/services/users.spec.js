@@ -2,8 +2,10 @@ const chai = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
+const couchSettings = require('@medic/settings');
 const people = require('../../../src/controllers/people');
 const places = require('../../../src/controllers/places');
+const tokenLogin = require('../../../src/services/token-login');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const auth = require('../../../src/auth');
@@ -27,6 +29,8 @@ describe('Users service', () => {
       facilityb,
       facilityc,
     ]));
+    sinon.stub(couchSettings, 'getCouchConfig').resolves();
+    sinon.stub(couchSettings, 'updateAdminPassword').resolves();
     userData = {
       username: 'x',
       password: COMPLEX_PASSWORD,
@@ -671,6 +675,633 @@ describe('Users service', () => {
 
   });
 
+  describe('createUsers', () => {
+    it('calls `createUser` if the body is not an array', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'foo',
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
+      const response = await service.createUsers(userData);
+      chai.expect(response).to.deep.equal({});
+    });
+
+    it('returns error if one of the users has missing fields', async () => {
+      try {
+        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+        sinon.stub(db.medicLogs, 'put').resolves({});
+
+        const result = await service.createUsers([
+          {},
+          { password: 'x', place: 'x', contact: { parent: 'x' }},
+          { username: 'x', place: 'x', contact: { parent: 'x' }},
+          { username: 'x', password: 'x', contact: { parent: 'x' }},
+          { username: 'x', place: 'x', contact: { parent: 'x' }},
+          { username: 'x', place: 'x', contact: {}},
+        ]);
+
+        chai.expect(result).to.have.deep.members([
+          { error: 'Missing required fields: username, password, type or roles' },
+          { error: 'Missing required fields: username, type or roles' },
+          { error: 'Missing required fields: password, type or roles' },
+          { error: 'Missing required fields: type or roles' },
+          { error: 'Missing required fields: password, type or roles' },
+          { error: 'Missing required fields: password, type or roles' },
+        ]);
+      } catch (error) {
+        chai.assert.fail('Should have not thrown');
+      }
+    });
+
+    it('returns error if one of the users has password errors', async () => {
+      try {
+        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+        sinon.stub(db.medicLogs, 'put').resolves({});
+
+        const results = await service.createUsers([
+          {
+            username: 'x',
+            place: 'x',
+            contact: { parent: 'x' },
+            type: 'national-manager',
+            password: 'short',
+          },
+          {
+            username: 'x',
+            place: 'x',
+            contact: { parent: 'x' },
+            type: 'national-manager',
+            password: 'password',
+          },
+        ]);
+
+        chai.expect(results).to.have.deep.members([
+          {
+            error: {
+              message: 'The password must be at least 8 characters long.',
+              translationKey: 'password.length.minimum',
+              translationParams: { minimum: 8 }
+            }
+          },
+          {
+            error: {
+              message: 'The password is too easy to guess. Include a range of' +
+                ' types of characters to increase the score.',
+              translationKey: 'password.weak',
+              translationParams: undefined
+            }
+          },
+        ]);
+      } catch (error) {
+        chai.assert.fail('Should have not thrown');
+      }
+    });
+
+    it('returns error if one of the users has a missing phone number and should login by SMS', async () => {
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+      sinon.stub(db.users, 'get').resolves({});
+      sinon.stub(db.medic, 'get').resolves({});
+      try {
+        const result = await service.createUsers([
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            phone: '+40 755 69-69-69',
+            token_login: true,
+          },
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            token_login: true,
+          },
+        ]);
+
+        chai.expect(result[1]).to.deep.equal({ error: 'Missing required fields: phone' });
+      } catch (error) {
+        chai.assert.fail('Should have not thrown');
+      }
+    });
+
+    it('returns error if one of the users has an invalid phone number and should login by SMS', async () => {
+      const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('url');
+      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+      sinon.stub(db.users, 'get').resolves({});
+      sinon.stub(db.medic, 'get').resolves({});
+      try {
+        const result = await service.createUsers([
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            phone: '+40 755 69-69-69',
+            token_login: true,
+          },
+          {
+            username: 'sally',
+            roles: ['a', 'b'],
+            phone: '123',
+            token_login: true,
+          },
+        ]);
+
+        chai.expect(result[1]).to.deep.equal({ error: 'A valid phone number is required for SMS login.' });
+      } catch (error) {
+        chai.assert.fail('Should have not thrown');
+      }
+    });
+
+    it('should normalize phone number and change provided password if should login by SMS', async () => {
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+      const tokenLoginConfig = { message: 'sms', enabled: true };
+      sinon.stub(config, 'get')
+        .withArgs('token_login').returns(tokenLoginConfig)
+        .withArgs('app_url').returns('');
+
+      sinon.stub(auth, 'isOffline').returns(false);
+
+      const users = [{
+        username: 'sally',
+        roles: ['a', 'b'],
+        phone: '+40 755 69-69-69',
+        password: 'random',
+        token_login: true,
+      }];
+
+      sinon.stub(db.medic, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+        .resolves({ id: 'org.couchdb.user:sally' });
+      sinon.stub(db.users, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+        .resolves({ id: 'org.couchdb.user:sally' });
+
+      sinon.stub(db.users, 'get').withArgs('org.couchdb.user:sally')
+        .onCall(0).rejects({ status: 404 })
+        .onCall(1).resolves({
+          _id: 'org.couchdb.user:sally',
+          type: 'user',
+          roles: ['a', 'b', 'mm-online'],
+          name: 'sally',
+        });
+      sinon.stub(db.medic, 'get').withArgs('org.couchdb.user:sally')
+        .onCall(0).rejects({ status: 404 })
+        .onCall(1).resolves({
+          _id: 'org.couchdb.user:sally',
+          type: 'user-settings',
+          roles: ['a', 'b', 'mm-online'],
+          phone: '+40755696969',
+          name: 'sally',
+        });
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+
+      const response = await service.createUsers(users, 'http://realhost');
+      chai.expect(response).to.deep.equal([
+        {
+          user: { id: 'org.couchdb.user:sally', rev: undefined },
+          'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
+          token_login: { expiration_date: oneDayInMS },
+        },
+      ]);
+      chai.expect(db.medic.put.callCount).to.equal(3);
+      chai.expect(db.users.put.callCount).to.equal(2);
+
+      chai.expect(db.medic.put.args[0]).to.deep.equal([{
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user-settings',
+        phone: '+40755696969', // normalized phone
+        roles: ['a', 'b', 'mm-online'],
+      }]);
+
+      chai.expect(db.users.put.args[0][0]).to.deep.include({
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+      chai.expect(db.users.put.args[0][0].password).not.to.equal('random');
+      chai.expect(db.users.put.args[0][0].password.length).to.equal(20);
+
+      chai.expect(db.medic.put.args[2][0]).to.deep.equal({
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user-settings',
+        phone: '+40755696969', // normalized phone
+        roles: ['a', 'b', 'mm-online'],
+        token_login: {
+          active: true,
+          expiration_date: oneDayInMS,
+        },
+      });
+
+      chai.expect(db.users.put.args[1][0]).to.deep.include({
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+
+      chai.expect(db.users.put.args[1][0].token_login).to.deep.include({
+        active: true,
+        expiration_date: oneDayInMS,
+      });
+      const token = db.users.put.args[1][0].token_login.token;
+      chai.expect(token.length).to.equal(64);
+
+      chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+        _id: `token:login:${token}`,
+        type: 'token_login',
+        reported_date: 0,
+        user: 'org.couchdb.user:sally',
+        'tasks[0].messages[0].to': '+40755696969',
+        'tasks[0].messages[0].message': 'sms',
+        'tasks[0].state': 'pending',
+        'tasks[1].messages[0].to': '+40755696969',
+        'tasks[1].messages[0].message': `http://realhost/medic/login/token/${token}`,
+        'tasks[1].state': 'pending',
+      });
+    });
+
+    describe('errors at insertion', () => {
+      it('returns responses with errors if contact.parent lookup fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().resolves());
+        service.__set__('setContactParent', sinon.stub().rejects(new Error('kablooey')));
+        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+        sinon.stub(db.medicLogs, 'put').resolves({});
+
+        const response = await service.createUsers([userData]);
+
+        chai.expect(response[0].error).to.equal('kablooey');
+      });
+
+      it('returns responses with errors if place lookup fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().rejects(new Error('fail')));
+        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+        sinon.stub(db.medicLogs, 'put').resolves({});
+
+        const response = await service.createUsers([userData]);
+
+        chai.expect(response[0].error).to.equal('fail');
+      });
+
+      it('returns responses with errors if username validation fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().rejects(new Error('fail username validation')));
+        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+        sinon.stub(db.medicLogs, 'put').resolves({});
+
+        const response = await service.createUsers([userData]);
+
+        chai.expect(response[0].error).to.equal('fail username validation');
+      });
+
+      it('returns responses with errors if contact creation fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().resolves());
+        service.__set__('createUser', sinon.stub().resolves());
+        service.__set__('setContactParent', sinon.stub().resolves());
+        service.__set__('createContact', sinon.stub().rejects(new Error('fail contact creation')));
+        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+        sinon.stub(db.medicLogs, 'put').resolves({});
+
+        const response = await service.createUsers([userData]);
+
+        chai.expect(response[0].error).to.equal('fail contact creation');
+      });
+
+      it('returns responses with errors if place update fails', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().resolves());
+        service.__set__('createUser', sinon.stub().resolves());
+        service.__set__('setContactParent', sinon.stub().resolves());
+        service.__set__('createContact', sinon.stub().resolves());
+        service.__set__('storeUpdatedPlace', sinon.stub().rejects(new Error('fail place update')));
+        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+        sinon.stub(db.medicLogs, 'put').resolves({});
+
+        const response = await service.createUsers([userData]);
+
+        chai.expect(response[0].error).to.equal('fail place update');
+      });
+
+      it('returns responses with errors if token login fails to be enabled', async () => {
+        const tokenLoginConfig = { translation_key: 'sms', enabled: true };
+        sinon.stub(config, 'get')
+          .withArgs('token_login').returns(tokenLoginConfig)
+          .withArgs('app_url').returns('url');
+        sinon.stub(auth, 'isOffline').returns(false);
+
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: { name: 'x' },
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().resolves());
+        service.__set__('createUser', sinon.stub().resolves());
+        service.__set__('setContactParent', sinon.stub().resolves());
+        service.__set__('createContact', sinon.stub().resolves());
+        service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+        service.__set__('createUser', sinon.stub().resolves());
+        service.__set__('createUserSettings', sinon.stub().resolves());
+        sinon.stub(tokenLogin, 'manageTokenLogin').rejects(new Error('fail to enable token login'));
+        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+        sinon.stub(db.medicLogs, 'put').resolves({});
+
+        const response = await service.createUsers([userData]);
+
+        chai.expect(response[0].error).to.equal('fail to enable token login');
+      });
+
+      it('returns responses with errors if place is not within contact', async () => {
+        const userData = {
+          username: 'x',
+          password: COMPLEX_PASSWORD,
+          place: 'georgia',
+          contact: { 'parent': 'x' },
+          type: 'national-manager'
+        };
+        service.__set__('validateNewUsername', sinon.stub().resolves());
+        service.__set__('createPlace', sinon.stub().resolves());
+        sinon.stub(places, 'getPlace').resolves({
+          _id: 'miami',
+          parent: {
+            _id: 'florida'
+          }
+        });
+        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+        sinon.stub(db.medicLogs, 'put').resolves({});
+
+        const response = await service.createUsers([userData]);
+
+        chai.expect(response[0].error.message).to.equal('Contact is not within place.');
+        chai.expect(response[0].error.translationKey).to.equal('configuration.user.place.contact');
+      });
+    });
+
+    it('succeeds and returns responses if some users fail to be inserted', async () => {
+      sinon.stub(db.medic, 'get').resolves({});
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      const getPlaceStub = sinon.stub(places, 'getPlace');
+      getPlaceStub.withArgs('user1-contact').resolves({
+        _id: 'user1-place',
+        _rev: 2,
+        name: 'user1-place',
+        parent: 'user1-contact'
+      });
+      getPlaceStub.withArgs('user2-contact').resolves();
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+      const response = await service.createUsers([
+        {
+          username: 'user1',
+          place: 'user1-place',
+          contact: { parent: 'user1-contact' },
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+        {
+          username: 'user2',
+          place: 'user2-place',
+          contact: { parent: 'user2-contact' },
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+      ]);
+
+      chai.expect(response[0]).to.deep.equal({});
+      chai.expect(response[1].error.message).to.equal('Contact is not within place.');
+      chai.expect(response[1].error.translationKey).to.equal('configuration.user.place.contact');
+    });
+
+    it('succeeds if contact and place are the same', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'foo',
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
+      userData.place = 'foo';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const response = await service.createUsers([userData]);
+
+      chai.expect(response).to.deep.equal([{}]);
+    });
+
+    it('succeeds and response contains the user, contact and user settings fields for each inserted user', async () => {
+      const users = [
+        {
+          username: 'user1',
+          place: 'foo',
+          contact: 'user1',
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+        {
+          username: 'user2',
+          place: 'foo',
+          contact: 'user2',
+          type: 'national-manager',
+          password: 'Sup3rSecret!',
+        },
+      ];
+      const medicGet = sinon.stub(db.medic, 'get');
+      const medicPut = sinon.stub(db.medic, 'put');
+      const medicQuery = sinon.stub(db.medic, 'query');
+      const usersPut = sinon.stub(db.users, 'put');
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
+      medicGet.withArgs('user1')
+        .onFirstCall().rejects({ status: 404 })
+        .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 })
+        .withArgs('user2')
+        .onFirstCall().rejects({ status: 404 })
+        .onSecondCall().resolves({ type: 'person', _id: 'contact_id', _rev: 1 });
+      usersPut.callsFake(user => Promise.resolve({ id: user._id, rev: 1 }));
+      medicQuery.resolves({ rows: [] });
+      medicPut.callsFake(userSettings => Promise.resolve({ id: userSettings._id, rev: 1 }));
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const response = await service.createUsers(users);
+
+      chai.expect(response).to.deep.equal([
+        {
+          contact: {
+            id: 'contact_id',
+            rev: 1,
+          },
+          user: {
+            id: 'org.couchdb.user:user1',
+            rev: 1,
+          },
+          'user-settings': {
+            id: 'org.couchdb.user:user1',
+            rev: 1,
+          },
+        },
+        {
+          contact: {
+            id: 'contact_id',
+            rev: 1,
+          },
+          user: {
+            id: 'org.couchdb.user:user2',
+            rev: 1,
+          },
+          'user-settings': {
+            id: 'org.couchdb.user:user2',
+            rev: 1,
+          },
+        },
+      ]);
+    });
+
+    it('succeeds if contact is within place', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: 'florida',
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
+      service.__set__('validateNewUsername', sinon.stub().resolves());
+      service.__set__('createPlace', sinon.stub().resolves());
+      service.__set__('createUser', sinon.stub().resolves());
+      service.__set__('createContact', sinon.stub().resolves());
+      service.__set__('storeUpdatedPlace', sinon.stub().resolves());
+      service.__set__('createUserSettings', sinon.stub().resolves());
+      sinon.stub(places, 'getPlace').resolves({
+        _id: 'miami',
+        parent: {
+          _id: 'florida'
+        }
+      });
+      userData.place = 'florida';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const response = await service.createUsers([userData]);
+
+      chai.expect(response).to.deep.equal([{}]);
+    });
+
+    it('errors if username exists in _users db', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'x' },
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
+      sinon.stub(db.users, 'get').resolves('bob lives here already.');
+      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+      const insert = sinon.stub(db.medic, 'put');
+
+      const response = await service.createUsers([userData]);
+
+      chai.expect(response[0].error.message).to.equal('Username "x" already taken.');
+      chai.expect(response[0].error.translationKey).to.equal('username.taken');
+      chai.expect(response[0].error.translationParams).to.have.property('username');
+      chai.expect(insert.callCount).to.equal(0);
+    });
+
+    it('errors if username exists in medic db', async () => {
+      const userData = {
+        username: 'x',
+        password: COMPLEX_PASSWORD,
+        place: { name: 'x' },
+        contact: { 'parent': 'x' },
+        type: 'national-manager'
+      };
+      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      sinon.stub(db.medic, 'get').resolves('jane lives here too.');
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+      const insert = sinon.stub(db.medic, 'put');
+
+      const response = await service.createUsers([userData]);
+
+      chai.expect(response[0].error.message).to.equal('Username "x" already taken.');
+      chai.expect(response[0].error.translationKey).to.equal('username.taken');
+      chai.expect(response[0].error.translationParams).to.have.property('username');
+      chai.expect(insert.callCount).to.equal(0);
+    });
+  });
+
   describe('setContactParent', () => {
 
     it('resolves contact parent in waterfall', () => {
@@ -910,7 +1541,7 @@ describe('Users service', () => {
       service.__set__('createUserSettings', sinon.stub().resolves());
       return service
         .createUser(userData)
-        .then(() => { throw 'should have thrown'; })
+        .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
           chai.expect(err).to.equal(conflictErr);
           chai.expect(db.medic.get.callCount).to.equal(4);
@@ -949,7 +1580,7 @@ describe('Users service', () => {
       service.__set__('createUserSettings', sinon.stub().resolves());
       return service
         .createUser(userData)
-        .then(() => { throw 'should have thrown'; })
+        .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ status: 400, reason: 'not-a-conflict' });
           chai.expect(db.medic.get.callCount).to.equal(1);
@@ -1340,6 +1971,99 @@ describe('Users service', () => {
           '_id': 'org.couchdb.user:paul'
         } ]);
       });
+    });
+
+    it('should update the admin password in CouchDB config', async () => {
+      const data = { password: COMPLEX_PASSWORD };
+      couchSettings.getCouchConfig.resolves({
+        admin1: 'password_1',
+        admin2: 'password_2',
+      });
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      sinon.stub(db.medic, 'put').resolves({});
+      sinon.stub(db.users, 'put').resolves({});
+
+      await service.updateUser('admin2', data, true);
+
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:admin2',
+        name: 'admin2',
+        type: 'user-settings',
+      });
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:admin2',
+        name: 'admin2',
+        password: COMPLEX_PASSWORD,
+        type: 'user',
+      });
+      chai.expect(couchSettings.updateAdminPassword.calledOnce).to.be.true;
+      chai.expect(couchSettings.updateAdminPassword.args[0]).to.deep.equal(['admin2', COMPLEX_PASSWORD]);
+      chai.expect(couchSettings.getCouchConfig.calledOnce).to.be.true;
+      chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
+    });
+
+    it('should update admin when no password is sent', async () => {
+      const data = { fullname: 'John Smith' };
+      couchSettings.getCouchConfig.resolves({
+        admin1: 'password_1',
+        admin2: 'password_2',
+      });
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      sinon.stub(db.medic, 'put').resolves({});
+      sinon.stub(db.users, 'put').resolves({});
+
+      await service.updateUser('admin2', data, true);
+
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:admin2',
+        name: 'admin2',
+        type: 'user-settings',
+        fullname: 'John Smith',
+      });
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:admin2',
+        name: 'admin2',
+        type: 'user',
+      });
+      chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(0);
+      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(0);
+    });
+
+    it('should not update the password in CouchDB config if user isnt admin', async () => {
+      const data = { password: COMPLEX_PASSWORD };
+      couchSettings.getCouchConfig.resolves({
+        admin1: 'password_1',
+        admin2: 'password_2',
+      });
+      service.__set__('validateUser', sinon.stub().resolves({}));
+      service.__set__('validateUserSettings', sinon.stub().resolves({}));
+      sinon.stub(db.medic, 'put').resolves({});
+      sinon.stub(db.users, 'put').resolves({});
+
+      await service.updateUser('anne', data, true);
+
+      chai.expect(db.medic.put.callCount).to.equal(1);
+      chai.expect(db.medic.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:anne',
+        name: 'anne',
+        type: 'user-settings',
+      });
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.deep.equal({
+        _id: 'org.couchdb.user:anne',
+        name: 'anne',
+        type: 'user',
+        password: COMPLEX_PASSWORD,
+      });
+      chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(0);
+      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
+      chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
     });
   });
 
@@ -1833,6 +2557,261 @@ describe('Users service', () => {
           'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
         });
       });
+    });
+  });
+
+  describe('parseCsv', () => {
+    it('should throw error when csv is empty', async () => {
+      try {
+        await service.parseCsv('');
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        chai.expect(error.message).to.equal('CSV is empty.');
+      }
+
+      try {
+        await service.parseCsv(null);
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        chai.expect(error.message).to.equal('CSV is empty.');
+      }
+    });
+
+    it('should parse csv, trim spaces and not split strings with commas inside', async () => {
+      const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
+        'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
+        'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'mary', phone: '2652527222', address: '1 King ST, Kent Town, 55555' }
+        },
+        {
+          password: 'Secret5678',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'Peter', phone: '2652279', address: '15 King ST, Kent Town, 55555' }
+        }
+      ]);
+    });
+
+    it('should parse csv, trim spaces and not split strings with commas inside', async () => {
+      /* eslint-disable max-len */
+      const csv = 'password,username,type,place,token_login,contact.name,contact.phone,contact.address\n' +
+        ',mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,TRUE,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
+        'Secret9876,devi,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,truthy mistake,devi,265252,"12 King ST, Kent Town, 55555"\n' +
+        'Secret1144,jeff,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,,jeff,26599102,"27 King ST, Kent Town, 55555"\n' +
+        'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,FALSE,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
+      /* eslint-enable max-len */
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.deep.members([
+        {
+          password: '',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'mary', phone: '2652527222', address: '1 King ST, Kent Town, 55555' },
+          token_login: true,
+        },
+        {
+          password: 'Secret9876',
+          username: 'devi',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'devi', phone: '265252', address: '12 King ST, Kent Town, 55555' },
+          token_login: 'truthy mistake',
+        },
+        {
+          password: 'Secret1144',
+          username: 'jeff',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'jeff', phone: '26599102', address: '27 King ST, Kent Town, 55555' },
+          token_login: '',
+        },
+        {
+          password: 'Secret5678',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: { name: 'Peter', phone: '2652279', address: '15 King ST, Kent Town, 55555' },
+          token_login: false,
+        }
+      ]);
+    });
+
+    it('should return empty array when there is not users in the csv', async () => {
+      const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.deep.members([]);
+    });
+
+    it('should ignore empty header columns', async () => {
+      const csv = 'password,username,type,,contact.name,,contact.address\n' +
+        'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          contact: { name: 'mary', address: '1 King ST, Kent Town, 55555' }
+        }
+      ]);
+    });
+
+    it('should keep attributes if there is not value', async () => {
+      const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
+        'Secret1234,mary,person,,mary,     ,"1 King ST, Kent Town, 55555"\n';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '',
+          contact: { name: 'mary', phone: '', address: '1 King ST, Kent Town, 55555' }
+        }
+      ]);
+    });
+
+    it('should parse csv with deep object structure', async () => {
+      const csv = 'password,username,type,place,contact.name,contact.address.country' +
+        ',contact.address.city.street,contact.address.city.name\n' +
+        'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,US,"5th ST", Kent Town\n' +
+        'Secret555,peter,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter,CA,,Victoria Town\n';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: {
+            name: 'mary',
+            address: {
+              city: {
+                name: 'Kent Town',
+                street: '5th ST'
+              },
+              country: 'US'
+            }
+          }
+        },
+        {
+          password: 'Secret555',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f98b-4e48-8c50-f12aeb018fcc',
+          contact: {
+            name: 'Peter',
+            address: {
+              city: {
+                name: 'Victoria Town',
+                street: ''
+              },
+              country: 'CA'
+            }
+          }
+        }
+      ]);
+    });
+
+    it('should parse csv with special characters', async () => {
+      const csv = 'password,username,type,place,contact.name,contact.notes\n' +
+        'Secret1234,mary,person,498a394e-f98,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
+        'Secret5678, peter ,person,498a394e-f99,Peter,"ce fût une belle saison, le maïs sera prêt à partir ' +
+        'de l’été c’est-à-dire dès demain, d’où l’invaitation"';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98',
+          contact: {
+            name: 'Mary\'s name!',
+            notes: '#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_' }
+        },
+        {
+          password: 'Secret5678',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f99',
+          contact: {
+            name: 'Peter',
+            notes: 'ce fût une belle saison, le maïs sera prêt à partir' +
+              ' de l’été c’est-à-dire dès demain, d’où l’invaitation'
+          }
+        }
+      ]);
+    });
+
+    it('should ignore excluded header columns', async () => {
+      const csv = 'password,username,type,place,contact.meta:excluded,contact.name,contact.notes\n' +
+        'Secret1234,mary,person,498a394e-f98,excluded column,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
+        'Secret5678, peter ,person,498a394e-f99,excluded column,Peter,' +
+        '"ce fût une belle saison, le maïs sera prêt à partir de l’été c’est-à-dire dès demain, d’où l’invaitation"';
+      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
+      sinon.stub(db.medicLogs, 'put').resolves({});
+
+      const result = await service.parseCsv(csv);
+
+      chai.expect(result.users).to.have.deep.members([
+        {
+          password: 'Secret1234',
+          username: 'mary',
+          type: 'person',
+          place: '498a394e-f98',
+          contact: {
+            name: 'Mary\'s name!',
+            notes: '#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_' }
+        },
+        {
+          password: 'Secret5678',
+          username: 'peter',
+          type: 'person',
+          place: '498a394e-f99',
+          contact: {
+            name: 'Peter',
+            notes: 'ce fût une belle saison, le maïs sera prêt à partir' +
+              ' de l’été c’est-à-dire dès demain, d’où l’invaitation'
+          }
+        }
+      ]);
     });
   });
 });

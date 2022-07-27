@@ -1,7 +1,7 @@
 const searchPage = require('../../page-objects/search/search.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const utils = require('../../utils');
-const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
+const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const moment = require('moment');
 const placeFactory = require('../../factories/cht/contacts/place');
@@ -99,16 +99,16 @@ describe('Test Reports Search Functionality', async () => {
 
   it('search by NON empty string should display results with contains match and then clears', async () => {
     // Waiting for initial load
-    await contactPage.getAllReportsText();
+    await reportsPage.getAllReportsText();
 
     // Searching by keyword
     await searchPage.performSearch('sittu');
-    let allLHSContacts = await contactPage.getAllReportsText();
+    let allLHSContacts = await reportsPage.getAllReportsText();
     expect(allLHSContacts.sort()).to.deep.equal([sittuPerson.name]);
 
     // Clearing
     await searchPage.clearSearch();
-    allLHSContacts = await contactPage.getAllReportsText();
+    allLHSContacts = await reportsPage.getAllReportsText();
     expect(allLHSContacts.sort()).to.deep.equal([potuPerson.name, sittuPerson.name]);
   });
 });

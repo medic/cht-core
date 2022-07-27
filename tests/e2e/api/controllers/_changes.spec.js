@@ -169,12 +169,6 @@ const parentPlace = {
   name: 'Big Parent Hostpital'
 };
 
-const defaultSettings = {
-  reiterate_changes: true,
-  changes_limit: 100,
-  debounce_interval: 200
-};
-
 const createSomeContacts = (nbr, parent) => {
   const docs = [];
   parent = typeof parent === 'string' ? { _id: parent } : parent;
@@ -190,19 +184,16 @@ const createSomeContacts = (nbr, parent) => {
 };
 
 const consumeChanges = (username, results, lastSeq) => {
-  const opts = { since: lastSeq, feed: 'longpoll' };
-  if (results && results.length) {
-    opts.timeout = 2000;
-  } else {
-    opts.timeout = 10000;
-  }
+  const opts = { since: lastSeq };
 
   return requestChanges(username, opts).then(changes => {
-    if (!changes.results.length) {
-      return { results: results, last_seq: changes.last_seq };
-    }
-    results = results.concat(changes.results);
-    return consumeChanges(username, results, changes.last_seq);
+    return getChangesSince(changes.last_seq).then(pending => {
+      if (!pending.results.length && !changes.results.length) {
+        return { results: results, last_seq: changes.last_seq };
+      }
+      results = results.concat(changes.results);
+      return consumeChanges(username, results, changes.last_seq);
+    });
   });
 };
 
@@ -227,10 +218,10 @@ const getChangesForIds = (username, docIds, retry = false, lastSeq = 0, limit = 
     });
 
     // simulate PouchDB 7.0.0 seq selection
-    const last_seq = changes.results.length ? changes.results[changes.results.length - 1].seq : changes.last_seq;
+    const lastSeq = changes.results.length ? changes.results[changes.results.length - 1].seq : changes.last_seq;
 
     if (docIds.find(id => !results.find(change => change.id === id)) || (retry && changes.results.length)) {
-      return getChangesForIds(username, docIds, retry, last_seq, limit, results);
+      return getChangesForIds(username, docIds, retry, lastSeq, limit, results);
     }
 
     return results;
@@ -238,13 +229,15 @@ const getChangesForIds = (username, docIds, retry = false, lastSeq = 0, limit = 
 };
 
 let currentSeq;
-const getCurrentSeq = () => {
+const getCurrentSeq = () => getLastSeq().then(lastSeq => currentSeq = lastSeq);
+const getLastSeq = () => {
   return sentinelUtils.waitForSentinel()
     .then(() => utils.requestOnTestDb('/_changes?descending=true&limit=1'))
-    .then(result => {
-      currentSeq = result.last_seq;
-    });
+    .then(result => result.last_seq);
 };
+const getChangesSince = (since) => sentinelUtils
+  .waitForSentinel()
+  .then(() => utils.requestOnTestDb(`/_changes?since=${since}`));
 
 describe('changes handler', () => {
 
@@ -358,22 +351,10 @@ describe('changes handler', () => {
               query: { since },
               timeout: 11000 // 5 heartbeats
             }),
-            heartRateMonitor({ // offline user longpoll _changes
-              path: '/' + constants.DB_NAME + '/_changes',
-              auth: `bob:${password}`,
-              // heartbeats are set to minimum 5 seconds in our changes controller!
-              query: { since, timeout: 21000, heartbeat: 5000 } // 4 heartbeats
-            }),
             heartRateMonitor({ // online meta longpoll _changes
               path: '/medic-user-manager-meta/_changes',
               query: { since },
               auth: `manager:${password}`,
-              timeout: 11000 // 5 heartbeats
-            }),
-            heartRateMonitor({ // offline meta longpoll _changes
-              path: '/medic-user-bob-meta/_changes',
-              query: { since },
-              auth: `bob:${password}`,
               timeout: 11000 // 5 heartbeats
             }),
           ]);
@@ -396,34 +377,13 @@ describe('changes handler', () => {
           });
           chai.expect(results[1].body).to.equal('{"results":[\n\n\n\n\n\n');
 
-          // offline user _changes
-          // `last_seq` doesn't necessarily match the `since` we requested
-          chai.expect(results[2].body.startsWith('\n\n\n\n{"results":[],"last_seq":')).to.equal(true);
-          results[2].heartbeats.forEach((heartbeat, idx) => {
-            if (idx === 4) {
-              chai.expect(heartbeat.chunk.startsWith('{"results":[],"last_seq":"')).to.equal(true);
-            } else {
-              chai.expect(heartbeat.chunk).to.equal('\n');
-            }
-            // heartbeats are set to minimum 5 seconds in our changes controller!
-            chai.expect(parseInt(heartbeat.interval / 1000)).to.be.below(6);
-          });
-
           // online user meta _changes
-          chai.expect(results[3].heartbeats.length).to.equal(6);
-          results[3].heartbeats.forEach((heartbeat, idx) => {
+          chai.expect(results[2].heartbeats.length).to.equal(6);
+          results[2].heartbeats.forEach((heartbeat, idx) => {
             chai.expect(heartbeat.chunk).to.equal(idx ? '\n' : '{"results":[\n');
             chai.expect(parseInt(heartbeat.interval / 1000)).to.be.below(3);
           });
-          chai.expect(results[3].body).to.equal('{"results":[\n\n\n\n\n\n');
-
-          // ofline user meta _changes
-          chai.expect(results[4].heartbeats.length).to.equal(6);
-          results[4].heartbeats.forEach((heartbeat, idx) => {
-            chai.expect(heartbeat.chunk).to.equal(idx ? '\n' : '{"results":[\n');
-            chai.expect(parseInt(heartbeat.interval / 1000)).to.be.below(3);
-          });
-          chai.expect(results[4].body).to.equal('{"results":[\n\n\n\n\n\n');
+          chai.expect(results[2].body).to.equal('{"results":[\n\n\n\n\n\n');
         });
     });
   });
@@ -503,15 +463,16 @@ describe('changes handler', () => {
         });
     });
 
-    it('filters allowed changes in longpolls', () => {
+    it('filters allowed changes', () => {
       const allowedDocs = createSomeContacts(3, 'fixture:bobville');
       const deniedDocs = createSomeContacts(3, 'irrelevant-place');
 
-      return Promise.all([
-        consumeChanges('bob', [], currentSeq),
-        utils.saveDocs(allowedDocs),
-        utils.saveDocs(deniedDocs)
-      ])
+      return Promise
+        .all([
+          consumeChanges('bob', [], currentSeq),
+          utils.saveDocs(allowedDocs),
+          utils.saveDocs(deniedDocs)
+        ])
         .then(([changes]) => {
           assertChangeIds(changes, ...getIds(allowedDocs));
         });
@@ -536,7 +497,7 @@ describe('changes handler', () => {
         });
     });
 
-    it('filters correctly for concurrent users on longpolls', () => {
+    it('filters correctly for concurrent users', () => {
       const allowedBob = createSomeContacts(3, 'fixture:bobville');
       const allowedSteve = createSomeContacts(3, 'fixture:steveville');
 
@@ -587,68 +548,6 @@ describe('changes handler', () => {
         })
         .then(changes => {
           chai.expect(_.uniq(getIds(changes.results))).to.have.members(newIds);
-        });
-    });
-
-    it('restarts longpoll feeds when settings are changed', () => {
-      const settingsUpdates = { changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) };
-      return Promise
-        .all([
-          requestChanges('steve', { feed: 'longpoll', since: currentSeq }),
-          requestChanges('bob', { feed: 'longpoll', since: currentSeq }),
-          // we delay the settings update request to make sure it happens AFTER the longpoll feeds have been created
-          utils.delayPromise(() => utils.updateSettings(settingsUpdates, true), 300)
-        ])
-        .then(([ stevesChanges, bobsChanges ]) => {
-          chai.expect(stevesChanges.results.length).to.equal(1);
-          chai.expect(bobsChanges.results.length).to.equal(1);
-          chai.expect(bobsChanges.results[0].id).to.equal('settings');
-          chai.expect(stevesChanges.results[0].id).to.equal('settings');
-          chai.expect(stevesChanges.last_seq).not.to.equal(currentSeq);
-          chai.expect(bobsChanges.last_seq).not.to.equal(currentSeq);
-        });
-    });
-
-    it('returns newly added docs when in restart mode', () => {
-      const newDocs = [
-        {_id: 'new_allowed_contact_bis', place_id: '123456', parent: {_id: 'fixture:bobville'}, type: 'clinic'},
-        {_id: 'new_denied_contact_bis', place_id: '888888', parent: {_id: 'fixture:steveville'}, type: 'clinic'},
-        {
-          _id: 'new_allowed_report_bis',
-          type: 'data_record',
-          reported_date: 1,
-          place_id: '123456',
-          form: 'some-form',
-          contact: {_id: 'fixture:bobville'}
-        },
-        {
-          _id: 'new_denied_report_bis',
-          type: 'data_record',
-          reported_date: 1,
-          place_id: '888888',
-          form: 'some-form',
-          contact: {_id: 'fixture:steveville'}
-        }
-      ];
-      const newIds = ['new_allowed_contact_bis', 'new_allowed_report_bis'];
-      return utils
-        .updateSettings({ changes_controller: _.defaults({ reiterate_changes: false }, defaultSettings) }, true)
-        .then(() => getCurrentSeq())
-        .then(() => {
-          return Promise
-            .all([
-              consumeChanges('bob', [], currentSeq),
-              utils.saveDocs(newDocs)
-            ])
-            .then(([changes]) => {
-              if (changes.results.length >= 2) {
-                return changes;
-              }
-              return consumeChanges('bob', [], currentSeq);
-            })
-            .then(changes => {
-              assertChangeIds(changes, ...newIds);
-            });
         });
     });
 
@@ -730,7 +629,7 @@ describe('changes handler', () => {
         }));
     });
 
-    it('filters allowed deletes in longpolls', () => {
+    it('filters allowed deletes', () => {
       const allowedDocs = createSomeContacts(3, 'fixture:bobville');
       const deniedDocs = createSomeContacts(3, 'irrelevant-place');
 
@@ -949,20 +848,22 @@ describe('changes handler', () => {
     });
 
     it('normal feeds should replicate correctly when new changes are pushed', () => {
-      const allowedDocs = createSomeContacts(25, 'fixture:bobville');
-      const allowedDocs2 = createSomeContacts(25, 'fixture:bobville');
-      const ids = [...getIds(allowedDocs), ...getIds(allowedDocs2)];
+      const allowedDocs = createSomeContacts(100, 'fixture:bobville');
+      const allowedDocs2 = createSomeContacts(100, 'fixture:bobville');
+      const allowedDocs3 = createSomeContacts(100, 'fixture:bobville');
+      const ids = [...getIds(allowedDocs), ...getIds(allowedDocs2), ...getIds(allowedDocs3)];
 
       // save docs in sequence
       const promiseChain = allowedDocs.reduce((promise, doc) => {
-        return utils.delayPromise(() => promise.then(() => utils.saveDoc(doc)), 50);
+        return utils.delayPromise(() => promise.then(() => utils.saveDoc(doc)), 20);
       }, Promise.resolve());
 
       return utils
         .saveDocs(allowedDocs2)
         .then(() => Promise.all([
           getChangesForIds('bob', ids, true, currentSeq, 4),
-          promiseChain
+          promiseChain,
+          utils.delayPromise(() => utils.saveDocs(allowedDocs3), 200),
         ]))
         .then(([ changes ]) => {
           chai.expect(ids).to.have.members(_.uniq(getIds(changes)));

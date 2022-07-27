@@ -10,7 +10,7 @@ describe('outbound shared library', () => {
 
   // This has to run before any describes even though it's only used by the service describe block
   // so the logger gets attached
-  const service = outbound({... console, isDebugEnabled: () => false});
+  const service = outbound({ ...console, isDebugEnabled: () => false });
 
   describe('send', () => {
     let restores;

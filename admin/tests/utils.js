@@ -64,7 +64,8 @@ window.KarmaUtils = {
       $provide.value('ReportViewModelGenerator', () => {});
       $provide.value('LiveList', mockLiveList);
       $provide.value('Session', {
-        userCtx: () => { return {}; }
+        userCtx: sinon.stub().returns({}),
+        checkCurrentSession: sinon.stub(),
       });
     });
   }

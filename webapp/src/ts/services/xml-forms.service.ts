@@ -5,6 +5,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
@@ -21,6 +22,7 @@ export class XmlFormsService {
     private changesService:ChangesService,
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
+    private fileReaderService: FileReaderService,
     private userContactService:UserContactService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
     private parseProvider:ParseProvider,
@@ -137,6 +139,32 @@ export class XmlFormsService {
     });
   }
 
+  private checkFormExpression(form, doc, user, contactSummary) {
+    if (!form.context.expression) {
+      return true;
+    }
+
+    try {
+      return this.evaluateExpression(
+        form.context.expression,
+        doc,
+        user,
+        contactSummary
+      );
+    } catch(err) {
+      console.error(`Unable to evaluate expression for form: ${form._id}`, err);
+      return false;
+    }
+  }
+
+  private checkFormPermissions(form) {
+    if (!form.context.permission) {
+      return true;
+    }
+
+    return this.authService.has(form.context.permission);
+  }
+
   private filter(form, options, user) {
     if (!options.includeCollect && form.context && form.context.collect) {
       return false;
@@ -158,31 +186,25 @@ export class XmlFormsService {
       return true;
     }
 
-    return this.filterContactTypes(form.context, options.doc).then(validSoFar => {
-      if (!validSoFar) {
-        return false;
-      }
-      if (form.context.expression) {
-        try {
-          return this.evaluateExpression(form.context.expression, options.doc, user, options.contactSummary);
-        } catch(err) {
-          console.error(`Unable to evaluate expression for form: ${form._id}`, err);
-          return false;
-        }
-      }
-      if (form.context.expression &&
-        !this.evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)) {
-        return false;
-      }
-      if (!form.context.permission) {
-        return true;
-      }
-      return this.authService.has(form.context.permission);
-    });
+    return this
+      .filterContactTypes(form.context, options.doc)
+      .then(valid => valid && this.checkFormPermissions(form))
+      .then(valid => valid && this.checkFormExpression(form, options.doc, user, options.contactSummary));
   }
 
   private notify(error, forms?) {
     this.observable.next({ error, forms });
+  }
+
+  /**
+   * @memberof XmlForms
+   * @param {Object} doc The document find the xform attachment for
+   * @returns {String} The name of the xform attachment.
+   */
+  private findXFormAttachmentName(doc) {
+    return doc &&
+      doc._attachments &&
+      Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
   }
 
   /**
@@ -252,15 +274,20 @@ export class XmlFormsService {
       });
   }
 
-  /**
-   * @memberof XmlForms
-   * @param {Object} doc The document find the xform attachment for
-   * @returns {String} The name of the xform attachment.
-   */
-  findXFormAttachmentName(doc) {
-    return doc &&
-      doc._attachments &&
-      Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
+  getDocAndFormAttachment(internalId) {
+    return this.get(internalId)
+      .then(doc => {
+        const attachmentName = this.findXFormAttachmentName(doc);
+        return this.dbService.get().getAttachment(doc._id, attachmentName)
+          .then(blob => this.fileReaderService.utf8(blob))
+          .then(xml => ({ doc, xml }))
+          .catch(err => {
+            if (err.status === 404) {
+              return Promise.reject(new Error(`The form "${internalId}" doesn't have an xform attachment`));
+            }
+            throw err;
+          });
+      });
   }
 
   /**

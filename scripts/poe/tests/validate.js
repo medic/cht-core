@@ -9,7 +9,7 @@ describe('validate', () => {
   const originalInfo = utils.info;
   const originalError = utils.error;
 
-  beforeEach(()=> {
+  beforeEach(() => {
     utils.log = jest.fn();
     utils.info = jest.fn();
     utils.error = jest.fn();

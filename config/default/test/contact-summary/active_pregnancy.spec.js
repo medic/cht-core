@@ -33,7 +33,7 @@ describe('Tests for active pregnancy condition card', () => {
       {
         'label': 'Weeks Pregnant',
         'value': {
-          'number': 21,//21 weeks and 6 days
+          'number': 21, //21 weeks and 6 days
           'approximate': false
         },
         'translate': false,
@@ -42,7 +42,7 @@ describe('Tests for active pregnancy condition card', () => {
       });
     expect(fields[1]).to.deep.equal({
       'label': 'contact.profile.edd',
-      'value': moment('2000-05-07').valueOf(),//LMP date + 280 days
+      'value': moment('2000-05-07').valueOf(), //LMP date + 280 days
       'translate': false,
       'filter': 'simpleDate',
       'width': 6
@@ -151,7 +151,7 @@ describe('Tests for active pregnancy condition card', () => {
     expect(fields[0]).to.deep.equal({
       'label': 'Weeks Pregnant',
       'value': {
-        'number': 24,//24 weeks and 6 days
+        'number': 24, //24 weeks and 6 days
         'approximate': false
       },
       'translate': false,
@@ -160,7 +160,7 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[1]).to.deep.equal({
       'label': 'contact.profile.edd',
-      'value': moment('2000-05-10').valueOf(),//(updated EDD)
+      'value': moment('2000-05-10').valueOf(), //(updated EDD)
       'translate': false,
       'filter': 'simpleDate',
       'width': 6
@@ -231,7 +231,7 @@ describe('Tests for active pregnancy condition card', () => {
     expect(fields[2]).to.deep.equal({
       'label': 'Weeks Pregnant',
       'value': {
-        'number': 24,//24 weeks and 3 days
+        'number': 24, //24 weeks and 3 days
         'approximate': false
       },
       'translate': false,
@@ -240,7 +240,7 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[3]).to.deep.equal({
       'label': 'contact.profile.edd',
-      'value': moment('2000-05-07').valueOf(),//LMP date + 280 days
+      'value': moment('2000-05-07').valueOf(), //LMP date + 280 days
       'translate': false,
       'filter': 'simpleDate',
       'width': 6

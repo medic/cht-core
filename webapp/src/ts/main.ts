@@ -15,7 +15,7 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import pouchdbDebug from 'pouchdb-debug';
 
 import { AppModule } from './app.module';
-import { environment } from './environments/environment';
+import { environment } from '@mm-environments/environment';
 import { POUCHDB_OPTIONS } from './constants';
 
 import * as bootstrapper from '../js/bootstrapper';
@@ -38,15 +38,12 @@ require('../js/enketo/main');
 window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS, (err) => {
   if (err) {
-    if (err.redirect) {
-      window.location.href = err.redirect;
-    } else {
-      console.error('Error bootstrapping', err);
-      setTimeout(() => {
-        // retry initial replication automatically after one minute
-        window.location.reload(false);
-      }, 60 * 1000);
-    }
+    console.error('Error bootstrapping', err);
+    setTimeout(() => {
+      // retry initial replication automatically after one minute
+      window.location.reload(false);
+    }, 60 * 1000);
+
     return;
   }
 

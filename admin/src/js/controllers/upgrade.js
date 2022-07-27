@@ -48,6 +48,8 @@ angular.module('controllers').controller('UpgradeCtrl',
             logError('instance.upgrade.error.deploy', 'instance.upgrade.error.deploy');
           }
           $scope.currentDeploy = deployInfo;
+          const currentVersion = Version.currentVersion($scope.currentDeploy);
+          $scope.isUsingFeatureRelease = !!currentVersion && typeof currentVersion.featureRelease !== 'undefined';
         })
         .catch(err => logError(err, 'instance.upgrade.error.deploy_info_fetch'));
     };
@@ -110,9 +112,21 @@ angular.module('controllers').controller('UpgradeCtrl',
             startkey: [ 'release', 'medic', 'medic', {}],
             endkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
           }),
+          !$scope.isUsingFeatureRelease ? getBuilds(buildsDb, {
+            startkey: [minVersion.featureRelease, 'medic', 'medic', {}],
+            endkey: [
+              minVersion.featureRelease,
+              'medic',
+              'medic',
+              minVersion.major,
+              minVersion.minor,
+              minVersion.patch,
+              minVersion.beta,
+            ],
+          }) : [],
         ])
-        .then(([ branches, betas, releases ]) => {
-          $scope.versions = { branches, betas, releases };
+        .then(([ branches, betas, releases, featureReleases ]) => {
+          $scope.versions = { branches, betas, releases, featureReleases };
         });
     };
 
@@ -147,7 +161,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         return true;
       }
 
-      const currentVersion = Version.parse($scope.currentDeploy.base_version);
+      const currentVersion = Version.currentVersion($scope.currentDeploy);
       if (!currentVersion) {
         // Unable to parse the current version information so all releases are
         // potentially incompatible

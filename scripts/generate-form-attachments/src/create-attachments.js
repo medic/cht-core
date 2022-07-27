@@ -48,7 +48,11 @@ const getReportsByAllDocs = async (couchUrl, startKey = '') => {
 };
 
 const populateXmlFields = (attachmentObj, fieldName, fieldValue, path, hiddenFields = []) => {
-  const thisFieldPath = fieldName ? (path ? `${path}.${fieldName}` : fieldName) : path;
+  let thisFieldPath = path;
+  if (fieldName) {
+    thisFieldPath = path ? `${path}.${fieldName}` : fieldName;
+  }
+
   const isHidden = hiddenFields && hiddenFields.includes(thisFieldPath);
 
   const field = Array.isArray(fieldValue) ? [] : {};

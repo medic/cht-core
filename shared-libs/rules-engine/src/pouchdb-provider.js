@@ -158,7 +158,7 @@ const docUpdateClosure = db => {
 
     previousResult = previousResult
       .then(() => db.put(baseDoc))
-      .then(updatedDoc => { baseDoc._rev = updatedDoc.rev; })
+      .then(updatedDoc => (baseDoc._rev = updatedDoc.rev))
       .catch(err => console.error(`Error updating ${baseDoc._id}: ${err}`))
       .then(() => {
         // unsure of how browsers handle long promise chains, so break the chain when possible

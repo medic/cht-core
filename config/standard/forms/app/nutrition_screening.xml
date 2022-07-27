@@ -1926,7 +1926,7 @@
         </translation>
       </itext>
       <instance>
-        <nutrition_screening id="nutrition_screening" prefix="J1!nutrition_screening!" delimiter="#" version="2019-05-10 10-16">
+        <nutrition_screening id="nutrition_screening" prefix="J1!nutrition_screening!" delimiter="#" version="2022-03-04 11-21">
           <inputs>
             <meta>
               <location>
@@ -1952,6 +1952,7 @@
             </contact>
           </inputs>
           <patient_uuid/>
+          <patient_name/>
           <child_name/>
           <patient_id/>
           <dob/>
@@ -2055,6 +2056,7 @@
       <bind nodeset="/nutrition_screening/inputs/contact/parent/contact/phone" type="string"/>
       <bind nodeset="/nutrition_screening/inputs/contact/parent/contact/name" type="string"/>
       <bind nodeset="/nutrition_screening/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/nutrition_screening/patient_name" type="string" calculate="../inputs/contact/name"/>
       <bind nodeset="/nutrition_screening/child_name" type="string" calculate="../inputs/contact/name"/>
       <bind nodeset="/nutrition_screening/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
       <bind nodeset="/nutrition_screening/dob" type="string" calculate="substr(../inputs/contact/date_of_birth, 0, 10)"/>
@@ -2095,8 +2097,8 @@
       <bind nodeset="/nutrition_screening/treatment/n_sfp" readonly="true()" type="string" relevant=" /nutrition_screening/treatment/program  = 'SFP'"/>
       <bind nodeset="/nutrition_screening/treatment/n_sc" readonly="true()" type="string" relevant=" /nutrition_screening/treatment/program  = 'SC'"/>
       <bind nodeset="/nutrition_screening/treatment/facility" type="select1" relevant=" /nutrition_screening/treatment/enroll  = 'yes'" required="true()"/>
-      <bind nodeset="/nutrition_screening/treatment/target_weight" type="decimal" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" jr:constraintMsg="jr:itext('/nutrition_screening/treatment/target_weight:jr:constraintMsg')" constraint=". &gt;= 0.8 and . &lt;= 68.5"/>
-      <bind nodeset="/nutrition_screening/treatment/target_muac" type="decimal" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'" jr:constraintMsg="jr:itext('/nutrition_screening/treatment/target_muac:jr:constraintMsg')" constraint=". &gt;= 5 and . &lt;= 30"/>
+      <bind nodeset="/nutrition_screening/treatment/target_weight" type="decimal" jr:constraintMsg="jr:itext('/nutrition_screening/treatment/target_weight:jr:constraintMsg')" constraint=". &gt;= 0.8 and . &lt;= 68.5" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'"/>
+      <bind nodeset="/nutrition_screening/treatment/target_muac" type="decimal" jr:constraintMsg="jr:itext('/nutrition_screening/treatment/target_muac:jr:constraintMsg')" constraint=". &gt;= 5 and . &lt;= 30" relevant=" /nutrition_screening/treatment/enroll  = 'yes' and  /nutrition_screening/treatment/facility  = 'clinic'"/>
       <bind nodeset="/nutrition_screening/treatment/other_facility" type="string" relevant=" /nutrition_screening/treatment/facility  = 'other_clinic'" required="true()"/>
       <bind nodeset="/nutrition_screening/treatment/additional_notes" type="string"/>
       <bind nodeset="/nutrition_screening/summary/n_1" readonly="true()" type="string"/>

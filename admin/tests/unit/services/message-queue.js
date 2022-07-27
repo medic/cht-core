@@ -547,7 +547,7 @@ describe('MessageQueue service', function() {
           task: { translation_key: 'task3', state: 'pending' },
           due: 300
         }
-      },];
+      }, ];
 
       translate.instant.callsFake(t => t);
 

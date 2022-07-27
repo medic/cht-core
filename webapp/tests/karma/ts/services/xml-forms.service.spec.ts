@@ -12,10 +12,12 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { PipesService } from '@mm-services/pipes.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
 
 describe('XmlForms service', () => {
   let dbGet;
   let dbQuery;
+  let dbGetAttachment;
   let Changes;
   let hasAuth;
   let UserContact;
@@ -24,6 +26,7 @@ describe('XmlForms service', () => {
   let contextUtils;
   let pipesService;
   let error;
+  let fileReaderService;
 
   const mockEnketoDoc = (formInternalId?, docId?) => {
     return {
@@ -46,10 +49,12 @@ describe('XmlForms service', () => {
   beforeEach(() => {
     dbQuery = sinon.stub();
     dbGet = sinon.stub();
+    dbGetAttachment = sinon.stub();
     Changes = sinon.stub();
     hasAuth = sinon.stub();
     UserContact = sinon.stub();
     getContactType = sinon.stub();
+    fileReaderService = sinon.stub();
     getTypeId = sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type);
     contextUtils = {};
     error = sinon.stub(console, 'error');
@@ -63,7 +68,9 @@ describe('XmlForms service', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
+        { provide: DbService, useValue: { get: () => ({
+          query: dbQuery, get: dbGet, getAttachment: dbGetAttachment
+        } ) } },
         { provide: ChangesService, useValue: { subscribe: Changes } },
         { provide: AuthService, useValue: { has: hasAuth } },
         { provide: XmlFormsContextUtilsService, useValue: contextUtils },
@@ -71,6 +78,7 @@ describe('XmlForms service', () => {
         { provide: UserContactService, useValue: { get: UserContact } },
         ParseProvider,
         { provide: PipesService, useValue: pipesService },
+        { provide: FileReaderService, useValue: { utf8: fileReaderService } }
       ],
     });
   });
@@ -777,6 +785,79 @@ describe('XmlForms service', () => {
 
     });
 
+    it('does not return a form with a truthy expression if the user does not have relevant permissions', () => {
+      const given = [
+        {
+          id: 'visit',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'true',
+              permission: [ 'national_admin' ]
+            },
+          },
+        },
+        {
+          id: 'registration',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'true',
+              permission: [ 'district_admin' ]
+            },
+          },
+        }
+      ];
+      dbQuery.resolves({ rows: given });
+      hasAuth.withArgs([ 'national_admin' ]).resolves(true);
+      UserContact.resolves();
+      const service = getService();
+      return service.list().then(actual => {
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[0].doc);
+      });
+    });
+
+    it('does not return a form with a false expression if the user has the relevant permissions', () => {
+      const given = [
+        {
+          id: 'visit',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'false',
+              permission: [ 'national_admin' ]
+            },
+          },
+        },
+        {
+          id: 'registration',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'false',
+              permission: [ 'district_admin' ]
+            },
+          },
+        }
+      ];
+      dbQuery.resolves({ rows: given });
+      hasAuth.withArgs([ 'national_admin' ]).resolves(true);
+      UserContact.resolves();
+      const service = getService();
+      return service.list().then(actual => {
+        expect(actual.length).to.equal(0);
+      });
+    });
+
   });
 
   describe('listen', () => {
@@ -1007,6 +1088,55 @@ describe('XmlForms service', () => {
         })
         .catch(err => {
           expect(err.message).to.equal(`No form found for internalId "${internalId}"`);
+        });
+    });
+
+  });
+
+  describe('getDocAndFormAttachment', () => {
+
+    it('fails if no forms found', () => {
+      const internalId = 'birth';
+      dbQuery.resolves([]);
+      dbGet.resolves({
+        _id: 'form:death',
+        _attachments: { 'something.xml': { stub: true } },
+        internalId: 'birth'
+      });
+      dbGetAttachment.rejects({ status: 404 });
+      const service = getService();
+      return service
+        .getDocAndFormAttachment(internalId)
+        .then(() => {
+          assert.fail('expected error to be thrown');
+        })
+        .catch(err => {
+          expect(err.message).to.equal(`The form "${internalId}" doesn't have an xform attachment`);
+        });
+    });
+
+    it('returns doc and xml', () => {
+      const internalId = 'birth';
+      const formDoc = {
+        _id: 'form:death',
+        _attachments: { xml: { stub: true } },
+        internalId: 'birth'
+      };
+      dbQuery.resolves([]);
+      dbGet.resolves(formDoc);
+      dbGetAttachment.resolves('someblob');
+      fileReaderService.resolves('<form/>');
+      const service = getService();
+      return service
+        .getDocAndFormAttachment(internalId)
+        .then((result) => {
+          expect(result.doc).to.deep.equal(formDoc);
+          expect(result.xml).to.deep.equal('<form/>');
+          expect(dbGetAttachment.callCount).to.equal(1);
+          expect(dbGetAttachment.args[0][0]).to.equal('form:death');
+          expect(dbGetAttachment.args[0][1]).to.equal('xml');
+          expect(fileReaderService.callCount).to.equal(1);
+          expect(fileReaderService.args[0][0]).to.equal('someblob');
         });
     });
 

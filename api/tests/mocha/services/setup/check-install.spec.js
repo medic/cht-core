@@ -81,7 +81,7 @@ describe('Check install service', () => {
         missing: [],
         different: ['_design/one', '_design/two', '_design/three'],
       });
-      ddocsService.compareDdocs.onCall(1).returns({ missing: [], different: [],});
+      ddocsService.compareDdocs.onCall(1).returns({ missing: [], different: [], });
       const db = { data: 'base' };
       Object.freeze(db);
 

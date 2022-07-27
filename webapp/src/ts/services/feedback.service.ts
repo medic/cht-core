@@ -26,6 +26,7 @@ export class FeedbackService {
     console: console,
     document: document
   };
+
   private logIdx = 0;
   private readonly LEVELS = ['error', 'warn', 'log', 'info'];
   private readonly LOG_LENGTH = 20;

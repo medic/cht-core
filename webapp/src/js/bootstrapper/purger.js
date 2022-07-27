@@ -1,137 +1,77 @@
-const utils = require('./utils');
-
 const PURGE_LOG_DOC_ID = '_local/purgelog';
-const MAX_HISTORY_LENGTH = 10;
+const MAX_HISTORY_LENGTH = 20;
 const BATCH_SIZE = 100;
 const META_BATCHES = 10; // purge 10 * 100 documents on every startup
 
 const sortedUniqueRoles = roles => JSON.stringify([...new Set(roles)].sort());
-const purgeFetch = (url) => {
-  return fetch(url, { headers: opts.remote_headers, credentials: 'same-origin' })
-    .then(res => res.json())
-    .then(res => {
-      if (res && res.code && res.code !== 200) {
-        throw new Error('Error fetching purge data: ' + JSON.stringify(res));
-      }
-      return res;
-    });
-};
 
 const getPurgeLog = (localDb) => {
   return localDb.get(PURGE_LOG_DOC_ID).catch(err => {
     if (err.status === 404) {
-      return {
-        _id: PURGE_LOG_DOC_ID,
-        history: [],
-      };
+      return { _id: PURGE_LOG_DOC_ID };
     }
     throw err;
   });
-};
-
-let opts;
-const setOptions = options => {
-  opts = options;
-};
-
-const info = () => {
-  return purgeFetch(`${utils.getBaseUrl()}/purging`).then(res => res && res.update_seq);
-};
-
-const checkpoint = (seq) => {
-  if (!seq) {
-    return Promise.resolve();
-  }
-  return purgeFetch(`${utils.getBaseUrl()}/purging/checkpoint?seq=${seq}`);
-};
-
-const daysToMs = (days) => 1000 * 60 * 60 * 24 * days;
-const shouldPurge = (localDb, userCtx) => {
-  return Promise
-    .all([ localDb.get('settings'), getPurgeLog(localDb), info() ])
-    .then(([ { settings: { purge } }, purgelog, info ]) => {
-      // purge not running on the server
-      if (!purge) {
-        console.debug('Not purging: Purge not configured.');
-        return false;
-      }
-
-      if (!info) {
-        console.debug('Not purging: Purge has not run on the server.');
-        return false;
-      }
-
-      // if user roles have changed
-      if (purgelog && purgelog.roles && purgelog.roles !== sortedUniqueRoles(userCtx.roles)) {
-        console.debug('Purging: user roles changed since last purge');
-        return true;
-      }
-
-      let dayInterval = parseInt(purge.run_every_days);
-
-      if (Number.isNaN(dayInterval)) {
-        dayInterval = 7;
-      }
-
-      const lastPurge = purgelog.date;
-      const purgedRecently = lastPurge && (new Date().getTime() - daysToMs(dayInterval)) < lastPurge;
-      if (purgedRecently) {
-        console.debug('Not purging: purge ran recently');
-        return false;
-      }
-
-      console.debug('Purging');
-      return true;
-    })
-    .catch(err => {
-      console.warn('Not purging:', err);
-      return false;
-    });
 };
 
 const shouldPurgeMeta = (localDb) => {
   return getPurgeLog(localDb).then(purgeLog => !!purgeLog.synced_seq);
 };
 
-const purge = (localDb, userCtx) => {
-  const handlers = {};
-  const baseUrl = utils.getBaseUrl();
+const appendToPurgeList = (localDb, ids) => {
+  if (!ids || !ids.length) {
+    return Promise.resolve();
+  }
+  return getPurgeLog(localDb)
+    .then(log => {
+      if (log.to_purge && log.to_purge.length) {
+        ids = Array.from(new Set(log.to_purge.concat(ids)));
+      }
+      log.to_purge = ids;
+      return localDb.put(log).then(() => log);
+    });
+};
+
+const purgeMain = (localDb, userCtx) => {
+
   let totalPurged = 0;
+  const eventListeners = {};
 
   const emit = (name, event) => {
     console.debug(`Emitting '${name}' event with:`, event);
-    (handlers[name] || []).forEach(callback => callback(event));
+    (eventListeners[name] || []).forEach(callback => callback(event));
   };
 
-  const batchedPurge = () => {
-    return purgeFetch(`${baseUrl}/purging/changes`)
-      .then(response => {
-        const { purged_ids: ids, last_seq: lastSeq } = response;
-
-        if (!ids || !ids.length) {
-          return;
-        }
-
-        return purgeIds(localDb, ids)
-          .then(nbr => {
-            totalPurged += nbr;
-            emit('progress', { purged: totalPurged });
-            return checkpoint(lastSeq);
-          })
-          .then(() => batchedPurge());
-      });
+  const batchedPurge = (ids) => {
+    if (!ids || !ids.length) {
+      return;
+    }
+    const batch = ids.slice(0, BATCH_SIZE);
+    return purgeIds(localDb, batch)
+      .then(nbr => {
+        totalPurged += nbr;
+        emit('progress', { purged: totalPurged });
+        return writePurgeLog(localDb, userCtx, nbr, batch);
+      })
+      .then(() => batchedPurge(ids.slice(BATCH_SIZE)));
   };
 
-  emit('start');
-  const p = Promise
-    .resolve()
-    .then(() => batchedPurge())
-    .then(() => writePurgeLog(localDb, totalPurged, userCtx))
-    .then(() => emit('done', { totalPurged }));
+  const p = Promise.resolve()
+    .then(() => {
+      return getPurgeLog(localDb)
+        .then(log => {
+          if (!log.to_purge || !log.to_purge.length) {
+            return;
+          }
+          emit('start');
+          return batchedPurge(log.to_purge)
+            .then(() => emit('done', { totalPurged }));
+        });
+    });
 
   p.on = (type, callback) => {
-    handlers[type] = handlers[type] || [];
-    handlers[type].push(callback);
+    eventListeners[type] = eventListeners[type] || [];
+    eventListeners[type].push(callback);
     return p;
   };
 
@@ -139,28 +79,54 @@ const purge = (localDb, userCtx) => {
 };
 
 const purgeMeta = (localDb) => {
-  return getPurgeLog(localDb).then(purgeLog => batchedMetaPurge(localDb, purgeLog.purged_seq, purgeLog.synced_seq));
+
+  const eventListeners = {};
+
+  const emit = (name, event) => {
+    console.debug(`Emitting '${name}' event with:`, event);
+    (eventListeners[name] || []).forEach(callback => callback(event));
+  };
+
+  const p = Promise.resolve()
+    .then(() => shouldPurgeMeta(localDb))
+    .then(shouldPurge => {
+      emit('should-purge', shouldPurge);
+      if (shouldPurge) {
+        emit('start');
+        return getPurgeLog(localDb)
+          .then(purgeLog => batchedMetaPurge(localDb, purgeLog.purged_seq, purgeLog.synced_seq))
+          .then(() => emit('done'));
+      }
+    });
+
+  p.on = (type, callback) => {
+    eventListeners[type] = eventListeners[type] || [];
+    eventListeners[type].push(callback);
+    return p;
+  };
+
+  return p;
 };
 
-const writePurgeMetaCheckpoint = (localDb, currentSeq) => {
-  return writeMetaPurgeLog(localDb, { syncedSeq: currentSeq });
-};
-
-const writePurgeLog = (localDb, totalPurged, userCtx) => {
-  return getPurgeLog(localDb).then(purgeLog => {
+const writePurgeLog = (localDb, userCtx, totalPurged, docIds) => {
+  return getPurgeLog(localDb).then(log => {
     const info = {
       date: new Date().getTime(),
       count: totalPurged,
       roles: sortedUniqueRoles(userCtx.roles)
     };
-    Object.assign(purgeLog, info);
-    purgeLog.history.unshift(info);
-    if (purgeLog.history.length > MAX_HISTORY_LENGTH) {
-      const diff = purgeLog.history.length - MAX_HISTORY_LENGTH;
-      purgeLog.history.splice(diff * -1, diff);
+    Object.assign(log, info);
+    if (!log.history) {
+      log.history = [];
     }
-
-    return localDb.put(purgeLog);
+    log.history.unshift(info);
+    if (log.history.length > MAX_HISTORY_LENGTH) {
+      log.history = log.history.slice(0, MAX_HISTORY_LENGTH);
+    }
+    log.to_purge = (log.to_purge || []).filter(id => {
+      return !docIds.includes(id);
+    });
+    return localDb.put(log);
   });
 };
 
@@ -178,7 +144,7 @@ const writeMetaPurgeLog = (localDb, { syncedSeq, purgedSeq }) => {
   });
 };
 
-const batchedMetaPurge = (localDb, sinceSeq = 0, untilSeq, iterations = 0) => {
+const batchedMetaPurge = (localDb, sinceSeq = 0, untilSeq = '', iterations = 0) => {
   if (iterations >= META_BATCHES) {
     return; // stop after 10 iterations
   }
@@ -240,12 +206,8 @@ const purgeIds = (db, ids) => {
 };
 
 module.exports = {
-  setOptions,
-  info,
-  checkpoint,
-  shouldPurge,
-  shouldPurgeMeta,
-  purge,
+  purgeMain,
   purgeMeta,
-  writePurgeMetaCheckpoint,
+  appendToPurgeList,
+  writeMetaPurgeLog,
 };

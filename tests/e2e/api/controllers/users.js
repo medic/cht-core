@@ -10,6 +10,46 @@ const sentinelUtils = require('../../sentinel/utils');
 const getUserId = n => `org.couchdb.user:${n}`;
 
 describe('Users API', () => {
+
+  const expectPasswordLoginToWork = (user) => {
+    const opts = {
+      path: '/login',
+      method: 'POST',
+      simple: false,
+      noAuth: true,
+      body: { user: user.username, password: user.password },
+      followRedirect: false,
+    };
+
+    return utils
+      .requestOnMedicDb(opts)
+      .then(response => {
+        chai.expect(response).to.include({
+          statusCode: 302,
+          body: '/',
+        });
+        chai.expect(response.headers['set-cookie']).to.be.an('array');
+        chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
+        chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
+      });
+  };
+
+  const expectPasswordLoginToFail = (user) => {
+    const opts = {
+      path: '/login',
+      method: 'POST',
+      simple: false,
+      noAuth: true,
+      body: { user: user.username, password: user.password },
+    };
+
+    return utils
+      .requestOnMedicDb(opts)
+      .then(response => {
+        chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Not logged in' } });
+      });
+  };
+
   describe('POST /api/v1/users/{username}', () => {
     const username = 'test' + new Date().getTime();
     const password = 'pass1234!';
@@ -272,6 +312,42 @@ describe('Users API', () => {
           });
         });
 
+    });
+
+    it('should allow to update the admin password and login successfully', async () => {
+      const newPassword = 'medic.456';
+      const otherAdmin = {
+        username: 'admin2',
+        password: 'medic.123',
+        roles: [ 'admin' ],
+        contact: { name: 'Philip' },
+        place: newPlaceId,
+      };
+      await utils.createUsers([ otherAdmin ]);
+      // Set admin user's password in CouchDB config.
+      await utils.request({
+        port: constants.COUCH_PORT,
+        method: 'PUT',
+        path: `/_node/${constants.COUCH_NODE_NAME}/_config/admins/${otherAdmin.username}`,
+        body: `"${otherAdmin.password}"`,
+      });
+
+      // Update password with new value.
+      const userResponse = await utils
+        .request({
+          path: `/api/v1/users/${otherAdmin.username}`,
+          method: 'POST',
+          body: { password: newPassword }
+        })
+        .catch(() => chai.assert.fail('Should not throw error'));
+
+      chai.expect(userResponse.user).to.not.be.undefined;
+      chai.expect(userResponse.user.id).to.equal('org.couchdb.user:admin2');
+      chai.expect(userResponse['user-settings']).to.not.be.undefined;
+      chai.expect(userResponse['user-settings'].id).to.equal('org.couchdb.user:admin2');
+      // Old password shouldn't work.
+      await expectPasswordLoginToFail(otherAdmin);
+      await expectPasswordLoginToWork({ username: otherAdmin.username, password: newPassword });
     });
 
   });
@@ -577,45 +653,6 @@ describe('Users API', () => {
       chai.expect(userSettings).to.shallowDeepEqual(Object.assign(defaultProps, extra));
     };
 
-    const expectPasswordLoginToWork = (user) => {
-      const opts = {
-        path: '/login',
-        method: 'POST',
-        simple: false,
-        noAuth: true,
-        body: { user: user.username, password: user.password },
-        followRedirect: false,
-      };
-
-      return utils
-        .requestOnMedicDb(opts)
-        .then(response => {
-          chai.expect(response).to.include({
-            statusCode: 302,
-            body: '/',
-          });
-          chai.expect(response.headers['set-cookie']).to.be.an('array');
-          chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('AuthSession'))).to.be.ok;
-          chai.expect(response.headers['set-cookie'].find(cookie => cookie.startsWith('userCtx'))).to.be.ok;
-        });
-    };
-
-    const expectPasswordLoginToFail = (user) => {
-      const opts = {
-        path: '/login',
-        method: 'POST',
-        simple: false,
-        noAuth: true,
-        body: { user: user.username, password: user.password },
-      };
-
-      return utils
-        .requestOnMedicDb(opts)
-        .then(response => {
-          chai.expect(response).to.deep.include({ statusCode: 401, body: { error: 'Not logged in' } });
-        });
-    };
-
     const expectTokenLoginToSucceed = (url) => {
       const opts = {
         uri: url,
@@ -650,7 +687,7 @@ describe('Users API', () => {
       });
     };
 
-    const expectSendableSms = (doc) => {
+    const expectSendableSms = (doc, to) => {
       const opts = {
         path: '/api/sms',
         method: 'POST',
@@ -660,9 +697,10 @@ describe('Users API', () => {
       const viewifyMessage = ({ uuid, message, to }) => ({ to, id: uuid, content: message });
 
       return utils.request(opts).then(response => {
-        chai.expect(response.messages).to.be.an('array');
-        chai.expect(response.messages.length).to.equal(doc.tasks.length);
-        chai.expect(response.messages).to.have.deep.members(doc.tasks.map(task => viewifyMessage(task.messages[0])));
+        const messages = to ? response.messages.filter(message => message.to === to) : response.messages;
+        chai.expect(messages).to.be.an('array');
+        chai.expect(messages.length).to.equal(doc.tasks.length);
+        chai.expect(messages).to.have.deep.members(doc.tasks.map(task => viewifyMessage(task.messages[0])));
       });
     };
 
@@ -805,6 +843,366 @@ describe('Users API', () => {
             chai.expect(userSettings.token_login).to.be.undefined;
           })
           .then(() => expectPasswordLoginToWork(user));
+      });
+
+      it('should create many users where one fails to be created w/o token_login', async () => {
+        const users = [
+          {
+            username: 'offline4',
+            password: password,
+            place: {
+              _id: 'fixture:offline4',
+              type: 'health_center',
+              name: 'Offline4 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline4',
+              name: 'Offline4User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'offline4']
+          },
+          {
+            username: 'invalid/username',
+            password: password,
+            place: {
+              _id: 'fixture:offline5',
+              type: 'health_center',
+              name: 'Offline5 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline5',
+              name: 'Offline5User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'fail']
+          },
+        ];
+        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
+        await utils.updateSettings(settings, true);
+        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
+        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+
+        chai.expect(response).to.shallowDeepEqual([
+          {
+            user: { id: getUserId(users[0].username) },
+            'user-settings': { id: getUserId(users[0].username) },
+            contact: { id: users[0].contact._id },
+          },
+          {
+            error: {
+              message:
+                'Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).',
+              translationKey: 'username.invalid'
+            },
+          },
+        ]);
+      });
+
+      it('should create many users where many fail to be created w/o token_login', async () => {
+        const users = [
+          {
+            username: 'offline5',
+            password: 'password',
+            place: {
+              _id: 'fixture:offline5',
+              type: 'health_center',
+              name: 'Offline5 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline5',
+              name: 'Offline5User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'invalid']
+          },
+          {
+            username: 'offline6',
+            place: {
+              _id: 'fixture:offline6',
+              type: 'health_center',
+              name: 'Offline6 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline6',
+              name: 'Offline6User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'invalid']
+          },
+          {
+            username: 'offline7',
+            password,
+            place: {
+              _id: 'fixture:offline7',
+              type: 'health_center',
+              name: 'Offline7 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline7',
+              name: 'Offline7User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'not', 'be', 'created']
+          },
+        ];
+        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
+        await utils.updateSettings(settings, true);
+        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
+
+        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+        chai.expect(response).to.shallowDeepEqual([
+          {
+            error: {
+              message:
+                  'The password is too easy to guess. Include a range of types of characters to increase the score.',
+              translationKey: 'password.weak'
+            },
+          },
+          {
+            error: 'Missing required fields: password'
+          },
+          {
+            user: { id: getUserId(users[2].username) },
+            'user-settings': { id: getUserId(users[2].username) },
+            contact: { id: users[2].contact._id },
+          },
+        ]);
+      });
+
+      it('should create and update many users correctly w/o token_login', async () => {
+        const users = [
+          {
+            username: 'offline2',
+            password: password,
+            place: {
+              _id: 'fixture:offline2',
+              type: 'health_center',
+              name: 'Offline2 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline2',
+              name: 'Offline2User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'offline2']
+          },
+          {
+            username: 'online2',
+            password: password,
+            place: {
+              _id: 'fixture:online2',
+              type: 'health_center',
+              name: 'Online2 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:online2',
+              name: 'Online2User'
+            },
+            roles: ['national_admin']
+          },
+          {
+            username: 'offlineonline2',
+            password: password,
+            place: {
+              _id: 'fixture:offlineonline2',
+              type: 'health_center',
+              name: 'Online2 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offlineonline2',
+              name: 'Online2User'
+            },
+            roles: ['district_admin', 'mm-online2']
+          },
+        ];
+        const settings = { token_login: { translation_key: 'token_login_sms', enabled: true } };
+        await utils.updateSettings(settings, true);
+        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
+        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+
+        chai.expect(response).to.shallowDeepEqual(users.map(user => ({
+          user: { id: getUserId(user.username) },
+          'user-settings': { id: getUserId(user.username) },
+          contact: { id: user.contact._id },
+        })));
+
+        for (const user of users) {
+          let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
+          const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
+          expectCorrectUser(userInDb, extraProps);
+          expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
+          chai.expect(userInDb.token_login).to.be.undefined;
+          chai.expect(userSettings.token_login).to.be.undefined;
+          await expectPasswordLoginToWork(user);
+
+          const updates = {
+            roles: ['new_role'],
+            phone: '+40744898989',
+          };
+          const updateResponse = await utils.request({
+            path: `/api/v1/users/${user.username}`,
+            body: updates,
+            method: 'POST',
+          });
+          chai.expect(updateResponse).to.shallowDeepEqual({
+            user: { id: getUserId(user.username) },
+            'user-settings': { id: getUserId(user.username) },
+          });
+
+          [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
+          expectCorrectUser(userInDb, { ...extraProps, roles: ['new_role'] });
+          expectCorrectUserSettings(userSettings, {
+            ...extraProps,
+            contact_id: user.contact._id,
+            roles: ['new_role'],
+            phone: '+40744898989',
+          });
+          chai.expect(userInDb.token_login).to.be.undefined;
+          chai.expect(userSettings.token_login).to.be.undefined;
+          await expectPasswordLoginToWork(user);
+        }
+      });
+
+      it('should create and update many users correctly with token_login', async () => {
+        const users = [
+          {
+            username: 'offline3',
+            password: password,
+            phone: '+40754898989',
+            token_login: true,
+            place: {
+              _id: 'fixture:offline3',
+              type: 'health_center',
+              name: 'Offline2 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offline3',
+              name: 'Offline2User'
+            },
+            roles: ['district_admin', 'this', 'user', 'will', 'be', 'offline3']
+          },
+          {
+            username: 'online3',
+            password: password,
+            phone: '+40755898989',
+            token_login: true,
+            place: {
+              _id: 'fixture:online3',
+              type: 'health_center',
+              name: 'Online2 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:online3',
+              name: 'Online2User'
+            },
+            roles: ['national_admin']
+          },
+          {
+            username: 'offlineonline3',
+            password: password,
+            token_login: true,
+            phone: '+40756898989',
+            place: {
+              _id: 'fixture:offlineonline3',
+              type: 'health_center',
+              name: 'Online2 place',
+              parent: 'PARENT_PLACE'
+            },
+            contact: {
+              _id: 'fixture:user:offlineonline3',
+              name: 'Online2User'
+            },
+            roles: ['district_admin', 'mm-online2']
+          },
+        ];
+        const settings = {
+          app_url: utils.getOrigin(),
+          token_login: {
+            translation_key: 'token_login_sms',
+            enabled: true,
+          },
+        };
+        await utils.updateSettings(settings, true);
+        await utils.addTranslations('en', { token_login_sms: 'Instructions sms' });
+        const response = await utils.request({ path: '/api/v1/users', method: 'POST', body: users });
+        response.forEach((responseUser, index) => {
+          chai.expect(responseUser).to.shallowDeepEqual({
+            user: { id: getUserId(users[index].username) },
+            'user-settings': { id: getUserId(users[index].username) },
+            contact: { id: users[index].contact._id },
+          });
+          chai.expect(responseUser.token_login).to.have.keys('expiration_date');
+        });
+
+        for (const user of users) {
+          let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
+          const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
+          expectCorrectUser(userInDb, extraProps);
+          expectCorrectUserSettings(userSettings, { ...extraProps, contact_id: user.contact._id });
+          chai.expect(userInDb.token_login).to.be.ok;
+          chai.expect(userInDb.token_login).to.have.keys(['active', 'token', 'expiration_date' ]);
+          chai.expect(userInDb.token_login).to.include({ active: true });
+          chai.expect(userSettings.token_login).to.be.ok;
+          chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date' ]);
+
+          const tokenUrl = `${utils.getOrigin()}/medic/login/token/${userInDb.token_login.token}`;
+          const loginTokenDoc = await utils.getDoc(getLoginTokenDocId(userInDb.token_login.token));
+          chai.expect(loginTokenDoc).to.include({
+            type: 'token_login',
+            user: getUserId(user.username),
+          });
+          chai.expect(loginTokenDoc.tasks).to.be.ok;
+          chai.expect(loginTokenDoc.tasks.length).to.equal(2);
+          chai.expect(loginTokenDoc.tasks).to.shallowDeepEqual([
+            {
+              messages: [{ to: user.phone, message: 'Instructions sms' }],
+            },
+            {
+              messages: [{ to: user.phone, message: tokenUrl }],
+            },
+          ]);
+
+          await expectSendableSms(loginTokenDoc, user.phone);
+          await expectPasswordLoginToFail(user);
+          await expectTokenLoginToSucceed(tokenUrl);
+
+          const updates = {
+            roles: ['new_role'],
+            phone: '+40744898989',
+          };
+          const updateResponse = await utils.request({
+            path: `/api/v1/users/${user.username}`,
+            body: updates,
+            method: 'POST',
+          });
+          chai.expect(updateResponse).to.shallowDeepEqual({
+            user: { id: getUserId(user.username) },
+            'user-settings': { id: getUserId(user.username) },
+          });
+
+          [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
+          expectCorrectUser(userInDb, { ...extraProps, roles: ['new_role'] });
+          expectCorrectUserSettings(userSettings, {
+            ...extraProps,
+            contact_id: user.contact._id,
+            roles: ['new_role'],
+            phone: '+40744898989',
+          });
+
+          chai.expect(userInDb.token_login).to.be.ok;
+          chai.expect(userInDb.token_login).to.have.keys([ 'active', 'token', 'expiration_date', 'login_date' ]);
+          chai.expect(userInDb.token_login.active).to.equal(false);
+
+          chai.expect(userSettings.token_login).to.be.ok;
+          chai.expect(userSettings.token_login).to.have.keys(['active', 'expiration_date', 'login_date' ]);
+          chai.expect(userSettings.token_login.active).to.equal(false);
+          await expectTokenLoginToFail(tokenUrl);
+        }
       });
 
       it('should throw an error when phone is missing when creating a user with token_login', () => {

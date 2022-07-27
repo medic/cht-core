@@ -4,10 +4,12 @@ const people  = require('../controllers/people');
 const places = require('../controllers/places');
 const db = require('../db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
+const couchSettings = require('@medic/settings');
 const getRoles = require('./types-and-roles');
 const auth = require('../auth');
 const tokenLogin = require('./token-login');
 const moment = require('moment');
+const bulkUploadLog = require('../services/bulk-upload-log');
 
 const USER_PREFIX = 'org.couchdb.user:';
 const DOC_IDS_WARN_LIMIT = 10000;
@@ -17,6 +19,23 @@ const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
 const MAX_CONFLICT_RETRY = 3;
+
+const BULK_UPLOAD_STATUSES = {
+  IMPORTED: 'imported',
+  SKIPPED: 'skipped',
+  ERROR: 'error',
+};
+const BULK_UPLOAD_PROGRESS_STATUSES = {
+  PARSING: 'parsing',
+  PARSED: 'parsed',
+  ERROR: 'error',
+  SAVING: 'saving',
+  FINISHED: 'finished',
+};
+const BULK_UPLOAD_RESERVED_COLS = {
+  IMPORT_STATUS: 'import.status:excluded',
+  IMPORT_MESSAGE: 'import.message:excluded',
+};
 
 const RESTRICTED_USER_EDITABLE_FIELDS = [
   'password',
@@ -58,9 +77,18 @@ const illegalDataModificationAttempts = data =>
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
  */
-const error400 = (msg, key, params) => ({
-  code: 400, message: { message: msg, translationKey: key, translationParams: params }
-});
+const error400 = (msg, key, params) => {
+  const error = new Error(msg);
+  error.code = 400;
+
+  if (typeof key === 'string') {
+    return Object.assign(error, {
+      message: { message: msg, translationKey: key, translationParams: params },
+    });
+  }
+
+  return Object.assign(error, { details: key });
+};
 
 const getType = user => {
   if (user.roles && user.roles.length) {
@@ -103,10 +131,10 @@ const validateContact = (id, placeID) => {
   return db.medic.get(id)
     .then(doc => {
       if (!people.isAPerson(doc)) {
-        return Promise.reject(error400('Wrong type, contact is not a person.','contact.type.wrong'));
+        return Promise.reject(error400('Wrong type, contact is not a person.', 'contact.type.wrong'));
       }
       if (!hasParent(doc, placeID)) {
-        return Promise.reject(error400('Contact is not within place.','configuration.user.place.contact'));
+        return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
       }
       return doc;
     });
@@ -211,7 +239,7 @@ const createPlace = data => {
   });
 };
 
-const storeUpdatedPlace = (data, retry = 0) => {
+const storeUpdatedPlace = (data, preservePrimaryContact, retry = 0) => {
   if (!data.place) {
     return;
   }
@@ -222,14 +250,16 @@ const storeUpdatedPlace = (data, retry = 0) => {
   return db.medic
     .get(data.place._id)
     .then(place => {
+      if (preservePrimaryContact) {
+        return;
+      }
       place.contact = data.place.contact;
       place.parent = data.place.parent;
-
       return db.medic.put(place);
     })
     .catch(err => {
       if (err.status === 409 && retry < MAX_CONFLICT_RETRY) {
-        return storeUpdatedPlace(data, retry + 1);
+        return storeUpdatedPlace(data, preservePrimaryContact, retry + 1);
       }
       throw err;
     });
@@ -258,7 +288,7 @@ const setContactParent = data => {
     return places.getPlace(data.contact.parent)
       .then(place => {
         if (!hasParent(place, data.place)) {
-          return Promise.reject(error400('Contact is not within place.','configuration.user.place.contact'));
+          return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
         }
         // save result to contact object
         data.contact.parent = lineage.minifyLineage(place);
@@ -457,6 +487,205 @@ const getUpdatedSettingsDoc = (username, data) => {
   });
 };
 
+const isDbAdmin = user => {
+  return couchSettings
+    .getCouchConfig('admins')
+    .then(admins => admins && !!admins[user.name]);
+};
+
+const saveUserUpdates = async (user) => {
+  const savedDoc = await db.users.put(user);
+
+  if (user.password && await isDbAdmin(user)) {
+    await couchSettings.updateAdminPassword(user.name, user.password);
+  }
+
+  return {
+    id: savedDoc.id,
+    rev: savedDoc.rev
+  };
+};
+
+const saveUserSettingsUpdates = async (userSettings) => {
+  const savedDoc = await db.medic.put(userSettings);
+
+  return {
+    id: savedDoc.id,
+    rev: savedDoc.rev
+  };
+};
+
+const validateUserFacility = (data, user, userSettings) => {
+  if (data.place) {
+    userSettings.facility_id = user.facility_id;
+    return places.getPlace(user.facility_id);
+  }
+
+  if (_.isNull(data.place)) {
+    if (userSettings.roles && auth.isOffline(userSettings.roles)) {
+      return Promise.reject(error400(
+        'Place field is required for offline users',
+        'field is required',
+        {'field': 'Place'}
+      ));
+    }
+    user.facility_id = null;
+    userSettings.facility_id = null;
+  }
+};
+
+const validateUserContact = (data, user, userSettings) => {
+  if (data.contact) {
+    return validateContact(userSettings.contact_id, user.facility_id);
+  }
+
+  if (_.isNull(data.contact)) {
+    if (userSettings.roles && auth.isOffline(userSettings.roles)) {
+      return Promise.reject(error400(
+        'Contact field is required for offline users',
+        'field is required',
+        {'field': 'Contact'}
+      ));
+    }
+    userSettings.contact_id = null;
+  }
+};
+
+const createUserEntities = async (user, appUrl, preservePrimaryContact) => {
+  const response = {};
+  await validateNewUsername(user.username);
+  await createPlace(user);
+  await setContactParent(user);
+  await createContact(user, response);
+  await storeUpdatedPlace(user, preservePrimaryContact);
+  await createUser(user, response);
+  await createUserSettings(user, response);
+  await tokenLogin.manageTokenLogin(user, appUrl, response);
+  return response;
+};
+
+const assignCsvCellValue = (data, attribute, value) => {
+  attribute = (attribute || '').trim();
+  if (!attribute.length || attribute.toLowerCase().indexOf(':excluded') > 0) {
+    return;
+  }
+
+  if (typeof value !== 'string') {
+    data[attribute] = value;
+    return;
+  }
+
+  data[attribute] = value.replace(/^"|"$/g, '').trim();
+
+  if (['TRUE', 'FALSE'].includes(data[attribute])) {
+    // converts the "TRUE" or "FALSE" string to boolean
+    data[attribute] = eval(data[attribute].toLowerCase());
+  }
+};
+
+const parseCsvRow = (data, header, value, valueIdx) => {
+  const deepAttributes = header[valueIdx].split('.');
+  if (deepAttributes.length === 1) {
+    assignCsvCellValue(data, deepAttributes[0], value);
+    return;
+  }
+
+  let deepObject = data;
+  deepAttributes.forEach((attr, idx) => {
+    if (idx === deepAttributes.length - 1) {
+      return assignCsvCellValue(deepObject, attr, value);
+    }
+
+    if (!deepObject[attr]) {
+      assignCsvCellValue(deepObject, attr, {});
+    }
+    deepObject = deepObject[attr];
+  });
+
+  return data;
+};
+
+const parseCsv = async (csv, logId) => {
+  if (!csv || !csv.length) {
+    throw new Error('CSV is empty.');
+  }
+
+  let allRows = csv.split(/\r\n|\n/);
+  const header = allRows
+    .shift()
+    .split(',');
+  allRows = allRows.filter(row => row.length);
+
+  const progress = {
+    status: BULK_UPLOAD_PROGRESS_STATUSES.PARSING,
+    parsing: { total: allRows.length, failed: 0, successful: 0 }
+  };
+  const logData = [];
+  await bulkUploadLog.updateLog(logId, progress);
+
+  const users = [];
+  const ignoredUsers = {};
+  for (let rowIdx = 0; rowIdx < allRows.length; rowIdx++) {
+    let ignoreUser = false;
+    let ignoreMessage = '';
+    const user = {};
+    try {
+      allRows[rowIdx]
+        .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+        .forEach((value, idx) => {
+          const ignoreStatus = [BULK_UPLOAD_STATUSES.IMPORTED, BULK_UPLOAD_STATUSES.SKIPPED];
+          if (header[idx].toLowerCase() === BULK_UPLOAD_RESERVED_COLS.IMPORT_STATUS
+            && ignoreStatus.indexOf(value.toLowerCase()) > -1) {
+            ignoreUser = true;
+          }
+          if (header[idx].toLowerCase() === BULK_UPLOAD_RESERVED_COLS.IMPORT_MESSAGE) {
+            ignoreMessage = value;
+            return;
+          }
+          parseCsvRow(user, header, value, idx);
+        });
+      progress.parsing.successful++;
+      logData.push(createRecordBulkLog(user, BULK_UPLOAD_PROGRESS_STATUSES.PARSED));
+    } catch (error) {
+      progress.parsing.failed++;
+      logData.push(createRecordBulkLog(user, BULK_UPLOAD_PROGRESS_STATUSES.ERROR, error));
+    }
+
+    if (rowIdx % 10) {
+      await bulkUploadLog.updateLog(logId, progress, logData);
+    }
+
+    users.push(user);
+    if (ignoreUser) {
+      ignoredUsers[user.username] = { user, ignoreMessage };
+    }
+  }
+
+  progress.status = BULK_UPLOAD_PROGRESS_STATUSES.PARSED;
+  await bulkUploadLog.updateLog(logId, progress, logData);
+  return { users, ignoredUsers };
+};
+
+const createRecordBulkLog = (record, status, error, message) => {
+  if (error) {
+    message = typeof error.message === 'object' ? error.message.message : error.message;
+  }
+
+  if (!message) {
+    message = status + ' on ' + new Date().toISOString();
+  }
+
+  const meta = {
+    import: {
+      status,
+      message,
+    }
+  };
+  const recordBulkLog = Object.assign({}, record, meta);
+  delete recordBulkLog.password;
+  return recordBulkLog;
+};
+
 /*
  * Everything not exported directly is private.  Underscore prefix is only used
  * to export functions needed for testing.
@@ -464,11 +693,12 @@ const getUpdatedSettingsDoc = (username, data) => {
 module.exports = {
   deleteUser: username => deleteUser(createID(username)),
   getList: () => {
-    return Promise.all([
-      getAllUsers(),
-      getAllUserSettings(),
-      getFacilities()
-    ])
+    return Promise
+      .all([
+        getAllUsers(),
+        getAllUserSettings(),
+        getFacilities()
+      ])
       .then(([ users, settings, facilities ]) => {
         return mapUsers(users, settings, facilities);
       });
@@ -481,7 +711,7 @@ module.exports = {
    * @param {String} appUrl - request protocol://hostname
    * @api public
    */
-  createUser: (data, appUrl) => {
+  createUser: async (data, appUrl) => {
     const missing = missingFields(data);
     if (missing.length > 0) {
       return Promise.reject(error400(
@@ -499,16 +729,88 @@ module.exports = {
     if (passwordError) {
       return Promise.reject(passwordError);
     }
-    const response = {};
-    return validateNewUsername(data.username)
-      .then(() => createPlace(data))
-      .then(() => setContactParent(data))
-      .then(() => createContact(data, response))
-      .then(() => storeUpdatedPlace(data))
-      .then(() => createUser(data, response))
-      .then(() => createUserSettings(data, response))
-      .then(() => tokenLogin.manageTokenLogin(data, appUrl, response))
-      .then(() => response);
+
+    return await createUserEntities(data, appUrl);
+  },
+
+  /**
+   * Take the request data and create valid users, user-settings and contacts
+   * objects. Returns the response body in the callback.
+   * @param {Object|Object[]} users
+   * @param {string} users[].username
+   * @param {string=} users[].phone Not required if the password is provided.
+   * @param {string=} users[].password Not required if the phone number is provided.
+   * @param {string[]} users[].roles
+   * @param {(Object|string)=} users[].place Can either be a place object or an existing place id.
+   * @param {(Object|string)=} users[].contact Can either be a contact object or an existing place id.
+   * @param {string=} users[].type Deprecated. Used to infer user's roles
+   * @param {string} appUrl request protocol://hostname
+   * @param {boolean} preservePrimaryContact Default false. Prevent updating the place's primary contact.
+   */
+  async createUsers(users, appUrl, ignoredUsers, logId, preservePrimaryContact) {
+    if (!Array.isArray(users)) {
+      return module.exports.createUser(users, appUrl);
+    }
+
+    const progress = {
+      status: BULK_UPLOAD_PROGRESS_STATUSES.SAVING,
+      saving: { total: users.length, failed: 0, successful: 0, ignored: 0 }
+    };
+    const logData = [];
+    await bulkUploadLog.updateLog(logId, progress);
+
+    const responses = [];
+    for (let userIdx = 0; userIdx < users.length; userIdx++) {
+      const user = users[userIdx];
+      let response;
+
+      if (ignoredUsers && ignoredUsers[user.username]) {
+        progress.saving.ignored++;
+        const log = createRecordBulkLog(
+          user,
+          BULK_UPLOAD_STATUSES.SKIPPED,
+          null,
+          ignoredUsers[user.username].ignoreMessage
+        );
+        logData.push(log);
+        continue;
+      }
+
+      try {
+        const missing = missingFields(user);
+        if (missing.length > 0) {
+          throw new Error('Missing required fields: ' + missing.join(', '));
+        }
+
+        const tokenLoginError = tokenLogin.validateTokenLogin(user, true);
+        if (tokenLoginError) {
+          throw new Error(tokenLoginError.msg);
+        }
+
+        const passwordError = validatePassword(user.password);
+        if (passwordError) {
+          throw passwordError;
+        }
+
+        response = await createUserEntities(user, appUrl, preservePrimaryContact);
+        progress.saving.successful++;
+        logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
+      } catch(error) {
+        response = { error: error.message };
+        progress.saving.failed++;
+        logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.ERROR, error));
+      }
+
+      if (userIdx % 10) {
+        await bulkUploadLog.updateLog(logId, progress, logData);
+      }
+
+      responses.push(response);
+    }
+
+    progress.status = BULK_UPLOAD_PROGRESS_STATUSES.FINISHED;
+    await bulkUploadLog.updateLog(logId, progress, logData);
+    return responses;
   },
 
   /*
@@ -545,7 +847,7 @@ module.exports = {
    *                                     security-related things?
    * @param      {String}    appUrl      request protocol://hostname
    */
-  updateUser: (username, data, fullAccess, appUrl) => {
+  updateUser: async (username, data, fullAccess, appUrl) => {
     // Reject update attempts that try to modify data they're not allowed to
     if (!fullAccess) {
       const illegalAttempts = illegalDataModificationAttempts(data);
@@ -577,72 +879,32 @@ module.exports = {
       }
     }
 
-    return Promise
-      .all([
-        getUpdatedUserDoc(username, data),
-        getUpdatedSettingsDoc(username, data),
-      ])
-      .then(([ user, settings ]) => {
-        const tokenLoginError = tokenLogin.validateTokenLogin(data, false, user, settings);
-        if (tokenLoginError) {
-          return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
-        }
+    const [user, userSettings] = await Promise.all([
+      getUpdatedUserDoc(username, data),
+      getUpdatedSettingsDoc(username, data),
+    ]);
 
-        const response = {};
+    const tokenLoginError = tokenLogin.validateTokenLogin(data, false, user, userSettings);
+    if (tokenLoginError) {
+      return Promise.reject(error400(tokenLoginError.msg, tokenLoginError.key));
+    }
 
-        return Promise.resolve()
-          .then(() => {
-            if (data.place) {
-              settings.facility_id = user.facility_id;
-              return places.getPlace(user.facility_id);
-            }
+    await validateUserFacility(data, user, userSettings);
+    await validateUserContact(data, user, userSettings);
+    const response = {
+      user: await saveUserUpdates(user),
+      'user-settings': await saveUserSettingsUpdates(userSettings),
+    };
 
-            if (_.isNull(data.place)) {
-              if (settings.roles && auth.isOffline(settings.roles)) {
-                return Promise.reject(error400(
-                  'Place field is required for offline users',
-                  'field is required',
-                  {'field': 'Place'}
-                ));
-              }
-              user.facility_id = null;
-              settings.facility_id = null;
-            }
-          })
-          .then(() => {
-            if (data.contact) {
-              return validateContact(settings.contact_id, user.facility_id);
-            }
-
-            if (_.isNull(data.contact)) {
-              if (settings.roles && auth.isOffline(settings.roles)) {
-                return Promise.reject(error400(
-                  'Contact field is required for offline users',
-                  'field is required',
-                  {'field': 'Contact'}
-                ));
-              }
-              settings.contact_id = null;
-            }
-          })
-          .then(() => db.users.put(user))
-          .then(resp => {
-            response.user = {
-              id: resp.id,
-              rev: resp.rev
-            };
-          })
-          .then(() => db.medic.put(settings))
-          .then(resp => {
-            response['user-settings'] = {
-              id: resp.id,
-              rev: resp.rev
-            };
-          })
-          .then(() => tokenLogin.manageTokenLogin(data, appUrl, response))
-          .then(() => response);
-      });
+    return tokenLogin.manageTokenLogin(data, appUrl, response);
   },
+
+  /**
+   * Parses a CSV of users to an array of objects.
+   *
+   * @param {string} csv CSV of users.
+   */
+  parseCsv,
 
   DOC_IDS_WARN_LIMIT,
 };

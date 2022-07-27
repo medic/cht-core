@@ -8,6 +8,7 @@ const oneYear = 31536000000;
 
 describe('cookie service', () => {
   beforeEach(() => {
+    sinon.stub(process, 'env').value({});
     service = rewire('../../../src/services/cookie');
     res = {
       cookie: sinon.stub(),
@@ -207,6 +208,33 @@ describe('cookie service', () => {
           httpOnly: true,
           maxAge: 454545000,
         },
+      ]);
+    });
+  });
+
+  describe('setForceLogin', () => {
+    it('should set cookie with correct value and options when not in production environment', () => {
+      service.setForceLogin(res);
+
+      chai.expect(res.cookie.callCount).to.equal(1);
+      chai.expect(res.cookie.args[0]).to.deep.equal([
+        'login',
+        'force',
+        { sameSite: 'lax', secure: false },
+      ]);
+    });
+
+    it('should set cookie with correct value and options when in production environment', () => {
+      sinon.stub(process, 'env').value({ NODE_ENV: 'production' });
+      service = rewire('../../../src/services/cookie'); // Rewire to pick stub in process.env.
+
+      service.setForceLogin(res);
+
+      chai.expect(res.cookie.callCount).to.equal(1);
+      chai.expect(res.cookie.args[0]).to.deep.equal([
+        'login',
+        'force',
+        { sameSite: 'lax', secure: true },
       ]);
     });
   });
