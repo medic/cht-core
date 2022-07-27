@@ -102,7 +102,7 @@ const copyBuildInfoToStagingDoc = () => {
 };
 
 const saveDockerComposeFiles = () => {
-  const servicesTemplatePath = path.resolve(__dirname, 'cht-services.yml.template');
+  const servicesTemplatePath = path.resolve(__dirname, 'cht-core.yml.template');
   const couchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb.yml.template');
 
   const servicesTemplate = fs.readFileSync(servicesTemplatePath, 'utf-8');
@@ -127,7 +127,7 @@ const saveDockerComposeFiles = () => {
   const dockerComposeFolder = path.resolve(stagingAttachmentsPath, 'docker-compose');
   mkdirSync(dockerComposeFolder);
 
-  const servicesDockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-services.yml');
+  const servicesDockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-core.yml');
   fs.writeFileSync(servicesDockerComposeFilePath, compiledServicesDockerCompose);
 
   const couchDbDockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-couchdb.yml');

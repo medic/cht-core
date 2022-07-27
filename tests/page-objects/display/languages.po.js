@@ -1,6 +1,5 @@
 const helper = require('../../helper');
 const utils = require('../../utils');
-const { element } = require('protractor');
 
 const submitButton = element(by.css('div.form-actions button.btn.btn-primary.ng-scope'));
 const addLanguageButton = element(by.css('i.fa.fa-plus'));
