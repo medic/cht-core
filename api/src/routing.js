@@ -428,6 +428,7 @@ app.postJsonOrCsv('/api/v2/users', users.v2.create);
 app.postJson('/api/v1/users/:username', users.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
+app.postJson('/api/v1/user-replace', users.replace);
 
 app.postJson('/api/v1/places', function(req, res) {
   auth

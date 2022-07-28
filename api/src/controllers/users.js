@@ -3,6 +3,7 @@ const auth = require('../auth');
 const logger = require('../logger');
 const serverUtils = require('../server-utils');
 const usersService = require('../services/users');
+const usersReplaceService = require('../services/users-replace');
 const authorization = require('../services/authorization');
 const purgedDocs = require('../services/purged-docs');
 const bulkUploadLog = require('../services/bulk-upload-log');
@@ -224,6 +225,15 @@ module.exports = {
         limit: usersService.DOC_IDS_WARN_LIMIT,
       }))
       .catch(err => serverUtils.error(err, req, res));
+  },
+  replace: (req, res) => {
+    if (_.isEmpty(req.body)) {
+      return serverUtils.emptyJSONBodyError(req, res);
+    }
+
+    return usersReplaceService.replaceUser(req.body.reportId, getAppUrl(req))
+      .then(user => res.json(user))
+      .catch(error => serverUtils.error(error, req, res));
   },
 
   v2: {
