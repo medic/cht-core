@@ -46,12 +46,14 @@ async function reparentReports(replaceUserReportId, newContact) {
   await db.medic.bulkDocs(reparentedForms);
 }
 
-function getReportsToReparent(userId, timestamp) {
+function getReportsToReparent(contactId, timestamp) {
   const query = {
+    'parent._id': contactId,
     type: 'data_record',
     reported_date: { $gte: timestamp },
+    include_docs: true,
   };
-  return db.medic.allDocs(); // TODO
+  return db.medic.allDocs(query); // TODO
 }
 
 module.exports = {
