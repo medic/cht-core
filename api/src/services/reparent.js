@@ -19,7 +19,8 @@ async function replaceUser(replaceUserReportId, appUrl) {
 
   const oldUser = await db.users.get(`org.couchdb.user:${oldContact.username}`);
   const user = {
-    username: '', // TODO
+    // TODO: either generate a username from the contact name or choose a username within the form
+    username: `${oldContact.username}-replacement`,
     contact: newContact._id,
     phone: newContact.phone,
     token_login: true,
