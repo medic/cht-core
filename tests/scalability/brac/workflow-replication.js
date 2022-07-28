@@ -7,9 +7,7 @@ const dataDirPath = path.resolve(dataDir || __dirname);
 const users = require(path.resolve(dataDirPath, 'users.json'));
 const config = require('./config');
 
-const factoryPath = path.join(__dirname, '../../factories/brac');
-const personFactory = require(path.join(factoryPath, 'contacts/brac-person'));
-const surveyFactory = require(path.join(factoryPath, 'reports/brac-survey'));
+const dataFactory = require('./data-factory');
 
 const user = users[(threadId || 0) % users.length];
 let clinics;
@@ -51,26 +49,6 @@ const getRandomParent = () => {
   return clinics[idx];
 };
 
-const generatePerson = (parent) => {
-  const lineage = { _id: parent._id, parent: parent.parent };
-  const person = personFactory.generateBracPerson(lineage, 'member_eligible_woman');
-  return person;
-};
-
-const generateReports = (person, parent) => {
-  const reports = [];
-  if (personFactory.shouldGeneratePregnancySurvey(person)) {
-    reports.push(surveyFactory.generateBracSurvey('pregnancy', parent, person));
-  }
-
-  if (personFactory.shouldGenerateAssessmentSurvey(person)) {
-    reports.push(surveyFactory.generateBracSurvey('assesment', parent, person));
-    reports.push(surveyFactory.generateBracSurvey('assesment_follow_up', parent, person));
-  }
-
-  return reports;
-};
-
 const getClinics = async () => {
   const contacts = await localDb.query(
     'medic-client/contacts_by_parent',
@@ -83,8 +61,8 @@ const generateData = async () => {
   const docs = [];
   for (let i = 0; i < config.workflowContactsNbr.person; i++) {
     const parent = getRandomParent();
-    const person = generatePerson(parent);
-    const reports = generateReports(person, parent);
+    const [person] = dataFactory.generatePerson(parent, 'member_eligible_woman');
+    const reports = dataFactory.generateReports(person, parent);
     docs.push(person, ...reports);
   }
 

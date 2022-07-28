@@ -5,7 +5,7 @@ if [[ ! $1 = 'local' || -z $1 ]]
 then
   RUN_LOCAL=false
 else
-  RUN_LOCAL=false
+  RUN_LOCAL=true
 fi
 
 if [ $RUN_LOCAL = false ]

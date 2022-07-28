@@ -5,22 +5,14 @@ const [,, dataDir] = process.argv;
 
 const config = require('./config');
 const factoryPath = path.join(__dirname, '../../factories/brac');
-const placeFactory = require(path.join(factoryPath, 'contacts/brac-place'));
-const personFactory = require(path.join(factoryPath, 'contacts/brac-person'));
-const surveyFactory = require(path.join(factoryPath, 'reports/brac-survey'));
 const userFactory = require(path.join(factoryPath, 'users/brac-user'));
+const dataFactory = require('./data-factory');
 
 const dataDirPath = dataDir || __dirname;
 const jsonDirPath = path.join(dataDirPath, 'json_docs');
 const FILE_EXTENSION = '.doc.json';
 
 const users = [];
-
-const personSubtypeByParentType = {
-  'district_hospital': 'manager',
-  'health_center': 'chw',
-  'clinic': 'member_eligible_woman'
-};
 
 const userRolesByFacilityType = {
   'district_hospital': ['supervisor'],
@@ -31,7 +23,7 @@ const userRolesByFacilityType = {
 const expectedNbr = config.contactsNbr.district_hospital *
                     config.contactsNbr.health_center *
                     config.contactsNbr.clinic *
-                    config.contactsNbr.person * 2;
+                    config.contactsNbr.person * 1.5;
 let savedDocs = 0;
 
 const saveJson = (doc) => {
@@ -64,36 +56,22 @@ const createJsonDir = async () => {
 };
 
 const generatePlace = async (type, parent) => {
-  const lineage = parent && { _id: parent._id, parent: parent.parent };
-  const place = placeFactory.generateBracPlace('', type, lineage);
+  const place = dataFactory.generatePlace(type, parent);
   await saveJson(place);
   return place;
 };
 
 const generatePerson = async (parent, subtype, primary = false) => {
-  const lineage = { _id: parent._id, parent: parent.parent };
-  subtype = subtype || personSubtypeByParentType[parent.type];
-  const person = personFactory.generateBracPerson(lineage, subtype);
-  await saveJson(person);
-  if (primary) {
-    parent.contact = { _id: person._id, parent: lineage };
-    await saveJson(parent);
-  }
-  return person;
+  const [personDoc, parentDoc] = dataFactory.generatePerson(parent, subtype, primary);
+  await saveJson(personDoc);
+  parentDoc && await saveJson(parentDoc);
+  return personDoc;
 };
 
 const generateReports = async (person, parent) => {
-  if (personFactory.shouldGeneratePregnancySurvey(person)) {
-    const pregnancySurvey = surveyFactory.generateBracSurvey('pregnancy', parent, person);
-    await saveJson(pregnancySurvey);
-  }
-
-  if (personFactory.shouldGenerateAssessmentSurvey(person)) {
-    const assesmentSurvey = surveyFactory.generateBracSurvey('assesment', parent, person);
-    await saveJson(assesmentSurvey);
-
-    const assesmentFollowUpSurvey = surveyFactory.generateBracSurvey('assesment_follow_up', parent, person);
-    await saveJson(assesmentFollowUpSurvey);
+  const reports = dataFactory.generateReports(person, parent);
+  for (const report of reports) {
+    await saveJson(report);
   }
 };
 
@@ -117,9 +95,7 @@ const generateHierarchy = async () => {
       const clinic = await generatePlace('clinic', healthCenter);
       for (let k = 0; k < config.contactsNbr.person; k++) {
         const person = await generatePerson(clinic, null, !k);
-        if (personFactory.shouldGenerateSurvey(person)) {
-          await generateReports(person, clinic);
-        }
+        await generateReports(person, clinic);
       }
     }
   }
