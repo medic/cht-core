@@ -1,6 +1,7 @@
 name: BRAC Scalability Workflow
 # Only trigger, when the build workflow succeeded
 on:
+  push:
   workflow_run:
     workflows: [ Build cht-core and test against node versions ]
     types: [completed]
