@@ -62,9 +62,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/person/ephemeral_dob/dob_method:label">
           </text>
-          <text id="/data/person/external_id:label">
-            <value>External ID</value>
-          </text>
           <text id="/data/person/name:label">
             <value>Full name</value>
           </text>
@@ -112,6 +109,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/person/role_other:label">
             <value>Specify other</value>
+          </text>
+          <text id="/data/person/secret_code:label">
+            <value>Secret Code</value>
           </text>
           <text id="/data/person/sex/female:label">
             <value>Female</value>
@@ -196,9 +196,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
-          <text id="/data/person/external_id:label">
-            <value>Identifiant externe</value>
-          </text>
           <text id="/data/person/name:label">
             <value>Nom</value>
           </text>
@@ -246,6 +243,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/person/role_other:label">
             <value>Autre rôle</value>
+          </text>
+          <text id="/data/person/secret_code:label">
+            <value>-</value>
           </text>
           <text id="/data/person/sex/female:label">
             <value>Femme</value>
@@ -330,9 +330,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
-          <text id="/data/person/external_id:label">
-            <value>बाहरी ID</value>
-          </text>
           <text id="/data/person/name:label">
             <value>नाम</value>
           </text>
@@ -380,6 +377,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/person/role_other:label">
             <value>अन्य का उल्‍लेख करें</value>
+          </text>
+          <text id="/data/person/secret_code:label">
+            <value>-</value>
           </text>
           <text id="/data/person/sex/female:label">
             <value>स्त्री</value>
@@ -464,9 +464,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
-          <text id="/data/person/external_id:label">
-            <value>Eksternal ID</value>
-          </text>
           <text id="/data/person/name:label">
             <value>Nama</value>
           </text>
@@ -514,6 +511,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/person/role_other:label">
             <value>Tentukan lainnya</value>
+          </text>
+          <text id="/data/person/secret_code:label">
+            <value>-</value>
           </text>
           <text id="/data/person/sex/female:label">
             <value>Wanita</value>
@@ -598,9 +598,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
-          <text id="/data/person/external_id:label">
-            <value>बाहिरी ID</value>
-          </text>
           <text id="/data/person/name:label">
             <value>नाम</value>
           </text>
@@ -648,6 +645,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/person/role_other:label">
             <value>अन्य उल्लेख गर्नुहोस्</value>
+          </text>
+          <text id="/data/person/secret_code:label">
+            <value>-</value>
           </text>
           <text id="/data/person/sex/female:label">
             <value>महिला</value>
@@ -732,9 +732,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob:label">
             <value>-</value>
           </text>
-          <text id="/data/person/external_id:label">
-            <value>ID ya nje</value>
-          </text>
           <text id="/data/person/name:label">
             <value>Majina</value>
           </text>
@@ -783,6 +780,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/role_other:label">
             <value>Jukumu lingine lelote</value>
           </text>
+          <text id="/data/person/secret_code:label">
+            <value>-</value>
+          </text>
           <text id="/data/person/sex/female:label">
             <value>Kike</value>
           </text>
@@ -807,7 +807,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2022-08-24 11-45">
+        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2022-07-28_04-42">
           <inputs>
             <meta>
               <location>
@@ -846,7 +846,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <phone_alternate/>
             <role/>
             <role_other/>
-            <external_id/>
+            <secret_code/>
             <notes/>
             <meta tag="hidden">
               <created_by/>
@@ -878,16 +878,16 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/parent" type="string"/>
       <bind nodeset="/data/person/type" type="string"/>
       <bind nodeset="/data/person/name" type="string" required="true()"/>
-      <bind nodeset="/data/person/short_name" type="string" jr:constraintMsg="jr:itext('/data/person/short_name:jr:constraintMsg')" constraint="string-length(.) &lt;= 10" required="false()"/>
+      <bind nodeset="/data/person/short_name" type="string" jr:constraintMsg="jr:itext('/data/person/short_name:jr:constraintMsg')" required="false()" constraint="string-length(.) &lt;= 10"/>
       <bind nodeset="/data/person/date_of_birth" type="string" calculate="../ephemeral_dob/dob_iso" required="true()"/>
       <bind nodeset="/data/person/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
-      <bind nodeset="/data/person/ephemeral_dob/dob_calendar" type="date" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg')" relevant="not(selected(../dob_method,'approx'))" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" required="true()"/>
+      <bind nodeset="/data/person/ephemeral_dob/dob_calendar" type="date" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg')" relevant="not(selected(../dob_method,'approx'))" required="true()" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))"/>
       <bind nodeset="/data/person/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
-      <bind nodeset="/data/person/ephemeral_dob/age_years" type="int" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_years:jr:constraintMsg')" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 130" required="true()"/>
+      <bind nodeset="/data/person/ephemeral_dob/age_years" type="int" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_years:jr:constraintMsg')" relevant="selected(../dob_method,'approx')" required="true()" constraint=". &gt;= 0 and . &lt;= 130"/>
       <bind nodeset="/data/person/ephemeral_dob/age_months" type="int" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_months:jr:constraintMsg')" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 11"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_method" type="select"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/person/ephemeral_dob/age_years , 0- /data/person/ephemeral_dob/age_months )"/>
-      <bind nodeset="/data/person/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected(  /data/person/ephemeral_dob/dob_method ,'approx')), 
+      <bind nodeset="/data/person/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected(  /data/person/ephemeral_dob/dob_method ,'approx')),
  /data/person/ephemeral_dob/dob_calendar ,
  /data/person/ephemeral_dob/dob_approx )"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
@@ -896,8 +896,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/phone" type="tel" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" constraint="true()"/>
       <bind nodeset="/data/person/phone_alternate" type="tel" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')" constraint="true()"/>
       <bind nodeset="/data/person/role" type="select1"/>
-      <bind nodeset="/data/person/role_other" type="string" relevant="selected(  /data/person/role ,'other')" required="true()"/>
-      <bind nodeset="/data/person/external_id" type="string"/>
+      <bind nodeset="/data/person/role_other" type="string" required="true()" relevant="selected(  /data/person/role ,'other')"/>
+      <bind nodeset="/data/person/secret_code" type="string" required="true()"/>
       <bind nodeset="/data/person/notes" type="string"/>
       <bind nodeset="/data/person/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/person/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
@@ -1022,8 +1022,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <input ref="/data/person/role_other">
         <label ref="jr:itext('/data/person/role_other:label')"/>
       </input>
-      <input ref="/data/person/external_id">
-        <label ref="jr:itext('/data/person/external_id:label')"/>
+      <input ref="/data/person/secret_code">
+        <label ref="jr:itext('/data/person/secret_code:label')"/>
       </input>
       <input appearance="multiline" ref="/data/person/notes">
         <label ref="jr:itext('/data/person/notes:label')"/>
