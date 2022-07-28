@@ -8,12 +8,12 @@ async function replaceUser(replaceUserReportId, appUrl) {
   const newContact = await people.getOrCreatePerson({
     name: replaceUserReport.fields.name,
     sex: replaceUserReport.fields.sex,
-
     phone: replaceUserReport.fields.phone ? replaceUserReport.fields.phone : oldContact.phone,
     role: oldContact.role,
     type: oldContact.type,
     contact_type: oldContact.contact_type,
     parent: oldContact.parent,
+    // TODO: there might be other properties here depending on the deployment's configuration
   });
   await reparentReports(replaceUserReportId, newContact);
 
