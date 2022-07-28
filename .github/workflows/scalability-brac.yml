@@ -1,9 +1,9 @@
-name: Scalability Workflow
+name: Brac Scalability Workflow
 # This workflow is triggered on pushes to the repository.
 # Only trigger, when the build workflow succeeded
 on:
   workflow_run:
-    workflows: ["Build cht-core and test against node versions"]
+    workflows: [ Build cht-core and test against node versions ]
     types:
       - completed
 
