@@ -51,9 +51,10 @@ staged=$(curl $INSTANCE_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 echo $(curl $INSTANCE_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
 until [ "$staged" == "true" ]
 do
-staged=$(curl $INSTANCE_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
-sleep 60
-echo "waiting for staging to complete"
+  echo $(curl $INSTANCE_URL/medic/horti-upgrade -s -k | jq)
+  staged=$(curl $INSTANCE_URL/medic/horti-upgrade -s -k | jq .staging_complete -r)
+  sleep 60
+  echo "waiting for staging to complete"
 done
 curl $INSTANCE_URL/api/v1/upgrade/complete -k -X POST
 

@@ -1,6 +1,11 @@
 name: Scalability Workflow
 # This workflow is triggered on pushes to the repository.
-on: [push]
+# Only trigger, when the build workflow succeeded
+on:
+  workflow_run:
+    workflows: ["Build cht-core and test against node versions"]
+    types:
+      - completed
 
 jobs:
   build:
