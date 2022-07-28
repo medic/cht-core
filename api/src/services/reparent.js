@@ -35,9 +35,9 @@ async function reparentReports(replaceUserReportId, newContact) {
     replaceUserReport.contact._id,
     replaceUserReport.reported_date,
   );
-  const reparentedForms = reportsSubmittedAfterReplace.map(form => {
-    return Object.assign({}, form, {
-      parent: {
+  const reparentedForms = reportsSubmittedAfterReplace.map(report => {
+    return Object.assign({}, report, {
+      contact: {
         _id: newContact._id,
         parent: newContact.parent,
       },
@@ -47,13 +47,14 @@ async function reparentReports(replaceUserReportId, newContact) {
 }
 
 function getReportsToReparent(contactId, timestamp) {
-  const query = {
-    'parent._id': contactId,
-    type: 'data_record',
-    reported_date: { $gte: timestamp },
-    include_docs: true,
-  };
-  return db.medic.allDocs(query); // TODO
+  // TODO: this query is un-optimized, we should probably use an index or a couchdb view for this query
+  return db.medic.find({
+    selector: {
+      'contact._id': contactId,
+      type: 'data_record',
+      reported_date: { $gte: timestamp },
+    },
+  });
 }
 
 module.exports = {
