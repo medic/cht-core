@@ -47,15 +47,14 @@ async function reparentReports(replaceUserReportId, newContact) {
   await db.medic.bulkDocs(reparentedForms);
 }
 
-function getReportsToReparent(contactId, timestamp) {
-  // TODO: this query is un-optimized, we should probably use an index or a couchdb view for this query
-  return db.medic.find({
-    selector: {
-      'contact._id': contactId,
-      type: 'data_record',
-      reported_date: { $gte: timestamp },
-    },
+async function getReportsToReparent(contactId, timestamp) {
+  const result = await db.medic.query('medic-client/reports_by_freetext', {
+    key: [`contact:${contactId}`],
+    include_docs: true,
   });
+  return result.rows
+    .filter(row => row.doc.reported_date >= timestamp)
+    .map(row => row.doc);
 }
 
 module.exports = {
