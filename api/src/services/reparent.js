@@ -36,15 +36,13 @@ async function reparentReports(replaceUserReportId, newContact) {
     replaceUserReport.contact._id,
     replaceUserReport.reported_date,
   );
-  const reparentedForms = reportsSubmittedAfterReplace.map(report => {
-    return Object.assign({}, report, {
-      contact: {
-        _id: newContact._id,
-        parent: newContact.parent,
-      },
-    });
+  const reparentedReports = reportsSubmittedAfterReplace.map(report => {
+    const reparentedReport = Object.assign({}, report);
+    reparentedReport.contact._id = newContact._id;
+    reparentedReport.contact.parent = newContact.parent;
+    return reparentedReport;
   });
-  await db.medic.bulkDocs(reparentedForms);
+  await db.medic.bulkDocs(reparentedReports);
 }
 
 async function getReportsToReparent(contactId, timestamp) {
