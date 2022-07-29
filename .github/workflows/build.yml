@@ -220,6 +220,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
           if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - uses: actions/checkout@v2
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
