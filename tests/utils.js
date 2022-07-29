@@ -42,7 +42,7 @@ let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
-const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
+const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const getTemplateComposeFilePath = file => path.resolve(__dirname, '..', 'scripts', 'build', `${file}.yml.template`);
 const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml`);
 

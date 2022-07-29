@@ -103,7 +103,7 @@ const copyBuildInfoToStagingDoc = () => {
 
 const saveDockerComposeFiles = () => {
   const servicesTemplatePath = path.resolve(__dirname, 'cht-core.yml.template');
-  const couchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb.yml.template');
+  const couchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb-single-node.yml.template');
 
   const servicesTemplate = fs.readFileSync(servicesTemplatePath, 'utf-8');
   const couchDbTemplate = fs.readFileSync(couchDbTemplatePath, 'utf-8');
@@ -112,9 +112,7 @@ const saveDockerComposeFiles = () => {
     repo: versions.getRepo(),
     tag: versions.getImageTag(undefined, undefined, true),
     network: 'cht-net',
-    couch1_container_name: 'cht-couchdb.1',
-    couch2_container_name: 'cht-couchdb.2',
-    couch3_container_name: 'cht-couchdb.3',
+    couch_container_name: 'cht-couchdb',
     haproxy_container_name: 'cht-haproxy',
     api_container_name: 'cht-api',
     sentinel_container_name: 'cht-sentinel',
