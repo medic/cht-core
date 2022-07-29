@@ -208,7 +208,7 @@ jobs:
 
   upgrade:
     needs: [publish]
-    name: Publish branch build
+    name: Upgrade from latest release
     runs-on: ubuntu-18.04
     if: ${{ github.event_name != 'pull_request' }}
 
