@@ -44,7 +44,7 @@ const baseConfig = {
   ],
   // Patterns to exclude.
   exclude: [
-    // 'path/to/excluded/files'
+    './tests/e2e/upgrade/*.wdio-spec.js',
   ],
   //
   // ============
