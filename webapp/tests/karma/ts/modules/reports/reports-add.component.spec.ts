@@ -157,7 +157,7 @@ describe('Reports Add Component', () => {
       expect(setEnketoError.args[0]).to.deep.equal([null]);
     });
 
-    it('route params subscription should not fire when params do not change', fakeAsync (() => {
+    it('route params subscription should not fire when params do not change', fakeAsync(() => {
       route.snapshot.params = { formId: 'some_form' };
       const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');

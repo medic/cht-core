@@ -13,6 +13,7 @@ const logger = require('../logger');
 const db = require('../db');
 const localeUtils = require('locale');
 const cookie = require('../services/cookie');
+const brandingService = require('../services/branding');
 
 const templates = {
   login: {
@@ -192,36 +193,8 @@ const setCookies = (req, res, sessionRes) => {
     });
 };
 
-const getInlineImage = (data, contentType) => `data:${contentType};base64,${data}`;
-
-const getDefaultBranding = () => {
-  const logoPath = path.join(__dirname, '..', 'resources', 'logo', 'medic-logo-light-full.svg');
-  return promisify(fs.readFile)(logoPath, {}).then(logo => {
-    const data = Buffer.from(logo).toString('base64');
-    return {
-      name: 'Medic',
-      logo: getInlineImage(data, 'image/svg+xml')
-    };
-  });
-};
-
-const getBranding = () => {
-  return db.medic.get('branding', {attachments: true})
-    .then(doc => {
-      const image = doc._attachments[doc.resources.logo];
-      return {
-        name: doc.title,
-        logo: getInlineImage(image.data, image.content_type)
-      };
-    })
-    .catch(err => {
-      logger.warn('Could not find branding doc on CouchDB: %o', err);
-      return getDefaultBranding();
-    });
-};
-
 const renderTokenLogin = (req, res) => {
-  return getBranding()
+  return brandingService.get()
     .then(branding => render('tokenLogin', req, branding, { tokenUrl: req.url }))
     .then(body => res.send(body));
 };
@@ -283,7 +256,8 @@ const loginByToken = (req, res) => {
 };
 
 const renderLogin = (req) => {
-  return getBranding().then(branding => render('login', req, branding));
+  return brandingService.get()
+    .then(branding => render('login', req, branding));
 };
 
 module.exports = {

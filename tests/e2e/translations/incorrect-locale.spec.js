@@ -36,7 +36,7 @@ describe('Incorrect locale', () => {
     await utils.afterEach();
   });
 
-  it('should work with incorrect locale',async () => {
+  it('should work with incorrect locale', async () => {
     await commonElements.openMenuNative();
     await commonElements.checkUserSettings();
 

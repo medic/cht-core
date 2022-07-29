@@ -69,5 +69,8 @@ module.exports = {
     const options = getCookieOptions();
     options.maxAge = ONE_YEAR_IN_MS;
     res.cookie('locale', locale, options);
+  },
+  setForceLogin: (res) => {
+    res.cookie('login', 'force', getCookieOptions());
   }
 };

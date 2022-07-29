@@ -5,6 +5,7 @@ const serverUtils = require('../server-utils');
 const usersService = require('../services/users');
 const authorization = require('../services/authorization');
 const purgedDocs = require('../services/purged-docs');
+const bulkUploadLog = require('../services/bulk-upload-log');
 
 const hasFullPermission = req => {
   return auth
@@ -127,7 +128,7 @@ module.exports = {
   create: (req, res) => {
     return auth
       .check(req, 'can_create_users')
-      .then(() => usersService.createUser(req.body, getAppUrl(req)))
+      .then(() => usersService.createUsers(req.body, getAppUrl(req)))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -208,7 +209,6 @@ module.exports = {
       .then(result => res.json(result))
       .catch(err => serverUtils.error(err, req, res));
   },
-
   info: (req, res) => {
     let userCtx;
     try {
@@ -225,4 +225,34 @@ module.exports = {
       }))
       .catch(err => serverUtils.error(err, req, res));
   },
+
+  v2: {
+    create: async (req, res) => {
+      try {
+        await auth.check(req, 'can_create_users');
+        const logId = await bulkUploadLog.createLog(req, 'user');
+        let users;
+        let ignoredUsers;
+
+        if (typeof req.body === 'string') {
+          const parsedCsv = await usersService.parseCsv(req.body, logId);
+          users = parsedCsv.users;
+          ignoredUsers = parsedCsv.ignoredUsers;
+        } else {
+          users = req.body;
+        }
+
+        const response = await usersService.createUsers(
+          users,
+          getAppUrl(req),
+          ignoredUsers,
+          logId,
+          true
+        );
+        res.json(response);
+      } catch (error) {
+        serverUtils.error(error, req, res);
+      }
+    },
+  }
 };

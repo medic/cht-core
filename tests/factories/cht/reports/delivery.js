@@ -194,14 +194,14 @@ const defaultFields = {
 };
 
 Factory.define('baseDelivery')
-  .sequence('_id',uuid.v4)
+  .sequence('_id', uuid.v4)
   .attr('form', 'delivery')
   .attr('type', 'data_record')
   .attr('content_type', 'xml')
   .attr('reported_date', () => new Date())
   .attr('contact', 'TODO')
   .attr('from', '')
-  .attr('hidden_fields',[
+  .attr('hidden_fields', [
     'household_id',
     'area_id',
     'facility_id',

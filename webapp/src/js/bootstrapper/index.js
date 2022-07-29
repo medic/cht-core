@@ -54,19 +54,22 @@
 
   const docCountPoll = (localDb) => {
     setUiStatus('POLL_REPLICATION');
-    const fetchOpts = {
-      credentials: 'same-origin',
-      headers: { 'Accept': 'application/json' }
-    };
     return Promise
       .all([
         localDb.allDocs({ limit: 1 }),
-        fetch(`${utils.getBaseUrl()}/api/v1/users-info`, fetchOpts).then(res => res.json())
+        utils.fetchJSON('/api/v1/users-info')
       ])
       .then(([ local, remote ]) => {
-        if (remote && remote.code && remote.code !== 200) {
+        const statusCode = remote && remote.code;
+
+        if (statusCode === 401) {
+          throw remote;
+        }
+
+        if (statusCode !== 200) {
           console.warn('Error fetching users-info - ignoring', remote);
         }
+
         localDocCount = local.total_rows;
         remoteDocCount = remote.total_docs;
 
@@ -106,36 +109,31 @@
     setUiStatus('LOAD_APP');
     const dbSyncStartTime = Date.now();
     const dbSyncStartData = getDataUsage();
+    setUiStatus('FETCH_INFO', { count: localDocCount, total: remoteDocCount });
 
-    return purger
-      .info()
-      .then(info => {
-        const replicator = localDb.replicate
-          .from(remoteDb, {
-            live: false,
-            retry: false,
-            heartbeat: 10000,
-            timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-            query_params: { initial_replication: true }
-          });
+    const replicator = localDb.replicate.from(remoteDb, {
+      live: false,
+      retry: false,
+      heartbeat: 10000,
+      timeout: 1000 * 60 * 10, // try for ten minutes then give up,
+      query_params: { initial_replication: true }
+    });
 
-        replicator
-          .on('change', function(info) {
-            console.log('initialReplication()', 'change', info);
-            setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
-          });
-
-        return replicator.then(() => purger.checkpoint(info));
-      })
-      .then(() => {
-        const duration = Date.now() - dbSyncStartTime;
-        console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
-        if (dbSyncStartData) {
-          const dbSyncEndData = getDataUsage();
-          const rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
-          console.info('Initial sync received ' + rx + 'B of data');
-        }
+    replicator
+      .on('change', function(info) {
+        console.log('initialReplication()', 'change', info);
+        setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
       });
+
+    return replicator.then(() => {
+      const duration = Date.now() - dbSyncStartTime;
+      console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
+      if (dbSyncStartData) {
+        const dbSyncEndData = getDataUsage();
+        const rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
+        console.info('Initial sync received ' + rx + 'B of data');
+      }
+    });
   };
 
   const getDataUsage = function() {
@@ -144,11 +142,15 @@
     }
   };
 
-  const redirectToLogin = function(dbInfo, err, callback) {
+  const redirectToLogin = (dbInfo) => {
     console.warn('User must reauthenticate');
+
+    if (!document.cookie.includes('login=force')) {
+      document.cookie = 'login=force;path=/';
+    }
+
     const currentUrl = encodeURIComponent(window.location.href);
-    err.redirect = '/' + dbInfo.name + '/login?redirect=' + currentUrl;
-    return callback(err);
+    window.location.href = '/' + dbInfo.name + '/login?redirect=' + currentUrl;
   };
 
   // TODO Use a shared library for this duplicated code #4021
@@ -194,13 +196,12 @@
   const getSettingsDoc = localDb => localDb.get('settings');
 
   module.exports = function(POUCHDB_OPTIONS, callback) {
+
     const dbInfo = getDbInfo();
     const userCtx = getUserCtx();
     const hasForceLoginCookie = document.cookie.includes('login=force');
     if (!userCtx || hasForceLoginCookie) {
-      const err = new Error('User must reauthenticate');
-      err.status = 401;
-      return redirectToLogin(dbInfo, err, callback);
+      return redirectToLogin(dbInfo);
     }
 
     if (hasFullDataAccess(userCtx)) {
@@ -227,7 +228,7 @@
     Promise
       .all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
       .then(resolved => {
-        purger.setOptions(POUCHDB_OPTIONS);
+        utils.setOptions(POUCHDB_OPTIONS);
         isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {
@@ -244,50 +245,27 @@
         }
       })
       .then(() => {
+        const purgeStarted = performance.now();
         return purger
-          .shouldPurge(localDb, userCtx)
-          .then(shouldPurge => {
-            window.startupTimes.purging = shouldPurge;
-
-            if (!shouldPurge) {
-              return;
-            }
-
-            const purgeStarted = performance.now();
-            return purger
-              .purge(localDb, userCtx)
-              .on('start', () => setUiStatus('PURGE_INIT'))
-              .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
-              .catch(err => {
-                console.error('Error attempting to purge', err);
-                window.startupTimes.purgingFailed = err.message;
-              })
-              .then(() => window.startupTimes.purge = performance.now() - purgeStarted);
+          .purgeMain(localDb, userCtx)
+          .on('start', () => setUiStatus('PURGE_INIT'))
+          .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
+          .on('done', () => window.startupTimes.purge = performance.now() - purgeStarted)
+          .catch(err => {
+            console.error('Error attempting to purge main db - continuing', err);
+            window.startupTimes.purgingFailed = err.message;
           });
       })
       .then(() => {
-        let purgeMetaStarted;
+        const purgeMetaStarted = performance.now();
         return purger
-          .shouldPurgeMeta(localMetaDb)
-          .then(shouldPurgeMeta => {
-            window.startupTimes.purgingMeta = shouldPurgeMeta;
-
-            if (!shouldPurgeMeta) {
-              return;
-            }
-
-            purgeMetaStarted = performance.now();
-            setUiStatus('PURGE_META');
-            return purger.purgeMeta(localMetaDb);
-          })
+          .purgeMeta(localMetaDb)
+          .on('should-purge', shouldPurge => window.startupTimes.purgingMeta = shouldPurge)
+          .on('start', () => setUiStatus('PURGE_META'))
+          .on('done', () => window.startupTimes.purgeMeta = performance.now() - purgeMetaStarted)
           .catch(err => {
-            console.error('Error attempting to purge meta', err);
+            console.error('Error attempting to purge meta db - continuing', err);
             window.startupTimes.purgingMetaFailed = err.message;
-          })
-          .then(() => {
-            if (purgeMetaStarted) {
-              window.startupTimes.purgeMeta = performance.now() - purgeMetaStarted;
-            }
           });
       })
       .then(() => setUiStatus('STARTING_APP'))
@@ -296,11 +274,12 @@
         localDb.close();
         remoteDb.close();
         localMetaDb.close();
-        if (err) {
-          if (err.status === 401) {
-            return redirectToLogin(dbInfo, err, callback);
-          }
 
+        if (err) {
+          const errorCode = err.status || err.code;
+          if (errorCode === 401) {
+            return redirectToLogin(dbInfo);
+          }
           setUiError(err);
         }
 

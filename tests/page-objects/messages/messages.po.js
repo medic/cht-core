@@ -25,7 +25,7 @@ const enterMessageText = async message => {
 const searchSelect2 = async (searchText, totalExpectedResults, entrySelector, entryText) => {
   await module.exports.messageRecipientSelect().sendKeys(searchText);
   await browser.wait(async () => await selectOptions.count() === totalExpectedResults, 20000, 'searchSelect2 timedout');
-  const elm = element(by.cssContainingText(selectOptions.locator().value + entrySelector , entryText));
+  const elm = element(by.cssContainingText(selectOptions.locator().value + entrySelector, entryText));
   await helper.waitUntilReadyNative(elm);
   return elm;
 };
@@ -85,15 +85,15 @@ module.exports = {
   sendMessageMobalSubmit: () => module.exports.sendMessageModal().element(by.css('a.btn.submit:not(.ng-hide)')),
   messageRecipientSelect: () => element(by.css('#send-message input.select2-search__field')),
 
-  exportData: ()=> {
+  exportData: () => {
     helper.waitUntilReady(exportButton);
     exportButton.click();
   },
-  openSendMessageModal: async ()=> {
+  openSendMessageModal: async () => {
     await helper.clickElementNative(module.exports.sendMessage());
     await helper.waitUntilReadyNative(module.exports.sendMessageModal());
   },
-  getSendMessageButton: ()=> {
+  getSendMessageButton: () => {
     helper.waitUntilReady(sendMessageButton);
     return sendMessageButton;
   },

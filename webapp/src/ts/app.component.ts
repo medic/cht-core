@@ -1,12 +1,12 @@
 import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { Component, NgZone, OnInit, HostListener } from '@angular/core';
+import { Component, HostListener, NgZone, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
+import { setTheme as setBootstrapTheme } from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
-import { DBSyncService } from '@mm-services/db-sync.service';
-import { Selectors } from './selectors';
+import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
+import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -17,7 +17,7 @@ import { LocationService } from '@mm-services/location.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { environment } from './environments/environment';
+import { environment } from '@mm-environments/environment';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { JsonFormsService } from '@mm-services/json-forms.service';
@@ -82,7 +82,6 @@ export class AppComponent implements OnInit {
   privacyPolicyAccepted;
   showPrivacyPolicy;
   selectMode;
-  minimalTabs;
   adminUrl;
   canLogOut;
   replicationStatus;
@@ -214,12 +213,12 @@ export class AppComponent implements OnInit {
     };
 
     this.dbSyncService.subscribe(({ state, to, from }) => {
-      if (state === 'disabled') {
+      if (state === SyncStatus.Disabled) {
         this.globalActions.updateReplicationStatus({ disabled: true });
         return;
       }
 
-      if (state === 'unknown') {
+      if (state === SyncStatus.Unknown) {
         this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.unknown });
         return;
       }
@@ -228,7 +227,7 @@ export class AppComponent implements OnInit {
       const lastTrigger = this.replicationStatus.lastTrigger;
       const delay = lastTrigger ? Math.round((now - lastTrigger) / 1000) : 'unknown';
 
-      if (state === 'inProgress') {
+      if (state === SyncStatus.InProgress) {
         this.globalActions.updateReplicationStatus({
           current: SYNC_STATUS.inProgress,
           lastTrigger: now
@@ -238,13 +237,13 @@ export class AppComponent implements OnInit {
       }
 
       const statusUpdates:any = {};
-      if (to === 'success') {
+      if (to === SyncStatus.Success) {
         statusUpdates.lastSuccessTo = now;
       }
-      if (from === 'success') {
+      if (from === SyncStatus.Success) {
         statusUpdates.lastSuccessFrom = now;
       }
-      if (to === 'success' && from === 'success') {
+      if (to === SyncStatus.Success && from === SyncStatus.Success) {
         console.info(`Replication succeeded after ${delay} seconds`);
         statusUpdates.current = SYNC_STATUS.success;
       } else {
@@ -263,10 +262,10 @@ export class AppComponent implements OnInit {
     this.setupDb();
     this.countMessageService.init();
     this.feedbackService.init();
+    this.sessionService.init();
 
     // initialisation tasks that can occur after the UI has been rendered
-    this.setupPromise = this.sessionService
-      .init()
+    this.setupPromise = Promise.resolve()
       .then(() => this.chtScriptApiService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
       .then(() => this.initRulesEngine())
@@ -276,7 +275,6 @@ export class AppComponent implements OnInit {
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses());
 
-    this.globalActions.setIsAdmin(this.sessionService.isAdmin());
     this.watchBrandingChanges();
     this.watchDDocChanges();
     this.watchUserContextChanges();
@@ -420,7 +418,6 @@ export class AppComponent implements OnInit {
       this.store.select(Selectors.getReplicationStatus),
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
-      this.store.select(Selectors.getMinimalTabs),
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getSelectMode),
@@ -428,7 +425,6 @@ export class AppComponent implements OnInit {
       replicationStatus,
       androidAppVersion,
       currentTab,
-      minimalTabs,
       privacyPolicyAccepted,
       showPrivacyPolicy,
       selectMode,
@@ -436,7 +432,6 @@ export class AppComponent implements OnInit {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab;
-      this.minimalTabs = minimalTabs;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
       this.selectMode = selectMode;
@@ -563,7 +558,7 @@ export class AppComponent implements OnInit {
   private initRulesEngine() {
     return this.rulesEngineService
       .isEnabled()
-      .then(isEnabled => console.info(`RulesEngine Status: ${ isEnabled ? 'Enabled' : 'Disabled' }`))
+      .then(isEnabled => console.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
       .catch(err => console.error('RuleEngine failed to initialize', err));
   }
 
@@ -678,6 +673,13 @@ export class AppComponent implements OnInit {
   private stopWatchingChanges() {
     // avoid Failed to fetch errors being logged when the browser window is reloaded
     this.changesService.killWatchers();
+  }
+
+  @HostListener('window:pageshow', ['$event'])
+  private pageshow(event) {
+    if (event.persisted) {
+      this.sessionService.check();
+    }
   }
 
   private async initAnalyticsModules() {

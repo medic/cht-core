@@ -111,6 +111,38 @@ const getRules = (validations) => {
   return rules;
 };
 
+const compareDate = (doc, validation, checkAfter = false) => {
+  const fields = [...validation.funcArgs];
+  try {
+    const duration = _parseDuration(fields.pop());
+    if (!duration.isValid()) {
+      logger.error('date constraint validation: the duration is invalid');
+      return Promise.resolve(false);
+    }
+    const testDate = moment(doc[validation.field]);
+    const controlDate = checkAfter ?
+      moment(doc.reported_date).add(duration) :
+      moment(doc.reported_date).subtract(duration);
+    if (!testDate.isValid() || !controlDate.isValid()) {
+      logger.error('date constraint validation: the date is invalid');
+      return Promise.resolve(false);
+    }
+
+    if (checkAfter && testDate.isSameOrAfter(controlDate, 'days')) {
+      return Promise.resolve(true);
+    }
+    if (!checkAfter && testDate.isSameOrBefore(controlDate, 'days')) {
+      return Promise.resolve(true);
+    }
+
+    logger.error('date constraint validation failed');
+    return Promise.resolve(false);
+  } catch (err) {
+    logger.error('date constraint validation: the date or duration is invalid: %o', err);
+    return Promise.resolve(false);
+  }
+};
+
 module.exports = {
   init: (options) => {
     db = options.db;
@@ -178,6 +210,10 @@ module.exports = {
       logger.error('isISOWeek validation failed: the number of week is greater than the maximum');
       return Promise.resolve(false);
     },
+
+    isAfter: (doc, validation) => compareDate(doc, validation, true),
+
+    isBefore: (doc, validation) => compareDate(doc, validation, false),
   },
   /**
    * Validation settings may consist of Pupil.js rules and custom rules.

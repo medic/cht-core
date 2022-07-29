@@ -3,6 +3,7 @@ import { isString as _isString } from 'lodash-es';
 
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguageService } from '@mm-services/language.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,7 @@ export class EnketoPrepopulationDataService {
   constructor(
     private enketoTranslationService:EnketoTranslationService,
     private userSettingsService:UserSettingsService,
+    private languageService:LanguageService,
   ) {}
 
   get(model, data) {
@@ -18,9 +20,12 @@ export class EnketoPrepopulationDataService {
       return Promise.resolve(data);
     }
 
-    return this.userSettingsService
-      .get()
-      .then((user) => {
+    return Promise
+      .all([
+        this.userSettingsService.get(),
+        this.languageService.get()
+      ])
+      .then(([user, language]) => {
         const xml = $($.parseXML(model));
         const bindRoot = xml.find('model instance').children().first();
 
@@ -34,7 +39,8 @@ export class EnketoPrepopulationDataService {
         }
 
         if (userRoot.length) {
-          this.enketoTranslationService.bindJsonToXml(userRoot, user);
+          const userObject = { ...user, language };
+          this.enketoTranslationService.bindJsonToXml(userRoot, userObject);
         }
 
         return new XMLSerializer().serializeToString(bindRoot[0]);

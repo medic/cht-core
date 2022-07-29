@@ -21,9 +21,21 @@ const usernameErrorMessage = () => $('span.help-block.ng-binding');
 const passwordErrorMessage = () => $('#edit-password ~ .help-block');
 const placeErrorMessage = () => $('#facilitySelect ~ .help-block');
 const contactErrorMessage = () => $('#contactSelect ~ .help-block');
+const uploadUsersButton = () => $('a#add-users');
+const uploadUsersDialog = () => $('div#bulk-user-upload');
+const confirmUploadUsersButton = () => $('a#upload-btn');
+const uploadSummaryDialog = () => $('#finish-summary');
+const successfulyUploadedUsers = () => $('p.text-success');
+const previouslyUploadedUsers = () => $('p.text-muted');
+const failedUploadedUsers = () => $('p.text-danger');
+const backToUserListButton = () => $('a#back-to-app-btn');
 
 const goToAdminUser = async () => {
   await browser.url('/admin/#/users');
+};
+
+const goToAdminUpgrade = async () => {
+  await browser.url('/admin/#/upgrade');
 };
 
 const openAddUserDialog = async () => {
@@ -40,7 +52,7 @@ const closeUserDialog = async () => {
   await (await addUserDialog()).waitForDisplayed({ reverse: true });
 };
 
-const inputAddUserFields = async (username, fullname, role, place, associatedContact, password, 
+const inputAddUserFields = async (username, fullname, role, place, associatedContact, password,
   confirmPassword = password) => {
   await (await userName()).addValue(username);
   await (await userFullName()).addValue(fullname);
@@ -53,9 +65,13 @@ const inputAddUserFields = async (username, fullname, role, place, associatedCon
   if (!_.isEmpty(associatedContact)) {
     await selectContact(associatedContact);
   }
-  
+
   await (await userPassword()).addValue(password);
   await (await userConfirmPassword()).addValue(confirmPassword);
+};
+
+const inputUploadUsersFields = async (filePath) => {
+  await (await $('input[type="file"]')).setValue(filePath);
 };
 
 const selectPlace = async (place) => {
@@ -83,6 +99,11 @@ const saveUser = async (isSuccessExpected = true)  => {
   if (isSuccessExpected) {
     await (await addUserDialog()).waitForDisplayed({ reverse: true });
   }
+};
+
+const uploadUsers = async () => {
+  await (await confirmUploadUsersButton()).waitForDisplayed();
+  await (await confirmUploadUsersButton()).click();
 };
 
 const logout = async () => {
@@ -115,8 +136,38 @@ const getContactErrorText = async () => {
   return await (await contactErrorMessage()).getText();
 };
 
+const getSuccessfulyUploadedUsers = async () => {
+  return await (await successfulyUploadedUsers()).getText();
+};
+
+const getPreviouslyUploadedUsers = async () => {
+  return await (await previouslyUploadedUsers()).getText();
+};
+
+const getFailedUploadedUsers = async () => {
+  return await (await failedUploadedUsers()).getText();
+};
+
+const backToUserList = async () => {
+  await (await backToUserListButton()).waitForDisplayed();
+  await (await backToUserListButton()).click();
+};
+
+const openUploadUsersDialog = async () => {
+  await (await uploadUsersButton()).waitForDisplayed();
+  await (await uploadUsersButton()).click();
+  await (await uploadUsersDialog()).waitForDisplayed();
+  // wait for animations to finish
+  await browser.pause(500);
+};
+
+const waitForUploadSummary = async () => {
+  await (await uploadSummaryDialog()).waitForDisplayed();
+};
+
 module.exports = {
   goToAdminUser,
+  goToAdminUpgrade,
   openAddUserDialog,
   closeUserDialog,
   inputAddUserFields,
@@ -126,5 +177,13 @@ module.exports = {
   getUsernameErrorText,
   getPasswordErrorText,
   getPlaceErrorText,
-  getContactErrorText
+  getContactErrorText,
+  openUploadUsersDialog,
+  inputUploadUsersFields,
+  uploadUsers,
+  waitForUploadSummary,
+  getSuccessfulyUploadedUsers,
+  getPreviouslyUploadedUsers,
+  getFailedUploadedUsers,
+  backToUserList
 };

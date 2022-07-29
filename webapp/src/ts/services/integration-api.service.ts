@@ -36,7 +36,6 @@ export class IntegrationApiService {
     private mrdtService:MRDTService,
     private markdownService:MarkdownService,
     private settingsService:SettingsService,
-    // todo simprints
     private androidApiService:AndroidApiService,
   ) {
     this.DB = dbService;

@@ -2,7 +2,7 @@
  * Philippines Ilonggo/Hiligaynon translation for bootstrap-datepicker
  */
 (function($){
-  $.fn.datepicker.dates['hil'] = {
+  $.fn.datepicker.dates.hil = {
     days: ['Domingo', 'Lunes', 'Martes', 'Miyerkules', 'Huwebes', 'Biyernes', 'Sabado'],
     daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     daysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],

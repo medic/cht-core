@@ -484,7 +484,7 @@ describe('provider-wireup integration tests', () => {
           hhEmission(7, 'family7', 'patient-7-1', false),
           hhEmission(7, 'family7', 'patient-7-1', true),
 
-          ...[1,2,3,4,5].map(day => hhEmission(day, 'family5', 'patient-5-1', true)),
+          ...[1, 2, 3, 4, 5].map(day => hhEmission(day, 'family5', 'patient-5-1', true)),
         ],
       });
       const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
