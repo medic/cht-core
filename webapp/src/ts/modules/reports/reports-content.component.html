@@ -94,8 +94,8 @@
             </ul>
           </li>
           <li *ngIf="selection?.formatted?.sms_message?.message">
-            <p>{{selection.formatted.sms_message.message}}</p>
             <label>{{'selection.doc.content.raw' | translate}}</label>
+            <p>{{selection.formatted.sms_message.message}}</p>
           </li>
           <li *ngIf="selection?.formatted?.tasks?.length">
             <label *ngIf="selection.formatted.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
