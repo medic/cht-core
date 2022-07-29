@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -83,10 +82,11 @@ const startUpgradeService = async () => {
 };
 
 // Override specific properties from wdio base config
-const upgradeConfig = _.merge(wdioBaseConfig.config, {
+const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   specs: [
     './tests/e2e/upgrade/*.wdio-spec.js'
   ],
+  exclude: [],
 
   onPrepare: async () => {
     await getUpgradeServiceDockerCompose();
