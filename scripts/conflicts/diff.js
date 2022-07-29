@@ -28,21 +28,27 @@ console.log(`Generating diffs for conflicts on ${server}`);
 
 const DB = new PouchDB(server);
 
-const writeToFile = function(path, content) {
-  content  = JSON.stringify(content, null, 3); 
-  fs.writeFile(path, content, (err) => {
-    if(err){
-      console.log(err);
-    }
-  });
+const writeToFile = async (path, content) => {
+  try {
+    const jsonContent = JSON.stringify(content, null, 3);
+    await fs.promises.writeFile(path, jsonContent);
+  } catch (err) {
+    console.error('Error when writing file', err);
+    throw err; 
+  }
 };
 
-const createDirectory = function(conflictDirectoryPath) {
+const createDirectoryIfValid = function(conflictDirectoryPath) {
   if (!fs.existsSync(conflictDirectoryPath)){
     try {
       fs.mkdirSync(conflictDirectoryPath);
     } catch(err){
-      console.log(err);
+      console.error('Error when creating conflict folder', err);
+    }
+  } else {
+    if(!isDiectoryEmpty(conflictDirectoryPath)){
+      console.log('Conflict Directory is not empty, exiting');
+      process.exit();
     }
   }
 };
@@ -51,32 +57,28 @@ const isDiectoryEmpty = function isEmpty(path) {
   return fs.readdirSync(path).length === 0;
 };
 
-const getConflictDirectoryPath = function (r, mainConflictFilesDirectory) {
-  let conflictDirectoryName = r.id;
-  if (r.id.includes('target')) {
-    conflictDirectoryName = r.id.split(':')[0];
-  } else { // if it is just a contact doc use the doc Id to create folder
-    conflictDirectoryName = r.id;
-  }
+const getConflictDirectoryPath = function (doc_id, mainConflictFilesDirectory) {
+  //id:target~2022-05~44a58753-50b6-593f-bb42-999a5ca3c18c~org.couchdb.user:bhaktapur_chn6
+  //foldername: target~2022-05~44a58753-50b6-593f-bb42-999a5ca3c18c~org.couchdb.user
+  //We are only taking the doc id of target before the colon to not have issues 
+  //creating the folder. We could replace and use the full id but then it would make the
+  //id corrupted and not directly searchable with a foldername copy paste in CouchDB
+ 
+  let conflictDirectoryName = doc_id.id.includes('target') ? doc_id.id.split(':')[0] : doc_id.id;
   //The doc id that is used for foldername might have characters that cannot 
   // be used to create folders. Hence we are replacing illegeal characters with space. 
   // Reverse this process to search for doc in DB.
   conflictDirectoryName = conflictDirectoryName.replace(/[/\\?%*:|"<>]/g, ' ');
-  const conflictDirectoryPath = `${mainConflictFilesDirectory}/${conflictDirectoryName}`;
+  const conflictDirectoryPath = path.join(mainConflictFilesDirectory, conflictDirectoryName);
   return conflictDirectoryPath;
 };
 
 DB.query('medic-conflicts/conflicts', {reduce:false})
   .then(conflicts => {
     console.log(`Found ${conflicts.rows.length} conflicts`);
-
-    const mainConflictFilesDirectory = './doc-conflicts';  
+    const mainConflictFilesDirectory = path.join(__dirname, 'doc-conflicts');
     let ps = Promise.resolve();
-    createDirectory(mainConflictFilesDirectory);
-    if(!isDiectoryEmpty(mainConflictFilesDirectory)){
-      console.log('Conflict Directory is not empty, exiting');
-      process.exit();
-    }
+    createDirectoryIfValid(mainConflictFilesDirectory);    
     conflicts.rows.forEach(r => {
       ps = ps.then(() => {
         const docId = r.id;
@@ -92,7 +94,7 @@ DB.query('medic-conflicts/conflicts', {reduce:false})
             //of document of couch db so that it is easily searchable with file name
             // copy and paste.
             const conflictDirectoryPath = getConflictDirectoryPath(r, mainConflictFilesDirectory); 
-            createDirectory(conflictDirectoryPath);
+            createDirectoryIfValid(conflictDirectoryPath);
 
             writeToFile(path.join(conflictDirectoryPath, 'mainDocument.json'), mainDoc);
             r.key.forEach( conflictDocId => {
