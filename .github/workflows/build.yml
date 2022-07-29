@@ -232,5 +232,7 @@ jobs:
           echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
           echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
       - run: npm ci --legacy-peer-deps
+      - name: Create logs directory
+          run: mkdir tests/logs
       - name: Upgrade
         run: npm run wdio-upgrade
