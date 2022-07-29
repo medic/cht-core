@@ -87,7 +87,7 @@ describe('Date Filter Component', () => {
     expect(setFilter.args[0]).to.deep.equal([{ date: { from, to } }]);
   });
 
-  it('clear should clear the value', () => {
+  it('should clear the value', () => {
     const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
     component.dateRange = { from: 1, to: 2 };
 
@@ -130,5 +130,15 @@ describe('Date Filter Component', () => {
     component.isStartDate = false;
     const result2 = component.countSelected();
     expect(result2).to.equal(0);
+  });
+
+  it('should do nothing if component is disabled', () => {
+    const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+    component.dateRange = { from: 1, to: 2 };
+    component.disabled = true;
+
+    component.clear();
+
+    expect(setFilter.notCalled).to.be.true;
   });
 });

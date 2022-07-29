@@ -20,7 +20,7 @@ import { Selectors } from '@mm-selectors/index';
 })
 export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, AfterViewInit {
   private globalActions;
-  subscription: Subscription = new Subscription();
+  private subscription: Subscription = new Subscription();
   inputLabel;
   showError;
   dateRange = {
@@ -75,10 +75,16 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     );
 
     // todo TOUR needs to show and hide this datepicker!
-    datepicker.on('show.daterangepicker', (e, picker) => {
+    datepicker.on('show.daterangepicker', (element, picker) => {
       setTimeout(() => {
-        if ($('#dateRangeDropdown').is('.disabled')) {
+        if (this.disabled) {
           picker.hide();
+          return;
+        }
+
+        if (!this.isInViewport(picker.container[0])) {
+          picker.drops = picker.drops === 'down' ? 'up' : 'down';
+          picker.move();
         }
       });
     });
@@ -137,7 +143,19 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     return { ...this.dateRange, to };
   }
 
+  private isInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    return rect.top >= 0 &&
+      rect.left >= 0 &&
+      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+      rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+  }
+
   clear(skipSearch?) {
+    if (this.disabled) {
+      return;
+    }
+
     this.applyFilter(undefined, skipSearch);
   }
 

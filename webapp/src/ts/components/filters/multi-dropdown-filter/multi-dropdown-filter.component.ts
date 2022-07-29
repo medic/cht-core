@@ -81,11 +81,17 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
   }
 
   selectAll() {
+    if (this.disabled) {
+      return;
+    }
     this.items.forEach(item => this.selected.add(item));
     this.apply();
   }
 
   clear(apply=true) {
+    if (this.disabled) {
+      return;
+    }
     this.selected.clear();
     if (apply) {
       return this.apply();

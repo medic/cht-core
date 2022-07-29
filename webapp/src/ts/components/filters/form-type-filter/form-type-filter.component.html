@@ -25,8 +25,9 @@
 </div>
 
 <ng-template #optionsTemplate let-forms="forms" let-filter="filter">
-  <li role="presentation" *ngFor="let form of forms; trackBy: trackByFn" [class.selected]="filter?.selected.has(form)">
-    <a role="menuitem" tabindex="-1" [attr.data-value]="form" (click)="filter?.toggle(form)">
+  <li
+    role="presentation" *ngFor="let form of forms; trackBy: trackByFn" [class.selected]="filter?.selected.has(form)" [class.disabled]="disabled">
+    <a role="menuitem" tabindex="-1" [attr.data-value]="form" (click)="!disabled && filter?.toggle(form)">
       {{ form.title || form.code }}
     </a>
   </li>

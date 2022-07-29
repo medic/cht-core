@@ -77,12 +77,12 @@ describe('Form Type Filter Component', () => {
     });
   });
 
-  it('trackByFn should return form code', () => {
+  it('should return form code when calling trackByFn', () => {
     const form = { code: 'formcode' };
     expect(component.trackByFn(0, form)).to.equal('formcode');
   });
 
-  it('applyFilter should set correct filter', () => {
+  it('should apply correct filter', () => {
     const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
     const forms = [{ _id: 'form1' }, { _id: 'form2' }];
     component.applyFilter(forms);
@@ -90,7 +90,7 @@ describe('Form Type Filter Component', () => {
     expect(setFilter.args[0]).to.deep.equal([{ forms: { selected: forms } }]);
   });
 
-  it('clear should clear dropdown filter', () => {
+  it('should clear dropdown filter', () => {
     const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
 
     component.clear();
@@ -165,4 +165,17 @@ describe('Form Type Filter Component', () => {
       }
     ]);
   }));
+
+  it('should do nothing if component is disabled', () => {
+    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
+    component.disabled = true;
+
+    component.clear();
+    component.inline = true;
+    component.clear();
+
+    expect(dropdownFilterClearSpy.notCalled).to.be.true;
+    expect(inlineFilterClearSpy.notCalled).to.be.true;
+  });
 });

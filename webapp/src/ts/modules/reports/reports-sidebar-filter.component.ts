@@ -34,8 +34,8 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   statusFilter: StatusFilterComponent;
 
   private globalActions;
+  private filters = [];
   isResettingFilters = false;
-  filters = [];
   isOpen = false;
   filterCount:any = { };
 
@@ -56,25 +56,25 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
     ];
   }
 
-  applyFilters(force?) {
-    if (this.isResettingFilters) {
+  applyFilters() {
+    if (this.isResettingFilters || this.disabled) {
       return;
     }
-    this.search.emit(force);
+    this.search.emit();
     this.countSelected();
   }
 
   clearFilters(fieldIds?) {
+    if (this.disabled) {
+      return;
+    }
     const filters = fieldIds ? this.filters.filter(filter => fieldIds.includes(filter.fieldId)) : this.filters;
-    filters.forEach(filter => filter?.clear());
+    filters.forEach(filter => filter.clear());
   }
 
   countSelected() {
     this.filterCount.total = 0;
     this.filters.forEach(filter => {
-      if (!filter?.countSelected) {
-        return;
-      }
       const count = filter.countSelected() || 0;
       this.filterCount.total += count;
       this.filterCount[filter.fieldId] = count;
@@ -83,6 +83,9 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   }
 
   resetFilters() {
+    if (this.disabled) {
+      return;
+    }
     this.isResettingFilters = true;
     this.globalActions.clearFilters();
     this.clearFilters();
@@ -90,9 +93,9 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
     this.applyFilters();
   }
 
-  toggleSidebarFilter(open?) {
-    this.isOpen = open === undefined ? !this.isOpen : open;
-    this.globalActions.setSidebarFilter({ isOpen: !!this.isOpen });
+  toggleSidebarFilter() {
+    this.isOpen = !this.isOpen;
+    this.globalActions.setSidebarFilter({ isOpen: this.isOpen });
 
     if (this.isOpen) {
       // Counting every time the user opens the sidebar filter in reports tab.

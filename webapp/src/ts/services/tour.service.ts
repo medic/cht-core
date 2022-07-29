@@ -14,7 +14,7 @@ import { SIDEBAR_FILTER_PERMISSION } from '@mm-modules/reports/reports-sidebar-f
   providedIn: 'root'
 })
 export class TourService {
-  canViewSidebar;
+  private canViewSidebar;
   current: {
     tour: any;
     name: any;
@@ -240,6 +240,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.reports.types-filter.title',
           content: 'tour.reports.types-filter.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowReportList(),
           onShown: () => this.mmOpenDropdown('mm-form-type-filter')
         },
@@ -249,6 +250,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.reports.facilities-filter.title',
           content: 'tour.reports.facilities-filter.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowReportList(),
           onShown: () => this.mmOpenDropdown('mm-facility-filter')
         },
@@ -258,6 +260,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.reports.date-filter.title',
           content: 'tour.reports.date-filter.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowReportList(),
           onShown: () => {
             if (!this.responsiveService.isMobile()) {
@@ -274,6 +277,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.reports.status-filter.title',
           content: 'tour.reports.status-filter.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowReportList(),
           onShown: () => this.mmOpenDropdown('mm-status-filter')
         },
@@ -511,30 +515,14 @@ export class TourService {
   }
 
   private getTour(name) {
-    return this.tours.find(t => t.name === name) || this.tours[0];
-  }
-
-  private getSkipSettings() {
-    return {
-      reports: {
-        condition: () => this.canViewSidebar,
-        steps:[
-          'mm-form-type-filter',
-          'mm-facility-filter',
-          'mm-date-filter',
-          'mm-status-filter',
-        ]
-      }
-    };
+    const tour = this.tours.find(t => t.name === name) || this.tours[0];
+    tour.steps = tour.steps.filter(step => !(step.skip && step.skip()));
+    return tour;
   }
 
   private getSettings(name) {
     const settings = this.getTour(name);
-    const skipSettings = this.getSkipSettings()[settings.name];
     settings.autoscroll = false;
-    settings.steps = settings.steps.filter(step => {
-      return !(skipSettings?.condition() && skipSettings.steps.includes(step.element));
-    });
 
     if (!settings.transmogrified) {
       settings.template = this.createTemplate();

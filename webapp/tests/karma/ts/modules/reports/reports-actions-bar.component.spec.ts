@@ -61,4 +61,15 @@ describe('Reports Actions Bar Component', () => {
     expect(freeTextClearSpy.calledOnce).to.be.true;
     expect(resetFilterSpy.calledOnce).to.be.true;
   });
+
+  it('should do nothing if component is disabled', () => {
+    const freeTextClearSpy = sinon.spy(component.freetextFilter, 'clear');
+    const resetFilterSpy = sinon.spy(component.resetFilter, 'emit');
+    component.disabled = true;
+
+    component.reset();
+
+    expect(freeTextClearSpy.notCalled).to.be.true;
+    expect(resetFilterSpy.notCalled).to.be.true;
+  });
 });

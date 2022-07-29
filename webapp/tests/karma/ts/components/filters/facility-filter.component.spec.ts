@@ -257,7 +257,7 @@ describe('Facility Filter Component', () => {
     expect(spySearch.callCount).to.equal(1);
   });
 
-  it('trackByFn should return unique value', () => {
+  it('should return unique value when calling trackByFn', () => {
     const facility = { doc: { _id: 'a', _rev: 'b' } };
     expect(component.trackByFn(0, facility)).to.equal('ab');
   });
@@ -348,7 +348,7 @@ describe('Facility Filter Component', () => {
     });
   });
 
-  it('clear should clear dropdown filter', () => {
+  it('should clear dropdown filter', () => {
     const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
     component.clear();
     expect(dropdownFilterClearSpy.callCount).to.equal(1);
@@ -379,7 +379,7 @@ describe('Facility Filter Component', () => {
     expect(result).to.equal(2);
   });
 
-  it('applyFilter should set correct selected facility ids', () => {
+  it('should set correct selected facility ids', () => {
     const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
     const selectedFacilities = [
       { doc: { _id: 'one' }, children: [{ doc: { _id: 'child1' } }, { doc: { _id: 'child2' } }] },
@@ -392,5 +392,28 @@ describe('Facility Filter Component', () => {
     expect(setFilter.args[0]).to.deep.equal([
       { facilities: { selected: ['one', 'child1', 'child2', 'parent1'] } }
     ]);
+  });
+
+  it('should do nothing if component is disabled', () => {
+    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
+    const dropdownFilterToggleSpy = sinon.spy(component.dropdownFilter, 'toggle');
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
+    const inlineFilterToggleSpy = sinon.spy(component.inlineFilter, 'toggle');
+    const spySearch = sinon.spy(component.search, 'emit');
+    const facilities = [{ _id: 'some', doc: { _id: 'some' } }];
+    component.disabled = true;
+
+    component.clear();
+    component.applyFilter(facilities);
+    component.select(null, facilities[0], component.dropdownFilter);
+    component.select(null, facilities[0], component.inlineFilter);
+    component.inline = true;
+    component.clear();
+
+    expect(dropdownFilterClearSpy.notCalled).to.be.true;
+    expect(dropdownFilterToggleSpy.notCalled).to.be.true;
+    expect(spySearch.notCalled).to.be.true;
+    expect(inlineFilterClearSpy.notCalled).to.be.true;
+    expect(inlineFilterToggleSpy.notCalled).to.be.true;
   });
 });

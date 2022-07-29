@@ -154,4 +154,17 @@ describe('Status Filter Component', () => {
       ]);
     });
   });
+
+  it('should do nothing if component is disabled', () => {
+    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
+    component.disabled = true;
+
+    component.clear();
+    component.inline = true;
+    component.clear();
+
+    expect(dropdownFilterClearSpy.notCalled).to.be.true;
+    expect(inlineFilterClearSpy.notCalled).to.be.true;
+  });
 });

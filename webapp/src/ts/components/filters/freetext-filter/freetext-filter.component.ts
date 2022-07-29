@@ -39,6 +39,10 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   applyFilter() {
+    if (this.disabled) {
+      return;
+    }
+
     this.globalActions.setFilter({ search: this.inputText });
     // always force the search, so the user is taken from the report detail page to the list page on mobile,
     // when clicking on a case_id link
@@ -50,6 +54,9 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   clear() {
+    if (this.disabled) {
+      return;
+    }
     this.applyFieldChange('');
   }
 }

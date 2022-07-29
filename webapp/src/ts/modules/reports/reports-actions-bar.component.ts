@@ -11,7 +11,7 @@ import { Selectors } from '@mm-selectors/index';
 })
 export class ReportsActionsBarComponent implements OnInit, OnDestroy {
   @Output() search: EventEmitter<any> = new EventEmitter();
-  @Output() openFilter: EventEmitter<any> = new EventEmitter();
+  @Output() toggleFilter: EventEmitter<any> = new EventEmitter();
   @Output() resetFilter: EventEmitter<any> = new EventEmitter();
   @Input() disabled;
 
@@ -33,6 +33,9 @@ export class ReportsActionsBarComponent implements OnInit, OnDestroy {
   }
 
   reset() {
+    if (this.disabled) {
+      return;
+    }
     this.freetextFilter.clear();
     this.resetFilter.emit();
   }

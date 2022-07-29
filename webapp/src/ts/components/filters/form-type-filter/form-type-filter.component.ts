@@ -75,10 +75,15 @@ export class FormTypeFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   clear() {
+    if (this.disabled) {
+      return;
+    }
+
     if (this.inline) {
       this.inlineFilter.clear();
       return;
     }
+
     this.dropdownFilter?.clear(false);
   }
 

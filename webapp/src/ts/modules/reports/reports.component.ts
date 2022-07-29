@@ -330,7 +330,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  openFilter() {
+  toggleFilter() {
     this.reportsSidebarFilter?.toggleSidebarFilter();
   }
 

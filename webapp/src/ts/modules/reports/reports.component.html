@@ -8,7 +8,7 @@
     <mm-navigation></mm-navigation>
     <mm-reports-actions-bar
       *ngIf="useSidebarFilter"
-      (openFilter)="openFilter()"
+      (toggleFilter)="toggleFilter()"
       (resetFilter)="resetFilter()"
       (search)="search($event)"
       [disabled]="selectMode && selectedReports?.length">

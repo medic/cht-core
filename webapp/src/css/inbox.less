@@ -17,7 +17,7 @@
 @import 'messages';
 @import 'common';
 @import 'privacy-policies';
-@import "sidebar-filter";
+@import 'sidebar-filter';
 
 .container-fluid {
   overflow: hidden;
@@ -419,6 +419,15 @@ body {
 
   .mobile-freetext-filter {
     display: none;
+  }
+
+  .freetext-filter,
+  .mobile-freetext-filter {
+    &.disabled {
+      input, .btn, .mm-button-icon {
+        color: @gray-dark;
+      }
+    }
   }
 
   .reset-filter,
@@ -1295,14 +1304,22 @@ a.fa:hover {
     .freetext-filter {
       width: 100%;
 
-      input {
+      input, input:focus {
         border-right: 3px solid @white;
         background-color: @yellow-highlight;
+        z-index: 0;
       }
 
       .btn {
         border-left: 3px solid @white;
         background-color: @yellow-highlight;
+        opacity: 1;
+      }
+
+      &.disabled input,
+      &.disabled .btn {
+        background-color: @gray-ultra-light;
+        color: @gray-medium;
       }
     }
   }

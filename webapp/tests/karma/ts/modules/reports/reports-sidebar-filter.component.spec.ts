@@ -76,48 +76,60 @@ describe('Reports Sidebar Filter Component', () => {
     flush();
     expect(component).to.exist;
     expect(component.isResettingFilters).to.be.false;
-    expect(component.filters.length).to.equal(5);
     expect(component.filterCount).to.be.empty;
     expect(component.isOpen).to.be.false;
+    expect(component.formTypeFilter).to.exist;
+    expect(component.facilityFilter).to.exist;
+    expect(component.toDateFilter).to.exist;
+    expect(component.fromDateFilter).to.exist;
+    expect(component.statusFilter).to.exist;
   }));
 
   it('should emit search when applying filters', () => {
     const searchSpy = sinon.spy(component.search, 'emit');
-
     component.applyFilters();
     expect(searchSpy.calledOnce).to.be.true;
-    expect(searchSpy.args[0]).to.deep.equal([undefined]);
-
-    component.applyFilters(true);
-    expect(searchSpy.callCount).to.equal(2);
-    expect(searchSpy.args[1]).to.deep.equal([true]);
   });
 
   it('should clear all filters', () => {
-    const clearSpies = [];
-    component.filters.forEach(filter => clearSpies.push(sinon.spy(filter, 'clear')));
+    const formClearSpy = sinon.spy(component.formTypeFilter, 'clear');
+    const facilityClearSpy = sinon.spy(component.facilityFilter, 'clear');
+    const fromDateClearSpy = sinon.spy(component.fromDateFilter, 'clear');
+    const toDateClearSpy = sinon.spy(component.toDateFilter, 'clear');
+    const statusClearSpy = sinon.spy(component.statusFilter, 'clear');
 
     component.clearFilters();
 
-    expect(clearSpies.length).to.equal(5);
-    clearSpies.forEach(clearSpy => expect(clearSpy.calledOnce).to.be.true);
+    expect(formClearSpy.calledOnce).to.be.true;
+    expect(facilityClearSpy.calledOnce).to.be.true;
+    expect(fromDateClearSpy.calledOnce).to.be.true;
+    expect(toDateClearSpy.calledOnce).to.be.true;
+    expect(statusClearSpy.calledOnce).to.be.true;
   });
 
   it('should clear some filters', () => {
-    const clearSpies = {};
+    const formClearSpy = sinon.spy(component.formTypeFilter, 'clear');
+    const facilityClearSpy = sinon.spy(component.facilityFilter, 'clear');
+    const fromDateClearSpy = sinon.spy(component.fromDateFilter, 'clear');
+    const toDateClearSpy = sinon.spy(component.toDateFilter, 'clear');
+    const statusClearSpy = sinon.spy(component.statusFilter, 'clear');
     const shouldClear = [ 'fromDateFilter', 'placeFilter', 'statusFilter' ];
-    const shouldNotClear = [ 'toDateFilter', 'formFilter' ];
-    component.filters.forEach(filter => clearSpies[filter.fieldId] = sinon.spy(filter, 'clear'));
 
     component.clearFilters(shouldClear);
 
-    shouldClear.forEach(fieldId => expect(clearSpies[fieldId].calledOnce).to.be.true);
-    shouldNotClear.forEach(fieldId => expect(clearSpies[fieldId].notCalled).to.be.true);
+    expect(formClearSpy.notCalled).to.be.true;
+    expect(facilityClearSpy.calledOnce).to.be.true;
+    expect(fromDateClearSpy.calledOnce).to.be.true;
+    expect(toDateClearSpy.notCalled).to.be.true;
+    expect(statusClearSpy.calledOnce).to.be.true;
   });
 
   it('should count selected items', () => {
-    const countSelectedSpies = [];
-    component.filters.forEach(filter => countSelectedSpies.push(sinon.spy(filter, 'countSelected')));
+    const formCountSpy = sinon.spy(component.formTypeFilter, 'countSelected');
+    const facilityCountSpy = sinon.spy(component.facilityFilter, 'countSelected');
+    const fromDateCountSpy = sinon.spy(component.fromDateFilter, 'countSelected');
+    const toDateCountSpy = sinon.spy(component.toDateFilter, 'countSelected');
+    const statusCountSpy = sinon.spy(component.statusFilter, 'countSelected');
     const selectedForms = new Set();
     selectedForms.add('pregnancy_form');
     selectedForms.add('u5_assessment');
@@ -134,35 +146,43 @@ describe('Reports Sidebar Filter Component', () => {
 
     component.countSelected();
 
-    expect(countSelectedSpies.length).to.equal(5);
-    countSelectedSpies.forEach(spy => expect(spy.calledOnce).to.be.true);
+    expect(formCountSpy.calledOnce).to.be.true;
+    expect(facilityCountSpy.calledOnce).to.be.true;
+    expect(fromDateCountSpy.calledOnce).to.be.true;
+    expect(toDateCountSpy.calledOnce).to.be.true;
+    expect(statusCountSpy.calledOnce).to.be.true;
     expect(component.filterCount).to.deep.equal(expectedCount);
     expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ filterCount: expectedCount });
   });
 
   it('should reset filters', () => {
     const searchSpy = sinon.spy(component.search, 'emit');
-    const clearSpies = [];
-    component.filters.forEach(filter => clearSpies.push(sinon.spy(filter, 'clear')));
+    const formClearSpy = sinon.spy(component.formTypeFilter, 'clear');
+    const facilityClearSpy = sinon.spy(component.facilityFilter, 'clear');
+    const fromDateClearSpy = sinon.spy(component.fromDateFilter, 'clear');
+    const toDateClearSpy = sinon.spy(component.toDateFilter, 'clear');
+    const statusClearSpy = sinon.spy(component.statusFilter, 'clear');
 
     component.resetFilters();
 
-    expect(clearSpies.length).to.equal(5);
-    clearSpies.forEach(clearSpy => expect(clearSpy.calledOnce).to.be.true);
+    expect(formClearSpy.calledOnce).to.be.true;
+    expect(facilityClearSpy.calledOnce).to.be.true;
+    expect(fromDateClearSpy.calledOnce).to.be.true;
+    expect(toDateClearSpy.calledOnce).to.be.true;
+    expect(statusClearSpy.calledOnce).to.be.true;
     expect(globalActions.clearFilters.calledOnce).to.be.true;
     expect(searchSpy.calledOnce).to.be.true;
-    expect(searchSpy.args[0]).to.deep.equal([undefined]);
   });
 
   it('should toggle sidebar filter', () => {
     component.toggleSidebarFilter();
-    component.toggleSidebarFilter(true);
+    component.toggleSidebarFilter();
     component.toggleSidebarFilter();
 
     expect(globalActions.setSidebarFilter.calledThrice).to.be.true;
     expect(globalActions.setSidebarFilter.args[0][0]).to.deep.equal({ isOpen: true });
-    expect(globalActions.setSidebarFilter.args[1][0]).to.deep.equal({ isOpen: true });
-    expect(globalActions.setSidebarFilter.args[2][0]).to.deep.equal({ isOpen: false });
+    expect(globalActions.setSidebarFilter.args[1][0]).to.deep.equal({ isOpen: false });
+    expect(globalActions.setSidebarFilter.args[2][0]).to.deep.equal({ isOpen: true });
     expect(telemetryService.record.calledTwice).to.be.true;
   });
 
@@ -171,5 +191,27 @@ describe('Reports Sidebar Filter Component', () => {
 
     expect(globalActions.clearSidebarFilter.calledOnce).to.be.true;
     expect(globalActions.clearFilters.calledOnce).to.be.true;
+  });
+
+  it('should do nothing if component is disabled', () => {
+    const searchSpy = sinon.spy(component.search, 'emit');
+    const formClearSpy = sinon.spy(component.formTypeFilter, 'clear');
+    const facilityClearSpy = sinon.spy(component.facilityFilter, 'clear');
+    const fromDateClearSpy = sinon.spy(component.fromDateFilter, 'clear');
+    const toDateClearSpy = sinon.spy(component.toDateFilter, 'clear');
+    const statusClearSpy = sinon.spy(component.statusFilter, 'clear');
+    component.disabled = true;
+
+    component.clearFilters();
+    component.resetFilters();
+    component.applyFilters();
+
+    expect(searchSpy.notCalled).to.be.true;
+    expect(formClearSpy.notCalled).to.be.true;
+    expect(facilityClearSpy.notCalled).to.be.true;
+    expect(fromDateClearSpy.notCalled).to.be.true;
+    expect(toDateClearSpy.notCalled).to.be.true;
+    expect(statusClearSpy.notCalled).to.be.true;
+
   });
 });

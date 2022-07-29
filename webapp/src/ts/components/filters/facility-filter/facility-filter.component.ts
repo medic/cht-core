@@ -159,6 +159,10 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   }
 
   applyFilter(facilities) {
+    if (this.disabled) {
+      return;
+    }
+
     const facilityIds = facilities.map(facility => facility.doc?._id);
     let selectedFacilities;
 
@@ -200,10 +204,15 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   }
 
   clear() {
+    if (this.disabled) {
+      return;
+    }
+
     if (this.inline) {
       this.inlineFilter.clear();
       return;
     }
+
     this.dropdownFilter?.clear(false);
   }
 
@@ -212,7 +221,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   }
 
   select(selectedParent, facility, filter) {
-    if (selectedParent) {
+    if (selectedParent || this.disabled) {
       return;
     }
     this.toggle(facility, filter);

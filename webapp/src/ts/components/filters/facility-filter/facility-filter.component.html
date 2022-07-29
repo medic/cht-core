@@ -38,7 +38,7 @@
   <li
     role="presentation"
     [class.selected]="filter?.selected.has(facility)"
-    [class.disabled]="selectedParent"
+    [class.disabled]="selectedParent || disabled"
     [class.accordion-list]="inline"
     [class.accordion-list-expand]="facility.toggle"
     [class.accordion-caret]="facility?.children?.length">

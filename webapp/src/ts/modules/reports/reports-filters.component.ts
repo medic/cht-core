@@ -47,10 +47,17 @@ export class ReportsFiltersComponent implements AfterViewInit, OnDestroy {
   }
 
   applyFilters(force?) {
+    if (this.disabled) {
+      return;
+    }
     this.search.emit(force);
   }
 
   resetFilters() {
+    if (this.disabled) {
+      return;
+    }
+
     this.globalActions.clearFilters();
 
     this.formTypeFilter?.clear();
