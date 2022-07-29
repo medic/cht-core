@@ -18,6 +18,7 @@
     "wdio-standard-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/wdio-standard.conf.js",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
     "wdio": "wdio run ./tests/wdio.conf.js",
+    "wdio-upgrade": "wdio run ./tests/wdio-upgrade.conf.js",
     "wdio-standard": "wdio run ./tests/wdio-standard.conf.js"
   },
   "devDependencies": {

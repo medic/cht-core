@@ -1244,4 +1244,6 @@ module.exports = {
   apiLogTestEnd: (name) => {
     return module.exports.requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
   },
+  COMPOSE_FILES,
+  listenForApi,
 };
