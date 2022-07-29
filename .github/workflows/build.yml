@@ -230,5 +230,6 @@ jobs:
         run: |
           echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
           echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+      - run: npm ci --legacy-peer-deps
       - name: Upgrade
         run: npm run wdio-upgrade
