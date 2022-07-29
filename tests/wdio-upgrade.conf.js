@@ -22,13 +22,14 @@ const chai = require('chai');
 const { spawn } = require('child_process');
 chai.use(require('chai-exclude'));
 
+const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
   const contents = await rpn.get('https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml');
   await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
 const getMainCHTDockerCompose = async () => {
-  for (const composeFile of utils.COMPOSE_FILES) {
+  for (const composeFile of COMPOSE_FILES) {
     const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${mainBranch}/docker-compose/${composeFile}.yml`;
     const contents = await rpn.get(composeFileUrl);
     const filePath = path.join(CHT_DOCKER_COMPOSE_FOLDER, `${composeFile}.yml`);
