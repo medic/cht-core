@@ -3,7 +3,7 @@ version: '3.9'
 services:
   couchdb:
     image: {{{ repo }}}/cht-couchdb:{{ tag }}
-    container_name: {{ couch1_container_name }}
+    container_name: {{ couch_container_name }}
     volumes:
       - ${DB1_DATA:-./srv1}:/opt/couchdb/data
       - cht-credentials:/opt/couchdb/etc/local.d/

@@ -1270,5 +1270,6 @@ module.exports = {
     return module.exports.requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
   },
   COMPOSE_FILES,
+  CONTAINER_NAMES,
   listenForApi,
 };
