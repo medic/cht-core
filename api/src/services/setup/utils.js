@@ -137,6 +137,7 @@ const validBuildInfo = (buildInfo) => {
  */
 const getStagingDoc = async (buildInfo) => {
   const stagingDocId = `${buildInfo.namespace}:${buildInfo.application}:${buildInfo.version}`;
+  logger.warn(environment.buildsUrl, stagingDocId);
   try {
     const stagingDoc = await db.builds.get(stagingDocId, { attachments: true });
     if (_.isEmpty(stagingDoc._attachments)) {

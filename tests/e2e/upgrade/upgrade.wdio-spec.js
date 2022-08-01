@@ -29,7 +29,8 @@ describe('Performing an upgrade', () => {
     await toggle.waitForDisplayed();
     await toggle.click();
 
-    await utils.delayPromise(1000);
+    // wait for animation
+    await utils.delayPromise(500);
 
     const installButton = await getInstallButton();
 
@@ -39,7 +40,7 @@ describe('Performing an upgrade', () => {
 
     await (await $('button*=Cancel')).waitForDisplayed();
     await (await $('legend*=Deployment in progress')).waitForDisplayed();
-    await (await $('legend*=Deployment in progress')).waitForDisplayed({ reverse: true, timeout: 20000 });
+    await (await $('legend*=Deployment in progress')).waitForDisplayed({ reverse: true, timeout: 80000 });
 
     await (await $('div*=Deployment complete')).waitForDisplayed();
     const currentVersion = await $('dl.horizontal dd');

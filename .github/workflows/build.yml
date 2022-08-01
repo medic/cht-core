@@ -239,7 +239,7 @@ jobs:
       - name: Archive Results
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.grunt-cmd }} on node ${{ matrix.node-version }}
+          name: Upgrade
           path: |
             allure-results
             allure-report
