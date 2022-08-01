@@ -19,6 +19,10 @@ const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 
 const sidebarFilter = () => $('.sidebar-filter');
+const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
+const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
+const sidebarFilterToDate = () => $('#toDateFilter');
+const sidebarFilterFromDate = () => $('#fromDateFilter');
 const sidebarFilterOpenBtn = () => $('.reports-action-bar .open-filter');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
@@ -204,15 +208,14 @@ const openSidebarFilter = async () => {
   return (await sidebarFilter()).waitForDisplayed();
 };
 
-const openSidebarFilterAccordion = async (selector) => {
-  await (await $(`${selector} .panel-heading`)).click();
-  return (await $(`${selector} .panel-collapse.show`)).waitForDisplayed();
+const openSidebarFilterDateAccordion = async () => {
+  await (await sidebarFilterDateAccordionHeader()).click();
+  return (await sidebarFilterDateAccordionBody()).waitForDisplayed();
 };
 
-const setSidebarFilterDate = async (fieldId, calendarIdx = 1, day = 'r1c2') => {
-  await (await $(fieldId)).waitForDisplayed();
-  await (await $(fieldId)).click();
-  await browser.pause(300); // Wait for animation to finish
+const setSidebarFilterDate = async (fieldPromise, calendarIdx = 1, date = 'r1c2') => {
+  await (await fieldPromise).waitForDisplayed();
+  await (await fieldPromise).click();
 
   const dateRangePicker = `.daterangepicker:nth-of-type(${calendarIdx})`;
   await (await $(dateRangePicker)).waitForDisplayed();
@@ -220,10 +223,8 @@ const setSidebarFilterDate = async (fieldId, calendarIdx = 1, day = 'r1c2') => {
   const leftArrow = $(`${dateRangePicker} .table-condensed th>.fa-chevron-left`);
   await (await leftArrow).click();
 
-  const date = $(`${dateRangePicker} .table-condensed tr td[data-title="${day}"]`);
-  await (await date).click();
-
-  await browser.pause(300); // Wait for animation to finish
+  const dateCel = $(`${dateRangePicker} .table-condensed tr td[data-title="${date}"]`);
+  await (await dateCel).click();
 };
 
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
@@ -271,8 +272,10 @@ module.exports = {
   getTaskState,
   openForm,
   formTitle,
+  sidebarFilterToDate,
+  sidebarFilterFromDate,
   openSidebarFilter,
-  openSidebarFilterAccordion,
+  openSidebarFilterDateAccordion,
   setSidebarFilterDate,
   setDateInput,
   getFieldValue,

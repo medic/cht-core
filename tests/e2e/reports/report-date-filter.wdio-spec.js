@@ -13,7 +13,7 @@ const reportFactory = require('../../factories/cht/reports/generic-report');
 describe('Report Filter', () => {
   let savedReports;
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
-  const user = userFactory.build({ username: 'john', roles: [ 'chw' ] });
+  const user = userFactory.build();
   const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
   const reports = [
     // one registration half an hour before the start date
@@ -52,7 +52,7 @@ describe('Report Filter', () => {
     await (await reportsTab.firstReport()).waitForDisplayed();
 
     await reportsTab.filterByDate(moment('05/16/2016', 'MM/DD/YYYY'), moment('05/17/2016', 'MM/DD/YYYY'));
-    await browser.pause(300); // Wait for filter to finish
+    await commonElements.waitForPageLoaded();
     const allReports = await reportsTab.allReports();
 
     expect(allReports.length).to.equal(2);

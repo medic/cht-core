@@ -13,7 +13,7 @@ describe('Reports Sidebar Filter', () => {
   let savedReports;
   const today = moment();
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
-  const user = userFactory.build({ username: 'john', roles: [ 'chw' ] });
+  const user = userFactory.build();
   const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
   const reports = [
     reportFactory.build(
@@ -54,12 +54,15 @@ describe('Reports Sidebar Filter', () => {
   it('should filter by date', async () => {
     await (await reportsPage.firstReport()).waitForDisplayed();
     await reportsPage.openSidebarFilter();
-    await reportsPage.openSidebarFilterAccordion('#date-filter-accordion');
+    await reportsPage.openSidebarFilterDateAccordion();
 
-    await reportsPage.setSidebarFilterDate('#fromDateFilter');
-    await reportsPage.setSidebarFilterDate('#toDateFilter', 2, 'r3c5');
+    const fromDate = reportsPage.sidebarFilterFromDate();
+    await reportsPage.setSidebarFilterDate(fromDate);
 
-    await browser.pause(300); // Wait for filter to finish
+    const toDate = reportsPage.sidebarFilterToDate();
+    await reportsPage.setSidebarFilterDate(toDate, 2, 'r3c5');
+
+    await commonElements.waitForPageLoaded();
     const allReports = await reportsPage.allReports();
 
     expect(allReports.length).to.equal(2);
