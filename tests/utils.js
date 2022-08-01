@@ -607,6 +607,7 @@ const generateComposeFiles = async () => {
     api_container_name: CONTAINER_NAMES.api,
     sentinel_container_name: CONTAINER_NAMES.sentinel,
     db_name: 'medic-test',
+    couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
   };
 
   for (const file of COMPOSE_FILES) {

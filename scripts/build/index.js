@@ -117,6 +117,7 @@ const saveDockerComposeFiles = () => {
     api_container_name: 'cht-api',
     sentinel_container_name: 'cht-sentinel',
     db_name: 'medic',
+    couchdb_servers: 'couchdb',
   };
 
   const compiledServicesDockerCompose = mustache.render(servicesTemplate, view);
