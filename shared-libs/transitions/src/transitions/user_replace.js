@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
-const url = require('url');
 const rpn = require('request-promise-native');
-const db = require('../db');
+const environment = require('../environment');
 const transitionUtils = require('./utils');
 
 const NAME = 'user_replace';
@@ -20,16 +19,11 @@ module.exports = {
     );
   },
   onMatch: change => {
-    const parsedUrl = url.parse(db.couchUrl);
-    const separatorIndex = parsedUrl.auth.indexOf(':');
-    const username = parsedUrl.auth.substring(0, separatorIndex);
-    const password = parsedUrl.auth.substring(separatorIndex + 1);
-
     return rpn.post({
-      url: `http://localhost:${process.env.API_PORT || 5988}/api/v1/user-replace`,
+      url: `${environment.apiUrl}/api/v1/user-replace`,
       json: true,
       body: { reportId: change.doc._id },
-      auth: { user: username, pass: password },
+      auth: { user: environment.username, pass: environment.password },
     })
       .then(() => true)
       .catch(() => false);
