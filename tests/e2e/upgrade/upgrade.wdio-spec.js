@@ -22,7 +22,7 @@ describe('Performing an upgrade', () => {
     await loginPage.cookieLogin({ ...auth, createUser: false });
   });
 
-  it('should upgrade', async () => {
+  it('should upgrade to current branch', async () => {
     await browser.url('/admin/#/upgrade');
     await common.waitForLoaders();
     const toggle = await $('.upgrade-accordion .accordion-toggle');

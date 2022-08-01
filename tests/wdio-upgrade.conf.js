@@ -7,7 +7,7 @@ const wdioBaseConfig = require('./wdio.conf');
 const constants = require('./constants');
 constants.DB_NAME = 'medic';
 
-const { MARKET_URL_READ, STAGING_SERVER, DB1_DATA, DB2_DATA, DB3_DATA, HAPROXY_PORT } = process.env;
+const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;
 
 const rpn = require('request-promise-native');
 
@@ -19,7 +19,8 @@ utils.CONTAINER_NAMES.api = 'cht-api';
 utils.CONTAINER_NAMES.sentinel = 'cht-sentinel';
 
 const DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'upgrade-service-'));
-const CHT_DOCKER_COMPOSE_FOLDER =  fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
+const CHT_DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
+
 const UPGRADE_SERVICE_DC = path.join(DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
 const mainBranch = 'medic:medic:archv3-master-merge-2';
 
@@ -45,9 +46,6 @@ const getMainCHTDockerCompose = async () => {
 const dockerComposeCmd = (...params) => {
   const env = {
     ...process.env,
-    DB1_DATA,
-    DB2_DATA,
-    DB3_DATA,
     HAPROXY_PORT,
     CHT_COMPOSE_PATH: CHT_DOCKER_COMPOSE_FOLDER,
     COUCHDB_USER: auth.username,
