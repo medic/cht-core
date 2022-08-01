@@ -139,6 +139,18 @@ describe('Contact Delivery Form', () => {
     expect((await reportPage.getReportType())).to.equal(formDocument.title);
   });
 
+  const getContacts = async () => {
+    const contacts = await utils
+      .requestOnTestDb({ path: `/_all_docs?include_docs=true`, })
+      .then(response => {
+        return response.rows
+          .map(row => row.doc)
+          .filter(doc => doc.date_of_birth);
+      });
+
+    console.log(JSON.stringify(contacts, null, 2));
+  };
+
   it('The past pregnancy card should show', async () => {
     await commonPage.goToPeople('fixture:woman', true);
     await contactPage.getContactCardTitle();
@@ -156,10 +168,12 @@ describe('Contact Delivery Form', () => {
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
     const targets = await analyticsPage.getTargets();
+    await getContacts();
+
     expect(targets).to.have.deep.members([
       { title: 'Deaths', goal: '0', count: '0' },
       { title: 'New pregnancies', goal: '20', count: '0' },
-      { title: 'Live births', count: '2' },
+      { title: 'Live births', count: '1' },
       { title: 'Active pregnancies', count: '0' },
       { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
       { title: 'In-facility deliveries', percent: '100%', percentCount: '(1 of 1)' },
