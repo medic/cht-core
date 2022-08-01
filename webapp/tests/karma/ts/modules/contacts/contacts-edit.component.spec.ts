@@ -623,7 +623,7 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(contactSaveService.save.callCount).to.equal(1);
-      expect(contactSaveService.save.args[0]).to.deep.equal([ form, null, 'clinic' ]);
+      expect(contactSaveService.save.args[0]).to.deep.equal([ form, null, 'clinic', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'new_clinic_id']]);
     });
@@ -658,7 +658,7 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(contactSaveService.save.callCount).to.equal(1);
-      expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_person', 'person' ]);
+      expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_person', 'person', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_person']]);
     });
@@ -693,7 +693,7 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(contactSaveService.save.callCount).to.equal(1);
-      expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_patient', 'patient' ]);
+      expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_patient', 'patient', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_patient']]);
     });
