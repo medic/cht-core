@@ -25,11 +25,10 @@ module.exports = {
     const username = parsedUrl.auth.substring(0, separatorIndex);
     const password = parsedUrl.auth.substring(separatorIndex + 1);
 
-    const doc = change.doc;
     return rpn.post({
-      url: 'http://localhost:5988/api/v1/user-replace',
+      url: `http://localhost:${process.env.API_PORT || 5988}/api/v1/user-replace`,
       json: true,
-      body: { reportId: doc._id },
+      body: { reportId: change.doc._id },
       auth: { user: username, pass: password },
     })
       .then(() => true)
