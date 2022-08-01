@@ -19,22 +19,14 @@ async function replaceUser(replaceUserReportId, appUrl) {
   }
 
   const oldUserSettings = oldUserSettingsResponse.docs[0];
-  const newContact = await people.getOrCreatePerson({
-    name: replaceUserReport.name,
-    sex: replaceUserReport.sex,
-    phone: replaceUserReport.phone ? replaceUserReport.phone : oldContact.phone,
-    role: oldContact.role,
-    type: oldContact.type,
-    contact_type: oldContact.contact_type,
-    parent: oldContact.parent,
-    // TODO: there might be other properties here depending on the deployment's configuration
-  });
+  const newContact = await people.getOrCreatePerson(replaceUserReportId);
   await reparentReports(replaceUserReportId, newContact);
 
   const oldUser = await db.users.get(oldUserSettings._id);
+  const randomNum = Math.floor(Math.random() * 9999) + 1000;
+  const username = replaceUserReport.name.replace(/\s+/g, '-').toLowerCase() + randomNum; 
   const user = {
-    // TODO: either generate a username from the contact name or choose a username within the form
-    username: `${oldUserSettings.name}-replacement`,
+    username: username,
     contact: newContact._id,
     place: newContact.parent._id,
     phone: newContact.phone,
@@ -43,7 +35,7 @@ async function replaceUser(replaceUserReportId, appUrl) {
     type: oldUser.type,
     fullname: replaceUserReport.name,
   };
-  return await usersService.createUser(user, appUrl);
+  return usersService.createUser(user, appUrl);
 }
 
 async function reparentReports(replaceUserReportId, newContact) {
