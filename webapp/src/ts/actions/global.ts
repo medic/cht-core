@@ -23,7 +23,6 @@ export const Actions = {
   setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
   clearSidebarFilter: createAction('CLEAR_SIDEBAR_FILTER'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
-  setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
   setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
@@ -113,10 +112,6 @@ export class GlobalActions {
 
   setSelectMode(selectMode) {
     return this.store.dispatch(Actions.setSelectMode(selectMode));
-  }
-
-  setIsAdmin(isAdmin) {
-    return this.store.dispatch(Actions.setIsAdmin(isAdmin));
   }
 
   setLoadingShowContent(id) {

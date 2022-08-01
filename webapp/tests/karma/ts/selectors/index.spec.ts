@@ -22,7 +22,6 @@ const state = {
       isOpen: false,
       filterCount: { total: 5, placeFilter: 3, formFilter: 2 },
     },
-    isAdmin: 'is it an admin',
     navigation: {
       cancelCallback: function() {},
       preventNavigation: 'prevent',
@@ -178,10 +177,6 @@ describe('Selectors', () => {
 
     it('should getSidebarFilter', () => {
       expect(Selectors.getSidebarFilter(state)).to.deep.equal(clonedState.global.sidebarFilter);
-    });
-
-    it('should getIsAdmin', () => {
-      expect(Selectors.getIsAdmin(state)).to.equal(clonedState.global.isAdmin);
     });
 
     it('should getCancelCallback', () => {

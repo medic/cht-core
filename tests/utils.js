@@ -949,6 +949,19 @@ module.exports = {
     };
   },
 
+  saveCredentials: (key, password) => {
+    const options = {
+      path: `/api/v1/credentials/${key}`,
+      method: 'PUT',
+      body: password,
+      json: false,
+      headers: {
+        'Content-Type': 'text/plain'
+      }
+    };
+    return request(options);
+  },
+
   /**
    * Watches a given logfile until at least one line matches one of the given regular expressions.
    * Watch expires after 10 seconds.

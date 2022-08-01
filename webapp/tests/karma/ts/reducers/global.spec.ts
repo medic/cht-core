@@ -162,11 +162,6 @@ describe('Global Reducer', () => {
     });
   });
 
-  it('should set is Admin', () => {
-    expect(globalReducer(state, Actions.setIsAdmin(true))).to.deep.equal({ isAdmin: true });
-    expect(globalReducer(state, Actions.setIsAdmin(false))).to.deep.equal({ isAdmin: false });
-  });
-
   it('should set left action bar', () => {
     const left = { some: 'settings' };
 

@@ -1,6 +1,7 @@
 const db = require('../db');
 const logger = require('../logger');
 const translationUtils = require('@medic/translation-utils');
+const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
 const settingsService = require('./settings');
 const translations = require('../translations');
@@ -113,6 +114,9 @@ const handleTranslationsChange = () => {
 };
 
 const handleFormChange = (change) => {
+  if (change.deleted) {
+    return Promise.resolve();
+  }
   logger.info('Detected form change - generating attachments');
   return generateXform.update(change.id).catch(err => {
     logger.error('Failed to update xform: %o', err);
@@ -148,6 +152,11 @@ const listen = () => {
   db.medic
     .changes({ live: true, since: 'now', return_docs: false })
     .on('change', change => {
+
+      if (tombstoneUtils.isTombstoneId(change.id)) {
+        return Promise.resolve();
+      }
+
       if (change.id === MEDIC_DDOC_ID) {
         return handleDdocChange();
       }

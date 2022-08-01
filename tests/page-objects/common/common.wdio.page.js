@@ -12,9 +12,6 @@ const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
-const snackbar = () => $('#snackbar');
-const snackbarMessage = async () => (await $('#snackbar .snackbar-message')).getText();
-const snackbarAction = () => $('#snackbar .snackbar-action');
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
@@ -266,8 +263,5 @@ module.exports = {
   waitForLoaderToDisappear,
   goToAboutPage,
   waitForPageLoaded,
-  snackbar,
-  snackbarMessage,
-  snackbarAction,
   getTextForElements,
 };

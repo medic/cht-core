@@ -1,9 +1,5 @@
 <div class="basic-filters left-pane show-one-filter">
   <mm-freetext-filter class="filter legacy" (search)="applyFilters()" [disabled]="disabled"></mm-freetext-filter>
-  <mm-simprints-filter
-    [simprintsEnabled]="simprintsEnabled"
-    (identify)="simprintsIdentify()"
-  ></mm-simprints-filter>
   <reset-filters (resetFilters)="resetFilters()" [disabled]="disabled"></reset-filters>
   <mm-sort-filter
     [lastVisitedDateExtras]="lastVisitedDateExtras"

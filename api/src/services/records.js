@@ -6,6 +6,10 @@ const validate = require('./report/validate');
 const PublicError = require('../public-error');
 const DATE_NUMBER_STRING = /(\d{13,})/;
 
+// matches invisible characters that can mess up our parsing
+// specifically: u200B, u200C, u200D, uFEFF
+const ZERO_WIDTH_UNICODE_CHARACTERS = /[\u200B-\u200D\uFEFF]/g;
+
 const empty = val => {
   return val === '' ||
          val === null ||
@@ -166,6 +170,8 @@ const createByForm = (data, { locale }={}) => {
   if (data.message === undefined) {
     throw new PublicError('Missing required field: message');
   }
+
+  data.message = data.message.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
 
   const content = {
     type: 'sms_message',
