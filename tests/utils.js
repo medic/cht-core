@@ -768,6 +768,24 @@ const hostURL = (port = 80) => {
   return url.href;
 };
 
+const formDocProcessing = async (docs) => {
+  if (!Array.isArray(docs)) {
+    docs = [docs];
+  }
+
+  const formsWatchers = docs
+    .filter(doc => doc.type === 'form')
+    .map(doc => new RegExp(`Form with ID "${doc._id}" does not need to be updated`))
+    .map(re => module.exports.waitForApiLogs(re));
+
+  const waitForForms = await Promise.all(formsWatchers);
+
+  return {
+    promise:() => Promise.all(waitForForms.map(wait => wait.promise)),
+    cancel: () => waitForForms.forEach(wait => wait.cancel),
+  };
+};
+
 module.exports = {
   hostURL,
   parseCookieResponse,
@@ -827,8 +845,6 @@ module.exports = {
     },
   },
 
-
-
   requestOnTestDb: (options, debug) => {
     if (typeof options === 'string') {
       options = {
@@ -861,27 +877,36 @@ module.exports = {
     return request(options, { debug: debug });
   },
 
-  saveDoc: doc => {
-    return module.exports.requestOnTestDb({
-      path: '/', // so audit picks this up
-      method: 'POST',
-      body: doc,
-    });
+  saveDoc: async doc => {
+    const waitForForms = await formDocProcessing(doc);
+    try {
+      const result = module.exports.requestOnTestDb({
+        path: '/', // so audit picks this up
+        method: 'POST',
+        body: doc,
+      });
+      await waitForForms.promise();
+      return result;
+    } catch (err) {
+      waitForForms.cancel();
+      throw err;
+    }
   },
 
-  saveDocs: docs => {
-    return module.exports
-      .requestOnTestDb({
-        path: '/_bulk_docs',
-        method: 'POST',
-        body: { docs: docs }
-      })
-      .then(results => {
-        if (results.find(r => !r.ok)) {
-          throw Error(JSON.stringify(results, null, 2));
-        }
-        return results;
-      });
+  saveDocs: async docs => {
+    const waitForForms = await formDocProcessing(docs);
+    const results = await module.exports.requestOnTestDb({
+      path: '/_bulk_docs',
+      method: 'POST',
+      body: { docs }
+    });
+    if (results.find(r => !r.ok)) {
+      waitForForms.cancel();
+      throw Error(JSON.stringify(results, null, 2));
+    }
+
+    await waitForForms.promise();
+    return results;
   },
 
   saveMetaDocs: (user, docs) => {
