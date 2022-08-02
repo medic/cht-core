@@ -21,7 +21,7 @@ utils.CONTAINER_NAMES.sentinel = 'cht-sentinel';
 const DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'upgrade-service-'));
 const CHT_DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
 const UPGRADE_SERVICE_DC = path.join(DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
-const mainBranch = 'medic:medic:archv3-master-merge-2';
+const mainBranch = 'medic:medic:archv3-e2e-upgrade-forinstall';
 
 console.warn(`
 DOCKER_COMPOSE_FOLDER: ${DOCKER_COMPOSE_FOLDER}
