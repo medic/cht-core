@@ -1,1 +1,1 @@
-../../../../webapp/node_modules/bowser/bundled.js
+../../../node_modules/bowser/bundled.js

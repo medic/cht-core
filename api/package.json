@@ -19,6 +19,7 @@
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
     "body-parser": "^1.19.2",
+    "bowser": "^2.11.0",
     "buffer-shims": "^1.0.0",
     "compression": "^1.7.4",
     "enketo-transformer": "^2.0.0",
