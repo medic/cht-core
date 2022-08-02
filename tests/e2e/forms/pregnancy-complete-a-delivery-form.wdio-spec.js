@@ -173,7 +173,7 @@ describe('Contact Delivery Form', () => {
     expect(targets).to.have.deep.members([
       { title: 'Deaths', goal: '0', count: '0' },
       { title: 'New pregnancies', goal: '20', count: '0' },
-      { title: 'Live births', count: '1' },
+      { title: 'Live births', count: '2' },
       { title: 'Active pregnancies', count: '0' },
       { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
       { title: 'In-facility deliveries', percent: '100%', percentCount: '(1 of 1)' },

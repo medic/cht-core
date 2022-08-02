@@ -5,7 +5,7 @@ services:
     image: {{{ repo }}}/cht-couchdb:{{ tag }}
     container_name: {{ couch_container_name }}
     volumes:
-      - ${COUCHDB_DATA:-./srv1}:/opt/couchdb/data
+      - ${COUCHDB_DATA:-./srv}:/opt/couchdb/data
       - cht-credentials:/opt/couchdb/etc/local.d/
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
