@@ -54,13 +54,10 @@ describe('Reports Sidebar Filter', () => {
   it('should filter by date', async () => {
     await (await reportsPage.firstReport()).waitForDisplayed();
     await reportsPage.openSidebarFilter();
+
     await reportsPage.openSidebarFilterDateAccordion();
-
-    const fromDate = reportsPage.sidebarFilterFromDate();
-    await reportsPage.setSidebarFilterDate(fromDate);
-
-    const toDate = reportsPage.sidebarFilterToDate();
-    await reportsPage.setSidebarFilterDate(toDate, 2, 'r3c5');
+    await reportsPage.setSidebarFilterFromDate();
+    await reportsPage.setSidebarFilterToDate();
 
     await commonElements.waitForPageLoaded();
     const allReports = await reportsPage.allReports();

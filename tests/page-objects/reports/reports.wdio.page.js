@@ -218,7 +218,7 @@ const openSidebarFilterDateAccordion = async () => {
   return (await sidebarFilterDateAccordionBody()).waitForDisplayed();
 };
 
-const setSidebarFilterDate = async (fieldPromise, calendarIdx = 1, date = 'r1c2') => {
+const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
   await (await fieldPromise).waitForDisplayed();
   await (await fieldPromise).click();
 
@@ -230,6 +230,14 @@ const setSidebarFilterDate = async (fieldPromise, calendarIdx = 1, date = 'r1c2'
 
   const dateCel = $(`${dateRangePicker} .table-condensed tr td[data-title="${date}"]`);
   await (await dateCel).click();
+};
+
+const setSidebarFilterFromDate = () => {
+  return setSidebarFilterDate(sidebarFilterFromDate(), 1, 'r1c2');
+};
+
+const setSidebarFilterToDate = () => {
+  return setSidebarFilterDate(sidebarFilterToDate(), 2, 'r3c5');
 };
 
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
@@ -288,11 +296,10 @@ module.exports = {
   getTaskState,
   openForm,
   formTitle,
-  sidebarFilterToDate,
-  sidebarFilterFromDate,
   openSidebarFilter,
   openSidebarFilterDateAccordion,
-  setSidebarFilterDate,
+  setSidebarFilterFromDate,
+  setSidebarFilterToDate,
   setDateInput,
   getFieldValue,
   setBikDateInput,
