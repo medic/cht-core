@@ -62,7 +62,7 @@ describe('Targets', () => {
     await utils.revertSettings(true);
   });
 
-  it.only('should display targets from default config', async () => {
+  it('should display targets from default config', async () => {
     await analyticsPage.goToTargets();
 
     const targets = await analyticsPage.getTargets();
