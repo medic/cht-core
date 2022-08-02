@@ -65,23 +65,26 @@ form {
   width: 300px;
   margin: 0 auto;
 }
-.locale-wrapper {
+.wrapper {
   max-width: 800px;
   text-align: center;
   margin: 1em auto;
   padding: 0 20px;
 }
-.locale {
+.wrapper a {
   color: #bbbbbb;
   text-decoration: none;
   padding: 5px 10px;
   display: inline-block;
 }
-.locale.selected {
+.wrapper a.selected {
   color: #ffffff;
 }
-.locale:hover {
+.wrapper a:hover {
   text-decoration: underline;
+}
+.legal {
+  font-size: 0.8rem;
 }
 .error {
   color: #DA4548;
