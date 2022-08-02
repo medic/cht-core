@@ -48,6 +48,7 @@ create_self_signed_ssl_certificate()
   mkdir -p /etc/nginx/private
   set_environment_variables_if_not_set
   openssl req -x509 -nodes -newkey rsa:4096 \
+    -trustout \
     -keyout $SSL_KEY_FILE_PATH -out $SSL_CERT_FILE_PATH -days 365 \
     -subj "/emailAddress=$EMAIL/C=$COUNTRY/ST=$STATE/L=$LOCALITY/O=$ORGANISATION/OU=$DEPARTMENT/CN=$COMMON_NAME"
 
@@ -83,7 +84,7 @@ generate_self_signed_cert(){
 
         # add acme.sh to path
         export PATH="/root/.acme.sh/:$PATH"
-        if [ ! -d /root/.acme.sh/${COMMON_NAME} ]; then
+        if [ ! -f /root/.acme.sh/${COMMON_NAME}/fullchain.cer ]; then
             acme.sh --issue -d ${COMMON_NAME} --standalone
         fi
         acme.sh --install-cert -d ${COMMON_NAME} \
