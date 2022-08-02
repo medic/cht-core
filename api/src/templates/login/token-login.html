@@ -27,11 +27,16 @@
         <a href="/medic/login" class="btn"><span translate="login.token.redirect.login"></span></a>
       </div>
     </div>
-    <div id="locale" class="locale-wrapper">
+    <div id="locale" class="wrapper">
       <% locales.forEach(function(locale) { %>
       <a href="#" name="{{ locale.key }}" class="locale">{{ locale.label }}</a>
       <% }); %>
     </div>
+    <% if(hasPrivacyPolicy) { %>
+      <div class="wrapper legal">
+        <a href="/medic/privacy-policy?back=true" translate="privacy.policy"></a>
+      </div>
+      <% } %>
   </div>
 </div>
 <form id="tokenLogin" action="{{tokenUrl}}"></form>

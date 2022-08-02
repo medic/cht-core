@@ -22,11 +22,16 @@
         <button id="login" class="btn" translate="login"></button>
         <div class="loader"></div>
       </form>
-      <div id="locale" class="locale-wrapper">
+      <div id="locale" class="wrapper">
         <% locales.forEach(function(locale) { %>
           <a href="#" name="{{ locale.key }}" class="locale">{{ locale.label }}</a>
         <% }); %>
       </div>
+      <% if(hasPrivacyPolicy) { %>
+      <div class="wrapper legal">
+        <a href="/medic/privacy-policy?back=true" translate="privacy.policy"></a>
+      </div>
+      <% } %>
     </div>
     <script src="/login/script.js"></script>
   </body>
