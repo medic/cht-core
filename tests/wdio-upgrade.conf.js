@@ -20,9 +20,13 @@ utils.CONTAINER_NAMES.sentinel = 'cht-sentinel';
 
 const DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'upgrade-service-'));
 const CHT_DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
-
 const UPGRADE_SERVICE_DC = path.join(DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
 const mainBranch = 'medic:medic:archv3-master-merge-2';
+
+console.warn(`
+DOCKER_COMPOSE_FOLDER: ${DOCKER_COMPOSE_FOLDER}
+CHT_DOCKER_COMPOSE_FOLDER: ${CHT_DOCKER_COMPOSE_FOLDER}
+`);
 
 const chai = require('chai');
 const { spawn } = require('child_process');
@@ -30,7 +34,8 @@ chai.use(require('chai-exclude'));
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
-  const contents = await rpn.get('https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml');
+  const contents = (await rpn.get('https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml'))
+    .replace(':latest', ':1.0.0-couchdb-data-env.2780203114');
   await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
@@ -51,9 +56,13 @@ const dockerComposeCmd = (...params) => {
     COUCHDB_USER: auth.username,
     COUCHDB_PASSWORD: auth.password,
     DOCKER_CONFIG_PATH: path.join(os.homedir(), '.docker'),
+    COUCHDB_DATA: CHT_DOCKER_COMPOSE_FOLDER,
   };
 
+  console.log('CHT_COMPOSE_PATH', env.CHT_COMPOSE_PATH);
+
   return new Promise((resolve, reject) => {
+    console.log(...['docker-compose', '-f', UPGRADE_SERVICE_DC, ...params ]);
     const cmd = spawn('docker-compose', [ '-f', UPGRADE_SERVICE_DC, ...params ], { env });
     const output = [];
     const log = (data, error) => {
