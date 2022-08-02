@@ -62,7 +62,7 @@ describe('Targets', () => {
     await utils.revertSettings(true);
   });
 
-  it('should display targets from default config', async () => {
+  it.only('should display targets from default config', async () => {
     await analyticsPage.goToTargets();
 
     const targets = await analyticsPage.getTargets();
@@ -70,7 +70,7 @@ describe('Targets', () => {
     expect(targets).to.have.deep.members([
       { title: 'Deaths', goal: '0', count: '0' },
       { title: 'New pregnancies', goal: '20', count: '0' },
-      { title: 'Live births', count: '1' }, // This is CHW Bob, the target counts any contact type 'person'.
+      { title: 'Live births', count: '0' },
       { title: 'Active pregnancies', count: '0' },
       { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
       { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
