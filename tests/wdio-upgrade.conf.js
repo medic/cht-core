@@ -107,6 +107,10 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
     await startUpgradeService();
     await utils.listenForApi();
   },
+  mochaOpts: {
+    ui: 'bdd',
+    timeout: 120 * 1000,
+  },
 });
 
 const exit = () => dockerComposeCmd('down');
