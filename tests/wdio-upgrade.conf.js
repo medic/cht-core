@@ -21,7 +21,7 @@ utils.CONTAINER_NAMES.sentinel = 'cht-sentinel';
 const DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'upgrade-service-'));
 const CHT_DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
 const UPGRADE_SERVICE_DC = path.join(DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
-const mainBranch = 'medic:medic:archv3-e2e-upgrade-forinstall';
+const mainBranch = 'medic:medic:archv3-with-different-name';
 
 console.warn(`
 DOCKER_COMPOSE_FOLDER: ${DOCKER_COMPOSE_FOLDER}
@@ -34,7 +34,7 @@ chai.use(require('chai-exclude'));
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
-  const contents = (await rpn.get('https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml'))
+  const contents = (await rpn.get('https://raw.githubusercontent.com/medic/cht-upgrade-service/couchdb_data_env/docker-compose.yml'))
     .replace(':latest', ':1.0.0-couchdb-data-env.2780203114');
   await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
