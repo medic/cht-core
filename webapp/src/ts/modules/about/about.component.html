@@ -13,11 +13,14 @@
         <dt>{{'version' | translate}}</dt>
         <dd>{{version}}</dd>
         <span>
-          <dt>{{'Supported browser' | translate}}</dt>
+          <dt>{{'debug.supported_browser' | translate}}</dt>
           <dd *ngIf="this.isUsingSupportedBrowser(); else unsupportedBrowser">✅</dd>
           <ng-template #unsupportedBrowser>
             <dd>
-              ❌ <a target="_blank" rel="noopener noreferrer" href="https://docs.communityhealthtoolkit.org/core/releases/#requirements">See requirements</a>
+              ❌
+              <a target="_blank" rel="noopener noreferrer" href="https://docs.communityhealthtoolkit.org/core/releases/#requirements">
+                {{'debug.supported_browser.see_requirements' | translate}}
+              </a>
             </dd>
           </ng-template>
         </span>
