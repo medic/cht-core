@@ -36,6 +36,7 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   isResettingFilters = false;
   isOpen = false;
   filterCount:any = { };
+  dateFilterError = '';
 
   constructor(
     private store: Store,
@@ -99,6 +100,10 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
       // Counting every time the user opens the sidebar filter in reports tab.
       this.telemetryService.record('sidebar_filter:reports:open');
     }
+  }
+
+  showDateFilterError(error) {
+    this.dateFilterError = error;
   }
 
   ngOnDestroy() {

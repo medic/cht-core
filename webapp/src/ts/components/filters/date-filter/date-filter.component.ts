@@ -22,7 +22,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   private globalActions;
   private subscription: Subscription = new Subscription();
   inputLabel;
-  showError;
+  error: string;
   dateRange = {
     from: undefined,
     to: undefined,
@@ -33,6 +33,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   @Input() isStartDate;
   @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
+  @Output() onError: EventEmitter<any> = new EventEmitter();
 
   constructor(
     private store: Store,
@@ -74,7 +75,6 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
       }
     );
 
-    // todo TOUR needs to show and hide this datepicker!
     datepicker.on('show.daterangepicker', (element, picker) => {
       setTimeout(() => {
         if (this.disabled) {
@@ -87,6 +87,22 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
           picker.move();
         }
       });
+    });
+
+    datepicker.on('hide.daterangepicker', (element, picker) => {
+      if (this.isRange) {
+        return;
+      }
+      let date = this.isStartDate ? this.dateRange.from : this.dateRange.to;
+      if (!date) {
+        date = moment();
+      }
+      if (!picker.startDate?.isSame(date, 'day')) {
+        picker.setStartDate(date);
+      }
+      if (!picker.endDate?.isSame(date, 'day')) {
+        picker.setEndDate(date);
+      }
     });
 
     datepicker.on('mm.dateSelected.daterangepicker', (e, picker) => {
@@ -105,13 +121,19 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
     }
   }
 
+  private setError(error) {
+    this.error = error;
+    this.onError.emit(this.error);
+  }
+
   private validateDateRange(dateRange) {
     if (dateRange?.from && dateRange?.to && dateRange.to < dateRange.from) {
-      this.showError = true;
+      const errorKey = this.isStartDate ? 'date_filter.error.from_date' : 'date_filter.error.to_date';
+      this.setError(errorKey);
       return false;
     }
 
-    this.showError = false;
+    this.setError(false);
     return true;
   }
 
@@ -187,7 +209,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   }
 
   ngOnDestroy() {
-    this.showError = false;
+    this.setError(false);
     this.subscription.unsubscribe();
     const datePicker:any = $(`#${this.fieldId}`).data('daterangepicker');
 

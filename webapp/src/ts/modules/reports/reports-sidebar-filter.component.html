@@ -66,6 +66,7 @@
             class="filter"
             fieldId="fromDateFilter"
             (search)="applyFilters()"
+            (onError)="showDateFilterError($event)"
             [disabled]="disabled"
             [isStartDate]="true">
           </mm-date-filter>
@@ -76,8 +77,10 @@
             class="filter"
             fieldId="toDateFilter"
             (search)="applyFilters()"
+            (onError)="showDateFilterError($event)"
             [disabled]="disabled">
           </mm-date-filter>
+          <p class="filter-error-message" *ngIf="dateFilterError">{{ dateFilterError | translate }}</p>
         </accordion-group>
 
         <!-- 4. Status -->

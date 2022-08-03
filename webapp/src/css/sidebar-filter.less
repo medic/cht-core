@@ -168,10 +168,8 @@
           }
         }
 
-        .date-filter-error {
-          color: @error-color;
-          margin-top: 10px;
-          font-size: @font-extra-small;
+        .date-filter-error .mm-button {
+          border-color: @error-color;
         }
       }
 
@@ -275,6 +273,15 @@
             }
           }
         }
+      }
+
+      .filter-error-message {
+        display: block;
+        margin-top: 10px;
+        padding: 0 5px;
+        color: @error-color;
+        font-size: @font-extra-small;
+        font-weight: bold;
       }
     }
 
