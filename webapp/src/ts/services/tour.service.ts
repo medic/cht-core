@@ -8,7 +8,7 @@ import { AnalyticsModulesService } from '@mm-services/analytics-modules.service'
 import { SessionService } from '@mm-services/session.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { SIDEBAR_FILTER_PERMISSION } from '@mm-modules/reports/reports-sidebar-filter.component';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 
 @Injectable({
   providedIn: 'root'
@@ -30,8 +30,8 @@ export class TourService {
     private responsiveService:ResponsiveService,
   ) {
     this.authService
-      .has(SIDEBAR_FILTER_PERMISSION)
-      .then(canViewSidebar => this.canViewSidebar = canViewSidebar);
+      .has(OLD_REPORTS_FILTER_PERMISSION)
+      .then(isSidebarDisabled => this.canViewSidebar = !isSidebarDisabled);
   }
 
   private mmScroll(container, elem) {

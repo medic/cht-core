@@ -8,8 +8,6 @@ import { DateFilterComponent } from '@mm-components/filters/date-filter/date-fil
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 
-export const SIDEBAR_FILTER_PERMISSION:string = 'can_view_sidebar_filter';
-
 @Component({
   selector: 'mm-reports-sidebar-filter',
   templateUrl: './reports-sidebar-filter.component.html'

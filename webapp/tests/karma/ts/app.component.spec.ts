@@ -258,12 +258,17 @@ describe('AppComponent', () => {
     expect(component.isSidebarFilterOpen).to.be.false;
   });
 
-  it('should set isSidebarFilterOpen true when filter state is open', () => {
+  it('should set isSidebarFilterOpen true when filter state is open', fakeAsync(async () => {
+    authService.has.resolves(false);
+    await getComponent();
+    component.ngAfterViewInit();
+
     store.overrideSelector(Selectors.getSidebarFilter, { isOpen: true });
     store.refreshState();
+    tick();
 
     expect(component.isSidebarFilterOpen).to.be.true;
-  });
+  }));
 
   it('should subscribe to xmlFormService when initing forms', async () => {
     const form1 = {

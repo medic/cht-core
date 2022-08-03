@@ -8,6 +8,8 @@ import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
 
+export const OLD_REPORTS_FILTER_PERMISSION:string = 'can_view_old_reports_filter';
+
 @Component({
   selector: 'reports-filters',
   templateUrl: './reports-filters.component.html'

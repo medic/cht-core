@@ -25,7 +25,7 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { AuthService } from '@mm-services/auth.service';
-import { SIDEBAR_FILTER_PERMISSION } from '@mm-modules/reports/reports-sidebar-filter.component';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 
 const PAGE_SIZE = 50;
 
@@ -144,8 +144,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngAfterViewInit() {
-    const enable = await this.authService.has(SIDEBAR_FILTER_PERMISSION);
-    this.useSidebarFilter = enable;
+    const isDisabled = await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    this.useSidebarFilter = !isDisabled;
     this.search();
 
     if (!this.useSidebarFilter) {

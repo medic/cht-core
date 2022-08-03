@@ -44,7 +44,7 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
-import { SIDEBAR_FILTER_PERMISSION } from '@mm-modules/reports/reports-sidebar-filter.component';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -445,9 +445,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async subscribeToSideFilterStore() {
-    const enable = await this.authService.has(SIDEBAR_FILTER_PERMISSION);
+    const isDisabled = await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
 
-    if (!enable) {
+    if (isDisabled) {
       return;
     }
 

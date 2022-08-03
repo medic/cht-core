@@ -39,12 +39,20 @@ describe('Report Filter', () => {
   ];
 
   beforeEach(async () => {
+    const settings = await utils.getSettings();
+    const permissions = {
+      ...settings.permissions,
+      can_view_old_reports_filter: [ 'chw' ]
+    };
+    await utils.updateSettings({ permissions }, true);
+
     const results = await utils.saveDocs([ parent, patient, ...reports ]);
     results.splice(0, 2); // Keeping only reports
     savedReports = results.map(result => result.id);
 
     await utils.createUsers([ user ]);
     await loginPage.login(user);
+    await commonElements.waitForPageLoaded();
     await commonElements.goToReports();
   });
 
