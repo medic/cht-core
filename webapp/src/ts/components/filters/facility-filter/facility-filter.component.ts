@@ -37,6 +37,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
   private totalFacilitiesDisplayed = 0;
   private listHasScroll = false;
+  private togglingFacilities = false;
   private scrollEventListenerAdded = false;
   private displayNewFacilityQueued = false;
   private readonly MAX_LIST_HEIGHT = 300; // this is set in CSS
@@ -159,7 +160,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   }
 
   applyFilter(facilities) {
-    if (this.disabled) {
+    if (this.disabled || this.togglingFacilities) {
       return;
     }
 
@@ -187,12 +188,17 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   }
 
   private toggle(facility, filter) {
+    this.togglingFacilities = true;
+
     const recursiveFacilities = this.getFacilitiesRecursive(facility);
     const newToggleValue = !filter.selected.has(facility);
     // Exclude places with already correct toggle state, then toggle the rest.
     recursiveFacilities
       .filter(place => filter.selected.has(place) !== newToggleValue)
       .forEach(place => filter.toggle(place));
+
+    this.togglingFacilities = false;
+    this.applyFilter(Array.from(filter.selected));
   }
 
   itemLabel(facility) {
