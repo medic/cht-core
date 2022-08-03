@@ -11,13 +11,14 @@ const submitterPlace = () => $('.position a');
 const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
 const firstReport = () => $(`${reportListID} li:first-child`);
-const reportList = () => $(`${reportListID}`);
 const allReports = () => $$(`${reportListID} li`);
 const reportsByUUID = (uuid) => $$(`li[data-record-id="${uuid}"]`);
 const reportRowSelector = `${reportListID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 
+
+const reportList = () => $(reportListID);
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
 
