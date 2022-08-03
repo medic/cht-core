@@ -23,11 +23,6 @@ const CHT_DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'))
 const UPGRADE_SERVICE_DC = path.join(DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
 const mainBranch = 'medic:medic:archv3-with-different-name';
 
-console.warn(`
-DOCKER_COMPOSE_FOLDER: ${DOCKER_COMPOSE_FOLDER}
-CHT_DOCKER_COMPOSE_FOLDER: ${CHT_DOCKER_COMPOSE_FOLDER}
-`);
-
 const chai = require('chai');
 const { spawn } = require('child_process');
 chai.use(require('chai-exclude'));
@@ -58,8 +53,6 @@ const dockerComposeCmd = (...params) => {
     DOCKER_CONFIG_PATH: path.join(os.homedir(), '.docker'),
     COUCHDB_DATA: CHT_DOCKER_COMPOSE_FOLDER,
   };
-
-  console.log('CHT_COMPOSE_PATH', env.CHT_COMPOSE_PATH);
 
   return new Promise((resolve, reject) => {
     console.log(...['docker-compose', '-f', UPGRADE_SERVICE_DC, ...params ]);
@@ -97,6 +90,7 @@ const startUpgradeService = async () => {
 // Override specific properties from wdio base config
 const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   specs: [
+    './tests/e2e/upgrade/upgrade.wdio-spec.js',
     './tests/e2e/upgrade/*.wdio-spec.js'
   ],
   exclude: [],
