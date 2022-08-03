@@ -231,6 +231,7 @@ jobs:
         run: |
           echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
           echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
       - run: npm ci --legacy-peer-deps
       - name: Create logs directory
         run: mkdir tests/logs
