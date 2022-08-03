@@ -28,36 +28,31 @@ console.log(`Generating diffs for conflicts on ${server}`);
 
 const DB = new PouchDB(server);
 
-const writeToFile = async (path, content) => {
-  try {
-    const jsonContent = JSON.stringify(content, null, 3);
-    await fs.promises.writeFile(path, jsonContent);
-  } catch (err) {
-    console.error('Error when writing file', err);
-    throw err; 
-  }
+const writeToFile = (path, content) => {
+  const jsonContent = JSON.stringify(content, null, 3);
+  fs.writeFileSync(path, jsonContent);
 };
 
-const createDirectoryIfValid = function(conflictDirectoryPath) {
+const createDirectoryIfValid = (conflictDirectoryPath) => {
   if (!fs.existsSync(conflictDirectoryPath)){
     try {
-      fs.mkdirSync(conflictDirectoryPath);
+      fs.mkdirSync(conflictDirectoryPath);     
+      return;
     } catch(err){
       console.error('Error when creating conflict folder', err);
-    }
-  } else {
-    if(!isDiectoryEmpty(conflictDirectoryPath)){
-      console.log('Conflict Directory is not empty, exiting');
-      process.exit();
-    }
+    }   
   }
+  if(!isDiectoryEmpty(conflictDirectoryPath)){
+    console.error('Conflict Directory is not empty, exiting');
+    process.exit();
+  } 
 };
 
-const isDiectoryEmpty = function isEmpty(path) {
+const isDiectoryEmpty = (path) => {
   return fs.readdirSync(path).length === 0;
 };
 
-const getConflictDirectoryPath = function (doc_id, mainConflictFilesDirectory) {
+const getConflictDirectoryPath = (doc_id, mainConflictFilesDirectory) => {
   //id:target~2022-05~44a58753-50b6-593f-bb42-999a5ca3c18c~org.couchdb.user:bhaktapur_chn6
   //foldername: target~2022-05~44a58753-50b6-593f-bb42-999a5ca3c18c~org.couchdb.user
   //We are only taking the doc id of target before the colon to not have issues 
