@@ -31,7 +31,6 @@ const AVAILABLE_TRANSITIONS = [
   'generate_patient_id_on_people',
   'default_responses',
   'update_sent_by',
-  'update_sent_forms',
   'death_reporting',
   'conditional_alerts',
   'multi_report_alerts',
