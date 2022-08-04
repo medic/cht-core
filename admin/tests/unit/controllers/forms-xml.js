@@ -7,6 +7,7 @@ describe('FormsXmlCtrl controller', () => {
   let rootScope;
   let db;
   let utf8Stub;
+  let AddAttachment;
 
   const nextTick = () => new Promise(r => setTimeout(r));
   const digest = () => {
@@ -40,6 +41,7 @@ describe('FormsXmlCtrl controller', () => {
         get: sinon.stub().resolves({}),
         put: sinon.stub().resolves()
       };
+      AddAttachment = sinon.stub().resolves();
       createController = (xmlContent, metaContent, validateFormStub) => {
         utf8Stub = sinon.stub().resolves();
         utf8Stub.withArgs('file.xml').resolves(xmlContent || '');
@@ -50,7 +52,7 @@ describe('FormsXmlCtrl controller', () => {
           $scope: scope,
           $rootScope: $rootScope,
           DB: () => db,
-          AddAttachment: sinon.stub().resolves(),
+          AddAttachment,
           FileReader: { utf8: utf8Stub },
           JsonParse: JSON.parse,
           ValidateForm: validateFormStub || sinon.stub().resolves({ok:true})
@@ -213,4 +215,67 @@ describe('FormsXmlCtrl controller', () => {
         });
     });
   });
+
+  describe('saves the doc', () => {
+
+    const NOW = moment('2000-01-15').valueOf();
+    let clock;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers(NOW);
+    });
+
+    afterEach(() => {
+      clock.restore();
+    });
+
+    it('creates the doc', () => {
+      mockFormUploader(['file.xml']);
+      mockMetaUploader(['file.json']);
+
+      const xml = `
+      <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+        <instance>
+          <data id="editcontact">
+            <meta><instanceID/></meta>
+            <h:title>my form title</h:title>
+          </data>
+        </instance>
+      </h:html>
+      `;
+
+      const meta = JSON.stringify({ icon: 'pic' });
+
+      createController(xml, meta);
+      db.get.rejects({ status: 404 });
+      return scope
+        .upload()
+        .then(() => clock.runAll())
+        .then(() => {
+          clock.runAll();
+          chai.expect(scope.status).to.deep.equal({
+            uploading: false,
+            error: false,
+            success: true,
+            errorMessage: null
+          });
+          chai.expect(db.put.callCount).to.equal(1);
+          const doc = db.put.args[0][0];
+          chai.expect(doc._id).to.equal('form:editcontact');
+          chai.expect(doc.type).to.equal('form');
+          chai.expect(doc.title).to.equal('my form title');
+          chai.expect(doc.internalId).to.equal('editcontact');
+          chai.expect(doc.icon).to.equal('pic');
+          chai.expect(doc.xmlVersion.sha256)
+            .to.equal('20a6dcd658bf49b6b03dc5c1d76055c3a0f28ffc60376beea3c628f5b4f0173f');
+          chai.expect(doc.xmlVersion.time).to.equal(NOW.valueOf());
+          chai.expect(AddAttachment.callCount).to.equal(1);
+          chai.expect(AddAttachment.args[0][0]).to.deep.equal(doc);
+          chai.expect(AddAttachment.args[0][1]).to.deep.equal('xml');
+          chai.expect(AddAttachment.args[0][2]).to.deep.equal(xml);
+          chai.expect(AddAttachment.args[0][3]).to.deep.equal('application/xml');
+        });
+    });
+  });
+
 });
