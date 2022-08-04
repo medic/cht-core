@@ -1,4 +1,4 @@
-name: BRAC Scalability Workflow
+name: Ongoing Scalability Workflow
 # Only trigger, when the build workflow succeeded
 on: workflow_dispatch
 
