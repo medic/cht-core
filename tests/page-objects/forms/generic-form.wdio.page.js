@@ -63,9 +63,7 @@ const verifyReport = async () => {
   expect(validatedReport.patient).to.be.undefined;
 };
 
-const submitForm = async () => {
-  await submitButton().click();
-}
+const submitForm = () => submitButton().click();
 
 module.exports = {
   submitButton,
@@ -77,5 +75,5 @@ module.exports = {
   selectContact,
   verifyReport,
   editForm,
-  submitForm
+  submitForm,
 };

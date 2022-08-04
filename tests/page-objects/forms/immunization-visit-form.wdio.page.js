@@ -1,4 +1,3 @@
-let countAppliedVaccines = 0;
 const BCG_VACCINE = 'input[name="/immunization_visit/group_bcg/g_bcg"]';
 const CHOLERA_VACCINE = 'input[name="/immunization_visit/group_cholera/g_cholera"]';
 const HEPATITIS_A_VACCINE = 'input[name="/immunization_visit/group_hep_a/g_hep_a"]';
@@ -19,49 +18,40 @@ const VITAMIN_A_VACCINE = 'input[name="/immunization_visit/group_vitamin_a/g_vit
 const YELLOW_FEVER_VACCINE = 'input[name="/immunization_visit/group_yellow_fever/g_yellow_fever"]';
 
 const notes = () => $('textarea[name="/immunization_visit/group_note/g_chw_sms"]');
+const vaccines = () => $$('input[name="/immunization_visit/group_select_vaccines/g_vaccines"]');
+const patientNameSummaryPage = () => $('span[data-value=" /immunization_visit/patient_name "]');
+const vaccinesAvalibleSummaryPage = () => $$('label.question.note.or-branch.non-select.or-appearance-li');
+const vaccinesDisableSummaryPage = () => $$('label.question.note.or-branch.non-select.or-appearance-li.disabled');
+const followUpSMS = () => $('span[data-value=" /immunization_visit/chw_sms "]');
 
 const selectAppliedVaccines = async (selector, option = "no") => {
     const vaccinesSelector = await $$(`${selector}[value*="${option}"]`);
     for (const vaccine of vaccinesSelector) {
         await vaccine.click();
     }
-    countAppliedVaccines += !option.includes('no') ? vaccinesSelector.length: 0;
+    return vaccinesSelector.length;
 };
 
 const selectAllVaccines = async () => {
-    const cbVaccines = await $$('input[name="/immunization_visit/group_select_vaccines/g_vaccines"]');
+    const cbVaccines = await vaccines();
     for (const vaccine of cbVaccines) {
         await vaccine.click();
     }
 };
 
-const addNotes = async (note = 'Test notes') => {
-    await notes().setValue(note);
-};
+const addNotes = async (note = 'Test notes') => notes().setValue(note);
 
-const getNotes = async () => {
-   return await notes().getText();
-};
+const getNotes = () => notes().getText();
 
-const getPatientNameSummaryPage = async () => {
-    const patientName = await $('span[data-value=" /immunization_visit/patient_name "]');
-    return await patientName.getText();
-};
-
-const getAppliedVaccines = () => {
-    return countAppliedVaccines;
-};
+const getPatientNameSummaryPage = () => patientNameSummaryPage().getText();
 
 const getAppliedVaccinesSummary = async () => {
-    const vaccinesAvaible = await $$('label.question.note.or-branch.non-select.or-appearance-li');
-    const vaccinesDisabled = await $$('label.question.note.or-branch.non-select.or-appearance-li.disabled');
+    const vaccinesAvaible = await vaccinesAvalibleSummaryPage();
+    const vaccinesDisabled = await vaccinesDisableSummaryPage();
     return vaccinesAvaible.length - vaccinesDisabled.length;
 };
 
-const getFollowUpSMS = async () => {
-    const sms = await $('span[data-value=" /immunization_visit/chw_sms "]');
-    return await sms.getText();
-};
+const getFollowUpSMS = async () =>  followUpSMS().getText();
 
 module.exports = {
   BCG_VACCINE,
@@ -87,7 +77,6 @@ module.exports = {
   addNotes,
   getNotes,
   getPatientNameSummaryPage,
-  getAppliedVaccines,
   getAppliedVaccinesSummary,
-  getFollowUpSMS
+  getFollowUpSMS,
 };

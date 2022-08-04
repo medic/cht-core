@@ -1,22 +1,23 @@
-const utils = require('../../utils');
-const loginPage = require('../../page-objects/login/login.wdio.page');
-const commonPage = require('../../page-objects/common/common.wdio.page');
-const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
-const reportsPage = require('../../page-objects/reports/reports.wdio.page');
-const analyticsPage = require('../../page-objects/analytics/analytics.wdio.page');
-const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
-const placeFactory = require('../../factories/cht/contacts/place');
-const userFactory = require('../../factories/cht/users/users');
-const gatewayApiUtils = require('../../gateway-api.utils');
-const immunizationVisitForm = require('../../page-objects/forms/immunization-visit-form.wdio.page');
+const utils = require('../../../utils');
+const loginPage = require('../../../page-objects/login/login.wdio.page');
+const commonPage = require('../../../page-objects/common/common.wdio.page');
+const contactPage = require('../../../page-objects/contacts/contacts.wdio.page');
+const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
+const analyticsPage = require('../../../page-objects/analytics/analytics.wdio.page');
+const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
+const placeFactory = require('../../../factories/cht/contacts/place');
+const userFactory = require('../../../factories/cht/users/users');
+const gatewayApiUtils = require('../../../gateway-api.utils');
+const immunizationVisitForm = require('../../../page-objects/forms/immunization-visit-form.wdio.page');
 
-const places = placeFactory.generateHierarchy();
-const healthCenter = places.find(place => place.type === 'health_center');
-const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });
-const babyName = 'Baby1';
-let babyMedicID = '';
+describe('Immunization Visit', () => {
+    const places = placeFactory.generateHierarchy();
+    const healthCenter = places.find(place => place.type === 'health_center');
+    const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });
+    const babyName = 'Baby1';
+    let babyMedicID = '';
+    let countAppliedVaccines = 0;
 
-describe('Immunization Visit', async() => {
     before(async() => {
         await utils.saveDocs([...places]);
         await utils.createUsers([user]);
@@ -54,48 +55,48 @@ describe('Immunization Visit', async() => {
 
         await immunizationVisitForm.selectAllVaccines();
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.BCG_VACCINE, 'yes');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.BCG_VACCINE, 'yes');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.CHOLERA_VACCINE, 'CH');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.CHOLERA_VACCINE, 'CH');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.HEPATITIS_A_VACCINE, 'HA');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.HEPATITIS_A_VACCINE, 'HA');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.HEPATITIS_B_VACCINE, 'yes');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.HEPATITIS_B_VACCINE, 'yes');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.HPV_VACCINE, 'HPV');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.HPV_VACCINE, 'HPV');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.FLU_VACCINE, 'yes');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.FLU_VACCINE, 'yes');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.JAP_ENCEPHALITIS_VACCINE, 'yes');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.JAP_ENCEPHALITIS_VACCINE, 'yes');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.MENINGOCOCCAL_VACCINE, 'MN');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.MENINGOCOCCAL_VACCINE, 'MN');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.MMR_VACCINE, 'MMR');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.MMR_VACCINE, 'MMR');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.MMRV_VACCINE, 'MMRV');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.MMRV_VACCINE, 'MMRV');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.POLIO_VACCINE, 'PV');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.POLIO_VACCINE, 'PV');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.PENTAVALENT_VACCINE, 'DT');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.PENTAVALENT_VACCINE, 'DT');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.DPT_BOOSTER_VACCINE, 'DPT');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.DPT_BOOSTER_VACCINE, 'DPT');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.PNEUMOCOCCAL_VACCINE, 'PCV');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.PNEUMOCOCCAL_VACCINE, 'PCV');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.ROTAVIRUS_VACCINE, 'RV');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.ROTAVIRUS_VACCINE, 'RV');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.TYPHOID_VACCINE, 'TY');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.TYPHOID_VACCINE, 'TY');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.VITAMIN_A_VACCINE, 'yes');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.VITAMIN_A_VACCINE, 'yes');
         await genericForm.nextPage();
-        await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.YELLOW_FEVER_VACCINE, 'yes');
+        countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.YELLOW_FEVER_VACCINE, 'yes');
         await genericForm.nextPage();
         await immunizationVisitForm.addNotes();
         await genericForm.nextPage();
 
         expect(await immunizationVisitForm.getPatientNameSummaryPage()).to.equal(babyName);
-        expect(await immunizationVisitForm.getAppliedVaccines()).to.equal(await immunizationVisitForm.getAppliedVaccinesSummary() - 1);
-        expect(await immunizationVisitForm.getFollowUpSMS()).to.include(babyName && await immunizationVisitForm.getNotes());
+        expect(countAppliedVaccines).to.equal(await immunizationVisitForm.getAppliedVaccinesSummary() - 1);
+        expect(await immunizationVisitForm.getFollowUpSMS()).to.include(babyName && babyMedicID && await immunizationVisitForm.getNotes());
 
         await genericForm.submitForm();
     });
@@ -104,10 +105,10 @@ describe('Immunization Visit', async() => {
         const vaccinesValues = await contactPage.getImmCardVaccinesValues();
         for (const value of vaccinesValues) {
             if (value.includes('of')) {
-                const totalVaccines =  value.charAt(value.length - 1);
+                const totalVaccines = value.split(' of ')[1];
                 expect(value).to.equal(`${totalVaccines} of ${totalVaccines}`);
             } else {
-                 expect(value).to.equal('Yes');
+                expect(value).to.equal('Yes');
             }
         }
     });
@@ -138,6 +139,7 @@ describe('Immunization Visit', async() => {
     it('Verify the targets page', async () => {
         await commonPage.logout()
         await loginPage.login(user);
+        await commonPage.waitForPageLoaded();
         await commonPage.goToAnalytics();
         const targets = await analyticsPage.getTargets();
         

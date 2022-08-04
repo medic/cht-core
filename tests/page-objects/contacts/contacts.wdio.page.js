@@ -56,13 +56,15 @@ const forms = () => $$('.action-container .detail-actions .actions.dropup .open 
 const formTitle = () => $('#form-title');
 const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
 const contactInfoName = () => $('.content-pane .material .body .card .row .heading-content');
-const contactMedicID = () => $('div[class = "cell patient_id"] > div > p');
+const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
 
+const HEALTH_PROGRAMS = { ANC: 'anc', PNC: 'pnc', IMM: 'imm', GPM: 'gpm'};
 const healthProgram = (program) => $(`input[name="/data/health_center/use_cases"][value="${program}"]`);
 const vaccines = () => $$('input[name="/data/health_center/vaccines"]');
-const immCardVaccinesSelector = 'div[class="col col-sm-6 col-xs-12"] > div > div > p';
-const immCardVaccineValue = () => $(immCardVaccinesSelector);
-const immCardVaccinesValues = () => $$(immCardVaccinesSelector);
+
+const IMM_CARD_VACCINES_SELECTOR = 'div[class="col col-sm-6 col-xs-12"] > div > div > p';
+const immCardVaccineValue = () => $(IMM_CARD_VACCINES_SELECTOR);
+const immCardVaccinesValues = () => $$(IMM_CARD_VACCINES_SELECTOR);
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -284,14 +286,16 @@ const getContactMedicID = async () => {
 /**
  * Add health programs to a health facility, standard config
  * 
- * @param {string} program 
- * Refers to the different Health Programs, "anc" for Antenatal care,  "pnc" for Postnatal care,  "imm" for Immunizations and "gpm" for Growth monitoring (nutrition)
+ * @param {string} program - Refers to the different Health Programs
+ *                            "anc" for Antenatal care
+ *                            "pnc" for Postnatal care
+ *                            "imm" for Immunizations and "gpm" for Growth monitoring (nutrition)
  */
-const addHealthPrograms = async (program = 'anc') => {
+const addHealthPrograms = async (program = HEALTH_PROGRAMS.ANC) => {
   await (await editContactButton()).waitForDisplayed();
   await (await editContactButton()).click();
   await healthProgram(program).click();
-  if(program === 'imm'){
+  if (program === HEALTH_PROGRAMS.IMM) {
     await addAllVaccines();
   }
   await genericForm.submitButton().click();
@@ -347,5 +351,5 @@ module.exports = {
   getContactInfoName,
   getContactMedicID,
   addHealthPrograms,
-  getImmCardVaccinesValues
+  getImmCardVaccinesValues,
 };
