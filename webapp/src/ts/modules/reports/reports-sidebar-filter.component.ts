@@ -103,7 +103,7 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   }
 
   showDateFilterError(error) {
-    this.dateFilterError = error;
+    this.dateFilterError = error || '';
   }
 
   ngOnDestroy() {
