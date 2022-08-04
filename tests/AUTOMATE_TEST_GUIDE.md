@@ -2,7 +2,19 @@
 
 This style guide provides editorial guidelines for anyone creating new automated test cases for the CHT-Core.
 
-There are three files that are the base of every new automated test case, the most important one is the `<name>.wdio.spec.js`, which contains the actual test that will be executed. It needs to have that name convention because the [config file](https://github.com/medic/cht-core/blob/master/tests/wdio.conf.js#L42-L44) has as an attribute to execute all the files that have `*.wdio-spec.js`.
+There are three files that are the base of every new automated test case, the most important one is the `spec.js`, which contains the actual test that will be executed. 
+
+Right now we have two different configs set up:
+* **default**
+    * Config file: [`wdio.conf.js`](https://github.com/medic/cht-core/blob/master/tests/wdio-standard.conf.js)
+    * Name convention for the `spec` file: `<name>.wdio-spec.js`
+    * Command to execute the tests that belong to this config:  `npm run wdio-local`
+* **standard**
+    * Config file: [`wdio-standard.conf.js`](https://github.com/medic/cht-core/blob/master/tests/wdio.conf.js)
+    * Name convention for the `spec` file: `<name>.standard-wdio-spec.js`
+    * Command to execute the tests that belong to this config:  `npm run wdio-standard-local`
+
+The `spec` files need to have that name convention because **the config file** has an attribute to execute all the files that have that specific format.
 ## Base files to use
 
 * Page-object file. (`../tests/page-objects/forms/<name>.wdio.page.js`)
@@ -13,9 +25,11 @@ There are three files that are the base of every new automated test case, the mo
 
     This file contains all the information about a _"dummy"_ contact that can be used for testing. All the attributes from this contact can be updated as required in the execution code for the test accessing the object. If a specific contact is required for the test a new file can be created with that information.
 
-* e2e testing file. (`../tests/e2e/forms/<name>.wdio.spec.js`)
+* e2e testing file. (`../tests/e2e/forms/<name>.spec.js`)
 
-    This file should contain **only** the implementation of the test that is going to be executed. All the logging and contact creation should be only referenced in this file. For a better understanding follow the [`pregnancy-visit.wdio-spec.js`](https://github.com/medic/cht-core/blob/master/tests/e2e/forms/pregnancy-visit.wdio-spec.js) file as an example.
+    This file should contain **only** the implementation of the test that is going to be executed. All the logging and contact creation should be only referenced in this file. For a better understanding follow these files as examples:
+    * default config: [`pregnancy-visit.wdio-spec.js`](https://github.com/medic/cht-core/blob/master/tests/e2e/forms/pregnancy-visit.wdio-spec.js).
+    * standard config: [`immunization-visit-form.standard-wdio-spec.js`](https://github.com/medic/cht-core/blob/master/tests/e2e/forms/pregnancy-visit.wdio-spec.js)
 
 ### Note:
 We decided to separate every functionality in files/folders because we want to make sure that we can reuse as much code as we can. If something new is implemented and might be used for another test will be important to isolate it in a separate file so it can be used in future tests.

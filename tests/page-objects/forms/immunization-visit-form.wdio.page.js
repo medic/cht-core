@@ -1,0 +1,93 @@
+let countAppliedVaccines = 0;
+const BCG_VACCINE = 'input[name="/immunization_visit/group_bcg/g_bcg"]';
+const CHOLERA_VACCINE = 'input[name="/immunization_visit/group_cholera/g_cholera"]';
+const HEPATITIS_A_VACCINE = 'input[name="/immunization_visit/group_hep_a/g_hep_a"]';
+const HEPATITIS_B_VACCINE = 'input[name="/immunization_visit/group_hep_b/g_hep_b"]';
+const HPV_VACCINE = 'input[name="/immunization_visit/group_hpv/g_hpv"]';
+const FLU_VACCINE = 'input[name="/immunization_visit/group_flu/g_flu"]';
+const JAP_ENCEPHALITIS_VACCINE = 'input[name="/immunization_visit/group_jap_enc/g_jap_enc"]';
+const MENINGOCOCCAL_VACCINE = 'input[name="/immunization_visit/group_meningococcal/g_meningococcal"]';
+const MMR_VACCINE = 'input[name="/immunization_visit/group_mmr/g_mmr"]';
+const MMRV_VACCINE = 'input[name="/immunization_visit/group_mmrv/g_mmrv"]';
+const POLIO_VACCINE = 'input[name="/immunization_visit/group_polio/g_polio"]';
+const PENTAVALENT_VACCINE = 'input[name="/immunization_visit/group_pentavalent/g_pentavalent"]';
+const DPT_BOOSTER_VACCINE = 'input[name="/immunization_visit/group_dpt/g_dpt"]';
+const PNEUMOCOCCAL_VACCINE = 'input[name="/immunization_visit/group_pneumococcal/g_pneumococcal"]';
+const ROTAVIRUS_VACCINE = 'input[name="/immunization_visit/group_rotavirus/g_rotavirus"]';
+const TYPHOID_VACCINE = 'input[name="/immunization_visit/group_typhoid/g_typhoid"]';
+const VITAMIN_A_VACCINE = 'input[name="/immunization_visit/group_vitamin_a/g_vitamin_a"]';
+const YELLOW_FEVER_VACCINE = 'input[name="/immunization_visit/group_yellow_fever/g_yellow_fever"]';
+
+const notes = () => $('textarea[name="/immunization_visit/group_note/g_chw_sms"]');
+
+const selectAppliedVaccines = async (selector, option = "no") => {
+    const vaccinesSelector = await $$(`${selector}[value*="${option}"]`);
+    for (const vaccine of vaccinesSelector) {
+        await vaccine.click();
+    }
+    countAppliedVaccines += !option.includes('no') ? vaccinesSelector.length: 0;
+};
+
+const selectAllVaccines = async () => {
+    const cbVaccines = await $$('input[name="/immunization_visit/group_select_vaccines/g_vaccines"]');
+    for (const vaccine of cbVaccines) {
+        await vaccine.click();
+    }
+};
+
+const addNotes = async (note = 'Test notes') => {
+    await notes().setValue(note);
+};
+
+const getNotes = async () => {
+   return await notes().getText();
+};
+
+const getPatientNameSummaryPage = async () => {
+    const patientName = await $('span[data-value=" /immunization_visit/patient_name "]');
+    return await patientName.getText();
+};
+
+const getAppliedVaccines = () => {
+    return countAppliedVaccines;
+};
+
+const getAppliedVaccinesSummary = async () => {
+    const vaccinesAvaible = await $$('label.question.note.or-branch.non-select.or-appearance-li');
+    const vaccinesDisabled = await $$('label.question.note.or-branch.non-select.or-appearance-li.disabled');
+    return vaccinesAvaible.length - vaccinesDisabled.length;
+};
+
+const getFollowUpSMS = async () => {
+    const sms = await $('span[data-value=" /immunization_visit/chw_sms "]');
+    return await sms.getText();
+};
+
+module.exports = {
+  BCG_VACCINE,
+  CHOLERA_VACCINE,
+  HEPATITIS_A_VACCINE,
+  HEPATITIS_B_VACCINE,
+  HPV_VACCINE,
+  FLU_VACCINE,
+  JAP_ENCEPHALITIS_VACCINE,
+  MENINGOCOCCAL_VACCINE,
+  MMR_VACCINE,
+  MMRV_VACCINE,
+  POLIO_VACCINE,
+  PENTAVALENT_VACCINE,
+  DPT_BOOSTER_VACCINE,
+  PNEUMOCOCCAL_VACCINE,
+  ROTAVIRUS_VACCINE,
+  TYPHOID_VACCINE,
+  VITAMIN_A_VACCINE,
+  YELLOW_FEVER_VACCINE,
+  selectAllVaccines,
+  selectAppliedVaccines,
+  addNotes,
+  getNotes,
+  getPatientNameSummaryPage,
+  getAppliedVaccines,
+  getAppliedVaccinesSummary,
+  getFollowUpSMS
+};

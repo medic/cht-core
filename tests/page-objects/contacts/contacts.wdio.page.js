@@ -56,6 +56,13 @@ const forms = () => $$('.action-container .detail-actions .actions.dropup .open 
 const formTitle = () => $('#form-title');
 const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
 const contactInfoName = () => $('.content-pane .material .body .card .row .heading-content');
+const contactMedicID = () => $('div[class = "cell patient_id"] > div > p');
+
+const healthProgram = (program) => $(`input[name="/data/health_center/use_cases"][value="${program}"]`);
+const vaccines = () => $$('input[name="/data/health_center/vaccines"]');
+const immCardVaccinesSelector = 'div[class="col col-sm-6 col-xs-12"] > div > div > p';
+const immCardVaccineValue = () => $(immCardVaccinesSelector);
+const immCardVaccinesValues = () => $$(immCardVaccinesSelector);
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -104,7 +111,7 @@ const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
 };
 
-const addPlace = async (type, placeName, contactName) => {
+const addPlacePrimaryContact = async (type, contactName) => {
   const dashedType = type.replace('_', '-');
   await (await actionResourceIcon(dashedType)).waitForDisplayed();
   await (await actionResourceIcon(dashedType)).click();
@@ -112,9 +119,10 @@ const addPlace = async (type, placeName, contactName) => {
   await (await newPrimaryContactButton()).waitForDisplayed();
   await (await newPrimaryContactButton()).click();
   await (await newPrimaryContactName()).addValue(contactName);
-  await (await dateOfBirthField()).addValue('2000-01-01');
-  await (await contactSexField()).click();
-  await genericForm.nextPage();
+};
+
+const addPlaceDetails = async (type, placeName) => {
+  const dashedType = type.replace('_', '-');
   await (await writeNamePlace(type)).click();
   await (await newPlaceName()).addValue(placeName);
   await (await externalIdField(type)).addValue('1234457');
@@ -122,6 +130,21 @@ const addPlace = async (type, placeName, contactName) => {
   await (await genericForm.submitButton()).click();
   await (await contactCardIcon(dashedType)).waitForDisplayed();
   await (await contactCard()).waitForDisplayed();
+};
+
+// Default config
+const addPlace = async (type, placeName, contactName) => {
+  await addPlacePrimaryContact(type, contactName);  
+  await (await dateOfBirthField()).addValue('2000-01-01');
+  await (await contactSexField()).click();
+  await genericForm.nextPage();
+  await addPlaceDetails(type, placeName);
+};
+
+const addPlaceStandardConfig = async (type, placeName, contactName) => {
+  await addPlacePrimaryContact(type, contactName);
+  await genericForm.nextPage();
+  await addPlaceDetails(type, placeName);
 };
 
 const addPerson = async (name, params = {}) => {
@@ -253,6 +276,40 @@ const getContactInfoName = async () => {
   return (await contactInfoName()).getText();
 };
 
+const getContactMedicID = async () => {
+  await contactMedicID().waitForDisplayed();
+  return (await contactMedicID()).getText();
+};
+
+/**
+ * Add health programs to a health facility, standard config
+ * 
+ * @param {string} program 
+ * Refers to the different Health Programs, "anc" for Antenatal care,  "pnc" for Postnatal care,  "imm" for Immunizations and "gpm" for Growth monitoring (nutrition)
+ */
+const addHealthPrograms = async (program = 'anc') => {
+  await (await editContactButton()).waitForDisplayed();
+  await (await editContactButton()).click();
+  await healthProgram(program).click();
+  if(program === 'imm'){
+    await addAllVaccines();
+  }
+  await genericForm.submitButton().click();
+};
+
+const addAllVaccines = async () => {
+  const allVaccines = await vaccines();  
+  for (const vaccine of allVaccines) {
+    await vaccine.waitForClickable()
+    await vaccine.click();
+  }
+};
+
+const getImmCardVaccinesValues = async () => {
+  await (await immCardVaccineValue()).waitForDisplayed();
+  return Promise.all((await immCardVaccinesValues()).map(value => value.getText()));
+};
+
 module.exports = {
   selectLHSRowByText,
   reportFilters,
@@ -262,6 +319,7 @@ module.exports = {
   getAllLHSContactsNames,
   addPerson,
   addPlace,
+  addPlaceStandardConfig,
   topContact,
   getPrimaryContactName,
   getAllRHSPeopleNames,
@@ -286,5 +344,8 @@ module.exports = {
   createNewAction,
   openReport,
   getContactCardTitle,
-  getContactInfoName
+  getContactInfoName,
+  getContactMedicID,
+  addHealthPrograms,
+  getImmCardVaccinesValues
 };
