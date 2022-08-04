@@ -1,11 +1,6 @@
 name: BRAC Scalability Workflow
 # Only trigger, when the build workflow succeeded
-on:
-  push:
-  workflow_run:
-    workflows: [ Build cht-core and test against node versions ]
-    types: [completed]
-    branches: [updated_scalability]
+on: workflow_dispatch
 
 jobs:
   build:
@@ -23,7 +18,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
           aws-region: ca-central-1
       - name: Start EC2 and Medics
-        run: cd tests/scalability/brac && ./start_ec2_medic.sh $TAG_NAME
+        run: cd tests/scalability/ongoing && ./start_ec2_medic.sh $TAG_NAME
       - name: Execute Jmeter
         env:
           SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
