@@ -350,6 +350,7 @@ describe('Target aggregates', () => {
 
       await commonElements.goToAnalytics();
       await analytics.goToTargetAggregates(true);
+      await helper.takeScreenshot('targets.png');
 
       const expectedTargets = [
         { id: 'count_no_goal', title: 'count no goal', progressBar: false, goal: false, counter: '27' },
