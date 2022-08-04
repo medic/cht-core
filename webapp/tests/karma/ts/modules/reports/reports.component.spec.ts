@@ -61,7 +61,7 @@ describe('Reports Component', () => {
     addReadStatusService = { updateReports: sinon.stub().resolvesArg(0) };
     authService = { has: sinon.stub().resolves(false) };
     sessionService = {
-      isAdmin: sinon.stub().returns(false),
+      isDbAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub()
     };
     datePipe = { transform: sinon.stub() };
