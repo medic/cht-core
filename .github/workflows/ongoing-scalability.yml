@@ -7,8 +7,12 @@ jobs:
     name: Set up Medic on EC2 and Execute Jmeter on another EC2
     runs-on: ubuntu-latest
     steps:
-      - name: Set TAG_NAME var
-        run: echo "TAG_NAME=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+      - name: Get branch name
+        uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
+      - name: Set TAG and BRANCH
+        run: |
+          echo "TAG_NAME=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v2
       - name: Configure AWS Credentials
@@ -18,8 +22,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
           aws-region: ca-central-1
       - name: Start EC2 and Medics
-        run: cd tests/scalability/ongoing && ./start_ec2_medic.sh $TAG_NAME
+        run: cd tests/scalability/ongoing && ./start_ec2_medic.sh $TAG_NAME $BRANCH_NAME
       - name: Execute Jmeter
         env:
           SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
-        run: cd tests/scalability/brac && ./start_jmeter_ec2.sh
+        run: cd tests/scalability/ongoing && ./start_jmeter_ec2.sh
