@@ -29,8 +29,7 @@ chai.use(require('chai-exclude'));
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
-  const contents = (await rpn.get('https://raw.githubusercontent.com/medic/cht-upgrade-service/couchdb_data_env/docker-compose.yml'))
-    .replace(':latest', ':1.0.0-couchdb-data-env.2780203114');
+  const contents = (await rpn.get('https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml'));
   await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
