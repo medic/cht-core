@@ -26,6 +26,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { AuthService } from '@mm-services/auth.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
+import { SessionService } from '@mm-services/session.service';
 
 const PAGE_SIZE = 50;
 
@@ -72,6 +73,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
     private ngZone:NgZone,
+    private sessionService:SessionService,
     private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
   ) {
@@ -144,7 +146,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngAfterViewInit() {
-    const isDisabled = await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSidebarFilter = !isDisabled;
     this.search();
 

@@ -31,7 +31,7 @@ export class TourService {
   ) {
     this.authService
       .has(OLD_REPORTS_FILTER_PERMISSION)
-      .then(isSidebarDisabled => this.canViewSidebar = !isSidebarDisabled);
+      .then(isSidebarDisabled => this.canViewSidebar = !isSidebarDisabled && !this.sessionService.isAdmin());
   }
 
   private mmScroll(container, elem) {

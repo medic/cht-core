@@ -445,7 +445,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private async subscribeToSideFilterStore() {
-    const isDisabled = await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    const isDisabled = !this.sessionService.isAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
 
     if (isDisabled) {
       return;

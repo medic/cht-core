@@ -33,6 +33,7 @@ describe('Reports Component', () => {
   let fixture: ComponentFixture<ReportsComponent>;
   let changesService;
   let addReadStatusService;
+  let sessionService;
   let searchService;
   let listContains;
   let authService;
@@ -59,6 +60,10 @@ describe('Reports Component', () => {
     changesService = { subscribe: sinon.stub().resolves(of({})) };
     addReadStatusService = { updateReports: sinon.stub().resolvesArg(0) };
     authService = { has: sinon.stub().resolves(false) };
+    sessionService = {
+      isAdmin: sinon.stub().returns(false),
+      isOnlineOnly: sinon.stub()
+    };
     datePipe = { transform: sinon.stub() };
 
     return TestBed
@@ -88,7 +93,7 @@ describe('Reports Component', () => {
           // Needed because of facility filter
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
           { provide: TourService, useValue: tourServiceMock },
-          { provide: SessionService, useValue: { isOnlineOnly: sinon.stub() } },
+          { provide: SessionService, useValue: sessionService },
           { provide: NavigationService, useValue: {} },
           { provide: AuthService, useValue: authService },
           { provide: DatePipe, useValue: datePipe },
