@@ -50,7 +50,7 @@
         </accordion-group>
 
         <!-- 3. Date -->
-        <accordion-group id="date-filter-accordion">
+        <accordion-group id="date-filter-accordion" [class.filter-error]="dateFilterError">
           <ng-container
             accordion-heading
             [ngTemplateOutlet]="headerTemplate"

@@ -85,53 +85,67 @@
       overflow-y: auto;
       overflow-x: hidden;
 
-      .panel-group .panel-heading .accordion-toggle {
-        .btn-link {
-          color: @gray-ultra-dark;
-          font-size: @font-medium;
-          font-weight: bold;
-          padding: 0;
-          border: none;
-
-          .title {
-            display: inline-block;
-            margin: 0;
-          }
+      .panel-group {
+        .panel {
+          margin: 0;
         }
 
-        &:before {
-          content: none;
-        }
-
-        &:after {
-          font-size: @font-medium;
-          margin: 5px;
-        }
-
-        &[aria-expanded="false"]:after {
-          content: '\f078'; // https://fontawesome.com/v4/icon/chevron-down
-        }
-
-        &[aria-expanded="true"]:after {
-          content: '\f077'; // https://fontawesome.com/v4/icon/chevron-up
-        }
-
-        .chip {
-          background: @blue-dark;
-          color: @white;
-          border-radius: 100px;
-          padding: 2px 15px;
-          margin-left: 10px;
-          display: inline-block;
-
-          &.disabled {
-            background: @gray-medium !important;
-          }
-
-          .fa {
-            margin-left: 10px;
+        .panel-heading .accordion-toggle {
+          .btn-link {
+            color: @gray-ultra-dark;
             font-size: @font-medium;
+            font-weight: bold;
+            padding: 0;
+            border: none;
+
+            .title {
+              display: inline-block;
+              margin: 0;
+            }
           }
+
+          &:before {
+            content: none;
+          }
+
+          &:after {
+            font-size: @font-medium;
+            margin: 5px;
+          }
+
+          &[aria-expanded="false"]:after {
+            content: '\f078'; // https://fontawesome.com/v4/icon/chevron-down
+          }
+
+          &[aria-expanded="true"]:after {
+            content: '\f077'; // https://fontawesome.com/v4/icon/chevron-up
+          }
+
+          .chip {
+            background: @blue-dark;
+            color: @white;
+            border-radius: 100px;
+            padding: 2px 15px;
+            margin-left: 10px;
+            display: inline-block;
+
+            &.disabled {
+              background: @gray-medium !important;
+            }
+
+            .fa {
+              margin-left: 10px;
+              font-size: @font-medium;
+            }
+          }
+        }
+
+        .panel-open .panel-collapse {
+          padding: 10px 0;
+        }
+
+        .filter-error .panel-collapse {
+          background: rgba(227, 48, 48, 0.1);
         }
       }
 
@@ -160,16 +174,13 @@
           display: block;
           box-shadow: none;
           border: 1px solid @gray-light;
+          background: @white;
           border-radius: 5px;
           margin-right: 8px;
 
           .mm-button-icon {
             padding-right: 10px;
           }
-        }
-
-        .date-filter-error .mm-button {
-          border-color: @error-color;
         }
       }
 
