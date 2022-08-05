@@ -59,6 +59,6 @@ describe('Webapp after upgrade', () => {
 
   it('should display correct version on the about page', async () => {
     await common.goToAboutPage();
-    expect(await upgradePage.getCurrentVersion()).to.equal(BRANCH);
+    expect(await upgradePage.getCurrentVersion()).to.include(`${BRANCH} (`);
   });
 });
