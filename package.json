@@ -33,7 +33,7 @@
     "@angular/compiler": "^12.2.1",
     "@angular/compiler-cli": "^12.2.1",
     "@angular/localize": "^12.2.1",
-    "@faker-js/faker": "^6.1.2",
+    "@faker-js/faker": "^6.3.1",
     "@medic/eslint-config": "^1.1.0",
     "@types/chai": "^4.2.22",
     "@types/jquery": "^3.5.6",

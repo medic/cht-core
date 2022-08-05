@@ -5,16 +5,22 @@ const personFactory = require(path.join(factoryPath, 'contacts/brac-person'));
 const surveyFactory = require(path.join(factoryPath, 'reports/brac-survey'));
 
 const personSubtypeByParentType = {
-  'district_hospital': 'manager',
-  'health_center': 'chw',
-  'clinic': 'member_eligible_woman'
+  'district_hospital': ['manager'],
+  'health_center': ['chw'],
+  'clinic': ['member_eligible_woman', 'member_child'],
+};
+
+const getRandomPersonSubtype = (parent) => {
+  const subTypes = personSubtypeByParentType[parent.type];
+  const idx = Math.floor(Math.random() * subTypes.length);
+  return subTypes[idx];
 };
 
 const generatePerson = (parent, subtype, primary = false) => {
   const docs = [];
 
   const lineage = { _id: parent._id, parent: parent.parent };
-  subtype = subtype || personSubtypeByParentType[parent.type];
+  subtype = subtype || getRandomPersonSubtype(parent);
   const person = personFactory.generateBracPerson(lineage, subtype);
   docs.push(person);
   if (primary) {
@@ -32,7 +38,8 @@ const generateReports = (person, parent) => {
 
   if (personFactory.shouldGeneratePregnancySurvey(person)) {
     const pregnancySurvey = surveyFactory.generateBracSurvey('pregnancy', parent, person);
-    docs.push(pregnancySurvey);
+    const assesmentSurvey = surveyFactory.generateBracSurvey('assesment', parent, person);
+    docs.push(pregnancySurvey, assesmentSurvey);
   }
 
   if (personFactory.shouldGenerateAssessmentSurvey(person)) {

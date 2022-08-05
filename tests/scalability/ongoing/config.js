@@ -1,8 +1,8 @@
 module.exports = {
   contactsNbr: {
     district_hospital: 5,
-    health_center: 10,
-    clinic: 30,
+    health_center: 100,
+    clinic: 100,
     person: 8,
     chw: 3,
   },

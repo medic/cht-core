@@ -36,8 +36,7 @@ mkdir -p $DATA_DIR/dbs
 echo "npm install for jmeter suite"
 npm ci
 
-node ./generate-data.js $DATA_DIR
-node ./upload-data.js $INSTANCE_URL $DATA_DIR
+node --inspect=0.0.0.0:9930 ./generate-data.js $INSTANCE_URL $DATA_DIR
 
 echo "jmeter install"
 wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.4.3.tgz -O $DATA_DIR/apache-jmeter.tgz

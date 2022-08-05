@@ -1,5 +1,6 @@
 const Factory = require('rosie').Factory;
 const Faker = require('@faker-js/faker');
+const prefix = 'scal-';
 
 const bracUser = () => {
   return new Factory()
@@ -11,7 +12,7 @@ const bracUser = () => {
 };
 
 const generateUsername = (name) => {
-  const username = name || Faker.faker.internet.userName();
+  const username = prefix + (name || Faker.faker.internet.userName());
   return username
     .toLowerCase()
     .replace(/[^a-z0-9_-]/g, '-');

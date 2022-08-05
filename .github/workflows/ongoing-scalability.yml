@@ -1,6 +1,6 @@
 name: Ongoing Scalability Workflow
-# Only trigger, when the build workflow succeeded
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 jobs:
   build:
