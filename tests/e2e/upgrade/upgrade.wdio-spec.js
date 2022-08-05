@@ -1,21 +1,9 @@
-const common = require('../../page-objects/common/common.wdio.page');
 const auth = require('../../auth')();
 const utils = require('../../utils');
 
 const { BRANCH, BUILD_NUMBER } = process.env;
 const loginPage = require('../../page-objects/login/login.wdio.page');
-
-const getInstallButton = async () => {
-  for (const element of await $$('span.release-name')) {
-    const text = await element.getText();
-    if (text.startsWith(`${BRANCH} (`)) {
-      const parent = await (await element.parentElement()).parentElement();
-      return await parent.$('.btn-primary');
-    }
-  }
-
-  throw new Error(`Could not find release ${BRANCH}`);
-};
+const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
 
 const getDdocs = async () => {
   const result = await utils.requestOnMedicDb({
@@ -36,28 +24,24 @@ describe('Performing an upgrade', () => {
   });
 
   it('should upgrade to current branch', async () => {
-    await browser.url('/admin/#/upgrade');
-    await common.waitForLoaders();
-    const toggle = await $('.upgrade-accordion .accordion-toggle');
-    await toggle.waitForDisplayed();
-    await toggle.click();
+    await upgradePage.goToUpgradePage();
+    await upgradePage.expandPreReleasesAccordion();
 
-    // wait for accordion animation
-    await utils.delayPromise(500);
-
-    const installButton = await getInstallButton();
-
+    const installButton = await upgradePage.getInstallButton(BRANCH);
     await installButton.click();
-    const confirm = await $('.modal-footer .submit.btn');
+
+    const confirm = await upgradePage.upgradeModalConfirm();
     await confirm.click();
 
-    await (await $('button*=Cancel')).waitForDisplayed();
-    await (await $('legend*=Deployment in progress')).waitForDisplayed();
-    await (await $('legend*=Deployment in progress')).waitForDisplayed({ reverse: true, timeout: 100000 });
+    await (await upgradePage.cancelUpgradeButton()).waitForDisplayed();
+    await (await upgradePage.deploymentInProgress()).waitForDisplayed();
+    await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
 
-    await (await $('div*=Deployment complete')).waitForDisplayed();
 
-    const currentVersion = await (await $('dl.horizontal dd')).getText();
+    await (await upgradePage.deploymentComplete()).waitForDisplayed();
+
+    const currentVersion = await upgradePage.getCurrentVersion();
+    // todo what happens when tags are pushed?
     expect(currentVersion).to.include(`${BRANCH}.${BUILD_NUMBER}`);
 
     // there should be no staged ddocs

@@ -4,7 +4,10 @@ const peoplePage = require('../../page-objects/contacts/contacts.wdio.page');
 const utils = require('../../utils');
 const auth = require('../../auth')();
 
+const { BRANCH } = process.env;
+
 const loginPage = require('../../page-objects/login/login.wdio.page');
+const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
 
 const docs = [
   {
@@ -52,5 +55,10 @@ describe('Webapp after upgrade', () => {
 
     const contacts = await peoplePage.getAllLHSContactsNames();
     expect(contacts).to.deep.equal(['DC']);
+  });
+
+  it('should display correct version on the about page', async () => {
+    await common.goToAboutPage();
+    expect(await upgradePage.getCurrentVersion()).to.equal(BRANCH);
   });
 });
