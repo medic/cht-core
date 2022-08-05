@@ -458,6 +458,7 @@ describe('Target aggregates', () => {
         { id: 'b_target', title: 'the most target', progressBar: true, counter: '27%' },
       ];
 
+      await helper.takeScreenshot('detail-targets.png');
       await expectTargets(expectedTargets);
       await openTargetDetails(expectedTargets[0].id);
       await clickOnTargetAggregateListItem(clarissa._id);
