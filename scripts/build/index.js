@@ -58,6 +58,15 @@ const setBuildInfo = () => {
 
   const buildVersionPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'version');
   fs.copyFileSync(buildVersionPath, path.resolve(buildInfoPath, 'build'));
+
+  const databases = fs.readdirSync(ddocsBuildPath);
+  databases.forEach(database => {
+    const dbPath = path.resolve(ddocsBuildPath, database);
+    const ddocs = fs.readdirSync(dbPath);
+    ddocs.forEach(ddoc => {
+      copyBuildInfo(path.join(ddocsBuildPath, database, ddoc, 'build_info'));
+    });
+  });
 };
 
 const mkdirSync = (dirPath) => {
@@ -84,19 +93,18 @@ const populateStagingDoc = () => {
   });
 
   // the validate_doc_update from staging.dev requires full build info in the staging document.
-  copyBuildInfoToStagingDoc();
+  copyBuildInfo(path.resolve(stagingPath, 'build_info'));
   saveDockerComposeFiles();
   saveServiceTags();
 };
 
-const copyBuildInfoToStagingDoc = () => {
+const copyBuildInfo = (destPath) => {
   const medicBuildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
-  const stagingBuildInfoPath = path.resolve(stagingPath, 'build_info');
-  mkdirSync(stagingBuildInfoPath);
+  mkdirSync(destPath);
 
   fs.readdirSync(medicBuildInfoPath, { withFileTypes: true }).forEach(file => {
     if (!file.isDirectory()) {
-      fs.copyFileSync(path.resolve(medicBuildInfoPath, file.name), path.resolve(stagingBuildInfoPath, file.name));
+      fs.copyFileSync(path.resolve(medicBuildInfoPath, file.name), path.resolve(destPath, file.name));
     }
   });
 };
