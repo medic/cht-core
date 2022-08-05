@@ -1,16 +1,16 @@
 const utils = require('../../../utils');
 const loginPage = require('../../../page-objects/login/login.wdio.page');
 const commonPage = require('../../../page-objects/common/common.wdio.page');
-const contactPage = require('../../../page-objects/contacts/contacts.wdio.page');
+const contactPage = require('../../../page-objects/standard/contacts/contacts.wdio.page');
 const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
 const analyticsPage = require('../../../page-objects/analytics/analytics.wdio.page');
 const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const userFactory = require('../../../factories/cht/users/users');
 const gatewayApiUtils = require('../../../gateway-api.utils');
-const immunizationVisitForm = require('../../../page-objects/forms/immunization-visit-form.wdio.page');
+const immVisitForm = require('../../../page-objects/forms/immunization-visit.wdio.page');
 
-describe ('Immunization Visit', () => {
+describe('Immunization Visit', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.find(place => place.type === 'health_center');
   const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });
@@ -18,7 +18,7 @@ describe ('Immunization Visit', () => {
   let babyMedicID = '';
   let countAppliedVaccines = 0;
 
-  before (async() => {
+  before(async () => {
     await utils.saveDocs([...places]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
@@ -27,7 +27,7 @@ describe ('Immunization Visit', () => {
     await contactPage.addHealthPrograms('imm');
   });
 
-  it ('Add a new child under 2 years old - SMS CW form', async () => {
+  it('Add a new child under 2 years old - SMS CW form', async () => {
     const messageValue = `CW 60 ${babyName}`;
     
     await gatewayApiUtils.api.postMessage({
@@ -37,7 +37,7 @@ describe ('Immunization Visit', () => {
     });
 
     await commonPage.goToPeople(user.place);
-    const allRHSPeople = await contactPage.getAllRHSPeopleNames();
+    const allRHSPeople = await contactPage.contactPageDefault.getAllRHSPeopleNames();
     expect(allRHSPeople.length).to.equal(2);
     expect(allRHSPeople).to.include.members([babyName, user.contact.name]);
 
@@ -47,61 +47,63 @@ describe ('Immunization Visit', () => {
     expect(firstReport.form).to.equal('New Child Registration (SMS)');
   });
   
-  it ('Submit immunization visit - webapp', async() => {        
+  it('Submit immunization visit - webapp', async () => {        
     await commonPage.goToPeople();
-    await contactPage.selectLHSRowByText(babyName);
-    babyMedicID = await contactPage.getContactMedicID();
-    await contactPage.createNewAction('Immunization Visit');
+    await contactPage.contactPageDefault.selectLHSRowByText(babyName);
+    babyMedicID = await contactPage.contactPageDefault.getContactMedicID();
+    await contactPage.contactPageDefault.createNewAction('Immunization Visit');
 
-    await immunizationVisitForm.selectAllVaccines();
+    await immVisitForm.selectAllVaccines();
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.BCG_VACCINE, 'yes');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.BCG_VACCINE, 'yes');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.CHOLERA_VACCINE, 'CH');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.CHOLERA_VACCINE, 'CH');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.HEPATITIS_A_VACCINE, 'HA');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.HEPATITIS_A_VACCINE, 'HA');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.HEPATITIS_B_VACCINE, 'yes');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.HEPATITIS_B_VACCINE, 'yes');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.HPV_VACCINE, 'HPV');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.HPV_VACCINE, 'HPV');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.FLU_VACCINE, 'yes');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.FLU_VACCINE, 'yes');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.JAP_ENCEPHALITIS_VACCINE, 'yes');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.JAP_ENCEPHALITIS_VACCINE, 'yes');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.MENINGOCOCCAL_VACCINE, 'MN');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.MENINGOCOCCAL_VACCINE, 'MN');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.MMR_VACCINE, 'MMR');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.MMR_VACCINE, 'MMR');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.MMRV_VACCINE, 'MMRV');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.MMRV_VACCINE, 'MMRV');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.POLIO_VACCINE, 'PV');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.POLIO_VACCINE, 'PV');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.PENTAVALENT_VACCINE, 'DT');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.PENTAVALENT_VACCINE, 'DT');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.DPT_BOOSTER_VACCINE, 'DPT');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.DPT_BOOSTER_VACCINE, 'DPT');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.PNEUMOCOCCAL_VACCINE, 'PCV');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.PNEUMOCOCCAL_VACCINE, 'PCV');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.ROTAVIRUS_VACCINE, 'RV');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.ROTAVIRUS_VACCINE, 'RV');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.TYPHOID_VACCINE, 'TY');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.TYPHOID_VACCINE, 'TY');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.VITAMIN_A_VACCINE, 'yes');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.VITAMIN_A_VACCINE, 'yes');
     await genericForm.nextPage();
-    countAppliedVaccines += await immunizationVisitForm.selectAppliedVaccines(immunizationVisitForm.YELLOW_FEVER_VACCINE, 'yes');
+    countAppliedVaccines += await immVisitForm.selectAppliedVaccines(immVisitForm.YELLOW_FEVER_VACCINE, 'yes');
     await genericForm.nextPage();
-    await immunizationVisitForm.addNotes();
+    await immVisitForm.addNotes();
     await genericForm.nextPage();
 
-    expect(await immunizationVisitForm.getPatientNameSummaryPage()).to.equal(babyName);
-    expect(countAppliedVaccines).to.equal(await immunizationVisitForm.getAppliedVaccinesSummary() - 1);
-    expect(await immunizationVisitForm.getFollowUpSMS()).to.include(babyName && babyMedicID && await immunizationVisitForm.getNotes());
+    expect(await immVisitForm.getPatientNameSummaryPage()).to.equal(babyName);
+    expect(countAppliedVaccines).to.equal(await immVisitForm.getAppliedVaccinesSummary());
+    expect(await immVisitForm.getFollowUpSMS()).to.include(babyName);
+    expect(await immVisitForm.getFollowUpSMS()).to.include(babyMedicID);
+    expect(await immVisitForm.getFollowUpSMS()).to.include(await immVisitForm.getNotes());
 
     await genericForm.submitForm();
   });
 
-  it ('Verify immunization card', async () => {
+  it('Verify immunization card', async () => {
     const vaccinesValues = await contactPage.getImmCardVaccinesValues();
     for (const value of vaccinesValues) {
       if (value.includes('of')) {
@@ -113,7 +115,7 @@ describe ('Immunization Visit', () => {
     }
   });
 
-  it ('Verify immunization report', async () => {
+  it('Verify immunization report', async () => {
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
 
@@ -121,7 +123,7 @@ describe ('Immunization Visit', () => {
     expect(firstReport.form).to.equal('Immunization Visit');
   });
 
-  it ('Submit immunization visit - SMS IMM form', async () => {
+  it('Submit immunization visit - SMS IMM form', async () => {
     const messageValue = `IMM ${babyMedicID}`;
 
     await gatewayApiUtils.api.postMessage({
@@ -136,7 +138,7 @@ describe ('Immunization Visit', () => {
     expect(firstReport.form).to.equal('Immunization Visit (SMS)');
   });
 
-  it ('Verify the targets page', async () => {
+  it('Verify the targets page', async () => {
     await commonPage.logout();
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();
