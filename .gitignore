@@ -22,6 +22,7 @@ dist
 .vscode/
 .idea/
 /build/
+api/src/public/login/lib-bowser.js
 api/**/extracted-resources/**/*
 api/build/**/*
 jsdocs
