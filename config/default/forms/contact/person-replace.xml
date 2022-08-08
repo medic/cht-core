@@ -809,7 +809,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2022-07-28_04-42">
+        <data id="contact:person:replace" prefix="J1!contact:person:replace!" delimiter="#" version="2022-08-08_16-39">
           <inputs>
             <meta>
               <location>
@@ -893,7 +893,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - ../age_months &lt; 0, format-date-time(today(),&quot;%m&quot;) - ../age_months + 12, format-date-time(today(),&quot;%m&quot;) - ../age_months)"/>
       <bind nodeset="/data/person/ephemeral_dob/ephemeral_years" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - ../age_months &lt; 0, format-date-time(today(),&quot;%Y&quot;) - ../age_years - 1, format-date-time(today(),&quot;%Y&quot;) -../age_years)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_approx" type="string" calculate="concat(string( /data/person/ephemeral_dob/ephemeral_years ),'-',if( /data/person/ephemeral_dob/ephemeral_months &lt;10, concat('0',string( /data/person/ephemeral_dob/ephemeral_months )),  /data/person/ephemeral_dob/ephemeral_months ),'-',string(format-date-time(today(), &quot;%d&quot;)))"/>
-      <bind nodeset="/data/person/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected(  /data/person/ephemeral_dob/dob_method ,'approx')), 
+      <bind nodeset="/data/person/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected(  /data/person/ephemeral_dob/dob_method ,'approx')),
  /data/person/ephemeral_dob/dob_calendar ,
  /data/person/ephemeral_dob/dob_approx )"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
