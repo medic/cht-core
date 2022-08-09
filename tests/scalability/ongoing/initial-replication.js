@@ -2,12 +2,12 @@ const PouchDB = require('pouchdb');
 const path = require('path');
 PouchDB.plugin(require('pouchdb-adapter-leveldb'));
 
-const [,, instanceUrl, dataDir, threadId] = process.argv;
-console.log(dataDir);
+const [,, instanceUrl, dataDir, threadId, skipUsers] = process.argv;
 const dataDirPath = path.resolve(dataDir || __dirname);
 const users = require(path.resolve(dataDirPath, 'users.json'));
 
-const user = users[(threadId || 0) % users.length];
+const idx = ((+threadId || 0) + +skipUsers) % users.length;
+const user = users[idx];
 const dbUrl = `${instanceUrl}/medic`;
 
 const remoteDb = new PouchDB(dbUrl, {

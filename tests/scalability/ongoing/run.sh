@@ -48,7 +48,7 @@ java -cp $DATA_DIR/jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugi
 $DATA_DIR/jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults
 echo "jmeter do it!"
 echo $(which node)
-$DATA_DIR/jmeter/bin/jmeter -n  -t ./sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jdata_dir=$DATA_DIR -Jinstance_url=$INSTANCE_URL -l ./report/cli_run.jtl -e -o ./report
+$DATA_DIR/jmeter/bin/jmeter -n  -t ./sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jdata_dir=$DATA_DIR -Jinstance_url=$INSTANCE_URL -Jskip=1 -l ./report/cli_run.jtl -e -o ./report
 mv ./jmeter.log ./report/jmeter.log
 echo "FINISHED! "
 

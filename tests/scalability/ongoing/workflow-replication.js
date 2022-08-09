@@ -2,14 +2,15 @@ const path = require('path');
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-leveldb'));
 
-const [,, instanceUrl, dataDir, threadId] = process.argv;
+const [,, instanceUrl, dataDir, threadId, skipUsers] = process.argv;
 const dataDirPath = path.resolve(dataDir || __dirname);
 const users = require(path.resolve(dataDirPath, 'users.json'));
 const config = require('./config');
 
 const dataFactory = require('./data-factory');
 
-const user = users[(threadId || 0) % users.length];
+const idx = ((+threadId || 0) + +skipUsers) % users.length;
+const user = users[idx];
 let clinics;
 const dbUrl = `${instanceUrl}/medic`;
 

@@ -73,7 +73,9 @@ const generateData = async () => {
 (async () => {
   try {
     await generateData();
+    await uploadData.indexViews();
     await uploadData.generateLoginList(users);
+    await uploadData.uploadUsers();
   } catch (err) {
     console.error('Error while generating data', err);
     process.exit(1);
