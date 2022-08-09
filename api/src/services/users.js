@@ -551,21 +551,21 @@ const validateUserContact = (data, user, userSettings) => {
   }
 };
 
-const createUserEntities = async (user, appUrl) => {
+const createUserEntities = async (data, appUrl) => {
   // preserve the place's primary contact only if it's an existing one
   // => if we're creating the place alongside the user, set the contact as the place's primary contact
-  const isCreatingNewPlace = !_.isNull(user.place) && typeof user.place._id === 'undefined';
+  const isCreatingNewPlace = !_.isNull(data.place) && typeof data.place._id === 'undefined';
   const preservePrimaryContact = !isCreatingNewPlace;
 
   const response = {};
-  await validateNewUsername(user.username);
-  await createPlace(user);
-  await setContactParent(user);
-  await createContact(user, response);
-  await storeUpdatedPlace(user, preservePrimaryContact);
-  await createUser(user, response);
-  await createUserSettings(user, response);
-  await tokenLogin.manageTokenLogin(user, appUrl, response);
+  await validateNewUsername(data.username);
+  await createPlace(data);
+  await setContactParent(data);
+  await createContact(data, response);
+  await storeUpdatedPlace(data, preservePrimaryContact);
+  await createUser(data, response);
+  await createUserSettings(data, response);
+  await tokenLogin.manageTokenLogin(data, appUrl, response);
   return response;
 };
 
