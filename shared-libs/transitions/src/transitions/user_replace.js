@@ -13,8 +13,7 @@ module.exports = {
   filter: (doc, info = {}) => {
     return Boolean(
       doc &&
-      doc.type === 'person' &&
-      doc.secret_code &&
+      doc.form === 'contact:person:replace',
       !transitionUtils.hasRun(info, NAME)
     );
   },
