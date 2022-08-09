@@ -331,7 +331,7 @@ module.exports = {
   },
 
   waitUntilReadyNative: elm => {
-    return browser.wait(EC.visibilityOf(elm), 20000, 'visibilityOf failed in 10 seconds ' + elm.locator());
+    return browser.wait(EC.visibilityOf(elm), 20000, 'visibilityOf failed in 20 seconds ' + elm.locator());
   },
 
   waitUntilTranslated: elm => {

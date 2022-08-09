@@ -42,7 +42,7 @@ let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
-const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
+const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const getTemplateComposeFilePath = file => path.resolve(__dirname, '..', 'scripts', 'build', `${file}.yml.template`);
 const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml`);
 
@@ -607,6 +607,7 @@ const generateComposeFiles = async () => {
     api_container_name: CONTAINER_NAMES.api,
     sentinel_container_name: CONTAINER_NAMES.sentinel,
     db_name: 'medic-test',
+    couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
   };
 
   for (const file of COMPOSE_FILES) {
@@ -768,6 +769,24 @@ const hostURL = (port = 80) => {
   return url.href;
 };
 
+const formDocProcessing = async (docs) => {
+  if (!Array.isArray(docs)) {
+    docs = [docs];
+  }
+
+  const formsWatchers = docs
+    .filter(doc => doc.type === 'form')
+    .map(doc => new RegExp(`Form with ID "${doc._id}" does not need to be updated`))
+    .map(re => module.exports.waitForApiLogs(re));
+
+  const waitForForms = await Promise.all(formsWatchers);
+
+  return {
+    promise:() => Promise.all(waitForForms.map(wait => wait.promise)),
+    cancel: () => waitForForms.forEach(wait => wait.cancel),
+  };
+};
+
 module.exports = {
   hostURL,
   parseCookieResponse,
@@ -827,8 +846,6 @@ module.exports = {
     },
   },
 
-
-
   requestOnTestDb: (options, debug) => {
     if (typeof options === 'string') {
       options = {
@@ -861,27 +878,36 @@ module.exports = {
     return request(options, { debug: debug });
   },
 
-  saveDoc: doc => {
-    return module.exports.requestOnTestDb({
-      path: '/', // so audit picks this up
-      method: 'POST',
-      body: doc,
-    });
+  saveDoc: async doc => {
+    const waitForForms = await formDocProcessing(doc);
+    try {
+      const result = module.exports.requestOnTestDb({
+        path: '/', // so audit picks this up
+        method: 'POST',
+        body: doc,
+      });
+      await waitForForms.promise();
+      return result;
+    } catch (err) {
+      waitForForms.cancel();
+      throw err;
+    }
   },
 
-  saveDocs: docs => {
-    return module.exports
-      .requestOnTestDb({
-        path: '/_bulk_docs',
-        method: 'POST',
-        body: { docs: docs }
-      })
-      .then(results => {
-        if (results.find(r => !r.ok)) {
-          throw Error(JSON.stringify(results, null, 2));
-        }
-        return results;
-      });
+  saveDocs: async docs => {
+    const waitForForms = await formDocProcessing(docs);
+    const results = await module.exports.requestOnTestDb({
+      path: '/_bulk_docs',
+      method: 'POST',
+      body: { docs }
+    });
+    if (results.find(r => !r.ok)) {
+      waitForForms.cancel();
+      throw Error(JSON.stringify(results, null, 2));
+    }
+
+    await waitForForms.promise();
+    return results;
   },
 
   saveMetaDocs: (user, docs) => {
@@ -1244,4 +1270,7 @@ module.exports = {
   apiLogTestEnd: (name) => {
     return module.exports.requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
   },
+  COMPOSE_FILES,
+  CONTAINER_NAMES,
+  listenForApi,
 };

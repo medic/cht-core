@@ -96,6 +96,7 @@ jobs:
     needs: [tests,config-tests]
     name: Publish branch build
     runs-on: ubuntu-18.04
+    if: ${{ github.event_name != 'pull_request' }}
 
     steps:
     - name: Delete image artifacts
@@ -123,7 +124,6 @@ jobs:
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
     - name: Publish
-      if: ${{ github.event_name != 'pull_request' }}
       run: |
         cd scripts/ci
         npm ci
@@ -205,3 +205,45 @@ jobs:
           tests/logs
           tests/results/
       if: ${{ failure() }}
+
+  upgrade:
+    needs: [publish]
+    name: Upgrade from latest release
+    runs-on: ubuntu-18.04
+    if: ${{ github.event_name != 'pull_request' }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - uses: actions/checkout@v2
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - name: Get branch name
+        uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
+      - name: Set ENV
+        run: |
+          echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+          echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
+      - run: npm ci --legacy-peer-deps
+      - name: Create logs directory
+        run: mkdir tests/logs
+      - name: Upgrade
+        run: npm run wdio-upgrade
+      - name: Archive Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: Upgrade
+          path: |
+            allure-results
+            allure-report
+            tests/logs
+            tests/results/
+        if: ${{ failure() }}

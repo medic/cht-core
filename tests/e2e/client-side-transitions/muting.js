@@ -260,8 +260,6 @@ describe('Muting', () => {
         await browser.driver.navigate().refresh();
         await commonElements.calmNative();
       }
-
-      await utils.closeTour();
     });
 
     afterAll(async () => {
