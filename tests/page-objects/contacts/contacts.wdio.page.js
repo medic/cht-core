@@ -56,6 +56,7 @@ const forms = () => $$('.action-container .detail-actions .actions.dropup .open 
 const formTitle = () => $('#form-title');
 const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
 const contactInfoName = () => $('.content-pane .material .body .card .row .heading-content');
+const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -253,7 +254,13 @@ const getContactInfoName = async () => {
   return (await contactInfoName()).getText();
 };
 
+const getContactMedicID = async () => {
+  await contactMedicID().waitForDisplayed();
+  return (await contactMedicID()).getText();
+};
+
 module.exports = {
+  genericForm,
   selectLHSRowByText,
   reportFilters,
   getReportFiltersText,
@@ -286,5 +293,15 @@ module.exports = {
   createNewAction,
   openReport,
   getContactCardTitle,
-  getContactInfoName
+  getContactInfoName,
+  getContactMedicID,  
+  actionResourceIcon,
+  newPrimaryContactButton,
+  newPrimaryContactName,
+  writeNamePlace,
+  newPlaceName,
+  externalIdField,
+  notes,
+  contactCardIcon,
+  editContactButton,  
 };

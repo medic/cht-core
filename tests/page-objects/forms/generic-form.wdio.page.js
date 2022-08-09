@@ -63,6 +63,8 @@ const verifyReport = async () => {
   expect(validatedReport.patient).to.be.undefined;
 };
 
+const submitForm = () => submitButton().click();
+
 module.exports = {
   submitButton,
   nextPage,
@@ -72,5 +74,6 @@ module.exports = {
   nameField,
   selectContact,
   verifyReport,
-  editForm
+  editForm,
+  submitForm,
 };

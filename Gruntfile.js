@@ -500,7 +500,7 @@ module.exports = function(grunt) {
       },
       'wdio-run-standard': {
         cmd: [
-          'npm run wdio-standard'
+          'npm run standard-wdio'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
