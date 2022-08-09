@@ -554,7 +554,7 @@ const validateUserContact = (data, user, userSettings) => {
 const createUserEntities = async (user, appUrl) => {
   // preserve the place's primary contact only if it's an existing one
   // => if we're creating the place alongside the user, set the contact as the place's primary contact
-  const isCreatingNewPlace = typeof user.place === 'object' && typeof user.place._id === 'undefined';
+  const isCreatingNewPlace = !_.isNull(user.place) && typeof user.place._id === 'undefined';
   const preservePrimaryContact = !isCreatingNewPlace;
 
   const response = {};
