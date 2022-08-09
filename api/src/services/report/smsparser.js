@@ -10,6 +10,9 @@ const moment = require('moment');
 const bs = require('bikram-sambat');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
+// matches invisible characters that can mess up our parsing
+// specifically: u200B, u200C, u200D, uFEFF
+const ZERO_WIDTH_UNICODE_CHARACTERS = /[\u200B-\u200D\uFEFF]/g;
 
 // Devanagari
 const T_TABLE = {
@@ -140,14 +143,14 @@ const getFieldByType = (def, type) => {
 
 const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
 
-exports.parseField = (field, raw) => {
-  switch (field.type) {
-  case 'integer':
+const fieldParsers = {
+  integer: (raw, field) => {
     // store list value since it has more meaning.
     // TODO we don't have locale data inside this function so calling
     // translate does not resolve locale.
+    const cleaned = String(raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, ''));
     if (field.list) {
-      const item = field.list.find(item => String(item[0]) === String(raw));
+      const item = field.list.find(item => String(item[0]) === cleaned);
       if (!item) {
         logger.warn(
           `Option not available for ${JSON.stringify(raw)} in list.`
@@ -156,44 +159,35 @@ exports.parseField = (field, raw) => {
       }
       return config.translate(item[1]);
     }
-    return parseNum(raw);
-  case 'string':
-    if (raw === undefined) {
-      return;
-    }
-    if (raw === '') {
-      return null;
-    }
+    return parseNum(cleaned);
+  },
+  string: (raw, field) => {
     if (field.list) {
+      const cleaned = raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
       for (const i of field.list) {
         const item = field.list[i];
-        if (item[0] === raw) {
+        if (item[0] === cleaned) {
           return item[1];
         }
       }
       logger.warn(`Option not available for ${raw} in list.`);
     }
     return raw;
-  case 'date':
-    if (!raw) {
-      return null;
-    }
+  },
+  date: (raw) => {
     // YYYY-MM-DD assume muvuku format for now
     // store in milliseconds since Epoch
-    return moment(raw).valueOf();
-  case 'bsDate': {
-    if (!raw) {
-      return null;
-    }
-    const separator = raw[raw.search(/[^0-9]/)];//non-numeric character
-    const dateParts = raw.split(separator);
+    const value = raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
+    return moment(value).valueOf();
+  },
+  bsDate: (raw) => {
+    const cleaned = raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
+    const separator = cleaned[cleaned.search(/[^0-9]/)];//non-numeric character
+    const dateParts = cleaned.split(separator);
     return bsToEpoch(...dateParts);
-  }
-  case 'boolean': {
-    if (raw === undefined) {
-      return;
-    }
-    const val = parseNum(raw);
+  },
+  boolean: (raw) => {
+    const val = parseNum(raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, ''));
     if (val === 1) {
       return true;
     }
@@ -202,14 +196,26 @@ exports.parseField = (field, raw) => {
     }
     // if we can't parse a number then return null
     return null;
-  }
-  case 'month':
+  },
+  month: (raw) => {
     // keep months integers, not their list value.
-    return parseNum(raw);
-  default:
+    return parseNum(raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, ''));
+  }
+};
+
+exports.parseField = (field, raw) => {
+  const parser = fieldParsers[field.type];
+  if (!parser) {
     logger.warn(`Unknown field type: ${field.type}`);
     return raw;
   }
+  if (raw === undefined) {
+    return;
+  }
+  if (raw === '') {
+    return null;
+  }
+  return parser(raw, field);
 };
 
 /**

@@ -54,14 +54,22 @@ describe('records service', () => {
   });
 
   it('strips unicode whitespace from textforms submission - #7654', () => {
-    // contains a zero width invisible unicode characters which should be stripped out
-    const message = 'A\u200B B\u200C C\u200D';
+    sinon.stub(config, 'get').returns(definitions.forms);
+
+    const formDefinition = 'YY\u200BYY'; // strip the invisible character to match form defn
+    const facilityId = 'Faci\u200Clity'; // string value - do not strip
+    const year = '19\u200C99'; // integer value - strip
+    const month = '1\u200D2'; // enum value - strip to match
+
+    const message = `${formDefinition} ${facilityId} ${year} ${month}`;
     const actual = service.createByForm({
       message,
       from: '+123'
     });
-    chai.expect(actual.sms_message.message).to.equal('A B C');
-    chai.expect(actual.sms_message.form).to.equal('A');
+    chai.expect(actual.sms_message.form).to.equal('YYYY'); // correct form is found
+    chai.expect(actual.fields.facility_id).to.equal(facilityId); // character not stripped from string
+    chai.expect(actual.fields.year).to.equal(1999); // integers parse
+    chai.expect(actual.fields.month).to.equal('December'); // list items are found
   });
 
   it('create json', () => {
