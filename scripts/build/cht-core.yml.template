@@ -9,7 +9,7 @@ services:
       - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
-      - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-couchdb.1,couchdb.2,couchdb.3}"
+      - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
       - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
     networks:
       {{ network }}:

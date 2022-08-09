@@ -43,5 +43,6 @@ tests/config-temp
 .eslintcache
 tests/cht-core-test.yml
 tests/cht-couchdb-test.yml
+tests/cht-couchdb-cluster-test.yml
 couchdb/srv*
 tests/scalability/jmeter/
