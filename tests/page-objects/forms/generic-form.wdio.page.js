@@ -7,8 +7,9 @@ const nameField = () => $('#report-form form [name="/data/name"]');
 
 const nextPage = async (numberOfPages = 1) => {
   for (let i = 0; i < numberOfPages; i++) {
-    await (await nextButton()).waitForDisplayed();
-    await (await nextButton()).click();
+    const button = await nextButton();
+    await button.waitForDisplayed();
+    await button.click();
   }
 };
 

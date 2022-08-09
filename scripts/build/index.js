@@ -58,6 +58,15 @@ const setBuildInfo = () => {
 
   const buildVersionPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'version');
   fs.copyFileSync(buildVersionPath, path.resolve(buildInfoPath, 'build'));
+
+  const databases = fs.readdirSync(ddocsBuildPath);
+  databases.forEach(database => {
+    const dbPath = path.resolve(ddocsBuildPath, database);
+    const ddocs = fs.readdirSync(dbPath);
+    ddocs.forEach(ddoc => {
+      copyBuildInfo(path.join(ddocsBuildPath, database, ddoc, 'build_info'));
+    });
+  });
 };
 
 const mkdirSync = (dirPath) => {
@@ -84,26 +93,25 @@ const populateStagingDoc = () => {
   });
 
   // the validate_doc_update from staging.dev requires full build info in the staging document.
-  copyBuildInfoToStagingDoc();
+  copyBuildInfo(path.resolve(stagingPath, 'build_info'));
   saveDockerComposeFiles();
   saveServiceTags();
 };
 
-const copyBuildInfoToStagingDoc = () => {
+const copyBuildInfo = (destPath) => {
   const medicBuildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
-  const stagingBuildInfoPath = path.resolve(stagingPath, 'build_info');
-  mkdirSync(stagingBuildInfoPath);
+  mkdirSync(destPath);
 
   fs.readdirSync(medicBuildInfoPath, { withFileTypes: true }).forEach(file => {
     if (!file.isDirectory()) {
-      fs.copyFileSync(path.resolve(medicBuildInfoPath, file.name), path.resolve(stagingBuildInfoPath, file.name));
+      fs.copyFileSync(path.resolve(medicBuildInfoPath, file.name), path.resolve(destPath, file.name));
     }
   });
 };
 
 const saveDockerComposeFiles = () => {
   const servicesTemplatePath = path.resolve(__dirname, 'cht-core.yml.template');
-  const couchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb.yml.template');
+  const couchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb-single-node.yml.template');
 
   const servicesTemplate = fs.readFileSync(servicesTemplatePath, 'utf-8');
   const couchDbTemplate = fs.readFileSync(couchDbTemplatePath, 'utf-8');
@@ -112,13 +120,12 @@ const saveDockerComposeFiles = () => {
     repo: versions.getRepo(),
     tag: versions.getImageTag(undefined, undefined, true),
     network: 'cht-net',
-    couch1_container_name: 'cht-couchdb.1',
-    couch2_container_name: 'cht-couchdb.2',
-    couch3_container_name: 'cht-couchdb.3',
+    couch_container_name: 'cht-couchdb',
     haproxy_container_name: 'cht-haproxy',
     api_container_name: 'cht-api',
     sentinel_container_name: 'cht-sentinel',
     db_name: 'medic',
+    couchdb_servers: 'couchdb',
   };
 
   const compiledServicesDockerCompose = mustache.render(servicesTemplate, view);

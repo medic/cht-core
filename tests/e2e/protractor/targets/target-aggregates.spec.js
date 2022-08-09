@@ -350,6 +350,7 @@ describe('Target aggregates', () => {
 
       await commonElements.goToAnalytics();
       await analytics.goToTargetAggregates(true);
+      await helper.takeScreenshot('targets.png');
 
       const expectedTargets = [
         { id: 'count_no_goal', title: 'count no goal', progressBar: false, goal: false, counter: '27' },
@@ -457,6 +458,7 @@ describe('Target aggregates', () => {
         { id: 'b_target', title: 'the most target', progressBar: true, counter: '27%' },
       ];
 
+      await helper.takeScreenshot('detail-targets.png');
       await expectTargets(expectedTargets);
       await openTargetDetails(expectedTargets[0].id);
       await clickOnTargetAggregateListItem(clarissa._id);
