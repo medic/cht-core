@@ -173,7 +173,7 @@ const createByForm = (data, { locale }={}) => {
 
   let formCode = smsparser.getFormCode(data.message);
   let formDefinition = getForm(formCode);
-  if (!formDefinition) {
+  if (formCode && !formDefinition) {
     // try again, this time without invisible characters
     const cleaned = formCode.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
     formDefinition = getForm(cleaned);

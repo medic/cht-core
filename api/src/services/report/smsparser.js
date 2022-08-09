@@ -47,6 +47,13 @@ const regexEscape = s => {
   return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
 
+const stripInvisibleCharacters = s => {
+  if (typeof s !== 'string') {
+    return s;
+  }
+  return s.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
+};
+
 // Remove the form code from the beginning of the message since it does
 // not belong to the TextForms format but is just a convention to
 // identify the message.
@@ -148,7 +155,7 @@ const fieldParsers = {
     // store list value since it has more meaning.
     // TODO we don't have locale data inside this function so calling
     // translate does not resolve locale.
-    const cleaned = String(raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, ''));
+    const cleaned = stripInvisibleCharacters(String(raw));
     if (field.list) {
       const item = field.list.find(item => String(item[0]) === cleaned);
       if (!item) {
@@ -163,7 +170,7 @@ const fieldParsers = {
   },
   string: (raw, field) => {
     if (field.list) {
-      const cleaned = raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
+      const cleaned = stripInvisibleCharacters(raw);
       for (const i of field.list) {
         const item = field.list[i];
         if (item[0] === cleaned) {
@@ -177,17 +184,16 @@ const fieldParsers = {
   date: (raw) => {
     // YYYY-MM-DD assume muvuku format for now
     // store in milliseconds since Epoch
-    const value = raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
-    return moment(value).valueOf();
+    return moment(stripInvisibleCharacters(raw)).valueOf();
   },
   bsDate: (raw) => {
-    const cleaned = raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
+    const cleaned = stripInvisibleCharacters(raw);
     const separator = cleaned[cleaned.search(/[^0-9]/)];//non-numeric character
     const dateParts = cleaned.split(separator);
     return bsToEpoch(...dateParts);
   },
   boolean: (raw) => {
-    const val = parseNum(raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, ''));
+    const val = parseNum(stripInvisibleCharacters(raw));
     if (val === 1) {
       return true;
     }
@@ -199,7 +205,7 @@ const fieldParsers = {
   },
   month: (raw) => {
     // keep months integers, not their list value.
-    return parseNum(raw.replace(ZERO_WIDTH_UNICODE_CHARACTERS, ''));
+    return parseNum(stripInvisibleCharacters(raw));
   }
 };
 
