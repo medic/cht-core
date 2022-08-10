@@ -73,33 +73,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/parent:label">
             <value>Parent ID</value>
           </text>
-          <text id="/data/person/role/chw:label">
-            <value>CHW</value>
-          </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>CHW Supervisor</value>
-          </text>
-          <text id="/data/person/role/manager:label">
-            <value>Facility Manager</value>
-          </text>
-          <text id="/data/person/role/nurse:label">
-            <value>Nurse</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>Other</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>Patient</value>
-          </text>
-          <text id="/data/person/role:hint">
-            <value>Select the role that best suits this person</value>
-          </text>
-          <text id="/data/person/role:label">
-            <value>Role</value>
-          </text>
-          <text id="/data/person/role_other:label">
-            <value>Specify other</value>
-          </text>
           <text id="/data/person/secret_code:label">
             <value>Secret Code</value>
           </text>
@@ -194,33 +167,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/person/parent:label">
             <value>identifiant du parent</value>
-          </text>
-          <text id="/data/person/role/chw:label">
-            <value>ASC</value>
-          </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>Superviseur ASC</value>
-          </text>
-          <text id="/data/person/role/manager:label">
-            <value>Personnel médical</value>
-          </text>
-          <text id="/data/person/role/nurse:label">
-            <value>Infirmier</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>Autre</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>Patient</value>
-          </text>
-          <text id="/data/person/role:hint">
-            <value>Sélectionnez le rôle qui convient le mieux à cette personne</value>
-          </text>
-          <text id="/data/person/role:label">
-            <value>Rôle</value>
-          </text>
-          <text id="/data/person/role_other:label">
-            <value>Autre rôle</value>
           </text>
           <text id="/data/person/secret_code:label">
             <value>-</value>
@@ -317,33 +263,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/parent:label">
             <value>मूल ID</value>
           </text>
-          <text id="/data/person/role/chw:label">
-            <value>सामुदायिक स्वास्थ्यकर्मी</value>
-          </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>सामुदायिक स्वास्थ्यकर्मी के मैनेजर</value>
-          </text>
-          <text id="/data/person/role/manager:label">
-            <value>स्वास्थ्य केंद्र के मैनजर</value>
-          </text>
-          <text id="/data/person/role/nurse:label">
-            <value>नर्स</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>अन्य</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>मरीज़</value>
-          </text>
-          <text id="/data/person/role:hint">
-            <value>उस भूमिका का चयन करें जो इस व्यक्ति को सबसे अच्छा सूट करता है</value>
-          </text>
-          <text id="/data/person/role:label">
-            <value>भूमिका</value>
-          </text>
-          <text id="/data/person/role_other:label">
-            <value>अन्य का उल्‍लेख करें</value>
-          </text>
           <text id="/data/person/secret_code:label">
             <value>-</value>
           </text>
@@ -438,33 +357,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/person/parent:label">
             <value>Asli ID</value>
-          </text>
-          <text id="/data/person/role/chw:label">
-            <value>Kader</value>
-          </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>Kader Pengawas</value>
-          </text>
-          <text id="/data/person/role/manager:label">
-            <value>Manajer Fasilitas</value>
-          </text>
-          <text id="/data/person/role/nurse:label">
-            <value>Perawat</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>Lain</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>Pasien</value>
-          </text>
-          <text id="/data/person/role:hint">
-            <value>Pilih peran yang paling cocok untuk orang ini</value>
-          </text>
-          <text id="/data/person/role:label">
-            <value>Peran</value>
-          </text>
-          <text id="/data/person/role_other:label">
-            <value>Tentukan lainnya</value>
           </text>
           <text id="/data/person/secret_code:label">
             <value>-</value>
@@ -561,33 +453,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/parent:label">
             <value>-</value>
           </text>
-          <text id="/data/person/role/chw:label">
-            <value>महिला स्वास्थ्य स्वयम् सेविका</value>
-          </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>महिला स्वास्थ्य स्वयम् सेविकाको सुपरभाइजर</value>
-          </text>
-          <text id="/data/person/role/manager:label">
-            <value>स्वास्थ्य संस्था प्रमुख</value>
-          </text>
-          <text id="/data/person/role/nurse:label">
-            <value>नर्स</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>अन्य</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>बिरामी</value>
-          </text>
-          <text id="/data/person/role:hint">
-            <value>यस व्यक्तिका लागि उपयुक्त भूमिका छान्नुहोस्</value>
-          </text>
-          <text id="/data/person/role:label">
-            <value>भूमिका</value>
-          </text>
-          <text id="/data/person/role_other:label">
-            <value>अन्य उल्लेख गर्नुहोस्</value>
-          </text>
           <text id="/data/person/secret_code:label">
             <value>-</value>
           </text>
@@ -683,33 +548,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/parent:label">
             <value>ID ya mzazi</value>
           </text>
-          <text id="/data/person/role/chw:label">
-            <value>Mhudumu wa afya</value>
-          </text>
-          <text id="/data/person/role/chw_supervisor:label">
-            <value>Mkuu wa wahudumu wa afya</value>
-          </text>
-          <text id="/data/person/role/manager:label">
-            <value>Meneja wa Kituo cha afya</value>
-          </text>
-          <text id="/data/person/role/nurse:label">
-            <value>Muuguzi</value>
-          </text>
-          <text id="/data/person/role/other:label">
-            <value>Ingine</value>
-          </text>
-          <text id="/data/person/role/patient:label">
-            <value>mgonjwa</value>
-          </text>
-          <text id="/data/person/role:hint">
-            <value>Chagua jukumu linachoambatana na huyu mtu</value>
-          </text>
-          <text id="/data/person/role:label">
-            <value>Jukumu</value>
-          </text>
-          <text id="/data/person/role_other:label">
-            <value>Jukumu lingine lelote</value>
-          </text>
           <text id="/data/person/secret_code:label">
             <value>-</value>
           </text>
@@ -774,8 +612,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
               <dob_debug/>
             </ephemeral_dob>
             <sex/>
-            <role/>
-            <role_other/>
             <secret_code/>
             <notes/>
             <meta tag="hidden">
@@ -825,8 +661,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
       <bind nodeset="/data/person/sex" type="select1" required="true()"/>
-      <bind nodeset="/data/person/role" type="select1"/>
-      <bind nodeset="/data/person/role_other" type="string" required="true()" relevant="selected(  /data/person/role ,'other')"/>
       <bind nodeset="/data/person/secret_code" type="string" required="true()"/>
       <bind nodeset="/data/person/notes" type="string"/>
       <bind nodeset="/data/person/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
@@ -915,37 +749,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <value>male</value>
         </item>
       </select1>
-      <select1 ref="/data/person/role">
-        <label ref="jr:itext('/data/person/role:label')"/>
-        <hint ref="jr:itext('/data/person/role:hint')"/>
-        <item>
-          <label ref="jr:itext('/data/person/role/chw:label')"/>
-          <value>chw</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person/role/chw_supervisor:label')"/>
-          <value>chw_supervisor</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person/role/nurse:label')"/>
-          <value>nurse</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person/role/manager:label')"/>
-          <value>manager</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person/role/patient:label')"/>
-          <value>patient</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/data/person/role/other:label')"/>
-          <value>other</value>
-        </item>
-      </select1>
-      <input ref="/data/person/role_other">
-        <label ref="jr:itext('/data/person/role_other:label')"/>
-      </input>
       <input ref="/data/person/secret_code">
         <label ref="jr:itext('/data/person/secret_code:label')"/>
       </input>
