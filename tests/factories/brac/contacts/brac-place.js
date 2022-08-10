@@ -10,7 +10,7 @@ const bracPlace = new Factory()
   .attr('is_name_generated', 'true')
   .attr('name', '')
   .attr('external_id', '')
-  .attr('notes', Faker.faker.lorem.sentence())
+  .attr('notes', () => Faker.faker.lorem.sentence())
   .attr('reported_date', () => Date.now())
   .attr('contact', '')
   .attr('geolocation', ['type'], (type) => {

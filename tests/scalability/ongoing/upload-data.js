@@ -12,7 +12,7 @@ const FILE_EXTENSION = '.doc.json';
 const expectedNbr = config.contactsNbr.district_hospital *
                     config.contactsNbr.health_center *
                     config.contactsNbr.clinic *
-                    config.contactsNbr.person * 3;
+                    config.contactsNbr.person * 3; // each person should have 2 reports
 let savedDocs = 0;
 
 const createJsonDir = async () => {
@@ -97,6 +97,9 @@ const indexView = async (ddoc, view) => {
 };
 
 const indexViews = async () => {
+  console.log('----------------------------------');
+  console.log('Indexing views');
+  console.log('----------------------------------');
   const ddocs = await rpn.get({
     url: `${instanceUrl}/medic/_design_docs?include_docs=true`,
     json: true,

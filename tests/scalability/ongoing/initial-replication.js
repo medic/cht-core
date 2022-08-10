@@ -6,7 +6,7 @@ const [,, instanceUrl, dataDir, threadId, skipUsers] = process.argv;
 const dataDirPath = path.resolve(dataDir || __dirname);
 const users = require(path.resolve(dataDirPath, 'users.json'));
 
-const idx = ((+threadId || 0) + +skipUsers) % users.length;
+const idx = ((+threadId || 0) + (+skipUsers || 0)) % users.length;
 const user = users[idx];
 const dbUrl = `${instanceUrl}/medic`;
 

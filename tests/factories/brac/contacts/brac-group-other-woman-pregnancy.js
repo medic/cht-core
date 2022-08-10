@@ -21,9 +21,9 @@ const moment = require('moment');
 const POSITIVE_NEGATIVE = ['pos', 'neg'];
 
 module.exports = new Factory()
-  .attr('married', Faker.faker.datatype.boolean())
+  .attr('married', () => Faker.faker.datatype.boolean())
   .attr('other_woman_pregnant', '')
-  .attr('o_lmp', Faker.faker.datatype.boolean())
+  .attr('o_lmp', () => Faker.faker.datatype.boolean())
   .attr('o_lmp_start', ['o_lmp'], (oLmp) => {
     if (oLmp) {
       return moment().subtract(Faker.faker.datatype.number({ min: 1, max: 9 }), 'month').format('YYYY-MM-DD');

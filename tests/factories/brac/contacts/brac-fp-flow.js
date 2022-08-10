@@ -27,7 +27,7 @@ const generateFpMethods = () => {
  * for the brac configuration.
  */
 module.exports = new Factory()
-  .attr('fp', Faker.faker.datatype.boolean())
+  .attr('fp', () => Faker.faker.datatype.boolean())
   .attr('fp_method', ['fp'], (fp) => {
     if (fp) {
       return generateFpMethods();

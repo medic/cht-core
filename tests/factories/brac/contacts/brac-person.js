@@ -38,7 +38,7 @@ const getAgeInYears = (subtype) => {
 
 const bracPerson = new Factory()
   .sequence('_id', uuid.v4)
-  .option('subtype', memberEligibleWoman)
+  .option('subtype', () =>  Faker.faker.helpers.arrayElement(memberEligibleWoman, memberChild))
   .attr('parent', '')
   .attr('type', 'person')
   .attr('sex', ['subtype'], (subtype) => {
@@ -47,9 +47,9 @@ const bracPerson = new Factory()
     }
     return Faker.faker.name.gender(true).toLowerCase();
   })
-  .attr('name', Faker.faker.name.findName())
-  .attr('short_name', Faker.faker.name.firstName())
-  .attr('date_of_birth_method', Faker.faker.helpers.arrayElement([approxDateOfBirthMethod, 'calendar']))
+  .attr('name', () => Faker.faker.name.findName())
+  .attr('short_name', () => Faker.faker.name.firstName())
+  .attr('date_of_birth_method', () => Faker.faker.helpers.arrayElement([approxDateOfBirthMethod, 'calendar']))
   .attr('age_years', ['subtype', 'date_of_birth_method'], (subtype, dateOfBirthMethod) => {
     if (dateOfBirthMethod === approxDateOfBirthMethod) {
       return getAgeInYears(subtype);
@@ -79,16 +79,16 @@ const bracPerson = new Factory()
       return Faker.faker.phone.phoneNumber(phoneNumberFormat);
     }
   })
-  .attr('notes', Faker.faker.lorem.sentence())
-  .attr('patient_id', Faker.faker.datatype.number({ min: 10000, max: 99999 }))
+  .attr('notes', () => Faker.faker.lorem.sentence())
+  .attr('patient_id', () => Faker.faker.unique(Faker.faker.datatype.number, { min: 10000, max: 99999 }, { maxRetries: 100 }))
   .attr('reported_date', () => Date.now())
-  .attr('has_disability', Faker.faker.datatype.boolean())
+  .attr('has_disability', () => Faker.faker.datatype.boolean())
   .attr('family_member_type', ['subtype'], (subtype) => {
     if (isFamilyMember(subtype)) {
       return subtype;
     }
   })
-  .attr('other_name', Faker.faker.name.firstName())
+  .attr('other_name', () => Faker.faker.name.firstName())
   .attr('patient_name', ['name'], (name) => {
     return name;
   })
