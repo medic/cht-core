@@ -73,18 +73,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/parent:label">
             <value>Parent ID</value>
           </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
-          </text>
-          <text id="/data/person/phone:label">
-            <value>Phone Number</value>
-          </text>
-          <text id="/data/person/phone_alternate:jr:constraintMsg">
-            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
-          </text>
-          <text id="/data/person/phone_alternate:label">
-            <value>Alternate Phone Number</value>
-          </text>
           <text id="/data/person/role/chw:label">
             <value>CHW</value>
           </text>
@@ -206,18 +194,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/person/parent:label">
             <value>identifiant du parent</value>
-          </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>Veuillez entrer un numéro local valide ou utiliser le format international standard, qui comprend un signe plus (+) et le code du pays. Par exemple: +254712345678</value>
-          </text>
-          <text id="/data/person/phone:label">
-            <value>Téléphone</value>
-          </text>
-          <text id="/data/person/phone_alternate:jr:constraintMsg">
-            <value>Veuillez entrer un numéro local valide ou utiliser le format international standard, qui comprend un signe plus (+) et le code du pays. Par exemple: +254712345678</value>
-          </text>
-          <text id="/data/person/phone_alternate:label">
-            <value>Téléphone alternatif</value>
           </text>
           <text id="/data/person/role/chw:label">
             <value>ASC</value>
@@ -341,18 +317,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/parent:label">
             <value>मूल ID</value>
           </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>कृपया एक सही स्थानीय नंबर दर्ज करें, या मानक अंतरराष्ट्रीय प्रारूप का उपयोग करें, जिसमें एक प्लस साइन (+) और देश कोड शामिल है। उदाहरण के लिए: +914712345678</value>
-          </text>
-          <text id="/data/person/phone:label">
-            <value>फोन नंबर</value>
-          </text>
-          <text id="/data/person/phone_alternate:jr:constraintMsg">
-            <value>कृपया एक सही स्थानीय नंबर दर्ज करें, या मानक अंतरराष्ट्रीय प्रारूप का उपयोग करें, जिसमें एक प्लस साइन (+) और देश कोड शामिल है। उदाहरण के लिए: +914712345678</value>
-          </text>
-          <text id="/data/person/phone_alternate:label">
-            <value>अन्य फोन नंबर</value>
-          </text>
           <text id="/data/person/role/chw:label">
             <value>सामुदायिक स्वास्थ्यकर्मी</value>
           </text>
@@ -474,18 +438,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/person/parent:label">
             <value>Asli ID</value>
-          </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/phone:label">
-            <value>Nomor Telepon</value>
-          </text>
-          <text id="/data/person/phone_alternate:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/phone_alternate:label">
-            <value>Nomor Telepon Alternatif</value>
           </text>
           <text id="/data/person/role/chw:label">
             <value>Kader</value>
@@ -609,18 +561,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/parent:label">
             <value>-</value>
           </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/phone:label">
-            <value>फोन नम्बर</value>
-          </text>
-          <text id="/data/person/phone_alternate:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/phone_alternate:label">
-            <value>अन्य फोन नम्बर</value>
-          </text>
           <text id="/data/person/role/chw:label">
             <value>महिला स्वास्थ्य स्वयम् सेविका</value>
           </text>
@@ -743,18 +683,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/parent:label">
             <value>ID ya mzazi</value>
           </text>
-          <text id="/data/person/phone:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/phone:label">
-            <value>Nambari ya simu</value>
-          </text>
-          <text id="/data/person/phone_alternate:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/data/person/phone_alternate:label">
-            <value>nambari nyingine ya simu</value>
-          </text>
           <text id="/data/person/role/chw:label">
             <value>Mhudumu wa afya</value>
           </text>
@@ -846,8 +774,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
               <dob_debug/>
             </ephemeral_dob>
             <sex/>
-            <phone/>
-            <phone_alternate/>
             <role/>
             <role_other/>
             <secret_code/>
@@ -899,8 +825,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
       <bind nodeset="/data/person/sex" type="select1" required="true()"/>
-      <bind nodeset="/data/person/phone" type="tel" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" constraint="true()"/>
-      <bind nodeset="/data/person/phone_alternate" type="tel" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')" constraint="true()"/>
       <bind nodeset="/data/person/role" type="select1"/>
       <bind nodeset="/data/person/role_other" type="string" required="true()" relevant="selected(  /data/person/role ,'other')"/>
       <bind nodeset="/data/person/secret_code" type="string" required="true()"/>
@@ -991,12 +915,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <value>male</value>
         </item>
       </select1>
-      <input ref="/data/person/phone">
-        <label ref="jr:itext('/data/person/phone:label')"/>
-      </input>
-      <input ref="/data/person/phone_alternate">
-        <label ref="jr:itext('/data/person/phone_alternate:label')"/>
-      </input>
       <select1 ref="/data/person/role">
         <label ref="jr:itext('/data/person/role:label')"/>
         <hint ref="jr:itext('/data/person/role:hint')"/>
