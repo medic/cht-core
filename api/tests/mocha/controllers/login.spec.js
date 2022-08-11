@@ -8,7 +8,6 @@ const users = require('../../../src/services/users');
 const tokenLogin = require('../../../src/services/token-login');
 const branding = require('../../../src/services/branding');
 const translations = require('../../../src/translations');
-const db = require('../../../src/db').medic;
 const sinon = require('sinon');
 const config = require('../../../src/config');
 const request = require('request-promise-native');
