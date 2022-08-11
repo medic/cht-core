@@ -19,7 +19,8 @@
   }
 }
 
-.accordion-check {
+.accordion-facility-check,
+.accordion-facility-chevron {
   display: none;
 }
 
@@ -233,45 +234,42 @@
           }
         }
 
-        li.accordion-list {
+        li.accordion-facility-list {
+          @accordion-chevron-width: 13px;
           padding-left: 27px;
 
-          a {
-            padding: 0 10px 0 0;
+          .accordion-facility-title {
+            padding: 0;
+            width: calc(100% - @accordion-chevron-width);
           }
 
-          a:before,
+          .accordion-facility-title:before,
           .mm-dropdown-submenu {
             display: none;
           }
 
-          &.accordion-caret {
-            &:after {
-              content: '\f0d7'; // https://fontawesome.com/v4/icon/caret-down
-              font-family: FontAwesome;
-              font-size: @font-large;
+          &.accordion-facility-caret {
+            &>.accordion-facility-chevron {
+              cursor: pointer;
+              width: @accordion-chevron-width;
+              font-size: @font-extra-large;
               color: @gray-medium;
+              display: block;
               position: absolute;
-              right: 0px;
-              top: 0px;
+              top: 0;
+              right: 0;
             }
 
-            &.accordion-list-expand {
-              &:after {
-                content: '\f0d8'; // https://fontawesome.com/v4/icon/caret-up
-              }
+            &.accordion-facility-list-expand > .mm-dropdown-submenu {
+              display: block;
 
-              & > .mm-dropdown-submenu {
-                display: block;
-
-                li {
-                  margin-top: 10px;
-                }
+              li {
+                margin-top: 10px;
               }
             }
           }
 
-          .accordion-check {
+          .accordion-facility-check {
             font-size: @font-extra-extra-large;
             color: @gray-medium;
             display: block;

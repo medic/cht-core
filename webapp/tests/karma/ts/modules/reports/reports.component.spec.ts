@@ -27,6 +27,7 @@ import { NavigationService } from '@mm-services/navigation.service';
 import { AuthService } from '@mm-services/auth.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { ReportsActionsBarComponent } from '@mm-modules/reports/reports-actions-bar.component';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -92,6 +93,8 @@ describe('Reports Component', () => {
           { provide: SettingsService, useValue: {} },
           // Needed because of facility filter
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
+          // Needed because of Reports Sidebar Filter
+          { provide: TelemetryService, useValue: { record: sinon.stub() } },
           { provide: TourService, useValue: tourServiceMock },
           { provide: SessionService, useValue: sessionService },
           { provide: NavigationService, useValue: {} },

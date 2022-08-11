@@ -226,10 +226,16 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     return this.inline && this.inlineFilter?.countSelected();
   }
 
-  select(selectedParent, facility, filter) {
+  select(selectedParent, facility, filter, isCheckBox = false) {
+    if (!isCheckBox && this.inline) {
+      facility.toggle = !facility.toggle;
+      return;
+    }
+
     if (selectedParent || this.disabled) {
       return;
     }
+
     this.toggle(facility, filter);
   }
 }

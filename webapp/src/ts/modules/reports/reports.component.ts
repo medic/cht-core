@@ -49,8 +49,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   forms;
   error;
   errorSyntax;
-  loading;
-  appending;
+  loading = true;
+  appending = false;
   moreItems;
   filters:any = {};
   hasReports;
@@ -58,7 +58,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   verifyingReport;
   showContent;
   enketoEdited;
-  useSidebarFilter = false;
+  useSidebarFilter = true;
   isSidebarFilterOpen = false;
 
   constructor(

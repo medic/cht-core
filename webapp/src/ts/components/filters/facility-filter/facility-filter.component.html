@@ -39,21 +39,28 @@
     role="presentation"
     [class.selected]="filter?.selected.has(facility)"
     [class.disabled]="selectedParent || disabled"
-    [class.accordion-list]="inline"
-    [class.accordion-list-expand]="facility.toggle"
-    [class.accordion-caret]="facility?.children?.length">
+    [class.accordion-facility-list]="inline"
+    [class.accordion-facility-list-expand]="facility.toggle"
+    [class.accordion-facility-caret]="facility?.children?.length">
     <span
-      class="fa accordion-check"
+      class="fa accordion-facility-check"
       [ngClass]="filter?.selected.has(facility) ? 'fa-check-square' : 'fa-square-o'"
-      (click)="select(selectedParent, facility, filter)">
+      (click)="select(selectedParent, facility, filter, true)">
     </span>
     <a
+      class="accordion-facility-title"
       role="menuitem"
       tabindex="-1"
       [attr.data-value]="facility?.doc?._id"
-      (click)="inline ? facility.toggle = !facility.toggle : select(selectedParent, facility, filter)">
+      (click)="select(selectedParent, facility, filter)">
       {{ facility.label | async }}
     </a>
+    <span
+      class="fa accordion-facility-chevron"
+      [class.fa-caret-up] = facility.toggle
+      [class.fa-caret-down] = !facility.toggle
+      (click)="select(selectedParent, facility, filter)">
+    </span>
     <ul class="mm-dropdown-submenu" *ngIf="facility?.children?.length">
       <ng-container
         *ngFor="let child of facility?.children; trackBy: trackByFn"
