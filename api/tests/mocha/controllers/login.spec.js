@@ -1,4 +1,5 @@
 const rewire = require('rewire');
+const _ = require('lodash');
 const chai = require('chai');
 const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');
@@ -181,9 +182,9 @@ describe('login controller', () => {
     it('caches the login page template for performance', () => {
       sinon.stub(res, 'send');
       sinon.stub(res, 'setHeader');
-      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(translations, 'getEnabledLocales').resolves([]);
       sinon.stub(res, 'cookie').returns(res);
-      const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'file content');
+      const readFile = sinon.stub(fs.promises, 'readFile').resolves('file content');
       sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
       const template = sinon.stub(_, 'template').returns(sinon.stub());
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
