@@ -42,4 +42,5 @@ allure*
 tests/config-temp
 cht-docker-compose.log
 .eslintcache
-/tests/scalability/brac/data/
+/tests/scalability/ongoing/data/
+/tests/scalability/ongoing/report/

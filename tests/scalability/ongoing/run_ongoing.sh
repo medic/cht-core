@@ -8,7 +8,9 @@ else
   RUN_LOCAL=true
 fi
 
-THREADS=10
+THREADS=30
+BATCHES=3
+THREADS_IN_BATCH=$(($THREADS/$BATCHES))
 SKIP=0
 
 if [ $RUN_LOCAL = false ]
@@ -39,12 +41,18 @@ mkdir -p $DATA_DIR/dbs
 echo "npm install for jmeter suite"
 npm ci
 
-node --inspect=0.0.0.0:9930 ./generate-data.js $INSTANCE_URL $DATA_DIR
-for THREAD in $(seq 1 $THREADS)
+ node ./generate-data.js $INSTANCE_URL $DATA_DIR
+for BATCH in $(seq 0 $(($BATCHES-1)))
 do
-    node --inspect=0.0.0.0:9930 ./initial-replication.js $INSTANCE_URL $DATA_DIR $THREAD
+  for THREAD in $(seq 1 $THREADS_IN_BATCH)
+  do
+    CURRENT_THREAD=$(($THREADS_IN_BATCH*$BATCH+$THREAD))
+    echo "Initial replication ${CURRENT_THREAD} of $(($THREADS))"
+    node ./initial-replication.js $INSTANCE_URL $DATA_DIR $CURRENT_THREAD &
+  done
+  wait
 done
-
+#
 echo "jmeter install"
 wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.4.3.tgz -O $DATA_DIR/apache-jmeter.tgz
 mkdir $DATA_DIR/jmeter && tar -xf $DATA_DIR/apache-jmeter.tgz -C $DATA_DIR/jmeter --strip-components=1
