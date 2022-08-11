@@ -35,6 +35,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   flattenedFacilities = [];
   displayedFacilities = [];
 
+  private loadingFacilities;
   private totalFacilitiesDisplayed = 0;
   private listHasScroll = false;
   private togglingFacilities = false;
@@ -66,7 +67,16 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
   ngAfterViewInit() {
     if (this.inline) {
-      this.loadFacilities();
+      this.loadingFacilities = this.loadFacilities();
+    }
+  }
+
+  async setDefault(facilityId?) {
+    await this.loadingFacilities;
+
+    if (facilityId) {
+      const facility = this.flattenedFacilities.find(facility => facility.doc._id === facilityId);
+      this.select(null, facility, this.inlineFilter, true);
     }
   }
 
@@ -238,4 +248,5 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
     this.toggle(facility, filter);
   }
+
 }

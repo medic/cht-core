@@ -27,6 +27,7 @@ import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sideb
 import { AuthService } from '@mm-services/auth.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { SessionService } from '@mm-services/session.service';
+import { UserContactService } from '@mm-services/user-contact.service';
 
 const PAGE_SIZE = 50;
 
@@ -76,6 +77,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private sessionService:SessionService,
     private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
+    private userContactService:UserContactService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -148,7 +150,17 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   async ngAfterViewInit() {
     const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSidebarFilter = !isDisabled;
-    this.search();
+    // Todo testing code, if permission then set default otherwise simple search + Also only if it is online user
+    // Todo this.search();
+    this.userContactService
+      .get()
+      .then(contact => {
+        if (contact?.parent?._id) {
+          this.reportsSidebarFilter.setDefault({ facility: contact?.parent?._id });
+          return;
+        }
+        this.search();
+      });
 
     if (!this.useSidebarFilter) {
       return;
