@@ -168,7 +168,7 @@ const fieldParsers = {
     }
     return parseNum(cleaned);
   },
-  string: (raw, field) => {
+  string: (raw, field, key) => {
     if (field.list) {
       const cleaned = stripInvisibleCharacters(raw);
       for (const i of field.list) {
@@ -178,6 +178,9 @@ const fieldParsers = {
         }
       }
       logger.warn(`Option not available for ${raw} in list.`);
+    } else if (key === 'patient_id' || key === 'place_id') {
+      // special handling for string IDs which must be [0-9]
+      return stripInvisibleCharacters(raw);
     }
     return raw;
   },
@@ -209,7 +212,7 @@ const fieldParsers = {
   }
 };
 
-exports.parseField = (field, raw) => {
+exports.parseField = (field, raw, key) => {
   const parser = fieldParsers[field.type];
   if (!parser) {
     logger.warn(`Unknown field type: ${field.type}`);
@@ -221,7 +224,7 @@ exports.parseField = (field, raw) => {
   if (raw === '') {
     return null;
   }
-  return parser(raw, field);
+  return parser(raw, field, key);
 };
 
 /**
@@ -273,7 +276,7 @@ exports.parse = (def, doc) => {
   // parse field types and resolve dot notation keys
   for (const k of Object.keys(def.fields)) {
     if (msgData[k] || addOmittedFields) {
-      const value = exports.parseField(def.fields[k], msgData[k]);
+      const value = exports.parseField(def.fields[k], msgData[k], k);
       createDeepKey(formData, k.split('.'), value);
     }
   }

@@ -171,6 +171,7 @@ const createByForm = (data, { locale }={}) => {
     throw new PublicError('Missing required field: message');
   }
 
+  const rawMessage = data.message;
   let formCode = smsparser.getFormCode(data.message);
   let formDefinition = getForm(formCode);
   if (formCode && !formDefinition) {
@@ -197,6 +198,7 @@ const createByForm = (data, { locale }={}) => {
   if (content.form && formDefinition) {
     formData = smsparser.parse(formDefinition, data);
   }
+  content.message = rawMessage; // reset this to the original message now that parsing is complete
   return getDataRecord(formData, content);
 };
 
