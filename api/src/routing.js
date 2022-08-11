@@ -34,6 +34,7 @@ const monitoring = require('./controllers/monitoring');
 const africasTalking = require('./controllers/africas-talking');
 const rapidPro = require('./controllers/rapidpro');
 const infodoc = require('./controllers/infodoc');
+const credentials = require('./controllers/credentials');
 const authorization = require('./middleware/authorization');
 const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
@@ -44,6 +45,7 @@ const couchConfigController = require('./controllers/couch-config');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
+const startupLog = require('./services/setup/startup-log');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
 const routePrefix = '/+' + environment.db + '/+';
@@ -58,9 +60,14 @@ const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshin
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const app = express.Router({ strict: true });
+const MAX_REQUEST_SIZE = '32mb';
 
+// requires content-type application/x-www-form-urlencoded header
+const formParser = bodyParser.urlencoded({ limit: MAX_REQUEST_SIZE, extended: false });
+// requires content-type text/plain or application/xml header
+const textParser = bodyParser.text({ limit: MAX_REQUEST_SIZE, type: [ 'text/plain', 'application/xml', 'text/csv' ] });
 // requires content-type application/json header
-const jsonParser = bodyParser.json({ limit: '32mb' });
+const jsonParser = bodyParser.json({ limit: MAX_REQUEST_SIZE });
 const jsonQueryParser = require('./middleware/query-parser').json;
 
 const handleJsonRequest = (method, path, callback) => {
@@ -80,16 +87,26 @@ const handleJsonRequest = (method, path, callback) => {
     }
   });
 };
+
+const handleJsonOrCsvRequest = (method, path, callback) => {
+  app[method](path, [jsonParser, textParser], (req, res, next) => {
+    const contentType = req.headers['content-type'];
+    if (!contentType || (contentType !== 'application/json' && contentType !== 'text/csv')) {
+      return serverUtils.error(
+        { code: 400, message: 'Content-Type must be application/json or text/csv' },
+        req,
+        res
+      );
+    }
+    callback(req, res, next);
+  });
+};
+
 app.deleteJson = (path, callback) =>
   handleJsonRequest('delete', path, callback);
+app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, callback);
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
-
-// requires content-type application/x-www-form-urlencoded header
-const formParser = bodyParser.urlencoded({ limit: '32mb', extended: false });
-
-// requires content-type text/plain or application/xml header
-const textParser = bodyParser.text({limit: '32mb', type: [ 'text/plain', 'application/xml' ]});
 
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
@@ -180,7 +197,7 @@ app.use(
 // requires `res` `Content-Type` to be compressible (see https://github.com/jshttp/mime-db/blob/master/db.json)
 // default threshold is 1KB
 
-const additionalCompressibleTypes = ['application/x-font-ttf','font/ttf'];
+const additionalCompressibleTypes = ['application/x-font-ttf', 'font/ttf'];
 app.use(compression({
   filter: (req, res) => {
     if (additionalCompressibleTypes.includes(res.getHeader('Content-Type'))) {
@@ -233,7 +250,7 @@ app.get('/favicon.ico', (req, res) => {
       res.send(blob);
     });
   }).catch(err => {
-    res.sendFile('resources/ico/favicon.ico' , { root : __dirname });
+    res.sendFile('resources/ico/favicon.ico', { root : __dirname });
     logger.warn('Branding doc or/and favicon missing: %o', err);
   });
 });
@@ -406,6 +423,7 @@ app.post('/api/v1/forms/validate', textParser, forms.validate);
 
 app.get('/api/v1/users', users.get);
 app.postJson('/api/v1/users', users.create);
+app.postJsonOrCsv('/api/v2/users', users.v2.create);
 app.postJson('/api/v1/users/:username', users.update);
 app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
@@ -510,6 +528,14 @@ app.get(
   purgedDocsController.checkpoint
 );
 
+app.put(
+  '/api/v1/credentials/:key',
+  authorization.handleAuthErrors,
+  authorization.offlineUserFirewall,
+  textParser,
+  credentials.put
+);
+
 app.get('/api/v1/users-doc-count', replicationLimitLogController.get);
 
 // authorization middleware to proxy online users requests directly to CouchDB
@@ -585,7 +611,6 @@ app.post(
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
 const dbDocHandler = require('./controllers/db-doc');
-const startupLog = require('./services/setup/startup-log');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';

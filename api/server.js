@@ -39,7 +39,7 @@ process
     logger.info('Translations loaded successfully');
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
-    logger.error('%o',err);
+    logger.error('%o', err);
     process.exit(1);
   }
 
@@ -62,10 +62,10 @@ process
   const generateXform = require('./src/services/generate-xform');
   const serverUtils = require('./src/server-utils');
   const generateServiceWorker = require('./src/generate-service-worker');
+  const manifest = require('./src/services/manifest');
   const startupLog = require('./src/services/setup/startup-log');
 
-  try
-  {
+  try {
     startupLog.start('checks');
     logger.info('Running installation checks…');
     await checkInstall.run();
@@ -83,8 +83,12 @@ process
     logger.info('Database migrations completed successfully');
 
     startupLog.start('forms');
+    logger.info('Generating manifest');
+    await manifest.generate();
+    logger.info('Manifest generated successfully');
+
     logger.info('Generating service worker');
-    await generateServiceWorker.run();
+    await generateServiceWorker.run(true);
     logger.info('Service worker generated successfully');
 
     logger.info('Updating xforms…');
@@ -93,7 +97,7 @@ process
 
   } catch (err) {
     logger.error('Fatal error initialising medic-api');
-    logger.error('%o',err);
+    logger.error('%o', err);
     process.exit(1);
   }
 

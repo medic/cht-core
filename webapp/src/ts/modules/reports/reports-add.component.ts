@@ -60,6 +60,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   private telemetryData:any = {
     preRender: Date.now()
   };
+
   private routeSnapshot;
 
   private subscribeToStore() {

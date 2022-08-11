@@ -53,7 +53,7 @@ module.exports = [
             facility_name: getField(report, 'test-reference.facility_name') ||
               getField(report, 'test-reference.other_facility_name'),
             facility_address: getField(report, 'test-reference.facility_address') ||
-              getField(report, 'test-reference.other_facility_address') ,
+              getField(report, 'test-reference.other_facility_address'),
             facility_test_setting: getField(report, 'test-reference.other_facility_test_setting'),
             other_test_setting: getField(report, 'test-reference.other_test_setting'),
             test_reason: getField(report, 'test-reference.test_reason'),

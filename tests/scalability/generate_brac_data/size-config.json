@@ -1,0 +1,8 @@
+{
+  "number_of_district_hospitals": 1,
+  "number_of_managers_per_district_hospitals": 6,
+  "number_of_health_centers_per_district_hospital": 3,
+  "number_of_chw_per_health_center": 1,
+  "number_of_clinics_per_health_center": 5,
+  "number_of_family_members": 8
+}

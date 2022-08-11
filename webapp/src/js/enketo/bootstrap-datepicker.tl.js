@@ -3,7 +3,7 @@
  * Philippines Tagalog translation for bootstrap-datepicker
  */
 (function($){
-  $.fn.datepicker.dates['tl'] = {
+  $.fn.datepicker.dates.tl = {
     days: ['Linggo', 'Lunes', 'Martes', 'Miyerkules', 'Huwebes', 'Biyernes', 'Sabado'],
     daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     daysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],

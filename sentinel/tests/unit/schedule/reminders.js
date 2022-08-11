@@ -51,7 +51,7 @@ describe('reminders', () => {
         assert.equal(runReminder.callCount, 3);
         assert.deepEqual(
           runReminder.args,
-          [[{ form: 'a', valid: true }],[{ form: 'c', valid: true }],[{ form: 'd', valid: true }]]
+          [[{ form: 'a', valid: true }], [{ form: 'c', valid: true }], [{ form: 'd', valid: true }]]
         );
       });
     });
@@ -662,7 +662,7 @@ describe('reminders', () => {
         assert.deepEqual(db.medic.query.args[0], [
           'medic/reports_by_form_and_parent',
           {
-            keys: [['vform','doc1'],['vform','doc2'],['vform','doc3']],
+            keys: [['vform', 'doc1'], ['vform', 'doc2'], ['vform', 'doc3']],
             group: true
           }
         ]);
@@ -831,7 +831,7 @@ describe('reminders', () => {
         form: 'frm',
         mute_after_form_for: '10 minute',
         message: 'I shot the sheriff',
-        contact_types: [ 'tier2','tier3' ]
+        contact_types: [ 'tier2', 'tier3' ]
       };
       sinon.stub(config, 'getAll').returns({ contact_types: [
         { id: 'tier3', parents: [ 'tier1' ] },

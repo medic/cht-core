@@ -1,5 +1,6 @@
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
+const modalPage = require('../../page-objects/common/modal.wdio.page');
 const auth = require('../../auth')();
 
 
@@ -39,13 +40,13 @@ describe('Login and logout tests', () => {
 
   it('should change locale to French', async () => {
     //French translations
-    expect(await loginPage.changeLanguage('fr',frTranslations.user)).to.deep.equal(frTranslations);
+    expect(await loginPage.changeLanguage('fr', frTranslations.user)).to.deep.equal(frTranslations);
     expect(await loginPage.getCurrentLanguage()).to.deep.equal({ code: 'fr', name: 'Français (French)' });
   });
 
   it('should change locale to Spanish', async () => {
     //Spanish translations
-    expect(await loginPage.changeLanguage('es',esTranslations.user)).to.deep.equal(esTranslations);
+    expect(await loginPage.changeLanguage('es', esTranslations.user)).to.deep.equal(esTranslations);
     expect(await loginPage.getCurrentLanguage()).to.deep.equal({ code: 'es', name: 'Español (Spanish)' });
   });
 
@@ -100,5 +101,19 @@ describe('Login and logout tests', () => {
       secure: false,
       value: 'en',
     });
+  });
+
+  it('should display the "session expired" modal and redirect to login page', async () => {
+    // Login and ensure it's redirected to webapp
+    await loginPage.login(auth);
+    await commonPage.closeTour();
+    await (await commonPage.messagesTab()).waitForDisplayed();
+    // Delete cookies and trigger a request to the server
+    await browser.deleteCookies('AuthSession');
+    await commonPage.goToReports();
+
+    expect(await (await modalPage.body()).getText()).to.equal('Your session has expired, please login to continue.');
+    await (await modalPage.submit()).click();
+    expect((await browser.getUrl()).includes('/medic/login')).to.be.true;
   });
 });

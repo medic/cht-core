@@ -10,11 +10,13 @@ const languageSubmitButton  = element(by.css('a.btn.submit.ng-scope.ng-binding.b
 const applicationLink = element(by.css('i.fa.fa-fw.fa-home'));
 const defaultLocaleOption = element(by.css('#locale'));
 const outgoingLocaleOption = element(by.css('#locale-outgoing'));
+const languages = () => element(by.css('#language-accordion > .panel'));
 
 const goToLanguagesTab = async () => {
   await browser.get(utils.getAdminBaseUrl() + 'display/languages');
   await utils.resetBrowserNative(addLanguageButton);
   await helper.waitElementToBeVisibleNative(addLanguageButton);
+  await helper.waitElementToBeVisible(languages());
 };
 
 const openAddLanguageModal = async () => {
@@ -22,7 +24,7 @@ const openAddLanguageModal = async () => {
   await helper.waitElementToBeVisibleNative(addLanguageModal);
 };
 
-const addNewLanguage = async (code, name) =>{
+const addNewLanguage = async (code, name) => {
   await helper.clickElementNative(addLanguageButton);
   await helper.waitElementToBeVisibleNative(addLanguageModal);
   await languageCodeInput.sendKeys(code);
@@ -30,7 +32,7 @@ const addNewLanguage = async (code, name) =>{
   await languageSubmitButton.click();
 };
 
-const languageDisplayed = async (code) =>{
+const languageDisplayed = async (code) => {
   const languageDiv = element(by.css(`#locale-${code}`));
   const languageName = await helper.getTextFromElementNative(languageDiv);
   return languageName;

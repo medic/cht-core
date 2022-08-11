@@ -7,9 +7,6 @@ const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
 const contactName = () => $$(`${contentRowSelector} .heading h4 span`);
 const reportFilterSelector = '.card.reports .table-filter a';
-const reportRowSelector = '#reports-list .content-row';
-const reportRow = () => $(reportRowSelector);
-const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const reportFilter = () => $(reportFilterSelector);
 const reportFilters = () => $$(reportFilterSelector);
 const taskFilterSelector = '.card.tasks .table-filter a';
@@ -32,10 +29,15 @@ const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
-const rhsPeopleListSelector = () => $$('[test-id="person"] h4 span');
-const rhsReportListSelector = '[test-id="report"] h4 span';
+
+const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
+const rhsReportListSelector = '.card.reports mm-content-row h4 span';
+const rhsTaskListSelector = '.card.tasks mm-content-row h4 span';
+const rhsTaskListElement = () => $(rhsTaskListSelector);
+const rhsTaskListElementList = () => $$(rhsTaskListSelector);
 const rhsReportListElement = () => $(rhsReportListSelector);
 const rhsReportElementList = () => $$(rhsReportListSelector);
+
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
 const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
@@ -49,12 +51,16 @@ const rightAddPerson = (create_key) => $(`span[test-id="rhs_add_contact"] p[test
 const contactCards = () => $$('.card.children');
 const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
 const childrenCards = () => $$('.right-pane .card.children');
+const newActionContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-stack');
+const forms = () => $$('.action-container .detail-actions .actions.dropup .open .dropdown-menu li');
+const formTitle = () => $('#form-title');
+const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
+const contactInfoName = () => $('.content-pane .material .body .card .row .heading-content');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await (await searchButton()).click();
   await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
-  await (await emptySelection()).waitForDisplayed();
 };
 
 const findRowByText = async (text) => {
@@ -65,7 +71,8 @@ const findRowByText = async (text) => {
   }
 };
 
-const selectLHSRowByText = async (text, executeSearch= true) => {
+const selectLHSRowByText = async (text, executeSearch = true) => {
+  await commonElements.waitForLoaderToDisappear();
   if (executeSearch) {
     await search(text);
   }
@@ -96,8 +103,8 @@ const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
 };
 
-const addPlace = async (type, placeName , contactName ) => {
-  const dashedType = type.replace('_','-');
+const addPlace = async (type, placeName, contactName) => {
+  const dashedType = type.replace('_', '-');
   await (await actionResourceIcon(dashedType)).waitForDisplayed();
   await (await actionResourceIcon(dashedType)).click();
 
@@ -117,7 +124,7 @@ const addPlace = async (type, placeName , contactName ) => {
 };
 
 const addPerson = async (name, params = {}) => {
-  const { dob='2000-01-01', phone } = params;
+  const { dob = '2000-01-01', phone } = params;
   await (await actionResourceIcon('person')).click();
   await (await personName()).addValue(name);
   await (await dateOfBirthField()).addValue(dob);
@@ -168,33 +175,29 @@ const getPrimaryContactName = async () => {
 
 const getAllLHSContactsNames = async () => {
   await (await contentRow()).waitForDisplayed();
-  return getTextForElements(contactName);
-};
-
-const getTextForElements = async (elements) => {
-  return Promise.all((await elements()).map(filter => filter.getText()));
-};
-
-const getAllReportsText = async () => {
-  await (await reportRow()).waitForDisplayed();
-  return getTextForElements(reportRowsText);
+  return commonElements.getTextForElements(contactName);
 };
 
 const getAllRHSPeopleNames = async () => {
   await (await name()).waitForDisplayed();
-  return getTextForElements(rhsPeopleListSelector);
+  return commonElements.getTextForElements(rhsPeopleListSelector);
 };
 
 const getAllRHSReportsNames = async () => {
   await (await rhsReportListElement()).waitForDisplayed();
-  return getTextForElements(rhsReportElementList);
+  return commonElements.getTextForElements(rhsReportElementList);
+};
+
+const getAllRHSTaskNames = async () => {
+  await (await rhsTaskListElement()).waitForDisplayed();
+  return commonElements.getTextForElements(rhsTaskListElementList);
 };
 
 const allContactsList = async () => {
   const parentCards = await contactCards();
   return Promise.all(parentCards.map(async (parent) => {
     return {
-      heading: await(await parent.$('h3')).getText(),
+      heading: await (await parent.$('h3')).getText(),
       contactNames: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
     };
   }));
@@ -213,6 +216,42 @@ const editDistrict = async (districtName, editedName) => {
   await (await genericForm.submitButton()).click();
 };
 
+const createNewAction = async (formName) => {
+  await (await newActionContactButton()).waitForDisplayed();
+  await (await newActionContactButton()).click();
+  await openForm(formName);
+};
+
+const openForm = async (name) => {
+  // this is annoying but there's a race condition where the click could end up on another form if we don't
+  // wait for the animation to finish
+  await (await $('.action-container .detail-actions #relevant-contacts-form')).waitForDisplayed();
+  await browser.pause(50);
+  for (const form of await forms()) {
+    if (await form.getText() === name) {
+      await form.click();
+      await (await formTitle()).waitForDisplayed();
+      return;
+    }
+  }
+  throw new Error(`Form with name: "${name}" not found`);
+};
+
+const openReport = async () => {
+  await (await rhsReportListElement()).waitForDisplayed();
+  return (await rhsReportListElement()).click();
+};
+
+const getContactCardTitle = async () => {
+  await contactCardTitle().waitForDisplayed();
+  return (await contactCardTitle()).getText();
+};
+
+const getContactInfoName = async () => {
+  await contactInfoName().waitForDisplayed();
+  return (await contactInfoName()).getText();
+};
+
 module.exports = {
   selectLHSRowByText,
   reportFilters,
@@ -224,7 +263,6 @@ module.exports = {
   addPlace,
   topContact,
   getPrimaryContactName,
-  getAllReportsText,
   getAllRHSPeopleNames,
   waitForContactLoaded,
   waitForContactUnloaded,
@@ -232,6 +270,9 @@ module.exports = {
   editPerson,
   getContactSummaryField,
   getAllRHSReportsNames,
+  rhsReportListElement,
+  getAllRHSTaskNames,
+  rhsTaskListElement,
   deletePerson,
   leftAddPlace,
   rightAddPlace,
@@ -240,5 +281,9 @@ module.exports = {
   rightAddPerson,
   allContactsList,
   editDistrict,
-  childrenCards
+  childrenCards,
+  createNewAction,
+  openReport,
+  getContactCardTitle,
+  getContactInfoName
 };

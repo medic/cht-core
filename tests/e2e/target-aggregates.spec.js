@@ -20,11 +20,21 @@ const randomNumber = (max) => Math.floor(Math.random() * max);
  */
 const expectTargets = async (targets) => {
   expect(await element.all(by.css(`#target-aggregates-list li`)).count()).toEqual(targets.length);
+
+  const expectTarget = async (target) => {
+    const lineItem = () => element(by.css(`#target-aggregates-list li[data-record-id=${target.id}]`));
+    expect(await lineItem().isPresent()).toBe(true);
+    expect(await lineItem().element(by.css('h4')).getText()).toEqual(target.title);
+    expect(await lineItem().element(by.css('.aggregate-status span')).getText()).toEqual(target.counter);
+  };
+
   for (const target of targets) {
-    const lineItem = element(by.css(`#target-aggregates-list li[data-record-id=${target.id}]`));
-    expect(await lineItem.isPresent()).toBe(true);
-    expect(await lineItem.element(by.css('h4')).getText()).toEqual(target.title);
-    expect(await lineItem.element(by.css('.aggregate-status span')).getText()).toEqual(target.counter);
+    try {
+      await expectTarget(target);
+    } catch (err) {
+      // element can go stale ?
+      await expectTarget(target);
+    }
   }
 };
 
@@ -92,8 +102,8 @@ const updateSettings = async (targetsConfig, user, contactSummary) => {
   tasks.targets.items = targetsConfig;
   const permissions = settings.permissions;
   permissions.can_aggregate_targets = user.roles;
-  await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary });
-  await helper.handleUpdateModalNative();
+  await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary }, true);
+  await utils.refreshToGetNewSettings();
 };
 
 const clickOnTargetAggregateListItem = async (contactId) => {
@@ -340,6 +350,7 @@ describe('Target aggregates', () => {
 
       await commonElements.goToAnalytics();
       await analytics.goToTargetAggregates(true);
+      await helper.takeScreenshot('targets.png');
 
       const expectedTargets = [
         { id: 'count_no_goal', title: 'count no goal', progressBar: false, goal: false, counter: '27' },
@@ -447,6 +458,7 @@ describe('Target aggregates', () => {
         { id: 'b_target', title: 'the most target', progressBar: true, counter: '27%' },
       ];
 
+      await helper.takeScreenshot('detail-targets.png');
       await expectTargets(expectedTargets);
       await openTargetDetails(expectedTargets[0].id);
       await clickOnTargetAggregateListItem(clarissa._id);

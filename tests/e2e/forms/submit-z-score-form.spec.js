@@ -20,7 +20,9 @@ const userContactDoc = {
 
 
 describe('Submit Z-Score form', () => {
-  beforeAll(async () => { await ZScoreForm.configureForm(userContactDoc); });
+  beforeAll(async () => {
+    await ZScoreForm.configureForm(userContactDoc);
+  });
 
   beforeEach(utils.resetBrowser);
 

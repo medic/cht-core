@@ -20,7 +20,7 @@ const getValue = function(resultObject) {
   return resultObject.v;
 };
 
-const now_and_today = function() { return { t: 'date', v: new Date() }; };
+const now_and_today = () => ({ t: 'date', v: new Date() });
 
 const toISOLocalString = function(date) {
   if (date.toString() === 'Invalid Date') {

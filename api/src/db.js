@@ -16,6 +16,7 @@ if (UNIT_TEST_ENV) {
     'sentinel',
     'medicLogs',
     'builds',
+    'vault',
   ];
   const DB_FUNCTIONS_TO_STUB = [
     'allDocs',
@@ -39,6 +40,7 @@ if (UNIT_TEST_ENV) {
     'allDbs',
     'activeTasks',
     'saveDocs',
+    'createVault'
   ];
 
   const notStubbed = (first, second) => {
@@ -75,6 +77,8 @@ if (UNIT_TEST_ENV) {
   module.exports.medicUsersMeta = new PouchDB(`${environment.couchUrl}-users-meta`, { fetch });
   module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
+  module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
+  module.exports.createVault = () => module.exports.vault.info();
   module.exports.users = new PouchDB(getDbUrl('/_users'), { fetch });
   module.exports.builds = new PouchDB(environment.buildsUrl);
 

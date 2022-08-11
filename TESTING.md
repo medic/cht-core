@@ -18,21 +18,29 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 ## Stack overview
 
 ### Requirements
-Follow the guide [DEVELOPMENT.md](DEVELOPMENT.md)
-JDK installed for Selenium.
-Docker to run couchdb.
+
+1. Follow the guide [DEVELOPMENT.md](DEVELOPMENT.md)
+2. JDK installed for Selenium.
+3. Docker to run couchdb.
 
 ### Local Run
 
 `grunt e2e` installs and runs chromedriver, starts couchdb in docker, pushes the compiled app to couchdb, starts api, starts sentinel, and then runs protractor tests against your local environment. 
 
-### WebdriverIO Local Run
+### WebdriverIO
 
-Run `npm ci`
-Run `grunt`
-Run `npm run wdio-local`
-Viewing the report 
-Run `npx allure open`
+#### Run locally
+
+1. Run `npm ci`
+2. Run `grunt`
+3. Run `npm run wdio-local`
+4. Run `npx allure open` to view the test reports
+
+#### View the CI report
+
+1. Download the CI run artifact zip file
+2. Extract it anyhere
+3. From your cht-core directory, run `npx allure open <path>/allure-report/`.
 
 ### Github Actions Protractor Run 
 
@@ -88,7 +96,7 @@ To run just a single test file in WebdriverIO, update the `specs` config in [tes
 1. Paste those files into a directory called .vscode within your cht-core repo. 
 1. Click the debug icon on the left tool bar.
 1. Select launch e2e.
-1. This will now run as if you ran the command `grunt e2e-deploy` and start the `scripts/e2e/e2e-servers` script. Then launch protractor to debug the test(s). 
+1. This will now run as if you ran the command `grunt e2e-deploy` and start the `tests/scripts/e2e-servers` script. Then launch protractor to debug the test(s). 
 
 ##### Debugging a single test by using the "grep" feature.
 

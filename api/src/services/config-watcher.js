@@ -1,11 +1,13 @@
 const db = require('../db');
 const logger = require('../logger');
 const translationUtils = require('@medic/translation-utils');
+const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
 const settingsService = require('./settings');
 const translations = require('../translations');
 const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
+const manifest = require('./manifest');
 const config = require('../config');
 
 const MEDIC_DDOC_ID = '_design/medic';
@@ -99,6 +101,9 @@ const handleTranslationsChange = () => {
 };
 
 const handleFormChange = (change) => {
+  if (change.deleted) {
+    return Promise.resolve();
+  }
   logger.info('Detected form change - generating attachments');
   return generateXform.update(change.id).catch(err => {
     logger.error('Failed to update xform: %o', err);
@@ -106,7 +111,14 @@ const handleFormChange = (change) => {
 };
 
 const handleBrandingChanges = () => {
-  return updateServiceWorker();
+  return updateManifest()
+    .then(() => updateServiceWorker());
+};
+
+const updateManifest = () => {
+  return manifest.generate().catch(err => {
+    logger.error('Failed to generate manifest: %o', err);
+  });
 };
 
 const updateServiceWorker = () => {
@@ -120,13 +132,19 @@ const load = () => {
   loadViewMaps();
   return loadTranslations()
     .then(() => loadSettings())
-    .then(() => initTransitionLib());
+    .then(() => initTransitionLib())
+    .then(() => db.createVault());
 };
 
 const listen = () => {
   db.medic
     .changes({ live: true, since: 'now', return_docs: false })
     .on('change', change => {
+
+      if (tombstoneUtils.isTombstoneId(change.id)) {
+        return Promise.resolve();
+      }
+
       if (change.id === MEDIC_DDOC_ID) {
         return handleDdocChange();
       }

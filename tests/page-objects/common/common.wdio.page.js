@@ -60,6 +60,7 @@ const navigateToLogoutModal = async () => {
 const logout = async () => {
   await navigateToLogoutModal();
   await (await modal.confirm()).click();
+  await browser.pause(100); // wait for login page js to execute
 };
 
 const getLogoutMessage = async () => {
@@ -105,7 +106,7 @@ const goToAnalytics = async () => {
 
 const goToAboutPage = async () => {
   await browser.url(`/#/about`);
-  await (await analyticsTab()).waitForDisplayed();
+  await waitForLoaders();
 };
 
 const closeTour = async () => {
@@ -165,7 +166,7 @@ const syncAndWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
-  await (await syncSuccess()).waitForDisplayed();
+  await (await syncSuccess()).waitForDisplayed({ timeout: 20000 });
 };
 
 const sync = async (expectReload) => {
@@ -178,11 +179,15 @@ const sync = async (expectReload) => {
 };
 
 const closeReloadModal = async () => {
-  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
-  // wait for the animation to complete
-  await browser.pause(500);
-  await (await reloadModalCancel()).click();
-  await browser.pause(500);
+  try {
+    await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
+    // wait for the animation to complete
+    await browser.pause(500);
+    await (await reloadModalCancel()).click();
+    await browser.pause(500);
+  } catch (err) {
+    console.error('Reload modal not showed up');
+  }
 };
 
 const openReportBugAndFetchProperties = async () => {
@@ -222,6 +227,10 @@ const openAppManagement = async () => {
   await (await $('.navbar-brand')).waitForDisplayed();
 };
 
+const getTextForElements = async (elements) => {
+  return Promise.all((await elements()).map(filter => filter.getText()));
+};
+
 module.exports = {
   logout,
   logoutButton,
@@ -238,6 +247,7 @@ module.exports = {
   hideSnackbar,
   waitForLoaders,
   sync,
+  syncButton,
   closeReloadModal,
   goToMessages,
   goToTasks,
@@ -257,4 +267,5 @@ module.exports = {
   waitForLoaderToDisappear,
   goToAboutPage,
   waitForPageLoaded,
+  getTextForElements,
 };

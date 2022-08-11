@@ -112,7 +112,7 @@ const _ = require('lodash/core');
 
         navigateToLogin: navigateToLogin,
 
-        init: checkCurrentSession,
+        checkCurrentSession: checkCurrentSession,
 
         /**
          * Returns true if the logged in user has the db or national admin role.

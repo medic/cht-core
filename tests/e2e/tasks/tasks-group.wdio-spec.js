@@ -135,6 +135,7 @@ const chw = {
   place: 'fixture:center',
   contact: { _id: 'fixture:user:bob', name: 'Bob' },
   roles: ['chw'],
+  known: true,
 };
 
 const supervisor = {
@@ -143,6 +144,7 @@ const supervisor = {
   place: 'fixture:center',
   contact: { _id: 'fixture:user:super', name: 'Nemo' },
   roles: ['chw_supervisor'],
+  known: true,
 };
 
 const getTaskNamesAndTitles = async (tasks) => {
@@ -186,9 +188,7 @@ describe('Tasks group landing page', () => {
 
   describe('for chw', () => {
     before(async () => {
-      await loginPage.login({ username: chw.username, password: chw.password });
-      await commonPage.closeTour();
-      await (await commonPage.analyticsTab()).waitForDisplayed();
+      await loginPage.login({ username: chw.username, password: chw.password, loadPage: true });
     });
 
     after(async () => {
@@ -292,6 +292,7 @@ describe('Tasks group landing page', () => {
 
     it('should not show page when there are no more household tasks', async () => {
       await tasksPage.goToTasksTab();
+      await (await commonPage.waitForPageLoaded());
       await tasksPage.getTasks();
       const task = await tasksPage.getTaskByContactAndForm('Napoleon Bonaparte', 'person_create');
       await task.click();
@@ -330,9 +331,7 @@ describe('Tasks group landing page', () => {
 
   describe('for supervisor', () => {
     before(async () => {
-      await loginPage.login({ username: supervisor.username, password: supervisor.password });
-      await commonPage.closeTour();
-      await (await commonPage.analyticsTab()).waitForDisplayed();
+      await loginPage.login({ username: supervisor.username, password: supervisor.password, loadPage: true });
     });
 
     after(async () => {

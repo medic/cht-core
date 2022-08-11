@@ -126,13 +126,34 @@ module.exports = {
       await browser.wait(async () => await leftActionBarButtons().count() === expectedActionbarButtons, 1000);
     }
 
+    try {
+      await module.exports.openForm(formId);
+    } catch (err) {
+      console.warn('Failed to click to open form');
+      await module.exports.openForm(formId);
+    }
+
+    // waiting for form
+    await helper.waitUntilReadyNative(element(by.css('#report-form #form-title')));
+  },
+
+  openForm: async (formId) => {
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     await helper.waitUntilReadyNative(addButton);
 
-    // select form
-    await helper.clickElementNative(addButton);
-    const form = module.exports.formByHref(formId);
-    await helper.clickElementNative(form);
+    const openForm = async () => {
+      await addButton.click();
+      const form = module.exports.formByHref(formId);
+      await helper.waitElementToBeVisibleNative(form, 1000);
+      await form.click();
+    };
+
+    try {
+      await openForm();
+    } catch (err) {
+      console.warn('Failed to open form, trying again');
+      await openForm();
+    }
 
     // waiting for form
     await helper.waitUntilReadyNative(element(by.css('#report-form #form-title')));

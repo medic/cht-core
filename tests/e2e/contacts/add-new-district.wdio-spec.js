@@ -1,15 +1,20 @@
 const commonElements = require('../../page-objects/common/common.wdio.page.js');
 const contactPage = require('../../page-objects/contacts/contacts.wdio.page.js');
 const utils = require('../../utils');
+const sentinelUtils = require('../sentinel/utils');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 
 describe('Add new district tests : ', () => {
   before(async () => await loginPage.cookieLogin());
+  afterEach(() => sentinelUtils.waitForSentinel());
 
   it('should add new district with a new person', async () => {
     await commonElements.goToPeople();
     const district = 'TestDistrict';
     await contactPage.addPlace('district_hospital', 'TestDistrict', 'Tester');
+
+    await sentinelUtils.waitForSentinel();
+
     expect(await (await contactPage.contactCard()).getText()).to.equal(district);
     expect(await contactPage.getPrimaryContactName()).to.equal('Tester');
   });
@@ -69,6 +74,8 @@ describe('Add new district tests : ', () => {
     await commonElements.goToPeople();
     await contactPage.editDistrict('Tudor\'s district', 'At Tudor\'s');
     expect(await (await contactPage.contactCard()).getText()).to.equal('At Tudor\'s');
+
+    await commonElements.waitForLoaders();
 
     const updatedDistrict = await utils.getDoc('other_district');
     expect(updatedDistrict.contact_type).to.equal('not a district_hospital'); // editing didn't overwrite

@@ -1,7 +1,11 @@
 const oneDay = 24 * 60 * 60 * 1000;
 
-const returnsTrue = function () { return true; };
-const returnsFalse = function () { return false; };
+const returnsTrue = function () {
+  return true;
+};
+const returnsFalse = function () {
+  return false;
+};
 
 const createTask = function(name, dueDays) {
   return {

@@ -10,6 +10,7 @@ import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { SessionService } from '@mm-services/session.service';
 import { TestingComponent } from '@mm-modules/testing/testing.component';
+import { PurgeService } from '@mm-services/purge.service';
 
 describe('Testing Component', () => {
   let component: TestingComponent;
@@ -20,6 +21,7 @@ describe('Testing Component', () => {
   let feedbackService;
   let sessionService;
   let cookieService;
+  let purgeService;
 
   beforeEach(waitForAsync(() => {
     database = { destroy: sinon.stub() };
@@ -35,6 +37,7 @@ describe('Testing Component', () => {
       logout: sinon.stub()
     };
     cookieService = { deleteAll: sinon.stub() };
+    purgeService = { updateDocsToPurge: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -49,7 +52,8 @@ describe('Testing Component', () => {
           { provide: DebugService, useValue: debugService },
           { provide: FeedbackService, useValue: feedbackService },
           { provide: SessionService, useValue: sessionService },
-          { provide: CookieService, useValue: cookieService }
+          { provide: CookieService, useValue: cookieService },
+          { provide: PurgeService, useValue: purgeService }
         ]
       })
       .compileComponents()
@@ -108,8 +112,9 @@ describe('Testing Component', () => {
 
   it('should not purge if user is online only', () => {
     sessionService.isOnlineOnly.returns(true);
+    purgeService.updateDocsToPurge.resolves();
     const purgeEvent = { on: sinon.stub() };
-    const purgeSub = sinon.stub(Purger, 'purge').returns(purgeEvent);
+    const purgeSub = sinon.stub(Purger, 'purgeMain').returns(purgeEvent);
 
     component.purge();
 
@@ -122,12 +127,14 @@ describe('Testing Component', () => {
 
   it('should purge if user is not online only', fakeAsync(() => {
     sessionService.isOnlineOnly.returns(false);
+    purgeService.updateDocsToPurge.resolves();
     const purgeEvent = { on: sinon.stub().resolves() };
-    const purgeSub = sinon.stub(Purger, 'purge').returns(purgeEvent);
+    const purgeSub = sinon.stub(Purger, 'purgeMain').returns(purgeEvent);
 
     component.purge();
 
     expect(component.purging).to.equal(true);
+    tick();
     expect(dbService.get.callCount).to.equal(1);
     expect(dbService.get.args[0][0]).to.deep.equal({ remote: false });
     expect(sessionService.userCtx.callCount).to.equal(1);
