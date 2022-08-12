@@ -22,14 +22,23 @@ import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/rese
 import { MultiDropdownFilterComponent } from
   '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { SessionService } from '@mm-services/session.service';
+import { DatePipe } from '@angular/common';
+import { Selectors } from '@mm-selectors/index';
 
 describe('Reports Filters Component', () => {
   let component: ReportsFiltersComponent;
   let fixture: ComponentFixture<ReportsFiltersComponent>;
   let searchFiltersService;
+  let datePipe;
 
   beforeEach(waitForAsync(() => {
     searchFiltersService = { init: sinon.stub(), destroy: sinon.stub() };
+    datePipe = { transform: sinon.stub() };
+
+    const mockedSelectors = [
+      { selector: Selectors.getFilters, value: {} },
+    ];
+
     return TestBed
       .configureTestingModule({
         imports: [
@@ -51,11 +60,11 @@ describe('Reports Filters Component', () => {
           MultiDropdownFilterComponent,
         ],
         providers: [
-          provideMockStore(),
+          provideMockStore({ selectors: mockedSelectors }),
           { provide: SearchFiltersService, useValue: searchFiltersService },
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves([]) } },
           { provide: SessionService, useValue: { isOnlineOnly: sinon.stub() } },
-
+          { provide: DatePipe, useValue: datePipe },
         ]
       })
       .compileComponents()
