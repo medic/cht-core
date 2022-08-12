@@ -155,9 +155,9 @@ export class EnketoService {
       });
   }
 
-  saveContactForm(form, docId, type) {
+  saveContactForm(form, docId, type, xmlVersion) {
     return this.ngZone.runOutsideAngular(() => {
-      return this.enketoFormMgr.saveContactForm(form, docId, type)
+      return this.enketoFormMgr.saveContactForm(form, docId, type, xmlVersion)
         .then(docs => {
           const primaryDoc = docs.preparedDocs.find(doc => doc.type === type);
           this.servicesActions.setLastChangedDoc(primaryDoc || docs.preparedDocs[0]);

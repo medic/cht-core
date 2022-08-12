@@ -768,8 +768,8 @@ class EnketoFormManager {
       .then((docs) => saveDocs(this.fileServices.db, docs));
   }
 
-  saveContactForm(form, docId, type) {
-    return this.contactSaver.save(form, docId, type);
+  saveContactForm(form, docId, type, xmlVersion) {
+    return this.contactSaver.save(form, docId, type, xmlVersion);
   }
 
   unload(form) {

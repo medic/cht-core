@@ -140,11 +140,7 @@ describe('ContactSave service', () => {
   });
 
   it('should include form_version if provided', () => {
-    const form = { getDataStr: () => '<data></data>' };
-    const docId = null;
-    const type = 'some-contact-type';
-
-    enketoTranslationService.contactRecordToJs.returns({
+    contactRecordToJs.returns({
       doc: { _id: 'main1', type: 'main', contact: 'NEW'},
       siblings: {
         contact: { _id: 'sis1', type: 'sister', parent: 'PARENT', },
@@ -159,18 +155,18 @@ describe('ContactSave service', () => {
       return contact;
     });
 
-    bulkDocs.resolves([]);
+    dbBulkDocs.resolves([]);
 
     const xmlVersion = {
       time: 123456,
       sha256: '654321'
     };
 
-    return service
-      .save(form, docId, type, xmlVersion)
+    return contactSaver
+      .save(form, DEFAULT_DOC_ID, DEFAULT_TYPE, xmlVersion)
       .then(() => {
-        assert.isTrue(bulkDocs.calledOnce);
-        const savedDocs = bulkDocs.args[0][0];
+        assert.isTrue(dbBulkDocs.calledOnce);
+        const savedDocs = dbBulkDocs.args[0][0];
         assert.equal(savedDocs.length, 3);
         for (const savedDoc of savedDocs) {
           assert.equal(savedDoc.form_version.time, 123456);

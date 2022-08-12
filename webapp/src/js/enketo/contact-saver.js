@@ -173,7 +173,7 @@ class ContactSaver {
     this.transitionsService = transitionsService;
   }
 
-  save(form, docId, type) {
+  save(form, docId, type, xmlVersion) {
     return (docId ? this.fileServices.db.get().get(docId) : Promise.resolve())
       .then(original => {
         const submitted = EnketoDataTranslator.contactRecordToJs(form.getDataStr({ irrelevant: false }));
@@ -187,6 +187,11 @@ class ContactSaver {
       })
       .then((preparedDocs) => applyTransitions(this.transitionsService, preparedDocs))
       .then((preparedDocs) => {
+        if (xmlVersion) {
+          for (const doc of preparedDocs.preparedDocs) {
+            doc.form_version = xmlVersion;
+          }
+        }
         return this.fileServices.db
           .get()
           .bulkDocs(preparedDocs.preparedDocs)
