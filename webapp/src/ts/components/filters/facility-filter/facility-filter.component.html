@@ -1,33 +1,71 @@
-<multi-dropdown-filter
-  [items]="flattenedFacilities"
-  [itemLabel]="itemLabel.bind(this)"
-  (applyFilter)="applyFilter($event)"
-  labelNoFilter="All facilities"
-  labelFilter="Number of facilities"
-  [disabled]="disabled"
-  (onOpen)="loadFacilities()"
->
-  <span class="fa fa-hospital-o"></span>
-  <ul id="facility-dropdown-list">
+<div class="mm-form-type-filter" [id]="fieldId">
+  <multi-dropdown-filter
+    *ngIf="!inline"
+    [items]="flattenedFacilities"
+    [itemLabel]="itemLabel.bind(this)"
+    (applyFilter)="applyFilter($event)"
+    labelNoFilter="All facilities"
+    labelFilter="Number of facilities"
+    [disabled]="disabled"
+    (onOpen)="loadFacilities()"
+  >
+    <span class="fa fa-hospital-o"></span>
+    <ul id="facility-dropdown-list" class="filter-options">
+      <ng-container
+        *ngFor="let facility of displayedFacilities; trackBy: trackByFn"
+        [ngTemplateOutlet]="facilityTemplate"
+        [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0, filter: dropdownFilter }">
+      </ng-container>
+    </ul>
+  </multi-dropdown-filter>
+
+  <ul class="filter-options" *ngIf="inline">
     <ng-container
       *ngFor="let facility of displayedFacilities; trackBy: trackByFn"
       [ngTemplateOutlet]="facilityTemplate"
-      [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0 }">
+      [ngTemplateOutletContext]="{ facility: facility, facilityDepth: 0, filter: inlineFilter }">
     </ng-container>
   </ul>
+</div>
 
-</multi-dropdown-filter>
-
-<ng-template #facilityTemplate let-facility="facility" let-facilityDepth="facilityDepth" let-parent="parent" let-selectedParent="selectedParent">
-  <li role="presentation" [class.selected]="dropdownFilter?.selected.has(facility)" [class.disabled]="selectedParent">
-    <a role="menuitem" tabindex="-1" [attr.data-value]="facility?.doc?._id" class="{{'indent-' + facilityDepth}}" (click)="!selectedParent && toggle(facility)">
-      {{facility.label | async }}
+<ng-template
+  #facilityTemplate
+  let-facility="facility"
+  let-facilityDepth="facilityDepth"
+  let-parent="parent"
+  let-selectedParent="selectedParent"
+  let-filter="filter">
+  <li
+    role="presentation"
+    [class.selected]="filter?.selected.has(facility)"
+    [class.disabled]="selectedParent || disabled"
+    [class.accordion-facility-list]="inline"
+    [class.accordion-facility-list-expand]="facility.toggle"
+    [class.accordion-facility-caret]="facility?.children?.length">
+    <span
+      class="fa accordion-facility-check"
+      [ngClass]="filter?.selected.has(facility) ? 'fa-check-square' : 'fa-square-o'"
+      (click)="select(selectedParent, facility, filter, true)">
+    </span>
+    <a
+      class="accordion-facility-title"
+      role="menuitem"
+      tabindex="-1"
+      [attr.data-value]="facility?.doc?._id"
+      (click)="select(selectedParent, facility, filter)">
+      {{ facility.label | async }}
     </a>
-    <ul class="mm-dropdown-submenu">
+    <span
+      class="fa accordion-facility-chevron"
+      [class.fa-caret-up] = facility.toggle
+      [class.fa-caret-down] = !facility.toggle
+      (click)="select(selectedParent, facility, filter)">
+    </span>
+    <ul class="mm-dropdown-submenu" *ngIf="facility?.children?.length">
       <ng-container
         *ngFor="let child of facility?.children; trackBy: trackByFn"
         [ngTemplateOutlet]="facilityTemplate"
-        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: dropdownFilter?.selected.has(facility), facilityDepth: facilityDepth + 1 }">
+        [ngTemplateOutletContext]="{ facility: child, parent: facility, selectedParent: filter?.selected.has(facility), facilityDepth: facilityDepth + 1, filter: filter }">
       </ng-container>
     </ul>
   </li>

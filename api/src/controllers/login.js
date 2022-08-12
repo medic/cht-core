@@ -9,6 +9,7 @@ const environment = require('../environment');
 const config = require('../config');
 const users = require('../services/users');
 const tokenLogin = require('../services/token-login');
+const privacyPolicy = require('../services/privacy-policy');
 const logger = require('../logger');
 const db = require('../db');
 const localeUtils = require('locale');
@@ -25,7 +26,8 @@ const templates = {
       'login.incorrect',
       'online.action.message',
       'User Name',
-      'Password'
+      'Password',
+      'privacy.policy'
     ],
   },
   tokenLogin: {
@@ -40,6 +42,7 @@ const templates = {
       'login.token.loading',
       'login.token.redirect.login.info',
       'login.token.redirect.login',
+      'privacy.policy'
     ],
   },
 };
@@ -103,18 +106,21 @@ const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
   return headerLocales.best(supportedLocales).language;
 };
 
-const render = (page, req, branding, extras = {}) => {
+const render = (page, req, extras = {}) => {
   const acceptLanguageHeader = req && req.headers && req.headers['accept-language'];
   return Promise
     .all([
       getTemplate(page),
       getEnabledLocales(),
+      brandingService.get(),
+      privacyPolicy.exists()
     ])
-    .then(([ template, locales ]) => {
+    .then(([ template, locales, branding, hasPrivacyPolicy ]) => {
       const options = Object.assign(
         {
-          branding: branding,
-          locales: locales,
+          branding,
+          locales,
+          hasPrivacyPolicy,
           defaultLocale: getBestLocaleCode(acceptLanguageHeader, locales, config.get('locale')),
           translations: getTranslationsString(page)
         },
@@ -194,8 +200,7 @@ const setCookies = (req, res, sessionRes) => {
 };
 
 const renderTokenLogin = (req, res) => {
-  return brandingService.get()
-    .then(branding => render('tokenLogin', req, branding, { tokenUrl: req.url }))
+  return render('tokenLogin', req, { tokenUrl: req.url })
     .then(body => res.send(body));
 };
 
@@ -256,8 +261,7 @@ const loginByToken = (req, res) => {
 };
 
 const renderLogin = (req) => {
-  return brandingService.get()
-    .then(branding => render('login', req, branding));
+  return render('login', req);
 };
 
 module.exports = {

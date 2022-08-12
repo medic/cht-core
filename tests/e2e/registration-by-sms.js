@@ -64,9 +64,6 @@ describe('registration transition', () => {
       },
       update_scheduled_reports: {
         load: './transitions/update_scheduled_reports.js'
-      },
-      update_sent_forms: {
-        load: './transitions/update_sent_forms.js'
       }
     },
     forms: {

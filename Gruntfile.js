@@ -129,6 +129,7 @@ module.exports = function(grunt) {
       test: {
         files: {
           ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
+          ['http://admin:pass@localhost:4984/medic-test-logs']: 'build/ddocs/medic/_attachments/ddocs/logs.json',
         },
       },
       staging: {
@@ -498,7 +499,7 @@ module.exports = function(grunt) {
       },
       'wdio-run-standard': {
         cmd: [
-          'npm run wdio-standard'
+          'npm run standard-wdio'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },

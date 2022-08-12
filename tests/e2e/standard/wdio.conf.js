@@ -1,9 +1,9 @@
-const wdioBaseConfig = require('./wdio.conf');
+const wdioBaseConfig = require('../../wdio.conf');
 const _ = require('lodash');
-const utils = require('./utils');
+const utils = require('../../utils');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-const constants = require('./constants');
+const constants = require('../../constants');
 
 const chai = require('chai');
 chai.use(require('chai-exclude'));
@@ -11,7 +11,7 @@ chai.use(require('chai-exclude'));
 // Override specific properties from wdio base config
 const standardConfig = _.merge(wdioBaseConfig.config, {
   specs: [
-    './tests/e2e/**/*.standard-wdio-spec.js'
+    './tests/e2e/standard/**/*.standard-wdio-spec.js'
   ],
 
   onPrepare: async function () {

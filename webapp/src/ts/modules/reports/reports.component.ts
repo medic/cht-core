@@ -1,9 +1,11 @@
 import { find as _find, cloneDeep as _cloneDeep } from 'lodash-es';
 import {
+  AfterViewInit,
   Component,
   NgZone,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
@@ -21,14 +23,20 @@ import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
+import { AuthService } from '@mm-services/auth.service';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
+import { SessionService } from '@mm-services/session.service';
 
 const PAGE_SIZE = 50;
 
 @Component({
   templateUrl: './reports.component.html'
 })
-export class ReportsComponent implements OnInit, OnDestroy {
+export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription: Subscription = new Subscription();
+  @ViewChild(ReportsSidebarFilterComponent)
+  reportsSidebarFilter: ReportsSidebarFilterComponent;
 
   private globalActions;
   private reportsActions;
@@ -41,8 +49,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
   forms;
   error;
   errorSyntax;
-  loading;
-  appending;
+  loading = true;
+  appending = false;
   moreItems;
   filters:any = {};
   hasReports;
@@ -50,19 +58,23 @@ export class ReportsComponent implements OnInit, OnDestroy {
   verifyingReport;
   showContent;
   enketoEdited;
+  useSidebarFilter = true;
+  isSidebarFilterOpen = false;
 
   constructor(
     private store:Store,
-    private route: ActivatedRoute,
+    private route:ActivatedRoute,
     private router:Router,
+    private authService:AuthService,
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
-    private tourService: TourService,
+    private tourService:TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
     private ngZone:NgZone,
-    private scrollLoaderProvider: ScrollLoaderProvider,
+    private sessionService:SessionService,
+    private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -129,11 +141,23 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.verifyingReport = false;
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
-
     this.tourService.startIfNeeded(this.route.snapshot);
-
-    this.search();
     this.setActionBarData();
+  }
+
+  async ngAfterViewInit() {
+    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    this.useSidebarFilter = !isDisabled;
+    this.search();
+
+    if (!this.useSidebarFilter) {
+      return;
+    }
+
+    const subscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
+    this.subscription.add(subscription);
   }
 
   ngOnDestroy() {
@@ -239,7 +263,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   search(force = false) {
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
-    if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
+    if ((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
       this.router.navigate(['reports']);
       this.reportsActions.clearSelection();
     }
@@ -306,5 +330,13 @@ export class ReportsComponent implements OnInit, OnDestroy {
     } else {
       this.reportsActions.removeSelectedReport(report);
     }
+  }
+
+  toggleFilter() {
+    this.reportsSidebarFilter?.toggleSidebarFilter();
+  }
+
+  resetFilter() {
+    this.reportsSidebarFilter?.resetFilters();
   }
 }

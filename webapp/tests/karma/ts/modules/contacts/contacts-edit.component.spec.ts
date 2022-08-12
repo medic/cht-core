@@ -16,6 +16,7 @@ import { DbService } from '@mm-services/db.service';
 import { Selectors } from '@mm-selectors/index';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { EnketoService } from '@mm-services/enketo.service';
+import { ContactSaveService } from '@mm-services/contact-save.service';
 import { GlobalActions } from '@mm-actions/global';
 
 
@@ -30,6 +31,7 @@ describe('ContactsEdit component', () => {
   let component;
   let enketoService;
   let lineageModelGeneratorService;
+  let contactSaveService;
   let routeSnapshot;
 
   beforeEach(() => {
@@ -51,9 +53,9 @@ describe('ContactsEdit component', () => {
     enketoService = {
       renderContactForm: sinon.stub(),
       unload: sinon.stub(),
-      saveContactForm: sinon.stub()
     };
     lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: { } }) };
+    contactSaveService =  { save: sinon.stub() };
 
     sinon.stub(console, 'error');
 
@@ -81,6 +83,7 @@ describe('ContactsEdit component', () => {
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
         { provide: EnketoService, useValue: enketoService },
         { provide: ContactTypesService, useValue: contactTypesService },
+        { provide: ContactSaveService, useValue: contactSaveService },
       ],
       declarations: [
         EnketoComponent,
@@ -553,7 +556,7 @@ describe('ContactsEdit component', () => {
       component.enketoSaving = true;
       await component.save();
 
-      expect(enketoService.saveContactForm.callCount).to.equal(0);
+      expect(contactSaveService.save.callCount).to.equal(0);
       expect(setEnketoSavingStatus.callCount).to.equal(0);
       expect(setEnketoError.callCount).to.equal(0);
     });
@@ -574,7 +577,7 @@ describe('ContactsEdit component', () => {
       expect(setEnketoError.callCount).to.equal(1);
       expect(setEnketoError.args).to.deep.equal([[null]]);
       expect(component.enketoContact.formInstance.validate.callCount).to.equal(1);
-      expect(enketoService.saveContactForm.callCount).to.equal(0);
+      expect(contactSaveService.save.callCount).to.equal(0);
     });
 
     it('should catch save errors', async () => {
@@ -587,13 +590,13 @@ describe('ContactsEdit component', () => {
         },
         type: 'some_contact',
       };
-      enketoService.saveContactForm.rejects({ some: 'error' });
+      contactSaveService.save.rejects({ some: 'error' });
 
       await component.save();
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(component.enketoContact.formInstance.validate.callCount).to.equal(1);
-      expect(enketoService.saveContactForm.callCount).to.equal(1);
+      expect(contactSaveService.save.callCount).to.equal(1);
       expect(setEnketoError.callCount).to.equal(2);
     });
 
@@ -612,15 +615,15 @@ describe('ContactsEdit component', () => {
       await createComponent();
       await fixture.whenStable();
 
-      enketoService.saveContactForm.resolves({ docId: 'new_clinic_id' });
+      contactSaveService.save.resolves({ docId: 'new_clinic_id' });
 
       await component.save();
 
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
-      expect(enketoService.saveContactForm.callCount).to.equal(1);
-      expect(enketoService.saveContactForm.args[0]).to.deep.equal([ form, null, 'clinic' ]);
+      expect(contactSaveService.save.callCount).to.equal(1);
+      expect(contactSaveService.save.args[0]).to.deep.equal([ form, null, 'clinic', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'new_clinic_id']]);
     });
@@ -647,15 +650,15 @@ describe('ContactsEdit component', () => {
       await createComponent();
       await fixture.whenStable();
 
-      enketoService.saveContactForm.resolves({ docId: 'the_person' });
+      contactSaveService.save.resolves({ docId: 'the_person' });
 
       await component.save();
 
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
-      expect(enketoService.saveContactForm.callCount).to.equal(1);
-      expect(enketoService.saveContactForm.args[0]).to.deep.equal([ form, 'the_person', 'person' ]);
+      expect(contactSaveService.save.callCount).to.equal(1);
+      expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_person', 'person', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_person']]);
     });
@@ -682,15 +685,15 @@ describe('ContactsEdit component', () => {
       await createComponent();
       await fixture.whenStable();
 
-      enketoService.saveContactForm.resolves({ docId: 'the_patient' });
+      contactSaveService.save.resolves({ docId: 'the_patient' });
 
       await component.save();
 
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
-      expect(enketoService.saveContactForm.callCount).to.equal(1);
-      expect(enketoService.saveContactForm.args[0]).to.deep.equal([ form, 'the_patient', 'patient' ]);
+      expect(contactSaveService.save.callCount).to.equal(1);
+      expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_patient', 'patient', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_patient']]);
     });

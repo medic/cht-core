@@ -386,7 +386,7 @@ angular
             return UpdateUser($scope.editUserModel.username, updates);
           }
 
-          return CreateUser(updates);
+          return CreateUser.createSingleUser(updates);
         })
         .then(() => {
           $scope.setFinished();
