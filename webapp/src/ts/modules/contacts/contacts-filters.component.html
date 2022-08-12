@@ -1,5 +1,5 @@
 <div class="basic-filters left-pane show-one-filter">
-  <mm-freetext-filter class="filter" (search)="applyFilters()" [disabled]="disabled"></mm-freetext-filter>
+  <mm-freetext-filter class="filter legacy" (search)="applyFilters()" [disabled]="disabled"></mm-freetext-filter>
   <reset-filters (resetFilters)="resetFilters()" [disabled]="disabled"></reset-filters>
   <mm-sort-filter
     [lastVisitedDateExtras]="lastVisitedDateExtras"

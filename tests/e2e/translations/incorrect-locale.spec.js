@@ -5,7 +5,6 @@ const userSettingsElements = require('../../page-objects/user-settings/user-sett
 const contactElements = require('../../page-objects/contacts/contacts.po');
 
 describe('Incorrect locale', () => {
-
   const createLanguage = () =>  utils.addTranslations('hil', {
     'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
     'n.week': '{WEEKS, plural, =1{1 saptamana} other{# saptamani}}',
@@ -36,6 +35,7 @@ describe('Incorrect locale', () => {
     await utils.afterEach();
   });
 
+  // open user settings modal
   it('should work with incorrect locale', async () => {
     await commonElements.openMenuNative();
     await commonElements.checkUserSettings();

@@ -52,7 +52,7 @@ angular.module('directives').directive('mmModal', function() {
       disableSubmit: '=',
 
       // string: (optional) the expression which, if true, will show the delete button
-      showDelete: '='
+      showDelete: '=',
     }
   };
 });

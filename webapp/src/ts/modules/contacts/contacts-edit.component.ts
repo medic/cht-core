@@ -38,6 +38,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   translationsLoadedSubscription;
   private globalActions;
   private contactsActions;
+  private xmlVersion;
 
   enketoStatus;
   enketoSaving;
@@ -240,6 +241,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private async renderForm(formId: string, titleKey: string) {
     const formDoc = await this.dbService.get().get(formId);
+    this.xmlVersion = formDoc.xmlVersion;
     const instanceData = this.getFormInstanceData();
     const markFormEdited = this.markFormEdited.bind(this);
     const resetFormError = this.resetFormError.bind(this);
@@ -287,7 +289,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
         $('form.or').trigger('beforesave');
 
         return this.contactSaveService
-          .save(form, docId, this.enketoContact.type)
+          .save(form, docId, this.enketoContact.type, this.xmlVersion)
           .then((result) => {
             console.debug('saved contact', result);
 

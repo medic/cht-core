@@ -3901,7 +3901,6 @@
     "registration": true,
     "update_scheduled_reports": false,
     "multi_report_alerts": false,
-    "update_sent_forms": false,
     "generate_patient_id_on_people": true,
     "death_reporting": true,
     "resolve_pending": false
