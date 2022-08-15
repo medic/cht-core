@@ -3,36 +3,6 @@ const uuid = require('uuid').v4;
 
 const CHW_CONTACT_NUMBER = '+32049832049';
 
-module.exports = {
-  api: {
-    get: get,
-    post: post,
-    postMessage: postMessage,
-    postMessages: postMessages,
-    postStatus: postStatus,
-    postStatuses: postStatuses,
-  },
-  db: {
-    getMessageContents: getMessageContents,
-    getMessageStates: getMessageStates,
-  },
-  setup: {
-    saveWoMessage: saveWoMessage,
-    saveWoMessages: saveWoMessages,
-  },
-
-  cleanUp: () => {
-    // delete WO and WT messages
-    return allMessageDocs()
-      .then(docs => docs.map(doc => {
-        doc._deleted = true;
-        return doc;
-      }))
-      .then(docs => testUtils.db.bulkDocs(docs));
-  },
-};
-
-
 const get = () => {
   return testUtils.request({
     path: '/api/sms',
@@ -136,4 +106,33 @@ const allMessageDocs = () => {
   return testUtils.db.query('medic-client/messages_by_contact_date',
     { reduce:false, include_docs:true })
     .then(res => res.rows.map(row => row.doc));
+};
+
+module.exports = {
+  api: {
+    get: get,
+    post: post,
+    postMessage: postMessage,
+    postMessages: postMessages,
+    postStatus: postStatus,
+    postStatuses: postStatuses,
+  },
+  db: {
+    getMessageContents: getMessageContents,
+    getMessageStates: getMessageStates,
+  },
+  setup: {
+    saveWoMessage: saveWoMessage,
+    saveWoMessages: saveWoMessages,
+  },
+
+  cleanUp: () => {
+    // delete WO and WT messages
+    return allMessageDocs()
+      .then(docs => docs.map(doc => {
+        doc._deleted = true;
+        return doc;
+      }))
+      .then(docs => testUtils.db.bulkDocs(docs));
+  },
 };

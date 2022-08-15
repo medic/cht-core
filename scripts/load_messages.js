@@ -99,7 +99,7 @@ const postMessage = (data) => {
 
   const http = options.protocol === 'https:' ? require('https') : require('http');
 
-  const req = http.request(options, function(res) {
+  const req = http.request(options, (res) => {
     res.setEncoding('utf8');
     res.on('data', (chunk) => {
       console.log(chunk);
