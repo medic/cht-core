@@ -13,11 +13,11 @@ const APPEARANCE_WIDGET = '.or-appearance-display-base64-image';
  * @param options {(Boolean|{touch: Boolean, repeat: Boolean})} Options passed to the widget during instantiation.
  * @param e {*=} Event
  */
-function Displaybase64image(element, options) {
+const Displaybase64image = function(element, options) {
   this.namespace = PLUGIN_NAME;
   Widget.call(this, element, options);
   this._init();
-}
+};
 
 // Copy the prototype functions from the Widget super class
 Displaybase64image.prototype = Object.create(Widget.prototype);
@@ -48,10 +48,10 @@ Displaybase64image.prototype._init = function() {
     .on('change inputupdate.enketo', () => setSource($img, $input.val()));
 };
 
-function setSource($img, value) {
+const setSource = ($img, value) => {
   const src = value ? `data:image/png;base64,${value}` : '';
   $img.attr('src', src);
-}
+};
 
 $.fn[PLUGIN_NAME] = function (options, event) {
   return this.each(function () {

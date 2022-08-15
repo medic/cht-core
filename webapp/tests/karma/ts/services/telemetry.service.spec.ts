@@ -31,7 +31,7 @@ describe('TelemetryService', () => {
     hardwareConcurrency: window.navigator.hardwareConcurrency
   };
 
-  function defineWindow() {
+  const defineWindow = () => {
     Object.defineProperty(
       window.navigator,
       'userAgent',
@@ -52,9 +52,9 @@ describe('TelemetryService', () => {
       'availHeight',
       { value: 1024, configurable: true }
     );
-  }
+  };
 
-  function restoreWindow() {
+  const restoreWindow = () => {
     Object.defineProperty(
       window.navigator,
       'userAgent',
@@ -75,20 +75,20 @@ describe('TelemetryService', () => {
       'availHeight',
       { value: windowScreenOriginal.availHeight, configurable: true }
     );
-  }
+  };
 
-  function subtractDays(numDays) {
+  const subtractDays = (numDays) => {
     return moment()
       .subtract(numDays, 'days')
       .valueOf()
       .toString();
-  }
+  };
 
-  function sameDay() {
+  const sameDay = () => {
     return moment()
       .valueOf()
       .toString();
-  }
+  };
 
   beforeEach(() => {
     defineWindow();
@@ -167,7 +167,7 @@ describe('TelemetryService', () => {
       expect(telemetryDb.close.callCount).to.equal(1);
     });
 
-    function setupDbMocks() {
+    const setupDbMocks = () => {
       storageGetItemStub.returns('dbname');
       telemetryDb.query.resolves({
         rows: [
@@ -203,7 +203,7 @@ describe('TelemetryService', () => {
           }
         }]
       });
-    }
+    };
 
     it('should aggregate once a day and resets the db first', async () => {
       setupDbMocks();

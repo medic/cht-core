@@ -17,11 +17,11 @@ const pluginName = 'dbobjectwidget';
    * @param {*=} e     event
    */
 
-function Dbobjectwidget( element, options ) {
+const Dbobjectwidget = function( element, options ) {
   this.namespace = pluginName;
   Widget.call( this, element, options );
   this._init();
-}
+};
 
 //copy the prototype functions from the Widget super class
 Dbobjectwidget.prototype = Object.create( Widget.prototype );
@@ -33,7 +33,7 @@ Dbobjectwidget.prototype._init = function() {
   construct( this.element );
 };
 
-function construct( element ) {
+const construct = ( element ) => {
   // timeout needed to let setting the value complete before rendering
   setTimeout(function() {
     const $question = $( element );
@@ -62,7 +62,7 @@ function construct( element ) {
       $textInput.prop('disabled', disabled);
     });
   });
-}
+};
 
 const getContactTypes = function($question, $textInput) {
   const dbObjectType = $textInput.attr('data-type-xml');
@@ -134,7 +134,7 @@ Dbobjectwidget.prototype.destroy = function( element ) {
 };
 
 /** Reverse the select2 setup steps performed in construct() */
-function deconstruct( element ) {
+const deconstruct = ( element ) => {
   const $question = $( element );
 
   $question.find( '.select2-container' ).remove();
@@ -155,7 +155,7 @@ function deconstruct( element ) {
     .replace( /^<select /, '<input ' )
     .replace( /<\/select>/, '</input>' );
   $selectInput.replaceWith( replacementHtml );
-}
+};
 
 $.fn[ pluginName ] = function( options, event ) {
   return this.each( function() {

@@ -708,9 +708,9 @@ describe('functional schedules', () => {
       });
   });
 
-  function testMessage(message, expectedTo, expectedContent) {
+  const testMessage = (message, expectedTo, expectedContent) => {
     assert(/^[a-z0-9-]*$/.test(message.uuid));
     assert.equal(message.to, expectedTo);
     assert.equal(message.message, expectedContent);
-  }
+  };
 });

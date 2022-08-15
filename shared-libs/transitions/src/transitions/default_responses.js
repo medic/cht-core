@@ -35,9 +35,9 @@ module.exports = {
     const config = self._getConfig(NAME);
     let start_date;
 
-    function isEmpty() {
+    const isEmpty = () => {
       return !(config && config.start_date && config.start_date.trim());
-    }
+    };
 
     if (!isEmpty()) {
       start_date = moment(config.start_date, 'YYYY-MM-DD');

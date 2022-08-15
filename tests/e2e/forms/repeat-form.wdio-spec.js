@@ -80,13 +80,13 @@ describe('RepeatForm', () => {
       await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'Melbourne' });
     });
 
-    async function repeatForm(count) {
+    const repeatForm = async (count) => {
       const inputCount = await $(inputCountPath);
       await inputCount.setValue(count);
       const stateLabel = await $(stateLabelPath);
       await stateLabel.click(); // trigger a blur event to trigger the enketo form change listener
       expect(await inputCount.getValue()).to.equal(count.toString());
-    }
+    };
   });
 
   describe('Repeat form with repeat button', () => {
@@ -128,10 +128,10 @@ describe('RepeatForm', () => {
       await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'Melbourne' });
     });
 
-    async function repeatForm() {
+    const repeatForm = async () => {
       const addRepeatButton = await $('.btn.btn-default.add-repeat-btn');
       await addRepeatButton.click();
-    }
+    };
   });
 
   describe('Repeat form with select', () => {
@@ -155,7 +155,7 @@ describe('RepeatForm', () => {
       expect(await redmondLabel.getText()).to.equal('Redmond');
     });
 
-    async function getField(fieldName, fieldValue) {
+    const getField = async (fieldName, fieldValue) => {
       const fieldInputPath = `#report-form input[name="/cascading_select/${fieldName}"][value="${fieldValue}"]`;
       const fieldLabelPath = `${fieldInputPath} ~ .option-label.active`;
 
@@ -163,30 +163,30 @@ describe('RepeatForm', () => {
         input: await $(fieldInputPath),
         label: await $(fieldLabelPath),
       };
-    }
+    };
   });
 
-  async function assertLabels({ selector, count, labelText }) {
+  const assertLabels = async ({ selector, count, labelText }) => {
     const labels = await $$(selector);
     expect(labels.length).to.equal(count);
     await Promise.all(labels.map(
       async label => expect(await label.getText()).to.equal(labelText),
     ));
-  }
+  };
 
-  async function login() {
+  const login = async () => {
     await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
     await commonPage.goToBase();
-  }
+  };
 
-  async function openRepeatForm(formInternalId) {
+  const openRepeatForm = async (formInternalId) => {
     await commonPage.goToReports();
     await (await reportsPage.submitReportButton()).click();
     await (await reportsPage.formActionsLink(formInternalId)).click();
-  }
+  };
 });
 
-function readFormDocument(formId) {
+const readFormDocument = (formId) => {
   const form = fs.readFileSync(`${__dirname}/../../forms/${formId}.xml`, 'utf8');
   const formDocument = {
     _id: `form:${formId}`,
@@ -201,4 +201,4 @@ function readFormDocument(formId) {
     }
   };
   return formDocument;
-}
+};

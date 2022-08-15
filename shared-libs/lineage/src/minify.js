@@ -5,7 +5,7 @@ const RECURSION_LIMIT = 50;
 //   doc.parent = minify(doc.parent)
 // Not:
 //   minify(doc)
-function minifyLineage(parent) {
+const minifyLineage = (parent) => {
   if (!parent || !parent._id) {
     return parent;
   }
@@ -24,13 +24,13 @@ function minifyLineage(parent) {
   }
 
   return result;
-}
+};
 
 /**
  * Remove all hyrdrated items and leave just the ids
  * @param {Object} doc The doc to minify
  */
-function minify(doc) {
+const minify = (doc) => {
   if (!doc) {
     return;
   }
@@ -54,7 +54,7 @@ function minify(doc) {
       doc.linked_docs[key] = utils.getId(doc.linked_docs[key]);
     });
   }
-}
+};
 
 module.exports = {
   minify,

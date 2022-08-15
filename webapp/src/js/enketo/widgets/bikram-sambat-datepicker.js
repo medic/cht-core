@@ -6,11 +6,11 @@ const bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
 
 const pluginName = 'bikramsambatdatepicker';
 
-function Bikramsambatdatepicker( element, options ) {
+const Bikramsambatdatepicker = function( element, options ) {
   this.namespace = pluginName;
   Widget.call( this, element, options );
   this._init();
-}
+};
 
 //copy the prototype functions from the Widget super class
 Bikramsambatdatepicker.prototype = Object.create( Widget.prototype );

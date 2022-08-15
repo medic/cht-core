@@ -3,7 +3,7 @@ module.exports = function(dependencies) {
   const Promise = dependencies.Promise;
   const DB = dependencies.DB;
 
-  function getParent(doc) {
+  const getParent = (doc) => {
     const parentId = doc.parent && doc.parent._id;
     if (!parentId) {
       return Promise.resolve();
@@ -15,7 +15,7 @@ module.exports = function(dependencies) {
         }
         throw err;
       });
-  }
+  };
 
   return {
     updateParentContacts: function(docs) {

@@ -207,7 +207,7 @@ const assert = {
 
       check();
 
-      function check() {
+      const check = () => {
         db.getMessageContents()
           .then(actualContents => {
             actualContents = JSON.stringify(actualContents);
@@ -221,7 +221,7 @@ const assert = {
             }
           })
           .catch(reject);
-      }
+      };
     });
   },
 
@@ -252,7 +252,7 @@ const assert = {
 
       check();
 
-      function check() {
+      const check = () => {
         db.getMessageStates()
           .then(actualStates => {
             actualStates = JSON.stringify(actualStates);
@@ -266,7 +266,7 @@ const assert = {
             }
           })
           .catch(reject);
-      }
+      };
     });
   },
 

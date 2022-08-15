@@ -30,11 +30,11 @@ const pluginName = 'unselectableradios';
    * @param {*=} e     event
    */
 
-function Unselectableradios( element, options ) {
+const Unselectableradios = function( element, options ) {
   this.namespace = pluginName;
   Widget.call( this, element, options );
   this._init();
-}
+};
 
 //copy the prototype functions from the Widget super class
 Unselectableradios.prototype = Object.create( Widget.prototype );

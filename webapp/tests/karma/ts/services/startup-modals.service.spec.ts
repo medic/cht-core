@@ -20,7 +20,7 @@ describe('StartupModalsService', () => {
     sinon.restore();
   });
 
-  function getProviders(toursResult) {
+  const getProviders = (toursResult) => {
     return [
       {
         provide: SessionService,
@@ -41,13 +41,13 @@ describe('StartupModalsService', () => {
       { provide: ModalService, useValue: { show: sinon.stub().resolves() } },
       { provide: TourService, useValue: { getTours: sinon.stub().resolves(toursResult) } },
     ];
-  }
+  };
 
-  function injectService() {
+  const injectService = () => {
     service = TestBed.inject(StartupModalsService);
     modalService = TestBed.inject(ModalService);
     userSettingsService = TestBed.inject(UserSettingsService);
-  }
+  };
 
   describe('showStartupModals', () => {
 

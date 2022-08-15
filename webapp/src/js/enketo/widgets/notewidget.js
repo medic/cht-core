@@ -30,11 +30,11 @@ const pluginName = 'notewidget';
    * @param {*=} e     event
    */
 
-function Notewidget( element, options ) {
+const Notewidget = function( element, options ) {
   this.namespace = pluginName;
   Widget.call( this, element, options );
   this._init();
-}
+};
 
 //copy the prototype functions from the Widget super class
 Notewidget.prototype = Object.create( Widget.prototype );
@@ -63,7 +63,7 @@ Notewidget.prototype.destroy = function( element ) {};  // eslint-disable-line n
 
 // Replace any markdown-style links containing HTML with hrefs which are
 // generated when the link is clicked.
-function applyLiveLinkHtml( $el ) {
+const applyLiveLinkHtml = ( $el ) => {
   // The html may include form inputs with values set via javascript,
   // explicitly set value attributes otherwise call html() won't include them
   $el.find('input').each(function () {
@@ -77,16 +77,16 @@ function applyLiveLinkHtml( $el ) {
       '$1<span class="href" style="display:none">$2</span></a>' );
 
   $el.text( '' ).append( html );
-}
+};
 
-function applyLiveLinkEventHandlers( $el ) {
+const applyLiveLinkEventHandlers = ( $el ) => {
   $el.find( '.live-link' ).each( function() {
     const $this = $( this );
     $this.on( 'click', function( e ) {
       e.originalEvent.currentTarget.href = $( this ).find( '.href' ).text();
     } );
   } );
-}
+};
 
 $.fn[ pluginName ] = function( options, event ) {
   return this.each( function() {

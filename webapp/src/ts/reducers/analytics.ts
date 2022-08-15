@@ -14,6 +14,6 @@ const _analyticsReducer = createReducer(
   }),
 );
 
-export function analyticsReducer(state, action) {
+export const analyticsReducer = (state, action) => {
   return _analyticsReducer(state, action);
-}
+};

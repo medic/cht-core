@@ -4,7 +4,7 @@ Handles the initial registration of the service worker
 
 'use strict';
 
-function register(onInstalling) {
+const register = (onInstalling) => {
   if (!window.navigator.serviceWorker) {
     return Promise.reject(new Error('Service worker not supported'));
   }
@@ -36,6 +36,6 @@ function register(onInstalling) {
       })
       .catch(reject);
   });
-}
+};
 
 module.exports = register;

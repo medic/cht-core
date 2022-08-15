@@ -13,7 +13,7 @@ const _init = function(settings, phone) {
   const parsed = instance.parseAndKeepRawInput(phone, regionCode);
   const validationType = ((settings && settings.phone_validation) || '').toLowerCase();
 
-  function validPhone(){
+  const validPhone = () => {
     if (validationType === 'partial') {
       return instance.isPossibleNumber(parsed);
     }
@@ -21,9 +21,9 @@ const _init = function(settings, phone) {
       return true;
     }
     return instance.isValidNumber(parsed);
-  }
+  };
 
-  function getScheme(given) {
+  const getScheme = (given) => {
     if (shortInfo.isValidShortNumber(parsed)) {
       return phonenumber.PhoneNumberFormat.NATIONAL;
     }
@@ -34,7 +34,7 @@ const _init = function(settings, phone) {
       return phonenumber.PhoneNumberFormat.NATIONAL;
     }
     return phonenumber.PhoneNumberFormat.INTERNATIONAL;
-  }
+  };
 
   return {
     format: function(scheme) {

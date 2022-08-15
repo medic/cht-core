@@ -85,6 +85,6 @@ const _tasksReducer = createReducer(
   }))
 );
 
-export function tasksReducer(state, action) {
+export const tasksReducer = (state, action) => {
   return _tasksReducer(state, action);
-}
+};

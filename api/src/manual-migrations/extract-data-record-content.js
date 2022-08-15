@@ -1,6 +1,6 @@
 // Copied from https://github.com/node-browser-compat/btoa/blob/master/index.js
 // because why import a library for one tiny function
-function btoa(str) {
+const btoa = (str) => {
   let buffer;
 
   if (str instanceof Buffer) {
@@ -10,7 +10,7 @@ function btoa(str) {
   }
 
   return buffer.toString('base64');
-}
+};
 
 module.exports = doc => {
   // XML forms which have not been migrated yet

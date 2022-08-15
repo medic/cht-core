@@ -11,11 +11,11 @@ const pluginName = 'mrdtwidget';
    * @param {(boolean|{touch: boolean, repeat: boolean})} options options
    * @param {*=} e     event
    */
-function Mrdtwidget( element, options ) {
+const Mrdtwidget = function( element, options ) {
   this.namespace = pluginName;
   Widget.call( this, element, options );
   this._init();
-}
+};
 
 //copy the prototype functions from the Widget super class
 Mrdtwidget.prototype = Object.create( Widget.prototype );

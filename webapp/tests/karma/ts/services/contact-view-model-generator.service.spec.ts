@@ -125,7 +125,7 @@ describe('ContactViewModelGenerator service', () => {
     sinon.restore();
   });
 
-  function waitForModelToLoad(model) {
+  const waitForModelToLoad = (model) => {
     return service
       .loadChildren(model)
       .then(children => {
@@ -136,7 +136,7 @@ describe('ContactViewModelGenerator service', () => {
         model.reports = reports;
         return model;
       });
-  }
+  };
 
   describe('Place', () => {
     const runPlaceTest = (childrenArray) => {

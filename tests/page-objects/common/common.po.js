@@ -280,6 +280,6 @@ module.exports = {
   getTasksButtonLabel: () => element(by.css('#tasks-tab .button-label')),
 };
 
-function openSubmenu(menuName) {
+const openSubmenu = (menuName) => {
   return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
-}
+};

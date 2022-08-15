@@ -2,17 +2,17 @@ const fs = require('fs');
 const utils = require('./utils');
 const EC = protractor.ExpectedConditions;
 
-function writeScreenShot(data, filename) {
+const writeScreenShot = (data, filename) => {
   const stream = fs.createWriteStream('./tests/results/' + filename);
   stream.write(Buffer.from(data, 'base64'));
   stream.end();
-}
-function handleUpdateModal() {
+};
+const handleUpdateModal = () => {
   utils.deprecated('handleUpdateModal', 'handleUpdateModalNative');
   if (element(by.css('#update-available')).isPresent()) {
     $('body').sendKeys(protractor.Key.ENTER);
   }
-}
+};
 
 const handleUpdateModalNative = async () => {
   if (await element(by.css('#update-available')).isPresent()) {

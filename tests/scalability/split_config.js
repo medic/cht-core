@@ -46,14 +46,14 @@ try {
 }
 
 
-function splitUsers(users, workerCount) {
+const splitUsers = (users, workerCount) => {
   const result = [];
   const newUsers = Object.assign(users);
   for (let i = workerCount; i > 0; i--) {
     result.push(newUsers.splice(0, Math.ceil(newUsers.length / i)));
   }
   return result;
-}
+};
 
 const usersList = splitUsers(config.users, workerCount);
 

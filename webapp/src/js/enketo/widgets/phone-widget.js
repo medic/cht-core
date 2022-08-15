@@ -50,14 +50,14 @@ FormModel.prototype.types.tel = {
    * @param {*=} e     event
    */
 
-function PhoneWidget( element, options, Settings ) {
+const PhoneWidget = function ( element, options, Settings ) {
   this.namespace = pluginName;
   Widget.call( this, element, options );
   if ( !Settings ) {
     Settings = window.CHTCore.Settings;
   }
   this._init( Settings );
-}
+};
 
 //copy the prototype functions from the Widget super class
 PhoneWidget.prototype = Object.create( Widget.prototype );
@@ -88,18 +88,18 @@ PhoneWidget.prototype._init = function( Settings ) {
     } );
 };
 
-function formatAndCopy( $from, $to, settings ) {
+const formatAndCopy = ( $from, $to, settings ) => {
   $from.change( function() {
     // Also trigger the change() event, since input was not by user.
     $to.val( getFormattedValue( settings, $from.val() ) ).change();
   } );
-}
+};
 
-function getFormattedValue( settings, value ) {
+const getFormattedValue = ( settings, value ) => {
   // If invalid, return the non-formatted value,
   // so that the "invalid value" error can display.
   return phoneNumber.normalize( settings, value ) || value;
-}
+};
 
 PhoneWidget.prototype.destroy = function( /* element */) {};
 

@@ -40,11 +40,11 @@ const pluginName = 'androiddatepicker';
    * @param {*=} e     event
    */
 
-function Androiddatepicker( element, options ) {
+const Androiddatepicker = function( element, options ) {
   this.namespace = pluginName;
   Widget.call( this, element, options );
   this._init();
-}
+};
 
 //copy the prototype functions from the Widget super class
 Androiddatepicker.prototype = Object.create( Widget.prototype );

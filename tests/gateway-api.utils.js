@@ -33,48 +33,48 @@ module.exports = {
 };
 
 
-function get() {
+const get = () => {
   return testUtils.request({
     path: '/api/sms',
     method: 'GET',
     headers: { 'Content-Type':'application/json' },
   });
-}
+};
 
-function post(body) {
+const post = (body) => {
   return testUtils.request({
     path: '/api/sms',
     method: 'POST',
     headers: { 'Content-Type':'application/json' },
     body: body,
   });
-}
+};
 
-function postMessage(...messages) {
+const postMessage = (...messages) => {
   return postMessages(...messages);
-}
+};
 
-function postMessages(...messages) {
+const postMessages = (...messages) => {
   return post({ messages });
-}
+};
 
-function postStatus(messageId, newStatus) {
+const postStatus = (messageId, newStatus) => {
   return postStatuses({ id:messageId, status:newStatus });
-}
+};
 
-function postStatuses(...updates) {
+const postStatuses = (...updates) => {
   return post({ updates });
-}
+};
 
-function saveWoMessage(id, content) {
+const saveWoMessage = (id, content) => {
   return saveWoMessages({ id, content });
-}
+};
 
-function saveWoMessages(...details) {
+const saveWoMessages = (...details) => {
   return testUtils.db.bulkDocs(details.map(d => createWoMessage(d.id, d.content)));
-}
+};
 
-function createWoMessage(id, content) {
+const createWoMessage = (id, content) => {
   const task = {
     messages: [
       {
@@ -101,9 +101,9 @@ function createWoMessage(id, content) {
   };
 
   return messageDoc;
-}
+};
 
-function getMessageStates() {
+const getMessageStates = () => {
   return allMessageDocs()
     .then(docs => docs.reduce((acc, doc) => {
       doc.tasks.forEach(task => task.messages.forEach(m => {
@@ -113,9 +113,9 @@ function getMessageStates() {
       }));
       return acc;
     }, []));
-}
+};
 
-function getMessageContents() {
+const getMessageContents = () => {
   return allMessageDocs()
     .then(docs => docs.reduce((acc, doc) => {
 
@@ -130,10 +130,10 @@ function getMessageContents() {
 
       return acc;
     }, []));
-}
+};
 
-function allMessageDocs() {
+const allMessageDocs = () => {
   return testUtils.db.query('medic-client/messages_by_contact_date',
     { reduce:false, include_docs:true })
     .then(res => res.rows.map(row => row.doc));
-}
+};

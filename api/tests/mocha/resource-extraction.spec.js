@@ -9,7 +9,7 @@ let mockDb;
 
 resourceExtraction.__set__('logger', { debug: () => {} });
 
-function doMocking(overwrites = {}) {
+const doMocking = (overwrites = {}) => {
   const defaultAttachment = {
     'js/attached.js': { digest: 'current' },
   };
@@ -36,7 +36,7 @@ function doMocking(overwrites = {}) {
   resourceExtraction.__set__('fs', mockFs);
   resourceExtraction.__set__('db', mockDb);
   resourceExtraction.clearCache();
-}
+};
 
 describe('Resource Extraction', () => {
   afterEach(() => {

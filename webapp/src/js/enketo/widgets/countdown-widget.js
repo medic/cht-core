@@ -33,11 +33,11 @@ const DEFAULT_TIME = 60;
    * @param {*=} e     event
    */
 
-function Timerwidget( element, options ) {
+const Timerwidget = function( element, options ) {
   this.namespace = pluginName;
   Widget.call( this, element, options );
   this._init();
-}
+};
 
 //copy the prototype functions from the Widget super class
 Timerwidget.prototype = Object.create( Widget.prototype );
@@ -76,7 +76,7 @@ module.exports = {
   'selector': '.or-appearance-countdown-timer input',
 };
 
-function TimerAnimation(canvas, canvasW, canvasH, duration) {
+const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
   const pi = Math.PI;
   const LIM = duration * 500; // Half of the time the animation should take in milliseconds
   const ctx = canvas.getContext('2d');
@@ -99,9 +99,9 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
       cached = loadSound();
     }
 
-    function loadSound() {
+    const loadSound = () => {
       return new Audio('/audio/alert.mp3');
-    }
+    };
 
     return {
       play: function() {
@@ -115,11 +115,11 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
   }());
 
   //> UTILS
-  function drawCircle(ctx, c) {
+  const drawCircle = (ctx, c) => {
     drawArc(ctx, c, 360);
-  }
+  };
 
-  function drawArc(ctx, c, arc) {
+  const drawArc = (ctx, c, arc) => {
     const arcRadians = pi*arc/180;
     ctx.beginPath();
     ctx.arc(c.x, c.y, c.r, -pi/2,
@@ -127,31 +127,31 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
     ctx.lineTo(c.x, c.y);
     ctx.fillStyle = c.color;
     ctx.fill();
-  }
+  };
 
   //> ANIMATION
-  function drawAnimation(offset) {
+  const drawAnimation = (offset) => {
     drawBackgroundCircle(activeBgColor);
     drawTimerArc(offset);
-  }
-  function drawBackgroundCircle(color) {
+  };
+  const drawBackgroundCircle = (color) => {
     drawCircle(ctx, {
       x: centre.x, y: centre.y, r: radius, color: color });
-  }
-  function drawTimerArc(offset) {
+  };
+  const drawTimerArc = (offset) => {
     drawArc(ctx, {
       x: centre.x, y: centre.y, r: radius, color: arcColor },
     offset * 180 / LIM);
-  }
+  };
 
-  function startTimer() {
+  const startTimer = () => {
     running = true;
     setTimeout(function() {
       animate(Date.now());
     }, 0);
-  }
+  };
 
-  function animate(start) {
+  const animate = (start) => {
     const offset = Date.now() - start;
 
     if(!running) {
@@ -171,14 +171,14 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         audio.play();
       }
     }
-  }
+  };
 
   // init
   (function() {
-    function resetTimer() {
+    const resetTimer = () => {
       running = false;
       drawBackgroundCircle(inactiveBgColor);
-    }
+    };
 
     // set up initial state
     resetTimer();
@@ -191,4 +191,4 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
       }
     });
   }());
-}
+};

@@ -21,11 +21,11 @@ const APPEARANCES = {
  * @param options {(Boolean|{touch: Boolean, repeat: Boolean})} Options passed to the widget during instantiation.
  * @param e {*=} Event
  */
-function Androidapplauncherwidget(element, options) {
+const Androidapplauncherwidget = function(element, options) {
   this.namespace = PLUGIN_NAME;
   Widget.call(this, element, options);
   this._init();
-}
+};
 
 // Copy the prototype functions from the Widget super class
 Androidapplauncherwidget.prototype = Object.create(Widget.prototype);
@@ -48,7 +48,7 @@ Androidapplauncherwidget.prototype._init = function() {
   displayActions($widget);
 };
 
-function displayActions($widget) {
+const displayActions = ($widget) => {
   window.CHTCore.Translate
     .get('android_app_launcher.button.launch')
     .then(label => {
@@ -60,9 +60,9 @@ function displayActions($widget) {
 
       $widget.on('click', '.btn.launch-app', () => launchApp($widget));
     });
-}
+};
 
-function launchApp($widget) {
+const launchApp = ($widget) => {
   const androidApp = getAndroidAppConfig($widget);
 
   window.CHTCore.AndroidAppLauncher
@@ -78,9 +78,9 @@ function launchApp($widget) {
     })
     // eslint-disable-next-line no-console
     .catch(error => console.error('Android App Launcher widget :: An error occurred: ', error));
-}
+};
 
-function getAndroidAppConfig($widget) {
+const getAndroidAppConfig = ($widget) => {
   const config = mapToObject($widget);
   const $inputs = $widget.find(APPEARANCES.inputs);
 
@@ -90,14 +90,14 @@ function getAndroidAppConfig($widget) {
 
   config.extras = mapToObject($inputs[0]);
   return config;
-}
+};
 
 /**
  * Map group's fields to an object.
  * @param group {Element} HTML element representing a XForm group.
  * @returns {Object|undefined}
  */
-function mapToObject(group) {
+const mapToObject = (group) => {
   if (!group) {
     return;
   }
@@ -109,14 +109,14 @@ function mapToObject(group) {
     processRepeatGroup(group, APPEARANCES.objectList, null, addObjectToList),
     mapSubLevelObject(group)
   );
-}
+};
 
 /**
  * Map input fields from XForm's group to an Object.
  * @param group {Element} HTML element representing a XForm group.
  * @returns {Object|undefined}
  */
-function mapObjectProperties(group) {
+const mapObjectProperties = (group) => {
   const $fields = getFieldsInGroup(group);
 
   if (!$fields.length) {
@@ -126,9 +126,9 @@ function mapObjectProperties(group) {
   const map = {};
   $fields.each((index, input) => map[getElementName(input)] = $(input).val());
   return map;
-}
+};
 
-function mapSubLevelObject(group) {
+const mapSubLevelObject = (group) => {
   const subLevels = $(group).children(APPEARANCES.object);
 
   if (!subLevels.length) {
@@ -138,9 +138,9 @@ function mapSubLevelObject(group) {
   const map = {};
   subLevels.each((index, level) => map[getElementName(level)] = mapToObject(level));
   return map;
-}
+};
 
-function addValueToList(itemGroupIndex, itemGroup, dataProperty, dataValueList) {
+const addValueToList = (itemGroupIndex, itemGroup, dataProperty, dataValueList) => {
   const $fields = getFieldsInGroup(itemGroup);
 
   if (!isValueListValid($fields)) {
@@ -154,9 +154,9 @@ function addValueToList(itemGroupIndex, itemGroup, dataProperty, dataValueList) 
   }
 
   dataValueList.push(val);
-}
+};
 
-function addObjectToList(itemGroupIndex, itemGroup, dataProperty, dataValueList) {
+const addObjectToList = (itemGroupIndex, itemGroup, dataProperty, dataValueList) => {
   const obj = mapToObject(itemGroup);
 
   if (!obj) {
@@ -164,14 +164,14 @@ function addObjectToList(itemGroupIndex, itemGroup, dataProperty, dataValueList)
   }
 
   dataValueList.push(obj);
-}
+};
 
 /**
  * Process the android app data object or sub-object.
  * @param group {Element} HTML element representing a XForm group.
  * @param data {Object} Android app data object or sub-object.
  */
-function processOutputData(group, data) {
+const processOutputData = (group, data) => {
   if (!group || !_isPlainObject(data) || !Object.keys(data).length) {
     return;
   }
@@ -180,18 +180,18 @@ function processOutputData(group, data) {
   processRepeatGroup(group, APPEARANCES.valueList, data, assignDataValueToRepeatGroup);
   processRepeatGroup(group, APPEARANCES.objectList, data, assignDataObjectToRepeatGroup);
   processOutputSubLevels(group, data);
-}
+};
 
-function setOutputFields(group, data) {
+const setOutputFields = (group, data) => {
   const $fields = getFieldsInGroup(group);
 
   $fields.each((index, input) => {
     const inputName = getElementName(input);
     assignValueToInput(input, inputName, data[inputName]);
   });
-}
+};
 
-function assignDataValueToRepeatGroup(itemGroupIndex, itemGroup, dataProperty, dataValueList) {
+const assignDataValueToRepeatGroup = (itemGroupIndex, itemGroup, dataProperty, dataValueList) => {
   if (dataValueList.length < itemGroupIndex) {
     return;
   }
@@ -201,23 +201,23 @@ function assignDataValueToRepeatGroup(itemGroupIndex, itemGroup, dataProperty, d
   if (isValueListValid($fields)) {
     assignValueToInput($($fields[0]), dataProperty, dataValueList[itemGroupIndex]);
   }
-}
+};
 
-function assignDataObjectToRepeatGroup(itemGroupIndex, itemGroup, dataProperty, dataValueList) {
+const assignDataObjectToRepeatGroup = (itemGroupIndex, itemGroup, dataProperty, dataValueList) => {
   if (dataValueList.length < itemGroupIndex) {
     return;
   }
   processOutputData(itemGroup, dataValueList[itemGroupIndex]);
-}
+};
 
-function processOutputSubLevels(group, data) {
+const processOutputSubLevels = (group, data) => {
   $(group)
     .children(APPEARANCES.object)
     .each((index, objectGroup) => {
       const prop = getElementName(objectGroup);
       processOutputData(objectGroup, data[prop]);
     });
-}
+};
 
 /**
  * Finds 'repeat' groups and execute a function to process each element.
@@ -231,7 +231,7 @@ function processOutputSubLevels(group, data) {
  * @param processItem {Function} Function that will process every element.
  * @returns {Object}
  */
-function processRepeatGroup(group, selector, data, processItem) {
+const processRepeatGroup = (group, selector, data, processItem) => {
   // XForm's repeat is automatically wrapped in a <section> element.
   const repeatGroups = $(group)
     .children('section')
@@ -246,9 +246,9 @@ function processRepeatGroup(group, selector, data, processItem) {
   repeatGroups.each((index, item) => processItem(index, item, prop, valueArray));
 
   return { [prop]: valueArray };
-}
+};
 
-function assignValueToInput(input, inputName, value) {
+const assignValueToInput = (input, inputName, value) => {
   if (!input || value === undefined || value === null) {
     return;
   }
@@ -268,15 +268,15 @@ function assignValueToInput(input, inputName, value) {
   $(input)
     .val(value)
     .trigger('change');
-}
+};
 
-function getFieldsInGroup(group) {
+const getFieldsInGroup = (group) => {
   return $(group)
     .children('.question')
     .children('input');
-}
+};
 
-function getElementName(element) {
+const getElementName = (element) => {
   if (!element) {
     return;
   }
@@ -284,9 +284,9 @@ function getElementName(element) {
   return ($(element).attr('name') || '')
     .split('/')
     .pop();
-}
+};
 
-function isValueListValid($fields) {
+const isValueListValid = ($fields) => {
   if (!$fields.length) {
     // eslint-disable-next-line no-console
     console.debug('Android App Launcher Widget :: "android-app-value-list" missing field.');
@@ -300,10 +300,10 @@ function isValueListValid($fields) {
   }
 
   return true;
-}
+};
 
 $.fn[PLUGIN_NAME] = function (options, event) {
-  return this.each(function () {
+  return this.each(() => {
     const $this = $(this);
     let data = $this.data(PLUGIN_NAME);
 

@@ -12,7 +12,7 @@ const _servicesReducer = createReducer(
   })
 );
 
-export function servicesReducer(state, action) {
+export const servicesReducer = (state, action) => {
   return _servicesReducer(state, action);
-}
+};
 
