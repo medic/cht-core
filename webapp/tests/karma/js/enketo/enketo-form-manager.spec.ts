@@ -1579,7 +1579,7 @@ describe('Enketo Form Manager', () => {
         .then((docs) => {
           expect(docs).to.deep.equal(savedDocs);
           expect(contactSave.callCount).to.equal(1);
-          expect(contactSave.args).to.deep.equal([[form, docId, docType]]);
+          expect(contactSave.args).to.deep.equal([[form, docId, docType, undefined]]);
         });
     });
   });
