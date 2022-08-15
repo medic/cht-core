@@ -171,22 +171,34 @@ const createByForm = (data, { locale }={}) => {
     throw new PublicError('Missing required field: message');
   }
 
-  data.message = data.message.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
-
+  const rawMessage = data.message;
+  let formCode = smsparser.getFormCode(data.message);
+  let formDefinition = getForm(formCode);
+  if (formCode && !formDefinition) {
+    // try again, this time without invisible characters
+    const cleaned = formCode.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
+    formDefinition = getForm(cleaned);
+    if (formDefinition) {
+      // update the message to use the correct form code
+      data.message = data.message.replace(formCode, cleaned);
+      formCode = cleaned;
+    }
+  }
   const content = {
     type: 'sms_message',
     message: data.message,
-    form: smsparser.getFormCode(data.message),
+    form: formCode,
     reported_date: data.sent_timestamp,
     locale: data.locale || locale,
     from: data.from,
     gateway_ref: data.gateway_ref,
   };
-  const formDefinition = getForm(content.form);
+
   let formData;
   if (content.form && formDefinition) {
     formData = smsparser.parse(formDefinition, data);
   }
+  content.message = rawMessage; // reset this to the original message now that parsing is complete
   return getDataRecord(formData, content);
 };
 

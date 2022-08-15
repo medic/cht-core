@@ -54,14 +54,42 @@ describe('records service', () => {
   });
 
   it('strips unicode whitespace from textforms submission - #7654', () => {
-    // contains a zero width invisible unicode characters which should be stripped out
-    const message = 'A\u200B B\u200C C\u200D';
+    sinon.stub(config, 'get').returns(definitions.forms);
+
+    const formDefinition = 'YY\u200BYY'; // strip the invisible character to match form defn
+    const facilityId = 'Faci\u200Clity'; // string value - do not strip
+    const year = '19\u200C99'; // integer value - strip
+    const month = '1\u200D2'; // enum value - strip to match
+    const misoprostol = '1\uFEFF'; // boolean value with trailing invisible character
+
+    const message = `${formDefinition} ${facilityId} ${year} ${month} ${misoprostol}`;
     const actual = service.createByForm({
       message,
       from: '+123'
     });
-    chai.expect(actual.sms_message.message).to.equal('A B C');
-    chai.expect(actual.sms_message.form).to.equal('A');
+    chai.expect(actual.sms_message.message).to.equal(message); // the given string is unchanged
+    chai.expect(actual.sms_message.form).to.equal('YYYY'); // correct form is found
+    chai.expect(actual.fields.facility_id).to.equal(facilityId); // character not stripped from string
+    chai.expect(actual.fields.year).to.equal(1999); // integers parse
+    chai.expect(actual.fields.month).to.equal('December'); // list items are found
+    chai.expect(actual.fields.misoprostol_administered).to.equal(true); // booleans parse
+  });
+
+  it('strips unicode whitespace from textforms submission patient_id and place_id fields - #7676', () => {
+    sinon.stub(config, 'get').returns(definitions.forms);
+
+    const formDefinition = 'YYYR';
+    const patientId = '012\u200C34'; // patient_id should be stripped
+    const bsYear = '2068';
+
+    const message = `${formDefinition} ${patientId} ${bsYear}`;
+    const actual = service.createByForm({
+      message,
+      from: '+123'
+    });
+    chai.expect(actual.sms_message.message).to.equal(message);
+    chai.expect(actual.sms_message.form).to.equal('YYYR');
+    chai.expect(actual.fields.patient_id).to.equal('01234'); // character stripped from patient_id
   });
 
   it('create json', () => {
