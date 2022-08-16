@@ -55,6 +55,6 @@ module.exports = {
   reset: () => {
     element(by.css('.icon.icon-refresh')).click();
   },
-  imagePreview: () => element(by.css('#photo-upload .file-picker .file-preview img')),
-  imagePathInput: () => element(by.css('#photo-upload input[type=file]')),
+  imagePreview: () => element(by.css('form[data-form-id="photo-upload"] .file-picker .file-preview img')),
+  imagePathInput: () => element(by.css('form[data-form-id="photo-upload"] input[type=file]')),
 };

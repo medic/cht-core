@@ -10,7 +10,6 @@ describe('Medic XPath Extensions', () => {
     expect(medicXpathExtensions.init).to.be.a('function');
 
     expect(medicXpathExtensions.func).to.not.be.undefined;
-    expect(medicXpathExtensions.func.now).to.be.a('function');
     expect(medicXpathExtensions.func.today).to.be.a('function');
     expect(medicXpathExtensions.func['z-score']).to.be.a('function');
     expect(medicXpathExtensions.func['parse-timestamp-to-date']).to.be.a('function');

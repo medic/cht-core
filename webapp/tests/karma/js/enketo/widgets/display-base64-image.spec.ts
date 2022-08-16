@@ -1,7 +1,7 @@
 import jQuery from 'jquery';
 import { expect } from 'chai';
 
-import * as displayBase64Image from '../../../../../src/js/enketo/widgets/display-base64-image';
+import * as Displaybase64image from '../../../../../src/js/enketo/widgets/display-base64-image';
 
 describe('Display Base64 Image Widget', () => {
   const $ = jQuery;
@@ -18,7 +18,7 @@ describe('Display Base64 Image Widget', () => {
     `);
 
     document.body.insertAdjacentHTML('afterbegin', $html[0]);
-    new displayBase64Image.widget($html.find(displayBase64Image.selector)[0], {});
+    new Displaybase64image($html.find(Displaybase64image.selector)[0], {});
   });
 
   afterEach(() => $('#test-form-group').remove());

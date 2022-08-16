@@ -1,11 +1,9 @@
 'use strict';
-const FormModel = require( 'enketo-core/src/js/Form-model' );
-const Widget = require( 'enketo-core/src/js/Widget' );
+const FormModel = require( 'enketo-core' ).FormModel;
+const Widget = require( 'enketo-core/src/js/widget' ).default;
 const $ = require( 'jquery' );
 const phoneNumber = require('@medic/phone-number');
 require( 'enketo-core/src/js/plugins' );
-
-const pluginName = 'phonewidget';
 
 // Set up enketo validation for `phone` input type
 FormModel.prototype.types.tel = {
@@ -44,49 +42,41 @@ FormModel.prototype.types.tel = {
 /**
    * Allows validated phonenumber entry.
    *
-   * @constructor
-   * @param {Element} element [description]
-   * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-   * @param {*=} e     event
+   * @extends Widget
    */
+class PhoneWidget extends Widget {
+  constructor( element, options, Settings = window.CHTCore.Settings ) {
+    super(element, options);
 
-function PhoneWidget( element, options, Settings ) {
-  this.namespace = pluginName;
-  Widget.call( this, element, options );
-  if ( !Settings ) {
-    Settings = window.CHTCore.Settings;
+    const $input = $( this.element );
+
+    // Add a proxy input field, which will send its input, formatted, to the real input field.
+    // TODO(estellecomment): format the visible field onBlur to user-friendly format.
+    const $proxyInput = $input.clone();
+    $proxyInput.addClass('ignore');
+    $proxyInput.removeAttr('data-relevant');
+    $proxyInput.removeAttr('data-required');
+    $proxyInput.removeAttr('name');
+    $input.before( $proxyInput );
+    $proxyInput.val( $input.val() );
+
+    $input.hide();
+
+    // TODO(estellecomment): move this to a catch clause, when settings aren't found.
+    formatAndCopy( $proxyInput, $input, {} );
+
+    return Settings.get()
+      .then( function( settings ) {
+        formatAndCopy( $proxyInput, $input, settings );
+      } );
   }
-  this._init( Settings );
+
+  static get selector() {
+    // 'string' questions with the `numbers` appearance also become input[type="tel"].
+    // So, here we need to also specify the data-type-xml to avoid collisions.
+    return 'input[type="tel"][data-type-xml="tel"]';
+  }
 }
-
-//copy the prototype functions from the Widget super class
-PhoneWidget.prototype = Object.create( Widget.prototype );
-
-//ensure the constructor is the new one
-PhoneWidget.prototype.constructor = PhoneWidget;
-
-PhoneWidget.prototype._init = function( Settings ) {
-  const $input = $( this.element );
-
-  // Add a proxy input field, which will send its input, formatted, to the real input field.
-  // TODO(estellecomment): format the visible field onBlur to user-friendly format.
-  const $proxyInput = $input.clone();
-  $proxyInput.addClass('ignore');
-  $proxyInput.removeAttr('data-relevant');
-  $proxyInput.removeAttr('name');
-  $input.before( $proxyInput );
-  $proxyInput.val( $input.val() );
-
-  $input.hide();
-
-  // TODO(estellecomment): move this to a catch clause, when settings aren't found.
-  formatAndCopy( $proxyInput, $input, {} );
-
-  this.builtPromise = Settings.get()
-    .then( function( settings ) {
-      formatAndCopy( $proxyInput, $input, settings );
-    } );
-};
 
 function formatAndCopy( $from, $to, settings ) {
   $from.change( function() {
@@ -101,25 +91,4 @@ function getFormattedValue( settings, value ) {
   return phoneNumber.normalize( settings, value ) || value;
 }
 
-PhoneWidget.prototype.destroy = function( /* element */) {};
-
-$.fn[ pluginName ] = function( options, event ) {
-  return this.each( function() {
-    const $this = $( this );
-    let data = $this.data( pluginName );
-
-    options = options || {};
-
-    if ( !data && typeof options === 'object' ) {
-      $this.data( pluginName, ( data = new PhoneWidget( this, options, event ) ) );
-    } else if ( data && typeof options === 'string' ) {
-      data[ options ]( this );
-    }
-  } );
-};
-
-module.exports = {
-  'name': pluginName,
-  'selector': 'input[type="tel"]',
-  'widget': PhoneWidget
-};
+module.exports = PhoneWidget;

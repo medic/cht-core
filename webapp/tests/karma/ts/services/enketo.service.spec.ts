@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
@@ -300,6 +300,25 @@ describe('Enketo service', () => {
       });
     });
 
+    it('passes users language to Enketo', () => {
+      const data = '<data><patient_id>123</patient_id></data>';
+      UserContact.resolves({ contact_id: '123' });
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      enketoInit.returns([]);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      EnketoPrepopulationData.resolves(data);
+      Language.resolves('sw');
+      return service.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
+        expect(Language.callCount).to.equal(1);
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][2].language).to.equal('sw');
+      });
+    });
+
     it('passes xml instance data through to Enketo', () => {
       const data = '<data><patient_id>123</patient_id></data>';
       UserContact.resolves({ contact_id: '123' });
@@ -379,7 +398,8 @@ describe('Enketo service', () => {
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
         expect(summary.id).to.equal('contact-summary');
-        expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
+        const xmlStr = new XMLSerializer().serializeToString(summary.xml);
+        expect(xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
         expect(Search.callCount).to.equal(1);
         expect(Search.args[0][0]).to.equal('reports');
         expect(Search.args[0][1].subjectIds).to.deep.equal(['fffff', '44509']);
@@ -431,9 +451,10 @@ describe('Enketo service', () => {
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
         expect(summary.id).to.equal('contact-summary');
-        expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob>' +
-          '<dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;' +
-          'characters&quot; &amp; \'words\'</notes></context>');
+        const xmlStr = new XMLSerializer().serializeToString(summary.xml);
+        expect(xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob>' +
+          '<dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved "' +
+          'characters" &amp; \'words\'</notes></context>');
         expect(ContactSummary.callCount).to.equal(1);
         expect(ContactSummary.args[0][0]._id).to.equal('fffff');
       });
@@ -507,13 +528,26 @@ describe('Enketo service', () => {
 
   describe('save', () => {
 
-    it('rejects on invalid form', done => {
+    it('rejects on invalid form', () => {
+      const inputRelevant = { dataset: { relevant: 'true' } };
+      const inputNonRelevant = { dataset: { relevant: 'false' } };
+      const inputNoDataset = {};
+      const toArray = sinon.stub().returns([inputRelevant, inputNoDataset, inputNonRelevant]);
+      // @ts-ignore
+      sinon.stub($.fn, 'find').returns({ toArray });
       form.validate.resolves(false);
-      service.save('V', form).catch(actual => {
-        expect(actual.message).to.equal('Form is invalid');
-        expect(form.validate.callCount).to.equal(1);
-        done();
-      });
+      form.relevant = { update: sinon.stub() };
+      return service
+        .save('V', form)
+        .then(() => expect.fail('expected to reject'))
+        .catch(actual => {
+          expect(actual.message).to.equal('Form is invalid');
+          expect(form.validate.callCount).to.equal(1);
+          expect(inputRelevant.dataset.relevant).to.equal('true');
+          expect(inputNonRelevant.dataset.relevant).to.equal('false');
+          // @ts-ignore
+          expect(inputNoDataset.dataset).to.be.undefined;
+        });
     });
 
     it('creates report', () => {
@@ -1749,5 +1783,108 @@ describe('Enketo service', () => {
         });
       });
     });
+  });
+
+  describe('multimedia', () => {
+    let overrideNavigationButtonsStub;
+    let pauseStubs;
+    let form;
+    let $form;
+    let $nextBtn;
+    let $prevBtn;
+    let originalJQueryFind;
+
+    before(() => {
+      $nextBtn = $('<button class="btn next-page"></button>');
+      $prevBtn = $('<button class="btn previous-page"></button>');
+      originalJQueryFind = $.fn.find;
+      overrideNavigationButtonsStub = sinon
+        .stub(EnketoService.prototype, <any>'overrideNavigationButtons')
+        .callThrough();
+
+      form = {
+        calc: { update: sinon.stub() },
+        output: { update: sinon.stub() },
+        resetView: sinon.stub(),
+        pages: {
+          _next: sinon.stub(),
+          _getCurrentIndex: sinon.stub()
+        }
+      };
+    });
+
+    beforeEach(() => {
+      $form = $(`<div></div>`);
+      $form
+        .append($nextBtn)
+        .append($prevBtn);
+
+      pauseStubs = {};
+      sinon
+        .stub($.fn, 'find')
+        .callsFake(selector => {
+          const result = originalJQueryFind.call($form, selector);
+
+          result.each((idx, element) => {
+            if (element.pause) {
+              pauseStubs[element.id] = sinon.stub(element, 'pause');
+            }
+          });
+
+          return result;
+        });
+    });
+
+    after(() => $.fn.find = originalJQueryFind);
+
+    it('should pause the multimedia when going to the previous page', fakeAsync(() => {
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $prevBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.video).to.not.be.undefined;
+      expect(pauseStubs.video.calledOnce).to.be.true;
+      expect(pauseStubs.audio).to.not.be.undefined;
+      expect(pauseStubs.audio.calledOnce).to.be.true;
+    }));
+
+    it('should pause the multimedia when going to the next page', fakeAsync(() => {
+      form.pages._next.resolves(true);
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $nextBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.video).to.not.be.undefined;
+      expect(pauseStubs.video.calledOnce).to.be.true;
+      expect(pauseStubs.audio).to.not.be.undefined;
+      expect(pauseStubs.audio.calledOnce).to.be.true;
+    }));
+
+    it('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
+      form.pages._next.resolves(false);
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $nextBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.video).to.be.undefined;
+      expect(pauseStubs.audio).to.be.undefined;
+    }));
+
+    it('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $prevBtn.trigger('click.pagemode');
+      $nextBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.video).to.be.undefined;
+      expect(pauseStubs.audio).to.be.undefined;
+    }));
   });
 });
