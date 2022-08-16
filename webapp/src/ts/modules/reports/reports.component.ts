@@ -21,6 +21,8 @@ import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
+import {UserContactService} from '@mm-services/user-contact.service';
+import {SessionService} from "@mm-services/session.service";
 
 const PAGE_SIZE = 50;
 
@@ -50,6 +52,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   verifyingReport;
   showContent;
   enketoEdited;
+  currentLevel;
 
   constructor(
     private store:Store,
@@ -64,6 +67,8 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private ngZone:NgZone,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
+    private userContactService:UserContactService,
+    private sessionService:SessionService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -134,6 +139,10 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
     this.search();
     this.setActionBarData();
+    this.userContactService.get().then((user) => {
+      this.currentLevel = user?.parent?.name;
+      console.log('user ', user, 'currentLevel', this.currentLevel);
+    });
   }
 
   ngOnDestroy() {
@@ -167,6 +176,16 @@ export class ReportsComponent implements OnInit, OnDestroy {
       report.heading = this.getReportHeading(form, report);
       report.summary = form ? form.title : report.form;
       report.lineage = report.subject && report.subject.lineage || report.lineage;
+      // filter out the lineage level that belongs to the logged in user
+      console.log('lineage ', report.lineage);
+      if(!this.sessionService.isOnlineOnly()) {
+        report.lineage = report.lineage.filter((level) => {
+          console.log('level currentLevel ', level, this.currentLevel);
+          const result = level !== this.currentLevel;
+          console.log(result);
+          return result;
+        });
+      }
       report.unread = !report.read;
 
       return report;
