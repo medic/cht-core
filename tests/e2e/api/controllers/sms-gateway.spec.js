@@ -204,9 +204,6 @@ const assert = {
 
     return new Promise((resolve, reject) => {
       const endTime = Date.now() + 10000;
-
-      check();
-
       const check = () => {
         db.getMessageContents()
           .then(actualContents => {
@@ -222,6 +219,7 @@ const assert = {
           })
           .catch(reject);
       };
+      check();
     });
   },
 
