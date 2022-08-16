@@ -41,8 +41,7 @@ describe('Submit Default Delivery Report', () => {
     await deliveryReport.selectBabiesDeliveredButton();
     await deliveryReport.enterNoOfBabiesDelivered(6);
     await deliveryReport.selectBabiesAliveButton(3);
-
-    await deliveryReport.enterDeliveryDate('');
+    await deliveryReport.enterDeliveryDate(new Date());
 
     await deliveryReport.selectDeliveryPlaceButton();
     await deliveryReport.selectDeliveryMethod();

@@ -1,10 +1,9 @@
 'use strict';
 const _isPlainObject = require('lodash/isPlainObject');
-const Widget = require('enketo-core/src/js/Widget');
+const Widget = require( 'enketo-core/src/js/widget' ).default;
 const $ = require('jquery');
 require('enketo-core/src/js/plugins');
 
-const PLUGIN_NAME = 'androidapplauncherwidget';
 const APPEARANCES = {
   widget: '.or-appearance-android-app-launcher',
   outputs: '.or-appearance-android-app-outputs',
@@ -16,37 +15,26 @@ const APPEARANCES = {
 
 /**
  * Android App Launcher widget
- * @constructor
- * @param element {Element} The DOM element the widget is applied on.
- * @param options {(Boolean|{touch: Boolean, repeat: Boolean})} Options passed to the widget during instantiation.
- * @param e {*=} Event
+ * @extends Widget
  */
-function Androidapplauncherwidget(element, options) {
-  this.namespace = PLUGIN_NAME;
-  Widget.call(this, element, options);
-  this._init();
-}
-
-// Copy the prototype functions from the Widget super class
-Androidapplauncherwidget.prototype = Object.create(Widget.prototype);
-
-// Ensure the constructor is the new one
-Androidapplauncherwidget.prototype.constructor = Androidapplauncherwidget;
-
-Androidapplauncherwidget.prototype.destroy = function(element) { };  // eslint-disable-line no-unused-vars
-
-Androidapplauncherwidget.prototype._init = function() {
-  const $widget = $(this.element);
-
-  if (!window.CHTCore.AndroidAppLauncher.isEnabled()) {
-    window.CHTCore.Translate
-      .get('android_app_launcher.message.disable')
-      .then(label => $widget.append(`<label>${label}</label>`));
-    return;
+class Androidapplauncherwidget extends Widget {
+  static get selector() {
+    return APPEARANCES.widget;
   }
 
-  displayActions($widget);
-};
+  _init() {
+    const $widget = $(this.element);
+
+    if (!window.CHTCore.AndroidAppLauncher.isEnabled()) {
+      window.CHTCore.Translate
+        .get('android_app_launcher.message.disable')
+        .then(label => $widget.append(`<label>${label}</label>`));
+      return;
+    }
+
+    displayActions($widget);
+  }
+}
 
 function displayActions($widget) {
   window.CHTCore.Translate
@@ -302,23 +290,4 @@ function isValueListValid($fields) {
   return true;
 }
 
-$.fn[PLUGIN_NAME] = function (options, event) {
-  return this.each(function () {
-    const $this = $(this);
-    let data = $this.data(PLUGIN_NAME);
-
-    options = options || {};
-
-    if (!data && typeof options === 'object') {
-      $this.data(PLUGIN_NAME, (data = new Androidapplauncherwidget(this, options, event)));
-    } else if (data && typeof options === 'string') {
-      data[options](this);
-    }
-  });
-};
-
-module.exports = {
-  'name': PLUGIN_NAME,
-  'selector': APPEARANCES.widget,
-  'widget': Androidapplauncherwidget
-};
+module.exports = Androidapplauncherwidget;

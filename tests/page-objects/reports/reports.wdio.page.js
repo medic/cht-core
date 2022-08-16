@@ -85,7 +85,7 @@ const openForm = async (name) => {
 
 const setDateInput = async (name, date) => {
   const input = await $(`input[name="${name}"]`);
-  const dateWidget = await input.nextElement();
+  const dateWidget = await input.previousElement();
   const visibleInput = await dateWidget.$('input[type="text"]');
   await visibleInput.setValue(date);
   await (await formTitle()).click();

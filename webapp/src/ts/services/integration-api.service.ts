@@ -4,7 +4,6 @@ import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.ser
 import { LanguageService } from '@mm-services/language.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 import { MRDTService } from '@mm-services/mrdt.service';
-import { MarkdownService } from '@mm-services/markdown.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { DbService } from '@mm-services/db.service';
@@ -34,7 +33,6 @@ export class IntegrationApiService {
     private enketoService:EnketoService,
     private translateService:TranslateService,
     private mrdtService:MRDTService,
-    private markdownService:MarkdownService,
     private settingsService:SettingsService,
     // todo simprints
     private androidApiService:AndroidApiService,
@@ -45,7 +43,6 @@ export class IntegrationApiService {
     this.Select2Search = select2SearchService;
     this.Enketo = enketoService;
     this.MRDT = mrdtService;
-    this.Markdown = markdownService;
     this.Settings = settingsService;
     this.AndroidApi = androidApiService;
     this.Translate = translateService;

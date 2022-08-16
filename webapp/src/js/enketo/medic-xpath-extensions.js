@@ -1,3 +1,11 @@
+const RAW_NUMBER = /^(-?[0-9]+)(\.[0-9]+)?$/;
+const DATE_STRING = /^\d\d\d\d-\d{1,2}-\d{1,2}(?:T\d\d:\d\d:\d\d\.?\d?\d?(?:Z|[+-]\d\d:\d\d)|.*)?$/;
+const XPR = {
+  number:  v => ({ t:'num',  v }),
+  string:  v => ({ t:'str',  v }),
+  date:    v => ({ t:'date', v }),
+};
+
 let zscoreUtil;
 let toBikramSambat;
 let moment;
@@ -14,13 +22,11 @@ const getValue = function(resultObject) {
 
   // input fields, evaluated as `UNORDERED_NODE_ITERATOR_TYPE`, are received as arrays with one element
   if (resultObject.t === 'arr' && resultObject.v.length) {
-    return resultObject.v[0];
+    return isNaN(resultObject.v[0]) ? asString(resultObject) : resultObject.v[0];
   }
 
   return resultObject.v;
 };
-
-const now_and_today = () => ({ t: 'date', v: new Date() });
 
 const toISOLocalString = function(date) {
   if (date.toString() === 'Invalid Date') {
@@ -56,19 +62,65 @@ const parseTimestampToDate = (value) => {
   const timestamp = parseInt(getValue(value));
 
   if (isNaN(timestamp)) {
-    return { t: 'str', v: '' };
+    return XPR.string('');
   }
 
-  return { t:'date', v: new Date(timestamp) };
+  return XPR.date(new Date(timestamp));
+};
+
+const asString = (r) => {
+  if(r.t !== 'arr') {
+    return r.v.toString();
+  }
+  if(r.v.length && !(r.v[0] === null || r.v[0] === undefined)) {
+    return r.v[0].textContent || '';
+  }
+  return '';
+};
+
+// Based on https://github.com/enketo/openrosa-xpath-evaluator/blob/3bfcb493ec01cf84f55e254a096a31e5be01de15/src/openrosa-extensions.js#L547
+const asMoment = (r) => {
+  const dateSinceUnixEpoch = (days) => {
+    // Create a date at 00:00:00 1st Jan 1970 _in the current timezone_
+    const date = new Date(1970, 0, 1);
+    date.setDate(1 + days);
+    return moment(date);
+  };
+  switch(r.t) {
+  case 'bool':
+    return moment(NaN);
+  case 'date':
+    return moment(r.v);
+  case 'num':
+    return dateSinceUnixEpoch(r.v);
+  case 'arr':
+  default: {
+    r = asString(r);
+    if(RAW_NUMBER.test(r)) {
+      return dateSinceUnixEpoch(parseInt(r, 10));
+    }
+    const rMoment = moment(r);
+    if(DATE_STRING.test(r) && rMoment.isValid()) {
+      if(r.indexOf('T')) {
+        return rMoment;
+      }
+
+      const rDate = rMoment.format('YYYY-MM-DD');
+      const time = `${rDate}T00:00:00.000${getTimezoneOffsetAsTime(new Date(rDate))}`;
+      return moment(time);
+    }
+    return moment(r);
+  }
+  }
 };
 
 const convertToBikramSambat = (value) => {
-  const date = getValue(value);
-  if (!date) {
+  const vMoment = asMoment(value);
+  if (!vMoment.isValid()) {
     return { t: 'str', v: '' };
   }
 
-  const convertedDate = toBikramSambat(moment(date));
+  const convertedDate = toBikramSambat(vMoment);
 
   return { t: 'str', v: convertedDate };
 };
@@ -82,20 +134,32 @@ module.exports = {
     moment = _moment;
   },
   func: {
-    now: now_and_today,
-    today: now_and_today,
+    today: function() {
+      return XPR.date(new Date());
+    },
     'z-score': function() {
       const args = Array.from(arguments).map(function(arg) {
         return getValue(arg);
       });
       const result = zscoreUtil.apply(null, args);
       if (!result) {
-        return { t: 'str', v: '' };
+        return XPR.string('');
       }
-      return { t: 'num', v: result };
+      return XPR.number(result);
     },
     'to-bikram-sambat': convertToBikramSambat,
     'parse-timestamp-to-date': parseTimestampToDate, // Function name convention of XForm
+    'difference-in-months': function(d1, d2) {
+      const d1Moment = asMoment(d1);
+      const d2Moment = asMoment(d2);
+
+      if(!d1Moment.isValid() || !d2Moment.isValid()) {
+        return XPR.string('');
+      }
+
+      const months = d2Moment.diff(d1Moment, 'months');
+      return XPR.number(months);
+    },
   },
   process: {
     toExternalResult: function(r) {

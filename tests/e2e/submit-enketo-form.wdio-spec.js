@@ -1,9 +1,12 @@
+const fs = require('fs');
 const utils = require('../utils');
 const constants = require('../constants');
 const commonElements = require('../page-objects/common/common.wdio.page');
 const reportsPo = require('../page-objects/reports/reports.wdio.page');
 const genericForm = require('../page-objects/forms/generic-form.wdio.page');
 const loginPage = require('../page-objects/login/login.wdio.page');
+const requireNodeXml = fs.readFileSync(`${__dirname}/../forms/required-note.xml`, 'utf8');
+
 
 describe('Submit Enketo form', () => {
   const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -58,6 +61,18 @@ describe('Submit Enketo form', () => {
       external_id: '',
       type: 'district_hospital',
     },
+    {
+      _id: 'form:required-note',
+      internalId: 'required-note',
+      title: 'Required Note',
+      type: 'form',
+      _attachments: {
+        xml: {
+          content_type: 'application/octet-stream',
+          data: Buffer.from(requireNodeXml).toString('base64')
+        }
+      }
+    }
   ];
 
   const userContactDoc = {
@@ -112,5 +127,14 @@ describe('Submit Enketo form', () => {
     // check the submitted name
     await (await reportsPo.firstReportDetailField()).waitForDisplayed();
     expect(await (await reportsPo.firstReportDetailField()).getText()).to.equal('Jones');
+  });
+
+  // If this test fails, it means something has gone wrong with the custom logic in openrosa2html5form.xsl
+  // that should prevent notes from every being required.
+  it('should allow forms with required notes to be submitted', async () => {
+    await commonElements.goToReports();
+    await reportsPo.openForm('Required Note');
+
+    await reportsPo.submitForm();
   });
 });
