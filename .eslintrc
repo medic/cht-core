@@ -64,7 +64,8 @@
     {
       "files": ["build/service-worker.js"],
       "rules": {
-        "array-callback-return": "off"
+        "array-callback-return": "off",
+        "func-style": "off"
       }
     }
   ]
