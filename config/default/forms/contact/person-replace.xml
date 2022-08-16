@@ -591,7 +591,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
               <name/>
             </user>
           </inputs>
-          <person>
+          <person db-doc="true">
             <parent>PARENT</parent>
             <type>person</type>
             <name/>
@@ -612,6 +612,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
               <dob_debug/>
             </ephemeral_dob>
             <sex/>
+            <phone tag="hidden"/>
+            <role tag="hidden"/>
             <secret_code/>
             <notes/>
             <meta tag="hidden">
@@ -661,6 +663,10 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
       <bind nodeset="/data/person/sex" type="select1" required="true()"/>
+
+      <bind nodeset="/data/person/role" type="tel" calculate="../../../inputs/user/role"/>
+      <bind nodeset="/data/person/phone" type="tel" calculate="../../../inputs/user/phone"/>
+
       <bind nodeset="/data/person/secret_code" type="string" required="true()"/>
       <bind nodeset="/data/person/notes" type="string"/>
       <bind nodeset="/data/person/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
