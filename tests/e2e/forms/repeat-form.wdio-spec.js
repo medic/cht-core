@@ -7,23 +7,6 @@ const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 
-const countFormDocument = readFormDocument('repeat-translation-count');
-const buttonFormDocument = readFormDocument('repeat-translation-button');
-const selectFormDocument = readFormDocument('repeat-translation-select');
-const userContactDoc = {
-  _id: constants.USER_CONTACT_ID,
-  name: 'Jack',
-  date_of_birth: '',
-  phone: '+64274444444',
-  alternate_phone: '',
-  notes: '',
-  type: 'person',
-  reported_date: 1478469976421,
-  parent: {
-    _id: 'some_parent'
-  }
-};
-
 const readFormDocument = (formId) => {
   const form = fs.readFileSync(`${__dirname}/../../forms/${formId}.xml`, 'utf8');
   const formDocument = {
@@ -68,6 +51,23 @@ const getField = async (fieldName, fieldValue) => {
     input: await $(fieldInputPath),
     label: await $(fieldLabelPath),
   };
+};
+
+const countFormDocument = readFormDocument('repeat-translation-count');
+const buttonFormDocument = readFormDocument('repeat-translation-button');
+const selectFormDocument = readFormDocument('repeat-translation-select');
+const userContactDoc = {
+  _id: constants.USER_CONTACT_ID,
+  name: 'Jack',
+  date_of_birth: '',
+  phone: '+64274444444',
+  alternate_phone: '',
+  notes: '',
+  type: 'person',
+  reported_date: 1478469976421,
+  parent: {
+    _id: 'some_parent'
+  }
 };
 
 describe('RepeatForm', () => {
@@ -139,7 +139,7 @@ describe('RepeatForm', () => {
       const addRepeatButton = await $('.btn.btn-default.add-repeat-btn');
       await addRepeatButton.click();
     };
-    
+
     it('should display the initial form and its repeated content in Swahili', async () => {
       const swUserName = 'Jina la mtumizi';
       await loginPage.changeLanguage('sw', swUserName);
