@@ -668,7 +668,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy id="pregnancy" prefix="J1!pregnancy!" delimiter="#" version="2020-05-15 09:21:28">
+        <pregnancy id="pregnancy" prefix="J1!pregnancy!" delimiter="#" version="2022-08-15 13:59:14">
           <inputs>
             <meta>
               <location>
@@ -1023,10 +1023,10 @@ or selected(../../method_approx/lmp_approx, 'approx_months')"/>
 if(selected(../register_method/lmp_method, 'method_lmp'), ../method_lmp/u_lmp_date,
 if(selected(../method_approx/lmp_approx, 'approx_weeks'), date-time(floor(decimal-date-time(today())) - (../method_approx/lmp_approx_weeks * 7)), 
 if(selected(../method_approx/lmp_approx, 'approx_months'), date-time(floor(decimal-date-time(today())) - round(../method_approx/lmp_approx_months * 30.5)),
-if(selected(../register_method/lmp_method, 'method_edd'), date-time(decimal-date-time(../method_edd/u_edd) - 280), '')
+if(selected(../register_method/lmp_method, 'method_edd'), add-date(../method_edd/u_edd, 0, 0, 0-280), '')
 ))), &quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/pregnancy/gestational_age/g_lmp_date" type="string" calculate="format-date-time(../g_lmp_date_8601, &quot;%e %b, %Y&quot;)"/>
-      <bind nodeset="/pregnancy/gestational_age/g_edd_8601" type="string" calculate="format-date-time(date-time(decimal-date-time(../g_lmp_date_8601)+280),&quot;%Y-%m-%d&quot;)"/>
+      <bind nodeset="/pregnancy/gestational_age/g_edd_8601" type="string" calculate="format-date-time(add-date(../g_lmp_date_8601, 0, 0, 280),&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/pregnancy/gestational_age/g_edd" type="string" calculate="format-date-time(../g_edd_8601,&quot;%e %b, %Y&quot;)"/>
       <bind nodeset="/pregnancy/gestational_age/method_none" relevant="selected(../register_method/lmp_method, 'method_none')"/>
       <bind nodeset="/pregnancy/gestational_age/method_none/no_info_notice" readonly="true()" type="string"/>
