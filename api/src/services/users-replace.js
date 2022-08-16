@@ -5,6 +5,7 @@ const people = require('../controllers/people');
 
 async function replaceUser(replaceUserReportId, appUrl) {
   const replaceUserReport = await db.medic.get(replaceUserReportId);
+  console.log("replaceUserReport", replaceUserReport);
   const newPerson = replaceUserReport.fields.person;
   const oldContact = await people.getOrCreatePerson(newPerson.meta.created_by_person_uuid);
   const oldUserSettingsResponse = await db.medic.find({
@@ -30,7 +31,7 @@ async function replaceUser(replaceUserReportId, appUrl) {
     parent: oldContact.parent,
     // TODO: there might be other properties here depending on the deployment's configuration
   });
-  await reparentReports(replaceUserReportId, newContact);
+  // await reparentReports(replaceUserReportId, newContact);
 
   const oldUser = await db.users.get(oldUserSettings._id);
   const randomNum = Math.floor(Math.random() * 9999) + 1000;

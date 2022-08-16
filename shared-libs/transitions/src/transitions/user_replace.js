@@ -11,6 +11,7 @@ const NAME = 'user_replace';
 module.exports = {
   name: NAME,
   filter: (doc, info = {}) => {
+    console.log("doc", doc);
     return Boolean(
       doc &&
       doc.form === 'contact:person:replace',
