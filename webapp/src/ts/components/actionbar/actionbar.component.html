@@ -70,7 +70,7 @@
           <div test-id='create_places' class="actions dropup" mmAuth [mmAuthAny]="[ actionBar?.left?.childPlaces && 'can_create_places' ]">
             <a *ngIf="actionBar?.left?.childPlaces?.length > 1"
                mmAuth="can_edit,can_create_places"
-               class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
+               class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle create-place"
                data-toggle="dropdown"
             >
               <span class="fa fa-plus"></span>
@@ -93,7 +93,7 @@
 
             <a *ngIf="actionBar?.left?.childPlaces?.length === 1"
                mmAuth="can_edit,can_create_places"
-               class="mm-icon mm-icon-inverse mm-icon-caption"
+               class="mm-icon mm-icon-inverse mm-icon-caption create-place"
                [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', actionBar.left.childPlaces[0]?.id] : ['/', 'contacts', 'add', actionBar.left.childPlaces[0]?.id]"
                [queryParams]="{ from: 'list' }"
             >
