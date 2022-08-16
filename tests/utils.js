@@ -678,12 +678,9 @@ const getDockerLogs = (container) => {
 };
 
 const saveLogs = async () => {
-  await getDockerLogs(CONTAINER_NAMES.api);
-  await getDockerLogs(CONTAINER_NAMES.sentinel);
-  await getDockerLogs(CONTAINER_NAMES.haproxy);
-  await getDockerLogs(CONTAINER_NAMES.couch1);
-  await getDockerLogs(CONTAINER_NAMES.couch2);
-  await getDockerLogs(CONTAINER_NAMES.couch3);
+  for (const containerName of Object.values(CONTAINER_NAMES)) {
+    await getDockerLogs(containerName);
+  }
 };
 
 const startServices = async () => {

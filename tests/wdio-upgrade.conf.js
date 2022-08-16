@@ -17,6 +17,7 @@ utils.CONTAINER_NAMES.haproxy = 'cht-haproxy';
 utils.CONTAINER_NAMES.couch1 = 'cht-couchdb';
 utils.CONTAINER_NAMES.api = 'cht-api';
 utils.CONTAINER_NAMES.sentinel = 'cht-sentinel';
+utils.CONTAINER_NAMES.upgradeService = 'cht-upgrade-service';
 
 const DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'upgrade-service-'));
 const CHT_DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
