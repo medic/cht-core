@@ -13,21 +13,11 @@ const logger = require('../../logger');
 const translations = require('../../translations');
 const config = require('../../config');
 const template = require('../template');
+const branding = require('../../services/branding');
 const STATUS = 503;
 
 router.use(express.static(environment.staticPath));
 router.use(getLocale);
-
-// todo
-// master contains a library for branding, replace this with that library when merging
-const getBranding = () => {
-  return db.medic.get('branding')
-    .then(doc => ({ name: doc.title }))
-    .catch(err => {
-      logger.warn('Could not find branding doc on CouchDB: %o', err);
-      return { name: 'Medic' };
-    });
-};
 
 const getEnabledLocales = () => {
   return translations
@@ -57,7 +47,7 @@ const renderStartupPage = async (req) => {
 
   const template = await getTemplate();
   return template({
-    title: config.translate('api.startup.title', locale, { branding: await getBranding() }),
+    title: config.translate('api.startup.title', locale, { branding: await branding.get() }),
     actions: progress.actions,
     locale: locale,
   });
