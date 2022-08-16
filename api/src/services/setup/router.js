@@ -8,7 +8,6 @@ const startupLog = require('./startup-log');
 
 const { wantsJSON } = require('../../middleware/wants-json');
 const { getLocale } = require('../../middleware/locale');
-const db = require('../../db');
 const logger = require('../../logger');
 const translations = require('../../translations');
 const config = require('../../config');
