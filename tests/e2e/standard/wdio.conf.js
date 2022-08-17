@@ -11,7 +11,7 @@ chai.use(require('chai-exclude'));
 // Override specific properties from wdio base config
 const standardConfig = _.merge(wdioBaseConfig.config, {
   specs: [
-    './tests/e2e/standard/**/*.standard-wdio-spec.js'
+    './tests/e2e/standard/**/*.wdio-spec.js'
   ],
 
   onPrepare: async function () {
