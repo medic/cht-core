@@ -22,7 +22,7 @@ import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
 import {UserContactService} from '@mm-services/user-contact.service';
-import {SessionService} from "@mm-services/session.service";
+import {SessionService} from '@mm-services/session.service';
 
 const PAGE_SIZE = 50;
 
