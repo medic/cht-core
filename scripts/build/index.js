@@ -118,6 +118,7 @@ const saveDockerComposeFiles = () => {
     haproxy_container_name: 'cht-haproxy',
     api_container_name: 'cht-api',
     sentinel_container_name: 'cht-sentinel',
+    healthcheck_container_name: 'cht-haproxy-healthcheck',
     db_name: 'medic',
   };
 
