@@ -607,7 +607,7 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'check').rejects({ status: 403 });
       return controller.create(req, res).then(() => {
         chai.expect(auth.check.callCount).to.equal(1);
-        chai.expect(auth.check.args[0]).to.deep.equal([req, 'can_create_users']);
+        chai.expect(auth.check.args[0]).to.deep.equal([req, ['can_edit', 'can_create_users']]);
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ status: 403 }, req, res]);
       });
@@ -668,7 +668,7 @@ describe('Users Controller', () => {
           res,
         ]);
         chai.expect(auth.check.callCount).to.equal(1);
-        chai.expect(auth.check.args[0]).to.deep.equal([req, 'can_update_users']);
+        chai.expect(auth.check.args[0]).to.deep.equal([req, ['can_edit', 'can_update_users']]);
         chai.expect(auth.getUserCtx.callCount).to.equal(2);
       });
     });
