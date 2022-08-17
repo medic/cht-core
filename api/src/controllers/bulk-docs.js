@@ -33,8 +33,15 @@ const interceptResponse = (requestDocs, req, res, response) => {
 
 module.exports = {
   bulkDelete: (req, res, next) => {
-    return auth.getUserCtx(req)
+    return auth
+      .getUserCtx(req)
       .then(userCtx => {
+        if (!auth.hasAllPermissions(userCtx, ['can_edit'])) {
+          throw {
+            code: 403,
+            message: 'Insufficient permissions'
+          };
+        }
         if (!auth.isOnlineOnly(userCtx)) {
           throw {
             code: 401,

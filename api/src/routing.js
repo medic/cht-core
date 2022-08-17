@@ -68,21 +68,8 @@ const jsonParser = bodyParser.json({ limit: MAX_REQUEST_SIZE });
 const jsonQueryParser = require('./middleware/query-parser').json;
 const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
-const canEdit = (req, res, next) => {
-  auth
-    .check(req, 'can_edit')
-    .then(ctx => {
-      if (!ctx || !ctx.user) {
-        serverUtils.serverError('not-authorized', req, res);
-        return;
-      }
-      next();
-    })
-    .catch(() => serverUtils.serverError('not-authorized', req, res));
-};
-
-const handleJsonRequest = (method, path, handlers, callback) => {
-  app[method](path, [jsonParser, ...handlers], (req, res, next) => {
+const handleJsonRequest = (method, path, callback) => {
+  app[method](path, jsonParser, (req, res, next) => {
     const contentType = req.headers['content-type'];
     if (!contentType || contentType !== 'application/json') {
       return serverUtils.error(
@@ -99,8 +86,8 @@ const handleJsonRequest = (method, path, handlers, callback) => {
   });
 };
 
-const handleJsonOrCsvRequest = (method, path, handlers, callback) => {
-  app[method](path, [jsonParser, textParser, ...handlers], (req, res, next) => {
+const handleJsonOrCsvRequest = (method, path, callback) => {
+  app[method](path, [jsonParser, textParser], (req, res, next) => {
     const contentType = req.headers['content-type'];
     if (!contentType || (contentType !== 'application/json' && contentType !== 'text/csv')) {
       return serverUtils.error(
@@ -113,10 +100,10 @@ const handleJsonOrCsvRequest = (method, path, handlers, callback) => {
   });
 };
 
-app.deleteJson = (path, handlers, callback) => handleJsonRequest('delete', path, handlers, callback);
-app.postJsonOrCsv = (path, handlers, callback) => handleJsonOrCsvRequest('post', path, handlers, callback);
-app.postJson = (path, handlers, callback) => handleJsonRequest('post', path, handlers, callback);
-app.putJson = (path, handlers, callback) => handleJsonRequest('put', path, handlers, callback);
+app.deleteJson = (path, callback) => handleJsonRequest('delete', path, callback);
+app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, callback);
+app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
+app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
 app.set('strict routing', true);
 app.set('trust proxy', true);
@@ -276,9 +263,9 @@ app.use(express.static(path.join(__dirname, '../build/public')));
 app.use(express.static(extractedResourceDirectory));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
-app.postJson(routePrefix + 'login', [], login.post);
+app.postJson(routePrefix + 'login', login.post);
 app.get(routePrefix + 'login/token/:token?', login.tokenGet);
-app.postJson(routePrefix + 'login/token/:token?', [], login.tokenPost);
+app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
 
 // saves CouchDB _session information as `userCtx` in the `req` object
@@ -403,10 +390,10 @@ app.get('/api/sms/', (req, res) => res.redirect(301, '/api/sms'));
 app.get('/api/sms', smsGateway.get);
 
 app.post('/api/sms/', (req, res) => res.redirect(301, '/api/sms'));
-app.postJson('/api/sms', [], smsGateway.post);
+app.postJson('/api/sms', smsGateway.post);
 
 app.get('/api/v2/export/:type', exportData.get);
-app.postJson('/api/v2/export/:type', [], exportData.get);
+app.postJson('/api/v2/export/:type', exportData.get);
 
 app.post('/api/v1/records', [jsonParser, formParser], records.v1);
 app.post('/api/v2/records', [jsonParser, formParser], records.v2);
@@ -419,15 +406,15 @@ app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
 app.get('/api/v1/users', users.get);
-app.postJson('/api/v1/users', [ canEdit ], users.create);
-app.postJsonOrCsv('/api/v2/users', [ canEdit ], users.v2.create);
-app.postJson('/api/v1/users/:username', [ canEdit ], users.update);
-app.delete('/api/v1/users/:username', [ canEdit ], users.delete);
+app.postJson('/api/v1/users', users.create);
+app.postJsonOrCsv('/api/v2/users', users.v2.create);
+app.postJson('/api/v1/users/:username', users.update);
+app.delete('/api/v1/users/:username', users.delete);
 app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getUserSettings, users.info);
 
-app.postJson('/api/v1/places', [ canEdit ], function(req, res) {
+app.postJson('/api/v1/places', function(req, res) {
   auth
-    .check(req, 'can_create_places')
+    .check(req, ['can_edit', 'can_create_places'])
     .then(() => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
@@ -437,9 +424,9 @@ app.postJson('/api/v1/places', [ canEdit ], function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
-app.postJson('/api/v1/places/:id', [ canEdit ], function(req, res) {
+app.postJson('/api/v1/places/:id', function(req, res) {
   auth
-    .check(req, 'can_update_places')
+    .check(req, ['can_edit', 'can_update_places'])
     .then(() => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
@@ -451,9 +438,9 @@ app.postJson('/api/v1/places/:id', [ canEdit ], function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
-app.postJson('/api/v1/people', [ canEdit ], function(req, res) {
+app.postJson('/api/v1/people', function(req, res) {
   auth
-    .check(req, 'can_create_people')
+    .check(req, ['can_edit', 'can_create_people'])
     .then(() => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
@@ -463,7 +450,7 @@ app.postJson('/api/v1/people', [ canEdit ], function(req, res) {
     .catch(err => serverUtils.error(err, req, res));
 });
 
-app.postJson('/api/v1/bulk-delete', [ canEdit ], bulkDocs.bulkDelete);
+app.postJson('/api/v1/bulk-delete', bulkDocs.bulkDelete);
 
 // offline users are not allowed to hydrate documents via the hydrate API
 app.get(
@@ -501,8 +488,8 @@ app.get(`${appPrefix}app_settings/${environment.ddoc}/:path?`, settings.getV0); 
 app.get('/api/v1/settings', settings.get);
 app.get('/api/v1/settings/deprecated-transitions', settings.getDeprecatedTransitions);
 
-app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, [ canEdit ], settings.put); // deprecated
-app.putJson('/api/v1/settings', [ canEdit ], settings.put);
+app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); // deprecated
+app.putJson('/api/v1/settings', settings.put);
 
 app.get('/api/couch-config-attachments', couchConfigController.getAttachments);
 
@@ -806,10 +793,23 @@ app.all(appPrefix + '*', authorization.setAuthorized);
 app.use(authorization.handleAuthErrorsAllowingAuthorized);
 app.use(authorization.offlineUserFirewall);
 
+const canEdit = (req, res) => {
+  auth
+    .check(req, 'can_edit')
+    .then(ctx => {
+      if (!ctx || !ctx.user) {
+        serverUtils.serverError('not-authorized', req, res);
+        return;
+      }
+      proxyForAuth.web(req, res);
+    })
+    .catch(() => serverUtils.serverError('not-authorized', req, res));
+};
+
 const editPath = routePrefix + '*';
-app.put(editPath, canEdit, (req, res) => proxyForAuth.web(req, res));
-app.post(editPath, canEdit, (req, res) => proxyForAuth.web(req, res));
-app.delete(editPath, canEdit, (req, res) => proxyForAuth.web(req, res));
+app.put(editPath, canEdit);
+app.post(editPath, canEdit);
+app.delete(editPath, canEdit);
 
 app.all('*', function(req, res) {
   proxy.web(req, res);

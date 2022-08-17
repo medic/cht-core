@@ -43,7 +43,7 @@ module.exports = {
     return auth
       .getUserCtx(req)
       .then(userCtx => {
-        if (!auth.hasAllPermissions(userCtx, 'can_configure')) {
+        if (!auth.hasAllPermissions(userCtx, ['can_edit', 'can_configure'])) {
           throw {
             code: 403,
             message: 'Insufficient permissions'
