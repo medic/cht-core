@@ -153,7 +153,7 @@ const getUsers = async () => {
   });
   return result.rows
     .map(row => row.id)
-    .map(id => id.replace('org.couchdb.user', ''));
+    .map(id => id.replace('org.couchdb.user:', ''));
 };
 
 module.exports = {

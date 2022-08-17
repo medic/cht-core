@@ -16,7 +16,7 @@ const remoteDb = new PouchDB(dbUrl, {
   auth: { username: user.username, password: user.password }
 });
 
-const localDb = new PouchDB(path.join(dataDirPath, `/dbs/scalability-test-${threadId}`), { adapter: 'leveldb' });
+const localDb = new PouchDB(path.join(dataDirPath, `/dbs/scalability-test-${user.username}`), { adapter: 'leveldb' });
 
 const replicateFrom = () => {
   return localDb.replicate
