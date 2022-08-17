@@ -40,9 +40,9 @@ const updateSettings = async (settings) => {
   await browser.refresh();
 };
 
-const compileTargets = async (/*configDirectory*/) => {
+const compileTargets = async () => {
   await chtConfUtils.initializeConfigDir();
-  const targetFilePath = path.join(__dirname/*, configDirectory*/, 'targets-config.js');
+  const targetFilePath = path.join(__dirname, 'targets-config.js');
 
   return chtConfUtils.compileNoolsConfig({ targets: targetFilePath });
 };
@@ -80,7 +80,7 @@ describe('Targets', () => {
   });
 
   it('should display correct message when no target found', async () => {
-    const settings = await compileTargets(/*'no-targets-config'*/);
+    const settings = await compileTargets();
     await updateSettings(settings);
     await analyticsPage.goToTargets();
 
