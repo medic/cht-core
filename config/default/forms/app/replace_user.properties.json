@@ -1,0 +1,9 @@
+{
+    "icon": "icon-risk",
+    "title": "Replace User",
+    "context": {
+        "person": true,
+        "place": false,
+        "expression": "user._id === contact._id"
+    }
+}
