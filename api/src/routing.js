@@ -68,7 +68,7 @@ const jsonParser = bodyParser.json({ limit: MAX_REQUEST_SIZE });
 const jsonQueryParser = require('./middleware/query-parser').json;
 const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
-const canEdit = function(req, res, next) {
+const canEdit = (req, res, next) => {
   auth
     .check(req, 'can_edit')
     .then(ctx => {
