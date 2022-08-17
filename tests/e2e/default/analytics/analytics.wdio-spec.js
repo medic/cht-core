@@ -2,7 +2,7 @@ const path = require('path');
 const expect = require('chai').expect;
 
 const utils = require('../../../utils');
-const sentinelUtils = require('../protractor/sentinel/utils');
+const sentinelUtils = require('../../sentinel/utils');
 const analyticsPage = require('../../../page-objects/analytics/analytics.wdio.page');
 const loginPage = require('../../../page-objects/login/login.wdio.page');
 const commonPage = require('../../../page-objects/common/common.wdio.page');
