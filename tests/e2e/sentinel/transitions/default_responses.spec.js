@@ -1,4 +1,4 @@
-const utils = require('../../../../utils');
+const utils = require('../../../utils');
 const sentinelUtils = require('../utils');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
