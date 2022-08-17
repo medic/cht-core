@@ -142,6 +142,20 @@ const getHealthCenters = async () => {
   return result.rows.map(row => row.doc);
 };
 
+const getUsers = async () => {
+  const result = await rpn.get({
+    url: `${instanceUrl}/medic/_all_docs`,
+    qs: {
+      start_key: JSON.stringify('org.couchdb.user:scal-'),
+      end_key: JSON.stringify('org.couchdb.user:z'),
+    },
+    json: true,
+  });
+  return result.rows
+    .map(row => row.id)
+    .map(id => id.replace('org.couchdb.user', ''));
+};
+
 module.exports = {
   uploadGeneratedDocs,
   uploadUsers,
@@ -150,4 +164,5 @@ module.exports = {
   generateLoginList,
   createJsonDir,
   getHealthCenters,
+  getUsers,
 };

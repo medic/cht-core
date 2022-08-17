@@ -41,7 +41,7 @@ mkdir -p $DATA_DIR/dbs
 echo "npm install for jmeter suite"
 npm ci
 
- node ./generate-data.js $INSTANCE_URL $DATA_DIR
+node ./generate-data.js $INSTANCE_URL $DATA_DIR
 for BATCH in $(seq 0 $(($BATCHES-1)))
 do
   for THREAD in $(seq 1 $THREADS_IN_BATCH)
