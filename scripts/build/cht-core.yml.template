@@ -17,13 +17,13 @@ services:
         max-size: "${LOG_MAX_SIZE:-50m}"
         max-file: "${LOG_MAX_FILES:-20}"
     networks:
-      - {{ network }}:
+      - {{ network }}
     ports:
       - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
 
   healthcheck:
     image: {{{ repo }}}/cht-haproxy/healthcheck:{{ tag }}
-    container_name: {{ healthcheck_container_name }}
+    container_name: cht-haproxy-healthcheck
     environment:
       - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-couchdb.1,couchdb.2,couchdb.3}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
