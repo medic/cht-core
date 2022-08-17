@@ -1,4 +1,4 @@
-const wdioBaseConfig = require('../../wdio.conf');
+const wdioBaseConfig = require('../default/wdio.conf');
 const _ = require('lodash');
 const utils = require('../../utils');
 const util = require('util');
