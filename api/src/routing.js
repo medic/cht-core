@@ -68,7 +68,7 @@ const jsonParser = bodyParser.json({ limit: MAX_REQUEST_SIZE });
 const jsonQueryParser = require('./middleware/query-parser').json;
 const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
-const canEdit = function(req, res) {
+const canEdit = function(req, res, next) {
   auth
     .check(req, 'can_edit')
     .then(ctx => {
@@ -76,11 +76,9 @@ const canEdit = function(req, res) {
         serverUtils.serverError('not-authorized', req, res);
         return;
       }
-      proxyForAuth.web(req, res);
+      next();
     })
-    .catch(() => {
-      serverUtils.serverError('not-authorized', req, res);
-    });
+    .catch(() => serverUtils.serverError('not-authorized', req, res));
 };
 
 const handleJsonRequest = (method, path, handlers, callback) => {
@@ -809,9 +807,9 @@ app.use(authorization.handleAuthErrorsAllowingAuthorized);
 app.use(authorization.offlineUserFirewall);
 
 const editPath = routePrefix + '*';
-app.put(editPath, canEdit);
-app.post(editPath, canEdit);
-app.delete(editPath, canEdit);
+app.put(editPath, canEdit, (req, res) => proxyForAuth.web(req, res));
+app.post(editPath, canEdit, (req, res) => proxyForAuth.web(req, res));
+app.delete(editPath, canEdit, (req, res) => proxyForAuth.web(req, res));
 
 app.all('*', function(req, res) {
   proxy.web(req, res);
