@@ -47,15 +47,23 @@ const saveJson = (doc) => {
 const uploadUsers = async () => {
   console.log('Creating users....');
   const users = require(path.resolve(dataDirPath, 'users.json'));
-  const results = await rpn.post({
-    url: `${instanceUrl}/api/v1/users`,
-    json: true,
-    body: users,
-  });
-  const errors = results.filter(result => result.error);
-  if (errors.length) {
-    console.error(errors);
-    throw new Error('Errors while creating users');
+  const batchSize = 50;
+  let batches = 0;
+
+  while (users.length) {
+    batches++;
+    const batch = users.splice(0, batchSize);
+    const results = await rpn.post({
+      url: `${instanceUrl}/api/v1/users`,
+      json: true,
+      body: batch,
+    });
+    const errors = results.filter(result => result.error);
+    if (errors.length) {
+      console.error(errors);
+      throw new Error('Errors while creating users');
+    }
+    console.log(`Users - batch ${batches} done`);
   }
   console.log('Users created successfully.');
 };
@@ -125,6 +133,15 @@ const uploadGeneratedDocs = async () => {
   await deleteJsonDocs();
 };
 
+const getHealthCenters = async () => {
+  const result = await rpn.get({
+    url: `${instanceUrl}/medic/_design/medic-client/_view/contacts_by_type`,
+    qs: { keys: JSON.stringify([['health_center']]), include_docs: true },
+    json: true,
+  });
+  return result.rows.map(row => row.doc);
+};
+
 module.exports = {
   uploadGeneratedDocs,
   uploadUsers,
@@ -132,4 +149,5 @@ module.exports = {
   saveJson,
   generateLoginList,
   createJsonDir,
+  getHealthCenters,
 };
