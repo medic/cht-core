@@ -38,8 +38,8 @@ const getAgeInYears = (subtype) => {
 
 const getPatientId = () => Faker.faker.unique(
   Faker.faker.datatype.number,
-  { min: 10000, max: 99999 },
-  { maxRetries: 100 }
+  { min: 10000, max: 99999999 },
+  { maxRetries: 300 }
 );
 
 const bracPerson = new Factory()
