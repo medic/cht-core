@@ -60,7 +60,7 @@ describe('Users API', () => {
       password: password,
       facility_id: null,
       roles: [
-        'kujua_user',
+        'chw',
         'data_entry',
       ]
     };
@@ -78,7 +78,7 @@ describe('Users API', () => {
         fullname: 'Test Apiuser',
         type: 'user-settings',
         roles: [
-          'kujua_user',
+          'chw',
           'data_entry',
         ]
       },
