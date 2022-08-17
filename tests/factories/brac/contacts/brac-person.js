@@ -36,12 +36,6 @@ const getAgeInYears = (subtype) => {
   return Faker.faker.datatype.number({ min: 6, max: 80 });
 };
 
-const getPatientId = () => Faker.faker.unique(
-  Faker.faker.datatype.number,
-  { min: 10000, max: 99999999 },
-  { maxRetries: 300 }
-);
-
 const bracPerson = new Factory()
   .sequence('_id', uuid.v4)
   .option('subtype', () =>  Faker.faker.helpers.arrayElement(memberEligibleWoman, memberChild))
@@ -86,7 +80,7 @@ const bracPerson = new Factory()
     }
   })
   .attr('notes', () => Faker.faker.lorem.sentence())
-  .attr('patient_id', getPatientId)
+  .attr('patient_id', () => Faker.faker.datatype.number({ min: 10000, max: 999999999 }))
   .attr('reported_date', () => Date.now())
   .attr('has_disability', () => Faker.faker.datatype.boolean())
   .attr('family_member_type', ['subtype'], (subtype) => {
