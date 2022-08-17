@@ -27,7 +27,7 @@ mkdir -p $DATA_DIR/dbs
 
 npm ci
 
-node ./generate-login-list.js
+node ./generate-login-list.js $INSTANCE_URL $DATA_DIR
 
 for BATCH in $(seq 0 $(($BATCHES-1)))
 do
