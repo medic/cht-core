@@ -160,6 +160,9 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact:label">
             <value>New User</value>
           </text>
+          <text id="/replace_user/patient_id:label">
+            <value>Assocaite form with original contact</value>
+          </text>
         </translation>
         <translation lang="fr">
           <text id="/replace_user/inputs/contact/_id:label">
@@ -334,6 +337,9 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact:label">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/patient_id:label">
             <value>-</value>
           </text>
         </translation>
@@ -512,6 +518,9 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/patient_id:label">
+            <value>-</value>
+          </text>
         </translation>
         <translation lang="id">
           <text id="/replace_user/inputs/contact/_id:label">
@@ -686,6 +695,9 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact:label">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/patient_id:label">
             <value>-</value>
           </text>
         </translation>
@@ -864,6 +876,9 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/patient_id:label">
+            <value>-</value>
+          </text>
         </translation>
         <translation lang="sw">
           <text id="/replace_user/inputs/contact/_id:label">
@@ -1040,10 +1055,13 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/patient_id:label">
+            <value>-</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <replace_user id="replace_user" prefix="J1!replace_user!" delimiter="#" version="2022-08-17 18-11">
+        <replace_user id="replace_user" prefix="J1!replace_user!" delimiter="#" version="2022-08-18 12-40">
           <inputs>
             <meta>
               <location>
@@ -1072,6 +1090,7 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
               </parent>
             </contact>
           </inputs>
+          <patient_id/>
           <contact_area_id/>
           <contact_facility_id/>
           <contact_phone/>
@@ -1121,7 +1140,8 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
             </meta>
             <created_by_doc db-doc-ref="/replace_user"/>
           </new_contact>
-          <created_contact_uuid db-doc-ref=" /replace_user/new_contact "/>
+          <original_contact_uuid/>
+          <new_contact_uuid db-doc-ref=" /replace_user/new_contact "/>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -1139,6 +1159,7 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
       <bind nodeset="/replace_user/inputs/contact/role" type="string"/>
       <bind nodeset="/replace_user/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/replace_user/inputs/contact/parent/parent/_id" type="string"/>
+      <bind nodeset="/replace_user/patient_id" type="string" calculate="../inputs/contact/_id"/>
       <bind nodeset="/replace_user/contact_area_id" type="string" calculate="../inputs/contact/parent/_id"/>
       <bind nodeset="/replace_user/contact_facility_id" type="string" calculate="../inputs/contact/parent/parent/_id"/>
       <bind nodeset="/replace_user/contact_phone" type="string" calculate="../inputs/contact/phone"/>
@@ -1156,10 +1177,10 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
       <bind nodeset="/replace_user/new_contact/short_name" type="string" constraint="string-length(.) &lt;= 10" jr:constraintMsg="jr:itext('/replace_user/new_contact/short_name:jr:constraintMsg')"/>
       <bind nodeset="/replace_user/new_contact/date_of_birth" type="string" calculate=" /replace_user/new_contact/ephemeral_dob/dob_iso " required="true()"/>
       <bind nodeset="/replace_user/new_contact/date_of_birth_method" type="string" calculate=" /replace_user/new_contact/ephemeral_dob/dob_method "/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_calendar" type="date" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_calendar:jr:constraintMsg')" relevant="not(selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx'))" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" required="true()"/>
+      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_calendar" type="date" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" required="true()" relevant="not(selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx'))" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_calendar:jr:constraintMsg')"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_years" type="int" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_years:jr:constraintMsg')" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')" constraint=". &gt;= 0 and . &lt;= 130" required="true()"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_months" type="int" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_months:jr:constraintMsg')"/>
+      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_years" type="int" constraint=". &gt;= 0 and . &lt;= 130" required="true()" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_years:jr:constraintMsg')"/>
+      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_months" type="int" constraint=". &gt;= 0 and . &lt;= 11" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_months:jr:constraintMsg')"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_method" type="select"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  &lt; 0, format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  + 12, format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months )"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/ephemeral_years" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  &lt; 0, format-date-time(today(),&quot;%Y&quot;) -  /replace_user/new_contact/ephemeral_dob/age_years  - 1, format-date-time(today(),&quot;%Y&quot;) - /replace_user/new_contact/ephemeral_dob/age_years )"/>
@@ -1170,7 +1191,7 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time( /replace_user/new_contact/ephemeral_dob/dob_raw ,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
       <bind nodeset="/replace_user/new_contact/sex" type="select1" required="true()"/>
-      <bind nodeset="/replace_user/new_contact/phone" type="string" readonly="true()" calculate=" /replace_user/contact_phone " constraint="true()" jr:constraintMsg="jr:itext('/replace_user/new_contact/phone:jr:constraintMsg')"/>
+      <bind nodeset="/replace_user/new_contact/phone" type="string" calculate=" /replace_user/contact_phone " constraint="true()" readonly="true()" jr:constraintMsg="jr:itext('/replace_user/new_contact/phone:jr:constraintMsg')"/>
       <bind nodeset="/replace_user/new_contact/phone_alternate" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/replace_user/new_contact/phone_alternate:jr:constraintMsg')"/>
       <bind nodeset="/replace_user/new_contact/role" type="select1" calculate=" /replace_user/contact_role " readonly="true()"/>
       <bind nodeset="/replace_user/new_contact/external_id" type="string"/>
@@ -1178,7 +1199,8 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
       <bind nodeset="/replace_user/new_contact/meta/created_by_person_uuid" type="string" calculate="../../../created_by_person_uuid"/>
       <bind nodeset="/replace_user/new_contact/meta/created_by_place_uuid" type="string" calculate="../../../created_by_place_uuid"/>
       <bind nodeset="/replace_user/new_contact/created_by_doc" type="string" calculate="."/>
-      <bind nodeset="/replace_user/created_contact_uuid" type="string" calculate=" /replace_user/new_contact "/>
+      <bind nodeset="/replace_user/original_contact_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/replace_user/new_contact_uuid" type="string" calculate=" /replace_user/new_contact "/>
       <bind nodeset="/replace_user/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
