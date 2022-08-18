@@ -6,8 +6,7 @@ const people = require('../controllers/people');
 async function replaceUser(replaceUserReportId, appUrl) {
   const replaceUserReport = await db.medic.get(replaceUserReportId);
   console.log("replaceUserReport", replaceUserReport);
-  const newPerson = replaceUserReport.fields.person;
-  const oldContact = await people.getOrCreatePerson(newPerson.meta.created_by_person_uuid);
+  const oldContact = await people.getOrCreatePerson(replaceUserReport.fields.original_contact_uuid);
   const oldUserSettingsResponse = await db.medic.find({
     selector: {
       type: 'user-settings',
@@ -21,21 +20,12 @@ async function replaceUser(replaceUserReportId, appUrl) {
   }
 
   const oldUserSettings = oldUserSettingsResponse.docs[0];
-  const newContact = await people.getOrCreatePerson({
-    name: newPerson.name,
-    sex: newPerson.sex,
-    phone: oldContact.phone,
-    role: oldContact.role,
-    type: oldContact.type,
-    contact_type: oldContact.contact_type,
-    parent: oldContact.parent,
-    // TODO: there might be other properties here depending on the deployment's configuration
-  });
-  // await reparentReports(replaceUserReportId, newContact);
+  const newContact = await people.getOrCreatePerson(replaceUserReport.fields.new_contact_uuid);
+  await reparentReports(replaceUserReportId, newContact);
 
   const oldUser = await db.users.get(oldUserSettings._id);
   const randomNum = Math.floor(Math.random() * 9999) + 1000;
-  const username = newPerson.name.replace(/\s+/g, '-').toLowerCase() + randomNum;
+  const username = newContact.name.replace(/\s+/g, '-').toLowerCase() + randomNum;
   const user = {
     username: username,
     contact: newContact._id,
@@ -44,7 +34,7 @@ async function replaceUser(replaceUserReportId, appUrl) {
     token_login: true,
     roles: oldUser.roles,
     type: oldUser.type,
-    fullname: newPerson.name,
+    fullname: newContact.name,
   };
   return usersService.createUser(user, appUrl);
 }
@@ -52,7 +42,7 @@ async function replaceUser(replaceUserReportId, appUrl) {
 async function reparentReports(replaceUserReportId, newContact) {
   const replaceUserReport = await db.medic.get(replaceUserReportId);
   const reportsSubmittedAfterReplace = await getReportsToReparent(
-    replaceUserReport.fields.person.meta.created_by_person_uuid,
+    replaceUserReport.fields.original_contact_uuid,
     replaceUserReport.reported_date,
   );
   if (reportsSubmittedAfterReplace.length === 0) {
