@@ -22,7 +22,7 @@ const configPath = 'config/default';
 let originalVersion;
 
 describe('cht-conf actions tests', () => {
-  beforeAll(async () => {
+  before(async () => {
     const settings = await utils.getDoc('settings');
     console.log('originalVersion', settings._rev);
     originalVersion = Number(settings._rev.charAt(0));
