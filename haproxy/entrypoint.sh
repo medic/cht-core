@@ -12,6 +12,8 @@ service rsyslog start
 #done
 #envsubst < $CONFIG
 
+envsubst < /usr/local/etc/haproxy/haproxy.cfg
+
 #Write pw for healthcheck subshell to work
 mkdir -p /srv/storage/haproxy/passwd
 echo $COUCHDB_USER > /srv/storage/haproxy/passwd/username
