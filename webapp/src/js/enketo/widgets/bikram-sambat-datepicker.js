@@ -1,82 +1,54 @@
 'use strict';
-const Widget = require( 'enketo-core/src/js/Widget' );
+const Widget = require( 'enketo-core/src/js/widget' ).default;
 const $ = require( 'jquery' );
 require( 'enketo-core/src/js/plugins' );
 const bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
 
-const pluginName = 'bikramsambatdatepicker';
+class Bikramsambatdatepicker extends Widget {
+  static get selector() {
+    return 'input[type=date]';
+  }
 
-const Bikramsambatdatepicker = function( element, options ) {
-  this.namespace = pluginName;
-  Widget.call( this, element, options );
-  this._init();
-};
+  _init() {
+    const el = this.element;
 
-//copy the prototype functions from the Widget super class
-Bikramsambatdatepicker.prototype = Object.create( Widget.prototype );
+    window.CHTCore.Language
+      .get()
+      .then( function( language ) {
+        const $el = $( el );
 
-//ensure the constructor is the new one
-Bikramsambatdatepicker.prototype.constructor = Bikramsambatdatepicker;
+        // Here we support the appearance="bikram-sambat" attribute as
+        // well to maintain compatibility with collect.
+        if ( language.indexOf( 'ne' ) !== 0 &&
+          $el.parent('.or-appearance-bikram-sambat').length === 0) {
+          return;
+        }
 
-Bikramsambatdatepicker.prototype._init = function() {
-  const el = this.element;
+        const $parent = $el.parent();
+        const $realDateInput = $parent.children( 'input[type=date]' );
+        const initialVal = $realDateInput.val();
 
-  window.CHTCore.Language
-    .get()
-    .then( function( language ) {
-      const $el = $( el );
+        // Remove datepicker-extended widget:
+        $parent.children( '.widget.date' ).remove();
+        // Hide standard date input (datepicker-extended may not have removed it
+        // previously due to badSamsung bug).
+        $realDateInput.hide();
 
-      // Here we support the appearance="bikram-sambat" attribute as
-      // well to maintain compatibility with collect.
-      if ( language.indexOf( 'ne' ) !== 0 &&
-                      $el.parent('.or-appearance-bikram-sambat').length === 0) {
-        return;
-      }
+        $parent.append( TEMPLATE );
 
-      const $parent = $el.parent();
-      const $realDateInput = $parent.children( 'input[type=date]' );
-      const initialVal = $realDateInput.val();
+        bikram_sambat_bs.initListeners( $parent, $realDateInput );
 
-      // Remove datepicker-extended widget:
-      $parent.children( '.widget.date' ).remove();
-      // Hide standard date input (datepicker-extended may not have removed it
-      // previously due to badSamsung bug).
-      $realDateInput.hide();
+        if ( initialVal ) {
+          bikram_sambat_bs.setDate_greg_text(
+            $parent.children( '.bikram-sambat-input-group' ),
+            $realDateInput,
+            initialVal );
+        }
+      });
+  }
+}
 
-      $parent.append( TEMPLATE );
-
-      bikram_sambat_bs.initListeners( $parent, $realDateInput );
-
-      if ( initialVal ) {
-        bikram_sambat_bs.setDate_greg_text(
-          $parent.children( '.bikram-sambat-input-group' ),
-          $realDateInput,
-          initialVal );
-      }
-    });
-};
-
-Bikramsambatdatepicker.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
-
-$.fn[ pluginName ] = function( options, event ) {
-  return this.each( function() {
-    const $this = $( this );
-    let data = $this.data( pluginName );
-
-    options = options || {};
-
-    if ( !data && typeof options === 'object' ) {
-      $this.data( pluginName, ( data = new Bikramsambatdatepicker( this, options, event ) ) );
-    } else if ( data && typeof options === 'string' ) {
-      data[ options ]( this );
-    }
-  } );
-};
-
-module.exports = {
-  'name': pluginName,
-  'selector': 'input[type=date]'
-};
+module.exports = Bikramsambatdatepicker;
 
 const TEMPLATE =
   '<div class="input-group bikram-sambat-input-group">' +

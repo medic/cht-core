@@ -241,9 +241,10 @@ export class EnketoService {
         }
 
         try {
+          const xmlStr = pojo2xml({ context: summary.context });
           return {
             id: 'contact-summary',
-            xmlStr: pojo2xml({ context: summary.context })
+            xml: new DOMParser().parseFromString(xmlStr, 'text/xml')
           };
         } catch (e) {
           console.error('Error while converting app_summary.contact_summary.context to xml.');
@@ -252,7 +253,7 @@ export class EnketoService {
       });
   }
 
-  private getEnketoOptions(doc, instanceData) {
+  private getEnketoForm(wrapper, doc, instanceData) {
     return Promise
       .all([
         this.enketoPrepopulationDataService.get(doc.model, instanceData),
@@ -262,37 +263,30 @@ export class EnketoService {
       .then(([ instanceStr, contactSummary, language ]) => {
         const options: EnketoOptions = {
           modelStr: doc.model,
-          instanceStr: instanceStr,
-          language: language
+          instanceStr: instanceStr
         };
         if (contactSummary) {
           options.external = [contactSummary];
         }
-        return options;
+        const form = wrapper.find('form')[0];
+        return new window.EnketoForm(form, options, { language });
       });
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext) {
     const { doc, instanceData, titleKey, wrapper } = xmlFormContext;
-    wrapper
-      .find('.form-footer')
-      .addClass('end')
-      .find('.previous-page,.next-page')
-      .addClass('disabled');
 
     const formContainer = wrapper.find('.container').first();
     formContainer.html(doc.html.get(0));
 
     return this
-      .getEnketoOptions(doc, instanceData)
-      .then((options) => {
-        this.currentForm = new window.EnketoForm(wrapper.find('form').first(), options);
+      .getEnketoForm(wrapper, doc, instanceData)
+      .then((form) => {
+        this.currentForm = form;
         const loadErrors = this.currentForm.init();
         if (loadErrors?.length) {
           return Promise.reject(new Error(JSON.stringify(loadErrors)));
         }
-
-        this.setupFormLanguage(options.language);
       })
       .then(() => this.getFormTitle(titleKey, doc))
       .then((title) => {
@@ -306,31 +300,9 @@ export class EnketoService {
         this.overrideNavigationButtons(this.currentForm, wrapper);
         this.addPopStateHandler(this.currentForm, wrapper);
         this.forceRecalculate(this.currentForm);
-
+        this.setupNavButtons(wrapper, 0);
         return this.currentForm;
       });
-  }
-
-  // set the enketo form's language, re-set it when a DOM node is added to the form and the form has been edited
-  // TODO: remove this method once the enketo uplift gets merged https://github.com/medic/cht-core/pull/7256
-  private setupFormLanguage(language: string) {
-    const setFormLanguage = (language: string) => this.currentForm.langs.$formLanguages.val(language).trigger('change');
-    setFormLanguage(language);
-    this.currentForm.view.$.on(
-      'click',
-      'button.add-repeat-btn:enabled',
-      () => setFormLanguage(language),
-    );
-    let hasFormChanged = false;
-    this.currentForm.view.$.on('change', () => hasFormChanged = true);
-    const observer = new MutationObserver((mutations) => {
-      const hasNewNodes = mutations.some(mutation => mutation.addedNodes.length > 0);
-      if (hasFormChanged && hasNewNodes) {
-        setFormLanguage(language);
-      }
-      hasFormChanged = false;
-    });
-    observer.observe(this.currentForm.view.html, { childList: true, subtree: true });
   }
 
   private getFormTitle(titleKey, doc) {
@@ -364,10 +336,13 @@ export class EnketoService {
       .off('.pagemode')
       .on('click.pagemode', () => {
         form.pages
-          .next()
-          .then((newPageIndex) => {
-            if (typeof newPageIndex === 'number') {
-              window.history.pushState({ enketo_page_number: newPageIndex }, '');
+          ._next()
+          .then(valid => {
+            if (valid) {
+              const currentIndex = form.pages._getCurrentIndex();
+              window.history.pushState({ enketo_page_number: currentIndex }, '');
+              this.setupNavButtons($wrapper, currentIndex);
+              this.pauseMultimedia($wrapper);
             }
             this.forceRecalculate(form);
           });
@@ -379,24 +354,34 @@ export class EnketoService {
       .off('.pagemode')
       .on('click.pagemode', () => {
         window.history.back();
+        this.setupNavButtons($wrapper, form.pages._getCurrentIndex() - 1);
         this.forceRecalculate(form);
+        this.pauseMultimedia($wrapper);
         return false;
       });
+  }
+
+  // This code can be removed once this issue is fixed: https://github.com/enketo/enketo-core/issues/816
+  private pauseMultimedia($wrapper) {
+    $wrapper
+      .find('audio, video')
+      .each((idx, element) => element.pause());
   }
 
   private addPopStateHandler(form, $wrapper) {
     $(window).on('popstate.enketo-pagemode', (event: any) => {
       if (event.originalEvent &&
         event.originalEvent.state &&
-        typeof event.originalEvent.state.enketo_page_number === 'number') {
-        const targetPage = event.originalEvent.state.enketo_page_number;
+        typeof event.originalEvent.state.enketo_page_number === 'number' &&
+        $wrapper.find('.container').not(':empty')) {
 
-        if ($wrapper.find('.container').not(':empty')) {
-          const pages = form.pages;
-          const activePages = pages.getAllActive();
-          if (activePages) {
-            pages.flipTo(activePages[targetPage], targetPage);
-          }
+        const targetPage = event.originalEvent.state.enketo_page_number;
+        const pages = form.pages;
+        const currentIndex = pages._getCurrentIndex();
+        if(targetPage > currentIndex) {
+          pages._next();
+        } else {
+          pages._prev();
         }
       }
     });
@@ -404,13 +389,13 @@ export class EnketoService {
 
   private registerEditedListener($selector, listener) {
     if (listener) {
-      $selector.on('edited.enketo', () => this.ngZone.run(() => listener()));
+      $selector.on('edited', () => this.ngZone.run(() => listener()));
     }
   }
 
   private registerValuechangeListener($selector, listener) {
     if (listener) {
-      $selector.on('valuechange.enketo', () => this.ngZone.run(() => listener()));
+      $selector.on('xforms-value-changed', () => this.ngZone.run(() => listener()));
     }
   }
 
@@ -451,6 +436,8 @@ export class EnketoService {
         this.registerAddrepeatListener($selector, formDoc);
         this.registerEditedListener($selector, editedListener);
         this.registerValuechangeListener($selector, valuechangeListener);
+        this.registerValuechangeListener($selector,
+          () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
 
         window.CHTCore.debugFormModel = () => form.model.getStr();
         return form;
@@ -707,6 +694,24 @@ export class EnketoService {
     form.output.update();
   }
 
+  private setupNavButtons($wrapper, currentIndex) {
+    if(!this.currentForm?.pages) {
+      return;
+    }
+    const lastIndex = this.currentForm.pages.activePages.length - 1;
+    const footer = $wrapper.find('.form-footer');
+    footer.removeClass('end');
+    footer.find('.previous-page, .next-page').removeClass('disabled');
+
+    if (currentIndex >= lastIndex) {
+      footer.addClass('end');
+      footer.find('.next-page').addClass('disabled');
+    }
+    if (currentIndex <= 0) {
+      footer.find('.previous-page').addClass('disabled');
+    }
+  }
+
   private saveGeo(geoHandle, docs) {
     if (!geoHandle) {
       return docs;
@@ -815,7 +820,6 @@ interface ContactSummary {
 interface EnketoOptions {
   modelStr: string;
   instanceStr: string;
-  language: string;
   external?: ContactSummary[];
 }
 

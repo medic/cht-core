@@ -2,7 +2,7 @@ import jQuery from 'jquery';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import * as androidAppLauncher from '../../../../../src/js/enketo/widgets/android-app-launcher';
+import * as Androidapplauncher from '../../../../../src/js/enketo/widgets/android-app-launcher';
 
 describe('Android App Launcher Widget', () => {
   const $ = jQuery;
@@ -42,14 +42,16 @@ describe('Android App Launcher Widget', () => {
     };
 
     $html = $(`
-      <section id="test-form-group" class="or-group-data" name="/main">
-        <section class="or-appearance-android-app-launcher or-group-data" name="/app"></section>
-      </section>
+      <label id="android-app-launcher-test" class="question">\
+        <section id="test-form-group" class="or-group-data" name="/main">
+          <section class="or-appearance-android-app-launcher or-group-data" name="/app"></section>
+        </section>
+      </label>
     `);
 
     document.body.insertAdjacentHTML('afterbegin', $html[0]);
-    $widget = $html.find(androidAppLauncher.selector);
-    new androidAppLauncher.widget($widget[0], {});
+    $widget = $html.find(Androidapplauncher.selector);
+    new Androidapplauncher($widget[0], {});
   });
 
   afterEach(() => {

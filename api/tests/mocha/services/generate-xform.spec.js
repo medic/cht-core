@@ -1,9 +1,11 @@
 const { promisify } = require('util');
 const readFile = promisify(require('fs').readFile);
+const rewire = require('rewire');
 const { join } = require('path');
 const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const childProcess = require('child_process');
+const markdown = require('enketo-transformer/src/markdown');
 const db = require('../../../src/db');
 const service = require('../../../src/services/generate-xform');
 
@@ -84,7 +86,7 @@ describe('generate-xform service', () => {
           spawned.on.args[2][1](0);
         }
         return generate.then(actual => {
-          expect(actual.form).to.equal(files.expectedForm);
+          expect(actual.form).to.equal(files.expectedForm.trim());
           expect(actual.model).to.equal(files.expectedModel);
         });
       });
@@ -95,6 +97,8 @@ describe('generate-xform service', () => {
     it('should replace multimedia src elements', () => runTest('multimedia', spawned));
 
     it('should correctly replaces models with nested "</root>" - #5971', () => runTest('nested-root', spawned));
+
+    it('should replace markdown syntax', () => runTest('markdown', spawned));
 
     it('should fail when child process errors', async () => {
       try {
@@ -458,4 +462,193 @@ describe('generate-xform service', () => {
 
   });
 
+  describe('replaceAllMarkdown', () => {
+    let replaceAllMarkdown;
+
+    const wrapInQuestionLabel = (contents) => `
+      <form>
+        <span class="question-label">${contents}</span>
+      </form>`.trim();
+
+    beforeEach(() => {
+      const generate = rewire('../../../src/services/generate-xform');
+      replaceAllMarkdown = generate.__get__('replaceAllMarkdown');
+    });
+
+    it('strips root node', () => {
+      const actual = replaceAllMarkdown('<root><form></form></root>');
+      expect(actual).to.equal('<form></form>');
+    });
+
+    it('replaces questions', () => {
+      sinon.stub(markdown, 'toHtml').returns('def');
+      const given = `
+<root>
+  <form>
+    <span class="question-label">abc</span>
+  </form>
+</root>`;
+      const expected = `
+  <form>
+    <span class="question-label">def</span>
+  </form>`;
+      expect(replaceAllMarkdown(given)).to.equal(expected.trim());
+      expect(markdown.toHtml.callCount).to.equal(1);
+      expect(markdown.toHtml.args[0][0]).to.equal('abc');
+    });
+
+    it('replaces hints', () => {
+      sinon.stub(markdown, 'toHtml').returns('def');
+      const given = `
+<root>
+  <form>
+    <span class="or-hint">abc</span>
+  </form>
+</root>`;
+      const expected = `
+  <form>
+    <span class="or-hint">def</span>
+  </form>`;
+      expect(replaceAllMarkdown(given)).to.equal(expected.trim());
+      expect(markdown.toHtml.callCount).to.equal(1);
+      expect(markdown.toHtml.args[0][0]).to.equal('abc');
+    });
+
+    it('replaces all questions and hints', () => {
+      sinon.stub(markdown, 'toHtml')
+        .withArgs('1').returns('a')
+        .withArgs('2').returns('b')
+        .withArgs('3').returns('c');
+      const given = `
+<root>
+  <form>
+    <span class="question-label">1</span>
+    <span class="or-hint">2</span>
+    <span class="question-label">3</span>
+  </form>
+</root>`;
+      const expected = `
+  <form>
+    <span class="question-label">a</span>
+    <span class="or-hint">b</span>
+    <span class="question-label">c</span>
+  </form>`;
+      expect(replaceAllMarkdown(given)).to.equal(expected.trim());
+      expect(markdown.toHtml.callCount).to.equal(3);
+      expect(markdown.toHtml.args).to.deep.equal([['1'], ['3'], ['2']]);
+    });
+
+    it('does not convert content outside of questions and hints', () => {
+      sinon.spy(markdown, 'toHtml');
+      const given = `
+  <form>
+    <span class="question-label">not markdown##</span>
+    <span class="question-label">##markdown</span>
+    <span class="or-hint">not markdown_</span>
+    <span class="or-hint">_markdown_</span>
+    <div>
+        ##Content with markdown formatting
+        _but does not get converted_
+    </div>
+  </form>`;
+      const expected = `
+  <form>
+    <span class="question-label">not markdown##</span>
+    <span class="question-label"><h2>markdown</h2></span>
+    <span class="or-hint">not markdown_</span>
+    <span class="or-hint"><em>markdown</em></span>
+    <div>
+        ##Content with markdown formatting
+        _but does not get converted_
+    </div>
+  </form>`;
+
+      expect(replaceAllMarkdown(given)).to.equal(expected.trim());
+      expect(markdown.toHtml.callCount).to.equal(4);
+      expect(markdown.toHtml.args)
+        .to.deep.equal([['not markdown##'], ['##markdown'], ['not markdown_'], ['_markdown_']]);
+    });
+
+    it('h1', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('\n# HELLO\n')))
+        .to.equal(wrapInQuestionLabel('<h1>HELLO</h1>'));
+    });
+
+    it('h2', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('\n## HELLO\n')))
+        .to.equal(wrapInQuestionLabel('<h2>HELLO</h2>'));
+    });
+
+    it('h3', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('\n### HELLO\n')))
+        .to.equal(wrapInQuestionLabel('<h3>HELLO</h3>'));
+    });
+
+    it('h4', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('\n#### HELLO\n')))
+        .to.equal(wrapInQuestionLabel('<h4>HELLO</h4>'));
+    });
+
+    it('h5', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('\n##### HELLO\n')))
+        .to.equal(wrapInQuestionLabel('<h5>HELLO</h5>'));
+    });
+
+    it('strong with underscore', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('__HELLO__')))
+        .to.equal(wrapInQuestionLabel('<strong>HELLO</strong>'));
+    });
+
+    it('strong with asterisk', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('**HELLO**')))
+        .to.equal(wrapInQuestionLabel('<strong>HELLO</strong>'));
+    });
+
+    it('em with underscore', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel(' _HELLO_')))
+        .to.equal(wrapInQuestionLabel(' <em>HELLO</em>'));
+    });
+
+    it('em with asterisk', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('*HELLO*')))
+        .to.equal(wrapInQuestionLabel('<em>HELLO</em>'));
+    });
+
+    it('a', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('click [here](http://google.com) to search')))
+        .to.equal(wrapInQuestionLabel('click <a href="http://google.com" rel="noopener" target="_blank">here</a> to search'));
+    });
+
+    it('br', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('hello\ncheck for new\nlines')))
+        .to.equal(wrapInQuestionLabel('hello<br>check for new<br>lines'));
+    });
+
+    it('converts a computed URL - #3349', () => {
+      const given = wrapInQuestionLabel('[Search for<span class="or-output" data-value=" /notedata/name "> </span>](http://google.com?q=<span class="or-output" data-value=" /notedata/name "> </span>)');
+      const expected = wrapInQuestionLabel('<a href="#" target="_blank" rel="noopener" class="dynamic-url">Search for<span class="or-output" data-value=" /notedata/name "> </span><span class="url hidden">http://google.com?q=<span class="or-output" data-value=" /notedata/name "> </span></span></a>');
+      expect(replaceAllMarkdown(given)).to.equal(expected);
+    });
+
+    it('converts html tags', () => {
+      const given = wrapInQuestionLabel('hello&lt;blink&gt;<output value="name"/>&lt;/blink&gt;');
+      const expected = wrapInQuestionLabel('hello<blink><output value="name"></output></blink>');
+      expect(replaceAllMarkdown(given)).to.equal(expected.trim());
+    });
+
+    it('converts ampersand', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('mock &amp; test')))
+        .to.equal(wrapInQuestionLabel('mock & test'));
+    });
+
+    it('converts double quote', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('mock &quot;test&quot;')))
+        .to.equal(wrapInQuestionLabel('mock "test"'));
+    });
+
+    it('converts single quote', () => {
+      expect(replaceAllMarkdown(wrapInQuestionLabel('someone&#039;s test')))
+        .to.equal(wrapInQuestionLabel('someone\'s test'));
+    });
+  });
 });

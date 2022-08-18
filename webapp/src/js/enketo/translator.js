@@ -1,6 +1,6 @@
 const moment = require('moment');
 
-const translate = (key) => {
+const translate = (key, options) => {
   if(key.indexOf('date.dayofweek.') === 0) {
     return moment().weekday(key.substring(15)).format('ddd');
   }
@@ -8,7 +8,7 @@ const translate = (key) => {
     return moment().month(parseInt(key.substring(11)) - 1).format('MMM');
   }
 
-  return window.CHTCore.Translate.instant('enketo.' + key);
+  return window.CHTCore.Translate.instant('enketo.' + key, options);
 };
 
 module.exports = {

@@ -15,9 +15,9 @@ const formDocument = {
   }
 };
 const dangerSignLabel = () =>
-  $('label.question.note.or-branch.non-select.or-appearance-h1.or-appearance-red > span.question-label');
+  $('label.question.readonly.or-branch.non-select.or-appearance-h1.or-appearance-red > span.question-label');
 const dangerSignSummary = () =>
-  $$('label.question.note.or-branch.non-select.or-appearance-li');
+  $$('label.question.readonly.or-branch.non-select.or-appearance-li');
 const followUpMessage = () => $('[data-value=" /pregnancy_visit/chw_sms "]');
 
 const selectPatient = (patientName) => {
