@@ -1,5 +1,5 @@
 const utils = require('../../../utils');
-const sUtils = require('./sentinel/utils');
+const sUtils = require('../../sentinel/utils');
 const commonElements = require('../../../page-objects/common/common.po.js');
 const helper = require('../../../helper');
 const moment = require('moment');

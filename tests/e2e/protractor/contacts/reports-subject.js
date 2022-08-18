@@ -3,7 +3,7 @@ const commonElements = require('../../../page-objects/common/common.po.js');
 const reportsTab = require('../../../page-objects/reports/reports.po');
 const helper = require('../../../helper');
 const moment = require('moment');
-const sentinelUtils = require('./sentinel/utils');
+const sentinelUtils = require('../../sentinel/utils');
 
 describe('Reports Summary', () => {
   const PHONE_CAROL = '+64271234567';
