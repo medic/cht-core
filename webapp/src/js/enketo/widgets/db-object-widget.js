@@ -26,9 +26,7 @@ class Dbobjectwidget extends Widget {
 }
 
 const construct = ( element ) => {
-  // timeout needed to let setting the value complete before rendering
-  setTimeout(function() {
-    const $question = $( element );
+  const $question = $( element );
 
   const Select2Search = window.CHTCore.Select2Search;
 
