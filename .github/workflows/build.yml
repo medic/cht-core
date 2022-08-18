@@ -207,4 +207,4 @@ jobs:
       if: ${{ failure() }}
     - name: healthcheck logs
       run: docker logs cht-haproxy-healthcheck
-      if: ${{ failure() }}
+      if: ${{ always() }}
