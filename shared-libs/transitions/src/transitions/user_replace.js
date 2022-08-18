@@ -14,7 +14,7 @@ module.exports = {
     console.log("doc", doc);
     return Boolean(
       doc &&
-      doc.form === 'contact:person:replace',
+      doc.form === 'replace_user' &&
       !transitionUtils.hasRun(info, NAME)
     );
   },
