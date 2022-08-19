@@ -332,16 +332,16 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.subscriptionSelectedContactForms.unsubscribe();
     }
 
-    const whitelistedIds = this.userSettings.contact_id === this.selectedContact.doc._id ?
-      ['contact:person:replace'] :
-      [];
+    // const whitelistedIds = this.userSettings.contact_id === this.selectedContact.doc._id ?
+    //   ['contact:person:replace'] :
+    //   [];
     this.subscriptionSelectedContactForms = this.xmlFormsService.subscribe(
       'SelectedContactReportForms',
       {
         doc: this.selectedContact.doc,
         contactSummary: this.selectedContact.summary.context,
         contactForms: false,
-        whitelistedIds,
+        // whitelistedIds,
       },
       (error, forms) => {
         if (error) {
