@@ -755,7 +755,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_home_visit id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" delimiter="#" version="2022-03-01 09:13:42">
+        <pregnancy_home_visit id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" delimiter="#" version="2022-08-19 15:52:36">
           <inputs>
             <meta>
               <location>
@@ -1251,7 +1251,7 @@
       <bind nodeset="/pregnancy_home_visit/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(floor(decimal-date-time(today())) + 3)"/>
       <bind nodeset="/pregnancy_home_visit/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"/>
       <bind nodeset="/pregnancy_home_visit/hiv_status_known" type="string" calculate="if(../context_vars/hiv_tested_ctx = 'yes', 'yes', ../safe_pregnancy_practices/hiv_status/hiv_tested)"/>
-      <bind nodeset="/pregnancy_home_visit/tt_received" type="string" calculate="if(../context_vars/tt_imm_received_ctx = 'yes', 'yes', ../safe_pregnancy_practices/tetanus/tt_imm_received)"/>
+      <bind nodeset="/pregnancy_home_visit/tt_received" type="string" calculate="if(../context_vars/tt_received_ctx = 'yes', 'yes', ../safe_pregnancy_practices/tetanus/tt_imm_received)"/>
       <bind nodeset="/pregnancy_home_visit/deworming_med_received" type="string" calculate="if(../context_vars/deworming_med_received_ctx = 'yes', 'yes', ../safe_pregnancy_practices/deworming/deworming_med)"/>
       <bind nodeset="/pregnancy_home_visit/context_vars/lmp_date_8601_ctx" type="string" calculate="if(instance('contact-summary')/context/lmp_date_8601 != '', instance('contact-summary')/context/lmp_date_8601, .)"/>
       <bind nodeset="/pregnancy_home_visit/context_vars/lmp_method_approx_ctx" type="string" calculate="if(instance('contact-summary')/context/lmp_method_approx != '', instance('contact-summary')/context/lmp_method_approx, .)"/>
@@ -1289,9 +1289,9 @@ selected(../../pregnancy_summary/visit_option, 'migrated')"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age" relevant="selected(../pregnancy_summary/visit_option, 'yes') and
 selected(../pregnancy_summary/g_age_correct, 'no')"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/g_age_update_method" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new" type="int" required="true()" constraint=". &gt;= 4 and . &lt;= 40" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new:jr:constraintMsg')" relevant="selected(../g_age_update_method, 'method_weeks')"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new" type="int" required="true()" constraint=". &gt;= 4 and . &lt;= 40" relevant="selected(../g_age_update_method, 'method_weeks')" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/u_edd_new" type="date" required="true()" constraint=". &gt;= date-time(floor(decimal-date-time(today()))) and
-. &lt;= date-time(floor(decimal-date-time(today())) + (9 * 30))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/u_edd_new:jr:constraintMsg')" relevant="selected(../g_age_update_method, 'method_edd')"/>
+. &lt;= date-time(floor(decimal-date-time(today())) + (9 * 30))" relevant="selected(../g_age_update_method, 'method_edd')" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/u_edd_new:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/update_check_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_info" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_g_age" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  != 'unknown'"/>
@@ -1411,7 +1411,7 @@ and selected(../breathlessness, 'no'), 'no', ''))"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status" relevant="../../context_vars/hiv_tested_ctx != 'yes'"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested" type="select1" required="true()"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_importance_note" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/tetanus" relevant="../context_vars/tt_received_ctx != 'yes' and
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/tetanus" relevant="../../context_vars/tt_received_ctx != 'yes' and
 (selected(../../anc_visits_hf/anc_visits_hf_past/last_visit_attended, 'yes') or
 selected(../../anc_visits_hf/anc_visits_hf_past/report_other_visits, 'yes'))"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/tetanus/tt_imm_received" type="select1" required="true()"/>
@@ -1451,7 +1451,10 @@ selected(../iron_folate/iron_folate_daily, 'no')), 'yes', 'no')"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_refer_clinic_immediately" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_refer_danger_sign" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_routine_anc" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'yes')"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_request_services" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/request_services, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_request_services" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/tetanus/tt_imm_received, 'no') or
+selected(../../safe_pregnancy_practices/hiv_status/hiv_tested, 'no') or
+selected(../../safe_pregnancy_practices/deworming/deworming_med, 'no') or
+selected(../../safe_pregnancy_practices/iron_folate/iron_folate_daily, 'no')"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_request_service_tt" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/tetanus/tt_imm_received, 'no')"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_request_service_hiv_test" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/hiv_status/hiv_tested, 'no')"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_request_service_deworming" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/deworming/deworming_med, 'no')"/>

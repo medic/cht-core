@@ -668,7 +668,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy id="pregnancy" prefix="J1!pregnancy!" delimiter="#" version="2020-05-15 09:21:28">
+        <pregnancy id="pregnancy" prefix="J1!pregnancy!" delimiter="#" version="2022-08-19 16:05:54">
           <inputs>
             <meta>
               <location>
@@ -1137,10 +1137,10 @@ selected(../iron_folate/iron_folate_daily, 'no')), 'yes', 'no')"/>
       <bind nodeset="/pregnancy/summary/r_risk_previous_difficulties" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/secondary_condition, 'previous_difficulties')"/>
       <bind nodeset="/pregnancy/summary/r_risk_more_than_4_children" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/secondary_condition, 'more_than_4_children')"/>
       <bind nodeset="/pregnancy/summary/r_risk_last_baby_born_less_than_1_year_ago" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/secondary_condition, 'last_baby_born_less_than_1_year_ago')"/>
-      <bind nodeset="/pregnancy/summary/r_risk_heart_condition" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'heart_condition') or selected(../../risk_factors/secondary_condition, 'heart_condition')"/>
-      <bind nodeset="/pregnancy/summary/r_risk_asthma" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'asthma') or selected(../../risk_factors/secondary_condition, 'asthma')"/>
-      <bind nodeset="/pregnancy/summary/r_risk_high_blood_pressure" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'high_blood_pressure') or selected(../../risk_factors/secondary_condition, 'high_blood_pressure')"/>
-      <bind nodeset="/pregnancy/summary/r_risk_diabetes" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'diabetes') or selected(../../risk_factors/secondary_condition, 'diabetes')"/>
+      <bind nodeset="/pregnancy/summary/r_risk_heart_condition" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'heart_condition') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'heart_condition')"/>
+      <bind nodeset="/pregnancy/summary/r_risk_asthma" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'asthma') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'asthma')"/>
+      <bind nodeset="/pregnancy/summary/r_risk_high_blood_pressure" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'high_blood_pressure') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'high_blood_pressure')"/>
+      <bind nodeset="/pregnancy/summary/r_risk_diabetes" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/primary_condition, 'diabetes') or selected(../../risk_factors/risk_factors_present/secondary_condition, 'diabetes')"/>
       <bind nodeset="/pregnancy/summary/r_risk_additional" readonly="true()" type="string" relevant="selected(../../risk_factors/risk_factors_present/additional_risk_check, 'yes')"/>
       <bind nodeset="/pregnancy/summary/r_danger_signs" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
       <bind nodeset="/pregnancy/summary/r_danger_sign_vaginal_bleeding" readonly="true()" type="string" relevant="selected(../../danger_signs/vaginal_bleeding, 'yes')"/>
