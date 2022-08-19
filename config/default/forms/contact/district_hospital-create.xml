@@ -917,7 +917,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" delimiter="#" version="2022-06-13 17-11">
+        <data id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" delimiter="#" version="2022-08-19 14-44">
           <inputs>
             <meta>
               <location>
@@ -1067,7 +1067,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       </group>
     </group>
     <group appearance="field-list" ref="/data/init">
-      <select1 appearance="horizontal-compact" ref="/data/init/create_new_person">
+      <select1 appearance="columns-pack" ref="/data/init/create_new_person">
         <label ref="jr:itext('/data/init/create_new_person:label')"/>
         <item>
           <label ref="jr:itext('/data/init/create_new_person/new_person:label')"/>
@@ -1144,7 +1144,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <input ref="/data/contact/ephemeral_dob/age_months">
             <label ref="jr:itext('/data/contact/ephemeral_dob/age_months:label')"/>
           </input>
-          <select appearance="horizontal" ref="/data/contact/ephemeral_dob/dob_method">
+          <select appearance="columns" ref="/data/contact/ephemeral_dob/dob_method">
             <label ref="jr:itext('/data/contact/ephemeral_dob/dob_method:label')"/>
             <item>
               <label ref="jr:itext('/data/contact/ephemeral_dob/dob_method/approx:label')"/>
@@ -1162,7 +1162,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <input ref="/data/contact/phone_alternate">
         <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
       </input>
-      <select1 appearance="horizontal" ref="/data/contact/sex">
+      <select1 appearance="columns" ref="/data/contact/sex">
         <label ref="jr:itext('/data/contact/sex:label')"/>
         <item>
           <label ref="jr:itext('/data/contact/sex/female:label')"/>
@@ -1212,7 +1212,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <group appearance="hidden" ref="/data/contact/meta"/>
     </group>
     <group appearance="field-list" ref="/data/district_hospital">
-      <select1 appearance="horizontal-compact" ref="/data/district_hospital/is_name_generated">
+      <select1 appearance="columns-pack" ref="/data/district_hospital/is_name_generated">
         <label ref="jr:itext('/data/district_hospital/is_name_generated:label')"/>
         <item>
           <label ref="jr:itext('/data/district_hospital/is_name_generated/true:label')"/>
