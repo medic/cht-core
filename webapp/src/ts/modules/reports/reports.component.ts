@@ -171,12 +171,15 @@ export class ReportsComponent implements OnInit, OnDestroy {
 
   private prepareReports(reports) {
     return reports.map(report => {
+      console.log('report ', report);
       const form = _find(this.forms, { code: report.form });
       report.icon = form && form.icon;
       report.heading = this.getReportHeading(form, report);
       report.summary = form ? form.title : report.form;
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       // filter out the lineage level that belongs to the logged in user
+      console.log('report.subject ', report.subject);
+      console.log('report.subject.lineage ', report.subject.lineage);
       console.log('lineage ', report.lineage);
       if(!this.sessionService.isOnlineOnly()) {
         report.lineage = report.lineage.filter((level) => {
