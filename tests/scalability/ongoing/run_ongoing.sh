@@ -35,6 +35,6 @@ $DATA_DIR/jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults
 echo "jmeter do it!"
 echo $SKIP
 echo $(which node)
-$DATA_DIR/jmeter/bin/jmeter -n  -t ./ongoing_sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jdata_dir=$DATA_DIR -Jinstance_url=$INSTANCE_URL -Jskip=SKIP -Jnumber_of_threads=$THREADS -l ./report/cli_run.jtl -e -o ./report
+$DATA_DIR/jmeter/bin/jmeter -n  -t ./ongoing_sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jdata_dir=$DATA_DIR -Jinstance_url=$INSTANCE_URL -Jskip=$SKIP -Jnumber_of_threads=$THREADS -l ./report/cli_run.jtl -e -o ./report
 mv ./jmeter.log ./report/jmeter.log
 echo "FINISHED! "
