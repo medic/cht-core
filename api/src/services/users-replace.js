@@ -32,7 +32,6 @@ async function replaceUser(replaceUserReportId, appUrl) {
     phone: newContact.phone,
     token_login: true,
     roles: oldUser.roles,
-    type: oldUser.type,
     fullname: newContact.name,
   };
   return usersService.createUser(user, appUrl);
