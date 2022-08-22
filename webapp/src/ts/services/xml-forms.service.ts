@@ -166,12 +166,6 @@ export class XmlFormsService {
   }
 
   private filter(form, options, user) {
-    // if (typeof options.whitelistedIds !== 'undefined') {
-    //   if (options.whitelistedIds.includes(form.internalId)) {
-    //     return true;
-    //   }
-    // }
-
     if (!options.includeCollect && form.context && form.context.collect) {
       return false;
     }
