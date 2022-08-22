@@ -51,9 +51,9 @@
                 <stringProp name="Argument.value">${__threadNum}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
-              <elementProp name="${skip_users}" elementType="Argument">
-                <stringProp name="Argument.name">${skip_users}</stringProp>
-                <stringProp name="Argument.value">${skip_users}</stringProp>
+              <elementProp name="" elementType="Argument">
+                <stringProp name="Argument.name"></stringProp>
+                <stringProp name="Argument.value">${__P(skip)}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
             </collectionProp>
