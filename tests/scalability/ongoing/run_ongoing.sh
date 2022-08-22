@@ -7,14 +7,6 @@ then
     SKIP=0
 fi
 
-if [ $RUN_LOCAL = false ]
-then
-  sudo shutdown -P +60
-  echo Cloning cht-core to /cht-core
-  git clone --single-branch --branch $TAG_NAME https://github.com/medic/cht-core.git;
-  cd cht-core/tests/scalability/ongoing
-fi
-
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
 if [ -z $INSTANCE_URL ]
