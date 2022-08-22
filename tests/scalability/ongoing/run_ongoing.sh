@@ -6,7 +6,6 @@ if [ -z $SKIP ]
 then
     SKIP=0
 fi
-echo $SKIP
 
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
@@ -34,6 +33,7 @@ wget 'http://search.maven.org/remotecontent?filepath=kg/apc/cmdrunner/2.2/cmdrun
 java -cp $DATA_DIR/jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.repository.PluginManagerCMDInstaller
 $DATA_DIR/jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults
 echo "jmeter do it!"
+echo $SKIP
 echo $(which node)
 $DATA_DIR/jmeter/bin/jmeter -n  -t ./ongoing_sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jdata_dir=$DATA_DIR -Jinstance_url=$INSTANCE_URL -Jskip=SKIP -Jnumber_of_threads=$THREADS -l ./report/cli_run.jtl -e -o ./report
 mv ./jmeter.log ./report/jmeter.log
