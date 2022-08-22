@@ -6,6 +6,7 @@ if [ -z $SKIP ]
 then
     SKIP=0
 fi
+echo $SKIP
 
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 
