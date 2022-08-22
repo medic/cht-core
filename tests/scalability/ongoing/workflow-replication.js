@@ -53,8 +53,8 @@ const getRandomParent = () => {
 
 const getClinics = async () => {
   const contacts = await localDb.query(
-    'medic-client/contacts_by_parent',
-    { key: [user.place, 'clinic'], include_docs: true }
+    'medic-client/contacts_by_type',
+    { key: ['clinic'], include_docs: true }
   );
   clinics = contacts.rows.map(row => row.doc);
 };
