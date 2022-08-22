@@ -62,6 +62,11 @@ const generateData = async () => {
   const docs = [];
   for (let i = 0; i < config.workflowContactsNbr.person; i++) {
     const parent = getRandomParent();
+    if (!parent) {
+      const empty = clinics.filter(clinic => !clinic);
+      console.log(empty);
+      throw new Error('Error choosing random clinic');
+    }
     const [person] = dataFactory.generatePerson(parent, 'member_eligible_woman');
     const reports = dataFactory.generateReports(person, parent);
     docs.push(person, ...reports);
