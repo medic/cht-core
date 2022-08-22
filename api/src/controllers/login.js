@@ -310,7 +310,10 @@ module.exports = {
       });
   },
 
-  tokenGet: (req, res, next) => renderTokenLogin(req, res).catch(next),
+  tokenGet: (req, res, next) => {
+    cookie.resetAuthCookies(res);
+    return renderTokenLogin(req, res).catch(next);
+  },
   tokenPost: (req, res, next) => {
     return auth
       .getUserCtx(req)

@@ -72,5 +72,10 @@ module.exports = {
   },
   setForceLogin: (res) => {
     res.cookie('login', 'force', getCookieOptions());
-  }
+  },
+  resetAuthCookies: (res) => {
+    res.clearCookie('login');
+    res.clearCookie('userCtx');
+    res.clearCookie('AuthSession');
+  },
 };
