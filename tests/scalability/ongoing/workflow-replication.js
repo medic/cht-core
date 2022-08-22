@@ -11,6 +11,7 @@ const dataFactory = require('./data-factory');
 
 const idx = ((+threadId || 0) + +skipUsers) % users.length;
 const user = users[idx];
+console.log(user);
 let clinics;
 const dbUrl = `${instanceUrl}/medic`;
 
