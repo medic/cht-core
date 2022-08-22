@@ -10,7 +10,7 @@ const config = require('./config');
 const dataFactory = require('./data-factory');
 
 const idx = ((+threadId || 0) + +skipUsers) % users.length;
-console.log(idx);
+console.log(idx, skipUsers);
 const user = users[idx];
 console.log(user);
 let clinics;
