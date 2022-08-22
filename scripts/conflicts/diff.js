@@ -16,7 +16,7 @@ const server = argv._[2] || argv.server || process.env.COUCH_URL;
 //node diff.js 'https://user:pass@medic-bhaktapur.com/medic'
 
 if (!server || argv.h || argv.help) {
-  console.log(`You need to provide a Medic CouchDB url with baisc authentication 
+  console.log(`You need to provide a Medic CouchDB url with basic authentication 
              (usename and password. Check 1password`);
   console.log('  node diff.js http://localhost:5984/medic');
   console.log('  node diff.js --server=http://localhost:5984/medic');
