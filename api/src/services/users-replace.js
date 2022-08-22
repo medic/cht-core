@@ -5,7 +5,6 @@ const people = require('../controllers/people');
 
 async function replaceUser(replaceUserReportId, appUrl) {
   const replaceUserReport = await db.medic.get(replaceUserReportId);
-  // console.log("replaceUserReport", replaceUserReport);
   const oldContact = await people.getOrCreatePerson(replaceUserReport.fields.original_contact_uuid);
   const oldUserSettingsResponse = await db.medic.find({
     selector: {
