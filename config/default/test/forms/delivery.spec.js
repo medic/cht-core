@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const TestRunner = require('cht-conf-test-harness');
-const { deliveryScenarios } = require('../form-inputs');
+const { deliveryReportScenarios } = require('../form-inputs');
 
 const harness = new TestRunner();
 const TODAY = '2000-01-01';
@@ -21,7 +21,7 @@ describe('Delivery form', () => {
   describe('PNC Visits', () => {
     ['within_24_hrs', '3_days', '7_days', 'none'].forEach(pncVisitsAttended => {
       it(`should show summary when the the PNC Visits attended is [${pncVisitsAttended}]`, async() => {
-        const result = await harness.fillForm('delivery', ...deliveryScenarios.pncVisits('1999-12-01', pncVisitsAttended, 2));
+        const result = await harness.fillForm('delivery', ...deliveryReportScenarios.pncVisits('1999-12-01', pncVisitsAttended, 2));
 
         expect(result.errors).to.be.empty;
         expect(result.report.fields.pnc_visits).to.deep.include({
@@ -43,7 +43,7 @@ describe('Delivery form', () => {
 
     ['alive_well', 'alive_unwell'].forEach(motherOutcome => {
       it(`should show summary when the baby is deceased but the mother is [${motherOutcome}]`, async() => {
-        const result = await harness.fillForm('delivery', ...deliveryScenarios.babyDeceased(TODAY, motherOutcome));
+        const result = await harness.fillForm('delivery', ...deliveryReportScenarios.babyDeceased(TODAY, motherOutcome));
 
         expect(result.errors).to.be.empty;
         expect(result.report.fields.pnc_visits).to.deep.include({
@@ -64,7 +64,7 @@ describe('Delivery form', () => {
     });
 
     it('should show summary when the mother is deceased but the baby is alive and no PNC visits have happened', async() => {
-      const result = await harness.fillForm('delivery', ...deliveryScenarios.motherDeceased(TODAY));
+      const result = await harness.fillForm('delivery', ...deliveryReportScenarios.motherDeceased(TODAY));
 
       expect(result.errors).to.be.empty;
       expect(result.report.fields.pnc_visits).to.deep.include({
@@ -84,7 +84,7 @@ describe('Delivery form', () => {
     });
 
     it('should not show summary when the baby and the mother are deceased', async() => {
-      const result = await harness.fillForm('delivery', ...deliveryScenarios.babyDeceased_motherDeceased(TODAY));
+      const result = await harness.fillForm('delivery', ...deliveryReportScenarios.babyDeceased_motherDeceased(TODAY));
 
       expect(result.errors).to.be.empty;
       expect(result.report.fields.pnc_visits).to.not.exist;
