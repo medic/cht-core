@@ -4,6 +4,9 @@ module.exports = {
     withDeathDate: deathDate => [
       [deathDate, 'health_facility', 'Died while sleeping.'],
       [],
+    ],
+    undo:[
+      ['yes']
     ]
   },
 
