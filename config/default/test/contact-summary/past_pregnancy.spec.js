@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const TestRunner = require('medic-conf-test-harness');
+const TestRunner = require('cht-conf-test-harness');
 const moment = require('moment');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios, deliveryReportScenarios } = require('../form-inputs');
 const harness = new TestRunner();
