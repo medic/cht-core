@@ -13,16 +13,15 @@ describe('Death Report form', () => {
   after(() => harness.stop());
 
   beforeEach(
-    async () => {
+    async() => {
       await harness.clear();
       await harness.setNow(new Date(TODAY));
-      await harness.loadForm('death_report');
     });
 
   afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
-  it('should submit successfully with today as the date of death', async () => {
-    const result = await harness.fillForm(...deathReportScenarios.withDeathDate(TODAY));
+  it('should submit successfully with today as the date of death', async() => {
+    const result = await harness.fillForm('death_report', ...deathReportScenarios.withDeathDate(TODAY));
 
     expect(result.errors).to.be.empty;
     expect(result.report.fields).to.deep.include({

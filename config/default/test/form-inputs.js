@@ -7,6 +7,42 @@ module.exports = {
     ]
   },
 
+  deliveryScenarios: {
+    babyDeceased: (deliveryDate, motherOutcome) => [
+      [motherOutcome],
+      Array(5).fill('no'),
+      [1, 0, deliveryDate, 'health_facility', 'vaginal'],
+      [deliveryDate, 'health_facility', 'yes', 'Baby Death Notes'],
+      ['none', ''],
+      [],
+    ],
+    motherDeceased: deliveryDate => [
+      ['deceased'],
+      [deliveryDate, 'health_facility', 'yes', 'Additional Notes'],
+      [1, 1, deliveryDate, 'health_facility', 'vaginal'],
+      ['alive_well', 'Baby Name', 'female', 'yes', 2000, 'yes', 50, 'bcg_and_birth_polio', ...Array(11).fill('no')],
+      [],
+      ['none', ''],
+      [],
+    ],
+    babyDeceased_motherDeceased: (deliveryDate) => [
+      ['deceased'],
+      [deliveryDate, 'health_facility', 'yes', 'Mother Death Notes'],
+      [1, 0, deliveryDate, 'health_facility', 'vaginal'],
+      [deliveryDate, 'health_facility', 'yes', 'Baby Death Notes'],
+      [],
+    ],
+    pncVisits: (deliveryDate, pncVisitsAttended, pncVisitsAdditional) => [
+      ['alive_well'],
+      Array(5).fill('no'),
+      [1, 1, deliveryDate, 'health_facility', 'vaginal'],
+      ['alive_well', 'Baby Name', 'female', 'yes', 2000, 'yes', 50, 'bcg_and_birth_polio', 'yes', 'yes', ...Array(9).fill('no')],
+      [],
+      [pncVisitsAttended, pncVisitsAdditional],
+      [],
+    ]
+  },
+
   pregnancyRegistrationScenarios: {
     safe: [
       ['method_lmp'],
