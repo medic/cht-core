@@ -227,8 +227,24 @@ export class DBSyncService {
           }
           this.sendUpdate(syncState);
         })
-        .finally(() => {
+        .finally(async () => {
           this.inProgressSync = undefined;
+
+          const userCtx = this.sessionService.userCtx();
+          if (!userCtx) {
+            return;
+          }
+
+          const db = this.dbService.get({ remote: true });
+          const userId = `org.couchdb.user:${userCtx.name}`;
+          const userSettings = await db.get(userId);
+          if (userSettings.shouldLogoutNextSync) {
+            const nextUserSettings = Object.assign({}, userSettings);
+            delete nextUserSettings.shouldLogoutNextSync;
+            await db.put(nextUserSettings);
+
+            return this.sessionService.logout();
+          }
         });
     }
 
