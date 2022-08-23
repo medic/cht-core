@@ -20,19 +20,11 @@ describe('Death Report form', () => {
 
   afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
-  it('should submit successfully with today as the date of death', async() => {
+  it('saves data when today is the date of death', async() => {
     const result = await harness.fillForm('death_report', ...deathReportScenarios.withDeathDate(TODAY));
 
     expect(result.errors).to.be.empty;
     expect(result.report.fields).to.deep.include({
-      patient_age_in_days: '10768',
-      patient_age_in_months: '353',
-      patient_age_in_years: '29',
-      patient_display_name: patientDoc.name,
-      patient_id: patientDoc._id,
-      patient_name: patientDoc.name,
-      patient_short_name: '',
-      patient_uuid: patientDoc._id,
       data: {
         __date_of_death: TODAY,
         __death_information: 'Died while sleeping.',

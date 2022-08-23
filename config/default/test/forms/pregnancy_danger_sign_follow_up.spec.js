@@ -20,7 +20,7 @@ describe('Pregnancy danger sign follow-up form', () => {
 
   afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
-  it('sets expected data when a danger sign is recorded', async() => {
+  it('saves data when a danger sign is recorded', async() => {
     const result = await harness.fillForm('pregnancy_danger_sign_follow_up', ...followUp.danger);
 
     expect(result.errors).to.be.empty;
@@ -56,7 +56,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     });
   });
 
-  it('sets expected data when no danger signs are recorded', async() => {
+  it('saves data when no danger signs are recorded', async() => {
     const result = await harness.fillForm('pregnancy_danger_sign_follow_up', ...followUp.cured);
 
     expect(result.errors).to.be.empty;

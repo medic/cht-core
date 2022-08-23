@@ -20,7 +20,7 @@ describe('Delivery form', () => {
 
   describe('PNC Visits', () => {
     ['within_24_hrs', '3_days', '7_days', 'none'].forEach(pncVisitsAttended => {
-      it(`should show summary when the the PNC Visits attended is [${pncVisitsAttended}]`, async() => {
+      it(`shows summary when the the PNC Visits attended is [${pncVisitsAttended}]`, async() => {
         const result = await harness.fillForm('delivery', ...deliveryReportScenarios.pncVisits('1999-12-12', pncVisitsAttended, 2));
 
         expect(result.errors).to.be.empty;
@@ -42,7 +42,7 @@ describe('Delivery form', () => {
     });
 
     ['alive_well', 'alive_unwell'].forEach(motherOutcome => {
-      it(`should show summary when the baby is deceased but the mother is [${motherOutcome}]`, async() => {
+      it(`shows summary when the baby is deceased but the mother is [${motherOutcome}]`, async() => {
         const result = await harness.fillForm('delivery', ...deliveryReportScenarios.babyDeceased(TODAY, motherOutcome));
 
         expect(result.errors).to.be.empty;
@@ -63,7 +63,7 @@ describe('Delivery form', () => {
       });
     });
 
-    it('should show summary when the mother is deceased but the baby is alive and no PNC visits have happened', async() => {
+    it('shows summary when the mother is deceased but the baby is alive and no PNC visits have happened', async() => {
       const result = await harness.fillForm('delivery', ...deliveryReportScenarios.motherDeceased(TODAY));
 
       expect(result.errors).to.be.empty;
@@ -83,7 +83,7 @@ describe('Delivery form', () => {
       expect(summary.r_pnc_visits_add).to.not.exist;
     });
 
-    it('should not show summary when the baby and the mother are deceased', async() => {
+    it('does not show summary when the baby and the mother are deceased', async() => {
       const result = await harness.fillForm('delivery', ...deliveryReportScenarios.babyDeceased_motherDeceased(TODAY));
 
       expect(result.errors).to.be.empty;

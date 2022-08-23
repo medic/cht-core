@@ -18,9 +18,9 @@ describe('Pregnancy home visit form', () => {
 
   afterEach(() => expect(harness.consoleErrors).to.be.empty);
 
-  describe('Tetanus Toxoid (TT) immunizations', () => {
+  describe('Tetanus Toxoid (TT) Immunizations', () => {
 
-    it('should ask about tetanus immunizations if the patient has unreported ANC visits', async() => {
+    it('asks about tetanus immunizations if the patient has unreported ANC visits', async() => {
       await harness.setNow('1999-10-17');
       const pregnancyHomeVisitForm = {
         form: 'pregnancy_home_visit',
@@ -48,7 +48,7 @@ describe('Pregnancy home visit form', () => {
       expect(data.__received_tetanus_toxoid_this_pregnancy).to.equal('yes');
     });
 
-    it('should ask about tetanus immunizations if the patient attended their last ANC visit', async() => {
+    it('asks about tetanus immunizations if the patient attended their last ANC visit', async() => {
       const pregnancyHomeVisitForm = {
         form: 'pregnancy_home_visit',
         contactSummary: {
@@ -76,7 +76,7 @@ describe('Pregnancy home visit form', () => {
       expect(data.__received_tetanus_toxoid_this_pregnancy).to.equal('yes');
     });
 
-    it('should not ask about tetanus immunizations if the patient has already received one', async() => {
+    it('does not ask about tetanus immunizations if the patient has already received one', async() => {
       const pregnancyHomeVisitForm = {
         form: 'pregnancy_home_visit',
         contactSummary: {

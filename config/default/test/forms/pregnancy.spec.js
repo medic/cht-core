@@ -124,8 +124,8 @@ describe('Pregnancy form tests', () => {
     expect(result.report.fields.safe_pregnancy_practices).to.not.have.property('deworming');
   });
 
-  describe('risk factors', () => {
-    it('should show risk factors summary when this is the first pregnancy for the woman and there are all the risk factors', async() => {
+  describe('Risk Factors', () => {
+    it('shows summary when this is the first pregnancy for the woman and there are all the risk factors', async() => {
       const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger({
         firstPregnancy: 'yes',
         miscarriages: 'no',
@@ -148,7 +148,7 @@ describe('Pregnancy form tests', () => {
       expect(summary.r_risk_additional).to.exist;
     });
 
-    it('should show risk factors summary when this is not the first pregnancy for the woman and there are all the risk factors', async() => {
+    it('shows summary when this is not the first pregnancy for the woman and there are all the risk factors', async() => {
       const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger({
         firstPregnancy: 'no',
         miscarriages: 'yes',
@@ -171,7 +171,7 @@ describe('Pregnancy form tests', () => {
       expect(summary.r_risk_additional).to.exist;
     });
 
-    it('should not show risk factors summary when there are no risk factors', async() => {
+    it('does not show summary when there are no risk factors', async() => {
       const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger({
         firstPregnancy: 'no',
         miscarriages: 'no',
