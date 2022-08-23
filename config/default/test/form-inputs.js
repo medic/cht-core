@@ -355,6 +355,20 @@ module.exports = {
       ['yes'],
       ['yes'],
       []
+    ],
+    attendedLastANCVisit: ({ ttReceivedPast } = {}) => [
+      ['yes', 'yes'],
+      ['yes', 'no'],
+      ['none', 'no'],
+      ['no'],
+      [],
+      Array(11).fill('yes'),
+      ['yes'],
+      ['yes'],
+      ['yes'],
+      [],
+      ['yes'],
+      ...(ttReceivedPast ? [] : [['yes']]),
     ]
   },
   pregnancyDangerSignScenarios: {
