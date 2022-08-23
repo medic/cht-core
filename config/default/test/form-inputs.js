@@ -205,25 +205,33 @@ module.exports = {
       []
 
     ],
-    riskDanger: [
-      ['method_lmp'],
-      ['1999-08-01'],
-      [],
-      ['1'],
-      ['yes', '1999-12-15'],
-      ['yes', '2000-01-15'],
-      ['no', 'no'],
-      ['asthma', 'yes', 'underweight'],
-      ['yes', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'],
-      ['no'],
-      ['no'],
-      ['no'],
-      [],
-      ['no'],
-      ['no'],
-      []
-    ],
-
+    riskDanger: opts => {
+      const content = {
+        firstPregnancy: 'no',
+        miscarriages: 'no',
+        conditions: ['asthma'],
+        additionalFactors: ['yes', 'underweight']
+      };
+      Object.assign(content, opts);
+      return [
+        ['method_lmp'],
+        ['1999-08-01'],
+        [],
+        ['1'],
+        ['yes', '1999-12-15'],
+        ['yes', '2000-01-15'],
+        [content.firstPregnancy, content.miscarriages],
+        [content.conditions, ...content.additionalFactors],
+        ['yes', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'],
+        ['no'],
+        ['no'],
+        ['no'],
+        [],
+        ['no'],
+        ['no'],
+        []
+      ];
+    },
   },
 
   pregnancyHomeVisitScenarios: {

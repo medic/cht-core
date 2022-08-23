@@ -89,7 +89,7 @@ describe('Pregnancy home visit form analytic field tests', () => {
     await harness.setNow('2000-01-01');
 
     // Load the pregnancy form and fill in
-    const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
+    const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
     expect(pregnancy.errors).to.be.empty;
 
     await harness.flush(2);
@@ -155,7 +155,7 @@ describe('Pregnancy home visit form analytic field tests', () => {
     await harness.setNow('2000-01-01');
 
     // Load the pregnancy form and fill in
-    const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
+    const pregnancy = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
     expect(pregnancy.errors).to.be.empty;
 
     await harness.setNow('2000-01-03');

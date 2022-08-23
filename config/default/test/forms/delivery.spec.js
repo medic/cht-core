@@ -21,11 +21,11 @@ describe('Delivery form', () => {
   describe('PNC Visits', () => {
     ['within_24_hrs', '3_days', '7_days', 'none'].forEach(pncVisitsAttended => {
       it(`should show summary when the the PNC Visits attended is [${pncVisitsAttended}]`, async() => {
-        const result = await harness.fillForm('delivery', ...deliveryReportScenarios.pncVisits('1999-12-01', pncVisitsAttended, 2));
+        const result = await harness.fillForm('delivery', ...deliveryReportScenarios.pncVisits('1999-12-12', pncVisitsAttended, 2));
 
         expect(result.errors).to.be.empty;
         expect(result.report.fields.pnc_visits).to.deep.include({
-          days: '31',
+          days: '20',
           pnc_visits_additional: '2',
           pnc_visits_attended: pncVisitsAttended,
         });
