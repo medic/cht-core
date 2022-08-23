@@ -1,5 +1,12 @@
 module.exports = {
 
+  deathReportScenarios: {
+    withDeathDate: deathDate => [
+      [deathDate, 'health_facility', 'Died while sleeping.'],
+      [],
+    ]
+  },
+
   pregnancyRegistrationScenarios: {
     safe: [
       ['method_lmp'],
