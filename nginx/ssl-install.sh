@@ -41,6 +41,7 @@ set_environment_variables_if_not_set(){
   EMAIL="domains@medic.org"
   fi
 }
+
 #Creates Self signed certificates if they do not exist
 create_self_signed_ssl_certificate()
 {
@@ -63,7 +64,7 @@ generate_self_signed_cert(){
     fi
 }
 
- generate_certificate_auto(){
+generate_certificate_auto(){
 
   if [ -z "$COMMON_NAME" ]; then
   echo "Mandatory COMMON_NAME variable not set. Please provide the domain for which to generate the ssl certificate from let's encrypt" >&2
@@ -106,26 +107,26 @@ ensure_own_cert_exits(){
 
 select_ssl_certificate_mode(){
   # Decide certificate mode and launch nginx
-echo "CERTIFICATE MODE = $CERTIFICATE_MODE"
-case $CERTIFICATE_MODE in
+  echo "CERTIFICATE MODE = $CERTIFICATE_MODE"
+  case $CERTIFICATE_MODE in
 
-  OWN_CERT)
-    ensure_own_cert_exits
-    ;;
+    OWN_CERT)
+      ensure_own_cert_exits
+      ;;
 
-  AUTO_GENERATE)
-     generate_certificate_auto
-    ;;
+    AUTO_GENERATE)
+      generate_certificate_auto
+      ;;
 
-  SELF_SIGNED)
-    generate_self_signed_cert
-    ;;
+    SELF_SIGNED)
+      generate_self_signed_cert
+      ;;
 
-  *)
-   echo "ssl certificate mode unknown or not set. Please set a proper ssl sertificate mode in the CERTIFICATE_MODE variable"
-   exit 1
-    ;;
-esac
+    *)
+    echo "ssl certificate mode unknown or not set. Please set a proper ssl sertificate mode in the CERTIFICATE_MODE variable"
+    exit 1
+      ;;
+  esac
 
 }
 
