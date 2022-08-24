@@ -1,7 +1,7 @@
 const path = require('path');
 
 const utils = require('../../../utils');
-const sentinelUtils = require('../../sentinel/utils');
+const sentinelUtils = require('../../../utils/sentinel');
 const tasksPage = require('../../../page-objects/tasks/tasks.wdio.page');
 const loginPage = require('../../../page-objects/login/login.wdio.page');
 const commonPage = require('../../../page-objects/common/common.wdio.page');

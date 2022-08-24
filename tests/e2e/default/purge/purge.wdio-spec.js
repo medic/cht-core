@@ -5,7 +5,7 @@ const userFactory = require('../../../factories/cht/users/users');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const personFactory = require('../../../factories/cht/contacts/person');
 const genericReportFactory = require('../../../factories/cht/reports/generic-report');
-const sentinelUtils = require('../../sentinel/utils');
+const sentinelUtils = require('../../../utils/sentinel');
 
 const PURGE_BATCH_SIZE = 100;
 
