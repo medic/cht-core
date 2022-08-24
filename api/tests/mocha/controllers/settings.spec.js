@@ -106,7 +106,7 @@ describe('Settings controller', () => {
         chai.expect(res.json.callCount).to.equal(0);
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([
-          { code: 403, message: 'Insufficient permissions' },
+          { code: 403, message: 'Insufficient privileges' },
           req,
           res,
           true

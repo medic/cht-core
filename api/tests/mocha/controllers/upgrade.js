@@ -50,7 +50,7 @@ describe('Upgrade controller', () => {
     });
 
     it('calls the uprgade service', () => {
-      auth.check.returns(Promise.resolve({user: 'admin'}));
+      auth.check.returns(Promise.resolve({ name: 'admin' }));
       const json = sinon.stub();
       return controller.upgrade(req, {json: json})
         .then(() => {
@@ -68,7 +68,7 @@ describe('Upgrade controller', () => {
 
   describe('Stage', () => {
     it('calls the upgrade service', () => {
-      auth.check.returns(Promise.resolve({user: 'admin'}));
+      auth.check.returns(Promise.resolve({ name: 'admin' }));
       const json = sinon.stub();
       return controller.stage(req, {json: json})
         .then(() => {
