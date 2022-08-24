@@ -60,9 +60,9 @@ services:
       - "EMAIL:${EMAIL:-domains@medic.org}"
       - "COUNTRY:${COUNTRY:-US}"
       - "STATE:${STATE:-California}"
-      - "LOCALITY:${LOCALITY:-San Francisco}"
+      - "LOCALITY:${LOCALITY:-\"San Francisco"}"
       - "ORGANISATION:${ORGANISATION:-medic}"
-      - "DEPARTMENT:${DEPARTMENT:-Department of Information Security}"
+      - "DEPARTMENT:${DEPARTMENT:-\"Department of Information Security\"}"
     networks:
       - {{ network }}
 
