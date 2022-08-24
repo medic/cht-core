@@ -13,7 +13,7 @@ on: ['deployment']
 
 jobs:
   deployment:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v1
