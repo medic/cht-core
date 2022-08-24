@@ -40,27 +40,6 @@ const hasPermission = (userCtx, permission) => {
   return _.some(roles, role => _.includes(userCtx.roles, role));
 };
 
-const checkDistrict = (requested, permitted) => {
-  if (!requested) {
-    // limit to configured facility
-    return permitted;
-  }
-  if (!permitted) {
-    // national admin - give them what they want
-    return requested;
-  }
-  if (requested === permitted) {
-    // asking for the allowed facility
-    return requested;
-  }
-  throw { code: 403, message: 'Insufficient privileges' };
-};
-
-const getFacilityId = (req, userCtx) => {
-  const url = '/_users/org.couchdb.user:' + userCtx.name;
-  return get(url, req.headers).then(user => user.facility_id);
-};
-
 const hydrateUserSettings = (userSettings) => {
   return db.medic
     .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
@@ -136,21 +115,14 @@ module.exports = {
       });
   },
 
-  check: (req, permissions, districtId) => {
-    return module.exports.getUserCtx(req)
+  check: (req, permissions) => {
+    return module.exports
+      .getUserCtx(req)
       .then(userCtx => {
-        if (isDbAdmin(userCtx)) {
-          return { user: userCtx.name };
-        }
         if (!module.exports.hasAllPermissions(userCtx, permissions)) {
           throw { code: 403, message: 'Insufficient privileges' };
         }
-        return getFacilityId(req, userCtx)
-          .catch(err => {
-            throw { code: 500, message: err };
-          })
-          .then(facilityId => checkDistrict(districtId, facilityId))
-          .then(district => ({ user: userCtx.name, district: district }));
+        return userCtx;
       });
   },
 

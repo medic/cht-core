@@ -796,8 +796,8 @@ app.use(authorization.offlineUserFirewall);
 const canEdit = (req, res) => {
   auth
     .check(req, 'can_edit')
-    .then(ctx => {
-      if (!ctx || !ctx.user) {
+    .then(userCtx => {
+      if (!userCtx || !userCtx.name) {
         serverUtils.serverError('not-authorized', req, res);
         return;
       }

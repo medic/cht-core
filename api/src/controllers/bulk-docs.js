@@ -34,19 +34,10 @@ const interceptResponse = (requestDocs, req, res, response) => {
 module.exports = {
   bulkDelete: (req, res, next) => {
     return auth
-      .getUserCtx(req)
+      .check(req, ['can_edit'])
       .then(userCtx => {
-        if (!auth.hasAllPermissions(userCtx, ['can_edit'])) {
-          throw {
-            code: 403,
-            message: 'Insufficient permissions'
-          };
-        }
         if (!auth.isOnlineOnly(userCtx)) {
-          throw {
-            code: 401,
-            message: 'User is not an admin'
-          };
+          throw { code: 401, message: 'User is not an admin' };
         }
       })
       .then(() => bulkDocs.bulkDelete(req.body.docs, res, { batchSize: 50}))

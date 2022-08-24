@@ -93,16 +93,11 @@ module.exports = {
     //    by the following auth check in ctx.district (maybe?)
     //  - Still don't let offline users use this API, and instead refactor the
     //    export logic so it can be used in webapp, and have exports works offline
-    return auth.getUserCtx(req)
+    return auth
+      .check(req, ['can_export_all', ...service.permission(type)])
       .then(userCtx => {
         if (!auth.isOnlineOnly(userCtx)) {
           throw { code: 403, message: 'Insufficient privileges' };
-        }
-        return userCtx;
-      })
-      .then((userCtx) => {
-        if (!auth.hasAllPermissions(userCtx, 'can_export_all')) {
-          return auth.check(req, service.permission(type));
         }
       })
       .then(() => {
@@ -111,10 +106,10 @@ module.exports = {
 
         const writeAsStream = format === 'csv';
         if (!writeAsStream) {
-          return service.exportObject(type, filters, options)
+          return service
+            .exportObject(type, filters, options)
             .then(obj => res.json(obj));
         }
-
 
         // To respond as quickly to the request as possible
         res.flushHeaders();
