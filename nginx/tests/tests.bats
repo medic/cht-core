@@ -1,17 +1,11 @@
 setup() {
-    load 'test_helper/bats-support/load'
-    load 'test_helper/bats-assert/load'
-    load 'test_helper/bats-shell-mock/bin/shellmock'
+    load '/opt/bats-support/load'
+    load '/opt/bats-assert/load'
+    load '/app/bash-shellmock/shellmock'
     # get the containing directory of this file
     # use $BATS_TEST_FILENAME instead of ${BASH_SOURCE[0]} or $0,
     # as those will point to the bats executable's location or the preprocessed file respectively
     DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )" >/dev/null 2>&1 && pwd )"
-
-    # make executables in  the base directory visible to PATH (ssl-install)
-    PATH="$DIR/../:$PATH"
-    # set shell mock env
-    source="$DIR/test_helper/bats-shell-mock/bin"
-    export PATH=$source:$PATH
 
      #shellcheck
     . shellmock

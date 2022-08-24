@@ -4,9 +4,9 @@ services:
         container_name: cht-nginx
         build:
             context: .
-            target: ${BUILD_TARGET:-base_nginx}
+            target: ${BUILD_TARGET:-test_nginx}
         environment:
-            CERTIFICATE_MODE: "${CERTIFICATE_MODE:-AUTO_GENERATE}"
+            CERTIFICATE_MODE: "${CERTIFICATE_MODE:-SELF_SIGNED}"
             COMMON_NAME: "${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
             EMAIL: "${EMAIL:-domains@medic.org}"
             COUNTRY: "${COUNTRY:-US}"
@@ -18,7 +18,8 @@ services:
             - 80:80
             - 443:443
         volumes:
-             - cht-ssl:/root/.acme.sh/
+            - cht-ssl:/root/.acme.sh/
+            - ./tests/tests.bats:/app/tests.bats
         depends_on:
             - medic-api
             - haproxy

@@ -130,9 +130,9 @@ esac
 }
 
 main (){
-welcome_message
-select_ssl_certificate_mode
-echo "Launching Nginx" >&2
+  welcome_message
+  select_ssl_certificate_mode
+  echo "Launching Nginx" >&2
 }
 
 # if no arguments are provided run the main method
