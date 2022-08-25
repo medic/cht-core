@@ -6,9 +6,25 @@ const uuid = require('uuid').v4;
 const docToKeep = { _id: uuid() };
 const docToDelete = { _id: uuid() };
 
+const parentPlace = {
+  _id: 'PARENT_PLACE',
+  type: 'district_hospital',
+  name: 'Big Parent Hospital',
+};
+
 const user = {
-  username: 'bgcu',
-  password: 'hunter2-is-not-long-enough',
+  username: 'bruce',
+  password: 'Nananana_b4tm4n!',
+  place: {
+    _id: 'fixture:online',
+    type: 'health_center',
+    name: 'Online place',
+    parent: 'PARENT_PLACE',
+  },
+  contact: {
+    _id: 'fixture:user:bruce',
+    name: 'Bruce',
+  },
   roles: ['national_admin'],
 };
 
@@ -23,7 +39,7 @@ describe('Background cleanup', () => {
   it('processes a batch of outstanding deletes ', () => {
     // Create then delete a doc
     return Promise.resolve()
-      .then(() => utils.saveDocs([docToDelete, docToKeep]))
+      .then(() => utils.saveDocs([parentPlace, docToDelete, docToKeep]))
       .then(() => sentinelUtils.waitForSentinel(docToDelete._id))
       // Setup some read docs
       .then(() => utils.createUsers([user], true))
