@@ -19,10 +19,15 @@ async function replaceUser(replaceUserReportId, appUrl) {
   }
 
   const oldUserSettings = oldUserSettingsResponse.docs[0];
+  if (oldUserSettings.replaced) {
+    return;
+  }
+
   const newContact = await people.getOrCreatePerson(replaceUserReport.fields.new_contact_uuid);
   await reparentReports(replaceUserReportId, newContact);
 
-  const oldUser = await db.users.get(oldUserSettings._id);
+  const oldUser = await db.medic.get(oldUserSettings._id);
+  await db.medic.put(Object.assign({}, oldUserSettings, { shouldLogoutNextSync: true, replaced: true }));
   const randomNum = Math.floor(Math.random() * 9999) + 1000;
   const username = newContact.name.replace(/\s+/g, '-').toLowerCase() + randomNum;
   const user = {

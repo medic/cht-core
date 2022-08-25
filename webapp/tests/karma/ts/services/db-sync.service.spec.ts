@@ -13,6 +13,7 @@ import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PurgeService } from '@mm-services/purge.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
@@ -38,6 +39,7 @@ describe('DBSync service', () => {
   let translateService;
   let purgeService;
   let store;
+  let userSettingsService;
 
   let localMedicDb;
   let localMetaDb;
@@ -111,8 +113,13 @@ describe('DBSync service', () => {
       put: sinon.stub(),
     };
     remoteMetaDb = {};
-    remoteMedicDb = {};
+    remoteMedicDb = {
+      put: sinon.stub(),
+    };
     purgeService = { updateDocsToPurge: sinon.stub().resolves() };
+    userSettingsService = {
+      get: sinon.stub().resolves({ shouldLogoutNextSync: false }),
+    };
 
     db = sinon.stub().returns(localMedicDb);
     db.withArgs({ remote: true }).returns(remoteMedicDb);
@@ -134,7 +141,8 @@ describe('DBSync service', () => {
         { provide: TranslateService, useValue: translateService },
         { provide: Store, useValue: store },
         { provide: CheckDateService, useValue: checkDateService },
-        { provide: PurgeService, useValue: purgeService }
+        { provide: PurgeService, useValue: purgeService },
+        { provide: UserSettingsService, useValue: userSettingsService },
       ]
     });
 
