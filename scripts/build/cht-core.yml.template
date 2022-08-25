@@ -22,8 +22,8 @@ services:
       - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
 
   healthcheck:
-    image: {{{ repo }}}/cht-haproxy/healthcheck:{{ tag }}
-    container_name: {{ haproxy-healthcheck_container_name }}
+    image: {{{ repo }}}/cht-haproxy-healthcheck:{{ tag }}
+    container_name: {{ haproxy_healthcheck_container_name }}
     environment:
       - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-couchdb.1,couchdb.2,couchdb.3}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
