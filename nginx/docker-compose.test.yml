@@ -5,15 +5,6 @@ services:
         build:
             context: .
             target: ${BUILD_TARGET:-test_nginx}
-        environment:
-            CERTIFICATE_MODE: "${CERTIFICATE_MODE:-SELF_SIGNED}"
-            COMMON_NAME: "${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
-            EMAIL: "${EMAIL:-domains@medic.org}"
-            COUNTRY: "${COUNTRY:-US}"
-            STATE: "${STATE:-Colorado}"
-            LOCALITY: "${LOCALITY:-Denver}"
-            ORGANISATION: "${ORGANISATION:-medic}"
-            DEPARTMENT: "${DEPARTMENT:-Department of Information Security}"
         ports:
             - 80:80
             - 443:443
@@ -21,14 +12,14 @@ services:
             - cht-ssl:/root/.acme.sh/
             - ./tests/tests.bats:/app/tests.bats
         depends_on:
-            - medic-api
+            - cht-api
             - haproxy
         networks:
             - cht-net
 
-    medic-api:
+    cht-api:
         image: mockserver/mockserver
-        container_name: medic-api-mock
+        container_name: cht-api-mock
         command: -serverPort 5988
         environment:
             MOCKSERVER_PROPERTY_FILE: /config/mockserver.properties
