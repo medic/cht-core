@@ -157,19 +157,19 @@
         </div>
 
         <div *ngIf="!selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && snapshotData?.name === 'reports.detail'"><span mmAuth="can_edit">
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p>{{'Send Message' | translate}}</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" *ngIf="actionBar?.right?.openSendMessageModal" (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
+            <a mmAuth="can_edit" class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" *ngIf="actionBar?.right?.openSendMessageModal" (click)="actionBar?.right?.sendTo?.phone && actionBar?.right?.openSendMessageModal(actionBar?.right?.sendTo?._id)" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p>{{'Send Message' | translate}}</p>
             </a>
             <div class="dropdown-menu sub-actions" *ngIf="actionBar?.right?.verifyingReport && loadingSubActionBar">
               <div class="loader"></div>
             </div>
-            <div class="dropdown-menu sub-actions" mmAuth [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportsDocs[0]?.verified === undefined && 'can_verify_reports']" *ngIf="actionBar?.right?.verifyingReport && !loadingSubActionBar">
+            <div class="dropdown-menu sub-actions" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportsDocs[0]?.verified === undefined && 'can_verify_reports']" *ngIf="actionBar?.right?.verifyingReport && !loadingSubActionBar">
               <a class="mm-icon mm-icon-caption verify-error" [ngClass]="{ active: actionBar?.right?.verified === false }" (click)="verifyReport(false)">
                 <report-verify-invalid-icon class="verify-icon"></report-verify-invalid-icon>
                 <span>{{'reports.verify.invalid' | translate}}</span>
@@ -179,23 +179,23 @@
                 <span>{{'reports.verify.valid' | translate}}</span>
               </a>
             </div>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" [ngClass]="{ active: actionBar?.right?.verifyingReport }" mmAuth [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportsDocs[0]?.verified === undefined && 'can_verify_reports']" (click)="toggleVerifyingReport()">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" [ngClass]="{ active: actionBar?.right?.verifyingReport }" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportsDocs[0]?.verified === undefined && 'can_verify_reports']" (click)="toggleVerifyingReport()">
               <span class="fa fa-check"></span>
               <p>{{'reports.verify' | translate}}</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_update_reports" [routerLink]="['/reports', 'edit', selectedReportsDocs[0]?._id]">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_edit,can_update_reports" [routerLink]="['/reports', 'edit', selectedReportsDocs[0]?._id]">
               <span class="fa fa-pencil"></span>
               <p>{{'Edit' | translate}}</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type !== 'xml'" (click)="launchEditFacilityDialog()">
+            <a mmAuth="can_edit" class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type !== 'xml'" (click)="launchEditFacilityDialog()">
               <span class="fa fa-pencil"></span>
               <p>{{'Update Facility' | translate}}</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" (click)="deleteDoc(selectedReportsDocs[0])" mmAuth="can_delete_reports">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" (click)="deleteDoc(selectedReportsDocs[0])" mmAuth="can_edit,can_delete_reports">
               <span class="fa fa-trash-o"></span>
               <p>{{'Delete' | translate}}</p>
             </a>
-          </span></div>
+          </div>
         </div>
       </div>
 
