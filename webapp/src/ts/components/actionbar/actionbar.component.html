@@ -3,8 +3,10 @@
     <div class="inner">
 
       <!-- LEFT PANE -->
-
-      <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'reports' && selectMode">
+      <div
+        class="general-actions left-pane"
+        *ngIf="currentTab === 'reports' && selectMode"
+        [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" (click)="selectAll()">
             <span class="fa fa-check-square-o"></span>
@@ -25,7 +27,10 @@
         </div>
       </div>
 
-      <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'reports' && !selectMode">
+      <div
+        class="general-actions left-pane"
+        *ngIf="currentTab === 'reports' && !selectMode"
+        [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
         <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!nonContactForms?.length">
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" dropdownToggle dropdata-toggle="dropdown" [ngClass]="{'mm-icon-disabled': !nonContactForms?.length}">
             <span class="fa fa-plus"></span>
@@ -125,7 +130,10 @@
 
       <!-- RIGHT PANE -->
 
-      <div class="col-sm-8 detail-actions right-pane" *ngIf="currentTab === 'reports'">
+      <div
+        class="detail-actions right-pane"
+        *ngIf="currentTab === 'reports'"
+        [ngClass]="{ 'col-sm-6': sidebarFilter?.isOpen, 'col-sm-8': !sidebarFilter?.isOpen }">
         <div *ngIf="selectMode">
           <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)">

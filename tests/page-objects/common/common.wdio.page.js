@@ -201,8 +201,8 @@ const openReportBugAndFetchProperties = async () => {
   await (await $('#feedback')).waitForDisplayed();
   return {
     modalHeader: await (await $('#feedback .modal-header > h2')).getText(),
-    modelCancelButtonText: await (await $('.btn.cancel')).getText(),
-    modelSubmitButtonText: await (await $('.btn-primary')).getText()
+    modelCancelButtonText: await (await $('#feedback .btn.cancel')).getText(),
+    modelSubmitButtonText: await (await $('#feedback .btn-primary')).getText()
   };
 };
 

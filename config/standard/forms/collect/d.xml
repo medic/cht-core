@@ -150,7 +150,7 @@
         </translation>
       </itext>
       <instance>
-        <d id="d" prefix="J1!d!" delimiter="#" version="2018-09-27_07-24">
+        <d id="d" prefix="J1!d!" delimiter="#" version="2022-02-25 15-08">
           <id/>
           <c/>
           <d/>
@@ -164,10 +164,10 @@
       </instance>
       <bind nodeset="/d/id" type="string" required="true()"/>
       <bind nodeset="/d/c" type="select1" required="true()"/>
-      <bind nodeset="/d/d" type="int" jr:constraintMsg="jr:itext('/d/d:jr:constraintMsg')" constraint=". &gt;= 0 and . &lt;= 365"/>
+      <bind nodeset="/d/d" type="int" constraint=". &gt;= 0 and . &lt;= 365" jr:constraintMsg="jr:itext('/d/d:jr:constraintMsg')"/>
       <bind nodeset="/d/c_label" type="string" calculate="jr:choice-name( /d/c , ' /d/c ')"/>
-      <bind nodeset="/d/review_with_days" readonly="true()" type="string" relevant="../d &gt;= 0"/>
-      <bind nodeset="/d/review_without_days" readonly="true()" type="string" relevant="not(../d &gt;= 0)"/>
+      <bind nodeset="/d/review_with_days" readonly="true()" type="string" relevant="coalesce(../d, 0) &gt;= 0"/>
+      <bind nodeset="/d/review_without_days" readonly="true()" type="string" relevant="not(coalesce(../d, 0) &gt;= 0)"/>
       <bind nodeset="/d/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>

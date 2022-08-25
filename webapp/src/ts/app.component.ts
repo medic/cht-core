@@ -1,6 +1,6 @@
 import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
 import * as moment from 'moment';
-import { Component, HostListener, NgZone, OnInit } from '@angular/core';
+import { AfterViewInit, Component, HostListener, NgZone, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { setTheme as setBootstrapTheme } from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
@@ -44,6 +44,7 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -72,7 +73,7 @@ const SYNC_STATUS = {
   selector: 'app-root',
   templateUrl: './app.component.html',
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
   private globalActions;
   private analyticsActions;
   setupPromise;
@@ -80,6 +81,7 @@ export class AppComponent implements OnInit {
 
   currentTab = '';
   privacyPolicyAccepted;
+  isSidebarFilterOpen = false;
   showPrivacyPolicy;
   selectMode;
   adminUrl;
@@ -289,6 +291,10 @@ export class AppComponent implements OnInit {
     this.initAnalyticsModules();
   }
 
+  ngAfterViewInit() {
+    this.subscribeToSideFilterStore();
+  }
+
   private initTransitions() {
     if (!this.sessionService.isOnlineOnly()) {
       return this.transitionsService.init();
@@ -436,6 +442,18 @@ export class AppComponent implements OnInit {
       this.privacyPolicyAccepted = privacyPolicyAccepted;
       this.selectMode = selectMode;
     });
+  }
+
+  private async subscribeToSideFilterStore() {
+    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+
+    if (isDisabled) {
+      return;
+    }
+
+    this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
   }
 
   private initForms() {

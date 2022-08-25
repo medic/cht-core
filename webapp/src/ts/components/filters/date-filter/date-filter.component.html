@@ -1,14 +1,12 @@
 <div class="dropdown mm-dropdown" [class.disabled]="disabled" dropdown [insideClick]="true">
-  <a id="date-filter" class="mm-button" href dropdownToggle (click)="false">
+  <a [id]="fieldId" class="mm-button" href dropdownToggle (click)="false">
     <span class="mm-button-icon">
        <span class="fa fa-calendar"></span>
     </span>
     <span class="mm-button-dropdown">
       <span class="fa fa-chevron-down"></span>
     </span>
-    <span class="mm-button-text" *ngIf="date.from || date.to">
-      {{date.from | date:'d MMM'}} - {{date.to | date:'d MMM'}}
-    </span>
-    <span class="mm-button-text" *ngIf="!date.from && !date.to">{{'Any date' | translate}}</span>
+    <span class="mm-button-text" *ngIf="inputLabel">{{ inputLabel }}</span>
+    <span class="mm-button-text" *ngIf="!inputLabel">{{ 'Any date' | translate }}</span>
   </a>
 </div>
