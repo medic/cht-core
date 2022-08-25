@@ -7,20 +7,20 @@
         class="general-actions left-pane"
         *ngIf="currentTab === 'reports' && selectMode"
         [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
-        <div class="actions dropup" mmAuth="can_edit">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" (click)="selectAll()">
+        <div class="actions dropup">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" (click)="selectAll()" mmAuth="can_edit">
             <span class="fa fa-check-square-o"></span>
             <p>{{'select.mode.select.all' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption deselect-all" (click)="deselectAll()">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption deselect-all" (click)="deselectAll()" mmAuth="can_edit">
             <span class="fa fa-square-o"></span>
             <p>{{'select.mode.deselect.all' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)" [ngClass]="{'mm-icon-disabled': !selectedReportsDocs.length}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_edit,can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)" [ngClass]="{'mm-icon-disabled': !selectedReportsDocs.length}">
             <span class="fa fa-trash-o"></span>
             <p>{{'select.mode.delete.all' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" (click)="setSelect(false)">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" (click)="setSelect(false)" mmAuth="can_edit">
             <span class="fa fa-times-circle"></span>
             <p>{{'select.mode.stop' | translate}}</p>
           </a>
@@ -31,13 +31,13 @@
         class="general-actions left-pane"
         *ngIf="currentTab === 'reports' && !selectMode"
         [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
-        <div
-          class="actions dropup"
-          dropdown [dropup]="true"
-          [isDisabled]="!nonContactForms?.length"
-          mmAuth [mmAuthAny]="['can_edit', 'can_export_all', 'can_export_messages']"
-        >
-          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" mmAuth="can_edit" dropdownToggle dropdata-toggle="dropdown" [ngClass]="{'mm-icon-disabled': !nonContactForms?.length}">
+        <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!nonContactForms?.length">
+          <a
+            mmAuth="can_edit"
+            class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
+            dropdownToggle dropdata-toggle="dropdown"
+            [ngClass]="{'mm-icon-disabled': !nonContactForms?.length}"
+          >
             <span class="fa fa-plus"></span>
             <p>{{'Submit Report' | translate}}</p>
           </a>
@@ -66,62 +66,60 @@
       </div>
 
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'contacts'">
-        <div mmAuth [mmAuthAny]="[ 'can_edit', 'can_export_all', 'can_export_contacts' ]">
-          <div test-id='create_places' class="actions dropup" mmAuth [mmAuthAny]="[ actionBar?.left?.childPlaces && 'can_create_places' ]">
-            <a
-              *ngIf="actionBar?.left?.childPlaces?.length > 1"
-              mmAuth="can_edit,can_create_places"
-              class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle create-place"
-              data-toggle="dropdown"
-            >
-              <span class="fa fa-plus"></span>
-              <p>{{'Add place' | translate}}</p>
-            </a>
+        <div test-id='create_places' class="actions dropup" mmAuth [mmAuthAny]="[ actionBar?.left?.childPlaces && 'can_create_places' ]">
+          <a
+            *ngIf="actionBar?.left?.childPlaces?.length > 1"
+            mmAuth="can_edit,can_create_places"
+            class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle create-place"
+            data-toggle="dropdown"
+          >
+            <span class="fa fa-plus"></span>
+            <p>{{'Add place' | translate}}</p>
+          </a>
 
-            <ul
-              *ngIf="actionBar?.left?.childPlaces?.length > 1"
-              mmAuth="can_edit,can_create_places"
-              class="dropdown-menu mm-dropdown-menu with-icon"
-            >
-              <li *ngFor="let child of actionBar.left.childPlaces; trackBy: trackById">
-                <a [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', child.id] : ['/', 'contacts', 'add', child.id]"
-                   [queryParams]="{ from: 'list' }"
-                >
-                  <span [innerHTML]="child.icon | resourceIcon"></span>
-                  <span class="content">{{ child.create_key | translate }}</span>
-                </a>
-              </li>
-            </ul>
+          <ul
+            *ngIf="actionBar?.left?.childPlaces?.length > 1"
+            mmAuth="can_edit,can_create_places"
+            class="dropdown-menu mm-dropdown-menu with-icon"
+          >
+            <li *ngFor="let child of actionBar.left.childPlaces; trackBy: trackById">
+              <a [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', child.id] : ['/', 'contacts', 'add', child.id]"
+                 [queryParams]="{ from: 'list' }"
+              >
+                <span [innerHTML]="child.icon | resourceIcon"></span>
+                <span class="content">{{ child.create_key | translate }}</span>
+              </a>
+            </li>
+          </ul>
 
-            <a
-              *ngIf="actionBar?.left?.childPlaces?.length === 1"
-              mmAuth="can_edit,can_create_places"
-              class="mm-icon mm-icon-inverse mm-icon-caption create-place"
-              [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', actionBar.left.childPlaces[0]?.id] : ['/', 'contacts', 'add', actionBar.left.childPlaces[0]?.id]"
-              [queryParams]="{ from: 'list' }"
-            >
-              <span class="fa-stack">
-                <i [innerHTML]="actionBar.left.childPlaces[0].icon | resourceIcon"></i>
-                <i class="fa fa-plus fa-stack-1x"></i>
-              </span>
-              <p>{{ actionBar.left.childPlaces[0].create_key | translate}}</p>
-            </a>
+          <a
+            *ngIf="actionBar?.left?.childPlaces?.length === 1"
+            mmAuth="can_edit,can_create_places"
+            class="mm-icon mm-icon-inverse mm-icon-caption create-place"
+            [routerLink]="actionBar.left.userFacilityId ? ['/', 'contacts', actionBar.left.userFacilityId, 'add', actionBar.left.childPlaces[0]?.id] : ['/', 'contacts', 'add', actionBar.left.childPlaces[0]?.id]"
+            [queryParams]="{ from: 'list' }"
+          >
+            <span class="fa-stack">
+              <i [innerHTML]="actionBar.left.childPlaces[0].icon | resourceIcon"></i>
+              <i class="fa fa-plus fa-stack-1x"></i>
+            </span>
+            <p>{{ actionBar.left.childPlaces[0].create_key | translate}}</p>
+          </a>
 
-            <a *ngIf="actionBar?.left?.exportFn"
-               mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_contacts']"
-               class="mm-icon mm-icon-inverse mm-icon-caption"
-               (click)="actionBar?.left?.exportFn()"
-               [ngClass]="{ 'mm-icon-disabled': !actionBar.left.hasResults }"
-            >
-              <span class="fa fa-arrow-down"></span>
-              <p>{{'Export' | translate}}</p>
-            </a>
-          </div>
+          <a *ngIf="actionBar?.left?.exportFn"
+             mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_contacts']"
+             class="mm-icon mm-icon-inverse mm-icon-caption"
+             (click)="actionBar?.left?.exportFn()"
+             [ngClass]="{ 'mm-icon-disabled': !actionBar.left.hasResults }"
+          >
+            <span class="fa fa-arrow-down"></span>
+            <p>{{'Export' | translate}}</p>
+          </a>
         </div>
       </div>
 
       <div class="col-sm-4 general-actions left-pane" *ngIf="currentTab === 'messages'">
-        <div class="actions dropup" mmAuth [mmAuthAny]="['can_edit', 'can_export_all', 'can_export_messages']">
+        <div class="actions dropup">
           <a
             class="mm-icon mm-icon-inverse mm-icon-caption send-message"
             mmAuth="can_edit"
@@ -149,17 +147,17 @@
         class="detail-actions right-pane"
         *ngIf="currentTab === 'reports'"
         [ngClass]="{ 'col-sm-6': sidebarFilter?.isOpen, 'col-sm-8': !sidebarFilter?.isOpen }">
-        <div mmAuth="can_edit" *ngIf="selectMode">
+        <div *ngIf="selectMode">
           <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && snapshotData?.name === 'reports.detail'">
-            <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_edit,can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)">
               <span class="fa fa-trash-o"></span>
               <p>{{'select.mode.delete.all' | translate}}</p>
             </a>
           </div>
         </div>
 
-        <div mmAuth="can_edit" *ngIf="!selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && snapshotData?.name === 'reports.detail'">
+        <div *ngIf="!selectMode">
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && snapshotData?.name === 'reports.detail'"><span mmAuth="can_edit">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p>{{'Send Message' | translate}}</p>
@@ -197,16 +195,12 @@
               <span class="fa fa-trash-o"></span>
               <p>{{'Delete' | translate}}</p>
             </a>
-          </div>
+          </span></div>
         </div>
       </div>
 
       <div class="col-sm-8 detail-actions right-pane" *ngIf="currentTab === 'contacts'">
-        <div
-          mmAuth [mmAuthAny]="['can_edit', 'can_view_call_action', 'can_view_message_action']"
-          class="actions dropup"
-          *ngIf="showActionBar && selectedContactDoc && !loadingContent && snapshotData?.name === 'contacts.detail'"
-        >
+        <div class="actions dropup" *ngIf="showActionBar && selectedContactDoc && !loadingContent && snapshotData?.name === 'contacts.detail'">
           <span mmAuth="can_edit">
             <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" [ngClass]="{'mm-icon-disabled': (!actionBar?.right?.relevantForms || !actionBar?.right?.relevantForms?.length)}">
               <span class="fa-stack">
