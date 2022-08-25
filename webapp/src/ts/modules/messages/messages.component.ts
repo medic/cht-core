@@ -14,6 +14,8 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { TourService } from '@mm-services/tour.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import {UserContactService} from '@mm-services/user-contact.service';
+import {SessionService} from '@mm-services/session.service';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -29,6 +31,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   selectedConversationId = null;
   error = false;
   private destroyed = false;
+  private currentLevel;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,6 +43,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private tourService: TourService,
     private responsiveService: ResponsiveService,
+    private userContactService:UserContactService,
+    private sessionService:SessionService,
+
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
@@ -48,6 +54,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
+    this.userContactService.get().then((user) => {
+      this.currentLevel = user?.parent?.name;
+      console.log('user ', user, 'currentLevel', this.currentLevel);
+    });
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
   }
@@ -152,6 +162,19 @@ export class MessagesComponent implements OnInit, OnDestroy {
     return this.messageContactService
       .getList()
       .then((conversations = []) => {
+        if(!this.sessionService.isOnlineOnly()) {
+          conversations.map((conversation) => {
+            console.log('lineage ', conversation.lineage);
+            conversation.lineage = conversation.lineage.filter((level) => {
+              console.log('level currentLevel ', level, this.currentLevel);
+              const result = level !== this.currentLevel;
+              console.log(result);
+              return result;
+            });
+            return conversation;
+          });
+
+        }
         this.setConversations(conversations, { merge });
         this.loading = false;
       });
