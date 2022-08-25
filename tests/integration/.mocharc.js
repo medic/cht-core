@@ -5,8 +5,8 @@ module.exports = {
   fullTrace: true,
   asyncOnly: false,
   spec: [
-    'tests/integration/sentinel/**/*.spec.js',
-    'tests/integration/!(sentinel)/**/*.spec.js',
+    'tests/integration/!(cht-conf)/**/*.spec.js',
+    'tests/integration/cht-conf/**/*.spec.js', // Executing last to not side-effect sentinel tests.
   ],
   timeout: 135 * 1000, // API takes a little long to start up
   reporter: 'spec',

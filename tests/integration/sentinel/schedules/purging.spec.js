@@ -420,7 +420,7 @@ const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentine
 describe('Server side purge', () => {
   before(async () => {
     await utils.revertDb([], true);
-    const existingUsers = utils.getCreatedUsers();
+    const existingUsers = await utils.getCreatedUsers();
     await utils.deleteUsers(existingUsers);
     await utils.saveDocs([...docs, ...tasks, ...targets]);
     await utils.createUsers(users);

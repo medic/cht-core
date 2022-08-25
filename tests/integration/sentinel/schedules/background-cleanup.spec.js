@@ -39,36 +39,31 @@ describe('Background cleanup', () => {
   it('processes a batch of outstanding deletes ', async () => {
     // Create then delete a doc
     await utils.saveDocs([parentPlace, docToDelete, docToKeep]);
-    console.log('CHECKPOINT # 1');
     await sentinelUtils.waitForSentinel(docToDelete._id);
-    console.log('CHECKPOINT # 2');
 
     // Setup some read docs
     await utils.createUsers([user], true);
-    console.log('CHECKPOINT # 3');
     await utils.requestOnTestMetaDb({
       userName: user.username,
       path: '/_bulk_docs',
       method: 'POST',
       body: {docs: userReadDocs}
     });
-    console.log('CHECKPOINT # 4');
+
     // Delete while stopped
     await utils.stopSentinel();
-    console.log('CHECKPOINT # 5');
     await utils.deleteDoc(docToDelete._id);
-    console.log('CHECKPOINT # 6');
+
     // Boot up sentinel again and let the background cleanup finish
     await utils.startSentinel();
-    console.log('CHECKPOINT # 7');
     await sentinelUtils.waitForBackgroundCleanup();
-    console.log('CHECKPOINT # 8');
+
     // Check infodoc deletion
     const infodocs = await utils.sentinelDb.allDocs({
       keys: [`${docToKeep._id}-info`, `${docToDelete._id}-info`],
       include_docs: true
     });
-    console.log('CHECKPOINT # 9');
+
     expect(infodocs.rows).to.have.lengthOf(2);
     expect(infodocs.rows[0].id).to.equal(`${docToKeep._id}-info`);
     expect(infodocs.rows[0].doc._id).to.equal(`${docToKeep._id}-info`);
@@ -82,7 +77,7 @@ describe('Background cleanup', () => {
       method: 'POST',
       body: {keys: userReadDocs.map(d => d._id)}
     });
-    console.log('CHECKPOINT # 10');
+
     expect(userDocs.rows).to.have.lengthOf(2);
     expect(userDocs.rows[0].id).to.equal(userReadDocs[0]._id);
     expect(userDocs.rows[1].id).to.equal(userReadDocs[1]._id);
