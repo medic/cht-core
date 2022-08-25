@@ -177,7 +177,9 @@ describe('FormsXmlCtrl controller', () => {
         .upload()
         .then(() => digest())
         .then(() => {
-          expectStatusError('Upload failed: Unexpected token o in JSON at position 1');
+          expectStatusError(
+            'Upload failed: Unexpected token &#39;o&#39;, &quot;not a valid&quot;... is not valid JSON'
+          );
         });
     });
 
