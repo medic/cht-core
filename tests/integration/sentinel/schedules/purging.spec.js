@@ -417,122 +417,111 @@ const getPurgeLog = () => {
 const getChangeIds = changes => changes.map(change => change.id);
 const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
-describe('server side purge', () => {
-  before(() => {
-    return utils
-      .getCreatedUsers()
-      .then((existingUsers) => utils.deleteUsers(existingUsers))
-      .then(() => utils.saveDocs([...docs, ...tasks, ...targets]))
-      .then(() => utils.createUsers(users));
+describe('Server side purge', () => {
+  before(async () => {
+    await utils.revertDb([], true);
+    const existingUsers = utils.getCreatedUsers();
+    await utils.deleteUsers(existingUsers);
+    await utils.saveDocs([...docs, ...tasks, ...targets]);
+    await utils.createUsers(users);
   });
-  after(() =>
-    utils
-      .revertDb([], true)
-      .then(() => sentinelUtils.deletePurgeDbs())
-      .then(() => utils.deleteUsers(users)));
+
+  after(async () => {
+    await utils.revertDb([], true);
+    await sentinelUtils.deletePurgeDbs();
+    await utils.deleteUsers(users);
+  });
 
   afterEach(() => utils.revertSettings(true));
 
-  it('should purge correct docs', () => {
-    let seq;
-    let user1Changes;
-    let user2Changes;
-    return sentinelUtils.getCurrentSeq()
-      .then(result => {
-        seq = result;
-        return utils.updateSettings({ purge: purgeSettings }, true);
-      })
-      .then(() => restartSentinel())
-      .then(() => sentinelUtils.waitForPurgeCompletion(seq))
-      .then(() => getPurgeLog())
-      .then(purgelog => {
-        chai.expect(Object.values(purgelog.roles)).to.deep.equal([
-          users[0].roles,
-          users[1].roles,
-        ]);
-        chai.expect(purgelog.skipped_contacts).to.deep.equal([]);
-        chai.expect(purgelog.error).to.equal(undefined);
-        chai.expect(purgelog.duration).to.be.a('number');
-      })
-      .then(() => Promise.all([
-        requestChanges('user1'),
-        requestChanges('user2'),
-      ]))
-      .then(([user1Changes, user2Changes]) => {
-        const user1ChangeIds = getChangeIds(user1Changes.results);
-        const user2ChangeIds = getChangeIds(user2Changes.results);
+  it('should purge correct docs', async () => {
+    const seq = await sentinelUtils.getCurrentSeq();
+    await utils.updateSettings({ purge: purgeSettings }, true);
+    await restartSentinel();
+    await sentinelUtils.waitForPurgeCompletion(seq);
 
-        chai.expect(user1ChangeIds)
-          .to.include.members([
-            'clinic1', 'contact1',
-            'report2', 'report5', 'report6', 'report11',
-            'message2', 'message4',
-            'task1~user1', 'task2~user1', 'task3~user1',
-          ]);
-        chai.expect(user1ChangeIds)
-          .to.not.include('report1')
-          .and.not.include('report3')
-          .and.not.include('report4')
-          .and.not.include('report9')
-          .and.not.include('report10')
-          .and.not.include('message1')
-          .and.not.include('message3')
-          .and.not.include('task4~user1');
+    const purgeLog = await getPurgeLog();
 
-        chai.expect(user2ChangeIds)
-          .to.include.members([
-            'clinic1', 'contact1',
-            'report1', 'report3', 'report4', 'report11', 'report9', 'report10',
-            'message1', 'message3',
-            'task1~user2', 'task2~user2', 'task3~user2',
-            ...targetIdsToKeep
-          ]);
-        chai.expect(user2ChangeIds)
-          .to.not.include('report2')
-          .and.not.include('report5')
-          .and.not.include('report6')
-          .and.not.include('message2')
-          .and.not.include('message4')
-          .and.not.include('task4~user2');
+    chai.expect(Object.values(purgeLog.roles)).to.deep.equal([
+      users[0].roles,
+      users[1].roles,
+    ]);
+    chai.expect(purgeLog.skipped_contacts).to.deep.equal([]);
+    chai.expect(purgeLog.error).to.equal(undefined);
+    chai.expect(purgeLog.duration).to.be.a('number');
 
-        targetIdsToPurge.map(targetID => chai.expect(user2ChangeIds).not.to.include(targetID));
-      })
-      .then(() => Promise.all([ requestPurges('user1'), requestPurges('user2') ]))
-      .then(([ purgedIdsUser1, purgedIdsUser2 ]) => {
-        chai.expect(purgedIdsUser1.purged_ids).to.have.members([
-          'report1',
-          'report3',
-          'report4',
-          'message1',
-          'message3',
-          'report9',
-          'report10',
-          'task4~user1',
-          ...targetIdsToPurge,
-        ]);
-        chai.expect(purgedIdsUser2.purged_ids).to.have.members([
-          'report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2', ...targetIdsToPurge
-        ]);
-      })
-      .then(() => utils.revertSettings(true))
-      .then(() => utils.updateSettings({ district_admins_access_unallocated_messages: true }, true))
-      /*.then(() => Promise.all([
-        requestChanges('user1'),
-        requestChanges('user2'),
-      ]))*/
-      .then(() => requestChanges('user1'))
-      .then((user1C) => user1Changes = user1C)
-      .then(() => requestChanges('user2'))
-      .then((user2C) => user2Changes = user2C)
-      .then(() => {
-        const user1ChangeIds = getChangeIds(user1Changes.results);
-        const user2ChangeIds = getChangeIds(user2Changes.results);
+    let responseChangesUser1 = await requestChanges('user1');
+    let responseChangesUser2 = await requestChanges('user2');
 
-        chai.expect(user1ChangeIds).to.include.members(['report8']);
-        chai.expect(user1ChangeIds).to.not.include('report7');
-        chai.expect(user2ChangeIds).to.include.members(['report7']);
-        chai.expect(user2ChangeIds).to.not.include('report8');
-      });
+    let user1ChangeIds = getChangeIds(responseChangesUser1.results);
+    let user2ChangeIds = getChangeIds(responseChangesUser2.results);
+
+    chai.expect(user1ChangeIds)
+      .to.include.members([
+        'clinic1', 'contact1',
+        'report2', 'report5', 'report6', 'report11',
+        'message2', 'message4',
+        'task1~user1', 'task2~user1', 'task3~user1',
+      ]);
+    chai.expect(user1ChangeIds)
+      .to.not.include('report1')
+      .and.not.include('report3')
+      .and.not.include('report4')
+      .and.not.include('report9')
+      .and.not.include('report10')
+      .and.not.include('message1')
+      .and.not.include('message3')
+      .and.not.include('task4~user1');
+
+    chai.expect(user2ChangeIds)
+      .to.include.members([
+        'clinic1', 'contact1',
+        'report1', 'report3', 'report4', 'report11', 'report9', 'report10',
+        'message1', 'message3',
+        'task1~user2', 'task2~user2', 'task3~user2',
+        ...targetIdsToKeep
+      ]);
+    chai.expect(user2ChangeIds)
+      .to.not.include('report2')
+      .and.not.include('report5')
+      .and.not.include('report6')
+      .and.not.include('message2')
+      .and.not.include('message4')
+      .and.not.include('task4~user2');
+
+    targetIdsToPurge.map(targetID => chai.expect(user2ChangeIds).not.to.include(targetID));
+
+    const purgedIdsUser1 = await requestPurges('user1');
+    const purgedIdsUser2 = await requestPurges('user2');
+
+    chai.expect(purgedIdsUser1.purged_ids).to.have.members([
+      'report1',
+      'report3',
+      'report4',
+      'message1',
+      'message3',
+      'report9',
+      'report10',
+      'task4~user1',
+      ...targetIdsToPurge,
+    ]);
+    chai.expect(purgedIdsUser2.purged_ids).to.have.members([
+      'report2', 'report5', 'report6', 'message2', 'message4', 'task4~user2', ...targetIdsToPurge
+    ]);
+
+    await utils.revertSettings(true);
+    await utils.updateSettings({ district_admins_access_unallocated_messages: true }, true);
+
+    responseChangesUser1 = await requestChanges('user1');
+    responseChangesUser2 = await requestChanges('user2');
+
+    user1ChangeIds = getChangeIds(responseChangesUser1.results);
+    user2ChangeIds = getChangeIds(responseChangesUser2.results);
+
+    chai.expect(user1ChangeIds).to.include.members(['report8']);
+    chai.expect(user1ChangeIds).to.not.include('report7');
+    chai.expect(user2ChangeIds).to.include.members(['report7']);
+    chai.expect(user2ChangeIds).to.not.include('report8');
   });
 
   it('should not re-purge docs', () => {

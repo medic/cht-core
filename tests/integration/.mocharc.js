@@ -5,7 +5,8 @@ module.exports = {
   fullTrace: true,
   asyncOnly: false,
   spec: [
-    'tests/integration/**/*.spec.js',
+    'tests/integration/sentinel/**/*.spec.js',
+    'tests/integration/!(sentinel)/**/*.spec.js',
   ],
   timeout: 135 * 1000, // API takes a little long to start up
   reporter: 'spec',
