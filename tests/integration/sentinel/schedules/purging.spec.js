@@ -435,6 +435,8 @@ describe('server side purge', () => {
 
   it('should purge correct docs', () => {
     let seq;
+    let user1Changes;
+    let user2Changes;
     return sentinelUtils.getCurrentSeq()
       .then(result => {
         seq = result;
@@ -514,11 +516,15 @@ describe('server side purge', () => {
       })
       .then(() => utils.revertSettings(true))
       .then(() => utils.updateSettings({ district_admins_access_unallocated_messages: true }, true))
-      .then(() => Promise.all([
+      /*.then(() => Promise.all([
         requestChanges('user1'),
         requestChanges('user2'),
-      ]))
-      .then(([user1Changes, user2Changes]) => {
+      ]))*/
+      .then(() => requestChanges('user1'))
+      .then((user1C) => user1Changes = user1C)
+      .then(() => requestChanges('user2'))
+      .then((user2C) => user2Changes = user2C)
+      .then(() => {
         const user1ChangeIds = getChangeIds(user1Changes.results);
         const user2ChangeIds = getChangeIds(user2Changes.results);
 
