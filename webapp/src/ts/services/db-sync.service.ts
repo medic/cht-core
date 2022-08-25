@@ -13,6 +13,7 @@ import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -76,6 +77,7 @@ export class DBSyncService {
     private store:Store,
     private translateService:TranslateService,
     private purgeService:PurgeService,
+    private userSettingsService:UserSettingsService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -227,8 +229,17 @@ export class DBSyncService {
           }
           this.sendUpdate(syncState);
         })
-        .finally(() => {
+        .finally(async () => {
           this.inProgressSync = undefined;
+
+          const userSettings: { shouldLogoutNextSync?: boolean } = await this.userSettingsService.get();
+          if (userSettings.shouldLogoutNextSync) {
+            const nextUserSettings = Object.assign({}, userSettings);
+            delete nextUserSettings.shouldLogoutNextSync;
+            await this.dbService.get({ remote: true }).put(nextUserSettings);
+
+            return this.sessionService.logout();
+          }
         });
     }
 
