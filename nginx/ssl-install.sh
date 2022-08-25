@@ -67,13 +67,13 @@ generate_self_signed_cert(){
 generate_certificate_auto(){
 
   if [ -z "$COMMON_NAME" ]; then
-  echo "Mandatory COMMON_NAME variable not set. Please provide the domain for which to generate the ssl certificate from let's encrypt" >&2
-  exit 1
+    echo "Mandatory COMMON_NAME variable not set. Please provide the domain for which to generate the ssl certificate from let's encrypt" >&2
+    exit 1
   fi
 
   if [ -z "$EMAIL" ]; then
-  echo "Mandatory EMAIL variable not set. Please provide the domain for which to generate the ssl certificate from let's encrypt" >&2
-  exit 1
+    echo "Mandatory EMAIL variable not set. Please provide the domain for which to generate the ssl certificate from let's encrypt" >&2
+    exit 1
   fi
 
   if [ -f $SSL_CERT_FILE_PATH -a -f $SSL_KEY_FILE_PATH ]; then
@@ -123,8 +123,8 @@ select_ssl_certificate_mode(){
       ;;
 
     *)
-    echo "ssl certificate mode unknown or not set. Please set a proper ssl sertificate mode in the CERTIFICATE_MODE variable"
-    exit 1
+      echo "ssl certificate mode unknown or not set. Please set a proper ssl sertificate mode in the CERTIFICATE_MODE variable"
+      exit 1
       ;;
   esac
 
