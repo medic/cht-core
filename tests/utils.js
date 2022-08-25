@@ -21,9 +21,9 @@ const CONTAINER_NAMES = {
   couch1: 'cht-couchdb.1-e2e',
   couch2: 'cht-couchdb.2-e2e',
   couch3: 'cht-couchdb.3-e2e',
-
   api: 'cht-api-e2e',
   sentinel: 'cht-sentinel-e2e',
+  haproxy-healthcheck: 'cht-haproxy-healthcheck'
 };
 
 const PouchDB = require('pouchdb-core');
@@ -606,6 +606,7 @@ const generateComposeFiles = async () => {
     haproxy_container_name: CONTAINER_NAMES.haproxy,
     api_container_name: CONTAINER_NAMES.api,
     sentinel_container_name: CONTAINER_NAMES.sentinel,
+    haproxy-healthcheck_container_name: CONTAINER_NAMES.haproxy-healthcheck,
     db_name: 'medic-test',
   };
 
@@ -683,6 +684,7 @@ const saveLogs = async () => {
   await getDockerLogs(CONTAINER_NAMES.couch1);
   await getDockerLogs(CONTAINER_NAMES.couch2);
   await getDockerLogs(CONTAINER_NAMES.couch3);
+  await getDockerLogs(CONTAINER_NAMES.haproxy-healthcheck);
 };
 
 const startServices = async () => {
