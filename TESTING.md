@@ -76,7 +76,9 @@ When debugging it can be helpful to disable the headless browser mode so that yo
 
 ### WebdriverIO
 
-To run just a single test file in WebdriverIO, update the `specs` config in [tests/wdio.conf.js](tests/wdio.conf.js) to refer to the desired test file.
+To run just a single test file in WebdriverIO, update the `specs` config in the `wdio.confi.js` to refer to the desired test file.
+* Default config: [`tests/e2e/default/wdio.confi.js`](tests/e2e/default/wdio.conf.js)
+* Standard config: [`tests/e2e/standard/wdio.confi.js`](tests/e2e/standard/wdio.conf.js)
 
 #### IntelliJ Based
 
@@ -118,8 +120,8 @@ To run just a single test file in WebdriverIO, update the `specs` config in [tes
 1. Set Protractor package is set to the `<cht-core-repo>/node_modules/protractor`.
 1. Optionally set the Protractor options to `--capabilities.chromeOptions.args=start-maximized --jasmine.DEFAULT_TIMEOUT_INTERVAL=120000`.
 1. Select the radio button for Test.
-1. Enter the path to the Test file Ex: `<cht-core-repo>/tests/e2e/login/login.specs.js`.
-1. Enter the test name. This is a bit of a chore. IntelliJ will automatically add the regex flags for begins(`^`) of line and end of line(`$`). Protractor presents the name for matching as the Describe description followed by the It description. To run the login test for should have a title you would need to put this as your matcher. `Login tests : should have a title`. An alternative would be to select Test File and run the entire file. You can add an `x` in front of `it` to disable the ones you do not need. EX: `xit('should login')`.
+1. Enter the path to the Test file Ex: `<cht-core-repo>/tests/e2e/protractor/cht/pregnancy.specs.js`.
+1. Enter the test name. This is a bit of a chore. IntelliJ will automatically add the regex flags for begins(`^`) of line and end of line(`$`). Protractor presents the name for matching as the Describe description followed by the It description. To run the pregnancy test for should have a title you would need to put this as your matcher. `Pregnancy tests : should have a title`. An alternative would be to select Test File and run the entire file. You can add an `x` in front of `it` to disable the ones you do not need. EX: `xit('should create a pregnancy')`.
 1. Click ok.
 1. Click the run configuration dropdown and select the protractor config. 
 1. In a terminal run `grunt e2e-deploy`   NOTE: This has to happen each time you run. 

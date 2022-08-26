@@ -8,7 +8,6 @@ const chai = require('chai');
 chai.use(require('chai-exclude'));
 
 const ALLURE_OUTPUT = 'allure-results';
-//const browserLogPath = path.join(__dirname, 'logs', 'browser.console.log');
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
 const browserUtils = require('../../utils/browser');
 const existingFeedBackDocIds = [];

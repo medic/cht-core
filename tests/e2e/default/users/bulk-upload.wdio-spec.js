@@ -22,7 +22,7 @@ describe('Bulk User Creation ->', () => {
   
   it('should show an upload summary with a successful upload and a failed upload', async () => {
     const path = require('path');
-    const filePath = path.join(__dirname, 'forms', 'bulk-upload-test.csv');
+    const filePath = path.join(__dirname, 'bulk-upload-test.csv');
     await usersAdminPage.inputUploadUsersFields(filePath);
     await usersAdminPage.uploadUsers();
     await usersAdminPage.waitForUploadSummary();
