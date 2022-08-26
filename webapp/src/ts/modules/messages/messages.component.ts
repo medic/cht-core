@@ -165,7 +165,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
         if(!this.sessionService.isOnlineOnly()) {
           conversations.map((conversation) => {
             console.log('lineage ', conversation.lineage);
-            conversation.lineage = conversation.lineage.filter((level) => {
+            conversation.lineage = conversation.lineage?.filter((level) => {
               console.log('level currentLevel ', level, this.currentLevel);
               const result = level !== this.currentLevel;
               console.log(result);
