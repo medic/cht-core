@@ -42,6 +42,16 @@ describe('Reports Component', () => {
   let datePipe;
   let userContactService;
 
+  const userContactGrandparent = { _id: 'grandparent' };
+  const userContactDoc = {
+    _id: 'user',
+    parent: {
+      _id: 'parent',
+      name: 'parent',
+      parent: userContactGrandparent,
+    },
+  };
+
   beforeEach(waitForAsync(() => {
     listContains = sinon.stub();
     const mockedSelectors = [
@@ -68,8 +78,10 @@ describe('Reports Component', () => {
       isOnlineOnly: sinon.stub()
     };
     datePipe = { transform: sinon.stub() };
-    userContactService = { get: sinon.stub().resolves({}) };
-
+    userContactService = {
+      get: sinon.stub().resolves(userContactDoc),
+      getCurrentLineageLevel : sinon.stub().resolves('parent')
+    };
     return TestBed
       .configureTestingModule({
         imports: [

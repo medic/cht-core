@@ -47,7 +47,10 @@ describe('Messages Component', () => {
     changesService = {
       subscribe: sinon.stub().resolves(of({}))
     };
-    userContactService = { get: sinon.stub().resolves({}) };
+    userContactService = {
+      get: sinon.stub().resolves(userContactDoc),
+      getCurrentLineageLevel : sinon.stub().resolves('parent')
+    };
     const tourServiceMock = {
       startIfNeeded: () => {}
     };
