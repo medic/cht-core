@@ -5,7 +5,7 @@ const gatewayApiUtils = require('../../../gateway-api.utils');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const commonPage = require('../../../page-objects/common/common.wdio.page');
 const contactPage = require('../../../page-objects/contacts/contacts.wdio.page');
-const sentinelUtils = require('../../sentinel/utils');
+const sentinelUtils = require('../../../utils/sentinel');
 
 const formId = 'CASEID';
 const formTitle = 'Case Id Form';

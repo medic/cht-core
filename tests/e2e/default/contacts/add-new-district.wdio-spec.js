@@ -1,7 +1,7 @@
 const commonElements = require('../../../page-objects/common/common.wdio.page.js');
 const contactPage = require('../../../page-objects/contacts/contacts.wdio.page.js');
 const utils = require('../../../utils');
-const sentinelUtils = require('../../sentinel/utils');
+const sentinelUtils = require('../../../utils/sentinel');
 const loginPage = require('../../../page-objects/login/login.wdio.page');
 
 describe('Add new district tests : ', () => {

@@ -6,7 +6,7 @@ const commonElements = require('../../../page-objects/common/common.po.js');
 const utils = require('../../../utils');
 const loginPage = require('../../../page-objects/login/login.po.js');
 const contactsObjects = require('../../../page-objects/contacts/contacts.po');
-const sentinelUtils = require('../../sentinel/utils');
+const sentinelUtils = require('../../../utils/sentinel');
 const formsUtils = require('./forms');
 
 /* global window */
