@@ -51,7 +51,7 @@ describe('Messages Component', () => {
       get: sinon.stub().resolves(userContactDoc),
       getCurrentLineageLevel : sinon.stub().resolves('parent')
     };
-    sessionService = { isOnlineOnly: sinon.stub() };
+    sessionService = { isOnlineOnly : sinon.stub().resolves(true) };
     const tourServiceMock = {
       startIfNeeded: () => {}
     };
