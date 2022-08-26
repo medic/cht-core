@@ -26,7 +26,7 @@ describe('Messages Component', () => {
   let exportService;
   let modalService;
   let userContactService;
-  let userCtx;
+  let sessionService;
 
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
@@ -51,6 +51,7 @@ describe('Messages Component', () => {
       get: sinon.stub().resolves(userContactDoc),
       getCurrentLineageLevel : sinon.stub().resolves('parent')
     };
+    sessionService = { isOnlineOnly : sinon.stub().resolves(true) };
     const tourServiceMock = {
       startIfNeeded: () => {}
     };
@@ -82,7 +83,7 @@ describe('Messages Component', () => {
           { provide: TourService, useValue: tourServiceMock },
           { provide: NavigationService, useValue: {} },
           { provide: UserContactService, useValue: userContactService },
-          { provide: SessionService, useValue: { userCtx } },
+          { provide: SessionService, useValue: sessionService },
         ]
       })
       .compileComponents()
