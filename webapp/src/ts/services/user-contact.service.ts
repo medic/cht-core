@@ -35,12 +35,15 @@ export class UserContactService {
   }
 
   async getCurrentLineageLevel(){
-    return this.get().then((user) => {
-      const currentLevel = user?.parent?.name;
-      console.log('user ', user, 'currentLevel', currentLevel);
-      return currentLevel;
-    }).catch((err) => {
-      throw err;
-    });
+    return this
+      .get()
+      .then((user) => {
+        const currentLevel = user?.parent?.name;
+        console.log('user ', user, 'currentLevel', currentLevel);
+        return currentLevel;
+      })
+      .catch((err) => {
+        throw err;
+      });
   }
 }

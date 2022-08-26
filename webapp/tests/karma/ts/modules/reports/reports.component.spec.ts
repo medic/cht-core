@@ -28,7 +28,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { ReportsActionsBarComponent } from '@mm-modules/reports/reports-actions-bar.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import {UserContactService} from '@mm-services/user-contact.service';
+import { UserContactService } from '@mm-services/user-contact.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -68,6 +68,7 @@ describe('Reports Component', () => {
       isOnlineOnly: sinon.stub()
     };
     datePipe = { transform: sinon.stub() };
+    userContactService = { get: sinon.stub() };
 
     return TestBed
       .configureTestingModule({

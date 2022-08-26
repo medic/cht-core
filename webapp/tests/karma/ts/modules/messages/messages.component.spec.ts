@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
+import {of, throwError} from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -15,7 +15,7 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
 import { NavigationService } from '@mm-services/navigation.service';
-import {UserContactService} from '@mm-services/user-contact.service';
+import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 
 describe('Messages Component', () => {
@@ -28,7 +28,7 @@ describe('Messages Component', () => {
   let userContactService;
   let userCtx;
 
-  const userContactGrandparent = { _id: 'grandparent' };
+  /*const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
     _id: 'user',
     parent: {
@@ -36,7 +36,7 @@ describe('Messages Component', () => {
       name: 'parent',
       parent: userContactGrandparent,
     },
-  };
+  };*/
 
   beforeEach(waitForAsync(() => {
     modalService = { show: sinon.stub() };
@@ -47,7 +47,7 @@ describe('Messages Component', () => {
     changesService = {
       subscribe: sinon.stub().resolves(of({}))
     };
-    userContactService = { get: sinon.stub().resolves(userContactDoc) };
+    userContactService = { get: sinon.stub() };
     const tourServiceMock = {
       startIfNeeded: () => {}
     };
@@ -198,4 +198,15 @@ describe('Messages Component', () => {
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
+
+/*  it('it should retrieve the hierarchy level of the connected user', () => {
+    userContactService.get.resolves(userContactDoc);
+    let level;
+    userContactService
+      .getCurrentLineageLevel()
+      .then((currentLevel) => level = currentLevel)
+      .catch((error) => throwError(error));
+    expect(level).to.equal('parent');
+  });*/
+
 });
