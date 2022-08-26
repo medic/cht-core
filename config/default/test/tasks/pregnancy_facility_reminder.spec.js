@@ -2,7 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 chai.use(require('chai-like'));
 chai.use(require('chai-things'));
-const TestRunner = require('medic-conf-test-harness');
+const TestRunner = require('cht-conf-test-harness');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
 const { getRangeForTask, getTaskTestDays } = require('../test-helpers');
 const harness = new TestRunner();
