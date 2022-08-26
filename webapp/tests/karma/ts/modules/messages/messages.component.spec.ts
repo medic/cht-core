@@ -16,6 +16,7 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { TourService } from '@mm-services/tour.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import {UserContactService} from '@mm-services/user-contact.service';
+import { SessionService } from '@mm-services/session.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -25,6 +26,7 @@ describe('Messages Component', () => {
   let exportService;
   let modalService;
   let userContactService;
+  let userCtx;
 
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
@@ -77,6 +79,7 @@ describe('Messages Component', () => {
           { provide: TourService, useValue: tourServiceMock },
           { provide: NavigationService, useValue: {} },
           { provide: UserContactService, useValue: userContactService },
+          { provide: SessionService, useValue: { userCtx } },
         ]
       })
       .compileComponents()
@@ -93,10 +96,6 @@ describe('Messages Component', () => {
 
   it('should create MessagesComponent', () => {
     expect(component).to.exist;
-  });
-
-  it('should load the user current lineage level', () => {
-    expect(userContactService.getCurrentLineageLevel()).to.equal('parent');
   });
 
   it('ngOnInit() should update conversations and watch for changes', () => {

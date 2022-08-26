@@ -28,6 +28,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { ReportsActionsBarComponent } from '@mm-modules/reports/reports-actions-bar.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import {UserContactService} from '@mm-services/user-contact.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -39,6 +40,7 @@ describe('Reports Component', () => {
   let listContains;
   let authService;
   let datePipe;
+  let userContactService;
 
   beforeEach(waitForAsync(() => {
     listContains = sinon.stub();
@@ -97,6 +99,7 @@ describe('Reports Component', () => {
           { provide: TelemetryService, useValue: { record: sinon.stub() } },
           { provide: TourService, useValue: tourServiceMock },
           { provide: SessionService, useValue: sessionService },
+          { provide: UserContactService, useValue: userContactService },
           { provide: NavigationService, useValue: {} },
           { provide: AuthService, useValue: authService },
           { provide: DatePipe, useValue: datePipe },
