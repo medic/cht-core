@@ -28,7 +28,7 @@ describe('Messages Component', () => {
   let userContactService;
   let userCtx;
 
-  /*const userContactGrandparent = { _id: 'grandparent' };
+  const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
     _id: 'user',
     parent: {
@@ -36,7 +36,7 @@ describe('Messages Component', () => {
       name: 'parent',
       parent: userContactGrandparent,
     },
-  };*/
+  };
 
   beforeEach(waitForAsync(() => {
     modalService = { show: sinon.stub() };
@@ -47,7 +47,7 @@ describe('Messages Component', () => {
     changesService = {
       subscribe: sinon.stub().resolves(of({}))
     };
-    userContactService = { get: sinon.stub() };
+    userContactService = { get: sinon.stub().resolves({}) };
     const tourServiceMock = {
       startIfNeeded: () => {}
     };
@@ -199,15 +199,10 @@ describe('Messages Component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
-  /*  it('it should retrieve the hierarchy level of the connected user', () => {
+  it('it should retrieve the hierarchy level of the connected user', () => {
     userContactService.get.resolves(userContactDoc);
-    let level;
-    userContactService
-      .getCurrentLineageLevel()
-      .then((currentLevel) => level = currentLevel)
-      .catch((error) => throwError(error));
-    expect(level).to.equal('parent');
+    component.ngOnInit();
+    expect(component.currentLevel).to.equal('parent');
   });
-  */
 
 });

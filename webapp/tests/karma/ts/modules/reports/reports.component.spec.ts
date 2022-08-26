@@ -68,7 +68,7 @@ describe('Reports Component', () => {
       isOnlineOnly: sinon.stub()
     };
     datePipe = { transform: sinon.stub() };
-    userContactService = { get: sinon.stub() };
+    userContactService = { get: sinon.stub().resolves({}) };
 
     return TestBed
       .configureTestingModule({

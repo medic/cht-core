@@ -31,7 +31,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   selectedConversationId = null;
   error = false;
   private destroyed = false;
-  private currentLevel;
+  currentLevel;
 
   constructor(
     private route: ActivatedRoute,
@@ -54,10 +54,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
-    this.userContactService.getCurrentLineageLevel().then((currentLevel) => {
+    /*this.userContactService.getCurrentLineageLevel().then((currentLevel) => {
       this.currentLevel = currentLevel;
       console.log('this.currentLevel', this.currentLevel);
-    });
+    });*/
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
   }
