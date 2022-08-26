@@ -55,7 +55,7 @@ jobs:
         node --stack_size=10000 `which grunt` publish-for-testing
 
   config-tests:
-#    needs: build
+    needs: build
     name: Config Tests
     runs-on: ubuntu-22.04
     strategy:
