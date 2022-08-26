@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import {of, throwError} from 'rxjs';
+import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -199,7 +199,7 @@ describe('Messages Component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
-/*  it('it should retrieve the hierarchy level of the connected user', () => {
+  /*  it('it should retrieve the hierarchy level of the connected user', () => {
     userContactService.get.resolves(userContactDoc);
     let level;
     userContactService
@@ -207,6 +207,7 @@ describe('Messages Component', () => {
       .then((currentLevel) => level = currentLevel)
       .catch((error) => throwError(error));
     expect(level).to.equal('parent');
-  });*/
+  });
+  */
 
 });
