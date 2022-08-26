@@ -26,6 +26,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { AuthService } from '@mm-services/auth.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
+import {UserContactService} from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 
 const PAGE_SIZE = 50;
@@ -60,6 +61,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   enketoEdited;
   useSidebarFilter = true;
   isSidebarFilterOpen = false;
+  currentLevel;
 
   constructor(
     private store:Store,
@@ -73,9 +75,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
     private ngZone:NgZone,
+    private userContactService:UserContactService,
     private sessionService:SessionService,
     private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
+
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -143,6 +147,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
     this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
+
+    this.userContactService.getCurrentLineageLevel().then((currentLevel) => {
+      this.currentLevel = currentLevel;
+      console.log('this.currentLevel in reports', this.currentLevel);
+    });
   }
 
   async ngAfterViewInit() {
@@ -158,6 +167,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
     this.subscription.add(subscription);
+
+
   }
 
   ngOnDestroy() {
@@ -186,11 +197,24 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private prepareReports(reports) {
     return reports.map(report => {
+      console.log('report ', report);
       const form = _find(this.forms, { code: report.form });
       report.icon = form && form.icon;
       report.heading = this.getReportHeading(form, report);
       report.summary = form ? form.title : report.form;
       report.lineage = report.subject && report.subject.lineage || report.lineage;
+      // filter out the lineage level that belongs to the logged in user
+      console.log('report.subject ', report.subject);
+      console.log('report.subject.lineage ', report.subject.lineage);
+      console.log('lineage ', report.lineage);
+      if(!this.sessionService.isOnlineOnly()) {
+        report.lineage = report.lineage.filter((level) => {
+          console.log('level currentLevel ', level, this.currentLevel);
+          const result = level !== this.currentLevel;
+          console.log(result);
+          return result;
+        });
+      }
       report.unread = !report.read;
 
       return report;
