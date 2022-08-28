@@ -156,6 +156,7 @@ describe('Contact Delivery Form', () => {
     await commonPage.goToAnalytics();
     await analyticsPage.goToTargets();
     const targets = await analyticsPage.getTargets();
+
     expect(targets).to.have.deep.members([
       { title: 'Deaths', goal: '0', count: '0' },
       { title: 'New pregnancies', goal: '20', count: '0' },

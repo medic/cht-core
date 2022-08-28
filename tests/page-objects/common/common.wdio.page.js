@@ -106,7 +106,7 @@ const goToAnalytics = async () => {
 
 const goToAboutPage = async () => {
   await browser.url(`/#/about`);
-  await (await analyticsTab()).waitForDisplayed();
+  await waitForLoaders();
 };
 
 const closeTour = async () => {

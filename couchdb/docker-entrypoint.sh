@@ -77,8 +77,9 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     fi
 
 
-    if [ "$SVC_NAME" ]; then
+    if [ "$SVC_NAME" ] && [[ "$COUCHDB_SYNC_ADMINS_NODE" || "$CLUSTER_PEER_IPS" ]]; then
         # Since changing this name after it has been set can mess up clustering, this can only run once  so a new service name can not be set on subsequent runs
+        # Should only run when creating a cluster
         if  grep "127.0.0.1" /opt/couchdb/etc/vm.args; then
             sed -i "s/127.0.0.1/$SVC_NAME/" "/opt/couchdb/etc/vm.args"
         fi
@@ -102,7 +103,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     fi
 
 
-    #Start clustering after UUID, Secret and Nodename are written. 
+    #Start clustering after UUID, Secret and Nodename are written.
     /bin/bash /opt/couchdb/etc/set-up-cluster.sh
 
     chown -f couchdb:couchdb $CLUSTER_CREDENTIALS || true
