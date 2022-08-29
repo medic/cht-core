@@ -81,9 +81,7 @@
             <value>Age</value>
           </text>
           <text id="/data/person/ephemeral_dob/dob_debug:label">
-            <value>Months: <output value=" /data/person/ephemeral_dob/ephemeral_months "/>
-Year: <output value=" /data/person/ephemeral_dob/ephemeral_years "/>
-DOB Approx: <output value=" /data/person/ephemeral_dob/dob_approx "/>
+            <value>DOB Approx: <output value=" /data/person/ephemeral_dob/dob_approx "/>
 DOB Calendar: <output value=" /data/person/ephemeral_dob/dob_calendar "/>
 DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/person/ephemeral_dob/dob_method/approx:label">
@@ -935,7 +933,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:edit" prefix="J1!contact:person:edit!" delimiter="#" version="2022-06-13 17-11">
+        <data id="contact:person:edit" prefix="J1!contact:person:edit!" delimiter="#" version="2022-08-15  11-48">
           <inputs>
             <meta>
               <location>
@@ -965,8 +963,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
               <age_years/>
               <age_months/>
               <dob_method/>
-              <ephemeral_months/>
-              <ephemeral_years/>
               <dob_approx/>
               <dob_raw/>
               <dob_iso/>
@@ -1033,9 +1029,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/ephemeral_dob/age_years" type="int" relevant="selected(../dob_method,'approx')" required="true()" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_years:jr:constraintMsg')" constraint=". &gt;= 0 and . &lt;= 130"/>
       <bind nodeset="/data/person/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_months:jr:constraintMsg')" constraint=". &gt;= 0 and . &lt;= 11"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_method" type="select"/>
-      <bind nodeset="/data/person/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) &lt; 0, format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) + 12, format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0))"/>
-      <bind nodeset="/data/person/ephemeral_dob/ephemeral_years" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) &lt; 0, format-date-time(today(),&quot;%Y&quot;) - ../age_years - 1, format-date-time(today(),&quot;%Y&quot;) -../age_years)"/>
-      <bind nodeset="/data/person/ephemeral_dob/dob_approx" type="string" calculate="concat(string(if( /data/person/ephemeral_dob/ephemeral_months  &gt; 0, /data/person/ephemeral_dob/ephemeral_years , /data/person/ephemeral_dob/ephemeral_years  - 1)),'-',if( /data/person/ephemeral_dob/ephemeral_months  &gt; 0,if( /data/person/ephemeral_dob/ephemeral_months &lt;10,concat('0',string( /data/person/ephemeral_dob/ephemeral_months )), /data/person/ephemeral_dob/ephemeral_months ),12),'-',string(format-date-time(today(), &quot;%d&quot;)))"/>
+      <bind nodeset="/data/person/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/person/ephemeral_dob/age_years , 0- /data/person/ephemeral_dob/age_months )"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), 
 ../dob_calendar,
 ../dob_approx)"/>
