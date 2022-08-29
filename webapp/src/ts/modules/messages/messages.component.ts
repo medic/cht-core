@@ -14,8 +14,8 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { TourService } from '@mm-services/tour.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import {UserContactService} from '@mm-services/user-contact.service';
-import {SessionService} from '@mm-services/session.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { SessionService } from '@mm-services/session.service';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -30,8 +30,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
   conversations = [];
   selectedConversationId = null;
   error = false;
-  private destroyed = false;
   currentLevel;
+  private destroyed = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -45,7 +45,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private responsiveService: ResponsiveService,
     private userContactService:UserContactService,
     private sessionService:SessionService,
-
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
@@ -56,7 +55,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.tourService.startIfNeeded(this.route.snapshot);
     this.userContactService.getCurrentLineageLevel().then((currentLevel) => {
       this.currentLevel = currentLevel;
-      console.log('this.currentLevel', this.currentLevel);
     });
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
@@ -162,18 +160,14 @@ export class MessagesComponent implements OnInit, OnDestroy {
     return this.messageContactService
       .getList()
       .then((conversations = []) => {
+        // filter out the lineage level that belongs to the online logged in user
         if(!this.sessionService.isOnlineOnly()) {
           conversations.map((conversation) => {
-            console.log('lineage ', conversation.lineage);
             conversation.lineage = conversation.lineage?.filter((level) => {
-              console.log('level currentLevel ', level, this.currentLevel);
-              const result = level !== this.currentLevel;
-              console.log(result);
-              return result;
+              return (level !== this.currentLevel);
             });
             return conversation;
           });
-
         }
         this.setConversations(conversations, { merge });
         this.loading = false;

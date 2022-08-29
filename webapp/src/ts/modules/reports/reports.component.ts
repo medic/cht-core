@@ -167,8 +167,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
     this.subscription.add(subscription);
-
-
   }
 
   ngOnDestroy() {
@@ -197,26 +195,18 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private prepareReports(reports) {
     return reports.map(report => {
-      console.log('report ', report);
       const form = _find(this.forms, { code: report.form });
       report.icon = form && form.icon;
       report.heading = this.getReportHeading(form, report);
       report.summary = form ? form.title : report.form;
       report.lineage = report.subject && report.subject.lineage || report.lineage;
-      // filter out the lineage level that belongs to the logged in user
-      console.log('report.subject ', report.subject);
-      console.log('report.subject.lineage ', report.subject.lineage);
-      console.log('lineage ', report.lineage);
+      // filter out the lineage level that belongs to the online logged in user
       if(!this.sessionService.isOnlineOnly()) {
         report.lineage = report.lineage.filter((level) => {
-          console.log('level currentLevel ', level, this.currentLevel);
-          const result = level !== this.currentLevel;
-          console.log(result);
-          return result;
+          return (level !== this.currentLevel);
         });
       }
       report.unread = !report.read;
-
       return report;
     });
   }
@@ -287,7 +277,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   search(force = false) {
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
-    if ((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
+    if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
       this.router.navigate(['reports']);
       this.reportsActions.clearSelection();
     }
