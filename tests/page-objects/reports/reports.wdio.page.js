@@ -345,8 +345,7 @@ module.exports = {
   getReportDetailFieldValueByLabel,
   getReportSubject,
   getReportType,
-  getListReportInfo
-  getReportDetailFieldValueByLabel,
+  getListReportInfo,
   openReport,
   editReport,
   fieldByIndex,
