@@ -96,7 +96,7 @@ export class ZScoreService {
           console.error('Doc "' + this.CONFIGURATION_DOC_ID + '" not found');
           return;
         }
-        if (!sex || !x || !y) {
+        if (!sex || x === null || x === undefined || y === null || y === undefined) {
           // the form may not have been filled out yet
           return;
         }

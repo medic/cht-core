@@ -7,6 +7,7 @@ import {
   MultiDropdownFilter,
 } from '@mm-components/filters/multi-dropdown-filter/multi-dropdown-filter.component';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
+import { InlineFilter } from '@mm-components/filters/inline-filter';
 
 @Component({
   selector: 'mm-status-filter',
@@ -14,7 +15,7 @@ import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 })
 export class StatusFilterComponent implements AbstractFilter {
   private globalActions;
-
+  inlineFilter: InlineFilter;
   statuses = {
     valid: ['valid', 'invalid'],
     verified: ['unverified', 'errors', 'correct'],
@@ -23,6 +24,8 @@ export class StatusFilterComponent implements AbstractFilter {
   allStatuses = [...this.statuses.valid, ...this.statuses.verified];
 
   @Input() disabled;
+  @Input() inline;
+  @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
 
   @ViewChild(MultiDropdownFilterComponent)
@@ -32,6 +35,7 @@ export class StatusFilterComponent implements AbstractFilter {
     private store: Store,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.inlineFilter = new InlineFilter(this.applyFilter.bind(this));
   }
 
   private getValidStatus(statuses) {
@@ -45,6 +49,8 @@ export class StatusFilterComponent implements AbstractFilter {
     if (!valid && invalid) {
       return false;
     }
+    // Return undefined if nothing was selected, to log telemetry properly.
+    return;
   }
 
   private getVerifiedStatus(statuses) {
@@ -58,13 +64,13 @@ export class StatusFilterComponent implements AbstractFilter {
     if (statuses.includes('correct')) {
       verified.push(true);
     }
-    return verified;
+    // Return undefined if nothing was selected, to log telemetry properly.
+    return verified.length ? verified : undefined;
   }
 
   applyFilter(statuses) {
     this.globalActions.setFilter({ valid: this.getValidStatus(statuses) });
     this.globalActions.setFilter({ verified: this.getVerifiedStatus(statuses) });
-
     this.search.emit();
   }
 
@@ -73,6 +79,19 @@ export class StatusFilterComponent implements AbstractFilter {
   }
 
   clear() {
+    if (this.disabled) {
+      return;
+    }
+
+    if (this.inline) {
+      this.inlineFilter.clear();
+      return;
+    }
+
     this.dropdownFilter?.clear(false);
+  }
+
+  countSelected() {
+    return this.inline && this.inlineFilter?.countSelected();
   }
 }

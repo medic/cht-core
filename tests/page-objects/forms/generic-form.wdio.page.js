@@ -40,6 +40,10 @@ const selectContact = async (inputName, contactName) => {
   await contact.waitForDisplayed();
   await contact.click();
 };
+const editForm = async () => {
+  const editFormBtn = await $('[href^="#/reports/edit"]>.fa-pencil');
+  await editFormBtn.click();
+};
 
 const verifyReport = async () => {
   const reportId = await reportsPage.getCurrentReportId();
@@ -64,6 +68,8 @@ const selectYes = async () => {
   await yesRadioButton.click();
 };
 
+const submitForm = () => submitButton().click();
+
 module.exports = {
   submitButton,
   nextPage,
@@ -74,4 +80,6 @@ module.exports = {
   selectContact,
   verifyReport,
   selectYes,
+  editForm,
+  submitForm,
 };

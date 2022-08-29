@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const commonElements = require('../common/common.wdio.page');
 const addUserButton = () => $('a#add-user');
 const cancelUserModalButton = () => $('[test-id="modal-cancel-btn"]');
 const addUserDialog = () => $('div#edit-user-profile');
@@ -21,6 +22,14 @@ const usernameErrorMessage = () => $('span.help-block.ng-binding');
 const passwordErrorMessage = () => $('#edit-password ~ .help-block');
 const placeErrorMessage = () => $('#facilitySelect ~ .help-block');
 const contactErrorMessage = () => $('#contactSelect ~ .help-block');
+const uploadUsersButton = () => $('a#add-users');
+const uploadUsersDialog = () => $('div#bulk-user-upload');
+const confirmUploadUsersButton = () => $('a#upload-btn');
+const uploadSummaryDialog = () => $('#finish-summary');
+const successfulyUploadedUsers = () => $('p.text-success');
+const previouslyUploadedUsers = () => $('p.text-muted');
+const failedUploadedUsers = () => $('p.text-danger');
+const backToUserListButton = () => $('a#back-to-app-btn');
 
 const goToAdminUser = async () => {
   await browser.url('/admin/#/users');
@@ -62,6 +71,10 @@ const inputAddUserFields = async (username, fullname, role, place, associatedCon
   await (await userConfirmPassword()).addValue(confirmPassword);
 };
 
+const inputUploadUsersFields = async (filePath) => {
+  await (await $('input[type="file"]')).setValue(filePath);
+};
+
 const selectPlace = async (place) => {
   await (await userPlace()).waitForDisplayed();
   await (await userPlace()).scrollIntoView();
@@ -89,6 +102,11 @@ const saveUser = async (isSuccessExpected = true)  => {
   }
 };
 
+const uploadUsers = async () => {
+  await (await confirmUploadUsersButton()).waitForDisplayed();
+  await (await confirmUploadUsersButton()).click();
+};
+
 const logout = async () => {
   await (await logoutButton()).waitForDisplayed();
   await (await logoutButton()).click();
@@ -96,11 +114,7 @@ const logout = async () => {
 
 const getAllUsernames = async () => {
   await (await usernameText()).waitForDisplayed();
-  return getTextForElements(usernameTextList);
-};
-
-const getTextForElements = async (elements) => {
-  return Promise.all((await elements()).map(filter => filter.getText()));
+  return commonElements.getTextForElements(usernameTextList);
 };
 
 const getUsernameErrorText = async () => {
@@ -119,6 +133,35 @@ const getContactErrorText = async () => {
   return await (await contactErrorMessage()).getText();
 };
 
+const getSuccessfulyUploadedUsers = async () => {
+  return await (await successfulyUploadedUsers()).getText();
+};
+
+const getPreviouslyUploadedUsers = async () => {
+  return await (await previouslyUploadedUsers()).getText();
+};
+
+const getFailedUploadedUsers = async () => {
+  return await (await failedUploadedUsers()).getText();
+};
+
+const backToUserList = async () => {
+  await (await backToUserListButton()).waitForDisplayed();
+  await (await backToUserListButton()).click();
+};
+
+const openUploadUsersDialog = async () => {
+  await (await uploadUsersButton()).waitForDisplayed();
+  await (await uploadUsersButton()).click();
+  await (await uploadUsersDialog()).waitForDisplayed();
+  // wait for animations to finish
+  await browser.pause(500);
+};
+
+const waitForUploadSummary = async () => {
+  await (await uploadSummaryDialog()).waitForDisplayed();
+};
+
 module.exports = {
   goToAdminUser,
   goToAdminUpgrade,
@@ -131,5 +174,13 @@ module.exports = {
   getUsernameErrorText,
   getPasswordErrorText,
   getPlaceErrorText,
-  getContactErrorText
+  getContactErrorText,
+  openUploadUsersDialog,
+  inputUploadUsersFields,
+  uploadUsers,
+  waitForUploadSummary,
+  getSuccessfulyUploadedUsers,
+  getPreviouslyUploadedUsers,
+  getFailedUploadedUsers,
+  backToUserList
 };

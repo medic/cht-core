@@ -15,61 +15,29 @@
  */
 
 'use strict';
-const Widget = require( 'enketo-core/src/js/Widget' );
+const Widget = require( 'enketo-core/src/js/widget' ).default;
 const $ = require( 'jquery' );
 require( 'enketo-core/src/js/plugins' );
-
-const pluginName = 'unselectableradios';
 
 /**
    * Prevent required radio buttons from being unchecked.
    *
-   * @constructor
-   * @param {Element} element [description]
-   * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-   * @param {*=} e     event
+   * @extends Widget
    */
+class Unselectableradios extends Widget {
+  static get selector() {
+    // Enketo currently uses `data-required` instead of `required` to denote
+    // a required field.
+    //
+    // This code assumes that we never have dynamically calculated required
+    // flags.  See https://github.com/enketo/enketo-core/issues/362 for more
+    // discussion.
+    return 'input[type=radio][data-required="true()"]';
+  }
 
-function Unselectableradios( element, options ) {
-  this.namespace = pluginName;
-  Widget.call( this, element, options );
-  this._init();
+  _init() {
+    $( this.element ).addClass( 'no-unselect' );
+  }
 }
 
-//copy the prototype functions from the Widget super class
-Unselectableradios.prototype = Object.create( Widget.prototype );
-
-//ensure the constructor is the new one
-Unselectableradios.prototype.constructor = Unselectableradios;
-
-Unselectableradios.prototype._init = function() {
-  $( this.element ).addClass( 'no-unselect' );
-};
-
-Unselectableradios.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
-
-$.fn[ pluginName ] = function( options, event ) {
-  return this.each( function() {
-    const $this = $( this );
-    let data = $this.data( pluginName );
-
-    options = options || {};
-
-    if ( !data && typeof options === 'object' ) {
-      $this.data( pluginName, ( data = new Unselectableradios( this, options, event ) ) );
-    } else if ( data && typeof options === 'string' ) {
-      data[ options ]( this );
-    }
-  } );
-};
-
-module.exports = {
-  'name': pluginName,
-  // Enketo currently uses `data-required` instead of `required` to denote
-  // a required field.
-  //
-  // This code assumes that we never have dynamicly calculated required
-  // flags.  See https://github.com/enketo/enketo-core/issues/362 for more
-  // discussion.
-  'selector': 'input[type=radio][data-required="true()"]'
-};
+module.exports = Unselectableradios;

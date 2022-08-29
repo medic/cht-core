@@ -12,11 +12,18 @@ const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
 const firstReport = () => $(`${reportListID} li:first-child`);
 const reportList = () => $(`${reportListID}`);
-const allReports = () => $$(`${reportListID} li`);
-const reportsByUUID = (uuid) => $$(`li[data-record-id="${uuid}"]`);
+const allReports = () => $$(`${reportListID} li.content-row`);
+const reportsByUUID = (uuid) => $$(`${reportListID} li.content-row[data-record-id="${uuid}"]`);
 const reportRowSelector = `${reportListID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
+
+const sidebarFilter = () => $('.sidebar-filter');
+const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
+const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
+const sidebarFilterToDate = () => $('#toDateFilter');
+const sidebarFilterFromDate = () => $('#fromDateFilter');
+const sidebarFilterOpenBtn = () => $('.reports-action-bar .open-filter');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
@@ -78,7 +85,7 @@ const openForm = async (name) => {
 
 const setDateInput = async (name, date) => {
   const input = await $(`input[name="${name}"]`);
-  const dateWidget = await input.nextElement();
+  const dateWidget = await input.previousElement();
   const visibleInput = await dateWidget.$('input[type="text"]');
   await visibleInput.setValue(date);
   await (await formTitle()).click();
@@ -163,6 +170,7 @@ const expandSelection = async () => {
   await (await itemSummary()).click();
   await (await $(reportBodyDetailsSelector)).waitForDisplayed();
 };
+
 const selectAll = async () => {
   await (await $('.action-container .select-all')).click();
   await (await $('#reports-content .selection-count > span')).waitForDisplayed();
@@ -190,7 +198,6 @@ const stopSelectMode = async (savedUuids) => {
   await checkbox.waitForDisplayed({ reverse: true });
 };
 
-
 const filterByDate = async (startDate, endDate) => {
   await (await dateFilter()).click();
   await (await datePickerStart()).click();
@@ -199,6 +206,38 @@ const filterByDate = async (startDate, endDate) => {
   await (await datePickerEnd()).setValue(endDate.format('MM/DD/YYYY'));
   await (await datePickerStart()).click();
   await (await $('#freetext')).click(); // blur the datepicker
+};
+
+const openSidebarFilter = async () => {
+  await (await sidebarFilterOpenBtn()).click();
+  return (await sidebarFilter()).waitForDisplayed();
+};
+
+const openSidebarFilterDateAccordion = async () => {
+  await (await sidebarFilterDateAccordionHeader()).click();
+  return (await sidebarFilterDateAccordionBody()).waitForDisplayed();
+};
+
+const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
+  await (await fieldPromise).waitForDisplayed();
+  await (await fieldPromise).click();
+
+  const dateRangePicker = `.daterangepicker:nth-of-type(${calendarIdx})`;
+  await (await $(dateRangePicker)).waitForDisplayed();
+
+  const leftArrow = $(`${dateRangePicker} .table-condensed th>.fa-chevron-left`);
+  await (await leftArrow).click();
+
+  const dateCel = $(`${dateRangePicker} .table-condensed tr td[data-title="${date}"]`);
+  await (await dateCel).click();
+};
+
+const setSidebarFilterFromDate = () => {
+  return setSidebarFilterDate(sidebarFilterFromDate(), 1, 'r1c2');
+};
+
+const setSidebarFilterToDate = () => {
+  return setSidebarFilterDate(sidebarFilterToDate(), 2, 'r3c5');
 };
 
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
@@ -257,6 +296,10 @@ module.exports = {
   getTaskState,
   openForm,
   formTitle,
+  openSidebarFilter,
+  openSidebarFilterDateAccordion,
+  setSidebarFilterFromDate,
+  setSidebarFilterToDate,
   setDateInput,
   getFieldValue,
   setBikDateInput,
