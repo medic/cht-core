@@ -50,9 +50,9 @@ The build process compiles our application. Then installs horticulturalist to ru
 
 The main difference now is that `grunt ci-webdriver` is executed now instead of `ci-e2e`. This executes the Webdriver IO tests.
 
-## Tips to write tests
+## Tips to write automated tests
 
-Please have a look at the [Automate Test Guide](tests/AUTOMATE_TEST_GUIDE.md) for details about how to write good tests.
+Please read the [style guide for automated tests](tests/AUTOMATE_TEST_GUIDE.md) which provides editorial guidelines for anyone creating new automated test cases for CHT-Core.
 
 ## Debugging
 Documented here are two ways to run individual tests and have your IDE break on the specific test.

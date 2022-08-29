@@ -1,4 +1,4 @@
-# Guide to create new automated test case
+# Style guide for automated tests
 
 This style guide provides editorial guidelines for anyone creating new automated test cases for the CHT-Core.
 
