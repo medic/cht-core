@@ -3,10 +3,10 @@ const rpn = require('request-promise-native');
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
-const [,, instanceUrl] = process.argv;
+const [,, instanceUrl, fromDb, toDb ] = process.argv;
 
-const source = new PouchDB(`${instanceUrl}/medic`);
-const dest = new PouchDB(`${instanceUrl}/medic-clone`);
+const source = new PouchDB(`${instanceUrl}/${fromDb}`);
+const dest = new PouchDB(`${instanceUrl}/${toDb}`);
 
 const syncDocs = () => {
   return source.replicate
