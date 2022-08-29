@@ -19,7 +19,7 @@ const syncDocs = () => {
 
 const getLocalDocs = async () => {
   const result = await rpn.get({
-    url: `${instanceUrl}/medic/_local_docs?include_docs=true`,
+    url: `${instanceUrl}/${fromDb}/_local_docs?include_docs=true`,
     json: true,
   });
   console.log(JSON.stringify(result, null, 2));
