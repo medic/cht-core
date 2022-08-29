@@ -5892,10 +5892,10 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       <bind nodeset="/immunization_visit/group_review/r_penta_3" readonly="true()" type="string" relevant="selected( /immunization_visit/group_pentavalent/g_pentavalent ,'DT3')"/>
       <bind nodeset="/immunization_visit/group_review/r_dpt_4" readonly="true()" type="string" relevant="selected( /immunization_visit/group_dpt/g_dpt ,'DPT4')"/>
       <bind nodeset="/immunization_visit/group_review/r_dpt_5" readonly="true()" type="string" relevant="selected( /immunization_visit/group_dpt/g_dpt ,'DPT5')"/>
-      <bind nodeset="/immunization_visit/group_review/r_pneumococcal_1" readonly="true()" type="string" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'MN1')"/>
-      <bind nodeset="/immunization_visit/group_review/r_pneumococcal_2" readonly="true()" type="string" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'MN2')"/>
-      <bind nodeset="/immunization_visit/group_review/r_pneumococcal_3" readonly="true()" type="string" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'MN3')"/>
-      <bind nodeset="/immunization_visit/group_review/r_pneumococcal_4" readonly="true()" type="string" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'MN4')"/>
+      <bind nodeset="/immunization_visit/group_review/r_pneumococcal_1" readonly="true()" type="string" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV1')"/>
+      <bind nodeset="/immunization_visit/group_review/r_pneumococcal_2" readonly="true()" type="string" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV2')"/>
+      <bind nodeset="/immunization_visit/group_review/r_pneumococcal_3" readonly="true()" type="string" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV3')"/>
+      <bind nodeset="/immunization_visit/group_review/r_pneumococcal_4" readonly="true()" type="string" relevant="selected( /immunization_visit/group_pneumococcal/g_pneumococcal ,'PCV4')"/>
       <bind nodeset="/immunization_visit/group_review/r_rotavirus_1" readonly="true()" type="string" relevant="selected( /immunization_visit/group_rotavirus/g_rotavirus ,'RV1')"/>
       <bind nodeset="/immunization_visit/group_review/r_rotavirus_2" readonly="true()" type="string" relevant="selected( /immunization_visit/group_rotavirus/g_rotavirus ,'RV2')"/>
       <bind nodeset="/immunization_visit/group_review/r_rotavirus_3" readonly="true()" type="string" relevant="selected( /immunization_visit/group_rotavirus/g_rotavirus ,'RV3')"/>

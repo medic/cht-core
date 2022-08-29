@@ -16,6 +16,8 @@ import { ReportsComponent } from '@mm-modules/reports/reports.component';
 import { ReportsContentComponent } from '@mm-modules/reports/reports-content.component';
 import { ReportsAddComponent } from '@mm-modules/reports/reports-add.component';
 import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.component';
+import { ReportsActionsBarComponent } from '@mm-modules/reports/reports-actions-bar.component';
+import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { ComponentsModule } from '@mm-components/components.module';
 import { MessagesComponent } from '@mm-modules/messages/messages.component';
 import { ContactsComponent } from '@mm-modules/contacts/contacts.component';
@@ -51,6 +53,8 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     MessagesComponent,
     ContactsComponent,
     ReportsFiltersComponent,
+    ReportsActionsBarComponent,
+    ReportsSidebarFilterComponent,
     ContactsContentComponent,
     ContactsFiltersComponent,
     ContactsDeceasedComponent,

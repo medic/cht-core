@@ -125,31 +125,23 @@ const convertToBikramSambat = (value) => {
   return { t: 'str', v: convertedDate };
 };
 
-const formatDate = (date, format) => {
-  const dateMoment = asMoment(date);
-  if(!dateMoment.isValid()) {
-    return '';
+function addDate(date, years, months, days, hours, minutes) {
+  if (arguments.length > 6) {
+    throw new Error('Too many arguments.');
   }
-
-  // Transform format from xform spec to Moment.
-  const formatStr = asString(format)
-    .replace(/%(?![YyMmnbdeaHhS3])/g, '--PERCENT_PLACEHOLDER--')
-    .replace(/%Y/g, 'YYYY')
-    .replace(/%y/g, 'YY')
-    .replace(/%m/g, 'MM')
-    .replace(/%n/g, 'M')
-    .replace(/%b/g, 'MMM')
-    .replace(/%d/g, 'DD')
-    .replace(/%e/g, 'D')
-    .replace(/%a/g, 'ddd')
-    .replace(/%H/g, 'HH')
-    .replace(/%h/g, 'H')
-    .replace(/%M/g, 'mm')
-    .replace(/%S/g, 'ss')
-    .replace(/%3/g, 'SSS')
-    .replace(/--PERCENT_PLACEHOLDER--/g, '%');
-  return dateMoment.format(formatStr);
-};
+  const moment = asMoment(date);
+  [
+    [years, 'years'],
+    [months, 'months'],
+    [days, 'days'],
+    [hours, 'hours'],
+    [minutes, 'minutes'],
+  ].filter(([value]) => value)
+    .map(([value, name]) => ([ +asString(value), name ]))
+    .filter(([value]) => value)
+    .forEach(([value, name]) => moment.add(value, name));
+  return XPR.date(moment.toDate());
+}
 
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
@@ -160,6 +152,7 @@ module.exports = {
     moment = _moment;
   },
   func: {
+    'add-date': addDate,
     today: function() {
       return XPR.date(new Date());
     },
@@ -186,12 +179,6 @@ module.exports = {
       const months = d2Moment.diff(d1Moment, 'months');
       return XPR.number(months);
     },
-    'format-date': function(date, format) {
-      if(arguments.length < 2) {
-        throw new Error('format-date() :: not enough args');
-      }
-      return XPR.string(formatDate(date, format));
-    },
   },
   process: {
     toExternalResult: function(r) {
@@ -205,6 +192,3 @@ module.exports = {
     }
   }
 };
-
-// Function aliases
-module.exports.func['format-date-time'] = module.exports.func['format-date'];

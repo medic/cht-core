@@ -1,10 +1,10 @@
-const utils = require('../../utils');
-const loginPage = require('../../page-objects/login/login.wdio.page');
-const commonPage = require('../../page-objects/common/common.wdio.page');
-const contactPage = require('../../page-objects/contacts/contacts.wdio.page');
-const placeFactory = require('../../factories/cht/contacts/place');
-const userFactory = require('../../factories/cht/users/users');
-const gatewayApiUtils = require('../../gateway-api.utils');
+const utils = require('../../../utils');
+const loginPage = require('../../../page-objects/login/login.wdio.page');
+const commonPage = require('../../../page-objects/common/common.wdio.page');
+const contactPage = require('../../../page-objects/contacts/contacts.wdio.page');
+const placeFactory = require('../../../factories/cht/contacts/place');
+const userFactory = require('../../../factories/cht/users/users');
+const gatewayApiUtils = require('../../../gateway-api.utils');
 
 const messageValue = 'N Potu';
 

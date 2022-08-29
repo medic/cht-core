@@ -30,26 +30,34 @@ function construct(element) {
 
   const Select2Search = window.CHTCore.Select2Search;
 
-  let $textInput = $question.find('input');
+  const $textInput = $question.find('input');
+  const $proxyInput = $('<select></select>');
 
-  const value = $textInput.val();
-  const disabled = $textInput.prop('readonly');
-  $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
-  $textInput = $question.find('select');
-  const preSelectedOption = $('<option></option>')
-    .attr('value', value)
-    .text(value);
-  $textInput.append(preSelectedOption);
+  const $option = $('<option></option>');
+  const setOptionValue = value => $option.attr('value', value).text(value);
+  setOptionValue($textInput.val());
+  $textInput.on('inputupdate', () => setOptionValue($textInput.val()));
 
-  const contactTypes = getContactTypes($question, $textInput);
+  $textInput.hide();
+  $textInput.after($proxyInput);
+  $proxyInput.attr('name', $textInput.attr('name'));
+
+  const $selectInput = $question.find('select');
+  $selectInput.append($option);
+  $selectInput.on('change.dbobjectwidget', () => {
+    const selected = $selectInput.select2('data');
+    const id = selected && selected[0] && selected[0].id;
+    $textInput.val(id);
+  });
 
   if (!$question.hasClass('or-appearance-bind-id-only')) {
-    $textInput.on('change.dbobjectwidget', changeHandler);
+    $selectInput.on('change.dbobjectwidget', changeHandler);
   }
+  const contactTypes = getContactTypes($question, $textInput);
   const allowNew = $question.hasClass('or-appearance-allow-new');
-  Select2Search.init($textInput, contactTypes, { allowNew }).then(function() {
+  Select2Search.init($selectInput, contactTypes, { allowNew }).then(function() {
     // select2 doesn't understand readonly
-    $textInput.prop('disabled', disabled);
+    $selectInput.prop('disabled', $textInput.prop('readonly'));
   });
 }
 
@@ -75,9 +83,13 @@ const changeHandler = function() {
   const doc = selected && selected[0] && selected[0].doc;
   if (doc) {
     const field = $this.attr('name');
-    const index = $('[name="' + field + '"]').index(this);
+    const index = $('select[name="' + field + '"]').index(this);
     const keyRoot = field.substring(0, field.lastIndexOf('/'));
     updateFields(doc, keyRoot, index, field);
+    // https://github.com/enketo/enketo-core/issues/910
+    // Re-validate the current question now that we have loaded the doc data.
+    // This will clear any constraint errors that were resolved by the doc data.
+    window.CHTCore.Enketo.getCurrentForm().validateContent($this.parent());
   }
 };
 
@@ -100,10 +112,9 @@ const updateFields = function(data, keyRoot, index, originatingKeyPath) {
       return updateFields(value, path, index, originatingKeyPath);
     }
 
-    const node = Enketo.getCurrentForm().model.node(path, index);
+    const node = Enketo.getCurrentForm().model.node(path, index, { onlyLeaf: true });
 
-    // Non-existant nodes are undefined
-    if (typeof node.getVal() !== 'undefined') {
+    if(node.getElements().length) {
       node.setVal(value);
     }
   });

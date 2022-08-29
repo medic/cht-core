@@ -12,12 +12,19 @@ const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
 const firstReport = () => $(`${reportListID} li:first-child`);
 const reportList = () => $(`${reportListID}`);
-const allReports = () => $$(`${reportListID} li`);
-const reportsByUUID = (uuid) => $$(`li[data-record-id="${uuid}"]`);
+const allReports = () => $$(`${reportListID} li.content-row`);
+const reportsByUUID = (uuid) => $$(`${reportListID} li.content-row[data-record-id="${uuid}"]`);
 const reportRowSelector = `${reportListID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const editReportButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
+
+const sidebarFilter = () => $('.sidebar-filter');
+const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
+const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
+const sidebarFilterToDate = () => $('#toDateFilter');
+const sidebarFilterFromDate = () => $('#fromDateFilter');
+const sidebarFilterOpenBtn = () => $('.reports-action-bar .open-filter');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
@@ -43,6 +50,10 @@ const checkCss = 'input[type="checkbox"]';
 const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
 const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
+const patientName = () => $('.subject .name');
+const reportType = () => $('div[test-id="form-title"]');
+
+
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
   await browser.waitUntil(async () => await (await unreadCount()).waitForDisplayed());
@@ -57,6 +68,7 @@ const getTaskState = async (first, second) => {
 };
 
 const openForm = async (name) => {
+  await (await submitReportButton()).waitForClickable();
   await (await submitReportButton()).click();
   // this is annoying but there's a race condition where the click could end up on another form if we don't
   // wait for the animation to finish
@@ -85,7 +97,7 @@ const setBikDateInput = async (name, date) => {
   const dateWidget = await input.nextElement();
   await (await dateWidget.$('input[name="day"]')).setValue(date.day);
   await (await dateWidget.$('.dropdown-toggle')).click();
-  await (await (await dateWidget.$$('.dropdown-menu li'))[date.month -1]).click();
+  await (await (await dateWidget.$$('.dropdown-menu li'))[date.month - 1]).click();
   await (await dateWidget.$('input[name="year"]')).setValue(date.year);
   await (await formTitle()).click();
 };
@@ -143,7 +155,7 @@ const deleteSelectedReports = async () => {
   await (await deleteAllButton()).click();
   await (await confirmButton()).click();
   await (await completeButton()).click();
-  await (await completeButton()).waitForDisplayed({reverse:true});
+  await (await completeButton()).waitForDisplayed({ reverse: true });
   await (await firstReport()).waitForDisplayed();
   return await $$(reportBody);
 };
@@ -152,7 +164,7 @@ const deselectAll = async () => {
   const deselectAllButton = await $('.action-container .deselect-all');
   await deselectAllButton.click();
   const count = await $('#reports-content .selection-count > span');
-  await count.waitForExist({reverse: true});
+  await count.waitForExist({ reverse: true });
   return await $$(reportBody);
 };
 
@@ -160,6 +172,7 @@ const expandSelection = async () => {
   await (await itemSummary()).click();
   await (await $(reportBodyDetailsSelector)).waitForDisplayed();
 };
+
 const selectAll = async () => {
   await (await $('.action-container .select-all')).click();
   await (await $('#reports-content .selection-count > span')).waitForDisplayed();
@@ -184,9 +197,8 @@ const startSelectMode = async (savedUuids) => {
 const stopSelectMode = async (savedUuids) => {
   await (await $('.action-container .select-mode-stop')).click();
   const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
-  await  checkbox.waitForDisplayed({reverse: true});
+  await checkbox.waitForDisplayed({ reverse: true });
 };
-
 
 const filterByDate = async (startDate, endDate) => {
   await (await dateFilter()).click();
@@ -196,6 +208,38 @@ const filterByDate = async (startDate, endDate) => {
   await (await datePickerEnd()).setValue(endDate.format('MM/DD/YYYY'));
   await (await datePickerStart()).click();
   await (await $('#freetext')).click(); // blur the datepicker
+};
+
+const openSidebarFilter = async () => {
+  await (await sidebarFilterOpenBtn()).click();
+  return (await sidebarFilter()).waitForDisplayed();
+};
+
+const openSidebarFilterDateAccordion = async () => {
+  await (await sidebarFilterDateAccordionHeader()).click();
+  return (await sidebarFilterDateAccordionBody()).waitForDisplayed();
+};
+
+const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
+  await (await fieldPromise).waitForDisplayed();
+  await (await fieldPromise).click();
+
+  const dateRangePicker = `.daterangepicker:nth-of-type(${calendarIdx})`;
+  await (await $(dateRangePicker)).waitForDisplayed();
+
+  const leftArrow = $(`${dateRangePicker} .table-condensed th>.fa-chevron-left`);
+  await (await leftArrow).click();
+
+  const dateCel = $(`${dateRangePicker} .table-condensed tr td[data-title="${date}"]`);
+  await (await dateCel).click();
+};
+
+const setSidebarFilterFromDate = () => {
+  return setSidebarFilterDate(sidebarFilterFromDate(), 1, 'r1c2');
+};
+
+const setSidebarFilterToDate = () => {
+  return setSidebarFilterDate(sidebarFilterToDate(), 2, 'r3c5');
 };
 
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
@@ -224,6 +268,17 @@ const getReportDetailFieldValueByLabel = async (label) => {
     }
   }
 };
+
+const getReportSubject = async () => {
+  await patientName().waitForDisplayed();
+  return (await patientName()).getText();
+};
+
+const getReportType = async () => {
+  await reportType().waitForDisplayed();
+  return (await reportType()).getText();
+};
+
 
 const openReport = async (reportId) => {
   await (await $('reset-filters')).click();
@@ -262,6 +317,10 @@ module.exports = {
   getTaskState,
   openForm,
   formTitle,
+  openSidebarFilter,
+  openSidebarFilterDateAccordion,
+  setSidebarFilterFromDate,
+  setSidebarFilterToDate,
   setDateInput,
   getFieldValue,
   setBikDateInput,
@@ -283,6 +342,10 @@ module.exports = {
   allReports,
   reportsByUUID,
   getAllReportsText,
+  getReportDetailFieldValueByLabel,
+  getReportSubject,
+  getReportType,
+  getListReportInfo
   getReportDetailFieldValueByLabel,
   openReport,
   editReport,

@@ -106,88 +106,6 @@ describe('medic-xpath-extensions', function() {
     });
   });
 
-  describe('#format-date()', () => {
-    [
-      [ { t:'str', v:'2015-9-2' }, '%Y-%m-%d', '2015-09-02'],
-      [ { t:'str', v:'1999-12-12' }, '%Y-%m-%d', '1999-12-12'],
-      [ { t:'str', v:'2015-9-2' }, '%y-%n-%e', '15-9-2'],
-      [ { t:'str', v:'1999-12-12' }, '%y-%n-%e', '99-12-12'],
-      [ { t:'str', v:'1999-12-12' }, '%a %b Do', 'Sun Dec 12th'],
-      [ { t:'date', v:new Date('2015-10-01T00:00:00.000') }, '(%Y/%m/%d)', '(2015/10/01)'],
-      [ { t:'num', v:11111 }, '%Y%%m%%d', '2000%06%03'],
-      [ { t:'arr', v:[{ textContent: '2014-09-22' }] }, '%Y-%m-%d %Y%m%d', '2014-09-22 20140922'],
-    ].forEach(([date, format, expected]) => {
-      it(`should format the ${date.t} [${JSON.stringify(date.v)}] according to the mask [${format}]`, () => {
-        assert.equal(func['format-date'](date, { t:'str', v:format }).v, expected);
-      });
-    });
-
-    [
-      { t:'str', v:'' },
-      { t:'date', v:null },
-      { t:'num', v:NaN },
-      { t:'str', v:'NaN' },
-      { t:'str', v:'invalid' },
-      { t:'str', v:'11:11' },
-      { t:'bool', v:true },
-      { t:'num', v:'-1' },
-      { t:'nonsense', v:[{ textContent: '2014-09-22' }] },
-      { t:'arr', v:[{ textContent: 'nonsense' }] },
-      { t:'arr', v:['2014-09-22'] }
-    ].forEach(date => {
-      it(`should return an empty string when the date value is [${date.v}]`, () => {
-        assert.equal(func['format-date'](date, { t:'str', v:'%Y-%m-%d' }).v, '');
-      });
-    });
-
-    [[{ t:'str', v:'1999-12-12' }], []].forEach(params => {
-      it(`should throw an error when ${params.length} arguments is provided`, () => {
-        assert.throws(() => func['format-date'](...params), 'format-date() :: not enough args');
-      });
-    });
-  });
-
-  describe('#format-date-time()', () => {
-    [
-      [ { t:'str', v:'2015-9-2' }, '%Y-%m-%d', '2015-09-02'],
-      [ { t:'str', v:'1999-12-12 1:1:1.2' }, '%Y-%m-%d %H:%M:%S.%3', '1999-12-12 01:01:01.200'],
-      [ { t:'str', v:'1999-12-12 01:01:01.999999' }, '%Y-%m-%d %h:%M:%S.%3', '1999-12-12 1:01:01.999'],
-      [ { t:'date', v:new Date('2015-10-01T11:11:11.111') }, '(%Y/%m/%d) (%H %M %S) (%3)',
-        '(2015/10/01) (11 11 11) (111)'],
-      [ { t:'num', v:11111 }, '%Y%%m%%d %H%%M%%S%%3', '2000%06%03 00%00%00%000'],
-      [ { t:'arr', v:[{ textContent: '2014-09-22 01:01:01.999999' }] }, '%H-%M-%S-%3 %H%M%S%3',
-        '01-01-01-999 010101999'],
-    ].forEach(([date, format, expected]) => {
-      it(`should format the ${date.t} [${JSON.stringify(date.v)}] according to the mask [${format}]`, () => {
-        assert.equal(func['format-date-time'](date, { t:'str', v:format }).v, expected);
-      });
-    });
-
-    [
-      { t:'str', v:'' },
-      { t:'date', v:null },
-      { t:'num', v:NaN },
-      { t:'str', v:'NaN' },
-      { t:'str', v:'invalid' },
-      { t:'str', v:'11:11' },
-      { t:'bool', v:true },
-      { t:'num', v:'-1' },
-      { t:'nonsense', v:[{ textContent: '2014-09-22' }] },
-      { t:'arr', v:[{ textContent: 'nonsense' }] },
-      { t:'arr', v:['2014-09-22'] }
-    ].forEach(date => {
-      it(`should return an empty string when the date value is [${date.v}]`, () => {
-        assert.equal(func['format-date-time'](date, { t:'str', v:'%Y-%m-%d %H:%M:%S.%3' }).v, '');
-      });
-    });
-
-    [[{ t:'str', v:'1999-12-12' }], []].forEach(params => {
-      it(`should throw an error when ${params.length} arguments is provided`, () => {
-        assert.throws(() => func['format-date-time'](...params), 'format-date() :: not enough args');
-      });
-    });
-  });
-
   describe('#to-bikram-sambat()', () => {
     [
       [ { t:'str', v:'2015-9-2' }, '१६ भदौ २०७२'],
@@ -216,6 +134,148 @@ describe('medic-xpath-extensions', function() {
     ].forEach(date => {
       it(`should return an empty string when the date value is [${date.v}]`, () => {
         assert.equal(func['to-bikram-sambat'](date).v, '');
+      });
+    });
+  });
+
+  describe('#add-date()', () => {
+    const display = value => value ? value.v : '';
+
+    [
+      [
+        [{ t:'num', v:1 }],
+        { t:'date', v:new Date('2015-10-01') },
+        '2016-10-01'
+      ],
+      [
+        [null, { t:'num', v:1 }],
+        { t:'date', v:new Date('2015-10-01T00:00') },
+        '2015-11-01T00:00'
+      ],
+      [
+        [null, null, { t:'num', v:1 }],
+        { t:'date', v:new Date('2015-10-01T00:00') },
+        '2015-10-02T00:00'
+      ],
+      [
+        [null, null, null, { t:'num', v:1 }],
+        { t:'date', v:new Date('2015-10-01T00:00') },
+        '2015-10-01T01:00'
+      ],
+      [
+        [null, null, null, null, { t:'num', v:1 }],
+        { t:'date', v:new Date('2015-10-01T00:00') },
+        '2015-10-01T00:01'
+      ],
+      [
+        [{ t:'num', v:1 }, { t:'num', v:1 }, { t:'num', v:1 }, { t:'num', v:1 }, { t:'num', v:1 }],
+        { t:'date', v:new Date('1998-11-30T22:59') },
+        '2000-01-01T00:00'
+      ],
+      [
+        [{ t:'num', v:-1 }],
+        { t:'date', v:new Date('2015-10-01') },
+        '2014-10-01'
+      ],
+      [
+        [null, { t:'num', v:-1 }],
+        { t:'date', v:new Date('2015-01-01T00:00') },
+        '2014-12-01T00:00'
+      ],
+      [
+        [null, null, { t:'num', v:-1 }],
+        { t:'date', v:new Date('2015-10-01T00:00') },
+        '2015-09-30T00:00'
+      ],
+      [
+        [null, null, null, { t:'num', v:-1 }],
+        { t:'date', v:new Date('2015-10-02T00:00') },
+        '2015-10-01T23:00'
+      ],
+      [
+        [null, null, null, null, { t:'num', v:-1 }],
+        { t:'date', v:new Date('2015-01-01T00:00') },
+        '2014-12-31T23:59'
+      ],
+      [
+        [{ t:'num', v:1 }],
+        { t:'str', v:'Sept 9 2015 00:00' },
+        '2016-09-09T00:00'
+      ],
+      [
+        [{ t:'num', v:1 }],
+        { t:'num', v:11111 },
+        '2001-06-03T00:00'
+      ],
+      [
+        [{ t:'num', v:1 }],
+        { t:'arr', v:[{ textContent: '2014-09-22' }] },
+        '2015-09-22T00:00'
+      ],
+      [
+        [{ t:'str', v:'111' }, null, { t:'str', v:'-1' }],
+        { t:'date', v:new Date('2015-10-01T00:00') },
+        '2126-09-30T00:00'
+      ],
+      [
+        [{ t:'arr', v:[{ textContent: '1' }] }],
+        { t:'date', v:new Date('2015-10-01') },
+        '2016-10-01'
+      ],
+      [
+        [{ t:'num', v:0 }, { t:'num', v:0 }, { t:'num', v:0 }, { t:'num', v:0 }, { t:'num', v:0 }],
+        { t:'date', v:new Date('2015-10-01') },
+        '2015-10-01'
+      ],
+      [
+        [],
+        { t:'date', v:new Date('2015-10-01') },
+        '2015-10-01'
+      ]
+    ].forEach(([[year, month, day, hour, minute], date, expected]) => {
+      const valuesDisplay = `[${display(year)},${display(month)},${display(day)},${display(hour)},${display(minute)}]`;
+      it(`should add ${valuesDisplay} to ${date.t} [${JSON.stringify(date.v)}]`, () => {
+        assert.deepEqual(func['add-date'](date, year, month, day, hour, minute).v, new Date(expected));
+      });
+    });
+
+    it(`should throw an error when providing too many number parameters`, () => {
+      const date = { t:'date', v:new Date('2015-10-01') };
+      assert.throws(() => func['add-date'](date, 1, 2, 3, 4, 5, 6), 'Too many arguments.');
+    });
+
+    [
+      { t:'str', v:'' },
+      { t:'bool', v:'true' },
+      { t:'str', v:'invalid' },
+      { t:'date', v:new Date('2015-10-01') },
+      { t:'num', v:'one' },
+      { t:'num', v:'NaN' },
+      { t:'num', v:NaN },
+      { t:'arr', v:[{ textContent: '2015-10-01' }] }
+    ].forEach(year => {
+      it(`should not modify the date when given ${year.t} [${JSON.stringify(year.v)}] as a number parameter`, () => {
+        const date = { t:'date', v:new Date('2015-10-01') };
+        assert.deepEqual(func['add-date'](date, year).v, date.v);
+      });
+    });
+
+    [
+      { t:'str', v:'' },
+      { t:'date', v:null },
+      { t:'num', v:NaN },
+      { t:'str', v:'NaN' },
+      { t:'str', v:'invalid' },
+      { t:'str', v:'11:11' },
+      { t:'bool', v:true },
+      { t:'num', v:'-1' },
+      { t:'nonsense', v:[{ textContent: '2014-09-22' }] },
+      { t:'arr', v:[{ textContent: 'nonsense' }] },
+      { t:'arr', v:['2014-09-22'] },
+    ].forEach(date => {
+      it(`should return "Invalid Date" when given ${date.t} [${date.v}] as the date parameter`, () => {
+        const year = { t:'num', v:1 };
+        assert.equal(func['add-date'](date, year).v.toString(), 'Invalid Date');
       });
     });
   });

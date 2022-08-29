@@ -1,39 +1,99 @@
 const request = require('request-promise-native');
-const RESULT_PARSE_REGEX = /^"(.*)"\n?$/;
+const crypto = require('crypto');
 
-// This API gives weird psuedo-JSON results:
-//   "password"\n
-// Should be just `password`
-const parseResponse = response => response.match(RESULT_PARSE_REGEX)[1];
+const IV_LENGTH = 16;
+const KEY_LENGTH = 32;
+const CRYPTO_ALGO = 'aes-256-cbc';
+
+const getCredentialId = id => `credential:${id}`;
 
 const getCouchNodeName = () => process.env.COUCH_NODE_NAME;
 
-const getCredentials = (key) => {
-  try {
-    const couchConfigUrl = getCouchConfigUrl();
-    return request
-      .get(`${couchConfigUrl}/medic-credentials/${key}`)
-      .then(parseResponse)
-      .catch(err => {
-        if (err.statusCode === 404) {
-          // No credentials defined
-          return;
-        }
-        // Throw it regardless so the process gets halted, we just error above for higher specificity
-        throw err;
-      });
-
-  } catch (error) {
-    return Promise.reject(error);
-  }
+const getCouchUrl = () => {
+  const couchUrl = process.env.COUCH_URL;
+  return couchUrl && couchUrl.replace(/\/$/, '');
 };
 
 const getServerUrl = () => {
-  if (!process.env.COUCH_URL) {
-    return;
+  const couchUrl = process.env.COUCH_URL;
+  return couchUrl && couchUrl.slice(0, couchUrl.lastIndexOf('/'));
+};
+
+const getVaultUrl = (id) => `${getCouchUrl()}-vault/${getCredentialId(id)}`;
+
+const getCredentialsDoc = (id) => {
+  if (!id) {
+    return Promise.reject(new Error('You must pass the key for the credentials you want'));
   }
-  const couchUrl = process.env.COUCH_URL.replace(/\/$/, '');
-  return couchUrl.slice(0, couchUrl.lastIndexOf('/'));
+  return request
+    .get(getVaultUrl(id), { json: true })
+    .catch(err => {
+      if (err.statusCode === 404) {
+        // No credentials defined
+        return;
+      }
+      // Throw it regardless so the process gets halted, we just error above for higher specificity
+      throw err;
+    });
+};
+
+const getKey = () => {
+  // NB: This path will need to change when we upgrade to CouchDB v3.2
+  // https://docs.couchdb.org/en/stable/config/auth.html#chttpd_auth/secret
+  const url = `${getCouchConfigUrl()}/couch_httpd_auth/secret`;
+  return request
+    .get(url, { json: true })
+    .then(key => Buffer.from(key).slice(0, KEY_LENGTH));
+};
+
+const encrypt = (text) => {
+  return getKey()
+    .then(key => {
+      const iv = crypto.randomBytes(IV_LENGTH);
+      const cipher = crypto.createCipheriv(CRYPTO_ALGO, key, iv);
+      const start = cipher.update(text);
+      const end = cipher.final();
+      const encrypted = Buffer.concat([ start, end ]);
+      return iv.toString('hex') + ':' + encrypted.toString('hex');
+    });
+};
+
+const decrypt = (text) => {
+  return getKey()
+    .then(key => {
+      const parts = text.split(':');
+      const iv = Buffer.from(parts.shift(), 'hex');
+      const encryptedText = Buffer.from(parts.join(':'), 'hex');
+      const decipher = crypto.createDecipheriv(CRYPTO_ALGO, key, iv);
+      const start = decipher.update(encryptedText);
+      const final = decipher.final();
+      return Buffer.concat([ start, final ]).toString();
+    });
+};
+
+const getCredentials = (id) => {
+  return getCredentialsDoc(id)
+    .then(doc => {
+      const encrypted = doc && doc.password;
+      if (!encrypted) {
+        return;
+      }
+      return decrypt(encrypted);
+    });
+};
+
+const setCredentials = (id, password) => {
+  return Promise.all([
+    getCredentialsDoc(id),
+    encrypt(password)
+  ])
+    .then(([ doc, encrypted ]) => {
+      if (!doc) {
+        doc = { _id: getCredentialId(id) };
+      }
+      doc.password = encrypted;
+      return request.put(getVaultUrl(id), { json: true, body: doc });
+    });
 };
 
 const getCouchConfigUrl = () => {
@@ -70,6 +130,7 @@ const updateAdminPassword = (userName, password) => {
 
 module.exports = {
   getCredentials,
+  setCredentials,
   getCouchConfig,
   updateAdminPassword,
 };

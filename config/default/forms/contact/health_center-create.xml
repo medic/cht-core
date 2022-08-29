@@ -42,9 +42,7 @@
             <value>Age</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
-            <value>Months: <output value=" /data/contact/ephemeral_dob/ephemeral_months "/>
-Year: <output value=" /data/contact/ephemeral_dob/ephemeral_years "/>
-DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "/>
+            <value>DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "/>
 DOB Calendar: <output value=" /data/contact/ephemeral_dob/dob_calendar "/>
 DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/contact/ephemeral_dob/dob_iso:label">
@@ -917,7 +915,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:health_center:create" prefix="J1!contact:health_center:create!" delimiter="#" version="2022-03-11 17-37">
+        <data id="contact:health_center:create" prefix="J1!contact:health_center:create!" delimiter="#" version="2022-08-15 11-54">
           <inputs>
             <meta>
               <location>
@@ -974,8 +972,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
               <age_years/>
               <age_months/>
               <dob_method/>
-              <ephemeral_months/>
-              <ephemeral_years/>
               <dob_approx/>
               <dob_raw/>
               <dob_iso/>
@@ -1024,18 +1020,16 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" relevant="not(selected(../dob_method,'approx'))" jr:constraintMsg="Date must be before today" required="true()" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="Age must be between 0 and 130" required="true()" constraint=". &gt;= 0 and . &lt;= 130"/>
-      <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="Months must between 0 and 11" constraint=". &gt;= 0 and . &lt;= 11"/>
+      <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="Months must between 0 and 11"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="select"/>
-      <bind nodeset="/data/contact/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) &lt; 0, format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) + 12, format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0))"/>
-      <bind nodeset="/data/contact/ephemeral_dob/ephemeral_years" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) &lt; 0, format-date-time(today(),&quot;%Y&quot;) - ../age_years - 1, format-date-time(today(),&quot;%Y&quot;) -../age_years)"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="concat(string( /data/contact/ephemeral_dob/ephemeral_years ),'-',if( /data/contact/ephemeral_dob/ephemeral_months &lt;10, concat('0',string( /data/contact/ephemeral_dob/ephemeral_months )),  /data/contact/ephemeral_dob/ephemeral_months ),'-',string(format-date-time(today(), &quot;%d&quot;)))"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/contact/ephemeral_dob/age_years , 0- /data/contact/ephemeral_dob/age_months )"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), 
 ../dob_calendar,
 ../dob_approx)"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="0"/>
-      <bind nodeset="/data/contact/phone" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" constraint="1"/>
-      <bind nodeset="/data/contact/phone_alternate" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" constraint="1"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
+      <bind nodeset="/data/contact/phone" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
+      <bind nodeset="/data/contact/phone_alternate" type="tel" relevant="selected( /data/init/create_new_person ,'new_person')" constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678"/>
       <bind nodeset="/data/contact/sex" type="select1" relevant="selected( /data/init/create_new_person ,'new_person')" required="true()"/>
       <bind nodeset="/data/contact/role" type="select1" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/role_other" type="string" relevant="selected(  /data/contact/role ,'other')" required="true()"/>
