@@ -126,7 +126,7 @@ const saveDockerComposeFiles = () => {
     sentinel_container_name: 'cht-sentinel',
     haproxy_healthcheck_container_name: 'cht-haproxy-healthcheck',
     db_name: 'medic',
-    couchdb_servers: 'couchdb',
+    couchdb_servers: 'cht-couchdb',
   };
 
   const compiledServicesDockerCompose = mustache.render(servicesTemplate, view);
