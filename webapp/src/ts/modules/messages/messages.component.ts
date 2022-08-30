@@ -43,8 +43,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private tourService: TourService,
     private responsiveService: ResponsiveService,
-    private userContactService:UserContactService,
-    private sessionService:SessionService,
+    private userContactService: UserContactService,
+    private sessionService: SessionService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
@@ -53,9 +53,13 @@ export class MessagesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
-    this.userContactService.getCurrentLineageLevel().then((currentLevel) => {
-      this.currentLevel = currentLevel;
-    });
+    if (!this.sessionService.isOnlineOnly()) {
+      this.userContactService
+        .getCurrentLineageLevel()
+        .then((currentLevel) => {
+          this.currentLevel = currentLevel;
+        });
+    }
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
   }
@@ -160,15 +164,14 @@ export class MessagesComponent implements OnInit, OnDestroy {
     return this.messageContactService
       .getList()
       .then((conversations = []) => {
-        // filter out the lineage level that belongs to the online logged in user
-        if(!this.sessionService.isOnlineOnly()) {
-          conversations.map((conversation) => {
-            conversation.lineage = conversation.lineage?.filter((level) => {
-              return (level !== this.currentLevel);
-            });
+        // remove the lineage level that belongs to the offline logged in user, normally the last one
+        if (this.currentLevel) {
+          conversations.forEach((conversation) => {
+            conversation.lineage = conversation.lineage?.filter(level => level !== this.currentLevel);
             return conversation;
           });
         }
+
         this.setConversations(conversations, { merge });
         this.loading = false;
       });

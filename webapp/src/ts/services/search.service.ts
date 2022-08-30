@@ -138,7 +138,6 @@ export class SearchService {
       return Promise.resolve([]);
     }
     const before = performance.now();
-
     return this
       .searchFactory(type, filters, options, extensions)
       .then((searchResults) => {
