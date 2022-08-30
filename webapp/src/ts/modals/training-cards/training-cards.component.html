@@ -21,7 +21,7 @@
     </div>
   </div>
 
-  <div class="item-content" [hidden]="showConfirmExit || loadingContent || contentError">
+  <div class="item-content" [hidden]="showConfirmExit || loadingContent || contentError" [class.form-no-title]="formNoTitle">
     <div class="body">
       <mm-enketo
         [formId]="formWrapperId"

@@ -35,6 +35,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   static id = 'training-cards-modal';
   private geoHandle:any;
   private globalActions;
+  formNoTitle = false;
   form;
   trainingForm;
   formWrapperId = 'training-cards-form';
@@ -92,6 +93,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     try {
       const selector = `#${this.formWrapperId}`;
       this.form = await this.enketoService.render(selector, form, null, null, this.resetFormError.bind(this), true);
+      this.formNoTitle = !form?.title;
       this.loadingContent = false;
       this.recordTelemetryPostRender();
     } catch(error) {
