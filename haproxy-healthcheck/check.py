@@ -6,7 +6,7 @@ import threading
 
 print_lock = threading.Lock()
 
-couchdb_servers = os.environ['COUCHDB_SERVERS'].split(',')
+couchdb_servers = sorted(os.environ['COUCHDB_SERVERS'].split(','))
 # Example: COUCHDB_SERVERS="couchdb.1,couchdb.2,couchdb.3"
 username = os.environ['COUCHDB_USER']
 password = os.environ['COUCHDB_PASSWORD']
@@ -38,18 +38,21 @@ def threaded(conn):
             print("Exception: ", e)
         data = r.json()
 
-        all_nodes = data['all_nodes']
-        cluster_nodes = data['cluster_nodes']
+        all_nodes = sorted(data['all_nodes'])
+        cluster_nodes = sorted(data['cluster_nodes'])
 
-        if all_nodes == cluster_nodes and all_nodes is not None:
+        if all_nodes is None or all_nodes != couchdb_servers:
+            print('Nodes starting up')
+            print(f'Details: all_nodes: {all_nodes}. couchdb_servers: {couchdb_servers}')
+            result.append(b'down\n')
+        elif all_nodes != cluster_nodes:
+            print('_membership shows not all nodes are part of Cluster')
+            print(f'Details: all_nodes: {all_nodes}. cluster_nodes: {cluster_nodes}')
+            result.append(b'down\n')
+        else:
             print('Everything is fine')
             result.append(b'up\n')
-            print(result)
-        else:
-            print('_membership shows not all nodes are part of Cluster')
-            print(f'Details: all_nodes: {all_nodes}.  cluster_nodes: {cluster_nodes}')
-            result.append(b'down\n')
-            print(result)
+        print(result)
     except Exception as e:
         result.append(b'down\n')
         print("Exception: ", e)
