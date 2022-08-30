@@ -3,6 +3,24 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const usersService = require('./users');
 const people = require('../controllers/people');
 
+const generateUsername = contactName => {
+  const randomNum = Math.floor(Math.random() * 9999) + 1000;
+  return contactName.replace(/\s+/g, '-').toLowerCase() + randomNum;
+};
+
+const createNewUser = (appUrl, newContact, oldUser) => {
+  const user = {
+    username: generateUsername(newContact.name),
+    token_login: true,
+    roles: oldUser.roles,
+    phone: oldUser.phone,
+    place: newContact.parent._id,
+    contact: newContact._id,
+    fullname: newContact.name,
+  };
+  return usersService.createUser(user, appUrl);
+};
+
 async function replaceUser(replaceUserReportId, appUrl) {
   const replaceUserReport = await db.medic.get(replaceUserReportId);
   const oldContact = await people.getOrCreatePerson(replaceUserReport.fields.original_contact_uuid);
@@ -28,18 +46,7 @@ async function replaceUser(replaceUserReportId, appUrl) {
 
   const oldUser = await db.medic.get(oldUserSettings._id);
   await db.medic.put(Object.assign({}, oldUserSettings, { shouldLogoutNextSync: true, replaced: true }));
-  const randomNum = Math.floor(Math.random() * 9999) + 1000;
-  const username = newContact.name.replace(/\s+/g, '-').toLowerCase() + randomNum;
-  const user = {
-    username: username,
-    contact: newContact._id,
-    place: newContact.parent._id,
-    phone: newContact.phone,
-    token_login: true,
-    roles: oldUser.roles,
-    fullname: newContact.name,
-  };
-  return usersService.createUser(user, appUrl);
+  return createNewUser(appUrl, newContact, oldUser);
 }
 
 async function reparentReports(replaceUserReportId, newContact) {
