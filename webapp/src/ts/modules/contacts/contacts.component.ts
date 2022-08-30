@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,11 +23,12 @@ import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 
 @Component({
   templateUrl: './contacts.component.html'
 })
-export class ContactsComponent implements OnInit, OnDestroy{
+export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
   private readonly PAGE_SIZE = 50;
   private subscription: Subscription = new Subscription();
   private globalActions;
@@ -54,6 +55,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
   defaultSortDirection = 'alpha';
   sortDirection = this.defaultSortDirection;
   additionalListItem = false;
+  useSearchNewDesign = true;
   enketoEdited;
   selectedContact;
 
@@ -164,6 +166,11 @@ export class ContactsComponent implements OnInit, OnDestroy{
       });
 
     this.tourService.startIfNeeded(this.route.snapshot);
+  }
+
+  async ngAfterViewInit() {
+    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    this.useSearchNewDesign = !isDisabled;
   }
 
   ngOnDestroy() {

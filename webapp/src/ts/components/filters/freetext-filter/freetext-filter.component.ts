@@ -53,11 +53,11 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
     this.subscription.unsubscribe();
   }
 
-  clear() {
+  clear(apply?) {
     if (this.disabled) {
       return;
     }
-    this.applyFieldChange('');
+    this.applyFieldChange('', apply);
   }
 }
 

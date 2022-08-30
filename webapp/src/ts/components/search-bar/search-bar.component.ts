@@ -13,6 +13,10 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 export class SearchBarComponent implements OnInit, OnDestroy {
   @Input() disabled;
   @Input() showFilter;
+  @Input() showSort;
+  @Input() sortDirection;
+  @Input() lastVisitedDateExtras;
+  @Output() sort: EventEmitter<any> = new EventEmitter();
   @Output() toggleFilter: EventEmitter<any> = new EventEmitter();
   @Output() search: EventEmitter<any> = new EventEmitter();
 
@@ -39,12 +43,8 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     if (this.disabled) {
       return;
     }
-    this.freetextFilter.clear();
+    this.freetextFilter.clear(true);
     this.toggleMobileSearch(false);
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 
   toggleMobileSearch(force?) {
@@ -52,5 +52,13 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       return;
     }
     this.openSearch = force !== undefined ? force : !this.openSearch;
+  }
+
+  applySort(direction) {
+    this.sort.emit(direction);
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 }
