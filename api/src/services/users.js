@@ -551,16 +551,37 @@ const validateUserContact = (data, user, userSettings) => {
   }
 };
 
-const createUserEntities = async (user, appUrl, preservePrimaryContact) => {
+/* eslint-disable max-len */
+/**
+ * @param {Object} data
+ * @param {string} data.username Identifier used for authentication
+ * @param {string[]} data.roles
+ * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
+ * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
+ * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+ * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
+ * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+ * @param {string=} data.fullname Full name
+ * @param {string=} data.email Email address
+ * @param {Boolean=} data.known Boolean to define if the user has logged in before. Used mainly to determine whether or not to start a tour on first login.
+ * @param {string=} data.type Deprecated. Used to infer user's roles
+ * @param {string} appUrl request protocol://hostname
+ */
+/* eslint-enable max-len */
+const createUserEntities = async (data, appUrl) => {
+  // Preserve the place's primary contact, if data.place already exists in the DB.
+  // => if we're creating the place alongside the user, set the contact as the place's primary contact
+  const preservePrimaryContact = !(_.isObject(data.place) && !data.place._rev);
+
   const response = {};
-  await validateNewUsername(user.username);
-  await createPlace(user);
-  await setContactParent(user);
-  await createContact(user, response);
-  await storeUpdatedPlace(user, preservePrimaryContact);
-  await createUser(user, response);
-  await createUserSettings(user, response);
-  await tokenLogin.manageTokenLogin(user, appUrl, response);
+  await validateNewUsername(data.username);
+  await createPlace(data);
+  await setContactParent(data);
+  await createContact(data, response);
+  await storeUpdatedPlace(data, preservePrimaryContact);
+  await createUser(data, response);
+  await createUserSettings(data, response);
+  await tokenLogin.manageTokenLogin(data, appUrl, response);
   return response;
 };
 
@@ -703,14 +724,27 @@ module.exports = {
         return mapUsers(users, settings, facilities);
       });
   },
-  /*
+  /* eslint-disable max-len */
+  /**
    * Take the request data and create valid user, user-settings and contact
    * objects. Returns the response body in the callback.
    *
-   * @param {Object} data - request body
-   * @param {String} appUrl - request protocol://hostname
+   * @param {Object} data
+   * @param {string} data.username Identifier used for authentication
+   * @param {string[]} data.roles
+   * @param {(Object|string)=} data.place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
+   * @param {(Object|string)=} data.contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
+   * @param {string=} data.password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+   * @param {string=} data.phone Valid phone number. Required if token_login is enabled for the user.
+   * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+   * @param {string=} data.fullname Full name
+   * @param {string=} data.email Email address
+   * @param {Boolean=} data.known Boolean to define if the user has logged in before. Used mainly to determine whether or not to start a tour on first login.
+   * @param {string=} data.type Deprecated. Used to infer user's roles
+   * @param {string} appUrl request protocol://hostname
    * @api public
    */
+  /* eslint-enable max-len */
   createUser: async (data, appUrl) => {
     const missing = missingFields(data);
     if (missing.length > 0) {
@@ -733,21 +767,27 @@ module.exports = {
     return await createUserEntities(data, appUrl);
   },
 
+  /* eslint-disable max-len */
   /**
    * Take the request data and create valid users, user-settings and contacts
    * objects. Returns the response body in the callback.
-   * @param {Object|Object[]} users
-   * @param {string} users[].username
-   * @param {string=} users[].phone Not required if the password is provided.
-   * @param {string=} users[].password Not required if the phone number is provided.
+   *
+   * @param {Object|Object[]} users[]
+   * @param {string} users[].username Identifier used for authentication
    * @param {string[]} users[].roles
-   * @param {(Object|string)=} users[].place Can either be a place object or an existing place id.
-   * @param {(Object|string)=} users[].contact Can either be a contact object or an existing place id.
+   * @param {(Object|string)=} users[].place Place identifier string (UUID) or object this user resides in. Required if the roles contain an offline role.
+   * @param {(Object|string)=} users[].contact A person identifier string (UUID) or object based on the form configured in the app. Required if the roles contain an offline role.
+   * @param {string=} users[].password Password string used for authentication. Only allowed to be set, not retrieved. Required if token_login is not enabled for the user.
+   * @param {string=} users[].phone Valid phone number. Required if token_login is enabled for the user.
+   * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
+   * @param {string=} users[].fullname Full name
+   * @param {string=} users[].email Email address
+   * @param {Boolean=} users[].known Boolean to define if the user has logged in before. Used mainly to determine whether or not to start a tour on first login.
    * @param {string=} users[].type Deprecated. Used to infer user's roles
    * @param {string} appUrl request protocol://hostname
-   * @param {boolean} preservePrimaryContact Default false. Prevent updating the place's primary contact.
    */
-  async createUsers(users, appUrl, ignoredUsers, logId, preservePrimaryContact) {
+  /* eslint-enable max-len */
+  async createUsers(users, appUrl, ignoredUsers, logId) {
     if (!Array.isArray(users)) {
       return module.exports.createUser(users, appUrl);
     }
@@ -792,7 +832,7 @@ module.exports = {
           throw passwordError;
         }
 
-        response = await createUserEntities(user, appUrl, preservePrimaryContact);
+        response = await createUserEntities(user, appUrl);
         progress.saving.successful++;
         logData.push(createRecordBulkLog(user, BULK_UPLOAD_STATUSES.IMPORTED));
       } catch(error) {
