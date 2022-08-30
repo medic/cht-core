@@ -2,27 +2,30 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } 
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
-import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { Selectors } from '@mm-selectors/index';
+import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Component({
-  selector: 'mm-reports-actions-bar',
-  templateUrl: './reports-actions-bar.component.html'
+  selector: 'mm-search-bar',
+  templateUrl: './search-bar.component.html'
 })
-export class ReportsActionsBarComponent implements OnInit, OnDestroy {
-  @Output() search: EventEmitter<any> = new EventEmitter();
-  @Output() toggleFilter: EventEmitter<any> = new EventEmitter();
-  @Output() resetFilter: EventEmitter<any> = new EventEmitter();
+export class SearchBarComponent implements OnInit, OnDestroy {
   @Input() disabled;
+  @Input() showFilter;
+  @Output() toggleFilter: EventEmitter<any> = new EventEmitter();
+  @Output() search: EventEmitter<any> = new EventEmitter();
 
   subscription: Subscription = new Subscription();
   activeFilters: number = 0;
+  openSearch = false;
 
   @ViewChild(FreetextFilterComponent)
   freetextFilter: FreetextFilterComponent;
 
   constructor(
     private store: Store,
+    private responsiveService: ResponsiveService,
   ) { }
 
   ngOnInit() {
@@ -32,15 +35,22 @@ export class ReportsActionsBarComponent implements OnInit, OnDestroy {
     this.subscription.add(subscription);
   }
 
-  reset() {
+  clear() {
     if (this.disabled) {
       return;
     }
     this.freetextFilter.clear();
-    this.resetFilter.emit();
+    this.toggleMobileSearch(false);
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  toggleMobileSearch(force?) {
+    if (this.disabled || !this.responsiveService.isMobile()) {
+      return;
+    }
+    this.openSearch = force !== undefined ? force : !this.openSearch;
   }
 }

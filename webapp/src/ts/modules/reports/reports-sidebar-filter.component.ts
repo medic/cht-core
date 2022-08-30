@@ -86,7 +86,7 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
       return;
     }
     this.isResettingFilters = true;
-    this.globalActions.clearFilters();
+    this.globalActions.clearFilters('search');
     this.clearFilters();
     this.isResettingFilters = false;
     this.applyFilters();

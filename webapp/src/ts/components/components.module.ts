@@ -29,6 +29,7 @@ import { ReportImageComponent } from '@mm-components/report-image/report-image.c
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import {
   AnalyticsTargetsProgressComponent
 } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
@@ -51,6 +52,7 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     FormTypeFilterComponent,
     StatusFilterComponent,
     FreetextFilterComponent,
+    SearchBarComponent,
     ResetFiltersComponent,
     SortFilterComponent,
     SenderComponent,
@@ -82,6 +84,7 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     FacilityFilterComponent,
     FormTypeFilterComponent,
     StatusFilterComponent,
+    SearchBarComponent,
     FreetextFilterComponent,
     ResetFiltersComponent,
     SortFilterComponent,
