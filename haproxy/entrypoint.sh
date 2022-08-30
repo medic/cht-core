@@ -6,6 +6,8 @@ service rsyslog start
 
 # Place environment variables into config
 CONFIG="/usr/local/etc/haproxy/haproxy.cfg"
+# Update backend servers
+sed -i '/server .*:5984/d' $CONFIG
 for COUCHDB_SERVER in ${COUCHDB_SERVERS//,/ }
 do
   printf "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check inter 2s\n" >> $CONFIG
