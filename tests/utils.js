@@ -23,7 +23,8 @@ const CONTAINER_NAMES = {
   couch3: 'cht-couchdb.3-e2e',
   api: 'cht-api-e2e',
   sentinel: 'cht-sentinel-e2e',
-  haproxy_healthcheck: 'cht-haproxy-healthcheck'
+  haproxy_healthcheck: 'cht-haproxy-healthcheck',
+  upgrade: 'cht-upgrade-service'
 };
 
 const PouchDB = require('pouchdb-core');
@@ -686,6 +687,7 @@ const saveLogs = async () => {
   await getDockerLogs(CONTAINER_NAMES.couch2);
   await getDockerLogs(CONTAINER_NAMES.couch3);
   await getDockerLogs(CONTAINER_NAMES.haproxy_healthcheck);
+  await getDockerLogs(CONTAINER_NAMES.upgrade);
 };
 
 const startServices = async () => {
