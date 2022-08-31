@@ -26,6 +26,7 @@ angular.module('controllers').controller('UpgradeCtrl',
     const POLL_URL = '/setup/poll';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
+    const REQ_OPTS = { headers: { 'Accept': 'application/json' } };
 
     const logError = (error, key) => {
       return $translate
@@ -39,7 +40,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const getExistingDeployment = (expectUpgrade, expectedVersion) => {
       return $http
-        .get('/api/deploy-info')
+        .get('/api/deploy-info', REQ_OPTS)
         .then(({ data: deployInfo }) => {
           if (expectUpgrade) {
             if (expectedVersion === deployInfo.version) {
@@ -56,7 +57,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const getCurrentUpgrade = () => {
       return $http
-        .get(UPGRADE_URL)
+        .get(UPGRADE_URL, REQ_OPTS)
         .then(({ data: { upgradeDoc, indexers } }) => {
           if ($scope.upgradeDoc && !upgradeDoc) {
             const expectedVersion = $scope.upgradeDoc.to && $scope.upgradeDoc.to.build;
@@ -195,7 +196,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const waitUntilApiStarts = () => new Promise((resolve) => {
       const pollApi = () => $http
-        .get(POLL_URL)
+        .get(POLL_URL, REQ_OPTS)
         .then(() => resolve())
         .catch(() => $timeout(pollApi, 1000));
       pollApi();
@@ -207,11 +208,11 @@ angular.module('controllers').controller('UpgradeCtrl',
       const url = action ? `${UPGRADE_URL}/${action}` : UPGRADE_URL;
 
       return $http
-        .post(url, { build })
+        .post(url, { build }, REQ_OPTS)
         .catch(err => {
           // todo which status do we get with nginx???
           // exclude "50x" like statuses that come from nginx
-          if (err && (!err.status || err.status === 503) && action === 'complete') {
+          if (err && (!err.status || err.status === 503 || err.status === -1) && action === 'complete') {
             // refresh page after API is back up
             return waitUntilApiStarts().then(() => reloadPage());
           }

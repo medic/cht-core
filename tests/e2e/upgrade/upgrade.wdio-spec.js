@@ -37,7 +37,6 @@ describe('Performing an upgrade', () => {
     await (await upgradePage.deploymentInProgress()).waitForDisplayed();
     await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true, timeout: 100000 });
 
-
     await (await upgradePage.deploymentComplete()).waitForDisplayed();
 
     const currentVersion = await upgradePage.getCurrentVersion();

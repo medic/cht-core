@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const localeUtils = require('locale');
+const morgan = require('morgan');
 
 const environment = require('../../environment');
 const startupLog = require('./startup-log');
@@ -17,6 +18,9 @@ const STATUS = 503;
 
 router.use(express.static(environment.staticPath));
 router.use(getLocale);
+router.use(
+  morgan('STARTUP RES :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length]')
+);
 
 const getEnabledLocales = () => {
   return translations
@@ -54,6 +58,11 @@ const renderStartupPage = async (req) => {
 
 router.get('/api/v1/startup-progress', (req, res) => {
   res.json(startupLog.getProgress(req.locale));
+});
+
+router.get('/setup/poll', (req, res) => {
+  res.status(STATUS);
+  res.json({ error: 'Service unavailable' });
 });
 
 router.all('*', wantsJSON, (req, res) => {
