@@ -15,6 +15,11 @@ services:
       - "SVC_NAME=${SVC1_NAME:-couchdb.1}"
       - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
     restart: always
     networks:
       {{ network }}:
@@ -32,6 +37,11 @@ services:
       - "SVC_NAME=${SVC2_NAME:-couchdb.2}"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
       - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
     restart: always
     networks:
       {{ network }}:
@@ -49,6 +59,11 @@ services:
       - "SVC_NAME=${SVC3_NAME:-couchdb.3}"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
       - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
     restart: always
     networks:
       {{ network }}:

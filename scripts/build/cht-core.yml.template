@@ -11,10 +11,30 @@ services:
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
       - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
       - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
     networks:
-      {{ network }}:
+      - {{ network }}
     ports:
       - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
+
+  healthcheck:
+    image: {{{ repo }}}/cht-haproxy-healthcheck:{{ tag }}
+    container_name: {{ haproxy_healthcheck_container_name }}
+    environment:
+      - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    networks:
+      - {{ network }}
 
   cht-api:
     image: {{{ repo }}}/cht-api:{{ tag }}
@@ -27,6 +47,11 @@ services:
       - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
       - BUILDS_URL=${MARKET_URL_READ:-https://staging.dev.medicmobile.org}/${BUILDS_SERVER:-_couch/builds}
       - UPGRADE_SERVICE_URL=${UPGRADE_SERVICE_URL:-http://localhost:5100}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
     networks:
       - {{ network }}
 
@@ -38,6 +63,11 @@ services:
     environment:
       - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
       - API_HOST=cht-api
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
     networks:
       - {{ network }}
 

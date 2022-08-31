@@ -8,7 +8,7 @@ service rsyslog start
 CONFIG="/usr/local/etc/haproxy/haproxy.cfg"
 for COUCHDB_SERVER in ${COUCHDB_SERVERS//,/ }
 do
-  printf "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check inter 2s\n" >> $CONFIG
+  printf "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check agent-check agent-inter 5s agent-addr healthcheck agent-port 5555\n" >> $CONFIG
 done
 envsubst < $CONFIG
 
