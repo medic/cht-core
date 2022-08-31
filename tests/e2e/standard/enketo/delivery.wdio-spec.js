@@ -151,7 +151,7 @@ describe('Delivery', () => {
     expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
   });
 
-  it.skip('Verify the targets page', async () => {
+  it('Verify the targets page', async () => {
     await commonPage.logout();
     await loginPage.login(user);
     await commonPage.waitForPageLoaded();

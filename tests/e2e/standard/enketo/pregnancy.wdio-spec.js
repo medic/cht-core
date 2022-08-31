@@ -18,7 +18,7 @@ describe('New pregnancy', () => {
   const pregnantWoman1 = 'Woman1';
   const pregnantWoman2 = 'Woman2';
 
-  before(async () => {  
+  before(async () => { 
     await utils.saveDocs([...places]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
@@ -42,14 +42,13 @@ describe('New pregnancy', () => {
     const note = 'Test note - pregnant woman';
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
     const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
-    await browser.pause(100000);
     await contactPage.contactPageDefault.createNewAction('New Pregnancy');
     
     await pregnancyForm.selectKnowLMP();
     await pregnancyForm.selectAproxLMP(pregnancyForm.APROX_LMP.b7To8Months);
     
     expect(await (await pregnancyForm.getEstDeliveryDate()).isDisplayed()).to.be.true;
-
+ 
     await genericForm.nextPage();
     const riskFactors = await pregnancyForm.selectAllRiskFactors();
     await genericForm.nextPage();
@@ -67,7 +66,7 @@ describe('New pregnancy', () => {
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
-
+    
     expect(await (await contactPage.pregnancyCard()).isDisplayed()).to.be.true;
     expect(await contactPage.getPregnancyCardRisk()).to.equal('High risk');
   });

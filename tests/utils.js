@@ -139,7 +139,7 @@ const deleteAll = (except) => {
     'branding',
     'partners',
     'settings',
-    /^form:contact:/,
+    /^form:/,
     /^_design/
   );
   const ignoreFns = [];
