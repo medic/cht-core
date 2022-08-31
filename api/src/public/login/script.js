@@ -215,6 +215,7 @@ const isUsingChtAndroidV1 = () => {
 };
 
 const checkUnsupportedBrowser = () => {
+  alert('check');
   if (!selectedLocale) {
     return;
   }
@@ -222,14 +223,18 @@ const checkUnsupportedBrowser = () => {
   const warningMessage = translations[selectedLocale]['login.unsupported_browser'];
   let outdatedComponentKey;
   if (isUsingChtAndroid()) {
+    alert('is using cht android');
     if (isUsingChtAndroidV1()) {
       outdatedComponentKey = 'login.unsupported_browser.outdated_cht_android';
     } else if (!isUsingSupportedBrowser()) {
       outdatedComponentKey = 'login.unsupported_browser.outdated_webview_apk';
     }
   } else if (!isUsingSupportedBrowser()) {
+    alert('is not using cht android & using unsupported browser');
     outdatedComponentKey = 'login.unsupported_browser.outdated_browser';
   }
+
+  alert(`outdatedComponentKey = "${outdatedComponentKey}"`);
 
   if (typeof outdatedComponentKey !== 'undefined') {
     document.getElementById('unsupported-browser-warning').innerText = warningMessage;
