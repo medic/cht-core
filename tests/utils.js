@@ -16,6 +16,7 @@ process.env.COUCH_PORT = constants.COUCH_PORT;
 process.env.COUCHDB_USER = auth.username;
 process.env.COUCHDB_PASSWORD = auth.password;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
+process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
 
 const CONTAINER_NAMES = {
   haproxy: 'cht-haproxy-e2e',
