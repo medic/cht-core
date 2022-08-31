@@ -8,7 +8,6 @@ const getUsers = async () => {
   const results = await db.allDocs({
     start_key: 'org.couchdb.user',
     end_key: 'org.couchdb.user\ufff0',
-    limit: 4,
     conflicts: true,
     include_docs: true,
   });
@@ -42,7 +41,6 @@ const updateUsers = async (users) => {
 
 (async () => {
   const users = await getUsers();
-  console.log(users);
   await updateUsers(users);
 })();
 
