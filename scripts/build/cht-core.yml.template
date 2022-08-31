@@ -25,7 +25,7 @@ services:
     image: {{{ repo }}}/cht-haproxy-healthcheck:{{ tag }}
     container_name: {{ haproxy_healthcheck_container_name }}
     environment:
-      - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-couchdb.1,couchdb.2,couchdb.3}"
+      - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
     logging:
