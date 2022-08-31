@@ -18,6 +18,7 @@ process.env.COUCHDB_PASSWORD = auth.password;
 
 const CONTAINER_NAMES = {
   haproxy: 'cht-haproxy-e2e',
+  nginx: 'cht-nginx-e2e',
   couch1: 'cht-couchdb.1-e2e',
   couch2: 'cht-couchdb.2-e2e',
   couch3: 'cht-couchdb.3-e2e',
@@ -604,6 +605,7 @@ const generateComposeFiles = async () => {
     couch2_container_name: CONTAINER_NAMES.couch2,
     couch3_container_name: CONTAINER_NAMES.couch3,
     haproxy_container_name: CONTAINER_NAMES.haproxy,
+    nginx_container_name: CONTAINER_NAMES.nginx,
     api_container_name: CONTAINER_NAMES.api,
     sentinel_container_name: CONTAINER_NAMES.sentinel,
     db_name: 'medic-test',
@@ -681,6 +683,7 @@ const saveLogs = async () => {
   await getDockerLogs(CONTAINER_NAMES.api);
   await getDockerLogs(CONTAINER_NAMES.sentinel);
   await getDockerLogs(CONTAINER_NAMES.haproxy);
+  await getDockerLogs(CONTAINER_NAMES.nginx);
   await getDockerLogs(CONTAINER_NAMES.couch1);
   await getDockerLogs(CONTAINER_NAMES.couch2);
   await getDockerLogs(CONTAINER_NAMES.couch3);
