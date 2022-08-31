@@ -215,6 +215,7 @@ const isUsingChtAndroidV1 = () => {
 };
 
 const checkUnsupportedBrowser = () => {
+  /* eslint-disable no-alert */
   alert('check');
   if (!selectedLocale) {
     return;
@@ -235,6 +236,7 @@ const checkUnsupportedBrowser = () => {
   }
 
   alert(`outdatedComponentKey = "${outdatedComponentKey}"`);
+  /* eslint-enable no-alert */
 
   if (typeof outdatedComponentKey !== 'undefined') {
     document.getElementById('unsupported-browser-warning').innerText = warningMessage;
