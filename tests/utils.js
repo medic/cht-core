@@ -31,9 +31,9 @@ const CONTAINER_NAMES = {
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
-const db = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}`, { auth });
-const sentinel = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}-sentinel`, { auth });
-const medicLogs = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}-logs`, { auth });
+const db = new PouchDB(`http://${constants.API_HOST}/${constants.DB_NAME}`, { auth });
+const sentinel = new PouchDB(`http://${constants.API_HOST}/${constants.DB_NAME}-sentinel`, { auth });
+const medicLogs = new PouchDB(`http://${constants.API_HOST}/${constants.DB_NAME}-logs`, { auth });
 let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
 const buildVersions = require('../scripts/build/versions');
@@ -55,7 +55,7 @@ const request = (options, { debug } = {}) => {
   if (!options.noAuth) {
     options.auth = options.auth || auth;
   }
-  options.uri = options.uri || `http://${constants.API_HOST}:${options.port || constants.API_PORT}${options.path}`;
+  options.uri = options.uri || `http://${constants.API_HOST}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
 
   if (debug) {
@@ -574,7 +574,7 @@ const getLoginUrl = () => {
   const redirectUrl = encodeURIComponent(
     `/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`
   );
-  return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
+  return `http://${constants.API_HOST}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
 };
 
 const saveBrowserLogs = () => {
@@ -1112,19 +1112,19 @@ module.exports = {
     `http://${auth.username}:${auth.password}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`,
 
   getInstanceUrl: () =>
-    `http://${auth.username}:${auth.password}@${constants.API_HOST}:${constants.API_PORT}`,
+    `http://${auth.username}:${auth.password}@${constants.API_HOST}`,
 
   getOrigin: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}`,
+    `http://${constants.API_HOST}`,
 
   getBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/#/`,
+    `http://${constants.API_HOST}/#/`,
 
   getAdminBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/admin/#/`,
+    `http://${constants.API_HOST}/admin/#/`,
 
   getLoginUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`,
+    `http://${constants.API_HOST}/${constants.DB_NAME}/login`,
 
   // Deletes _users docs and medic/user-settings docs for specified users
   // @param {Array} usernames - list of users to be deleted
