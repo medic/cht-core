@@ -83,16 +83,16 @@ services:
     volumes:
       - cht-ssl:/root/.acme.sh/
     environment:
-      - "CERTIFICATE_MODE:${CERTIFICATE_MODE:-OWN_CERT}"
+      - "CERTIFICATE_MODE=${CERTIFICATE_MODE:-OWN_CERT}"
       - "SSL_CERT_FILE_PATH=${SSL_CERT_FILE_PATH:-/etc/nginx/private/cert.pem}"
       - "SSL_KEY_FILE_PATH=${SSL_KEY_FILE_PATH:-/etc/nginx/private/key.pem}"
-      - "COMMON_NAME:${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
-      - "EMAIL:${EMAIL:-domains@medic.org}"
-      - "COUNTRY:${COUNTRY:-US}"
-      - "STATE:${STATE:-California}"
-      - "LOCALITY:${LOCALITY:-San_Francisco}"
-      - "ORGANISATION:${ORGANISATION:-medic}"
-      - "DEPARTMENT:${DEPARTMENT:-Information_Security}"
+      - "COMMON_NAME=${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
+      - "EMAIL=${EMAIL:-domains@medic.org}"
+      - "COUNTRY=${COUNTRY:-US}"
+      - "STATE=${STATE:-California}"
+      - "LOCALITY=${LOCALITY:-San_Francisco}"
+      - "ORGANISATION=${ORGANISATION:-medic}"
+      - "DEPARTMENT=${DEPARTMENT:-Information_Security}"
     networks:
       - {{ network }}
 

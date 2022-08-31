@@ -15,6 +15,7 @@ process.env.API_PORT = constants.API_PORT;
 process.env.COUCH_PORT = constants.COUCH_PORT;
 process.env.COUCHDB_USER = auth.username;
 process.env.COUCHDB_PASSWORD = auth.password;
+process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 
 const CONTAINER_NAMES = {
   haproxy: 'cht-haproxy-e2e',
