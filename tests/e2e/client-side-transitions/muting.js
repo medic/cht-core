@@ -7,6 +7,7 @@ const loginPage = require('../../page-objects/login/login.po.js');
 const contactsObjects = require('../../page-objects/contacts/contacts.po');
 const sentinelUtils = require('../sentinel/utils');
 const formsUtils = require('./forms');
+const constants = require('../../constants.js');
 
 /* global window */
 

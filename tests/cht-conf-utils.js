@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+const constants = require('./constants');
 const exec = util.promisify(require('child_process').exec);
-const utils = require('./utils');
 
 const runCommand = async (action, dirPath) => {
   const url = constants.BASE_URL_AUTH;

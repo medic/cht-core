@@ -3,6 +3,7 @@ const userFactory = require('../../factories/cht/users/users');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const common = require('../../page-objects/common/common.wdio.page');
 const placeFactory = require('../../factories/cht/contacts/place');
+const constants = require('../../constants');
 
 const offlineUser = userFactory.build({ username: 'offlineuser', isOffline: true });
 const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
@@ -54,7 +55,7 @@ describe('Acessing the admin app', () => {
   });
 
   it('should allow admins to access the page', async () => {
-    await loginPage.cookieLogin({ ...auth, createUser: false });
+    await loginPage.cookieLogin({ username: constants.USERNAME, password: constants.PASSWORD, createUser: false });
 
     await browser.url('/admin');
     await (await adminNavbarLogo()).waitForDisplayed();

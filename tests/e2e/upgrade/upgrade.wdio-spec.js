@@ -3,6 +3,7 @@ const utils = require('../../utils');
 const { BRANCH, BUILD_NUMBER } = process.env;
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
+const constants = require('../../constants');
 
 const getDdocs = async () => {
   const result = await utils.requestOnMedicDb({
@@ -19,7 +20,7 @@ const getDdocs = async () => {
 
 describe('Performing an upgrade', () => {
   before(async () => {
-    await loginPage.cookieLogin({ ...auth, createUser: false });
+    await loginPage.cookieLogin({ username: constants.USERNAME, password: constants.PASSWORD, createUser: false });
   });
 
   it('should upgrade to current branch', async () => {
