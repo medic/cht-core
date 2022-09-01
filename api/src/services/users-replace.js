@@ -3,9 +3,9 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const usersService = require('./users');
 const people = require('../controllers/people');
 
-const createNewUser = (appUrl, newContact, oldUser) => {
+const createNewUser = async(appUrl, newContact, oldUser) => {
   const user = {
-    username: generateUniqueUsername(newContact.name),
+    username: await generateUniqueUsername(newContact.name),
     token_login: true,
     roles: oldUser.roles,
     phone: newContact.phone,
