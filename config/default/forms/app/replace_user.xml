@@ -35,6 +35,9 @@
           <text id="/replace_user/inputs/user/name:label">
             <value>Username</value>
           </text>
+          <text id="/replace_user/inputs/user/phone:label">
+            <value>Phone Number</value>
+          </text>
           <text id="/replace_user/intro/admin_code:label">
             <value>Admin Code</value>
           </text>
@@ -85,6 +88,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact/name:label">
             <value>Full name</value>
           </text>
+          <text id="/replace_user/new_contact/new_phone:jr:constraintMsg">
+            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
+          </text>
+          <text id="/replace_user/new_contact/new_phone:label">
+            <value>Phone Number</value>
+          </text>
           <text id="/replace_user/new_contact/parent/_id:label">
             <value>Parent</value>
           </text>
@@ -97,11 +106,8 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact/parent:label">
             <value>Area ID</value>
           </text>
-          <text id="/replace_user/new_contact/phone:hint">
-            <value>Inherited from existing user</value>
-          </text>
           <text id="/replace_user/new_contact/phone:jr:constraintMsg">
-            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
+            <value>-</value>
           </text>
           <text id="/replace_user/new_contact/phone:label">
             <value>Phone Number</value>
@@ -111,6 +117,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           </text>
           <text id="/replace_user/new_contact/phone_alternate:label">
             <value>Alternate Phone Number</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:hint">
+            <value>Inherited from existing user</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:label">
+            <value>Phone Number</value>
           </text>
           <text id="/replace_user/new_contact/role/chw:label">
             <value>CHW</value>
@@ -204,6 +216,9 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/inputs/user/name:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/inputs/user/phone:label">
+            <value>-</value>
+          </text>
           <text id="/replace_user/inputs/user:label">
             <value>-</value>
           </text>
@@ -264,6 +279,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact/name:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/new_contact/new_phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/new_contact/new_phone:label">
+            <value>-</value>
+          </text>
           <text id="/replace_user/new_contact/parent/_id:label">
             <value>-</value>
           </text>
@@ -274,9 +295,6 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/replace_user/new_contact/phone:hint">
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact/phone:jr:constraintMsg">
@@ -290,6 +308,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           </text>
           <text id="/replace_user/new_contact/phone_alternate:label">
             <value>Téléphone alternatif</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:hint">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:label">
+            <value>-</value>
           </text>
           <text id="/replace_user/new_contact/role/chw:label">
             <value>-</value>
@@ -383,6 +407,9 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/inputs/user/name:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/inputs/user/phone:label">
+            <value>-</value>
+          </text>
           <text id="/replace_user/inputs/user:label">
             <value>-</value>
           </text>
@@ -443,6 +470,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact/name:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/new_contact/new_phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/new_contact/new_phone:label">
+            <value>-</value>
+          </text>
           <text id="/replace_user/new_contact/parent/_id:label">
             <value>-</value>
           </text>
@@ -453,9 +486,6 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/replace_user/new_contact/phone:hint">
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact/phone:jr:constraintMsg">
@@ -469,6 +499,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           </text>
           <text id="/replace_user/new_contact/phone_alternate:label">
             <value>अन्य फोन नंबर</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:hint">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:label">
+            <value>-</value>
           </text>
           <text id="/replace_user/new_contact/role/chw:label">
             <value>-</value>
@@ -562,6 +598,9 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/inputs/user/name:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/inputs/user/phone:label">
+            <value>-</value>
+          </text>
           <text id="/replace_user/inputs/user:label">
             <value>-</value>
           </text>
@@ -622,6 +661,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact/name:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/new_contact/new_phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/new_contact/new_phone:label">
+            <value>-</value>
+          </text>
           <text id="/replace_user/new_contact/parent/_id:label">
             <value>-</value>
           </text>
@@ -632,9 +677,6 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/replace_user/new_contact/phone:hint">
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact/phone:jr:constraintMsg">
@@ -648,6 +690,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           </text>
           <text id="/replace_user/new_contact/phone_alternate:label">
             <value>Nomor Telepon Alternatif</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:hint">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:label">
+            <value>-</value>
           </text>
           <text id="/replace_user/new_contact/role/chw:label">
             <value>-</value>
@@ -741,6 +789,9 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/inputs/user/name:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/inputs/user/phone:label">
+            <value>-</value>
+          </text>
           <text id="/replace_user/inputs/user:label">
             <value>-</value>
           </text>
@@ -801,6 +852,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact/name:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/new_contact/new_phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/new_contact/new_phone:label">
+            <value>-</value>
+          </text>
           <text id="/replace_user/new_contact/parent/_id:label">
             <value>-</value>
           </text>
@@ -811,9 +868,6 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/replace_user/new_contact/phone:hint">
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact/phone:jr:constraintMsg">
@@ -827,6 +881,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           </text>
           <text id="/replace_user/new_contact/phone_alternate:label">
             <value>अन्य फोन नम्बर</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:hint">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:label">
+            <value>-</value>
           </text>
           <text id="/replace_user/new_contact/role/chw:label">
             <value>-</value>
@@ -920,6 +980,9 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/inputs/user/name:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/inputs/user/phone:label">
+            <value>-</value>
+          </text>
           <text id="/replace_user/inputs/user:label">
             <value>-</value>
           </text>
@@ -980,6 +1043,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <text id="/replace_user/new_contact/name:label">
             <value>-</value>
           </text>
+          <text id="/replace_user/new_contact/new_phone:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/new_contact/new_phone:label">
+            <value>-</value>
+          </text>
           <text id="/replace_user/new_contact/parent/_id:label">
             <value>-</value>
           </text>
@@ -990,9 +1059,6 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact/parent:label">
-            <value>-</value>
-          </text>
-          <text id="/replace_user/new_contact/phone:hint">
             <value>-</value>
           </text>
           <text id="/replace_user/new_contact/phone:jr:constraintMsg">
@@ -1006,6 +1072,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           </text>
           <text id="/replace_user/new_contact/phone_alternate:label">
             <value>nambari nyingine ya simu</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:hint">
+            <value>-</value>
+          </text>
+          <text id="/replace_user/new_contact/phone_read_only:label">
+            <value>-</value>
           </text>
           <text id="/replace_user/new_contact/role/chw:label">
             <value>-</value>
@@ -1061,7 +1133,7 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
         </translation>
       </itext>
       <instance>
-        <replace_user id="replace_user" prefix="J1!replace_user!" delimiter="#" version="2022-08-18 12-40">
+        <replace_user id="replace_user" prefix="J1!replace_user!" delimiter="#" version="2022-09-01 13-12">
           <inputs>
             <meta>
               <location>
@@ -1077,11 +1149,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
               <contact_id/>
               <facility_id/>
               <name/>
+              <phone/>
             </user>
             <contact>
               <_id/>
-              <phone/>
               <role/>
+              <phone/>
               <parent>
                 <_id/>
                 <parent>
@@ -1094,6 +1167,7 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <contact_area_id/>
           <contact_facility_id/>
           <contact_phone/>
+          <user_phone/>
           <contact_role/>
           <created_by/>
           <created_by_person_uuid/>
@@ -1129,6 +1203,8 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
               <dob_debug/>
             </ephemeral_dob>
             <sex/>
+            <phone_read_only/>
+            <new_phone/>
             <phone/>
             <phone_alternate/>
             <role/>
@@ -1154,15 +1230,17 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
       <bind nodeset="/replace_user/inputs/user/contact_id" type="string"/>
       <bind nodeset="/replace_user/inputs/user/facility_id" type="string"/>
       <bind nodeset="/replace_user/inputs/user/name" type="string"/>
+      <bind nodeset="/replace_user/inputs/user/phone" type="string"/>
       <bind nodeset="/replace_user/inputs/contact/_id" type="string"/>
-      <bind nodeset="/replace_user/inputs/contact/phone" type="string"/>
       <bind nodeset="/replace_user/inputs/contact/role" type="string"/>
+      <bind nodeset="/replace_user/inputs/contact/phone" type="string"/>
       <bind nodeset="/replace_user/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/replace_user/inputs/contact/parent/parent/_id" type="string"/>
       <bind nodeset="/replace_user/patient_id" type="string" calculate="../inputs/contact/_id"/>
       <bind nodeset="/replace_user/contact_area_id" type="string" calculate="../inputs/contact/parent/_id"/>
       <bind nodeset="/replace_user/contact_facility_id" type="string" calculate="../inputs/contact/parent/parent/_id"/>
       <bind nodeset="/replace_user/contact_phone" type="string" calculate="../inputs/contact/phone"/>
+      <bind nodeset="/replace_user/user_phone" type="string" calculate="../inputs/user/phone"/>
       <bind nodeset="/replace_user/contact_role" type="string" calculate="../inputs/contact/role"/>
       <bind nodeset="/replace_user/created_by" type="string" calculate="../inputs/user/name"/>
       <bind nodeset="/replace_user/created_by_person_uuid" type="string" calculate="../inputs/user/contact_id"/>
@@ -1174,13 +1252,13 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
       <bind nodeset="/replace_user/new_contact/parent/parent/_id" type="string" calculate=" /replace_user/contact_facility_id "/>
       <bind nodeset="/replace_user/new_contact/type" type="string" calculate="&quot;person&quot;"/>
       <bind nodeset="/replace_user/new_contact/name" type="string" required="true()"/>
-      <bind nodeset="/replace_user/new_contact/short_name" type="string" constraint="string-length(.) &lt;= 10" jr:constraintMsg="jr:itext('/replace_user/new_contact/short_name:jr:constraintMsg')"/>
-      <bind nodeset="/replace_user/new_contact/date_of_birth" type="string" calculate=" /replace_user/new_contact/ephemeral_dob/dob_iso " required="true()"/>
+      <bind nodeset="/replace_user/new_contact/short_name" type="string" jr:constraintMsg="jr:itext('/replace_user/new_contact/short_name:jr:constraintMsg')" constraint="string-length(.) &lt;= 10"/>
+      <bind nodeset="/replace_user/new_contact/date_of_birth" type="string" required="true()" calculate=" /replace_user/new_contact/ephemeral_dob/dob_iso "/>
       <bind nodeset="/replace_user/new_contact/date_of_birth_method" type="string" calculate=" /replace_user/new_contact/ephemeral_dob/dob_method "/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_calendar" type="date" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" required="true()" relevant="not(selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx'))" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_calendar:jr:constraintMsg')"/>
+      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_calendar" type="date" required="true()" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_calendar:jr:constraintMsg')" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" relevant="not(selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx'))"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_years" type="int" constraint=". &gt;= 0 and . &lt;= 130" required="true()" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_years:jr:constraintMsg')"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_months" type="int" constraint=". &gt;= 0 and . &lt;= 11" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_months:jr:constraintMsg')"/>
+      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_years" type="int" required="true()" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_years:jr:constraintMsg')" constraint=". &gt;= 0 and . &lt;= 130" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')"/>
+      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_months" type="int" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_months:jr:constraintMsg')"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_method" type="select"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  &lt; 0, format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  + 12, format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months )"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/ephemeral_years" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  &lt; 0, format-date-time(today(),&quot;%Y&quot;) -  /replace_user/new_contact/ephemeral_dob/age_years  - 1, format-date-time(today(),&quot;%Y&quot;) - /replace_user/new_contact/ephemeral_dob/age_years )"/>
@@ -1191,8 +1269,10 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time( /replace_user/new_contact/ephemeral_dob/dob_raw ,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
       <bind nodeset="/replace_user/new_contact/sex" type="select1" required="true()"/>
-      <bind nodeset="/replace_user/new_contact/phone" type="string" calculate=" /replace_user/contact_phone " constraint="true()" readonly="true()" jr:constraintMsg="jr:itext('/replace_user/new_contact/phone:jr:constraintMsg')"/>
-      <bind nodeset="/replace_user/new_contact/phone_alternate" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/replace_user/new_contact/phone_alternate:jr:constraintMsg')"/>
+      <bind nodeset="/replace_user/new_contact/phone_read_only" type="string" relevant="boolean( /replace_user/user_phone )" calculate=" /replace_user/user_phone " readonly="true()"/>
+      <bind nodeset="/replace_user/new_contact/new_phone" type="string" required="true()" relevant="not(boolean( /replace_user/user_phone ))" jr:constraintMsg="jr:itext('/replace_user/new_contact/new_phone:jr:constraintMsg')" constraint="true()" calculate=" /replace_user/contact_phone "/>
+      <bind nodeset="/replace_user/new_contact/phone" type="string" jr:constraintMsg="jr:itext('/replace_user/new_contact/phone:jr:constraintMsg')" calculate="coalesce( /replace_user/user_phone ,  /replace_user/new_contact/new_phone )"/>
+      <bind nodeset="/replace_user/new_contact/phone_alternate" type="tel" jr:constraintMsg="jr:itext('/replace_user/new_contact/phone_alternate:jr:constraintMsg')" constraint="true()"/>
       <bind nodeset="/replace_user/new_contact/role" type="select1" calculate=" /replace_user/contact_role " readonly="true()"/>
       <bind nodeset="/replace_user/new_contact/external_id" type="string"/>
       <bind nodeset="/replace_user/new_contact/meta/created_by" type="string" calculate="../../../created_by"/>
@@ -1277,9 +1357,12 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
           <value>female</value>
         </item>
       </select1>
-      <input ref="/replace_user/new_contact/phone">
-        <label ref="jr:itext('/replace_user/new_contact/phone:label')"/>
-        <hint ref="jr:itext('/replace_user/new_contact/phone:hint')"/>
+      <input ref="/replace_user/new_contact/phone_read_only">
+        <label ref="jr:itext('/replace_user/new_contact/phone_read_only:label')"/>
+        <hint ref="jr:itext('/replace_user/new_contact/phone_read_only:hint')"/>
+      </input>
+      <input ref="/replace_user/new_contact/new_phone">
+        <label ref="jr:itext('/replace_user/new_contact/new_phone:label')"/>
       </input>
       <input ref="/replace_user/new_contact/phone_alternate">
         <label ref="jr:itext('/replace_user/new_contact/phone_alternate:label')"/>

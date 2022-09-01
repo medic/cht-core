@@ -13,7 +13,7 @@ const createNewUser = (appUrl, newContact, oldUser) => {
     username: generateUsername(newContact.name),
     token_login: true,
     roles: oldUser.roles,
-    phone: oldUser.phone,
+    phone: newContact.phone,
     place: newContact.parent._id,
     contact: newContact._id,
     fullname: newContact.name,
