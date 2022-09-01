@@ -102,7 +102,6 @@ describe('Users API', () => {
         .then(() => new Promise((resolve, reject) => {
           const options = {
             hostname: constants.API_HOST,
-            port: constants.API_PORT,
             path: '/_session',
             method: 'POST',
             headers: {
@@ -329,7 +328,6 @@ describe('Users API', () => {
       const nodes = membership.all_nodes;
       for (const nodeName of nodes) {
         await utils.request({
-          port: constants.COUCH_PORT,
           method: 'PUT',
           path: `/_node/${nodeName}/_config/admins/${otherAdmin.username}`,
           body: `"${otherAdmin.password}"`,

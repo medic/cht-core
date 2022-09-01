@@ -2,7 +2,6 @@ const assert = require('chai').assert;
 const net = require('net');
 const constants = require('../constants');
 const host = constants.API_HOST;
-const port = constants.API_PORT;
 const dbName = constants.DB_NAME;
 const utils = require('../utils');
 const db = utils.db;
@@ -44,7 +43,7 @@ describe('medic-collect', () => {
         `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
-Host: ${host}:5988\r
+Host: ${host}\r
 Connection: close\r
 \r\n`
       ).then(res => {
@@ -64,7 +63,7 @@ Connection: close\r
         `GET /api/v1/forms HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
-Host: ${host}:5988\r
+Host: ${host}\r
 Connection: close\r
 \r\n`
       ).then(res => {
@@ -77,7 +76,7 @@ Connection: close\r
 <xforms xmlns="http://openrosa.org/xforms/xformsList">
   <xform>
     <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
-    <downloadUrl>http://${host}:5988/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
+    <downloadUrl>http://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
   </xform>
 </xforms>\r
 0\r\n\r\n`,
@@ -94,7 +93,7 @@ Connection: close\r
         `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
-Host: ${host}:5988\r
+Host: ${host}\r
 User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
 Connection: close\r
 \r\n`
@@ -115,7 +114,7 @@ Connection: close\r
         `GET /api/v1/forms HTTP/1.1\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
-Host: ${host}:5988\r
+Host: ${host}\r
 User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
 Connection: close\r
 \r\n`
@@ -129,7 +128,7 @@ Connection: close\r
 <xforms xmlns="http://openrosa.org/xforms/xformsList">
   <xform>
     <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
-    <downloadUrl>http://${host}:5988/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
+    <downloadUrl>http://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
   </xform>
 </xforms>\r
 0\r\n\r\n`,
@@ -142,10 +141,7 @@ Connection: close\r
 
 const rawHttpRequest = rawRequest => {
   return new Promise((resolve, reject) => {
-    const api = net.connect(
-      port,
-      host
-    );
+    const api = net.connect(host);
     let rawResponse = '';
 
     api.on('connect', () => api.write(rawRequest));

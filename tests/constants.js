@@ -1,22 +1,13 @@
-const IS_CI = !!process.env.CI;
-
-const COUCH_HOST = 'localhost';
-const COUCH_PORT = IS_CI ? '5984' : '4984';
-const API_PORT = IS_CI ? '5988' : '4988';
+const USERNAME = 'admin';
+const PASSWORD = 'pass';
 
 module.exports = {
-  IS_CI: IS_CI,
+  IS_CI: !!process.env.CI,
 
   // connection information for the test api instance which is
   // intentionally different from the dev api instance to avoid
   // port collisions
-  API_PORT,
-  API_HOST: 'localhost',
-
-  // connection information for the couchdb instance
-  // locally we spin up a different CouchDB for e2e tests
-  COUCH_PORT,
-  COUCH_HOST,
+  API_HOST: 'localhost', // TODO remove?
 
   // test database to avoid writing to the dev db
   // TODO: we don't need to do this anymore since it's in its own docker container
@@ -32,8 +23,12 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
-  BASE_URL: `https://${COUCH_HOST}/`,
+  BASE_URL: `https://localhost/`,
+  BASE_URL_AUTH: `https://${USERNAME}:${PASSWORD}:localhost/`,
 
   // nginx certificate setting
-  CERTIFICATE_MODE: 'SELF_SIGNED'
+  CERTIFICATE_MODE: 'SELF_SIGNED',
+
+  USERNAME,
+  PASSWORD
 };

@@ -5,7 +5,7 @@ const exec = util.promisify(require('child_process').exec);
 const utils = require('./utils');
 
 const runCommand = async (action, dirPath) => {
-  const url = utils.getInstanceUrl();
+  const url = constants.BASE_URL_AUTH;
   try {
     const chtConfPath = path.resolve(process.cwd(), './node_modules/.bin/cht');
     const { stdout } = await exec(`${chtConfPath} --url=${url} ${action} --force --debug`, { cwd: dirPath });

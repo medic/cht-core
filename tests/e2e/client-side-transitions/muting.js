@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const { expect } = require('chai');
 
-const auth = require('../../auth')();
 const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.po.js');
@@ -208,7 +207,7 @@ describe('Muting', () => {
 
     await utils.startSentinel();
     await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(auth.username, auth.password);
+    await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
     await utils.revertDb();
     await commonElements.calmNative();
   });

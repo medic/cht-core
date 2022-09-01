@@ -2,7 +2,6 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-const auth = require('./auth')();
 const wdioBaseConfig = require('./wdio.conf');
 const constants = require('./constants');
 constants.DB_NAME = 'medic';
@@ -49,8 +48,8 @@ const dockerComposeCmd = (...params) => {
     ...process.env,
     HAPROXY_PORT,
     CHT_COMPOSE_PATH: CHT_DOCKER_COMPOSE_FOLDER,
-    COUCHDB_USER: auth.username,
-    COUCHDB_PASSWORD: auth.password,
+    COUCHDB_USER: constants.USERNAME,
+    COUCHDB_PASSWORD: constants.PASSWORD,
     DOCKER_CONFIG_PATH: path.join(os.homedir(), '.docker'),
     COUCHDB_DATA: CHT_DATA_FOLDER,
   };

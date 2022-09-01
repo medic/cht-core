@@ -1,5 +1,4 @@
 const utils = require('../../utils');
-const auth = require('../../auth')();
 const userFactory = require('../../factories/cht/users/users');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const common = require('../../page-objects/common/common.wdio.page');

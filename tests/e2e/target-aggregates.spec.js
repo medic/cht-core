@@ -5,7 +5,6 @@ const loginPage = require('../page-objects/login/login.po.js');
 const helper = require('../helper');
 const moment = require('moment');
 const uuid = require('uuid').v4;
-const auth = require('../auth')();
 const _ = require('lodash');
 
 const randomString = (length) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
@@ -229,7 +228,7 @@ describe('Target aggregates', () => {
 
     afterAll(async () => {
       await commonElements.goToLoginPageNative();
-      await loginPage.loginNative(auth.username, auth.password);
+      await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
       await commonElements.calmNative();
     });
 

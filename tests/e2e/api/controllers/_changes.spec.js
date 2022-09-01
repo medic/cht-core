@@ -5,7 +5,6 @@ const uuid = require('uuid').v4;
 const http = require('http');
 const querystring = require('querystring');
 const constants = require('../../../constants');
-const auth = require('../../../auth')();
 const semver = require('semver');
 const chai = require('chai');
 
@@ -295,8 +294,7 @@ describe('changes handler', () => {
       const heartRateMonitor = options => {
         options = options || {};
         options.hostname = constants.API_HOST;
-        options.port = constants.API_PORT;
-        options.auth = options.auth || `${auth.username}:${auth.password}`;
+        options.auth = options.auth || `${constants.USERNAME}:${constants.PASSWORD}`;
         options.path = options.path || '/';
         options.query = Object.assign({ heartbeat: 2000, feed: 'longpoll' }, options.query || {});
         options.path += '?' + querystring.stringify(options.query || {});
@@ -397,9 +395,8 @@ describe('changes handler', () => {
 
     before(() => {
       const options = {
-        hostname: constants.COUCH_HOST,
-        port: constants.COUCH_PORT,
-        auth: auth.username+ ':' + auth.password,
+        hostname: constants.API_HOST,
+        auth: constants.USERNAME + ':' + constants.PASSWORD,
         path: '/'
       };
 

@@ -1,4 +1,3 @@
-const auth = require('../../auth')();
 const utils = require('../../utils');
 
 const { BRANCH, BUILD_NUMBER } = process.env;
