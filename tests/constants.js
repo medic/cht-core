@@ -32,7 +32,7 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
-  BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`,
+  BASE_URL: `https://${COUCH_HOST}/`,
 
   // nginx certificate setting
   CERTIFICATE_MODE: 'SELF_SIGNED'

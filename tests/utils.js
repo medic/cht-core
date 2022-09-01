@@ -53,6 +53,7 @@ const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
 const request = (options, { debug } = {}) => {
+  debug = true; // TODO remove
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;
@@ -1107,16 +1108,16 @@ module.exports = {
     `http://${auth.username}:${auth.password}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`,
 
   getInstanceUrl: () =>
-    `http://${auth.username}:${auth.password}@${constants.API_HOST}`,
+    `https://${auth.username}:${auth.password}@${constants.API_HOST}`,
 
   getOrigin: () =>
-    `http://${constants.API_HOST}`,
+    `https://${constants.API_HOST}`,
 
   getBaseUrl: () =>
-    `http://${constants.API_HOST}/#/`,
+    `https://${constants.API_HOST}/#/`,
 
   getAdminBaseUrl: () =>
-    `http://${constants.API_HOST}/admin/#/`,
+    `https://${constants.API_HOST}/admin/#/`,
 
   getLoginUrl: () =>
     `https://${constants.API_HOST}/${constants.DB_NAME}/login`,
