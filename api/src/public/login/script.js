@@ -219,7 +219,6 @@ const checkUnsupportedBrowser = () => {
     return;
   }
 
-  const warningMessage = translations[selectedLocale]['login.unsupported_browser'];
   let outdatedComponentKey;
   if (isUsingChtAndroid()) {
     if (isUsingChtAndroidV1()) {
@@ -232,7 +231,7 @@ const checkUnsupportedBrowser = () => {
   }
 
   if (typeof outdatedComponentKey !== 'undefined') {
-    document.getElementById('unsupported-browser-warning').innerText = warningMessage;
+    document.getElementById('unsupported-browser-update').setAttribute('translate', outdatedComponentKey);
     document.getElementById('unsupported-browser-update').innerText =
       translations[selectedLocale][outdatedComponentKey];
     document.getElementById('unsupported-browser').classList.remove('hidden');
