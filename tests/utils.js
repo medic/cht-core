@@ -572,13 +572,6 @@ const setupSettings = () => {
   });
 };
 
-const getLoginUrl = () => {
-  const redirectUrl = encodeURIComponent(
-    `/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`
-  );
-  return `http://${constants.API_HOST}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
-};
-
 const saveBrowserLogs = () => {
   // wdio also writes in this file
   if (!browserLogStream) {
@@ -712,7 +705,7 @@ const stopService = async (service) => {
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
-  await browser.driver.get(getLoginUrl());
+  await browser.driver.get(exports.getLoginUrl());
   await browser.driver.findElement(by.name('user')).sendKeys(auth.username);
   await browser.driver.findElement(by.name('password')).sendKeys(auth.password);
   await browser.driver.findElement(by.id('login')).click();
@@ -1126,7 +1119,7 @@ module.exports = {
     `http://${constants.API_HOST}/admin/#/`,
 
   getLoginUrl: () =>
-    `http://${constants.API_HOST}/${constants.DB_NAME}/login`,
+    `https://${constants.API_HOST}/${constants.DB_NAME}/login`,
 
   // Deletes _users docs and medic/user-settings docs for specified users
   // @param {Array} usernames - list of users to be deleted
