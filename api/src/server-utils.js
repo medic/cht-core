@@ -6,13 +6,17 @@ const logger = require('./logger');
 const MEDIC_BASIC_AUTH = 'Basic realm="Medic Web Services"';
 const cookie = require('./services/cookie');
 
-const wantsJSON = req => req.get('Accept') === 'application/json';
+const APP_JSON = 'application/json';
+
+const wantsJSON = req => req.get('Accept') === APP_JSON;
 
 const writeJSON = (res, code, error, details) => {
-  if (!res.headersSent && !res.ended) {
+  if (!res.headersSent) {
     res.status(code);
-    res.json({ code, error, details });
+    res.setHeader('Content-Type', APP_JSON);
   }
+  // using res.json would also automatically try to set the Content-Type header, which fails if headers are sent
+  res.end(JSON.stringify({ code, error, details }));
 };
 
 const respond = (req, res, code, message, details) => {
