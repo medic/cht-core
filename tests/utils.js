@@ -705,7 +705,7 @@ const stopService = async (service) => {
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
-  await browser.driver.get(exports.getLoginUrl());
+  await browser.driver.get(module.exports.getLoginUrl());
   await browser.driver.findElement(by.name('user')).sendKeys(auth.username);
   await browser.driver.findElement(by.name('password')).sendKeys(auth.password);
   await browser.driver.findElement(by.id('login')).click();
