@@ -80,7 +80,7 @@ const request = (options, { debug } = {}) => {
 
   return rpn(options).catch(err => {
     err.responseBody = err.response && err.response.body;
-    debug && console.warn(`A request error occurred ${err.options.uri}`);
+    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri}`);
     throw err;
   });
 };
