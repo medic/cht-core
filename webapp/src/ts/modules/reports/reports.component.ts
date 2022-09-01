@@ -194,7 +194,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       report.heading = this.getReportHeading(form, report);
       report.summary = form ? form.title : report.form;
       report.lineage = report.subject && report.subject.lineage || report.lineage;
-      // remove the lineage level that belongs to the offline logged in user, normally the last one
+      // remove the lineage level that belongs to the offline logged-in user, normally the last one
       if (this.currentLevel) {
         report.lineage = report.lineage.filter(level => level !== this.currentLevel);
       }
@@ -345,4 +345,5 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   resetFilter() {
     this.reportsSidebarFilter?.resetFilters();
   }
+
 }

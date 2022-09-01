@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-import { debounce as _debounce } from 'lodash-es';
+import { debounce as _debounce, map as _map, find as _find } from 'lodash-es';
 import * as moment from 'moment';
 
 import { ChangesService } from '@mm-services/changes.service';
@@ -13,6 +13,9 @@ import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TourService } from '@mm-services/tour.service';
 import { GlobalActions } from '@mm-actions/global';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { SessionService } from '@mm-services/session.service';
 
 @Component({
   templateUrl: './tasks.component.html',
@@ -26,6 +29,9 @@ export class TasksComponent implements OnInit, OnDestroy {
     private telemetryService:TelemetryService,
     private tourService:TourService,
     private route:ActivatedRoute,
+    private lineageModelGeneratorService:LineageModelGeneratorService,
+    private userContactService:UserContactService,
+    private sessionService:SessionService,
   ) {
     this.tasksActions = new TasksActions(store);
     this.globalActions = new GlobalActions(store);
@@ -41,6 +47,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   hasTasks;
   loading;
   tasksDisabled;
+  currentLevel;
 
   private tasksLoaded;
   private debouncedReload;
@@ -97,6 +104,13 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.hasTasks = false;
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
+    if (!this.sessionService.isOnlineOnly()) {
+      this
+        .getCurrentLineageLevel()
+        .then((currentLevel) => {
+          this.currentLevel = currentLevel;
+        });
+    }
     this.refreshTasks();
 
     this.tourService.startIfNeeded(this.route.snapshot);
@@ -116,14 +130,13 @@ export class TasksComponent implements OnInit, OnDestroy {
     window.location.reload();
   }
 
-  private hydrateEmissions(taskDocs) {
+  private async hydrateEmissions(taskDocs) {
     return taskDocs.map(taskDoc => {
       const emission = { ...taskDoc.emission };
       const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
       emission.date = new Date(dueDate.valueOf());
       emission.overdue = dueDate.isBefore(moment());
       emission.owner = taskDoc.owner;
-
       return emission;
     });
   }
@@ -142,7 +155,27 @@ export class TasksComponent implements OnInit, OnDestroy {
       .then(taskDocs => {
         this.hasTasks = taskDocs.length > 0;
         this.loading = false;
-        this.tasksActions.setTasksList(this.hydrateEmissions(taskDocs));
+        this.hydrateEmissions(taskDocs)
+          .then((tasks) => {
+            // get lineages for all tasks
+            this.getLineagesFromTaskDocs(tasks)
+              .then((subjects) => {
+                const deepCopy = obj => JSON.parse(JSON.stringify(obj));
+                const lineagedTasks = deepCopy(tasks);
+                lineagedTasks.forEach((task) => {
+                  // map tasks with lineages
+                  let lineage = _map(_find(subjects, subject => subject._id === task.forId).lineage, 'name');
+                  // remove the lineage level that belongs to the offline logged-in user, normally the last one
+                  if (this.currentLevel) {
+                    lineage = lineage.filter(level => level && level !== this.currentLevel);
+                  }
+                  task.lineage = lineage;
+                });
+                this.tasksActions.setTasksList(lineagedTasks);
+              });
+
+          });
+
         if (!this.tasksLoaded) {
           this.tasksActions.setTasksLoaded(true);
         }
@@ -153,7 +186,6 @@ export class TasksComponent implements OnInit, OnDestroy {
       })
       .catch(err => {
         console.error('Error getting tasks for all contacts', err);
-
         this.error = true;
         this.loading = false;
         this.hasTasks = false;
@@ -163,5 +195,14 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   listTrackBy(index, task) {
     return task?._id;
+  }
+
+  async getCurrentLineageLevel(){
+    return this.userContactService.get().then(user => user?.parent?.name);
+  }
+
+  async getLineagesFromTaskDocs(taskDocs){
+    const ids = _map(taskDocs, 'forId');
+    return await this.lineageModelGeneratorService.reportSubjects(ids);
   }
 }
