@@ -53,7 +53,6 @@ const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
 const request = (options, { debug } = {}) => {
-  debug = true;
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;

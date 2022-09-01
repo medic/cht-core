@@ -18,8 +18,8 @@ services:
         max-file: "${LOG_MAX_FILES:-20}"
     networks:
       - {{ network }}
-    ports:
-      - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
+    expose:
+      - ${HAPROXY_PORT:-5984}
 
   healthcheck:
     image: {{{ repo }}}/cht-haproxy-healthcheck:{{ tag }}
