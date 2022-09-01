@@ -28,10 +28,8 @@ async function replaceUser(replaceUserReportId, appUrl) {
 
   const oldUser = await db.medic.get(oldUserSettings._id);
   await db.medic.put(Object.assign({}, oldUserSettings, { shouldLogoutNextSync: true, replaced: true }));
-  const randomNum = Math.floor(Math.random() * 9999) + 1000;
-  const username = newContact.name.replace(/\s+/g, '-').toLowerCase() + randomNum;
   const user = {
-    username: username,
+    username: generateUniqueUsername(newContact.name),
     contact: newContact._id,
     place: newContact.parent._id,
     phone: newContact.phone,
@@ -40,6 +38,35 @@ async function replaceUser(replaceUserReportId, appUrl) {
     fullname: newContact.name,
   };
   return usersService.createUser(user, appUrl);
+}
+
+async function generateUniqueUsername(contactName) {
+  const username = generateUsername(contactName);
+  try {
+    await db.users.get(`org.couchdb.user:${username}`);
+
+    // this username is already used, retry
+    return generateUniqueUsername(contactName);
+  } catch (error) {
+    if (error.status === 404) {
+      // this username is available
+      return username;
+    }
+
+    throw error;
+  }
+}
+
+function generateUsername(contactName) {
+  const randomNum = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+  const username = contactName.normalize('NFD') // split an accented letter in the base letter and the accent
+    .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9 ]/g, '') // remove all chars not letters, numbers and spaces (to be replaced)
+    .replace(/\s+/g, '-'); // separator
+
+  return `${username}-${randomNum}`;
 }
 
 async function reparentReports(replaceUserReportId, newContact) {
