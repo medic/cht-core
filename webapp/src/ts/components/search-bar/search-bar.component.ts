@@ -47,11 +47,11 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     this.toggleMobileSearch(false);
   }
 
-  toggleMobileSearch(force?) {
-    if (this.disabled || !this.responsiveService.isMobile()) {
+  toggleMobileSearch(forcedValue?) {
+    if (forcedValue === undefined && (this.disabled || !this.responsiveService.isMobile())) {
       return;
     }
-    this.openSearch = force !== undefined ? force : !this.openSearch;
+    this.openSearch = forcedValue !== undefined ? forcedValue : !this.openSearch;
   }
 
   applySort(direction) {

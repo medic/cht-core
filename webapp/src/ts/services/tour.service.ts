@@ -288,6 +288,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.reports.freetext-filter.title',
           content: 'tour.reports.freetext-filter.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowReportList()
         },
         {
@@ -362,6 +363,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.contacts.search.title',
           content: 'tour.contacts.search.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowContactList()
         },
         {
