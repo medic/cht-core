@@ -1,5 +1,5 @@
 import {cloneDeep as _cloneDeep, find as _find} from 'lodash-es';
-import {AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild,} from '@angular/core';
+import {AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {combineLatest, Subscription} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
