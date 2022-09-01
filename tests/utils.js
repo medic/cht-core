@@ -53,6 +53,7 @@ const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
 const request = (options, { debug } = {}) => {
+  debug = true;
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;
@@ -61,11 +62,8 @@ const request = (options, { debug } = {}) => {
   options.json = options.json === undefined ? true : options.json;
 
   if (debug) {
-    console.log('!!!!!!!REQUEST!!!!!!!');
-    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log('SENDING REQUEST' );
     console.log(JSON.stringify(options, null, 2));
-    console.log('!!!!!!!REQUEST!!!!!!!');
-    console.log('!!!!!!!REQUEST!!!!!!!');
   }
 
   options.transform = (body, response, resolveWithFullResponse) => {
