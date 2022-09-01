@@ -32,6 +32,7 @@
               </div>
 
               <div *ngIf="task.priorityLabel" class="warning">{{task.priorityLabel}}</div>
+              <div *ngIf="task.lineage?.length" class="detail" [innerHTML]="task.lineage | lineage"></div>
             </div>
           </a>
         </li>
