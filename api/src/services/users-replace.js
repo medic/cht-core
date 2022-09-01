@@ -70,7 +70,6 @@ function generateUsername(contactName) {
 }
 
 async function reparentReports(replaceUserReportId, newContact) {
-  // TODO: 409
   const replaceUserReport = await db.medic.get(replaceUserReportId);
   const reportsSubmittedAfterReplace = await getReportsToReparent(
     replaceUserReport.fields.original_contact_uuid,
