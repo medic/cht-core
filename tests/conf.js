@@ -38,7 +38,7 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu', '--deny-permission-prompts', '--no-sandbox'],
+      args: ['--window-size=1024,768', '--headless', '--ignore-certificate-errors', '--disable-gpu', '--deny-permission-prompts', '--no-sandbox'],
       prefs: {
         intl: { accept_languages: 'en-US' },
       },
