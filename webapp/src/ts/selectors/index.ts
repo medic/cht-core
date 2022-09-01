@@ -29,6 +29,7 @@ export const Selectors = {
   getForms: createSelector(getGlobalState, (globalState) => globalState.forms),
   getFilters: createSelector(getGlobalState, (globalState) => globalState.filters),
   getIsAdmin: createSelector(getGlobalState, (globalState) => globalState.isAdmin),
+  getSidebarFilter: createSelector(getGlobalState, (globalState) => globalState.sidebarFilter),
   getTitle: createSelector(getGlobalState, (globalState) => globalState.title),
   getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),

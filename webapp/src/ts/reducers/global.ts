@@ -22,7 +22,8 @@ const initialState = {
     error: null
   },
   facilities: [],
-  filters: {},
+  filters: {}, // Selected criteria to filter data.
+  sidebarFilter: {}, // Component state.
   forms: null,
   isAdmin: false,
   lastChangedDoc: false,
@@ -98,6 +99,15 @@ const _globalReducer = createReducer(
   }),
   on(Actions.setIsAdmin, (state, { payload: { isAdmin } }) => {
     return { ...state, isAdmin };
+  }),
+  on(Actions.setSidebarFilter, (state, { payload: { sidebarFilter } }) => {
+    return {
+      ...state,
+      sidebarFilter: { ...state.sidebarFilter, ...sidebarFilter }
+    };
+  }),
+  on(Actions.clearSidebarFilter, (state) => {
+    return { ...state, sidebarFilter: {} };
   }),
   on(Actions.setTitle, (state, { payload: { title} }) => {
     return { ...state, title };

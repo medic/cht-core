@@ -20,6 +20,8 @@ export const Actions = {
   clearFilters: createAction('CLEAR_FILTERS'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
+  setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
+  clearSidebarFilter: createAction('CLEAR_SIDEBAR_FILTER'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
   setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
@@ -99,6 +101,14 @@ export class GlobalActions {
 
   setFilters(filters) {
     return this.store.dispatch(Actions.setFilters(filters));
+  }
+
+  setSidebarFilter(sidebarFilter) {
+    return this.store.dispatch(Actions.setSidebarFilter(sidebarFilter));
+  }
+
+  clearSidebarFilter() {
+    return this.store.dispatch(Actions.clearSidebarFilter());
   }
 
   setSelectMode(selectMode) {
