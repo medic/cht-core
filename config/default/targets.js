@@ -53,7 +53,7 @@ module.exports = [
     appliesTo: 'contacts',
     appliesToType: ['person'],
     appliesIf: function (contact) {
-      return !!contact;
+      return contact && contact.contact && contact.contact.date_of_birth;
     },
     date: (contact) => contact.contact.date_of_birth,
     dhis: {

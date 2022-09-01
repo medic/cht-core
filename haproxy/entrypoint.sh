@@ -4,13 +4,19 @@ set -e
 # Make sure service is running
 service rsyslog start
 
-# Place environment variables into config
-CONFIG="/usr/local/etc/haproxy/haproxy.cfg"
+DEFAULT="/usr/local/etc/haproxy/default_frontend.cfg"
+BACKEND="/usr/local/etc/haproxy/backend.cfg"
+
+# Update backend servers
+cp /usr/local/etc/haproxy/backend.cfg.template $BACKEND
 for COUCHDB_SERVER in ${COUCHDB_SERVERS//,/ }
 do
-  printf "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check agent-check agent-inter 5s agent-addr healthcheck agent-port 5555\n" >> $CONFIG
+  printf "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check agent-check agent-inter 5s agent-addr healthcheck agent-port 5555\n" >> $BACKEND
 done
-envsubst < $CONFIG
+
+# Place environment variables into config
+envsubst < $DEFAULT
+envsubst < $BACKEND
 
 #Write pw for healthcheck subshell to work
 mkdir -p /srv/storage/haproxy/passwd
