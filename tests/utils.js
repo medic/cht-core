@@ -53,7 +53,6 @@ const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
 const request = (options, { debug } = {}) => {
-  debug = true; // TODO remove
   options = typeof options === 'string' ? { path: options } : _.clone(options);
   if (!options.noAuth) {
     options.auth = options.auth || auth;
@@ -707,7 +706,6 @@ const stopService = async (service) => {
 
 const protractorLogin = async (browser, timeout = 20) => {
   await browser.driver.get(module.exports.getLoginUrl());
-  await browser.takeScreenshot();
   await browser.driver.findElement(by.name('user')).sendKeys(auth.username);
   await browser.driver.findElement(by.name('password')).sendKeys(auth.password);
   await browser.driver.findElement(by.id('login')).click();
