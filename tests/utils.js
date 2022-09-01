@@ -57,7 +57,7 @@ const request = (options, { debug } = {}) => {
   if (!options.noAuth) {
     options.auth = options.auth || auth;
   }
-  options.uri = options.uri || `http://${constants.API_HOST}${options.path}`;
+  options.uri = options.uri || `https://${constants.API_HOST}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
 
   if (debug) {
