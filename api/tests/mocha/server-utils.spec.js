@@ -186,7 +186,7 @@ describe('Server utils', () => {
 
     it('responds with JSON if requested', () => {
       const status = sinon.stub(res, 'status');
-      const json = sinon.stub(res, 'json');
+      const end = sinon.stub(res, 'end');
       const get = sinon.stub(req, 'get');
       get.returns('application/json');
       sinon.stub(res, 'setHeader');
@@ -195,12 +195,12 @@ describe('Server utils', () => {
       chai.expect(get.args[0][0]).to.equal('Accept');
       chai.expect(status.callCount).to.equal(1);
       chai.expect(status.args[0][0]).to.equal(401);
-      chai.expect(json.callCount).to.equal(1);
-      chai.expect(json.args[0][0].error).to.equal('unauthorized');
-      chai.expect(json.args[0][0].code).to.equal(401);
+      chai.expect(end.callCount).to.equal(1);
+      chai.expect(end.args[0][0]).to.equal(JSON.stringify({ code: 401, error: 'unauthorized' }));
 
-      chai.expect(res.setHeader.callCount).to.equal(1);
+      chai.expect(res.setHeader.callCount).to.equal(2);
       chai.expect(res.setHeader.args[0]).to.deep.equal(['logout-authorization', 'CHT-Core API']);
+      chai.expect(res.setHeader.args[1]).to.deep.equal(['Content-Type', 'application/json']);
     });
 
   });
@@ -231,7 +231,7 @@ describe('Server utils', () => {
 
     it('responds with JSON', () => {
       const status = sinon.stub(res, 'status');
-      const json = sinon.stub(res, 'json');
+      const end = sinon.stub(res, 'end');
       const get = sinon.stub(req, 'get');
       get.returns('application/json');
       serverUtils.serverError({ foo: 'bar' }, req, res);
@@ -239,14 +239,13 @@ describe('Server utils', () => {
       chai.expect(get.args[0][0]).to.equal('Accept');
       chai.expect(status.callCount).to.equal(1);
       chai.expect(status.args[0][0]).to.equal(500);
-      chai.expect(json.callCount).to.equal(1);
-      chai.expect(json.args[0][0].code).to.equal(500);
-      chai.expect(json.args[0][0].error).to.equal('Server error');
+      chai.expect(end.callCount).to.equal(1);
+      chai.expect(end.args[0][0]).to.equal(JSON.stringify({ code: 500, error: 'Server error' }));
     });
 
     it('handles uncaught payload size exceptions', () => {
       const status = sinon.stub(res, 'status');
-      const json = sinon.stub(res, 'json');
+      const end = sinon.stub(res, 'end');
       const get = sinon.stub(req, 'get');
       get.returns('application/json');
       serverUtils.serverError({ foo: 'bar', type: 'entity.too.large' }, req, res);
@@ -254,9 +253,8 @@ describe('Server utils', () => {
       chai.expect(get.args[0][0]).to.equal('Accept');
       chai.expect(status.callCount).to.equal(1);
       chai.expect(status.args[0][0]).to.equal(413);
-      chai.expect(json.callCount).to.equal(1);
-      chai.expect(json.args[0][0].code).to.equal(413);
-      chai.expect(json.args[0][0].error).to.equal('Payload Too Large');
+      chai.expect(end.callCount).to.equal(1);
+      chai.expect(end.args[0][0]).to.equal(JSON.stringify({ code: 413, error: 'Payload Too Large' }));
     });
 
   });
