@@ -40,7 +40,7 @@ const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
 const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectangle'));
 
 const reportsFilterOpenBtn = element(by.css('mm-search-bar .open-filter'));
-const reportsFilterResetBtn = element(by.css('mm-search-bar .sidebar-reset'));
+const reportsFilterResetBtn = element(by.css('mm-reports-sidebar-filter .sidebar-reset'));
 
 const waitForLoaderToDisappear = async (timeout = 10000) => {
   try {
