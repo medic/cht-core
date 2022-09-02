@@ -1,5 +1,7 @@
 const USERNAME = 'admin';
 const PASSWORD = 'pass';
+const API_HOST = 'localhost';
+const SCHEME = 'https://';
 
 module.exports = {
   IS_CI: !!process.env.CI,
@@ -7,7 +9,7 @@ module.exports = {
   // connection information for the test api instance which is
   // intentionally different from the dev api instance to avoid
   // port collisions
-  API_HOST: 'localhost', // TODO remove?
+  API_HOST,
 
   // test database to avoid writing to the dev db
   // TODO: we don't need to do this anymore since it's in its own docker container
@@ -23,8 +25,8 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
-  BASE_URL: `https://localhost`,
-  BASE_URL_AUTH: `https://${USERNAME}:${PASSWORD}:localhost`,
+  BASE_URL: `${SCHEME}${API_HOST}`,
+  BASE_URL_AUTH: `${SCHEME}${USERNAME}:${PASSWORD}:${API_HOST}`,
 
   // nginx certificate setting
   CERTIFICATE_MODE: 'SELF_SIGNED',

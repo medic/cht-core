@@ -5,7 +5,6 @@ const uuid = require('uuid').v4;
 const http = require('http');
 const querystring = require('querystring');
 const constants = require('../../../constants');
-const semver = require('semver');
 const chai = require('chai');
 
 const DEFAULT_EXPECTED = [
@@ -387,31 +386,9 @@ describe('changes handler', () => {
   });
 
   describe('Filtered replication', () => {
-    const couchVersionForBatching = '2.3.0';
 
-    let shouldBatchChangesRequests;
     let bobsIds;
     let stevesIds;
-
-    before(() => {
-      const options = {
-        hostname: constants.API_HOST,
-        auth: constants.USERNAME + ':' + constants.PASSWORD,
-        path: '/'
-      };
-
-      const req = http.request(options, res => {
-        let body = '';
-        res.on('data', data => body += data);
-        res.on('end', () => {
-          body = JSON.parse(body);
-          shouldBatchChangesRequests = semver.lte(couchVersionForBatching, body.version);
-        });
-      });
-
-      req.on('error', e => e);
-      req.end();
-    });
 
     beforeEach(async () => {
       bobsIds = ['org.couchdb.user:bob', 'fixture:user:bob', 'fixture:bobville'];
@@ -446,17 +423,8 @@ describe('changes handler', () => {
         ])
         .then(() => requestChanges('bob', { limit: 4 }))
         .then(changes => {
-          if (shouldBatchChangesRequests) {
-            // requests should be limited
-            const receivedIds = getIds(changes.results)
-              .filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
-            chai.expect(bobsIds).to.include.members(receivedIds);
-            // because we still process pending changes, it's not a given we will receive only 4 changes.
-            chai.expect(bobsIds).to.not.have.members(receivedIds);
-          } else {
-            // requests should return full changes list
-            assertChangeIds(changes, ...bobsIds);
-          }
+          // requests should return full changes list
+          assertChangeIds(changes, ...bobsIds);
         });
     });
 
