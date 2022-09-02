@@ -75,12 +75,11 @@ describe('Reports Component', () => {
     authService = { has: sinon.stub().resolves(false) };
     sessionService = {
       isDbAdmin: sinon.stub().returns(false),
-      isOnlineOnly: sinon.stub()
+      isOnlineOnly: sinon.stub().returns(false)
     };
     datePipe = { transform: sinon.stub() };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
-      getCurrentLineageLevel : sinon.stub().resolves('parent')
     };
     return TestBed
       .configureTestingModule({
@@ -279,4 +278,20 @@ describe('Reports Component', () => {
     });
   });
 
+  describe('lineage updates', () => {
+    it('it should retrieve the hierarchy level of the connected user', () => {
+      userContactService.get.resolves(userContactDoc);
+      sessionService.isOnlineOnly.resolves(false);
+      component.ngOnInit();
+      expect(component.currentLevel).to.equal('parent');
+    });
+
+    it('it should not change the report lineage if the connected user is online only', () => {
+      userContactService.get.resolves(userContactDoc);
+      sessionService.isOnlineOnly.resolves(true);
+      component.ngOnInit();
+      expect(component.currentLevel).to.equal('parent');
+    });
+
+  });
 });

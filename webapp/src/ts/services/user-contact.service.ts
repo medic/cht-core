@@ -33,10 +33,4 @@ export class UserContactService {
         throw err;
       });
   }
-
-  async getCurrentLineageLevel(){
-    return this
-      .get()
-      .then(user =>  user?.parent?.name);
-  }
 }

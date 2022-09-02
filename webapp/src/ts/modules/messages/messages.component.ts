@@ -54,8 +54,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
     if (!this.sessionService.isOnlineOnly()) {
-      this.userContactService
-        .getCurrentLineageLevel()
+      this.getCurrentLineageLevel()
         .then((currentLevel) => {
           this.currentLevel = currentLevel;
         });
@@ -164,10 +163,13 @@ export class MessagesComponent implements OnInit, OnDestroy {
     return this.messageContactService
       .getList()
       .then((conversations = []) => {
+        console.log(conversations);
         // remove the lineage level that belongs to the offline logged in user, normally the last one
         if (this.currentLevel) {
           conversations.forEach((conversation) => {
-            conversation.lineage = conversation.lineage?.filter(level => level !== this.currentLevel);
+            if (conversation.lineage) {
+              conversation.lineage = conversation.lineage.filter(level => level !== this.currentLevel);
+            }
             return conversation;
           });
         }
@@ -203,5 +205,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
   listTrackBy(index, message) {
     const identifier = message.doc ? message.doc.id + message.doc._rev : message.id;
     return message.key + identifier;
+  }
+
+  async getCurrentLineageLevel(){
+    return this.userContactService.get().then(user => user?.parent?.name);
   }
 }

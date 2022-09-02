@@ -49,9 +49,8 @@ describe('Messages Component', () => {
     };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
-      getCurrentLineageLevel : sinon.stub().resolves('parent')
     };
-    sessionService = { isOnlineOnly : sinon.stub().resolves(true) };
+    sessionService = { isOnlineOnly : sinon.stub().resolves(false) };
     const tourServiceMock = {
       startIfNeeded: () => {}
     };
@@ -193,6 +192,126 @@ describe('Messages Component', () => {
       expect(component.loading).to.be.false;
       expect(component.conversations).to.eql( newConversations);
     });
+
+    it('it should retrieve the hierarchy level of the connected user', () => {
+      userContactService.get.resolves(userContactDoc);
+      sessionService.isOnlineOnly.resolves(false);
+      component.ngOnInit();
+      expect(component.currentLevel).to.equal('parent');
+    });
+
+    it('it should not change the conversations lineage if the connected user is online only', async () => {
+      const conversations = [
+        { key: 'a', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+        { key: 'b', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+        { key: 'c', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+        { key: 'd', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+      ];
+      messageContactService.getList.reset();
+      messageContactService.getList.resolves(conversations);
+      userContactService.get.resolves(userContactDoc);
+      sessionService.isOnlineOnly.resolves(true);
+      //fixture.detectChanges();
+      //await component.updateConversations();
+      component.ngOnInit();
+      expect(messageContactService.getList.callCount).to.equal(1);
+      expect(component.currentLevel).to.equal('parent');
+      //expect(component.conversations).to.equal(conversations);
+    });
+
+    it('it should not change the conversations lineage ' +
+      'if the connected user is offline only but belongs to a place out of the conversation lineage', async () => {
+      const offlineUserContactDoc = {
+        _id: 'user',
+        parent: {
+          _id: 'parent',
+          name: 'parent',
+          parent: userContactGrandparent,
+        },
+      };
+      const conversations = [
+        { key: 'a', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+        { key: 'b', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+        { key: 'c', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+        { key: 'd', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+      ];
+      messageContactService.getList.reset();
+      messageContactService.getList.resolves(conversations);
+      userContactService.get.resolves(offlineUserContactDoc);
+      sessionService.isOnlineOnly.resolves(false);
+      //fixture.detectChanges();
+      //await component.updateConversations();
+      component.ngOnInit();
+      expect(await messageContactService.getList.callCount).to.equal(1);
+      expect(component.currentLevel).to.equal('parent');
+      //expect(component.conversations).to.equal(conversations);
+    });
+
+    it('it should update the conversations lineage ' +
+      'if the connected user is offline and belongs to a place of the conversation lineage', async () => {
+      const offlineUserContactDoc2 = {
+        _id: 'user',
+        parent: {
+          _id: 'parent',
+          name: 'CHW Bettys Area',
+          parent: userContactGrandparent,
+        },
+      };
+      const conversations = [
+        { key: 'a', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+        { key: 'b', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+        { key: 'c', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+        { key: 'd', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        },
+      ];
+      const updatedConversations = [
+        { key: 'a', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+        },
+        { key: 'b', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+        },
+        { key: 'c', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+        },
+        { key: 'd', message: { inAllMessages: true },
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+        },
+      ];
+      messageContactService.getList.reset();
+      messageContactService.getList.resolves(conversations);
+      userContactService.get.resolves(offlineUserContactDoc2);
+      sessionService.isOnlineOnly.resolves(false);
+      //fixture.detectChanges();
+      //await component.updateConversations();
+      component.ngOnInit();
+      expect(messageContactService.getList.callCount).to.equal(1);
+      expect(component.currentLevel).to.equal('CHW Bettys Area');
+      //expect(component.conversations).to.equal(updatedConversations);
+    });
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {
@@ -201,12 +320,6 @@ describe('Messages Component', () => {
     component.ngOnDestroy();
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
-  });
-
-  it('it should retrieve the hierarchy level of the connected user', () => {
-    userContactService.get.resolves(userContactDoc);
-    component.ngOnInit();
-    expect(component.currentLevel).to.equal('parent');
   });
 
 });

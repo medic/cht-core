@@ -140,8 +140,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
     if (!this.sessionService.isOnlineOnly()) {
-      this.userContactService
-        .getCurrentLineageLevel()
+      this.getCurrentLineageLevel()
         .then((currentLevel) => {
           this.currentLevel = currentLevel;
         });
@@ -188,6 +187,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private prepareReports(reports) {
+    console.log(reports);
     return reports.map(report => {
       const form = _find(this.forms, { code: report.form });
       report.icon = form && form.icon;
@@ -344,5 +344,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   resetFilter() {
     this.reportsSidebarFilter?.resetFilters();
+  }
+
+  async getCurrentLineageLevel(){
+    return this.userContactService.get().then(user => user?.parent?.name);
   }
 }
