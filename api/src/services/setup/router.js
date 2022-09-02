@@ -62,7 +62,7 @@ router.get('/api/v1/startup-progress', (req, res) => {
 
 const paths = [
   '/setup/poll',
-  '_session',
+  '/_session',
   '/api/v2/upgrade',
 ];
 paths.forEach(path => {
