@@ -2,6 +2,10 @@ const uploadData = require('./upload-data');
 
 (async () => {
   try {
+    if (await uploadData.loginListExists()) {
+      return;
+    }
+
     const usernames = await uploadData.getUsers();
     const loginMap = usernames.map(username => ({ username, password: 'Secret_1' }));
     await uploadData.generateLoginList(loginMap);

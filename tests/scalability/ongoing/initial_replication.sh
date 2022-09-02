@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-THREADS=300
-BATCHES=10
+THREADS=30
+BATCHES=1
 THREADS_IN_BATCH=$(($THREADS/$BATCHES))
 
 if [ -z $INSTANCE_URL ]
@@ -33,8 +33,8 @@ for BATCH in $(seq 0 $(($BATCHES-1)))
 do
   for THREAD in $(seq 1 $THREADS_IN_BATCH)
   do
-    CURRENT_THREAD=$(($THREADS_IN_BATCH*$BATCH+$THREAD+$THREADS*$SKIP))
-    echo "Initial replication ${CURRENT_THREAD} of $(($THREADS))"
+    CURRENT_THREAD=$(($THREADS_IN_BATCH*$BATCH+$THREAD+$SKIP))
+    echo "Initial replication ${CURRENT_THREAD} of $(($SKIP)) to $(($THREADS+$SKIP))"
     node ./initial-replication.js $INSTANCE_URL $DATA_DIR $CURRENT_THREAD &
   done
   wait

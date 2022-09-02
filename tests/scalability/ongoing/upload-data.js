@@ -124,6 +124,8 @@ const indexViews = async () => {
   return await Promise.all(indexViewsPromises);
 };
 
+const loginListExists = () => fs.existsSync(path.join(dataDirPath, 'users.json'));
+
 const generateLoginList = (users) => {
   return fs.promises.writeFile(path.join(dataDirPath, 'users.json'), JSON.stringify(users, null, 2 ));
 };
@@ -161,6 +163,7 @@ module.exports = {
   uploadUsers,
   indexViews,
   saveJson,
+  loginListExists,
   generateLoginList,
   createJsonDir,
   getHealthCenters,
