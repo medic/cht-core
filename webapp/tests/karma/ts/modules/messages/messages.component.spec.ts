@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -50,13 +50,19 @@ describe('Messages Component', () => {
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };
-    sessionService = { isOnlineOnly : sinon.stub().resolves(false) };
+    sessionService = { isOnlineOnly : sinon.stub().returns(false) };
     const tourServiceMock = {
       startIfNeeded: () => {}
     };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
-      { selector: 'getConversations', value: []},
+      { selector: 'getConversations', value: 
+          [
+            { key: 'a', message: { inAllMessages: true },
+              lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+            },
+          ],
+      },
       { selector: 'getLoadingContent', value: false },
       { selector: 'getMessagesError', value: false },
     ];
@@ -194,8 +200,8 @@ describe('Messages Component', () => {
     });
 
     it('it should retrieve the hierarchy level of the connected user', () => {
-      userContactService.get.resolves(userContactDoc);
-      sessionService.isOnlineOnly.resolves(false);
+      //userContactService.get.resolves(userContactDoc);
+      sessionService.isOnlineOnly.returns(false);
       component.ngOnInit();
       expect(component.currentLevel).to.equal('parent');
     });
@@ -218,13 +224,11 @@ describe('Messages Component', () => {
       messageContactService.getList.reset();
       messageContactService.getList.resolves(conversations);
       userContactService.get.resolves(userContactDoc);
-      sessionService.isOnlineOnly.resolves(true);
-      //fixture.detectChanges();
-      //await component.updateConversations();
-      component.ngOnInit();
+      sessionService.isOnlineOnly.returns(true);
+      await component.updateConversations({merge : true});
       expect(messageContactService.getList.callCount).to.equal(1);
       expect(component.currentLevel).to.equal('parent');
-      //expect(component.conversations).to.equal(conversations);
+      expect(component.conversations).to.deep.equal(conversations);
     });
 
     it('it should not change the conversations lineage ' +
@@ -254,17 +258,16 @@ describe('Messages Component', () => {
       messageContactService.getList.reset();
       messageContactService.getList.resolves(conversations);
       userContactService.get.resolves(offlineUserContactDoc);
-      sessionService.isOnlineOnly.resolves(false);
+      sessionService.isOnlineOnly.returns(false);
       //fixture.detectChanges();
-      //await component.updateConversations();
-      component.ngOnInit();
+      await component.updateConversations({merge : true});
       expect(await messageContactService.getList.callCount).to.equal(1);
       expect(component.currentLevel).to.equal('parent');
-      //expect(component.conversations).to.equal(conversations);
+      expect(component.conversations).to.equal(conversations);
     });
 
     it('it should update the conversations lineage ' +
-      'if the connected user is offline and belongs to a place of the conversation lineage', async () => {
+      'if the connected user is offline and belongs to a place of the conversation lineage', fakeAsync( () => {
       const offlineUserContactDoc2 = {
         _id: 'user',
         parent: {
@@ -304,14 +307,15 @@ describe('Messages Component', () => {
       messageContactService.getList.reset();
       messageContactService.getList.resolves(conversations);
       userContactService.get.resolves(offlineUserContactDoc2);
-      sessionService.isOnlineOnly.resolves(false);
-      //fixture.detectChanges();
-      //await component.updateConversations();
+      sessionService.isOnlineOnly.returns(false);
       component.ngOnInit();
-      expect(messageContactService.getList.callCount).to.equal(1);
+      tick();
+      component.updateConversations({merge : true});
+      tick();
+      expect(messageContactService.getList.callCount).to.equal(2);
       expect(component.currentLevel).to.equal('CHW Bettys Area');
-      //expect(component.conversations).to.equal(updatedConversations);
-    });
+      expect(component.conversations).to.deep.equal(updatedConversations);
+    }));
   });
 
   it('ngOnDestroy() should unsubscribe from observables', () => {
