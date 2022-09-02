@@ -16,6 +16,9 @@ import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
+import {UserContactService} from '@mm-services/user-contact.service';
+import {SessionService} from '@mm-services/session.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -26,9 +29,20 @@ describe('TasksComponent', () => {
   let contactTypesService;
   let clock;
   let store;
+  let sessionService;
+  let userContactService;
+  let lineageModelGeneratorService;
 
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
+
+  const userContactDoc = {
+    _id: 'user',
+    parent: {
+      _id: 'parent',
+      name: 'parent',
+    },
+  };
 
   beforeEach(async () => {
     changesService = { subscribe: sinon.stub() };
@@ -43,6 +57,15 @@ describe('TasksComponent', () => {
     contactTypesService = {
       includes: sinon.stub(),
     };
+    sessionService = {
+      isDbAdmin: sinon.stub().returns(false),
+      isOnlineOnly: sinon.stub().returns(false),
+      userCtx: sinon.stub().returns({ name: 'Sarah' })
+    };
+    userContactService = {
+      get: sinon.stub().resolves(userContactDoc),
+    };
+    lineageModelGeneratorService = { reportSubjects: sinon.stub() };
 
     TestBed.configureTestingModule({
       imports: [
@@ -57,6 +80,9 @@ describe('TasksComponent', () => {
         { provide: TourService, useValue: tourService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: NavigationService, useValue: {} },
+        { provide: SessionService, useValue: sessionService },
+        { provide: UserContactService, useValue: userContactService },
+        { provide: LineageModelGeneratorService, useValue: { lineageModelGeneratorService } },
       ],
       declarations: [
         TasksComponent,
@@ -277,5 +303,15 @@ describe('TasksComponent', () => {
     it('should nullcheck', () => {
       expect(component.listTrackBy(0, false)).to.equal(undefined);
     });
+  });
+
+  describe('lineage and breadcrumbs', () => {
+    it('it should retrieve the hierarchy level of the connected user', () => {
+      userContactService.get.resolves(userContactDoc);
+      sessionService.isOnlineOnly.resolves(false);
+      component.ngOnInit();
+      expect(component.currentLevel).to.equal('parent');
+    });
+
   });
 });
