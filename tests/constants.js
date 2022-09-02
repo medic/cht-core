@@ -23,8 +23,8 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
-  BASE_URL: `https://localhost/`,
-  BASE_URL_AUTH: `https://${USERNAME}:${PASSWORD}:localhost/`,
+  BASE_URL: `https://localhost`,
+  BASE_URL_AUTH: `https://${USERNAME}:${PASSWORD}:localhost`,
 
   // nginx certificate setting
   CERTIFICATE_MODE: 'SELF_SIGNED',
