@@ -26,7 +26,7 @@ import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AuthService } from '@mm-services/auth.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
-import { ReportsActionsBarComponent } from '@mm-modules/reports/reports-actions-bar.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('Reports Component', () => {
@@ -80,7 +80,7 @@ describe('Reports Component', () => {
           ReportsComponent,
           ReportsFiltersComponent,
           ReportsSidebarFilterComponent,
-          ReportsActionsBarComponent,
+          SearchBarComponent,
           ReportsContentComponent,
           NavigationComponent,
         ],
