@@ -39,6 +39,9 @@ const selectedPreferenceHeading = element(by.css('#language-preference-heading >
 const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
 const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectangle'));
 
+const reportsFilterOpenBtn = element(by.css('mm-search-bar .open-filter'));
+const reportsFilterResetBtn = element(by.css('mm-search-bar .sidebar-reset'));
+
 const waitForLoaderToDisappear = async (timeout = 10000) => {
   try {
     await helper.waitElementToDisappear(by.css('.loader', timeout));
@@ -195,7 +198,8 @@ module.exports = {
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
-      element(by.css('.reset-filter')).click();
+      reportsFilterOpenBtn.click();
+      reportsFilterResetBtn.click();
       browser.waitForAngular();
     }
   },
@@ -220,7 +224,8 @@ module.exports = {
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
-      await helper.clickElementNative(element(by.css('.reset-filter')));
+      await helper.clickElementNative(reportsFilterOpenBtn);
+      await helper.clickElementNative(reportsFilterResetBtn);
       await browser.waitForAngular();
     }
   },
