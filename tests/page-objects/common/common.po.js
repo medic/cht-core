@@ -199,6 +199,7 @@ module.exports = {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
       reportsFilterOpenBtn.click();
+      browser.waitForAngular();
       reportsFilterResetBtn.click();
       browser.waitForAngular();
     }
@@ -225,6 +226,7 @@ module.exports = {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
       await helper.clickElementNative(reportsFilterOpenBtn);
+      await browser.waitForAngular();
       await helper.clickElementNative(reportsFilterResetBtn);
       await browser.waitForAngular();
     }

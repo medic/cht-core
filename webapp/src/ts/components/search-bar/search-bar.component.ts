@@ -51,7 +51,13 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     if (forcedValue === undefined && (this.disabled || !this.responsiveService.isMobile())) {
       return;
     }
+
     this.openSearch = forcedValue !== undefined ? forcedValue : !this.openSearch;
+
+    if (this.openSearch) {
+      // To automatically display the mobile's soft keyboard.
+      setTimeout(() => $('.mm-search-bar-container #freetext').focus());
+    }
   }
 
   applySort(direction) {
