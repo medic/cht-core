@@ -67,7 +67,7 @@ const baseConfig = {
     browser.waitForAngularEnabled(false);
     // wait for startup to complete
     const config = await browser.getProcessedConfig();
-    await browser.driver.wait(utils.prepServices(config.suite === 'web'), 135 * 1000, 'API took too long to start up');
+    await browser.driver.wait(utils.prepServices(config.suite === 'web'), 200 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return utils.saveBrowserLogs();
