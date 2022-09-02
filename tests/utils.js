@@ -24,7 +24,7 @@ const CONTAINER_NAMES = {
   couch3: 'cht-couchdb.3-e2e',
   api: 'cht-api-e2e',
   sentinel: 'cht-sentinel-e2e',
-  haproxy_healthcheck: 'cht-haproxy-healthcheck',
+  haproxy_healthcheck: 'cht-haproxy-healthcheck-e2e',
   upgrade: 'cht-upgrade-service'
 };
 
