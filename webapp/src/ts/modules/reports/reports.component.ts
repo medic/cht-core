@@ -180,21 +180,20 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (report.validSubject) {
       return report.subject.value;
     }
-    if (report.subject.name) {
+    if (report.subject?.name) {
       return report.subject.name;
     }
     return this.translateService.instant('report.subject.unknown');
   }
 
-  private prepareReports(reports) {
-    console.log(reports);
+  prepareReports(reports) {
     return reports.map(report => {
       const form = _find(this.forms, { code: report.form });
       report.icon = form && form.icon;
       report.heading = this.getReportHeading(form, report);
       report.summary = form ? form.title : report.form;
       report.lineage = report.subject && report.subject.lineage || report.lineage;
-      // remove the lineage level that belongs to the offline logged in user, normally the last one
+      // remove the lineage level that belongs to the offline logged-in user, normally the last one
       if (this.currentLevel) {
         report.lineage = report.lineage.filter(level => level !== this.currentLevel);
       }
@@ -230,7 +229,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .then((reports) => this.addReadStatusService.updateReports(reports))
       .then((updatedReports) => {
         updatedReports = this.prepareReports(updatedReports);
-
+        console.log(updatedReports);
         this.reportsActions.updateReportsList(updatedReports);
 
         this.moreItems = updatedReports.length >= options.limit;

@@ -280,17 +280,138 @@ describe('Reports Component', () => {
 
   describe('lineage updates', () => {
     it('it should retrieve the hierarchy level of the connected user', () => {
-      userContactService.get.resolves(userContactDoc);
-      sessionService.isOnlineOnly.resolves(false);
-      component.ngOnInit();
       expect(component.currentLevel).to.equal('parent');
     });
 
-    it('it should not change the report lineage if the connected user is online only', () => {
+    it('it should not change the reports lineages if the connected user is online only', async () => {
+      const reports = [
+        {_id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd', lineage: [
+          'St Elmos Concession',
+          'Chattanooga Village',
+          'CHW Bettys Area'
+        ]},
+        {_id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage:  [
+          'Chattanooga Village',
+          'CHW Bettys Area'
+        ]},
+        {_id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899', lineage: [
+          'Chattanooga Village'
+        ]},
+        {_id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229', lineage: [
+          'CHW Bettys Area'
+        ]},
+      ];
+      const expectedReports = [
+        {_id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd', lineage: [
+          'St Elmos Concession',
+          'Chattanooga Village',
+          'CHW Bettys Area'
+        ],
+        heading: 'report.subject.unknown',
+        icon: undefined,
+        summary: undefined,
+        unread: true
+        },
+        {_id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage:  [
+          'Chattanooga Village',
+          'CHW Bettys Area'
+        ],
+        heading: 'report.subject.unknown',
+        icon: undefined,
+        summary: undefined,
+        unread: true
+        },
+        {_id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899', lineage: [
+          'Chattanooga Village'
+        ],
+        heading: 'report.subject.unknown',
+        icon: undefined,
+        summary: undefined,
+        unread: true
+        },
+        {_id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229', lineage: [
+          'CHW Bettys Area'
+        ],
+        heading: 'report.subject.unknown',
+        icon: undefined,
+        summary: undefined,
+        unread: true
+        },
+      ];
       userContactService.get.resolves(userContactDoc);
       sessionService.isOnlineOnly.resolves(true);
-      component.ngOnInit();
+      component.currentLevel = await component.getCurrentLineageLevel();
       expect(component.currentLevel).to.equal('parent');
+      const updatedReports = component.prepareReports(reports);
+      expect(updatedReports).to.deep.equal(expectedReports);
+    });
+
+    it('it should update the reports lineages to remove current level if the connected user is offline', async () => {
+      const offlineUserContactDoc = {
+        _id: 'user',
+        parent: {
+          _id: 'parent',
+          name: 'CHW Bettys Area',
+          parent: userContactGrandparent,
+        },
+      };
+      const reports = [
+        {_id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd', lineage: [
+          'St Elmos Concession',
+          'Chattanooga Village',
+          'CHW Bettys Area'
+        ]},
+        {_id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage:  [
+          'Chattanooga Village',
+          'CHW Bettys Area'
+        ]},
+        {_id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899', lineage: [
+          'Chattanooga Village'
+        ]},
+        {_id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229', lineage: [
+          'CHW Bettys Area'
+        ]},
+      ];
+      const expectedReports = [
+        {_id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd', lineage: [
+          'St Elmos Concession',
+          'Chattanooga Village',
+        ],
+        heading: 'report.subject.unknown',
+        icon: undefined,
+        summary: undefined,
+        unread: true
+        },
+        {_id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage:  [
+          'Chattanooga Village',
+        ],
+        heading: 'report.subject.unknown',
+        icon: undefined,
+        summary: undefined,
+        unread: true
+        },
+        {_id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899', lineage: [
+          'Chattanooga Village'
+        ],
+        heading: 'report.subject.unknown',
+        icon: undefined,
+        summary: undefined,
+        unread: true
+        },
+        {_id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229', lineage: [
+        ],
+        heading: 'report.subject.unknown',
+        icon: undefined,
+        summary: undefined,
+        unread: true
+        },
+      ]; 
+      userContactService.get.resolves(offlineUserContactDoc);
+      sessionService.isOnlineOnly.resolves(false);
+      component.currentLevel = await component.getCurrentLineageLevel();
+      expect(component.currentLevel).to.equal('CHW Bettys Area');
+      const updatedReports = component.prepareReports(reports);
+      expect(updatedReports).to.deep.equal(expectedReports);
     });
 
   });

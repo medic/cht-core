@@ -200,13 +200,10 @@ describe('Messages Component', () => {
     });
 
     it('it should retrieve the hierarchy level of the connected user', () => {
-      //userContactService.get.resolves(userContactDoc);
-      sessionService.isOnlineOnly.returns(false);
-      component.ngOnInit();
       expect(component.currentLevel).to.equal('parent');
     });
 
-    it('it should not change the conversations lineage if the connected user is online only', async () => {
+    it('it should not change the conversations lineage if the connected user is online only', fakeAsync( () => {
       const conversations = [
         { key: 'a', message: { inAllMessages: true },
           lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
@@ -225,14 +222,17 @@ describe('Messages Component', () => {
       messageContactService.getList.resolves(conversations);
       userContactService.get.resolves(userContactDoc);
       sessionService.isOnlineOnly.returns(true);
-      await component.updateConversations({merge : true});
-      expect(messageContactService.getList.callCount).to.equal(1);
+      component.ngOnInit();
+      tick();
+      component.updateConversations({merge : true});
+      tick();
+      expect(messageContactService.getList.callCount).to.equal(2);
       expect(component.currentLevel).to.equal('parent');
       expect(component.conversations).to.deep.equal(conversations);
-    });
+    }));
 
     it('it should not change the conversations lineage ' +
-      'if the connected user is offline only but belongs to a place out of the conversation lineage', async () => {
+      'if the connected user is offline only but belongs to a place out of the conversation lineage', fakeAsync( () => {
       const offlineUserContactDoc = {
         _id: 'user',
         parent: {
@@ -259,12 +259,14 @@ describe('Messages Component', () => {
       messageContactService.getList.resolves(conversations);
       userContactService.get.resolves(offlineUserContactDoc);
       sessionService.isOnlineOnly.returns(false);
-      //fixture.detectChanges();
-      await component.updateConversations({merge : true});
-      expect(await messageContactService.getList.callCount).to.equal(1);
+      component.ngOnInit();
+      tick();
+      component.updateConversations({merge : true});
+      tick();
+      expect(messageContactService.getList.callCount).to.equal(2);
       expect(component.currentLevel).to.equal('parent');
-      expect(component.conversations).to.equal(conversations);
-    });
+      expect(component.conversations).to.deep.equal(conversations);
+    }));
 
     it('it should update the conversations lineage ' +
       'if the connected user is offline and belongs to a place of the conversation lineage', fakeAsync( () => {
@@ -281,10 +283,10 @@ describe('Messages Component', () => {
           lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
         },
         { key: 'b', message: { inAllMessages: true },
-          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
         },
         { key: 'c', message: { inAllMessages: true },
-          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
         },
         { key: 'd', message: { inAllMessages: true },
           lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
@@ -298,7 +300,7 @@ describe('Messages Component', () => {
           lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
         },
         { key: 'c', message: { inAllMessages: true },
-          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+          lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
         },
         { key: 'd', message: { inAllMessages: true },
           lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
