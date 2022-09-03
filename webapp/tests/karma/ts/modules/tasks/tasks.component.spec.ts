@@ -166,7 +166,7 @@ describe('TasksComponent', () => {
     expect(consoleErrorMock.args[0][0]).to.equal('Error getting tasks for all contacts');
   });
 
-  it('tasks render', fakeAsync( () => {
+  it('tasks render', async() => {
     const now = moment('2020-10-20');
     const futureDate = now.clone().add(3, 'days');
     const pastDate = now.clone().subtract(3, 'days');
@@ -176,12 +176,11 @@ describe('TasksComponent', () => {
       { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
     ];
     rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
-    tick();
-    new Promise(resolve => {
+    await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
     });
-    tick();
+    clock.tick();
     expect(component.loading).to.be.false;
     expect(component.tasksDisabled).to.be.false;
     expect(component.hasTasks).to.be.true;
@@ -204,7 +203,7 @@ describe('TasksComponent', () => {
     ];
     const tasks = (<any>TasksActions.prototype.setTasksList).args;
     expect(tasks).to.deep.eq([[expectedTasks]]);
-  }));
+  });
 
   it('rules engine yields no tasks', async () => {
     await new Promise(resolve => {

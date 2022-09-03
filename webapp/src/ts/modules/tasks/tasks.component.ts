@@ -135,10 +135,8 @@ export class TasksComponent implements OnInit, OnDestroy {
       const emission = { ...taskDoc.emission };
       const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
       emission.date = new Date(dueDate.valueOf());
-      emission.moment = moment();
       emission.overdue = dueDate.isBefore(moment());
       emission.owner = taskDoc.owner;
-
       return emission;
     });
   }
