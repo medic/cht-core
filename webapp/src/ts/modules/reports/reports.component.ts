@@ -229,7 +229,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .then((reports) => this.addReadStatusService.updateReports(reports))
       .then((updatedReports) => {
         updatedReports = this.prepareReports(updatedReports);
-        console.log(updatedReports);
         this.reportsActions.updateReportsList(updatedReports);
 
         this.moreItems = updatedReports.length >= options.limit;

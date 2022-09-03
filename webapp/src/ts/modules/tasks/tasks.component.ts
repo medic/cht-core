@@ -173,7 +173,6 @@ export class TasksComponent implements OnInit, OnDestroy {
                 });
                 this.tasksActions.setTasksList(lineagedTasks);
               });
-
           });
 
         if (!this.tasksLoaded) {
