@@ -166,22 +166,23 @@ describe('TasksComponent', () => {
     expect(consoleErrorMock.args[0][0]).to.equal('Error getting tasks for all contacts');
   });
 
-  it('tasks render', async () => {
+  it('tasks render', fakeAsync( () => {
     const now = moment('2020-10-20');
     const futureDate = now.clone().add(3, 'days');
     const pastDate = now.clone().subtract(3, 'days');
     clock = sinon.useFakeTimers(now.valueOf());
+
     const taskDocs = [
       { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
       { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
     ];
     rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
-
-    await new Promise(resolve => {
+    tick();
+    new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
     });
-
+    tick();
     expect(component.loading).to.be.false;
     expect(component.tasksDisabled).to.be.false;
     expect(component.hasTasks).to.be.true;
@@ -193,6 +194,7 @@ describe('TasksComponent', () => {
         overdue: false,
         date: new Date(futureDate.valueOf()),
         owner: 'a',
+        lineage: [],
       },
       {
         _id: 'e2',
@@ -200,10 +202,11 @@ describe('TasksComponent', () => {
         overdue: true,
         date: new Date(pastDate.valueOf()),
         owner: 'b',
+        lineage: []
       },
     ];
     expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[expectedTasks]]);
-  });
+  }));
 
   it('rules engine yields no tasks', async () => {
     await new Promise(resolve => {

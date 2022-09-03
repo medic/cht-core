@@ -164,7 +164,7 @@ export class TasksComponent implements OnInit, OnDestroy {
                 const lineagedTasks = deepCopy(tasks);
                 lineagedTasks.forEach((task) => {
                   // map tasks with lineages
-                  let lineage = _map(_find(subjects, subject => subject._id === task.forId).lineage, 'name');
+                  let lineage = _map(_find(subjects, subject => subject._id === task.forId)?.lineage, 'name');
                   // remove the lineage level that belongs to the offline logged-in user, normally the last one
                   if (this.currentLevel) {
                     lineage = lineage.filter(level => level && level !== this.currentLevel);
