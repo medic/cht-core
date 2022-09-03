@@ -82,7 +82,7 @@ describe('TasksComponent', () => {
         { provide: NavigationService, useValue: {} },
         { provide: SessionService, useValue: sessionService },
         { provide: UserContactService, useValue: userContactService },
-        { provide: LineageModelGeneratorService, useValue: { lineageModelGeneratorService } },
+        { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
       ],
       declarations: [
         TasksComponent,
