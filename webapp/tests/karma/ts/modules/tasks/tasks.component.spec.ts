@@ -167,11 +167,10 @@ describe('TasksComponent', () => {
   });
 
   it('tasks render', fakeAsync( () => {
-    const now = moment();
+    const now = moment('2020-10-20');
     const futureDate = now.clone().add(3, 'days');
     const pastDate = now.clone().subtract(3, 'days');
     clock = sinon.useFakeTimers(now.valueOf());
-
     const taskDocs = [
       { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
       { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
@@ -192,20 +191,19 @@ describe('TasksComponent', () => {
         _id: 'e1',
         dueDate: futureDate.format('YYYY-MM-DD'),
         overdue: false,
-        date: futureDate.format('YYYY-MM-DD'),
+        date: new Date(futureDate.valueOf()).toISOString(),
         owner: 'a',
-        lineage: [],
       },
       {
         _id: 'e2',
         dueDate: pastDate.format('YYYY-MM-DD'),
         overdue: true,
-        date: pastDate.format('YYYY-MM-DD'),
+        date: new Date(pastDate.valueOf()).toISOString(),
         owner: 'b',
-        lineage: []
       },
     ];
-    expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[expectedTasks]]);
+    const tasks = (<any>TasksActions.prototype.setTasksList).args;
+    expect(tasks).to.deep.eq([[expectedTasks]]);
   }));
 
   it('rules engine yields no tasks', async () => {

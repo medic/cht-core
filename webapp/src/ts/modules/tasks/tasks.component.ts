@@ -134,9 +134,11 @@ export class TasksComponent implements OnInit, OnDestroy {
     return taskDocs.map(taskDoc => {
       const emission = { ...taskDoc.emission };
       const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
-      emission.date = dueDate.format('YYYY-MM-DD');
+      emission.date = new Date(dueDate.valueOf());
+      emission.moment = moment();
       emission.overdue = dueDate.isBefore(moment());
       emission.owner = taskDoc.owner;
+
       return emission;
     });
   }
@@ -162,14 +164,16 @@ export class TasksComponent implements OnInit, OnDestroy {
               .then((subjects) => {
                 const deepCopy = obj => JSON.parse(JSON.stringify(obj));
                 const lineagedTasks = deepCopy(tasks);
-                lineagedTasks.forEach((task) => {
+                lineagedTasks?.forEach((task) => {
                   // map tasks with lineages
                   let lineage = _map(_find(subjects, subject => subject._id === task.forId)?.lineage, 'name');
                   // remove the lineage level that belongs to the offline logged-in user, normally the last one
-                  if (this.currentLevel) {
-                    lineage = lineage.filter(level => level && level !== this.currentLevel);
+                  if (lineage && lineage.length) {
+                    if(this.currentLevel){
+                      lineage = lineage.filter(level => level && level !== this.currentLevel);
+                    }
+                    task.lineage = lineage;
                   }
-                  task.lineage = lineage;
                 });
                 this.tasksActions.setTasksList(lineagedTasks);
               });
