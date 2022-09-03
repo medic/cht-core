@@ -64,9 +64,10 @@ const paths = [
   '/setup/poll',
   '/_session',
   '/api/v2/upgrade',
+  '/api/deploy-info',
 ];
 paths.forEach(path => {
-  router.get(path, (req, res) => {
+  router.all(path, (req, res) => {
     res.status(STATUS);
     res.json({ error: 'Service unavailable' });
   });

@@ -76,8 +76,8 @@ describe('UpgradeCtrl controller', () => {
     expect(scope.loading).to.equal(false);
     expect(buildsDb.query.callCount).to.equal(0);
     expect(http.get.args).to.deep.equal([
-      ['/api/deploy-info', { headers: { 'Accept': 'application/json' } }],
-      ['/api/v2/upgrade', { headers: { 'Accept': 'application/json' } }],
+      ['/api/deploy-info'],
+      ['/api/v2/upgrade'],
     ]);
   });
 
@@ -90,8 +90,8 @@ describe('UpgradeCtrl controller', () => {
     expect(scope.loading).to.equal(false);
     expect(buildsDb.query.callCount).to.equal(0);
     expect(http.get.args).to.deep.equal([
-      ['/api/deploy-info', { headers: { 'Accept': 'application/json' } }],
-      ['/api/v2/upgrade', { headers: { 'Accept': 'application/json' } }],
+      ['/api/deploy-info'],
+      ['/api/v2/upgrade'],
     ]);
     expect(scope.versions).to.deep.equal({});
   });
@@ -383,7 +383,6 @@ describe('UpgradeCtrl controller', () => {
       expect(http.post.args[0]).to.deep.equal([
         '/api/v2/upgrade/stage',
         { build: { version: '4.2.0' } },
-        { headers: { 'Accept': 'application/json' } },
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
       expect(scope.upgradeDoc).to.deep.equal({ up: 'grade' });
@@ -440,7 +439,6 @@ describe('UpgradeCtrl controller', () => {
       expect(http.post.args[0]).to.deep.equal([
         '/api/v2/upgrade',
         { build: { version: '4.2.0' } },
-        { headers: { 'Accept': 'application/json' } },
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
       expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
@@ -497,7 +495,6 @@ describe('UpgradeCtrl controller', () => {
       expect(http.post.args[0]).to.deep.equal([
         '/api/v2/upgrade',
         { build: { version: '4.2.0' } },
-        { headers: { 'Accept': 'application/json' } },
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
       expect(scope.upgradeDoc).to.deep.equal({ up: 'grade' });
@@ -555,7 +552,6 @@ describe('UpgradeCtrl controller', () => {
       expect(http.post.args[0]).to.deep.equal([
         '/api/v2/upgrade/complete',
         { build: { version: '4.2.0' } },
-        { headers: { 'Accept': 'application/json' } },
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
     });
@@ -599,7 +595,6 @@ describe('UpgradeCtrl controller', () => {
       expect(http.post.args[0]).to.deep.equal([
         '/api/v2/upgrade/stage',
         { build: { version: '4.2.0' } },
-        { headers: { 'Accept': 'application/json' } },
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
     });
@@ -657,7 +652,6 @@ describe('UpgradeCtrl controller', () => {
       expect(http.post.args[0]).to.deep.equal([
         '/api/v2/upgrade/complete',
         { build: { version: '4.2.0' } },
-        { headers: { 'Accept': 'application/json' } },
       ]);
 
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
@@ -802,7 +796,6 @@ describe('UpgradeCtrl controller', () => {
       expect(http.post.args[0]).to.deep.equal([
         '/api/v2/upgrade/stage',
         { build: { the: 'buildinfo', version: '4.2.0' } },
-        { headers: { 'Accept': 'application/json' } },
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
       expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
@@ -842,7 +835,6 @@ describe('UpgradeCtrl controller', () => {
       expect(http.post.args[0]).to.deep.equal([
         '/api/v2/upgrade',
         { build: { the: 'buildinfo', version: '4.3.0' } },
-        { headers: { 'Accept': 'application/json' } },
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
       expect(scope.upgradeDoc).to.deep.equal(upgradeDoc);
@@ -908,7 +900,6 @@ describe('UpgradeCtrl controller', () => {
       expect(http.post.args[0]).to.deep.equal([
         '/api/v2/upgrade',
         { build: { the: 'buildinfo', version: '4.3.0' } },
-        { headers: { 'Accept': 'application/json' } },
       ]);
       expect(http.get.withArgs('/api/v2/upgrade').callCount).to.equal(2);
       expect(scope.upgradeDoc).to.be.undefined;
