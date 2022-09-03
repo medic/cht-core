@@ -345,10 +345,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportsSidebarFilter?.resetFilters();
   }
 
-<<<<<<< HEAD
   async getCurrentLineageLevel(){
     return this.userContactService.get().then(user => user?.parent?.name);
   }
-=======
->>>>>>> dd233036a (add breadcrumbs to tasks tab)
 }
