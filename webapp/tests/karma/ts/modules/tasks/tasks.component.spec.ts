@@ -167,7 +167,7 @@ describe('TasksComponent', () => {
   });
 
   it('tasks render', fakeAsync( () => {
-    const now = moment('2020-10-20');
+    const now = moment();
     const futureDate = now.clone().add(3, 'days');
     const pastDate = now.clone().subtract(3, 'days');
     clock = sinon.useFakeTimers(now.valueOf());
@@ -192,7 +192,7 @@ describe('TasksComponent', () => {
         _id: 'e1',
         dueDate: futureDate.format('YYYY-MM-DD'),
         overdue: false,
-        date: new Date(futureDate.valueOf()),
+        date: futureDate.format('YYYY-MM-DD'),
         owner: 'a',
         lineage: [],
       },
@@ -200,7 +200,7 @@ describe('TasksComponent', () => {
         _id: 'e2',
         dueDate: pastDate.format('YYYY-MM-DD'),
         overdue: true,
-        date: new Date(pastDate.valueOf()),
+        date: pastDate.format('YYYY-MM-DD'),
         owner: 'b',
         lineage: []
       },
