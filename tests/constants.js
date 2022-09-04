@@ -26,7 +26,7 @@ module.exports = {
     reported_date: 1541679811408,
   },
   BASE_URL: `${SCHEME}${API_HOST}`,
-  BASE_URL_AUTH: `${SCHEME}${USERNAME}:${PASSWORD}:${API_HOST}`,
+  BASE_URL_AUTH: `${SCHEME}${USERNAME}:${PASSWORD}@${API_HOST}`,
 
   // nginx certificate setting
   CERTIFICATE_MODE: 'SELF_SIGNED',
