@@ -15,9 +15,11 @@ describe('Pregnancy Visit', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.find(place => place.type === 'health_center');
   const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });
-  const pregnantWoman = personFactory.build({ patient_id: '12345', 
+  const pregnantWoman = personFactory.build({ 
+    patient_id: '12345', 
     date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'), 
-    parent: {_id: healthCenter._id, parent: healthCenter.parent} });
+    parent: {_id: healthCenter._id, parent: healthCenter.parent} 
+  });
 
   before(async () => {
     await utils.saveDocs([...places, pregnantWoman]);

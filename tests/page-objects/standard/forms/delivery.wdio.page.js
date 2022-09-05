@@ -21,14 +21,14 @@ const selectPregnancyOutcome = async (value = OUTCOME.liveBirth) => {
   const outcome = await pregnancyOutcome(value);
   await outcome.waitForDisplayed();
   await outcome.click();
-  return await (await pregnancyOutcomeLabel(value)).getText();
+  return await pregnancyOutcomeLabel(value).getText();
 };
 
 const selectDeliveryLocation = async (value = LOCATION.facility) => {
   const location = await deliveryLocation(value);
   await location.waitForDisplayed();
   await location.click();
-  return await (await deliveryLocationLabel(value)).getText();
+  return await deliveryLocationLabel(value).getText();
 };
 
 const setDeliveryDate =  async (value) => {

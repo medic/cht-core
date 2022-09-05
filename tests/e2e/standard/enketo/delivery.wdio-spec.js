@@ -21,7 +21,7 @@ describe('Delivery', () => {
   let medicIDW2 = '';
 
   before(async () => {
-    await utils.saveDocs([...places]);
+    await utils.saveDocs(places);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
     await commonPage.goToPeople(healthCenter._id);

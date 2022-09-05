@@ -1,10 +1,10 @@
+const moment = require('moment');
 const utils = require('../../../utils');
 const gatewayApiUtils = require('../../../gateway-api.utils');
 const commonPage = require('../../../page-objects/common/common.wdio.page');
 const loginPage = require('../../../page-objects/login/login.wdio.page');
 const userFactory = require('../../../factories/cht/users/users');
 const placeFactory = require('../../../factories/cht/contacts/place');
-const newPersonPage = require('../../../page-objects/forms/new-person.wdio.page');
 const contactPage = require('../../../page-objects/standard/contacts/contacts.wdio.page');
 const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
 const analyticsPage = require('../../../page-objects/analytics/analytics.wdio.page');
@@ -19,17 +19,16 @@ describe('New pregnancy', () => {
   const pregnantWoman2 = 'Woman2';
 
   before(async () => { 
-    await utils.saveDocs([...places]);
+    await utils.saveDocs(places);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
     await commonPage.goToPeople(healthCenter._id);
     
     // Create Woman1 - webapp
-    await contactPage.contactPageDefault.createNewPerson();
-    await newPersonPage.fillDefaultContactForm();
-    await genericForm.submitForm();
+    await contactPage.contactPageDefault.addPerson(pregnantWoman1, 
+      {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
 
-    // Createn Woman2 - SMS N form
+    // Create Woman2 - SMS N form
     const messageNewWoman = `N ${pregnantWoman2}`;    
     await gatewayApiUtils.api.postMessage({
       id: 'N-id',

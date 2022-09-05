@@ -24,7 +24,6 @@ const getFollowUpSMS = async () => {
   return sms.getText();
 };
 
-
 module.exports = {
   selectAllDangerSigns,
   setNote,

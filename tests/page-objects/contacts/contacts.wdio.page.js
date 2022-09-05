@@ -57,7 +57,6 @@ const formTitle = () => $('#form-title');
 const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
 const contactInfoName = () => $('.content-pane .material .body .card .row .heading-content');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
-const newPersonContactButton = () => $('span[test-id="rhs_add_contact"][ng-reflect-mm-auth="can_create_people"]');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -260,11 +259,6 @@ const getContactMedicID = async () => {
   return (await contactMedicID()).getText();
 };
 
-const createNewPerson = async () => {
-  await newPersonContactButton().waitForDisplayed();
-  await newPersonContactButton().click();
-};
-
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -310,5 +304,4 @@ module.exports = {
   notes,
   contactCardIcon,
   editContactButton,
-  createNewPerson,  
 };
