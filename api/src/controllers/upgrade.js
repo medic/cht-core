@@ -42,7 +42,12 @@ const upgradeInProgress = (req, res) => {
     .then(([upgradeDoc, indexers]) => {
       res.json({ upgradeDoc, indexers });
     })
-    .catch(err => serverUtils.error(err, req, res));
+    .catch(err => {
+      if (err && err.error && err.error.code === 'ECONNREFUSED') {
+        err.type = 'upgrade.connection.refused';
+      }
+      return serverUtils.error(err, req, res);
+    });
 };
 
 const abortUpgrade = (req, res) => {

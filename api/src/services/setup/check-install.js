@@ -3,6 +3,7 @@ const upgradeUtils = require('./utils');
 const upgradeSteps = require('./upgrade-steps');
 const ddocsService = require('./ddocs');
 const { DATABASES } = require('./databases');
+const startupLog = require('./startup-log');
 
 
 const checkInstallForDb = async (database) => {
@@ -71,10 +72,11 @@ const checkInstall = async () => {
   const allDbsUpToDate = ddocValidation.every(check => check.upToDate);
   if (allDbsUpToDate) {
     logger.info('Installation valid.');
-    // todo poll views to start view warming anyway?
     await upgradeUtils.interruptPreviousUpgrade();
     return;
   }
+
+  startupLog.start('install');
 
   const allDbsStaged = ddocValidation.every(check => check.stagedUpgrade || check.upToDate);
   if (allDbsStaged) {
