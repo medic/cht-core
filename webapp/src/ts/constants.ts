@@ -6,12 +6,12 @@
 // go and if it's still too long then API will respond with a 413.
 const BODY_LENGTH_LIMIT = 32000000; // 32 million
 
-// To keep long _changes requests open, API sends a heartbeat (a new line) every 10 seconds, starting on the 10sh
-// second. Sending data through automatically adds a success 200 status, even though the results of the request is
-// not known, and it can still fail.
-// PouchDb only checks the request status to determine whether the request is successful or not. \
-// In order to enable a retry, and not incorrectly communicate success to the client, validate _changes request
-// responses and update the respons object accordingly before passing it to PouchDb for processing.
+// To keep long _changes requests open, API sends a heartbeat (a new line character"\n") every 10 seconds,
+// starting on the 10th second. Sending any data through automatically sends a 200 status header,
+// even though the result of the request is not yet known, and it could still fail.
+// PouchDb only checks the response status to determine whether the request was successful or not.
+// In order to enable a retry, and not incorrectly communicate success to the client, validate _changes
+// responses and update the response object accordingly, before passing it to PouchDb for processing.
 const processChangesResponse = (response) => {
   return response.json().then(json => {
     const validChangesResponse = json.results && !json.error;
@@ -45,10 +45,12 @@ export const POUCHDB_OPTIONS = {
         opts.headers.set(header, POUCHDB_OPTIONS.remote_headers[header]);
       });
       opts.credentials = 'same-origin';
-      const isChangesRequest = parsedUrl.pathname.startsWith('/_changes');
-      return window.PouchDB
-        .fetch(url, opts)
-        .then(response => isChangesRequest ? processChangesResponse(response) : response);
+
+      const promise = window.PouchDB.fetch(url, opts);
+      if (parsedUrl.pathname.startsWith('/_changes')) {
+        return promise.then(response => processChangesResponse(response));
+      }
+      return promise;
     },
   },
   remote_headers: {
