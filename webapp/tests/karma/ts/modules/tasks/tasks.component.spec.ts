@@ -363,7 +363,6 @@ describe('TasksComponent', () => {
             owner: 'b',
           }
         ];
-
       userContactService.get.resolves(bettysContactDoc);
       sessionService.isOnlineOnly.returns(true);
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
@@ -405,12 +404,10 @@ describe('TasksComponent', () => {
             owner: 'b',
           }
         ];
-      
       userContactService.get.resolves(userContactDoc);
       sessionService.isOnlineOnly.returns(false);
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
-      //component.ngOnInit();
       await new Promise(resolve => {
         sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
         getComponent();
