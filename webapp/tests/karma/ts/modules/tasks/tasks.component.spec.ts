@@ -63,7 +63,7 @@ describe('TasksComponent', () => {
       userCtx: sinon.stub().returns({ name: 'Sarah' })
     };
     userContactService = {
-      get: sinon.stub().resolves(userContactDoc),
+      get: sinon.stub().resolves(),
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub() };
 
@@ -201,8 +201,7 @@ describe('TasksComponent', () => {
         owner: 'b',
       },
     ];
-    const tasks = (<any>TasksActions.prototype.setTasksList).args;
-    expect(tasks).to.deep.eq([[expectedTasks]]);
+    expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[expectedTasks]]);
   });
 
   it('rules engine yields no tasks', async () => {
@@ -306,11 +305,161 @@ describe('TasksComponent', () => {
   });
 
   describe('lineage and breadcrumbs', () => {
-    it('it should retrieve the hierarchy level of the connected user', () => {
+    const bettysContactDoc = {
+      _id: 'user',
+      parent: {
+        _id: 'parent',
+        name: 'CHW Bettys Area',
+      },
+    };
+    const taskDocs = [
+      { _id: '1', emission: { _id: 'e1', dueDate: '2020-10-20' }, forId: 'a', owner: 'a' },
+      { _id: '2', emission: { _id: 'e2', dueDate: '2020-10-20' }, forId: 'b', owner: 'b' },
+    ];
+    const taskLineages = [
+      {
+        _id: 'a', lineage: [
+          {name: 'Amy Johnsons Household'},
+          {name: 'St Elmos Concession'},
+          {name: 'Chattanooga Village'},
+          {name: 'CHW Bettys Area'},
+        ]
+      },
+      {
+        _id: 'b', lineage: [
+          {name: 'Amy Johnsons Household'},
+          {name: 'St Elmos Concession'},
+          {name: 'Chattanooga Village'},
+        ]
+      }
+    ];
+
+    it('it should not change the reports lineages if the connected user is online only', async() => {
+      const expectedTasks =
+        [
+          {
+            _id: 'e1',
+            date: '2020-10-20T00:00:00.000Z',
+            dueDate: '2020-10-20',
+            lineage: [
+              'Amy Johnsons Household',
+              'St Elmos Concession',
+              'Chattanooga Village',
+              'CHW Bettys Area'
+            ],
+            overdue: true,
+            owner: 'a',
+          },
+          {
+            _id: 'e2',
+            date: '2020-10-20T00:00:00.000Z',
+            dueDate: '2020-10-20',
+            lineage: [
+              'Amy Johnsons Household',
+              'St Elmos Concession',
+              'Chattanooga Village',
+            ],
+            overdue: true,
+            owner: 'b',
+          }
+        ];
+
+      userContactService.get.resolves(bettysContactDoc);
+      sessionService.isOnlineOnly.returns(true);
+      rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+      lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
+      await new Promise(resolve => {
+        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+        getComponent();
+      });
+      expect(component.currentLevel).to.be.undefined;
+      expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
+    });
+
+    it('it should not change the reports lineages if the connected user is offline with unrelated lineage', async() => {
+      const expectedTasks =
+        [
+          {
+            _id: 'e1',
+            date: '2020-10-20T00:00:00.000Z',
+            dueDate: '2020-10-20',
+            lineage: [
+              'Amy Johnsons Household',
+              'St Elmos Concession',
+              'Chattanooga Village',
+              'CHW Bettys Area'
+            ],
+            overdue: true,
+            owner: 'a',
+          },
+          {
+            _id: 'e2',
+            date: '2020-10-20T00:00:00.000Z',
+            dueDate: '2020-10-20',
+            lineage: [
+              'Amy Johnsons Household',
+              'St Elmos Concession',
+              'Chattanooga Village',
+            ],
+            overdue: true,
+            owner: 'b',
+          }
+        ];
+      
       userContactService.get.resolves(userContactDoc);
-      sessionService.isOnlineOnly.resolves(false);
-      component.ngOnInit();
+      sessionService.isOnlineOnly.returns(false);
+      rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+      lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
+      //component.ngOnInit();
+      await new Promise(resolve => {
+        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+        getComponent();
+      });
+      const tasks = await (<any>TasksActions.prototype.setTasksList).args;
       expect(component.currentLevel).to.equal('parent');
+      expect(tasks).to.deep.equal([[expectedTasks]]);
+    });
+
+    it('it should update the reports lineages if the connected user is offline with related place', async() => {
+      const expectedTasks =
+        [
+          {
+            _id: 'e1',
+            date: '2020-10-20T00:00:00.000Z',
+            dueDate: '2020-10-20',
+            lineage: [
+              'Amy Johnsons Household',
+              'St Elmos Concession',
+              'Chattanooga Village',
+            ],
+            overdue: true,
+            owner: 'a',
+          },
+          {
+            _id: 'e2',
+            date: '2020-10-20T00:00:00.000Z',
+            dueDate: '2020-10-20',
+            lineage: [
+              'Amy Johnsons Household',
+              'St Elmos Concession',
+              'Chattanooga Village',
+            ],
+            overdue: true,
+            owner: 'b',
+          }
+        ];
+
+      userContactService.get.resolves(bettysContactDoc);
+      sessionService.isOnlineOnly.returns(false);
+      rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+      lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
+      await new Promise(resolve => {
+        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+        getComponent();
+      });
+      const tasks = await (<any>TasksActions.prototype.setTasksList).args;
+      expect(component.currentLevel).to.equal('CHW Bettys Area');
+      expect(tasks).to.deep.equal([[expectedTasks]]);
     });
 
   });
