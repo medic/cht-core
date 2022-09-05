@@ -44,6 +44,8 @@ const purgedDocsController = require('./controllers/purged-docs');
 const couchConfigController = require('./controllers/couch-config');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const connectedUserLog = require('./middleware/connected-user-log').log;
+const getLocale = require('./middleware/locale').getLocale;
+const startupLog = require('./services/setup/startup-log');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
 const routePrefix = '/+' + environment.db + '/+';
@@ -57,7 +59,7 @@ const compression = require('compression');
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
-const app = express();
+const app = express.Router({ strict: true });
 const MAX_REQUEST_SIZE = '32mb';
 
 // requires content-type application/x-www-form-urlencoded header
@@ -106,9 +108,6 @@ app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, cal
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
-app.set('strict routing', true);
-app.set('trust proxy', true);
-
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
 // --allow-cors commandline switch will enable this from within a web browser.
@@ -132,6 +131,7 @@ app.use((req, res, next) => {
   req.id = uuid.v4();
   next();
 });
+app.use(getLocale);
 
 morgan.token('id', req => req.id);
 
@@ -338,6 +338,10 @@ app.get('/setup/poll', function(req, res) {
 
 app.all('/setup', function(req, res) {
   res.status(503).send('Setup services are not currently available');
+});
+
+app.get('/api/v1/startup-progress', (req, res) => {
+  res.json(startupLog.getProgress(req.locale));
 });
 
 app.all('/setup/password', function(req, res) {

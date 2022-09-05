@@ -450,4 +450,50 @@ describe('translations', () => {
       ]);
     });
   });
+
+  describe('getTranslationDocs', () => {
+    it('should return all translation docs', () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: 'messages-en' } },
+          { doc: { _id: 'messages-fr' } },
+        ],
+      });
+      return translations.getTranslationDocs().then(results => {
+        chai.expect(results).to.deep.equal([
+          { _id: 'messages-en' },
+          { _id: 'messages-fr' },
+        ]);
+        chai.expect(db.medic.allDocs.callCount).to.equal(1);
+        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
+          { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
+        ]);
+      });
+    });
+  });
+
+  describe('getEnabledLocales', () => {
+    it('should only return enabled translation docs', () => {
+      it('should return all translation docs', () => {
+        sinon.stub(db.medic, 'allDocs').resolves({
+          rows: [
+            { doc: { _id: 'messages-en', enabled: true } },
+            { doc: { _id: 'messages-fr', enabled: false } },
+            { doc: { _id: 'messages-es', enabled: true } },
+          ],
+        });
+        return translations.getTranslationDocs().then(results => {
+          chai.expect(results).to.deep.equal([
+            { _id: 'messages-en', enabled: true },
+            { _id: 'messages-es', enabled: true }
+          ]);
+
+          chai.expect(db.medic.allDocs.callCount).to.equal(1);
+          chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
+            { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
+          ]);
+        });
+      });
+    });
+  });
 });

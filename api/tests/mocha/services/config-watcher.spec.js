@@ -37,6 +37,7 @@ describe('Configuration', () => {
     sinon.spy(config, 'setTranslationCache');
     sinon.spy(config, 'setTransitionsLib');
     sinon.stub(fs, 'watch');
+    sinon.stub(translations, 'getTranslationDocs');
   });
 
   afterEach(() => {
@@ -48,7 +49,7 @@ describe('Configuration', () => {
       settingsService.update.resolves();
       settingsService.get.resolves({ foo: 'bar' });
       db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
-      db.medic.query.resolves({ rows: [] });
+      translations.getTranslationDocs.resolves([]);
 
       return bootstrap.load().then(() => {
         chai.expect(db.medic.get.callCount).to.equal(1);
@@ -61,11 +62,7 @@ describe('Configuration', () => {
             'docs_by_replication_key',
             'contacts_by_depth',
           ]);
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equal([
-          'medic-client/doc_by_type',
-          { key: ['translations', true], include_docs: true },
-        ]);
+        chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
 
         chai.expect(settingsService.update.callCount).to.equal(1);
         chai.expect(settingsService.get.callCount).to.equal(1);
@@ -84,7 +81,7 @@ describe('Configuration', () => {
       settingsService.update.resolves();
       settingsService.get.resolves({ foo: 'bar' });
       db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
-      db.medic.query.rejects('errors nooo');
+      translations.getTranslationDocs.rejects('errors nooo');
 
       return bootstrap.load().then(() => {
         chai.expect(settingsService.get.callCount).to.equal(1);
@@ -92,7 +89,7 @@ describe('Configuration', () => {
 
         chai.expect(db.medic.get.callCount).to.equal(1);
         chai.expect(viewMapUtils.loadViewMaps.callCount).to.equal(1);
-        chai.expect(db.medic.query.callCount).to.equal(1);
+        chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
 
         chai.expect(config.setTranslationCache.callCount).to.equal(0);
       });
@@ -101,13 +98,11 @@ describe('Configuration', () => {
     it('should crash if translations are malformed', () => {
       settingsService.get.resolves({ foo: 'bar' });
       db.medic.get.withArgs('_design/medic').resolves({ _id: '_design/medic' });
-      db.medic.query.resolves({
-        rows: [
-          { doc: { generic: 'something', code: 'en' }},
-          { doc: { custom: 'or other', code: 'fr', values: 'true' }},
-          { doc: { code: 'hi' }}
-        ]
-      });
+      translations.getTranslationDocs.resolves([
+        { generic: 'something', code: 'en' },
+        { custom: 'or other', code: 'fr', values: 'true' },
+        { code: 'hi' },
+      ]);
 
       return bootstrap
         .load()
@@ -134,7 +129,7 @@ describe('Configuration', () => {
       emitChange({ id: 'someDoc' });
       on.callCount.should.equal(2);
 
-      chai.expect(db.medic.query.callCount).to.equal(0);
+      chai.expect(translations.getTranslationDocs.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(0);
     });
 
@@ -169,25 +164,21 @@ describe('Configuration', () => {
       it('reloads translations and generates service worker when translations are updated', () => {
         translations.run.resolves();
         generateServiceWorker.run.resolves();
-        db.medic.query.resolves({ rows: [] });
+        translations.getTranslationDocs.resolves([]);
 
         return emitChange({ id: 'messages-test' }).then(() => {
           chai.expect(translations.run.callCount).to.equal(0);
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
           chai.expect(db.medic.get.callCount).to.equal(0);
 
-          chai.expect(db.medic.query.callCount).to.equal(1);
-          chai.expect(db.medic.query.args[0]).to.deep.equal([
-            'medic-client/doc_by_type',
-            { key: ['translations', true], include_docs: true },
-          ]);
+          chai.expect(translations.getTranslationDocs.callCount).to.equal(1);
         });
       });
 
       it('should catch translations errors', () => {
         translations.run.rejects();
         generateServiceWorker.run.resolves();
-        db.medic.query.resolves({ rows: [] });
+        translations.getTranslationDocs.resolves([]);
 
         return emitChange({ id: 'messages-test' }).then(() => {
           chai.expect(generateServiceWorker.run.callCount).to.equal(1);
@@ -198,7 +189,7 @@ describe('Configuration', () => {
       it('should terminate process on service worker errors', () => {
         translations.run.resolves();
         generateServiceWorker.run.rejects();
-        db.medic.query.resolves({ rows: [] });
+        translations.getTranslationDocs.resolves([]);
         sinon.stub(process, 'exit');
 
         return emitChange({ id: 'messages-test' }).then(() => {
