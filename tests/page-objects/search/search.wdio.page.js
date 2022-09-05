@@ -6,7 +6,7 @@ const performSearch = async (searchString) => {
   await (await searchBox()).click();
   await (await searchBox()).clearValue();
   await (await searchBox()).addValue(searchString);
-  browser.keys('Enter');
+  await browser.keys('Enter');
   // After search is triggered there can be a slight delay before the AJAX call
   // is made and the search spinner shows up hence we just need to wait for a bit before moving forward
   await browser.pause(1000);

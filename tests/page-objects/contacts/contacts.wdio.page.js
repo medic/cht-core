@@ -1,7 +1,6 @@
 const genericForm = require('../forms/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
-const searchBox = () => $('#freetext');
-const searchButton = () => $('#search');
+const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
@@ -60,7 +59,7 @@ const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
-  await (await searchButton()).click();
+  await browser.keys('Enter');
   await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
   await (await emptySelection()).waitForDisplayed();
 };
