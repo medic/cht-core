@@ -1,10 +1,10 @@
 const assert = require('chai').assert;
-const net = require('net');
 const constants = require('../constants');
-const host = constants.API_HOST;
-const dbName = constants.DB_NAME;
+const request = require('request-promise-native');
 const utils = require('../utils');
+const host = constants.API_HOST;
 const db = utils.db;
+
 
 /**
  * Tests to ensure continued support for Medic Collect.
@@ -38,35 +38,14 @@ describe('medic-collect', () => {
 
   describe('without User-Agent header', () => {
     it('is prompted for auth details if not supplied', () => {
-      // when
-      return rawHttpRequest(
-        `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
-X-OpenRosa-Version: 1.0\r
-Date: ${new Date().toISOString()}\r
-Host: ${host}\r
-Connection: close\r
-\r\n`
-      ).then(res => {
-        // then
+      return getForms({ auth: false, userAgent: false }).then(res => {
         assert.equal(res.statusCode, 401, JSON.stringify(res));
-        assert.equal(
-          res.headers['WWW-Authenticate'],
-          'Basic realm="Medic Web Services"',
-          JSON.stringify(res)
-        );
+        assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Web Services"');
       });
     });
 
     it('can fetch a list of forms', () => {
-      // when
-      return rawHttpRequest(
-        `GET /api/v1/forms HTTP/1.1\r
-X-OpenRosa-Version: 1.0\r
-Date: ${new Date().toISOString()}\r
-Host: ${host}\r
-Connection: close\r
-\r\n`
-      ).then(res => {
+      return getForms({ auth: true, userAgent: false }).then(res => {
         // then
         assert.equal(res.statusCode, 200, JSON.stringify(res));
         assert.equal(
@@ -79,8 +58,7 @@ Connection: close\r
     <downloadUrl>http://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
   </xform>
 </xforms>\r
-0\r\n\r\n`,
-          JSON.stringify(res)
+0\r\n\r\n`
         );
       });
     });
@@ -88,39 +66,15 @@ Connection: close\r
 
   describe('with User-Agent header', () => {
     it('is prompted for auth details if not supplied', () => {
-      // when
-      return rawHttpRequest(
-        `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
-X-OpenRosa-Version: 1.0\r
-Date: ${new Date().toISOString()}\r
-Host: ${host}\r
-User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
-Connection: close\r
-\r\n`
-      ).then(res => {
-        // then
+      return getForms({ auth: false, userAgent: true }).then(res => {
         assert.equal(res.statusCode, 401, JSON.stringify(res));
-        assert.equal(
-          res.headers['WWW-Authenticate'],
-          'Basic realm="Medic Web Services"',
-          JSON.stringify(res)
-        );
+        assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Web Services"');
       });
     });
 
     it('can fetch a list of forms', () => {
-      // when
-      return rawHttpRequest(
-        `GET /api/v1/forms HTTP/1.1\r
-X-OpenRosa-Version: 1.0\r
-Date: ${new Date().toISOString()}\r
-Host: ${host}\r
-User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
-Connection: close\r
-\r\n`
-      ).then(res => {
-        // then
-        assert.equal(res.statusCode, 200, JSON.stringify(res));
+      return getForms({ auth: true, userAgent: true }).then(res => {
+        assert.equal(res.statusCode, 200);
         assert.equal(
           res.body,
           `108\r
@@ -131,39 +85,30 @@ Connection: close\r
     <downloadUrl>http://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
   </xform>
 </xforms>\r
-0\r\n\r\n`,
-          JSON.stringify(res)
+0\r\n\r\n`
         );
       });
     });
   });
 });
 
-const rawHttpRequest = rawRequest => {
-  return new Promise((resolve, reject) => {
-    const api = net.connect({ port: 443 });
-    let rawResponse = '';
-
-    api.on('connect', () => api.write(rawRequest));
-    api.on('data', data => (rawResponse += data.toString()));
-    api.on('error', reject);
-
-    api.on('close', () => {
-      const response = { headers: {} };
-      let line;
-      const lines = rawResponse.split('\r\n');
-
-      response.statusCode = parseInt(lines.shift().split(' ')[1]);
-      while ((line = lines.shift())) {
-        const colon = line.indexOf(':');
-        response.headers[line.substring(0, colon)] = line
-          .substring(colon + 1)
-          .trim();
-      }
-      response.body = lines.join('\r\n');
-
-      resolve(response);
-    });
+const getForms = ({ auth, userAgent }) => {
+  const host = auth ? constants.BASE_URL_AUTH : constants.BASE_URL;
+  
+  const headers = {
+    'X-OpenRosa-Version': '1.0',
+    Date: new Date().toISOString(),
+    Host: host
+  };
+  if (userAgent) {
+    headers['User-Agent'] = 'Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) ' +
+      'org.medicmobile.collect.android/SNAPSHOT';
+  }
+  
+  return request.get({
+    url: `${host}/api/v1/forms`,
+    headers,
+    resolveWithFullResponse: true
   });
 };
 
