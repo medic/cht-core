@@ -2,7 +2,7 @@ const helper = require('../../helper');
 const genericForm = require('../forms/generic-form.po');
 const utils = require('../../utils');
 
-const searchBox = element(by.css('.mm-search-bar-container input#freetext'));
+const searchBox = element(by.css('input#freetext'));
 const newDistrictButton = element(by.css('a[href="#/contacts/add/district_hospital?from=list"]'));
 const newPlaceName = element(by.css('[name="/data/init/custom_place_name"]'));
 const districtHospitalName = element(by.css('[name="/data/district_hospital/name"]'));
