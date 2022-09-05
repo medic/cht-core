@@ -140,10 +140,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
     if (!this.sessionService.isOnlineOnly()) {
-      this.getCurrentLineageLevel()
-        .then((currentLevel) => {
-          this.currentLevel = currentLevel;
-        });
+      this
+        .getCurrentLineageLevel()
+        .then(currentLevel => this.currentLevel = currentLevel);
     }
   }
 
@@ -344,7 +343,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportsSidebarFilter?.resetFilters();
   }
 
-  async getCurrentLineageLevel(){
+  getCurrentLineageLevel(){
     return this.userContactService.get().then(user => user?.parent?.name);
   }
 }

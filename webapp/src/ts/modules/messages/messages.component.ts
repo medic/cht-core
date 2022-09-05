@@ -53,12 +53,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
-    const isOffline = !this.sessionService.isOnlineOnly();
-    if (isOffline) {
-      this.getCurrentLineageLevel()
-        .then((currentLevel) => {
-          this.currentLevel = currentLevel;
-        });
+    if (!this.sessionService.isOnlineOnly()) {
+      this
+        .getCurrentLineageLevel()
+        .then(currentLevel => this.currentLevel = currentLevel);
     }
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
@@ -166,11 +164,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
       .then((conversations = []) => {
         // remove the lineage level that belongs to the offline logged-in user, normally the last one
         if (this.currentLevel) {
-          conversations.forEach((conversation) => {
+          conversations.forEach(conversation => {
             if (conversation.lineage) {
               conversation.lineage = conversation.lineage.filter(level => level !== this.currentLevel);
             }
-            return conversation;
           });
         }
         this.setConversations(conversations, { merge });
@@ -206,7 +203,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     return message.key + identifier;
   }
 
-  async getCurrentLineageLevel(){
+  getCurrentLineageLevel(){
     return this.userContactService.get().then(user => user?.parent?.name);
   }
 }
