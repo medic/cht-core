@@ -40,7 +40,8 @@ const AVAILABLE_TRANSITIONS = [
   'resolve_pending',
   'muting',
   'mark_for_outbound',
-  'user_replace'
+  'user_replace',
+  'supervisor_chw_create'
 ];
 
 const transitions = [];
