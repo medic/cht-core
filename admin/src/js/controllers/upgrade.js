@@ -26,7 +26,6 @@ angular.module('controllers').controller('UpgradeCtrl',
     const POLL_URL = '/setup/poll';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
-    const REQ_OPTS = { headers: { 'Accept': 'application/json' } };
 
     const logError = (error, key) => {
       return $translate
@@ -40,7 +39,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const getExistingDeployment = (expectUpgrade, expectedVersion) => {
       return $http
-        .get('/api/deploy-info', REQ_OPTS)
+        .get('/api/deploy-info')
         .then(({ data: deployInfo }) => {
           if (expectUpgrade) {
             if (expectedVersion === deployInfo.version) {
@@ -57,7 +56,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const getCurrentUpgrade = () => {
       return $http
-        .get(UPGRADE_URL, REQ_OPTS)
+        .get(UPGRADE_URL)
         .then(({ data: { upgradeDoc, indexers } }) => {
           if ($scope.upgradeDoc && !upgradeDoc) {
             const expectedVersion = $scope.upgradeDoc.to && $scope.upgradeDoc.to.build;
@@ -196,7 +195,7 @@ angular.module('controllers').controller('UpgradeCtrl',
 
     const waitUntilApiStarts = () => new Promise((resolve) => {
       const pollApi = () => $http
-        .get(POLL_URL, REQ_OPTS)
+        .get(POLL_URL)
         .then(() => resolve())
         .catch(() => $timeout(pollApi, 1000));
       pollApi();
@@ -208,7 +207,7 @@ angular.module('controllers').controller('UpgradeCtrl',
       const url = action ? `${UPGRADE_URL}/${action}` : UPGRADE_URL;
 
       return $http
-        .post(url, { build }, REQ_OPTS)
+        .post(url, { build })
         .catch(err => {
           // todo which status do we get with nginx???
           // exclude "50x" like statuses that come from nginx
