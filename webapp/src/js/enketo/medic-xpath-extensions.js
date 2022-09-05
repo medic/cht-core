@@ -125,7 +125,7 @@ const convertToBikramSambat = (value) => {
   return { t: 'str', v: convertedDate };
 };
 
-const addDate = (date, years, months, days, hours, minutes) => {
+const addDate = function (date, years, months, days, hours, minutes) {
   if (arguments.length > 6) {
     throw new Error('Too many arguments.');
   }
