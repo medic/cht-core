@@ -17,12 +17,13 @@ utils.CONTAINER_NAMES.haproxy = 'cht-haproxy';
 utils.CONTAINER_NAMES.couch1 = 'cht-couchdb';
 utils.CONTAINER_NAMES.api = 'cht-api';
 utils.CONTAINER_NAMES.sentinel = 'cht-sentinel';
+utils.CONTAINER_NAMES.upgradeService = 'cht-upgrade-service';
 
 const DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'upgrade-service-'));
 const CHT_DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
 const CHT_DATA_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
 const UPGRADE_SERVICE_DC = path.join(DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
-const mainBranch = 'medic:medic:archv3-with-different-name';
+const mainBranch = 'medic:medic:archv3-startup-page';
 
 const chai = require('chai');
 const { spawn } = require('child_process');

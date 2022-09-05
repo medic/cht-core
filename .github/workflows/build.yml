@@ -126,7 +126,7 @@ jobs:
     - name: Publish
       run: |
         cd scripts/ci
-        npm ci
+        npm ci --legacy-peer-deps
         node ./publish.js
         node ./tag-docker-images.js
 

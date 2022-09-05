@@ -14,21 +14,21 @@ const MEDIC_DDOC_ID = '_design/medic';
 
 const loadTranslations = () => {
   const translationCache = {};
-  const options = { key: ['translations', true], include_docs: true };
-  return db.medic
-    .query('medic-client/doc_by_type', options)
+  return translations
+    .getTranslationDocs()
     .catch(err => {
       logger.error('Error loading translations - starting up anyway: %o', err);
     })
-    .then(result => {
-      if (!result) {
+    .then(translationDocs => {
+      if (!translationDocs) {
         return;
       }
-      result.rows.forEach(row => {
+
+      translationDocs.forEach(doc => {
         // If the field generic does not exist then we assume that the translation document
         // has not been converted to the new format so we will use the field values
-        const values = row.doc.generic ? Object.assign(row.doc.generic, row.doc.custom || {}) : row.doc.values;
-        translationCache[row.doc.code] = translationUtils.loadTranslations(values);
+        const values = doc.generic ? Object.assign(doc.generic, doc.custom || {}) : doc.values;
+        translationCache[doc.code] = translationUtils.loadTranslations(values);
       });
 
       config.setTranslationCache(translationCache);
@@ -175,4 +175,5 @@ module.exports = {
   load,
   listen,
   updateServiceWorker,
+  loadTranslations,
 };

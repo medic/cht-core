@@ -80,6 +80,10 @@ const getTranslationDocs = () => {
     .then(response => response.rows.map(row => row.doc));
 };
 
+const getEnabledLocales = () => {
+  return getTranslationDocs().then(docs => docs.filter(doc => doc.enabled));
+};
+
 const readTranslationFile = (fileName, folderPath) => {
   const filePath = path.join(folderPath, fileName);
   return fs.promises
@@ -116,4 +120,6 @@ module.exports = {
         });
     });
   },
+  getEnabledLocales,
+  getTranslationDocs,
 };

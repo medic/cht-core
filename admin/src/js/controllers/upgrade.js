@@ -209,7 +209,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         .catch(err => {
           // todo which status do we get with nginx???
           // exclude "50x" like statuses that come from nginx
-          if (err && !err.status && action === 'complete') {
+          if (err && (!err.status || err.status === 503 || err.status === -1) && action === 'complete') {
             // refresh page after API is back up
             return waitUntilApiStarts().then(() => reloadPage());
           }

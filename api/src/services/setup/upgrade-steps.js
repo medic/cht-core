@@ -3,6 +3,7 @@ const viewIndexerProgress = require('./view-indexer-progress');
 const upgradeLogService = require('./upgrade-log');
 const viewIndexer = require('./view-indexer');
 const logger = require('../../logger');
+const startupLog = require('./startup-log');
 
 /**
  * Finalizes the installation:
@@ -97,6 +98,7 @@ const stage = async (buildInfo) => {
  * @return {Promise}
  */
 const indexStagedViews = async () => {
+  startupLog.start('index');
   const viewsToIndex = await viewIndexer.getViewsToIndex();
   const viewIndexingPromise = viewIndexer.indexViews(viewsToIndex);
   const stopQueryingIndexers = viewIndexerProgress.log();

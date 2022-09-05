@@ -1,5 +1,3 @@
-const fs = require('fs');
-const { promisify } = require('util');
 const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
@@ -9,12 +7,12 @@ const environment = require('../environment');
 const config = require('../config');
 const users = require('../services/users');
 const tokenLogin = require('../services/token-login');
-const privacyPolicy = require('../services/privacy-policy');
 const logger = require('../logger');
-const db = require('../db');
 const localeUtils = require('locale');
 const cookie = require('../services/cookie');
 const brandingService = require('../services/branding');
+const translations = require('../translations');
+const template = require('../services/template');
 
 const templates = {
   login: {
@@ -26,8 +24,7 @@ const templates = {
       'login.incorrect',
       'online.action.message',
       'User Name',
-      'Password',
-      'privacy.policy'
+      'Password'
     ],
   },
   tokenLogin: {
@@ -42,7 +39,6 @@ const templates = {
       'login.token.loading',
       'login.token.redirect.login.info',
       'login.token.redirect.login',
-      'privacy.policy'
     ],
   },
 };
@@ -74,11 +70,12 @@ const getRedirectUrl = (userCtx, requested) => {
 };
 
 const getEnabledLocales = () => {
-  const options = { key: ['translations', true], include_docs: true };
-  return db.medic
-    .query('medic-client/doc_by_type', options)
-    .then(result => result.rows.map(row => ({ key: row.doc.code, label: row.doc.name })))
-    .then(enabled => (enabled.length < 2) ? [] : enabled) // hide selector if only one option
+  return translations
+    .getEnabledLocales()
+    .then(docs => {
+      const enabledLocales = docs.map(doc => ({ key: doc.code, label: doc.name }));
+      return enabledLocales.length < 2 ? [] : enabledLocales; // hide selector if only one option
+    })
     .catch(err => {
       logger.error('Error loading translations: %o', err);
       return [];
@@ -86,12 +83,8 @@ const getEnabledLocales = () => {
 };
 
 const getTemplate = (page) => {
-  if (templates[page].content) {
-    return templates[page].content;
-  }
   const filepath = path.join(__dirname, '..', 'templates', 'login', templates[page].file);
-  templates[page].content = promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
-    .then(file => _.template(file));
+  templates[page].content = template.getTemplate(filepath);
   return templates[page].content;
 };
 
@@ -106,21 +99,18 @@ const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
   return headerLocales.best(supportedLocales).language;
 };
 
-const render = (page, req, extras = {}) => {
-  const acceptLanguageHeader = req && req.headers && req.headers['accept-language'];
+const render = (page, req, branding, extras = {}) => {
+  const acceptLanguageHeader = req && req.locale;
   return Promise
     .all([
       getTemplate(page),
       getEnabledLocales(),
-      brandingService.get(),
-      privacyPolicy.exists()
     ])
-    .then(([ template, locales, branding, hasPrivacyPolicy ]) => {
+    .then(([ template, locales ]) => {
       const options = Object.assign(
         {
-          branding,
-          locales,
-          hasPrivacyPolicy,
+          branding: branding,
+          locales: locales,
           defaultLocale: getBestLocaleCode(acceptLanguageHeader, locales, config.get('locale')),
           translations: getTranslationsString(page)
         },
@@ -200,7 +190,8 @@ const setCookies = (req, res, sessionRes) => {
 };
 
 const renderTokenLogin = (req, res) => {
-  return render('tokenLogin', req, { tokenUrl: req.url })
+  return brandingService.get()
+    .then(branding => render('tokenLogin', req, branding, { tokenUrl: req.url }))
     .then(body => res.send(body));
 };
 
@@ -261,7 +252,8 @@ const loginByToken = (req, res) => {
 };
 
 const renderLogin = (req) => {
-  return render('login', req);
+  return brandingService.get()
+    .then(branding => render('login', req, branding));
 };
 
 module.exports = {

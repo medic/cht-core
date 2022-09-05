@@ -109,6 +109,9 @@ module.exports = {
     if (err.type === 'entity.too.large') {
       return respond(req, res, 413, 'Payload Too Large');
     }
+    if (err.type === 'upgrade.connection.refused') {
+      return respond(req, res, 503, 'Connection refused');
+    }
     respond(req, res, 500, 'Server error', err.publicMessage);
   },
 
@@ -119,4 +122,6 @@ module.exports = {
     };
     return module.exports.error(err, req, res);
   },
+
+  wantsJSON,
 };
