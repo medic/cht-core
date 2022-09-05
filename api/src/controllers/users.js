@@ -246,8 +246,7 @@ module.exports = {
           users,
           getAppUrl(req),
           ignoredUsers,
-          logId,
-          true
+          logId
         );
         res.json(response);
       } catch (error) {
