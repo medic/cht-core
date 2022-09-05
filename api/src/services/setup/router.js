@@ -60,18 +60,6 @@ router.get('/api/v1/startup-progress', (req, res) => {
   res.json(startupLog.getProgress(req.locale));
 });
 
-const paths = [
-  '/setup/poll',
-  '/_session',
-  '/api/v2/upgrade',
-];
-paths.forEach(path => {
-  router.get(path, (req, res) => {
-    res.status(STATUS);
-    res.json({ error: 'Service unavailable' });
-  });
-});
-
 router.all('*', wantsJSON, (req, res) => {
   res.status(STATUS);
   res.json({ error: 'Service unavailable' });

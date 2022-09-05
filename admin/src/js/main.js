@@ -175,6 +175,7 @@ angular.module('adminApp').constant('POUCHDB_OPTIONS', {
 angular.module('adminApp').config(function(
   $compileProvider,
   $locationProvider,
+  $httpProvider,
   $ngReduxProvider,
   $stateProvider,
   $translateProvider,
@@ -192,6 +193,7 @@ angular.module('adminApp').config(function(
   $translateProvider.addInterpolation('TranslationNullInterpolation');
 
   $ngReduxProvider.createStoreWith(RootReducer, []);
+  $httpProvider.defaults.headers.common.Accept = 'application/json';
 
   $stateProvider
     .state('display', {
