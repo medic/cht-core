@@ -343,7 +343,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportsSidebarFilter?.resetFilters();
   }
 
-  async getCurrentLineageLevel(){
+  getCurrentLineageLevel(){
     return this.userContactService.get().then(user => user?.parent?.name);
   }
 }
