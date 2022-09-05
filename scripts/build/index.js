@@ -144,16 +144,10 @@ const saveDockerComposeFiles = () => {
 };
 
 const saveServiceTags = () => {
-  const tags = [
-    {
-      container_name: 'cht-api',
-      image: versions.getImageTag('api', undefined, true),
-    },
-    {
-      container_name: 'cht-sentinel',
-      image: versions.getImageTag('sentinel', undefined, true),
-    },
-  ];
+  const tags = [...versions.SERVICES, ...versions.INFRASTRUCTURE].map(service => ({
+    container_name: `cht-${service}`,
+    image: versions.getImageTag(service, undefined, true),
+  }));
   const tagsFilePath = path.resolve(stagingPath, 'tags.json');
   fs.writeFileSync(tagsFilePath, JSON.stringify(tags));
 };
