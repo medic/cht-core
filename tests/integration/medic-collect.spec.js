@@ -55,7 +55,7 @@ describe('medic-collect', () => {
 <xforms xmlns="http://openrosa.org/xforms/xformsList">
   <xform>
     <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
-    <downloadUrl>http://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
+    <downloadUrl>https://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
   </xform>
 </xforms>\r
 0\r\n\r\n`
@@ -82,7 +82,7 @@ describe('medic-collect', () => {
 <xforms xmlns="http://openrosa.org/xforms/xformsList">
   <xform>
     <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
-    <downloadUrl>http://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
+    <downloadUrl>https://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
   </xform>
 </xforms>\r
 0\r\n\r\n`
@@ -93,7 +93,7 @@ describe('medic-collect', () => {
 });
 
 const getForms = ({ auth, userAgent }) => {
-  const host = auth ? constants.BASE_URL_AUTH : constants.BASE_URL;
+  const url = auth ? constants.BASE_URL_AUTH : constants.BASE_URL;
   
   const headers = {
     'X-OpenRosa-Version': '1.0',
@@ -106,7 +106,7 @@ const getForms = ({ auth, userAgent }) => {
   }
   
   return request.get({
-    url: `${host}/api/v1/forms`,
+    url: `${url}/api/v1/forms`,
     headers,
     resolveWithFullResponse: true
   });
