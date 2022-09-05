@@ -1,7 +1,7 @@
 const USERNAME = 'admin';
 const PASSWORD = 'pass';
 const API_HOST = 'localhost';
-const SCHEME = 'https://';
+const PROTOCOL = 'https://';
 
 module.exports = {
   IS_CI: !!process.env.CI,
@@ -25,8 +25,8 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
-  BASE_URL: `${SCHEME}${API_HOST}`,
-  BASE_URL_AUTH: `${SCHEME}${USERNAME}:${PASSWORD}@${API_HOST}`,
+  BASE_URL: `${PROTOCOL}${API_HOST}`,
+  BASE_URL_AUTH: `${PROTOCOL}${USERNAME}:${PASSWORD}@${API_HOST}`,
 
   // nginx certificate setting
   CERTIFICATE_MODE: 'SELF_SIGNED',
