@@ -125,7 +125,7 @@ const convertToBikramSambat = (value) => {
   return { t: 'str', v: convertedDate };
 };
 
-function addDate(date, years, months, days, hours, minutes) {
+const addDate = (date, years, months, days, hours, minutes) => {
   if (arguments.length > 6) {
     throw new Error('Too many arguments.');
   }
@@ -141,7 +141,7 @@ function addDate(date, years, months, days, hours, minutes) {
     .filter(([value]) => value)
     .forEach(([value, name]) => moment.add(value, name));
   return XPR.date(moment.toDate());
-}
+};
 
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
