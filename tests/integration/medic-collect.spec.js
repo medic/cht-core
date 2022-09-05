@@ -141,7 +141,7 @@ Connection: close\r
 
 const rawHttpRequest = rawRequest => {
   return new Promise((resolve, reject) => {
-    const api = net.connect(host);
+    const api = net.connect({ port: 443 });
     let rawResponse = '';
 
     api.on('connect', () => api.write(rawRequest));

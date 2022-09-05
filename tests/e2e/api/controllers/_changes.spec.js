@@ -411,23 +411,6 @@ describe('changes handler', () => {
         });
     });
 
-    it('depending on CouchDB version, should limit changes requests or specifically ignore limit', () => {
-      const allowedDocs = createSomeContacts(12, 'fixture:bobville');
-      const deniedDocs = createSomeContacts(10, 'irrelevant-place');
-      bobsIds.push(...getIds(allowedDocs));
-
-      return Promise
-        .all([
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs)
-        ])
-        .then(() => requestChanges('bob', { limit: 4 }))
-        .then(changes => {
-          // requests should return full changes list
-          assertChangeIds(changes, ...bobsIds);
-        });
-    });
-
     it('filters allowed changes', () => {
       const allowedDocs = createSomeContacts(3, 'fixture:bobville');
       const deniedDocs = createSomeContacts(3, 'irrelevant-place');

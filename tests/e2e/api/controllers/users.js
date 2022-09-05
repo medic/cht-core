@@ -1,5 +1,5 @@
 const constants = require('../../../constants');
-const http = require('http');
+const https = require('https');
 const utils = require('../../../utils');
 const uuid = require('uuid').v4;
 const querystring = require('querystring');
@@ -111,9 +111,9 @@ describe('Users API', () => {
           };
 
           // Use http service to extract cookie
-          const req = http.request(options, res => {
+          const req = https.request(options, res => {
             if (res.statusCode !== 200) {
-              return reject('Expected 200 from _session authing');
+              return reject(new Error(`Expected 200 from _session authing, but got ${res.statusCode}`));
             }
 
             // Example header:
