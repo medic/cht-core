@@ -190,14 +190,14 @@ describe('TasksComponent', () => {
         _id: 'e1',
         dueDate: futureDate.format('YYYY-MM-DD'),
         overdue: false,
-        date: new Date(futureDate.valueOf()).toISOString(),
+        date: new Date(futureDate.valueOf()),
         owner: 'a',
       },
       {
         _id: 'e2',
         dueDate: pastDate.format('YYYY-MM-DD'),
         overdue: true,
-        date: new Date(pastDate.valueOf()).toISOString(),
+        date: new Date(pastDate.valueOf()),
         owner: 'b',
       },
     ];
@@ -339,7 +339,7 @@ describe('TasksComponent', () => {
         [
           {
             _id: 'e1',
-            date: '2020-10-20T00:00:00.000Z',
+            date: new Date('2020-10-20'),
             dueDate: '2020-10-20',
             lineage: [
               'Amy Johnsons Household',
@@ -352,7 +352,7 @@ describe('TasksComponent', () => {
           },
           {
             _id: 'e2',
-            date: '2020-10-20T00:00:00.000Z',
+            date: new Date('2020-10-20'),
             dueDate: '2020-10-20',
             lineage: [
               'Amy Johnsons Household',
@@ -380,7 +380,7 @@ describe('TasksComponent', () => {
         [
           {
             _id: 'e1',
-            date: '2020-10-20T00:00:00.000Z',
+            date: new Date('2020-10-20'),
             dueDate: '2020-10-20',
             lineage: [
               'Amy Johnsons Household',
@@ -393,7 +393,7 @@ describe('TasksComponent', () => {
           },
           {
             _id: 'e2',
-            date: '2020-10-20T00:00:00.000Z',
+            date: new Date('2020-10-20'),
             dueDate: '2020-10-20',
             lineage: [
               'Amy Johnsons Household',
@@ -422,7 +422,7 @@ describe('TasksComponent', () => {
         [
           {
             _id: 'e1',
-            date: '2020-10-20T00:00:00.000Z',
+            date: new Date('2020-10-20'),
             dueDate: '2020-10-20',
             lineage: [
               'Amy Johnsons Household',
@@ -434,7 +434,7 @@ describe('TasksComponent', () => {
           },
           {
             _id: 'e2',
-            date: '2020-10-20T00:00:00.000Z',
+            date: new Date('2020-10-20'),
             dueDate: '2020-10-20',
             lineage: [
               'Amy Johnsons Household',

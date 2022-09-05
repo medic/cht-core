@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-import { debounce as _debounce, map as _map, find as _find } from 'lodash-es';
+import { debounce as _debounce } from 'lodash-es';
 import * as moment from 'moment';
 
 import { ChangesService } from '@mm-services/changes.service';
@@ -107,9 +107,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     if (!this.sessionService.isOnlineOnly()) {
       this
         .getCurrentLineageLevel()
-        .then((currentLevel) => {
-          this.currentLevel = currentLevel;
-        });
+        .then(currentLevel => this.currentLevel = currentLevel);
     }
     this.refreshTasks();
 
@@ -141,71 +139,75 @@ export class TasksComponent implements OnInit, OnDestroy {
     });
   }
 
-  private refreshTasks() {
-    const telemetryData:any = {
-      start: Date.now(),
-    };
+  async refreshTasks() {
+    try {
+      const telemetryData:any = {
+        start: Date.now(),
+      };
 
-    return this.rulesEngineService
-      .isEnabled()
-      .then(isEnabled => {
-        this.tasksDisabled = !isEnabled;
-        return isEnabled ? this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
-      })
-      .then(taskDocs => {
-        this.hasTasks = taskDocs.length > 0;
-        this.loading = false;
-        this.hydrateEmissions(taskDocs)
-          .then((tasks) => {
-            // get lineages for all tasks
-            this.getLineagesFromTaskDocs(tasks)
-              .then((subjects) => {
-                const deepCopy = obj => JSON.parse(JSON.stringify(obj));
-                const lineagedTasks = deepCopy(tasks);
-                lineagedTasks?.forEach((task) => {
-                  // map tasks with lineages
-                  let lineage = _map(
-                    _find(subjects, subject => (subject._id === task.forId || subject._id === task.owner))?.lineage,
-                    'name');
-                  // remove the lineage level that belongs to the offline logged-in user, normally the last one
-                  if (lineage && lineage.length) {
-                    if(this.currentLevel){
-                      lineage = lineage.filter(level => level && level !== this.currentLevel);
-                    }
-                    task.lineage = lineage;
-                  }
-                });
-                this.tasksActions.setTasksList(lineagedTasks);
-              });
-          });
-        if (!this.tasksLoaded) {
-          this.tasksActions.setTasksLoaded(true);
-        }
+      const isEnabled = await this.rulesEngineService.isEnabled();
+      this.tasksDisabled = !isEnabled;
+      const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
 
-        telemetryData.end = Date.now();
-        const telemetryEntryName = !this.tasksLoaded ? `tasks:load`: `tasks:refresh`;
-        this.telemetryService.record(telemetryEntryName, telemetryData.end - telemetryData.start);
-      })
-      .catch(err => {
-        console.error('Error getting tasks for all contacts', err);
-        this.error = true;
-        this.loading = false;
-        this.hasTasks = false;
-        this.tasksActions.setTasksList([]);
-      });
+      this.hasTasks = taskDocs.length > 0;
+      this.loading = false;
+
+      const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
+      const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
+
+      if(subjects) {
+        hydratedTasks.forEach(task => {
+          const lineage = this.getTaskLineage(subjects, task);
+          task.lineage = this.currentLevel ? this.removeCurrentLineage(lineage) : lineage;
+        });
+      }
+
+      this.tasksActions.setTasksList(hydratedTasks);
+
+      if (!this.tasksLoaded) {
+        this.tasksActions.setTasksLoaded(true);
+      }
+
+      telemetryData.end = Date.now();
+      const telemetryEntryName = !this.tasksLoaded ? `tasks:load`: `tasks:refresh`;
+      this.telemetryService.record(telemetryEntryName, telemetryData.end - telemetryData.start);
+       
+    } catch (exception) {
+      console.error('Error getting tasks for all contacts', exception);
+      this.error = true;
+      this.loading = false;
+      this.hasTasks = false;
+      this.tasksActions.setTasksList([]);
+    }
   }
 
   listTrackBy(index, task) {
     return task?._id;
   }
 
-  async getCurrentLineageLevel(){
+  getCurrentLineageLevel(){
     return this.userContactService.get().then(user => user?.parent?.name);
   }
 
-  async getLineagesFromTaskDocs(taskDocs){
-    const ids = _map(taskDocs, 'forId');
-    return await this.lineageModelGeneratorService.reportSubjects(ids);
+  getLineagesFromTaskDocs(taskDocs){
+    const ids = taskDocs.map(task => task.forId);
+    return this.lineageModelGeneratorService.reportSubjects(ids);
   }
 
+  private getTaskLineage(subjects, task) {
+    if (!subjects?.length) {
+      return;
+    }
+
+    const lineage = subjects.find(subject => (subject._id === task.forId || subject._id === task.owner))?.lineage;
+    return lineage.map(lineage => lineage.name);
+  }
+
+  private removeCurrentLineage(lineage) {
+    if (!this.currentLevel || !lineage?.length) {
+      return;
+    }
+
+    return lineage.filter(level => level && level !== this.currentLevel);
+  }
 }
