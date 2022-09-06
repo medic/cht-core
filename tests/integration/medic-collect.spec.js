@@ -2,9 +2,8 @@ const assert = require('chai').assert;
 const constants = require('../constants');
 const request = require('request-promise-native');
 const utils = require('../utils');
-const host = constants.API_HOST;
+const host = 'localhost';
 const db = utils.db;
-
 
 /**
  * Tests to ensure continued support for Medic Collect.
@@ -38,56 +37,43 @@ describe('medic-collect', () => {
 
   describe('without User-Agent header', () => {
     it('is prompted for auth details if not supplied', () => {
-      return getForms({ auth: false, userAgent: false }).then(res => {
-        assert.equal(res.statusCode, 401, JSON.stringify(res));
-        assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Web Services"');
-      });
+      return getForms({ auth: false, userAgent: false })
+        .then(() => {
+          assert.fail('should fail the request');
+        })
+        .catch(err => {
+          assert.equal(err.statusCode, 401);
+          assert.equal(err.response.headers['www-authenticate'], 'Basic realm="Medic Web Services"');
+        });
     });
 
     it('can fetch a list of forms', () => {
-      return getForms({ auth: true, userAgent: false }).then(res => {
-        // then
-        assert.equal(res.statusCode, 200, JSON.stringify(res));
-        assert.equal(
-          res.body,
-          `108\r
-<?xml version="1.0" encoding="UTF-8"?>
-<xforms xmlns="http://openrosa.org/xforms/xformsList">
-  <xform>
-    <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
-    <downloadUrl>https://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
-  </xform>
-</xforms>\r
-0\r\n\r\n`
-        );
-      });
+      return getForms({ auth: true, userAgent: false })
+        .then(res => {
+          assert.equal(res.statusCode, 200);
+          assert.equal(res.body, MY_COLLECT_FORM_RESPONSE);
+        });
     });
   });
 
   describe('with User-Agent header', () => {
     it('is prompted for auth details if not supplied', () => {
-      return getForms({ auth: false, userAgent: true }).then(res => {
-        assert.equal(res.statusCode, 401, JSON.stringify(res));
-        assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Web Services"');
-      });
+      return getForms({ auth: false, userAgent: true })
+        .then(() => {
+          assert.fail('should fail the request');
+        })
+        .catch(err => {
+          assert.equal(err.statusCode, 401);
+          assert.equal(err.response.headers['www-authenticate'], 'Basic realm="Medic Web Services"');
+        });
     });
 
     it('can fetch a list of forms', () => {
-      return getForms({ auth: true, userAgent: true }).then(res => {
-        assert.equal(res.statusCode, 200);
-        assert.equal(
-          res.body,
-          `108\r
-<?xml version="1.0" encoding="UTF-8"?>
-<xforms xmlns="http://openrosa.org/xforms/xformsList">
-  <xform>
-    <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
-    <downloadUrl>https://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
-  </xform>
-</xforms>\r
-0\r\n\r\n`
-        );
-      });
+      return getForms({ auth: true, userAgent: true })
+        .then(res => {
+          assert.equal(res.statusCode, 200);
+          assert.equal(res.body, MY_COLLECT_FORM_RESPONSE);
+        });
     });
   });
 });
@@ -116,7 +102,7 @@ const saveFormToDb = doc => {
   return Promise.resolve()
     .then(() => db.put(doc))
     .then(res => {
-      const xml = '<xform/>';
+      const xml = `<h:html xmlns:h="http://www.w3.org/1999/xhtml"><h:head><model><instance><${doc.internalId}/></instance></model></h:head></h:html>`;
       const body = Buffer.from(xml).toString('base64');
       return db.putAttachment(doc._id, 'xml', res.rev, body, {
         type: 'text/xml',
@@ -124,3 +110,12 @@ const saveFormToDb = doc => {
       });
     });
 };
+
+const MY_COLLECT_FORM_RESPONSE = `<?xml version="1.0" encoding="UTF-8"?>
+<xforms xmlns="http://openrosa.org/xforms/xformsList">
+  <xform>
+    <formID>MY-COLLECT-FORM</formID>
+    <hash>md5:7f356568a6096ef8589aef17ccc0ac27</hash>
+    <downloadUrl>https://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
+  </xform>
+</xforms>`;
