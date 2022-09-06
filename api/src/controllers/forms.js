@@ -82,16 +82,18 @@ module.exports = {
     const form = parts.slice(0, -1).join('.');
     const format = parts.slice(-1)[0];
     if (!form) {
-      throw {
+      const error = {
         code: 400,
         message: `Invalid form name (form="${form}", format="${format}")`,
       };
+      return serverUtils.error(error, req, res);
     }
     if (format !== 'xml') {
-      throw {
+      const error = {
         code: 400,
         message: `Invalid file format (format="${format}")`,
       };
+      return serverUtils.error(error, req, res);
     }
     return formsService.getFormDocs()
       .then(docs => docs.find(doc => doc.internalId === form))
