@@ -162,7 +162,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     return this.messageContactService
       .getList()
       .then((conversations = []) => {
-        // remove the lineage level that belongs to the offline logged-in user, normally the last one
+        // remove the lineage level that belongs to the offline logged-in user
         if (this.currentLevel) {
           conversations.forEach(conversation => {
             if (conversation.lineage) {
@@ -203,7 +203,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     return message.key + identifier;
   }
 
-  getCurrentLineageLevel(){
+  private getCurrentLineageLevel() {
     return this.userContactService.get().then(user => user?.parent?.name);
   }
 }
