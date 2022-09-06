@@ -160,6 +160,18 @@ Age: <output value=" /child_health_registration/patient_age_in_years "/> yr old<
           <text id="/child_health_registration/inputs/contact/_id:label">
             <value>-</value>
           </text>
+          <text id="/child_health_registration/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta:label">
+            <value>-</value>
+          </text>
           <text id="/child_health_registration/inputs:label">
             <value>-</value>
           </text>
@@ -246,6 +258,18 @@ ID: <output value=" /child_health_registration/group_summary/r_patient_id "/></v
           <text id="/child_health_registration/inputs/contact/_id:label">
             <value>Quel est le nom du patient ?</value>
           </text>
+          <text id="/child_health_registration/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta:label">
+            <value>-</value>
+          </text>
           <text id="/child_health_registration/inputs:label">
             <value>Patient</value>
           </text>
@@ -330,6 +354,18 @@ ID: <output value=" /child_health_registration/group_summary/r_patient_id "/></v
           </text>
           <text id="/child_health_registration/inputs/contact/_id:label">
             <value>मरीज का नाम क्या है?</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta:label">
+            <value>-</value>
           </text>
           <text id="/child_health_registration/inputs:label">
             <value>मरीज</value>
@@ -416,6 +452,18 @@ ID: <output value=" /child_health_registration/group_summary/r_patient_id "/></v
           <text id="/child_health_registration/inputs/contact/_id:label">
             <value>Apa nama pasien?</value>
           </text>
+          <text id="/child_health_registration/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta:label">
+            <value>-</value>
+          </text>
           <text id="/child_health_registration/inputs:label">
             <value>Pasien</value>
           </text>
@@ -500,6 +548,18 @@ ID: <output value=" /child_health_registration/group_summary/r_patient_id "/></v
             <value>-</value>
           </text>
           <text id="/child_health_registration/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta:label">
             <value>-</value>
           </text>
           <text id="/child_health_registration/inputs:label">
@@ -588,6 +648,18 @@ ID: <output value=" /child_health_registration/group_summary/r_patient_id "/></v
           <text id="/child_health_registration/inputs/contact/_id:label">
             <value>-</value>
           </text>
+          <text id="/child_health_registration/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/child_health_registration/inputs/meta:label">
+            <value>-</value>
+          </text>
           <text id="/child_health_registration/inputs:label">
             <value>-</value>
           </text>
@@ -609,7 +681,7 @@ ID: <output value=" /child_health_registration/group_summary/r_patient_id "/></v
         </translation>
       </itext>
       <instance>
-        <child_health_registration id="child_health_registration" prefix="J1!child_health_registration!" delimiter="#" version="2018-11-14_10-20">
+        <child_health_registration id="child_health_registration" prefix="J1!child_health_registration!" delimiter="#" version="2022-08-19 16-23">
           <inputs>
             <meta>
               <location>
@@ -640,6 +712,12 @@ ID: <output value=" /child_health_registration/group_summary/r_patient_id "/></v
                 </parent>
               </parent>
             </contact>
+            <meta tag="hidden">
+              <location>
+                <lat/>
+                <long/>
+              </location>
+            </meta>
           </inputs>
           <patient_uuid tag="hidden"/>
           <patient_id/>
@@ -685,6 +763,8 @@ ID: <output value=" /child_health_registration/group_summary/r_patient_id "/></v
       <bind nodeset="/child_health_registration/inputs/contact/parent/contact/phone" type="string"/>
       <bind nodeset="/child_health_registration/inputs/contact/parent/contact/name" type="string"/>
       <bind nodeset="/child_health_registration/inputs/contact/parent/parent/parent/use_cases" type="string"/>
+      <bind nodeset="/child_health_registration/inputs/meta/location/lat" type="string"/>
+      <bind nodeset="/child_health_registration/inputs/meta/location/long" type="string"/>
       <bind nodeset="/child_health_registration/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
       <bind nodeset="/child_health_registration/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
       <bind nodeset="/child_health_registration/patient_name" type="string" calculate="../inputs/contact/name"/>
@@ -693,9 +773,9 @@ ID: <output value=" /child_health_registration/group_summary/r_patient_id "/></v
       <bind nodeset="/child_health_registration/birth_date" type="string" calculate="substr(  /child_health_registration/inputs/contact/date_of_birth , 0, 10 )"/>
       <bind nodeset="/child_health_registration/chw_sms" type="string" calculate="if( /child_health_registration/group_note/g_chw_sms  != '', concat( /child_health_registration/group_note/default_chw_sms_text ,concat('
 ', /child_health_registration/group_note/g_chw_sms )),  /child_health_registration/group_note/default_chw_sms_text )"/>
-      <bind nodeset="/child_health_registration/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
+      <bind nodeset="/child_health_registration/geolocation" type="string" calculate="concat(../inputs/meta/location/lat, concat(' ', ../inputs/meta/location/long))"/>
       <bind nodeset="/child_health_registration/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /child_health_registration/birth_date , today() ) div 12 )"/>
-      <bind nodeset="/child_health_registration/patient_contact_phone" type="string" calculate="coalesce(/postnatal_care/inputs/contact/phone,/postnatal_care/inputs/contact/parent/contact/phone)"/>
+      <bind nodeset="/child_health_registration/patient_contact_phone" type="string" calculate="coalesce(../inputs/contact/phone,../inputs/contact/parent/contact/phone)"/>
       <bind nodeset="/child_health_registration/group_note/default_chw_sms" type="select1"/>
       <bind nodeset="/child_health_registration/group_note/default_chw_sms_text" type="string" calculate="jr:choice-name( /child_health_registration/group_note/default_chw_sms ,' /child_health_registration/group_note/default_chw_sms ')"/>
       <bind nodeset="/child_health_registration/group_note/default_chw_sms_note" readonly="true()" type="string"/>
@@ -735,6 +815,9 @@ ID: <output value=" /child_health_registration/group_summary/r_patient_id "/></v
             </group>
           </group>
         </group>
+      </group>
+      <group ref="/child_health_registration/inputs/meta">
+        <group ref="/child_health_registration/inputs/meta/location"/>
       </group>
     </group>
     <group appearance="field-list" ref="/child_health_registration/group_note">
