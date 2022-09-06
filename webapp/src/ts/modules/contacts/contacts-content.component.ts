@@ -341,7 +341,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       },
       (error, forms) => {
         if (error) {
-          console.warn('filtered forms :: ', forms);
           console.error('Error fetching relevant forms', error);
           return;
         }
@@ -368,8 +367,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
             };
           })
           .sort((a, b) => a.title?.localeCompare(b.title));
-
-        console.warn('Forms for action button :: ', formSummaries);
         this.globalActions.updateRightActionBar({ relevantForms: formSummaries });
       }
     );
