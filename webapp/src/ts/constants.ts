@@ -13,15 +13,18 @@ const BODY_LENGTH_LIMIT = 32000000; // 32 million
 // In order to enable a retry, and not incorrectly communicate success to the client, validate _changes
 // responses and update the response object accordingly, before passing it to PouchDb for processing.
 const processChangesResponse = (response) => {
-  return response.json().then(json => {
+  const clone = response.clone();
+  return clone.json().then(json => {
     const validChangesResponse = json.results && !json.error;
     if (validChangesResponse) {
       return response;
     }
 
-    response.ok = false;
-    response.status = json.code || 500;
-    return response;
+    return {
+      ok: false,
+      status: json.code || 500,
+      ...response,
+    };
   });
 };
 
@@ -47,7 +50,7 @@ export const POUCHDB_OPTIONS = {
       opts.credentials = 'same-origin';
 
       const promise = window.PouchDB.fetch(url, opts);
-      if (parsedUrl.pathname.startsWith('/_changes')) {
+      if (parsedUrl.pathname.endsWith('/_changes')) {
         return promise.then(response => processChangesResponse(response));
       }
       return promise;
