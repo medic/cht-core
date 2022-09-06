@@ -13,7 +13,7 @@ describe('Server utils', () => {
   beforeEach(() => {
     req = {
       url: '',
-      accepts: sinon.stub(),
+      get: sinon.stub(),
     };
     res = {
       writeHead: sinon.stub(),
@@ -169,10 +169,10 @@ describe('Server utils', () => {
     });
 
     it('responds with JSON if requested', () => {
-      req.accepts.returns(true);
+      req.get.returns('application/json');
       serverUtils.notLoggedIn(req, res);
-      chai.expect(req.accepts.callCount).to.equal(1);
-      chai.expect(req.accepts.args[0][0]).to.equal('json');
+      chai.expect(req.get.callCount).to.equal(1);
+      chai.expect(req.get.args[0][0]).to.equal('Accept');
       chai.expect(res.status.callCount).to.equal(1);
       chai.expect(res.status.args[0][0]).to.equal(401);
       chai.expect(res.type.callCount).to.equal(1);
@@ -207,10 +207,10 @@ describe('Server utils', () => {
     });
 
     it('responds with JSON', () => {
-      req.accepts.withArgs('json').returns(true);
+      req.get.withArgs('Accept').returns('application/json');
       serverUtils.serverError({ foo: 'bar' }, req, res);
-      chai.expect(req.accepts.callCount).to.equal(1);
-      chai.expect(req.accepts.args[0][0]).to.equal('json');
+      chai.expect(req.get.callCount).to.equal(1);
+      chai.expect(req.get.args[0][0]).to.equal('Accept');
       chai.expect(res.status.callCount).to.equal(1);
       chai.expect(res.status.args[0][0]).to.equal(500);
       chai.expect(res.end.callCount).to.equal(1);
@@ -218,10 +218,10 @@ describe('Server utils', () => {
     });
 
     it('handles uncaught payload size exceptions', () => {
-      req.accepts.withArgs('json').returns(true);
+      req.get.withArgs('Accept').returns('application/json');
       serverUtils.serverError({ foo: 'bar', type: 'entity.too.large' }, req, res);
-      chai.expect(req.accepts.callCount).to.equal(1);
-      chai.expect(req.accepts.args[0][0]).to.equal('json');
+      chai.expect(req.get.callCount).to.equal(1);
+      chai.expect(req.get.args[0][0]).to.equal('Accept');
       chai.expect(res.status.callCount).to.equal(1);
       chai.expect(res.status.args[0][0]).to.equal(413);
       chai.expect(res.end.callCount).to.equal(1);
