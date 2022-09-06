@@ -56,8 +56,10 @@ const listFormsJSON = forms => {
 
 module.exports = {
   list: (req, res) => {
-    return auth.check(req, 'can_configure')
-      .then(() => formsService.getFormDocs())
+    if (!req.userCtx) {
+      return serverUtils.notLoggedIn(req, res);
+    }
+    return formsService.getFormDocs()
       .then(forms => {
         if (req.headers['x-openrosa-version']) {
           return listFormsXML(forms, req).then(xml => {
@@ -72,36 +74,37 @@ module.exports = {
       .catch(err => serverUtils.error(err, req, res));
   },
   get: (req, res) => {
-    return auth.check(req, 'can_configure')
-      .then(() => {
-        const parts = req.params.form.split('.');
-        const form = parts.slice(0, -1).join('.');
-        const format = parts.slice(-1)[0];
-        if (!form) {
-          throw {
-            code: 400,
-            message: `Invalid form name (form="${form}", format="${format}")`,
-          };
-        }
-        if (format !== 'xml') {
-          throw {
-            code: 400,
-            message: `Invalid file format (format="${format}")`,
-          };
-        }
-        return formsService.getFormDocs()
-          .then(docs => docs.find(doc => doc.internalId === form))
-          .then(doc => formsService.getXFormAttachment(doc))
-          .then(attachment => {
-            if (!attachment) {
-              return Promise.reject({
-                code: 404,
-                message: `Form not found: ${form} (${format})`,
-              });
-            }
-            res.writeHead(200, { 'Content-Type': attachment.content_type });
-            res.end(attachment.data);
+    if (!req.userCtx) {
+      return serverUtils.notLoggedIn(req, res);
+    }
+
+    const parts = req.params.form.split('.');
+    const form = parts.slice(0, -1).join('.');
+    const format = parts.slice(-1)[0];
+    if (!form) {
+      throw {
+        code: 400,
+        message: `Invalid form name (form="${form}", format="${format}")`,
+      };
+    }
+    if (format !== 'xml') {
+      throw {
+        code: 400,
+        message: `Invalid file format (format="${format}")`,
+      };
+    }
+    return formsService.getFormDocs()
+      .then(docs => docs.find(doc => doc.internalId === form))
+      .then(doc => formsService.getXFormAttachment(doc))
+      .then(attachment => {
+        if (!attachment) {
+          return Promise.reject({
+            code: 404,
+            message: `Form not found: ${form} (${format})`,
           });
+        }
+        res.writeHead(200, { 'Content-Type': attachment.content_type });
+        res.end(attachment.data);
       })
       .catch(err => serverUtils.error(err, req, res));
   },
