@@ -54,7 +54,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
     if (!this.sessionService.isOnlineOnly()) {
-      this.currentLevel = this.getCurrentLineageLevel();
+      this
+        .getCurrentLineageLevel()
+        .then(currentLevel => this.currentLevel = currentLevel);
     }
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
