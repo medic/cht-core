@@ -58,10 +58,10 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getTasksLoaded),
       this.store.select(Selectors.getSelectedTask),
     ).subscribe(([
-                   tasksList,
-                   tasksLoaded,
-                   selectedTask,
-                 ]) => {
+      tasksList,
+      tasksLoaded,
+      selectedTask,
+    ]) => {
       this.tasksList = tasksList;
       this.tasksLoaded = tasksLoaded;
       this.selectedTask = selectedTask;
