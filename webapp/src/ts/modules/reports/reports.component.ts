@@ -194,7 +194,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       // remove the lineage level that belongs to the offline logged-in user
       if (this.currentLevel && report.lineage && report.lineage.length) {
-        report.lineage = report.lineage?.filter(level => level !== this.currentLevel);
+        report.lineage = report.lineage.filter(level => level !== this.currentLevel);
       }
       report.unread = !report.read;
       return report;

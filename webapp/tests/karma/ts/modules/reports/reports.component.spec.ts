@@ -300,6 +300,14 @@ describe('Reports Component', () => {
         _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba965525',
       },
     ];
+    const offlineUserContactDoc = {
+      _id: 'user',
+      parent: {
+        _id: 'parent',
+        name: 'CHW Bettys Area',
+        parent: userContactGrandParent,
+      },
+    };
 
     it('it should retrieve the hierarchy level of the connected user', () => {
       expect(component.currentLevel).to.equal('parent');
@@ -368,14 +376,7 @@ describe('Reports Component', () => {
     });
 
     it('should remove current level from reports lineage when user is offline', async () => {
-      const offlineUserContactDoc = {
-        _id: 'user',
-        parent: {
-          _id: 'parent',
-          name: 'CHW Bettys Area',
-          parent: userContactGrandParent,
-        },
-      };
+
       const expectedReports = [
         {
           _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd', lineage: [ 'St Elmos Concession', 'Chattanooga Village' ],

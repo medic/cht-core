@@ -56,16 +56,6 @@ describe('Messages Component', () => {
     };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
-      {
-        selector: 'getConversations',
-        value: [
-          { 
-            key: 'a', 
-            message: { inAllMessages: true },
-            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ]
-          },
-        ],
-      },
       { selector: 'getLoadingContent', value: false },
       { selector: 'getMessagesError', value: false },
     ];
@@ -212,15 +202,7 @@ describe('Messages Component', () => {
   });
 
   describe('Messages breadcrumbs', () => {
-    const offlineUserContactDoc = {
-      _id: 'user',
-      parent: {
-        _id: 'parent',
-        name: 'parent',
-        parent: userContactGrandparent,
-      },
-    };
-    const offlineUserContactDoc2 = {
+    const bettyOfflineUserContactDoc = {
       _id: 'user',
       parent: {
         _id: 'parent',
@@ -254,12 +236,12 @@ describe('Messages Component', () => {
       expect(component.currentLevel).to.equal('parent');
     });
 
-    it('should not alter conversations when user is offline and parent place isnt relevant to the conversation',
+    it('should not alter conversations when user is offline and parent place is not relevant to the conversation',
       fakeAsync( () => {
         sinon.resetHistory();
 
         messageContactService.getList.resolves(conversations);
-        userContactService.get.resolves(offlineUserContactDoc);
+        userContactService.get.resolves(userContactDoc);
         sessionService.isOnlineOnly.returns(false);
 
         component.updateConversations({merge : true});
@@ -274,14 +256,14 @@ describe('Messages Component', () => {
       sinon.resetHistory();
 
       messageContactService.getList.resolves(conversations);
-      userContactService.get.resolves(userContactDoc);
+      userContactService.get.resolves(bettyOfflineUserContactDoc);
       sessionService.isOnlineOnly.returns(true);
 
+      component.ngOnInit();
+      tick();
       component.updateConversations({merge : true});
       tick();
 
-      expect(messageContactService.getList.callCount).to.equal(1);
-      expect(component.currentLevel).to.equal('parent');
       expect(component.conversations).to.deep.equal(conversations);
     }));
 
@@ -311,7 +293,7 @@ describe('Messages Component', () => {
         ];
 
         messageContactService.getList.resolves(conversations);
-        userContactService.get.resolves(offlineUserContactDoc2);
+        userContactService.get.resolves(bettyOfflineUserContactDoc);
         sessionService.isOnlineOnly.returns(false);
 
         component.ngOnInit();
@@ -319,7 +301,6 @@ describe('Messages Component', () => {
         component.updateConversations({ merge : true });
         tick();
 
-        expect(messageContactService.getList.callCount).to.equal(2);
         expect(component.currentLevel).to.equal('CHW Bettys Area');
         expect(component.conversations).to.deep.equal(updatedConversations);
       }));
