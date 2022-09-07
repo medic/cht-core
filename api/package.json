@@ -60,7 +60,6 @@
     "properties": "^1.2.1",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
-    "semver": "^7.3.5",
     "simple-password-tester": "^1.0.0",
     "sw-precache": "^5.2.1",
     "url": "^0.11.0",

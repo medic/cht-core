@@ -1,6 +1,8 @@
 const constants = require('./constants');
 const medicConf = require('medic-conf');
 
+const CHT_URL = `${constants.BASE_URL_AUTH}/${constants.DB_NAME}`;
+
 const defaultActions = [
   'compile-app-settings',
   'upload-app-settings',
@@ -16,14 +18,9 @@ const defaultActions = [
 ];
 
 const applyConfig = async path => {
-  const couchUrl = `${constants.BASE_URL_AUTH}/${constants.DB_NAME}`;
-
   defaultActions.forEach(async function(action) {
-    if (action === 'compile-app-settings') {
-      await medicConf(action, couchUrl, ['--noDependencyCheck'], path);
-    } else {
-      await medicConf(action, couchUrl, '', path);
-    }
+    const args = action === 'compile-app-settings' ? ['--noDependencyCheck'] : '';
+    await medicConf(action, CHT_URL, args, path);
   });
 
   return new Promise(resolve => {
