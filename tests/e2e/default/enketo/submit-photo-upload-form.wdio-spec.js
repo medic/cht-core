@@ -1,10 +1,10 @@
-const photoUpload = require('../../page-objects/forms/photo-upload.wdio.page');
-const common = require('../../page-objects/common/common.wdio.page');
-const reportsPage = require('../../page-objects/reports/reports.wdio.page');
-const utils = require('../../utils');
-const userData = require('../../page-objects/forms/data/user.po.data');
+const photoUpload = require('../../../page-objects/forms/photo-upload.wdio.page');
+const common = require('../../../page-objects/common/common.wdio.page');
+const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
+const utils = require('../../../utils');
+const userData = require('../../../page-objects/forms/data/user.po.data');
 const path = require('path');
-const loginPage = require('../../page-objects/login/login.wdio.page');
+const loginPage = require('../../../page-objects/login/login.wdio.page');
 
 const { userContactDoc, docs } = userData;
 
@@ -20,7 +20,7 @@ describe('Submit Photo Upload form', () => {
     await common.goToReports();
 
     await reportsPage.openForm(photoUpload.docs[0].title);
-    await photoUpload.selectImage(path.join(__dirname, '../../../webapp/src/img/setup-wizard-demo.png'));
+    await photoUpload.selectImage(path.join(__dirname, '../../../../webapp/src/img/setup-wizard-demo.png'));
     await (photoUpload.imagePreview()).waitForDisplayed();
 
     await reportsPage.submitForm();
@@ -46,7 +46,7 @@ describe('Submit Photo Upload form', () => {
     await common.goToReports();
 
     await reportsPage.openForm(photoUpload.docs[0].title);
-    await photoUpload.selectImage(path.join(__dirname, '../../../webapp/src/img/setup-wizard-demo.png'));
+    await photoUpload.selectImage(path.join(__dirname, '../../../../webapp/src/img/setup-wizard-demo.png'));
     await (photoUpload.imagePreview()).waitForDisplayed();
 
     await reportsPage.submitForm();
@@ -59,7 +59,7 @@ describe('Submit Photo Upload form', () => {
 
     await reportsPage.editReport(reportId);
     await (photoUpload.imagePreview()).waitForDisplayed();
-    await photoUpload.selectImage(path.join(__dirname, '../../../webapp/src/img/layers.png'));
+    await photoUpload.selectImage(path.join(__dirname, '../../../../webapp/src/img/layers.png'));
     await (photoUpload.imagePreview()).waitForDisplayed();
     await reportsPage.submitForm();
 

@@ -1,13 +1,13 @@
-const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
-const reportsPage = require('../../page-objects/reports/reports.wdio.page');
+const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
+const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
 const uuid = require('uuid').v4;
-const common = require('../../page-objects/common/common.wdio.page');
-const loginPage = require('../../page-objects/login/login.wdio.page');
-const utils = require('../../utils');
-const userData = require('../../page-objects/forms/data/user.po.data');
+const common = require('../../../page-objects/common/common.wdio.page');
+const loginPage = require('../../../page-objects/login/login.wdio.page');
+const utils = require('../../../utils');
+const userData = require('../../../page-objects/forms/data/user.po.data');
 const fs = require('fs');
-const commonElements = require('../../page-objects/common/common.wdio.page');
-const oneTextForm = fs.readFileSync(`${__dirname}/../../forms/one-text-form.xml`, 'utf8');
+const commonElements = require('../../../page-objects/common/common.wdio.page');
+const oneTextForm = fs.readFileSync(`${__dirname}/forms/one-text-form.xml`, 'utf8');
 
 const instanceID = uuid();
 const reportModelXml = `
