@@ -15,10 +15,10 @@
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
     "wdio-setup": "rm -rf allure-results allure-report && grunt e2e-env-setup",
-    "wdio-local": "npm run wdio-setup && wdio run ./tests/wdio.conf.js",
+    "wdio-local": "npm run wdio-setup && wdio run ./tests/e2e/default/wdio.conf.js",
     "standard-wdio-local": "npm run wdio-setup && wdio run ./tests/e2e/standard/wdio.conf.js",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
-    "wdio": "wdio run ./tests/wdio.conf.js",
+    "wdio": "wdio run ./tests/e2e/default/wdio.conf.js",
     "standard-wdio": "wdio run ./tests/e2e/standard/wdio.conf.js"
   },
   "devDependencies": {
