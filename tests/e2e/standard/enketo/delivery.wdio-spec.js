@@ -103,7 +103,7 @@ describe('Delivery', () => {
     expect(firstReportInfo.heading).to.equal(pregnantWoman2);
     expect(firstReportInfo.form).to.equal('Delivery Report (SMS)');
 
-    await reportsPage.openReport(firstReport);
+    await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
     expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
@@ -146,7 +146,7 @@ describe('Delivery', () => {
     expect(firstReportInfo.heading).to.equal(pregnantWoman1);
     expect(firstReportInfo.form).to.equal('Delivery');
 
-    await reportsPage.openReport(firstReport);
+    await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
     expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');

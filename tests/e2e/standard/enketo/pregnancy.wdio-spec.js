@@ -78,7 +78,7 @@ describe('New pregnancy', () => {
     expect(firstReportInfo.heading).to.equal(pregnantWoman1);
     expect(firstReportInfo.form).to.equal('New Pregnancy');
 
-    await reportsPage.openReport(firstReport);
+    await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
     expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
@@ -107,7 +107,7 @@ describe('New pregnancy', () => {
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
-    await reportsPage.openReport(firstReport);
+    await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
 
     expect(firstReportInfo.heading).to.equal('Woman2');

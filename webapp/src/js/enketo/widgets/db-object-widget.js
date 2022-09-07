@@ -25,7 +25,7 @@ class Dbobjectwidget extends Widget {
   }
 }
 
-function construct(element) {
+const construct = ( element ) => {
   const $question = $( element );
 
   const Select2Search = window.CHTCore.Select2Search;
@@ -59,7 +59,7 @@ function construct(element) {
     // select2 doesn't understand readonly
     $selectInput.prop('disabled', $textInput.prop('readonly'));
   });
-}
+};
 
 const getContactTypes = function($question, $textInput) {
   const dbObjectType = $textInput.attr('data-type-xml');

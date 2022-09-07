@@ -795,7 +795,7 @@
         </translation>
       </itext>
       <instance>
-        <delivery id="delivery" prefix="J1!delivery!" delimiter="#" version="2022-06-14 15-07">
+        <delivery id="delivery" prefix="J1!delivery!" delimiter="#" version="2022-08-23 13-48">
           <inputs>
             <meta>
               <location>
@@ -1522,8 +1522,7 @@ selected(../../death_info_woman/woman_death_birth, 'yes')"/>
       <bind nodeset="/delivery/summary/r_mom_convulsion" readonly="true()" type="string" relevant="selected(../../pnc_danger_sign_check/convulsion, 'yes')"/>
       <bind nodeset="/delivery/summary/r_pnc_visits" readonly="true()" type="string" relevant="selected(../../condition/woman_outcome, 'alive_well') or
 selected(../../condition/woman_outcome, 'alive_unwell') or
-../delivery_outcome/babies_alive_num &gt; 0 or
-../../pnc_visits/pnc_visits_additional != ''"/>
+../../delivery_outcome/babies_alive_num &gt; 0"/>
       <bind nodeset="/delivery/summary/r_pnc_visits_completed" readonly="true()" type="string" relevant="selected(../../condition/woman_outcome, 'alive_well') or
 selected(../../condition/woman_outcome, 'alive_unwell') or
 ../../delivery_outcome/babies_alive_num &gt; 0"/>
