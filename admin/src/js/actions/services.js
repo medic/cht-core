@@ -18,11 +18,11 @@ angular.module('inboxServices').factory('ServicesActions',
     'use strict';
     'ngInject';
 
-    return function(dispatch) {
+    return (dispatch) => {
 
-      function setLastChangedDoc(value) {
+      const setLastChangedDoc = (value) => {
         dispatch(ActionUtils.createSingleValueAction(actionTypes.SET_LAST_CHANGED_DOC, 'lastChangedDoc', value));
-      }
+      };
 
       return {
         setLastChangedDoc

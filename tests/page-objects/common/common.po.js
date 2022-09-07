@@ -47,6 +47,10 @@ const waitForLoaderToDisappear = async (timeout = 10000) => {
   }
 };
 
+const openSubmenu = (menuName) => {
+  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
+};
+
 module.exports = {
   snackBarContent,
   messagesList,
@@ -280,6 +284,3 @@ module.exports = {
   getTasksButtonLabel: () => element(by.css('#tasks-tab .button-label')),
 };
 
-function openSubmenu(menuName) {
-  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
-}

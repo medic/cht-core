@@ -22,29 +22,29 @@ PouchDB.plugin(require('pouchdb-mapreduce'));
 
 let ddocs;
 
-function filesIn(dir) {
+const filesIn = (dir) => {
   return fs.readdirSync(dir).filter(it => !it.startsWith('.'));
-}
+};
 
-function readFile(path) {
+const readFile = (path) => {
   return fs.readFileSync(path, { encoding: 'utf-8' });
-}
+};
 
-function readOptionalFile(path) {
+const readOptionalFile = (path) => {
   if (fs.existsSync(path)) {
     return readFile(path);
   }
-}
+};
 
-function loadView(viewsDir, viewName) {
+const loadView = (viewsDir, viewName) => {
   const viewDir = path.join(viewsDir, viewName);
   return {
     map: readFile(`${viewDir}/map.js`),
     reduce: readOptionalFile(`${viewDir}/reduce.js`),
   };
-}
+};
 
-function loadDdoc(rootDir, dbName, ddocName) {
+const loadDdoc = (rootDir, dbName, ddocName) => {
   let viewsDir;
   if (dbName) {
     viewsDir = path.join(rootDir, 'ddocs', dbName, ddocName, 'views');
@@ -56,7 +56,7 @@ function loadDdoc(rootDir, dbName, ddocName) {
     filesIn(viewsDir).forEach(view => views[view] = loadView(viewsDir, view));
   }
   ddocs.push({ _id: `_design/${ddocName}`, views });
-}
+};
 
 module.exports = (rootDir='./') => {
   if (!ddocs) {
