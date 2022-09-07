@@ -12,6 +12,8 @@ const nextPage = async (numberOfPages = 1) => {
   }
 };
 
+const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
+
 const openReportReviewMenu = async () => {
   const reviewButton = await $('.actions>.mm-icon-inverse>.fa-check');
   await reviewButton.click();
@@ -72,6 +74,7 @@ module.exports = {
   invalidateReport,
   validateReport,
   nameField,
+  fieldByName,
   selectContact,
   verifyReport,
   editForm,
