@@ -166,7 +166,7 @@ describe('TasksComponent', () => {
     expect(consoleErrorMock.args[0][0]).to.equal('Error getting tasks for all contacts');
   });
 
-  it('tasks render', async() => {
+  it('tasks render', async () => {
     const now = moment('2020-10-20');
     const futureDate = now.clone().add(3, 'days');
     const pastDate = now.clone().subtract(3, 'days');
@@ -318,146 +318,121 @@ describe('TasksComponent', () => {
     ];
     const taskLineages = [
       {
-        _id: 'a', lineage: [
-          {name: 'Amy Johnsons Household'},
-          {name: 'St Elmos Concession'},
-          {name: 'Chattanooga Village'},
-          {name: 'CHW Bettys Area'},
-        ]
+        _id: 'a',
+        lineage: [
+          { name: 'Amy Johnsons Household' },
+          { name: 'St Elmos Concession' },
+          { name: 'Chattanooga Village' },
+          { name: 'CHW Bettys Area' },
+        ],
       },
       {
-        _id: 'b', lineage: [
-          {name: 'Amy Johnsons Household'},
-          {name: 'St Elmos Concession'},
-          {name: 'Chattanooga Village'},
-        ]
-      }
+        _id: 'b',
+        lineage: [
+          { name: 'Amy Johnsons Household' },
+          { name: 'St Elmos Concession' },
+          { name: 'Chattanooga Village' },
+        ],
+      },
     ];
 
-    it('it should not change the reports lineages if the connected user is online only', async() => {
-      const expectedTasks =
-        [
-          {
-            _id: 'e1',
-            date: new Date('2020-10-20'),
-            dueDate: '2020-10-20',
-            lineage: [
-              'Amy Johnsons Household',
-              'St Elmos Concession',
-              'Chattanooga Village',
-              'CHW Bettys Area'
-            ],
-            overdue: true,
-            owner: 'a',
-          },
-          {
-            _id: 'e2',
-            date: new Date('2020-10-20'),
-            dueDate: '2020-10-20',
-            lineage: [
-              'Amy Johnsons Household',
-              'St Elmos Concession',
-              'Chattanooga Village',
-            ],
-            overdue: true,
-            owner: 'b',
-          }
-        ];
+    it('should not alter tasks lineage if user is online only', async () => {
+      const expectedTasks = [
+        {
+          _id: 'e1',
+          date: new Date('2020-10-20'),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+          overdue: true,
+          owner: 'a',
+        },
+        {
+          _id: 'e2',
+          date: new Date('2020-10-20'),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          overdue: true,
+          owner: 'b',
+        },
+      ];
       userContactService.get.resolves(bettysContactDoc);
       sessionService.isOnlineOnly.returns(true);
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
+
       await new Promise(resolve => {
         sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
         getComponent();
       });
+
       expect(component.currentLevel).to.be.undefined;
       expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
     });
 
-    it('it should not change the reports lineages if the connected user is offline with unrelated lineage', async() => {
-      const expectedTasks =
-        [
-          {
-            _id: 'e1',
-            date: new Date('2020-10-20'),
-            dueDate: '2020-10-20',
-            lineage: [
-              'Amy Johnsons Household',
-              'St Elmos Concession',
-              'Chattanooga Village',
-              'CHW Bettys Area'
-            ],
-            overdue: true,
-            owner: 'a',
-          },
-          {
-            _id: 'e2',
-            date: new Date('2020-10-20'),
-            dueDate: '2020-10-20',
-            lineage: [
-              'Amy Johnsons Household',
-              'St Elmos Concession',
-              'Chattanooga Village',
-            ],
-            overdue: true,
-            owner: 'b',
-          }
-        ];
+    it('should not change the tasks lineage if user is offline with unrelated lineage', async () => {
+      const expectedTasks = [
+        {
+          _id: 'e1',
+          date: new Date('2020-10-20'),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+          overdue: true,
+          owner: 'a',
+        },
+        {
+          _id: 'e2',
+          date: new Date('2020-10-20'),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          overdue: true,
+          owner: 'b',
+        },
+      ];
       userContactService.get.resolves(userContactDoc);
       sessionService.isOnlineOnly.returns(false);
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
+
       await new Promise(resolve => {
         sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
         getComponent();
       });
-      const tasks = await (<any>TasksActions.prototype.setTasksList).args;
+
       expect(component.currentLevel).to.equal('parent');
-      expect(tasks).to.deep.equal([[expectedTasks]]);
+      expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
     });
 
-    it('it should update the reports lineages if the connected user is offline with related place', async() => {
-      const expectedTasks =
-        [
-          {
-            _id: 'e1',
-            date: new Date('2020-10-20'),
-            dueDate: '2020-10-20',
-            lineage: [
-              'Amy Johnsons Household',
-              'St Elmos Concession',
-              'Chattanooga Village',
-            ],
-            overdue: true,
-            owner: 'a',
-          },
-          {
-            _id: 'e2',
-            date: new Date('2020-10-20'),
-            dueDate: '2020-10-20',
-            lineage: [
-              'Amy Johnsons Household',
-              'St Elmos Concession',
-              'Chattanooga Village',
-            ],
-            overdue: true,
-            owner: 'b',
-          }
-        ];
-
+    it('should update the tasks lineage if user is offline with related place to lineage', async () => {
+      const expectedTasks = [
+        {
+          _id: 'e1',
+          date: new Date('2020-10-20'),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          overdue: true,
+          owner: 'a',
+        },
+        {
+          _id: 'e2',
+          date: new Date('2020-10-20'),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          overdue: true,
+          owner: 'b',
+        },
+      ];
       userContactService.get.resolves(bettysContactDoc);
       sessionService.isOnlineOnly.returns(false);
       rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
       lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
+
       await new Promise(resolve => {
         sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
         getComponent();
       });
-      const tasks = await (<any>TasksActions.prototype.setTasksList).args;
-      expect(component.currentLevel).to.equal('CHW Bettys Area');
-      expect(tasks).to.deep.equal([[expectedTasks]]);
-    });
 
+      expect(component.currentLevel).to.equal('CHW Bettys Area');
+      expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
+    });
   });
 });

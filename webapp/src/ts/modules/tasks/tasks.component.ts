@@ -22,16 +22,16 @@ import { SessionService } from '@mm-services/session.service';
 })
 export class TasksComponent implements OnInit, OnDestroy {
   constructor(
-    private store:Store,
-    private changesService:ChangesService,
-    private contactTypesService:ContactTypesService,
-    private rulesEngineService:RulesEngineService,
-    private telemetryService:TelemetryService,
-    private tourService:TourService,
-    private route:ActivatedRoute,
-    private lineageModelGeneratorService:LineageModelGeneratorService,
-    private userContactService:UserContactService,
-    private sessionService:SessionService,
+    private store: Store,
+    private changesService: ChangesService,
+    private contactTypesService: ContactTypesService,
+    private rulesEngineService: RulesEngineService,
+    private telemetryService: TelemetryService,
+    private tourService: TourService,
+    private route: ActivatedRoute,
+    private lineageModelGeneratorService: LineageModelGeneratorService,
+    private userContactService: UserContactService,
+    private sessionService: SessionService,
   ) {
     this.tasksActions = new TasksActions(store);
     this.globalActions = new GlobalActions(store);
@@ -58,10 +58,10 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getTasksLoaded),
       this.store.select(Selectors.getSelectedTask),
     ).subscribe(([
-      tasksList,
-      tasksLoaded,
-      selectedTask,
-    ]) => {
+                   tasksList,
+                   tasksLoaded,
+                   selectedTask,
+                 ]) => {
       this.tasksList = tasksList;
       this.tasksLoaded = tasksLoaded;
       this.selectedTask = selectedTask;
@@ -103,7 +103,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.error = false;
     this.hasTasks = false;
     this.loading = true;
-    this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
+    this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, {maxWait: 10 * 1000});
     if (!this.sessionService.isOnlineOnly()) {
       this
         .getCurrentLineageLevel()
@@ -128,9 +128,9 @@ export class TasksComponent implements OnInit, OnDestroy {
     window.location.reload();
   }
 
-  private async hydrateEmissions(taskDocs) {
+  private hydrateEmissions(taskDocs) {
     return taskDocs.map(taskDoc => {
-      const emission = { ...taskDoc.emission };
+      const emission = {...taskDoc.emission};
       const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
       emission.date = new Date(dueDate.valueOf());
       emission.overdue = dueDate.isBefore(moment());
@@ -139,9 +139,9 @@ export class TasksComponent implements OnInit, OnDestroy {
     });
   }
 
-  async refreshTasks() {
+  private async refreshTasks() {
     try {
-      const telemetryData:any = {
+      const telemetryData: any = {
         start: Date.now(),
       };
 
@@ -155,7 +155,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
       const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
 
-      if(subjects) {
+      if (subjects) {
         hydratedTasks.forEach(task => {
           const lineage = this.getTaskLineage(subjects, task);
           task.lineage = this.currentLevel ? this.removeCurrentLineage(lineage) : lineage;
@@ -169,9 +169,9 @@ export class TasksComponent implements OnInit, OnDestroy {
       }
 
       telemetryData.end = Date.now();
-      const telemetryEntryName = !this.tasksLoaded ? `tasks:load`: `tasks:refresh`;
+      const telemetryEntryName = !this.tasksLoaded ? `tasks:load` : `tasks:refresh`;
       this.telemetryService.record(telemetryEntryName, telemetryData.end - telemetryData.start);
-       
+
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
       this.error = true;
@@ -185,11 +185,11 @@ export class TasksComponent implements OnInit, OnDestroy {
     return task?._id;
   }
 
-  getCurrentLineageLevel(){
+  private getCurrentLineageLevel() {
     return this.userContactService.get().then(user => user?.parent?.name);
   }
 
-  getLineagesFromTaskDocs(taskDocs){
+  private getLineagesFromTaskDocs(taskDocs) {
     const ids = taskDocs.map(task => task.forId);
     return this.lineageModelGeneratorService.reportSubjects(ids);
   }
