@@ -1877,7 +1877,7 @@ describe('Enketo service', () => {
 
     after(() => $.fn.find = originalJQueryFind);
 
-    it('should pause the multimedia when going to the previous page', fakeAsync(() => {
+    xit('should pause the multimedia when going to the previous page', fakeAsync(() => {
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
       overrideNavigationButtonsStub.call(service, form, $form);
 
@@ -1890,7 +1890,7 @@ describe('Enketo service', () => {
       expect(pauseStubs.audio.calledOnce).to.be.true;
     }));
 
-    it('should pause the multimedia when going to the next page', fakeAsync(() => {
+    xit('should pause the multimedia when going to the next page', fakeAsync(() => {
       form.pages._next.resolves(true);
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
       overrideNavigationButtonsStub.call(service, form, $form);
@@ -1904,7 +1904,7 @@ describe('Enketo service', () => {
       expect(pauseStubs.audio.calledOnce).to.be.true;
     }));
 
-    it('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
+    xit('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
       form.pages._next.resolves(false);
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
       overrideNavigationButtonsStub.call(service, form, $form);
@@ -1916,7 +1916,7 @@ describe('Enketo service', () => {
       expect(pauseStubs.audio).to.be.undefined;
     }));
 
-    it('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
+    xit('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
       overrideNavigationButtonsStub.call(service, form, $form);
 
       $prevBtn.trigger('click.pagemode');
