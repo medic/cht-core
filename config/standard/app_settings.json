@@ -228,7 +228,8 @@
     "can_export_all": [
       "national_admin"
     ],
-    "can_view_uhc_stats": []
+    "can_view_uhc_stats": [],
+    "can_view_old_filter_and_search": []
   },
   "setup_complete": true,
   "outgoing_phone_replace": {

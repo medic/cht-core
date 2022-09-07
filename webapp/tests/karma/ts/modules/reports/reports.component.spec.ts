@@ -131,7 +131,7 @@ describe('Reports Component', () => {
 
     expect(component.isSidebarFilterOpen).to.be.false;
     expect(authService.has.calledOnce).to.be.true;
-    expect(authService.has.args[0][0]).to.equal('can_view_old_reports_filter');
+    expect(authService.has.args[0][0]).to.equal('can_view_old_filter_and_search');
     expect(searchService.search.calledOnce).to.be.true;
     expect(changesService.subscribe.calledOnce).to.be.true;
     expect(spySubscriptionsAdd.calledThrice).to.be.true;
