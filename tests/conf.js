@@ -21,11 +21,11 @@ const baseConfig = {
   ],
   suites: {
     web: [
-      'e2e/!(cht)/**/*.js',
-      'e2e/**/*.js'
+      'e2e/protractor/!(cht)/**/*.js',
+      'e2e/protractor/**/*.js'
     ],
     cht: [
-      'e2e/cht/*.spec.js'
+      'e2e/protractor/cht/*.spec.js'
     ],
     mobile: ['mobile/**/*.js'],
     // performance: 'performance/**/*.js'
