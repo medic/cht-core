@@ -7,6 +7,8 @@ import { DbService } from '@mm-services/db.service';
 import { GetReportContentService } from '@mm-services/get-report-content.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { PipesService } from '@mm-services/pipes.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguageService } from '@mm-services/language.service';
 
 describe('Form2Sms service', () => {
   'use strict';
@@ -17,6 +19,7 @@ describe('Form2Sms service', () => {
   /** @return a mock form ready for putting in #dbContent */
   let service;
   let dbGet;
+  let dbGetAttachment;
   let GetReportContent;
 
   const testFormExists = () => {
@@ -24,16 +27,17 @@ describe('Form2Sms service', () => {
   };
 
   const testFormExistsWithAttachedCode = (code?) => {
-    dbGet.withArgs(TEST_FORM_ID).resolves({ xml2sms:code });
+    dbGet.withArgs(TEST_FORM_ID).resolves({ xml2sms: code });
   };
 
   const aFormSubmission = (xml?) => {
     GetReportContent.resolves(xml);
-    return { _id:'abc-123', form:TEST_FORM_NAME };
+    return { _id: 'abc-123', form: TEST_FORM_NAME };
   };
 
   beforeEach(() => {
     dbGet = sinon.stub();
+    dbGetAttachment = sinon.stub();
     GetReportContent = sinon.stub();
     const pipesService = {
       getPipeNameVsIsPureMap: sinon.stub().returns(new Map),
@@ -42,10 +46,12 @@ describe('Form2Sms service', () => {
     };
     TestBed.configureTestingModule({
       providers: [
-        { provide: DbService, useValue: { get: () => ({ get: dbGet }) } },
+        { provide: DbService, useValue: { get: () => ({ get: dbGet, getAttachment: dbGetAttachment }) } },
         { provide: GetReportContentService, useValue: { getReportContent: GetReportContent } },
         ParseProvider,
         { provide: PipesService, useValue: pipesService },
+        { provide: UserSettingsService, useValue: { get: sinon.stub(), } },
+        { provide: LanguageService, useValue: { get: sinon.stub(), } }
       ]
     });
     service = TestBed.inject(Form2smsService);
@@ -109,11 +115,39 @@ describe('Form2Sms service', () => {
       `);
       // and
       testFormExistsWithAttachedCode(true);
+      dbGetAttachment.resolves(new Blob([`
+        <test prefix="T" delimiter="#">
+          <field_one tag="f1"></field_one>
+          <field_two tag="f2"></field_two>
+          <ignored_field></ignored_field>
+        </test>` ]));
 
       // when
       return service
         .transform(doc)
         .then(smsContent => assert.equal(smsContent, 'T#f1#une#f2#deux'));
+    });
+
+    it('should work with report with no content attachment', () => {
+      const doc = {
+        form: TEST_FORM_NAME,
+        fields: { a: 1, b: 2 },
+      };
+      testFormExistsWithAttachedCode(true);
+      GetReportContent.resolves(doc.fields);
+      dbGetAttachment.resolves(new Blob(
+        [`<model>
+          <instance>
+            <form prefix="T" delimiter="#">
+              <a tag="a"></a>
+              <b tag="b"></b>
+            </form>
+          </instance>
+        </model>` ]
+      ));
+      return service
+        .transform(doc)
+        .then(smsContent => assert.equal(smsContent, 'T#a#1#b#2'));
     });
 
     it('should do nothing if xml2sms field not provided', () => {
@@ -151,7 +185,9 @@ describe('Form2Sms service', () => {
       const doc = aFormSubmission('<test/>');
       // and
       testFormExistsWithAttachedCode(true);
-
+      dbGetAttachment.resolves(new Blob(
+        ['<model><instance><form><test></test></form></instance></model>' ]
+      ));
       // when
       return service
         .transform(doc)

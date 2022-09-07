@@ -1023,7 +1023,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="Months must between 0 and 11" constraint=". &gt;= 0 and . &lt;= 11"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="select"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/contact/ephemeral_dob/age_years , 0- /data/contact/ephemeral_dob/age_months )"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), 
+      <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')),
 ../dob_calendar,
 ../dob_approx)"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
