@@ -50,14 +50,12 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.messagesActions = new MessagesActions(store);
   }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
-    if (!this.sessionService.isOnlineOnly()) {
-      this
-        .getCurrentLineageLevel()
-        .then(currentLevel => this.currentLevel = currentLevel);
-    }
+
+    this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
+
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
   }
@@ -158,15 +156,17 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.updateActionBar();
   }
 
-  updateConversations({merge = false} = {}) {
-    return this.messageContactService
-      .getList()
-      .then((conversations = []) => {
-        // remove the lineage level that belongs to the offline logged-in user
-        if (this.currentLevel) {
-          conversations.forEach(conversation => {
+  updateConversations({ merge = false } = {}) {
+    return Promise
+      .all([ this.messageContactService.getList(), this.currentLevel ])
+      .then(([ conversations, currentLevel ]) => {
+        // Remove the lineage level that belongs to the offline logged-in user.
+        if (currentLevel) {
+          conversations?.forEach(conversation => {
             if (conversation.lineage) {
-              conversation.lineage = conversation.lineage.filter(level => level !== this.currentLevel);
+              conversation.lineage = conversation.lineage.filter(level => level);
+              conversation.lineage
+              //conversation.lineage = conversation.lineage.filter(level => level !== currentLevel);
             }
           });
         }
