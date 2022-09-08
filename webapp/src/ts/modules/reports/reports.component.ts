@@ -1,10 +1,5 @@
-import { find as _find, cloneDeep as _cloneDeep } from 'lodash-es';
-import {
-  Component,
-  NgZone,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { cloneDeep as _cloneDeep, find as _find } from 'lodash-es';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,13 +16,16 @@ import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { AuthService } from '@mm-services/auth.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { SessionService } from '@mm-services/session.service';
 
 const PAGE_SIZE = 50;
 
 @Component({
   templateUrl: './reports.component.html'
 })
-export class ReportsComponent implements OnInit, OnDestroy {
+export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   subscription: Subscription = new Subscription();
 
   private globalActions;
@@ -41,29 +39,35 @@ export class ReportsComponent implements OnInit, OnDestroy {
   forms;
   error;
   errorSyntax;
-  loading;
-  appending;
+  loading = true;
+  appending = false;
   moreItems;
-  filters:any = {};
+  filters: any = {};
   hasReports;
   selectMode;
   verifyingReport;
   showContent;
   enketoEdited;
+  useSidebarFilter = true;
+  isSidebarFilterOpen = false;
+  currentLevel;
 
   constructor(
-    private store:Store,
+    private store: Store,
     private route: ActivatedRoute,
-    private router:Router,
-    private changesService:ChangesService,
-    private searchService:SearchService,
-    private translateService:TranslateService,
+    private router: Router,
+    private authService: AuthService,
+    private changesService: ChangesService,
+    private searchService: SearchService,
+    private translateService: TranslateService,
     private tourService: TourService,
-    private addReadStatusService:AddReadStatusService,
-    private exportService:ExportService,
-    private ngZone:NgZone,
+    private addReadStatusService: AddReadStatusService,
+    private exportService: ExportService,
+    private ngZone: NgZone,
+    private userContactService: UserContactService,
+    private sessionService: SessionService,
     private scrollLoaderProvider: ScrollLoaderProvider,
-    private responsiveService:ResponsiveService,
+    private responsiveService: ResponsiveService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -110,11 +114,11 @@ export class ReportsComponent implements OnInit, OnDestroy {
       key: 'reports-list',
       callback: (change) => {
         if (change.deleted) {
-          this.reportsActions.removeReportFromList({ _id: change.id });
+          this.reportsActions.removeReportFromList({_id: change.id});
           this.hasReports = this.reportsList.length;
           this.setActionBarData();
         } else {
-          this.query({ silent: true, limit: this.reportsList.length });
+          this.query({silent: true, limit: this.reportsList.length});
         }
       },
       filter: (change) => {
@@ -128,12 +132,18 @@ export class ReportsComponent implements OnInit, OnDestroy {
     this.error = false;
     this.verifyingReport = false;
 
-    this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
-
+    this.globalActions.setFilter({search: this.route.snapshot.queryParams.query || ''});
     this.tourService.startIfNeeded(this.route.snapshot);
-
-    this.search();
     this.setActionBarData();
+    if (!this.sessionService.isOnlineOnly()) {
+      this
+        .getCurrentLineageLevel()
+        .then(currentLevel => this.currentLevel = currentLevel);
+    }
+  }
+
+  async ngAfterViewInit() {
+    this.search();
   }
 
   ngOnDestroy() {
@@ -154,27 +164,30 @@ export class ReportsComponent implements OnInit, OnDestroy {
     if (report.validSubject) {
       return report.subject.value;
     }
-    if (report.subject.name) {
+    if (report.subject?.name) {
       return report.subject.name;
     }
     return this.translateService.instant('report.subject.unknown');
   }
 
-  private prepareReports(reports) {
+  prepareReports(reports) {
     return reports.map(report => {
-      const form = _find(this.forms, { code: report.form });
+      const form = _find(this.forms, {code: report.form});
       report.icon = form && form.icon;
       report.heading = this.getReportHeading(form, report);
       report.summary = form ? form.title : report.form;
       report.lineage = report.subject && report.subject.lineage || report.lineage;
+      // remove the lineage level that belongs to the offline logged-in user
+      if (this.currentLevel && report.lineage && report.lineage.length) {
+        report.lineage = report.lineage.filter(level => level !== this.currentLevel);
+      }
       report.unread = !report.read;
-
       return report;
     });
   }
 
   private query(opts) {
-    const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
+    const options = Object.assign({limit: PAGE_SIZE, hydrateContactNames: true}, opts);
     if (options.limit < PAGE_SIZE) {
       options.limit = PAGE_SIZE;
     }
@@ -200,7 +213,6 @@ export class ReportsComponent implements OnInit, OnDestroy {
       .then((reports) => this.addReadStatusService.updateReports(reports))
       .then((updatedReports) => {
         updatedReports = this.prepareReports(updatedReports);
-
         this.reportsActions.updateReportsList(updatedReports);
 
         this.moreItems = updatedReports.length >= options.limit;
@@ -231,7 +243,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   private initScroll() {
     this.scrollLoaderProvider.init(() => {
       if (!this.loading && this.moreItems) {
-        this.query({ skip: true });
+        this.query({skip: true});
       }
     });
   }
@@ -239,7 +251,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
   search(force = false) {
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
-    if((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
+    if ((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
       this.router.navigate(['reports']);
       this.reportsActions.clearSelection();
     }
@@ -285,7 +297,7 @@ export class ReportsComponent implements OnInit, OnDestroy {
       }, 2000);
     });
 
-    exportService.export('reports', exportFilters, { humanReadable: true });
+    exportService.export('reports', exportFilters, {humanReadable: true});
   }
 
   toggleSelected(report) {
@@ -306,5 +318,9 @@ export class ReportsComponent implements OnInit, OnDestroy {
     } else {
       this.reportsActions.removeSelectedReport(report);
     }
+  }
+
+  getCurrentLineageLevel() {
+    return this.userContactService.get().then(user => user?.parent?.name);
   }
 }

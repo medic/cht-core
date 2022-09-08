@@ -184,7 +184,8 @@ describe('Tasks group landing page', () => {
     await utils.updateSettings({ tasks }, 'api');
   });
 
-  describe('for chw', () => {
+
+  xdescribe('for chw', () => {
     before(async () => {
       await loginPage.login({ username: chw.username, password: chw.password });
       await commonPage.closeTour();
@@ -328,7 +329,7 @@ describe('Tasks group landing page', () => {
     });
   });
 
-  describe('for supervisor', () => {
+  xdescribe('for supervisor', () => {
     before(async () => {
       await loginPage.login({ username: supervisor.username, password: supervisor.password });
       await commonPage.closeTour();
