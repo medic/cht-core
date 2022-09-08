@@ -63,6 +63,9 @@ const getUserSettingsDocs = () => utils.db
 const getUserSettingsDoc = (contactId) => getUserSettingsDocs()
   .then(docs => docs.find(doc => doc.contact_id === contactId));
 
+const getQueuedMessages = () => utils.db.query('medic-admin/message_queue', { reduce: false, include_docs: true })
+  .then(response => response.rows.map(row => row.doc));
+
 describe('user_replace', () => {
   afterEach(async () => {
     await utils.revertDb([], true);
@@ -145,6 +148,14 @@ describe('user_replace', () => {
         _id: NEW_PERSON.parent._id,
       }
     });
+    // Login token sent
+    const queuedMsgs = await getQueuedMessages();
+    expect(queuedMsgs).to.have.lengthOf(1);
+    expect(queuedMsgs[0]).to.deep.include({
+      type: 'token_login',
+      user: newUserSettings._id
+    });
+    expect(queuedMsgs[0].tasks[0].messages[0].to).to.equal(NEW_PERSON.phone);
 
     await utils.deleteDoc(newUserSettings._id);
   });
