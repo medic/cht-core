@@ -9,10 +9,11 @@ const loginPage = require('../../page-objects/login/login.wdio.page');
 const userData = require('../../page-objects/forms/data/user.po.data');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
-const constants = require("../../constants");
-const contactsPage = require("../../page-objects/contacts/contacts.wdio.page");
-const genericForm = require("../../page-objects/forms/generic-form.wdio.page");
-const commonElements = require("../../page-objects/common/common.wdio.page");
+const constants = require('../../constants');
+const contactsPage = require('../../page-objects/contacts/contacts.wdio.page');
+const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
+const commonElements = require('../../page-objects/common/common.wdio.page');
+const sentinelUtils = require("../sentinel/utils");
 
 const rightAddAction = () => $('.right-pane span a[data-toggle="dropdown"]');
 const replaceUserItem = () => $('li[id="form:replace_user"]');
@@ -47,6 +48,32 @@ const login = async () => {
   await commonPage.waitForPageLoaded();
 };
 
+const getUserSettingsDocs = () => utils.db
+  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+  .then(response => response.rows.map(row => row.doc));
+
+const getUserSettingsDoc = (contactId) => getUserSettingsDocs()
+  .then(docs => docs.find(doc => doc.contact_id === contactId));
+
+const waitForUserSettingsDoc = async (contactId) => {
+  console.log('Waiting for user-settings doc for ');
+  const userSettings = await getUserSettingsDoc(contactId);
+  if(!userSettings) {
+    return new Promise(resolve => setTimeout(resolve, 100))
+      .then(() => waitForUserSettingsDoc(contactId));
+  }
+};
+
+const settings = {
+  transitions: {
+    user_replace: true
+  },
+  token_login: {
+    enabled: true,
+    translation_key: 'sms.token.login.help'
+  },
+};
+
 describe('user_replace transition', () => {
   before(async () => {
     // await utils.saveDoc(formDocument);
@@ -58,12 +85,12 @@ describe('user_replace transition', () => {
   });
 
   it('submits on reports tab', async () => {
+    await utils.updateSettings(settings, 'sentinel');
     await utils.createUsers([chw]);
     await login();
-    await browser.throttle('offline');
     await commonPage.closeTour();
     await commonPage.goToPeople('fixture:user:bob');
-
+    await browser.throttle('offline');
 
     await (await rightAddAction()).click();
     await (await replaceUserItem()).click();
@@ -77,6 +104,7 @@ describe('user_replace transition', () => {
     await (await genericForm.submitButton()).click();
 
     await (await reportRecordEntry()).waitForDisplayed();
+    await (await reportRecordEntry()).scrollIntoView();
     await (await reportRecordEntry()).click();
     const reportId = await reportsPage.getCurrentReportId();
 
@@ -86,9 +114,27 @@ describe('user_replace transition', () => {
     await (await commonElements.syncButton()).click();
     await (await loginButton()).waitForDisplayed();
 
+    // User has been logged out. Now we need to verify:
+    // - The replace_user form has been created
+    // - The new contact has been created
+    // - The new user has been created
+    // - The reports have been re-parented
+    // - There is an outgoing message to the new user with a login link
+
     await loginPage.cookieLogin();
 
-    // const initialReport = await utils.getDoc(reportId);
+    const replaceUserReport = await utils.getDoc(reportId);
+    const { new_contact_uuid } = replaceUserReport.fields;
+    expect(new_contact_uuid).to.not.be.empty;
+
+    const newContact = await utils.getDoc(new_contact_uuid);
+    const newContactId = newContact._id;
+    expect(newContactId).to.not.be.empty;
+
+    await sentinelUtils.waitForSentinel();
+    const temp = await sentinelUtils.getInfoDocs();
+    // const userSettingsDocs = await waitForUserSettingsDoc(newContactId);
+
     console.log('jkuester' + reportId);
     // TODO Assert report submitted:
 
