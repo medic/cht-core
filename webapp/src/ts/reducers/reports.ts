@@ -128,6 +128,6 @@ const _reportsReducer = createReducer(
   }),
 );
 
-export function reportsReducer(state, action) {
+export const reportsReducer = (state, action) => {
   return _reportsReducer(state, action);
-}
+};

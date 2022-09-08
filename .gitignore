@@ -42,3 +42,4 @@ allure*
 tests/config-temp
 cht-docker-compose.log
 .eslintcache
+doc-conflicts/

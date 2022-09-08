@@ -89,6 +89,6 @@ const reducer = createReducer(
   on(Actions.markSelectedConversationRead, (state) => markSelectedConversationRead(state)),
 );
 
-export function messagesReducer(state, action) {
+export const messagesReducer = (state, action) => {
   return reducer(state, action);
-}
+};

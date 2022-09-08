@@ -17,6 +17,7 @@ const reportsByUUID = (uuid) => $$(`${reportListID} li.content-row[data-record-i
 const reportRowSelector = `${reportListID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
+const editReportButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 
 const sidebarFilter = () => $('.sidebar-filter');
 const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
@@ -84,8 +85,8 @@ const openForm = async (name) => {
 };
 
 const setDateInput = async (name, date) => {
-  const input = await $(`input[name="${name}"]`);
-  const dateWidget = await input.nextElement();
+  const input = await (typeof name === 'string' ? $(`input[name="${name}"]`) : name);
+  const dateWidget = await input.previousElement();
   const visibleInput = await dateWidget.$('input[type="text"]');
   await visibleInput.setValue(date);
   await (await formTitle()).click();
@@ -113,6 +114,7 @@ const getFieldValue = async (name) => {
 };
 
 const submitForm = async () => {
+  await (await submitButton()).waitForDisplayed();
   await (await submitButton()).click();
   await (await reportBodyDetails()).waitForDisplayed();
 };
@@ -278,6 +280,25 @@ const getReportType = async () => {
 };
 
 
+const openReport = async (reportId) => {
+  await (await $('reset-filters')).click();
+  await (await firstReport()).waitForDisplayed();
+  const reportListItem = await reportByUUID(reportId);
+  await reportListItem.waitForDisplayed();
+  await reportListItem.click();
+  await reportBodyDetails().waitForDisplayed();
+};
+
+const editReport = async (reportId) => {
+  await commonElements.goToReports();
+  await openReport(reportId);
+  await (await editReportButton()).click();
+  await (await formTitle()).waitForDisplayed();
+};
+
+const fieldByIndex = async (index) => {
+  return await (await $(`${reportBodyDetailsSelector} li:nth-child(${index}) p`)).getText();
+};
 
 module.exports = {
   getCurrentReportId,
@@ -324,5 +345,8 @@ module.exports = {
   getReportDetailFieldValueByLabel,
   getReportSubject,
   getReportType,
-  getListReportInfo
+  getListReportInfo,
+  openReport,
+  editReport,
+  fieldByIndex,
 };
