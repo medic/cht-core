@@ -1,10 +1,10 @@
 const moment = require('moment');
-const auth = require('../../../auth')();
-const utils = require('../../../utils');
-const helper = require('../../../helper');
-const commonElements = require('../../../page-objects/common/common.po.js');
-const loginPage = require('../../../page-objects/login/login.po.js');
-const contactsPo = require('../../../page-objects/contacts/contacts.po');
+const utils = require('../utils');
+const helper = require('../helper');
+const commonElements = require('../page-objects/common/common.po.js');
+const loginPage = require('../page-objects/login/login.po.js');
+const contactsPo = require('../page-objects/contacts/contacts.po');
+const constants = require('../constants');
 
 
 describe('Contact summary info', () => {
@@ -259,7 +259,7 @@ describe('Contact summary info', () => {
 
   afterAll(async () => {
     await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(auth.username, auth.password);
+    await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
     await utils.deleteUsers([ USER_HOME_VISITS, USER_DISTRICT ]);
     await utils.revertDb();
     await commonElements.calmNative();

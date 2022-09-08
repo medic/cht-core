@@ -18,8 +18,8 @@ services:
         max-file: "${LOG_MAX_FILES:-20}"
     networks:
       - {{ network }}
-    ports:
-      - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
+    expose:
+      - ${HAPROXY_PORT:-5984}
 
   healthcheck:
     image: {{{ repo }}}/cht-haproxy-healthcheck:{{ tag }}
@@ -41,8 +41,8 @@ services:
     container_name: {{ api_container_name }}
     depends_on:
       - haproxy
-    ports:
-      - "${API_PORT:-5988}:5988"
+    expose:
+      - "${API_PORT:-5988}"
     environment:
       - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
       - BUILDS_URL=${MARKET_URL_READ:-https://staging.dev.medicmobile.org}/${BUILDS_SERVER:-_couch/builds}
@@ -83,16 +83,16 @@ services:
     volumes:
       - cht-ssl:/root/.acme.sh/
     environment:
-      - "CERTIFICATE_MODE:${CERTIFICATE_MODE:-OWN_CERT}"
+      - "CERTIFICATE_MODE=${CERTIFICATE_MODE:-OWN_CERT}"
       - "SSL_CERT_FILE_PATH=${SSL_CERT_FILE_PATH:-/etc/nginx/private/cert.pem}"
       - "SSL_KEY_FILE_PATH=${SSL_KEY_FILE_PATH:-/etc/nginx/private/key.pem}"
-      - "COMMON_NAME:${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
-      - "EMAIL:${EMAIL:-domains@medic.org}"
-      - "COUNTRY:${COUNTRY:-US}"
-      - "STATE:${STATE:-California}"
-      - "LOCALITY:${LOCALITY:-San_Francisco}"
-      - "ORGANISATION:${ORGANISATION:-medic}"
-      - "DEPARTMENT:${DEPARTMENT:-Information_Security}"
+      - "COMMON_NAME=${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
+      - "EMAIL=${EMAIL:-domains@medic.org}"
+      - "COUNTRY=${COUNTRY:-US}"
+      - "STATE=${STATE:-California}"
+      - "LOCALITY=${LOCALITY:-San_Francisco}"
+      - "ORGANISATION=${ORGANISATION:-medic}"
+      - "DEPARTMENT=${DEPARTMENT:-Information_Security}"
     networks:
       - {{ network }}
 

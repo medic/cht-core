@@ -1,10 +1,8 @@
 const assert = require('chai').assert;
-const net = require('net');
-const constants = require('../../constants');
-const host = constants.API_HOST;
-const port = constants.API_PORT;
-const dbName = constants.DB_NAME;
-const utils = require('../../utils');
+const constants = require('../constants');
+const request = require('request-promise-native');
+const utils = require('../utils');
+const host = 'localhost';
 const db = utils.db;
 
 /**
@@ -39,135 +37,64 @@ describe('medic-collect', () => {
 
   describe('without User-Agent header', () => {
     it('is prompted for auth details if not supplied', () => {
-      // when
-      return rawHttpRequest(
-        `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
-X-OpenRosa-Version: 1.0\r
-Date: ${new Date().toISOString()}\r
-Host: ${host}:5988\r
-Connection: close\r
-\r\n`
-      ).then(res => {
-        // then
-        assert.equal(res.statusCode, 401, JSON.stringify(res));
-        assert.equal(
-          res.headers['WWW-Authenticate'],
-          'Basic realm="Medic Web Services"',
-          JSON.stringify(res)
-        );
-      });
+      return getForms({ auth: false, userAgent: false })
+        .then(() => {
+          assert.fail('should fail the request');
+        })
+        .catch(err => {
+          assert.equal(err.statusCode, 401);
+          assert.equal(err.response.headers['www-authenticate'], 'Basic realm="Medic Web Services"');
+        });
     });
 
     it('can fetch a list of forms', () => {
-      // when
-      return rawHttpRequest(
-        `GET /api/v1/forms HTTP/1.1\r
-X-OpenRosa-Version: 1.0\r
-Date: ${new Date().toISOString()}\r
-Host: ${host}:5988\r
-Connection: close\r
-\r\n`
-      ).then(res => {
-        // then
-        assert.equal(res.statusCode, 200, JSON.stringify(res));
-        assert.equal(
-          res.body,
-          `108\r
-<?xml version="1.0" encoding="UTF-8"?>
-<xforms xmlns="http://openrosa.org/xforms/xformsList">
-  <xform>
-    <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
-    <downloadUrl>http://${host}:5988/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
-  </xform>
-</xforms>\r
-0\r\n\r\n`,
-          JSON.stringify(res)
-        );
-      });
+      return getForms({ auth: true, userAgent: false })
+        .then(res => {
+          assert.equal(res.statusCode, 200);
+          assert.equal(res.body, MY_COLLECT_FORM_RESPONSE);
+        });
     });
   });
 
   describe('with User-Agent header', () => {
     it('is prompted for auth details if not supplied', () => {
-      // when
-      return rawHttpRequest(
-        `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1\r
-X-OpenRosa-Version: 1.0\r
-Date: ${new Date().toISOString()}\r
-Host: ${host}:5988\r
-User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
-Connection: close\r
-\r\n`
-      ).then(res => {
-        // then
-        assert.equal(res.statusCode, 401, JSON.stringify(res));
-        assert.equal(
-          res.headers['WWW-Authenticate'],
-          'Basic realm="Medic Web Services"',
-          JSON.stringify(res)
-        );
-      });
+      return getForms({ auth: false, userAgent: true })
+        .then(() => {
+          assert.fail('should fail the request');
+        })
+        .catch(err => {
+          assert.equal(err.statusCode, 401);
+          assert.equal(err.response.headers['www-authenticate'], 'Basic realm="Medic Web Services"');
+        });
     });
 
     it('can fetch a list of forms', () => {
-      // when
-      return rawHttpRequest(
-        `GET /api/v1/forms HTTP/1.1\r
-X-OpenRosa-Version: 1.0\r
-Date: ${new Date().toISOString()}\r
-Host: ${host}:5988\r
-User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
-Connection: close\r
-\r\n`
-      ).then(res => {
-        // then
-        assert.equal(res.statusCode, 200, JSON.stringify(res));
-        assert.equal(
-          res.body,
-          `108\r
-<?xml version="1.0" encoding="UTF-8"?>
-<xforms xmlns="http://openrosa.org/xforms/xformsList">
-  <xform>
-    <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
-    <downloadUrl>http://${host}:5988/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
-  </xform>
-</xforms>\r
-0\r\n\r\n`,
-          JSON.stringify(res)
-        );
-      });
+      return getForms({ auth: true, userAgent: true })
+        .then(res => {
+          assert.equal(res.statusCode, 200);
+          assert.equal(res.body, MY_COLLECT_FORM_RESPONSE);
+        });
     });
   });
 });
 
-const rawHttpRequest = rawRequest => {
-  return new Promise((resolve, reject) => {
-    const api = net.connect(
-      port,
-      host
-    );
-    let rawResponse = '';
-
-    api.on('connect', () => api.write(rawRequest));
-    api.on('data', data => (rawResponse += data.toString()));
-    api.on('error', reject);
-
-    api.on('close', () => {
-      const response = { headers: {} };
-      let line;
-      const lines = rawResponse.split('\r\n');
-
-      response.statusCode = parseInt(lines.shift().split(' ')[1]);
-      while ((line = lines.shift())) {
-        const colon = line.indexOf(':');
-        response.headers[line.substring(0, colon)] = line
-          .substring(colon + 1)
-          .trim();
-      }
-      response.body = lines.join('\r\n');
-
-      resolve(response);
-    });
+const getForms = ({ auth, userAgent }) => {
+  const url = auth ? constants.BASE_URL_AUTH : constants.BASE_URL;
+  
+  const headers = {
+    'X-OpenRosa-Version': '1.0',
+    Date: new Date().toISOString(),
+    Host: host
+  };
+  if (userAgent) {
+    headers['User-Agent'] = 'Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) ' +
+      'org.medicmobile.collect.android/SNAPSHOT';
+  }
+  
+  return request.get({
+    url: `${url}/api/v1/forms`,
+    headers,
+    resolveWithFullResponse: true
   });
 };
 
@@ -175,7 +102,7 @@ const saveFormToDb = doc => {
   return Promise.resolve()
     .then(() => db.put(doc))
     .then(res => {
-      const xml = '<xform/>';
+      const xml = `<h:html xmlns:h="http://www.w3.org/1999/xhtml"><h:head><model><instance><${doc.internalId}/></instance></model></h:head></h:html>`;
       const body = Buffer.from(xml).toString('base64');
       return db.putAttachment(doc._id, 'xml', res.rev, body, {
         type: 'text/xml',
@@ -183,3 +110,12 @@ const saveFormToDb = doc => {
       });
     });
 };
+
+const MY_COLLECT_FORM_RESPONSE = `<?xml version="1.0" encoding="UTF-8"?>
+<xforms xmlns="http://openrosa.org/xforms/xformsList">
+  <xform>
+    <formID>MY-COLLECT-FORM</formID>
+    <hash>md5:7f356568a6096ef8589aef17ccc0ac27</hash>
+    <downloadUrl>https://${host}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
+  </xform>
+</xforms>`;

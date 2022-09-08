@@ -1,5 +1,4 @@
 const utils = require('../../utils');
-const auth = require('../../auth')();
 const request = require('request');
 const constants = require('../../constants');
 const _ = require('lodash');
@@ -25,9 +24,13 @@ describe('server', () => {
   describe('response compression', () => {
     const requestWrapper = (options) => {
       _.defaults(options, {
-        auth: Object.assign({ sendImmediately: true }, auth),
+        auth: {
+          sendImmediately: true,
+          username: constants.USERNAME,
+          password: constants.PASSWORD
+        },
         method: 'GET',
-        baseUrl: 'http://' + constants.API_HOST + ':' + constants.API_PORT + '/' + constants.DB_NAME,
+        baseUrl: constants.BASE_URL + '/' + constants.DB_NAME,
         uri: '/',
         gzip: true
       });
