@@ -13,19 +13,25 @@ import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TourService } from '@mm-services/tour.service';
 import { GlobalActions } from '@mm-actions/global';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { SessionService } from '@mm-services/session.service';
 
 @Component({
   templateUrl: './tasks.component.html',
 })
 export class TasksComponent implements OnInit, OnDestroy {
   constructor(
-    private store:Store,
-    private changesService:ChangesService,
-    private contactTypesService:ContactTypesService,
-    private rulesEngineService:RulesEngineService,
-    private telemetryService:TelemetryService,
-    private tourService:TourService,
-    private route:ActivatedRoute,
+    private store: Store,
+    private changesService: ChangesService,
+    private contactTypesService: ContactTypesService,
+    private rulesEngineService: RulesEngineService,
+    private telemetryService: TelemetryService,
+    private tourService: TourService,
+    private route: ActivatedRoute,
+    private lineageModelGeneratorService: LineageModelGeneratorService,
+    private userContactService: UserContactService,
+    private sessionService: SessionService,
   ) {
     this.tasksActions = new TasksActions(store);
     this.globalActions = new GlobalActions(store);
@@ -41,6 +47,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   hasTasks;
   loading;
   tasksDisabled;
+  currentLevel;
 
   private tasksLoaded;
   private debouncedReload;
@@ -96,7 +103,12 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.error = false;
     this.hasTasks = false;
     this.loading = true;
-    this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
+    this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, {maxWait: 10 * 1000});
+    if (!this.sessionService.isOnlineOnly()) {
+      this
+        .getCurrentLineageLevel()
+        .then(currentLevel => this.currentLevel = currentLevel);
+    }
     this.refreshTasks();
 
     this.tourService.startIfNeeded(this.route.snapshot);
@@ -118,50 +130,84 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private hydrateEmissions(taskDocs) {
     return taskDocs.map(taskDoc => {
-      const emission = { ...taskDoc.emission };
+      const emission = {...taskDoc.emission};
       const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
       emission.date = new Date(dueDate.valueOf());
       emission.overdue = dueDate.isBefore(moment());
       emission.owner = taskDoc.owner;
-
       return emission;
     });
   }
 
-  private refreshTasks() {
-    const telemetryData:any = {
-      start: Date.now(),
-    };
+  private async refreshTasks() {
+    try {
+      const telemetryData: any = {
+        start: Date.now(),
+      };
 
-    return this.rulesEngineService
-      .isEnabled()
-      .then(isEnabled => {
-        this.tasksDisabled = !isEnabled;
-        return isEnabled ? this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
-      })
-      .then(taskDocs => {
-        this.hasTasks = taskDocs.length > 0;
-        this.loading = false;
-        this.tasksActions.setTasksList(this.hydrateEmissions(taskDocs));
-        if (!this.tasksLoaded) {
-          this.tasksActions.setTasksLoaded(true);
-        }
+      const isEnabled = await this.rulesEngineService.isEnabled();
+      this.tasksDisabled = !isEnabled;
+      const taskDocs = isEnabled ? await this.rulesEngineService.fetchTaskDocsForAllContacts() : [];
 
-        telemetryData.end = Date.now();
-        const telemetryEntryName = !this.tasksLoaded ? `tasks:load`: `tasks:refresh`;
-        this.telemetryService.record(telemetryEntryName, telemetryData.end - telemetryData.start);
-      })
-      .catch(err => {
-        console.error('Error getting tasks for all contacts', err);
+      this.hasTasks = taskDocs.length > 0;
+      this.loading = false;
 
-        this.error = true;
-        this.loading = false;
-        this.hasTasks = false;
-        this.tasksActions.setTasksList([]);
-      });
+      const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
+      const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
+
+      if (subjects) {
+        hydratedTasks.forEach(task => {
+          const lineage = this.getTaskLineage(subjects, task);
+          task.lineage = this.currentLevel ? this.removeCurrentLineage(lineage) : lineage;
+        });
+      }
+
+      this.tasksActions.setTasksList(hydratedTasks);
+
+      if (!this.tasksLoaded) {
+        this.tasksActions.setTasksLoaded(true);
+      }
+
+      telemetryData.end = Date.now();
+      const telemetryEntryName = !this.tasksLoaded ? `tasks:load` : `tasks:refresh`;
+      this.telemetryService.record(telemetryEntryName, telemetryData.end - telemetryData.start);
+
+    } catch (exception) {
+      console.error('Error getting tasks for all contacts', exception);
+      this.error = true;
+      this.loading = false;
+      this.hasTasks = false;
+      this.tasksActions.setTasksList([]);
+    }
   }
 
   listTrackBy(index, task) {
     return task?._id;
+  }
+
+  private getCurrentLineageLevel() {
+    return this.userContactService.get().then(user => user?.parent?.name);
+  }
+
+  private getLineagesFromTaskDocs(taskDocs) {
+    const ids = taskDocs.map(task => task.forId);
+    return this.lineageModelGeneratorService.reportSubjects(ids);
+  }
+
+  private getTaskLineage(subjects, task) {
+    if (!subjects?.length) {
+      return;
+    }
+
+    const lineage = subjects.find(subject => (subject._id === task.forId || subject._id === task.owner))?.lineage;
+    return lineage.map(lineage => lineage.name);
+  }
+
+  private removeCurrentLineage(lineage) {
+    if (!this.currentLevel || !lineage?.length) {
+      return;
+    }
+
+    return lineage.filter(level => level && level !== this.currentLevel);
   }
 }

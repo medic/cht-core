@@ -14,6 +14,8 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { TourService } from '@mm-services/tour.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { SessionService } from '@mm-services/session.service';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -28,6 +30,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   conversations = [];
   selectedConversationId = null;
   error = false;
+  currentLevel;
   private destroyed = false;
 
   constructor(
@@ -40,14 +43,19 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private tourService: TourService,
     private responsiveService: ResponsiveService,
+    private userContactService: UserContactService,
+    private sessionService: SessionService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
   }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
+
+    this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
+
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
   }
@@ -148,10 +156,20 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.updateActionBar();
   }
 
-  updateConversations({merge = false} = {}) {
-    return this.messageContactService
-      .getList()
-      .then((conversations = []) => {
+  updateConversations({ merge = false } = {}) {
+    return Promise
+      .all([ this.messageContactService.getList(), this.currentLevel ])
+      .then(([ conversations, currentLevel ]) => {
+        // Remove the lineage level that belongs to the offline logged-in user.
+        if (currentLevel) {
+          conversations?.forEach(conversation => {
+            if (conversation.lineage) {
+              conversation.lineage = conversation.lineage.filter(level => level);
+              conversation.lineage
+              //conversation.lineage = conversation.lineage.filter(level => level !== currentLevel);
+            }
+          });
+        }
         this.setConversations(conversations, { merge });
         this.loading = false;
       });
@@ -183,5 +201,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
   listTrackBy(index, message) {
     const identifier = message.doc ? message.doc.id + message.doc._rev : message.id;
     return message.key + identifier;
+  }
+
+  private getCurrentLineageLevel() {
+    return this.userContactService.get().then(user => user?.parent?.name);
   }
 }

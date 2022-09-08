@@ -28,6 +28,7 @@ import { AuthService } from '@mm-services/auth.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { ReportsActionsBarComponent } from '@mm-modules/reports/reports-actions-bar.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { UserContactService } from '@mm-services/user-contact.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -39,6 +40,17 @@ describe('Reports Component', () => {
   let listContains;
   let authService;
   let datePipe;
+  let userContactService;
+
+  const userContactGrandParent = { _id: 'grandparent' };
+  const userContactDoc = {
+    _id: 'user',
+    parent: {
+      _id: 'parent',
+      name: 'parent',
+      parent: userContactGrandParent,
+    },
+  };
 
   beforeEach(waitForAsync(() => {
     listContains = sinon.stub();
@@ -63,10 +75,12 @@ describe('Reports Component', () => {
     authService = { has: sinon.stub().resolves(false) };
     sessionService = {
       isDbAdmin: sinon.stub().returns(false),
-      isOnlineOnly: sinon.stub()
+      isOnlineOnly: sinon.stub().returns(false)
     };
     datePipe = { transform: sinon.stub() };
-
+    userContactService = {
+      get: sinon.stub().resolves(userContactDoc),
+    };
     return TestBed
       .configureTestingModule({
         imports: [
@@ -97,6 +111,7 @@ describe('Reports Component', () => {
           { provide: TelemetryService, useValue: { record: sinon.stub() } },
           { provide: TourService, useValue: tourServiceMock },
           { provide: SessionService, useValue: sessionService },
+          { provide: UserContactService, useValue: userContactService },
           { provide: NavigationService, useValue: {} },
           { provide: AuthService, useValue: authService },
           { provide: DatePipe, useValue: datePipe },
@@ -263,4 +278,162 @@ describe('Reports Component', () => {
     });
   });
 
+  describe('Reports breadcrumbs', () => {
+    const reports = [
+      {
+        _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
+        lineage: [ 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+      },
+      {
+        _id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage:  [ 'Chattanooga Village', 'CHW Bettys Area'],
+      },
+      {
+        _id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899', lineage: [ 'Chattanooga Village' ],
+      },
+      {
+        _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229', lineage: [ 'CHW Bettys Area'],
+      },
+      {
+        _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229', lineage: [],
+      },
+      {
+        _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba965525',
+      },
+    ];
+    const offlineUserContactDoc = {
+      _id: 'user',
+      parent: {
+        _id: 'parent',
+        name: 'CHW Bettys Area',
+        parent: userContactGrandParent,
+      },
+    };
+
+    it('it should retrieve the hierarchy level of the connected user', () => {
+      expect(component.currentLevel).to.equal('parent');
+    });
+
+    it('should not change the reports lineage if user is online only', async () => {
+      const expectedReports = [
+        {
+          _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
+          lineage: [ 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          unread: true,
+        },
+        {
+          _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
+          lineage:  [ 'Chattanooga Village', 'CHW Bettys Area' ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          unread: true,
+        },
+        {
+          _id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899',
+          lineage: [ 'Chattanooga Village' ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          unread: true,
+        },
+        {
+          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
+          lineage: [ 'CHW Bettys Area' ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          unread: true,
+        },
+        {
+          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
+          lineage: [],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          unread: true,
+        },
+        {
+          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba965525',
+          lineage: undefined,
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          unread: true,
+
+        },
+      ];
+      userContactService.get.resolves(userContactDoc);
+      sessionService.isOnlineOnly.resolves(true);
+      component.currentLevel = await component.getCurrentLineageLevel();
+
+      const updatedReports = component.prepareReports(reports);
+
+      expect(component.currentLevel).to.equal('parent');
+      expect(updatedReports).to.deep.equal(expectedReports);
+    });
+
+    it('should remove current level from reports lineage when user is offline', async () => {
+
+      const expectedReports = [
+        {
+          _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd', lineage: [ 'St Elmos Concession', 'Chattanooga Village' ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          unread: true,
+        },
+        {
+          _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
+          lineage:  [ 'Chattanooga Village' ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          unread: true,
+        },
+        {
+          _id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899',
+          lineage: [ 'Chattanooga Village' ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          unread: true,
+        },
+        {
+          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
+          lineage: [],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          unread: true,
+        },
+        {
+          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          lineage: [],
+          summary: undefined,
+          unread: true,
+        },
+        {
+          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba965525',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          lineage: undefined,
+          summary: undefined,
+          unread: true,
+        },
+      ];
+      userContactService.get.resolves(offlineUserContactDoc);
+      sessionService.isOnlineOnly.resolves(false);
+      component.currentLevel = await component.getCurrentLineageLevel();
+
+      const updatedReports = component.prepareReports(reports);
+
+      expect(component.currentLevel).to.equal('CHW Bettys Area');
+      expect(updatedReports).to.deep.equal(expectedReports);
+    });
+  });
 });
