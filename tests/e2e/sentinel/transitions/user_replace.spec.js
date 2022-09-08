@@ -12,7 +12,7 @@ const ORIGINAL_PERSON = {
   _id: 'original_person',
   type: 'person',
   name: 'Original Person',
-  parent: { _id: 'clinic' },
+  parent: { _id: CLINIC._id },
 };
 
 const NEW_PERSON = {
@@ -20,15 +20,14 @@ const NEW_PERSON = {
   type: 'person',
   name: 'New Person',
   phone: '+254712345678',
-  parent: { _id: 'clinic' },
+  parent: { _id: CLINIC._id },
 };
 
 const ORIGINAL_USER = {
   _id: 'org.couchdb.user:original_person',
   type: 'user-settings',
   name: 'original_person',
-  contact_id: 'original_person',
-  phone: '+254712345678',
+  contact_id: ORIGINAL_PERSON._id,
   roles: ['chw'],
 };
 
@@ -37,37 +36,319 @@ const REPLACE_USER = {
   type: 'data_record',
   reported_date: new Date().getTime(),
   form: 'replace_user',
+  contact: {
+    _id: ORIGINAL_PERSON._id,
+    parent: {
+      _id: ORIGINAL_PERSON.parent._id,
+    }
+  },
   fields: {
-    original_contact_uuid: 'original_person',
-    new_contact_uuid: 'new_person',
+    original_contact_uuid: ORIGINAL_PERSON._id,
+    new_contact_uuid: NEW_PERSON._id,
   },
 };
 
 const getSettings = ({
   transitions: { user_replace = true } = {},
-  token_login: { enabled = true, translation_key = 'sms.token.login.help' } = {}
+  token_login: { enabled = true } = {}
 } = {}) => ({
   transitions: { user_replace },
-  token_login: { enabled, translation_key }
+  token_login: { enabled }
 });
 
-describe('user_replace', () => {
-  after(() => utils.revertDb([], true));
-  afterEach(() => utils.revertDb([], true));
+const getUserSettingsDocs = () => utils.db
+  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+  .then(response => response.rows.map(row => row.doc));
 
-  it('should replace a user', async () => {
+const getUserSettingsDoc = (contactId) => getUserSettingsDocs()
+  .then(docs => docs.find(doc => doc.contact_id === contactId));
+
+describe('user_replace', () => {
+  afterEach(async () => {
+    await utils.revertDb([], true);
+
+    await utils.getDoc(ORIGINAL_USER._id)
+      .then(() => utils.deleteDoc(ORIGINAL_USER._id))
+      .catch(() => {
+      });
+  });
+
+  it('should replace user when the replace_user form is submitted', async () => {
+    const oldReport = {
+      _id: uuid(),
+      reported_date: REPLACE_USER.reported_date - 1,
+      form: 'death_report',
+      type: 'data_record',
+      contact: {
+        _id: ORIGINAL_PERSON._id,
+        parent: {
+          _id: ORIGINAL_PERSON.parent._id,
+        }
+      },
+    };
+    const newReport = {
+      _id: uuid(),
+      reported_date: REPLACE_USER.reported_date + 1,
+      form: 'death_report',
+      type: 'data_record',
+      contact: {
+        _id: ORIGINAL_PERSON._id,
+        parent: {
+          _id: ORIGINAL_PERSON.parent._id,
+        }
+      },
+    };
+
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.saveDocs([
       CLINIC,
       ORIGINAL_PERSON,
       NEW_PERSON,
       ORIGINAL_USER,
-      REPLACE_USER
+      oldReport,
+      REPLACE_USER,
+      newReport,
+    ]);
+    await sentinelUtils.waitForSentinel(REPLACE_USER._id);
+    const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
+
+    // Transition successful
+    expect(transitions.user_replace.ok).to.be.true;
+    // Original user updated
+    const oldUserSettings = await utils.getDoc(ORIGINAL_USER._id);
+    expect(oldUserSettings).to.deep.include({
+      replaced: true,
+      shouldLogoutNextSync: true
+    });
+    // New user created
+    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    expect(newUserSettings).to.deep.include({
+      roles: ORIGINAL_USER.roles,
+      phone: NEW_PERSON.phone,
+      facility_id: NEW_PERSON.parent._id,
+      contact_id: NEW_PERSON._id,
+      fullname: NEW_PERSON.name,
+    });
+    expect(newUserSettings.token_login.active).to.be.true;
+    expect(newUserSettings._id).to.match(/^org\.couchdb\.user:new-person-\d\d\d\d/);
+    // Earlier reports not re-parented
+    const oldReport_notUpdated = await utils.getDoc(oldReport._id);
+    expect(oldReport_notUpdated.contact._id).to.equal(ORIGINAL_PERSON._id);
+    // replace_user report not re-parented
+    const replaceUser_updated = await utils.getDoc(REPLACE_USER._id);
+    expect(replaceUser_updated.contact._id).to.equal(ORIGINAL_PERSON._id);
+    // Later reports re-parented
+    const newReport_updated = await utils.getDoc(newReport._id);
+    expect(newReport_updated.contact).to.deep.equal({
+      _id: NEW_PERSON._id,
+      parent: {
+        _id: NEW_PERSON.parent._id,
+      }
+    });
+
+    await utils.deleteDoc(newUserSettings._id);
+  });
+
+  it('should not replace user when transition is disabled', async () => {
+    await utils.updateSettings(getSettings({ transitions: { user_replace: false } }), 'sentinel');
+    await utils.saveDocs([
+      CLINIC,
+      ORIGINAL_PERSON,
+      NEW_PERSON,
+      ORIGINAL_USER,
+      REPLACE_USER,
     ]);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
-    const infos = await sentinelUtils.getInfoDocs([REPLACE_USER._id]);
-    expect(infos[0].transitions).to.not.be.undefined;
-    expect(infos[0].transitions.user_replace).to.not.be.undefined;
-    expect(infos[0].transitions.user_replace.ok).to.be.true;
+    const info = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
+
+    expect(Object.keys(info.transitions)).to.be.empty;
+    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    expect(newUserSettings).to.be.undefined;
+  });
+
+  it('should disable transitions if replace_user is enabled but token_login is not enabled', async () => {
+    const tokenLoginErrorPattern =
+      /Configuration error\. Token login must be enabled to use the user_replace transition\./;
+    const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
+
+    const collectLogs = utils.collectLogs('sentinel.e2e.log', tokenLoginErrorPattern, transitionsDisabledPattern);
+    await utils.updateSettings(getSettings({ token_login: { enabled: false } }), 'sentinel');
+    const logs = await collectLogs();
+    expect(logs.find(log => log.match(tokenLoginErrorPattern))).to.exist;
+    expect(logs.find(log => log.match(transitionsDisabledPattern))).to.exist;
+  });
+
+  it('should not replace user when the new contact does not exist', async () => {
+    const missingPersonPattern = /Failed to find person/;
+    const collectLogs = utils.collectLogs('sentinel.e2e.log', missingPersonPattern);
+    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.saveDocs([
+      CLINIC,
+      ORIGINAL_PERSON,
+      ORIGINAL_USER,
+      REPLACE_USER,
+    ]);
+    await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
+    const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
+
+    // Transition ran
+    expect(transitions.user_replace.ok).to.be.false;
+    expect(await collectLogs()).to.not.be.empty;
+    // Error saved on the replace_user report
+    const replaceUser_updated = await utils.getDoc(REPLACE_USER._id);
+    expect(replaceUser_updated.errors).to.have.lengthOf(1);
+    const [{ code, message }] = replaceUser_updated.errors;
+    expect(code).to.equal('user_replace_error\'');
+    expect(message).to.match(missingPersonPattern);
+    // New user not created
+    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    expect(newUserSettings).to.be.undefined;
+  });
+
+  it('should not replace user when the original user does not exist', async () => {
+    const missingUserPattern = /user with contact_id=(\\|)"original_person(\\|)" not found/;
+    const collectLogs = utils.collectLogs('sentinel.e2e.log', missingUserPattern);
+    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.saveDocs([
+      CLINIC,
+      ORIGINAL_PERSON,
+      NEW_PERSON,
+      REPLACE_USER,
+    ]);
+    await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
+    const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
+
+    // Transition ran
+    expect(transitions.user_replace.ok).to.be.false;
+    expect(await collectLogs()).to.not.be.empty;
+    // Error saved on the replace_user report
+    const replaceUser_updated = await utils.getDoc(REPLACE_USER._id);
+    expect(replaceUser_updated.errors).to.have.lengthOf(1);
+    const [{ code, message }] = replaceUser_updated.errors;
+    expect(code).to.equal('user_replace_error\'');
+    expect(message).to.match(missingUserPattern);
+    // New user not created
+    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    expect(newUserSettings).to.be.undefined;
+  });
+
+  it('should not replace user when the new contact does not have a phone', async () => {
+    const missingPhonePattern = /Missing required fields: phone/;
+    const newPerson = Object.assign({}, NEW_PERSON, { phone: undefined });
+
+    const collectLogs = utils.collectLogs('sentinel.e2e.log', missingPhonePattern);
+    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.saveDocs([
+      CLINIC,
+      ORIGINAL_PERSON,
+      newPerson,
+      ORIGINAL_USER,
+      REPLACE_USER,
+    ]);
+    await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
+    const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
+
+    // Transition ran
+    expect(transitions.user_replace.ok).to.be.false;
+    expect(await collectLogs()).to.not.be.empty;
+    // Error saved on the replace_user report
+    const replaceUser_updated = await utils.getDoc(REPLACE_USER._id);
+    expect(replaceUser_updated.errors).to.have.lengthOf(1);
+    const [{ code, message }] = replaceUser_updated.errors;
+    expect(code).to.equal('user_replace_error\'');
+    expect(message).to.match(missingPhonePattern);
+    // New user not created
+    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    expect(newUserSettings).to.be.undefined;
+  });
+
+  it('should not replace user when the new contact has an invalid phone', async () => {
+    const missingPhonePattern = /A valid phone number is required for SMS login/;
+    const newPerson = Object.assign({}, NEW_PERSON, { phone: 12345 });
+
+    const collectLogs = utils.collectLogs('sentinel.e2e.log', missingPhonePattern);
+    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.saveDocs([
+      CLINIC,
+      ORIGINAL_PERSON,
+      newPerson,
+      ORIGINAL_USER,
+      REPLACE_USER,
+    ]);
+    await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
+    const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
+
+    // Transition ran
+    expect(transitions.user_replace.ok).to.be.false;
+    expect(await collectLogs()).to.not.be.empty;
+    // Error saved on the replace_user report
+    const replaceUser_updated = await utils.getDoc(REPLACE_USER._id);
+    expect(replaceUser_updated.errors).to.have.lengthOf(1);
+    const [{ code, message }] = replaceUser_updated.errors;
+    expect(code).to.equal('user_replace_error\'');
+    expect(message).to.match(missingPhonePattern);
+    // New user not created
+    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    expect(newUserSettings).to.be.undefined;
+  });
+
+  it('should not replace user when the new contact does not have a name', async () => {
+    const missingNamePattern = /Contact \[new_person] does not have a name/;
+    const newPerson = Object.assign({}, NEW_PERSON, { name: undefined });
+
+    const collectLogs = utils.collectLogs('sentinel.e2e.log', missingNamePattern);
+    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.saveDocs([
+      CLINIC,
+      ORIGINAL_PERSON,
+      newPerson,
+      ORIGINAL_USER,
+      REPLACE_USER,
+    ]);
+    await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
+    const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
+
+    // Transition ran
+    expect(transitions.user_replace.ok).to.be.false;
+    expect(await collectLogs()).to.not.be.empty;
+    // Error saved on the replace_user report
+    const replaceUser_updated = await utils.getDoc(REPLACE_USER._id);
+    expect(replaceUser_updated.errors).to.have.lengthOf(1);
+    const [{ code, message }] = replaceUser_updated.errors;
+    expect(code).to.equal('user_replace_error\'');
+    expect(message).to.match(missingNamePattern);
+    // New user not created
+    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    expect(newUserSettings).to.be.undefined;
+  });
+
+  it('should not replace user when the new contact does not have a parent', async () => {
+    const missingParentPattern = /Contact \[new_person] does not have a parent/;
+    const newPerson = Object.assign({}, NEW_PERSON, { parent: undefined });
+
+    const collectLogs = utils.collectLogs('sentinel.e2e.log', missingParentPattern);
+    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.saveDocs([
+      CLINIC,
+      ORIGINAL_PERSON,
+      newPerson,
+      ORIGINAL_USER,
+      REPLACE_USER,
+    ]);
+    await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
+    const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
+
+    // Transition ran
+    expect(transitions.user_replace.ok).to.be.false;
+    expect(await collectLogs()).to.not.be.empty;
+    // Error saved on the replace_user report
+    const replaceUser_updated = await utils.getDoc(REPLACE_USER._id);
+    expect(replaceUser_updated.errors).to.have.lengthOf(1);
+    const [{ code, message }] = replaceUser_updated.errors;
+    expect(code).to.equal('user_replace_error\'');
+    expect(message).to.match(missingParentPattern);
+    // New user not created
+    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    expect(newUserSettings).to.be.undefined;
   });
 });
