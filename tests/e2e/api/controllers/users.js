@@ -60,7 +60,7 @@ describe('Users API', () => {
       password: password,
       facility_id: null,
       roles: [
-        'kujua_user',
+        'chw',
         'data_entry',
       ]
     };
@@ -78,7 +78,7 @@ describe('Users API', () => {
         fullname: 'Test Apiuser',
         type: 'user-settings',
         roles: [
-          'kujua_user',
+          'chw',
           'data_entry',
         ]
       },
@@ -86,67 +86,78 @@ describe('Users API', () => {
         _id: newPlaceId,
         type: 'clinic'
       }
-
     ];
 
-    before(() =>
-      utils.request({
+    before(async () => {
+      const settings = await utils.getSettings();
+      const permissions = {
+        ...settings.permissions,
+        'can_edit': ['chw'],
+      };
+      await utils.updateSettings({ permissions }, true);
+
+      await utils.request({
         path: '/_users',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: _usersUser
-      })
-        .then(() => utils.saveDocs(medicData))
-        .then(() => new Promise((resolve, reject) => {
-          const options = {
-            hostname: constants.API_HOST,
-            port: constants.API_PORT,
-            path: '/_session',
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            auth: `${username}:${password}`
-          };
+      });
 
-          // Use http service to extract cookie
-          const req = http.request(options, res => {
-            if (res.statusCode !== 200) {
-              return reject('Expected 200 from _session authing');
-            }
+      await utils.saveDocs(medicData);
 
-            // Example header:
-            // AuthSession=cm9vdDo1MEJDMDEzRTp7Vu5GKCkTxTVxwXbpXsBARQWnhQ; Version=1; Path=/; HttpOnly
-            try {
-              cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
-            } catch (err) {
-              return reject(err);
-            }
+      return new Promise((resolve, reject) => {
+        const options = {
+          hostname: constants.API_HOST,
+          port: constants.API_PORT,
+          path: '/_session',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          auth: `${username}:${password}`
+        };
 
-            resolve(cookie);
-          });
-
-          req.write(JSON.stringify({
-            name: username,
-            password: password
-          }));
-          req.end();
-        })));
-
-    after(() =>
-      utils.request(`/_users/${getUserId(username)}`)
-        .then(({_rev}) => utils.request({
-          path: `/_users/${getUserId(username)}`,
-          method: 'PUT',
-          body: {
-            _id: getUserId(username),
-            _rev: _rev,
-            _deleted: true
+        // Use http service to extract cookie
+        const req = http.request(options, res => {
+          if (res.statusCode !== 200) {
+            return reject('Expected 200 from _session authing');
           }
-        }))
-        .then(() => utils.revertDb([], true)));
+
+          // Example header:
+          // AuthSession=cm9vdDo1MEJDMDEzRTp7Vu5GKCkTxTVxwXbpXsBARQWnhQ; Version=1; Path=/; HttpOnly
+          try {
+            cookie = res.headers['set-cookie'][0].match(/^(AuthSession=[^;]+)/)[0];
+          } catch (err) {
+            return reject(err);
+          }
+
+          resolve(cookie);
+        });
+
+        req.write(JSON.stringify({
+          name: username,
+          password: password
+        }));
+        req.end();
+      });
+    });
+
+    after(async () => {
+      const { _rev } = await utils.request(`/_users/${getUserId(username)}`);
+      await utils.request({
+        path: `/_users/${getUserId(username)}`,
+        method: 'PUT',
+        body: {
+          _id: getUserId(username),
+          _rev,
+          _deleted: true,
+        }
+      });
+      await utils.revertSettings(true);
+      await utils.revertDb([], true);
+    });
 
     it('Allows for admin users to modify someone', () =>
       utils.request({
@@ -258,7 +269,8 @@ describe('Users API', () => {
         reported_date: new Date().getTime()
       };
       return utils
-        .updateSettings({ transitions: { generate_patient_id_on_people: true }}, true)
+        .revertSettings(true)
+        .then(() => utils.updateSettings({ transitions: { generate_patient_id_on_people: true }}, true))
         .then(() => utils.saveDoc(parentPlace))
         .then(() => {
           const opts = {

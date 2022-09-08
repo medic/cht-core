@@ -41,15 +41,7 @@ module.exports = {
   },
   put: (req, res) => {
     return auth
-      .getUserCtx(req)
-      .then(userCtx => {
-        if (!auth.hasAllPermissions(userCtx, 'can_configure')) {
-          throw {
-            code: 403,
-            message: 'Insufficient permissions'
-          };
-        }
-      })
+      .check(req, ['can_edit', 'can_configure'])
       .then(() => {
         const replace = req.query && req.query.replace;
         const overwrite = req.query && req.query.overwrite;

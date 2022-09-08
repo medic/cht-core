@@ -44,7 +44,7 @@ const emptySelection = () => $('contacts-content .empty-selection');
 const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 const deleteContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-trash-o');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
-const leftAddPlace = () => $('.dropup a[mmauth="can_create_places"]');
+const leftAddPlace = () => $('.dropup a.create-place');
 const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
 const rightAddPlaces = () => $('span[test-id="rhs_add_contact"] p[test-key="Add place"]');
 const rightAddPersons = () => $('span[test-id="rhs_add_contact"] p[test-key="Add person"]');
