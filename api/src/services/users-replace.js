@@ -3,7 +3,7 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const usersService = require('./users');
 const people = require('../controllers/people');
 
-const createNewUser = async(appUrl, newContact, oldUser) => {
+const createNewUser = async (appUrl, newContact, oldUser) => {
   const user = {
     username: await generateUniqueUsername(newContact.name),
     token_login: true,
@@ -16,7 +16,7 @@ const createNewUser = async(appUrl, newContact, oldUser) => {
   return usersService.createUser(user, appUrl);
 };
 
-async function generateUniqueUsername(contactName) {
+const generateUniqueUsername = async (contactName) => {
   const username = generateUsername(contactName);
   try {
     await db.users.get(`org.couchdb.user:${username}`);
@@ -31,9 +31,9 @@ async function generateUniqueUsername(contactName) {
 
     throw error;
   }
-}
+};
 
-function generateUsername(contactName) {
+const generateUsername = (contactName) => {
   const randomNum = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
   const username = contactName.normalize('NFD') // split an accented letter in the base letter and the accent
     .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
@@ -43,9 +43,9 @@ function generateUsername(contactName) {
     .replace(/\s+/g, '-'); // separator
 
   return `${username}-${randomNum}`;
-}
+};
 
-async function replaceUser(replaceUserReportId, appUrl) {
+const replaceUser = async (replaceUserReportId, appUrl) => {
   const replaceUserReport = await db.medic.get(replaceUserReportId);
   const oldContact = await people.getOrCreatePerson(replaceUserReport.fields.original_contact_uuid);
   const oldUserSettingsResponse = await db.medic.find({
@@ -71,9 +71,9 @@ async function replaceUser(replaceUserReportId, appUrl) {
   const oldUser = await db.medic.get(oldUserSettings._id);
   await db.medic.put(Object.assign({}, oldUserSettings, { shouldLogoutNextSync: true, replaced: true }));
   return createNewUser(appUrl, newContact, oldUser);
-}
+};
 
-async function reparentReports(replaceUserReportId, newContact) {
+const reparentReports = async (replaceUserReportId, newContact) => {
   const replaceUserReport = await db.medic.get(replaceUserReportId);
   const reportsSubmittedAfterReplace = await getReportsToReparent(
     replaceUserReport.fields.original_contact_uuid,
@@ -91,9 +91,9 @@ async function reparentReports(replaceUserReportId, newContact) {
     return reparentedReport;
   });
   return db.medic.bulkDocs(reparentedReports);
-}
+};
 
-async function getReportsToReparent(contactId, timestamp) {
+const getReportsToReparent = async (contactId, timestamp) => {
   const result = await db.medic.query('medic-client/reports_by_freetext', {
     key: [`contact:${contactId}`],
     include_docs: true,
@@ -101,8 +101,9 @@ async function getReportsToReparent(contactId, timestamp) {
   return result.rows
     .filter(row => row.doc.reported_date >= timestamp)
     .map(row => row.doc);
-}
+};
 
 module.exports = {
   replaceUser,
+  _reparentReports: reparentReports,
 };
