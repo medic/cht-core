@@ -138,7 +138,7 @@ main (){
 
 # if no arguments are provided run the main method
 if [ $# -eq 0 ]; then
-   main
+  main
 else # run the requested argument.
- "$@"
+  "$@"
 fi
