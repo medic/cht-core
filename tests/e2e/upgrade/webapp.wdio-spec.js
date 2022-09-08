@@ -2,12 +2,12 @@ const common = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const peoplePage = require('../../page-objects/contacts/contacts.wdio.page');
 const utils = require('../../utils');
-const auth = require('../../auth')();
 
 const { BRANCH } = process.env;
 
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
+const constants = require('../../constants');
 
 const docs = [
   {
@@ -39,7 +39,7 @@ describe('Webapp after upgrade', () => {
   });
 
   it('should login with admin account', async () => {
-    await loginPage.login({ ...auth });
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD });
     await common.closeTour();
   });
 

@@ -201,6 +201,9 @@ describe('routing', () => {
         utils
           .request(Object.assign({ path: '/api/v1/hydrate' }, getUnauthenticatedRequestOptions('POST')))
           .catch(err => err),
+        utils
+          .request(Object.assign({ path: '/api/v1/forms' }, unauthenticatedRequestOptions))
+          .catch(err => err),
       ]).then(results => {
         results.forEach(result => {
           expect(result.statusCode).to.equal(401);
@@ -214,17 +217,15 @@ describe('routing', () => {
       return Promise.all([
         utils.requestOnTestDb(Object.assign({ path: '/login', json: false }, unauthenticatedRequestOptions)),
         utils.request(Object.assign({ path: '/login/style.css' }, unauthenticatedRequestOptions)),
-        utils.request(Object.assign({ path: '/api/v1/forms' }, unauthenticatedRequestOptions)),
         utils.requestOnMedicDb(Object.assign({ path: '/login', json: false }, unauthenticatedRequestOptions)),
         utils.request(Object.assign({ path: '/setup/poll' }, unauthenticatedRequestOptions)),
         utils.request(Object.assign({ path: '/api/info' }, unauthenticatedRequestOptions)),
       ]).then(results => {
         expect(results[0].length).to.be.above(0);
         expect(results[1].length).to.be.above(0);
-        expect(_.isArray(results[2])).to.equal(true);
-        expect(results[3].length).to.be.above(0);
+        expect(results[2].length).to.be.above(0);
+        expect(results[3].version).to.equal('0.1.0');
         expect(results[4].version).to.equal('0.1.0');
-        expect(results[5].version).to.equal('0.1.0');
       });
     });
 

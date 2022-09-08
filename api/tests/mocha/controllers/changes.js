@@ -9,8 +9,6 @@ const inherits = require('util').inherits;
 const EventEmitter = require('events');
 const _ = require('lodash');
 const config = require('../../../src/config');
-const serverChecks = require('@medic/server-checks');
-const environment = require('../../../src/environment');
 const purgedDocs = require('../../../src/services/purged-docs');
 const replicationLimitLogService = require('../../../src/services/replication-limit-log');
 const serverUtils = require('../../../src/server-utils');
@@ -78,7 +76,6 @@ describe('Changes controller', () => {
 
     sinon.stub(_, 'now').callsFake(Date.now); // force underscore's debounce to use fake timers!
     sinon.stub(config, 'get').returns(defaultSettings);
-    sinon.stub(serverChecks, 'getCouchDbVersion').resolves('2.2.0');
 
     sinon.stub(purgedDocs, 'getUnPurgedIds').callsFake((roles, ids) => Promise.resolve(ids));
     sinon.stub(replicationLimitLogService, 'put');
@@ -175,26 +172,6 @@ describe('Changes controller', () => {
       return Promise.resolve().then(() => {
         changesSpy.callCount.should.equal(2);
         changesSpy.args[1][0].since.should.equal('seq-3');
-      });
-    });
-
-    it('should check if changes requests can be limited', () => {
-      sinon.stub(environment, 'serverUrl').value('someURL');
-      serverChecks.getCouchDbVersion.resolves('2.2.0');
-      return controller.__get__('init')().then(() => {
-        serverChecks.getCouchDbVersion.callCount.should.equal(1);
-        serverChecks.getCouchDbVersion.args[0].should.deep.equal(['someURL']);
-        controller.__get__('limitChangesRequests').should.equal(false);
-      });
-    });
-
-    it('should check if changes requests can be limited', () => {
-      sinon.stub(environment, 'serverUrl').value('someOtherURL');
-      serverChecks.getCouchDbVersion.resolves('2.3.0');
-      return controller.__get__('init')().then(() => {
-        serverChecks.getCouchDbVersion.callCount.should.equal(1);
-        serverChecks.getCouchDbVersion.args[0].should.deep.equal(['someOtherURL']);
-        controller.__get__('limitChangesRequests').should.equal(true);
       });
     });
 
@@ -416,26 +393,6 @@ describe('Changes controller', () => {
       return nextTick().then(() => {
         changesSpy.callCount.should.equal(2);
         changesSpy.args[1][0].should.deep.equal({
-          since: '22',
-          batch_size: 4,
-          doc_ids: ['d1', 'd2', 'd3'],
-          conflicts: true,
-          return_docs: true,
-        });
-      });
-    });
-
-    it('should limit changes requests when couchDB version allows it', () => {
-      testReq.query = {
-        limit: 20, view: 'test', something: 'else', conflicts: true,
-        seq_interval: false, since: '22', return_docs: false
-      };
-      authorization.getAllowedDocIds.resolves(['d1', 'd2', 'd3']);
-      serverChecks.getCouchDbVersion.resolves('2.3.0');
-      controller.request(testReq, testRes);
-      return nextTick().then(() => {
-        changesSpy.callCount.should.equal(2);
-        changesSpy.args[1][0].should.deep.equal({
           limit: 20,
           since: '22',
           batch_size: 4,
@@ -512,72 +469,8 @@ describe('Changes controller', () => {
         });
     });
 
-
-    it('pushes allowed pending changes to the results, including their seq when not batching', () => {
+    it('pushes allowed pending changes to the results, updating their seq', () => {
       const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
-      authorization.getAllowedDocIds.resolves(validatedIds);
-      authorization.filterAllowedDocs.returns([
-        { change: { id: 8, changes: [], seq: 8 }, id: 8, viewResults: {} },
-        { change: { id: 9, changes: [], seq: 9 }, id: 9, viewResults: {} }
-      ]);
-      testReq.query = { since: 0 };
-
-      controller.request(testReq, testRes);
-
-      const expected = {
-        results: [{ id: 1, changes: [], seq: 1 }, { id: 2, changes: [], seq: 2 }, { id: 3, changes: [], seq: 3 }],
-        last_seq: 3
-      };
-
-      return nextTick()
-        .then(() => {
-          controller.__get__('continuousFeed').emit('change', { id: 7, changes: [], doc: { _id: 7 }, seq: 4 }, 0, 4);
-        })
-        .then(() => {
-          controller.__get__('continuousFeed').emit('change', { id: 8, changes: [], doc: { _id: 8 }, seq: 5 }, 0, 5);
-        })
-        .then(() => {
-          controller.__get__('continuousFeed').emit('change', { id: 9, changes: [], doc: { _id: 9 }, seq: 6 }, 0, 6);
-        })
-        .then(nextTick)
-        .then(() => {
-          const feed = controller.__get__('changesFeeds')[0];
-          feed.pendingChanges.length.should.equal(3);
-          feed.pendingChanges.should.deep.equal([
-            { change: { id: 7, changes: [], seq: 4 }, id: 7, viewResults: {} },
-            { change: { id: 8, changes: [], seq: 5 }, id: 8, viewResults: {} },
-            { change: { id: 9, changes: [], seq: 6 }, id: 9, viewResults: {} }
-          ]);
-          feed.upstreamRequest.complete(null, expected);
-        })
-        .then(nextTick)
-        .then(() => {
-          testRes.write.callCount.should.equal(1);
-          testRes.write.args[0][0].should.equal(JSON.stringify({
-            results: [
-              { id: 1, changes: [], seq: 1 },
-              { id: 2, changes: [], seq: 2 },
-              { id: 3, changes: [], seq: 3 },
-              { id: 8, changes: [], seq: 8 },
-              { id: 9, changes: [], seq: 9 }
-            ],
-            last_seq: 3
-          }));
-          testRes.end.callCount.should.equal(1);
-          controller.__get__('changesFeeds').length.should.equal(0);
-          authorization.allowedDoc.callCount.should.equal(0);
-          authorization.filterAllowedDocs.callCount.should.equal(1);
-          authorization.filterAllowedDocs.args[0][1].should.deep.equal([
-            { change: { id: 7, changes: [], seq: 4 }, id: 7, viewResults: {} },
-            { change: { id: 8, changes: [], seq: 5 }, id: 8, viewResults: {} },
-            { change: { id: 9, changes: [], seq: 6 }, id: 9, viewResults: {} }
-          ]);
-        });
-    });
-
-    it('pushes allowed pending changes to the results, updating their seq when batching', () => {
-      const validatedIds = Array.from({length: 101}, () => Math.floor(Math.random() * 101));
-      serverChecks.getCouchDbVersion.resolves('2.3.0');
       authorization.getAllowedDocIds.resolves(validatedIds);
       authorization.filterAllowedDocs.returns([
         { change: { id: 8, changes: [], seq: 8 }, id: 8, viewResults: {} },
@@ -741,9 +634,9 @@ describe('Changes controller', () => {
           testRes.write.args[0][0].should.equal(JSON.stringify({
             results: [
               { id: 22, seq: 5 },
-              { id: 1, changes: [], seq: 4 },
-              { id: 3, changes: [], seq: 1 },
-              { id: 2, changes: [], seq: 2 }
+              { id: 1, changes: [], seq: 5 },
+              { id: 3, changes: [], seq: 5 },
+              { id: 2, changes: [], seq: 5 }
             ],
             last_seq: 5
           }));
@@ -792,9 +685,9 @@ describe('Changes controller', () => {
           testRes.write.args[0][0].should.equal(JSON.stringify({
             results: [
               { id: 22, seq: 5 },
-              { id: 1, changes: [], seq: 4 },
-              { id: 3, changes: [], seq: 1 },
-              { id: 2, changes: [], seq: 2 }
+              { id: 1, changes: [], seq: 5 },
+              { id: 3, changes: [], seq: 5 },
+              { id: 2, changes: [], seq: 5 }
             ],
             last_seq: 5
           }));
@@ -1195,51 +1088,6 @@ describe('Changes controller', () => {
     it('returns error message when error exists', () => {
       const feed = { results: 'results', lastSeq: 'lastSeq', error: true };
       controller.__get__('generateResponse')(feed).should.deep.equal({ error: 'Error processing your changes' });
-    });
-  });
-
-  describe('shouldLimitChangesRequests', () => {
-    it('should not limit when serverChecks returns some invalid string', () => {
-      controller.__get__('shouldLimitChangesRequests')();
-      controller.__get__('limitChangesRequests').should.equal(false);
-      controller.__get__('shouldLimitChangesRequests')('dsaddada');
-      controller.__get__('limitChangesRequests').should.equal(false);
-      controller.__get__('shouldLimitChangesRequests')([1, 2, 3]);
-      controller.__get__('limitChangesRequests').should.equal(false);
-      controller.__get__('shouldLimitChangesRequests')(undefined);
-      controller.__get__('limitChangesRequests').should.equal(false);
-    });
-
-    it('should not limit when serverChecks returns some lower than minimum version', () => {
-      controller.__get__('shouldLimitChangesRequests')('1.7.1');
-      controller.__get__('limitChangesRequests').should.equal(false);
-      controller.__get__('shouldLimitChangesRequests')('2.1.1-beta.0');
-      controller.__get__('limitChangesRequests').should.equal(false);
-      controller.__get__('shouldLimitChangesRequests')('2.2.9');
-      controller.__get__('limitChangesRequests').should.equal(false);
-      controller.__get__('shouldLimitChangesRequests')('1.9.9');
-      controller.__get__('limitChangesRequests').should.equal(false);
-      controller.__get__('shouldLimitChangesRequests')('1.7.55');
-      controller.__get__('limitChangesRequests').should.equal(false);
-    });
-
-    it('should limit when serverChecks returns some higher than minimum version', () => {
-      controller.__get__('shouldLimitChangesRequests')('2.3.0');
-      controller.__get__('limitChangesRequests').should.equal(true);
-      controller.__get__('shouldLimitChangesRequests')('2.3.1-beta.1');
-      controller.__get__('limitChangesRequests').should.equal(true);
-      controller.__get__('shouldLimitChangesRequests')('2.3.1');
-      controller.__get__('limitChangesRequests').should.equal(true);
-      controller.__get__('shouldLimitChangesRequests')('2.4.0');
-      controller.__get__('limitChangesRequests').should.equal(true);
-      controller.__get__('shouldLimitChangesRequests')('3.0.0');
-      controller.__get__('limitChangesRequests').should.equal(true);
-      controller.__get__('shouldLimitChangesRequests')('3.1.0');
-      controller.__get__('limitChangesRequests').should.equal(true);
-      controller.__get__('shouldLimitChangesRequests')('2.10.0');
-      controller.__get__('limitChangesRequests').should.equal(true);
-      controller.__get__('shouldLimitChangesRequests')('2.20.0');
-      controller.__get__('limitChangesRequests').should.equal(true);
     });
   });
 

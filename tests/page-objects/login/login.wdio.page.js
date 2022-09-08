@@ -1,5 +1,5 @@
+const constants = require('../../constants');
 const utils = require('../../utils');
-const auth = require('../../auth')();
 const commonPage = require('../common/common.wdio.page');
 const loginButton = () => $('#login');
 const userField = () => $('#user');
@@ -29,8 +29,8 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
 
 const cookieLogin = async (options = {}) => {
   const {
-    username = auth.username,
-    password = auth.password,
+    username = constants.USERNAME,
+    password = constants.PASSWORD,
     createUser = true,
     locale = 'en',
   } = options;

@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 
 const _ = require('lodash');
-const auth = require('./auth')();
 const constants = require('./constants');
 const rpn = require('request-promise-native');
 const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
@@ -11,10 +10,10 @@ const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 
-process.env.API_PORT = constants.API_PORT;
-process.env.COUCH_PORT = constants.COUCH_PORT;
-process.env.COUCHDB_USER = auth.username;
-process.env.COUCHDB_PASSWORD = auth.password;
+process.env.COUCHDB_USER = constants.USERNAME;
+process.env.COUCHDB_PASSWORD = constants.PASSWORD;
+process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
+process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
 
 const CONTAINER_NAMES = {
   haproxy: 'cht-haproxy-e2e',
@@ -28,12 +27,14 @@ const CONTAINER_NAMES = {
   upgrade: 'cht-upgrade-service'
 };
 
+const auth = { username: constants.USERNAME, password: constants.PASSWORD };
+
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
-const db = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}`, { auth });
-const sentinel = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}-sentinel`, { auth });
-const medicLogs = new PouchDB(`http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}-logs`, { auth });
+const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
+const sentinel = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
+const medicLogs = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
 const buildVersions = require('../scripts/build/versions');
@@ -55,15 +56,12 @@ const request = (options, { debug } = {}) => {
   if (!options.noAuth) {
     options.auth = options.auth || auth;
   }
-  options.uri = options.uri || `http://${constants.API_HOST}:${options.port || constants.API_PORT}${options.path}`;
+  options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
 
   if (debug) {
-    console.log('!!!!!!!REQUEST!!!!!!!');
-    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log('SENDING REQUEST' );
     console.log(JSON.stringify(options, null, 2));
-    console.log('!!!!!!!REQUEST!!!!!!!');
-    console.log('!!!!!!!REQUEST!!!!!!!');
   }
 
   options.transform = (body, response, resolveWithFullResponse) => {
@@ -78,7 +76,7 @@ const request = (options, { debug } = {}) => {
 
   return rpn(options).catch(err => {
     err.responseBody = err.response && err.response.body;
-    debug && console.warn(`A request error occurred ${err.options.uri}`);
+    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri}`);
     throw err;
   });
 };
@@ -302,7 +300,7 @@ const revertDb = async (except, ignoreRefresh) => {
 };
 
 const getCreatedUsers = async () => {
-  const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
+  const adminUserId = COUCH_USER_ID_PREFIX + constants.USERNAME;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
   return users.rows
     .filter(user => user.id !== adminUserId)
@@ -570,13 +568,6 @@ const setupSettings = () => {
   });
 };
 
-const getLoginUrl = () => {
-  const redirectUrl = encodeURIComponent(
-    `/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`
-  );
-  return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
-};
-
 const saveBrowserLogs = () => {
   // wdio also writes in this file
   if (!browserLogStream) {
@@ -710,9 +701,9 @@ const stopService = async (service) => {
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
-  await browser.driver.get(getLoginUrl());
-  await browser.driver.findElement(by.name('user')).sendKeys(auth.username);
-  await browser.driver.findElement(by.name('password')).sendKeys(auth.password);
+  await browser.driver.get(module.exports.getLoginUrl());
+  await browser.driver.findElement(by.name('user')).sendKeys(constants.USERNAME);
+  await browser.driver.findElement(by.name('password')).sendKeys(constants.PASSWORD);
   await browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
   const bootstrappedCheck = () =>
@@ -730,7 +721,7 @@ const setupUser = () => {
     .then(() => module.exports.closeTour());
 };
 
-const setupUserDoc = (userName = auth.username, userDoc = userSettings.build()) => {
+const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.build()) => {
   return module.exports.getDoc(COUCH_USER_ID_PREFIX + userName)
     .then(doc => {
       const finalDoc = Object.assign(doc, userDoc);
@@ -1108,23 +1099,17 @@ module.exports = {
     };
   },
 
-  getCouchUrl: () =>
-    `http://${auth.username}:${auth.password}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`,
-
-  getInstanceUrl: () =>
-    `http://${auth.username}:${auth.password}@${constants.API_HOST}:${constants.API_PORT}`,
-
   getOrigin: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}`,
+    `${constants.BASE_URL}`,
 
   getBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/#/`,
+    `${constants.BASE_URL}/#/`,
 
   getAdminBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/admin/#/`,
+    `${constants.BASE_URL}/admin/#/`,
 
   getLoginUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`,
+    `${constants.BASE_URL}/${constants.DB_NAME}/login`,
 
   // Deletes _users docs and medic/user-settings docs for specified users
   // @param {Array} usernames - list of users to be deleted

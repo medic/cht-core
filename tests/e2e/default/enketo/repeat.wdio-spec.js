@@ -1,57 +1,10 @@
 const fs = require('fs');
 
-const constants = require('../../../constants');
-const utils = require('../../../utils');
-const auth = require('../../../auth')();
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
-
-const readFormDocument = (formId) => {
-  const form = fs.readFileSync(`${__dirname}/forms/${formId}.xml`, 'utf8');
-  const formDocument = {
-    _id: `form:${formId}`,
-    internalId: formId,
-    title: `Form ${formId}`,
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(form).toString('base64')
-      }
-    }
-  };
-  return formDocument;
-};
-
-const assertLabels = async ({ selector, count, labelText }) => {
-  const labels = await $$(selector);
-  expect(labels.length).to.equal(count);
-  await Promise.all(labels.map(
-    async label => expect(await label.getText()).to.equal(labelText),
-  ));
-};
-
-const login = async () => {
-  await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
-  await commonPage.goToBase();
-};
-
-const openRepeatForm = async (formInternalId) => {
-  await commonPage.goToReports();
-  await (await reportsPage.submitReportButton()).click();
-  await (await reportsPage.formActionsLink(formInternalId)).click();
-};
-
-const getField = async (fieldName, fieldValue) => {
-  const fieldInputPath = `#report-form input[name="/cascading_select/${fieldName}"][value="${fieldValue}"]`;
-  const fieldLabelPath = `${fieldInputPath} ~ .option-label.active`;
-
-  return {
-    input: await $(fieldInputPath),
-    label: await $(fieldLabelPath),
-  };
-};
+const constants = require('../../constants');
+const utils = require('../../utils');
+const loginPage = require('../../page-objects/login/login.wdio.page');
+const commonPage = require('../../page-objects/common/common.wdio.page');
+const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 
 const countFormDocument = readFormDocument('repeat-translation-count');
 const buttonFormDocument = readFormDocument('repeat-translation-button');
@@ -87,13 +40,6 @@ describe('RepeatForm', () => {
 
   describe('Repeat form with count input', () => {
     const inputCountPath = `${selectorPrefix}[data-itext-id="/repeat_translation/basic/count:label"] ~ input`;
-    const repeatForm = async (count) => {
-      const inputCount = await $(inputCountPath);
-      await inputCount.setValue(count);
-      const stateLabel = await $(stateLabelPath);
-      await stateLabel.click(); // trigger a blur event to trigger the enketo form change listener
-      expect(await inputCount.getValue()).to.equal(count.toString());
-    };
 
     it('should display the initial form and its repeated content in Nepali', async () => {
       const neUserName = 'प्रयोगकर्ताको नाम';
@@ -132,14 +78,17 @@ describe('RepeatForm', () => {
       await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city:' });
       await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'Melbourne' });
     });
+
+    async function repeatForm(count) {
+      const inputCount = await $(inputCountPath);
+      await inputCount.setValue(count);
+      const stateLabel = await $(stateLabelPath);
+      await stateLabel.click(); // trigger a blur event to trigger the enketo form change listener
+      expect(await inputCount.getValue()).to.equal(count.toString());
+    }
   });
 
   describe('Repeat form with repeat button', () => {
-    const repeatForm = async () => {
-      const addRepeatButton = await $('.btn.btn-default.add-repeat-btn');
-      await addRepeatButton.click();
-    };
-
     it('should display the initial form and its repeated content in Swahili', async () => {
       const swUserName = 'Jina la mtumizi';
       await loginPage.changeLanguage('sw', swUserName);
@@ -177,6 +126,11 @@ describe('RepeatForm', () => {
       await assertLabels({ selector: cityLabelPath, count: 3, labelText: 'Select a city:' });
       await assertLabels({ selector: melbourneLabelPath, count: 3, labelText: 'Melbourne' });
     });
+
+    async function repeatForm() {
+      const addRepeatButton = await $('.btn.btn-default.add-repeat-btn');
+      await addRepeatButton.click();
+    }
   });
 
   describe('Repeat form with select', () => {
@@ -199,5 +153,51 @@ describe('RepeatForm', () => {
       expect(await seattleLabel.getText()).to.equal('Seattle');
       expect(await redmondLabel.getText()).to.equal('Redmond');
     });
+
+    async function getField(fieldName, fieldValue) {
+      const fieldInputPath = `#report-form input[name="/cascading_select/${fieldName}"][value="${fieldValue}"]`;
+      const fieldLabelPath = `${fieldInputPath} ~ .option-label.active`;
+
+      return {
+        input: await $(fieldInputPath),
+        label: await $(fieldLabelPath),
+      };
+    }
   });
+
+  async function assertLabels({ selector, count, labelText }) {
+    const labels = await $$(selector);
+    expect(labels.length).to.equal(count);
+    await Promise.all(labels.map(
+      async label => expect(await label.getText()).to.equal(labelText),
+    ));
+  }
+
+  async function login() {
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, createUser: true });
+    await commonPage.goToBase();
+  }
+
+  async function openRepeatForm(formInternalId) {
+    await commonPage.goToReports();
+    await (await reportsPage.submitReportButton()).click();
+    await (await reportsPage.formActionsLink(formInternalId)).click();
+  }
 });
+
+function readFormDocument(formId) {
+  const form = fs.readFileSync(`${__dirname}/../../forms/${formId}.xml`, 'utf8');
+  const formDocument = {
+    _id: `form:${formId}`,
+    internalId: formId,
+    title: `Form ${formId}`,
+    type: 'form',
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer.from(form).toString('base64')
+      }
+    }
+  };
+  return formDocument;
+}

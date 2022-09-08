@@ -1,13 +1,13 @@
-const commonPage = require('../../../page-objects/common/common.wdio.page');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const usersAdminPage = require('../../../page-objects/admin/user.wdio.page');
-const auth = require('../../../auth')();
+const commonPage = require('../../page-objects/common/common.wdio.page');
+const loginPage = require('../../page-objects/login/login.wdio.page');
+const usersAdminPage = require('../../page-objects/admin/user.wdio.page');
+const constants = require('../../constants');
 
 describe('bfcache', async () => {
   beforeEach(async () => {
     await loginPage.login({
-      username: auth.username,
-      password: auth.password,
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
       createUser: true,
     });
   });

@@ -25,8 +25,23 @@ describe('forms controller', () => {
   });
 
   describe('get', () => {
+
+    it('returns auth error when not logged in', () => {
+      const req = {
+        params: { form: 'a.xml' }
+      };
+      const query = sinon.stub(db.medic, 'query');
+      const error = sinon.stub(serverUtils, 'notLoggedIn');
+      controller.get(req, res);
+      chai.expect(error.callCount).to.equal(1);
+      chai.expect(query.callCount).to.equal(0);
+    });
+
     it('returns error from view query', () => {
-      const req = { params: { form: 'a.xml' } };
+      const req = {
+        params: { form: 'a.xml' },
+        userCtx: { name: 'formuser' }
+      };
       const query = sinon
         .stub(db.medic, 'query')
         .returns(Promise.reject('icky'));
@@ -38,7 +53,10 @@ describe('forms controller', () => {
     });
 
     it('returns body and headers from attachment query', () => {
-      const req = { params: { form: 'a.xml' } };
+      const req = {
+        params: { form: 'a.xml' },
+        userCtx: { name: 'formuser' }
+      };
       sinon.stub(db.medic, 'query').resolves({
         rows: [
           {
@@ -68,8 +86,20 @@ describe('forms controller', () => {
   });
 
   describe('list', () => {
+
+    it('returns auth error when not logged in', () => {
+      const req = { params: { form: 'a.xml' } };
+      const query = sinon.stub(db.medic, 'query');
+      const error = sinon.stub(serverUtils, 'notLoggedIn');
+      controller.list(req, res);
+      chai.expect(error.callCount).to.equal(1);
+      chai.expect(query.callCount).to.equal(0);
+    });
+
     it('returns error from view query', () => {
-      const req = {};
+      const req = {
+        userCtx: { name: 'formuser' }
+      };
       const get = sinon.stub(db.medic, 'query').returns(Promise.reject('icky'));
       const error = sinon.stub(serverUtils, 'error');
       return controller.list(req, res).then(() => {
@@ -107,7 +137,10 @@ describe('forms controller', () => {
           },
         }
       );
-      const req = { headers: {} };
+      const req = {
+        headers: {},
+        userCtx: { name: 'formuser' }
+      };
       const end = sinon.stub(res, 'end');
       const writeHead = sinon.stub(res, 'writeHead');
 
@@ -142,7 +175,10 @@ describe('forms controller', () => {
           },
         },
       });
-      const req = { headers: {} };
+      const req = {
+        headers: {},
+        userCtx: { name: 'formuser' }
+      };
       const end = sinon.stub(res, 'end');
       sinon.stub(res, 'writeHead');
 
@@ -154,6 +190,7 @@ describe('forms controller', () => {
   });
 
   describe('validate', () => {
+
     it('returns ok when validations passed', async () => {
       const req = { body: '<xml></xml>' };
       const json = sinon.stub(res, 'json');
