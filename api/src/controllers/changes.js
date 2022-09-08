@@ -7,10 +7,7 @@ const tombstoneUtils = require('@medic/tombstone-utils');
 const uuid = require('uuid').v4;
 const config = require('../config');
 const logger = require('../logger');
-const serverChecks = require('@medic/server-checks');
 const serverUtils = require('../server-utils');
-const environment = require('../environment');
-const semver = require('semver');
 const purgedDocs = require('../services/purged-docs');
 const replicationLimitLog = require('../services/replication-limit-log');
 
@@ -18,7 +15,6 @@ let inited = false;
 let continuousFeed = false;
 let changesFeeds = [];
 let currentSeq = 0;
-let limitChangesRequests = null;
 
 const cleanUp = feed => {
   clearInterval(feed.heartbeat);
@@ -97,10 +93,10 @@ const appendChange = (results, changeObj, forceSeq = false) => {
 };
 
 // appends allowed `changes` to feed `results`
-const processPendingChanges = (feed, forceSeq = false) => {
+const processPendingChanges = (feed) => {
   authorization
     .filterAllowedDocs(feed, feed.pendingChanges)
-    .forEach(changeObj => appendChange(feed.results, changeObj, forceSeq));
+    .forEach(changeObj => appendChange(feed.results, changeObj, feed.lastSeq));
 };
 
 // returns true if an authorization change is found
@@ -135,14 +131,7 @@ const writeDownstream = (feed, content, end) => {
 
 const getChanges = feed => {
   const options = { return_docs: true };
-  Object.assign(options, _.pick(feed.req.query, 'since', 'style', 'conflicts'));
-
-  // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
-  // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
-  // `limitChangesRequests` should only be true when CouchDB version is gte 2.3.0
-  if (limitChangesRequests && feed.req.query.limit) {
-    options.limit = feed.req.query.limit;
-  }
+  Object.assign(options, _.pick(feed.req.query, 'since', 'style', 'conflicts', 'limit'));
 
   options.doc_ids = feed.allowedDocIds;
   options.since = options.since || 0;
@@ -187,7 +176,7 @@ const getChanges = feed => {
 
       // avoid race condition where the continuous listener receives a change immediately after we ended the feed
       return Promise.resolve().then(() => {
-        processPendingChanges(feed, limitChangesRequests && feed.lastSeq);
+        processPendingChanges(feed);
         return endFeed(feed);
       });
     })
@@ -304,33 +293,14 @@ const initContinuousFeed = since => {
     });
 };
 
-const initServerChecks = () => {
-  return serverChecks
-    .getCouchDbVersion(environment.serverUrl)
-    .then(shouldLimitChangesRequests);
-};
-
-const shouldLimitChangesRequests = couchDbVersion => {
-  // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
-  // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
-  const MIN_COUCH_VERSION_FOR_LIMITING_CHANGES = '2.3.0';
-  limitChangesRequests = semver.valid(couchDbVersion) ?
-    semver.lte(MIN_COUCH_VERSION_FOR_LIMITING_CHANGES, couchDbVersion) :
-    false;
-};
-
 const initCurrentSeq = () => db.medic.info().then(info => currentSeq = info.update_seq);
 
 const init = () => {
   if (!inited) {
     inited = true;
     initContinuousFeed();
-    return Promise.all([
-      initCurrentSeq(),
-      initServerChecks()
-    ]);
+    return initCurrentSeq();
   }
-
   return Promise.resolve();
 };
 

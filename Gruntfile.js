@@ -659,7 +659,7 @@ module.exports = function(grunt) {
             suite: 'mobile',
             capabilities: {
               chromeOptions: {
-                'args': ['headless', 'disable-gpu'],
+                'args': ['headless', 'disable-gpu', 'ignore-certificate-errors'],
                 mobileEmulation: { 'deviceName': 'Nexus 5' }
               }
             }
@@ -674,7 +674,7 @@ module.exports = function(grunt) {
           },
           capabilities: {
             chromeOptions: {
-              args: ['window-size=1024,768']
+              args: ['window-size=1024,768', 'ignore-certificate-errors']
             }
           }
         }

@@ -1,5 +1,5 @@
 const constants = require('../../../constants');
-const http = require('http');
+const https = require('https');
 const utils = require('../../../utils');
 const uuid = require('uuid').v4;
 const querystring = require('querystring');
@@ -102,7 +102,6 @@ describe('Users API', () => {
         .then(() => new Promise((resolve, reject) => {
           const options = {
             hostname: constants.API_HOST,
-            port: constants.API_PORT,
             path: '/_session',
             method: 'POST',
             headers: {
@@ -112,9 +111,9 @@ describe('Users API', () => {
           };
 
           // Use http service to extract cookie
-          const req = http.request(options, res => {
+          const req = https.request(options, res => {
             if (res.statusCode !== 200) {
-              return reject('Expected 200 from _session authing');
+              return reject(new Error(`Expected 200 from _session authing, but got ${res.statusCode}`));
             }
 
             // Example header:
@@ -329,7 +328,6 @@ describe('Users API', () => {
       const nodes = membership.all_nodes;
       for (const nodeName of nodes) {
         await utils.request({
-          port: constants.COUCH_PORT,
           method: 'PUT',
           path: `/_node/${nodeName}/_config/admins/${otherAdmin.username}`,
           body: `"${otherAdmin.password}"`,

@@ -2,7 +2,6 @@ const fs = require('fs');
 
 const constants = require('../../constants');
 const utils = require('../../utils');
-const auth = require('../../auth')();
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
@@ -175,7 +174,7 @@ describe('RepeatForm', () => {
   }
 
   async function login() {
-    await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, createUser: true });
     await commonPage.goToBase();
   }
 

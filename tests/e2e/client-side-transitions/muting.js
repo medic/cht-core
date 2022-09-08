@@ -1,13 +1,13 @@
 const _ = require('lodash');
 const { expect } = require('chai');
 
-const auth = require('../../auth')();
 const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.po.js');
 const contactsObjects = require('../../page-objects/contacts/contacts.po');
 const sentinelUtils = require('../sentinel/utils');
 const formsUtils = require('./forms');
+const constants = require('../../constants.js');
 
 /* global window */
 
@@ -208,7 +208,7 @@ describe('Muting', () => {
 
     await utils.startSentinel();
     await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(auth.username, auth.password);
+    await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
     await utils.revertDb();
     await commonElements.calmNative();
   });
