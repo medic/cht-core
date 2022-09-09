@@ -52,6 +52,8 @@ const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
 const patientName = () => $('.subject .name');
 const reportType = () => $('div[test-id="form-title"]');
+const filterResetButton = () => $('.sidebar-reset');
+const openFilterButton = () => $('.open-filter');
 
 
 // warning: the unread element is not displayed when there are no unread reports
@@ -279,9 +281,17 @@ const getReportType = async () => {
   return (await reportType()).getText();
 };
 
+const resetFilter = async () => {
+  if (!await (await filterResetButton()).isDisplayed()) {
+    await (await openFilterButton()).click();
+  }
+  await (await filterResetButton()).waitForDisplayed();
+  await (await filterResetButton()).click();
+  await (await openFilterButton()).click();
+};
 
 const openReport = async (reportId) => {
-  await (await $('.reset-filter')).click();
+  await resetFilter();
   await (await firstReport()).waitForDisplayed();
   const reportListItem = await reportByUUID(reportId);
   await reportListItem.waitForDisplayed();
