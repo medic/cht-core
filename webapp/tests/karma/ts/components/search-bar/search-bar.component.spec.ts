@@ -4,18 +4,22 @@ import { expect } from 'chai';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { provideMockStore } from '@ngrx/store/testing';
 
-import { ReportsActionsBarComponent } from '@mm-modules/reports/reports-actions-bar.component';
-import { Selectors } from '@mm-selectors/index';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
+import { Selectors } from '@mm-selectors/index';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
-describe('Reports Actions Bar Component', () => {
-  let component: ReportsActionsBarComponent;
-  let fixture: ComponentFixture<ReportsActionsBarComponent>;
+describe('Search Bar Component', () => {
+  let component: SearchBarComponent;
+  let fixture: ComponentFixture<SearchBarComponent>;
+  let responsiveService;
 
   beforeEach(waitForAsync(() => {
     const mockedSelectors = [
       { selector: Selectors.getSidebarFilter, value: { filterCount: { total: 5 } } },
     ];
+
+    responsiveService = { isMobile: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -23,16 +27,17 @@ describe('Reports Actions Bar Component', () => {
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
         declarations: [
-          ReportsActionsBarComponent,
+          SearchBarComponent,
           FreetextFilterComponent,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
+          { provide: ResponsiveService, useValue: responsiveService },
         ]
       })
       .compileComponents()
       .then(() => {
-        fixture = TestBed.createComponent(ReportsActionsBarComponent);
+        fixture = TestBed.createComponent(SearchBarComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
       });
@@ -52,24 +57,37 @@ describe('Reports Actions Bar Component', () => {
     expect(unsubscribeSpy.callCount).to.equal(1);
   });
 
-  it('should reset filters', () => {
+  it('should clear search term and apply', () => {
     const freeTextClearSpy = sinon.spy(component.freetextFilter, 'clear');
-    const resetFilterSpy = sinon.spy(component.resetFilter, 'emit');
 
-    component.reset();
+    component.clear();
 
     expect(freeTextClearSpy.calledOnce).to.be.true;
-    expect(resetFilterSpy.calledOnce).to.be.true;
+    expect(freeTextClearSpy.args[0]).to.deep.equal([ true ]);
+    expect(component.openSearch).to.be.false;
   });
 
   it('should do nothing if component is disabled', () => {
     const freeTextClearSpy = sinon.spy(component.freetextFilter, 'clear');
-    const resetFilterSpy = sinon.spy(component.resetFilter, 'emit');
     component.disabled = true;
 
-    component.reset();
+    component.clear();
 
     expect(freeTextClearSpy.notCalled).to.be.true;
-    expect(resetFilterSpy.notCalled).to.be.true;
+  });
+
+  it('should toggle search', () => {
+    responsiveService.isMobile.returns(true);
+    component.toggleMobileSearch();
+    expect(component.openSearch).to.be.true;
+    component.toggleMobileSearch();
+    expect(component.openSearch).to.be.false;
+
+    responsiveService.isMobile.returns(false);
+    component.toggleMobileSearch();
+    expect(component.openSearch).to.be.false;
+
+    component.toggleMobileSearch(true);
+    expect(component.openSearch).to.be.true;
   });
 });
