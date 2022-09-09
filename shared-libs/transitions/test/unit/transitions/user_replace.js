@@ -6,6 +6,7 @@ const environment = require('../../../src/environment');
 const transition = require('../../../src/transitions/user_replace');
 
 const originalApiUrl = environment.apiUrl;
+const originalConfigGet = config.get;
 
 const REPLACE_USER_DOC = {
   _id: 'replace_user_id',
@@ -15,7 +16,10 @@ const REPLACE_USER_DOC = {
 describe('user_replace', () => {
   before(() => environment.apiUrl = 'https://my.cht.instance');
   afterEach(() => sinon.restore());
-  after(() => environment.apiUrl = originalApiUrl);
+  after(() => {
+    environment.apiUrl = originalApiUrl;
+    config.get = originalConfigGet;
+  });
 
   it('init succeeds if token_login is enabled', () => {
     config.get = sinon.stub().returns({ enabled: true });
