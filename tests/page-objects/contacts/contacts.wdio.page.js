@@ -1,8 +1,6 @@
 const genericForm = require('../forms/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
-
-const searchBox = () => $('#freetext');
-const searchButton = () => $('#search');
+const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
@@ -52,10 +50,16 @@ const rightAddPerson = (create_key) => $(`span[test-id="rhs_add_contact"] p[test
 const contactCards = () => $$('.card.children');
 const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
 const childrenCards = () => $$('.right-pane .card.children');
+const newActionContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-stack');
+const forms = () => $$('.action-container .detail-actions .actions.dropup .open .dropdown-menu li');
+const formTitle = () => $('#form-title');
+const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
+const contactInfoName = () => $('.content-pane .material .body .card .row .heading-content');
+const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
-  await (await searchButton()).click();
+  await browser.keys('Enter');
   await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
   await (await emptySelection()).waitForDisplayed();
 };
@@ -68,7 +72,7 @@ const findRowByText = async (text) => {
   }
 };
 
-const selectLHSRowByText = async (text, executeSearch= true) => {
+const selectLHSRowByText = async (text, executeSearch = true) => {
   await commonElements.waitForLoaderToDisappear();
   if (executeSearch) {
     await search(text);
@@ -100,7 +104,7 @@ const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
 };
 
-const addPlace = async (type, placeName, contactName ) => {
+const addPlace = async (type, placeName, contactName) => {
   const dashedType = type.replace('_', '-');
   await (await actionResourceIcon(dashedType)).waitForDisplayed();
   await (await actionResourceIcon(dashedType)).click();
@@ -121,7 +125,7 @@ const addPlace = async (type, placeName, contactName ) => {
 };
 
 const addPerson = async (name, params = {}) => {
-  const { dob='2000-01-01', phone } = params;
+  const { dob = '2000-01-01', phone } = params;
   await (await actionResourceIcon('person')).click();
   await (await personName()).addValue(name);
   await (await dateOfBirthField()).addValue(dob);
@@ -194,7 +198,7 @@ const allContactsList = async () => {
   const parentCards = await contactCards();
   return Promise.all(parentCards.map(async (parent) => {
     return {
-      heading: await(await parent.$('h3')).getText(),
+      heading: await (await parent.$('h3')).getText(),
       contactNames: await Promise.all((await parent.$$('.children h4 span')).map(filter => filter.getText()))
     };
   }));
@@ -213,7 +217,49 @@ const editDistrict = async (districtName, editedName) => {
   await (await genericForm.submitButton()).click();
 };
 
+const createNewAction = async (formName) => {
+  await (await newActionContactButton()).waitForDisplayed();
+  await (await newActionContactButton()).click();
+  await openForm(formName);
+};
+
+const openForm = async (name) => {
+  // this is annoying but there's a race condition where the click could end up on another form if we don't
+  // wait for the animation to finish
+  await (await $('.action-container .detail-actions #relevant-contacts-form')).waitForDisplayed();
+  await browser.pause(50);
+  for (const form of await forms()) {
+    if (await form.getText() === name) {
+      await form.click();
+      await (await formTitle()).waitForDisplayed();
+      return;
+    }
+  }
+  throw new Error(`Form with name: "${name}" not found`);
+};
+
+const openReport = async () => {
+  await (await rhsReportListElement()).waitForDisplayed();
+  return (await rhsReportListElement()).click();
+};
+
+const getContactCardTitle = async () => {
+  await contactCardTitle().waitForDisplayed();
+  return (await contactCardTitle()).getText();
+};
+
+const getContactInfoName = async () => {
+  await contactInfoName().waitForDisplayed();
+  return (await contactInfoName()).getText();
+};
+
+const getContactMedicID = async () => {
+  await contactMedicID().waitForDisplayed();
+  return (await contactMedicID()).getText();
+};
+
 module.exports = {
+  genericForm,
   selectLHSRowByText,
   reportFilters,
   getReportFiltersText,
@@ -242,5 +288,19 @@ module.exports = {
   rightAddPerson,
   allContactsList,
   editDistrict,
-  childrenCards
+  childrenCards,
+  createNewAction,
+  openReport,
+  getContactCardTitle,
+  getContactInfoName,
+  getContactMedicID,  
+  actionResourceIcon,
+  newPrimaryContactButton,
+  newPrimaryContactName,
+  writeNamePlace,
+  newPlaceName,
+  externalIdField,
+  notes,
+  contactCardIcon,
+  editContactButton,  
 };

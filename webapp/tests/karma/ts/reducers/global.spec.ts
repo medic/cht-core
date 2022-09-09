@@ -93,7 +93,7 @@ describe('Global Reducer', () => {
     });
   });
 
-  it('should clear filters', () => {
+  it('should clear all filters', () => {
     state = {
       filters: {
         date: { from: 1, to: 22 },
@@ -101,7 +101,30 @@ describe('Global Reducer', () => {
         search: 'lalala'
       },
     };
-    state = globalReducer(state, Actions.clearFilters());
+    state = globalReducer(state, Actions.clearFilters(undefined));
+    expect(state).to.deep.equal({ filters: {} });
+  });
+
+  it('should skip one and clear the other filters', () => {
+    state = {
+      filters: {
+        date: { from: 1, to: 22 },
+        forms: [{ _id: 'form1' }, { _id: 'form2' }],
+        search: 'lalala'
+      },
+    };
+    state = globalReducer(state, Actions.clearFilters('search'));
+    expect(state).to.deep.equal({ filters: { search: 'lalala' } });
+  });
+
+  it('should clear all filters if skip is not found', () => {
+    state = {
+      filters: {
+        date: { from: 1, to: 22 },
+        forms: [{ _id: 'form1' }, { _id: 'form2' }],
+      },
+    };
+    state = globalReducer(state, Actions.clearFilters('search'));
     expect(state).to.deep.equal({ filters: {} });
   });
 

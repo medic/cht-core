@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Input, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Input, Output, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 
@@ -19,6 +19,7 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   @Input() disabled;
   @Input() mobileDropdown;
   @Output() search: EventEmitter<any> = new EventEmitter();
+  @ViewChild('freetextInput') inputElement;
 
   constructor(
     private store: Store,
@@ -47,17 +48,22 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
     // always force the search, so the user is taken from the report detail page to the list page on mobile,
     // when clicking on a case_id link
     this.search.emit(true);
+
+    if (this.inputElement) {
+      // Closing mobile's soft keyboard when search is triggered.
+      this.inputElement.nativeElement.blur();
+    }
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
-  clear() {
+  clear(apply?) {
     if (this.disabled) {
       return;
     }
-    this.applyFieldChange('');
+    this.applyFieldChange('', apply);
   }
 }
 

@@ -17,7 +17,7 @@ export const Actions = {
   setRightActionBar: createSingleValueAction('SET_RIGHT_ACTION_BAR', 'right'),
   setRightActionBarVerified: createSingleValueAction('SET_ACTION_BAR_RIGHT_VERIFIED', 'verified'),
   updateRightActionBar: createSingleValueAction('UPDATE_RIGHT_ACTION_BAR', 'right'),
-  clearFilters: createAction('CLEAR_FILTERS'),
+  clearFilters: createSingleValueAction('CLEAR_FILTERS', 'skip'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
@@ -91,8 +91,8 @@ export class GlobalActions {
     this.setShowActionBar(true);
   }
 
-  clearFilters() {
-    return this.store.dispatch(Actions.clearFilters());
+  clearFilters(skip?) {
+    return this.store.dispatch(Actions.clearFilters(skip));
   }
 
   setFilter(filter) {

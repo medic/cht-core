@@ -6,13 +6,13 @@
       [disabled]="selectMode && selectedReports?.length">
     </reports-filters>
     <mm-navigation></mm-navigation>
-    <mm-reports-actions-bar
+    <mm-search-bar
       *ngIf="useSidebarFilter"
       (toggleFilter)="toggleFilter()"
-      (resetFilter)="resetFilter()"
       (search)="search($event)"
-      [disabled]="selectMode && selectedReports?.length">
-    </mm-reports-actions-bar>
+      [disabled]="selectMode && selectedReports?.length"
+      [showFilter]="true">
+    </mm-search-bar>
   </div>
 </div>
 

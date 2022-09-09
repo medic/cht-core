@@ -23,7 +23,7 @@ const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-
 const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
 const sidebarFilterToDate = () => $('#toDateFilter');
 const sidebarFilterFromDate = () => $('#fromDateFilter');
-const sidebarFilterOpenBtn = () => $('.reports-action-bar .open-filter');
+const sidebarFilterOpenBtn = () => $('mm-search-bar .open-filter');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
