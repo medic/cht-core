@@ -1,100 +1,67 @@
-const fs = require('fs');
-
+const { expect } = require('chai');
 const utils = require('../../utils');
-// const constants = require('../../constants');
-// const commonElements = require('../../page-objects/common/common.wdio.page');
-// const reportsPo = require('../../page-objects/reports/reports.wdio.page');
-// const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
 const loginPage = require('../../page-objects/login/login.wdio.page');
-const userData = require('../../page-objects/forms/data/user.po.data');
 const commonPage = require('../../page-objects/common/common.wdio.page');
 const reportsPage = require('../../page-objects/reports/reports.wdio.page');
 const constants = require('../../constants');
 const contactsPage = require('../../page-objects/contacts/contacts.wdio.page');
 const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
 const commonElements = require('../../page-objects/common/common.wdio.page');
-const sentinelUtils = require("../sentinel/utils");
+const sentinelUtils = require('../sentinel/utils');
 
-const rightAddAction = () => $('.right-pane span a[data-toggle="dropdown"]');
-const replaceUserItem = () => $('li[id="form:replace_user"]');
-
-const formTitle = () => $('#form-title');
 const adminCodeField = () => $('input[name="/replace_user/intro/admin_code"]');
 const fullNameField = () => $('input[name="/replace_user/new_contact/name"]');
 const dobUnknownField = () => $('input[name="/replace_user/new_contact/ephemeral_dob/dob_method"]');
 const yearsField = () => $('input[name="/replace_user/new_contact/ephemeral_dob/age_years"]');
 const femaleField = () => $('input[name="/replace_user/new_contact/sex"][value="female"]');
 
-const reportRecordEntry = () => $('[ng-reflect-heading="Replace User"]');
-const loginButton = () => $('button[id="login"]');
-
-const district = {
+const DISTRICT = {
   _id: 'fixture:district',
   type: 'district_hospital',
-  name: 'District',
-  place_id: 'district',
-  reported_date: new Date().getTime(),
 };
-const chw = {
-  username: 'bob',
+const ORIGINAL_USER = {
+  username: 'original_person',
   password: 'medic.123',
-  place: 'fixture:district',
-  contact: { _id: 'fixture:user:bob', name: 'Bob' },
+  place: DISTRICT._id,
+  phone: '+254712345678',
+  contact: { _id: 'fixture:user:original_person', name: 'Original Person' },
   roles: ['chw'],
 };
 
-const login = async () => {
-  await loginPage.login(chw);
-  await commonPage.waitForPageLoaded();
-};
+const newUsers = [];
 
-const getUserSettingsDocs = () => utils.db
-  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+const getQueuedMessages = () => utils.db.query('medic-admin/message_queue', { reduce: false, include_docs: true })
   .then(response => response.rows.map(row => row.doc));
 
-const getUserSettingsDoc = (contactId) => getUserSettingsDocs()
-  .then(docs => docs.find(doc => doc.contact_id === contactId));
-
-const waitForUserSettingsDoc = async (contactId) => {
-  console.log('Waiting for user-settings doc for ');
-  const userSettings = await getUserSettingsDoc(contactId);
-  if(!userSettings) {
-    return new Promise(resolve => setTimeout(resolve, 100))
-      .then(() => waitForUserSettingsDoc(contactId));
-  }
-};
-
 const settings = {
-  transitions: {
-    user_replace: true
-  },
-  token_login: {
-    enabled: true,
-    translation_key: 'sms.token.login.help'
-  },
+  transitions: { user_replace: true },
+  token_login: { enabled: true },
+  app_url: `http://${constants.API_HOST}:${constants.API_PORT}`
 };
 
 describe('user_replace transition', () => {
   before(async () => {
-    // await utils.saveDoc(formDocument);
-    // await utils.seedTestData(userData.userContactDoc, userData.docs);
-    await utils.saveDoc(district);
+    await utils.saveDoc(DISTRICT);
   });
 
   afterEach(async () => {
+    await utils.revertDb([], true);
+    await utils.deleteUsers(newUsers.map(username => ({ username })));
+    newUsers.length = 0;
   });
 
-  it('submits on reports tab', async () => {
+  it('is triggred when the replace_user form is submitted', async () => {
     await utils.updateSettings(settings, 'sentinel');
-    await utils.createUsers([chw]);
-    await login();
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
+    await loginPage.login(ORIGINAL_USER);
+    await commonPage.waitForPageLoaded();
     await commonPage.closeTour();
-    await commonPage.goToPeople('fixture:user:bob');
+
     await browser.throttle('offline');
 
-    await (await rightAddAction()).click();
-    await (await replaceUserItem()).click();
-    await (await formTitle()).waitForDisplayed();
+    await commonPage.goToPeople(ORIGINAL_USER.contact._id);
+    await contactsPage.openNewAction('replace_user');
     await (await adminCodeField()).setValue('secretCode');
     await genericForm.nextPage();
     await (await fullNameField()).setValue('Replacement User');
@@ -102,42 +69,63 @@ describe('user_replace transition', () => {
     await (await yearsField()).setValue(22);
     await (await femaleField()).click();
     await (await genericForm.submitButton()).click();
-
-    await (await reportRecordEntry()).waitForDisplayed();
-    await (await reportRecordEntry()).scrollIntoView();
-    await (await reportRecordEntry()).click();
+    const reportNames = await contactsPage.getAllRHSReportsNames();
+    expect(reportNames.filter(name => name === 'Replace User')).to.have.lengthOf(1);
+    await commonPage.goToReports();
+    await (await reportsPage.firstReport()).click();
     const reportId = await reportsPage.getCurrentReportId();
 
     await browser.throttle('online');
-    // await commonElements.sync();
+
     await commonElements.openHamburgerMenu();
     await (await commonElements.syncButton()).click();
-    await (await loginButton()).waitForDisplayed();
+    await (await loginPage.loginButton()).waitForDisplayed();
 
-    // User has been logged out. Now we need to verify:
-    // - The replace_user form has been created
-    // - The new contact has been created
-    // - The new user has been created
-    // - The reports have been re-parented
-    // - There is an outgoing message to the new user with a login link
-
-    await loginPage.cookieLogin();
-
+    // Replace user report created
     const replaceUserReport = await utils.getDoc(reportId);
-    const { new_contact_uuid } = replaceUserReport.fields;
+    const { original_contact_uuid, new_contact_uuid } = replaceUserReport.fields;
     expect(new_contact_uuid).to.not.be.empty;
-
+    expect(original_contact_uuid).to.equal(ORIGINAL_USER.contact._id);
+    // New contact created
     const newContact = await utils.getDoc(new_contact_uuid);
-    const newContactId = newContact._id;
-    expect(newContactId).to.not.be.empty;
+    expect(newContact.phone).to.equal(ORIGINAL_USER.phone);
 
-    await sentinelUtils.waitForSentinel();
-    const temp = await sentinelUtils.getInfoDocs();
-    // const userSettingsDocs = await waitForUserSettingsDoc(newContactId);
+    await sentinelUtils.waitForSentinel(reportId);
+    const { transitions } = await sentinelUtils.getInfoDoc(reportId);
 
-    console.log('jkuester' + reportId);
-    // TODO Assert report submitted:
+    // Transition successful
+    expect(transitions.user_replace.ok).to.be.true;
+    // Original user updated
+    const oldUserSettings = await utils.getUserSettings({ contactId: original_contact_uuid });
+    expect(oldUserSettings.replaced).to.be.true;
+    // New user created
+    const newUserSettings = await utils.getUserSettings({ contactId: new_contact_uuid });
+    newUsers.push(newUserSettings.name);
+    expect(newUserSettings).to.deep.include({
+      roles: ORIGINAL_USER.roles,
+      phone: newContact.phone,
+      facility_id: newContact.parent._id,
+      contact_id: newContact._id,
+      fullname: newContact.name,
+    });
+    expect(newUserSettings.token_login.active).to.be.true;
+    expect(newUserSettings._id).to.match(/^org\.couchdb\.user:replacement-user-\d\d\d\d$/);
+    expect(newUserSettings.name).to.match(/^replacement-user-\d\d\d\d$/);
+    // Login token sent
+    const queuedMsgs = await getQueuedMessages();
+    expect(queuedMsgs).to.have.lengthOf(1);
+    const [queuedMsg] = queuedMsgs;
+    expect(queuedMsg).to.deep.include({
+      type: 'token_login',
+      user: newUserSettings._id
+    });
+    const [{ to, message }] = queuedMsg.tasks[1].messages;
+    expect(to).to.equal(newUserSettings.phone);
 
-
+    // Open the texted link
+    browser.navigateTo(message);
+    await commonPage.waitForPageLoaded();
+    const [cookie] = await browser.getCookies('userCtx');
+    expect(cookie.value).to.contain(newUserSettings.name);
   });
 });
