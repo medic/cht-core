@@ -48,6 +48,8 @@ const REPLACE_USER = {
   },
 };
 
+const newUsers = [];
+
 const getSettings = ({
   transitions: { user_replace = true } = {},
   token_login: { enabled = true } = {}
@@ -56,24 +58,14 @@ const getSettings = ({
   token_login: { enabled }
 });
 
-const getUserSettingsDocs = () => utils.db
-  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
-  .then(response => response.rows.map(row => row.doc));
-
-const getUserSettingsDoc = (contactId) => getUserSettingsDocs()
-  .then(docs => docs.find(doc => doc.contact_id === contactId));
-
 const getQueuedMessages = () => utils.db.query('medic-admin/message_queue', { reduce: false, include_docs: true })
   .then(response => response.rows.map(row => row.doc));
 
 describe('user_replace', () => {
   afterEach(async () => {
     await utils.revertDb([], true);
-
-    await utils.getDoc(ORIGINAL_USER._id)
-      .then(() => utils.deleteDoc(ORIGINAL_USER._id))
-      .catch(() => {
-      });
+    await utils.deleteUsers(newUsers.map(username => ({ username })));
+    newUsers.length = 0;
   });
 
   it('should replace user when the replace_user form is submitted', async () => {
@@ -112,6 +104,7 @@ describe('user_replace', () => {
       REPLACE_USER,
       newReport,
     ]);
+    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel(REPLACE_USER._id);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -124,7 +117,8 @@ describe('user_replace', () => {
       shouldLogoutNextSync: true
     });
     // New user created
-    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
+    newUsers.push(newUserSettings.name);
     expect(newUserSettings).to.deep.include({
       roles: ORIGINAL_USER.roles,
       phone: NEW_PERSON.phone,
@@ -134,6 +128,7 @@ describe('user_replace', () => {
     });
     expect(newUserSettings.token_login.active).to.be.true;
     expect(newUserSettings._id).to.match(/^org\.couchdb\.user:new-person-\d\d\d\d/);
+    expect(newUserSettings.name).to.match(/^new-person-\d\d\d\d$/);
     // Earlier reports not re-parented
     const oldReport_notUpdated = await utils.getDoc(oldReport._id);
     expect(oldReport_notUpdated.contact._id).to.equal(ORIGINAL_PERSON._id);
@@ -156,8 +151,6 @@ describe('user_replace', () => {
       user: newUserSettings._id
     });
     expect(queuedMsgs[0].tasks[0].messages[0].to).to.equal(NEW_PERSON.phone);
-
-    await utils.deleteDoc(newUserSettings._id);
   });
 
   it('should not replace user when transition is disabled', async () => {
@@ -169,11 +162,12 @@ describe('user_replace', () => {
       ORIGINAL_USER,
       REPLACE_USER,
     ]);
+    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const info = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
     expect(Object.keys(info.transitions)).to.be.empty;
-    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     expect(newUserSettings).to.be.undefined;
   });
 
@@ -199,6 +193,7 @@ describe('user_replace', () => {
       ORIGINAL_USER,
       REPLACE_USER,
     ]);
+    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -212,7 +207,7 @@ describe('user_replace', () => {
     expect(code).to.equal('user_replace_error\'');
     expect(message).to.match(missingPersonPattern);
     // New user not created
-    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     expect(newUserSettings).to.be.undefined;
   });
 
@@ -226,6 +221,7 @@ describe('user_replace', () => {
       NEW_PERSON,
       REPLACE_USER,
     ]);
+    newUsers.push(REPLACE_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -239,7 +235,7 @@ describe('user_replace', () => {
     expect(code).to.equal('user_replace_error\'');
     expect(message).to.match(missingUserPattern);
     // New user not created
-    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     expect(newUserSettings).to.be.undefined;
   });
 
@@ -256,6 +252,7 @@ describe('user_replace', () => {
       ORIGINAL_USER,
       REPLACE_USER,
     ]);
+    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -269,7 +266,7 @@ describe('user_replace', () => {
     expect(code).to.equal('user_replace_error\'');
     expect(message).to.match(missingPhonePattern);
     // New user not created
-    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     expect(newUserSettings).to.be.undefined;
   });
 
@@ -286,6 +283,7 @@ describe('user_replace', () => {
       ORIGINAL_USER,
       REPLACE_USER,
     ]);
+    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -299,7 +297,7 @@ describe('user_replace', () => {
     expect(code).to.equal('user_replace_error\'');
     expect(message).to.match(missingPhonePattern);
     // New user not created
-    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     expect(newUserSettings).to.be.undefined;
   });
 
@@ -316,6 +314,7 @@ describe('user_replace', () => {
       ORIGINAL_USER,
       REPLACE_USER,
     ]);
+    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -329,7 +328,7 @@ describe('user_replace', () => {
     expect(code).to.equal('user_replace_error\'');
     expect(message).to.match(missingNamePattern);
     // New user not created
-    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     expect(newUserSettings).to.be.undefined;
   });
 
@@ -346,6 +345,7 @@ describe('user_replace', () => {
       ORIGINAL_USER,
       REPLACE_USER,
     ]);
+    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -359,7 +359,7 @@ describe('user_replace', () => {
     expect(code).to.equal('user_replace_error\'');
     expect(message).to.match(missingParentPattern);
     // New user not created
-    const newUserSettings = await getUserSettingsDoc(NEW_PERSON._id);
+    const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     expect(newUserSettings).to.be.undefined;
   });
 });
