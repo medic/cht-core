@@ -4,6 +4,7 @@
   <div class="sidebar-main" [ngClass]="{ hidden: !isOpen }">
     <div class="sidebar-header">
       <p class="sidebar-title">{{ 'reports.sidebar.filter.title' | translate }}</p>
+      <a class="sidebar-reset" [class.disabled]="disabled" (click)="resetFilters()">{{ 'reports.sidebar.filter.reset' | translate }}</a>
       <a class="sidebar-close fa fa-times" (click)="toggleSidebarFilter()"></a>
     </div>
 

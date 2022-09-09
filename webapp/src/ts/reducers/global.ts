@@ -84,8 +84,9 @@ const _globalReducer = createReducer(
   on(Actions.setForms, (state, { payload: { forms } }) => {
     return { ...state, forms };
   }),
-  on(Actions.clearFilters, (state) => {
-    return { ...state, filters: {} };
+  on(Actions.clearFilters, (state, { payload: { skip } }) => {
+    const newValue = skip && state.filters[skip] ? { [skip]: state.filters[skip] } : {};
+    return { ...state, filters: newValue };
   }),
   on(Actions.setFilters, (state, { payload: { filters } }) => {
     return { ...state, filters };

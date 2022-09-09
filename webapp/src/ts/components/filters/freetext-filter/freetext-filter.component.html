@@ -1,5 +1,13 @@
 <span class="input-group freetext-filter" [class.disabled]="disabled" [class.mobile-dropdown]="mobileDropdown">
-  <input id="freetext" class="form-control" [(ngModel)]="inputText" type="text" [disabled]="disabled" placeholder="{{'freetext.search' | translate}}" (keyup.enter)="applyFilter()">
+  <input
+    #freetextInput
+    id="freetext"
+    class="form-control"
+    [(ngModel)]="inputText"
+    type="text"
+    [disabled]="disabled"
+    placeholder="{{'freetext.search' | translate}}"
+    (keyup.enter)="applyFilter()">
   <span class="input-group-btn">
     <button id="search" class="btn btn-default" type="button" (click)="applyFilter()">
       <span class="fa fa-search"></span>
