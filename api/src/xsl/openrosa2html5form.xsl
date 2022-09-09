@@ -7,8 +7,8 @@ This stylesheet extends the default one to allow for additional input types.
                 xmlns:enk="http://enketo.org/xforms"
                 xmlns:jr="http://openrosa.org/javarosa"
                 xmlns:orx="http://openrosa.org/xforms">
- 
-  <xsl:import href="../../node_modules/enketo-transformer/src/xsl/openrosa2html5form.xsl"/>
+
+  <xsl:import href="../enketo-transformer/xsl/openrosa2html5form.xsl"/>
 
   <!-- Overwrite binding-attributes declaration from openrosa2html5form.xsl to include custom code -->
   <!-- Prevent notes from ever being required -->
@@ -193,5 +193,5 @@ This stylesheet extends the default one to allow for additional input types.
       <!-- Medic specific section end -->
     </xsl:choose>
   </xsl:template>
- 
+
 </xsl:stylesheet>

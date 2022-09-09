@@ -7,6 +7,7 @@ const cookie = require('../../../src/services/cookie');
 const users = require('../../../src/services/users');
 const tokenLogin = require('../../../src/services/token-login');
 const branding = require('../../../src/services/branding');
+const privacyPolicy = require('../../../src/services/privacy-policy');
 const db = require('../../../src/db').medic;
 const sinon = require('sinon');
 const config = require('../../../src/config');
@@ -55,6 +56,7 @@ describe('login controller', () => {
     sinon.stub(environment, 'isTesting').get(() => false);
 
     sinon.stub(auth, 'isOnlineOnly').returns(false);
+    sinon.stub(privacyPolicy, 'exists').resolves(false);
   });
 
   afterEach(() => {
