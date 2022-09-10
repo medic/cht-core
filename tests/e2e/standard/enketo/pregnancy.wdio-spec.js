@@ -29,16 +29,15 @@ describe('New pregnancy', () => {
       {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
 
     // Create Woman2 - SMS N form
-    const messageNewWoman = `N ${pregnantWoman2}`;    
-    await gatewayApiUtils.api.postMessage({
-      id: 'N-id',
-      from: user.phone,
-      content: messageNewWoman
-    }); 
+    await commonPage.goToPeople(healthCenter._id);
+    await commonPage.waitForPageLoaded();
+    await contactPage.contactPageDefault.addPerson(pregnantWoman2, 
+      {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
   });
 
   it('Submit new pregnancy - Woman1 - webapp', async () => {
     const note = 'Test note - pregnant woman';
+    await commonPage.goToPeople(healthCenter._id);
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
     const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
     await contactPage.contactPageDefault.createNewAction('New Pregnancy');
@@ -68,9 +67,8 @@ describe('New pregnancy', () => {
     
     expect(await (await contactPage.pregnancyCard()).isDisplayed()).to.be.true;
     expect(await contactPage.getPregnancyCardRisk()).to.equal('High risk');
-  });
 
-  it('Verify pregnancy report - Woman1 - webapp', async () => {
+    // Verify the created report 
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
@@ -99,10 +97,9 @@ describe('New pregnancy', () => {
     await browser.refresh();
     await commonPage.waitForPageLoaded();
     expect(await (await contactPage.pregnancyCard()).isDisplayed()).to.be.true;
-    expect(await contactPage.getPregnancyCardRisk()).to.equal('Normal');    
-  });
-
-  it('Verify pregnancy report - Woman2 - SMS', async () => {
+    expect(await contactPage.getPregnancyCardRisk()).to.equal('Normal'); 
+    
+    // Verify the created report 
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);

@@ -1,3 +1,6 @@
+const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
+const contactPage = require('../../../page-objects/contacts/contacts.wdio.page');
+
 const FORM = 'form[data-form-id="pregnancy_visit"]';
 const dangerSig = () => $$(`${FORM} input[name="/pregnancy_visit/group_danger_signs/g_danger_signs"]`);
 const smsNote = () => $(`${FORM} textarea[name="/pregnancy_visit/group_note/g_chw_sms"]`);
@@ -24,9 +27,19 @@ const getFollowUpSMS = async () => {
   return sms.getText();
 };
 
+const submitPregnancyVisit = async () => {
+  await contactPage.createNewAction('Pregnancy Visit');
+  await selectAllDangerSigns();
+  await genericForm.nextPage();
+  await setNote('Test note');
+  await genericForm.nextPage();
+  await genericForm.submitForm();
+};
+
 module.exports = {
   selectAllDangerSigns,
   setNote,
   dangerSignSummary,
   getFollowUpSMS,
+  submitPregnancyVisit,
 };

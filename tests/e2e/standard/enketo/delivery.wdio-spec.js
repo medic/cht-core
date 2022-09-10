@@ -9,7 +9,9 @@ const contactPage = require('../../../page-objects/standard/contacts/contacts.wd
 const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
 const analyticsPage = require('../../../page-objects/analytics/analytics.wdio.page');
 const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
-const delivery = require('../../../page-objects/standard/forms/delivery.wdio.page');
+const pregnancyForm = require('../../../page-objects/standard/forms/pregnancy.wdio.page');
+const pregnancyVisitForm = require('../../../page-objects/standard/forms/pregnancy-visit.wdio.page');
+const deliveryForm = require('../../../page-objects/standard/forms/delivery.wdio.page');
 
 describe('Delivery', () => {
   const places = placeFactory.generateHierarchy();
@@ -17,8 +19,6 @@ describe('Delivery', () => {
   const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });
   const pregnantWoman1 = 'Woman1';
   const pregnantWoman2 = 'Woman2';
-  let medicIDW1 = '';
-  let medicIDW2 = '';
 
   before(async () => {
     await utils.saveDocs(places);
@@ -27,104 +27,52 @@ describe('Delivery', () => {
     await commonPage.goToPeople(healthCenter._id);
 
     //Create Woman1
-    await gatewayApiUtils.api.postMessage({
-      id: 'N-id-1',
-      from: user.phone,
-      content: `N ${pregnantWoman1}`
-    });
-    
-    await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
-    medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
+    await contactPage.contactPageDefault.addPerson(pregnantWoman1, 
+      {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
 
     // Submit new pregnancy for Woman1
-    await gatewayApiUtils.api.postMessage({
-      id: 'P-id-1',
-      from: user.phone,
-      content: `P ${medicIDW1} 27`
-    });
+    await pregnancyForm.submitPregnancy();
+    await commonPage.waitForPageLoaded();
 
     // Submit 4 pregnancy visits for Woman1 to see the update in the targets
     for(let i = 0; i < 4; i++){
-      await gatewayApiUtils.api.postMessage({
-        id: `V-id-${i}`,
-        from: user.phone,
-        content: `V ${medicIDW1}`
-      });
+      await pregnancyVisitForm.submitPregnancyVisit();
+      await commonPage.waitForPageLoaded();
     }
 
     // Create Woman2
-    await gatewayApiUtils.api.postMessage({
-      id: 'N-id-2',
-      from: user.phone,
-      content: `N ${pregnantWoman2}`
-    });
-    
-    await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman2);
-    medicIDW2 = await contactPage.contactPageDefault.getContactMedicID();
+    await commonPage.goToPeople(healthCenter._id);
+    await contactPage.contactPageDefault.addPerson(pregnantWoman2, 
+      {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
+
 
     // Submit new pregnancy for Woman2
-    await gatewayApiUtils.api.postMessage({
-      id: 'P-id-2',
-      from: user.phone,
-      content: `P ${medicIDW2} 27`
-    });
+    await pregnancyForm.submitPregnancy();
+    await commonPage.waitForPageLoaded();
 
     // Submit 1 pregnancy visit for Woman2 to see the update in the targets
-    await gatewayApiUtils.api.postMessage({
-      id: 'V-id-W2',
-      from: user.phone,
-      content: `V ${medicIDW2}`
-    });
-
-  });
-
-  it('Delivery - Woman2 - SMS D form', async () => {
-    await gatewayApiUtils.api.postMessage({
-      id: 'D-id',
-      from: user.phone,
-      content: `D ${medicIDW2} F 1`
-    });
-
-    await commonPage.goToPeople();
-    await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman2);
+    await pregnancyVisitForm.submitPregnancyVisit();
     await commonPage.waitForPageLoaded();
-
-    expect(await (await contactPage.pastPregnancyCard()).isDisplayed()).to.be.true;
-    expect(await contactPage.getDeliveryCode()).to.equal('Facility birth');
-    const visits = (await contactPage.getAncVisits()).split(' of ')[0];
-    expect(visits).to.equal('0');
-  });
-
-  it('Verify delivery report - Woman2 - SMS', async () => {
-    await commonPage.goToReports();
-    const firstReport = await reportsPage.firstReport();
-    const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
-
-    expect(firstReportInfo.heading).to.equal(pregnantWoman2);
-    expect(firstReportInfo.form).to.equal('Delivery Report (SMS)');
-
-    await reportsPage.openSelectedReport(firstReport);
-    await commonPage.waitForPageLoaded();
-    expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
   });
 
   it('Delivery - Woman1 - webapp', async () => {
     const note = 'Test note - pregnant woman';
-    await commonPage.goToPeople();
+    await commonPage.goToPeople(healthCenter._id);
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
+    await commonPage.waitForPageLoaded();
+    const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
     await contactPage.contactPageDefault.createNewAction('Delivery');
 
-    const pregnancyOutcome = await delivery.selectPregnancyOutcome();
-    const locationDelivery = await delivery.selectDeliveryLocation();
-    await delivery.setDeliveryDate(moment().format('YYYY-MM-DD'));
+    const pregnancyOutcome = await deliveryForm.selectPregnancyOutcome();
+    const locationDelivery = await deliveryForm.selectDeliveryLocation();
+    await deliveryForm.setDeliveryDate(moment().format('YYYY-MM-DD'));
     await genericForm.nextPage();
-    await delivery.setNote(note);
+    await deliveryForm.setNote(note);
     await genericForm.nextPage();
 
-    expect(await delivery.getOutcomeSummary()).to.equal(pregnancyOutcome);
-    expect(await delivery.getLocationSummary()).to.equal(locationDelivery);
-    const followUpSMS = await delivery.getFollowUpSMS();
+    expect(await deliveryForm.getOutcomeSummary()).to.equal(pregnancyOutcome);
+    expect(await deliveryForm.getLocationSummary()).to.equal(locationDelivery);
+    const followUpSMS = await deliveryForm.getFollowUpSMS();
     expect(followUpSMS).to.include(pregnantWoman1);
     expect(followUpSMS).to.include(medicIDW1);
     expect(followUpSMS).to.include(note);
@@ -136,15 +84,47 @@ describe('Delivery', () => {
     expect(await contactPage.getDeliveryCode()).to.equal('Facility birth');
     const visits = (await contactPage.getAncVisits()).split(' of ')[0];
     expect(visits).to.equal('4');
-  });
 
-  it('Verify delivery report - Woman1 - webapp', async () => {
+    // Verify the created report
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
     expect(firstReportInfo.heading).to.equal(pregnantWoman1);
     expect(firstReportInfo.form).to.equal('Delivery');
+
+    await reportsPage.openSelectedReport(firstReport);
+    await commonPage.waitForPageLoaded();
+    expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+  });
+
+  it('Delivery - Woman2 - SMS D form', async () => {
+    await commonPage.goToPeople(healthCenter._id);
+    await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman2);
+    await commonPage.waitForPageLoaded();
+    const medicIDW2 = await contactPage.contactPageDefault.getContactMedicID();
+
+    await gatewayApiUtils.api.postMessage({
+      id: 'D-id',
+      from: user.phone,
+      content: `D ${medicIDW2} F 1`
+    });
+
+    await browser.refresh();
+    await commonPage.waitForPageLoaded();    
+    expect(await (await contactPage.pastPregnancyCard()).isDisplayed()).to.be.true;
+    expect(await contactPage.getDeliveryCode()).to.equal('Facility birth');
+    const visits = (await contactPage.getAncVisits()).split(' of ')[0];
+    expect(visits).to.equal('0');
+
+    // Verify the created report
+    await commonPage.goToReports();
+    const firstReport = await reportsPage.firstReport();
+    const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
+
+    expect(firstReportInfo.heading).to.equal(pregnantWoman2);
+    expect(firstReportInfo.form).to.equal('Delivery Report (SMS)');
 
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();

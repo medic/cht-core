@@ -220,6 +220,7 @@ const editDistrict = async (districtName, editedName) => {
 
 const createNewAction = async (formName) => {
   await (await newActionContactButton()).waitForDisplayed();
+  await (await newActionContactButton()).waitForClickable();
   await (await newActionContactButton()).click();
   await openForm(formName);
 };

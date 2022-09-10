@@ -1,3 +1,6 @@
+const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
+const contactPage = require('../../../page-objects/contacts/contacts.wdio.page');
+
 const APROX_LMP = {up2Months: 61, up3Months: 91, up4Months: 122, b5To6Months: 183, b7To8Months: 244};
 
 const form = 'form[data-form-id="pregnancy"]';
@@ -53,6 +56,20 @@ const getFollowUpSMS = async () => {
   return sms.getText();
 };
 
+const submitPregnancy = async () => {
+  await contactPage.createNewAction('New Pregnancy');
+  await selectKnowLMP();
+  await selectAproxLMP(APROX_LMP.b7To8Months);
+  await genericForm.nextPage();
+  await selectAllRiskFactors();
+  await genericForm.nextPage();
+  await selectAllDangerSigns();
+  await genericForm.nextPage();
+  await setNote('Test note');
+  await genericForm.nextPage();
+  await genericForm.submitForm();
+};
+
 module.exports = {
   APROX_LMP,
   selectKnowLMP,
@@ -64,4 +81,5 @@ module.exports = {
   riskFactorsSummary,
   dangerSignsSummary,
   getFollowUpSMS,
+  submitPregnancy,
 };

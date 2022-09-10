@@ -9,6 +9,7 @@ const userFactory = require('../../../factories/cht/users/users');
 const contactPage = require('../../../page-objects/standard/contacts/contacts.wdio.page');
 const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
 const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
+const pregnancyForm = require('../../../page-objects/standard/forms/pregnancy.wdio.page');
 const pregnancyVisitForm = require('../../../page-objects/standard/forms/pregnancy-visit.wdio.page');
 
 describe('Pregnancy Visit', () => {
@@ -25,19 +26,21 @@ describe('Pregnancy Visit', () => {
     await utils.saveDocs([...places, pregnantWoman]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
-    await commonPage.goToPeople(healthCenter._id);
+    await commonPage.goToPeople(pregnantWoman._id);
 
     // Submit new pregnancy for pregnantWoman
-    await gatewayApiUtils.api.postMessage({
+    await pregnancyForm.submitPregnancy();
+    await commonPage.waitForPageLoaded();
+    /*await gatewayApiUtils.api.postMessage({
       id: 'P-id',
       from: user.phone,
       content: `P ${pregnantWoman.patient_id} 27`
-    });
+    });*/
   });
 
   it('Submit new pregnancy visit - webapp', async () => {
     const note = 'Test note - pregnancy visit';
-    await commonPage.goToPeople(pregnantWoman._id);
+    //await commonPage.goToPeople(pregnantWoman._id);
     await contactPage.contactPageDefault.createNewAction('Pregnancy Visit');
 
     const dangerSigns = await pregnancyVisitForm.selectAllDangerSigns();
@@ -55,9 +58,8 @@ describe('Pregnancy Visit', () => {
     await commonPage.waitForPageLoaded();
     const visits = (await contactPage.getPregnancyCardVisits()).split(' of ')[0];
     expect(visits).to.equal('1');
-  });
 
-  it('Verify pregnancy visit report - webapp', async () => {
+    // Verify the created report
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
@@ -76,9 +78,8 @@ describe('Pregnancy Visit', () => {
     await commonPage.goToPeople(pregnantWoman._id);
     const visits = (await contactPage.getPregnancyCardVisits()).split(' of ')[0];
     expect(visits).to.equal('2');
-  });
 
-  it('Verify pregnancy visit report - SMS', async () => {
+    // Verify the created report
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
