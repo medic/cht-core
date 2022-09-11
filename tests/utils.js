@@ -139,6 +139,7 @@ const deleteAll = (except) => {
     'branding',
     'partners',
     'settings',
+    'form:replace_user',
     /^form:contact:/,
     /^_design/
   );
