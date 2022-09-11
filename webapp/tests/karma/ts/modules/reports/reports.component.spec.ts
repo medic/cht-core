@@ -42,13 +42,13 @@ describe('Reports Component', () => {
   let datePipe;
   let userContactService;
 
-  const userContactGrandParent = { _id: 'grandparent' };
+  const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
     _id: 'user',
     parent: {
       _id: 'parent',
       name: 'parent',
-      parent: userContactGrandParent,
+      parent: userContactGrandparent,
     },
   };
 
@@ -285,7 +285,7 @@ describe('Reports Component', () => {
         lineage: [ 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
       },
       {
-        _id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage:  [ 'Chattanooga Village', 'CHW Bettys Area'],
+        _id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage:  [ 'Chattanooga Village', 'CHW Bettys Area', null, null],
       },
       {
         _id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899', lineage: [ 'Chattanooga Village' ],
@@ -305,7 +305,7 @@ describe('Reports Component', () => {
       parent: {
         _id: 'parent',
         name: 'CHW Bettys Area',
-        parent: userContactGrandParent,
+        parent: userContactGrandparent,
       },
     };
 

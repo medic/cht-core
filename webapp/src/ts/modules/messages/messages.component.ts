@@ -50,14 +50,12 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.messagesActions = new MessagesActions(store);
   }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
-    if (!this.sessionService.isOnlineOnly()) {
-      this
-        .getCurrentLineageLevel()
-        .then(currentLevel => this.currentLevel = currentLevel);
-    }
+
+    this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
+
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
   }
@@ -77,11 +75,11 @@ export class MessagesComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getMessagesError),
     ).subscribe(([
-      conversations = [],
-      selectedConversation,
-      loadingContent,
-      error,
-    ]) => {
+                   conversations = [],
+                   selectedConversation,
+                   loadingContent,
+                   error,
+                 ]) => {
       // Create new reference of conversation's items
       // because the ones from store can't be modified as they are read only.
       this.conversations = conversations.map(conversation => {
@@ -158,15 +156,18 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.updateActionBar();
   }
 
-  updateConversations({merge = false} = {}) {
-    return this.messageContactService
-      .getList()
-      .then((conversations = []) => {
-        // remove the lineage level that belongs to the offline logged in user
-        if (this.currentLevel) {
-          conversations.forEach(conversation => {
-            if (conversation.lineage) {
-              conversation.lineage = conversation.lineage.filter(level => level !== this.currentLevel);
+  updateConversations({ merge = false } = {}) {
+    return Promise
+      .all([ this.messageContactService.getList(), this.currentLevel ])
+      .then(([ conversations, currentLevel ]) => {
+        // Remove the lineage level that belongs to the offline logged-in user.
+        if (currentLevel) {
+          conversations?.forEach(conversation => {
+            if (conversation.lineage && conversation.lineage.length) {
+              conversation.lineage = conversation.lineage.filter(level => level);
+              if(conversation.lineage[conversation.lineage.length-1] === currentLevel){
+                conversation.lineage.pop();
+              }
             }
           });
         }

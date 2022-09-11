@@ -89,15 +89,15 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.store.select(Selectors.getEnketoEditedStatus),
       this.store.select(Selectors.getSelectMode),
     ).subscribe(([
-      reportsList,
-      selectedReports,
-      listContains,
-      forms,
-      filters,
-      showContent,
-      enketoEdited,
-      selectMode,
-    ]) => {
+                   reportsList,
+                   selectedReports,
+                   listContains,
+                   forms,
+                   filters,
+                   showContent,
+                   enketoEdited,
+                   selectMode,
+                 ]) => {
       this.reportsList = reportsList;
       // selected objects have the form
       //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
@@ -194,7 +194,10 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       // remove the lineage level that belongs to the offline logged-in user
       if (this.currentLevel && report.lineage && report.lineage.length) {
-        report.lineage = report.lineage.filter(level => level !== this.currentLevel);
+        report.lineage = report.lineage.filter(level => level);
+        if(report.lineage[report.lineage.length-1] === this.currentLevel){
+          report.lineage.pop();
+        }
       }
       report.unread = !report.read;
       return report;
