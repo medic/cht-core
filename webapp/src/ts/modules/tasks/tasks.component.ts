@@ -155,7 +155,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
       const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
 
-      if (subjects) {
+      if (subjects.length) {
         hydratedTasks.forEach(task => {
           const lineage = this.getTaskLineage(subjects, task);
           task.lineage = this.currentLevel ? this.removeCurrentLineage(lineage) : lineage;
@@ -190,7 +190,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private getLineagesFromTaskDocs(taskDocs) {
-    const ids = taskDocs.map(task => task.forId);
+    const ids = [...new Set(taskDocs.map(task => task.forId))];
     return this.lineageModelGeneratorService.reportSubjects(ids);
   }
 

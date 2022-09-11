@@ -340,7 +340,7 @@ describe('TasksComponent', () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: new Date('2020-10-20'),
+          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
           overdue: true,
@@ -348,7 +348,7 @@ describe('TasksComponent', () => {
         },
         {
           _id: 'e2',
-          date: new Date('2020-10-20'),
+          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
