@@ -12,7 +12,7 @@ services:
     - cht-credentials:/opt/couchdb/etc/local.d/
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
       - "SVC_NAME=${SVC1_NAME:-couchdb.1}"
@@ -28,7 +28,7 @@ services:
     - ${DB2_DATA:-./srv2}:/opt/couchdb/data
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
       - "SVC_NAME=${SVC2_NAME:-couchdb.2}"
@@ -44,7 +44,7 @@ services:
     - ${DB3_DATA:-./srv3}:/opt/couchdb/data
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
       - "SVC_NAME=${SVC3_NAME:-couchdb.3}"
@@ -60,7 +60,7 @@ services:
     environment:
       - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB1_SERVER=${COUCHDB1_SERVER:-couchdb.1}"
       - "COUCHDB2_SERVER=${COUCHDB2_SERVER:-couchdb.2}"
       - "COUCHDB3_SERVER=${COUCHDB3_SERVER:-couchdb.3}"

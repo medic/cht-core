@@ -10,7 +10,7 @@ services:
       target: cht-couchdb
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
       - "SVC_NAME=couchdb.1"
@@ -25,7 +25,7 @@ services:
       target: cht-couchdb
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
       - "SVC_NAME=couchdb.2"
@@ -40,7 +40,7 @@ services:
       target: cht-couchdb
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
       - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
       - "SVC_NAME=couchdb.3"
@@ -64,7 +64,7 @@ services:
     environment:
       - "TEST_MODE=CLUSTERED"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-password}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "SVC_NAME=couchdb.1"
     networks:
       cht-net-test:
