@@ -88,7 +88,6 @@ module.exports = {
   formId: formDoc.internalId,
 
   configureForm: () => {
-    return utils.deleteDoc(formDoc._id)
-      .then(() => utils.saveDoc(formDoc));
+    return utils.saveDoc(formDoc);
   },
 };
