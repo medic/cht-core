@@ -161,6 +161,6 @@ const _contactsReducer = createReducer(
   }),
 );
 
-export function contactsReducer(state, action) {
+export const contactsReducer = (state, action) => {
   return _contactsReducer(state, action);
-}
+};

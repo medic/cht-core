@@ -45,7 +45,7 @@
                 </div>
 
                 <div class="actions">
-                  <a class="btn btn-link fa fa-trash-o" (click)="deleteDoc(message.doc)" title="{{ 'Delete' | translate }}" mmAuth="can_delete_messages"></a>
+                  <a class="btn btn-link fa fa-trash-o" (click)="deleteDoc(message.doc)" title="{{ 'Delete' | translate }}" mmAuth="can_edit,can_delete_messages"></a>
                 </div>
               </span>
 
@@ -54,7 +54,9 @@
         </div>
       </div>
 
-      <div id="message-footer"
+      <div
+        mmAuth="can_edit"
+        id="message-footer"
         class="reply message-form"
         [ngClass]="{sending: textAreaFocused || send.message?.length}">
 

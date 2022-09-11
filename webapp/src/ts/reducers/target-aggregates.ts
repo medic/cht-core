@@ -40,6 +40,6 @@ const _targetAggregatesReducer = createReducer(
   }),
 );
 
-export function targetAggregatesReducer(state, action) {
+export const targetAggregatesReducer = (state, action) => {
   return _targetAggregatesReducer(state, action);
-}
+};

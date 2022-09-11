@@ -26,7 +26,7 @@ import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AuthService } from '@mm-services/auth.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
-import { ReportsActionsBarComponent } from '@mm-modules/reports/reports-actions-bar.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 
@@ -94,7 +94,7 @@ describe('Reports Component', () => {
           ReportsComponent,
           ReportsFiltersComponent,
           ReportsSidebarFilterComponent,
-          ReportsActionsBarComponent,
+          SearchBarComponent,
           ReportsContentComponent,
           NavigationComponent,
         ],
@@ -146,7 +146,7 @@ describe('Reports Component', () => {
 
     expect(component.isSidebarFilterOpen).to.be.false;
     expect(authService.has.calledOnce).to.be.true;
-    expect(authService.has.args[0][0]).to.equal('can_view_old_reports_filter');
+    expect(authService.has.args[0][0]).to.equal('can_view_old_filter_and_search');
     expect(searchService.search.calledOnce).to.be.true;
     expect(changesService.subscribe.calledOnce).to.be.true;
     expect(spySubscriptionsAdd.calledThrice).to.be.true;

@@ -31,7 +31,7 @@
       return function() {
         const listeners = {};
 
-        function emit(event, data) {
+        const emit = (event, data) => {
           if (listeners[event]) {
             listeners[event].forEach(function(callback) {
               try {
@@ -41,7 +41,7 @@
               }
             });
           }
-        }
+        };
 
         const deferred = $q(function(resolve, reject) {
           cache(function(err, settings) {
@@ -54,7 +54,7 @@
           });
         });
 
-        deferred.on = function(event, callback) {
+        deferred.on = (event, callback) => {
           if (!listeners[event]) {
             listeners[event] = [];
           }

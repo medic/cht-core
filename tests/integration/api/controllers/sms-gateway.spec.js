@@ -204,10 +204,7 @@ const assert = {
 
     return new Promise((resolve, reject) => {
       const endTime = Date.now() + 10000;
-
-      check();
-
-      function check() {
+      const check = () => {
         db.getMessageContents()
           .then(actualContents => {
             actualContents = JSON.stringify(actualContents);
@@ -221,7 +218,8 @@ const assert = {
             }
           })
           .catch(reject);
-      }
+      };
+      check();
     });
   },
 
@@ -250,9 +248,7 @@ const assert = {
     return new Promise((resolve, reject) => {
       const endTime = Date.now() + 10000;
 
-      check();
-
-      function check() {
+      const check = () => {
         db.getMessageStates()
           .then(actualStates => {
             actualStates = JSON.stringify(actualStates);
@@ -266,7 +262,9 @@ const assert = {
             }
           })
           .catch(reject);
-      }
+      };
+
+      check();
     });
   },
 
