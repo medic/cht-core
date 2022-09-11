@@ -76,11 +76,13 @@ ul {
 
 .lineage {
   margin-bottom: 0;
-  white-space: normal !important;
   display: -webkit-box;
   // limit the lineage wrapping to two lines
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  li{
+    white-space: normal;
+  }
   li:after {
     content: '\2022'; /* bullet */
     padding: 0 5px;

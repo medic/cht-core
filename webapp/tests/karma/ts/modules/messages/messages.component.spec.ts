@@ -213,7 +213,7 @@ describe('Messages Component', () => {
     const conversations =  [
       { key: 'a',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area']
+        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null]
       },
       { key: 'b',
         message: { inAllMessages: true },
@@ -221,7 +221,7 @@ describe('Messages Component', () => {
       },
       { key: 'c',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
+        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place', null, null]
       },
       { key: 'd',
         message: { inAllMessages: true },
@@ -232,25 +232,24 @@ describe('Messages Component', () => {
       },
     ];
 
-    it('it should retrieve the hierarchy level of the connected user', () => {
-      expect(component.currentLevel).to.equal('parent');
+    it('it should retrieve the hierarchy level of the connected user', async () => {
+      expect(await component.currentLevel).to.equal('parent');
     });
 
-    it('should not alter conversations when user is offline and parent place is not relevant to the conversation',
-      fakeAsync( () => {
-        sinon.resetHistory();
+    it('should not change the conversations lineage if the connected user is online only', fakeAsync( () => {
+      sinon.resetHistory();
 
-        messageContactService.getList.resolves(conversations);
-        userContactService.get.resolves(userContactDoc);
-        sessionService.isOnlineOnly.returns(false);
+      messageContactService.getList.resolves(conversations);
+      userContactService.get.resolves(bettyOfflineUserContactDoc);
+      sessionService.isOnlineOnly.returns(true);
 
-        component.updateConversations({merge : true});
-        tick();
+      component.ngOnInit();
+      tick();
+      component.updateConversations({merge : true});
+      tick();
 
-        expect(messageContactService.getList.callCount).to.equal(1);
-        expect(component.currentLevel).to.equal('parent');
-        expect(component.conversations).to.deep.equal(conversations);
-      }));
+      expect(component.conversations).to.deep.equal(conversations);
+    }));
 
     it('should not change the conversations lineage if the connected user is online only', fakeAsync( () => {
       sinon.resetHistory();
@@ -301,9 +300,8 @@ describe('Messages Component', () => {
         component.updateConversations({ merge : true });
         tick();
 
-        expect(component.currentLevel).to.equal('CHW Bettys Area');
         expect(component.conversations).to.deep.equal(updatedConversations);
       }));
   });
-
 });
+
