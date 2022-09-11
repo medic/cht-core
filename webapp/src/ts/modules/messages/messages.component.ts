@@ -75,11 +75,11 @@ export class MessagesComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getMessagesError),
     ).subscribe(([
-                   conversations = [],
-                   selectedConversation,
-                   loadingContent,
-                   error,
-                 ]) => {
+      conversations = [],
+      selectedConversation,
+      loadingContent,
+      error,
+    ]) => {
       // Create new reference of conversation's items
       // because the ones from store can't be modified as they are read only.
       this.conversations = conversations.map(conversation => {
