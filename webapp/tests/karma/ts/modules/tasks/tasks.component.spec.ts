@@ -58,9 +58,7 @@ describe('TasksComponent', () => {
       includes: sinon.stub(),
     };
     sessionService = {
-      isDbAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
-      userCtx: sinon.stub().returns({ name: 'Sarah' })
     };
     userContactService = {
       get: sinon.stub().resolves(),
@@ -175,16 +173,6 @@ describe('TasksComponent', () => {
       { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
       { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
     ];
-    rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
-    await new Promise(resolve => {
-      sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
-      getComponent();
-    });
-    clock.tick();
-    expect(component.loading).to.be.false;
-    expect(component.tasksDisabled).to.be.false;
-    expect(component.hasTasks).to.be.true;
-    expect(!!component.error).to.be.false;
     const expectedTasks = [
       {
         _id: 'e1',
@@ -201,6 +189,17 @@ describe('TasksComponent', () => {
         owner: 'b',
       },
     ];
+
+    rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+    await new Promise(resolve => {
+      sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+      getComponent();
+    });
+
+    expect(component.loading).to.be.false;
+    expect(component.tasksDisabled).to.be.false;
+    expect(component.hasTasks).to.be.true;
+    expect(!!component.error).to.be.false;
     expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[expectedTasks]]);
   });
 
@@ -373,17 +372,17 @@ describe('TasksComponent', () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: new Date('2020-10-20'),
+          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null ],
           overdue: true,
           owner: 'a',
         },
         {
           _id: 'e2',
-          date: new Date('2020-10-20'),
+          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', null, null ],
           overdue: true,
           owner: 'b',
         },
