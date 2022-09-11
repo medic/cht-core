@@ -8,7 +8,7 @@ services:
     environment:
       - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
       - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
     logging:
@@ -27,7 +27,7 @@ services:
     environment:
       - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:-pass}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
     logging:
       driver: "json-file"
       options:
@@ -44,7 +44,7 @@ services:
     expose:
       - "${API_PORT:-5988}"
     environment:
-      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
+      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
       - BUILDS_URL=${MARKET_URL_READ:-https://staging.dev.medicmobile.org}/${BUILDS_SERVER:-_couch/builds}
       - UPGRADE_SERVICE_URL=${UPGRADE_SERVICE_URL:-http://localhost:5100}
     logging:
@@ -61,7 +61,7 @@ services:
     depends_on:
       - haproxy
     environment:
-      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD:-pass}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
+      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
       - API_HOST=cht-api
     logging:
       driver: "json-file"
@@ -83,7 +83,7 @@ services:
     volumes:
       - cht-ssl:/root/.acme.sh/
     environment:
-      - "CERTIFICATE_MODE=${CERTIFICATE_MODE:-OWN_CERT}"
+      - "CERTIFICATE_MODE=${CERTIFICATE_MODE:-SELF_SIGNED}"
       - "SSL_CERT_FILE_PATH=${SSL_CERT_FILE_PATH:-/etc/nginx/private/cert.pem}"
       - "SSL_KEY_FILE_PATH=${SSL_KEY_FILE_PATH:-/etc/nginx/private/key.pem}"
       - "COMMON_NAME=${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
