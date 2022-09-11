@@ -89,15 +89,15 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.store.select(Selectors.getEnketoEditedStatus),
       this.store.select(Selectors.getSelectMode),
     ).subscribe(([
-                   reportsList,
-                   selectedReports,
-                   listContains,
-                   forms,
-                   filters,
-                   showContent,
-                   enketoEdited,
-                   selectMode,
-                 ]) => {
+      reportsList,
+      selectedReports,
+      listContains,
+      forms,
+      filters,
+      showContent,
+      enketoEdited,
+      selectMode,
+    ]) => {
       this.reportsList = reportsList;
       // selected objects have the form
       //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
