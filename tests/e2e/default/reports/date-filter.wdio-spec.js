@@ -42,7 +42,7 @@ describe('Report Filter', () => {
     const settings = await utils.getSettings();
     const permissions = {
       ...settings.permissions,
-      can_view_old_reports_filter: [ 'chw' ]
+      can_view_old_filter_and_search: [ 'chw' ]
     };
     await utils.updateSettings({ permissions }, true);
 

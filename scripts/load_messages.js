@@ -71,7 +71,7 @@ parser.on('error', function(error){
 
 input.pipe(parser);
 
-function postMessage(data) {
+const postMessage = (data) => {
 
   const body = {};
 
@@ -96,12 +96,12 @@ function postMessage(data) {
   options.headers = options.headers ? options.headers : {};
   options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
   options.method = 'POST';
-    
+
   const http = options.protocol === 'https:' ? require('https') : require('http');
 
-  const req = http.request(options, function(res) {
+  const req = http.request(options, (res) => {
     res.setEncoding('utf8');
-    res.on('data', function (chunk) {
+    res.on('data', (chunk) => {
       console.log(chunk);
     });
   });
@@ -115,4 +115,4 @@ function postMessage(data) {
   console.log(querystring.stringify(body));
   req.write(querystring.stringify(body));
   req.end();
-}
+};

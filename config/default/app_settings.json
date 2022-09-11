@@ -264,7 +264,8 @@
     ],
     "can_upgrade": [
       "program_officer"
-    ]
+    ],
+    "can_view_old_filter_and_search": []
   },
   "uhc": {
     "contacts_default_sort": "",

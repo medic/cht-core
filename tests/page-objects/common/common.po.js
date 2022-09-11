@@ -39,12 +39,18 @@ const selectedPreferenceHeading = element(by.css('#language-preference-heading >
 const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
 const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectangle'));
 
+const searchBox = element(by.css('input#freetext'));
+
 const waitForLoaderToDisappear = async (timeout = 10000) => {
   try {
     await helper.waitElementToDisappear(by.css('.loader', timeout));
   } catch(err) {
     // element can go stale
   }
+};
+
+const openSubmenu = (menuName) => {
+  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
 };
 
 module.exports = {
@@ -195,7 +201,8 @@ module.exports = {
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
-      element(by.css('.reset-filter')).click();
+      searchBox.clear();
+      searchBox.sendKeys(protractor.Key.ENTER);
       browser.waitForAngular();
     }
   },
@@ -220,7 +227,8 @@ module.exports = {
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
-      await helper.clickElementNative(element(by.css('.reset-filter')));
+      await searchBox.clear();
+      await searchBox.sendKeys(protractor.Key.ENTER);
       await browser.waitForAngular();
     }
   },
@@ -280,6 +288,3 @@ module.exports = {
   getTasksButtonLabel: () => element(by.css('#tasks-tab .button-label')),
 };
 
-function openSubmenu(menuName) {
-  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
-}

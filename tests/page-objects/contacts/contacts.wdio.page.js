@@ -1,7 +1,6 @@
 const genericForm = require('../forms/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
-const searchBox = () => $('#freetext');
-const searchButton = () => $('#search');
+const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
@@ -43,7 +42,7 @@ const emptySelection = () => $('contacts-content .empty-selection');
 const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 const deleteContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-trash-o');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
-const leftAddPlace = () => $('.dropup a[mmauth="can_create_places"]');
+const leftAddPlace = () => $('.dropup a.create-place');
 const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
 const rightAddPlaces = () => $('span[test-id="rhs_add_contact"] p[test-key="Add place"]');
 const rightAddPersons = () => $('span[test-id="rhs_add_contact"] p[test-key="Add person"]');
@@ -60,7 +59,7 @@ const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
-  await (await searchButton()).click();
+  await browser.keys('Enter');
   await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
   await (await emptySelection()).waitForDisplayed();
 };

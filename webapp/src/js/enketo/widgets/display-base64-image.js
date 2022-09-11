@@ -36,9 +36,9 @@ class Displaybase64image extends Widget {
   }
 }
 
-function setSource($img, value) {
+const setSource = ($img, value) => {
   const src = value ? `data:image/png;base64,${value}` : '';
   $img.attr('src', src);
-}
+};
 
 module.exports = Displaybase64image;
