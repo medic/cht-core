@@ -58,10 +58,12 @@ describe('TasksComponent', () => {
       includes: sinon.stub(),
     };
     sessionService = {
+      isDbAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
+      userCtx: sinon.stub().returns({ name: 'Sarah' })
     };
     userContactService = {
-      get: sinon.stub().resolves(),
+      get: sinon.stub().resolves(userContactDoc),
     };
     lineageModelGeneratorService = { reportSubjects: sinon.stub() };
 
