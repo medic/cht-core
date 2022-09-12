@@ -1916,12 +1916,11 @@ describe('Enketo service', () => {
       expect(pauseStubs.audio).to.be.undefined;
     }));
 
-    it('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
+    it('should not call pause function when there is not video and audio in the form wrapper', fakeAsync(() => {
       form.pages._next.resolves(true);
       $form.prepend('<span>no media here</span>');
       overrideNavigationButtonsStub.call(service, form, $form);
 
-      $prevBtn.trigger('click.pagemode');
       $nextBtn.trigger('click.pagemode');
       flush();
 
