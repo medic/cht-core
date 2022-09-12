@@ -139,6 +139,7 @@ const deleteAll = (except) => {
     'branding',
     'partners',
     'settings',
+    'form:replace_user',
     /^form:contact:/,
     /^_design/
   );
@@ -347,6 +348,13 @@ const createUsers = async (users, meta = false) => {
     await request({ path: `/${constants.DB_NAME}-user-${user.username}-meta`, method: 'PUT' });
   }
 };
+
+const getAllUserSettings = () => db
+  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+  .then(response => response.rows.map(row => row.doc));
+
+const getUserSettings = ({ contactId }) => getAllUserSettings()
+  .then(docs => docs.find(doc => doc.contact_id === contactId));
 
 const waitForDocRev = (ids) => {
   ids = ids.map(id => typeof id === 'string' ? { id: id, rev: 1 } : id);
@@ -905,6 +913,11 @@ module.exports = {
   // @param {Boolean} meta - if true, creates meta db-s as well, default false
   // @return {Promise}
   createUsers: createUsers,
+
+  // Returns the user settings doc for the specified user.
+  // @param {{ contactId }} opts - object containing the contact id of the user
+  // @return {Promise}
+  getUserSettings,
 
   setDebug: debug => e2eDebug = debug,
 

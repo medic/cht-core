@@ -47,15 +47,15 @@ const generateUsername = (contactName) => {
 
 const replaceUser = async (replaceUserReportId, appUrl) => {
   const replaceUserReport = await db.medic.get(replaceUserReportId);
-  const oldContact = await people.getOrCreatePerson(replaceUserReport.fields.original_contact_uuid);
+  const { original_contact_uuid } = replaceUserReport.fields;
   const oldUserSettingsResponse = await db.medic.find({
     selector: {
       type: 'user-settings',
-      contact_id: oldContact._id,
+      contact_id: original_contact_uuid,
     },
   });
   if (oldUserSettingsResponse.docs.length === 0) {
-    const error = new Error(`user with contact_id="${oldContact._id}" not found`);
+    const error = new Error(`user with contact_id="${original_contact_uuid}" not found`);
     error.code = 400;
     return Promise.reject(error);
   }
@@ -66,11 +66,19 @@ const replaceUser = async (replaceUserReportId, appUrl) => {
   }
 
   const newContact = await people.getOrCreatePerson(replaceUserReport.fields.new_contact_uuid);
+  if (!newContact.name) {
+    const error = new Error(`Contact [${replaceUserReport.fields.new_contact_uuid}] does not have a name.`);
+    error.code = 400;
+    return Promise.reject(error);
+  }
+  if (!newContact.parent || !newContact.parent._id) {
+    const error = new Error(`Contact [${replaceUserReport.fields.new_contact_uuid}] does not have a parent.`);
+    error.code = 400;
+    return Promise.reject(error);
+  }
   await reparentReports(replaceUserReportId, newContact);
-
-  const oldUser = await db.medic.get(oldUserSettings._id);
   await db.medic.put(Object.assign({}, oldUserSettings, { shouldLogoutNextSync: true, replaced: true }));
-  return createNewUser(appUrl, newContact, oldUser);
+  return createNewUser(appUrl, newContact, oldUserSettings);
 };
 
 const reparentReports = async (replaceUserReportId, newContact) => {
@@ -99,7 +107,7 @@ const getReportsToReparent = async (contactId, timestamp) => {
     include_docs: true,
   });
   return result.rows
-    .filter(row => row.doc.reported_date >= timestamp)
+    .filter(row => row.doc.reported_date > timestamp)
     .map(row => row.doc);
 };
 
