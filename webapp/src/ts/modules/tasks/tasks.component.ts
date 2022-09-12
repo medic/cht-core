@@ -107,9 +107,13 @@ export class TasksComponent implements OnInit, OnDestroy {
     if (!this.sessionService.isOnlineOnly()) {
       this
         .getCurrentLineageLevel()
-        .then(currentLevel => this.currentLevel = currentLevel);
+        .then(currentLevel => {
+          this.currentLevel = currentLevel;
+          this.refreshTasks();
+        });
+    } else {
+      this.refreshTasks();
     }
-    this.refreshTasks();
 
     this.tourService.startIfNeeded(this.route.snapshot);
   }
