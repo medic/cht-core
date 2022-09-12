@@ -139,11 +139,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
     this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
-    if (!this.sessionService.isOnlineOnly()) {
-      this
-        .getCurrentLineageLevel()
-        .then(currentLevel => this.currentLevel = currentLevel);
-    }
+
+    this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
+
   }
 
   async ngAfterViewInit() {
@@ -185,23 +183,28 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.translateService.instant('report.subject.unknown');
   }
 
-  prepareReports(reports) {
-    return reports.map(report => {
-      const form = _find(this.forms, { code: report.form });
-      report.icon = form && form.icon;
-      report.heading = this.getReportHeading(form, report);
-      report.summary = form ? form.title : report.form;
-      report.lineage = report.subject && report.subject.lineage || report.lineage;
-      // remove the lineage level that belongs to the offline logged-in user
-      if (this.currentLevel && report.lineage && report.lineage.length) {
-        report.lineage = report.lineage.filter(level => level);
-        if(report.lineage[report.lineage.length-1] === this.currentLevel){
-          report.lineage.pop();
-        }
+  private prepareReports(reports) {
+    return this.currentLevel.then(
+      currentLevel => {
+        return reports.map(report => {
+          const form = _find(this.forms, { code: report.form });
+          report.icon = form && form.icon;
+          report.heading = this.getReportHeading(form, report);
+          report.summary = form ? form.title : report.form;
+          report.lineage = report.subject && report.subject.lineage || report.lineage;
+          // remove the lineage level that belongs to the offline logged-in user
+          if (currentLevel && report.lineage && report.lineage.length) {
+            report.lineage = report.lineage.filter(level => level);
+            if(report.lineage[report.lineage.length-1] === currentLevel){
+              report.lineage.pop();
+            }
+          }
+          report.unread = !report.read;
+          return report;
+        });
       }
-      report.unread = !report.read;
-      return report;
-    });
+    );
+
   }
 
   private query(opts) {
@@ -229,9 +232,10 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.searchService
       .search('reports', this.filters, options)
       .then((reports) => this.addReadStatusService.updateReports(reports))
-      .then((updatedReports) => {
-        updatedReports = this.prepareReports(updatedReports);
-        this.reportsActions.updateReportsList(updatedReports);
+      .then(updatedReports => {
+        this
+          .prepareReports(updatedReports)
+          .then(updatedReports => this.reportsActions.updateReportsList(updatedReports));
 
         this.moreItems = updatedReports.length >= options.limit;
         this.hasReports = !!updatedReports.length;
@@ -346,7 +350,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportsSidebarFilter?.resetFilters();
   }
 
-  getCurrentLineageLevel(){
+  private getCurrentLineageLevel(){
     return this.userContactService.get().then(user => user?.parent?.name);
   }
 }

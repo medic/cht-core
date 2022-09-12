@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { DatePipe } from '@angular/common';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -81,6 +81,7 @@ describe('Reports Component', () => {
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };
+
     return TestBed
       .configureTestingModule({
         imports: [
@@ -309,11 +310,15 @@ describe('Reports Component', () => {
       },
     };
 
-    it('it should retrieve the hierarchy level of the connected user', () => {
-      expect(component.currentLevel).to.equal('parent');
+    let updateReportsListStub;
+
+    beforeEach(() => {
+      updateReportsListStub = sinon.stub(ReportsActions.prototype, 'updateReportsList');
+      searchService.search.resolves(reports);
     });
 
-    it('should not change the reports lineage if user is online only', async () => {
+    it('should not change the reports lineage if user is online only', fakeAsync(() => {
+      sessionService.isOnlineOnly.returns(true);
       const expectedReports = [
         {
           _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
@@ -325,7 +330,7 @@ describe('Reports Component', () => {
         },
         {
           _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage:  [ 'Chattanooga Village', 'CHW Bettys Area' ],
+          lineage:  [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
@@ -365,21 +370,22 @@ describe('Reports Component', () => {
 
         },
       ];
-      userContactService.get.resolves(userContactDoc);
-      sessionService.isOnlineOnly.resolves(true);
-      component.currentLevel = await component.getCurrentLineageLevel();
 
-      const updatedReports = component.prepareReports(reports);
+      component.ngOnInit();
+      component.ngAfterViewInit();
+      flush();
 
-      expect(component.currentLevel).to.equal('parent');
-      expect(updatedReports).to.deep.equal(expectedReports);
-    });
+      expect(updateReportsListStub.callCount).to.equal(1);
+      expect(updateReportsListStub.args[0]).to.deep.equal([ expectedReports ]);
+    }));
 
-    it('should remove current level from reports lineage when user is offline', async () => {
-
+    it('should remove current level from reports lineage when user is offline', fakeAsync(() => {
+      userContactService.get.resolves(offlineUserContactDoc);
+      sessionService.isOnlineOnly.returns(false);
       const expectedReports = [
         {
-          _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd', lineage: [ 'St Elmos Concession', 'Chattanooga Village' ],
+          _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
+          lineage: [ 'St Elmos Concession', 'Chattanooga Village' ],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
@@ -426,14 +432,15 @@ describe('Reports Component', () => {
           unread: true,
         },
       ];
-      userContactService.get.resolves(offlineUserContactDoc);
-      sessionService.isOnlineOnly.resolves(false);
-      component.currentLevel = await component.getCurrentLineageLevel();
 
-      const updatedReports = component.prepareReports(reports);
+      component.ngOnInit();
+      component.ngAfterViewInit();
+      flush();
 
-      expect(component.currentLevel).to.equal('CHW Bettys Area');
-      expect(updatedReports).to.deep.equal(expectedReports);
-    });
+      expect(updateReportsListStub.callCount).to.equal(1);
+      expect(updateReportsListStub.args[0]).to.deep.equal([ expectedReports ]);
+    }));
+
   });
+
 });
