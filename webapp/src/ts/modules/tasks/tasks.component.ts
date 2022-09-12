@@ -200,7 +200,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     }
     let lineage = subjects
       .get(task.forId)
-      .map(lineage => lineage.name);
+      ?.map(lineage => lineage.name);
     lineage = this.currentLevel ? this.removeCurrentLineage(lineage) : lineage;
     return lineage;
   }
