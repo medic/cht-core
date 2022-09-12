@@ -185,7 +185,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.translateService.instant('report.subject.unknown');
   }
 
-  prepareReports(reports) {
+  private prepareReports(reports) {
     return reports.map(report => {
       const form = _find(this.forms, { code: report.form });
       report.icon = form && form.icon;
@@ -231,7 +231,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .then((reports) => this.addReadStatusService.updateReports(reports))
       .then((updatedReports) => {
         updatedReports = this.prepareReports(updatedReports);
+        console.log(updatedReports);
         this.reportsActions.updateReportsList(updatedReports);
+        console.log(updatedReports);
 
         this.moreItems = updatedReports.length >= options.limit;
         this.hasReports = !!updatedReports.length;
@@ -346,7 +348,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportsSidebarFilter?.resetFilters();
   }
 
-  getCurrentLineageLevel(){
+  private getCurrentLineageLevel(){
     return this.userContactService.get().then(user => user?.parent?.name);
   }
 }
