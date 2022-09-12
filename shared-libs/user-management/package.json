@@ -1,0 +1,29 @@
+{
+  "name": "@medic/user-management",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha ./test/**/*"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "chai-exclude": "^2.1.0",
+    "jsverify": "^0.8.4",
+    "mocha": "^7.2.0",
+    "rewire": "^5.0.0",
+    "sinon": "^11.1.2"
+  },
+  "dependencies": {
+    "@medic/contacts": "file:../contacts",
+    "@medic/contact-types-utils": "file:../contact-types-utils",
+    "@medic/lineage": "file:../lineage",
+    "@medic/phone-number": "file:../phone-number",
+    "@medic/settings": "file:../settings",
+    "@medic/task-utils": "file:../task-utils",
+    "lodash": "4.17.19",
+    "moment": "^2.29.1",
+    "simple-password-tester": "^1.0.0"
+  }
+}

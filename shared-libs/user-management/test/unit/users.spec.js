@@ -3,12 +3,11 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 
 const couchSettings = require('@medic/settings');
-const people = require('../../../src/controllers/people');
-const places = require('../../../src/controllers/places');
-const tokenLogin = require('../../../src/services/token-login');
-const config = require('../../../src/config');
-const db = require('../../../src/db');
-const auth = require('../../../src/auth');
+const tokenLogin = require('../../src/token-login');
+const config = require('../../src/libs/config');
+const db = require('../../src/libs/db');
+const roles = require('../../src/roles');
+const { people, places }  = require('@medic/contacts')(config, db);
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
 const facilitya = { _id: 'a', name: 'aaron' };
@@ -17,13 +16,16 @@ const facilityc = { _id: 'c', name: 'cathy' };
 
 let userData;
 let clock;
+let addMessage;
 const oneDayInMS = 24 * 60 * 60 * 1000;
 
 let service;
 
 describe('Users service', () => {
   beforeEach(() => {
-    service = rewire('../../../src/services/users');
+    addMessage = sinon.stub();
+    sinon.stub(config, 'getTransitionsLib').returns({ messages: { addMessage } });
+    service = rewire('../../src/users');
     service.__set__('getFacilities', sinon.stub().returns([
       facilitya,
       facilityb,
@@ -771,7 +773,7 @@ describe('Users service', () => {
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
       sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
       sinon.stub(db.medicLogs, 'put').resolves({});
       sinon.stub(db.users, 'get').resolves({});
@@ -802,7 +804,7 @@ describe('Users service', () => {
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
       sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
       sinon.stub(db.medicLogs, 'put').resolves({});
       sinon.stub(db.users, 'get').resolves({});
@@ -837,7 +839,7 @@ describe('Users service', () => {
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('');
 
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       const users = [{
         username: 'sally',
@@ -925,18 +927,34 @@ describe('Users service', () => {
       const token = db.users.put.args[1][0].token_login.token;
       chai.expect(token.length).to.equal(64);
 
-      chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+      const expectedDoc = {
         _id: `token:login:${token}`,
         type: 'token_login',
         reported_date: 0,
         user: 'org.couchdb.user:sally',
-        'tasks[0].messages[0].to': '+40755696969',
-        'tasks[0].messages[0].message': 'sms',
-        'tasks[0].state': 'pending',
-        'tasks[1].messages[0].to': '+40755696969',
-        'tasks[1].messages[0].message': `http://realhost/medic/login/token/${token}`,
-        'tasks[1].state': 'pending',
-      });
+        tasks: []
+      };
+      chai.expect(db.medic.put.args[1][0]).to.deep.equal(expectedDoc);
+      chai.expect(addMessage.callCount).to.equal(2);
+      chai.expect(addMessage.args[0]).to.deep.equal([
+        expectedDoc,
+        { enabled: true, message: 'sms' },
+        '+40755696969',
+        {
+          templateContext: {
+            _id: 'org.couchdb.user:sally',
+            name: 'sally',
+            phone: '+40755696969',
+            roles: ['a', 'b', 'mm-online'],
+            type: 'user'
+          }
+        }
+      ]);
+      chai.expect(addMessage.args[1]).to.deep.equal([
+        expectedDoc,
+        { message: `http://realhost/medic/login/token/${token}` },
+        '+40755696969',
+      ]);
     });
 
     describe('errors at insertion', () => {
@@ -1042,7 +1060,7 @@ describe('Users service', () => {
         sinon.stub(config, 'get')
           .withArgs('token_login').returns(tokenLoginConfig)
           .withArgs('app_url').returns('url');
-        sinon.stub(auth, 'isOffline').returns(false);
+        sinon.stub(roles, 'isOffline').returns(false);
 
         const userData = {
           username: 'x',
@@ -1717,7 +1735,7 @@ describe('Users service', () => {
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
-      sinon.stub(auth, 'isOffline').withArgs(['rebel']).returns(false);
+      sinon.stub(roles, 'isOffline').withArgs(['rebel']).returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0][0].roles).to.deep.equal(['rebel', 'mm-online']);
@@ -1734,7 +1752,7 @@ describe('Users service', () => {
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
-      sinon.stub(auth, 'isOffline').withArgs(['rebel']).returns(true);
+      sinon.stub(roles, 'isOffline').withArgs(['rebel']).returns(true);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0][0].roles).to.deep.equal(['rebel']);
@@ -1854,7 +1872,7 @@ describe('Users service', () => {
       sinon.stub(places, 'getPlace').resolves();
       sinon.stub(db.medic, 'put').resolves({});
       sinon.stub(db.users, 'put').resolves({});
-      sinon.stub(auth, 'isOffline').withArgs(['rambler']).returns(false);
+      sinon.stub(roles, 'isOffline').withArgs(['rambler']).returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         const settings = db.medic.put.args[0][0];
@@ -2214,7 +2232,7 @@ describe('Users service', () => {
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       return service.createUser(user)
         .then(() => chai.assert.fail('Should have thrown'))
@@ -2238,7 +2256,7 @@ describe('Users service', () => {
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       return service.createUser(user)
         .then(() => chai.assert.fail('Should have thrown'))
@@ -2256,7 +2274,7 @@ describe('Users service', () => {
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('');
 
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       const user = {
         username: 'sally',
@@ -2343,18 +2361,34 @@ describe('Users service', () => {
         const token = db.users.put.args[1][0].token_login.token;
         chai.expect(token.length).to.equal(64);
 
-        chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+        const expectedDoc = {
           _id: `token:login:${token}`,
           type: 'token_login',
           reported_date: 0,
           user: 'org.couchdb.user:sally',
-          'tasks[0].messages[0].to': '+40755696969',
-          'tasks[0].messages[0].message': 'sms',
-          'tasks[0].state': 'pending',
-          'tasks[1].messages[0].to': '+40755696969',
-          'tasks[1].messages[0].message': `http://realhost/medic/login/token/${token}`,
-          'tasks[1].state': 'pending',
-        });
+          tasks: []
+        };
+        chai.expect(db.medic.put.args[1][0]).to.deep.equal(expectedDoc);
+        chai.expect(addMessage.callCount).to.equal(2);
+        chai.expect(addMessage.args[0]).to.deep.equal([
+          expectedDoc,
+          { enabled: true, message: 'sms' },
+          '+40755696969',
+          {
+            templateContext: {
+              _id: 'org.couchdb.user:sally',
+              name: 'sally',
+              phone: '+40755696969',
+              roles: ['a', 'b', 'mm-online'],
+              type: 'user'
+            }
+          }
+        ]);
+        chai.expect(addMessage.args[1]).to.deep.equal([
+          expectedDoc,
+          { message: `http://realhost/medic/login/token/${token}` },
+          '+40755696969',
+        ]);
       });
     });
   });
@@ -2367,7 +2401,7 @@ describe('Users service', () => {
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       sinon.stub(db.medic, 'get').resolves({
         _id: 'org.couchdb.user:sally',
@@ -2396,7 +2430,7 @@ describe('Users service', () => {
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       sinon.stub(db.medic, 'get').resolves({
         _id: 'org.couchdb.user:sally',
@@ -2425,7 +2459,7 @@ describe('Users service', () => {
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('http://host');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: true, phone: '+40 755 89-89-89' };
       sinon.stub(db.medic, 'get').resolves({
@@ -2484,18 +2518,30 @@ describe('Users service', () => {
         const token = db.users.put.args[0][0].token_login.token;
         chai.expect(token.length).to.equal(64);
 
-        chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+        const expectedDoc = {
           _id: `token:login:${token}`,
           type: 'token_login',
-          user: 'org.couchdb.user:sally',
           reported_date: 5000,
-          'tasks[0].messages[0].to': '+40755898989',
-          'tasks[0].messages[0].message': 'the sms',
-          'tasks[0].state': 'pending',
-          'tasks[1].messages[0].to': '+40755898989',
-          'tasks[1].messages[0].message': `http://host/medic/login/token/${token}`,
-          'tasks[1].state': 'pending',
+          user: 'org.couchdb.user:sally',
+          tasks: []
+        };
+        chai.expect(db.medic.put.args[1][0]).to.deep.equal(expectedDoc);
+        chai.expect(addMessage.callCount).to.equal(2);
+        chai.expect(addMessage.args[0][0]).to.deep.equal(expectedDoc);
+        chai.expect(addMessage.args[0][1]).to.deep.equal({ enabled: true, message: 'the sms' });
+        chai.expect(addMessage.args[0][2]).to.equal('+40755898989');
+        chai.expect(addMessage.args[0][3].templateContext).to.deep.include({
+          _id: 'org.couchdb.user:sally',
+          name: 'sally',
+          phone: '+40755898989',
+          roles: ['a', 'b', 'mm-online'],
+          type: 'user'
         });
+        chai.expect(addMessage.args[1]).to.deep.equal([
+          expectedDoc,
+          { message: `http://host/medic/login/token/${token}` },
+          '+40755898989',
+        ]);
       });
     });
 
@@ -2504,7 +2550,7 @@ describe('Users service', () => {
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('http://host');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: false };
       sinon.stub(db.medic, 'get').resolves({
@@ -2535,7 +2581,7 @@ describe('Users service', () => {
       sinon.stub(config, 'get')
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('http://host');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: false };
       sinon.stub(db.medic, 'get').withArgs('org.couchdb.user:sally').resolves({

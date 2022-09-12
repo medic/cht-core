@@ -1,9 +1,9 @@
 const chai = require('chai');
 const sinon = require('sinon');
 
-const config = require('../../../src/config');
-const db = require('../../../src/db');
-const service = require('../../../src/services/token-login');
+const config = require('../../src/libs/config');
+const db = require('../../src/libs/db');
+const service = require('../../src/token-login');
 
 const oneDayInMS = 24 * 60 * 60 * 1000;
 
@@ -664,6 +664,13 @@ describe('TokenLogin service', () => {
     });
 
     describe('enabling token login', () => {
+      let addMessage;
+
+      beforeEach(() => {
+        addMessage = sinon.stub();
+        sinon.stub(config, 'getTransitionsLib').returns({ messages: { addMessage } });
+      });
+
       it('should generate password, token, create sms and update user docs', () => {
         sinon.stub(config, 'get')
           .withArgs('token_login').returns({ message: 'the sms', enabled: true })
@@ -703,17 +710,34 @@ describe('TokenLogin service', () => {
           const token = db.users.put.args[0][0].token_login.token;
 
           chai.expect(db.medic.put.callCount).to.equal(2);
-          chai.expect(db.medic.put.args[0][0]).to.deep.nested.include({
+          const expectedDoc = {
             _id: `token:login:${token}`,
             type: 'token_login',
             reported_date: 2000,
             user: 'userID',
-            'tasks[0].state': 'pending',
-            'tasks[0].messages[0].to': '+40755232323',
-            'tasks[0].messages[0].message': 'the sms',
-            'tasks[1].messages[0].to': '+40755232323',
-            'tasks[1].messages[0].message': `http://host/medic/login/token/${token}`,
-          });
+            tasks: []
+          };
+          chai.expect(db.medic.put.args[0][0]).to.deep.equal(expectedDoc);
+          chai.expect(addMessage.callCount).to.equal(2);
+          chai.expect(addMessage.args[0]).to.deep.equal([
+            expectedDoc,
+            { enabled: true, message: 'the sms' },
+            '+40755232323',
+            {
+              templateContext: {
+                _id: 'userID',
+                name: 'user',
+                phone: '+40755232323',
+                roles: ['a', 'b']
+              }
+            }
+          ]);
+          chai.expect(addMessage.args[1]).to.deep.equal([
+            expectedDoc,
+            { message: `http://host/medic/login/token/${token}` },
+            '+40755232323',
+          ]);
+
           chai.expect(db.medic.put.args[1]).to.deep.equal([{
             _id: 'userID',
             name: 'user',
@@ -821,17 +845,39 @@ describe('TokenLogin service', () => {
             ],
           }]);
 
-          chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+          const expectedDoc = {
             _id: `token:login:${token}`,
             type: 'token_login',
             reported_date: 2000,
             user: 'my_user',
-            'tasks[0].state': 'pending',
-            'tasks[0].messages[0].to': 'phone',
-            'tasks[0].messages[0].message': 'the sms',
-            'tasks[1].messages[0].to': 'phone',
-            'tasks[1].messages[0].message': `http://host/medic/login/token/${token}`,
-          });
+            tasks: []
+          };
+          chai.expect(db.medic.put.args[1][0]).to.deep.nested.equal(expectedDoc);
+
+          chai.expect(addMessage.callCount).to.equal(2);
+          chai.expect(addMessage.args[0]).to.deep.equal([
+            expectedDoc,
+            { enabled: true, message: 'the sms' },
+            'phone',
+            {
+              templateContext: {
+                _id: 'my_user',
+                name: 'user',
+                phone: 'phone',
+                roles: ['a', 'b'],
+                token_login: {
+                  active: true,
+                  expiration_date: 2500,
+                  token: 'oldtoken'
+                }
+              }
+            }
+          ]);
+          chai.expect(addMessage.args[1]).to.deep.equal([
+            expectedDoc,
+            { message: `http://host/medic/login/token/${token}` },
+            'phone',
+          ]);
 
           chai.expect(db.medic.put.args[2]).to.deep.equal([{
             _id: 'my_user',
@@ -929,17 +975,40 @@ describe('TokenLogin service', () => {
             ],
           }]);
 
-          chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+          const expectedDoc = {
             _id: `token:login:${token}`,
             type: 'token_login',
             reported_date: 5000,
             user: 'userID',
-            'tasks[0].state': 'pending',
-            'tasks[0].messages[0].to': 'newphone',
-            'tasks[0].messages[0].message': 'the sms',
-            'tasks[1].messages[0].to': 'newphone',
-            'tasks[1].messages[0].message': `http://host/medic/login/token/${token}`,
-          });
+            tasks: []
+          };
+          chai.expect(db.medic.put.args[1][0]).to.deep.nested.equal(expectedDoc);
+
+          chai.expect(addMessage.callCount).to.equal(2);
+          chai.expect(addMessage.args[0]).to.deep.equal([
+            expectedDoc,
+            { enabled: true, message: 'the sms' },
+            'newphone',
+            {
+              templateContext: {
+                _id: 'userID',
+                name: 'username',
+                phone: 'newphone',
+                roles: ['a', 'b'],
+                token_login: {
+                  active: true,
+                  doc_id: 'oldSms',
+                  expiration_date: 2500,
+                  token: 'oldtoken'
+                }
+              }
+            }
+          ]);
+          chai.expect(addMessage.args[1]).to.deep.equal([
+            expectedDoc,
+            { message: `http://host/medic/login/token/${token}` },
+            'newphone',
+          ]);
 
           chai.expect(actual).to.deep.equal({
             user: { id: 'userID' },

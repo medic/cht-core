@@ -1,15 +1,15 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
-const people  = require('../controllers/people');
-const places = require('../controllers/places');
-const db = require('../db');
+const db = require('./libs/db');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const couchSettings = require('@medic/settings');
-const getRoles = require('./types-and-roles');
-const auth = require('../auth');
+const getRoles = require('./libs/types-and-roles');
+const roles = require('./roles');
 const tokenLogin = require('./token-login');
+const config = require('./libs/config');
 const moment = require('moment');
-const bulkUploadLog = require('../services/bulk-upload-log');
+const bulkUploadLog = require('./bulk-upload-log');
+const { people, places }  = require('@medic/contacts')(config, db);
 
 const USER_PREFIX = 'org.couchdb.user:';
 const DOC_IDS_WARN_LIMIT = 10000;
@@ -363,15 +363,15 @@ const getSettingsUpdates = (username, data) => {
     settings.roles = getRoles(data.type);
   }
   if (settings.roles) {
-    const index = settings.roles.indexOf(auth.ONLINE_ROLE);
-    if (auth.isOffline(settings.roles)) {
+    const index = settings.roles.indexOf(roles.ONLINE_ROLE);
+    if (roles.isOffline(settings.roles)) {
       if (index !== -1) {
         // remove the online role
         settings.roles.splice(index, 1);
       }
     } else if (index === -1) {
       // add the online role
-      settings.roles.push(auth.ONLINE_ROLE);
+      settings.roles.push(roles.ONLINE_ROLE);
     }
   }
   if (data.place) {
@@ -402,8 +402,8 @@ const getUserUpdates = (username, data) => {
     // deprecated: use 'roles' instead
     user.roles = getRoles(data.type);
   }
-  if (user.roles && !auth.isOffline(user.roles)) {
-    user.roles.push(auth.ONLINE_ROLE);
+  if (user.roles && !roles.isOffline(user.roles)) {
+    user.roles.push(roles.ONLINE_ROLE);
   }
   if (data.place) {
     user.facility_id = getDocID(data.place);
@@ -456,7 +456,7 @@ const missingFields = data => {
     required.push('password');
   }
 
-  if (data.roles && auth.isOffline(data.roles)) {
+  if (data.roles && roles.isOffline(data.roles)) {
     required.push('place', 'contact');
   }
 
@@ -522,7 +522,7 @@ const validateUserFacility = (data, user, userSettings) => {
   }
 
   if (_.isNull(data.place)) {
-    if (userSettings.roles && auth.isOffline(userSettings.roles)) {
+    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
       return Promise.reject(error400(
         'Place field is required for offline users',
         'field is required',
@@ -540,7 +540,7 @@ const validateUserContact = (data, user, userSettings) => {
   }
 
   if (_.isNull(data.contact)) {
-    if (userSettings.roles && auth.isOffline(userSettings.roles)) {
+    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
       return Promise.reject(error400(
         'Contact field is required for offline users',
         'field is required',
@@ -862,8 +862,8 @@ module.exports = {
 
     // Online users can remove place or contact
     if (!_.isNull(data.place) &&
-        !_.isNull(data.contact) &&
-        !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
+      !_.isNull(data.contact) &&
+      !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
     ) {
       return Promise.reject(error400(
         'One of the following fields are required: ' + props.join(', '),

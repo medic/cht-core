@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
-const db = require('../db');
-const config = require('../config');
+const db = require('./libs/db');
+const config = require('./libs/config');
 const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');
 const TOKEN_EXPIRE_TIME = 24 * 60 * 60 * 1000; // 24 hours
