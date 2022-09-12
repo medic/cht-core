@@ -371,7 +371,7 @@ describe('TasksComponent', () => {
         getComponent();
       });
 
-      expect(component.currentLevel).to.be.undefined;
+      expect(await component.currentLevel).to.be.undefined;
       expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
     });
 
@@ -406,7 +406,7 @@ describe('TasksComponent', () => {
         getComponent();
       });
 
-      expect(component.currentLevel).to.equal('parent');
+      expect(await component.currentLevel).to.equal('parent');
       expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
     });
 
@@ -441,7 +441,7 @@ describe('TasksComponent', () => {
         getComponent();
       });
 
-      expect(component.currentLevel).to.equal('CHW Bettys Area');
+      expect(await component.currentLevel).to.equal('CHW Bettys Area');
       expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
     });
   });

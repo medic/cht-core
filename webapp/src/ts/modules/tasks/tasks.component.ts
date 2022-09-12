@@ -104,16 +104,10 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.hasTasks = false;
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, {maxWait: 10 * 1000});
-    if (!this.sessionService.isOnlineOnly()) {
-      this
-        .getCurrentLineageLevel()
-        .then(currentLevel => {
-          this.currentLevel = currentLevel;
-          this.refreshTasks();
-        });
-    } else {
-      this.refreshTasks();
-    }
+
+    this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
+
+    this.refreshTasks();
 
     this.tourService.startIfNeeded(this.route.snapshot);
   }
@@ -215,9 +209,11 @@ export class TasksComponent implements OnInit, OnDestroy {
       return;
     }
     lineage = lineage.filter(level => level);
-    if(this.currentLevel === lineage[lineage.length-1]){
-      lineage.pop();
-    }
+    this.currentLevel.then(currentLevel => {
+      if(currentLevel === lineage[lineage.length-1]){
+        lineage.pop();
+      }
+    });
     return lineage;
   }
 }
