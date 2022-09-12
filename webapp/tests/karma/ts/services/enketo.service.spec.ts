@@ -1921,6 +1921,7 @@ describe('Enketo service', () => {
       $form.prepend('<span>no media here</span>');
       overrideNavigationButtonsStub.call(service, form, $form);
 
+      $prevBtn.trigger('click.pagemode');
       $nextBtn.trigger('click.pagemode');
       flush();
 

@@ -340,8 +340,10 @@ export class EnketoService {
           .then(valid => {
             if (valid) {
               const currentIndex = form.pages._getCurrentIndex();
-              window.history.pushState({ enketo_page_number: currentIndex }, '');
-              this.setupNavButtons($wrapper, currentIndex);
+              if (currentIndex !== undefined) {
+                window.history.pushState({ enketo_page_number: currentIndex }, '');
+                this.setupNavButtons($wrapper, currentIndex);
+              }
               this.pauseMultimedia($wrapper);
             }
             this.forceRecalculate(form);
@@ -353,10 +355,13 @@ export class EnketoService {
       .find('.btn.previous-page')
       .off('.pagemode')
       .on('click.pagemode', () => {
-        window.history.back();
-        this.setupNavButtons($wrapper, form.pages._getCurrentIndex() - 1);
-        this.forceRecalculate(form);
+        const currentIndex = form.pages._getCurrentIndex();
+        if (currentIndex !== undefined) {
+          window.history.back();
+          this.setupNavButtons($wrapper, currentIndex - 1);
+        }
         this.pauseMultimedia($wrapper);
+        this.forceRecalculate(form);
         return false;
       });
   }
