@@ -28,6 +28,7 @@ const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
+const formTitle = () => $('#form-title');
 
 const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
 const rhsReportListSelector = '.card.reports mm-content-row h4 span';
@@ -47,6 +48,8 @@ const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
 const rightAddPlaces = () => $('span[test-id="rhs_add_contact"] p[test-key="Add place"]');
 const rightAddPersons = () => $('span[test-id="rhs_add_contact"] p[test-key="Add person"]');
 const rightAddPerson = (create_key) => $(`span[test-id="rhs_add_contact"] p[test-key="${create_key}"]`);
+const rightNewAction = () => $('.right-pane .actions.dropup a[data-toggle="dropdown"]');
+const rightNewActionItem = (formName) => $(`.right-pane .actions.dropup li[id="form:${formName}"]`);
 const contactCards = () => $$('.card.children');
 const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
 const childrenCards = () => $$('.right-pane .card.children');
@@ -164,6 +167,12 @@ const deletePerson = async (name) => {
   await (await deleteConfirmationModalButton()).click();
 };
 
+const openNewAction = async (formName) => {
+  await (await rightNewAction()).click();
+  await (await rightNewActionItem(formName)).click();
+  await (await formTitle()).waitForDisplayed();
+};
+
 const getContactSummaryField = async (fieldName) => {
   await (await contactSummaryContainer()).waitForDisplayed();
   const field = await (await contactSummaryContainer()).$(`.cell.${fieldName.toLowerCase().replace(/\./g, '\\.')}`);
@@ -270,6 +279,7 @@ module.exports = {
   getAllLHSContactsNames,
   addPerson,
   addPlace,
+  openNewAction,
   topContact,
   getPrimaryContactName,
   getAllRHSPeopleNames,

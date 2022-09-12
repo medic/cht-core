@@ -432,6 +432,6 @@
     "update_scheduled_reports": false,
     "generate_patient_id_on_people": true,
     "death_reporting": true,
-    "user_replace": true
+    "user_replace": false
   }
 }
