@@ -43,4 +43,11 @@ export class BrowserDetectorService {
     return typeof this.androidAppVersion !== 'undefined';
   }
 
+  public isUsingChtAndroidV1() {
+    if (!this.isUsingChtAndroid()) {
+      return false;
+    }
+
+    return this.androidAppVersion.startsWith('v1.');
+  }
 }

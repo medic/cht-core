@@ -55,6 +55,7 @@ describe('Browser Detector Service', () => {
 
     expect(service.isUsingSupportedBrowser()).to.be.true;
     expect(service.isUsingChtAndroid()).to.be.true;
+    expect(service.isUsingChtAndroidV1()).to.be.true;
   });
 
   it('runs with cht-android v1 and an unsupported webview version', () => {
@@ -64,6 +65,7 @@ describe('Browser Detector Service', () => {
 
     expect(service.isUsingSupportedBrowser()).to.be.false;
     expect(service.isUsingChtAndroid()).to.be.true;
+    expect(service.isUsingChtAndroidV1()).to.be.true;
   });
 
   it('runs with cht-android v0.11 and webview v53', () => {
@@ -73,6 +75,7 @@ describe('Browser Detector Service', () => {
 
     expect(service.isUsingSupportedBrowser()).to.be.true;
     expect(service.isUsingChtAndroid()).to.be.true;
+    expect(service.isUsingChtAndroidV1()).to.be.false;
   });
 
   it('runs with a dev build of cht-android and webview v53', () => {
@@ -82,10 +85,12 @@ describe('Browser Detector Service', () => {
 
     expect(service.isUsingSupportedBrowser()).to.be.true;
     expect(service.isUsingChtAndroid()).to.be.true;
+    expect(service.isUsingChtAndroidV1()).to.be.false;
   });
 
   it('runs with the local chrome', () => {
     expect(service.isUsingSupportedBrowser()).to.be.true;
     expect(service.isUsingChtAndroid()).to.be.false;
+    expect(service.isUsingChtAndroidV1()).to.be.false;
   });
 });
