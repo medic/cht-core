@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { DatePipe } from '@angular/common';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -330,7 +330,7 @@ describe('Reports Component', () => {
         },
         {
           _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage:  [ 'Chattanooga Village', 'CHW Bettys Area' ],
+          lineage:  [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
