@@ -279,7 +279,7 @@ describe('Reports Component', () => {
     });
   });
 
-  describe.only('Reports breadcrumbs', () => {
+  describe('Reports breadcrumbs', () => {
     const reports = [
       {
         _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
