@@ -135,6 +135,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       emission.date = new Date(dueDate.valueOf());
       emission.overdue = dueDate.isBefore(moment());
       emission.owner = taskDoc.owner;
+      emission.forId = taskDoc.forId;
       return emission;
     });
   }
@@ -200,18 +201,18 @@ export class TasksComponent implements OnInit, OnDestroy {
     }
     let lineage = subjects
       .get(task.forId)
-      ?.map(lineage => lineage.name);
-    lineage = this.currentLevel ? this.removeCurrentLineage(lineage) : lineage;
+      ?.map(lineage => lineage?.name);
+    lineage = this.cleanAndRemoveCurrentLineage(lineage);
     return lineage;
   }
 
-  private removeCurrentLineage(lineage) {
-    if (!this.currentLevel || !lineage?.length) {
+  private cleanAndRemoveCurrentLineage(lineage) {
+    if(!lineage?.length){
       return;
     }
-    lineage.lineage = lineage.lineage.filter(level => level);
-    if(lineage.lineage[lineage.lineage.length-1] === this.currentLevel){
-      lineage.lineage.pop();
+    lineage = lineage.filter(level => level);
+    if(this.currentLevel === lineage[lineage.length-1]){
+      lineage.pop();
     }
     return lineage;
   }

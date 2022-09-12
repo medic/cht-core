@@ -323,6 +323,7 @@ describe('TasksComponent', () => {
           { name: 'St Elmos Concession' },
           { name: 'Chattanooga Village' },
           { name: 'CHW Bettys Area' },
+          null,
         ],
       },
       {
@@ -331,6 +332,8 @@ describe('TasksComponent', () => {
           { name: 'Amy Johnsons Household' },
           { name: 'St Elmos Concession' },
           { name: 'Chattanooga Village' },
+          null,
+          null,
         ],
       },
     ];
@@ -344,6 +347,7 @@ describe('TasksComponent', () => {
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
           overdue: true,
           owner: 'a',
+          forId: 'a',
         },
         {
           _id: 'e2',
@@ -352,6 +356,7 @@ describe('TasksComponent', () => {
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
+          forId: 'b',
         },
       ];
       userContactService.get.resolves(bettysContactDoc);
@@ -374,17 +379,19 @@ describe('TasksComponent', () => {
           _id: 'e1',
           date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null ],
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
           overdue: true,
           owner: 'a',
+          forId: 'a',
         },
         {
           _id: 'e2',
           date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
-          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', null, null ],
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
+          forId: 'b',
         },
       ];
       userContactService.get.resolves(userContactDoc);
@@ -410,6 +417,7 @@ describe('TasksComponent', () => {
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'a',
+          forId: 'a',
         },
         {
           _id: 'e2',
@@ -418,6 +426,7 @@ describe('TasksComponent', () => {
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
+          forId: 'b',
         },
       ];
       userContactService.get.resolves(bettysContactDoc);
