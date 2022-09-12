@@ -135,7 +135,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       emission.date = new Date(dueDate.valueOf());
       emission.overdue = dueDate.isBefore(moment());
       emission.owner = taskDoc.owner;
-      emission.forId = taskDoc.forId;
+      emission.forId = taskDoc.forId ? taskDoc.forId : taskDoc.owner;
       return emission;
     });
   }
@@ -155,7 +155,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
       const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
-      if (subjects.size) {
+      if (subjects?.size) {
         hydratedTasks.forEach(task => {
           task.lineage = this.getTaskLineage(subjects, task);
         });
@@ -192,7 +192,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     const ids = [...new Set(taskDocs.map(task => task.forId))];
     return this
       .lineageModelGeneratorService.reportSubjects(ids)
-      .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
+      ?.then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
   }
 
   private getTaskLineage(subjects, task) {

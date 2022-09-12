@@ -180,6 +180,7 @@ describe('TasksComponent', () => {
         overdue: false,
         date: new Date(futureDate.valueOf()),
         owner: 'a',
+        forId: 'a',
       },
       {
         _id: 'e2',
@@ -187,6 +188,7 @@ describe('TasksComponent', () => {
         overdue: true,
         date: new Date(pastDate.valueOf()),
         owner: 'b',
+        forId: 'b',
       },
     ];
 
