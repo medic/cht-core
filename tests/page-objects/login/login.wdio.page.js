@@ -14,9 +14,6 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
   await (await passwordField()).setValue(password);
   await changeLocale(locale);
   await (await loginButton()).click();
-  if (loadPage) {
-    await commonPage.waitForLoaders();
-  }
 
   if (createUser) {
     await browser.waitUntil(async () => {
@@ -24,6 +21,10 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
       return cookies.some(cookie => cookie.name === 'userCtx');
     });
     await utils.setupUserDoc(username);
+  }
+
+  if (loadPage) {
+    await commonPage.waitForLoaders();
   }
 };
 
