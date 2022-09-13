@@ -32,7 +32,7 @@ const assertLabels = async ({ selector, count, labelText }) => {
 };
 
 const login = async () => {
-  await loginPage.login({ username: auth.username, password: auth.password, createUser: true });
+  await loginPage.login({ username: constants.username, password: constants.password, createUser: true });
   await commonPage.goToBase();
 };
 

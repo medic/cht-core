@@ -3,7 +3,6 @@ const _ = require('lodash');
 const utils = require('../../utils');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-const constants = require('../../constants');
 const chtConfUtils = require('./cht-conf-utils');
 
 const chai = require('chai');
