@@ -1,5 +1,6 @@
 const helper = require('../../../helper');
 const utils = require('../../../utils');
+const sentinelUtils = require('../../../utils/sentinel');
 const commonElements = require('../../../page-objects/common/common.po.js');
 const contactPage = require('../../../page-objects/contacts/contacts.po.js');
 const uuid = require('uuid');
@@ -8,9 +9,6 @@ const districtName = uuid.v4();
 const healtchCenterName = uuid.v4();
 
 describe('Creating contacts with standard config', () => {
-  beforeAll(async () => await utils.saveDocs(expectedDocs));
-  afterAll(() => utils.revertDb());
-
   const expectedDocs = [
     {
       _id: districtId,
@@ -28,6 +26,12 @@ describe('Creating contacts with standard config', () => {
       reported_date: Date.now(),
     }
   ];
+
+  beforeAll(async () => {
+    await utils.saveDocs(expectedDocs);
+    await sentinelUtils.waitForSentinel();
+  });
+  afterAll(() => utils.revertDb());
 
   it('should create a new district hospital', async () => {
     const expectDistrictName = 'Test District';

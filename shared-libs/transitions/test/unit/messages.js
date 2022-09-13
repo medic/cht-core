@@ -383,8 +383,8 @@ describe('messages', () => {
 
   it('describe isMessageFromGateway', () => {
     const tests = [
-      ['+40733535353', '40-733-535-353', true],
-      ['+40733535355', '40-733-535-353', false],
+      ['+640275552636', '64-27-555-2636', true],
+      ['+640275552637', '64-27-555-2636', false],
       // missing country code matches
       ['+41446681800', '446681800', true]
     ];

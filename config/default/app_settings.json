@@ -264,12 +264,8 @@
     ],
     "can_upgrade": [
       "program_officer"
-    ]
-  },
-  "changes_controller": {
-    "reiterate_changes": true,
-    "changes_limit": 100,
-    "debounce_interval": 200
+    ],
+    "can_view_old_filter_and_search": []
   },
   "uhc": {
     "contacts_default_sort": "",
@@ -434,7 +430,6 @@
     "update_clinics": false,
     "update_notifications": false,
     "update_scheduled_reports": false,
-    "update_sent_forms": false,
     "generate_patient_id_on_people": true,
     "death_reporting": true
   }

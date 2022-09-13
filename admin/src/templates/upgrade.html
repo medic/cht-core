@@ -103,6 +103,24 @@
 
           <div class="alert alert-warning" role="alert" translate>instance.upgrade.pre_releases_warning</div>
 
+          <div ng-show="isUsingFeatureRelease" class="upgrade-grid">
+            <legend translate>instance.upgrade.feature_releases</legend>
+            <div>
+              <p ng-hide="versions.featureReleases.length" translate>instance.upgrade.no_feature_releases</p>
+              <div ng-show="versions.featureReleases.length">
+                <div class="row selection-heading">
+                  <div class="col-xs-5" translate>instance.upgrade.version</div>
+                  <div class="col-xs-7" translate>instance.upgrade.date</div>
+                </div>
+                <ul>
+                  <li ng-repeat="release in versions.featureReleases" class="row">
+                    <release release="release" potentially-incompatible="potentiallyIncompatible" upgrade="upgrade" date-format="medium" />
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           <div class="upgrade-grid">
             <legend translate>instance.upgrade.betas</legend>
             <div>

@@ -2,15 +2,15 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-const wdioBaseConfig = require('./wdio.conf');
-const constants = require('./constants');
+const wdioBaseConfig = require('../default/wdio.conf');
+const constants = require('../../constants');
 constants.DB_NAME = 'medic';
 
 const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;
 
 const rpn = require('request-promise-native');
 
-const utils = require('./utils');
+const utils = require('../../utils');
 
 utils.CONTAINER_NAMES.haproxy = 'cht-haproxy';
 utils.CONTAINER_NAMES.couch1 = 'cht-couchdb';

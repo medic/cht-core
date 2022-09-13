@@ -48,6 +48,8 @@ angular.module('controllers').controller('UpgradeCtrl',
             logError('instance.upgrade.error.deploy', 'instance.upgrade.error.deploy');
           }
           $scope.currentDeploy = deployInfo;
+          const currentVersion = Version.currentVersion($scope.currentDeploy);
+          $scope.isUsingFeatureRelease = !!currentVersion && typeof currentVersion.featureRelease !== 'undefined';
         })
         .catch(err => logError(err, 'instance.upgrade.error.deploy_info_fetch'));
     };
@@ -159,7 +161,7 @@ angular.module('controllers').controller('UpgradeCtrl',
         return true;
       }
 
-      const currentVersion = Version.parse($scope.currentDeploy.base_version);
+      const currentVersion = Version.currentVersion($scope.currentDeploy);
       if (!currentVersion) {
         // Unable to parse the current version information so all releases are
         // potentially incompatible

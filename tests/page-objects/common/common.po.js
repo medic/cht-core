@@ -39,12 +39,18 @@ const selectedPreferenceHeading = element(by.css('#language-preference-heading >
 const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
 const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectangle'));
 
+const searchBox = element(by.css('input#freetext'));
+
 const waitForLoaderToDisappear = async (timeout = 10000) => {
   try {
     await helper.waitElementToDisappear(by.css('.loader', timeout));
   } catch(err) {
     // element can go stale
   }
+};
+
+const openSubmenu = (menuName) => {
+  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
 };
 
 const hideSnackbar = () => {
@@ -95,7 +101,7 @@ module.exports = {
     const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
     expect(wizardTitleText.toLowerCase()).toContain('wizard');
     expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
-    const texts = ['setup.start','Finish'];
+    const texts = ['setup.start', 'Finish'];
     const displayed = await helper.getTextFromElementNative(finishBtn);
     expect(texts).toContain(displayed);
     await skipSetup.click();
@@ -103,7 +109,7 @@ module.exports = {
 
   getDefaultLanguages: async () => {
     await module.exports.openMenuNative();
-    await openSubmenu(['configuration wizard','easy setup wizard ']);
+    await openSubmenu(['configuration wizard', 'easy setup wizard ']);
     await helper.waitUntilReadyNative(wizardTitle);
     await helper.waitUntilTranslated(wizardTitle);
     await helper.clickElementNative(languagePreferenceHeading);
@@ -209,7 +215,8 @@ module.exports = {
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
-      element(by.css('.reset-filter')).click();
+      searchBox.clear();
+      searchBox.sendKeys(protractor.Key.ENTER);
       browser.waitForAngular();
     }
   },
@@ -234,7 +241,8 @@ module.exports = {
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
-      await helper.clickElementNative(element(by.css('.reset-filter')));
+      await searchBox.clear();
+      await searchBox.sendKeys(protractor.Key.ENTER);
       await browser.waitForAngular();
     }
   },
@@ -296,6 +304,3 @@ module.exports = {
   hideSnackbar: hideSnackbar,
 };
 
-function openSubmenu(menuName) {
-  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
-}

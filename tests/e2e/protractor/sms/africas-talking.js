@@ -1,8 +1,8 @@
-const utils = require('../utils');
-const commonElements = require('../page-objects/common/common.po.js');
-const messagesElements = require('../page-objects/messages/messages.po');
-const reportsElements = require('../page-objects/reports/reports.po');
-const helper = require('../helper');
+const utils = require('../../../utils');
+const commonElements = require('../../../page-objects/common/common.po.js');
+const messagesElements = require('../../../page-objects/messages/messages.po');
+const reportsElements = require('../../../page-objects/reports/reports.po');
+const helper = require('../../../helper');
 const querystring = require('querystring');
 
 const messageGatewayRef1 = 'f0f237ab-dd34-44a8-9f17-caaa022be947';
@@ -224,7 +224,7 @@ describe('africas talking api', () => {
 
     afterEach(() => utils.deleteDoc(savedDoc));
 
-    it('- shows content', async () => {
+    xit('- shows content', async () => {
       await commonElements.goToReportsNative();
       const firstReport = reportsElements.firstReport();
 

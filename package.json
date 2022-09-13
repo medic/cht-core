@@ -14,12 +14,12 @@
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
-    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/wdio.conf.js",
-    "wdio-standard-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/wdio-standard.conf.js",
+    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js",
+    "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
-    "wdio": "wdio run ./tests/wdio.conf.js",
-    "wdio-upgrade": "wdio run ./tests/wdio-upgrade.conf.js",
-    "wdio-standard": "wdio run ./tests/wdio-standard.conf.js"
+    "wdio": "wdio run ./tests/e2e/default/wdio.conf.js",
+    "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
+    "standard-wdio": "wdio run ./tests/e2e/standard/wdio.conf.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^12.1.0",
@@ -143,15 +143,15 @@
   "bundlesize": [
     {
       "path": "./api/build/static/webapp/main.js",
-      "maxSize": "900 kB"
+      "maxSize": "950 kB"
     },
     {
       "path": "./api/build/static/webapp/polyfills-es5.js",
-      "maxSize": "50 kB"
+      "maxSize": "55 kB"
     },
     {
       "path": "./api/build/static/webapp/polyfills.js",
-      "maxSize": "16 kB"
+      "maxSize": "20 kB"
     },
     {
       "path": "./api/build/static/webapp/runtime.js",

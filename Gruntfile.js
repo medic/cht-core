@@ -83,6 +83,7 @@ module.exports = function(grunt) {
       test: {
         files: {
           ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
+          ['http://admin:pass@localhost:4984/medic-test-logs']: 'build/ddocs/medic/_attachments/ddocs/logs.json',
         },
       },
       testing: {
@@ -275,6 +276,7 @@ module.exports = function(grunt) {
             '**/node_modules/**',
             'build/**',
             '**/pupil/**',
+            'api/src/enketo-transformer/**',
           ];
 
           return [ESLINT_COMMAND]
@@ -434,7 +436,7 @@ module.exports = function(grunt) {
       },
       'wdio-run-standard': {
         cmd: [
-          'npm run wdio-standard'
+          'npm run standard-wdio'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
@@ -475,11 +477,12 @@ module.exports = function(grunt) {
             'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
 
             // patch enketo to always mark the /inputs group as relevant
-            'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
+            'patch webapp/node_modules/enketo-core/src/js/form.js < webapp/patches/enketo-inputs-always-relevant_form.patch',
+            'patch webapp/node_modules/enketo-core/src/js/relevant.js < webapp/patches/enketo-inputs-always-relevant_relevant.patch',
 
-            // patch enketo so forms with no active pages are considered valid
-            // https://github.com/medic/medic/issues/5484
-            'patch webapp/node_modules/enketo-core/src/js/page.js < webapp/patches/enketo-handle-no-active-pages.patch',
+            // patch enketo to fix repeat name collision bug - this should be removed when upgrading to a new version of enketo-core
+            // https://github.com/enketo/enketo-core/issues/815
+            'patch webapp/node_modules/enketo-core/src/js/calculate.js < webapp/patches/enketo-repeat-name-collision.patch',
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',

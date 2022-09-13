@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 const URL = require('url');
-const utils = require('../utils');
-const loginPage = require('../page-objects/login/login.wdio.page');
-const commonPage = require('../page-objects/common/common.wdio.page');
+const utils = require('../../../utils');
+const loginPage = require('../../../page-objects/login/login.wdio.page');
+const commonPage = require('../../../page-objects/common/common.wdio.page');
 
 /* global caches fetch Response navigator */
 

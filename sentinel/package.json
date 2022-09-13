@@ -27,7 +27,7 @@
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
     "epi-week": "^0.0.1",
-    "google-libphonenumber": "3.2.22",
+    "google-libphonenumber": "^3.2.30",
     "gsm": "^0.1.4",
     "later": "^1.2.0",
     "lodash": "4.17.19",
