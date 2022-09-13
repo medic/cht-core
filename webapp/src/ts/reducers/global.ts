@@ -22,7 +22,8 @@ const initialState = {
     error: null
   },
   facilities: [],
-  filters: {},
+  filters: {}, // Selected criteria to filter data.
+  sidebarFilter: {}, // Component state.
   forms: null,
   lastChangedDoc: false,
   loadingContent: false,
@@ -83,8 +84,9 @@ const _globalReducer = createReducer(
   on(Actions.setForms, (state, { payload: { forms } }) => {
     return { ...state, forms };
   }),
-  on(Actions.clearFilters, (state) => {
-    return { ...state, filters: {} };
+  on(Actions.clearFilters, (state, { payload: { skip } }) => {
+    const newValue = skip && state.filters[skip] ? { [skip]: state.filters[skip] } : {};
+    return { ...state, filters: newValue };
   }),
   on(Actions.setFilters, (state, { payload: { filters } }) => {
     return { ...state, filters };
@@ -94,6 +96,15 @@ const _globalReducer = createReducer(
       ...state,
       filters: { ...state.filters, ...filter }
     };
+  }),
+  on(Actions.setSidebarFilter, (state, { payload: { sidebarFilter } }) => {
+    return {
+      ...state,
+      sidebarFilter: { ...state.sidebarFilter, ...sidebarFilter }
+    };
+  }),
+  on(Actions.clearSidebarFilter, (state) => {
+    return { ...state, sidebarFilter: {} };
   }),
   on(Actions.setTitle, (state, { payload: { title} }) => {
     return { ...state, title };

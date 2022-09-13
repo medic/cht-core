@@ -3,6 +3,18 @@ import { assert } from 'chai';
 
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 
+const serialize = (element) => {
+  if (element.nodeType !== Node.ELEMENT_NODE) {
+    element = element[0];
+  }
+  const serializer = new XMLSerializer();
+  const serialized = serializer.serializeToString(element);
+  return inlineXml(serialized);
+};
+
+const inlineXml = (xmlString) => xmlString
+  .replace(/^\s+|\n|\t|\s+$/g, '')
+  .replace(/>\s+</g, '><');
 
 describe('EnketoTranslation service', () => {
   let service;
@@ -467,6 +479,27 @@ describe('EnketoTranslation service', () => {
       // then
       assert.deepEqual(hidden_fields, [ 'secret.first', 'lmp' ]);
     });
+
+    it('should not duplicate hidden paths', () => {
+      const xml =
+        `<doc>
+          <name>Sally</name>
+          <secret>
+            <first tag="hidden">a</first>
+            <second>b</second>
+          </secret>
+          <lmp tag="hidden">10</lmp>
+          <lmp tag="hidden">20</lmp>
+          <lmp tag="hidden">30</lmp>
+          <lmp tag="hidden">40</lmp>
+        </doc>`;
+
+      // when
+      const hidden_fields = service.getHiddenFieldList(xml);
+
+      // then
+      assert.deepEqual(hidden_fields, [ 'secret.first', 'lmp' ]);
+    });
   });
 
   describe('#bindJsonToXml()', () => {
@@ -641,6 +674,173 @@ describe('EnketoTranslation service', () => {
       service.bindJsonToXml(element, data);
 
       assert.equal(element.find('smang').text(), DEEP_TEST_VALUE);
+    });
+
+    it('should bind arrays', () => {
+      const model = `
+      <data>
+        <foo>
+          <bar></bar>
+          <baz>
+            <one></one>
+            <two></two>
+            <three>
+              <four></four>
+            </three>
+          </baz>  
+          <omg>
+            <thing></thing>  
+          </omg>
+          <mixrepeat>
+            <property></property>  
+          </mixrepeat>
+        </foo>
+      </data>
+      `;
+      const element = $($.parseXML(model)).children().first();
+      const data = {
+        foo: {
+          bar: 'barvalue',
+          baz: [
+            {
+              one: 'baz1one',
+              two: 'baz1two',
+              three: {
+                four: [
+                  'baz1four1',
+                  'baz1four2',
+                  'baz1four3'
+                ]
+              }
+            },
+            {
+              one:'baz2one',
+              two: 'baz2two',
+              three: {
+                four: [
+                  'baz2four1',
+                  'baz2four2',
+                ]
+              }
+            },
+            {
+              one:'baz3one',
+              two: 'baz3two',
+              three: {
+                four: 'baz3four1'
+              }
+            },
+          ],
+          omg: {
+            thing: [
+              'thing1',
+              'thing2',
+              'thing3',
+              { _id: 'id_of_thing_4' }
+            ]
+          },
+          mixrepeat: [
+            'one',
+            'two',
+            { property: 'propvalue' }
+          ]
+        }
+      };
+      service.bindJsonToXml(element, data, (name) => {
+        return '>%, >inputs>%'.replace(/%/g, name);
+      });
+
+      assert.equal(element.find('bar').length, 1);
+      assert.equal(element.find('bar').text(), 'barvalue');
+
+      assert.equal(element.find('baz').length, 3);
+      assert.equal(serialize(element.find('baz')[0]), inlineXml(`
+      <baz>
+        <one>baz1one</one>
+        <two>baz1two</two>
+        <three>
+          <four>baz1four1</four>
+          <four>baz1four2</four>
+          <four>baz1four3</four>
+        </three>
+      </baz>
+      `));
+
+      assert.equal(serialize(element.find('baz')[1]), inlineXml(`
+      <baz>
+        <one>baz2one</one>
+        <two>baz2two</two>
+        <three>
+          <four>baz2four1</four>
+          <four>baz2four2</four>         
+        </three>
+      </baz>
+      `));
+
+      assert.equal(serialize(element.find('baz')[2]), inlineXml(`
+      <baz>
+        <one>baz3one</one>
+        <two>baz3two</two>
+        <three>
+          <four>baz3four1</four>                  
+        </three>
+      </baz>
+      `));
+
+      assert.equal(element.find('omg').length, 1);
+      assert.equal(serialize(element.find('omg')), inlineXml(`
+      <omg>
+        <thing>thing1</thing>
+        <thing>thing2</thing>
+        <thing>thing3</thing>
+        <thing>id_of_thing_4</thing>
+      </omg>
+      `));
+
+      assert.equal(element.find('mixrepeat').length, 3);
+      assert.equal(serialize(element.find('mixrepeat')[0]), '<mixrepeat>one</mixrepeat>');
+      assert.equal(serialize(element.find('mixrepeat')[1]), '<mixrepeat>two</mixrepeat>');
+      assert.equal(
+        serialize(element.find('mixrepeat')[2]),
+        '<mixrepeat><property>propvalue</property></mixrepeat>'
+      );
+    });
+
+    it('should remove template-like attributes', () => {
+      const model =
+        `<data xmlns:jr="http://openrosa.org/javarosa">
+          <district_hospital jr:template="">
+            <name template=""></name>
+            <external_id jr:template=""></external_id>
+            <notes template=""></notes>
+          </district_hospital>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>`;
+      const element = $($.parseXML(model)).children().first();
+      const data = {
+        district_hospital: {
+          name: 'Davesville',
+          external_id: 'THING',
+          notes: 'Some notes',
+          type: 'district_hospital',
+        },
+      };
+
+      service.bindJsonToXml(element, data);
+
+      assert.equal(element.find('district_hospital')[0].hasAttribute('jr:template'), false);
+      assert.equal(element.find('district_hospital')[0].hasAttribute('template'), false);
+
+      assert.equal(element.find('name')[0].hasAttribute('jr:template'), false);
+      assert.equal(element.find('name')[0].hasAttribute('template'), false);
+
+      assert.equal(element.find('external_id')[0].hasAttribute('jr:template'), false);
+      assert.equal(element.find('external_id')[0].hasAttribute('template'), false);
+
+      assert.equal(element.find('notes')[0].hasAttribute('jr:template'), false);
+      assert.equal(element.find('notes')[0].hasAttribute('template'), false);
     });
   });
 });

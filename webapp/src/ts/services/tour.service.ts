@@ -8,12 +8,13 @@ import { AnalyticsModulesService } from '@mm-services/analytics-modules.service'
 import { SessionService } from '@mm-services/session.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TourService {
-
+  private canViewSidebar;
   current: {
     tour: any;
     name: any;
@@ -27,7 +28,11 @@ export class TourService {
     private translateService: TranslateService,
     private router: Router,
     private responsiveService:ResponsiveService,
-  ) { }
+  ) {
+    this.authService
+      .has(OLD_REPORTS_FILTER_PERMISSION)
+      .then(isSidebarDisabled => this.canViewSidebar = !isSidebarDisabled || this.sessionService.isDbAdmin());
+  }
 
   private mmScroll(container, elem) {
     container = $(container);
@@ -235,6 +240,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.reports.types-filter.title',
           content: 'tour.reports.types-filter.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowReportList(),
           onShown: () => this.mmOpenDropdown('mm-form-type-filter')
         },
@@ -244,6 +250,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.reports.facilities-filter.title',
           content: 'tour.reports.facilities-filter.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowReportList(),
           onShown: () => this.mmOpenDropdown('mm-facility-filter')
         },
@@ -253,6 +260,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.reports.date-filter.title',
           content: 'tour.reports.date-filter.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowReportList(),
           onShown: () => {
             if (!this.responsiveService.isMobile()) {
@@ -269,6 +277,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.reports.status-filter.title',
           content: 'tour.reports.status-filter.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowReportList(),
           onShown: () => this.mmOpenDropdown('mm-status-filter')
         },
@@ -279,6 +288,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.reports.freetext-filter.title',
           content: 'tour.reports.freetext-filter.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowReportList()
         },
         {
@@ -353,6 +363,7 @@ export class TourService {
           mobilePlacement: 'bottom',
           title: 'tour.contacts.search.title',
           content: 'tour.contacts.search.description',
+          skip: () => this.canViewSidebar,
           onShow: () => this.mmShowContactList()
         },
         {
@@ -403,7 +414,7 @@ export class TourService {
         }
       ]
     }
-  ]
+  ];
 
   private createTemplate() {
     return  `<div class="popover tour">
@@ -506,23 +517,21 @@ export class TourService {
   }
 
   private getTour(name) {
-    return this.tours.find(t => t.name === name) || this.tours[0];
+    const tour = this.tours.find(t => t.name === name) || this.tours[0];
+    tour.steps = tour.steps.filter(step => !(step.skip && step.skip()));
+    return tour;
   }
 
   private getSettings(name) {
-
     const settings = this.getTour(name);
     settings.autoscroll = false;
 
     if (!settings.transmogrified) {
-
       settings.template = this.createTemplate();
-
-      const mobile = this.responsiveService.isMobile();
       settings.steps.forEach(step => {
         step.title = this.translateService.instant(step.title);
         step.content = this.translateService.instant(step.content);
-        if (mobile) {
+        if (this.responsiveService.isMobile()) {
           // there's no room to show steps to the left or right on a mobile device
           if (step.mobileElement) {
             step.element = step.mobileElement;
@@ -538,7 +547,6 @@ export class TourService {
       });
 
       settings.transmogrified = true;
-
     }
 
     return settings;

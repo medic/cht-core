@@ -20,7 +20,7 @@ describe('Navigation tests : ', () => {
   });
 
   it('should open Reports or History tab', async () => {
-    await commonElements.goToReportsNative();
+    await commonElements.goToReportsNative(true);
     expect(await commonElements.isAt('reports-list'));
   });
 

@@ -4,7 +4,7 @@ chai.use(require('chai-like'));
 chai.use(require('chai-things'));
 
 //const { Forms } = require('../../nools-extras');
-const TestRunner = require('medic-conf-test-harness');
+const TestRunner = require('cht-conf-test-harness');
 
 const { pncDangerSignFollowUpScenarios } = require('../form-inputs');
 const { newbornBaby } = require('../contacts');
@@ -36,6 +36,7 @@ describe('PNC danger sign follow up for baby tests', () => {
     await harness.loadAction(tasksFromContact[0]);
     const followupFormResult = await harness.fillForm(...pncDangerSignFollowUpScenarios.baby.cured);
     expect(followupFormResult.errors).to.be.empty;
+    expect(followupFormResult.report.fields.data.meta.__delivery_uuid).to.equal(newbornBaby.created_by_doc);
     const tasksAfterDangerSignsFollowUp = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_baby.title' });
     expect(tasksAfterDangerSignsFollowUp).to.have.property('length', 0);
 
@@ -51,6 +52,7 @@ describe('PNC danger sign follow up for baby tests', () => {
 
     await harness.loadAction(tasksFromContact[0]);
     let followupFormResult = await harness.fillForm(...pncDangerSignFollowUpScenarios.baby.danger);
+    expect(followupFormResult.report.fields.data.meta.__delivery_uuid).to.equal(newbornBaby.created_by_doc);
     const tasksAfterDangerSignFollowUp = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_baby.title' });
 
     expect(tasksAfterDangerSignFollowUp).to.have.property('length', 1);
@@ -58,6 +60,7 @@ describe('PNC danger sign follow up for baby tests', () => {
     await harness.loadAction(tasksAfterDangerSignFollowUp[0]);
     followupFormResult = await harness.fillForm(...pncDangerSignFollowUpScenarios.baby.cured);
     expect(followupFormResult.errors).to.be.empty;
+    expect(followupFormResult.report.fields.data.meta.__delivery_uuid).to.equal(newbornBaby.created_by_doc);
     const tasksAfterDangerSignsFollowUp = await harness.getTasks({ title: 'task.pnc.danger_sign_followup_baby.title' });
     expect(tasksAfterDangerSignsFollowUp).to.have.property('length', 0);
 

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { DatePipe } from '@angular/common';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -23,14 +24,21 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { TourService } from '@mm-services/tour.service';
 import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { AuthService } from '@mm-services/auth.service';
+import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
   let fixture: ComponentFixture<ReportsComponent>;
   let changesService;
   let addReadStatusService;
+  let sessionService;
   let searchService;
   let listContains;
+  let authService;
+  let datePipe;
 
   beforeEach(waitForAsync(() => {
     listContains = sinon.stub();
@@ -44,14 +52,20 @@ describe('Reports Component', () => {
       { selector: Selectors.getEnketoStatus, value: {} },
       { selector: Selectors.getEnketoEditedStatus, value: false },
       { selector: Selectors.getEnketoSavingStatus, value: false },
+      { selector: Selectors.getSidebarFilter, value: {} },
     ];
-    const tourServiceMock = {
-      startIfNeeded: () => {}
-    };
+    const tourServiceMock = { startIfNeeded: () => {} };
+    (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
 
     searchService = { search: sinon.stub().resolves([]) };
     changesService = { subscribe: sinon.stub().resolves(of({})) };
     addReadStatusService = { updateReports: sinon.stub().resolvesArg(0) };
+    authService = { has: sinon.stub().resolves(false) };
+    sessionService = {
+      isDbAdmin: sinon.stub().returns(false),
+      isOnlineOnly: sinon.stub()
+    };
+    datePipe = { transform: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -65,6 +79,8 @@ describe('Reports Component', () => {
         declarations: [
           ReportsComponent,
           ReportsFiltersComponent,
+          ReportsSidebarFilterComponent,
+          SearchBarComponent,
           ReportsContentComponent,
           NavigationComponent,
         ],
@@ -77,9 +93,13 @@ describe('Reports Component', () => {
           { provide: SettingsService, useValue: {} },
           // Needed because of facility filter
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
+          // Needed because of Reports Sidebar Filter
+          { provide: TelemetryService, useValue: { record: sinon.stub() } },
           { provide: TourService, useValue: tourServiceMock },
-          { provide: SessionService, useValue: { isOnlineOnly: sinon.stub() } },
+          { provide: SessionService, useValue: sessionService },
           { provide: NavigationService, useValue: {} },
+          { provide: AuthService, useValue: authService },
+          { provide: DatePipe, useValue: datePipe },
         ]
       })
       .compileComponents()
@@ -96,19 +116,25 @@ describe('Reports Component', () => {
 
   it('should create ReportsComponent', () => {
     expect(component).to.exist;
+    expect(component.isSidebarFilterOpen).to.be.false;
   });
 
-  it('ngOnInit() should watch for changes, set selected reports, search and set search filter', () => {
+  it('should watch for changes, set selected reports, search and set search filter', async () => {
     changesService.subscribe.resetHistory();
     searchService.search.resetHistory();
+    authService.has.resetHistory();
 
     const spySubscriptionsAdd = sinon.spy(component.subscription, 'add');
 
     component.ngOnInit();
+    await component.ngAfterViewInit();
 
-    expect(searchService.search.callCount).to.equal(1);
-    expect(changesService.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(2);
+    expect(component.isSidebarFilterOpen).to.be.false;
+    expect(authService.has.calledOnce).to.be.true;
+    expect(authService.has.args[0][0]).to.equal('can_view_old_filter_and_search');
+    expect(searchService.search.calledOnce).to.be.true;
+    expect(changesService.subscribe.calledOnce).to.be.true;
+    expect(spySubscriptionsAdd.calledThrice).to.be.true;
   });
 
   it('listTrackBy() should return unique identifier', () => {

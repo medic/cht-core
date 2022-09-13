@@ -1,17 +1,15 @@
-<div class="content-pane right-pane">
-
-  <div class="col-sm-8 item-content empty-selection" *ngIf="loadingContent && !selectMode">
+<ng-container>
+  <div class="empty-selection" *ngIf="loadingContent && !selectMode">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && !selectedReports?.length">
+  <div class="empty-selection" *ngIf="!loadingContent && !selectedReports?.length">
     <div>{{'No report selected' | translate }}</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content"
-    *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
+  <div id="reports-content" class="report-wrap" *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
 
     <div class="selection-count" *ngIf="selectMode && selectedReports.length">
       <span *ngIf="selectedReports.length === 1">{{'select.mode.count.singular' | translate}}</span>
@@ -94,8 +92,8 @@
             </ul>
           </li>
           <li *ngIf="selection?.formatted?.sms_message?.message">
-            <p>{{selection.formatted.sms_message.message}}</p>
             <label>{{'selection.doc.content.raw' | translate}}</label>
+            <p>{{selection.formatted.sms_message.message}}</p>
           </li>
           <li *ngIf="selection?.formatted?.tasks?.length">
             <label *ngIf="selection.formatted.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
@@ -158,4 +156,4 @@
 
     <div class="padding"></div>
   </div>
-</div>
+</ng-container>

@@ -49,7 +49,7 @@
 
         <ng-container *ngIf="selectedContact?.summary">
           <div *ngFor="let card of selectedContact?.summary?.cards">
-            <div class="card">
+            <div class="card" [attr.test-id]="card.label">
               <div class="action-header cell">
                 <h3>{{card.label | translate}}</h3>
               </div>
@@ -57,11 +57,11 @@
                 <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of card.fields">
                   <div class="cell">
                     <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
-                    <div>
+                    <div [attr.test-id]="field.label">
                       <label *ngIf="field.label">{{field.label | translate}}</label>
-                      <p *ngIf="field.translate" translate [translateParams]="field.context">{{field.value}}</p>
-                      <p *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
-                      <p *ngIf="!field.translate && !field.filter">{{field.value}}</p>
+                      <p class="card-field-value" *ngIf="field.translate" translate [translateParams]="field.context">{{field.value}}</p>
+                      <p class="card-field-value" *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
+                      <p class="card-field-value" *ngIf="!field.translate && !field.filter">{{field.value}}</p>
                     </div>
                   </div>
                 </div>

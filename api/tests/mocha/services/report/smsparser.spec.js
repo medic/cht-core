@@ -1000,7 +1000,7 @@ describe('sms parser', () => {
     chai.expect(actual).to.deep.equal({
       facility_id: 'fa\\cility#2#3',
       year: undefined,
-      month: null,
+      month: undefined,
       misoprostol_administered: undefined,
       quantity_dispensed: {
         la_6x1: undefined,

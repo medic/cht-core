@@ -8,6 +8,7 @@ const users = require('../../../src/services/users');
 const tokenLogin = require('../../../src/services/token-login');
 const branding = require('../../../src/services/branding');
 const translations = require('../../../src/translations');
+const privacyPolicy = require('../../../src/services/privacy-policy');
 const sinon = require('sinon');
 const config = require('../../../src/config');
 const request = require('request-promise-native');
@@ -57,6 +58,7 @@ describe('login controller', () => {
     sinon.stub(environment, 'isTesting').get(() => false);
 
     sinon.stub(auth, 'isOnlineOnly').returns(false);
+    sinon.stub(privacyPolicy, 'exists').resolves(false);
   });
 
   afterEach(() => {

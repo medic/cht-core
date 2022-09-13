@@ -111,7 +111,8 @@ module.exports = {
       .catch(err => serverUtils.error(err, req, res));
   },
   validate: (req, res) => {
-    return auth.check(req, 'can_configure')
+    return auth
+      .check(req, 'can_configure')
       .then(() => generateXform.generate(req.body))
       .then(() => res.json({ok: true}))
       .catch(err => {

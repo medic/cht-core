@@ -2,9 +2,7 @@ const helper = require('../../helper');
 const genericForm = require('../forms/generic-form.po');
 const utils = require('../../utils');
 
-const searchBox = element(by.css('#freetext'));
-const searchButton = element(by.css('#search'));
-const refreshButton = element(by.css('.fa fa-undo'));
+const searchBox = element(by.css('input#freetext'));
 const newDistrictButton = element(by.css('a[href="#/contacts/add/district_hospital?from=list"]'));
 const newPlaceName = element(by.css('[name="/data/init/custom_place_name"]'));
 const districtHospitalName = element(by.css('[name="/data/district_hospital/name"]'));
@@ -37,7 +35,6 @@ module.exports = {
   cardFieldLabel:  (label) => element(by.css(`.cell.${label} label`)),
   cardFieldText: (label) => helper.getTextFromElementNative(element(by.css(`.cell.${label} p`))),
   searchBox,
-  searchButton,
   contactsTab,
   peopleRows,
   contactName,
@@ -156,14 +153,10 @@ module.exports = {
     await genericForm.submitButton.click();
   },
 
-  refresh: async () => {
-    await refreshButton.click();
-  },
-
   search: async (query) => {
     await searchBox.clear();
     await searchBox.sendKeys(query);
-    await searchButton.click();
+    await searchBox.sendKeys(protractor.Key.ENTER);
   },
 
   clickRowByName: async (name) => {

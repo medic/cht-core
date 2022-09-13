@@ -37,7 +37,7 @@ describe('Enketo: Phone Widget', () => {
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsService);
+    new phoneWidget($(phoneWidget.selector)[0], {}, settingsService);
 
     // Check a proxy input field is added, and the real one is hidden.
     expect($('input').length).to.equal(2);
@@ -48,7 +48,7 @@ describe('Enketo: Phone Widget', () => {
 
   it('should format input when input value change', () => {
     buildHtml();
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsService);
+    new phoneWidget($(phoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
@@ -63,7 +63,7 @@ describe('Enketo: Phone Widget', () => {
 
   it('should still format if no settings are found', () => {
     buildHtml();
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsService);
+    new phoneWidget($(phoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
 
@@ -76,7 +76,7 @@ describe('Enketo: Phone Widget', () => {
 
   it('should not format invalid input', () => {
     buildHtml();
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsService);
+    new phoneWidget($(phoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
     const invalid = '+1 (650) 222-33333333';
@@ -90,7 +90,7 @@ describe('Enketo: Phone Widget', () => {
 
   it('should keep formatted input when value is valid', () => {
     buildHtml();
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsService);
+    new phoneWidget($(phoneWidget.selector)[0], {}, settingsService);
     const input = inputSelector(inputName);
     const proxyInput = proxySelector(inputName);
     const valid = '+16502223333';
@@ -104,10 +104,6 @@ describe('Enketo: Phone Widget', () => {
 
   it('should not modify non-phone fields', () => {
     buildHtml('other');
-
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsService);
-
-    // No extra field
-    expect($('input').length).to.equal(1);
+    expect($(phoneWidget.selector).length).to.equal(0);
   });
 });

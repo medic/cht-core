@@ -13,6 +13,8 @@ const nextPage = async (numberOfPages = 1) => {
   }
 };
 
+const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
+
 const openReportReviewMenu = async () => {
   const reviewButton = await $('.actions>.mm-icon-inverse>.fa-check');
   await reviewButton.click();
@@ -64,6 +66,8 @@ const verifyReport = async () => {
   expect(validatedReport.patient).to.be.undefined;
 };
 
+const submitForm = () => submitButton().click();
+
 module.exports = {
   submitButton,
   nextPage,
@@ -71,7 +75,9 @@ module.exports = {
   invalidateReport,
   validateReport,
   nameField,
+  fieldByName,
   selectContact,
   verifyReport,
-  editForm
+  editForm,
+  submitForm,
 };

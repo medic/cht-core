@@ -17,6 +17,7 @@
 @import 'messages';
 @import 'common';
 @import 'privacy-policies';
+@import 'sidebar-filter';
 
 .container-fluid {
   overflow: hidden;
@@ -392,11 +393,10 @@ body {
 
   .basic-filters {
     position: absolute;
-    top: 0;
+    top: 2px;
     left: 0;
     right: 0;
     display: flex;
-
   }
 
   .freetext-filter {
@@ -417,9 +417,22 @@ body {
     }
   }
 
+  .mobile-freetext-filter {
+    display: none;
+  }
+
+  .freetext-filter,
+  .mobile-freetext-filter {
+    &.disabled {
+      input, .btn, .mm-button-icon {
+        color: @gray-dark;
+      }
+    }
+  }
+
   .reset-filter,
   .sort-results {
-    line-height: 38px;
+    line-height: 40px;
     > a {
       color: @text-normal-color;
       display: inline-block;
@@ -433,12 +446,10 @@ body {
     }
   }
 
-  .mobile-freetext-filter {
-    display: none;
-  }
   .right-pane {
     padding-left: 0;
   }
+
   h2 {
     line-height: 40px;
     overflow: hidden;
@@ -480,7 +491,9 @@ body {
   background-color: @background-color;
 }
 
+.content .item-content .empty-selection,
 .content .item-content.empty-selection {
+  height: 100%;
   text-align: center;
   color: #c2c2c2;
   text-shadow: 1px 1px 4px rgba(255, 255, 255, 1);
@@ -730,7 +743,8 @@ body {
     word-break: break-word;
     margin: 0;
   }
-  > div {
+  > div,
+  .report-wrap > div {
     margin-bottom: 10px;
   }
   .padding {
@@ -1258,7 +1272,108 @@ a.fa:hover {
   }
 }
 
-@media (max-width: 767px) {
+mm-search-bar {
+  padding: 4px 0;
+  position: relative;
+  display: block;
+
+  .mm-search-bar-container {
+    display: flex;
+    justify-content: flex-start;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.8);
+
+    *, *:active, *:focus {
+      outline: none !important;
+      box-shadow: none;
+    }
+
+    .search-bar-left-icon {
+      align-self: center;
+      width: 18px;
+      height: 20px;
+      margin: 0 15px;
+    }
+
+    mm-sort-filter {
+      margin: 0 6px;
+
+      .sort-dropdown {
+        position: relative;
+      }
+
+      .mm-dropdown-menu {
+        left: -270px;
+        margin: 40px 0;
+        box-shadow: 0 6px 12px rgb(0 0 0 / 40%);
+
+        .dropdown-header {
+          color: @gray-medium;
+        }
+      }
+    }
+
+    mm-freetext-filter.filter {
+      flex: 1 1 auto;
+      margin: 0;
+
+      .freetext-filter {
+        width: 100%;
+        padding: 0;
+
+        input, input:focus {
+          border: none;
+          background: transparent;
+          z-index: 0;
+          padding: 0;
+          font-size: @font-large;
+          margin: 0;
+        }
+
+        .btn {
+          display: none;
+        }
+      }
+    }
+
+    .btn.open-filter {
+      background-color: transparent;
+      margin: 0 3px;
+      font-size: @font-large;
+      position: relative;
+
+      &:active {
+        box-shadow: none;
+      }
+
+      .filter-counter {
+        color: @white;
+        font-size: @font-extra-extra-small;
+        background: @blue-dark;
+        border-radius: 50%;
+        padding: 1px 5px;
+        vertical-align: middle;
+      }
+    }
+
+    .fa {
+      font-size: @font-extra-large;
+      color: @black;
+    }
+
+    &.disabled .search-bar-left-icon .fa {
+      color: @gray-medium;
+    }
+  }
+}
+
+@media (max-width: @content-width) {
+  mm-search-bar {
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: @media-mobile) {
   #mobile-detection {
     display: inline;
   }
@@ -1282,7 +1397,7 @@ a.fa:hover {
     padding-left: 0;
   }
   .filters {
-    height: 46px;
+    height: 50px;
     padding: 0;
     .navigation {
       display: inline-block;
@@ -1330,18 +1445,27 @@ a.fa:hover {
     .basic-filters {
       left: 2px;
     }
-    .freetext-filter {
-      display: none;
-    }
-    .show-one-filter .freetext-filter,
-    .show-one-filter .filter {
-      display: inline-block;
+    mm-freetext-filter {
       width: auto;
-    }
-    .mobile-freetext-filter {
-      display: block;
-      .search-pane {
-        padding: 10px;
+
+      .freetext-filter {
+        width: 95%;
+        &.mobile-dropdown {
+          display: none;
+        }
+      }
+
+      .mobile-freetext-filter {
+        display: block;
+        .search-pane {
+          padding: 10px;
+        }
+      }
+
+      &.legacy {
+        // ToDo: Remove when upgrading contact's search design
+        display: inline-block;
+        width: auto;
       }
     }
     .reset-filter {
@@ -1391,7 +1515,7 @@ a.fa:hover {
   }
   .content {
     .page {
-      top: 111px;
+      top: 115px;
     }
     .meta {
       padding-bottom: 0;
@@ -1463,6 +1587,9 @@ a.fa:hover {
     .right-pane {
       left: 0;
     }
+    mm-search-bar {
+      display: none;
+    }
   }
 
   .filter-daterangepicker {
@@ -1513,9 +1640,59 @@ a.fa:hover {
   .deceased-page .material .card.persons .cell {
     display: none;
   }
+
+  mm-search-bar {
+    padding: 5px;
+    .mm-search-bar-container {
+      background: transparent;
+      justify-content: flex-end;
+      min-height: 40px;
+
+      mm-freetext-filter.filter {
+        display: none;
+      }
+
+      mm-sort-filter .mm-dropdown-menu {
+        top: 115px;
+        left: 10px;
+        margin: 0;
+      }
+
+      .search-bar-left-icon {
+        margin: 0 12px 0 0;
+      }
+
+      .btn.open-filter {
+        margin: 0;
+
+        .open-filter-label {
+          display: none;
+        }
+
+        .filter-counter {
+          position: absolute;
+          top: 3px;
+          right: -2px;
+          border: 1px solid @white;
+        }
+      }
+
+      &.open-search {
+        background-color: rgba(255, 255, 255, 0.8);
+
+        mm-freetext-filter {
+          display: inherit;
+        }
+
+        .search-bar-left-icon {
+          margin: 0 10px;
+        }
+      }
+    }
+  }
 }
 
-@media (max-width: 400px) {
+@media (max-width: @media-small-mobile) {
   .logo {
     display: none;
   }
@@ -1545,17 +1722,14 @@ a.fa:hover {
   .action-container .actions {
     min-height: 50px;
     p {
-      display: none;
-    }
-    .fa-stack {
-      height: 20px;
+      font-size: @font-extra-extra-small;
     }
     .mm-icon {
       min-height: 50px;
     }
   }
   .content .page {
-    top: 111px;
+    top: 115px;
   }
   .mobile-only {
     display: initial;
@@ -1570,3 +1744,4 @@ a.fa:hover {
     }
   }
 }
+

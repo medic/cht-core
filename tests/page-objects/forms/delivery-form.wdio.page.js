@@ -15,7 +15,7 @@ const deliveryOutcomeBabiesDeliveredField = (value) =>
 const deliveryOutcomeBabiesAliveField = (value) =>
   $(`input[type="radio"][name="/delivery/delivery_outcome/babies_alive"][value="${value}"]`);
 const dateOfDeliveryField = () =>
-  $('#delivery > section.or-group.or-branch.or-appearance-field-list.current > label:nth-child(6) > div > input');
+  $('form > section.or-group.or-branch.or-appearance-field-list.current > label:nth-child(6) > div > input');
 const deliveryPlaceField = (value) =>
   $(`input[type="radio"][name="/delivery/delivery_outcome/delivery_place"][value="${value}"]`);
 const deliveryModeField = (value) =>

@@ -1,4 +1,5 @@
 const commonElements = require('../common/common.wdio.page');
+const searchElements = require('../search/search.wdio.page');
 const utils = require('../../utils');
 
 const reportListID = '#reports-list';
@@ -12,11 +13,19 @@ const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
 const firstReport = () => $(`${reportListID} li:first-child`);
 const reportList = () => $(`${reportListID}`);
-const allReports = () => $$(`${reportListID} li`);
-const reportsByUUID = (uuid) => $$(`li[data-record-id="${uuid}"]`);
+const allReports = () => $$(`${reportListID} li.content-row`);
+const reportsByUUID = (uuid) => $$(`${reportListID} li.content-row[data-record-id="${uuid}"]`);
 const reportRowSelector = `${reportListID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
+const editReportButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
+
+const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
+const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
+const sidebarFilterToDate = () => $('#toDateFilter');
+const sidebarFilterFromDate = () => $('#fromDateFilter');
+const sidebarFilterOpenBtn = () => $('mm-search-bar .open-filter');
+const filterResetBtn = () => $('.sidebar-reset');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
@@ -44,7 +53,6 @@ const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
 const patientName = () => $('.subject .name');
 const reportType = () => $('div[test-id="form-title"]');
-
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
@@ -77,8 +85,8 @@ const openForm = async (name) => {
 };
 
 const setDateInput = async (name, date) => {
-  const input = await $(`input[name="${name}"]`);
-  const dateWidget = await input.nextElement();
+  const input = await (typeof name === 'string' ? $(`input[name="${name}"]`) : name);
+  const dateWidget = await input.previousElement();
   const visibleInput = await dateWidget.$('input[type="text"]');
   await visibleInput.setValue(date);
   await (await formTitle()).click();
@@ -106,6 +114,7 @@ const getFieldValue = async (name) => {
 };
 
 const submitForm = async () => {
+  await (await submitButton()).waitForDisplayed();
   await (await submitButton()).click();
   await (await reportBodyDetails()).waitForDisplayed();
 };
@@ -163,6 +172,7 @@ const expandSelection = async () => {
   await (await itemSummary()).click();
   await (await $(reportBodyDetailsSelector)).waitForDisplayed();
 };
+
 const selectAll = async () => {
   await (await $('.action-container .select-all')).click();
   await (await $('#reports-content .selection-count > span')).waitForDisplayed();
@@ -190,7 +200,6 @@ const stopSelectMode = async (savedUuids) => {
   await checkbox.waitForDisplayed({ reverse: true });
 };
 
-
 const filterByDate = async (startDate, endDate) => {
   await (await dateFilter()).click();
   await (await datePickerStart()).click();
@@ -199,6 +208,47 @@ const filterByDate = async (startDate, endDate) => {
   await (await datePickerEnd()).setValue(endDate.format('MM/DD/YYYY'));
   await (await datePickerStart()).click();
   await (await $('#freetext')).click(); // blur the datepicker
+};
+
+const openSidebarFilter = async () => {
+  if (!await (await filterResetBtn()).isDisplayed()) {
+    await (await sidebarFilterOpenBtn()).click();
+  }
+  return await (await filterResetBtn()).waitForDisplayed();
+};
+
+const closeSidebarFilter = async () => {
+  if (await (await filterResetBtn()).isDisplayed()) {
+    await (await sidebarFilterOpenBtn()).click();
+  }
+  return await (await filterResetBtn()).waitForDisplayed({ reverse: true });
+};
+
+const openSidebarFilterDateAccordion = async () => {
+  await (await sidebarFilterDateAccordionHeader()).click();
+  return (await sidebarFilterDateAccordionBody()).waitForDisplayed();
+};
+
+const setSidebarFilterDate = async (fieldPromise, calendarIdx, date) => {
+  await (await fieldPromise).waitForDisplayed();
+  await (await fieldPromise).click();
+
+  const dateRangePicker = `.daterangepicker:nth-of-type(${calendarIdx})`;
+  await (await $(dateRangePicker)).waitForDisplayed();
+
+  const leftArrow = $(`${dateRangePicker} .table-condensed th>.fa-chevron-left`);
+  await (await leftArrow).click();
+
+  const dateCel = $(`${dateRangePicker} .table-condensed tr td[data-title="${date}"]`);
+  await (await dateCel).click();
+};
+
+const setSidebarFilterFromDate = () => {
+  return setSidebarFilterDate(sidebarFilterFromDate(), 1, 'r1c2');
+};
+
+const setSidebarFilterToDate = () => {
+  return setSidebarFilterDate(sidebarFilterToDate(), 2, 'r3c5');
 };
 
 const firstReportDetailField = () => $('#reports-content .details ul li:first-child p');
@@ -238,7 +288,33 @@ const getReportType = async () => {
   return (await reportType()).getText();
 };
 
+const resetFilter = async () => {
+  await openSidebarFilter();
+  await (await filterResetBtn()).waitForDisplayed();
+  await (await filterResetBtn()).click();
+  await closeSidebarFilter();
+  await searchElements.clearSearch();
+};
 
+const openReport = async (reportId) => {
+  await resetFilter();
+  await (await firstReport()).waitForDisplayed();
+  const reportListItem = await reportByUUID(reportId);
+  await reportListItem.waitForDisplayed();
+  await reportListItem.click();
+  await reportBodyDetails().waitForDisplayed();
+};
+
+const editReport = async (reportId) => {
+  await commonElements.goToReports();
+  await openReport(reportId);
+  await (await editReportButton()).click();
+  await (await formTitle()).waitForDisplayed();
+};
+
+const fieldByIndex = async (index) => {
+  return await (await $(`${reportBodyDetailsSelector} li:nth-child(${index}) p`)).getText();
+};
 
 module.exports = {
   getCurrentReportId,
@@ -257,6 +333,10 @@ module.exports = {
   getTaskState,
   openForm,
   formTitle,
+  openSidebarFilter,
+  openSidebarFilterDateAccordion,
+  setSidebarFilterFromDate,
+  setSidebarFilterToDate,
   setDateInput,
   getFieldValue,
   setBikDateInput,
@@ -281,5 +361,8 @@ module.exports = {
   getReportDetailFieldValueByLabel,
   getReportSubject,
   getReportType,
-  getListReportInfo
+  getListReportInfo,
+  openReport,
+  editReport,
+  fieldByIndex,
 };
