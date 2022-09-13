@@ -313,6 +313,7 @@ module.exports = function(grunt) {
             '**/node_modules/**',
             'build/**',
             '**/pupil/**',
+            'api/src/enketo-transformer/**',
           ];
 
           return [ESLINT_COMMAND]
