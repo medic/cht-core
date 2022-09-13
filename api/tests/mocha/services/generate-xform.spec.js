@@ -5,7 +5,7 @@ const { join } = require('path');
 const { assert, expect } = require('chai');
 const sinon = require('sinon');
 const childProcess = require('child_process');
-const markdown = require('enketo-transformer/src/markdown');
+const markdown = require('../../../src/enketo-transformer/markdown');
 const db = require('../../../src/db');
 const service = require('../../../src/services/generate-xform');
 

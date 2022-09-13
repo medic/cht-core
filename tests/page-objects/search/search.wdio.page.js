@@ -1,3 +1,5 @@
+const commonElements = require('../common/common.wdio.page');
+
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const resetSearch = () => $('.mm-search-bar-container .search-bar-clear');
 
@@ -13,10 +15,12 @@ const performSearch = async (searchString) => {
 };
 
 const clearSearch = async () => {
+  if (!await (await resetSearch()).isDisplayed()) {
+    return;
+  }
+
   await (await resetSearch()).click();
-  // After the button is pressed there can be a slight delay before the AJAX call
-  // is made and the search spinner shows up hence we just need to wait for a bit before moving forward
-  await browser.pause(1000);
+  await commonElements.waitForLoaders();
 };
 
 module.exports = {

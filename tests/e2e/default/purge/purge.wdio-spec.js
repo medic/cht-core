@@ -109,7 +109,7 @@ describe('purge', () => {
 
     await runPurging();
 
-    await loginPage.login({ username: user.username, password: user.password, loadPage: false });
+    await loginPage.login({ username: user.username, password: user.password, loadPage: true });
 
     const purgingRequestsPromise = utils.collectLogs(utils.apiLogFile, /REQ.*purging/);
     await commonElements.sync();
