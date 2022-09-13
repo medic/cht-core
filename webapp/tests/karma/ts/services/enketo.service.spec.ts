@@ -1877,7 +1877,7 @@ describe('Enketo service', () => {
 
     after(() => $.fn.find = originalJQueryFind);
 
-    xit('should pause the multimedia when going to the previous page', fakeAsync(() => {
+    it('should pause the multimedia when going to the previous page', fakeAsync(() => {
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
       overrideNavigationButtonsStub.call(service, form, $form);
 
@@ -1890,7 +1890,7 @@ describe('Enketo service', () => {
       expect(pauseStubs.audio.calledOnce).to.be.true;
     }));
 
-    xit('should pause the multimedia when going to the next page', fakeAsync(() => {
+    it('should pause the multimedia when going to the next page', fakeAsync(() => {
       form.pages._next.resolves(true);
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
       overrideNavigationButtonsStub.call(service, form, $form);
@@ -1904,7 +1904,7 @@ describe('Enketo service', () => {
       expect(pauseStubs.audio.calledOnce).to.be.true;
     }));
 
-    xit('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
+    it('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
       form.pages._next.resolves(false);
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
       overrideNavigationButtonsStub.call(service, form, $form);
@@ -1916,10 +1916,11 @@ describe('Enketo service', () => {
       expect(pauseStubs.audio).to.be.undefined;
     }));
 
-    xit('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
+    it('should not call pause function when there is not video and audio in the form wrapper', fakeAsync(() => {
+      form.pages._next.resolves(true);
+      $form.prepend('<span>no media here</span>');
       overrideNavigationButtonsStub.call(service, form, $form);
 
-      $prevBtn.trigger('click.pagemode');
       $nextBtn.trigger('click.pagemode');
       flush();
 
