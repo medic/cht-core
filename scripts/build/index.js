@@ -111,10 +111,12 @@ const copyBuildInfo = (destPath) => {
 
 const saveDockerComposeFiles = () => {
   const servicesTemplatePath = path.resolve(__dirname, 'cht-core.yml.template');
-  const couchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb-single-node.yml.template');
+  const singleCouchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb-single-node.yml.template');
+  const clusteredCouchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb-cluster.yml.template');
 
   const servicesTemplate = fs.readFileSync(servicesTemplatePath, 'utf-8');
-  const couchDbTemplate = fs.readFileSync(couchDbTemplatePath, 'utf-8');
+  const singleCouchDbTemplate = fs.readFileSync(singleCouchDbTemplatePath, 'utf-8');
+  const clusteredCouchDbTemplate = fs.readFileSync(clusteredCouchDbTemplatePath, 'utf-8');
 
   const view = {
     repo: versions.getRepo(),
@@ -129,9 +131,17 @@ const saveDockerComposeFiles = () => {
     db_name: 'medic',
     couchdb_servers: 'couchdb',
   };
+  const viewClustered = {
+    ...view,
+    couch1_container_name: 'cht-couchdb.1',
+    couch2_container_name: 'cht-couchdb.2',
+    couch3_container_name: 'cht-couchdb.3',
+    couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
+  };
 
   const compiledServicesDockerCompose = mustache.render(servicesTemplate, view);
-  const compiledCouchDbDockerCompose = mustache.render(couchDbTemplate, view);
+  const compiledCouchDbDockerCompose = mustache.render(singleCouchDbTemplate, view);
+  const compiledClusteredCouchDbDockerCompose = mustache.render(clusteredCouchDbTemplate, viewClustered);
 
   const dockerComposeFolder = path.resolve(stagingAttachmentsPath, 'docker-compose');
   mkdirSync(dockerComposeFolder);
@@ -141,6 +151,9 @@ const saveDockerComposeFiles = () => {
 
   const couchDbDockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-couchdb.yml');
   fs.writeFileSync(couchDbDockerComposeFilePath, compiledCouchDbDockerCompose);
+
+  const clusteredCouchDbDockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-couchdb-clustered.yml');
+  fs.writeFileSync(clusteredCouchDbDockerComposeFilePath, compiledClusteredCouchDbDockerCompose);
 };
 
 const saveServiceTags = () => {
