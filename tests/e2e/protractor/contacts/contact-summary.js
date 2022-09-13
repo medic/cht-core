@@ -1,10 +1,10 @@
 const moment = require('moment');
-const utils = require('../utils');
-const helper = require('../helper');
-const commonElements = require('../page-objects/common/common.po.js');
-const loginPage = require('../page-objects/login/login.po.js');
-const contactsPo = require('../page-objects/contacts/contacts.po');
-const constants = require('../constants');
+const constants = require('../../../constants');
+const utils = require('../../../utils');
+const helper = require('../../../helper');
+const commonElements = require('../../../page-objects/common/common.po.js');
+const loginPage = require('../../../page-objects/login/login.po.js');
+const contactsPo = require('../../../page-objects/contacts/contacts.po');
 
 
 describe('Contact summary info', () => {

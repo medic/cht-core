@@ -1,12 +1,12 @@
-const utils = require('../utils');
-const commonElements = require('../page-objects/common/common.po.js');
-const analytics = require('../page-objects/analytics/analytics.po');
-const loginPage = require('../page-objects/login/login.po.js');
-const helper = require('../helper');
+const utils = require('../../../utils');
+const commonElements = require('../../../page-objects/common/common.po.js');
+const analytics = require('../../../page-objects/analytics/analytics.po');
+const loginPage = require('../../../page-objects/login/login.po.js');
+const helper = require('../../../helper');
 const moment = require('moment');
 const uuid = require('uuid').v4;
 const _ = require('lodash');
-const constants = require('../constants');
+const constants = require('../../../constants');
 
 const randomString = (length) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
 const randomNumber = (max) => Math.floor(Math.random() * max);

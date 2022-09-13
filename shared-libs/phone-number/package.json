@@ -9,6 +9,6 @@
     "test": "mocha ./test"
   },
   "dependencies": {
-    "google-libphonenumber": "3.2.22"
+    "google-libphonenumber": "^3.2.30"
   }
 }

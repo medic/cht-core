@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
-const constants = require('../constants');
+const constants = require('../../constants');
 const request = require('request-promise-native');
-const utils = require('../utils');
+const utils = require('../../utils');
 const host = 'localhost';
 const db = utils.db;
 
@@ -80,7 +80,7 @@ describe('medic-collect', () => {
 
 const getForms = ({ auth, userAgent }) => {
   const url = auth ? constants.BASE_URL_AUTH : constants.BASE_URL;
-  
+
   const headers = {
     'X-OpenRosa-Version': '1.0',
     Date: new Date().toISOString(),
@@ -90,7 +90,7 @@ const getForms = ({ auth, userAgent }) => {
     headers['User-Agent'] = 'Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) ' +
       'org.medicmobile.collect.android/SNAPSHOT';
   }
-  
+
   return request.get({
     url: `${url}/api/v1/forms`,
     headers,

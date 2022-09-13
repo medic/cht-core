@@ -10,6 +10,7 @@ const generateServiceWorker = require('../../../src/generate-service-worker');
 const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
 const bootstrap = require('../../../src/services/config-watcher');
+const manifest = require('../../../src/services/manifest');
 
 let on;
 const emitChange = (change) => {
@@ -20,17 +21,18 @@ const emitChange = (change) => {
 describe('Configuration', () => {
   beforeEach(() => {
     on = sinon.stub();
-    on.returns({ on: on });
+    on.returns({ on });
 
     sinon.stub(db, 'createVault');
     sinon.stub(db.medic, 'get');
     sinon.stub(db.medic, 'query');
-    sinon.stub(db.medic, 'changes').returns({ on: on });
+    sinon.stub(db.medic, 'changes').returns({ on });
     sinon.stub(viewMapUtils, 'loadViewMaps');
     sinon.stub(translations, 'run');
     sinon.stub(settingsService, 'get');
     sinon.stub(settingsService, 'update');
     sinon.stub(generateServiceWorker, 'run');
+    sinon.stub(manifest, 'generate');
     sinon.spy(config, 'set');
     sinon.spy(config, 'setTranslationCache');
     sinon.spy(config, 'setTransitionsLib');
@@ -198,6 +200,7 @@ describe('Configuration', () => {
 
     describe('branding changes', () => {
       it('generates service worker when branding doc is updated', () => {
+        manifest.generate.resolves();
         generateServiceWorker.run.resolves();
 
         return emitChange({ id: 'branding' }).then(() => {
@@ -208,7 +211,9 @@ describe('Configuration', () => {
       });
 
       it('should terminate process on service worker errors', () => {
+        manifest.generate.resolves();
         generateServiceWorker.run.rejects();
+
         sinon.stub(process, 'exit');
 
         return emitChange({ id: 'branding' }).then(() => {
@@ -257,6 +262,21 @@ describe('Configuration', () => {
         return emitChange({ id: 'form:id' }).then(() => {
           chai.expect(generateXform.update.callCount).to.equal(1);
           chai.expect(generateXform.update.args[0]).to.deep.equal(['form:id']);
+        });
+      });
+
+      it('should handle deletions gracefully - #7608', () => {
+        sinon.stub(generateXform, 'update');
+        return emitChange({ id: 'form:id', deleted: true }).then(() => {
+          chai.expect(generateXform.update.callCount).to.equal(0);
+        });
+      });
+
+      it('should ignore tombstones - #7608', () => {
+        sinon.stub(generateXform, 'update');
+        const tombstoneId = 'form:pnc_danger_sign_follow_up_mother____3-336f91959e14966f9baec1c3dd1c7fa2____tombstone';
+        return emitChange({ id: tombstoneId }).then(() => {
+          chai.expect(generateXform.update.callCount).to.equal(0);
         });
       });
     });

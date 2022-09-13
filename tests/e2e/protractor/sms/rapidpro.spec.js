@@ -3,11 +3,11 @@ const bodyParser = require('body-parser');
 const uuid = require('uuid').v4;
 const _ = require('lodash');
 
-const commonElements = require('../page-objects/common/common.po.js');
-const messagesElements = require('../page-objects/messages/messages.po');
-const reportsElements = require('../page-objects/reports/reports.po');
-const helper = require('../helper');
-const utils = require('../utils');
+const commonElements = require('../../../page-objects/common/common.po.js');
+const messagesElements = require('../../../page-objects/messages/messages.po');
+const reportsElements = require('../../../page-objects/reports/reports.po');
+const helper = require('../../../helper');
+const utils = require('../../../utils');
 
 // Mock rapidpro server
 const mockApp = express();
@@ -62,7 +62,7 @@ describe('RapidPro SMS Gateway', () => {
     broadcastsEndpointRequests = [];
     messagesEndpointRequests = [];
   });
-  afterEach(() => utils.revertDb([],true));
+  afterEach(() => utils.revertDb([], true));
 
   describe('Webapp Terminating messages', () => {
     const endpoint = '/api/v1/sms/radpidpro/incoming-messages';
@@ -583,12 +583,13 @@ describe('RapidPro SMS Gateway', () => {
     it('should poll for state updates and consume queue', async () => {
       const nonFinalStates = ['received-by-gateway', 'forwarded-by-gateway', 'sent'];
       const finalStates = ['delivered', 'failed'];
+      const docsCount = 90;
 
       const getNonFinalStateByIds = (idx) => nonFinalStates[idx % 3];
       const getFinalStateByIdx = (idx) => finalStates[idx % 2];
       const getIdx = (ref) => ref.replace('gateway_ref', '');
 
-      const docs = Array.from({ length: 90 }).map((_, idx) => ({
+      const docs = Array.from({ length: docsCount }).map((_, idx) => ({
         _id: uuid(),
         type: 'data_record',
         form: 'a',
@@ -610,7 +611,8 @@ describe('RapidPro SMS Gateway', () => {
       await setOutgoingKey();
       await utils.saveDocs(docs);
 
-      await browser.wait(() => messagesEndpointRequests.length === 90, (90 / 25 + 1) * 1000 ); // batch size is 25
+      const iterations = docsCount / 25; // batch size is 25
+      await browser.wait(() => messagesEndpointRequests.length === docsCount, (iterations + 2) * 1000 );
 
       const queriedBroadcasts = messagesEndpointRequests.map(request => request[0].broadcast).sort();
       const expectedBroadcasts = docs.map(doc => doc.tasks[0].gateway_ref).sort();
@@ -618,7 +620,7 @@ describe('RapidPro SMS Gateway', () => {
 
       await browser.sleep(1100); // wait for another polling iteration
 
-      expect(messagesEndpointRequests.length).toEqual(90); // no additional requests were made
+      expect(messagesEndpointRequests.length).toEqual(docsCount); // no additional requests were made
 
       const updatedDocs = await utils.getDocs(docs.map(doc => doc._id));
       updatedDocs.forEach(doc => {

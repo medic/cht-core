@@ -1,15 +1,15 @@
 const allure = require('allure-commandline');
 const fs = require('fs');
-const constants = require('./constants');
-const utils = require('./utils');
+const constants = require('../../constants');
+const utils = require('../../utils');
 const path = require('path');
 
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 
 const ALLURE_OUTPUT = 'allure-results';
-const browserLogPath = path.join(__dirname, 'logs', 'browser.console.log');
-const browserUtils = require('./utils/browser');
+const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
+const browserUtils = require('../../utils/browser');
 const existingFeedBackDocIds = [];
 const logLevels = ['error', 'warning', 'debug'];
 let testTile;
@@ -40,11 +40,12 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    './tests/e2e/**/*.wdio-spec.js',
+    './tests/e2e/default/**/*.wdio-spec.js',
+    './tests/e2e/admin/**/*.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
-    './tests/e2e/upgrade/*.wdio-spec.js',
+    // 'path/to/excluded/files'
   ],
   //
   // ============
@@ -162,13 +163,12 @@ const baseConfig = {
     }],
     'spec',
   ],
-
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: 90000,
+    timeout: 120000,
   },
   //
   // =====

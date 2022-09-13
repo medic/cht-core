@@ -82,9 +82,7 @@ const getLogoutMessage = async () => {
 
 const goToBase = async () => {
   await browser.url('/');
-
-  await (await analyticsTab()).waitForDisplayed();
-  await (await messagesTab()).waitForDisplayed();
+  await waitForPageLoaded();
 };
 
 const goToReports = async () => {
