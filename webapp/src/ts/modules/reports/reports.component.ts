@@ -183,28 +183,28 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.translateService.instant('report.subject.unknown');
   }
 
-  private prepareReports(reports) {
-    return this.currentLevel.then(
-      currentLevel => {
-        return reports.map(report => {
-          const form = _find(this.forms, { code: report.form });
-          report.icon = form && form.icon;
-          report.heading = this.getReportHeading(form, report);
-          report.summary = form ? form.title : report.form;
-          report.lineage = report.subject && report.subject.lineage || report.lineage;
-          // remove the lineage level that belongs to the offline logged-in user
-          if (currentLevel && report.lineage && report.lineage.length) {
-            report.lineage = report.lineage.filter(level => level);
-            if(report.lineage[report.lineage.length-1] === currentLevel){
-              report.lineage.pop();
-            }
-          }
-          report.unread = !report.read;
-          return report;
-        });
-      }
-    );
+  private async prepareReports(reports) {
+    const userLineageLevel = await this.currentLevel;
 
+    return reports.map(report => {
+      const form = _find(this.forms, { code: report.form });
+      report.icon = form && form.icon;
+      report.heading = this.getReportHeading(form, report);
+      report.summary = form ? form.title : report.form;
+      report.lineage = report.subject && report.subject.lineage || report.lineage;
+      report.unread = !report.read;
+
+      // remove the lineage level that belongs to the offline logged-in user
+      if (userLineageLevel && report?.lineage?.length) {
+        report.lineage = report.lineage.filter(level => level);
+        const item = report.lineage?.length && report.lineage[report.lineage.length -1];
+        if (item === userLineageLevel) {
+          report.lineage.pop();
+        }
+      }
+
+      return report;
+    });
   }
 
   private query(opts) {
@@ -232,10 +232,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.searchService
       .search('reports', this.filters, options)
       .then((reports) => this.addReadStatusService.updateReports(reports))
+      .then(updatedReports => this.prepareReports(updatedReports))
       .then(updatedReports => {
-        this
-          .prepareReports(updatedReports)
-          .then(updatedReports => this.reportsActions.updateReportsList(updatedReports));
+        this.reportsActions.updateReportsList(updatedReports);
 
         this.moreItems = updatedReports.length >= options.limit;
         this.hasReports = !!updatedReports.length;

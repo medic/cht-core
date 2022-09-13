@@ -123,6 +123,14 @@ describe('Messages Component', () => {
     expect(resultNoDoc).to.equal('134abc');
   });
 
+  it('ngOnDestroy() should unsubscribe from observables', () => {
+    const spySubscriptionsUnsubscribe = sinon.spy(component.subscriptions, 'unsubscribe');
+
+    component.ngOnDestroy();
+
+    expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+  });
+
   describe('updateConversations()', () => {
     it('should get conversations and add new one', async () => {
       const newConversations = [
@@ -191,14 +199,6 @@ describe('Messages Component', () => {
       expect(component.loading).to.be.false;
       expect(component.conversations).to.eql( newConversations);
     });
-
-    it('ngOnDestroy() should unsubscribe from observables', () => {
-      const spySubscriptionsUnsubscribe = sinon.spy(component.subscriptions, 'unsubscribe');
-
-      component.ngOnDestroy();
-
-      expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
-    });
   });
 
   describe('Messages breadcrumbs', () => {
@@ -236,7 +236,7 @@ describe('Messages Component', () => {
       expect(await component.currentLevel).to.equal('parent');
     });
 
-    it('should not change the conversations lineage if the connected user is online only', fakeAsync( () => {
+    it('should not change the conversations lineage if the connected user is online only', fakeAsync(() => {
       sinon.resetHistory();
 
       messageContactService.getList.resolves(conversations);
@@ -251,7 +251,7 @@ describe('Messages Component', () => {
       expect(component.conversations).to.deep.equal(conversations);
     }));
 
-    it('should not change the conversations lineage if the connected user is online only', fakeAsync( () => {
+    it('should not change the conversations lineage if the connected user is online only', fakeAsync(() => {
       sinon.resetHistory();
 
       messageContactService.getList.resolves(conversations);
@@ -267,7 +267,7 @@ describe('Messages Component', () => {
     }));
 
     it('should remove current level from lineage when user is offline and parent place relevant to the conversation',
-      fakeAsync( () => {
+      fakeAsync(() => {
         sinon.resetHistory();
         const updatedConversations = [
           { key: 'a',
