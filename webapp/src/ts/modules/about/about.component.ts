@@ -17,6 +17,7 @@ import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 export class AboutComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
   private dataUsageUpdate;
+  browserSupport;
 
   userCtx;
   replicationStatus;
@@ -54,16 +55,13 @@ export class AboutComponent implements OnInit, OnDestroy {
     this.getAndroidDataUsage();
     this.getAndroidDeviceInfo();
     this.getDbInfo();
+    this.getBrowserSupport();
   }
 
   ngOnDestroy() {
     clearTimeout(this.doorTimeout);
     clearInterval(this.dataUsageUpdate);
     this.subscription.unsubscribe();
-  }
-
-  public isUsingSupportedBrowser() {
-    return this.browserDetectorService.isUsingSupportedBrowser();
   }
 
   private subscribeToStore() {
@@ -129,6 +127,28 @@ export class AboutComponent implements OnInit, OnDestroy {
       .catch(error => {
         console.error('Failed to fetch DB info', error);
       });
+  }
+
+  private getBrowserSupport() {
+    const isUsingSupportedBrowser = this.browserDetectorService.isUsingSupportedBrowser();
+    const isUsingChtAndroid = this.browserDetectorService.isUsingChtAndroid();
+    const isUsingChtAndroidV1 = this.browserDetectorService.isUsingChtAndroidV1();
+
+    let outdatedComponent;
+    if (isUsingChtAndroid) {
+      if (!isUsingChtAndroidV1) {
+        outdatedComponent = 'chtAndroid';
+      } else if (!isUsingSupportedBrowser) {
+        outdatedComponent = 'webviewApk';
+      }
+    } else if (!isUsingSupportedBrowser) {
+      outdatedComponent = 'browser';
+    }
+
+    this.browserSupport = {
+      isUsingSupportedEnvironment: typeof outdatedComponent === 'undefined',
+      outdatedComponent,
+    };
   }
 
   reload() {
