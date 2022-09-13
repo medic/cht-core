@@ -1,13 +1,21 @@
-<span class="input-group freetext-filter">
-  <input id="freetext" class="form-control" [(ngModel)]="inputText" type="text" [class.disabled]="disabled" placeholder="{{'freetext.search' | translate}}" (keyup.enter)="applyFilter()">
+<span class="input-group freetext-filter" [class.disabled]="disabled" [class.mobile-dropdown]="mobileDropdown">
+  <input
+    #freetextInput
+    id="freetext"
+    class="form-control"
+    [(ngModel)]="inputText"
+    type="text"
+    [disabled]="disabled"
+    placeholder="{{'freetext.search' | translate}}"
+    (keyup.enter)="applyFilter()">
   <span class="input-group-btn">
-    <button id="search" class="btn btn-default" type="button" [class.disabled]="disabled" (click)="applyFilter()">
+    <button id="search" class="btn btn-default" type="button" (click)="applyFilter()">
       <span class="fa fa-search"></span>
     </button>
   </span>
 </span>
 
-<span class="dropdown mobile-freetext-filter" *ngIf="currentTab === 'reports'" [class.disabled]="disabled" dropdown [insideClick]="true">
+<span class="dropdown mobile-freetext-filter" [class.disabled]="disabled" *ngIf="mobileDropdown" dropdown [insideClick]="true">
   <span id="mobile-search" class="mm-button" data-toggle="dropdown" dropdownToggle>
     <span class="mm-button-icon">
       <span class="fa fa-search"></span>
@@ -18,7 +26,7 @@
   </span>
   <div class="search-pane dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="mobile-search" *dropdownMenu>
     <span class="input-group">
-      <input id="mobile-freetext" class="form-control" type="text" [(ngModel)]="inputText" placeholder="{{'freetext.search' | translate}}" (keyup.enter)="applyFilter()">
+      <input id="mobile-freetext" class="form-control" [disabled]="disabled" type="text" [(ngModel)]="inputText" placeholder="{{'freetext.search' | translate}}" (keyup.enter)="applyFilter()">
       <span class="input-group-btn small-font">
         <button id="mobile-search-go" class="btn btn-default" type="button" (click)="applyFilter()">
           <span class="fa fa-search"></span>

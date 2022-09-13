@@ -41,6 +41,7 @@ const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
+const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const connectedUserLog = require('./middleware/connected-user-log').log;
@@ -102,8 +103,7 @@ const handleJsonOrCsvRequest = (method, path, callback) => {
   });
 };
 
-app.deleteJson = (path, callback) =>
-  handleJsonRequest('delete', path, callback);
+app.deleteJson = (path, callback) => handleJsonRequest('delete', path, callback);
 app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, callback);
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
@@ -270,6 +270,7 @@ app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
 app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
+app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
 const ONLINE_ONLY_ENDPOINTS = [
@@ -430,7 +431,7 @@ app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getU
 
 app.postJson('/api/v1/places', function(req, res) {
   auth
-    .check(req, 'can_create_places')
+    .check(req, ['can_edit', 'can_create_places'])
     .then(() => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
@@ -442,7 +443,7 @@ app.postJson('/api/v1/places', function(req, res) {
 
 app.postJson('/api/v1/places/:id', function(req, res) {
   auth
-    .check(req, 'can_update_places')
+    .check(req, ['can_edit', 'can_update_places'])
     .then(() => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
@@ -456,7 +457,7 @@ app.postJson('/api/v1/places/:id', function(req, res) {
 
 app.postJson('/api/v1/people', function(req, res) {
   auth
-    .check(req, 'can_create_people')
+    .check(req, ['can_edit', 'can_create_people'])
     .then(() => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
@@ -809,19 +810,17 @@ app.all(appPrefix + '*', authorization.setAuthorized);
 app.use(authorization.handleAuthErrorsAllowingAuthorized);
 app.use(authorization.offlineUserFirewall);
 
-const canEdit = function(req, res) {
+const canEdit = (req, res) => {
   auth
     .check(req, 'can_edit')
-    .then(ctx => {
-      if (!ctx || !ctx.user) {
+    .then(userCtx => {
+      if (!userCtx || !userCtx.name) {
         serverUtils.serverError('not-authorized', req, res);
         return;
       }
       proxyForAuth.web(req, res);
     })
-    .catch(() => {
-      serverUtils.serverError('not-authorized', req, res);
-    });
+    .catch(() => serverUtils.serverError('not-authorized', req, res));
 };
 
 const editPath = routePrefix + '*';

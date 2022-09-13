@@ -1,0 +1,367 @@
+@import 'variables';
+
+.sidebar-filter-wrapper {
+  height: 100%;
+  padding: 0;
+  position: fixed;
+  right: -500px;
+}
+
+.sidebar-filter-active {
+  .inbox.page,
+  mm-actionbar .inner {
+    max-width: calc(100vw - @content-margin) !important;
+  }
+
+  .sidebar-filter-wrapper {
+    position: static;
+    right: 0;
+  }
+}
+
+.accordion-facility-check,
+.accordion-facility-chevron {
+  display: none;
+}
+
+.sidebar-filter {
+  height: 100%;
+  width: 100%;
+
+  * {
+    outline: none !important;
+    text-decoration: none !important;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .sidebar-backdrop {
+    display: none;
+  }
+
+  .sidebar-main {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 1030;
+    overflow: hidden;
+    background-color: @white;
+    background-clip: padding-box;
+    display: flex;
+    flex-direction: column;
+    color: @gray-ultra-dark;
+
+    .sidebar-header,
+    .sidebar-footer,
+    .panel-group .panel-heading .accordion-toggle {
+      width: 100%;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      padding: 0px 20px;
+    }
+
+    .sidebar-header {
+      justify-content: flex-start;
+      border-bottom: 1px solid @gray-light;
+
+      .sidebar-title {
+        font-size: @font-extra-large;
+        font-weight: bold;
+        margin: 0;
+        flex-grow: 1;
+      }
+
+      .sidebar-reset {
+        font-size: @font-medium;
+        margin-right: 20px;
+
+        &.disabled {
+          color: @gray-medium;
+          cursor: not-allowed;
+        }
+      }
+
+      .sidebar-close {
+        font-size: @font-large;
+        font-weight: lighter;
+        color: @gray-ultra-dark;
+      }
+    }
+
+    .sidebar-body {
+      flex: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+
+      .panel-group {
+        .panel {
+          margin: 0;
+        }
+
+        .panel-heading .accordion-toggle {
+          .btn-link {
+            color: @gray-ultra-dark;
+            font-size: @font-medium;
+            font-weight: bold;
+            padding: 0;
+            border: none;
+
+            .title {
+              display: inline-block;
+              margin: 0;
+            }
+          }
+
+          &:before {
+            content: none;
+          }
+
+          &:after {
+            font-size: @font-medium;
+            margin: 5px;
+          }
+
+          &[aria-expanded="false"]:after {
+            content: '\f078'; // https://fontawesome.com/v4/icon/chevron-down
+          }
+
+          &[aria-expanded="true"]:after {
+            content: '\f077'; // https://fontawesome.com/v4/icon/chevron-up
+          }
+
+          .chip {
+            background: @blue-dark;
+            color: @white;
+            border-radius: 100px;
+            padding: 2px 15px;
+            margin-left: 10px;
+            display: inline-block;
+
+            &.disabled {
+              background: @gray-medium !important;
+            }
+
+            .fa {
+              margin-left: 10px;
+              font-size: @font-medium;
+            }
+          }
+        }
+
+        .panel-open .panel-collapse {
+          padding: 10px 0;
+        }
+
+        .filter-error .panel-collapse {
+          background: rgba(227, 48, 48, 0.1);
+        }
+      }
+
+      label {
+        display: block;
+        margin-left: 5px;
+
+        &:not(:first-child) {
+          margin-top: 10px;
+        }
+      }
+
+      .filter {
+        width: 100%;
+      }
+
+      mm-date-filter {
+        margin-bottom: 15px;
+        padding: 0 5px;
+
+        .mm-dropdown {
+          width: 100%;
+        }
+
+        .mm-button {
+          display: block;
+          box-shadow: none;
+          border: 1px solid @gray-light;
+          background: @white;
+          border-radius: 5px;
+          margin-right: 8px;
+
+          .mm-button-icon {
+            padding-right: 10px;
+          }
+        }
+      }
+
+      .filter-options {
+        padding: 0px 5px 10px 5px;
+
+        li {
+          position: relative;
+
+          &.group-header {
+            font-size: @font-medium;
+            color: @gray-medium;
+            padding: 3px 0px;
+
+            &:not(:first-child) {
+              margin-top: 10px;
+            }
+          }
+
+          a {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            white-space: normal;
+            color: @gray-ultra-dark;
+            font-size: @font-medium;
+            padding-left: 30px;
+            margin-bottom: 5px;
+
+            &:before {
+              content: '\f096'; // http://fontawesome.io/icon/square-o/
+              font-family: FontAwesome;
+              font-size: @font-extra-extra-large;
+              color: @gray-medium;
+              vertical-align: middle;
+              margin: 5px 7px 5px -30px;
+            }
+          }
+
+          &.selected a:before {
+            content: '\f14a'; // https://fontawesome.com/v4/icon/check-square
+            color: @blue-dark;
+          }
+
+          &.disabled *,
+          &.disabled a:before {
+            color: @gray-medium !important;
+          }
+        }
+
+        li.accordion-facility-list {
+          @accordion-chevron-width: 13px;
+          padding-left: 27px;
+
+          .accordion-facility-title {
+            padding: 0;
+            width: calc(100% - @accordion-chevron-width);
+          }
+
+          .accordion-facility-title:before,
+          .mm-dropdown-submenu {
+            display: none;
+          }
+
+          &.accordion-facility-caret {
+            &>.accordion-facility-chevron {
+              cursor: pointer;
+              width: @accordion-chevron-width;
+              font-size: @font-extra-large;
+              color: @gray-medium;
+              display: block;
+              position: absolute;
+              top: 0;
+              right: 0;
+            }
+
+            &.accordion-facility-list-expand > .mm-dropdown-submenu {
+              display: block;
+
+              li {
+                margin-top: 10px;
+              }
+            }
+          }
+
+          .accordion-facility-check {
+            font-size: @font-extra-extra-large;
+            color: @gray-medium;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            &.fa-check-square {
+              color: @blue-dark;
+            }
+          }
+        }
+      }
+
+      .filter-error-message {
+        display: block;
+        margin-top: 10px;
+        padding: 0 5px;
+        color: @error-color;
+        font-size: @font-extra-small;
+        font-weight: bold;
+      }
+    }
+
+    .sidebar-footer {
+      display: none;
+      box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.24);
+
+      .btn {
+        width: 100%;
+      }
+    }
+  }
+}
+
+@media (min-width: @content-width) {
+  .sidebar-filter-active {
+    mm-actionbar .inner {
+      margin-left: @content-margin !important;
+    }
+  }
+}
+
+@media (max-width: @media-mobile) {
+  .sidebar-filter-active {
+    .header,
+    .action-container {
+      z-index: 2;
+    }
+  }
+
+  .sidebar-filter {
+    .sidebar-backdrop {
+      display: block;
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1020;
+      overflow-x: hidden;
+      overflow-y: auto;
+      opacity: 0.4;
+      background-color: @black;
+    }
+
+    .sidebar-main {
+      position: fixed;
+      width: calc(100vw - 30px);
+      max-width: 370px;
+      height: 100%;
+      top: 0;
+      right: 0;
+      box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.24);
+
+      .sidebar-footer {
+        display: flex;
+      }
+    }
+  }
+}

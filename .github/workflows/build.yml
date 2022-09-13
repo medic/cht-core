@@ -237,7 +237,7 @@ jobs:
       - name: Create logs directory
         run: mkdir tests/logs
       - name: Upgrade
-        run: npm run wdio-upgrade
+        run: npm run upgrade-wdio
       - name: Archive Results
         uses: actions/upload-artifact@v2
         with:

@@ -18,6 +18,10 @@ const state = {
     showActionBar: 'is showing action bar',
     forms: ['these', 'are', 'some', 'forms'],
     filters: { some: 'filters' },
+    sidebarFilter: {
+      isOpen: false,
+      filterCount: { total: 5, placeFilter: 3, formFilter: 2 },
+    },
     navigation: {
       cancelCallback: function() {},
       preventNavigation: 'prevent',
@@ -169,6 +173,10 @@ describe('Selectors', () => {
 
     it('should getFilters', () => {
       expect(Selectors.getFilters(state)).to.deep.equal(clonedState.global.filters);
+    });
+
+    it('should getSidebarFilter', () => {
+      expect(Selectors.getSidebarFilter(state)).to.deep.equal(clonedState.global.sidebarFilter);
     });
 
     it('should getCancelCallback', () => {

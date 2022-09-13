@@ -1,0 +1,123 @@
+<section class="sidebar-filter">
+  <div class="sidebar-backdrop" [ngClass]="{ hidden: !isOpen }" (click)="toggleSidebarFilter()"></div>
+
+  <div class="sidebar-main" [ngClass]="{ hidden: !isOpen }">
+    <div class="sidebar-header">
+      <p class="sidebar-title">{{ 'reports.sidebar.filter.title' | translate }}</p>
+      <a class="sidebar-reset" [class.disabled]="disabled" (click)="resetFilters()">{{ 'reports.sidebar.filter.reset' | translate }}</a>
+      <a class="sidebar-close fa fa-times" (click)="toggleSidebarFilter()"></a>
+    </div>
+
+    <div class="sidebar-body">
+      <accordion [closeOthers]="true" [isAnimated]="true">
+        <!-- 1. Form Type -->
+        <accordion-group id="form-filter-accordion">
+          <ng-container
+            accordion-heading
+            [ngTemplateOutlet]="headerTemplate"
+            [ngTemplateOutletContext]="{
+              numSelected: filterCount.formFilter,
+              label: 'reports.sidebar.filter.form_type',
+              filters: [ 'formFilter' ]
+            }">
+          </ng-container>
+          <mm-form-type-filter
+            class="filter"
+            fieldId="formFilter"
+            (search)="applyFilters()"
+            [disabled]="disabled"
+            [inline]="true">
+          </mm-form-type-filter>
+        </accordion-group>
+
+        <!-- 2. Place -->
+        <accordion-group id="place-filter-accordion">
+          <ng-container
+            accordion-heading
+            [ngTemplateOutlet]="headerTemplate"
+            [ngTemplateOutletContext]="{
+              numSelected: filterCount.placeFilter,
+              label: 'reports.sidebar.filter.place',
+              filters: [ 'placeFilter' ]
+            }">
+          </ng-container>
+          <mm-facility-filter
+            class="filter"
+            fieldId="placeFilter"
+            (search)="applyFilters()"
+            [disabled]="disabled"
+            [inline]="true">
+          </mm-facility-filter>
+        </accordion-group>
+
+        <!-- 3. Date -->
+        <accordion-group id="date-filter-accordion" [class.filter-error]="dateFilterError">
+          <ng-container
+            accordion-heading
+            [ngTemplateOutlet]="headerTemplate"
+            [ngTemplateOutletContext]="{
+              numSelected: (filterCount.fromDateFilter || 0) + (filterCount.toDateFilter || 0),
+              label: 'reports.sidebar.filter.date',
+              filters: [ 'fromDateFilter', 'toDateFilter' ]
+            }">
+          </ng-container>
+          <label>{{ 'reports.sidebar.filter.from_date' | translate }}</label>
+          <mm-date-filter
+            #fromDate
+            class="filter"
+            fieldId="fromDateFilter"
+            (search)="applyFilters()"
+            (onError)="showDateFilterError($event)"
+            [disabled]="disabled"
+            [isStartDate]="true">
+          </mm-date-filter>
+
+          <label>{{ 'reports.sidebar.filter.to_date' | translate }}</label>
+          <mm-date-filter
+            #toDate
+            class="filter"
+            fieldId="toDateFilter"
+            (search)="applyFilters()"
+            (onError)="showDateFilterError($event)"
+            [disabled]="disabled">
+          </mm-date-filter>
+          <p class="filter-error-message" *ngIf="dateFilterError">{{ dateFilterError | translate }}</p>
+        </accordion-group>
+
+        <!-- 4. Status -->
+        <accordion-group id="status-filter-accordion">
+          <ng-container
+            accordion-heading
+            [ngTemplateOutlet]="headerTemplate"
+            [ngTemplateOutletContext]="{
+              numSelected: filterCount.statusFilter,
+              label: 'reports.sidebar.filter.status',
+              filters: [ 'statusFilter' ]
+            }">
+          </ng-container>
+          <mm-status-filter
+            class="filter"
+            fieldId="statusFilter"
+            (search)="applyFilters()"
+            [disabled]="disabled"
+            [inline]="true">
+          </mm-status-filter>
+        </accordion-group>
+      </accordion>
+    </div>
+
+    <div class="sidebar-footer">
+      <button type="button" class="btn btn-primary" (click)="toggleSidebarFilter()">{{ 'reports.sidebar.filter.submit' | translate }}</button>
+    </div>
+  </div>
+</section>
+
+<ng-template #headerTemplate let-numSelected="numSelected" let-label="label" let-filters="filters">
+  <button class="btn btn-link">
+    <p class="title">{{ label | translate }}</p>
+    <div class="chip" *ngIf="numSelected" [class.disabled]="disabled">
+      <span>{{ numSelected | translate }}</span>
+      <span class="fa fa-times" (click)="clearFilters(filters); $event.stopPropagation();"></span>
+    </div>
+  </button>
+</ng-template>

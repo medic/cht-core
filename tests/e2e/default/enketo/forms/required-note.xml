@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+    <h:head>
+        <h:title>Required Note</h:title>
+        <model>
+            <itext>
+                <translation lang="en">
+                    <text id="/required_note/intro:label">
+                        <value>This note is required, but should not be.</value>
+                    </text>
+                </translation>
+            </itext>
+            <instance>
+                <required_note id="required_note" prefix="J1!required_note!" delimiter="#" version="2021-12-01 00:00:00">
+                    <intro/>
+                    <meta tag="hidden">
+                        <instanceID/>
+                    </meta>
+                </required_note>
+            </instance>
+            <instance id="contact-summary"/>
+            <bind nodeset="/required_note/intro" readonly="true()" type="string" required="true()"/>
+            <bind nodeset="/required_note/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+        </model>
+    </h:head>
+    <h:body class="pages">
+        <input ref="/required_note/intro">
+            <label ref="jr:itext('/required_note/intro:label')"/>
+        </input>
+    </h:body>
+</h:html>

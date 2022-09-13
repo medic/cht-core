@@ -41,6 +41,7 @@ tests/integration/results/
 allure*
 tests/config-temp
 .eslintcache
+doc-conflicts/
 cht-docker-compose.log
 tests/cht-core-test.yml
 tests/cht-couchdb-test.yml

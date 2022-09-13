@@ -1,6 +1,6 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { expect, assert } from 'chai';
+import { expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
 import { toBik_text } from 'bikram-sambat';
@@ -17,7 +17,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguageService } from '@mm-services/language.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
-import { AddAttachmentService } from '@mm-services/add-attachment.service';
+import { AttachmentService } from '@mm-services/attachment.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { EnketoService } from '@mm-services/enketo.service';
@@ -60,6 +60,7 @@ describe('Enketo service', () => {
   let TranslateFrom;
   let form;
   let AddAttachment;
+  let removeAttachment;
   let EnketoForm;
   let EnketoPrepopulationData;
   let Search;
@@ -90,6 +91,7 @@ describe('Enketo service', () => {
       getDataStr: sinon.stub(),
     };
     AddAttachment = sinon.stub();
+    removeAttachment = sinon.stub();
     EnketoForm = sinon.stub();
     EnketoPrepopulationData = sinon.stub();
     Search = sinon.stub();
@@ -141,7 +143,7 @@ describe('Enketo service', () => {
         { provide: LanguageService, useValue: { get: Language } },
         { provide: TranslateFromService, useValue: { get: TranslateFrom } },
         { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
-        { provide: AddAttachmentService, useValue: { add: AddAttachment } },
+        { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
         {
           provide: XmlFormsService,
           useValue: {
@@ -198,7 +200,7 @@ describe('Enketo service', () => {
       return service
         .render(null, 'not-defined')
         .then(() => {
-          assert.fail('Should throw error');
+          expect.fail('Should throw error');
         })
         .catch(actual => {
           expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access ' +
@@ -218,7 +220,7 @@ describe('Enketo service', () => {
       return service
         .render($('<div></div>'), mockEnketoDoc('myform'))
         .then(() => {
-          assert.fail('Should throw error');
+          expect.fail('Should throw error');
         })
         .catch(actual => {
           expect(enketoInit.callCount).to.equal(1);
@@ -297,6 +299,25 @@ describe('Enketo service', () => {
         expect(createObjectURL.callCount).to.equal(0);
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0]).to.equal('Error fetching media file');
+      });
+    });
+
+    it('passes users language to Enketo', () => {
+      const data = '<data><patient_id>123</patient_id></data>';
+      UserContact.resolves({ contact_id: '123' });
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      enketoInit.returns([]);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      EnketoPrepopulationData.resolves(data);
+      Language.resolves('sw');
+      return service.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
+        expect(Language.callCount).to.equal(1);
+        expect(EnketoForm.callCount).to.equal(1);
+        expect(EnketoForm.args[0][2].language).to.equal('sw');
       });
     });
 
@@ -379,7 +400,8 @@ describe('Enketo service', () => {
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
         expect(summary.id).to.equal('contact-summary');
-        expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
+        const xmlStr = new XMLSerializer().serializeToString(summary.xml);
+        expect(xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
         expect(Search.callCount).to.equal(1);
         expect(Search.args[0][0]).to.equal('reports');
         expect(Search.args[0][1].subjectIds).to.deep.equal(['fffff', '44509']);
@@ -431,9 +453,10 @@ describe('Enketo service', () => {
         expect(EnketoForm.args[0][1].external.length).to.equal(1);
         const summary = EnketoForm.args[0][1].external[0];
         expect(summary.id).to.equal('contact-summary');
-        expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob>' +
-          '<dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;' +
-          'characters&quot; &amp; \'words\'</notes></context>');
+        const xmlStr = new XMLSerializer().serializeToString(summary.xml);
+        expect(xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob>' +
+          '<dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved "' +
+          'characters" &amp; \'words\'</notes></context>');
         expect(ContactSummary.callCount).to.equal(1);
         expect(ContactSummary.args[0][0]._id).to.equal('fffff');
       });
@@ -507,13 +530,26 @@ describe('Enketo service', () => {
 
   describe('save', () => {
 
-    it('rejects on invalid form', done => {
+    it('rejects on invalid form', () => {
+      const inputRelevant = { dataset: { relevant: 'true' } };
+      const inputNonRelevant = { dataset: { relevant: 'false' } };
+      const inputNoDataset = {};
+      const toArray = sinon.stub().returns([inputRelevant, inputNoDataset, inputNonRelevant]);
+      // @ts-ignore
+      sinon.stub($.fn, 'find').returns({ toArray });
       form.validate.resolves(false);
-      service.save('V', form).catch(actual => {
-        expect(actual.message).to.equal('Form is invalid');
-        expect(form.validate.callCount).to.equal(1);
-        done();
-      });
+      form.relevant = { update: sinon.stub() };
+      return service
+        .save('V', form)
+        .then(() => expect.fail('expected to reject'))
+        .catch(actual => {
+          expect(actual.message).to.equal('Form is invalid');
+          expect(form.validate.callCount).to.equal(1);
+          expect(inputRelevant.dataset.relevant).to.equal('true');
+          expect(inputNonRelevant.dataset.relevant).to.equal('false');
+          // @ts-ignore
+          expect(inputNoDataset.dataset).to.be.undefined;
+        });
     });
 
     it('creates report', () => {
@@ -541,11 +577,9 @@ describe('Enketo service', () => {
         expect(actual.from).to.equal('555');
         expect(xmlFormGetWithAttachment.callCount).to.equal(1);
         expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
-        expect(AddAttachment.callCount).to.equal(1);
-        expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
-        expect(AddAttachment.args[0][1]).to.equal('content');
-        expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
-        expect(AddAttachment.args[0][3]).to.equal('application/xml');
+        expect(AddAttachment.callCount).to.equal(0);
+        expect(removeAttachment.callCount).to.equal(1);
+        expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
       });
     });
 
@@ -609,11 +643,8 @@ describe('Enketo service', () => {
           expect(actual.geolocation_log[0].recording).to.deep.equal(geoData);
           expect(xmlFormGetWithAttachment.callCount).to.equal(1);
           expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
-          expect(AddAttachment.callCount).to.equal(1);
-          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
-          expect(AddAttachment.args[0][1]).to.equal('content');
-          expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
-          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+          expect(AddAttachment.callCount).to.equal(0);
+          expect(removeAttachment.callCount).to.equal(1);
         });
       });
 
@@ -651,11 +682,8 @@ describe('Enketo service', () => {
           expect(actual.geolocation_log[0].recording).to.deep.equal(geoError);
           expect(xmlFormGetWithAttachment.callCount).to.equal(1);
           expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
-          expect(AddAttachment.callCount).to.equal(1);
-          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
-          expect(AddAttachment.args[0][1]).to.equal('content');
-          expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
-          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+          expect(AddAttachment.callCount).to.equal(0);
+          expect(removeAttachment.callCount).to.equal(1);
         });
       });
 
@@ -719,11 +747,8 @@ describe('Enketo service', () => {
           expect(actual.geolocation_log[0]).to.deep.equal(originalGeoLogEntry);
           expect(actual.geolocation_log[1].timestamp).to.be.greaterThan(0);
           expect(actual.geolocation_log[1].recording).to.deep.equal(geoData);
-          expect(AddAttachment.callCount).to.equal(1);
-          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
-          expect(AddAttachment.args[0][1]).to.equal('content');
-          expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
-          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+          expect(AddAttachment.callCount).to.equal(0);
+          expect(removeAttachment.callCount).to.equal(1);
           expect(setLastChangedDoc.callCount).to.equal(1);
           expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
         });
@@ -760,11 +785,8 @@ describe('Enketo service', () => {
         expect(actual.geolocation).to.deep.equal(geoError);
         expect(xmlFormGetWithAttachment.callCount).to.equal(1);
         expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
-        expect(AddAttachment.callCount).to.equal(1);
-        expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
-        expect(AddAttachment.args[0][1]).to.equal('content');
-        expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
-        expect(AddAttachment.args[0][3]).to.equal('application/xml');
+        expect(AddAttachment.callCount).to.equal(0);
+        expect(removeAttachment.callCount).to.equal(1);
       });
     });
 
@@ -827,11 +849,9 @@ describe('Enketo service', () => {
         expect(actual.type).to.equal('data_record');
         expect(actual.reported_date).to.equal(500);
         expect(actual.content_type).to.equal('xml');
-        expect(AddAttachment.callCount).to.equal(1);
-        expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
-        expect(AddAttachment.args[0][1]).to.equal('content');
-        expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
-        expect(AddAttachment.args[0][3]).to.equal('application/xml');
+        expect(AddAttachment.callCount).to.equal(0);
+        expect(removeAttachment.callCount).to.equal(1);
+        expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
         expect(setLastChangedDoc.callCount).to.equal(1);
         expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
@@ -872,10 +892,16 @@ describe('Enketo service', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name']);
+        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
-        expect(actualReport.fields.doc1).to.equal(undefined);
-        expect(actualReport.fields.doc2).to.equal(undefined);
+        expect(actualReport.fields.doc1).to.deep.equal({
+          some_property_1: 'some_value_1',
+          type: 'thing_1',
+        });
+        expect(actualReport.fields.doc2).to.deep.equal({
+          some_property_2: 'some_value_2',
+          type: 'thing_2',
+        });
 
         const actualThing1 = actual[1];
         expect(actualThing1._id).to.match(/(\w+-)\w+/);
@@ -938,10 +964,16 @@ describe('Enketo service', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name']);
+        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
-        expect(actualReport.fields.doc1).to.equal(undefined);
-        expect(actualReport.fields.doc2).to.equal(undefined);
+        expect(actualReport.fields.doc1).to.deep.equal({
+          some_property_1: 'some_value_1',
+          type: 'thing_1',
+        });
+        expect(actualReport.fields.doc2).to.deep.equal({
+          some_property_2: 'some_value_2',
+          type: 'thing_2',
+        });
 
         expect(actualReport.geolocation).to.deep.equal(geoData);
 
@@ -1000,10 +1032,22 @@ describe('Enketo service', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name']);
+        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
 
-        expect(actualReport.fields.doc1).to.equal(undefined);
-        expect(actualReport.fields.doc2).to.equal(undefined);
+        expect(actualReport.fields.doc1).to.deep.equal({
+          type: 'thing_1',
+          some_property_1: 'some_value_1',
+          my_self_1: doc1_id,
+          my_parent_1: reportId,
+          my_sibling_1: doc2_id
+        });
+        expect(actualReport.fields.doc2).to.deep.equal({
+          type: 'thing_2',
+          some_property_2: 'some_value_2',
+          my_self_2: doc2_id,
+          my_parent_2: reportId,
+          my_sibling_2: doc1_id
+        });
 
         const actualThing1 = actual[1];
         expect(actualThing1._id).to.match(/(\w+-)\w+/);
@@ -1054,7 +1098,7 @@ describe('Enketo service', () => {
         expect(actualReport.content_type).to.equal('xml');
         expect(actualReport.contact._id).to.equal('123');
         expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.deep.equal(['secret_code_name']);
+        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'repeat_doc']);
 
         for (let i = 1; i <= 3; ++i) {
           const repeatDocN = actual[i];
@@ -1465,14 +1509,13 @@ describe('Enketo service', () => {
         return service
           .save('my-form', form, () => Promise.resolve(true))
           .then(() => {
-            expect(AddAttachment.calledTwice);
+            expect(AddAttachment.calledOnce);
             expect(saveDocsSpy.calledOnce);
 
             expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
             expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
             expect(AddAttachment.args[0][3]).to.equal('image');
 
-            expect(AddAttachment.args[1][1]).to.equal('content');
             expect(globalActions.setSnackbarContent.notCalled);
           });
       });
@@ -1520,27 +1563,22 @@ describe('Enketo service', () => {
         form.validate.resolves(true);
         const content = loadXML('binary-field');
 
-        const expected =
-          `<my-form>
-  <name>Mary</name>
-  <age>10</age>
-  <gender>f</gender>
-  <my_file type="binary"/>
-</my-form>`;
-
         form.getDataStr.returns(content);
         dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
         return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
-          expect(AddAttachment.callCount).to.equal(2);
+          expect(dbBulkDocs.args[0][0][0].fields).to.deep.equal({
+            name: 'Mary',
+            age: '10',
+            gender: 'f',
+            my_file: '',
+          });
+          expect(AddAttachment.callCount).to.equal(1);
 
           expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
           expect(AddAttachment.args[0][2]).to.deep.equal('some image data');
           expect(AddAttachment.args[0][3]).to.equal('image/png');
-
-          expect(AddAttachment.args[1][1]).to.equal('content');
-          expect(AddAttachment.args[1][2]).to.equal(expected);
         });
       });
 
@@ -1565,7 +1603,7 @@ describe('Enketo service', () => {
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
         return service.save('my-form-internal-id', form, () => Promise.resolve(true)).then(() => {
-          expect(AddAttachment.callCount).to.equal(3);
+          expect(AddAttachment.callCount).to.equal(2);
 
           expect(AddAttachment.args[0][1]).to.equal('user-file/my-form-internal-id/my_file');
           expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
@@ -1575,8 +1613,6 @@ describe('Enketo service', () => {
             .to.equal('user-file/my-form-internal-id/sub_element/sub_sub_element/other_file');
           expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
           expect(AddAttachment.args[1][3]).to.equal('mytype');
-
-          expect(AddAttachment.args[2][1]).to.equal('content');
         });
       });
 
@@ -1612,6 +1648,10 @@ describe('Enketo service', () => {
           clones.push({ _id: 'new doc', type: 'existent doc updated by the transition' });
           return Promise.resolve(clones);
         });
+        xmlFormGetWithAttachment.resolves({
+          doc: { _id: 'abc', xmlVersion: { time: '1', sha256: 'imahash' } },
+          xml: `<form><repeat nodeset="/data/repeat_doc"></repeat></form>`
+        });
 
         return service.save('V', form, geoHandle).then(actual => {
           expect(form.validate.callCount).to.equal(1);
@@ -1627,9 +1667,26 @@ describe('Enketo service', () => {
               {
                 contact: {},
                 content_type: 'xml',
-                fields: { name: 'Sally', lmp: '10' },
-                hidden_fields: [],
+                fields: {
+                  name: 'Sally', lmp: '10',
+                  repeat_doc: [
+                    {
+                      type: 'repeater',
+                      some_property: 'some_value_1',
+                    },
+                    {
+                      type: 'repeater',
+                      some_property: 'some_value_2',
+                    },
+                    {
+                      type: 'repeater',
+                      some_property: 'some_value_3',
+                    },
+                  ],
+                },
+                hidden_fields: ['repeat_doc'],
                 form: 'V',
+                form_version: { time: '1', sha256: 'imahash' },
                 from: '555',
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
@@ -1662,9 +1719,26 @@ describe('Enketo service', () => {
               {
                 contact: {},
                 content_type: 'xml',
-                fields: { name: 'Sally', lmp: '10' },
-                hidden_fields: [],
+                fields: {
+                  name: 'Sally', lmp: '10',
+                  repeat_doc: [
+                    {
+                      type: 'repeater',
+                      some_property: 'some_value_1',
+                    },
+                    {
+                      type: 'repeater',
+                      some_property: 'some_value_2',
+                    },
+                    {
+                      type: 'repeater',
+                      some_property: 'some_value_3',
+                    },
+                  ],
+                },
+                hidden_fields: ['repeat_doc'],
                 form: 'V',
+                form_version: { time: '1', sha256: 'imahash' },
                 from: '555',
                 geolocation: { geo: 'data' },
                 geolocation_log: [{ recording: { geo: 'data' } }],
@@ -1749,5 +1823,108 @@ describe('Enketo service', () => {
         });
       });
     });
+  });
+
+  describe('multimedia', () => {
+    let overrideNavigationButtonsStub;
+    let pauseStubs;
+    let form;
+    let $form;
+    let $nextBtn;
+    let $prevBtn;
+    let originalJQueryFind;
+
+    before(() => {
+      $nextBtn = $('<button class="btn next-page"></button>');
+      $prevBtn = $('<button class="btn previous-page"></button>');
+      originalJQueryFind = $.fn.find;
+      overrideNavigationButtonsStub = sinon
+        .stub(EnketoService.prototype, <any>'overrideNavigationButtons')
+        .callThrough();
+
+      form = {
+        calc: { update: sinon.stub() },
+        output: { update: sinon.stub() },
+        resetView: sinon.stub(),
+        pages: {
+          _next: sinon.stub(),
+          _getCurrentIndex: sinon.stub()
+        }
+      };
+    });
+
+    beforeEach(() => {
+      $form = $(`<div></div>`);
+      $form
+        .append($nextBtn)
+        .append($prevBtn);
+
+      pauseStubs = {};
+      sinon
+        .stub($.fn, 'find')
+        .callsFake(selector => {
+          const result = originalJQueryFind.call($form, selector);
+
+          result.each((idx, element) => {
+            if (element.pause) {
+              pauseStubs[element.id] = sinon.stub(element, 'pause');
+            }
+          });
+
+          return result;
+        });
+    });
+
+    after(() => $.fn.find = originalJQueryFind);
+
+    xit('should pause the multimedia when going to the previous page', fakeAsync(() => {
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $prevBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.video).to.not.be.undefined;
+      expect(pauseStubs.video.calledOnce).to.be.true;
+      expect(pauseStubs.audio).to.not.be.undefined;
+      expect(pauseStubs.audio.calledOnce).to.be.true;
+    }));
+
+    xit('should pause the multimedia when going to the next page', fakeAsync(() => {
+      form.pages._next.resolves(true);
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $nextBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.video).to.not.be.undefined;
+      expect(pauseStubs.video.calledOnce).to.be.true;
+      expect(pauseStubs.audio).to.not.be.undefined;
+      expect(pauseStubs.audio.calledOnce).to.be.true;
+    }));
+
+    xit('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
+      form.pages._next.resolves(false);
+      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $nextBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.video).to.be.undefined;
+      expect(pauseStubs.audio).to.be.undefined;
+    }));
+
+    xit('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
+      overrideNavigationButtonsStub.call(service, form, $form);
+
+      $prevBtn.trigger('click.pagemode');
+      $nextBtn.trigger('click.pagemode');
+      flush();
+
+      expect(pauseStubs.video).to.be.undefined;
+      expect(pauseStubs.audio).to.be.undefined;
+    }));
   });
 });

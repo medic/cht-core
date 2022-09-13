@@ -46,7 +46,7 @@ describe('MultipleUserCtrl controller', () => {
           $rootScope: $rootScope,
           $q: Q,
           $uibModalInstance: uibModalInstance,
-        }); 
+        });
       };
       mockMultipleUserUpload = () => {
         createController();

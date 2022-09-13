@@ -17,9 +17,11 @@ export const Actions = {
   setRightActionBar: createSingleValueAction('SET_RIGHT_ACTION_BAR', 'right'),
   setRightActionBarVerified: createSingleValueAction('SET_ACTION_BAR_RIGHT_VERIFIED', 'verified'),
   updateRightActionBar: createSingleValueAction('UPDATE_RIGHT_ACTION_BAR', 'right'),
-  clearFilters: createAction('CLEAR_FILTERS'),
+  clearFilters: createSingleValueAction('CLEAR_FILTERS', 'skip'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
+  setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
+  clearSidebarFilter: createAction('CLEAR_SIDEBAR_FILTER'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
@@ -88,8 +90,8 @@ export class GlobalActions {
     this.setShowActionBar(true);
   }
 
-  clearFilters() {
-    return this.store.dispatch(Actions.clearFilters());
+  clearFilters(skip?) {
+    return this.store.dispatch(Actions.clearFilters(skip));
   }
 
   setFilter(filter) {
@@ -98,6 +100,14 @@ export class GlobalActions {
 
   setFilters(filters) {
     return this.store.dispatch(Actions.setFilters(filters));
+  }
+
+  setSidebarFilter(sidebarFilter) {
+    return this.store.dispatch(Actions.setSidebarFilter(sidebarFilter));
+  }
+
+  clearSidebarFilter() {
+    return this.store.dispatch(Actions.clearSidebarFilter());
   }
 
   setSelectMode(selectMode) {

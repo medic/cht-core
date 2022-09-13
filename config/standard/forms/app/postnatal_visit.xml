@@ -2349,7 +2349,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
         </translation>
       </itext>
       <instance>
-        <postnatal_visit id="postnatal_visit" prefix="J1!postnatal_visit!" delimiter="#" version="2018-11-14_10-19">
+        <postnatal_visit id="postnatal_visit" prefix="J1!postnatal_visit!" delimiter="#" version="2022-03-03 15-46">
           <inputs>
             <meta>
               <location>
@@ -2390,7 +2390,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
           <group_chw_info tag="hidden">
             <chw_information/>
             <call_button/>
-            <attended_pnc>yes</attended_pnc>
+            <attended_pnc/>
           </group_chw_info>
           <group_who_assessed tag="hidden">
             <g_who_assessed/>
@@ -2478,12 +2478,12 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
       <bind nodeset="/postnatal_visit/danger_signs_baby" type="string" calculate=" /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby "/>
       <bind nodeset="/postnatal_visit/chw_sms" type="string" calculate="if( /postnatal_visit/group_note/g_chw_sms  != '', concat( /postnatal_visit/group_note/default_chw_sms_text ,concat('
 ', /postnatal_visit/group_note/g_chw_sms )),  /postnatal_visit/group_note/default_chw_sms_text )"/>
-      <bind nodeset="/postnatal_visit/visit_confirmed" type="string" calculate=" /postnatal_visit/group_chw_info/attended_pnc "/>
+      <bind nodeset="/postnatal_visit/visit_confirmed" type="string" calculate="coalesce( /postnatal_visit/group_chw_info/attended_pnc , 'yes')"/>
       <bind nodeset="/postnatal_visit/group_chw_info" relevant=" /postnatal_visit/inputs/source  = 'task'"/>
       <bind nodeset="/postnatal_visit/group_chw_info/chw_information" readonly="true()" type="string"/>
       <bind nodeset="/postnatal_visit/group_chw_info/call_button" readonly="true()" type="string"/>
       <bind nodeset="/postnatal_visit/group_chw_info/attended_pnc" type="select1" required="true()"/>
-      <bind nodeset="/postnatal_visit/group_who_assessed" relevant=" /postnatal_visit/group_chw_info/attended_pnc  = 'yes'"/>
+      <bind nodeset="/postnatal_visit/group_who_assessed" relevant=" /postnatal_visit/visit_confirmed  = 'yes'"/>
       <bind nodeset="/postnatal_visit/group_who_assessed/g_who_assessed" type="select1" required="true()"/>
       <bind nodeset="/postnatal_visit/group_danger_signs_mom" relevant=" /postnatal_visit/group_who_assessed/g_who_assessed  = 'mom' or  /postnatal_visit/group_who_assessed/g_who_assessed  = 'both'"/>
       <bind nodeset="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom" type="select"/>
@@ -2491,7 +2491,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
       <bind nodeset="/postnatal_visit/group_danger_signs_baby" relevant=" /postnatal_visit/group_who_assessed/g_who_assessed  = 'baby' or  /postnatal_visit/group_who_assessed/g_who_assessed  = 'both'"/>
       <bind nodeset="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby" type="select"/>
       <bind nodeset="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other" type="string" required="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd11')"/>
-      <bind nodeset="/postnatal_visit/group_note/default_chw_sms" type="select1" calculate="if( /postnatal_visit/group_chw_info/attended_pnc  = 'yes',
+      <bind nodeset="/postnatal_visit/group_note/default_chw_sms" type="select1" calculate="if( /postnatal_visit/visit_confirmed  = 'yes',
  if( /postnatal_visit/group_who_assessed/g_who_assessed  = 'both',
  if( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != '',
  if( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby  != '',
@@ -2519,14 +2519,14 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
       <bind nodeset="/postnatal_visit/group_note/default_chw_sms_text" type="string" calculate="jr:choice-name( /postnatal_visit/group_note/default_chw_sms ,' /postnatal_visit/group_note/default_chw_sms ')"/>
       <bind nodeset="/postnatal_visit/group_note/default_chw_sms_note" readonly="true()" type="string"/>
       <bind nodeset="/postnatal_visit/group_note/is_sms_edited" type="select1" required="true()"/>
-      <bind nodeset="/postnatal_visit/group_note/g_chw_sms" type="string" constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/postnatal_visit/group_note/g_chw_sms:jr:constraintMsg')"/>
+      <bind nodeset="/postnatal_visit/group_note/g_chw_sms" type="string" jr:constraintMsg="jr:itext('/postnatal_visit/group_note/g_chw_sms:jr:constraintMsg')" constraint="string-length(.) &lt;= 715"/>
       <bind nodeset="/postnatal_visit/group_review/submit" readonly="true()" type="string"/>
       <bind nodeset="/postnatal_visit/group_review/r_summary" readonly="true()" type="string"/>
       <bind nodeset="/postnatal_visit/group_review/r_patient_id" type="string" calculate="../../inputs/contact/patient_id"/>
       <bind nodeset="/postnatal_visit/group_review/r_postnatal_details" readonly="true()" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_visit" readonly="true()" type="string" relevant=" /postnatal_visit/group_chw_info/attended_pnc  != ''"/>
-      <bind nodeset="/postnatal_visit/group_review/r_visit_yes" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_chw_info/attended_pnc , 'yes')"/>
-      <bind nodeset="/postnatal_visit/group_review/r_visit_no" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_chw_info/attended_pnc ,'no')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_visit" readonly="true()" type="string" relevant=" /postnatal_visit/visit_confirmed  != ''"/>
+      <bind nodeset="/postnatal_visit/group_review/r_visit_yes" readonly="true()" type="string" relevant="selected( /postnatal_visit/visit_confirmed , 'yes')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_visit_no" readonly="true()" type="string" relevant="selected( /postnatal_visit/visit_confirmed ,'no')"/>
       <bind nodeset="/postnatal_visit/group_review/r_danger_signs" readonly="true()" type="string" relevant=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != '' or  /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby  != ''"/>
       <bind nodeset="/postnatal_visit/group_review/r_mom_danger_signs" readonly="true()" type="string" relevant=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != ''"/>
       <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign1" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd1')"/>

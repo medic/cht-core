@@ -9,11 +9,8 @@ module.exports = {
   fullTrace: true,
   asyncOnly: false,
   spec: [
-    'tests/e2e/api/**/*.js',
-    'tests/integration/**/*.js',
-    'tests/e2e/sentinel/**/*.js',
-    'tests/e2e/transitions/**/*.js',
-    'tests/cht-conf/**/*.js'
+    'tests/integration/!(cht-conf)/**/*.spec.js',
+    'tests/integration/cht-conf/**/*.spec.js', // Executing last to not side-effect sentinel tests.
   ],
   timeout: 200 * 1000, //API takes a little long to start up
   reporter: 'spec',

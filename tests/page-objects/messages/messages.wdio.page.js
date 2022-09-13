@@ -1,6 +1,7 @@
 //LHS Elements
 const messageByIndex = index => $(`#message-list li:nth-child(${index})`);
 const messageInList = identifier => $(`#message-list li[test-id="${identifier}"]`);
+const messagesList = () => $('#message-list');
 const waitForMessagesInLHS = async () => await browser.waitUntil(
   async () => await (await messageByIndex(1)).waitForDisplayed(),
   5000,
@@ -35,5 +36,6 @@ module.exports = {
   messageDetailsHeader,
   messageContentText,
   messageContentIndex,
-  messageDetailStatus
+  messageDetailStatus,
+  messagesList
 };

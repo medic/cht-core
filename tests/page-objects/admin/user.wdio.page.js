@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const commonElements = require('../common/common.wdio.page');
 const addUserButton = () => $('a#add-user');
 const cancelUserModalButton = () => $('[test-id="modal-cancel-btn"]');
 const addUserDialog = () => $('div#edit-user-profile');
@@ -113,11 +114,7 @@ const logout = async () => {
 
 const getAllUsernames = async () => {
   await (await usernameText()).waitForDisplayed();
-  return getTextForElements(usernameTextList);
-};
-
-const getTextForElements = async (elements) => {
-  return Promise.all((await elements()).map(filter => filter.getText()));
+  return commonElements.getTextForElements(usernameTextList);
 };
 
 const getUsernameErrorText = async () => {

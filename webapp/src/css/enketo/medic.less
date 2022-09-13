@@ -14,6 +14,18 @@
 .enketo {
   position: relative;
 
+  form {
+    #form-languages {
+      display: none;
+    }
+    .option-wrapper {
+      .option-label {
+        white-space: normal;
+        word-break: normal;
+      }
+    }
+  }
+
   #form-title {
     border-bottom: 1px solid @separator-color;
   }
@@ -27,8 +39,19 @@
     font-size: @font-large;
   }
 
+  .or-repeat .remove {
+    display: inline-block;
+  }
   .btn-primary {
     background-color: @button-color;
+  }
+  .btn-icon-only {
+    padding: 0;
+    width: inherit;
+  }
+  .icon {
+    position: relative;
+    top: 1px;
   }
   .or-group {
     margin: 15px 0 0 0;
@@ -45,6 +68,9 @@
     h4 {
       padding: 15px 20px;
       text-align: left;
+    }
+    .question-label {
+      display: inline;
     }
   }
   // nested group
@@ -76,7 +102,6 @@
   label,
   legend,
   .btn,
-  .note,
   .or-required-msg.active,
   .or-constraint-msg.active,
   .or-hint.active,
@@ -120,21 +145,10 @@
       float: left;
     }
   }
-  .note {
-    border: 0;
-    display: block;
-    padding: 7px 12px;
-    margin: 15px 0;
-  }
   label,
-  .question,
-  .note {
+  .question {
     padding-left: 20px;
     padding-right: 20px;
-  }
-  .note {
-    border: 0;
-    font-weight: normal;
   }
   .container {
     padding: 0;
@@ -146,8 +160,7 @@
   .or-appearance-hidden {
     display: none !important;
   }
-  .question,
-  .note {
+  .question {
     input[type="text"],
     input[type="password"],
     input[type="url"],
@@ -189,10 +202,16 @@
     input[type=checkbox]:checked {
       background-position: -1px;
     }
+    .date input[type=text] {
+      width: 180px;
+    }
   }
   input[type="tel"] {
     /* inherit all standard TEXT input styles */
     &:extend(.enketo input[type="text"]);
+  }
+  .readonly {
+    font-weight: normal;
   }
   .invalid-constraint,
   .invalid-required {
@@ -212,12 +231,20 @@
   em {
     font-style: italic;
   }
-  .or-appearance-countdown-timer canvas {
-    width: 100%;
-    max-width: 320px;
-    display: block;
+  .or-appearance-countdown-timer {
+    input {
+      display: none;
+    }
+    canvas {
+      width: 100%;
+      max-width: 320px;
+      display: block;
+    }
   }
   .or-appearance-mrdt-verify {
+    .mrdt-verify {
+      display: inline-block;
+    }
     .mrdt-verify,
     .mrdt-preview {
       margin: 8px 0;
@@ -236,6 +263,7 @@
   }
 
   .option-wrapper > label:not(.filler) {
+    margin-right: 10px;
     padding-top: 8px;
     padding-bottom: 8px;
     border-radius: 4px;
@@ -403,7 +431,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: @media-mobile) {
   .enketo {
     #form-title {
       display: none;

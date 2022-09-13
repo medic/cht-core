@@ -1,17 +1,34 @@
-<multi-dropdown-filter
-  [items]="forms"
-  [itemLabel]="itemLabel"
-  (applyFilter)="applyFilter($event)"
-  labelNoFilter="All form types"
-  labelFilter="Number of form types"
-  [disabled]="disabled"
->
-  <span class="fa fa-list-alt"></span>
-  <ul>
-    <li role="presentation" *ngFor="let form of forms; trackBy: trackByFn" [class.selected]="dropdownFilter?.selected.has(form)">
-      <a role="menuitem" tabindex="-1" [attr.data-value]="form" (click)="dropdownFilter?.toggle(form)">
-        {{form.title || form.code}}
-      </a>
-    </li>
+<div class="mm-form-type-filter" [id]="fieldId">
+  <multi-dropdown-filter
+    *ngIf="!inline"
+    [items]="forms"
+    [itemLabel]="itemLabel"
+    (applyFilter)="applyFilter($event)"
+    labelNoFilter="All form types"
+    labelFilter="Number of form types"
+    [disabled]="disabled">
+    <span class="fa fa-list-alt"></span>
+    <ul class="filter-options">
+      <ng-container
+        [ngTemplateOutlet]="optionsTemplate"
+        [ngTemplateOutletContext]="{ forms: forms, filter: dropdownFilter }">
+      </ng-container>
+    </ul>
+  </multi-dropdown-filter>
+
+  <ul class="filter-options" *ngIf="inline">
+    <ng-container
+      [ngTemplateOutlet]="optionsTemplate"
+      [ngTemplateOutletContext]="{ forms: forms, filter: inlineFilter }">
+    </ng-container>
   </ul>
-</multi-dropdown-filter>
+</div>
+
+<ng-template #optionsTemplate let-forms="forms" let-filter="filter">
+  <li
+    role="presentation" *ngFor="let form of forms; trackBy: trackByFn" [class.selected]="filter?.selected.has(form)" [class.disabled]="disabled">
+    <a role="menuitem" tabindex="-1" [attr.data-value]="form" (click)="!disabled && filter?.toggle(form)">
+      {{ form.title || form.code }}
+    </a>
+  </li>
+</ng-template>
