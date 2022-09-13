@@ -12,7 +12,6 @@ const bulkUploadLog = require('./bulk-upload-log');
 const { people, places }  = require('@medic/contacts')(config, db);
 
 const USER_PREFIX = 'org.couchdb.user:';
-const DOC_IDS_WARN_LIMIT = 10000;
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -905,6 +904,4 @@ module.exports = {
    * @param {string} csv CSV of users.
    */
   parseCsv,
-
-  DOC_IDS_WARN_LIMIT,
 };

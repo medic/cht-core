@@ -1,10 +1,10 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const config = require('../../../src/config');
-const db = require('../../../src/db');
-const controller = require('../../../src/controllers/places');
-const people = require('../../../src/controllers/people');
-const cutils = require('../../../src/controllers/utils');
+const config = require('../../src/libs/config');
+const db = require('../../src/libs/db');
+const controller = require('../../src/places');
+const people = require('../../src/people');
+const cutils = require('../../src/libs/utils');
 
 let examplePlace;
 

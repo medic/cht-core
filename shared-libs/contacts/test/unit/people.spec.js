@@ -1,9 +1,9 @@
-const controller = require('../../../src/controllers/people');
+const controller = require('../../src/people');
 const chai = require('chai');
-const places = require('../../../src/controllers/places');
-const cutils = require('../../../src/controllers/utils');
-const config = require('../../../src/config');
-const db = require('../../../src/db');
+const places = require('../../src/places');
+const cutils = require('../../src/libs/utils');
+const config = require('../../src/libs/config');
+const db = require('../../src/libs/db');
 const sinon = require('sinon');
 
 describe('people controller', () => {

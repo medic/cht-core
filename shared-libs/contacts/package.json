@@ -1,5 +1,5 @@
 {
-  "name": "@medic/user-management",
+  "name": "@medic/contacts",
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
@@ -17,13 +17,8 @@
   },
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",
-    "@medic/contacts": "file:../contacts",
     "@medic/lineage": "file:../lineage",
-    "@medic/phone-number": "file:../phone-number",
-    "@medic/settings": "file:../settings",
-    "@medic/task-utils": "file:../task-utils",
     "lodash": "4.17.19",
-    "moment": "^2.29.1",
-    "simple-password-tester": "^1.0.0"
+    "moment": "^2.29.1"
   }
 }

@@ -1,7 +1,7 @@
 const _ = require('lodash');
-const db = require('../db');
-const config = require('../config');
-const utils = require('./utils');
+const db = require('./libs/db');
+const config = require('./libs/config');
+const utils = require('./libs/utils');
 const places = require('./places');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const contactTypeUtils = require('@medic/contact-types-utils');
