@@ -1211,6 +1211,10 @@ describe('Users service', () => {
       medicPut.callsFake(userSettings => Promise.resolve({ id: userSettings._id, rev: 1 }));
       sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
       sinon.stub(db.medicLogs, 'put').resolves({});
+      const getOrCreatePerson = sinon.stub(people, 'getOrCreatePerson').resolves({
+        _id: 'contact_id',
+        _rev: 1,
+      });
 
       const response = await service.createUsers(users);
 
@@ -1244,6 +1248,8 @@ describe('Users service', () => {
           },
         },
       ]);
+      chai.expect(getOrCreatePerson.callCount).to.equal(2);
+      chai.expect(getOrCreatePerson.args).to.deep.equal([['user1'], ['user2']]);
     });
 
     it('succeeds if contact is within place', async () => {
