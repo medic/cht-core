@@ -165,7 +165,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
           conversations?.forEach(conversation => {
             if (conversation.lineage && conversation.lineage.length) {
               conversation.lineage = conversation.lineage.filter(level => level);
-              if(conversation.lineage[conversation.lineage.length-1] === currentLevel){
+              if(conversation.lineage[conversation.lineage.length -1] === currentLevel){
                 conversation.lineage.pop();
               }
             }
