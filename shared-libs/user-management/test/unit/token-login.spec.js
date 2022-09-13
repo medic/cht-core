@@ -11,6 +11,14 @@ let clock;
 
 describe('TokenLogin service', () => {
   beforeEach(() => {
+    config.init({
+      get: () => {},
+      getTransitionsLib: () => {},
+    });
+    db.init({
+      medic: { get: () => {}, put: () => {}, allDocs: () => {} },
+      users: { get: () => {}, put: () => {} },
+    });
     clock = sinon.useFakeTimers();
   });
   afterEach(() => {

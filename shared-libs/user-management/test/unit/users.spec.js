@@ -23,6 +23,15 @@ let service;
 
 describe('Users service', () => {
   beforeEach(() => {
+    config.init({
+      get: () => {},
+      getTransitionsLib: () => {},
+    });
+    db.init({
+      medic: { get: () => {}, put: () => {}, allDocs: () => {}, query: () => {} },
+      medicLogs: { get: () => {}, put: () => {}, },
+      users: { get: () => {}, put: () => {} },
+    });
     addMessage = sinon.stub();
     sinon.stub(config, 'getTransitionsLib').returns({ messages: { addMessage } });
     service = rewire('../../src/users');

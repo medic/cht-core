@@ -5,6 +5,7 @@ const config = require('../../src/libs/config');
 const roles = require('../../src/roles');
 
 describe('roles', () => {
+  beforeEach(() => config.init({ get: () => {} }));
   afterEach(() => sinon.restore());
 
   describe('hasOnlineRole', () => {
