@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
 const db = require('./libs/db');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const lineage = require('./libs/lineage');
 const couchSettings = require('@medic/settings');
 const getRoles = require('./libs/types-and-roles');
 const roles = require('./roles');
@@ -243,8 +243,8 @@ const storeUpdatedPlace = (data, preservePrimaryContact, retry = 0) => {
     return;
   }
 
-  data.place.contact = lineage.minifyLineage(data.contact);
-  data.place.parent = lineage.minifyLineage(data.place.parent);
+  data.place.contact = lineage.get().minifyLineage(data.contact);
+  data.place.parent = lineage.get().minifyLineage(data.place.parent);
 
   return db.medic
     .get(data.place._id)
@@ -279,7 +279,7 @@ const setContactParent = data => {
           return Promise.reject(err);
         }
         // try creating the user
-        data.contact.parent = lineage.minifyLineage(data.place);
+        data.contact.parent = lineage.get().minifyLineage(data.place);
       });
   }
   if (data.contact.parent) {
@@ -290,11 +290,11 @@ const setContactParent = data => {
           return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
         }
         // save result to contact object
-        data.contact.parent = lineage.minifyLineage(place);
+        data.contact.parent = lineage.get().minifyLineage(place);
       });
   }
   // creating new contact
-  data.contact.parent = lineage.minifyLineage(data.place);
+  data.contact.parent = lineage.get().minifyLineage(data.place);
 };
 
 const hasParent = (facility, id) => {
