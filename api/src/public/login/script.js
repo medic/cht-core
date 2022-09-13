@@ -221,7 +221,7 @@ const checkUnsupportedBrowser = () => {
 
   let outdatedComponentKey;
   if (isUsingChtAndroid()) {
-    if (isUsingChtAndroidV1()) {
+    if (!isUsingChtAndroidV1()) {
       outdatedComponentKey = 'login.unsupported_browser.outdated_cht_android';
     } else if (!isUsingSupportedBrowser()) {
       outdatedComponentKey = 'login.unsupported_browser.outdated_webview_apk';
