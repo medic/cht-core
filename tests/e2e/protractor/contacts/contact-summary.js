@@ -1,5 +1,5 @@
 const moment = require('moment');
-const constants = require('../../constants');
+const constants = require('../../../constants');
 const utils = require('../../../utils');
 const helper = require('../../../helper');
 const commonElements = require('../../../page-objects/common/common.po.js');

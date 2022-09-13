@@ -32,8 +32,12 @@ const assertLabels = async ({ selector, count, labelText }) => {
 };
 
 const login = async () => {
-  await loginPage.login({ username: constants.username, password: constants.password, createUser: true });
-  await commonPage.goToBase();
+  await loginPage.login({
+    username: constants.USERNAME,
+    password: constants.PASSWORD,
+    loadPage: true,
+    createUser: true,
+  });
 };
 
 const openRepeatForm = async (formInternalId) => {
