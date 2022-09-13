@@ -154,9 +154,9 @@ export class TasksComponent implements OnInit, OnDestroy {
       const hydratedTasks = await this.hydrateEmissions(taskDocs) || [];
       const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
       if (subjects?.size) {
-        hydratedTasks.forEach(task => {
-          task.lineage = this.getTaskLineage(subjects, task);
-        });
+        for (const task of hydratedTasks) {
+          task.lineage = await this.getTaskLineage(subjects, task);
+        }
       }
 
       this.tasksActions.setTasksList(hydratedTasks);
@@ -188,8 +188,8 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private getLineagesFromTaskDocs(taskDocs) {
     const ids = [...new Set(taskDocs.map(task => task.forId))];
-    return this
-      .lineageModelGeneratorService.reportSubjects(ids)
+    return this.lineageModelGeneratorService
+      .reportSubjects(ids)
       ?.then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
   }
 
@@ -197,23 +197,22 @@ export class TasksComponent implements OnInit, OnDestroy {
     if (!subjects?.size) {
       return;
     }
-    let lineage = subjects
+    const lineage = subjects
       .get(task.forId)
       ?.map(lineage => lineage?.name);
-    lineage = this.cleanAndRemoveCurrentLineage(lineage);
-    return lineage;
+    return this.cleanAndRemoveCurrentLineage(lineage);
   }
 
-  private cleanAndRemoveCurrentLineage(lineage) {
+  private async cleanAndRemoveCurrentLineage(lineage) {
     if(!lineage?.length){
       return;
     }
     lineage = lineage.filter(level => level);
-    this.currentLevel.then(currentLevel => {
-      if(currentLevel === lineage[lineage.length-1]){
-        lineage.pop();
-      }
-    });
+    const userLineageLevel = await this.currentLevel;
+    const item = lineage[lineage.length - 1];
+    if (item === userLineageLevel) {
+      lineage.pop();
+    }
     return lineage;
   }
 }

@@ -16,8 +16,8 @@ import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
-import {UserContactService} from '@mm-services/user-contact.service';
-import {SessionService} from '@mm-services/session.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { SessionService } from '@mm-services/session.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 describe('TasksComponent', () => {
@@ -414,7 +414,7 @@ describe('TasksComponent', () => {
       const expectedTasks = [
         {
           _id: 'e1',
-          date: new Date('2020-10-20'),
+          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
@@ -423,7 +423,7 @@ describe('TasksComponent', () => {
         },
         {
           _id: 'e2',
-          date: new Date('2020-10-20'),
+          date: moment('2020-10-20').toDate(),
           dueDate: '2020-10-20',
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
