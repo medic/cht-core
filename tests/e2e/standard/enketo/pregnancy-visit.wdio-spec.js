@@ -31,16 +31,10 @@ describe('Pregnancy Visit', () => {
     // Submit new pregnancy for pregnantWoman
     await pregnancyForm.submitPregnancy();
     await commonPage.waitForPageLoaded();
-    /*await gatewayApiUtils.api.postMessage({
-      id: 'P-id',
-      from: user.phone,
-      content: `P ${pregnantWoman.patient_id} 27`
-    });*/
   });
 
   it('Submit new pregnancy visit - webapp', async () => {
     const note = 'Test note - pregnancy visit';
-    //await commonPage.goToPeople(pregnantWoman._id);
     await contactPage.contactPageDefault.createNewAction('Pregnancy Visit');
 
     const dangerSigns = await pregnancyVisitForm.selectAllDangerSigns();
