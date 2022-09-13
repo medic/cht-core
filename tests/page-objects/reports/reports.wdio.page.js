@@ -1,4 +1,5 @@
 const commonElements = require('../common/common.wdio.page');
+const searchElements = require('../search/search.wdio.page');
 const utils = require('../../utils');
 
 const reportListID = '#reports-list';
@@ -20,12 +21,12 @@ const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const editReportButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 
-const sidebarFilter = () => $('.sidebar-filter');
 const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
 const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
 const sidebarFilterToDate = () => $('#toDateFilter');
 const sidebarFilterFromDate = () => $('#fromDateFilter');
-const sidebarFilterOpenBtn = () => $('.reports-action-bar .open-filter');
+const sidebarFilterOpenBtn = () => $('mm-search-bar .open-filter');
+const filterResetBtn = () => $('.sidebar-reset');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
@@ -53,7 +54,6 @@ const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
 const patientName = () => $('.subject .name');
 const reportType = () => $('div[test-id="form-title"]');
-
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
@@ -212,8 +212,17 @@ const filterByDate = async (startDate, endDate) => {
 };
 
 const openSidebarFilter = async () => {
-  await (await sidebarFilterOpenBtn()).click();
-  return (await sidebarFilter()).waitForDisplayed();
+  if (!await (await filterResetBtn()).isDisplayed()) {
+    await (await sidebarFilterOpenBtn()).click();
+  }
+  return await (await filterResetBtn()).waitForDisplayed();
+};
+
+const closeSidebarFilter = async () => {
+  if (await (await filterResetBtn()).isDisplayed()) {
+    await (await sidebarFilterOpenBtn()).click();
+  }
+  return await (await filterResetBtn()).waitForDisplayed({ reverse: true });
 };
 
 const openSidebarFilterDateAccordion = async () => {
@@ -284,8 +293,16 @@ const openSelectedReport = async (listElement) => {
   await listElement.click();
 };
 
+const resetFilter = async () => {
+  await openSidebarFilter();
+  await (await filterResetBtn()).waitForDisplayed();
+  await (await filterResetBtn()).click();
+  await closeSidebarFilter();
+  await searchElements.clearSearch();
+};
+
 const openReport = async (reportId) => {
-  await (await $('reset-filters')).click();
+  await resetFilter();
   await (await firstReport()).waitForDisplayed();
   const reportListItem = await reportByUUID(reportId);
   await reportListItem.waitForDisplayed();

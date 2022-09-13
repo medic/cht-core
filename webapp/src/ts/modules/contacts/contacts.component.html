@@ -1,6 +1,7 @@
 <div class="filters">
   <div class="inner">
     <contacts-filters
+      *ngIf="!useSearchNewDesign"
       (search)="search()"
       (sort)="sort($event)"
       [disabled]="false"
@@ -8,6 +9,14 @@
       [lastVisitedDateExtras]="lastVisitedDateExtras">
     </contacts-filters>
     <mm-navigation></mm-navigation>
+    <mm-search-bar
+      *ngIf="useSearchNewDesign"
+      [showSort]="true"
+      [sortDirection]="sortDirection"
+      [lastVisitedDateExtras]="lastVisitedDateExtras"
+      (sort)="sort($event)"
+      (search)="search()">
+    </mm-search-bar>
   </div>
 </div>
 

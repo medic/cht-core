@@ -4,7 +4,8 @@ const serverUtils = require('../server-utils');
 const service = require('../services/upgrade');
 
 const upgrade = (req, res, stageOnly) => {
-  return auth.check(req, 'can_upgrade')
+  return auth
+    .check(req, 'can_upgrade')
     .then(userCtx => {
       const buildInfo = req.body.build;
       if (!buildInfo) {
@@ -14,7 +15,8 @@ const upgrade = (req, res, stageOnly) => {
         };
       }
 
-      return service.upgrade(req.body.build, userCtx.user, {stageOnly: stageOnly})
+      return service
+        .upgrade(req.body.build, userCtx.name, {stageOnly: stageOnly})
         .then(() => res.json({ ok: true }));
     })
     .catch(err => serverUtils.error(err, req, res));
@@ -24,9 +26,11 @@ module.exports = {
   upgrade: (req, res) => upgrade(req, res, false),
   stage: (req, res) => upgrade(req, res, true),
   complete: (req, res) => {
-    return auth.check(req, 'can_upgrade')
+    return auth
+      .check(req, 'can_upgrade')
       .then(() => {
-        return service.complete()
+        return service
+          .complete()
           .then(() => res.json({ ok: true }));
       })
       .catch(err => serverUtils.error(err, req, res));

@@ -21,7 +21,8 @@ const generate = (req, options) => {
 };
 
 const process = (req, res, options) => {
-  return auth.check(req, 'can_create_records')
+  return auth
+    .check(req, 'can_create_records')
     .then(() => generate(req, options))
     .then(doc => runTransitions(doc))
     .then(result => {

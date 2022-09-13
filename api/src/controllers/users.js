@@ -9,7 +9,7 @@ const bulkUploadLog = require('../services/bulk-upload-log');
 
 const hasFullPermission = req => {
   return auth
-    .check(req, 'can_update_users')
+    .check(req, ['can_edit', 'can_update_users'])
     .then(() => true)
     .catch(err => {
       if (err.code === 403) {
@@ -127,7 +127,7 @@ module.exports = {
   },
   create: (req, res) => {
     return auth
-      .check(req, 'can_create_users')
+      .check(req, ['can_edit', 'can_create_users'])
       .then(() => usersService.createUsers(req.body, getAppUrl(req)))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
@@ -204,7 +204,7 @@ module.exports = {
   },
   delete: (req, res) => {
     auth
-      .check(req, 'can_delete_users')
+      .check(req, ['can_edit', 'can_delete_users'])
       .then(() => usersService.deleteUser(req.params.username))
       .then(result => res.json(result))
       .catch(err => serverUtils.error(err, req, res));
@@ -229,7 +229,7 @@ module.exports = {
   v2: {
     create: async (req, res) => {
       try {
-        await auth.check(req, 'can_create_users');
+        await auth.check(req, ['can_edit', 'can_create_users']);
         const logId = await bulkUploadLog.createLog(req, 'user');
         let users;
         let ignoredUsers;
