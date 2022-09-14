@@ -1,27 +1,3 @@
-const utils = require('../../utils');
-const fs = require('fs');
-
-const xml = fs.readFileSync(`${__dirname}/../../forms/multiple-repeats.xml`, 'utf8');
-
-const docs = [
-  {
-    _id: 'form:add-family',
-    internalId: 'any',
-    title: 'AddFamily',
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer.from(xml).toString('base64'),
-      },
-    },
-  },
-];
-
-const configureForm =  async (contactId) => {
-  await utils.seedTestData(contactId, docs);
-};
-
 const fillPrimaryCaregiver =  async caregiverName => {
   const primaryCaregiverField = await $('[name="/data/contact/name"]');
   await primaryCaregiverField.setValue(caregiverName);
