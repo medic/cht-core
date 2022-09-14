@@ -63,7 +63,7 @@ describe('TasksComponent', () => {
     userContactService = {
       get: sinon.stub().resolves(),
     };
-    lineageModelGeneratorService = { reportSubjects: sinon.stub() };
+    lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
 
     TestBed.configureTestingModule({
       imports: [
