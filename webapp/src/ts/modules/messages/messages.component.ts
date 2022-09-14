@@ -163,11 +163,12 @@ export class MessagesComponent implements OnInit, OnDestroy {
         // Remove the lineage level that belongs to the offline logged-in user.
         if (currentLevel) {
           conversations?.forEach(conversation => {
-            if (conversation.lineage && conversation.lineage.length) {
-              conversation.lineage = conversation.lineage.filter(level => level);
-              if(conversation.lineage[conversation.lineage.length -1] === currentLevel){
-                conversation.lineage.pop();
-              }
+            if (!conversation.lineage?.length) {
+              return;
+            }
+            conversation.lineage = conversation.lineage.filter(level => level);
+            if(conversation.lineage[conversation.lineage.length -1] === currentLevel){
+              conversation.lineage.pop();
             }
           });
         }
