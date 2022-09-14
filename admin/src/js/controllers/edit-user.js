@@ -21,6 +21,7 @@ angular
     FormatDate,
     Languages,
     Select2Search,
+    Session,
     Settings,
     Translate,
     UpdateUser
@@ -223,8 +224,7 @@ angular
       return true;
     };
 
-    const isOnlineUser = (roles) => { // TODO extract as common function?
-      // TODO if ANY are online then don't replicate? What does dbsync do? WHat does API do?
+    const isOnlineUser = (roles) => {
       if (!$scope.roles) {
         return true;
       }
@@ -336,7 +336,7 @@ angular
       }
 
       const query = {
-        role: $scope.editUserModel.roles, // TODO test this
+        role: $scope.editUserModel.roles,
         facility_id: $scope.editUserModel.place,
         contact_id: $scope.editUserModel.contact
       };
