@@ -21,7 +21,6 @@ angular
     FormatDate,
     Languages,
     Select2Search,
-    Session,
     Settings,
     Translate,
     UpdateUser
