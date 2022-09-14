@@ -1,9 +1,15 @@
 const _ = require('lodash');
 const properties = require('properties');
 const db = require('./db');
-const DDOC_ID = '_design/medic';
-const TRANSLATION_FILE_NAME_REGEX = /translations\/messages-([a-z]*)\.properties/;
+const environment = require('./environment');
+const fs = require('fs');
+const util = require('util');
+const path = require('path');
+const TRANSLATION_FILE_NAME_REGEX = /messages-([a-z]*)\.properties/;
 const DOC_TYPE = 'translations';
+const MESSAGES_DOC_ID_PREFIX = 'messages-';
+
+const parseProperties = util.promisify(properties.parse);
 
 const LOCAL_NAME_MAP = {
   bm: 'Bamanankan (Bambara)',
@@ -25,7 +31,7 @@ const extractLocaleCode = filename => {
 
 const createDoc = attachment => {
   return {
-    _id: [ 'messages', attachment.code ].join('-'),
+    _id: `${MESSAGES_DOC_ID_PREFIX}${attachment.code}`,
     type: DOC_TYPE,
     code: attachment.code,
     name: LOCAL_NAME_MAP[attachment.code] || attachment.code,
@@ -34,96 +40,86 @@ const createDoc = attachment => {
   };
 };
 
-const overwrite = (attachments, docs) => {
+const overwrite = (translationFiles, docs) => {
   const updatedDocs = [];
-  const english = _.find(attachments, { code: 'en' });
+  const english = translationFiles.find(file => file.code === 'en');
   const knownKeys = english ? Object.keys(english.generic) : [];
-  attachments.forEach(attachment => {
-    const code = attachment.code;
+
+  translationFiles.forEach(file => {
+    const code = file.code;
     if (!code) {
       return;
     }
     knownKeys.forEach(knownKey => {
-      const value = attachment.generic[knownKey];
+      const value = file.generic[knownKey];
       if (_.isUndefined(value) || value === null) {
-        attachment.generic[knownKey] = knownKey;
+        file.generic[knownKey] = knownKey;
       } else if (typeof value !== 'string') {
-        attachment.generic[knownKey] = String(value);
+        file.generic[knownKey] = String(value);
       }
     });
-    const doc = _.find(docs, { code: code });
-    if (doc) {
-      if (!_.isEqual(doc.generic, attachment.generic)) {
-        // backup the modified attachment
-        doc.generic = attachment.generic;
-        updatedDocs.push(doc);
-      }
-    } else {
-      updatedDocs.push(createDoc(attachment));
+
+    const doc = docs.find(doc => doc.code === code);
+    if (!doc) {
+      updatedDocs.push(createDoc(file));
+      return;
+    }
+
+    if (!_.isEqual(doc.generic, file.generic)) {
+      // backup the modified attachment
+      doc.generic = file.generic;
+      updatedDocs.push(doc);
     }
   });
   return updatedDocs;
 };
 
-const getAttachment = name => {
-  return db.medic.getAttachment(DDOC_ID, name)
-    .then(attachment => {
-      return new Promise((resolve, reject) => {
-        properties.parse(attachment.toString('utf8'), (err, values) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve({
-            code: extractLocaleCode(name),
-            generic: values
-          });
-        });
-      });
-    });
-};
-
-const getAttachments = () => {
-  return db.medic.get(DDOC_ID)
-    .then(ddoc => {
-      if (!ddoc._attachments) {
-        return [];
-      }
-      const attachments = _.filter(Object.keys(ddoc._attachments), key => {
-        return key.match(TRANSLATION_FILE_NAME_REGEX);
-      });
-      return Promise.all(attachments.map(getAttachment));
-    });
-};
-
-const getDocs = options => {
-  return db.medic.query('medic-client/doc_by_type', options)
-    .then(response => {
-      return _.map(response.rows, 'doc');
-    });
-};
-
 const getTranslationDocs = () => {
-  return getDocs({
-    startkey: [ DOC_TYPE, false ],
-    endkey: [ DOC_TYPE, true ],
-    include_docs: true
+  return db.medic
+    .allDocs({ startkey: MESSAGES_DOC_ID_PREFIX, endkey: `${MESSAGES_DOC_ID_PREFIX}\ufff0`, include_docs: true })
+    .then(response => response.rows.map(row => row.doc));
+};
+
+const getEnabledLocales = () => {
+  return getTranslationDocs().then(docs => docs.filter(doc => doc.enabled));
+};
+
+const readTranslationFile = (fileName, folderPath) => {
+  const filePath = path.join(folderPath, fileName);
+  return fs.promises
+    .readFile(filePath, 'utf8')
+    .then(fileContents => parseProperties(fileContents))
+    .then(values => ({
+      code: extractLocaleCode(fileName),
+      generic: values
+    }));
+};
+
+const getTranslationFiles = () => {
+  const translationsPath = path.join(environment.resourcesPath, 'translations');
+  return fs.promises.readdir(translationsPath).then(files => {
+    const translationsFiles = files.filter(file => file && file.match(TRANSLATION_FILE_NAME_REGEX));
+    return Promise.all(translationsFiles.map(fileName => readTranslationFile(fileName, translationsPath)));
   });
 };
 
 module.exports = {
   run: () => {
-    return getAttachments()
-      .then(attachments => {
-        if (!attachments.length) {
-          return;
-        }
-        return Promise.all([ getTranslationDocs() ])
-          .then(([ docs ]) => overwrite(attachments, docs))
-          .then(updated => {
-            if (updated.length) {
-              return db.medic.bulkDocs(updated);
-            }
-          });
-      });
-  }
+    return getTranslationFiles().then(files => {
+      if (!files.length) {
+        return;
+      }
+
+      return Promise
+        .all([ getTranslationDocs() ])
+        .then(([ docs ]) => overwrite(files, docs))
+        .then(updated => {
+          if (updated.length) {
+            return db.medic.bulkDocs(updated);
+          }
+        });
+    });
+  },
+  getEnabledLocales,
+  getTranslationDocs,
 };

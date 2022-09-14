@@ -1,8 +1,12 @@
 const loginPage = require('../../../page-objects/login/login.wdio.page');
 const commonPage = require('../../../page-objects/common/common.wdio.page');
 const modalPage = require('../../../page-objects/common/modal.wdio.page');
-const auth = require('../../../auth')();
+const constants = require('../../../constants');
 
+const auth = {
+  username: constants.USERNAME,
+  password: constants.PASSWORD
+};
 
 describe('Login and logout tests', () => {
   const defaultLocales = [

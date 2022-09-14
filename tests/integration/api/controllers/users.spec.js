@@ -1,5 +1,5 @@
 const constants = require('../../../constants');
-const http = require('http');
+const https = require('https');
 const utils = require('../../../utils');
 const uuid = require('uuid').v4;
 const querystring = require('querystring');
@@ -110,7 +110,6 @@ describe('Users API', () => {
       return new Promise((resolve, reject) => {
         const options = {
           hostname: constants.API_HOST,
-          port: constants.API_PORT,
           path: '/_session',
           method: 'POST',
           headers: {
@@ -120,9 +119,9 @@ describe('Users API', () => {
         };
 
         // Use http service to extract cookie
-        const req = http.request(options, res => {
+        const req = https.request(options, res => {
           if (res.statusCode !== 200) {
-            return reject('Expected 200 from _session authing');
+            return reject(new Error(`Expected 200 from _session authing, but got ${res.statusCode}`));
           }
 
           // Example header:
@@ -337,12 +336,15 @@ describe('Users API', () => {
       };
       await utils.createUsers([ otherAdmin ]);
       // Set admin user's password in CouchDB config.
-      await utils.request({
-        port: constants.COUCH_PORT,
-        method: 'PUT',
-        path: `/_node/${constants.COUCH_NODE_NAME}/_config/admins/${otherAdmin.username}`,
-        body: `"${otherAdmin.password}"`,
-      });
+      const membership = await utils.request({ path: '/_membership' });
+      const nodes = membership.all_nodes;
+      for (const nodeName of nodes) {
+        await utils.request({
+          method: 'PUT',
+          path: `/_node/${nodeName}/_config/admins/${otherAdmin.username}`,
+          body: `"${otherAdmin.password}"`,
+        });
+      }
 
       // Update password with new value.
       const userResponse = await utils
@@ -351,7 +353,9 @@ describe('Users API', () => {
           method: 'POST',
           body: { password: newPassword }
         })
-        .catch(() => chai.assert.fail('Should not throw error'));
+        .catch((err) => {
+          chai.assert.fail(err);
+        });
 
       chai.expect(userResponse.user).to.not.be.undefined;
       chai.expect(userResponse.user.id).to.equal('org.couchdb.user:admin2');
@@ -911,7 +915,7 @@ describe('Users API', () => {
         ]);
       });
 
-      it('should create many users where many fail to be created w/o token_login', async () => {
+      it('should fail to create many users with invalid fields w/o token_login', async () => {
         const users = [
           {
             username: 'offline5',
@@ -1041,6 +1045,8 @@ describe('Users API', () => {
           contact: { id: user.contact._id },
         })));
 
+        await utils.delayPromise(1000);
+
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
           const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
@@ -1150,6 +1156,8 @@ describe('Users API', () => {
           });
           chai.expect(responseUser.token_login).to.have.keys('expiration_date');
         });
+
+        await utils.delayPromise(1000);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
@@ -1327,6 +1335,7 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
+          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1405,6 +1414,7 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
+          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1440,6 +1450,7 @@ describe('Users API', () => {
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
+            return utils.delayPromise(1000);
           })
           .then(() => expectPasswordLoginToFail(user))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))

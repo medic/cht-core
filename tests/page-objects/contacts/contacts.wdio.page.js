@@ -61,7 +61,6 @@ const search = async (query) => {
   await (await searchBox()).setValue(query);
   await browser.keys('Enter');
   await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
-  await (await emptySelection()).waitForDisplayed();
 };
 
 const findRowByText = async (text) => {
@@ -293,7 +292,7 @@ module.exports = {
   openReport,
   getContactCardTitle,
   getContactInfoName,
-  getContactMedicID,  
+  getContactMedicID,
   actionResourceIcon,
   newPrimaryContactButton,
   newPrimaryContactName,

@@ -33,12 +33,15 @@ const fillPrimaryTel =  async () => {
 };
 
 const fillSexAndAge =  async () => {
-  // 0 - female; 1 - male
-  const sex = await $$('[name="/data/ephemeral_dob/g_sex"]');
-  const female = sex[0];
+  await selectSex();
   const age = await $('[name="/data/ephemeral_dob/age"]');
-  await female.click();
   await age.setValue(20);
+};
+
+const selectSex = async () => {
+  const sex = await $('input[name="/data/ephemeral_dob/g_sex"]');
+  await sex.waitForDisplayed();
+  await sex.click();
 };
 
 const fillChildren =  async () => {
@@ -68,17 +71,19 @@ const registerWomenOption =  async () => {
 
 const finalSurvey =  async (sourceWater, mosqNet, hygenicToilet, familyPlan) => {
   // Source of water: 0 - Boreholes; 1- Spring
-  const sourceOfWater = await $$('.current fieldset:first-of-type input');
-  // Mosquito net: 0 - yes; 1 - no
-  const mosquitoNet = await $$('.current fieldset:nth-of-type(2) input');
-  // Hygienic toilet: 0 - yes; 1 - no
-  const hygienicToilet = await $$('.current fieldset:nth-of-type(3) input');
-  // Family Planning: 0 - UCID; 1 - Condoms
-  const familyPlanning = await $$('.current fieldset:nth-of-type(4) input');
-
+  const sourceOfWater = await $$('input[name="/data/clinic/household_survey/source_of_drinking_water"]');
   await sourceOfWater[sourceWater].click();
+
+  // Mosquito net: 0 - yes; 1 - no
+  const mosquitoNet = await $$('input[name="/data/clinic/household_survey/mosquito_nets"]');
   await mosquitoNet[mosqNet].click();
+
+  // Hygienic toilet: 0 - yes; 1 - no
+  const hygienicToilet = await $$('input[name="/data/clinic/household_survey/hygeinic_toilet"]');
   await hygienicToilet[hygenicToilet].click();
+
+  // Family Planning: 0 - UCID; 1 - Condoms
+  const familyPlanning = await $$('input[name="/data/clinic/household_survey/family_planning_method"]');
   await familyPlanning[familyPlan].click();
 };
 

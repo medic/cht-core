@@ -43,7 +43,7 @@ describe('validate doc update', () => {
   };
 
   const serverValidateDocUpdate = function() {
-    const fn = fs.readFileSync('./ddocs/medic/validate_doc_update.js');
+    const fn = fs.readFileSync('./ddocs/medic-db/medic/validate_doc_update.js');
     eval('(' + fn + ')').apply(null, arguments);
   };
 

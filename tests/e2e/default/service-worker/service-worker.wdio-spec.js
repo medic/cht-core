@@ -124,7 +124,7 @@ describe('Service worker cache', () => {
   });
 
   it('branding updates trigger login page refresh', async () => {
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
+    const waitForLogs = await utils.waitForApiLogs(SW_SUCCESSFUL_REGEX);
     const branding = await utils.getDoc('branding');
     branding.title = 'Not Medic';
     await utils.saveDoc(branding);
@@ -139,7 +139,7 @@ describe('Service worker cache', () => {
   });
 
   it('login page translation updates trigger login page refresh', async () => {
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
+    const waitForLogs = await utils.waitForApiLogs(SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('en', {
       'User Name': 'NotUsername',
       'login': 'NotLogin',
@@ -157,7 +157,7 @@ describe('Service worker cache', () => {
   });
 
   it('adding new languages triggers login page refresh', async () => {
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
+    const waitForLogs = await utils.waitForApiLogs(SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('ro', {
       'User Name': 'Utilizator',
       'Password': 'Parola',
@@ -182,7 +182,7 @@ describe('Service worker cache', () => {
 
     const cacheDetails = await getCachedRequests(true);
 
-    const waitForLogs = utils.waitForLogs(utils.apiLogFile, SW_SUCCESSFUL_REGEX);
+    const waitForLogs = await utils.waitForApiLogs(SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('en', {
       'ran': 'dom',
       'some': 'thing',
@@ -200,19 +200,6 @@ describe('Service worker cache', () => {
 
   it('should load the page while offline', async () => {
     await browser.throttle('offline');
-    await browser.refresh();
-    await (await commonPage.analyticsTab()).waitForDisplayed();
-    await browser.throttle('online');
-  });
-
-  it('should load the page while on a very slow connection', async () => {
-    const turtleMode = {
-      offline: false,
-      latency: 60000, // take a minute to respond to any request
-      downloadThroughput: -1,
-      uploadThroughput: -1
-    };
-    await browser.throttle(turtleMode);
     await browser.refresh();
     await (await commonPage.analyticsTab()).waitForDisplayed();
     await browser.throttle('online');

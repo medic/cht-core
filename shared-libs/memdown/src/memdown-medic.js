@@ -45,12 +45,7 @@ const loadView = (viewsDir, viewName) => {
 };
 
 const loadDdoc = (rootDir, dbName, ddocName) => {
-  let viewsDir;
-  if (dbName) {
-    viewsDir = path.join(rootDir, 'ddocs', dbName, ddocName, 'views');
-  } else {
-    viewsDir = path.join(rootDir, 'ddocs', ddocName, 'views');
-  }
+  const viewsDir = path.join(rootDir, 'ddocs', dbName, ddocName, 'views');
   const views = {};
   if (fs.existsSync(viewsDir)) {
     filesIn(viewsDir).forEach(view => views[view] = loadView(viewsDir, view));
@@ -61,7 +56,6 @@ const loadDdoc = (rootDir, dbName, ddocName) => {
 module.exports = (rootDir='./') => {
   if (!ddocs) {
     ddocs = [];
-    loadDdoc(rootDir, false, 'medic');
     filesIn(`${rootDir}/ddocs/medic-db`).forEach(ddoc => loadDdoc(rootDir, 'medic-db', ddoc));
   }
   const db = new PouchDB(uuid(), { adapter: 'memory' });

@@ -5,8 +5,8 @@ const pouchDbOptions = {
   remote: { skip_setup: true },
   remote_headers: { 'Accept': 'application/json' }
 };
-
-const bootstrapper = require('../../../src/js/bootstrapper');
+const rewire = require('rewire');
+const bootstrapper = rewire('../../../src/js/bootstrapper');
 const purger = require('../../../src/js/bootstrapper/purger');
 const utils = require('../../../src/js/bootstrapper/utils');
 
@@ -300,10 +300,6 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').rejects();
     sinon.stub(utils, 'setOptions');
 
-    const localReplicateResult = Promise.reject({ status: 401 });
-    localReplicateResult.on = () => {};
-    localReplicate.returns(localReplicateResult);
-
     localAllDocs.resolves({ total_rows: 0 });
     sinon.stub(utils, 'fetchJSON').resolves({ total_docs: 2500, warn: false });
 
@@ -322,7 +318,7 @@ describe('bootstrapper', () => {
     localGet.withArgs('_design/medic-client').rejects();
     sinon.stub(utils, 'setOptions');
 
-    const localReplicateResult = Promise.reject({ status: 401 });
+    const localReplicateResult = new Promise((resolve, reject) => setTimeout(() => reject({ status: 401 })));
     localReplicateResult.on = () => {};
     localReplicate.returns(localReplicateResult);
 

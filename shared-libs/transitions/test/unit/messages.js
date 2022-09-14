@@ -388,11 +388,10 @@ describe('messages', () => {
       // missing country code matches
       ['+41446681800', '446681800', true]
     ];
-    tests.forEach(function(t) {
-      const s = sinon.stub(config, 'get');
-      s.withArgs('gateway_number').returns(t[0]);
-      assert.equal(messages.isMessageFromGateway(t[1]), t[2]);
-      s.restore();
+    sinon.stub(config, 'get');
+    tests.forEach(([configured, requested, result]) => {
+      config.get.withArgs('gateway_number').returns(configured);
+      assert.equal(messages.isMessageFromGateway(requested), result, `failed for ${requested}`);
     });
   });
 });

@@ -1,5 +1,5 @@
-const _ = require('lodash');
 const rewire = require('rewire');
+const _ = require('lodash');
 const chai = require('chai');
 const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');
@@ -7,11 +7,12 @@ const cookie = require('../../../src/services/cookie');
 const users = require('../../../src/services/users');
 const tokenLogin = require('../../../src/services/token-login');
 const branding = require('../../../src/services/branding');
+const translations = require('../../../src/translations');
 const privacyPolicy = require('../../../src/services/privacy-policy');
-const db = require('../../../src/db').medic;
 const sinon = require('sinon');
 const config = require('../../../src/config');
 const request = require('request-promise-native');
+const template = require('../../../src/services/template');
 const fs = require('fs');
 const DB_NAME = 'lg';
 const DDOC_NAME = 'medic';
@@ -30,6 +31,7 @@ const DEFAULT_BRANDING = {
 describe('login controller', () => {
 
   beforeEach(() => {
+    template.clear();
     controller = rewire('../../../src/controllers/login');
 
     req = {
@@ -140,13 +142,12 @@ describe('login controller', () => {
   describe('get', () => {
 
     it('send login page', () => {
-      const query = sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(translations, 'getEnabledLocales').resolves([]);
       const linkResources = '</login/style.css>; rel=preload; as=style, </login/script.js>; rel=preload; as=script';
       const brandingGet = sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       const send = sinon.stub(res, 'send');
       const setHeader = sinon.stub(res, 'setHeader');
-      const readFile = sinon.stub(fs, 'readFile')
-        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations }}');
+      sinon.stub(fs.promises, 'readFile').resolves('LOGIN PAGE GOES HERE. {{ translations }}');
       sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
       return controller.get(req, res).then(() => {
         chai.expect(brandingGet.callCount).to.equal(1);
@@ -156,18 +157,18 @@ describe('login controller', () => {
         chai.expect(setHeader.callCount).to.equal(1);
         chai.expect(setHeader.args[0][0]).to.equal('Link');
         chai.expect(setHeader.args[0][1]).to.equal(linkResources);
-        chai.expect(readFile.callCount).to.equal(1);
-        chai.expect(query.callCount).to.equal(1);
+        chai.expect(fs.promises.readFile.callCount).to.equal(1);
+        chai.expect(translations.getEnabledLocales.callCount).to.equal(1);
       });
     });
 
     it('when branding doc missing send login page', () => {
       const linkResources = '</login/style.css>; rel=preload; as=style, </login/script.js>; rel=preload; as=script';
       const brandingGet = sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
-      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(translations, 'getEnabledLocales').resolves([]);
       const send = sinon.stub(res, 'send');
       const setHeader = sinon.stub(res, 'setHeader');
-      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE.');
+      sinon.stub(template, 'getTemplate').resolves(() => 'LOGIN PAGE GOES HERE.');
       sinon.stub(config, 'getTranslationValues').returns({});
       return controller.get(req, res).then(() => {
         chai.expect(brandingGet.callCount).to.equal(1);
@@ -182,9 +183,9 @@ describe('login controller', () => {
     it('caches the login page template for performance', () => {
       sinon.stub(res, 'send');
       sinon.stub(res, 'setHeader');
-      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(translations, 'getEnabledLocales').resolves([]);
       sinon.stub(res, 'cookie').returns(res);
-      const readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'file content');
+      const readFile = sinon.stub(fs.promises, 'readFile').resolves('file content');
       sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
       const template = sinon.stub(_, 'template').returns(sinon.stub());
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
@@ -204,10 +205,10 @@ describe('login controller', () => {
     it('hides locale selector when there is only one option', () => {
       const linkResources = '</login/style.css>; rel=preload; as=style, </login/script.js>; rel=preload; as=script';
       const setHeader = sinon.stub(res, 'setHeader');
-      sinon.stub(db, 'query').resolves({ rows: [ { doc: { code: 'en', name: 'English' } } ] });
+      sinon.stub(translations, 'getEnabledLocales').resolves([{ code: 'en', name: 'English' }]);
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       const send = sinon.stub(res, 'send');
-      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ locales.length }}');
+      sinon.stub(fs.promises, 'readFile').resolves('LOGIN PAGE GOES HERE. {{ locales.length }}');
       sinon.stub(config, 'translate').returns('TRANSLATED VALUE.');
       sinon.stub(cookie, 'get').returns('en');
       return controller.get(req, res).then(() => {
@@ -220,12 +221,10 @@ describe('login controller', () => {
 
     it('uses application default locale if accept-language header is undefined', () => {
       req.headers = { 'accept-language': undefined };
-      sinon.stub(db, 'query').resolves({ rows: [
-        { doc: { code: 'fr', name: 'French'  } }
-      ]});
+      sinon.stub(translations, 'getEnabledLocales').resolves([{ code: 'fr', name: 'French' }]);
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       const send = sinon.stub(res, 'send');
-      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ defaultLocale }}');
+      sinon.stub(fs.promises, 'readFile').resolves('LOGIN PAGE GOES HERE. {{ defaultLocale }}');
       sinon.stub(config, 'get').withArgs('locale').returns('de');
 
       return controller.get(req, res).then(() => {
@@ -235,10 +234,10 @@ describe('login controller', () => {
 
     it('uses application default locale if none of the accept-language headers match', () => {
       req.headers = { 'accept-language': 'en' };
-      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(translations, 'getEnabledLocales').resolves([]);
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       const send = sinon.stub(res, 'send');
-      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ defaultLocale }}');
+      sinon.stub(fs.promises, 'readFile').resolves('LOGIN PAGE GOES HERE. {{ defaultLocale }}');
       sinon.stub(config, 'get').withArgs('locale').returns('de');
 
       return controller.get(req, res).then(() => {
@@ -247,14 +246,14 @@ describe('login controller', () => {
     });
 
     it('uses best request header locale available', () => {
-      req.headers = { 'accept-language': 'fr_CA, en' };
-      sinon.stub(db, 'query').resolves({ rows: [
-        { doc: { code: 'en', name: 'English' } },
-        { doc: { code: 'fr', name: 'French'  } }
-      ]});
+      req.locale = 'fr_CA, en';
+      sinon.stub(translations, 'getEnabledLocales').resolves([
+        { code: 'en', name: 'English' },
+        { code: 'fr', name: 'French' },
+      ]);
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       const send = sinon.stub(res, 'send');
-      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ defaultLocale }}');
+      sinon.stub(fs.promises, 'readFile').resolves('LOGIN PAGE GOES HERE. {{ defaultLocale }}');
 
       return controller.get(req, res).then(() => {
         chai.expect(send.args[0][0]).to.equal('LOGIN PAGE GOES HERE. fr');
@@ -264,10 +263,10 @@ describe('login controller', () => {
 
   describe('get login/token', () => {
     it('should render the token login page', () => {
-      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(translations, 'getEnabledLocales').resolves([]);
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       sinon.stub(res, 'send');
-      sinon.stub(fs, 'readFile').callsArgWith(2, null, 'TOKEN PAGE GOES HERE. {{ translations }}');
+      sinon.stub(fs.promises, 'readFile').resolves('TOKEN PAGE GOES HERE. {{ translations }}');
       sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
       req.params = { token: 'my_token', hash: 'my_hash' };
       return controller.tokenGet(req, res).then(() => {
@@ -275,8 +274,8 @@ describe('login controller', () => {
         chai.expect(res.send.callCount).to.equal(1);
         chai.expect(res.send.args[0][0])
           .to.equal('TOKEN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D');
-        chai.expect(fs.readFile.callCount).to.equal(1);
-        chai.expect(db.query.callCount).to.equal(1);
+        chai.expect(fs.promises.readFile.callCount).to.equal(1);
+        chai.expect(translations.getEnabledLocales.callCount).to.equal(1);
       });
     });
   });
@@ -725,13 +724,13 @@ describe('login controller', () => {
 
   describe('renderLogin', () => {
     it('should get branding and render the login page', () => {
-      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(translations, 'getEnabledLocales').resolves([]);
       sinon.stub(branding, 'get').resolves({
         name: 'something',
         logo: 'data:zes;base64,xsd'
       });
-      sinon.stub(fs, 'readFile')
-        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations }} {{ branding.logo }} {{ branding.name }}');
+      sinon.stub(fs.promises, 'readFile')
+        .resolves('LOGIN PAGE GOES HERE. {{ translations }} {{ branding.logo }} {{ branding.name }}');
       sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
 
       return controller.renderLogin(req).then((loginPage) => {
@@ -739,31 +738,23 @@ describe('login controller', () => {
           'LOGIN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D data:zes;base64,xsd something'
         );
         chai.expect(branding.get.callCount).to.equal(1);
-        chai.expect(fs.readFile.callCount).to.equal(1);
-        chai.expect(db.query.callCount).to.equal(1);
-        chai.expect(db.query.args[0]).to.deep.equal([
-          'medic-client/doc_by_type',
-          { key: ['translations', true], include_docs: true },
-        ]);
+        chai.expect(fs.promises.readFile.callCount).to.equal(1);
+        chai.expect(translations.getEnabledLocales.callCount).to.equal(1);
       });
     });
 
     it('should nullcheck the request param', () => {
-      sinon.stub(db, 'query').resolves({ rows: [] });
+      sinon.stub(translations, 'getEnabledLocales').resolves([]);
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
-      sinon.stub(fs, 'readFile')
-        .callsArgWith(2, null, 'LOGIN PAGE GOES HERE. {{ translations }} {{ branding.logo }} {{ branding.name }}');
+      sinon.stub(fs.promises, 'readFile')
+        .resolves('LOGIN PAGE GOES HERE. {{ translations }} {{ branding.logo }} {{ branding.name }}');
       sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
 
       return controller.renderLogin().then((loginPage) => {
         chai.expect(loginPage).to.equal(
           'LOGIN PAGE GOES HERE. %7B%22en%22%3A%7B%22login%22%3A%22English%22%7D%7D xyz CHT'
         );
-        chai.expect(db.query.callCount).to.equal(1);
-        chai.expect(db.query.args[0]).to.deep.equal([
-          'medic-client/doc_by_type',
-          { key: ['translations', true], include_docs: true },
-        ]);
+        chai.expect(translations.getEnabledLocales.callCount).to.equal(1);
       });
     });
   });
