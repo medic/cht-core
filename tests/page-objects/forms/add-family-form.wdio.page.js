@@ -97,7 +97,6 @@ const reportCheck =  async (
 };
 
 module.exports =  {
-  configureForm,
   fillPrimaryCaregiver,
   fillPrimaryTel,
   fillSexAndAge,
@@ -107,5 +106,4 @@ module.exports =  {
   registerWomenOption,
   finalSurvey,
   reportCheck,
-  docs,
 };
