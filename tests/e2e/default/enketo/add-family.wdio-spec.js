@@ -27,7 +27,7 @@ describe('Family form', () => {
 
   before(async () => {
     await utils.saveDocs(userDocs);
-    await utils.seedTestData(contactId, formDoc);
+    await utils.seedTestData(contactId, [ formDoc ]);
     await cookieLogin();
   });
 
