@@ -54,7 +54,10 @@ describe('Create Person Under Area', async () => {
     await usersAdminPage.openAddUserDialog();
     await usersAdminPage.inputAddUserFields(username, 'Jack', 'CHW', healthCenter2.name, person2.name, password);
     await usersAdminPage.saveUser();
-    await usersAdminPage.logout();
+
+    await browser.reloadSession();
+    await browser.url('/');
+
     await loginPage.login({ username, password });
     await commonPage.closeTour();
 

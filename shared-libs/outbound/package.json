@@ -8,14 +8,6 @@
   },
   "author": "",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "chai": "^4.3.6",
-    "chai-as-promised": "^7.1.1",
-    "chai-exclude": "^2.1.0",
-    "chai-shallow-deep-equal": "^1.4.6",
-    "mocha": "^7.2.0",
-    "sinon": "^11.1.2"
-  },
   "dependencies": {
     "@medic/settings": "file:../settings",
     "object-path": "^0.11.8",

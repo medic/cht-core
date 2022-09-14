@@ -13,7 +13,7 @@ if (typeof (args.version) !== 'string') {
   process.exit(1);
 }
 
-async function createProjectAddColumnsAndIssues() {
+const createProjectAddColumnsAndIssues = async () => {
   const projectResponse = await projects.createProject(args.v);
   const columnNames = Object.keys(config.columnNamesData);
   for (let i = 0; i < columnNames.length; i++) {
@@ -22,7 +22,7 @@ async function createProjectAddColumnsAndIssues() {
     columnConfig.columnId = columnData.data.id;
   }
 
-  try{
+  try {
     projects.reOrderColumns(config.columnNamesData);
     const response = await issues();
     const issueIds = response.data.map(x => x.id);
@@ -31,7 +31,6 @@ async function createProjectAddColumnsAndIssues() {
   } catch(err){
     console.error(err);
   }
-}
-
+};
 
 createProjectAddColumnsAndIssues();

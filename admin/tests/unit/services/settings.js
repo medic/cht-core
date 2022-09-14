@@ -70,9 +70,9 @@ describe('Settings service', function() {
     let service;
     let cacheCallback;
 
-    function triggerCacheChange(err, settings) {
+    const triggerCacheChange = (err, settings) => {
       cacheCallback(err, settings);
-    }
+    };
 
     beforeEach(function() {
       module('adminApp');

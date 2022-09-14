@@ -66,12 +66,24 @@
     }
 
     .sidebar-header {
+      justify-content: flex-start;
       border-bottom: 1px solid @gray-light;
 
       .sidebar-title {
         font-size: @font-extra-large;
         font-weight: bold;
         margin: 0;
+        flex-grow: 1;
+      }
+
+      .sidebar-reset {
+        font-size: @font-medium;
+        margin-right: 20px;
+
+        &.disabled {
+          color: @gray-medium;
+          cursor: not-allowed;
+        }
       }
 
       .sidebar-close {

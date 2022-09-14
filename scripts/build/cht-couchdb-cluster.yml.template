@@ -1,0 +1,76 @@
+version: '3.9'
+
+services:
+  couchdb.1:
+    image: {{{ repo }}}/cht-couchdb:{{ tag }}
+    container_name: {{ couch1_container_name }}
+    volumes:
+      - ${DB1_DATA:-./srv1}:/opt/couchdb/data
+      - cht-credentials:/opt/couchdb/etc/local.d/
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=${SVC1_NAME:-couchdb.1}"
+      - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    restart: always
+    networks:
+      {{ network }}:
+
+  couchdb.2:
+    image: {{{ repo }}}/cht-couchdb:{{ tag }}
+    container_name: {{ couch2_container_name }}
+    volumes:
+      - ${DB2_DATA:-./srv2}:/opt/couchdb/data
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=${SVC2_NAME:-couchdb.2}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    restart: always
+    networks:
+      {{ network }}:
+
+  couchdb.3:
+    image: {{{ repo }}}/cht-couchdb:{{ tag }}
+    container_name: {{ couch3_container_name }}
+    volumes:
+      - ${DB3_DATA:-./srv3}:/opt/couchdb/data
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=${SVC3_NAME:-couchdb.3}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    restart: always
+    networks:
+      {{ network }}:
+
+volumes:
+  cht-credentials:
+
+networks:
+  {{ network }}:
+    name: {{ network }}

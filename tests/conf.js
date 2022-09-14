@@ -38,7 +38,14 @@ const baseConfig = {
       // eg: browser.actions().sendKeys(protractor.Key.TAB).perform()
       // https://github.com/angular/protractor/issues/5261
       w3c: false,
-      args: ['--window-size=1024,768', '--headless', '--disable-gpu'],
+      args: [
+        '--window-size=1024,768',
+        '--headless',
+        '--ignore-certificate-errors',
+        '--disable-gpu',
+        '--deny-permission-prompts',
+        '--no-sandbox'
+      ],
       prefs: {
         intl: { accept_languages: 'en-US' },
       },
@@ -67,7 +74,7 @@ const baseConfig = {
     browser.waitForAngularEnabled(false);
     // wait for startup to complete
     const config = await browser.getProcessedConfig();
-    await browser.driver.wait(utils.prepServices(config.suite === 'web'), 135 * 1000, 'API took too long to start up');
+    await browser.driver.wait(utils.prepServices(config.suite === 'web'), 200 * 1000, 'API took too long to start up');
 
     afterEach(() => {
       return utils.saveBrowserLogs();

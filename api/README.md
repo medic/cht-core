@@ -18,12 +18,6 @@ Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 export COUCH_URL='http://myadminuser:myadminpass@localhost:5984/medic'
 ```
 
-If you are using CouchDB2.0 you need to also provide your node name. e.g.
-
-```
-export COUCH_NODE_NAME=couchdb@127.0.0.1 node server.js
-```
-
 If you want to allow cross-origin requests, add the flag `--allow-cors` when starting api. E.g.
 
     node server.js --allow-cors
@@ -77,6 +71,4 @@ curl 'http://myadminuser:myadminpass@localhost:5984/medic/_design/medic-client/_
 
 So, if you want to re-run a migration, delete its entry in the `migrations` list and re-run api.
 
-## Troubleshooting
-Given the error `StatusCodeError: 404 - {"error":"not_found","reason":"no such node: couchdb@localhost"}` or alike - check that the value of your COUCH_NODE_NAME environment variable equals the result of `curl -X GET "http://localhost:5984/_membership" --user user:pwd`.`
 

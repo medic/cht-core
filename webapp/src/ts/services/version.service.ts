@@ -13,15 +13,15 @@ export class VersionService {
     return rev.split('-')[0];
   }
 
-  private getDeployVersion(deployInfo) {
-    const version = deployInfo && deployInfo.version;
+  private getDeployVersion(buildInfo) {
+    const version = buildInfo && buildInfo.version;
     if (!version) {
       return;
     }
-    if (version === deployInfo.base_version || !deployInfo.base_version) {
+    if (version === buildInfo.base_version || !buildInfo.base_version) {
       return version;
     }
-    return `${version} (~${deployInfo.base_version})`;
+    return `${version} (~${buildInfo.base_version})`;
   }
 
   getLocal () {
@@ -29,7 +29,7 @@ export class VersionService {
       .get('_design/medic-client')
       .then(ddoc => {
         return {
-          version: this.getDeployVersion(ddoc.deploy_info),
+          version: this.getDeployVersion(ddoc.build_info),
           rev: this.formatRev(ddoc._rev)
         };
       });

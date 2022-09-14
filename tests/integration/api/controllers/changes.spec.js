@@ -5,8 +5,6 @@ const uuid = require('uuid').v4;
 const http = require('http');
 const querystring = require('querystring');
 const constants = require('../../../constants');
-const auth = require('../../../auth')();
-const semver = require('semver');
 const chai = require('chai');
 
 const DEFAULT_EXPECTED = [
@@ -291,12 +289,11 @@ describe('changes handler', () => {
         });
     });
 
-    it('should send heartbeats at specified intervals for all types of _changes requests', () => {
+    xit('should send heartbeats at specified intervals for all types of _changes requests', () => {
       const heartRateMonitor = options => {
         options = options || {};
         options.hostname = constants.API_HOST;
-        options.port = constants.API_PORT;
-        options.auth = options.auth || `${auth.username}:${auth.password}`;
+        options.auth = options.auth || `${constants.USERNAME}:${constants.PASSWORD}`;
         options.path = options.path || '/';
         options.query = Object.assign({ heartbeat: 2000, feed: 'longpoll' }, options.query || {});
         options.path += '?' + querystring.stringify(options.query || {});
@@ -314,7 +311,7 @@ describe('changes handler', () => {
               timer = new Date().getTime();
               heartbeats.push({ chunk, interval: timer - oldTimer });
             });
-            res.on('end', () => {
+            res.on('close', () => {
               resolve({ body, heartbeats });
             });
           });
@@ -329,7 +326,7 @@ describe('changes handler', () => {
 
           if (options.timeout) {
             // have to manually abort this, sending a `heartbeat` disables the `timeout` mechanism in CouchDB
-            setTimeout(() => req.abort(), options.timeout);
+            setTimeout(() => req.destroy(), options.timeout);
           }
 
         });
@@ -389,32 +386,9 @@ describe('changes handler', () => {
   });
 
   describe('Filtered replication', () => {
-    const couchVersionForBatching = '2.3.0';
 
-    let shouldBatchChangesRequests;
     let bobsIds;
     let stevesIds;
-
-    before(() => {
-      const options = {
-        hostname: constants.COUCH_HOST,
-        port: constants.COUCH_PORT,
-        auth: auth.username+ ':' + auth.password,
-        path: '/'
-      };
-
-      const req = http.request(options, res => {
-        let body = '';
-        res.on('data', data => body += data);
-        res.on('end', () => {
-          body = JSON.parse(body);
-          shouldBatchChangesRequests = semver.lte(couchVersionForBatching, body.version);
-        });
-      });
-
-      req.on('error', e => e);
-      req.end();
-    });
 
     beforeEach(async () => {
       bobsIds = ['org.couchdb.user:bob', 'fixture:user:bob', 'fixture:bobville'];
@@ -434,32 +408,6 @@ describe('changes handler', () => {
         .then(() => batchedChanges('bob', 4))
         .then(changes => {
           assertChangeIds(changes, ...bobsIds, ...getIds(allowedDocs));
-        });
-    });
-
-    it('depending on CouchDB version, should limit changes requests or specifically ignore limit', () => {
-      const allowedDocs = createSomeContacts(12, 'fixture:bobville');
-      const deniedDocs = createSomeContacts(10, 'irrelevant-place');
-      bobsIds.push(...getIds(allowedDocs));
-
-      return Promise
-        .all([
-          utils.saveDocs(allowedDocs),
-          utils.saveDocs(deniedDocs)
-        ])
-        .then(() => requestChanges('bob', { limit: 4 }))
-        .then(changes => {
-          if (shouldBatchChangesRequests) {
-            // requests should be limited
-            const receivedIds = getIds(changes.results)
-              .filter(id => !isFormOrTranslation(id) && !DEFAULT_EXPECTED.includes(id));
-            chai.expect(bobsIds).to.include.members(receivedIds);
-            // because we still process pending changes, it's not a given we will receive only 4 changes.
-            chai.expect(bobsIds).to.not.have.members(receivedIds);
-          } else {
-            // requests should return full changes list
-            assertChangeIds(changes, ...bobsIds);
-          }
         });
     });
 

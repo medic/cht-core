@@ -7,10 +7,13 @@ const nameField = () => $('#report-form form [name="/data/name"]');
 
 const nextPage = async (numberOfPages = 1) => {
   for (let i = 0; i < numberOfPages; i++) {
-    await (await nextButton()).waitForDisplayed();
-    await (await nextButton()).click();
+    const button = await nextButton();
+    await button.waitForDisplayed();
+    await button.click();
   }
 };
+
+const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
 
 const openReportReviewMenu = async () => {
   const reviewButton = await $('.actions>.mm-icon-inverse>.fa-check');
@@ -72,6 +75,7 @@ module.exports = {
   invalidateReport,
   validateReport,
   nameField,
+  fieldByName,
   selectContact,
   verifyReport,
   editForm,

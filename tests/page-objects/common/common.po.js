@@ -39,12 +39,31 @@ const selectedPreferenceHeading = element(by.css('#language-preference-heading >
 const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
 const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectangle'));
 
+const searchBox = element(by.css('input#freetext'));
+
 const waitForLoaderToDisappear = async (timeout = 10000) => {
   try {
     await helper.waitElementToDisappear(by.css('.loader', timeout));
   } catch(err) {
     // element can go stale
   }
+};
+
+const openSubmenu = (menuName) => {
+  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
+};
+
+const hideSnackbar = () => {
+  // snackbar appears in the bottom of the page for 5 seconds when certain actions are made
+  // for example when filling a form, or creating a contact
+  // and intercepts all clicks in the actionbar
+  // this action is temporary, and will be undone with a refresh
+  return browser.executeAsyncScript(() => {
+    const callback = arguments[arguments.length - 1];
+    // eslint-disable-next-line no-undef
+    window.jQuery('.snackbar-content').hide();
+    callback();
+  });
 };
 
 module.exports = {
@@ -141,6 +160,7 @@ module.exports = {
   },
 
   goToAnalytics: async () => {
+    await helper.waitElementToBeVisibleNative(analyticsTab);
     await analyticsTab.click();
   },
 
@@ -195,7 +215,8 @@ module.exports = {
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
-      element(by.css('.reset-filter')).click();
+      searchBox.clear();
+      searchBox.sendKeys(protractor.Key.ENTER);
       browser.waitForAngular();
     }
   },
@@ -220,7 +241,8 @@ module.exports = {
     } else {
       // A trick to trigger a list refresh.
       // When already on the "reports" page, clicking on the menu item to "go to reports" doesn't, in fact, do anything.
-      await helper.clickElementNative(element(by.css('.reset-filter')));
+      await searchBox.clear();
+      await searchBox.sendKeys(protractor.Key.ENTER);
       await browser.waitForAngular();
     }
   },
@@ -278,8 +300,7 @@ module.exports = {
   getReportsButtonLabel: () => element(by.css('#reports-tab .button-label')),
   getMessagesButtonLabel: () => element(by.css('#messages-tab .button-label')),
   getTasksButtonLabel: () => element(by.css('#tasks-tab .button-label')),
+
+  hideSnackbar: hideSnackbar,
 };
 
-function openSubmenu(menuName) {
-  return helper.findElementByTextAndClickNative(hamburgerMenuOptions, menuName);
-}

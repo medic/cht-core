@@ -595,8 +595,9 @@ describe('Contacts component', () => {
 
   describe('last visited date', () => {
     it('does not enable LastVisitedDate features not allowed', () => {
-      expect(authService.has.callCount).equal(1);
+      expect(authService.has.callCount).equal(2);
       expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.args[1]).to.deep.equal(['can_view_old_filter_and_search']);
       expect(component.lastVisitedDateExtras).to.equal(false);
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');
@@ -620,8 +621,9 @@ describe('Contacts component', () => {
       userSettingsService.get.resetHistory();
       component.ngOnInit();
       flush();
-      expect(authService.has.callCount).equal(2);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.callCount).equal(3);
+      expect(authService.has.args[2]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.args[1]).to.deep.equal(['can_view_old_filter_and_search']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');

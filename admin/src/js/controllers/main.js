@@ -22,8 +22,8 @@ angular.module('controllers').controller('MainCtrl',
           }
           return response;
         });
-    };   
-    
+    };
+
     Language().then(locale => SetLanguage(locale));
     $scope.authorized = false;
     $scope.navbarCollapsed = true;

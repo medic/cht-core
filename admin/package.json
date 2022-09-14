@@ -3,11 +3,20 @@
   "private": true,
   "version": "0.1.0",
   "engines": {
-    "node": ">=8.11.0",
-    "npm": ">=6.4.1"
+    "node": ">=16.12.0",
+    "npm": ">=8.3.1"
   },
   "dependencies": {
-    "@uirouter/angularjs": "^1.0.30",
+    "@medic/calendar-interval": "file:../shared-libs/calendar-interval",
+    "@medic/cht-script-api": "file:../shared-libs/cht-script-api",
+    "@medic/contact-types-utils": "file:../shared-libs/contact-types-utils",
+    "@medic/lineage": "file:../shared-libs/lineage",
+    "@medic/message-utils": "file:../shared-libs/message-utils",
+    "@medic/phone-number": "file:../shared-libs/phone-number",
+    "@medic/registration-utils": "file:../shared-libs/registration-utils",
+    "@medic/search": "file:../shared-libs/search",
+    "@medic/translation-utils": "file:../shared-libs/translation-utils",
+    "@uirouter/angularjs": "^1.0.29",
     "angular": "^1.8.2",
     "angular-cookie": "^4.1.0",
     "angular-pouchdb": "^5.0.2",
@@ -35,7 +44,6 @@
     "simple-password-tester": "^1.0.0",
     "uuid": "^8.3.2"
   },
-  "devDependencies": {},
   "resolutions": {
     "**/jquery": "3.2.x",
     "**/pouchdb-browser": "^7.2.2"

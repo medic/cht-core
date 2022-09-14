@@ -78,17 +78,17 @@ class PhoneWidget extends Widget {
   }
 }
 
-function formatAndCopy( $from, $to, settings ) {
+const formatAndCopy = ( $from, $to, settings ) => {
   $from.change( function() {
     // Also trigger the change() event, since input was not by user.
     $to.val( getFormattedValue( settings, $from.val() ) ).change();
   } );
-}
+};
 
-function getFormattedValue( settings, value ) {
+const getFormattedValue = ( settings, value ) => {
   // If invalid, return the non-formatted value,
   // so that the "invalid value" error can display.
   return phoneNumber.normalize( settings, value ) || value;
-}
+};
 
 module.exports = PhoneWidget;

@@ -9,7 +9,7 @@ import * as moment from 'moment';
 import { Xpath } from '@mm-providers/xpath-element-path.provider';
 import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
-import { AddAttachmentService } from '@mm-services/add-attachment.service';
+import { AttachmentService } from '@mm-services/attachment.service';
 import { DbService } from '@mm-services/db.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
@@ -36,7 +36,7 @@ import { GlobalActions } from '@mm-actions/global';
 export class EnketoService {
   constructor(
     private store: Store,
-    private addAttachmentService: AddAttachmentService,
+    private attachmentService: AttachmentService,
     private contactSummaryService: ContactSummaryService,
     private dbService: DbService,
     private enketoPrepopulationDataService: EnketoPrepopulationDataService,
@@ -553,6 +553,7 @@ export class EnketoService {
       return $('<temproot>').append($(xml).clone()).html();
     };
 
+    const dbDocTags = [];
     $record
       .find('[db-doc]')
       .filter((idx, element) => {
@@ -560,6 +561,7 @@ export class EnketoService {
       })
       .each((idx, element) => {
         mapOrAssignId(element);
+        dbDocTags.push(element.tagName);
       });
 
     $record
@@ -587,14 +589,14 @@ export class EnketoService {
     if (xmlVersion) {
       doc.form_version = xmlVersion;
     }
-    doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record);
+    doc.hidden_fields = this.enketoTranslationService.getHiddenFieldList(record, dbDocTags);
 
     const attach = (elem, file, type, alreadyEncoded, xpath?) => {
       xpath = xpath || Xpath.getElementXPath(elem);
       // replace instance root element node name with form internal ID
       const filename = 'user-file' +
         (xpath.startsWith('/' + doc.form) ? xpath : xpath.replace(/^\/[^/]+/, '/' + doc.form));
-      this.addAttachmentService.add(doc, filename, file, type, alreadyEncoded);
+      this.attachmentService.add(doc, filename, file, type, alreadyEncoded);
     };
 
     $record
@@ -620,8 +622,8 @@ export class EnketoService {
 
     record = getOuterHTML($record[0]);
 
-    this.addAttachmentService.add(doc, this.getReportContentService.REPORT_ATTACHMENT_NAME, record, 'application/xml');
-
+    // remove old style content attachment
+    this.attachmentService.remove(doc, this.getReportContentService.REPORT_ATTACHMENT_NAME);
     docsToStore.unshift(doc);
 
     doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);

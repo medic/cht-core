@@ -24,15 +24,5 @@
     "md5": "^2.3.0",
     "cht-nootils": "^4.0.2",
     "nools": "^0.4.4"
-  },
-  "devDependencies": {
-    "@medic/memdown": "file:../memdown",
-    "chai": "^4.3.6",
-    "chai-exclude": "^2.1.0",
-    "mocha": "^7.2.0",
-    "moment": "^2.29.1",
-    "pouchdb": "^7.2.2",
-    "pouchdb-adapter-memory": "^7.2.2",
-    "sinon": "^11.1.2"
   }
 }
