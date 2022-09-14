@@ -207,7 +207,7 @@ const getAndroidAppVersion = () => {
 
 const isUsingChtAndroidV1 = () => {
   const androidAppVersion = getAndroidAppVersion();
-  if (!isUsingChtAndroid() || typeof androidAppVersion !== 'string') {
+  if (typeof androidAppVersion !== 'string') {
     return false;
   }
 
