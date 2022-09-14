@@ -28,7 +28,7 @@ describe('Pregnancy Visit', () => {
     await loginPage.cookieLogin();
     await commonPage.goToPeople(pregnantWoman._id);
 
-    // Submit new pregnancy for pregnantWoman
+    // Submit new pregnancy for pregnantWoman.
     await pregnancyForm.submitPregnancy();
     await commonPage.waitForPageLoaded();
   });
@@ -53,7 +53,7 @@ describe('Pregnancy Visit', () => {
     const visits = (await contactPage.getPregnancyCardVisits()).split(' of ')[0];
     expect(visits).to.equal('1');
 
-    // Verify the created report
+    // Verify the created report.
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
@@ -73,7 +73,7 @@ describe('Pregnancy Visit', () => {
     const visits = (await contactPage.getPregnancyCardVisits()).split(' of ')[0];
     expect(visits).to.equal('2');
 
-    // Verify the created report
+    // Verify the created report.
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
