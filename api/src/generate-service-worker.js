@@ -11,8 +11,9 @@ const loginController = require('./controllers/login');
 const SWMETA_DOC_ID = 'service-worker-meta';
 const apiSrcDirectoryPath = __dirname;
 
-const staticDirectoryPath = environment.getExtractedResourcesPath();
-const scriptOutputPath = path.join(staticDirectoryPath, 'js', 'service-worker.js');
+const staticDirectoryPath = environment.staticPath;
+const webappDirectoryPath = environment.webappPath;
+const scriptOutputPath = path.join(webappDirectoryPath, 'service-worker.js');
 
 const fsExists = (path) => new Promise((resolve) => {
   fs.access(path, (err) => resolve(!err));
@@ -54,7 +55,7 @@ const getLoginPageContents = async () => {
   } catch (err) {
     logger.error('Error rendering login page %o', err);
     // default to returning the file
-    return [path.join(apiSrcDirectoryPath, 'templates/login', 'index.html')];
+    return [path.join(apiSrcDirectoryPath, 'templates', 'login', 'index.html')];
   }
 };
 
@@ -67,27 +68,28 @@ const writeServiceWorkerFile = async () => {
     directoryIndex: false,
     handleFetch: true,
     staticFileGlobs: [
-      path.join(staticDirectoryPath, '{audio,img}', '*'),
-      path.join(staticDirectoryPath, 'manifest.json'),
-      path.join(staticDirectoryPath, '*.js'),
-      path.join(staticDirectoryPath, '*.css'),
+      path.join(webappDirectoryPath, '{audio,img}', '*'),
+      path.join(webappDirectoryPath, 'manifest.json'),
+      path.join(webappDirectoryPath, '*.js'),
+      path.join(webappDirectoryPath, '*.css'),
+      `!${scriptOutputPath}`, // exclude service worker path
 
       // Fonts
-      path.join(staticDirectoryPath, 'fontawesome-webfont.woff2'),
-      path.join(staticDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
-      path.join(staticDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
-      path.join(staticDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
-      path.join(apiSrcDirectoryPath, 'public/login', '*.{css,js}'),
+      path.join(webappDirectoryPath, 'fontawesome-webfont.woff2'),
+      path.join(webappDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
+      path.join(webappDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
+      path.join(webappDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
+      path.join(staticDirectoryPath, 'login', '*.{css,js}'),
     ],
     dynamicUrlToDependencies: {
-      '/': [path.join(staticDirectoryPath, 'index.html')], // Webapp's entry point
+      '/': [path.join(webappDirectoryPath, 'index.html')], // Webapp's entry point
       '/medic/login': await getLoginPageContents(),
-      '/medic/_design/medic/_rewrite/': [path.join(apiSrcDirectoryPath, 'public', 'appcache-upgrade.html')],
+      '/medic/_design/medic/_rewrite/': [path.join(webappDirectoryPath, 'appcache-upgrade.html')],
     },
     ignoreUrlParametersMatching: [/redirect/, /username/],
     stripPrefixMulti: {
+      [webappDirectoryPath]: '',
       [staticDirectoryPath]: '',
-      [path.join(apiSrcDirectoryPath, 'public')]: '',
     },
     maximumFileSizeToCacheInBytes: 1048576 * 30,
     verbose: true,
@@ -126,8 +128,16 @@ const writeServiceWorkerMetaDoc = async (hash) => {
   }
 };
 
+let generate = false;
 module.exports = {
-  run: async () => {
+  run: async (unlock) => {
+    if (unlock) {
+      generate = true;
+    }
+    if (!generate) {
+      return;
+    }
+
     const initialHash = await getServiceWorkerHash();
     await writeServiceWorkerFile();
     const updatedHash = await getServiceWorkerHash();

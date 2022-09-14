@@ -24,6 +24,7 @@ module.exports = {
     },
 
     'type': 'person',
+    'created_by_doc': 'fake_delivery_report_uuid',
     'reported_date': 957128198000
   },
 

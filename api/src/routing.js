@@ -45,18 +45,22 @@ const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const connectedUserLog = require('./middleware/connected-user-log').log;
+const getLocale = require('./middleware/locale').getLocale;
+const startupLog = require('./services/setup/startup-log');
 const staticResources = /\/(templates|static)\//;
 // CouchDB is very relaxed in matching routes
 const routePrefix = '/+' + environment.db + '/+';
 const pathPrefix = '/' + environment.db + '/';
 const appPrefix = pathPrefix + '_design/' + environment.ddoc + '/_rewrite/';
-const adminAppPrefix = pathPrefix + '_design/medic-admin/_rewrite/';
+const adminAppPrefix = routePrefix + '_design/medic-admin/_rewrite(/*)?';
+const adminAppReg = new RegExp(`/*${environment.db}/_design/medic-admin/_rewrite/?`);
 const serverUtils = require('./server-utils');
 const uuid = require('uuid');
 const compression = require('compression');
 const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
 const cookie = require('./services/cookie');
-const app = express();
+const deployInfo = require('./services/deploy-info');
+const app = express.Router({ strict: true });
 const MAX_REQUEST_SIZE = '32mb';
 
 // requires content-type application/x-www-form-urlencoded header
@@ -66,7 +70,6 @@ const textParser = bodyParser.text({ limit: MAX_REQUEST_SIZE, type: [ 'text/plai
 // requires content-type application/json header
 const jsonParser = bodyParser.json({ limit: MAX_REQUEST_SIZE });
 const jsonQueryParser = require('./middleware/query-parser').json;
-const extractedResourceDirectory = environment.getExtractedResourcesPath();
 
 const handleJsonRequest = (method, path, callback) => {
   app[method](path, jsonParser, (req, res, next) => {
@@ -100,14 +103,10 @@ const handleJsonOrCsvRequest = (method, path, callback) => {
   });
 };
 
-app.deleteJson = (path, callback) =>
-  handleJsonRequest('delete', path, callback);
+app.deleteJson = (path, callback) => handleJsonRequest('delete', path, callback);
 app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, callback);
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
-
-app.set('strict routing', true);
-app.set('trust proxy', true);
 
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
@@ -132,6 +131,7 @@ app.use((req, res, next) => {
   req.id = uuid.v4();
   next();
 });
+app.use(getLocale);
 
 morgan.token('id', req => req.id);
 
@@ -217,7 +217,7 @@ app.get('/', function(req, res) {
     // Required for service compatibility during upgrade.
     proxy.web(req, res);
   } else {
-    res.sendFile(path.join(extractedResourceDirectory, 'index.html')); // Webapp's index - entry point
+    res.sendFile(path.join(environment.webappPath, 'index.html')); // Webapp's index - entry point
   }
 });
 
@@ -228,18 +228,13 @@ app.get('/dbinfo', connectedUserLog, (req, res) => {
 
 app.get(
   [`/medic/_design/medic/_rewrite/`, appPrefix],
-  (req, res) => res.sendFile(path.join(__dirname, 'public/appcache-upgrade.html'))
+  (req, res) => res.sendFile(path.join(environment.webappPath, 'appcache-upgrade.html'))
 );
 
 app.all('/+medic(/*)?', (req, res, next) => {
   if (environment.db !== 'medic') {
     req.url = req.url.replace(/\/medic\/?/, pathPrefix);
   }
-  next();
-});
-
-app.all('/+admin(/*)?', (req, res, next) => {
-  req.url = req.url.replace(/\/admin\/?/, adminAppPrefix);
   next();
 });
 
@@ -260,17 +255,22 @@ app.get('/favicon.ico', (req, res) => {
   });
 });
 
-app.use(express.static(path.join(__dirname, '../build/public')));
-app.use(express.static(extractedResourceDirectory));
+// saves CouchDB _session information as `userCtx` in the `req` object
+app.use(authorization.getUserCtx);
+app.all(adminAppPrefix, (req, res, next) => {
+  req.url = req.url.replace(adminAppReg, '/admin/');
+  next();
+});
+app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUserFirewall);
+
+app.use(express.static(environment.staticPath));
+app.use(express.static(environment.webappPath));
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
 app.get(routePrefix + 'login/token/:token?', login.tokenGet);
 app.postJson(routePrefix + 'login/token/:token?', login.tokenPost);
 app.get(routePrefix + 'privacy-policy', privacyPolicyController.get);
-
-// saves CouchDB _session information as `userCtx` in the `req` object
-app.use(authorization.getUserCtx);
 
 // authorization for `_compact`, `_view_cleanup`, `_revs_limit` endpoints is handled by CouchDB
 const ONLINE_ONLY_ENDPOINTS = [
@@ -341,6 +341,10 @@ app.all('/setup', function(req, res) {
   res.status(503).send('Setup services are not currently available');
 });
 
+app.get('/api/v1/startup-progress', (req, res) => {
+  res.json(startupLog.getProgress(req.locale));
+});
+
 app.all('/setup/password', function(req, res) {
   res.status(503).send('Setup services are not currently available');
 });
@@ -354,11 +358,16 @@ app.get('/api/info', function(req, res) {
   res.json({ version: p.version });
 });
 
-app.get('/api/deploy-info', (req, res) => {
+app.get('/api/deploy-info', async (req, res) => {
   if (!req.userCtx) {
     return serverUtils.notLoggedIn(req, res);
   }
-  res.json(environment.getDeployInfo());
+
+  try {
+    res.json(await deployInfo.get());
+  } catch (err) {
+    serverUtils.serverError(err, req, res);
+  }
 });
 
 app.get('/api/v1/monitoring', deprecation.deprecate('/api/v2/monitoring'), monitoring.getV1);
@@ -381,6 +390,13 @@ app.get('/api/auth/:path', function(req, res) {
 app.post('/api/v1/upgrade', jsonParser, upgrade.upgrade);
 app.post('/api/v1/upgrade/stage', jsonParser, upgrade.stage);
 app.post('/api/v1/upgrade/complete', jsonParser, upgrade.complete);
+
+app.get('/api/v2/upgrade', upgrade.upgradeInProgress);
+app.post('/api/v2/upgrade', jsonParser, upgrade.upgrade);
+app.post('/api/v2/upgrade/stage', jsonParser, upgrade.stage);
+app.post('/api/v2/upgrade/complete', jsonParser, upgrade.complete);
+app.delete('/api/v2/upgrade', jsonParser, upgrade.abort);
+app.all('/api/v2/upgrade/service-worker', upgrade.serviceWorker);
 
 app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalking.incomingMessages);
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);
@@ -415,7 +431,7 @@ app.get('/api/v1/users-info', authorization.handleAuthErrors, authorization.getU
 
 app.postJson('/api/v1/places', function(req, res) {
   auth
-    .check(req, 'can_create_places')
+    .check(req, ['can_edit', 'can_create_places'])
     .then(() => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
@@ -427,7 +443,7 @@ app.postJson('/api/v1/places', function(req, res) {
 
 app.postJson('/api/v1/places/:id', function(req, res) {
   auth
-    .check(req, 'can_update_places')
+    .check(req, ['can_edit', 'can_update_places'])
     .then(() => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
@@ -441,7 +457,7 @@ app.postJson('/api/v1/places/:id', function(req, res) {
 
 app.postJson('/api/v1/people', function(req, res) {
   auth
-    .check(req, 'can_create_people')
+    .check(req, ['can_edit', 'can_create_people'])
     .then(() => {
       if (_.isEmpty(req.body)) {
         return serverUtils.emptyJSONBodyError(req, res);
@@ -736,7 +752,7 @@ app.get('/service-worker.js', (req, res) => {
     ['Content-Type', 'application/javascript'],
   ]);
 
-  res.sendFile(path.join(extractedResourceDirectory, 'js/service-worker.js'));
+  res.sendFile(path.join(environment.webappPath, 'service-worker.js'));
 });
 
 /**
@@ -794,19 +810,17 @@ app.all(appPrefix + '*', authorization.setAuthorized);
 app.use(authorization.handleAuthErrorsAllowingAuthorized);
 app.use(authorization.offlineUserFirewall);
 
-const canEdit = function(req, res) {
+const canEdit = (req, res) => {
   auth
     .check(req, 'can_edit')
-    .then(ctx => {
-      if (!ctx || !ctx.user) {
+    .then(userCtx => {
+      if (!userCtx || !userCtx.name) {
         serverUtils.serverError('not-authorized', req, res);
         return;
       }
       proxyForAuth.web(req, res);
     })
-    .catch(() => {
-      serverUtils.serverError('not-authorized', req, res);
-    });
+    .catch(() => serverUtils.serverError('not-authorized', req, res));
 };
 
 const editPath = routePrefix + '*';

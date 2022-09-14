@@ -8,11 +8,6 @@
   },
   "author": "",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "chai": "^4.3.6",
-    "mocha": "^7.2.0",
-    "sinon": "^11.1.2"
-  },
   "dependencies": {
     "lodash": "4.17.19"
   }

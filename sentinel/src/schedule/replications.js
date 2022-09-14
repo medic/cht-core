@@ -101,7 +101,7 @@ const batchedPurge = (sourceDb, targetDb, lastSeq = 0) => {
 
 const isTelemetryOrFeedback = (docId) => docId.startsWith('telemetry-') || docId.startsWith('feedback-');
 
-function replicateDb(sourceDb, targetDb) {
+const replicateDb = (sourceDb, targetDb) => {
   // Replicate only telemetry and feedback docs
   return sourceDb.info().then(info => {
     return sourceDb.replicate
@@ -110,7 +110,7 @@ function replicateDb(sourceDb, targetDb) {
       })
       .then(() => purgeFeedback(sourceDb, info, targetDb));
   });
-}
+};
 
 module.exports = {
   execute: () => {

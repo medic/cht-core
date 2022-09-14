@@ -82,9 +82,7 @@ const getLogoutMessage = async () => {
 
 const goToBase = async () => {
   await browser.url('/');
-
-  await (await analyticsTab()).waitForDisplayed();
-  await (await messagesTab()).waitForDisplayed();
+  await waitForPageLoaded();
 };
 
 const goToReports = async () => {
@@ -116,7 +114,7 @@ const goToAnalytics = async () => {
 
 const goToAboutPage = async () => {
   await browser.url(`/#/about`);
-  await (await analyticsTab()).waitForDisplayed();
+  await waitForLoaders();
 };
 
 const closeTour = async () => {
@@ -189,11 +187,15 @@ const sync = async (expectReload) => {
 };
 
 const closeReloadModal = async () => {
-  await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
-  // wait for the animation to complete
-  await browser.pause(500);
-  await (await reloadModalCancel()).click();
-  await browser.pause(500);
+  try {
+    await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
+    // wait for the animation to complete
+    await browser.pause(500);
+    await (await reloadModalCancel()).click();
+    await browser.pause(500);
+  } catch (err) {
+    console.error('Reload modal not showed up');
+  }
 };
 
 const openReportBugAndFetchProperties = async () => {

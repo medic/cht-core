@@ -1,14 +1,17 @@
-name: Build cht-core and test against node versions
+name: Build and test
 
 on: [push, pull_request]
 
 env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
-  COUCH_NODE_NAME: nonode@nohost
   BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
-  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }} 
-  MARKET_URL_READ: 'https://staging.dev.medicmobile.org' 
+  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
+  MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
+  INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
+  DOCKERHUB_USERNAME: 'dockermedic'
+  ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
+  COUCHDB_LOG_LEVEL: 'debug'
 
 jobs:
 
@@ -17,36 +20,44 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Get Docker Hub username
-      id: get-docker-hub-username
-      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
     - name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: steps.get-docker-hub-username.outputs.dockerhub_username
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
-    - name: Set CI Vars
+    - name: Set ENV
       run: |
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
     - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
+    - name: Use Node.js 16.x
       uses: actions/setup-node@v1
       with:
-        node-version: 12.x
+        node-version: 16.x
     - name: Couch Start
       run: ./scripts/ci/couch-start
     - name: Create logs directory
       run: mkdir tests/logs
-    - name: npm CI
-      run: npm ci
+    - run: npm ci --legacy-peer-deps
     - name: Grunt Install
       run: npm install -g grunt-cli
-    - name: Configure Couch
-      run: ./scripts/ci/couch-config
     - name: Grunt CI-Compile
       run: |
         node --stack_size=10000 `which grunt` ci-compile-github
@@ -54,118 +65,186 @@ jobs:
       run: |
         node --stack_size=10000 `which grunt` publish-for-testing
 
+    - name: Upload docker images as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: cht-images
+        path: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+
   config-tests:
     needs: build
-    name: Config Tests
+    name: ${{ matrix.grunt-cmd }}
     runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
         grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
+    - name: Use Node.js 16.x
       uses: actions/setup-node@v1
       with:
-        node-version: 12.x
+        node-version: 16.x
     - name: Grunt Install
       run: npm install -g grunt-cli
-    - name: NPM
-      run: npm ci
+    - run: npm ci --legacy-peer-deps
     - name: Run Tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
 
-  publish:
-    needs: [tests,config-tests]
-    name: Publish branch build
-    runs-on: ubuntu-22.04
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Get branch name
-      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
-    - name: Set CI Vars
-      run: |
-        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
-    - name: Publish
-      if: ${{ github.event_name != 'pull_request' }}
-      run: |
-        cd scripts/ci
-        npm ci
-        node ./publish.js
-
   tests:
     needs: build
-    name: ${{ matrix.grunt-cmd }} on node ${{ matrix.node-version }}
+    name: ${{ matrix.grunt-cmd }}
     runs-on: ubuntu-22.04
     env:
-      NODE: ${{ matrix.node-version }}
+      NODE: 16.x
 
     strategy:
+      fail-fast: false
       matrix:
-        node-version: ['8.x', '10.x', '12.x']
         grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
 
     steps:
-    - name: Get Docker Hub username
-      id: get-docker-hub-username
-      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
     - name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: steps.get-docker-hub-username.outputs.dockerhub_username
-    - name: Set CI Vars
-      run: |
-        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "TEST_SUITE=integration" >> $GITHUB_ENV
-    - name: Use Node.js 12.x
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Get branch name
+      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
+    - name: Use Node.js 16.x
       uses: actions/setup-node@v1
       with:
-        node-version: 12.x
+        node-version: 16.x
     - uses: actions/checkout@v2
+    - name: Download docker images artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: cht-images
+        path: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    - name: Load docker images
+      run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
+      working-directory: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Set ENV
+      run: |
+        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+        echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
     - name: Install pyxform
       run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     - name: Install cht-conf
       run:  npm install -g cht-conf
-    - name: npm CI
-      run: npm ci
-    - name: Should Install Latest
-      run: echo "IS_TAG=TRUE" >> $GITHUB_ENV
-      if: startsWith(github.ref, 'refs/tags/')
-    - name: Horti Setup
-      run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER"
-        docker-compose -f scripts/ci/horti-compose.yml up -d 
-        sh scripts/wait_for_response_code.sh 5988 200 api
-    # Restarting horti to install on a different builds server.
-    # Used for installing the current release then installing the beta. 
-    - name: Install Latest Build After Installing Latest In Previous Startup
-      run: |
-        cp tests/logs/horti.log tests/logs/horti_first_run.log
-        docker stop horti
-        docker logs horti > tests/logs/horti_before_recreate_container.log 2>&1
-        INSTALL_LATEST=yes docker-compose -f scripts/ci/horti-compose.yml up -d 
-        sh scripts/wait_for_response_code.sh 5988 200 api
-      if: startsWith(github.ref, 'refs/tags/')
-    - name: Test it!
+    - run: npm ci --legacy-peer-deps
+    - name: Run tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
-    - name: Dump Couch logs
-      run: |
-        docker logs couch > tests/logs/couch_container.log 2>&1 &&
-        docker logs horti > tests/logs/horti_container.log 2>&1
-      if: ${{ always() }}
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
-        name: ${{ matrix.grunt-cmd }} on node ${{ matrix.node-version }}
+        name: ${{ matrix.grunt-cmd }}
         path: |
           allure-results
           allure-report
           tests/logs
           tests/results/
       if: ${{ failure() }}
+
+  publish:
+    needs: [tests,config-tests]
+    name: Publish branch build
+    runs-on: ubuntu-22.04
+    if: ${{ github.event_name != 'pull_request' }}
+
+    steps:
+    - name: Delete image artifacts
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: cht-images
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    - uses: actions/checkout@v2
+    - name: Get branch name
+      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
+    - name: Set ENV
+      run: |
+        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+    - name: Publish
+      run: |
+        cd scripts/ci
+        npm ci --legacy-peer-deps
+        node ./publish.js
+        node ./tag-docker-images.js
+
+  upgrade:
+    needs: [publish]
+    name: Upgrade from latest release
+    runs-on: ubuntu-22.04
+    if: ${{ github.event_name != 'pull_request' }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - uses: actions/checkout@v2
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      - name: Get branch name
+        uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
+      - name: Set ENV
+        run: |
+          echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+          echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
+      - run: npm ci --legacy-peer-deps
+      - name: Create logs directory
+        run: mkdir tests/logs
+      - name: Upgrade
+        run: npm run upgrade-wdio
+      - name: Archive Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: Upgrade
+          path: |
+            allure-results
+            allure-report
+            tests/logs
+            tests/results/
+        if: ${{ failure() }}

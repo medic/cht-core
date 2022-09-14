@@ -1,4 +1,5 @@
 const commonElements = require('../common/common.wdio.page');
+const searchElements = require('../search/search.wdio.page');
 const utils = require('../../utils');
 
 const reportListID = '#reports-list';
@@ -17,13 +18,14 @@ const reportsByUUID = (uuid) => $$(`${reportListID} li.content-row[data-record-i
 const reportRowSelector = `${reportListID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
+const editReportButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
 
-const sidebarFilter = () => $('.sidebar-filter');
 const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
 const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
 const sidebarFilterToDate = () => $('#toDateFilter');
 const sidebarFilterFromDate = () => $('#fromDateFilter');
-const sidebarFilterOpenBtn = () => $('.reports-action-bar .open-filter');
+const sidebarFilterOpenBtn = () => $('mm-search-bar .open-filter');
+const filterResetBtn = () => $('.sidebar-reset');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
@@ -51,7 +53,6 @@ const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
 const patientName = () => $('.subject .name');
 const reportType = () => $('div[test-id="form-title"]');
-
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
@@ -84,7 +85,7 @@ const openForm = async (name) => {
 };
 
 const setDateInput = async (name, date) => {
-  const input = await $(`input[name="${name}"]`);
+  const input = await (typeof name === 'string' ? $(`input[name="${name}"]`) : name);
   const dateWidget = await input.previousElement();
   const visibleInput = await dateWidget.$('input[type="text"]');
   await visibleInput.setValue(date);
@@ -113,6 +114,7 @@ const getFieldValue = async (name) => {
 };
 
 const submitForm = async () => {
+  await (await submitButton()).waitForDisplayed();
   await (await submitButton()).click();
   await (await reportBodyDetails()).waitForDisplayed();
 };
@@ -209,8 +211,17 @@ const filterByDate = async (startDate, endDate) => {
 };
 
 const openSidebarFilter = async () => {
-  await (await sidebarFilterOpenBtn()).click();
-  return (await sidebarFilter()).waitForDisplayed();
+  if (!await (await filterResetBtn()).isDisplayed()) {
+    await (await sidebarFilterOpenBtn()).click();
+  }
+  return await (await filterResetBtn()).waitForDisplayed();
+};
+
+const closeSidebarFilter = async () => {
+  if (await (await filterResetBtn()).isDisplayed()) {
+    await (await sidebarFilterOpenBtn()).click();
+  }
+  return await (await filterResetBtn()).waitForDisplayed({ reverse: true });
 };
 
 const openSidebarFilterDateAccordion = async () => {
@@ -277,7 +288,33 @@ const getReportType = async () => {
   return (await reportType()).getText();
 };
 
+const resetFilter = async () => {
+  await openSidebarFilter();
+  await (await filterResetBtn()).waitForDisplayed();
+  await (await filterResetBtn()).click();
+  await closeSidebarFilter();
+  await searchElements.clearSearch();
+};
 
+const openReport = async (reportId) => {
+  await resetFilter();
+  await (await firstReport()).waitForDisplayed();
+  const reportListItem = await reportByUUID(reportId);
+  await reportListItem.waitForDisplayed();
+  await reportListItem.click();
+  await reportBodyDetails().waitForDisplayed();
+};
+
+const editReport = async (reportId) => {
+  await commonElements.goToReports();
+  await openReport(reportId);
+  await (await editReportButton()).click();
+  await (await formTitle()).waitForDisplayed();
+};
+
+const fieldByIndex = async (index) => {
+  return await (await $(`${reportBodyDetailsSelector} li:nth-child(${index}) p`)).getText();
+};
 
 module.exports = {
   getCurrentReportId,
@@ -324,5 +361,8 @@ module.exports = {
   getReportDetailFieldValueByLabel,
   getReportSubject,
   getReportType,
-  getListReportInfo
+  getListReportInfo,
+  openReport,
+  editReport,
+  fieldByIndex,
 };

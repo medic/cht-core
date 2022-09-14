@@ -10,7 +10,7 @@ const {
 
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
-const PouchDB = require('pouchdb');
+const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 const sinon = require('sinon');
 const rewire = require('rewire');

@@ -1,6 +1,5 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const path = require('path');
 const fs = require('fs');
 const swPrecache = require('sw-precache');
 const rewire = require('rewire');
@@ -14,10 +13,10 @@ describe('generate service worker', () => {
   let clock;
   let getServiceWorkerHash;
   let generateServiceWorker;
-  const apiPath = path.join(__dirname, '../../src');
 
   beforeEach(() => {
-    sinon.stub(env, 'getExtractedResourcesPath').returns('/tmp/');
+    sinon.stub(env, 'staticPath').value('/absolute/path/to/build/static/');
+    sinon.stub(env, 'webappPath').value('/absolute/path/to/build/static/webapp/');
     sinon.stub(loginController, 'renderLogin');
     sinon.stub(swPrecache, 'write');
     sinon.stub(db.medic, 'get');
@@ -29,11 +28,16 @@ describe('generate service worker', () => {
     getServiceWorkerHash.onCall(0).resolves('first');
     getServiceWorkerHash.onCall(1).resolves('second');
     generateServiceWorker.__set__('getServiceWorkerHash', getServiceWorkerHash);
+    generateServiceWorker.__set__('apiSrcDirectoryPath', '/absolute/path/to/api/src/');
   });
 
   afterEach(() => {
     clock.restore();
     sinon.restore();
+  });
+
+  it('should not generate if locked', () => {
+    generateServiceWorker.run();
   });
 
   it('should generate the service worker file and update the service worker meta doc', () => {
@@ -43,12 +47,12 @@ describe('generate service worker', () => {
     db.medic.put.resolves();
     clock.tick(2500);
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
 
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(swPrecache.write.args[0]).to.deep.equal([
-        '/tmp/js/service-worker.js',
+        '/absolute/path/to/build/static/webapp/service-worker.js',
         {
           cacheId: 'cache',
           claimsClient: true,
@@ -56,25 +60,26 @@ describe('generate service worker', () => {
           directoryIndex: false,
           handleFetch: true,
           staticFileGlobs: [
-            '/tmp/{audio,img}/*',
-            '/tmp/manifest.json',
-            '/tmp/*.js',
-            '/tmp/*.css',
-            '/tmp/fontawesome-webfont.woff2',
-            '/tmp/fonts/enketo-icons-v2.woff',
-            '/tmp/fonts/NotoSans-Bold.ttf',
-            '/tmp/fonts/NotoSans-Regular.ttf',
-            path.join(apiPath, 'public/login/*.{css,js}'),
+            '/absolute/path/to/build/static/webapp/{audio,img}/*',
+            '/absolute/path/to/build/static/webapp/manifest.json',
+            '/absolute/path/to/build/static/webapp/*.js',
+            '/absolute/path/to/build/static/webapp/*.css',
+            '!/absolute/path/to/build/static/webapp/service-worker.js',
+            '/absolute/path/to/build/static/webapp/fontawesome-webfont.woff2',
+            '/absolute/path/to/build/static/webapp/fonts/enketo-icons-v2.woff',
+            '/absolute/path/to/build/static/webapp/fonts/NotoSans-Bold.ttf',
+            '/absolute/path/to/build/static/webapp/fonts/NotoSans-Regular.ttf',
+            '/absolute/path/to/build/static/login/*.{css,js}',
           ],
           dynamicUrlToDependencies: {
-            '/': ['/tmp/index.html'], // Webapp's entry point
+            '/': ['/absolute/path/to/build/static/webapp/index.html'], // Webapp's entry point
             '/medic/login': 'loginpage html',
-            '/medic/_design/medic/_rewrite/': [path.join(apiPath, 'public/appcache-upgrade.html')],
+            '/medic/_design/medic/_rewrite/': ['/absolute/path/to/build/static/webapp/appcache-upgrade.html'],
           },
           ignoreUrlParametersMatching: [/redirect/, /username/],
           stripPrefixMulti: {
-            ['/tmp/']: '',
-            [path.join(apiPath, 'public')]: '',
+            ['/absolute/path/to/build/static/webapp/']: '',
+            ['/absolute/path/to/build/static/']: '',
           },
           maximumFileSizeToCacheInBytes: 1048576 * 30,
           verbose: true,
@@ -97,7 +102,7 @@ describe('generate service worker', () => {
     getServiceWorkerHash.onCall(0).resolves('same');
     getServiceWorkerHash.onCall(1).resolves('same');
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(db.medic.get.callCount).to.equal(0);
@@ -111,7 +116,7 @@ describe('generate service worker', () => {
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(db.medic.get.callCount).to.equal(1);
@@ -130,7 +135,7 @@ describe('generate service worker', () => {
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(db.medic.get.callCount).to.equal(0);
@@ -144,7 +149,7 @@ describe('generate service worker', () => {
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(db.medic.get.callCount).to.equal(0);
@@ -157,12 +162,12 @@ describe('generate service worker', () => {
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
 
       chai.expect(swPrecache.write.callCount).to.deep.equal(1);
       chai.expect(swPrecache.write.args[0]).to.deep.equal([
-        '/tmp/js/service-worker.js',
+        '/absolute/path/to/build/static/webapp/service-worker.js',
         {
           cacheId: 'cache',
           claimsClient: true,
@@ -170,25 +175,26 @@ describe('generate service worker', () => {
           directoryIndex: false,
           handleFetch: true,
           staticFileGlobs: [
-            '/tmp/{audio,img}/*',
-            '/tmp/manifest.json',
-            '/tmp/*.js',
-            '/tmp/*.css',
-            '/tmp/fontawesome-webfont.woff2',
-            '/tmp/fonts/enketo-icons-v2.woff',
-            '/tmp/fonts/NotoSans-Bold.ttf',
-            '/tmp/fonts/NotoSans-Regular.ttf',
-            path.join(apiPath, 'public/login/*.{css,js}'),
+            '/absolute/path/to/build/static/webapp/{audio,img}/*',
+            '/absolute/path/to/build/static/webapp/manifest.json',
+            '/absolute/path/to/build/static/webapp/*.js',
+            '/absolute/path/to/build/static/webapp/*.css',
+            '!/absolute/path/to/build/static/webapp/service-worker.js',
+            '/absolute/path/to/build/static/webapp/fontawesome-webfont.woff2',
+            '/absolute/path/to/build/static/webapp/fonts/enketo-icons-v2.woff',
+            '/absolute/path/to/build/static/webapp/fonts/NotoSans-Bold.ttf',
+            '/absolute/path/to/build/static/webapp/fonts/NotoSans-Regular.ttf',
+            '/absolute/path/to/build/static/login/*.{css,js}',
           ],
           dynamicUrlToDependencies: {
-            '/': ['/tmp/index.html'], // Webapp's entry point
-            '/medic/login': [path.join(apiPath, 'templates/login', 'index.html')],
-            '/medic/_design/medic/_rewrite/': [path.join(apiPath, 'public/appcache-upgrade.html')],
+            '/': ['/absolute/path/to/build/static/webapp/index.html'], // Webapp's entry point
+            '/medic/login': ['/absolute/path/to/api/src/templates/login/index.html'],
+            '/medic/_design/medic/_rewrite/': ['/absolute/path/to/build/static/webapp/appcache-upgrade.html'],
           },
           ignoreUrlParametersMatching: [/redirect/, /username/],
           stripPrefixMulti: {
-            ['/tmp/']: '',
-            [path.join(apiPath, 'public')]: '',
+            ['/absolute/path/to/build/static/webapp/']: '',
+            ['/absolute/path/to/build/static/']: '',
           },
           maximumFileSizeToCacheInBytes: 1048576 * 30,
           verbose: true,
@@ -212,7 +218,7 @@ describe('generate service worker', () => {
     swPrecache.write.rejects({ an: 'error' });
 
     return generateServiceWorker
-      .run()
+      .run(true)
       .then(() => chai.expect.fail('should have thrown'))
       .catch(err => {
         chai.expect(err).to.deep.equal({ an: 'error' });
@@ -229,7 +235,7 @@ describe('generate service worker', () => {
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(logger.error.callCount).to.equal(0);
       chai.expect(db.medic.get.callCount).to.equal(1);
       chai.expect(db.medic.put.callCount).to.equal(1);
@@ -247,7 +253,7 @@ describe('generate service worker', () => {
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.resolves();
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(db.medic.get.callCount).to.equal(1);
       chai.expect(db.medic.put.callCount).to.equal(1);
     });
@@ -259,7 +265,7 @@ describe('generate service worker', () => {
     swPrecache.write.resolves();
     sinon.stub(logger, 'error');
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(logger.error.args[0][1]).to.deep.equal({ status: 500 });
       chai.expect(db.medic.put.callCount).to.equal(0);
     });
@@ -272,7 +278,7 @@ describe('generate service worker', () => {
     swPrecache.write.resolves();
     sinon.stub(logger, 'error');
 
-    return generateServiceWorker.run().then(() => {
+    return generateServiceWorker.run(true).then(() => {
       chai.expect(logger.error.args[0][1]).to.deep.equal({ status: 502 });
     });
   });
@@ -303,7 +309,7 @@ describe('generate service worker', () => {
       return getServiceWorkerHash().then((result) => {
         chai.expect(result).to.equal(undefined);
         chai.expect(fs.access.callCount).to.equal(1);
-        chai.expect(fs.access.args[0][0]).to.equal('/tmp/js/service-worker.js');
+        chai.expect(fs.access.args[0][0]).to.equal('/absolute/path/to/build/static/webapp/service-worker.js');
         chai.expect(fs.createReadStream.callCount).to.equal(0);
       });
     });
@@ -318,7 +324,9 @@ describe('generate service worker', () => {
         .resolve()
         .then(() => {
           chai.expect(fs.createReadStream.callCount).to.equal(1);
-          chai.expect(fs.createReadStream.args[0]).to.deep.equal(['/tmp/js/service-worker.js']);
+          chai.expect(fs.createReadStream.args[0]).to.deep.equal([
+            '/absolute/path/to/build/static/webapp/service-worker.js',
+          ]);
           chai.expect(stream.setEncoding.callCount).to.equal(1);
           chai.expect(stream.setEncoding.args[0]).to.deep.equal(['utf8']);
 
@@ -349,7 +357,9 @@ describe('generate service worker', () => {
         .resolve()
         .then(() => {
           chai.expect(fs.createReadStream.callCount).to.equal(1);
-          chai.expect(fs.createReadStream.args[0]).to.deep.equal(['/tmp/js/service-worker.js']);
+          chai.expect(fs.createReadStream.args[0]).to.deep.equal([
+            '/absolute/path/to/build/static/webapp/service-worker.js',
+          ]);
           chai.expect(stream.setEncoding.callCount).to.equal(1);
           chai.expect(stream.setEncoding.args[0]).to.deep.equal(['utf8']);
 

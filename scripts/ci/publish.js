@@ -33,7 +33,8 @@ const prepare = doc => {
   console.log('Checking if already published...');
   doc._id = stagingDocId;
   doc._rev = undefined;
-  return stagingDb.get(stagingDocId)
+  return stagingDb
+    .get(stagingDocId)
     .then(current => {
       console.log(`Exising release found - updating...`);
       doc._rev = current._rev;
