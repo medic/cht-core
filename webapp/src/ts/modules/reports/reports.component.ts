@@ -197,7 +197,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       // remove the lineage level that belongs to the offline logged-in user
       if (userLineageLevel && report?.lineage?.length) {
         report.lineage = report.lineage.filter(level => level);
-        const item = report.lineage?.length && report.lineage[report.lineage.length -1];
+        const item = report.lineage[report.lineage.length -1];
         if (item === userLineageLevel) {
           report.lineage.pop();
         }

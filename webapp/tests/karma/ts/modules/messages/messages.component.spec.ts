@@ -236,20 +236,21 @@ describe('Messages Component', () => {
       expect(await component.currentLevel).to.equal('parent');
     });
 
-    it('should not change the conversations lineage if the connected user is online only', fakeAsync(() => {
-      sinon.resetHistory();
+    it('should not alter conversations when user is offline and parent place is not relevant to the conversation',
+      fakeAsync( () => {
+        sinon.resetHistory();
 
-      messageContactService.getList.resolves(conversations);
-      userContactService.get.resolves(bettyOfflineUserContactDoc);
-      sessionService.isOnlineOnly.returns(true);
+        messageContactService.getList.resolves(conversations);
+        userContactService.get.resolves(userContactDoc);
+        sessionService.isOnlineOnly.returns(false);
 
-      component.ngOnInit();
-      tick();
-      component.updateConversations({merge : true});
-      tick();
+        component.ngOnInit();
+        tick();
+        component.updateConversations({merge : true});
+        tick();
 
-      expect(component.conversations).to.deep.equal(conversations);
-    }));
+        expect(component.conversations).to.deep.equal(conversations);
+      }));
 
     it('should not change the conversations lineage if the connected user is online only', fakeAsync(() => {
       sinon.resetHistory();
