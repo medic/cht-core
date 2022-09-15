@@ -685,6 +685,38 @@ const createRecordBulkLog = (record, status, error, message) => {
   return recordBulkLog;
 };
 
+const hydrateUserSettings = (userSettings) => {
+  return db.medic
+    .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
+    .then((response) => {
+      if (!Array.isArray(response.rows) || response.rows.length !== 2) { // malformed response
+        return userSettings;
+      }
+
+      const [facilityRow, contactRow] = response.rows;
+      if (!facilityRow || !contactRow) { // malformed response
+        return userSettings;
+      }
+
+      userSettings.facility = facilityRow.doc;
+      userSettings.contact = contactRow.doc;
+
+      return userSettings;
+    });
+};
+
+const getUserSettings = ({ name }) => {
+  return Promise
+    .all([
+      db.users.get('org.couchdb.user:' + name),
+      db.medic.get('org.couchdb.user:' + name)
+    ])
+    .then(([ user, medicUser ]) => {
+      Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
+      return hydrateUserSettings(medicUser);
+    });
+};
+
 /*
  * Everything not exported directly is private.  Underscore prefix is only used
  * to export functions needed for testing.
@@ -702,6 +734,7 @@ module.exports = {
         return mapUsers(users, settings, facilities);
       });
   },
+  getUserSettings,
   /*
    * Take the request data and create valid user, user-settings and contact
    * objects. Returns the response body in the callback.

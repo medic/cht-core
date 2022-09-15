@@ -4,7 +4,7 @@ const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
-const { roles } = require('@medic/user-management')(config, db);
+const { roles, users } = require('@medic/user-management')(config, db);
 
 const get = (path, headers) => {
   const dbUrl = url.parse(environment.serverUrl);
@@ -49,29 +49,10 @@ const getFacilityId = (req, userCtx) => {
   return get(url, req.headers).then(user => user.facility_id);
 };
 
-const hydrateUserSettings = (userSettings) => {
-  return db.medic
-    .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
-    .then((response) => {
-      if (!Array.isArray(response.rows) || response.rows.length !== 2) { // malformed response
-        return userSettings;
-      }
-
-      const [facilityRow, contactRow] = response.rows;
-      if (!facilityRow || !contactRow) { // malformed response
-        return userSettings;
-      }
-
-      userSettings.facility = facilityRow.doc;
-      userSettings.contact = contactRow.doc;
-
-      return userSettings;
-    });
-};
-
 module.exports = {
   isOnlineOnly: roles.isOnlineOnly,
   isDbAdmin: roles.isDbAdmin,
+  getUserSettings: users.getUserSettings,
   hasAllPermissions: (userCtx, permissions) => {
     if (roles.isDbAdmin(userCtx)) {
       return true;
@@ -184,18 +165,6 @@ module.exports = {
           return Promise.reject(new Error(`Expected 200 got ${res.statusCode}`));
         }
         return username;
-      });
-  },
-
-  getUserSettings: userCtx => {
-    return Promise
-      .all([
-        db.users.get('org.couchdb.user:' + userCtx.name),
-        db.medic.get('org.couchdb.user:' + userCtx.name)
-      ])
-      .then(([ user, medicUser ]) => {
-        Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
-        return hydrateUserSettings(medicUser);
       });
   },
 };
