@@ -4,7 +4,6 @@ const chai = require('chai');
 const sinon = require('sinon');
 const auth = require('../../src/auth');
 const config = require('../../src/config');
-const db = require('../../src/db');
 const environment = require('../../src/environment');
 
 let originalServerUrl;
