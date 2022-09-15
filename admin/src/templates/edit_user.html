@@ -36,20 +36,22 @@
       <span class="help-block">{{errors.phone}}</span>
     </div>
 
-    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.role}">
-      <label for="role" translate>configuration.role</label> *
+    <div id="role-select" class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.role}">
+      <label translate>configuration.role</label> *
       <input type="text" class="form-control" ng-model="editUserModel.roles" disabled="disabled" ng-if="editUserModel.roles.indexOf('_admin') !== -1" />
-      <li ng-repeat="(key, value) in roles" class="checkbox" ng-if="editUserModel.roles.indexOf('_admin') === -1">
-        <label>
-          <input
-            type="checkbox"
-            name="roles[]"
-            ng-value="key"
-            ng-checked="editUserModel.roles.indexOf(key) !== -1"
-            ng-click="toggleRole(key)"
-          ><span translate>{{value.name}}</span>
-        </label>
-      </li>
+      <ul>
+        <li ng-repeat="(key, value) in roles" class="checkbox" ng-if="editUserModel.roles.indexOf('_admin') === -1">
+          <label>
+            <input
+              type="checkbox"
+              name="roles[]"
+              ng-value="key"
+              ng-checked="editUserModel.roles.indexOf(key) !== -1"
+              ng-click="toggleRole(key)"
+            ><span translate>{{value.name}}</span>
+          </label>
+        </li>
+      </ul>
       <span class="help-block">{{errors.roles}}</span>
     </div>
 
