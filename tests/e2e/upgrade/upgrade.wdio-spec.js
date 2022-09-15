@@ -1,9 +1,10 @@
 const utils = require('../../utils');
 
-const { BRANCH, BUILD_NUMBER } = process.env;
+const { BRANCH } = process.env;
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
 const constants = require('../../constants');
+const version = require('../../../scripts/build/versions');
 
 const getDdocs = async () => {
   const result = await utils.requestOnMedicDb({
@@ -40,8 +41,7 @@ describe('Performing an upgrade', () => {
     await (await upgradePage.deploymentComplete()).waitForDisplayed();
 
     const currentVersion = await upgradePage.getCurrentVersion();
-    // todo what happens when tags are pushed?
-    expect(currentVersion).to.include(`${BRANCH}.${BUILD_NUMBER}`);
+    expect(currentVersion).to.include(version.getVersion());
 
     // there should be no staged ddocs
     const ddocs = await getDdocs();

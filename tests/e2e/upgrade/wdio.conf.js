@@ -22,7 +22,7 @@ const DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'upgrade-ser
 const CHT_DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
 const CHT_DATA_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
 const UPGRADE_SERVICE_DC = path.join(DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
-const mainBranch = 'medic:medic:archv3-startup-page';
+const mainBranch = 'medic:medic:master';
 
 const chai = require('chai');
 const { spawn } = require('child_process');
