@@ -435,6 +435,54 @@ describe('Users service', () => {
         });
     });
 
+    it('returns user settings by contact_id from medic user doc', () => {
+      sinon
+        .stub(db.users, 'get')
+        .resolves({ name: 'steve', facility_id: 'steveVille', roles: ['b'] });
+      sinon
+        .stub(db.medic, 'query')
+        .resolves({
+          rows: [
+            { doc: { name: 'no_contact', } },
+            { doc: { name: 'mis_matched_contact', contact_id: 'mis_matched_contact', } },
+            { doc: {
+              name: 'steve',
+              facility_id: 'otherville',
+              contact_id: 'steve_contact',
+              roles: ['c']
+            } }
+          ]
+        });
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { id: 'steveVille', key: 'steveVille', doc: { _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' } },
+          { id: 'steve', key: 'steve', doc: { _id: 'steve', patient_id: 'steve', name: 'steve' } },
+        ],
+      });
+
+      return service
+        .getUserSettings({ contact_id: 'steve_contact' })
+        .then(result => {
+          chai.expect(result).to.deep.equal({
+            name: 'steve',
+            facility_id: 'steveVille',
+            contact_id: 'steve_contact',
+            roles: ['b'],
+            facility: { _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' },
+            contact: { _id: 'steve', patient_id: 'steve', name: 'steve' },
+          });
+
+          chai.expect(db.users.get.callCount).to.equal(1);
+          chai.expect(db.users.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+          chai.expect(db.medic.query.callCount).to.equal(1);
+          chai.expect(db.medic.query.args[0])
+            .to.deep.equal(['medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] }]);
+          chai.expect(db.medic.allDocs.callCount).to.equal(1);
+          chai.expect(db.medic.allDocs.args[0])
+            .to.deep.equal([{ keys: ['steveVille', 'steve_contact'], include_docs: true }]);
+        });
+    });
+
     it('returns name and roles from provided userCtx', () => {
       sinon.stub(db.users, 'get').resolves({
         _id: 'org.couchdb.user:my-user',
@@ -672,6 +720,26 @@ describe('Users service', () => {
         });
     });
 
+    it('throws error if _users user returns an error when getting by contact_id', () => {
+      sinon.stub(db.users, 'get').rejects({ some: 'err' });
+      sinon
+        .stub(db.medic, 'query')
+        .resolves({
+          rows: [{ doc: {
+            name: 'steve',
+            facility_id: 'otherville',
+            contact_id: 'steve_contact',
+            roles: ['c']
+          } }]
+        });
+      return service
+        .getUserSettings({ contact_id: 'steve_contact' })
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ some: 'err' });
+        });
+    });
+
     it('throws error if medic user-settings returns an error', () => {
       sinon.stub(db.users, 'get').resolves({});
       sinon.stub(db.medic, 'get').rejects({ some: 'err' });
@@ -680,6 +748,26 @@ describe('Users service', () => {
         .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({ some: 'err' });
+        });
+    });
+
+    it('throws error if medic user-settings returns no matching users when getting by contact_id', () => {
+      sinon
+        .stub(db.medic, 'query')
+        .resolves({
+          rows: [
+            { doc: { name: 'no_contact', } },
+            { doc: { name: 'mis_matched_contact', contact_id: 'mis_matched_contact', } },
+          ]
+        });
+      return service
+        .getUserSettings({ contact_id: 'steve_contact' })
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({
+            message: 'Failed to find user setting with contact_id [steve_contact].',
+            status: 404
+          });
         });
     });
 
