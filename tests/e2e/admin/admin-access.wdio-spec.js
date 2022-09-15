@@ -5,7 +5,7 @@ const common = require('../../page-objects/common/common.wdio.page');
 const placeFactory = require('../../factories/cht/contacts/place');
 const constants = require('../../constants');
 
-const offlineUser = userFactory.build({ username: 'offlineuser', isOffline: true });
+const offlineUser = userFactory.build({ username: 'offlineuser-admin', isOffline: true });
 const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
 
 const adminNavbarLogo = () => $('.navbar-header .navbar-brand');
