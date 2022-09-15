@@ -40,8 +40,10 @@ const womenBetween =  async () => {
 };
 
 const registerWomenOption =  async () => {
+  const radios = () => $$('[name="/data/repeat-women/women"]');
+  await browser.waitUntil(async () => (await radios()).length === 2);
+  const registerChildren = await radios();
   // 0 - yes; 1 - no
-  const registerChildren = await $$('[name="/data/repeat-women/women"]');
   await registerChildren[1].click();
 };
 
