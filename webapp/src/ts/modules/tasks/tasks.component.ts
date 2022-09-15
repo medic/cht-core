@@ -133,7 +133,7 @@ export class TasksComponent implements OnInit, OnDestroy {
       emission.date = new Date(dueDate.valueOf());
       emission.overdue = dueDate.isBefore(moment());
       emission.owner = taskDoc.owner;
-      emission.forId = taskDoc.forId ? taskDoc.forId : taskDoc.owner;
+      emission.forId = taskDoc.forId;
       return emission;
     });
   }
@@ -155,9 +155,9 @@ export class TasksComponent implements OnInit, OnDestroy {
       const subjects = await this.getLineagesFromTaskDocs(hydratedTasks);
       if (subjects?.size) {
         const userLineageLevel = await this.currentLevel;
-        for (const task of hydratedTasks) {
-          task.lineage = await this.getTaskLineage(subjects, task, userLineageLevel);
-        }
+        hydratedTasks.forEach(task => {
+          task.lineage = this.getTaskLineage(subjects, task, userLineageLevel);
+        });
       }
 
       this.tasksActions.setTasksList(hydratedTasks);
@@ -188,23 +188,20 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private getLineagesFromTaskDocs(taskDocs) {
-    const ids = [...new Set(taskDocs.map(task => task.forId))];
+    const ids = [...new Set(taskDocs.map(task => task.forId || task.owner))];
     return this.lineageModelGeneratorService
       .reportSubjects(ids)
       .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
   }
 
   private getTaskLineage(subjects, task, userLineageLevel) {
-    if (!subjects?.size) {
-      return;
-    }
     const lineage = subjects
       .get(task.forId)
       ?.map(lineage => lineage?.name);
     return this.cleanAndRemoveCurrentLineage(lineage, userLineageLevel);
   }
 
-  private async cleanAndRemoveCurrentLineage(lineage, userLineageLevel) {
+  private cleanAndRemoveCurrentLineage(lineage, userLineageLevel) {
     if(!lineage?.length){
       return;
     }
