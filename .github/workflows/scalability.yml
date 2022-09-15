@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Set up Medic on EC2 and Execute Jmeter on another EC2
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Set TAG_NAME var
         run: echo "TAG_NAME=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
@@ -25,4 +25,4 @@ jobs:
       - name: Execute Jmeter
         env: 
           SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
-        run: cd tests/scalability && ./start_jmeter_ec2.sh 
+        run: cd tests/scalability && ./start_jmeter_ec2.sh

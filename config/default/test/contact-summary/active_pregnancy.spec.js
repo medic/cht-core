@@ -5,7 +5,7 @@ const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require(
 const harness = new TestRunner();
 
 describe('Tests for active pregnancy condition card', () => {
-  before(async () => { return await harness.start(); });
+  before(() => harness.start());
   after(async () => { return await harness.stop(); });
   beforeEach(async () => {
     await harness.clear();

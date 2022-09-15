@@ -14,7 +14,7 @@ jobs:
 
   build:
     name: Compile the app
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Get Docker Hub username
@@ -57,7 +57,7 @@ jobs:
   config-tests:
     needs: build
     name: Config Tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
@@ -78,7 +78,7 @@ jobs:
   publish:
     needs: [tests,config-tests]
     name: Publish branch build
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v2
@@ -98,7 +98,7 @@ jobs:
   tests:
     needs: build
     name: ${{ matrix.grunt-cmd }} on node ${{ matrix.node-version }}
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     env:
       NODE: ${{ matrix.node-version }}
 
