@@ -148,6 +148,15 @@ const hideSnackbar = () => {
   });
 };
 
+const toggleActionbar = (hide) => {
+  // the actiobar can cover elements at the bottom of the page, making clicks land in incorrect places
+  return browser.execute((hide) => {
+    // eslint-disable-next-line no-undef
+    const element = window.jQuery('.detail-actions');
+    hide ? element.hide() : element.show();
+  }, hide);
+};
+
 const waitForLoaders = async () => {
   await browser.waitUntil(async () => {
     for (const loader of await loaders()) {
@@ -294,4 +303,5 @@ module.exports = {
   snackbarAction,
   getDefaultLanguages,
   getTextForElements,
+  toggleActionbar,
 };

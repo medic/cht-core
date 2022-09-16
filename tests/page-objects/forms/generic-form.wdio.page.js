@@ -36,12 +36,16 @@ const validateReport = async () => {
 };
 
 const selectContact = async (inputName, contactName) => {
-  await (await $(`section[name="${inputName}"] .select2-selection`)).click();
+  const select2Selection = () => $(`section[name="${inputName}"] .select2-selection`);
+  await (await select2Selection()).click();
   const searchField = await $('.select2-search__field');
   await searchField.setValue(contactName);
   const contact = await $('.name');
   await contact.waitForDisplayed();
   await contact.click();
+  await browser.waitUntil(async () =>
+    (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase())
+  );
 };
 const editForm = async () => {
   const editFormBtn = await $('[href^="#/reports/edit"]>.fa-pencil');

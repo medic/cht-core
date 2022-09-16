@@ -365,4 +365,5 @@ module.exports = {
   openReport,
   editReport,
   fieldByIndex,
+  reportBodyDetails,
 };

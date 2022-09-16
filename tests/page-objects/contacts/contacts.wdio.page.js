@@ -238,8 +238,10 @@ const openForm = async (name) => {
 };
 
 const openReport = async () => {
+  await commonElements.toggleActionbar(true);
   await (await rhsReportListElement()).waitForDisplayed();
-  return (await rhsReportListElement()).click();
+  await (await rhsReportListElement()).click();
+  await commonElements.toggleActionbar();
 };
 
 const getContactCardTitle = async () => {
