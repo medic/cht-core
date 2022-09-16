@@ -83,7 +83,7 @@ describe('Reports tab breadcrumbs', () => {
     expect(reportLineages[0].lineage).to.equal(expectedLineage);
   });
 
-  it('should display updated reports with breadcrumbs for offline user', async () => {
+  it('should display reports with updated breadcrumbs for offline user', async () => {
     await loginPage.login(offlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToReports();
