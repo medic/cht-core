@@ -1,13 +1,13 @@
 const config = require('../config');
 const db = require('../db');
 const environment = require('../environment');
+const Search = require('../lib/search');
 const transitionUtils = require('./utils');
 const { people } = require('@medic/contacts')(config, db);
-const search = require('@medic/search')(Promise, db.medic);
 const { users } = require('@medic/user-management')(config, db);
 
 const NAME = 'user_replace';
-const REPARENT_BATCH_SIZE = 2;
+const REPARENT_BATCH_SIZE = 100;
 
 const validateReplaceUserDoc = ({ reported_date, fields: { original_contact_uuid, new_contact_uuid } }) => {
   if (!reported_date) {
@@ -30,16 +30,6 @@ const validateContact = (contact) => {
 
 const getContact = (contactId) => people.getOrCreatePerson(contactId)
   .then(contact => validateContact(contact));
-
-const getUserSettings = (contact_id) => {
-  return users.getUserSettings({ contact_id })
-    .then(userSettings => {
-      if (!userSettings.roles || !userSettings.roles.length) {
-        throw new Error(`User [${userSettings._id}] does not have any roles.`);
-      }
-      return userSettings;
-    });
-};
 
 const validateContactParents = (originalContact, newContact) => {
   if (originalContact.parent._id !== newContact.parent._id) {
@@ -107,13 +97,16 @@ const getReportIdsToReparent = (contactId, timestamp, docsReparented) => {
     limit: REPARENT_BATCH_SIZE,
     skip: docsReparented,
   };
-  return search('reports', filters, options).then(({ docIds }) => docIds);
+  return Search.execute('reports', filters, options).then(({ docIds }) => docIds);
 };
 
 const getReports = (keys) => db.medic.allDocs({ keys, include_docs: true })
   .then(({ rows }) => rows.map(({ doc }) => doc));
 
 const reparentReports = (newContactId, reports) => {
+  if(!reports.length) {
+    return;
+  }
   reports.forEach(report => report.contact._id = newContactId);
   return db.medic.bulkDocs(reports);
 };
@@ -124,13 +117,18 @@ const reparentReportsFromReplacedUser = (replaceUserDoc, docsReparented = 0) => 
     fields: { original_contact_uuid, new_contact_uuid }
   } = replaceUserDoc;
   return getReportIdsToReparent(original_contact_uuid, reported_date, docsReparented)
-    .then(reportIds => getReports(reportIds)
-      .then(reports => reparentReports(new_contact_uuid, reports))
-      .then(() => {
-        if (reportIds.length === REPARENT_BATCH_SIZE) {
-          return reparentReportsFromReplacedUser(replaceUserDoc, docsReparented + REPARENT_BATCH_SIZE);
-        }
-      }));
+    .then(reportIds => {
+      if(!reportIds.length) {
+        return;
+      }
+      return getReports(reportIds)
+        .then(reports => reparentReports(new_contact_uuid, reports))
+        .then(() => {
+          if (reportIds.length === REPARENT_BATCH_SIZE) {
+            return reparentReportsFromReplacedUser(replaceUserDoc, docsReparented + REPARENT_BATCH_SIZE);
+          }
+        });
+    });
 };
 
 const replaceUser = (replaceUserDoc) => {
@@ -142,7 +140,7 @@ const replaceUser = (replaceUserDoc) => {
         .all([
           getContact(original_contact_uuid),
           getContact(new_contact_uuid),
-          getUserSettings(original_contact_uuid),
+          users.getUserSettings({ contact_id: original_contact_uuid }),
         ])
         .then(([originalContact, newContact, originalUserSettings]) => {
           validateContactParents(originalContact, newContact);
