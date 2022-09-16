@@ -7,6 +7,7 @@ const search = require('@medic/search')(Promise, db.medic);
 const { users } = require('@medic/user-management')(config, db);
 
 const NAME = 'user_replace';
+const REPARENT_BATCH_SIZE = 2;
 
 const validateReplaceUserDoc = ({ reported_date, fields: { original_contact_uuid, new_contact_uuid } }) => {
   if (!reported_date) {
@@ -88,7 +89,7 @@ const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
       };
       return users.createUser(user, environment.apiUrl)
         .catch(err => {
-          if(!err.message || typeof err.message === 'string') {
+          if (!err.message || typeof err.message === 'string') {
             throw err;
           }
           const message = err.message.message ? err.message.message : err.message;
@@ -97,38 +98,39 @@ const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
     });
 };
 
-const getReportsToReparent = (contactId, timestamp) => {
+const getReportIdsToReparent = (contactId, timestamp, docsReparented) => {
   const filters = {
     date: { from: timestamp + 1, },
     contact: contactId,
   };
-  // TODO Need to execute in batches....
   const options = {
-    limit: 50,
-    skip: 0,
+    limit: REPARENT_BATCH_SIZE,
+    skip: docsReparented,
   };
-  return search('reports', filters, options)
-    .then(({ docIds }) => db.medic.allDocs({
-      keys: docIds,
-      include_docs: true
-    }))
-    .then(({ rows }) => rows.map(({ doc }) => doc));
+  return search('reports', filters, options).then(({ docIds }) => docIds);
 };
 
-const reparentReports = ({ reported_date, fields: { original_contact_uuid, new_contact_uuid } }) => {
-  return getReportsToReparent(original_contact_uuid, reported_date)
-    .then(reports => {
-      if (reports.length === 0) {
-        return;
-      }
+const getReports = (keys) => db.medic.allDocs({ keys, include_docs: true })
+  .then(({ rows }) => rows.map(({ doc }) => doc));
 
-      const reparentedReports = reports.map(report => {
-        const reparentedReport = Object.assign({}, report);
-        reparentedReport.contact._id = new_contact_uuid;
-        return reparentedReport;
-      });
-      return db.medic.bulkDocs(reparentedReports);
-    });
+const reparentReports = (newContactId, reports) => {
+  reports.forEach(report => report.contact._id = newContactId);
+  return db.medic.bulkDocs(reports);
+};
+
+const reparentReportsFromReplacedUser = (replaceUserDoc, docsReparented = 0) => {
+  const {
+    reported_date,
+    fields: { original_contact_uuid, new_contact_uuid }
+  } = replaceUserDoc;
+  return getReportIdsToReparent(original_contact_uuid, reported_date, docsReparented)
+    .then(reportIds => getReports(reportIds)
+      .then(reports => reparentReports(new_contact_uuid, reports))
+      .then(() => {
+        if (reportIds.length === REPARENT_BATCH_SIZE) {
+          return reparentReportsFromReplacedUser(replaceUserDoc, docsReparented + REPARENT_BATCH_SIZE);
+        }
+      }));
 };
 
 const replaceUser = (replaceUserDoc) => {
@@ -143,7 +145,7 @@ const replaceUser = (replaceUserDoc) => {
     .then(([originalContact, newContact, originalUserSettings]) => {
       validateContactParents(originalContact, newContact);
       return createNewUser(originalUserSettings, newContact)
-        .then(() => reparentReports(replaceUserDoc))
+        .then(() => reparentReportsFromReplacedUser(replaceUserDoc))
         .then(() => users.deleteUser(originalUserSettings.name));
     });
 };
