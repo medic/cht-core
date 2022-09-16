@@ -123,7 +123,6 @@ describe('user_replace', () => {
     // Transition successful
     expect(transitions.user_replace.ok).to.be.true;
     // Original user is disabled
-    // const originalUserSettings = await utils.getDoc(`org.couchdb.user:${ORIGINAL_USER.username}`);
     const originalUserSettings = await utils.getUserSettings({ contactId: ORIGINAL_PERSON._id });
     expect(originalUserSettings.inactive).to.be.true;
     // New user created
