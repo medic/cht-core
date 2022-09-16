@@ -24,6 +24,7 @@
     "@medic/outbound": "file:../outbound",
     "@medic/phone-number": "file:../phone-number",
     "@medic/registration-utils": "file:../registration-utils",
+    "@medic/search": "file:../search",
     "@medic/settings": "file:../settings",
     "@medic/task-utils": "file:../task-utils",
     "@medic/user-management": "file:../user-management",

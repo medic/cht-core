@@ -101,29 +101,4 @@ describe('user_replace', () => {
 
     expect(transition.filter(REPLACE_USER_DOC, info)).to.be.false;
   });
-
-  it('match succeeds when the user-replace api call returns successfully', () => {
-    rpn.post = sinon.stub().resolves();
-
-    return transition.onMatch({ doc: REPLACE_USER_DOC }).then(result => {
-      expect(result).to.be.true;
-      // expect(rpn.post.callCount).to.equal(1);
-      // expect(rpn.post.args[0][0]).to.deep.include({
-      //   body: {
-      //     reportId: REPLACE_USER_DOC._id
-      //   },
-      //   json: true,
-      //   url: `${environment.apiUrl}/api/v1/user-replace`
-      // });
-    });
-  });
-
-  it('match errors when the user-replace api call fails', () => {
-    rpn.post = sinon.stub().rejects({ message: 'something went wrong' });
-
-    return transition.onMatch({ doc: REPLACE_USER_DOC }).catch(err => {
-      expect(err.message).to.equal('something went wrong');
-      expect(err.changed).to.be.true;
-    });
-  });
 });
