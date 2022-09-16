@@ -134,19 +134,22 @@ const reparentReportsFromReplacedUser = (replaceUserDoc, docsReparented = 0) => 
 };
 
 const replaceUser = (replaceUserDoc) => {
-  validateReplaceUserDoc(replaceUserDoc);
-  const { original_contact_uuid, new_contact_uuid } = replaceUserDoc.fields;
-  return Promise
-    .all([
-      getContact(original_contact_uuid),
-      getContact(new_contact_uuid),
-      getUserSettings(original_contact_uuid),
-    ])
-    .then(([originalContact, newContact, originalUserSettings]) => {
-      validateContactParents(originalContact, newContact);
-      return createNewUser(originalUserSettings, newContact)
-        .then(() => reparentReportsFromReplacedUser(replaceUserDoc))
-        .then(() => users.deleteUser(originalUserSettings.name));
+  return Promise.resolve()
+    .then(() => validateReplaceUserDoc(replaceUserDoc))
+    .then(() => {
+      const { original_contact_uuid, new_contact_uuid } = replaceUserDoc.fields;
+      return  Promise
+        .all([
+          getContact(original_contact_uuid),
+          getContact(new_contact_uuid),
+          getUserSettings(original_contact_uuid),
+        ])
+        .then(([originalContact, newContact, originalUserSettings]) => {
+          validateContactParents(originalContact, newContact);
+          return createNewUser(originalUserSettings, newContact)
+            .then(() => reparentReportsFromReplacedUser(replaceUserDoc))
+            .then(() => users.deleteUser(originalUserSettings.name));
+        });
     });
 };
 
