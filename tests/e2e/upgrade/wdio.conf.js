@@ -18,9 +18,9 @@ utils.CONTAINER_NAMES.api = 'cht-api';
 utils.CONTAINER_NAMES.sentinel = 'cht-sentinel';
 utils.CONTAINER_NAMES.upgradeService = 'cht-upgrade-service';
 
-const DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'upgrade-service-'));
-const CHT_DOCKER_COMPOSE_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
-const CHT_DATA_FOLDER = fs.mkdtempSync(path.join(os.tmpdir(), 'cht-'));
+const DOCKER_COMPOSE_FOLDER = utils.makeTempDir('upgrade-service-');
+const CHT_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('cht-');
+const CHT_DATA_FOLDER = utils.makeTempDir('cht-');
 const UPGRADE_SERVICE_DC = path.join(DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
 const mainBranch = 'medic:medic:master';
 
