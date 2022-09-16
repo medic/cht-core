@@ -24,10 +24,10 @@ const NEW_PERSON = {
 };
 
 const ORIGINAL_USER = {
-  _id: 'org.couchdb.user:original_person',
-  type: 'user-settings',
-  name: 'original_person',
-  contact_id: ORIGINAL_PERSON._id,
+  username: 'original_person',
+  password: 'Sup3rSecret!',
+  place: CLINIC._id,
+  contact: ORIGINAL_PERSON,
   roles: ['chw'],
 };
 
@@ -55,18 +55,21 @@ const getSettings = ({
   token_login: { enabled = true } = {}
 } = {}) => ({
   transitions: { user_replace },
-  token_login: { enabled }
+  token_login: { enabled },
 });
 
 const getQueuedMessages = () => utils.db.query('medic-admin/message_queue', { reduce: false, include_docs: true })
   .then(response => response.rows.map(row => row.doc));
 
 describe('user_replace', () => {
+  beforeEach(() => utils.saveDoc(CLINIC));
+
   afterEach(async () => {
     await utils.revertDb([], true);
     await utils.deleteUsers(newUsers.map(username => ({ username })));
     newUsers.length = 0;
   });
+
 
   it('should replace user when the replace_user form is submitted', async () => {
     const oldReport = {
@@ -95,27 +98,25 @@ describe('user_replace', () => {
     };
 
     await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
     await utils.saveDocs([
-      CLINIC,
-      ORIGINAL_PERSON,
       NEW_PERSON,
-      ORIGINAL_USER,
       oldReport,
       REPLACE_USER,
       newReport,
     ]);
-    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel(REPLACE_USER._id);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
     // Transition successful
     expect(transitions.user_replace.ok).to.be.true;
-    // Original user updated
-    const oldUserSettings = await utils.getDoc(ORIGINAL_USER._id);
-    expect(oldUserSettings).to.deep.include({
-      replaced: true,
-      shouldLogoutNextSync: true
-    });
+    // TODO Original user updated
+    // const oldUserSettings = await utils.getDoc(ORIGINAL_USER._id);
+    // expect(oldUserSettings).to.deep.include({
+    //   replaced: true,
+    //   shouldLogoutNextSync: true
+    // });
     // New user created
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     newUsers.push(newUserSettings.name);
@@ -155,14 +156,12 @@ describe('user_replace', () => {
 
   it('should not replace user when transition is disabled', async () => {
     await utils.updateSettings(getSettings({ transitions: { user_replace: false } }), 'sentinel');
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
     await utils.saveDocs([
-      CLINIC,
-      ORIGINAL_PERSON,
       NEW_PERSON,
-      ORIGINAL_USER,
       REPLACE_USER,
     ]);
-    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const info = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -187,13 +186,9 @@ describe('user_replace', () => {
     const missingPersonPattern = /Failed to find person/;
     const collectLogs = utils.collectLogs('sentinel.e2e.log', missingPersonPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
-    await utils.saveDocs([
-      CLINIC,
-      ORIGINAL_PERSON,
-      ORIGINAL_USER,
-      REPLACE_USER,
-    ]);
-    newUsers.push(ORIGINAL_USER.name);
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
+    await utils.saveDoc(REPLACE_USER);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -212,16 +207,14 @@ describe('user_replace', () => {
   });
 
   it('should not replace user when the original user does not exist', async () => {
-    const missingUserPattern = /user with contact_id=(\\|)"original_person(\\|)" not found/;
+    const missingUserPattern = /Failed to find user setting with contact_id \[original_person]\./;
     const collectLogs = utils.collectLogs('sentinel.e2e.log', missingUserPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.saveDocs([
-      CLINIC,
       ORIGINAL_PERSON,
       NEW_PERSON,
       REPLACE_USER,
     ]);
-    newUsers.push(REPLACE_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -240,19 +233,17 @@ describe('user_replace', () => {
   });
 
   it('should not replace user when the new contact does not have a phone', async () => {
-    const missingPhonePattern = /Missing required fields: phone/;
+    const missingPhonePattern = /Replacement contact \[new_person] must have a phone number\./;
     const newPerson = Object.assign({}, NEW_PERSON, { phone: undefined });
 
     const collectLogs = utils.collectLogs('sentinel.e2e.log', missingPhonePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
     await utils.saveDocs([
-      CLINIC,
-      ORIGINAL_PERSON,
       newPerson,
-      ORIGINAL_USER,
       REPLACE_USER,
     ]);
-    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -276,14 +267,12 @@ describe('user_replace', () => {
 
     const collectLogs = utils.collectLogs('sentinel.e2e.log', missingPhonePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
     await utils.saveDocs([
-      CLINIC,
-      ORIGINAL_PERSON,
       newPerson,
-      ORIGINAL_USER,
       REPLACE_USER,
     ]);
-    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -302,19 +291,17 @@ describe('user_replace', () => {
   });
 
   it('should not replace user when the new contact does not have a name', async () => {
-    const missingNamePattern = /Contact \[new_person] does not have a name/;
+    const missingNamePattern = /Replacement contact \[new_person] must have a name\./;
     const newPerson = Object.assign({}, NEW_PERSON, { name: undefined });
 
     const collectLogs = utils.collectLogs('sentinel.e2e.log', missingNamePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
     await utils.saveDocs([
-      CLINIC,
-      ORIGINAL_PERSON,
       newPerson,
-      ORIGINAL_USER,
       REPLACE_USER,
     ]);
-    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -333,19 +320,17 @@ describe('user_replace', () => {
   });
 
   it('should not replace user when the new contact does not have a parent', async () => {
-    const missingParentPattern = /Contact \[new_person] does not have a parent/;
+    const missingParentPattern = /Contact \[new_person] does not have a parent\./;
     const newPerson = Object.assign({}, NEW_PERSON, { parent: undefined });
 
     const collectLogs = utils.collectLogs('sentinel.e2e.log', missingParentPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
     await utils.saveDocs([
-      CLINIC,
-      ORIGINAL_PERSON,
       newPerson,
-      ORIGINAL_USER,
       REPLACE_USER,
     ]);
-    newUsers.push(ORIGINAL_USER.name);
     await sentinelUtils.waitForSentinel([REPLACE_USER._id]);
     const { transitions } = await sentinelUtils.getInfoDoc(REPLACE_USER._id);
 
@@ -362,4 +347,12 @@ describe('user_replace', () => {
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     expect(newUserSettings).to.be.undefined;
   });
+
+  // TODO
+  // Old person has no parent
+  // Missing reported_date
+  // Missing original_contact_uuid
+  // Missing new_contact_uuid
+  // Contacts have same parent
+  //
 });
