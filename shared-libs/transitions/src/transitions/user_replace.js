@@ -1,10 +1,10 @@
-const environment = require('../environment');
-const transitionUtils = require('./utils');
 const config = require('../config');
 const db = require('../db');
+const environment = require('../environment');
+const transitionUtils = require('./utils');
 const { people } = require('@medic/contacts')(config, db);
-const { users } = require('@medic/user-management')(config, db);
 const search = require('@medic/search')(Promise, db.medic);
+const { users } = require('@medic/user-management')(config, db);
 
 const NAME = 'user_replace';
 
@@ -46,15 +46,6 @@ const validateContactParents = (originalContact, newContact) => {
   }
 };
 
-const validateNewContact = ({ _id, phone, name }) => {
-  if (!phone) { // TODO - validate phone number
-    throw new Error(`Replacement contact [${_id}] must have a phone number.`);
-  }
-  if (!name) {
-    throw new Error(`Replacement contact [${_id}] must have a name.`);
-  }
-};
-
 const generateUsername = (contactName) => {
   const randomNum = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
   const username = contactName.normalize('NFD') // split an accented letter in the base letter and the accent
@@ -81,6 +72,9 @@ const generateUniqueUsername = (contactName) => {
 };
 
 const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
+  if (!name) {
+    throw new Error(`Replacement contact [${_id}] must have a name.`);
+  }
   return generateUniqueUsername(name)
     .then(username => {
       const user = {
@@ -93,23 +87,15 @@ const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
         fullname: name,
       };
       return users.createUser(user, environment.apiUrl)
-        .catch(err => { // TODO - may not need this if we have the phone validation...
-          throw new Error(`Error creating new user: ${JSON.stringify(err.message)}`);
+        .catch(err => {
+          if(!err.message || typeof err.message === 'string') {
+            throw err;
+          }
+          const message = err.message.message ? err.message.message : err.message;
+          throw new Error(`Error creating new user: ${JSON.stringify(message)}`);
         });
     });
 };
-
-// const updateOriginalUser = originalUserSettings => {
-//   throw new Error(`Jkuester [${JSON.stringify(originalUserSettings)}].`);
-//   const updatedUser = {
-//
-//   }
-//
-//
-//   const updatedUser = Object.assign({}, originalUser, { shouldLogoutNextSync: true, replaced: true });
-//   return users().updateUser(originalUser.username, updatedUser, true, environment.apiUrl);
-// };
-// db.medic.put(Object.assign({}, originalUser, { shouldLogoutNextSync: true, replaced: true }));
 
 const getReportsToReparent = (contactId, timestamp) => {
   const filters = {
@@ -148,19 +134,18 @@ const reparentReports = ({ reported_date, fields: { original_contact_uuid, new_c
 const replaceUser = (replaceUserDoc) => {
   validateReplaceUserDoc(replaceUserDoc);
   const { original_contact_uuid, new_contact_uuid } = replaceUserDoc.fields;
-  return Promise.all([
-    getContact(original_contact_uuid),
-    getContact(new_contact_uuid),
-    getUserSettings(original_contact_uuid),
-  ]).then(([originalContact, newContact, originalUserSettings]) => {
-    validateContactParents(originalContact, newContact);
-    validateNewContact(newContact);
-    return Promise.all([
-      createNewUser(originalUserSettings, newContact),
-      // TODO Handle the original user
-      // updateOriginalUser(originalUserSettings)
-    ]);
-  }).then(() => reparentReports(replaceUserDoc));
+  return Promise
+    .all([
+      getContact(original_contact_uuid),
+      getContact(new_contact_uuid),
+      getUserSettings(original_contact_uuid),
+    ])
+    .then(([originalContact, newContact, originalUserSettings]) => {
+      validateContactParents(originalContact, newContact);
+      return createNewUser(originalUserSettings, newContact)
+        .then(() => reparentReports(replaceUserDoc))
+        .then(() => users.deleteUser(originalUserSettings.name));
+    });
 };
 
 /**

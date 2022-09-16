@@ -70,7 +70,6 @@ describe('user_replace', () => {
     newUsers.length = 0;
   });
 
-
   it('should replace user when the replace_user form is submitted', async () => {
     const oldReport = {
       _id: uuid(),
@@ -111,12 +110,10 @@ describe('user_replace', () => {
 
     // Transition successful
     expect(transitions.user_replace.ok).to.be.true;
-    // TODO Original user updated
-    // const oldUserSettings = await utils.getDoc(ORIGINAL_USER._id);
-    // expect(oldUserSettings).to.deep.include({
-    //   replaced: true,
-    //   shouldLogoutNextSync: true
-    // });
+    // Original user is disabled
+    // const originalUserSettings = await utils.getDoc(`org.couchdb.user:${ORIGINAL_USER.username}`);
+    const originalUserSettings = await utils.getUserSettings({ contactId: ORIGINAL_PERSON._id });
+    expect(originalUserSettings.inactive).to.be.true;
     // New user created
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     newUsers.push(newUserSettings.name);
@@ -233,7 +230,7 @@ describe('user_replace', () => {
   });
 
   it('should not replace user when the new contact does not have a phone', async () => {
-    const missingPhonePattern = /Replacement contact \[new_person] must have a phone number\./;
+    const missingPhonePattern = /Missing required fields: phone/;
     const newPerson = Object.assign({}, NEW_PERSON, { phone: undefined });
 
     const collectLogs = utils.collectLogs('sentinel.e2e.log', missingPhonePattern);
