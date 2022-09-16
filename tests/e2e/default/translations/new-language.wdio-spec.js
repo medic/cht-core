@@ -12,12 +12,15 @@ const NEW_LANG_CODE = 'afr';
 
 describe('Adding new language', () => {
   const addTranslations = async () => {
+    const waitForServiceWorker = await utils.waitForApiLogs(/Service worker generated successfully/);
     await utils.addTranslations(NEW_LANG_CODE, {
       'No messages found':'Geen boodskappe gevind nie',
       'No contacts found':'Geen mense gevind nie',
       'reports.none':'Geen verslae gevind nie',
       'Analytics': 'Analytiks'
     });
+
+    await waitForServiceWorker.promise;
     await browser.refresh();
   };
 
