@@ -63,7 +63,7 @@
     "ngx-cookie-service": "^11.0.2",
     "object-path": "^0.11.8",
     "odk-xform-compact-record-representation-for-sms": "^1.0.1",
-    "openrosa-xpath-evaluator": "^2.0.11",
+    "openrosa-xpath-evaluator": "^2.0.12",
     "partial-json-parser": "^1.2.2",
     "pojo2xml": "^1.7.2",
     "pouchdb-browser": "^7.2.2",
