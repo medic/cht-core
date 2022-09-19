@@ -137,6 +137,21 @@ form {
   width: 4em;
   height: 4em;
 }
+
+#unsupported-browser {
+  text-align: center;
+  border: 2px solid darkred;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 1em;
+  text-decoration: none;
+}
+
+.hidden {
+  display: none;
+  visibility: hidden;
+}
+
 @-webkit-keyframes loader {
   0% {
     -webkit-transform: rotate(0deg);

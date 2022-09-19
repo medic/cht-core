@@ -143,7 +143,9 @@ describe('login controller', () => {
 
     it('send login page', () => {
       sinon.stub(translations, 'getEnabledLocales').resolves([]);
-      const linkResources = '</login/style.css>; rel=preload; as=style, </login/script.js>; rel=preload; as=script';
+      const linkResources = '</login/style.css>; rel=preload; as=style, '
+          + '</login/script.js>; rel=preload; as=script, '
+          + '</login/lib-bowser.js>; rel=preload; as=script';
       const brandingGet = sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       const send = sinon.stub(res, 'send');
       const setHeader = sinon.stub(res, 'setHeader');
@@ -163,7 +165,9 @@ describe('login controller', () => {
     });
 
     it('when branding doc missing send login page', () => {
-      const linkResources = '</login/style.css>; rel=preload; as=style, </login/script.js>; rel=preload; as=script';
+      const linkResources = '</login/style.css>; rel=preload; as=style, '
+          + '</login/script.js>; rel=preload; as=script, '
+          + '</login/lib-bowser.js>; rel=preload; as=script';
       const brandingGet = sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       sinon.stub(translations, 'getEnabledLocales').resolves([]);
       const send = sinon.stub(res, 'send');
@@ -203,7 +207,9 @@ describe('login controller', () => {
     });
 
     it('hides locale selector when there is only one option', () => {
-      const linkResources = '</login/style.css>; rel=preload; as=style, </login/script.js>; rel=preload; as=script';
+      const linkResources = '</login/style.css>; rel=preload; as=style, '
+          + '</login/script.js>; rel=preload; as=script, '
+          + '</login/lib-bowser.js>; rel=preload; as=script';
       const setHeader = sinon.stub(res, 'setHeader');
       sinon.stub(translations, 'getEnabledLocales').resolves([{ code: 'en', name: 'English' }]);
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
