@@ -27,12 +27,13 @@ describe('New pregnancy', () => {
     // Create Woman1 - webapp
     await contactPage.contactPageDefault.addPerson(pregnantWoman1, 
       {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
+    await commonPage.waitForPageLoaded();
 
     // Create Woman2 - SMS N form
     await commonPage.goToPeople(healthCenter._id);
-    await commonPage.waitForPageLoaded();
     await contactPage.contactPageDefault.addPerson(pregnantWoman2, 
       {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
+    await commonPage.waitForPageLoaded();
   });
 
   it('Submit new pregnancy - Woman1 - webapp', async () => {
