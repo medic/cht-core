@@ -133,6 +133,7 @@ module.exports = function(grunt) {
         files: {
           // static api files
           'api/build/static/login/script.js': 'api/build/static/login/script.js',
+          'api/build/static/login/lib-bowser.js': 'api/build/static/login/lib-bowser.js',
         }
       }
     },
@@ -212,6 +213,10 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'api/build/static/',
       },
+      'api-bowser': {
+        src: 'api/node_modules/bowser/bundled.js',
+        dest: 'api/src/public/login/lib-bowser.js',
+      },
       'admin-static': {
         files: [
           {
@@ -271,6 +276,7 @@ module.exports = function(grunt) {
           const ignore = [
             'webapp/src/ts/providers/xpath-element-path.provider.ts',
             'webapp/src/js/bootstrap-tour-standalone.js',
+            'api/src/public/login/lib-bowser.js',
             'api/extracted-resources/**/*',
             'api/build/**/*',
             '**/node_modules/**',
@@ -408,8 +414,8 @@ module.exports = function(grunt) {
             'pouchdb-browser',
           ];
           return modulesToPatch.map(module => {
-            const backupPath = 'webapp/node_modules_backup/' + module;
-            const modulePath = 'webapp/node_modules/' + module;
+            const backupPath = `webapp/node_modules_backup/${module}`;
+            const modulePath = `webapp/node_modules/${module}`;
             return `
               [ -d ${backupPath} ] &&
               rm -rf ${modulePath} &&
@@ -832,6 +838,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
     'copy:api-resources',
+    'copy:api-bowser',
     'copy:built-resources',
     'copy:webapp-static',
     'copy:admin-static',
@@ -1038,6 +1045,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
+    'copy:api-bowser',
     'exec:api-dev',
   ]);
 

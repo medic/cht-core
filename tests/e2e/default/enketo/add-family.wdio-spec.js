@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const familyForm = require('../../../page-objects/forms/add-family-form.wdio.page');
 const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
 const common = require('../../../page-objects/common/common.wdio.page');
@@ -8,18 +10,30 @@ const { cookieLogin } = require('../../../page-objects/login/login.wdio.page');
 
 describe('Family form', () => {
   const contactId = userData.contactId;
-  const docs = userData.docs;
-  const formTitle = familyForm.docs[0].title;
+  const userDocs = userData.docs;
+  const formXML = fs.readFileSync(`${__dirname}/forms/add-family-multiple-repeats.xml`, 'utf8');
+  const formDoc = {
+    _id: 'form:add-family',
+    internalId: 'any',
+    title: 'AddFamily',
+    type: 'form',
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer.from(formXML).toString('base64'),
+      },
+    },
+  };
 
   before(async () => {
-    await utils.saveDocs(docs);
-    await familyForm.configureForm(contactId);
+    await utils.saveDocs(userDocs);
+    await utils.seedTestData(contactId, [ formDoc ]);
     await cookieLogin();
   });
 
   it('Submit Add Family form', async () => {
     await common.goToReports();
-    await reportsPage.openForm(formTitle);
+    await reportsPage.openForm(formDoc.title);
     await familyForm.fillPrimaryCaregiver('test');
     await genericForm.nextPage();
     await familyForm.fillPrimaryTel();

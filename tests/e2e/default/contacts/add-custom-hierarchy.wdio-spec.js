@@ -42,6 +42,8 @@ const person3 = customTypeFactory.customType()
   .build({ parents: [customParentWithMultiplePersons.id], person: true }, { name: 'nurse' });
 
 describe('Creating custom places', () => {
+  const ngoCreateXML = `${__dirname}/forms/ngo-create.xml`;
+
   beforeEach(async () => {
     const contacts = [
       customTopLevel,
@@ -56,7 +58,7 @@ describe('Creating custom places', () => {
       person1
     ];
     translations = customTypeFactory.translationKeys(contacts);
-    forms = customTypeFactory.formsForTypes(contacts);
+    forms = customTypeFactory.formsForTypes(contacts, ngoCreateXML);
     await utils.addTranslations('en', translations);
     await utils.updateSettings({ contact_types: contacts }, true);
     await utils.saveDocs(forms);
@@ -77,7 +79,7 @@ describe('Creating custom places', () => {
   it('the LHS add place button should read add place when multiple places exist at the current level', async () => {
     const settings = await utils.getSettings();
     settings.contact_types.push(secondTopLevel);
-    const forms = customTypeFactory.formsForTypes([secondTopLevel]);
+    const forms = customTypeFactory.formsForTypes([secondTopLevel], ngoCreateXML);
     await utils.revertSettings(true);
     await utils.updateSettings({ contact_types: settings.contact_types }, true);
     await utils.saveDocs(forms);

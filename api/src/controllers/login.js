@@ -23,6 +23,10 @@ const templates = {
       'login',
       'login.error',
       'login.incorrect',
+      'login.unsupported_browser',
+      'login.unsupported_browser.outdated_cht_android',
+      'login.unsupported_browser.outdated_webview_apk',
+      'login.unsupported_browser.outdated_browser',
       'online.action.message',
       'User Name',
       'Password',
@@ -269,7 +273,8 @@ module.exports = {
         res.setHeader(
           'Link',
           '</login/style.css>; rel=preload; as=style, '
-          + '</login/script.js>; rel=preload; as=script'
+          + '</login/script.js>; rel=preload; as=script, '
+          + '</login/lib-bowser.js>; rel=preload; as=script'
         );
         res.send(body);
       })
