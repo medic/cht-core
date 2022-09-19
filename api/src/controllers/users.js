@@ -234,19 +234,19 @@ module.exports = {
         await auth.check(req, 'can_create_users');
         const user = await auth.getUserCtx(req);
         const logId = await bulkUploadLog.createLog(user, 'user');
-        let users;
+        let usersToCreate;
         let ignoredUsers;
 
         if (typeof req.body === 'string') {
           const parsedCsv = await users.parseCsv(req.body, logId);
-          users = parsedCsv.users;
+          usersToCreate = parsedCsv.users;
           ignoredUsers = parsedCsv.ignoredUsers;
         } else {
-          users = req.body;
+          usersToCreate = req.body;
         }
 
         const response = await users.createUsers(
-          users,
+          usersToCreate,
           getAppUrl(req),
           ignoredUsers,
           logId,

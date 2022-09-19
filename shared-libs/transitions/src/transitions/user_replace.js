@@ -1,7 +1,7 @@
 const config = require('../config');
 const db = require('../db');
 const environment = require('../environment');
-const Search = require('../lib/search');
+const search = require('../lib/search');
 const transitionUtils = require('./utils');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
@@ -97,7 +97,7 @@ const getReportIdsToReparent = (contactId, timestamp, docsReparented) => {
     limit: REPARENT_BATCH_SIZE,
     skip: docsReparented,
   };
-  return Search.execute('reports', filters, options).then(({ docIds }) => docIds);
+  return search.execute('reports', filters, options).then(({ docIds }) => docIds);
 };
 
 const getReports = (keys) => db.medic.allDocs({ keys, include_docs: true })
