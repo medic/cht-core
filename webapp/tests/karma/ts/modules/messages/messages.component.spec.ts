@@ -237,7 +237,7 @@ describe('Messages Component', () => {
     });
 
     it('should not alter conversations when user is offline and parent place is not relevant to the conversation',
-      fakeAsync( () => {
+      fakeAsync(() => {
         sinon.resetHistory();
 
         messageContactService.getList.resolves(conversations);
@@ -246,7 +246,7 @@ describe('Messages Component', () => {
 
         component.ngOnInit();
         tick();
-        component.updateConversations({merge : true});
+        component.updateConversations({ merge: true });
         tick();
 
         expect(component.conversations).to.deep.equal(conversations);
@@ -261,7 +261,7 @@ describe('Messages Component', () => {
 
       component.ngOnInit();
       tick();
-      component.updateConversations({merge : true});
+      component.updateConversations({ merge: true });
       tick();
 
       expect(component.conversations).to.deep.equal(conversations);
@@ -298,7 +298,7 @@ describe('Messages Component', () => {
 
         component.ngOnInit();
         tick();
-        component.updateConversations({ merge : true });
+        component.updateConversations({ merge: true });
         tick();
 
         expect(component.conversations).to.deep.equal(updatedConversations);

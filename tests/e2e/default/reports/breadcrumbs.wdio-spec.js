@@ -50,7 +50,8 @@ describe('Reports tab breadcrumbs', () => {
   });
   const patient = personFactory.build({
     _id: 'patient1',
-    parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }} }  });
+    parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
+  });
   const reports = [
     reportFactory.build(
       {
@@ -60,7 +61,8 @@ describe('Reports tab breadcrumbs', () => {
       },
       {
         patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: 'patient1' },
-      }),
+      },
+    ),
   ];
 
   before(async () => {
