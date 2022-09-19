@@ -1,12 +1,22 @@
-const controller = require('../../../src/controllers/people');
+const controller = require('../../src/people');
 const chai = require('chai');
-const places = require('../../../src/controllers/places');
-const cutils = require('../../../src/controllers/utils');
-const config = require('../../../src/config');
-const db = require('../../../src/db');
+const places = require('../../src/places');
+const cutils = require('../../src/libs/utils');
+const config = require('../../src/libs/config');
+const db = require('../../src/libs/db');
+const lineage = require('../../src/libs/lineage');
 const sinon = require('sinon');
 
 describe('people controller', () => {
+  let fetchHydratedDoc;
+
+  beforeEach(() => {
+    config.init({ get: () => {} });
+    db.init({ medic: { post: () => {} } });
+    const mockLineage = lineage.get();
+    fetchHydratedDoc = sinon.stub(mockLineage, 'fetchHydratedDoc');
+    sinon.stub(lineage, 'get').returns(mockLineage);
+  });
 
   afterEach(() => {
     sinon.restore();
@@ -54,7 +64,7 @@ describe('people controller', () => {
   describe('getPerson', () => {
 
     it('returns custom message on 404 errors.', done => {
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.reject({status: 404}));
+      fetchHydratedDoc.rejects({status: 404});
       controller._getPerson('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find person.');
         done();
@@ -62,7 +72,7 @@ describe('people controller', () => {
     });
 
     it('returns not found message if doc is wrong type.', done => {
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').resolves({type: 'clinic'});
+      fetchHydratedDoc.resolves({type: 'clinic'});
       controller._getPerson('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find person.');
         done();
@@ -71,7 +81,7 @@ describe('people controller', () => {
 
     it('succeeds and returns doc when person type.', () => {
       sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').resolves({type: 'person'});
+      fetchHydratedDoc.resolves({type: 'person'});
       return controller._getPerson('x').then(doc => {
         chai.expect(doc).to.deep.equal({ type: 'person' });
       });
@@ -157,7 +167,7 @@ describe('people controller', () => {
       };
       sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
-      sinon.stub(controller._lineage, 'minifyLineage').returns(minified);
+      sinon.stub(lineage.get(), 'minifyLineage').returns(minified);
       sinon.stub(db.medic, 'post').resolves();
       return controller.createPerson(person).then(() => {
         const doc = db.medic.post.args[0][0];
@@ -165,8 +175,8 @@ describe('people controller', () => {
         chai.expect(doc.parent).to.deep.equal(minified);
         chai.expect(places.getOrCreatePlace.callCount).to.equal(1);
         chai.expect(places.getOrCreatePlace.args[0][0]).to.equal('a');
-        chai.expect(controller._lineage.minifyLineage.callCount).to.equal(1);
-        chai.expect(controller._lineage.minifyLineage.args[0][0]).to.deep.equal(place);
+        chai.expect(lineage.get().minifyLineage.callCount).to.equal(1);
+        chai.expect(lineage.get().minifyLineage.args[0][0]).to.deep.equal(place);
         chai.expect(config.get.args[0]).to.deep.equal([]);
       });
     });

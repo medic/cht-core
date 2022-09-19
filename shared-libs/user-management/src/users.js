@@ -1,18 +1,17 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
-const people  = require('../controllers/people');
-const places = require('../controllers/places');
-const db = require('../db');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const db = require('./libs/db');
+const lineage = require('./libs/lineage');
 const couchSettings = require('@medic/settings');
-const getRoles = require('./types-and-roles');
-const auth = require('../auth');
+const getRoles = require('./libs/types-and-roles');
+const roles = require('./roles');
 const tokenLogin = require('./token-login');
+const config = require('./libs/config');
 const moment = require('moment');
-const bulkUploadLog = require('../services/bulk-upload-log');
+const bulkUploadLog = require('./bulk-upload-log');
+const { people, places }  = require('@medic/contacts')(config, db);
 
 const USER_PREFIX = 'org.couchdb.user:';
-const DOC_IDS_WARN_LIMIT = 10000;
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -244,8 +243,8 @@ const storeUpdatedPlace = (data, preservePrimaryContact, retry = 0) => {
     return;
   }
 
-  data.place.contact = lineage.minifyLineage(data.contact);
-  data.place.parent = lineage.minifyLineage(data.place.parent);
+  data.place.contact = lineage.get().minifyLineage(data.contact);
+  data.place.parent = lineage.get().minifyLineage(data.place.parent);
 
   return db.medic
     .get(data.place._id)
@@ -280,7 +279,7 @@ const setContactParent = data => {
           return Promise.reject(err);
         }
         // try creating the user
-        data.contact.parent = lineage.minifyLineage(data.place);
+        data.contact.parent = lineage.get().minifyLineage(data.place);
       });
   }
   if (data.contact.parent) {
@@ -291,11 +290,11 @@ const setContactParent = data => {
           return Promise.reject(error400('Contact is not within place.', 'configuration.user.place.contact'));
         }
         // save result to contact object
-        data.contact.parent = lineage.minifyLineage(place);
+        data.contact.parent = lineage.get().minifyLineage(place);
       });
   }
   // creating new contact
-  data.contact.parent = lineage.minifyLineage(data.place);
+  data.contact.parent = lineage.get().minifyLineage(data.place);
 };
 
 const hasParent = (facility, id) => {
@@ -363,15 +362,15 @@ const getSettingsUpdates = (username, data) => {
     settings.roles = getRoles(data.type);
   }
   if (settings.roles) {
-    const index = settings.roles.indexOf(auth.ONLINE_ROLE);
-    if (auth.isOffline(settings.roles)) {
+    const index = settings.roles.indexOf(roles.ONLINE_ROLE);
+    if (roles.isOffline(settings.roles)) {
       if (index !== -1) {
         // remove the online role
         settings.roles.splice(index, 1);
       }
     } else if (index === -1) {
       // add the online role
-      settings.roles.push(auth.ONLINE_ROLE);
+      settings.roles.push(roles.ONLINE_ROLE);
     }
   }
   if (data.place) {
@@ -402,8 +401,8 @@ const getUserUpdates = (username, data) => {
     // deprecated: use 'roles' instead
     user.roles = getRoles(data.type);
   }
-  if (user.roles && !auth.isOffline(user.roles)) {
-    user.roles.push(auth.ONLINE_ROLE);
+  if (user.roles && !roles.isOffline(user.roles)) {
+    user.roles.push(roles.ONLINE_ROLE);
   }
   if (data.place) {
     user.facility_id = getDocID(data.place);
@@ -456,7 +455,7 @@ const missingFields = data => {
     required.push('password');
   }
 
-  if (data.roles && auth.isOffline(data.roles)) {
+  if (data.roles && roles.isOffline(data.roles)) {
     required.push('place', 'contact');
   }
 
@@ -522,7 +521,7 @@ const validateUserFacility = (data, user, userSettings) => {
   }
 
   if (_.isNull(data.place)) {
-    if (userSettings.roles && auth.isOffline(userSettings.roles)) {
+    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
       return Promise.reject(error400(
         'Place field is required for offline users',
         'field is required',
@@ -540,7 +539,7 @@ const validateUserContact = (data, user, userSettings) => {
   }
 
   if (_.isNull(data.contact)) {
-    if (userSettings.roles && auth.isOffline(userSettings.roles)) {
+    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
       return Promise.reject(error400(
         'Contact field is required for offline users',
         'field is required',
@@ -686,6 +685,51 @@ const createRecordBulkLog = (record, status, error, message) => {
   return recordBulkLog;
 };
 
+const hydrateUserSettings = (userSettings) => {
+  return db.medic
+    .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
+    .then((response) => {
+      if (!Array.isArray(response.rows) || response.rows.length !== 2) { // malformed response
+        return userSettings;
+      }
+
+      const [facilityRow, contactRow] = response.rows;
+      if (!facilityRow || !contactRow) { // malformed response
+        return userSettings;
+      }
+
+      userSettings.facility = facilityRow.doc;
+      userSettings.contact = contactRow.doc;
+
+      return userSettings;
+    });
+};
+
+const getUserDocsByContactId = async(contact_id) => {
+  const userSettingsDocs = await getAllUserSettings();
+  const medicUser = await userSettingsDocs.find(doc => doc.contact_id === contact_id);
+  if (!medicUser) {
+    return Promise.reject({
+      status: 404,
+      message: `Failed to find user setting with contact_id [${contact_id}].`
+    });
+  }
+  const user = await db.users.get('org.couchdb.user:' + medicUser.name);
+  return [user, medicUser];
+};
+
+const getUserDocsByName = (name) => Promise
+  .all([
+    db.users.get('org.couchdb.user:' + name),
+    db.medic.get('org.couchdb.user:' + name)
+  ]);
+
+const getUserSettings = async({ name, contact_id }) => {
+  const [ user, medicUser ] = await (name ? getUserDocsByName(name) : getUserDocsByContactId(contact_id));
+  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
+  return hydrateUserSettings(medicUser);
+};
+
 /*
  * Everything not exported directly is private.  Underscore prefix is only used
  * to export functions needed for testing.
@@ -703,6 +747,7 @@ module.exports = {
         return mapUsers(users, settings, facilities);
       });
   },
+  getUserSettings,
   /*
    * Take the request data and create valid user, user-settings and contact
    * objects. Returns the response body in the callback.
@@ -862,8 +907,8 @@ module.exports = {
 
     // Online users can remove place or contact
     if (!_.isNull(data.place) &&
-        !_.isNull(data.contact) &&
-        !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
+      !_.isNull(data.contact) &&
+      !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
     ) {
       return Promise.reject(error400(
         'One of the following fields are required: ' + props.join(', '),
@@ -905,6 +950,4 @@ module.exports = {
    * @param {string} csv CSV of users.
    */
   parseCsv,
-
-  DOC_IDS_WARN_LIMIT,
 };

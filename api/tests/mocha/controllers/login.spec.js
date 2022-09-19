@@ -4,12 +4,11 @@ const chai = require('chai');
 const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');
 const cookie = require('../../../src/services/cookie');
-const users = require('../../../src/services/users');
-const tokenLogin = require('../../../src/services/token-login');
 const branding = require('../../../src/services/branding');
 const db = require('../../../src/db').medic;
 const sinon = require('sinon');
 const config = require('../../../src/config');
+const { tokenLogin, roles, users } = require('@medic/user-management')(config, db);
 const request = require('request-promise-native');
 const fs = require('fs');
 const DB_NAME = 'lg';
@@ -54,7 +53,7 @@ describe('login controller', () => {
     sinon.stub(environment, 'port').get(() => 1234);
     sinon.stub(environment, 'isTesting').get(() => false);
 
-    sinon.stub(auth, 'isOnlineOnly').returns(false);
+    sinon.stub(roles, 'isOnlineOnly').returns(false);
   });
 
   afterEach(() => {
@@ -630,7 +629,7 @@ describe('login controller', () => {
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const cookie = sinon.stub(res, 'cookie').returns(res);
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      auth.isOnlineOnly.returns(true);
+      roles.isOnlineOnly.returns(true);
       sinon.stub(auth, 'hasAllPermissions').returns(true);
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
@@ -662,16 +661,16 @@ describe('login controller', () => {
       sinon.stub(users, 'createAdmin').resolves();
       const userCtx = { name: 'shazza', roles: [ '_admin' ] };
       sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      auth.isOnlineOnly.returns(true);
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      roles.isOnlineOnly.returns(true);
+      sinon.stub(roles, 'isDbAdmin').returns(true);
       sinon.stub(auth, 'hasAllPermissions').returns(true);
       sinon.stub(auth, 'getUserSettings');
       return controller.post(req, res).then(() => {
         chai.expect(request.post.callCount).to.equal(1);
         chai.expect(auth.getUserCtx.callCount).to.equal(1);
         chai.expect(auth.getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
-        chai.expect(auth.isDbAdmin.callCount).to.equal(1);
-        chai.expect(auth.isDbAdmin.args[0]).to.deep.equal([userCtx]);
+        chai.expect(roles.isDbAdmin.callCount).to.equal(1);
+        chai.expect(roles.isDbAdmin.args[0]).to.deep.equal([userCtx]);
         chai.expect(users.createAdmin.callCount).to.equal(1);
         chai.expect(users.createAdmin.args[0]).to.deep.equal([userCtx]);
         chai.expect(auth.getUserSettings.callCount).to.equal(0);

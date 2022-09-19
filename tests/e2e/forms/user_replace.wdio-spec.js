@@ -15,6 +15,8 @@ const dobUnknownField = () => $('input[name="/replace_user/new_contact/ephemeral
 const yearsField = () => $('input[name="/replace_user/new_contact/ephemeral_dob/age_years"]');
 const femaleField = () => $('input[name="/replace_user/new_contact/sex"][value="female"]');
 
+const redirectToLoginBtn = () => $('#session-expired .btn.submit.btn-primary');
+
 const DISTRICT = {
   _id: 'fixture:district',
   type: 'district_hospital',
@@ -79,8 +81,10 @@ describe('user_replace transition', () => {
 
     await commonElements.openHamburgerMenu();
     await (await commonElements.syncButton()).click();
+    await (await redirectToLoginBtn()).click();
     await (await loginPage.loginButton()).waitForDisplayed();
 
+    await loginPage.cookieLogin();
     // Replace user report created
     const replaceUserReport = await utils.getDoc(reportId);
     const { original_contact_uuid, new_contact_uuid } = replaceUserReport.fields;
@@ -95,9 +99,9 @@ describe('user_replace transition', () => {
 
     // Transition successful
     expect(transitions.user_replace.ok).to.be.true;
-    // Original user updated
+    // Original user disabled
     const oldUserSettings = await utils.getUserSettings({ contactId: original_contact_uuid });
-    expect(oldUserSettings.replaced).to.be.true;
+    expect(oldUserSettings.inactive).to.be.true;
     // New user created
     const newUserSettings = await utils.getUserSettings({ contactId: new_contact_uuid });
     newUsers.push(newUserSettings.name);
@@ -123,6 +127,7 @@ describe('user_replace transition', () => {
     expect(to).to.equal(newUserSettings.phone);
 
     // Open the texted link
+    await commonPage.logout();
     browser.navigateTo(message);
     await commonPage.waitForPageLoaded();
     const [cookie] = await browser.getCookies('userCtx');

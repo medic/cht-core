@@ -1,13 +1,13 @@
 const _ = require('lodash');
-const db = require('../db');
-const config = require('../config');
-const utils = require('./utils');
+const db = require('./libs/db');
+const config = require('./libs/config');
+const utils = require('./libs/utils');
 const places = require('./places');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const lineage = require('./libs/lineage');
 const contactTypeUtils = require('@medic/contact-types-utils');
 
 const getPerson = id => {
-  return lineage.fetchHydratedDoc(id)
+  return lineage.get().fetchHydratedDoc(id)
     .catch(err => {
       if (err.status === 404) {
         throw { code: 404, message: 'Failed to find person.' };
@@ -75,7 +75,7 @@ const createPerson = data => {
     .then(() => {
       if (data.place) {
         return places.getOrCreatePlace(data.place).then(place => {
-          data.parent = lineage.minifyLineage(place);
+          data.parent = lineage.get().minifyLineage(place);
           delete data.place;
         });
       }
@@ -111,4 +111,3 @@ module.exports.isAPerson = isAPerson;
 
 module.exports._getPerson = getPerson;
 module.exports._validatePerson = validatePerson;
-module.exports._lineage = lineage;
