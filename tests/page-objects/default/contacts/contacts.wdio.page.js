@@ -28,7 +28,6 @@ const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
-const formTitle = () => $('#form-title');
 
 const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
 const rhsReportListSelector = '.card.reports mm-content-row h4 span';

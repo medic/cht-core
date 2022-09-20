@@ -5,6 +5,7 @@ const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');
 const cookie = require('../../../src/services/cookie');
 const branding = require('../../../src/services/branding');
+const db = require('../../../src/db').medic;
 const translations = require('../../../src/translations');
 const privacyPolicy = require('../../../src/services/privacy-policy');
 const sinon = require('sinon');
