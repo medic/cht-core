@@ -1,6 +1,6 @@
-const guidedTourPO = require('../../../page-objects/common/guided-tour.wdio.page.js');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
+const guidedTourPO = require('../../../page-objects/default/common/guided-tour.wdio.page.js');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 
 describe('Guided tour', async () => {
   beforeEach(async () => {

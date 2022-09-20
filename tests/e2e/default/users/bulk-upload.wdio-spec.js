@@ -1,5 +1,5 @@
-const usersAdminPage = require('../../../page-objects/admin/user.wdio.page');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
+const usersAdminPage = require('../../../page-objects/default/users/user.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 
 describe('Bulk User Creation ->', () => {
   before(async () => {

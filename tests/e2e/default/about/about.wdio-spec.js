@@ -1,7 +1,7 @@
 const utils = require('../../../utils');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const aboutPage = require('../../../page-objects/common/about.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const aboutPage = require('../../../page-objects/default/common/about.wdio.page');
 const partnersFactory = require('../../../factories/cht/config/partners');
 
 describe('About page', async () => {

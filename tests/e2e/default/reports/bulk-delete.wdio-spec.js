@@ -1,7 +1,7 @@
 const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/common/common.wdio.page');
-const reports = require('../../../page-objects/reports/reports.wdio.page');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
+const commonElements = require('../../../page-objects/default/common/common.wdio.page');
+const reports = require('../../../page-objects/default/reports/reports.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 
 describe('Bulk delete reports', () => {
   const docs = [

@@ -1,6 +1,6 @@
 
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const moment = require('moment');
 const browserPage = require('../../../utils/browser');
 const chai = require('chai');

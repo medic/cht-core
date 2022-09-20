@@ -2,9 +2,9 @@ const path = require('path');
 
 const utils = require('../../../utils');
 const sentinelUtils = require('../../../utils/sentinel');
-const tasksPage = require('../../../page-objects/tasks/tasks.wdio.page');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
+const tasksPage = require('../../../page-objects/default/tasks/tasks.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const chtConfUtils = require('../../../cht-conf-utils');
 
 const contacts = [

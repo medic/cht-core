@@ -3,9 +3,9 @@ const bodyParser = require('body-parser');
 const uuid = require('uuid').v4;
 const _ = require('lodash');
 
-const commonElements = require('../../../page-objects/common/common.po.js');
-const messagesElements = require('../../../page-objects/messages/messages.po');
-const reportsElements = require('../../../page-objects/reports/reports.po');
+const commonElements = require('../../../page-objects/protractor/common/common.po.js');
+const messagesElements = require('../../../page-objects/protractor/sms/messages.po');
+const reportsElements = require('../../../page-objects/protractor/reports/reports.po');
 const helper = require('../../../helper');
 const utils = require('../../../utils');
 
