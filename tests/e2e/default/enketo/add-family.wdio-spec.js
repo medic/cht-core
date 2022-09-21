@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const familyForm = require('../../../page-objects/default/enketo/add-family-form.wdio.page');
+const familyForm = require('../../../page-objects/default/enketo/add-family.wdio.page');
 const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
 const common = require('../../../page-objects/default/common/common.wdio.page');
 const utils = require('../../../utils');
