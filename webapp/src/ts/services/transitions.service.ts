@@ -4,6 +4,7 @@ import { cloneDeep } from 'lodash-es';
 import { SettingsService } from '@mm-services/settings.service';
 import { ValidationService } from '@mm-services/validation.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
+import { UserReplaceTransition } from '@mm-services/transitions/user-replace.transition';
 
 @Injectable({
   providedIn: 'root'
@@ -13,11 +14,13 @@ export class TransitionsService {
     private settingsService:SettingsService,
     private validationService:ValidationService,
     private mutingTransition:MutingTransition,
+    private userReplaceTransition:UserReplaceTransition,
   ) {
   }
 
   private readonly AVAILABLE_TRANSITIONS = [
-    { name: 'muting', transition: this.mutingTransition }
+    { name: this.mutingTransition.name, transition: this.mutingTransition },
+    { name: this.userReplaceTransition.name, transition: this.userReplaceTransition },
   ];
 
   private loadedTransitions = [];
