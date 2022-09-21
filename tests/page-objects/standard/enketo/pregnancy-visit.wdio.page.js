@@ -1,5 +1,5 @@
-const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
-const contactPage = require('../../../page-objects/contacts/contacts.wdio.page');
+const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
+const contactPage = require('../../../page-objects//default/contacts/contacts.wdio.page');
 
 const FORM = 'form[data-form-id="pregnancy_visit"]';
 const dangerSig = () => $$(`${FORM} input[name="/pregnancy_visit/group_danger_signs/g_danger_signs"]`);
