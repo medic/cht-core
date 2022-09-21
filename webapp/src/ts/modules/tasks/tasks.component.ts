@@ -103,7 +103,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.error = false;
     this.hasTasks = false;
     this.loading = true;
-    this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, {maxWait: 10 * 1000});
+    this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
 
     this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
 
@@ -128,12 +128,12 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private hydrateEmissions(taskDocs) {
     return taskDocs.map(taskDoc => {
-      const emission = {...taskDoc.emission};
+      const emission = { ...taskDoc.emission };
       const dueDate = moment(emission.dueDate, 'YYYY-MM-DD');
       emission.date = new Date(dueDate.valueOf());
       emission.overdue = dueDate.isBefore(moment());
       emission.owner = taskDoc.owner;
-      emission.forId = taskDoc.forId;
+
       return emission;
     });
   }
@@ -188,7 +188,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   }
 
   private getLineagesFromTaskDocs(taskDocs) {
-    const ids = [...new Set(taskDocs.map(task => task.forId || task.owner))];
+    const ids = [...new Set(taskDocs.map(task => task.owner))];
     return this.lineageModelGeneratorService
       .reportSubjects(ids)
       .then(subjects => new Map(subjects.map(subject => [subject._id, subject.lineage])));
@@ -196,13 +196,13 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   private getTaskLineage(subjects, task, userLineageLevel) {
     const lineage = subjects
-      .get(task.forId)
+      .get(task.owner)
       ?.map(lineage => lineage?.name);
     return this.cleanAndRemoveCurrentLineage(lineage, userLineageLevel);
   }
 
   private cleanAndRemoveCurrentLineage(lineage, userLineageLevel) {
-    if(!lineage?.length){
+    if (!lineage?.length) {
       return;
     }
     lineage = lineage.filter(level => level);

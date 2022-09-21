@@ -180,7 +180,6 @@ describe('TasksComponent', () => {
         overdue: false,
         date: new Date(futureDate.valueOf()),
         owner: 'a',
-        forId: undefined,
       },
       {
         _id: 'e2',
@@ -188,7 +187,6 @@ describe('TasksComponent', () => {
         overdue: true,
         date: new Date(pastDate.valueOf()),
         owner: 'b',
-        forId: undefined,
       },
     ];
 
@@ -349,7 +347,6 @@ describe('TasksComponent', () => {
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
           overdue: true,
           owner: 'a',
-          forId: 'a',
         },
         {
           _id: 'e2',
@@ -358,7 +355,6 @@ describe('TasksComponent', () => {
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
-          forId: 'b',
         },
       ];
       userContactService.get.resolves(bettysContactDoc);
@@ -384,7 +380,6 @@ describe('TasksComponent', () => {
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
           overdue: true,
           owner: 'a',
-          forId: 'a',
         },
         {
           _id: 'e2',
@@ -393,7 +388,6 @@ describe('TasksComponent', () => {
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
-          forId: 'b',
         },
       ];
       userContactService.get.resolves(userContactDoc);
@@ -419,7 +413,6 @@ describe('TasksComponent', () => {
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'a',
-          forId: 'a',
         },
         {
           _id: 'e2',
@@ -428,7 +421,6 @@ describe('TasksComponent', () => {
           lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
           overdue: true,
           owner: 'b',
-          forId: 'b',
         },
       ];
       userContactService.get.resolves(bettysContactDoc);
