@@ -19,7 +19,7 @@ describe('Immunization Visit', () => {
   let countAppliedVaccines = 0;
 
   before(async () => {
-    await utils.saveDocs([...places]);
+    await utils.saveDocs(places);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
 
