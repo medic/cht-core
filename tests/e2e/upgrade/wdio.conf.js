@@ -1,16 +1,17 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-
-const wdioBaseConfig = require('../default/wdio.conf');
-const constants = require('../../constants');
-constants.DB_NAME = 'medic';
-
-const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;
-
+const chai = require('chai');
+const { spawn } = require('child_process');
+chai.use(require('chai-exclude'));
 const rpn = require('request-promise-native');
 
 const utils = require('../../utils');
+const wdioBaseConfig = require('../default/wdio.conf');
+const constants = require('../../constants');
+
+constants.DB_NAME = 'medic';
+const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;
 
 utils.CONTAINER_NAMES.haproxy = 'cht-haproxy';
 utils.CONTAINER_NAMES.couch1 = 'cht-couchdb';
@@ -18,15 +19,11 @@ utils.CONTAINER_NAMES.api = 'cht-api';
 utils.CONTAINER_NAMES.sentinel = 'cht-sentinel';
 utils.CONTAINER_NAMES.upgradeService = 'cht-upgrade-service';
 
-const DOCKER_COMPOSE_FOLDER = utils.makeTempDir('upgrade-service-');
+const UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('upgrade-service-');
 const CHT_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('cht-');
 const CHT_DATA_FOLDER = utils.makeTempDir('cht-');
-const UPGRADE_SERVICE_DC = path.join(DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
-const mainBranch = 'medic:medic:master';
-
-const chai = require('chai');
-const { spawn } = require('child_process');
-chai.use(require('chai-exclude'));
+const UPGRADE_SERVICE_DC = path.join(UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
+const MAIN_BRANCH = 'medic:medic:master';
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
@@ -36,7 +33,7 @@ const getUpgradeServiceDockerCompose = async () => {
 
 const getMainCHTDockerCompose = async () => {
   for (const composeFile of COMPOSE_FILES) {
-    const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${mainBranch}/docker-compose/${composeFile}.yml`;
+    const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${MAIN_BRANCH}/docker-compose/${composeFile}.yml`;
     const contents = await rpn.get(composeFileUrl);
     const filePath = path.join(CHT_DOCKER_COMPOSE_FOLDER, `${composeFile}.yml`);
     await fs.promises.writeFile(filePath, contents);

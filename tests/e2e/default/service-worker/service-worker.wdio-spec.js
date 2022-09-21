@@ -78,8 +78,6 @@ const login = async () => {
   await commonPage.waitForPageLoaded();
 };
 
-const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
-
 describe('Service worker cache', () => {
   before(async () => {
     await utils.saveDoc(district);
@@ -124,7 +122,7 @@ describe('Service worker cache', () => {
   });
 
   it('branding updates trigger login page refresh', async () => {
-    const waitForLogs = await utils.waitForApiLogs(SW_SUCCESSFUL_REGEX);
+    const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     const branding = await utils.getDoc('branding');
     branding.title = 'Not Medic';
     await utils.saveDoc(branding);
@@ -139,7 +137,7 @@ describe('Service worker cache', () => {
   });
 
   it('login page translation updates trigger login page refresh', async () => {
-    const waitForLogs = await utils.waitForApiLogs(SW_SUCCESSFUL_REGEX);
+    const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('en', {
       'User Name': 'NotUsername',
       'login': 'NotLogin',
@@ -157,7 +155,7 @@ describe('Service worker cache', () => {
   });
 
   it('adding new languages triggers login page refresh', async () => {
-    const waitForLogs = await utils.waitForApiLogs(SW_SUCCESSFUL_REGEX);
+    const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('ro', {
       'User Name': 'Utilizator',
       'Password': 'Parola',
@@ -182,7 +180,7 @@ describe('Service worker cache', () => {
 
     const cacheDetails = await getCachedRequests(true);
 
-    const waitForLogs = await utils.waitForApiLogs(SW_SUCCESSFUL_REGEX);
+    const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('en', {
       'ran': 'dom',
       'some': 'thing',

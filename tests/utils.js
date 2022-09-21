@@ -1282,4 +1282,5 @@ module.exports = {
   CONTAINER_NAMES,
   listenForApi,
   makeTempDir,
+  SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
 };

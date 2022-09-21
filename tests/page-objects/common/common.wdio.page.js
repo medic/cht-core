@@ -12,6 +12,7 @@ const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
+const jsonError = async () => (await $('pre')).getText();
 
 //languages
 const languagePreferenceHeading = () => $('#language-preference-heading');
@@ -304,4 +305,5 @@ module.exports = {
   getDefaultLanguages,
   getTextForElements,
   toggleActionbar,
+  jsonError,
 };
