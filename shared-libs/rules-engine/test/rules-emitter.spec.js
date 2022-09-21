@@ -215,7 +215,8 @@ describe('rules-emitter', () => {
       const { tasks, targets } = await rulesEmitter.getEmissionsFor([chtDocs.contact], [chtDocs.pregnancyReport]);
       expect(tasks.length).to.eq(1);
       expect(tasks[0].title).to.eq('task.anc.facility_reminder.title');
-      expect(targets.length).to.eq(0);
+      expect(targets.length).to.eq(1);
+      expect(targets[0].type).to.eq('births-this-month');
     });
   });
 });
