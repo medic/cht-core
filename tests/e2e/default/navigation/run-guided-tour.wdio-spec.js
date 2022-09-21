@@ -1,4 +1,4 @@
-const guidedTourPO = require('../../../page-objects/default/common/guided-tour.wdio.page.js');
+const guidedTourPO = require('../../../page-objects/default/navigation/guided-tour.wdio.page.js');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 
