@@ -1,6 +1,7 @@
 const path = require('path');
 const PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-adapter-leveldb'));
+const { performance } = require('perf_hooks');
 
 const [,, instanceUrl, dataDir, threadId, skipUsers] = process.argv;
 const dataDirPath = path.resolve(dataDir || __dirname);
@@ -43,8 +44,12 @@ const replicateTo = () => {
 };
 
 const replicate = async () => {
+  const t = performance.now();
   await replicateTo();
+  console.log('replicate to took ', performance.now() - t);
+  const l = performance.now();
   await replicateFrom();
+  console.log('replicate from took ', performance.now() - l);
 };
 
 const getRandomParent = () => {
@@ -61,6 +66,7 @@ const getClinics = async () => {
 };
 
 const generateData = async () => {
+  const t = performance.now();
   const docs = [];
   for (let i = 0; i < config.workflowContactsNbr.person; i++) {
     const parent = getRandomParent();
@@ -73,8 +79,10 @@ const generateData = async () => {
     const reports = dataFactory.generateReports(person, parent);
     docs.push(person, ...reports);
   }
-
+  console.log('generation took ', performance.now() - t);
+  const l = performance.now();
   await localDb.bulkDocs(docs);
+  console.log('saving took ', performance.now() - l);
 };
 
 (async () => {
