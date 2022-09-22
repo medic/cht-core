@@ -107,6 +107,7 @@ describe('Service worker cache', () => {
       '/img/icon-pregnant.svg',
       '/img/layers.png',
       '/img/setup-wizard-demo.png',
+      '/login/lib-bowser.js',
       '/login/script.js',
       '/login/style.css',
       '/main.js',

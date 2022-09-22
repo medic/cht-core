@@ -12,6 +12,28 @@
       <dl class="horizontal">
         <dt>{{'version' | translate}}</dt>
         <dd>{{version}}</dd>
+        <span>
+          <dt>{{'debug.supported_browser' | translate}}</dt>
+          <dd *ngIf="browserSupport.isUsingSupportedEnvironment; else unsupportedBrowser">
+            <span class="fa fa-check-square browser-support-icon-green"></span>
+          </dd>
+          <ng-template #unsupportedBrowser>
+            <dd>
+              <span class="fa fa-times browser-support-icon-red"></span>
+              <a target="_blank" rel="noopener noreferrer" href="https://docs.communityhealthtoolkit.org/core/releases/#requirements">
+                {{'debug.supported_browser.see_requirements' | translate}}
+              </a>
+              <p class="browser-support-message">
+                <span>{{'login.unsupported_browser' | translate}}</span>
+                <ng-container [ngSwitch]="browserSupport.outdatedComponent">
+                  <span *ngSwitchCase="'chtAndroid'">{{'login.unsupported_browser.outdated_cht_android' | translate}}</span>
+                  <span *ngSwitchCase="'webviewApk'">{{'login.unsupported_browser.outdated_webview_apk' | translate}}</span>
+                  <span *ngSwitchCase="'browser'">{{'login.unsupported_browser.outdated_browser' | translate}}</span>
+                </ng-container>
+              </p>
+            </dd>
+          </ng-template>
+        </span>
         <span *ngIf="androidDeviceInfo?.app?.version">
           <dt>{{'android_app.version.title' | translate}}</dt>
           <dd>{{androidDeviceInfo.app.version}}</dd>
