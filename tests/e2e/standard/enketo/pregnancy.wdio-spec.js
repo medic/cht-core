@@ -1,5 +1,6 @@
 const moment = require('moment');
 const utils = require('../../../utils');
+const sentinelUtils = require('../../../utils/sentinel');
 const gatewayApiUtils = require('../../../gateway-api.utils');
 const commonPage = require('../../../page-objects/common/common.wdio.page');
 const loginPage = require('../../../page-objects/login/login.wdio.page');
@@ -31,12 +32,14 @@ describe('New pregnancy', () => {
     await contactPage.contactPageDefault.addPerson(pregnantWoman1,
       {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
     await commonPage.waitForPageLoaded();
+    await sentinelUtils.waitForSentinel();
 
     // Create Woman2 - SMS N form
     await commonPage.goToPeople(healthCenter._id);
     await contactPage.contactPageDefault.addPerson(pregnantWoman2,
       {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
     await commonPage.waitForPageLoaded();
+    await sentinelUtils.waitForSentinel();
   });
 
   it('Submit new pregnancy - Woman1 - webapp', async () => {
