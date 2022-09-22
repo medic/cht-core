@@ -79,7 +79,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
     return this.placeHierarchyService
       .get()
-      .then(hierarchy => {
+      .then((hierarchy = []) => {
         hierarchy = this.sortHierarchyAndAddFacilityLabels(hierarchy);
         this.facilities = hierarchy;
         this.flattenedFacilities = _flatten(this.facilities.map(facility => this.getFacilitiesRecursive(facility)));
