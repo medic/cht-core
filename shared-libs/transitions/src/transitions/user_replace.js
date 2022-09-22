@@ -8,8 +8,8 @@ const { users } = require('@medic/user-management')(config, db);
 const NAME = 'user_replace';
 
 const getNewContact = (contactId) => {
-  if(!contactId) {
-    throw new Error('No id was provided for the new replacement contact.');
+  if (!contactId) {
+    return Promise.reject(new Error('No id was provided for the new replacement contact.'));
   }
   return people.getOrCreatePerson(contactId);
 };
@@ -66,24 +66,21 @@ const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
 };
 
 const replaceUser = (originalContact) => {
-  return Promise.resolve()
-    .then(() => {
-      const { _id, replaced: { by } } = originalContact;
-      return  Promise
-        .all([
-          getNewContact(by),
-          users.getUserSettings({ contact_id: _id }),
-        ])
-        .then(([newContact, originalUserSettings]) => {
-          return createNewUser(originalUserSettings, newContact)
-            .then(() => users.deleteUser(originalUserSettings.name))
-            .then(() => originalContact.replaced.status = 'COMPLETE');
-        });
-    });
+  const { _id, replaced: { by } } = originalContact;
+  return Promise
+    .all([
+      getNewContact(by),
+      users.getUserSettings({ contact_id: _id }),
+    ])
+    .then(([newContact, originalUserSettings]) => {
+      return createNewUser(originalUserSettings, newContact)
+        .then(() => users.deleteUser(originalUserSettings.name));
+    })
+    .then(() => originalContact.replaced.status = 'COMPLETE');
 };
 
 /**
- * Replace a contact with a new contact.
+ * Replace a user whose contact has been marked as ready to be replaced with a new user.
  */
 module.exports = {
   name: NAME,
@@ -103,9 +100,7 @@ module.exports = {
   },
   onMatch: change => {
     return replaceUser(change.doc)
-      .then(() => {
-        return true;
-      })
+      .then(() => true)
       .catch(err => {
         change.doc.replaced.status = 'ERROR';
         err.changed = true;
