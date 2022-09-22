@@ -5,8 +5,6 @@ const path = require('path');
 
 const utils = require('../../../utils');
 
-const SW_SUCCESSFUL_REGEX = /Service worker generated successfully/;
-
 const DEFAULT_MANIFEST = {
   start_url: './',
   name: 'CHT',
@@ -29,7 +27,7 @@ const addAttachment = async (doc, label, path, name, type) => {
 };
 
 const updateBranding = async (doc) => {
-  const waitForLogs = await utils.waitForApiLogs(SW_SUCCESSFUL_REGEX);
+  const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
   if (!doc) {
     try {
       await utils.deleteDoc('branding');

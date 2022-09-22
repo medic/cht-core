@@ -12,6 +12,7 @@ const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
+const jsonError = async () => (await $('pre')).getText();
 
 //languages
 const languagePreferenceHeading = () => $('#language-preference-heading');
@@ -146,6 +147,15 @@ const hideSnackbar = () => {
     // eslint-disable-next-line no-undef
     window.jQuery('.snackbar-content').hide();
   });
+};
+
+const toggleActionbar = (hide) => {
+  // the actiobar can cover elements at the bottom of the page, making clicks land in incorrect places
+  return browser.execute((hide) => {
+    // eslint-disable-next-line no-undef
+    const element = window.jQuery('.detail-actions');
+    hide ? element.hide() : element.show();
+  }, hide);
 };
 
 const waitForLoaders = async () => {
@@ -294,4 +304,6 @@ module.exports = {
   snackbarAction,
   getDefaultLanguages,
   getTextForElements,
+  toggleActionbar,
+  jsonError,
 };
