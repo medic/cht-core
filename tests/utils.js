@@ -6,6 +6,7 @@ const rpn = require('request-promise-native');
 const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
@@ -48,6 +49,11 @@ const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const getTemplateComposeFilePath = file => path.resolve(__dirname, '..', 'scripts', 'build', `${file}.yml.template`);
 const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml`);
+
+const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
+const db1Data = makeTempDir('ci-dbdata');
+const db2Data = makeTempDir('ci-dbdata');
+const db3Data = makeTempDir('ci-dbdata');
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -614,7 +620,16 @@ const generateComposeFiles = async () => {
   }
 };
 
+const createLogDir = async () => {
+  const logDirPath = path.join(__dirname, 'logs');
+  if (fs.existsSync(logDirPath)) {
+    await fs.promises.rmdir(logDirPath, { recursive: true });
+  }
+  await fs.promises.mkdir(logDirPath);
+};
+
 const prepServices = async (defaultSettings) => {
+  await createLogDir();
   await generateComposeFiles();
 
   await stopServices(true);
@@ -631,8 +646,15 @@ const dockerComposeCmd = (...params) => {
     .map(file => ['-f', getTestComposeFilePath(file)])
     .flat();
 
+  const env = {
+    ...process.env,
+    DB1_DATA: db1Data,
+    DB2_DATA: db2Data,
+    DB3_DATA: db3Data,
+  };
+
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', [ ...composeFilesParam, ...params ]);
+    const cmd = spawn('docker-compose', [ ...composeFilesParam, ...params ], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -1259,4 +1281,6 @@ module.exports = {
   COMPOSE_FILES,
   CONTAINER_NAMES,
   listenForApi,
+  makeTempDir,
+  SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
 };
