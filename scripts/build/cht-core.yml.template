@@ -12,7 +12,7 @@ services:
       - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
       - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
     logging:
-      driver: "json-file"
+      driver: "local"
       options:
         max-size: "${LOG_MAX_SIZE:-50m}"
         max-file: "${LOG_MAX_FILES:-20}"
@@ -29,7 +29,7 @@ services:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
     logging:
-      driver: "json-file"
+      driver: "local"
       options:
         max-size: "${LOG_MAX_SIZE:-50m}"
         max-file: "${LOG_MAX_FILES:-20}"
@@ -48,7 +48,7 @@ services:
       - BUILDS_URL=${MARKET_URL_READ:-https://staging.dev.medicmobile.org}/${BUILDS_SERVER:-_couch/builds}
       - UPGRADE_SERVICE_URL=${UPGRADE_SERVICE_URL:-http://localhost:5100}
     logging:
-      driver: "json-file"
+      driver: "local"
       options:
         max-size: "${LOG_MAX_SIZE:-50m}"
         max-file: "${LOG_MAX_FILES:-20}"
@@ -64,7 +64,7 @@ services:
       - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
       - API_HOST=cht-api
     logging:
-      driver: "json-file"
+      driver: "local"
       options:
         max-size: "${LOG_MAX_SIZE:-50m}"
         max-file: "${LOG_MAX_FILES:-20}"
@@ -93,6 +93,11 @@ services:
       - "LOCALITY=${LOCALITY:-San_Francisco}"
       - "ORGANISATION=${ORGANISATION:-medic}"
       - "DEPARTMENT=${DEPARTMENT:-Information_Security}"
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
     networks:
       - {{ network }}
 

@@ -135,6 +135,7 @@ describe('Contact Delivery Form', () => {
     await genericForm.nextPage();
     await deliveryForm.submitForm();
     await contactPage.openReport();
+    await (await reportPage.reportBodyDetails()).waitForDisplayed();
     expect((await reportPage.getReportSubject())).to.equal(MOTHERS_NAME);
     expect((await reportPage.getReportType())).to.equal(formDocument.title);
   });

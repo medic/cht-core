@@ -20,8 +20,8 @@ const dangerSignSummary = () =>
   $$('label.question.readonly.or-branch.non-select.or-appearance-li');
 const followUpMessage = () => $('[data-value=" /pregnancy_visit/chw_sms "]');
 
-const selectPatient = (patientName) => {
-  return genericForm.selectContact('/pregnancy_visit/inputs/contact', patientName);
+const selectPatient = async (patientName) => {
+  await genericForm.selectContact('/pregnancy_visit/inputs/contact', patientName);
 };
 const selectDangerSign = async (value) => {
   const danger = await $(`input[value="${value}"]`);

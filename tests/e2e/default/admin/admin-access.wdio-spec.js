@@ -1,14 +1,12 @@
-const utils = require('../../utils');
-const userFactory = require('../../factories/cht/users/users');
-const loginPage = require('../../page-objects/default/login/login.wdio.page');
-const common = require('../../page-objects/default/common/common.wdio.page');
-const placeFactory = require('../../factories/cht/contacts/place');
-const constants = require('../../constants');
+const utils = require('../../../utils');
+const userFactory = require('../../../factories/cht/users/users');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const adminPage = require('../../../page-objects/default/admin/admin.wdio.page');
+const common = require('../../../page-objects/default/common/common.wdio.page');
+const placeFactory = require('../../../factories/cht/contacts/place');
 
-const offlineUser = userFactory.build({ username: 'offlineuser', isOffline: true });
+const offlineUser = userFactory.build({ username: 'offline-user-admin', isOffline: true });
 const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
-
-const adminNavbarLogo = () => $('.navbar-header .navbar-brand');
 
 describe('Acessing the admin app', () => {
   afterEach(async () => {
@@ -38,36 +36,36 @@ describe('Acessing the admin app', () => {
 
     await common.waitForLoaders();
     await browser.url('/admin/#/forms');
-    expect(await (await adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await (await $('pre')).getText()).to.equal(error);
+    expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
+    expect(await common.jsonError()).to.equal(error);
 
     await browser.url('/admin');
-    expect(await (await adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await (await $('pre')).getText()).to.equal(error);
+    expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
+    expect(await common.jsonError()).to.equal(error);
 
     await browser.url('/medic/_design/medic-admin/_rewrite/');
-    expect(await (await adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await (await $('pre')).getText()).to.equal(error);
+    expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
+    expect(await common.jsonError()).to.equal(error);
 
     await browser.url('/medic/_design/medic-admin/_rewrite/#/authorization/permissions');
-    expect(await (await adminNavbarLogo()).isDisplayed()).to.equal(false);
-    expect(await (await $('pre')).getText()).to.equal(error);
+    expect(await (await adminPage.adminNavbarLogo()).isDisplayed()).to.equal(false);
+    expect(await common.jsonError()).to.equal(error);
   });
 
   it('should allow admins to access the page', async () => {
-    await loginPage.cookieLogin({ username: constants.USERNAME, password: constants.PASSWORD, createUser: false });
+    await loginPage.cookieLogin({ createUser: false });
 
     await browser.url('/admin');
-    await (await adminNavbarLogo()).waitForDisplayed();
-    expect(await (await adminNavbarLogo()).getText()).to.equal('App Management');
+    await (await adminPage.adminNavbarLogo()).waitForDisplayed();
+    expect(await (await adminPage.adminNavbarLogo()).getText()).to.equal('App Management');
 
     await browser.url('/admin#/forms');
-    await (await adminNavbarLogo()).waitForDisplayed();
+    await (await adminPage.adminNavbarLogo()).waitForDisplayed();
 
     await browser.url('/medic/_design/medic-admin/_rewrite/');
-    await (await adminNavbarLogo()).waitForDisplayed();
+    await (await adminPage.adminNavbarLogo()).waitForDisplayed();
 
     await browser.url('/medic/_design/medic-admin/_rewrite/#/authorization/permissions');
-    await (await adminNavbarLogo()).waitForDisplayed();
+    await (await adminPage.adminNavbarLogo()).waitForDisplayed();
   });
 });

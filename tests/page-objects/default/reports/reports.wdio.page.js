@@ -371,5 +371,6 @@ module.exports = {
   reportTasks,
   editReport,
   fieldByIndex,
+  reportBodyDetails,
   openSelectedReport,
 };
