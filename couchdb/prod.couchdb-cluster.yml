@@ -1,0 +1,74 @@
+version: "3.3"
+
+networks:
+  cht-net:
+    driver: bridge
+
+services:
+  couchdb.1:
+    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042622-test37}
+    volumes:
+    - ${DB1_DATA:-./srv1}:/opt/couchdb/data
+    - cht-credentials:/opt/couchdb/etc/local.d/
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=${SVC1_NAME:-couchdb.1}"
+      - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+    restart: always
+    networks:
+      cht-net:
+
+  couchdb.2:
+    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042622-test37}
+    volumes:
+    - ${DB2_DATA:-./srv2}:/opt/couchdb/data
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=${SVC2_NAME:-couchdb.2}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    restart: always
+    networks:
+      cht-net:
+
+  couchdb.3:
+    image: medicmobile/cht-couchdb:${CHT_CORE_RELEASE:-clustered-042622-test37}
+    volumes:
+    - ${DB3_DATA:-./srv3}:/opt/couchdb/data
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=${SVC3_NAME:-couchdb.3}"
+      - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    restart: always
+    networks:
+      cht-net:
+
+  haproxy:
+    image: medicmobile/cht-haproxy:${CHT_CORE_RELEASE:-archv3-042822-v256}
+    hostname: haproxy
+    environment:
+      - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB1_SERVER=${COUCHDB1_SERVER:-couchdb.1}"
+      - "COUCHDB2_SERVER=${COUCHDB2_SERVER:-couchdb.2}"
+      - "COUCHDB3_SERVER=${COUCHDB3_SERVER:-couchdb.3}"
+      - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
+    networks:
+      cht-net:
+    ports:
+      - ${HAPROXY_PORT:-5984}:${HAPROXY_PORT:-5984}
+
+volumes:
+  cht-credentials:

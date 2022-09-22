@@ -41,6 +41,7 @@ const baseConfig = {
   //
   specs: [
     './tests/e2e/default/**/*.wdio-spec.js',
+    './tests/e2e/admin/**/*.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
@@ -78,7 +79,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu', '--deny-permission-prompts']
+      args: ['--headless', '--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -268,10 +269,11 @@ const baseConfig = {
   /**
    * Function to be executed before a test (in Mocha/Jasmine) starts.
    */
-  beforeTest: (test) => {
+  beforeTest: async (test) => {
     testTile = test.title;
     const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
     fs.appendFileSync(browserLogPath, title);
+    await utils.apiLogTestStart(testTile);
   },
   /**
    * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
@@ -300,6 +302,7 @@ const baseConfig = {
     if (passed === false) {
       await browser.takeScreenshot();
     }
+    await utils.apiLogTestEnd(test.title);
   },
 
   /**
@@ -331,7 +334,7 @@ const baseConfig = {
     if (users.length) {
       await utils.deleteUsers(users);
     }
-    await utils.revertDb([], true);
+    await utils.revertDb([/^form:/], true);
   },
   /**
    * Gets executed right after terminating the webdriver session.
@@ -349,8 +352,8 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {<Object>} results object containing test results
    */
-  onComplete: function () {
-    utils.tearDownServices();
+  onComplete: async () => {
+    await utils.tearDownServices();
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');
     const generation = allure(['generate', 'allure-results', '--clean']);

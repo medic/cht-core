@@ -1,7 +1,7 @@
 const commonElements = require('../../page-objects/common/common.po.js');
 const utils = require('../../utils');
-const auth = require('../../auth')();
 const loginPage = require('../../page-objects/login/login.po');
+const constants = require('../../constants.js');
 
 describe('Navigation tests : ', () => {
   beforeEach(utils.beforeEach);
@@ -101,7 +101,7 @@ describe('Navigation tests : ', () => {
       await utils.deleteUsers([user]);
       await utils.revertSettings();
       await commonElements.goToLoginPageNative();
-      await loginPage.loginNative(auth.username, auth.password);
+      await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
       await commonElements.waitForLoaderToDisappear();
     });
 

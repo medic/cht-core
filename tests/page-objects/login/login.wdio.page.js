@@ -1,5 +1,5 @@
+const constants = require('../../constants');
 const utils = require('../../utils');
-const auth = require('../../auth')();
 const commonPage = require('../common/common.wdio.page');
 const loginButton = () => $('#login');
 const userField = () => $('#user');
@@ -14,9 +14,6 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
   await (await passwordField()).setValue(password);
   await changeLocale(locale);
   await (await loginButton()).click();
-  if (loadPage) {
-    await commonPage.waitForLoaders();
-  }
 
   if (createUser) {
     await browser.waitUntil(async () => {
@@ -25,12 +22,16 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
     });
     await utils.setupUserDoc(username);
   }
+
+  if (loadPage) {
+    await commonPage.waitForLoaders();
+  }
 };
 
 const cookieLogin = async (options = {}) => {
   const {
-    username = auth.username,
-    password = auth.password,
+    username = constants.USERNAME,
+    password = constants.PASSWORD,
     createUser = true,
     locale = 'en',
   } = options;

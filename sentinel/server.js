@@ -24,7 +24,7 @@ const waitForApi = () =>
     //
     const waitLoop = () => {
       request(
-        `http://localhost:${process.env.API_PORT || 5988}/setup/poll`,
+        `http://${process.env.API_HOST || 'localhost'}:${process.env.API_PORT || 5988}/setup/poll`,
         (err, response, body) => {
           if (err) {
             logger.info('Waiting for API to be ready...');
@@ -42,7 +42,7 @@ const waitForApi = () =>
 
 logger.info('Running server checks…');
 serverChecks
-  .check(db.serverUrl)
+  .check(db.couchUrl)
   .then(waitForApi)
   .then(() => {
     // Even requiring this boots translations, so has to be required after

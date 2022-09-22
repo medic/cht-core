@@ -92,6 +92,7 @@ if (UNIT_TEST_ENV) {
     }
   };
   module.exports.couchUrl = couchUrl;
+  module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`, { fetch: fetchFn });
   module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`);
   module.exports.queryMedic = (viewPath, queryParams, body) => {
     const [ddoc, view] = viewPath.split('/');

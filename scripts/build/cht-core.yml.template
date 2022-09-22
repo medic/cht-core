@@ -1,0 +1,110 @@
+version: '3.9'
+
+services:
+  haproxy:
+    image: {{{ repo }}}/cht-haproxy:{{ tag }}
+    container_name: {{ haproxy_container_name }}
+    hostname: haproxy
+    environment:
+      - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
+      - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    networks:
+      - {{ network }}
+    expose:
+      - ${HAPROXY_PORT:-5984}
+
+  healthcheck:
+    image: {{{ repo }}}/cht-haproxy-healthcheck:{{ tag }}
+    container_name: {{ haproxy_healthcheck_container_name }}
+    environment:
+      - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    networks:
+      - {{ network }}
+
+  cht-api:
+    image: {{{ repo }}}/cht-api:{{ tag }}
+    container_name: {{ api_container_name }}
+    depends_on:
+      - haproxy
+    expose:
+      - "${API_PORT:-5988}"
+    environment:
+      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
+      - BUILDS_URL=${MARKET_URL_READ:-https://staging.dev.medicmobile.org}/${BUILDS_SERVER:-_couch/builds}
+      - UPGRADE_SERVICE_URL=${UPGRADE_SERVICE_URL:-http://localhost:5100}
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    networks:
+      - {{ network }}
+
+  cht-sentinel:
+    image: {{{ repo }}}/cht-sentinel:{{ tag }}
+    container_name: {{ sentinel_container_name }}
+    depends_on:
+      - haproxy
+    environment:
+      - COUCH_URL=http://${COUCHDB_USER:-admin}:${COUCHDB_PASSWORD}@haproxy:${HAPROXY_PORT:-5984}/{{ db_name }}
+      - API_HOST=cht-api
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    networks:
+      - {{ network }}
+
+  cht-nginx:
+    image: {{{ repo }}}/cht-nginx:{{ tag }}
+    container_name: {{ nginx_container_name }}
+    depends_on:
+      - cht-api
+      - haproxy
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - cht-ssl:/root/.acme.sh/
+    environment:
+      - "CERTIFICATE_MODE=${CERTIFICATE_MODE:-SELF_SIGNED}"
+      - "SSL_CERT_FILE_PATH=${SSL_CERT_FILE_PATH:-/etc/nginx/private/cert.pem}"
+      - "SSL_KEY_FILE_PATH=${SSL_KEY_FILE_PATH:-/etc/nginx/private/key.pem}"
+      - "COMMON_NAME=${COMMON_NAME:-test-nginx.dev.medicmobile.org}"
+      - "EMAIL=${EMAIL:-domains@medic.org}"
+      - "COUNTRY=${COUNTRY:-US}"
+      - "STATE=${STATE:-California}"
+      - "LOCALITY=${LOCALITY:-San_Francisco}"
+      - "ORGANISATION=${ORGANISATION:-medic}"
+      - "DEPARTMENT=${DEPARTMENT:-Information_Security}"
+    logging:
+      driver: "local"
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-20}"
+    networks:
+      - {{ network }}
+
+networks:
+  {{ network }}:
+    name: {{ network }}
+
+volumes:
+    cht-ssl:
+        name: cht-ssl

@@ -5,6 +5,7 @@ const utils = require('../../utils');
 const reportListID = '#reports-list';
 const reportBodyDetailsSelector = '#reports-content .report-body .details';
 const reportBodyDetails = () => $(reportBodyDetailsSelector);
+const reportTasks = () =>  $(`${reportBodyDetailsSelector} .scheduled-tasks`);
 const reportBody = '#reports-content .report-body';
 const selectedCaseId = () => $(`${reportBodyDetailsSelector} > ul > li > p > span > a`);
 const selectedCaseIdLabel = () => $(`${reportBodyDetailsSelector} ul > li > label > span`);
@@ -288,6 +289,10 @@ const getReportType = async () => {
   return (await reportType()).getText();
 };
 
+const openSelectedReport = async (listElement) => {
+  await listElement.click();
+};
+
 const resetFilter = async () => {
   await openSidebarFilter();
   await (await filterResetBtn()).waitForDisplayed();
@@ -363,6 +368,8 @@ module.exports = {
   getReportType,
   getListReportInfo,
   openReport,
+  reportTasks,
   editReport,
   fieldByIndex,
+  openSelectedReport,
 };

@@ -40,6 +40,11 @@ config/*/forms/contact/*.xlsx
 tests/integration/results/
 allure*
 tests/config-temp
-cht-docker-compose.log
 .eslintcache
 doc-conflicts/
+cht-docker-compose.log
+tests/cht-core-test.yml
+tests/cht-couchdb-test.yml
+tests/cht-couchdb-cluster-test.yml
+couchdb/srv*
+tests/scalability/jmeter/

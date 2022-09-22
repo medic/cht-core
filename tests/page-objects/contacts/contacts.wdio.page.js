@@ -61,7 +61,6 @@ const search = async (query) => {
   await (await searchBox()).setValue(query);
   await browser.keys('Enter');
   await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
-  await (await emptySelection()).waitForDisplayed();
 };
 
 const findRowByText = async (text) => {
@@ -219,15 +218,15 @@ const editDistrict = async (districtName, editedName) => {
 
 const createNewAction = async (formName) => {
   await (await newActionContactButton()).waitForDisplayed();
+  await (await newActionContactButton()).waitForClickable();
   await (await newActionContactButton()).click();
   await openForm(formName);
 };
 
 const openForm = async (name) => {
-  // this is annoying but there's a race condition where the click could end up on another form if we don't
-  // wait for the animation to finish
-  await (await $('.action-container .detail-actions #relevant-contacts-form')).waitForDisplayed();
-  await browser.pause(50);
+  const parent = await newActionContactButton().parentElement();
+  await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
+
   for (const form of await forms()) {
     if (await form.getText() === name) {
       await form.click();
@@ -293,7 +292,7 @@ module.exports = {
   openReport,
   getContactCardTitle,
   getContactInfoName,
-  getContactMedicID,  
+  getContactMedicID,
   actionResourceIcon,
   newPrimaryContactButton,
   newPrimaryContactName,
@@ -302,5 +301,5 @@ module.exports = {
   externalIdField,
   notes,
   contactCardIcon,
-  editContactButton,  
+  editContactButton,
 };

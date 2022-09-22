@@ -1,0 +1,18 @@
+[
+    {
+      "httpRequest": {
+        "path": "/"
+      },
+      "httpResponse": {
+        "body": "Hello from CHT api mock"
+      }
+    },
+    {
+      "httpRequest": {
+        "path": "/somepath"
+      },
+      "httpResponse": {
+        "body": "Test"
+      }
+    }
+  ]

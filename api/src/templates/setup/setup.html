@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <script>
+    const locale = "{{ locale }}";
+    const getListElem = () => document.getElementById('actions');
+    const hideList = () => {
+      const actionsElem = getListElem();
+      [...actionsElem.children].forEach(listItem => {
+        if (!listItem.classList.contains('hidden')) {
+          listItem.classList.add('hidden');
+        }
+        const loader = listItem.getElementsByClassName('loader')[0];
+        loader.classList.remove('loading');
+        loader.classList.remove('done');
+      });
+    };
+
+    const showList = (progress) => {
+      if (!progress.actions) {
+        // something went wrong
+        return;
+      }
+      Object.entries(progress.actions).forEach(([actionId, action]) => {
+        const actionElem = document.getElementById(`action_${actionId}`);
+        if (!actionElem) {
+          return;
+        }
+        const loader = actionElem.getElementsByClassName('loader')[0];
+
+        if (action.display) {
+          actionElem.classList.remove('hidden');
+        }
+        if (action.completed) {
+          loader.classList.add('done');
+        } else if (action.started) {
+          loader.classList.add('loading');
+        }
+      });
+    };
+
+    const getProgress = async () => {
+
+      const result = await fetch('/api/v1/startup-progress', { headers: { 'accept-language': locale } });
+      if (result.redirected) {
+        window.location.reload();
+        return;
+      }
+
+      if (!result.ok) {
+        console.error('Error when fetching progress', await result.text());
+        return;
+      }
+
+      const progress = await result.json();
+      if (progress.completed) {
+        window.location.reload();
+        return;
+      }
+      hideList();
+      showList(progress);
+    };
+
+    getProgress();
+    setInterval(getProgress, 1000);
+  </script>
+  <style>
+    html {
+      margin: 0;
+      padding: 0;
+    }
+    @font-face {
+      font-family: 'Noto';
+      src: url(/fonts/NotoSans-Regular.ttf) format("truetype");
+      font-weight: normal;
+    }
+    body {
+      background-color: #323232;
+      color: #FFFFFF;
+      font-size: 1em;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      overflow-y: hidden;
+      font-family: Noto, sans-serif;
+    }
+    .center {
+      box-sizing: border-box;
+      padding: 2em;
+      width: 450px;
+      min-width: 350px;
+      max-width: 100%;
+      margin: auto;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .loader {
+      margin: 10px;
+      position: relative;
+      border: 5px solid rgba(255, 255, 255, 0.5);
+      transform: translateZ(0);
+      animation: loader 1.1s infinite linear;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+    }
+
+    .loader.loading {
+      border-left-color: rgba(255, 255, 255, 0.8);
+    }
+
+    .loader.done {
+      border-color: #218E7F;
+      background: #218E7F;
+    }
+
+    @-webkit-keyframes loader {
+      0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+    @keyframes loader {
+      0% {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+      }
+      100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+      }
+    }
+
+    .action {
+      display: flex;
+      align-items: center;
+      justify-items: left;
+    }
+    .action.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="center">
+  <h1>{{ title }}</h1>
+  <ul id="actions">
+    <% Object.entries(actions).forEach(function(actionItem) { %>
+      <li class="action hidden" id="action_{{ actionItem[0] }}">
+        <div class="loader"></div>
+        <span>{{ actionItem[1].text }}</span>
+      </li>
+    <% }); %>
+  </ul>
+</div>
+</body>
+</html>

@@ -1,6 +1,5 @@
 const Factory = require('rosie').Factory;
 const fs = require('fs');
-const xmlPath = `${__dirname}/../../../forms/ngo-create.xml`;
 
 const custom_type_doctor = {
   id: 'doctor',
@@ -58,7 +57,7 @@ const translationKeys = (types) => {
   return typeTranslations;
 };
 
-const formsForTypes = (types, xml = xmlPath) => {
+const formsForTypes = (types, xml) => {
   return types.map((type) => {
     return {
       _id: `form:contact:${type.id}:create`,

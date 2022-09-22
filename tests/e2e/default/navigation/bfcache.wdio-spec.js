@@ -1,13 +1,13 @@
 const commonPage = require('../../../page-objects/common/common.wdio.page');
 const loginPage = require('../../../page-objects/login/login.wdio.page');
 const usersAdminPage = require('../../../page-objects/admin/user.wdio.page');
-const auth = require('../../../auth')();
+const constants = require('../../../constants');
 
 describe('bfcache', async () => {
   beforeEach(async () => {
     await loginPage.login({
-      username: auth.username,
-      password: auth.password,
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
       createUser: true,
     });
   });
@@ -33,7 +33,7 @@ describe('bfcache', async () => {
       await commonPage.goToMessages();
       const redirectToLoginBtn = await $('#session-expired .btn.submit.btn-primary');
       await redirectToLoginBtn.click();
-      expect(await browser.getUrl()).to.contain('/login?redirect=');
+      await browser.waitUntil(async () => (await browser.getUrl()).includes('/login?redirect='), { timeout: 1000 });
       await browser.back();
       await browser.waitUntil(async () => (await browser.getUrl()).includes('/login?redirect='));
     });
@@ -44,7 +44,7 @@ describe('bfcache', async () => {
       await usersAdminPage.goToAdminUser();
       await browser.deleteCookies('AuthSession');
       await usersAdminPage.goToAdminUpgrade();
-      expect(await browser.getUrl()).to.contain('/login?redirect=');
+      await browser.waitUntil(async () => (await browser.getUrl()).includes('/login?redirect='), { timeout: 1000 });
       await browser.back();
       await browser.waitUntil(async () => (await browser.getUrl()).includes('/login?redirect='));
     });

@@ -111,7 +111,7 @@ describe('purge', () => {
 
     await loginPage.login({ username: user.username, password: user.password, loadPage: true });
 
-    const purgingRequestsPromise = utils.collectLogs(utils.apiLogFile, /REQ.*purging/);
+    const purgingRequestsPromise = await utils.collectApiLogs(/REQ.*purging/);
     await commonElements.sync();
     const purgingRequests = parsePurgingLogEntries(await purgingRequestsPromise());
     expect(purgingRequests).to.deep.equal([
