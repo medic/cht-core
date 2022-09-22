@@ -15,8 +15,6 @@ const dobUnknownField = () => $('input[name="/replace_user/new_contact/ephemeral
 const yearsField = () => $('input[name="/replace_user/new_contact/ephemeral_dob/age_years"]');
 const femaleField = () => $('input[name="/replace_user/new_contact/sex"][value="female"]');
 
-const redirectToLoginBtn = () => $('#session-expired .btn.submit.btn-primary');
-
 const DISTRICT = {
   _id: 'fixture:district',
   type: 'district_hospital',
@@ -81,7 +79,7 @@ describe('user_replace transition', () => {
 
     await commonElements.openHamburgerMenu();
     await (await commonElements.syncButton()).click();
-    await (await redirectToLoginBtn()).click();
+    // await (await redirectToLoginBtn()).click();
     await (await loginPage.loginButton()).waitForDisplayed();
 
     await loginPage.cookieLogin();
@@ -94,8 +92,8 @@ describe('user_replace transition', () => {
     const newContact = await utils.getDoc(new_contact_uuid);
     expect(newContact.phone).to.equal(ORIGINAL_USER.phone);
 
-    await sentinelUtils.waitForSentinel(reportId);
-    const { transitions } = await sentinelUtils.getInfoDoc(reportId);
+    await sentinelUtils.waitForSentinel(original_contact_uuid);
+    const { transitions } = await sentinelUtils.getInfoDoc(original_contact_uuid);
 
     // Transition successful
     expect(transitions.user_replace.ok).to.be.true;
