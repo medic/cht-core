@@ -19,8 +19,8 @@ export class TransitionsService {
   }
 
   private readonly AVAILABLE_TRANSITIONS = [
-    { name: this.mutingTransition.name, transition: this.mutingTransition },
-    { name: this.userReplaceTransition.name, transition: this.userReplaceTransition },
+    { name: 'muting', transition: this.mutingTransition },
+    { name: 'user_replace', transition: this.userReplaceTransition },
   ];
 
   private loadedTransitions = [];

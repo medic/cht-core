@@ -7,6 +7,7 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ValidationService } from '@mm-services/validation.service';
+import { UserReplaceTransition } from '@mm-services/transitions/user-replace.transition';
 
 describe('Transitions Service', () => {
   let settingsService;
@@ -27,6 +28,7 @@ describe('Transitions Service', () => {
       providers: [
         { provide: SettingsService, useValue: settingsService },
         { provide: MutingTransition, useValue: mutingTransition },
+        { provide: UserReplaceTransition, useValue: { } },
         { provide: ValidationService, useValue: validationService },
       ]
     });
