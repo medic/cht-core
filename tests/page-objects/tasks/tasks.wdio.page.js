@@ -6,7 +6,7 @@ const noSelectedTaskSelector = '.empty-selection';
 
 const tasksList = () => $(taskListSelector);
 const getTaskById = (emissionId) => $(`${taskListSelector} li[data-record-id="${emissionId}"`);
-const getTasks = () => $$(`${taskListSelector} li`);
+const getTasks = () => $$(`${taskListSelector} li.content-row`);
 
 const getTaskInfo = async (taskElement) => {
   const contactName = await (await taskElement.$('h4 span')).getText();
