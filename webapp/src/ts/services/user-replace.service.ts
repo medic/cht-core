@@ -1,31 +1,47 @@
 import { Injectable } from '@angular/core';
-import { UserContactService } from '@mm-services/user-contact.service';
 import { DbService } from '@mm-services/db.service';
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserReplaceService {
   constructor(
-    private settingsService:SettingsService,
-    private userContactService: UserContactService,
+    private settingsService: SettingsService,
+    private userSettingsService: UserSettingsService,
     private dbService: DbService,
     private dbSyncService: DBSyncService,
     private sessionService: SessionService,
   ) {
-    this.settingsService.get().then(settings => {
-      if(settings?.transitions?.user_replace) {
-        this.dbSyncService.subscribe(this.syncStatusChanged(
-          this.userContactService,
-          this.dbService,
-          this.dbSyncService,
-          this.sessionService
-        ));
-      }
-    });
+    const that = this;
+    this.settingsService
+      .get()
+      .then((settings) => {
+        if (settings?.transitions?.user_replace) {
+          that.dbSyncService.subscribe(async(status) => {
+            return that.syncStatusChanged(status);
+          });
+        }
+      });
+  }
+
+  async getUserContact() {
+    const { contact_id }: any = await this.userSettingsService.get();
+    if (!contact_id) {
+      return;
+    }
+    return this.dbService
+      .get()
+      .get(contact_id)
+      .catch(err => {
+        if (err.status === 404) {
+          return;
+        }
+        throw err;
+      });
   }
 
   setReplaced(originalContact, newContact) {
@@ -59,37 +75,30 @@ export class UserReplaceService {
     contact.replaced.status = status;
   }
 
-  private syncStatusChanged(
-    userContactService: UserContactService,
-    dbService: DbService,
-    dbSyncService: DBSyncService,
-    sessionService: SessionService
-  ) {
-    return async({ to, from }) => {
-      if (to !== SyncStatus.Success || from !== SyncStatus.Success) {
-        return;
-      }
+  private async syncStatusChanged({ to, from }: any) {
+    if (to !== SyncStatus.Success || from !== SyncStatus.Success) {
+      return;
+    }
 
-      const contact = await userContactService.get();
-      if (!contact || !this.isReplaced(contact)) {
-        return;
-      }
+    const contact = await this.getUserContact();
+    if (!contact || !this.isReplaced(contact)) {
+      return;
+    }
 
-      const status = this.getStatus(contact);
-      if (status !== ReplaceStatus.PENDING) {
-        return;
-      }
-      // After a user is replaced, the original contact will have status of PENDING.
-      // Set to READY to trigger Sentinel to create a new user (now that all docs are synced).
-      this.setStatus(contact, ReplaceStatus.READY);
-      await dbService.get().put(contact);
-      // Make sure there is not an ongoing sync before pushing changes to contact
-      if(dbSyncService.isSyncInProgress()) {
-        await dbSyncService.sync();
-      }
-      await dbSyncService.sync(true);
-      await sessionService.logout();
-    };
+    const status = this.getStatus(contact);
+    if (status !== ReplaceStatus.PENDING) {
+      return;
+    }
+    // After a user is replaced, the original contact will have status of PENDING.
+    // Set to READY to trigger Sentinel to create a new user (now that all docs are synced).
+    this.setStatus(contact, ReplaceStatus.READY);
+    await this.dbService.get().put(contact);
+    // Make sure there is not an ongoing sync before pushing changes to contact
+    if (this.dbSyncService.isSyncInProgress()) {
+      await this.dbSyncService.sync();
+    }
+    await this.dbSyncService.sync(true);
+    await this.sessionService.logout();
   }
 }
 

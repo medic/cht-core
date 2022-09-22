@@ -2,8 +2,6 @@ import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
 import { Transition } from '@mm-services/transitions/transition';
-import { UserContactService } from '@mm-services/user-contact.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UserReplaceService } from '@mm-services/user-replace.service';
 
 @Injectable({
@@ -11,9 +9,7 @@ import { UserReplaceService } from '@mm-services/user-replace.service';
 })
 export class UserReplaceTransition extends Transition {
   constructor(
-    private dbService:DbService,
-    private userSettingsService:UserSettingsService,
-    private userContactService: UserContactService,
+    private dbService: DbService,
     private userReplaceService: UserReplaceService,
   ) {
     super();
@@ -21,7 +17,8 @@ export class UserReplaceTransition extends Transition {
 
   readonly name = 'user_replace';
 
-  init() { //settings
+  init() {
+    // TODO Update this to load configured forms based on passed in settings
     return true;
   }
 
@@ -38,16 +35,16 @@ export class UserReplaceTransition extends Transition {
    * @returns {Promise<Array<Doc>>} - updated docs (may include additional docs)
    */
   async run(docs) {
-    const originalContact = await this.userContactService.get();
+    const originalContact = await this.userReplaceService.getUserContact();
     if (!originalContact) {
       return docs;
     }
 
     const userReplaceDoc = docs.find(doc => doc.form === 'replace_user');
-    if(userReplaceDoc) {
+    if (userReplaceDoc) {
       return this.replaceUser(docs, userReplaceDoc, originalContact);
     }
-    if(this.userReplaceService.isReplaced(originalContact)) {
+    if (this.userReplaceService.isReplaced(originalContact)) {
       this.reparentReports(docs, originalContact);
     }
 
@@ -60,21 +57,35 @@ export class UserReplaceTransition extends Transition {
       throw new Error('The only the contact associated with the currently logged in user can be replaced.');
     }
     const newContact = await this.getNewContact(docs, new_contact_uuid);
+    if (!newContact) {
+      throw new Error(`The new contact could not be found [${new_contact_uuid}].`);
+    }
 
     this.userReplaceService.setReplaced(originalContact, newContact);
     return [...docs, originalContact];
   }
 
-  private async getNewContact(docs, newContactId:string) {
+  private async getNewContact(docs, newContactId: string) {
     const newContact = docs.find(doc => doc._id === newContactId);
     if (newContact) {
       return newContact;
     }
-    return this.dbService.get().get(newContactId);
+    return this.dbService
+      .get()
+      .get(newContactId)
+      .catch(err => {
+        if (err.status === 404) {
+          return;
+        }
+        throw err;
+      });
   }
 
   private reparentReports(docs, originalContact) {
     const replacedById = this.userReplaceService.getReplacedBy(originalContact);
+    if(!replacedById) {
+      return;
+    }
     docs
       .filter(doc => doc.type === 'data_record')
       .filter(doc => doc.contact?._id === originalContact._id)
