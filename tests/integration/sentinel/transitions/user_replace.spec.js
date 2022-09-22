@@ -183,7 +183,7 @@ describe('user_replace', () => {
       /Configuration error\. Token login must be enabled to use the user_replace transition\./;
     const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
 
-    const collectLogs = utils.collectSentinelLogs(tokenLoginErrorPattern, transitionsDisabledPattern);
+    const collectLogs = await utils.collectSentinelLogs(tokenLoginErrorPattern, transitionsDisabledPattern);
     await utils.updateSettings(getSettings({ token_login: { enabled: false } }), 'sentinel');
     const logs = await collectLogs();
     expect(logs.find(log => log.match(tokenLoginErrorPattern))).to.exist;
@@ -192,7 +192,7 @@ describe('user_replace', () => {
 
   it('should not replace user when the new contact does not exist', async () => {
     const missingPersonPattern = /Failed to find person/;
-    const collectLogs = utils.collectSentinelLogs(missingPersonPattern);
+    const collectLogs = await utils.collectSentinelLogs(missingPersonPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
@@ -207,7 +207,7 @@ describe('user_replace', () => {
 
   it('should not replace user when the original user does not exist', async () => {
     const missingUserPattern = /Failed to find user setting with contact_id \[original_person]\./;
-    const collectLogs = utils.collectSentinelLogs(missingUserPattern);
+    const collectLogs = await utils.collectSentinelLogs(missingUserPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.saveDocs([
       ORIGINAL_PERSON,
@@ -226,7 +226,7 @@ describe('user_replace', () => {
     const missingPhonePattern = /Missing required fields: phone/;
     const newPerson = Object.assign({}, NEW_PERSON, { phone: undefined });
 
-    const collectLogs = utils.collectSentinelLogs(missingPhonePattern);
+    const collectLogs = await utils.collectSentinelLogs(missingPhonePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
@@ -246,7 +246,7 @@ describe('user_replace', () => {
     const invalidPhonePattern = /A valid phone number is required for SMS login/;
     const newPerson = Object.assign({}, NEW_PERSON, { phone: 12345 });
 
-    const collectLogs = utils.collectSentinelLogs(invalidPhonePattern);
+    const collectLogs = await utils.collectSentinelLogs(invalidPhonePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
@@ -266,7 +266,7 @@ describe('user_replace', () => {
     const missingNamePattern = /Replacement contact \[new_person] must have a name\./;
     const newPerson = Object.assign({}, NEW_PERSON, { name: undefined });
 
-    const collectLogs = utils.collectSentinelLogs(missingNamePattern);
+    const collectLogs = await utils.collectSentinelLogs(missingNamePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
@@ -286,7 +286,7 @@ describe('user_replace', () => {
     const missingParentPattern = /Contact \[new_person] does not have a parent\./;
     const newPerson = Object.assign({}, NEW_PERSON, { parent: undefined });
 
-    const collectLogs = utils.collectSentinelLogs(missingParentPattern);
+    const collectLogs = await utils.collectSentinelLogs(missingParentPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
@@ -307,7 +307,7 @@ describe('user_replace', () => {
     const differentClinic = { _id: 'different_clinic', type: 'clinic', };
     const newPerson = Object.assign({}, NEW_PERSON, { parent: { _id: differentClinic._id } });
 
-    const collectLogs = utils.collectSentinelLogs(sameParentPattern);
+    const collectLogs = await utils.collectSentinelLogs(sameParentPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
@@ -329,7 +329,7 @@ describe('user_replace', () => {
       fields: { original_contact_uuid: undefined, new_contact_uuid: NEW_PERSON._id },
     });
 
-    const collectLogs = utils.collectSentinelLogs(missingIdPattern);
+    const collectLogs = await utils.collectSentinelLogs(missingIdPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
@@ -351,7 +351,7 @@ describe('user_replace', () => {
       fields: { original_contact_uuid: ORIGINAL_PERSON._id, new_contact_uuid: undefined },
     });
 
-    const collectLogs = utils.collectSentinelLogs(missingIdPattern);
+    const collectLogs = await utils.collectSentinelLogs(missingIdPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
