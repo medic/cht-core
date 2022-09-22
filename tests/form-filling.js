@@ -1,5 +1,5 @@
 const helper = require('./helper');
-const genericFormPo = require('./page-objects/forms/generic-form.po');
+const genericFormPo = require('./page-objects/protractor/enketo/generic-form.po');
 const answeredQuestions = [];
 const flatten = require('flat');
 

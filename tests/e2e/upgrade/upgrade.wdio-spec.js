@@ -1,7 +1,7 @@
 const utils = require('../../utils');
 
 const { BRANCH } = process.env;
-const loginPage = require('../../page-objects/login/login.wdio.page');
+const loginPage = require('../../page-objects/default/login/login.wdio.page');
 const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
 const constants = require('../../constants');
 const version = require('../../../scripts/build/versions');

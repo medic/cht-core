@@ -1,8 +1,8 @@
 const utils = require('../../../utils');
 const userFactory = require('../../../factories/cht/users/users');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const adminPage = require('../../../page-objects/admin/admin.wdio.page');
-const common = require('../../../page-objects/common/common.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const adminPage = require('../../../page-objects/default/admin/admin.wdio.page');
+const common = require('../../../page-objects/default/common/common.wdio.page');
 const placeFactory = require('../../../factories/cht/contacts/place');
 
 const offlineUser = userFactory.build({ username: 'offline-user-admin', isOffline: true });

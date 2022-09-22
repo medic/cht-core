@@ -1,8 +1,8 @@
 const utils = require('../../../utils');
 const helper = require('../../../helper');
-const commonElements = require('../../../page-objects/common/common.po.js');
-const userSettingsElements = require('../../../page-objects/user-settings/user-settings.po');
-const contactElements = require('../../../page-objects/contacts/contacts.po');
+const commonElements = require('../../../page-objects/protractor/common/common.po.js');
+const userSettingsElements = require('../../../page-objects/protractor/users/user-settings.po');
+const contactElements = require('../../../page-objects/protractor/contacts/contacts.po');
 
 describe('Incorrect locale', () => {
   const createLanguage = () =>  utils.addTranslations('hil', {

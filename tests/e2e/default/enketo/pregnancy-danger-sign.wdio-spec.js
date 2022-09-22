@@ -1,12 +1,12 @@
 const fs = require('fs');
 
 const utils = require('../../../utils');
-const userData = require('../../../page-objects/forms/data/user.po.data');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
-const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
-const pregnancyDangerSignForm = require('../../../page-objects/forms/pregnancy-danger-sign-form.wdio.page');
+const userData = require('../../../page-objects/default/users/user.data');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
+const pregnancyDangerSignForm = require('../../../page-objects/default/enketo/pregnancy-danger-sign.wdio.page');
 
 const xml = fs.readFileSync(`${__dirname}/forms/pregnancy-danger-sign-follow-up.xml`, 'utf8');
 const formDocument = {

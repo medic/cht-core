@@ -1,13 +1,13 @@
 const _ = require('lodash');
 const moment = require('moment');
 
-const deliveryReport = require('../../../page-objects/forms/default-delivery-report.wdio.page');
-const genericForm = require('../../../page-objects/forms/generic-form.wdio.page');
-const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
-const common = require('../../../page-objects/common/common.wdio.page');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
+const deliveryReport = require('../../../page-objects/default/enketo/default-delivery-report.wdio.page');
+const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
+const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const common = require('../../../page-objects/default/common/common.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const utils = require('../../../utils');
-const userData = require('../../../page-objects/forms/data/user.po.data');
+const userData = require('../../../page-objects/default/users/user.data');
 const sentinelUtils = require('../../../utils/sentinel');
 
 describe('Submit Default Delivery Report', () => {

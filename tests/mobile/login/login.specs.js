@@ -1,6 +1,6 @@
 const utils = require('../../utils');
-const commonElements = require('../../page-objects/common/common.po.js');
-const loginPage = require('../../page-objects/login/login.po.js');
+const commonElements = require('../../page-objects/protractor/common/common.po.js');
+const loginPage = require('../../page-objects/protractor/login/login.po.js');
 const constants = require('../../constants');
 let branding;
 

@@ -1,11 +1,11 @@
 const { expect } = require('chai');
 
 const utils = require('../../../utils');
-const homeVisit = require('../../../page-objects/forms/home-visit.po');
-const unmutePerson = require('../../../page-objects/forms/unmute-person.po');
-const contactsObjects = require('../../../page-objects/contacts/contacts.po');
-const genericContactForm = require('../../../page-objects/forms/generic-contact-form.po');
-const commonElements = require('../../../page-objects/common/common.po');
+const homeVisit = require('../../../page-objects/protractor/enketo/home-visit.po');
+const unmutePerson = require('../../../page-objects/protractor/enketo/unmute-person.po');
+const contactsObjects = require('../../../page-objects/protractor/contacts/contacts.po');
+const genericContactForm = require('../../../page-objects/protractor/enketo/generic-contact-form.po');
+const commonElements = require('../../../page-objects/protractor/common/common.po');
 
 const clinic = {
   _id: 'clinic',

@@ -1,9 +1,9 @@
 const helper = require('../../../helper');
-const deliveryReport = require('../../../page-objects/forms/delivery-report.po');
-const genericForm = require('../../../page-objects/forms/generic-form.po');
-const common = require('../../../page-objects/common/common.po');
+const deliveryReport = require('../../../page-objects/protractor/enketo/delivery-report.po');
+const genericForm = require('../../../page-objects/protractor/enketo/generic-form.po');
+const common = require('../../../page-objects/protractor/common/common.po');
 const utils = require('../../../utils');
-const userData = require('../../../page-objects/forms/data/user.po.data');
+const userData = require('../../../page-objects/default/users/user.data');
 
 describe('Submit Delivery Report', () => {
   const { userContactDoc, docs } = userData;

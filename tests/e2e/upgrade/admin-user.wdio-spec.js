@@ -1,5 +1,5 @@
 const utils = require('../../utils');
-const loginPage = require('../../page-objects/login/login.wdio.page');
+const loginPage = require('../../page-objects/default/login/login.wdio.page');
 
 describe('admin users', () => {
   it('should allow to update the admin password and login successfully', async () => {

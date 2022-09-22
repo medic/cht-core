@@ -4,10 +4,10 @@ const { devanagari } = require('eurodigit/src/to_non_euro');
 const moment = require('moment');
 
 const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/reports/reports.wdio.page');
-const contactsPage = require('../../../page-objects/contacts/contacts.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const chtConfUtils = require('../../../cht-conf-utils');
 const gatewayApiUtils = require('../../../gateway-api.utils');
 

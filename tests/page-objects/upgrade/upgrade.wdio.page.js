@@ -1,4 +1,4 @@
-const common = require('../common/common.wdio.page');
+const common = require('../default/common/common.wdio.page');
 const utils = require('../../utils');
 
 const cancelUpgradeButton = () => $('button*=Cancel');
