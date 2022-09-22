@@ -18,20 +18,23 @@ describe('New pregnancy', () => {
   const pregnantWoman1 = 'Woman1';
   const pregnantWoman2 = 'Woman2';
 
-  before(async () => { 
+  before(async () => {
     await utils.saveDocs(places);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
+  });
+
+  it('should create required persons', async () => {
     await commonPage.goToPeople(healthCenter._id);
-    
+
     // Create Woman1 - webapp
-    await contactPage.contactPageDefault.addPerson(pregnantWoman1, 
+    await contactPage.contactPageDefault.addPerson(pregnantWoman1,
       {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
     await commonPage.waitForPageLoaded();
 
     // Create Woman2 - SMS N form
     await commonPage.goToPeople(healthCenter._id);
-    await contactPage.contactPageDefault.addPerson(pregnantWoman2, 
+    await contactPage.contactPageDefault.addPerson(pregnantWoman2,
       {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
     await commonPage.waitForPageLoaded();
   });
@@ -42,12 +45,12 @@ describe('New pregnancy', () => {
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
     const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
     await contactPage.contactPageDefault.createNewAction('New Pregnancy');
-    
+
     await pregnancyForm.selectKnowLMP();
     await pregnancyForm.selectAproxLMP(pregnancyForm.APROX_LMP.b7To8Months);
-    
+
     expect(await (await pregnancyForm.getEstDeliveryDate()).isDisplayed()).to.be.true;
- 
+
     await genericForm.nextPage();
     const riskFactors = await pregnancyForm.selectAllRiskFactors();
     await genericForm.nextPage();
@@ -65,11 +68,11 @@ describe('New pregnancy', () => {
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
-    
+
     expect(await (await contactPage.pregnancyCard()).isDisplayed()).to.be.true;
     expect(await contactPage.getPregnancyCardRisk()).to.equal('High risk');
 
-    // Verify the created report 
+    // Verify the created report
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
@@ -86,7 +89,7 @@ describe('New pregnancy', () => {
   it('Submit new pregnancy - Woman2 - SMS P form', async () => {
     await commonPage.goToPeople();
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman2);
-    const medicIDW2 = await contactPage.contactPageDefault.getContactMedicID();    
+    const medicIDW2 = await contactPage.contactPageDefault.getContactMedicID();
 
     const messageValue = `P ${medicIDW2} 27`;
     await gatewayApiUtils.api.postMessage({
@@ -98,9 +101,9 @@ describe('New pregnancy', () => {
     await browser.refresh();
     await commonPage.waitForPageLoaded();
     expect(await (await contactPage.pregnancyCard()).isDisplayed()).to.be.true;
-    expect(await contactPage.getPregnancyCardRisk()).to.equal('Normal'); 
-    
-    // Verify the created report 
+    expect(await contactPage.getPregnancyCardRisk()).to.equal('Normal');
+
+    // Verify the created report
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
@@ -134,7 +137,7 @@ describe('New pregnancy', () => {
       { title: 'Active SAM cases', count: '0' },
       { title: 'Active OTP cases', count: '0' },
       { title: 'Active SFP cases', count: '0' }
-    ]);  
+    ]);
   });
 
 });
