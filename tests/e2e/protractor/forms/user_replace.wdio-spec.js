@@ -1,4 +1,5 @@
 const { expect } = require('chai');
+const fs = require('fs');
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/login/login.wdio.page');
 const commonPage = require('../../page-objects/common/common.wdio.page');
@@ -39,9 +40,22 @@ const settings = {
   app_url: `http://${constants.API_HOST}:${constants.API_PORT}`
 };
 
+const BASIC_FORM_DOC = {
+  _id: 'form:basic_form',
+  internalId: 'basic_form',
+  title: 'Form basic_form',
+  type: 'form',
+  _attachments: {
+    xml: {
+      content_type: 'application/octet-stream',
+      data: Buffer.from(fs.readFileSync(`${__dirname}/../../forms/basic_form.xml`, 'utf8')).toString('base64')
+    }
+  }
+};
+
 describe('user_replace transition', () => {
-  before(async () => {
-    await utils.saveDoc(DISTRICT);
+  beforeEach(async () => {
+    await utils.saveDocs([DISTRICT, BASIC_FORM_DOC]);
   });
 
   afterEach(async () => {
@@ -74,12 +88,22 @@ describe('user_replace transition', () => {
     await commonPage.goToReports();
     await (await reportsPage.firstReport()).click();
     const reportId = await reportsPage.getCurrentReportId();
+    // Submit several forms to be re-parented
+    await (await reportsPage.submitReportButton()).click();
+    await (await reportsPage.formActionsLink('basic_form')).click();
+    await (await genericForm.submitButton()).click();
+    await commonPage.waitForPageLoaded();
+    const basicReportId0 = await reportsPage.getCurrentReportId();
+    await (await reportsPage.submitReportButton()).click();
+    await (await reportsPage.formActionsLink('basic_form')).click();
+    await (await genericForm.submitButton()).click();
+    await commonPage.waitForPageLoaded();
+    const basicReportId1 = await reportsPage.getCurrentReportId();
 
     await browser.throttle('online');
 
     await commonElements.openHamburgerMenu();
     await (await commonElements.syncButton()).click();
-    // await (await redirectToLoginBtn()).click();
     await (await loginPage.loginButton()).waitForDisplayed();
 
     await loginPage.cookieLogin();
@@ -88,6 +112,9 @@ describe('user_replace transition', () => {
     const { original_contact_uuid, new_contact_uuid } = replaceUserReport.fields;
     expect(new_contact_uuid).to.not.be.empty;
     expect(original_contact_uuid).to.equal(ORIGINAL_USER.contact._id);
+    // Basic form reports re-parented
+    const basicReports = await utils.getDocs([basicReportId0, basicReportId1]);
+    basicReports.forEach((report) => expect(report.contact._id).to.equal(new_contact_uuid));
     // New contact created
     const newContact = await utils.getDoc(new_contact_uuid);
     expect(newContact.phone).to.equal(ORIGINAL_USER.phone);
