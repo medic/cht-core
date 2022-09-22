@@ -125,6 +125,7 @@ const addPlace = async (type, placeName, contactName) => {
 
 const addPerson = async (name, params = {}) => {
   const { dob = '2000-01-01', phone } = params;
+  await (await actionResourceIcon('person')).waitForDisplayed();
   await (await actionResourceIcon('person')).click();
   await (await personName()).addValue(name);
   await (await dateOfBirthField()).addValue(dob);
