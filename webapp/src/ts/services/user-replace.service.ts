@@ -33,9 +33,9 @@ export class UserReplaceService {
       throw new Error('The original contact could not be found when replacing the user.');
     }
     if (!newContact) {
-      throw new Error('The new contact could not be found when replacing a user.');
+      throw new Error('The new contact could not be found when replacing the user.');
     }
-    if (originalContact.parent._id !== newContact.parent._id) {
+    if (!originalContact.parent?._id || originalContact.parent._id !== newContact.parent._id) {
       throw new Error('The new contact must have the same parent as the original contact when replacing a user.');
     }
     // TODO Currently the transitions are not run for online users so this is not used.
@@ -48,7 +48,7 @@ export class UserReplaceService {
   }
 
   getReplacedBy(contact): string {
-    return contact.replaced.by;
+    return contact.replaced?.by;
   }
 
   private getStatus(contact): ReplaceStatus {
@@ -65,8 +65,7 @@ export class UserReplaceService {
     dbSyncService: DBSyncService,
     sessionService: SessionService
   ) {
-    return async({ state, to, from }) => {
-      console.log(from + state);
+    return async({ to, from }) => {
       if (to !== SyncStatus.Success || from !== SyncStatus.Success) {
         return;
       }
