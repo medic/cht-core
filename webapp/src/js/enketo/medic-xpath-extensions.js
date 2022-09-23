@@ -153,9 +153,6 @@ module.exports = {
   },
   func: {
     'add-date': addDate,
-    today: function() {
-      return XPR.date(new Date());
-    },
     'z-score': function() {
       const args = Array.from(arguments).map(function(arg) {
         return getValue(arg);
