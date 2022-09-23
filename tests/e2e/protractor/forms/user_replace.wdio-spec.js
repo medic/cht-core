@@ -91,11 +91,13 @@ describe('user_replace transition', () => {
     // Submit several forms to be re-parented
     await (await reportsPage.submitReportButton()).click();
     await (await reportsPage.formActionsLink('basic_form')).click();
+    await (await genericForm.submitButton()).waitForDisplayed();
     await (await genericForm.submitButton()).click();
     await commonPage.waitForPageLoaded();
     const basicReportId0 = await reportsPage.getCurrentReportId();
     await (await reportsPage.submitReportButton()).click();
     await (await reportsPage.formActionsLink('basic_form')).click();
+    await (await genericForm.submitButton()).waitForDisplayed();
     await (await genericForm.submitButton()).click();
     await commonPage.waitForPageLoaded();
     const basicReportId1 = await reportsPage.getCurrentReportId();
