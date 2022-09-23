@@ -189,7 +189,7 @@ and floor(decimal-date-time(today()) - decimal-date-time(.)) &lt;= 365"/>
       <bind nodeset="/death_report/death_details/death_information" type="string"/>
       <bind nodeset="/death_report/group_review/submit" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_summary_details" readonly="true()" type="string"/>
-      <bind nodeset="/death_report/group_review/c_patient_age" type="string" calculate="if(../../patient_age_in_days &lt; 31,
+      <bind nodeset="/death_report/group_review/c_patient_age" type="string" calculate="if(../../patient_age_in_days &lt; 31, 
 concat(../../patient_age_in_days, ' days old'),
 if(../../patient_age_in_months &lt; 12, 
 concat(../../patient_age_in_months, ' months old'), 
