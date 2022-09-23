@@ -182,14 +182,14 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
       <bind nodeset="/death_report/patient_name" type="string" calculate="../inputs/contact/name"/>
       <bind nodeset="/death_report/patient_short_name" type="string" calculate="../inputs/contact/short_name"/>
       <bind nodeset="/death_report/patient_display_name" type="string" calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))"/>
-      <bind nodeset="/death_report/death_details/date_of_death" type="date" jr:constraintMsg="jr:itext('/death_report/death_details/date_of_death:jr:constraintMsg')" constraint="(decimal-date-time(.) &lt;= decimal-date-time(today()))
-and floor(decimal-date-time(today()) - decimal-date-time(.)) &lt;= 365" required="true()"/>
+      <bind nodeset="/death_report/death_details/date_of_death" type="date" jr:constraintMsg="jr:itext('/death_report/death_details/date_of_death:jr:constraintMsg')" required="true()" constraint="(decimal-date-time(.) &lt;= decimal-date-time(today()))
+and floor(decimal-date-time(today()) - decimal-date-time(.)) &lt;= 365"/>
       <bind nodeset="/death_report/death_details/place_of_death" type="select1" required="true()"/>
-      <bind nodeset="/death_report/death_details/place_of_death_other" type="string" relevant="selected(../place_of_death, 'other')" required="true()"/>
+      <bind nodeset="/death_report/death_details/place_of_death_other" type="string" required="true()" relevant="selected(../place_of_death, 'other')"/>
       <bind nodeset="/death_report/death_details/death_information" type="string"/>
       <bind nodeset="/death_report/group_review/submit" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_summary_details" readonly="true()" type="string"/>
-      <bind nodeset="/death_report/group_review/c_patient_age" type="string" calculate="if(../../patient_age_in_days &lt; 31, 
+      <bind nodeset="/death_report/group_review/c_patient_age" type="string" calculate="if(../../patient_age_in_days &lt; 31,
 concat(../../patient_age_in_days, ' days old'),
 if(../../patient_age_in_months &lt; 12, 
 concat(../../patient_age_in_months, ' months old'), 

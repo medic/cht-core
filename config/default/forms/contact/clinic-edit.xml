@@ -270,7 +270,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="contact:clinic:edit" prefix="J1!contact:clinic:edit!" delimiter="#" version="2019-10-09_12-30">
+        <data id="contact:clinic:edit" prefix="J1!contact:clinic:edit!" delimiter="#" version="2022-08-19 14-44">
           <inputs>
             <meta>
               <location>
@@ -329,9 +329,9 @@
       <bind nodeset="/data/clinic/contact/name" type="string"/>
       <bind nodeset="/data/clinic/contact/contact_name" type="string" calculate="../name"/>
       <bind nodeset="/data/clinic/contact/_id" type="db:person"/>
-      <bind nodeset="/data/clinic/is_name_generated" type="select1" required="true()" readonly="boolean( /data/clinic/contact/_id )" relevant="not( /data/clinic/contact/_id ) or selected( . , 'true') or boolean( /data/clinic/contact/_id )" calculate="if(  /data/clinic/generated_name  = ../name, 'true', 'false')"/>
+      <bind nodeset="/data/clinic/is_name_generated" type="select1" calculate="if(  /data/clinic/generated_name  = ../name, 'true', 'false')" relevant="not( /data/clinic/contact/_id ) or selected( . , 'true') or boolean( /data/clinic/contact/_id )" readonly="boolean( /data/clinic/contact/_id )" required="true()"/>
       <bind nodeset="/data/clinic/generated_name" type="string" calculate=" /data/init/generated_name_translation "/>
-      <bind nodeset="/data/clinic/name" type="string" required="true()" relevant="boolean( /data/clinic/contact/_id ) or not( /data/clinic/contact/_id ) or not(selected( /data/clinic/is_name_generated , 'true')) or not(selected( /data/clinic/is_name_generated , 'yes'))" calculate="if( ( selected( /data/clinic/is_name_generated , 'true') or selected( /data/clinic/is_name_generated , 'yes') ),  /data/clinic/generated_name , .)"/>
+      <bind nodeset="/data/clinic/name" type="string" calculate="if( ( selected( /data/clinic/is_name_generated , 'true') or selected( /data/clinic/is_name_generated , 'yes') ),  /data/clinic/generated_name , .)" relevant="boolean( /data/clinic/contact/_id ) or not( /data/clinic/contact/_id ) or not(selected( /data/clinic/is_name_generated , 'true')) or not(selected( /data/clinic/is_name_generated , 'yes'))" required="true()"/>
       <bind nodeset="/data/clinic/external_id" type="string"/>
       <bind nodeset="/data/clinic/notes" type="string"/>
       <bind nodeset="/data/clinic/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
@@ -364,7 +364,7 @@
           <hint ref="jr:itext('/data/clinic/contact/_id:hint')"/>
         </input>
       </group>
-      <select1 appearance="horizontal-compact" ref="/data/clinic/is_name_generated">
+      <select1 appearance="columns-pack" ref="/data/clinic/is_name_generated">
         <label ref="jr:itext('/data/clinic/is_name_generated:label')"/>
         <item>
           <label ref="jr:itext('/data/clinic/is_name_generated/true:label')"/>

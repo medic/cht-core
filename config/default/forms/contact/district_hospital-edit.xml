@@ -270,7 +270,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="contact:district_hospital:edit" prefix="J1!contact:district_hospital:edit!" delimiter="#" version="2019-10-09_12-30">
+        <data id="contact:district_hospital:edit" prefix="J1!contact:district_hospital:edit!" delimiter="#" version="2022-08-19 14-44">
           <inputs>
             <meta>
               <location>
@@ -329,9 +329,9 @@
       <bind nodeset="/data/district_hospital/contact/name" type="string"/>
       <bind nodeset="/data/district_hospital/contact/contact_name" type="string" calculate="../name"/>
       <bind nodeset="/data/district_hospital/contact/_id" type="db:person"/>
-      <bind nodeset="/data/district_hospital/is_name_generated" type="select1" readonly="boolean( /data/district_hospital/contact/_id )" required="true()" relevant="not( /data/district_hospital/contact/_id ) or selected( . , 'true') or boolean( /data/district_hospital/contact/_id )" calculate="if(  /data/district_hospital/generated_name  = ../name, 'true', 'false')"/>
+      <bind nodeset="/data/district_hospital/is_name_generated" type="select1" readonly="boolean( /data/district_hospital/contact/_id )" calculate="if(  /data/district_hospital/generated_name  = ../name, 'true', 'false')" required="true()" relevant="not( /data/district_hospital/contact/_id ) or selected( . , 'true') or boolean( /data/district_hospital/contact/_id )"/>
       <bind nodeset="/data/district_hospital/generated_name" type="string" calculate=" /data/init/generated_name_translation "/>
-      <bind nodeset="/data/district_hospital/name" type="string" required="true()" relevant="boolean( /data/district_hospital/contact/_id ) or not( /data/district_hospital/contact/_id ) or not(selected( /data/district_hospital/is_name_generated , 'true')) or not(selected( /data/district_hospital/is_name_generated , 'yes'))" calculate="if( ( selected( /data/district_hospital/is_name_generated , 'true') or selected( /data/district_hospital/is_name_generated , 'yes') ),  /data/district_hospital/generated_name , .)"/>
+      <bind nodeset="/data/district_hospital/name" type="string" calculate="if( ( selected( /data/district_hospital/is_name_generated , 'true') or selected( /data/district_hospital/is_name_generated , 'yes') ),  /data/district_hospital/generated_name , .)" required="true()" relevant="boolean( /data/district_hospital/contact/_id ) or not( /data/district_hospital/contact/_id ) or not(selected( /data/district_hospital/is_name_generated , 'true')) or not(selected( /data/district_hospital/is_name_generated , 'yes'))"/>
       <bind nodeset="/data/district_hospital/external_id" type="string"/>
       <bind nodeset="/data/district_hospital/notes" type="string"/>
       <bind nodeset="/data/district_hospital/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
@@ -364,7 +364,7 @@
           <hint ref="jr:itext('/data/district_hospital/contact/_id:hint')"/>
         </input>
       </group>
-      <select1 appearance="horizontal-compact" ref="/data/district_hospital/is_name_generated">
+      <select1 appearance="columns-pack" ref="/data/district_hospital/is_name_generated">
         <label ref="jr:itext('/data/district_hospital/is_name_generated:label')"/>
         <item>
           <label ref="jr:itext('/data/district_hospital/is_name_generated/true:label')"/>
