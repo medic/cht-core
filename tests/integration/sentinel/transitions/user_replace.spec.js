@@ -1,5 +1,5 @@
 const utils = require('../../../utils');
-const sentinelUtils = require('../utils');
+const sentinelUtils = require('../../../utils/sentinel');
 const { expect } = require('chai');
 
 const CLINIC = {
