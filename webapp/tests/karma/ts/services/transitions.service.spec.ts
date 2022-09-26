@@ -18,6 +18,7 @@ describe('Transitions Service', () => {
   beforeEach(() => {
     settingsService = { get: sinon.stub() };
     mutingTransition = {
+      name: 'muting',
       init: sinon.stub(),
       filter: sinon.stub(),
       run: sinon.stub(),
@@ -28,7 +29,7 @@ describe('Transitions Service', () => {
       providers: [
         { provide: SettingsService, useValue: settingsService },
         { provide: MutingTransition, useValue: mutingTransition },
-        { provide: UserReplaceTransition, useValue: { } },
+        { provide: UserReplaceTransition, useValue: { name: 'user_replace' } },
         { provide: ValidationService, useValue: validationService },
       ]
     });

@@ -59,8 +59,8 @@ export class UserReplaceService {
     originalContact.replaced = { status, by: newContact._id };
   }
 
-  isReplaced(contact): boolean {
-    return contact.replaced;
+  isReplaced(contact) {
+    return !!contact.replaced;
   }
 
   getReplacedBy(contact): string {

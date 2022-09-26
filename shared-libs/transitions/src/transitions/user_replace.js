@@ -7,6 +7,13 @@ const { users } = require('@medic/user-management')(config, db);
 
 const NAME = 'user_replace';
 
+const ReplaceStatus = {
+  // PENDING - Set by webapp while waiting for sync to complete
+  READY: 'READY', // Ready to be replaced
+  COMPLETE: 'COMPLETE', // The new user has been created
+  ERROR: 'ERROR', // The new user could not be created
+};
+
 const getNewContact = (contactId) => {
   if (!contactId) {
     return Promise.reject(new Error('No id was provided for the new replacement contact.'));
@@ -76,7 +83,7 @@ const replaceUser = (originalContact) => {
       return createNewUser(originalUserSettings, newContact)
         .then(() => users.deleteUser(originalUserSettings.name));
     })
-    .then(() => originalContact.replaced.status = 'COMPLETE');
+    .then(() => originalContact.replaced.status = ReplaceStatus.COMPLETE);
 };
 
 /**
@@ -96,13 +103,13 @@ module.exports = {
       return false;
     }
 
-    return doc.replaced && doc.replaced.status === 'READY';
+    return doc.replaced && doc.replaced.status === ReplaceStatus.READY;
   },
   onMatch: change => {
     return replaceUser(change.doc)
       .then(() => true)
       .catch(err => {
-        change.doc.replaced.status = 'ERROR';
+        change.doc.replaced.status = ReplaceStatus.ERROR;
         err.changed = true;
         throw err;
       });

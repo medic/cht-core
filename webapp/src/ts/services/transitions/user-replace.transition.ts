@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
-import { Transition } from '@mm-services/transitions/transition';
+import { Transition, Doc } from '@mm-services/transitions/transition';
 import { UserReplaceService } from '@mm-services/user-replace.service';
 
 @Injectable({
@@ -26,32 +26,36 @@ export class UserReplaceTransition extends Transition {
    * @param {Array<Doc>} docs - docs to be saved
    * @return {Boolean} - whether any of the docs from the batch should be processed
    */
-  filter(docs) {
-    return docs.filter(doc => doc.type === 'data_record').length;
+  filter(docs: Doc[]) {
+    return !!docs.filter(doc => doc.type === 'data_record').length;
   }
 
   /**
    * @param {Array<Doc>} docs - docs to run the transition over
    * @returns {Promise<Array<Doc>>} - updated docs (may include additional docs)
    */
-  async run(docs) {
+  async run(docs: Doc[]): Promise<Doc[]> {
     const originalContact = await this.userReplaceService.getUserContact();
     if (!originalContact) {
       return docs;
     }
 
-    const userReplaceDoc = docs.find(doc => doc.form === 'replace_user');
+    const userReplaceDoc = this.getUserReplaceDoc(docs);
     if (userReplaceDoc) {
       return this.replaceUser(docs, userReplaceDoc, originalContact);
     }
     if (this.userReplaceService.isReplaced(originalContact)) {
-      this.reparentReports(docs, originalContact);
+      this.reparentReports(docs as ReportDoc[], originalContact);
     }
 
     return docs;
   }
 
-  private async replaceUser(docs, userReplaceDoc, originalContact) {
+  private getUserReplaceDoc(docs: Doc[]): UserReplaceDoc {
+    return docs.find(doc => doc.form === 'replace_user') as UserReplaceDoc;
+  }
+
+  private async replaceUser(docs: Doc[], userReplaceDoc: UserReplaceDoc, originalContact: Doc): Promise<Doc[]> {
     const { original_contact_uuid, new_contact_uuid } = userReplaceDoc.fields;
     if (originalContact._id !== original_contact_uuid) {
       throw new Error('The only the contact associated with the currently logged in user can be replaced.');
@@ -65,7 +69,7 @@ export class UserReplaceTransition extends Transition {
     return [...docs, originalContact];
   }
 
-  private async getNewContact(docs, newContactId: string) {
+  private async getNewContact(docs: Doc[], newContactId: string): Promise<Doc> {
     const newContact = docs.find(doc => doc._id === newContactId);
     if (newContact) {
       return newContact;
@@ -81,9 +85,9 @@ export class UserReplaceTransition extends Transition {
       });
   }
 
-  private reparentReports(docs, originalContact) {
+  private reparentReports(docs: ReportDoc[], originalContact: Doc) {
     const replacedById = this.userReplaceService.getReplacedBy(originalContact);
-    if(!replacedById) {
+    if (!replacedById) {
       return;
     }
     docs
@@ -91,4 +95,17 @@ export class UserReplaceTransition extends Transition {
       .filter(doc => doc.contact?._id === originalContact._id)
       .forEach(doc => doc.contact._id = replacedById);
   }
+}
+
+interface UserReplaceDoc extends Doc {
+  fields: {
+    original_contact_uuid: string;
+    new_contact_uuid: string;
+  };
+}
+
+interface ReportDoc extends Doc {
+  contact: {
+    _id: string;
+  };
 }
