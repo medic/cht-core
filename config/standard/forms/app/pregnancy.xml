@@ -2085,7 +2085,7 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
         </translation>
       </itext>
       <instance>
-        <pregnancy id="pregnancy" prefix="J1!pregnancy!" delimiter="#" version="2018-11-14_10-23">
+        <pregnancy id="pregnancy" prefix="J1!pregnancy!" delimiter="#" version="2022-09-26 12-39">
           <inputs>
             <meta>
               <location>
@@ -2221,7 +2221,7 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
       <bind nodeset="/pregnancy/days_since_lmp" type="string" calculate="round(decimal-date-time(today()) - decimal-date-time( /pregnancy/group_lmp/g_lmp_date_8601 ), 2)"/>
       <bind nodeset="/pregnancy/weeks_since_lmp" type="string" calculate="round( /pregnancy/days_since_lmp  div 7, 2)"/>
       <bind nodeset="/pregnancy/group_lmp/g_lmp_method" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy/group_lmp/g_lmp_calendar" type="date" jr:constraintMsg="jr:itext('/pregnancy/group_lmp/g_lmp_calendar:jr:constraintMsg')" required="true()" constraint=".&lt;today() and ((decimal-date-time(.)+294) &gt;= decimal-date-time(today()))" relevant="selected( /pregnancy/group_lmp/g_lmp_method ,'calendar')"/>
+      <bind nodeset="/pregnancy/group_lmp/g_lmp_calendar" type="date" constraint=". &lt; now() and ((decimal-date-time(.)+294) &gt;= decimal-date-time(today()))" relevant="selected( /pregnancy/group_lmp/g_lmp_method ,'calendar')" jr:constraintMsg="jr:itext('/pregnancy/group_lmp/g_lmp_calendar:jr:constraintMsg')" required="true()"/>
       <bind nodeset="/pregnancy/group_lmp/g_lmp_approx" type="select1" relevant="selected( /pregnancy/group_lmp/g_lmp_method ,'approx')" required="true()"/>
       <bind nodeset="/pregnancy/group_lmp/g_lmp_date_raw" type="string" calculate="if(selected(  /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx )))"/>
       <bind nodeset="/pregnancy/group_lmp/g_lmp_date_8601" type="string" calculate="format-date-time(if(selected(  /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx ))),&quot;%Y-%m-%d&quot;)"/>
