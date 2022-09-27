@@ -20,7 +20,7 @@ export class CreateUserForContactsService {
     this.settingsService
       .get()
       .then((settings) => {
-        if (settings?.transitions?.user_replace) {
+        if (settings?.transitions?.create_user_for_contacts) {
           that.dbSyncService.subscribe(async(status) => {
             return that.syncStatusChanged(status);
           });

@@ -1,14 +1,13 @@
 const { expect } = require('chai');
 const fs = require('fs');
-const utils = require('../../utils');
-const loginPage = require('../../page-objects/login/login.wdio.page');
-const commonPage = require('../../page-objects/common/common.wdio.page');
-const reportsPage = require('../../page-objects/reports/reports.wdio.page');
-const constants = require('../../constants');
-const contactsPage = require('../../page-objects/contacts/contacts.wdio.page');
-const genericForm = require('../../page-objects/forms/generic-form.wdio.page');
-const commonElements = require('../../page-objects/common/common.wdio.page');
-const sentinelUtils = require('../sentinel/utils');
+const utils = require('../../../utils');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const constants = require('../../../constants');
+const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
+const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
+const sentinelUtils = require('../../../utils/sentinel');
 
 const adminCodeField = () => $('input[name="/replace_user/intro/admin_code"]');
 const fullNameField = () => $('input[name="/replace_user/new_contact/name"]');
@@ -35,9 +34,9 @@ const getQueuedMessages = () => utils.db.query('medic-admin/message_queue', { re
   .then(response => response.rows.map(row => row.doc));
 
 const settings = {
-  transitions: { user_replace: true },
+  transitions: { create_user_for_contacts: true },
   token_login: { enabled: true },
-  app_url: `http://${constants.API_HOST}:${constants.API_PORT}`
+  app_url: constants.BASE_URL
 };
 
 const BASIC_FORM_DOC = {
@@ -48,12 +47,12 @@ const BASIC_FORM_DOC = {
   _attachments: {
     xml: {
       content_type: 'application/octet-stream',
-      data: Buffer.from(fs.readFileSync(`${__dirname}/../../forms/basic_form.xml`, 'utf8')).toString('base64')
+      data: Buffer.from(fs.readFileSync(`${__dirname}/forms/basic_form.xml`, 'utf8')).toString('base64')
     }
   }
 };
 
-describe('user_replace transition', () => {
+describe('Submit the Replace User form', () => {
   beforeEach(async () => {
     await utils.saveDocs([DISTRICT, BASIC_FORM_DOC]);
   });
@@ -75,7 +74,7 @@ describe('user_replace transition', () => {
     await browser.throttle('offline');
 
     await commonPage.goToPeople(ORIGINAL_USER.contact._id);
-    await contactsPage.openNewAction('replace_user');
+    await contactsPage.createNewAction('Replace User');
     await (await adminCodeField()).setValue('secretCode');
     await genericForm.nextPage();
     await (await fullNameField()).setValue('Replacement User');
@@ -104,8 +103,8 @@ describe('user_replace transition', () => {
 
     await browser.throttle('online');
 
-    await commonElements.openHamburgerMenu();
-    await (await commonElements.syncButton()).click();
+    await commonPage.openHamburgerMenu();
+    await (await commonPage.syncButton()).click();
     await (await loginPage.loginButton()).waitForDisplayed();
 
     await loginPage.cookieLogin();
@@ -125,7 +124,7 @@ describe('user_replace transition', () => {
     const { transitions } = await sentinelUtils.getInfoDoc(original_contact_uuid);
 
     // Transition successful
-    expect(transitions.user_replace.ok).to.be.true;
+    expect(transitions.create_user_for_contacts.ok).to.be.true;
     // Original user disabled
     const oldUserSettings = await utils.getUserSettings({ contactId: original_contact_uuid });
     expect(oldUserSettings.inactive).to.be.true;
@@ -155,7 +154,7 @@ describe('user_replace transition', () => {
 
     // Open the texted link
     await commonPage.logout();
-    browser.navigateTo(message);
+    await browser.url(message);
     await commonPage.waitForPageLoaded();
     const [cookie] = await browser.getCookies('userCtx');
     expect(cookie.value).to.contain(newUserSettings.name);

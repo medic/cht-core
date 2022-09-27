@@ -47,7 +47,7 @@ describe('Create User for Contacts service', () => {
   let service;
 
   beforeEach(() => {
-    settingsService = { get: sinon.stub().resolves({ transitions: { user_replace: true } }) };
+    settingsService = { get: sinon.stub().resolves({ transitions: { create_user_for_contacts: true } }) };
     userSettingsService = { get: sinon.stub().resolves({}) };
     medicDb = { get: sinon.stub(), put: sinon.stub() };
     dbService = { get: sinon.stub().returns(medicDb) };
