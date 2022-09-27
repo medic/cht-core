@@ -34,7 +34,7 @@ export class UserReplaceTransition extends Transition {
    * @param {Array<Doc>} docs - docs to run the transition over
    * @returns {Promise<Array<Doc>>} - updated docs (may include additional docs)
    */
-  async run(docs: Doc[]): Promise<Doc[]> {
+  async run(docs: Doc[]) {
     const originalContact = await this.userReplaceService.getUserContact();
     if (!originalContact) {
       return docs;
@@ -51,11 +51,11 @@ export class UserReplaceTransition extends Transition {
     return docs;
   }
 
-  private getUserReplaceDoc(docs: Doc[]): UserReplaceDoc {
+  private getUserReplaceDoc(docs: Doc[]) {
     return docs.find(doc => doc.form === 'replace_user') as UserReplaceDoc;
   }
 
-  private async replaceUser(docs: Doc[], userReplaceDoc: UserReplaceDoc, originalContact: Doc): Promise<Doc[]> {
+  private async replaceUser(docs: Doc[], userReplaceDoc: UserReplaceDoc, originalContact: Doc) {
     const { original_contact_uuid, new_contact_uuid } = userReplaceDoc.fields;
     if (originalContact._id !== original_contact_uuid) {
       throw new Error('The only the contact associated with the currently logged in user can be replaced.');
