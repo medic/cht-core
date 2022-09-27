@@ -36,13 +36,15 @@ const getReplacedContact = (status, by = NEW_CONTACT._id) => ({
   parent: {
     _id: 'parent-id',
   },
-  replaced: {
-    by,
-    status,
+  user_for_contact: {
+    replaced: {
+      by,
+      status,
+    }
   }
 });
 
-describe('user_replace', () => {
+describe('create_user_for_contacts', () => {
   afterEach(() => sinon.restore());
 
   it('has the proper name', () => {
@@ -62,7 +64,7 @@ describe('user_replace', () => {
       sinon.stub(config, 'get').returns({ enabled: false });
 
       expect(() => transition.init()).to
-        .throw('Configuration error. Token login must be enabled to use the user_replace transition.');
+        .throw('Configuration error. Token login must be enabled to use the create_user_for_contacts transition.');
       expect(config.get.callCount).to.equal(1);
       expect(config.get.args[0]).to.deep.equal(['token_login']);
     });
@@ -71,7 +73,7 @@ describe('user_replace', () => {
       sinon.stub(config, 'get').returns(undefined);
 
       expect(() => transition.init()).to
-        .throw('Configuration error. Token login must be enabled to use the user_replace transition.');
+        .throw('Configuration error. Token login must be enabled to use the create_user_for_contacts transition.');
       expect(config.get.callCount).to.equal(1);
       expect(config.get.args[0]).to.deep.equal(['token_login']);
     });
@@ -182,7 +184,7 @@ describe('user_replace', () => {
         expectInitialDataRetrieved(ORIGINAL_CONTACT, NEW_CONTACT);
         expectUserCreated(NEW_CONTACT, ORIGINAL_USER);
         expectUserDeleted(ORIGINAL_USER);
-        expect(doc.replaced.status).to.equal('COMPLETE');
+        expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
       });
     });
 
@@ -214,7 +216,7 @@ describe('user_replace', () => {
         expect(createUser.args[0][0].username).to.match(/^new-contact-\d\d\d\d$/);
         expect(createUser.args[0][1]).to.equal(environment.apiUrl);
         expect(usersGet.args[2][0]).to.include(createUser.args[0][0].username);
-        expect(doc.replaced.status).to.equal('COMPLETE');
+        expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
       });
     });
 
