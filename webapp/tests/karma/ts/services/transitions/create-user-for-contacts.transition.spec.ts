@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { DbService } from '@mm-services/db.service';
-import { UserReplaceService } from '@mm-services/user-replace.service';
-import { UserReplaceTransition } from '@mm-services/transitions/user-replace.transition';
+import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
+import { UserReplaceTransition } from '@mm-services/transitions/create_user_for_contacts.transition';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
@@ -58,7 +58,7 @@ describe('User Replace Transition', () => {
       providers: [
         provideMockStore(),
         { provide: DbService, useValue: dbService },
-        { provide: UserReplaceService, useValue: userReplaceService },
+        { provide: CreateUserForContactsService, useValue: userReplaceService },
       ]
     });
 

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { UserReplaceService } from '@mm-services/user-replace.service';
+import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { DbService } from '@mm-services/db.service';
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
@@ -70,7 +70,7 @@ describe('User Replace service', () => {
       ]
     });
 
-    service = TestBed.inject(UserReplaceService);
+    service = TestBed.inject(CreateUserForContactsService);
   });
 
   afterEach(() => sinon.restore());

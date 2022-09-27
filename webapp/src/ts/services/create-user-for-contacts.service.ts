@@ -8,7 +8,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 @Injectable({
   providedIn: 'root'
 })
-export class UserReplaceService {
+export class CreateUserForContactsService {
   constructor(
     private settingsService: SettingsService,
     private userSettingsService: UserSettingsService,

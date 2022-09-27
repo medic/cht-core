@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash-es';
 import { SettingsService } from '@mm-services/settings.service';
 import { ValidationService } from '@mm-services/validation.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
-import { UserReplaceTransition } from '@mm-services/transitions/user-replace.transition';
+import { UserReplaceTransition } from '@mm-services/transitions/create_user_for_contacts.transition';
 
 @Injectable({
   providedIn: 'root'

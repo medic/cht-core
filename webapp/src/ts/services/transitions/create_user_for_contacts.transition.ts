@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { DbService } from '@mm-services/db.service';
 import { Transition, Doc } from '@mm-services/transitions/transition';
-import { UserReplaceService } from '@mm-services/user-replace.service';
+import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ import { UserReplaceService } from '@mm-services/user-replace.service';
 export class UserReplaceTransition extends Transition {
   constructor(
     private dbService: DbService,
-    private userReplaceService: UserReplaceService,
+    private userReplaceService: CreateUserForContactsService,
   ) {
     super();
   }

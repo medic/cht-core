@@ -7,7 +7,7 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ValidationService } from '@mm-services/validation.service';
-import { UserReplaceTransition } from '@mm-services/transitions/user-replace.transition';
+import { UserReplaceTransition } from '@mm-services/transitions/create_user_for_contacts.transition';
 
 describe('Transitions Service', () => {
   let settingsService;
