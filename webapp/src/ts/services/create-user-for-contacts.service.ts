@@ -55,24 +55,27 @@ export class CreateUserForContactsService {
       throw new Error('The new contact must have the same parent as the original contact when replacing a user.');
     }
     // TODO Currently the transitions are not run for online users so this is not used.
-    const status = this.sessionService.isOnlineOnly() ? ReplaceStatus.READY : ReplaceStatus.PENDING;
-    originalContact.replaced = { status, by: newContact._id };
+    const status = this.sessionService.isOnlineOnly() ? UserCreationStatus.READY : UserCreationStatus.PENDING;
+    if(!originalContact.user_for_contact) {
+      originalContact.user_for_contact = {};
+    }
+    originalContact.user_for_contact.replaced = { status, by: newContact._id };
   }
 
   isReplaced(contact) {
-    return !!contact.replaced;
+    return !!contact.user_for_contact?.replaced;
   }
 
   getReplacedBy(contact): string {
-    return contact.replaced?.by;
+    return contact.user_for_contact?.replaced?.by;
   }
 
-  private getStatus(contact): ReplaceStatus {
-    return ReplaceStatus[contact.replaced.status];
+  private getReplacedStatus(contact): UserCreationStatus {
+    return UserCreationStatus[contact.user_for_contact.replaced.status];
   }
 
-  private setStatus(contact, status: ReplaceStatus) {
-    contact.replaced.status = status;
+  private setReplacedStatus(contact, status: UserCreationStatus) {
+    contact.user_for_contact.replaced.status = status;
   }
 
   private async syncStatusChanged({ to, from }: any) {
@@ -85,13 +88,13 @@ export class CreateUserForContactsService {
       return;
     }
 
-    const status = this.getStatus(contact);
-    if (status !== ReplaceStatus.PENDING) {
+    const status = this.getReplacedStatus(contact);
+    if (status !== UserCreationStatus.PENDING) {
       return;
     }
     // After a user is replaced, the original contact will have status of PENDING.
     // Set to READY to trigger Sentinel to create a new user (now that all docs are synced).
-    this.setStatus(contact, ReplaceStatus.READY);
+    this.setReplacedStatus(contact, UserCreationStatus.READY);
     await this.dbService.get().put(contact);
     // Make sure there is not an ongoing sync before pushing changes to contact
     if (this.dbSyncService.isSyncInProgress()) {
@@ -102,7 +105,7 @@ export class CreateUserForContactsService {
   }
 }
 
-enum ReplaceStatus {
+enum UserCreationStatus {
   PENDING = 'PENDING', // Waiting on sync to complete
   READY = 'READY' // Ready to be replaced
   // COMPLETE - Set by Sentinel when the new user has been created

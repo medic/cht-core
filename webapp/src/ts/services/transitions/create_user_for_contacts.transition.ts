@@ -7,15 +7,15 @@ import { CreateUserForContactsService } from '@mm-services/create-user-for-conta
 @Injectable({
   providedIn: 'root'
 })
-export class UserReplaceTransition extends Transition {
+export class CreateUserForContactsTransition extends Transition {
   constructor(
     private dbService: DbService,
-    private userReplaceService: CreateUserForContactsService,
+    private createUserForContactsService: CreateUserForContactsService,
   ) {
     super();
   }
 
-  readonly name = 'user_replace';
+  readonly name = 'create_user_for_contacts';
 
   init() {
     // TODO Update this to load configured forms based on passed in settings
@@ -35,7 +35,7 @@ export class UserReplaceTransition extends Transition {
    * @returns {Promise<Array<Doc>>} - updated docs (may include additional docs)
    */
   async run(docs: Doc[]) {
-    const originalContact = await this.userReplaceService.getUserContact();
+    const originalContact = await this.createUserForContactsService.getUserContact();
     if (!originalContact) {
       return docs;
     }
@@ -44,7 +44,7 @@ export class UserReplaceTransition extends Transition {
     if (userReplaceDoc) {
       return this.replaceUser(docs, userReplaceDoc, originalContact);
     }
-    if (this.userReplaceService.isReplaced(originalContact)) {
+    if (this.createUserForContactsService.isReplaced(originalContact)) {
       this.reparentReports(docs as ReportDoc[], originalContact);
     }
 
@@ -56,6 +56,8 @@ export class UserReplaceTransition extends Transition {
   }
 
   private async replaceUser(docs: Doc[], userReplaceDoc: UserReplaceDoc, originalContact: Doc) {
+    // TODO Should change maybe to replacement_contact_id
+    //  and then just load the original_contact_id from the contact associated with the form...
     const { original_contact_uuid, new_contact_uuid } = userReplaceDoc.fields;
     if (originalContact._id !== original_contact_uuid) {
       throw new Error('The only the contact associated with the currently logged in user can be replaced.');
@@ -65,7 +67,7 @@ export class UserReplaceTransition extends Transition {
       throw new Error(`The new contact could not be found [${new_contact_uuid}].`);
     }
 
-    this.userReplaceService.setReplaced(originalContact, newContact);
+    this.createUserForContactsService.setReplaced(originalContact, newContact);
     return [...docs, originalContact];
   }
 
@@ -86,7 +88,7 @@ export class UserReplaceTransition extends Transition {
   }
 
   private reparentReports(docs: ReportDoc[], originalContact: Doc) {
-    const replacedById = this.userReplaceService.getReplacedBy(originalContact);
+    const replacedById = this.createUserForContactsService.getReplacedBy(originalContact);
     if (!replacedById) {
       return;
     }

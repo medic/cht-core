@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { DbService } from '@mm-services/db.service';
 import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
-import { UserReplaceTransition } from '@mm-services/transitions/create_user_for_contacts.transition';
+import { CreateUserForContactsTransition } from '@mm-services/transitions/create_user_for_contacts.transition';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
@@ -38,7 +38,7 @@ const getDataRecord = (contact = { _id: ORIGINAL_CONTACT._id}) => ({
   contact
 });
 
-describe('User Replace Transition', () => {
+describe('Create User for Contacts Transition', () => {
   let medicDb;
   let dbService;
   let userReplaceService;
@@ -62,7 +62,7 @@ describe('User Replace Transition', () => {
       ]
     });
 
-    transition = TestBed.inject(UserReplaceTransition);
+    transition = TestBed.inject(CreateUserForContactsTransition);
   });
 
   afterEach(() => sinon.restore());
