@@ -1,40 +1,24 @@
 const config = require('../config');
 const db = require('../db');
 const environment = require('../environment');
-const search = require('../lib/search');
-const transitionUtils = require('./utils');
+const contactTypeUtils = require('@medic/contact-types-utils');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
 
 const NAME = 'user_replace';
-const REPARENT_BATCH_SIZE = 100;
 
-const validateReplaceUserDoc = ({ reported_date, fields: { original_contact_uuid, new_contact_uuid } }) => {
-  if (!reported_date) {
-    throw new Error('The reported_date field must be populated on the replace_user report.');
-  }
-  if (!original_contact_uuid) {
-    throw new Error('The original_contact_uuid field must be populated on the replace_user report.');
-  }
-  if (!new_contact_uuid) {
-    throw new Error('The new_contact_uuid field must be populated on the replace_user report.');
-  }
+const ReplaceStatus = {
+  // PENDING - Set by webapp while waiting for sync to complete
+  READY: 'READY', // Ready to be replaced
+  COMPLETE: 'COMPLETE', // The new user has been created
+  ERROR: 'ERROR', // The new user could not be created
 };
 
-const validateContact = (contact) => {
-  if (!contact.parent || !contact.parent._id) {
-    throw new Error(`Contact [${contact._id}] does not have a parent.`);
+const getNewContact = (contactId) => {
+  if (!contactId) {
+    return Promise.reject(new Error('No id was provided for the new replacement contact.'));
   }
-  return contact;
-};
-
-const getContact = (contactId) => people.getOrCreatePerson(contactId)
-  .then(contact => validateContact(contact));
-
-const validateContactParents = (originalContact, newContact) => {
-  if (originalContact.parent._id !== newContact.parent._id) {
-    throw new Error(`The replacement contact must have the same parent as the original contact.`);
-  }
+  return people.getOrCreatePerson(contactId);
 };
 
 const generateUsername = (contactName) => {
@@ -88,71 +72,22 @@ const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
     });
 };
 
-const getReportIdsToReparent = (contactId, timestamp, docsReparented) => {
-  const filters = {
-    date: { from: timestamp + 1, },
-    contact: contactId,
-  };
-  const options = {
-    limit: REPARENT_BATCH_SIZE,
-    skip: docsReparented,
-  };
-  return search.execute('reports', filters, options).then(({ docIds }) => docIds);
-};
-
-const getReports = (keys) => db.medic.allDocs({ keys, include_docs: true })
-  .then(({ rows }) => rows.map(({ doc }) => doc));
-
-const reparentReports = (newContactId, reports) => {
-  if(!reports.length) {
-    return;
-  }
-  reports.forEach(report => report.contact._id = newContactId);
-  return db.medic.bulkDocs(reports);
-};
-
-const reparentReportsFromReplacedUser = (replaceUserDoc, docsReparented = 0) => {
-  const {
-    reported_date,
-    fields: { original_contact_uuid, new_contact_uuid }
-  } = replaceUserDoc;
-  return getReportIdsToReparent(original_contact_uuid, reported_date, docsReparented)
-    .then(reportIds => {
-      if(!reportIds.length) {
-        return;
-      }
-      return getReports(reportIds)
-        .then(reports => reparentReports(new_contact_uuid, reports))
-        .then(() => {
-          if (reportIds.length === REPARENT_BATCH_SIZE) {
-            return reparentReportsFromReplacedUser(replaceUserDoc, docsReparented + REPARENT_BATCH_SIZE);
-          }
-        });
-    });
-};
-
-const replaceUser = (replaceUserDoc) => {
-  return Promise.resolve()
-    .then(() => validateReplaceUserDoc(replaceUserDoc))
-    .then(() => {
-      const { original_contact_uuid, new_contact_uuid } = replaceUserDoc.fields;
-      return  Promise
-        .all([
-          getContact(original_contact_uuid),
-          getContact(new_contact_uuid),
-          users.getUserSettings({ contact_id: original_contact_uuid }),
-        ])
-        .then(([originalContact, newContact, originalUserSettings]) => {
-          validateContactParents(originalContact, newContact);
-          return createNewUser(originalUserSettings, newContact)
-            .then(() => reparentReportsFromReplacedUser(replaceUserDoc))
-            .then(() => users.deleteUser(originalUserSettings.name));
-        });
-    });
+const replaceUser = (originalContact) => {
+  const { _id, replaced: { by } } = originalContact;
+  return Promise
+    .all([
+      getNewContact(by),
+      users.getUserSettings({ contact_id: _id }),
+    ])
+    .then(([newContact, originalUserSettings]) => {
+      return createNewUser(originalUserSettings, newContact)
+        .then(() => users.deleteUser(originalUserSettings.name));
+    })
+    .then(() => originalContact.replaced.status = ReplaceStatus.COMPLETE);
 };
 
 /**
- * Replace a contact with a new contact.
+ * Replace a user whose contact has been marked as ready to be replaced with a new user.
  */
 module.exports = {
   name: NAME,
@@ -162,16 +97,19 @@ module.exports = {
       throw new Error(`Configuration error. Token login must be enabled to use the user_replace transition.`);
     }
   },
-  filter: (doc, info = {}) => {
-    return doc.form === 'replace_user'
-      && !transitionUtils.hasRun(info, NAME);
+  filter: (doc) => {
+    const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
+    if (!contactType || !contactTypeUtils.isPersonType(contactType)) {
+      return false;
+    }
+
+    return doc.replaced && doc.replaced.status === ReplaceStatus.READY;
   },
   onMatch: change => {
     return replaceUser(change.doc)
-      .then(() => {
-        return true;
-      })
+      .then(() => true)
       .catch(err => {
+        change.doc.replaced.status = ReplaceStatus.ERROR;
         err.changed = true;
         throw err;
       });

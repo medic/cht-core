@@ -4,7 +4,7 @@ import { DbService } from '@mm-services/db.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
-import { Transition } from '@mm-services/transitions/transition';
+import { Transition, Doc } from '@mm-services/transitions/transition';
 import { ValidationService } from '@mm-services/validation.service';
 
 @Injectable({
@@ -437,10 +437,4 @@ interface MutingContext {
 
 interface HydratedDocs {
   [uuid:string]:Doc;
-}
-
-interface Doc {
-  _id:string;
-  type:string;
-  [other:string]:unknown;
 }
