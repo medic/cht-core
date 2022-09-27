@@ -114,9 +114,15 @@ describe('create_user_for_contacts', () => {
       assertGetContactType(doc);
     });
 
-    it('excludes person contacts which have not been replaced', () => {
+    it('excludes person contacts which do not have user_for_contact data', () => {
       expect(transition.filter(ORIGINAL_CONTACT)).to.be.undefined;
       assertGetContactType(ORIGINAL_CONTACT);
+    });
+
+    it('excludes person contacts which have user_for_contact data, but have not been replaced', () => {
+      const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact: { hello: 'world' } });
+      expect(transition.filter(originalContact)).to.be.undefined;
+      assertGetContactType(originalContact);
     });
 
     it('excludes replaced contacts which do not have a READY status', () => {
