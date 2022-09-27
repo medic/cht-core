@@ -5,7 +5,7 @@ const contactTypeUtils = require('@medic/contact-types-utils');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
 
-const NAME = 'user_replace';
+const NAME = 'create_user_for_contacts';
 
 const ReplaceStatus = {
   // PENDING - Set by webapp while waiting for sync to complete

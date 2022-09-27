@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const environment = require('../../../src/environment');
-const transition = require('../../../src/transitions/user_replace');
+const transition = require('../../../src/transitions/create_user_for_contacts');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
 const contactTypeUtils = require('@medic/contact-types-utils');
@@ -46,7 +46,7 @@ describe('user_replace', () => {
   afterEach(() => sinon.restore());
 
   it('has the proper name', () => {
-    expect(transition.name).to.equal('user_replace');
+    expect(transition.name).to.equal('create_user_for_contacts');
   });
 
   describe('init', () => {
