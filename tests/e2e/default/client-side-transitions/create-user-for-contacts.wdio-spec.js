@@ -24,7 +24,7 @@ const ORIGINAL_USER = {
   password: 'medic.123',
   place: DISTRICT._id,
   phone: '+254712345678',
-  contact: { _id: 'fixture:user:original_person', name: 'Original Person' },
+  contact: { _id: 'fixture:user:original_person', name: 'Original Person', role: 'chw' },
   roles: ['chw'],
 };
 
@@ -95,9 +95,9 @@ const submitBasicForm = async () => {
 };
 
 const assertReplaceUserReport = (replaceUserReport, originalContactId) => {
-  const { new_contact_uuid } = replaceUserReport.fields;
+  const { replacement_contact_id } = replaceUserReport.fields;
   const { _id } = replaceUserReport.contact;
-  expect(new_contact_uuid).to.not.be.empty;
+  expect(replacement_contact_id).to.not.be.empty;
   expect(_id).to.equal(originalContactId);
 };
 
@@ -162,7 +162,7 @@ describe('Create user for contacts', () => {
   });
 
   describe('for an offline user', () => {
-    it('creates a new user and re-parents reports when the replace_user form is submitted', async () => {
+    it.only('creates a new user and re-parents reports when the replace_user form is submitted', async () => {
       await utils.updateSettings(SETTINGS, 'sentinel');
       const originalContactId = await loginAsOfflineUser();
 
@@ -185,12 +185,12 @@ describe('Create user for contacts', () => {
       // Replace user report created
       const replaceUserReport = await utils.getDoc(reportId);
       assertReplaceUserReport(replaceUserReport, originalContactId);
-      const { new_contact_uuid } = replaceUserReport.fields;
+      const { replacement_contact_id } = replaceUserReport.fields;
       // Basic form reports re-parented
       const basicReports = await utils.getDocs([basicReportId0, basicReportId1]);
-      basicReports.forEach((report) => expect(report.contact._id).to.equal(new_contact_uuid));
+      basicReports.forEach((report) => expect(report.contact._id).to.equal(replacement_contact_id));
       // New contact created
-      const newContact = await utils.getDoc(new_contact_uuid);
+      const newContact = await utils.getDoc(replacement_contact_id);
       expect(newContact.phone).to.equal(ORIGINAL_USER.phone);
 
       await sentinelUtils.waitForSentinel(originalContactId);
@@ -198,12 +198,12 @@ describe('Create user for contacts', () => {
 
       // Transition successful
       expect(transitions.create_user_for_contacts.ok).to.be.true;
-      await assertOriginalContactUpdated(originalContactId, new_contact_uuid);
+      await assertOriginalContactUpdated(originalContactId, replacement_contact_id);
       await assertOriginalUserDisabled(originalContactId);
       // Set as primary contact
-      expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal(new_contact_uuid);
+      expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal(replacement_contact_id);
       // New user created
-      const newUserSettings = await utils.getUserSettings({ contactId: new_contact_uuid });
+      const newUserSettings = await utils.getUserSettings({ contactId: replacement_contact_id });
       newUsers.push(newUserSettings.name);
       assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
       const loginLink = await getTextedLoginLink(newUserSettings);
@@ -233,9 +233,9 @@ describe('Create user for contacts', () => {
       // Replace user report created
       const replaceUserReport = await utils.getDoc(reportId);
       assertReplaceUserReport(replaceUserReport, originalContactId);
-      const { new_contact_uuid } = replaceUserReport.fields;
+      const { replacement_contact_id } = replaceUserReport.fields;
       // New contact created
-      const newContact = await utils.getDoc(new_contact_uuid);
+      const newContact = await utils.getDoc(replacement_contact_id);
       expect(newContact.phone).to.equal(ORIGINAL_USER.phone);
 
       await sentinelUtils.waitForSentinel(originalContactId);
@@ -243,12 +243,12 @@ describe('Create user for contacts', () => {
 
       // Transition successful
       expect(transitions.create_user_for_contacts.ok).to.be.true;
-      await assertOriginalContactUpdated(originalContactId, new_contact_uuid);
+      await assertOriginalContactUpdated(originalContactId, replacement_contact_id);
       await assertOriginalUserDisabled(originalContactId);
       // Set as primary contact
-      expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal(new_contact_uuid);
+      expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal(replacement_contact_id);
       // New user created
-      const newUserSettings = await utils.getUserSettings({ contactId: new_contact_uuid });
+      const newUserSettings = await utils.getUserSettings({ contactId: replacement_contact_id });
       newUsers.push(newUserSettings.name);
       assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
       const loginLink = await getTextedLoginLink(newUserSettings);
@@ -282,9 +282,9 @@ describe('Create user for contacts', () => {
       // Replace user report created
       const replaceUserReport = await utils.getDoc(reportId);
       assertReplaceUserReport(replaceUserReport, originalContactId);
-      const { new_contact_uuid } = replaceUserReport.fields;
+      const { replacement_contact_id } = replaceUserReport.fields;
       // New contact created
-      const newContact = await utils.getDoc(new_contact_uuid);
+      const newContact = await utils.getDoc(replacement_contact_id);
       expect(newContact.phone).to.equal(ORIGINAL_USER.phone);
 
       await sentinelUtils.waitForSentinel(originalContactId);
@@ -292,12 +292,12 @@ describe('Create user for contacts', () => {
 
       // Transition successful
       expect(transitions.create_user_for_contacts.ok).to.be.true;
-      await assertOriginalContactUpdated(originalContactId, new_contact_uuid);
+      await assertOriginalContactUpdated(originalContactId, replacement_contact_id);
       await assertOriginalUserDisabled(originalContactId);
       // Primary contact not updated
       expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal('not-the-original-contact');
       // New user created
-      const newUserSettings = await utils.getUserSettings({ contactId: new_contact_uuid });
+      const newUserSettings = await utils.getUserSettings({ contactId: replacement_contact_id });
       newUsers.push(newUserSettings.name);
       assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
       const loginLink = await getTextedLoginLink(newUserSettings);
@@ -325,9 +325,9 @@ describe('Create user for contacts', () => {
       // Replace user report created
       const replaceUserReport = await utils.getDoc(reportId);
       assertReplaceUserReport(replaceUserReport, originalContactId);
-      const { new_contact_uuid } = replaceUserReport.fields;
+      const { replacement_contact_id } = replaceUserReport.fields;
       // New contact created
-      const newContact = await utils.getDoc(new_contact_uuid);
+      const newContact = await utils.getDoc(replacement_contact_id);
       expect(newContact.phone).to.equal(ORIGINAL_USER.phone);
       // Basic report not re-parented
       const basicReports = await utils.getDoc(basicReportId);
@@ -359,7 +359,7 @@ describe('Create user for contacts', () => {
     // Report is submitted successfully
     const replaceUserReport = await utils.getDoc(reportId);
     assertReplaceUserReport(replaceUserReport, DEFAULT_USER_CONTACT_DOC._id);
-    const { new_contact_uuid } = replaceUserReport.fields;
+    const { replacement_contact_id } = replaceUserReport.fields;
 
     await sentinelUtils.waitForSentinel(DEFAULT_USER_CONTACT_DOC._id);
     const { transitions } = await sentinelUtils.getInfoDoc(DEFAULT_USER_CONTACT_DOC._id);
@@ -373,7 +373,7 @@ describe('Create user for contacts', () => {
     const oldUserSettings = await utils.getUserSettings({ contactId: DEFAULT_USER_CONTACT_DOC._id });
     expect(oldUserSettings.inactive).to.be.undefined;
     // New user not created
-    const newUserSettings = await utils.getUserSettings({ contactId: new_contact_uuid });
+    const newUserSettings = await utils.getUserSettings({ contactId: replacement_contact_id });
     expect(newUserSettings).to.be.undefined;
     // No messages sent
     const queuedMsgs = await getQueuedMessages();

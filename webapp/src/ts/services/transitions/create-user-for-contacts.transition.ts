@@ -79,7 +79,12 @@ export class CreateUserForContactsTransition extends Transition {
   }
 
   private async replaceUser(docs: Doc[], userReplaceDoc: UserReplaceDoc, originalContact: Doc) {
-    const { new_contact_uuid } = userReplaceDoc.fields;
+    const { replacement_contact_id } = userReplaceDoc.fields;
+    if (!replacement_contact_id) {
+      throw new Error('The form for replacing a user must include a replacement_contact_id field ' +
+        'containing the id of the new contact.');
+    }
+
     const originalContactId = userReplaceDoc.contact._id;
 
     const isOriginalContact = () => originalContact._id === originalContactId;
@@ -88,9 +93,9 @@ export class CreateUserForContactsTransition extends Transition {
     if (!isOriginalContact() && !isReplacedContact()) {
       throw new Error('Only the contact associated with the currently logged in user can be replaced.');
     }
-    const newContact = await this.getNewContact(docs, new_contact_uuid);
+    const newContact = await this.getNewContact(docs, replacement_contact_id);
     if (!newContact) {
-      throw new Error(`The new contact could not be found [${new_contact_uuid}].`);
+      throw new Error(`The new contact could not be found [${replacement_contact_id}].`);
     }
     this.createUserForContactsService.setReplaced(originalContact, newContact);
     const updatedDocs = [...docs, originalContact];
@@ -151,7 +156,7 @@ export class CreateUserForContactsTransition extends Transition {
 
 interface UserReplaceDoc extends ReportDoc {
   fields: {
-    new_contact_uuid: string;
+    replacement_contact_id: string;
   };
 }
 

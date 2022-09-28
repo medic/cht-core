@@ -40,14 +40,14 @@ const REPLACE_USER_DOC = {
   type: 'data_record',
   form: 'replace_user',
   fields: {
-    new_contact_uuid: NEW_CONTACT._id,
+    replacement_contact_id: NEW_CONTACT._id,
   },
   contact: {
     _id: ORIGINAL_CONTACT._id,
   }
 };
 
-const getDataRecord = (contact = { _id: ORIGINAL_CONTACT._id}) => ({
+const getDataRecord = (contact = { _id: ORIGINAL_CONTACT._id }) => ({
   type: 'data_record',
   form: 'other',
   contact
@@ -134,7 +134,7 @@ describe('Create User for Contacts Transition', () => {
   describe('run', () => {
     beforeEach(() => transition.init({ create_user_for_contacts: { replace_forms: ['replace_user'] } }));
 
-    it('does nothing when the user is not associated with a contact', async () => {
+    it('does nothing when the user is not associated with a contact', async() => {
       createUserForContactsService.getUserContact.resolves(null);
 
       const docs = await transition.run([REPLACE_USER_DOC]);
@@ -147,7 +147,7 @@ describe('Create User for Contacts Transition', () => {
       expect(createUserForContactsService.isReplaced.callCount).to.equal(0);
     });
 
-    it('does nothing when the user is not being replaced or is not already replaced', async () => {
+    it('does nothing when the user is not being replaced or is not already replaced', async() => {
       createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
       createUserForContactsService.isReplaced.returns(false);
       const submittedDocs = [getDataRecord(), getDataRecord(), NEW_CONTACT];
@@ -164,7 +164,7 @@ describe('Create User for Contacts Transition', () => {
     });
 
     describe(`when the reports submitted include a replace user report`, () => {
-      it('sets the contact as replaced when the new contact is existing', async () => {
+      it('sets the contact as replaced when the new contact is existing', async() => {
         const originalUser = Object.assign({}, ORIGINAL_CONTACT);
         createUserForContactsService.getUserContact.resolves(originalUser);
         medicDb.get.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
@@ -188,7 +188,7 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.isReplaced.callCount).to.equal(1);
       });
 
-      it('sets the contact as replaced when the new contact is also being submitted', async () => {
+      it('sets the contact as replaced when the new contact is also being submitted', async() => {
         const originalUser = Object.assign({}, ORIGINAL_CONTACT);
         createUserForContactsService.getUserContact.resolves(originalUser);
         const parentPlace = Object.assign({}, PARENT_PLACE);
@@ -210,7 +210,7 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.isReplaced.callCount).to.equal(1);
       });
 
-      it('re-parents new reports to existing user before replacing user again for existing replaced user', async () => {
+      it('re-parents new reports to existing user before replacing user again for existing replaced user', async() => {
         const originalUser = Object.assign({}, ORIGINAL_CONTACT);
         createUserForContactsService.getUserContact.resolves(originalUser);
         const replaceContact = Object.assign({}, REPLACE_USER_DOC.contact);
@@ -224,7 +224,7 @@ describe('Create User for Contacts Transition', () => {
         sinon.resetHistory();
 
         const secondNewContact = Object.assign({}, NEW_CONTACT, { _id: 'new-contact-2' });
-        const fields = Object.assign({}, replaceUserDoc.fields, { new_contact_uuid: secondNewContact._id });
+        const fields = Object.assign({}, replaceUserDoc.fields, { replacement_contact_id: secondNewContact._id });
         const secondReplaceUserDoc = Object.assign({}, replaceUserDoc, { fields });
         const anotherDoc = getDataRecord();
         createUserForContactsService.isReplaced.returns(true);
@@ -251,11 +251,11 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, secondNewContact]);
       });
 
-      it('does not assign new contact as primary contact when original contact was not primary', async () => {
+      it('does not assign new contact as primary contact when original contact was not primary', async() => {
         const originalUser = Object.assign({}, ORIGINAL_CONTACT);
         createUserForContactsService.getUserContact.resolves(originalUser);
         medicDb.get.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
-        const parentPlace = Object.assign({}, PARENT_PLACE, {  contact: { _id: 'different-contact', }});
+        const parentPlace = Object.assign({}, PARENT_PLACE, { contact: { _id: 'different-contact', } });
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
 
         const docs = await transition.run([REPLACE_USER_DOC]);
@@ -272,7 +272,7 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.isReplaced.callCount).to.equal(1);
       });
 
-      it('does not assign new contact as primary contact when parent doc not found', async () => {
+      it('does not assign new contact as primary contact when parent doc not found', async() => {
         const originalUser = Object.assign({}, ORIGINAL_CONTACT);
         createUserForContactsService.getUserContact.resolves(originalUser);
         medicDb.get.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
@@ -291,7 +291,7 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.isReplaced.callCount).to.equal(1);
       });
 
-      it(`throws an error if the original contact being replaced does not match the user's contact`, async () => {
+      it(`throws an error if the original contact being replaced does not match the user's contact`, async() => {
         createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
         const replaceUserDoc = Object.assign(
           {},
@@ -314,7 +314,26 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.isReplaced.callCount).to.equal(2);
       });
 
-      it(`throws an error if the new contact cannot be found`, async () => {
+      it(`throws an error when no replacement_contact_id is set`, async() => {
+        createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
+        const replaceUserDoc = Object.assign({}, REPLACE_USER_DOC, { fields: { } });
+
+        try {
+          await transition.run([replaceUserDoc]);
+          expect.fail('should have thrown an error');
+        } catch (err) {
+          expect(err.message).to.equal('The form for replacing a user must include a replacement_contact_id field ' +
+              'containing the id of the new contact.');
+        }
+
+        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(dbService.get.callCount).to.equal(0);
+        expect(medicDb.get.callCount).to.equal(0);
+        expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
+        expect(createUserForContactsService.isReplaced.callCount).to.equal(1);
+      });
+
+      it(`throws an error if the new contact cannot be found`, async() => {
         createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
         medicDb.get.rejects({ status: 404 });
 
@@ -334,7 +353,7 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.isReplaced.callCount).to.equal(1);
       });
 
-      it(`throws an error if an error is encountered getting the new contact`, async () => {
+      it(`throws an error if an error is encountered getting the new contact`, async() => {
         createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
         medicDb.get.rejects({ message: 'Server Error' });
 
@@ -362,7 +381,7 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
       });
 
-      it('re-parents the given reports to the new contact', async () => {
+      it('re-parents the given reports to the new contact', async() => {
         createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
         createUserForContactsService.isReplaced.returns(true);
         createUserForContactsService.getReplacedBy.returns(NEW_CONTACT._id);
@@ -383,7 +402,7 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.getReplacedBy.args[0]).to.deep.equal([ORIGINAL_CONTACT]);
       });
 
-      it('does nothing if there is no replaced by id', async () => {
+      it('does nothing if there is no replaced by id', async() => {
         createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
         createUserForContactsService.isReplaced.returns(true);
         createUserForContactsService.getReplacedBy.returns(null);

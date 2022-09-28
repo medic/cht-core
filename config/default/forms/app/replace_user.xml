@@ -172,7 +172,7 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
         </translation>
       </itext>
       <instance>
-        <replace_user id="replace_user" prefix="J1!replace_user!" delimiter="#" version="2022-09-28 16-44">
+        <replace_user id="replace_user" prefix="J1!replace_user!" delimiter="#" version="2022-09-28 16-51">
           <inputs>
             <meta>
               <location>
@@ -260,8 +260,7 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
             </meta>
             <created_by_doc db-doc-ref="/replace_user"/>
           </new_contact>
-          <original_contact_uuid/>
-          <new_contact_uuid db-doc-ref=" /replace_user/new_contact "/>
+          <replacement_contact_id db-doc-ref=" /replace_user/new_contact "/>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -300,11 +299,11 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
       <bind nodeset="/replace_user/new_contact/type" type="string" calculate="&quot;person&quot;"/>
       <bind nodeset="/replace_user/new_contact/name" type="string" required="true()"/>
       <bind nodeset="/replace_user/new_contact/short_name" type="string" jr:constraintMsg="jr:itext('/replace_user/new_contact/short_name:jr:constraintMsg')" constraint="string-length(.) &lt;= 10"/>
-      <bind nodeset="/replace_user/new_contact/date_of_birth" type="string" required="true()" calculate=" /replace_user/new_contact/ephemeral_dob/dob_iso "/>
+      <bind nodeset="/replace_user/new_contact/date_of_birth" type="string" calculate=" /replace_user/new_contact/ephemeral_dob/dob_iso " required="true()"/>
       <bind nodeset="/replace_user/new_contact/date_of_birth_method" type="string" calculate=" /replace_user/new_contact/ephemeral_dob/dob_method "/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_calendar" type="date" required="true()" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_calendar:jr:constraintMsg')" relevant="not(selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx'))" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))"/>
+      <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_calendar" type="date" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/dob_calendar:jr:constraintMsg')" relevant="not(selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx'))" required="true()" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')"/>
-      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_years" type="int" required="true()" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_years:jr:constraintMsg')" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')" constraint=". &gt;= 0 and . &lt;= 130"/>
+      <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_years" type="int" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_years:jr:constraintMsg')" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')" required="true()" constraint=". &gt;= 0 and . &lt;= 130"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/age_months" type="int" jr:constraintMsg="jr:itext('/replace_user/new_contact/ephemeral_dob/age_months:jr:constraintMsg')" relevant="selected( /replace_user/new_contact/ephemeral_dob/dob_method ,'approx')" constraint=". &gt;= 0 and . &lt;= 11"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_method" type="select"/>
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  &lt; 0, format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months  + 12, format-date-time(today(),&quot;%m&quot;) -  /replace_user/new_contact/ephemeral_dob/age_months )"/>
@@ -317,7 +316,7 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
       <bind nodeset="/replace_user/new_contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
       <bind nodeset="/replace_user/new_contact/sex" type="select1" required="true()"/>
       <bind nodeset="/replace_user/new_contact/phone_read_only" type="string" calculate=" /replace_user/user_phone " relevant=" /replace_user/user_phone  != ''" readonly="true()"/>
-      <bind nodeset="/replace_user/new_contact/new_phone" type="tel" required="true()" jr:constraintMsg="jr:itext('/replace_user/new_contact/new_phone:jr:constraintMsg')" relevant=" /replace_user/user_phone  = ''" constraint="true()"/>
+      <bind nodeset="/replace_user/new_contact/new_phone" type="tel" jr:constraintMsg="jr:itext('/replace_user/new_contact/new_phone:jr:constraintMsg')" relevant=" /replace_user/user_phone  = ''" required="true()" constraint="true()"/>
       <bind nodeset="/replace_user/new_contact/phone" type="string" calculate="coalesce( /replace_user/user_phone ,  /replace_user/new_contact/new_phone )"/>
       <bind nodeset="/replace_user/new_contact/phone_alternate" type="tel" jr:constraintMsg="jr:itext('/replace_user/new_contact/phone_alternate:jr:constraintMsg')" constraint="true()"/>
       <bind nodeset="/replace_user/new_contact/role" type="select1" calculate=" /replace_user/contact_role " readonly="true()"/>
@@ -326,8 +325,7 @@ DOB ISO: <output value=" /replace_user/new_contact/ephemeral_dob/dob_iso "/></va
       <bind nodeset="/replace_user/new_contact/meta/created_by_person_uuid" type="string" calculate="../../../created_by_person_uuid"/>
       <bind nodeset="/replace_user/new_contact/meta/created_by_place_uuid" type="string" calculate="../../../created_by_place_uuid"/>
       <bind nodeset="/replace_user/new_contact/created_by_doc" type="string" calculate="."/>
-      <bind nodeset="/replace_user/original_contact_uuid" type="string" calculate="../inputs/contact/_id"/>
-      <bind nodeset="/replace_user/new_contact_uuid" type="string" calculate=" /replace_user/new_contact "/>
+      <bind nodeset="/replace_user/replacement_contact_id" type="string" calculate=" /replace_user/new_contact "/>
       <bind nodeset="/replace_user/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
