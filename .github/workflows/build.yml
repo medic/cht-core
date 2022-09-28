@@ -183,18 +183,21 @@ jobs:
       with:
         name: cht-images
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      with:
+        aws-region: eu-west-2
+
     - name: Login to Public Amazon ECR
       id: login-ecr-public
       uses: aws-actions/amazon-ecr-login@v1
@@ -202,6 +205,7 @@ jobs:
         registry-type: public
         aws-region: us-east-1
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
     - uses: actions/checkout@v2
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
@@ -223,13 +227,6 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
 
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-2
-        if: ${{ env.INTERNAL_CONTRIBUTOR }}
       - uses: actions/checkout@v2
       - name: Get branch name
         uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
