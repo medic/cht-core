@@ -3,7 +3,7 @@ const { expect } = require('chai');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const environment = require('../../../src/environment');
-const transition = require('../../../src/transitions/user_replace');
+const transition = require('../../../src/transitions/create_user_for_contacts');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
 const contactTypeUtils = require('@medic/contact-types-utils');
@@ -36,17 +36,19 @@ const getReplacedContact = (status, by = NEW_CONTACT._id) => ({
   parent: {
     _id: 'parent-id',
   },
-  replaced: {
-    by,
-    status,
+  user_for_contact: {
+    replaced: {
+      by,
+      status,
+    }
   }
 });
 
-describe('user_replace', () => {
+describe('create_user_for_contacts', () => {
   afterEach(() => sinon.restore());
 
   it('has the proper name', () => {
-    expect(transition.name).to.equal('user_replace');
+    expect(transition.name).to.equal('create_user_for_contacts');
   });
 
   describe('init', () => {
@@ -62,7 +64,7 @@ describe('user_replace', () => {
       sinon.stub(config, 'get').returns({ enabled: false });
 
       expect(() => transition.init()).to
-        .throw('Configuration error. Token login must be enabled to use the user_replace transition.');
+        .throw('Configuration error. Token login must be enabled to use the create_user_for_contacts transition.');
       expect(config.get.callCount).to.equal(1);
       expect(config.get.args[0]).to.deep.equal(['token_login']);
     });
@@ -71,7 +73,7 @@ describe('user_replace', () => {
       sinon.stub(config, 'get').returns(undefined);
 
       expect(() => transition.init()).to
-        .throw('Configuration error. Token login must be enabled to use the user_replace transition.');
+        .throw('Configuration error. Token login must be enabled to use the create_user_for_contacts transition.');
       expect(config.get.callCount).to.equal(1);
       expect(config.get.args[0]).to.deep.equal(['token_login']);
     });
@@ -112,9 +114,15 @@ describe('user_replace', () => {
       assertGetContactType(doc);
     });
 
-    it('excludes person contacts which have not been replaced', () => {
+    it('excludes person contacts which do not have user_for_contact data', () => {
       expect(transition.filter(ORIGINAL_CONTACT)).to.be.undefined;
       assertGetContactType(ORIGINAL_CONTACT);
+    });
+
+    it('excludes person contacts which have user_for_contact data, but have not been replaced', () => {
+      const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact: { hello: 'world' } });
+      expect(transition.filter(originalContact)).to.be.undefined;
+      assertGetContactType(originalContact);
     });
 
     it('excludes replaced contacts which do not have a READY status', () => {
@@ -182,7 +190,7 @@ describe('user_replace', () => {
         expectInitialDataRetrieved(ORIGINAL_CONTACT, NEW_CONTACT);
         expectUserCreated(NEW_CONTACT, ORIGINAL_USER);
         expectUserDeleted(ORIGINAL_USER);
-        expect(doc.replaced.status).to.equal('COMPLETE');
+        expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
       });
     });
 
@@ -214,7 +222,7 @@ describe('user_replace', () => {
         expect(createUser.args[0][0].username).to.match(/^new-contact-\d\d\d\d$/);
         expect(createUser.args[0][1]).to.equal(environment.apiUrl);
         expect(usersGet.args[2][0]).to.include(createUser.args[0][0].username);
-        expect(doc.replaced.status).to.equal('COMPLETE');
+        expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
       });
     });
 

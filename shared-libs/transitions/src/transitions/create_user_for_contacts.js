@@ -5,9 +5,9 @@ const contactTypeUtils = require('@medic/contact-types-utils');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
 
-const NAME = 'user_replace';
+const NAME = 'create_user_for_contacts';
 
-const ReplaceStatus = {
+const UserCreationStatus = {
   // PENDING - Set by webapp while waiting for sync to complete
   READY: 'READY', // Ready to be replaced
   COMPLETE: 'COMPLETE', // The new user has been created
@@ -73,7 +73,7 @@ const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
 };
 
 const replaceUser = (originalContact) => {
-  const { _id, replaced: { by } } = originalContact;
+  const { _id, user_for_contact : { replaced: { by } } } = originalContact;
   return Promise
     .all([
       getNewContact(by),
@@ -83,7 +83,7 @@ const replaceUser = (originalContact) => {
       return createNewUser(originalUserSettings, newContact)
         .then(() => users.deleteUser(originalUserSettings.name));
     })
-    .then(() => originalContact.replaced.status = ReplaceStatus.COMPLETE);
+    .then(() => originalContact.user_for_contact.replaced.status = UserCreationStatus.COMPLETE);
 };
 
 /**
@@ -94,7 +94,9 @@ module.exports = {
   init: () => {
     const tokenLogin = config.get('token_login');
     if (!tokenLogin || !tokenLogin.enabled) {
-      throw new Error(`Configuration error. Token login must be enabled to use the user_replace transition.`);
+      throw new Error(
+        `Configuration error. Token login must be enabled to use the create_user_for_contacts transition.`
+      );
     }
   },
   filter: (doc) => {
@@ -103,13 +105,15 @@ module.exports = {
       return false;
     }
 
-    return doc.replaced && doc.replaced.status === ReplaceStatus.READY;
+    return doc.user_for_contact &&
+      doc.user_for_contact.replaced &&
+      doc.user_for_contact.replaced.status === UserCreationStatus.READY;
   },
   onMatch: change => {
     return replaceUser(change.doc)
       .then(() => true)
       .catch(err => {
-        change.doc.replaced.status = ReplaceStatus.ERROR;
+        change.doc.user_for_contact.replaced.status = UserCreationStatus.ERROR;
         err.changed = true;
         throw err;
       });

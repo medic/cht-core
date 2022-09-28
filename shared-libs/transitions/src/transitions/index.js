@@ -39,7 +39,7 @@ const AVAILABLE_TRANSITIONS = [
   'resolve_pending',
   'muting',
   'mark_for_outbound',
-  'user_replace'
+  'create_user_for_contacts'
 ];
 
 const transitions = [];
