@@ -13,6 +13,7 @@ env:
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
   ECR_PUBLIC_REPO: 'public.ecr.aws/s5s3h4s7'
   COUCHDB_LOG_LEVEL: 'debug'
+  AWS_DEFAULT_REGION: 'us-east-1'
 
 jobs:
 
@@ -200,6 +201,7 @@ jobs:
       with:
         registry-type: public
         aws-region: us-east-1
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
     - uses: actions/checkout@v2
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
