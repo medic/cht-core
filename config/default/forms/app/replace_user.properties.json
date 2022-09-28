@@ -4,6 +4,6 @@
     "context": {
         "person": true,
         "place": false,
-        "expression": "user._id === contact._id"
+        "expression": "user._id === contact._id && ['chw'].includes(user.role)"
     }
 }
