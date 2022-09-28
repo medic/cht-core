@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { DbService } from '@mm-services/db.service';
 import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
-import { CreateUserForContactsTransition } from '@mm-services/transitions/create_user_for_contacts.transition';
+import { CreateUserForContactsTransition } from '@mm-services/transitions/create-user-for-contacts.transition';
 import sinon from 'sinon';
 import { expect } from 'chai';
 

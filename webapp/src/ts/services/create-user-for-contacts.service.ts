@@ -54,7 +54,6 @@ export class CreateUserForContactsService {
     if (!originalContact.parent?._id || originalContact.parent._id !== newContact.parent._id) {
       throw new Error('The new contact must have the same parent as the original contact when replacing a user.');
     }
-    // TODO Currently the transitions are not run for online users so this is not used.
     const status = this.sessionService.isOnlineOnly() ? UserCreationStatus.READY : UserCreationStatus.PENDING;
     if(!originalContact.user_for_contact) {
       originalContact.user_for_contact = {};
