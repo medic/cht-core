@@ -53,12 +53,12 @@ export class CreateUserForContactsTransition extends Transition {
       return docs;
     }
 
+    if (this.createUserForContactsService.isReplaced(originalContact)) {
+      this.reparentReports(docs, originalContact);
+    }
     const userReplaceDoc = this.getUserReplaceDoc(docs);
     if (userReplaceDoc) {
       return this.replaceUser(docs, userReplaceDoc, originalContact);
-    }
-    if (this.createUserForContactsService.isReplaced(originalContact)) {
-      this.reparentReports(docs as ReportDoc[], originalContact);
     }
 
     return docs;
@@ -77,11 +77,14 @@ export class CreateUserForContactsTransition extends Transition {
   }
 
   private async replaceUser(docs: Doc[], userReplaceDoc: UserReplaceDoc, originalContact: Doc) {
-    // TODO Should change maybe to replacement_contact_id
-    //  and then just load the original_contact_id from the contact associated with the form...
-    const { original_contact_uuid, new_contact_uuid } = userReplaceDoc.fields;
-    if (originalContact._id !== original_contact_uuid) {
-      throw new Error('The only the contact associated with the currently logged in user can be replaced.');
+    const { new_contact_uuid } = userReplaceDoc.fields;
+    const originalContactId = userReplaceDoc.contact._id;
+
+    const isOriginalContact = () => originalContact._id === originalContactId;
+    const isReplacedContact = () => this.createUserForContactsService.isReplaced(originalContact) &&
+      this.createUserForContactsService.getReplacedBy(originalContact) === originalContactId;
+    if (!isOriginalContact() && !isReplacedContact()) {
+      throw new Error('Only the contact associated with the currently logged in user can be replaced.');
     }
     const newContact = await this.getNewContact(docs, new_contact_uuid);
     if (!newContact) {
@@ -108,21 +111,25 @@ export class CreateUserForContactsTransition extends Transition {
       });
   }
 
-  private reparentReports(docs: ReportDoc[], originalContact: Doc) {
+  private getReportDocs(docs: Doc[]) {
+    return docs
+      .filter(doc => doc.type === 'data_record')
+      .filter(doc => doc.contact) as ReportDoc[];
+  }
+
+  private reparentReports(docs: Doc[], originalContact: Doc) {
     const replacedById = this.createUserForContactsService.getReplacedBy(originalContact);
     if (!replacedById) {
       return;
     }
-    docs
-      .filter(doc => doc.type === 'data_record')
-      .filter(doc => doc.contact?._id === originalContact._id)
+    this.getReportDocs(docs)
+      .filter(doc => doc.contact._id === originalContact._id)
       .forEach(doc => doc.contact._id = replacedById);
   }
 }
 
-interface UserReplaceDoc extends Doc {
+interface UserReplaceDoc extends ReportDoc {
   fields: {
-    original_contact_uuid: string;
     new_contact_uuid: string;
   };
 }

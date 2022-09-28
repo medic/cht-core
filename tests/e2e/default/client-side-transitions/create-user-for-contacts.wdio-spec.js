@@ -92,9 +92,10 @@ const submitBasicForm = async () => {
 };
 
 const assertReplaceUserReport = (replaceUserReport, originalContactId) => {
-  const { original_contact_uuid, new_contact_uuid } = replaceUserReport.fields;
+  const { new_contact_uuid } = replaceUserReport.fields;
+  const { _id } = replaceUserReport.contact;
   expect(new_contact_uuid).to.not.be.empty;
-  expect(original_contact_uuid).to.equal(originalContactId);
+  expect(_id).to.equal(originalContactId);
 };
 
 const assertOriginalContactUpdated = async (originalContactId, newContactId) => {
