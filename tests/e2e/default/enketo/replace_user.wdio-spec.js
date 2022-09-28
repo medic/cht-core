@@ -35,6 +35,7 @@ const getQueuedMessages = () => utils.db.query('medic-admin/message_queue', { re
 
 const settings = {
   transitions: { create_user_for_contacts: true },
+  create_user_for_contacts: { replace_forms: ['replace_user'] },
   token_login: { enabled: true },
   app_url: constants.BASE_URL
 };

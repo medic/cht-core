@@ -421,6 +421,9 @@
       ]
     }
   },
+  "create_user_for_contacts": {
+    "replace_forms": ["replace_user"]
+  },
   "transitions": {
     "accept_patient_reports": false,
     "conditional_alerts": false,

@@ -16,9 +16,22 @@ export class CreateUserForContactsTransition extends Transition {
   }
 
   readonly name = 'create_user_for_contacts';
+  private readonly REPLACE_PROPERTY = 'replace_forms';
+  private replaceForms;
 
-  init() {
-    // TODO Update this to load configured forms based on passed in settings
+  /**
+   * @param {Object} settings - the CHT instance settings
+   * @return {Boolean} - whether the required config is present
+   */
+  init(settings) {
+    this.replaceForms = this.getReplaceForms(settings);
+    if (!this.replaceForms || !Array.isArray(this.replaceForms) || !this.replaceForms.length) {
+      console.warn(
+        `Configuration error. Config must define have a '${this.name}.${this.REPLACE_PROPERTY}' array defined.`
+      );
+
+      return false;
+    }
     return true;
   }
 
@@ -51,8 +64,16 @@ export class CreateUserForContactsTransition extends Transition {
     return docs;
   }
 
+  private getTransitionConfig(settings) {
+    return settings[this.name];
+  }
+
+  private getReplaceForms(settings) {
+    return this.getTransitionConfig(settings)?.[this.REPLACE_PROPERTY] || [];
+  }
+
   private getUserReplaceDoc(docs: Doc[]) {
-    return docs.find(doc => doc.form === 'replace_user') as UserReplaceDoc;
+    return docs.find(doc => this.replaceForms.includes(doc.form)) as UserReplaceDoc;
   }
 
   private async replaceUser(docs: Doc[], userReplaceDoc: UserReplaceDoc, originalContact: Doc) {
