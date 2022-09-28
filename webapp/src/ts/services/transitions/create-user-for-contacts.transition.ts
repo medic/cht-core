@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { DbService } from '@mm-services/db.service';
 import { Transition, Doc } from '@mm-services/transitions/transition';
 import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
+import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,7 @@ export class CreateUserForContactsTransition extends Transition {
   constructor(
     private dbService: DbService,
     private createUserForContactsService: CreateUserForContactsService,
+    private extractLineageService:ExtractLineageService,
   ) {
     super();
   }
@@ -90,15 +92,34 @@ export class CreateUserForContactsTransition extends Transition {
     if (!newContact) {
       throw new Error(`The new contact could not be found [${new_contact_uuid}].`);
     }
-
     this.createUserForContactsService.setReplaced(originalContact, newContact);
-    return [...docs, originalContact];
+    const updatedDocs = [...docs, originalContact];
+
+    const parentPlace = await this.getParentDoc(newContact);
+    if (parentPlace?.contact?._id === originalContactId) {
+      parentPlace.contact = this.extractLineageService.extract(newContact);
+      updatedDocs.push(parentPlace);
+    }
+
+    return updatedDocs;
   }
 
-  private async getNewContact(docs: Doc[], newContactId: string): Promise<Doc> {
+  private async getParentDoc(doc: ContactDoc) {
+    return this.dbService
+      .get()
+      .get(doc.parent._id)
+      .catch(err => {
+        if (err.status === 404) {
+          return;
+        }
+        throw err;
+      }) as ContactDoc;
+  }
+
+  private async getNewContact(docs: Doc[], newContactId: string): Promise<ContactDoc> {
     const newContact = docs.find(doc => doc._id === newContactId);
     if (newContact) {
-      return newContact;
+      return newContact as ContactDoc;
     }
     return this.dbService
       .get()
@@ -136,6 +157,12 @@ interface UserReplaceDoc extends ReportDoc {
 
 interface ReportDoc extends Doc {
   contact: {
+    _id: string;
+  };
+}
+
+interface ContactDoc extends ReportDoc {
+  parent: {
     _id: string;
   };
 }

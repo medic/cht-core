@@ -14,6 +14,9 @@ const common = require('../../../page-objects/default/common/common.wdio.page');
 const DISTRICT = {
   _id: 'fixture:district',
   type: 'district_hospital',
+  contact: {
+    _id: 'fixture:user:original_person',
+  }
 };
 
 const ORIGINAL_USER = {
@@ -197,6 +200,8 @@ describe('Create user for contacts', () => {
       expect(transitions.create_user_for_contacts.ok).to.be.true;
       await assertOriginalContactUpdated(originalContactId, new_contact_uuid);
       await assertOriginalUserDisabled(originalContactId);
+      // Set as primary contact
+      expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal(new_contact_uuid);
       // New user created
       const newUserSettings = await utils.getUserSettings({ contactId: new_contact_uuid });
       newUsers.push(newUserSettings.name);
@@ -238,9 +243,59 @@ describe('Create user for contacts', () => {
 
       // Transition successful
       expect(transitions.create_user_for_contacts.ok).to.be.true;
-      // Original contact updated
       await assertOriginalContactUpdated(originalContactId, new_contact_uuid);
       await assertOriginalUserDisabled(originalContactId);
+      // Set as primary contact
+      expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal(new_contact_uuid);
+      // New user created
+      const newUserSettings = await utils.getUserSettings({ contactId: new_contact_uuid });
+      newUsers.push(newUserSettings.name);
+      assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
+      const loginLink = await getTextedLoginLink(newUserSettings);
+
+      // Open the texted link
+      await commonPage.logout();
+      await browser.url(loginLink);
+      await commonPage.waitForPageLoaded();
+      const [cookie] = await browser.getCookies('userCtx');
+      expect(cookie.value).to.contain(newUserSettings.name);
+    });
+
+    it('does not assign new person as primary contact of parent place if original person was not primary', async () => {
+      await utils.updateSettings(SETTINGS, 'sentinel');
+      const district = await utils.getDoc(DISTRICT._id);
+      district.contact = { _id: 'not-the-original-contact' };
+      await utils.saveDoc(district);
+
+      const originalContactId = await loginAsOfflineUser();
+
+      await commonPage.goToPeople(originalContactId);
+      await submitReplaceUserForm();
+
+      // Logout triggered immediately
+      await (await loginPage.loginButton()).waitForDisplayed();
+
+      await loginPage.cookieLogin();
+      await commonPage.goToReports();
+      const reportId = await getLastSubmittedReportId();
+
+      // Replace user report created
+      const replaceUserReport = await utils.getDoc(reportId);
+      assertReplaceUserReport(replaceUserReport, originalContactId);
+      const { new_contact_uuid } = replaceUserReport.fields;
+      // New contact created
+      const newContact = await utils.getDoc(new_contact_uuid);
+      expect(newContact.phone).to.equal(ORIGINAL_USER.phone);
+
+      await sentinelUtils.waitForSentinel(originalContactId);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContactId);
+
+      // Transition successful
+      expect(transitions.create_user_for_contacts.ok).to.be.true;
+      await assertOriginalContactUpdated(originalContactId, new_contact_uuid);
+      await assertOriginalUserDisabled(originalContactId);
+      // Primary contact not updated
+      expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal('not-the-original-contact');
       // New user created
       const newUserSettings = await utils.getUserSettings({ contactId: new_contact_uuid });
       newUsers.push(newUserSettings.name);
