@@ -11,6 +11,7 @@ env:
   INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
   DOCKERHUB_USERNAME: 'dockermedic'
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
+  ECR_PUBLIC_REPO: 'public.ecr.aws/s5s3h4s7'
   COUCHDB_LOG_LEVEL: 'debug'
 
 jobs:
@@ -193,6 +194,11 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    - name: Login to Public Amazon ECR
+      id: login-ecr-public
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        registry-type: public
     - uses: actions/checkout@v2
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
@@ -222,10 +228,6 @@ jobs:
           aws-region: eu-west-2
         if: ${{ env.INTERNAL_CONTRIBUTOR }}
       - uses: actions/checkout@v2
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-        if: ${{ env.INTERNAL_CONTRIBUTOR }}
       - name: Get branch name
         uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
       - name: Set ENV
