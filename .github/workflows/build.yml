@@ -199,6 +199,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
       with:
         registry-type: public
+        aws-region: us-east-1
     - uses: actions/checkout@v2
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
