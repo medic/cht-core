@@ -2,7 +2,6 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-const environment = require('../../../src/environment');
 const transition = require('../../../src/transitions/create_user_for_contacts');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
@@ -52,12 +51,13 @@ describe('create_user_for_contacts', () => {
   });
 
   describe('init', () => {
-    it('succeeds if token_login is enabled', () => {
-      sinon.stub(config, 'get').returns({ enabled: true });
+    it('succeeds if token_login is enabled and an app_url is set', () => {
+      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true });
+      config.get.withArgs('app_url').returns('https://my.cht.instance');
 
       expect(() => transition.init()).to.not.throw();
-      expect(config.get.callCount).to.equal(1);
-      expect(config.get.args[0]).to.deep.equal(['token_login']);
+      expect(config.get.callCount).to.equal(2);
+      expect(config.get.args).to.deep.equal([['token_login'], ['app_url']]);
     });
 
     it('fails if token_login is not enabled', () => {
@@ -76,6 +76,16 @@ describe('create_user_for_contacts', () => {
         .throw('Configuration error. Token login must be enabled to use the create_user_for_contacts transition.');
       expect(config.get.callCount).to.equal(1);
       expect(config.get.args[0]).to.deep.equal(['token_login']);
+    });
+
+    it('fails if app_url is not set', () => {
+      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true });
+      config.get.withArgs('app_url').returns(undefined);
+
+      expect(() => transition.init()).to
+        .throw('Configuration error. The app_url must be defined to use the create_user_for_contacts transition.');
+      expect(config.get.callCount).to.equal(2);
+      expect(config.get.args).to.deep.equal([['token_login'], ['app_url']]);
     });
   });
 
@@ -134,16 +144,14 @@ describe('create_user_for_contacts', () => {
   });
 
   describe(`onMatch`, () => {
-    const originalApiUrl = environment.apiUrl;
-
     let getOrCreatePerson;
     let getUserSettings;
     let createUser;
     let deleteUser;
     let usersGet;
 
-    before(() => environment.apiUrl = 'https://my.cht.instance');
     beforeEach(() => {
+      sinon.stub(config, 'get').withArgs('app_url').returns('https://my.cht.instance');
       getOrCreatePerson = sinon.stub(people, 'getOrCreatePerson');
       getOrCreatePerson.withArgs(ORIGINAL_CONTACT._id).resolves(ORIGINAL_CONTACT);
       getOrCreatePerson.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
@@ -152,7 +160,6 @@ describe('create_user_for_contacts', () => {
       deleteUser = sinon.stub(users, 'deleteUser').resolves();
       usersGet = sinon.stub(db.users, 'get').rejects({ status: 404 });
     });
-    after(() => environment.apiUrl = originalApiUrl);
 
     const expectInitialDataRetrieved = (originalContact, newContact) => {
       expect(getOrCreatePerson.withArgs(newContact._id).callCount).to.equal(1);
@@ -173,7 +180,7 @@ describe('create_user_for_contacts', () => {
         fullname: newContact.name,
       });
       expect(createUser.args[0][0].username).to.match(/^new-contact-\d\d\d\d$/);
-      expect(createUser.args[0][1]).to.equal(environment.apiUrl);
+      expect(createUser.args[0][1]).to.equal('https://my.cht.instance');
     };
 
     const expectUserDeleted = (originalUser) => {
@@ -220,7 +227,7 @@ describe('create_user_for_contacts', () => {
           fullname: NEW_CONTACT.name,
         });
         expect(createUser.args[0][0].username).to.match(/^new-contact-\d\d\d\d$/);
-        expect(createUser.args[0][1]).to.equal(environment.apiUrl);
+        expect(createUser.args[0][1]).to.equal('https://my.cht.instance');
         expect(usersGet.args[2][0]).to.include(createUser.args[0][0].username);
         expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
       });

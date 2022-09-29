@@ -1,6 +1,5 @@
 const config = require('../config');
 const db = require('../db');
-const environment = require('../environment');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
@@ -61,7 +60,7 @@ const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
         contact: _id,
         fullname: name,
       };
-      return users.createUser(user, environment.apiUrl)
+      return users.createUser(user, config.get('app_url'))
         .catch(err => {
           if (!err.message || typeof err.message === 'string') {
             throw err;
@@ -96,6 +95,13 @@ module.exports = {
     if (!tokenLogin || !tokenLogin.enabled) {
       throw new Error(
         `Configuration error. Token login must be enabled to use the create_user_for_contacts transition.`
+      );
+    }
+
+    const appUrl = config.get('app_url');
+    if(!appUrl) {
+      throw new Error(
+        'Configuration error. The app_url must be defined to use the create_user_for_contacts transition.'
       );
     }
   },

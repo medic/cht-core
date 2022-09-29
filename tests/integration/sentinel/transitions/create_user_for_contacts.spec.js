@@ -34,10 +34,12 @@ const newUsers = [];
 
 const getSettings = ({
   transitions: { create_user_for_contacts = true } = {},
-  token_login: { enabled = true } = {}
+  token_login: { enabled = true } = {},
+  app_url = 'http://localhost:5988',
 } = {}) => ({
   transitions: { create_user_for_contacts },
   token_login: { enabled },
+  app_url,
 });
 
 const getQueuedMessages = () => utils.db.query('medic-admin/message_queue', { reduce: false, include_docs: true })
@@ -128,6 +130,18 @@ describe('create_user_for_contacts', () => {
     await utils.updateSettings(getSettings({ token_login: { enabled: false } }), 'sentinel');
     const logs = await collectLogs();
     expect(logs.find(log => log.match(tokenLoginErrorPattern))).to.exist;
+    expect(logs.find(log => log.match(transitionsDisabledPattern))).to.exist;
+  });
+
+  it('disables transitions if replace_user is enabled but an app_url is not set', async () => {
+    const appUrlErrorPattern =
+      /Configuration error\. The app_url must be defined to use the create_user_for_contacts transition\./;
+    const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
+
+    const collectLogs = await utils.collectSentinelLogs(appUrlErrorPattern, transitionsDisabledPattern);
+    await utils.updateSettings(getSettings({ app_url: '' }), 'sentinel');
+    const logs = await collectLogs();
+    expect(logs.find(log => log.match(appUrlErrorPattern))).to.exist;
     expect(logs.find(log => log.match(transitionsDisabledPattern))).to.exist;
   });
 
