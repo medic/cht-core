@@ -9,6 +9,7 @@ const waitForMessagesInLHS = async () => await browser.waitUntil(
 
 const listMessageHeading = (listElement) => listElement.$('.heading h4');
 const listMessageSummary = (listElement) => listElement.$('.summary p');
+const listMessageLineage = (listElement) => listElement.$('.detail');
 
 //RHS Elements
 
@@ -32,6 +33,7 @@ module.exports = {
   waitForMessagesInLHS,
   listMessageHeading,
   listMessageSummary,
+  listMessageLineage,
   clickLhsEntry,
   messageDetailsHeader,
   messageContentText,
