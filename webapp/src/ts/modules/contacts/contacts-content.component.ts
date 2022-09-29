@@ -338,7 +338,6 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         doc: this.selectedContact.doc,
         contactSummary: this.selectedContact.summary.context,
         contactForms: false,
-        // whitelistedIds,
       },
       (error, forms) => {
         if (error) {
