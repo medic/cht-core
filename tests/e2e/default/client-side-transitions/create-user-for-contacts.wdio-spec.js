@@ -87,6 +87,7 @@ const submitReplaceUserForm = async () => {
   await replaceUserForm.selectContactDobUnknown();
   await replaceUserForm.selectContactAgeYears(22);
   await replaceUserForm.selectContactSex(replaceUserForm.SEX.female);
+  await genericForm.nextPage();
   await (await genericForm.submitButton()).click();
   await commonPage.waitForPageLoaded();
 };
