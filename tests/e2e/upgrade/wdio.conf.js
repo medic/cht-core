@@ -23,7 +23,7 @@ const UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('upgrade-service
 const CHT_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('cht-');
 const CHT_DATA_FOLDER = utils.makeTempDir('cht-');
 const UPGRADE_SERVICE_DC = path.join(UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
-const MAIN_BRANCH = 'medic:medic:master';
+const MAIN_BRANCH = 'medic:medic:7826-dupe-public-ecr';
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
