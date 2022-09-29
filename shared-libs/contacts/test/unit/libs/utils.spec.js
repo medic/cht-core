@@ -1,5 +1,5 @@
 const chai = require('chai');
-const utils = require('../../../../../api/src/controllers/utils');
+const utils = require('../../../src/libs/utils');
 const sinon = require('sinon');
 
 let clock;
