@@ -13,7 +13,6 @@ env:
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
   ECR_PUBLIC_REPO: 'public.ecr.aws/s5s3h4s7'
   COUCHDB_LOG_LEVEL: 'debug'
-  AWS_DEFAULT_REGION: 'us-east-1'
 
 jobs:
 
@@ -179,32 +178,37 @@ jobs:
 
     steps:
     - name: Delete image artifacts
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
       uses: geekyeggo/delete-artifact@v1
       with:
         name: cht-images
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
     - name: Configure AWS credentials
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-
+        aws-region: eu-west-2
     - name: Login to Amazon ECR
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      with:
-        aws-region: eu-west-2
 
+    - name: Configure AWS credentials Public
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
     - name: Login to Public Amazon ECR
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
       id: login-ecr-public
       uses: aws-actions/amazon-ecr-login@v1
       with:
         registry-type: public
         aws-region: us-east-1
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
     - uses: actions/checkout@v2
     - name: Get branch name
