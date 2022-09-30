@@ -71,6 +71,7 @@ const dockerComposeCmd = (...params) => {
     cmd.on('close', () => resolve(output));
   });
 };
+const exit = () => dockerComposeCmd('down');
 
 const startUpgradeService = async () => {
   await dockerComposeCmd('up', '-d');
@@ -82,6 +83,13 @@ const startUpgradeService = async () => {
     }
     await utils.delayPromise(500);
   } while (--retries);
+};
+
+const startTimeout = () => {
+  setTimeout(async () => {
+    await utils.tearDownServices();
+    exit();
+  }, 120 * 1000);
 };
 
 // Override specific properties from wdio base config
@@ -96,6 +104,7 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
     await getUpgradeServiceDockerCompose();
     await getMainCHTDockerCompose();
     await startUpgradeService();
+    startTimeout();
     await utils.listenForApi();
   },
   mochaOpts: {
@@ -103,8 +112,6 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
     timeout: 120 * 1000,
   },
 });
-
-const exit = () => dockerComposeCmd('down');
 
 //do something when app is closing
 process.on('exit', exit);
