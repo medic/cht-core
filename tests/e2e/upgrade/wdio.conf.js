@@ -88,7 +88,7 @@ const startUpgradeService = async () => {
 const startTimeout = () => {
   setTimeout(async () => {
     await utils.tearDownServices();
-    exit();
+    process.exit(1);
   }, 120 * 1000);
 };
 
