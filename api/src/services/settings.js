@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const path = require('path');
 
+const config = require('../config');
 const db = require('../db');
 const environment = require('../environment');
 const { info } = require('../logger');
@@ -32,7 +33,7 @@ const doExtend = (target, source) => {
 };
 
 const getDeprecatedTransitions = () => {
-  const transitions = require('@medic/transitions')();
+  const transitions = config.getTransitionsLib();
 
   return transitions
     .getDeprecatedTransitions()
