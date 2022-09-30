@@ -40,6 +40,8 @@ const getMainCHTDockerCompose = async () => {
   }
 };
 
+const testTimeout = 250 * 1000;
+
 const dockerComposeCmd = (...params) => {
   const env = {
     ...process.env,
@@ -85,11 +87,11 @@ const startUpgradeService = async () => {
   } while (--retries);
 };
 
-const startTimeout = () => {
-  setTimeout(async () => {
+const servicesStartTimeout = () => {
+  return setTimeout(async () => {
     await utils.tearDownServices();
     process.exit(1);
-  }, 120 * 1000);
+  }, testTimeout);
 };
 
 // Override specific properties from wdio base config
@@ -104,12 +106,13 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
     await getUpgradeServiceDockerCompose();
     await getMainCHTDockerCompose();
     await startUpgradeService();
-    startTimeout();
+    const tooLongTimeout = servicesStartTimeout();
     await utils.listenForApi();
+    clearTimeout(tooLongTimeout);
   },
   mochaOpts: {
     ui: 'bdd',
-    timeout: 120 * 1000,
+    timeout: testTimeout,
   },
 });
 
