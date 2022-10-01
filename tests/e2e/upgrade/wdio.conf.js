@@ -89,6 +89,12 @@ const startUpgradeService = async () => {
 
 const servicesStartTimeout = () => {
   return setTimeout(async () => {
+    console.warn('Services took too long to start. Shutting down...');
+    console.info(`
+      If you are seeing this locally, it can mean that your internet is too slow to download all images in the 
+      allotted time. 
+      Either run the test multiple times until you load all images, download images manually or increase this timeout.
+    `);
     await utils.tearDownServices();
     process.exit(1);
   }, testTimeout);
