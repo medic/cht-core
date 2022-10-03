@@ -36,7 +36,7 @@ describe('Reports Content Component', () => {
       { selector: Selectors.getSelectedReportsSummaries, value: {} },
       { selector: Selectors.getForms, value: [] },
       { selector: Selectors.getLoadingContent, value: false },
-      { selector: Selectors.getSelectMode, value: false },
+      { selector: Selectors.getSelectMode, value: { available: false, active: false } },
     ];
     searchFiltersService = { freetextSearch: sinon.stub() };
     changesService = { subscribe: sinon.stub().resolves(of({})) };
@@ -155,7 +155,7 @@ describe('Reports Content Component', () => {
 
     it('callback should handle deletions when in select mode', () => {
       const callback = changesService.subscribe.args[0][0].callback;
-      store.overrideSelector(Selectors.getSelectMode, true);
+      store.overrideSelector(Selectors.getSelectMode, { available: true, active: true });
       store.refreshState();
       fixture.detectChanges();
       const removeSelectedReport = sinon.stub(ReportsActions.prototype, 'removeSelectedReport');
@@ -205,21 +205,21 @@ describe('Reports Content Component', () => {
     });
 
     it('should do nothing when not in select mode', () => {
-      component.selectMode = false;
+      component.selectModeActive = false;
       component.toggleExpand({ _id: 'thing' });
       expect(updateSelectedReportItem.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
     });
 
     it('should do nothing when in select mode but no report', () => {
-      component.selectMode = true;
+      component.selectModeActive = true;
       component.toggleExpand(undefined);
       expect(updateSelectedReportItem.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
     });
 
     it('should toggle expanded and load', () => {
-      component.selectMode = true;
+      component.selectModeActive = true;
       const report = { _id: 'report_id' };
       component.toggleExpand(report);
       expect(updateSelectedReportItem.callCount).to.equal(1);
@@ -229,7 +229,7 @@ describe('Reports Content Component', () => {
     });
 
     it('should only toggle expanded when report already loaded', () => {
-      component.selectMode = true;
+      component.selectModeActive = true;
       const report = { _id: 'report_id', doc: { _id: 'report_id', value: '1' } };
       component.toggleExpand(report);
       expect(updateSelectedReportItem.callCount).to.equal(1);
@@ -238,7 +238,7 @@ describe('Reports Content Component', () => {
     });
 
     it('should only toggle expanded when report already expanded', () => {
-      component.selectMode = true;
+      component.selectModeActive = true;
       const report = { _id: 'report_id', expanded: true };
       component.toggleExpand(report);
       expect(updateSelectedReportItem.callCount).to.equal(1);
@@ -256,14 +256,14 @@ describe('Reports Content Component', () => {
     });
 
     it('should do nothing when not in select mode', () => {
-      component.selectMode = false;
+      component.selectModeActive = false;
       const report = { _id: 'report' };
       component.deselect(report, event);
       expect(removeSelectedReport.callCount).to.equal(0);
     });
 
     it('should call removeSelectedReport when in select mode', () => {
-      component.selectMode = true;
+      component.selectModeActive = true;
       const report = { _id: 'report' };
       component.deselect(report, event);
       expect(removeSelectedReport.callCount).to.equal(1);

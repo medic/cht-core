@@ -5,31 +5,7 @@
       <!-- LEFT PANE -->
       <div
         class="general-actions left-pane"
-        *ngIf="currentTab === 'reports' && selectMode"
-        [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
-        <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" (click)="selectAll()" mmAuth="can_edit">
-            <span class="fa fa-check-square-o"></span>
-            <p>{{'select.mode.select.all' | translate}}</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption deselect-all" (click)="deselectAll()" mmAuth="can_edit">
-            <span class="fa fa-square-o"></span>
-            <p>{{'select.mode.deselect.all' | translate}}</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_edit,can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)" [ngClass]="{'mm-icon-disabled': !selectedReportsDocs.length}">
-            <span class="fa fa-trash-o"></span>
-            <p>{{'select.mode.delete.all' | translate}}</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" (click)="setSelect(false)" mmAuth="can_edit">
-            <span class="fa fa-times-circle"></span>
-            <p>{{'select.mode.stop' | translate}}</p>
-          </a>
-        </div>
-      </div>
-
-      <div
-        class="general-actions left-pane"
-        *ngIf="currentTab === 'reports' && !selectMode"
+        *ngIf="currentTab === 'reports' && !selectModeActive"
         [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
         <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!nonContactForms?.length">
           <a
@@ -49,10 +25,6 @@
               </a>
             </li>
           </ul>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mmAuth="can_edit,can_bulk_delete_reports" (click)="setSelect(true)" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
-            <span class="fa fa-check-circle"></span>
-            <p>{{'select.mode.start' | translate}}</p>
-          </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption"
              mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_messages']"
              *ngIf="actionBar?.left?.exportFn"
@@ -147,16 +119,7 @@
         class="detail-actions right-pane"
         *ngIf="currentTab === 'reports'"
         [ngClass]="{ 'col-sm-6': sidebarFilter?.isOpen, 'col-sm-8': !sidebarFilter?.isOpen }">
-        <div *ngIf="selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && snapshotData?.name === 'reports.detail'">
-            <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_edit,can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)">
-              <span class="fa fa-trash-o"></span>
-              <p>{{'select.mode.delete.all' | translate}}</p>
-            </a>
-          </div>
-        </div>
-
-        <div *ngIf="!selectMode">
+        <div *ngIf="!selectModeActive">
           <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>

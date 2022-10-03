@@ -41,7 +41,7 @@ describe('Reports effects', () => {
   beforeEach(waitForAsync(() => {
     actions$ = new Observable<Action>();
     const mockedSelectors = [
-      { selector: Selectors.getSelectMode, value: false },
+      { selector: Selectors.getSelectMode, value: { available: false, active: false } },
       { selector: Selectors.getSelectedReports, value: [] },
       { selector: Selectors.getListReport, value: {} },
       { selector: Selectors.getForms, value: [] },
@@ -450,7 +450,7 @@ describe('Reports effects', () => {
     });
 
     it('should set empty model when in select mode and no selected docs', waitForAsync(() => {
-      store.overrideSelector(Selectors.getSelectMode, true);
+      store.overrideSelector(Selectors.getSelectMode, { available: true, active: true });
       store.overrideSelector(Selectors.getSelectedReportsDocs, []);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       actions$ = of(ReportActionList.setRightActionBar);
@@ -461,7 +461,7 @@ describe('Reports effects', () => {
     }));
 
     it('should set empty model when in select mode and selected docs', waitForAsync(() => {
-      store.overrideSelector(Selectors.getSelectMode, true);
+      store.overrideSelector(Selectors.getSelectMode, { available: true, active: true });
       store.overrideSelector(Selectors.getSelectedReportsDocs, [{ _id: 'doc' }]);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       actions$ = of(ReportActionList.setRightActionBar);
@@ -472,7 +472,7 @@ describe('Reports effects', () => {
     }));
 
     it('should set empty model when not in select mode and no selected docs', waitForAsync(() => {
-      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
       store.overrideSelector(Selectors.getSelectedReportsDocs, []);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       actions$ = of(ReportActionList.setRightActionBar);
@@ -488,7 +488,7 @@ describe('Reports effects', () => {
         verified: false,
         content_type: 'xml',
       };
-      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
       store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       actions$ = of(ReportActionList.setRightActionBar);
@@ -508,7 +508,7 @@ describe('Reports effects', () => {
         content_type: 'xml',
         contact: false,
       };
-      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
       store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       actions$ = of(ReportActionList.setRightActionBar);
@@ -529,7 +529,7 @@ describe('Reports effects', () => {
         contact: { _id: 'the_contact' },
       };
       dbService.get.resolves({ _id: 'the_contact', phone: '12345' });
-      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
       store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
       store.overrideSelector(Selectors.getVerifyingReport, true);
 
@@ -556,7 +556,7 @@ describe('Reports effects', () => {
         contact: { _id: 'non-existing' },
       };
       dbService.get.rejects({ error: 'boom' });
-      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
       store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
       store.overrideSelector(Selectors.getVerifyingReport, false);
 
@@ -576,7 +576,7 @@ describe('Reports effects', () => {
 
     it('openSendMessageModal function should open correct modal', () => {
       const report = {};
-      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
       store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       modalService.show.resolves();
@@ -597,7 +597,7 @@ describe('Reports effects', () => {
 
     it('should catch modal show promise rejections', () => {
       const report = {};
-      store.overrideSelector(Selectors.getSelectMode, false);
+      store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
       store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       modalService.show.rejects();
@@ -618,11 +618,11 @@ describe('Reports effects', () => {
   });
 
   describe('setSelectMode', () => {
-    let setSelectMode;
+    let setSelectModeStatus;
     let unsetSelected;
 
     beforeEach(() => {
-      setSelectMode = sinon.stub(GlobalActions.prototype, 'setSelectMode');
+      setSelectModeStatus = sinon.stub(GlobalActions.prototype, 'setSelectModeStatus');
       unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
     });
 
@@ -634,7 +634,7 @@ describe('Reports effects', () => {
       ]);
 
       effects.setSelectMode.subscribe();
-      expect(setSelectMode.callCount).to.equal(0);
+      expect(setSelectModeStatus.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(0);
     });
 
@@ -642,8 +642,8 @@ describe('Reports effects', () => {
       actions$ = of(ReportActionList.setSelectMode(true));
       effects.setSelectMode.subscribe();
 
-      expect(setSelectMode.callCount).to.equal(1);
-      expect(setSelectMode.args[0]).to.deep.equal([true]);
+      expect(setSelectModeStatus.callCount).to.equal(1);
+      expect(setSelectModeStatus.args[0]).to.deep.equal([{ active: true }]);
       expect(unsetSelected.callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
@@ -653,8 +653,8 @@ describe('Reports effects', () => {
       actions$ = of(ReportActionList.setSelectMode(false));
       effects.setSelectMode.subscribe();
 
-      expect(setSelectMode.callCount).to.equal(1);
-      expect(setSelectMode.args[0]).to.deep.equal([false]);
+      expect(setSelectModeStatus.callCount).to.equal(1);
+      expect(setSelectModeStatus.args[0]).to.deep.equal([{ active: false }]);
       expect(unsetSelected.callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/reports']]);

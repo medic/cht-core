@@ -175,7 +175,7 @@ describe('Reports Component', () => {
     });
 
     it('should do nothing when not in select mode', () => {
-      component.selectMode = false;
+      component.selectMode = { available: false, active: false };
       component.toggleSelected({ _id: 'report_id' });
 
       expect(addSelectedReport.callCount).to.equal(0);
@@ -184,7 +184,7 @@ describe('Reports Component', () => {
     });
 
     it('should add selected report when in select mode and not already selected', () => {
-      component.selectMode = true;
+      component.selectMode = { available: true, active: true };
       component.selectedReports = null;
 
       component.toggleSelected({ _id: 'rid' });
@@ -196,7 +196,7 @@ describe('Reports Component', () => {
     });
 
     it('should add selected report when in select mode and not already selected with some selected reports', () => {
-      component.selectMode = true;
+      component.selectMode = { available: true, active: true };
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
 
       component.toggleSelected({ _id: 'rid' });
@@ -208,7 +208,7 @@ describe('Reports Component', () => {
     });
 
     it('should remove selected report if in select mode and already selected', () => {
-      component.selectMode = true;
+      component.selectMode = { available: true, active: true };
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'rid' }];
 
       component.toggleSelected({ _id: 'rid' });

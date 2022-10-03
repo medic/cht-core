@@ -3,14 +3,14 @@
     <reports-filters
       *ngIf="!useSidebarFilter"
       (search)="search($event)"
-      [disabled]="selectMode && selectedReports?.length">
+      [disabled]="selectMode?.active && selectedReports?.length">
     </reports-filters>
     <mm-navigation></mm-navigation>
     <mm-search-bar
       *ngIf="useSidebarFilter"
       (toggleFilter)="toggleFilter()"
       (search)="search($event)"
-      [disabled]="selectMode && selectedReports?.length"
+      [disabled]="selectMode?.active && selectedReports?.length"
       [showFilter]="true">
     </mm-search-bar>
   </div>
@@ -22,9 +22,9 @@
     <div
       id="reports-list"
       class="inbox-items left-pane"
-      [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen }">
+      [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen, 'select-mode-available': selectMode?.available }">
 
-      <div class="selection-count" *ngIf="selectMode">
+      <div class="selection-count" *ngIf="selectMode?.active">
         <span *ngIf="selectedReports?.length === 1">{{'select.mode.count.singular' | translate}}</span>
         <span *ngIf="selectedReports?.length !== 1" translate [translateParams]="{ number: selectedReports?.length || 0 | localizeNumber }">select.mode.count.plural</span>
       </div>
@@ -86,7 +86,7 @@
         class="col-sm-3 sidebar-filter-wrapper"
         *ngIf="useSidebarFilter"
         (search)="search($event)"
-        [disabled]="selectMode && selectedReports?.length">
+        [disabled]="selectMode?.active && selectedReports?.length">
       </mm-reports-sidebar-filter>
     </div>
   </div>

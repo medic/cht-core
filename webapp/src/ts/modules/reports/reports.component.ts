@@ -146,6 +146,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngAfterViewInit() {
+    await this.enableBulkDelete();
     const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
     this.useSidebarFilter = !isDisabled;
     this.search();
@@ -166,9 +167,14 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     // when navigating back from another tab, if there are reports in the state, angular will try to render them
     this.reportsActions.resetReportsList();
     this.reportsActions.setSelectedReports([]);
-    this.globalActions.setSelectMode(false);
+    this.globalActions.setSelectModeStatus({ active: false, available: false });
     this.globalActions.unsetSelected();
     this.globalActions.setLeftActionBar({});
+  }
+
+  private async enableBulkDelete() {
+    const canBulkDelete = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
+    this.globalActions.setSelectModeStatus({ available: canBulkDelete, active: false });
   }
 
   private getReportHeading(form, report) {
@@ -313,7 +319,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   toggleSelected(report) {
-    if (!this.selectMode) {
+    if (!this.selectMode?.active) {
       // let the routerLink handle navigation
       return;
     }

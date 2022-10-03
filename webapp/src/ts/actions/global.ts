@@ -22,7 +22,7 @@ export const Actions = {
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
   setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
   clearSidebarFilter: createAction('CLEAR_SIDEBAR_FILTER'),
-  setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
+  setSelectModeStatus: createSingleValueAction('SET_SELECT_MODE_STATUS', 'selectModeStatus'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
   setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
@@ -110,8 +110,8 @@ export class GlobalActions {
     return this.store.dispatch(Actions.clearSidebarFilter());
   }
 
-  setSelectMode(selectMode) {
-    return this.store.dispatch(Actions.setSelectMode(selectMode));
+  setSelectModeStatus(selectModeStatus) {
+    return this.store.dispatch(Actions.setSelectModeStatus(selectModeStatus));
   }
 
   setLoadingShowContent(id) {

@@ -1,5 +1,5 @@
 <ng-container>
-  <div class="empty-selection" *ngIf="loadingContent && !selectMode">
+  <div class="empty-selection" *ngIf="loadingContent && !selectModeActive">
     <div>
       <div class="loader"></div>
     </div>
@@ -9,9 +9,11 @@
     <div>{{'No report selected' | translate }}</div>
   </div>
 
-  <div id="reports-content" class="report-wrap" *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
+  <div id="reports-content"
+    class="report-wrap"
+    *ngIf="selectModeActive || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
 
-    <div class="selection-count" *ngIf="selectMode && selectedReports.length">
+    <div class="selection-count" *ngIf="selectModeActive && selectedReports.length">
       <span *ngIf="selectedReports.length === 1">{{'select.mode.count.singular' | translate}}</span>
       <span *ngIf="selectedReports.length !== 1" translate
         [translateParams]="{ number: selectedReports?.length | localizeNumber }">select.mode.count.plural</span>
@@ -21,7 +23,7 @@
 
       <div class="item-summary" (click)="toggleExpand(selection)">
         <span class="icon" [innerHTML]="summaries[$index] | formIcon:forms"></span>
-        <a class="deselect" *ngIf="selectMode" (click)="deselect(selection, $event)">
+        <a class="deselect" *ngIf="selectModeActive" (click)="deselect(selection, $event)">
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
@@ -150,7 +152,7 @@
       </div>
     </div>
 
-    <div *ngIf="loadingContent && selectMode">
+    <div *ngIf="loadingContent && selectModeActive">
       <div class="loader"></div>
     </div>
 

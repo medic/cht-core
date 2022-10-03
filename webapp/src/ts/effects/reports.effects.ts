@@ -80,7 +80,7 @@ export class ReportsEffects {
         const model = { ...selected };
         let refreshing = true;
 
-        if (selectMode) {
+        if (selectMode?.active) {
           const existing = this.selectedReports?.find(report => report?._id === model?.doc?._id);
           if (existing) {
             model.loading = false;
@@ -177,7 +177,7 @@ export class ReportsEffects {
       tap(([, selectMode, selectedReportsDocs, verifyingReport ]) => {
         const model:any = {};
         const doc =
-          !selectMode &&
+          !selectMode?.active &&
           selectedReportsDocs &&
           selectedReportsDocs.length === 1 &&
           selectedReportsDocs[0];
@@ -213,7 +213,7 @@ export class ReportsEffects {
     return this.actions$.pipe(
       ofType(ReportActionList.setSelectMode),
       tap(({ payload: { selectMode } }) => {
-        this.globalActions.setSelectMode(selectMode);
+        this.globalActions.setSelectModeStatus({ active: selectMode });
         this.globalActions.unsetSelected();
         this.router.navigate(['/reports']);
       }),

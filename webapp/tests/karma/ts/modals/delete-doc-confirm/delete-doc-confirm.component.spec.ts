@@ -123,7 +123,7 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should not navigate if it is selectMode', fakeAsync(() => {
       router.url = '/reports/id';
-      component.selectMode = true;
+      component.selectModeActive = true;
       fixture.detectChanges();
 
       component.submit();
@@ -137,7 +137,7 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should not navigate if url is not from reports or contacts', fakeAsync(() => {
       router.url = '/something';
-      component.selectMode = false;
+      component.selectModeActive = false;
       component.model = {
         doc: {
           id: 'id',
@@ -160,7 +160,7 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should navigate if it is not selectMode and url is from reports', fakeAsync(() => {
       router.url = '/reports/id';
-      component.selectMode = false;
+      component.selectModeActive = false;
       component.model = {
         doc: {
           id: 'id',
@@ -184,7 +184,7 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should navigate if it is not selectMode and url is from contact with not parent place', fakeAsync(() => {
       router.url = '/contacts/id';
-      component.selectMode = false;
+      component.selectModeActive = false;
       component.model = {
         doc: {
           id: 'id',
@@ -206,7 +206,7 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should navigate to parent place if it is not selectMode and url is from contact', fakeAsync(() => {
       router.url = '/contacts/id';
-      component.selectMode = false;
+      component.selectModeActive = false;
       component.model = {
         doc: {
           id: 'id',

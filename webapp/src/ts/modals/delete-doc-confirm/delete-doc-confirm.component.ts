@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import * as LineageFactory from '@medic/lineage';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { DbService } from '@mm-services/db.service';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
@@ -18,7 +18,7 @@ import { TranslateService } from '@mm-services/translate.service';
 export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
   subscriptions: Subscription = new Subscription();
-  selectMode;
+  selectModeActive;
   lineageLib;
   model = { doc: null }; // Automatically assigned by BsModalRef
 
@@ -37,14 +37,9 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
   }
 
   ngOnInit(): void {
-    const subscription = combineLatest(
-      this.store.select(Selectors.getSelectMode),
-    )
-      .subscribe(([
-        selectMode,
-      ]) => {
-        this.selectMode = selectMode;
-      });
+    const subscription = this.store
+      .select(Selectors.getSelectMode)
+      .subscribe((selectMode) => this.selectModeActive = selectMode);
     this.subscriptions.add(subscription);
   }
 
@@ -80,7 +75,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
         this.globalActions.setSnackbarContent(text);
         this.close();
 
-        if (!this.selectMode && route?.name) {
+        if (!this.selectModeActive && route?.name) {
           this.router.navigate([route.name, route.parameter || '']);
         }
       })

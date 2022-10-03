@@ -29,7 +29,10 @@ const initialState = {
   loadingContent: false,
   loadingSubActionBar: false,
   replicationStatus: {},
-  selectMode: false,
+  selectMode: {
+    available: false,
+    active: false,
+  },
   privacyPolicyAccepted: false,
   showActionBar: false,
   showContent: false,
@@ -43,8 +46,7 @@ const initialState = {
 };
 
 const setShowContent = (state, showContent) => {
-  const selectMode = state.selectMode;
-  if (showContent && selectMode) {
+  if (showContent && state.selectMode?.active) {
     // when in select mode we never show the RHS on mobile
     return state;
   }
@@ -106,14 +108,14 @@ const _globalReducer = createReducer(
   on(Actions.clearSidebarFilter, (state) => {
     return { ...state, sidebarFilter: {} };
   }),
-  on(Actions.setTitle, (state, { payload: { title} }) => {
+  on(Actions.setTitle, (state, { payload: { title } }) => {
     return { ...state, title };
   }),
   on(Actions.setShowContent, (state, { payload: { showContent } }) => {
     return setShowContent(state, showContent);
   }),
-  on(Actions.setSelectMode, (state, { payload: { selectMode } }) => {
-    return { ...state, selectMode };
+  on(Actions.setSelectModeStatus, (state, { payload: { selectModeStatus } }) => {
+    return { ...state, selectMode: { ...state.selectMode, ...selectModeStatus } };
   }),
   on(Actions.setLeftActionBar, (state, { payload: { left } }) => {
     return {

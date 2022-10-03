@@ -2,11 +2,9 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { Selectors } from '@mm-selectors/index';
-import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 
 @Component({
   selector: 'mm-actionbar',
@@ -20,7 +18,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
 
   currentTab;
   snapshotData;
-  selectMode;
+  selectModeActive;
   selectedReportsDocs = [];
   actionBar;
   showActionBar;
@@ -31,7 +29,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
 
   constructor(
     private store: Store,
-    private modalService: ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -63,7 +60,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
     ]) => {
       this.currentTab = currentTab;
       this.snapshotData = snapshotData;
-      this.selectMode = selectMode;
+      this.selectModeActive = !!selectMode?.active;
       this.actionBar = actionBar;
       this.showActionBar = showActionBar;
       this.sidebarFilter = sidebarFilter;
@@ -77,18 +74,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-  }
-
-  setSelect(selectMode) {
-    this.reportsActions.setSelectMode(selectMode);
-  }
-
-  selectAll() {
-    this.reportsActions.selectAll();
-  }
-
-  deselectAll() {
-    this.reportsActions.deselectAll();
   }
 
   verifyReport(reportIsVerified) {
@@ -105,22 +90,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
 
   deleteDoc(doc) {
     this.globalActions.deleteDocConfirm(doc);
-  }
-
-  bulkDelete(docs) {
-    if (!docs) {
-      console.warn('Trying to delete empty object', docs);
-      return;
-    }
-
-    if (!docs.length) {
-      console.warn('Trying to delete empty array', docs);
-      return;
-    }
-
-    this.modalService
-      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs } } })
-      .catch(() => {});
   }
 
   trackById(idx, item) {

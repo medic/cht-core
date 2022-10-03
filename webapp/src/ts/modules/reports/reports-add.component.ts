@@ -52,7 +52,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   form;
   errorTranslationKey;
   cancelCallback;
-  selectMode;
+  selectModeActive;
 
   private geoHandle:any;
   private globalActions;
@@ -88,7 +88,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
       this.cancelCallback = cancelCallback;
-      this.selectMode = selectMode;
+      this.selectModeActive = selectMode?.active;
     });
     this.subscription.add(reduxSubscription);
   }

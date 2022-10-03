@@ -23,7 +23,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   forms;
   loadingContent;
   selectedReports;
-  selectMode;
+  selectModeActive;
   validChecks;
   summaries;
 
@@ -62,7 +62,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       this.validChecks = validChecks;
       this.loadingContent = loadingContent;
       this.forms = forms;
-      this.selectMode = selectMode;
+      this.selectModeActive = selectMode?.active;
     });
     this.subscription.add(reduxSubscription);
 
@@ -80,7 +80,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       },
       callback: (change) => {
         if (change.deleted) {
-          if (this.selectMode) {
+          if (this.selectModeActive) {
             this.reportsActions.removeSelectedReport(change.id);
           } else {
             return this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
@@ -116,7 +116,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   toggleExpand(report) {
-    if (!this.selectMode || !report?._id) {
+    if (!this.selectModeActive || !report?._id) {
       return;
     }
 
@@ -130,7 +130,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   deselect(report, event) {
-    if (this.selectMode) {
+    if (this.selectModeActive) {
       event.stopPropagation();
       this.reportsActions.removeSelectedReport(report);
     }
