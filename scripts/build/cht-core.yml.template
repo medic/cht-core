@@ -11,6 +11,7 @@ services:
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
       - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
       - "HAPROXY_PORT=${HAPROXY_PORT:-5984}"
+      - "HEALTHCHECK_ADDR=${HEALTHCHECK_ADDR:-healthcheck}"
     logging:
       driver: "local"
       options:

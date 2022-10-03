@@ -11,7 +11,7 @@ BACKEND="/usr/local/etc/haproxy/backend.cfg"
 cp /usr/local/etc/haproxy/backend.cfg.template $BACKEND
 for COUCHDB_SERVER in ${COUCHDB_SERVERS//,/ }
 do
-  printf "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check agent-check agent-inter 5s agent-addr healthcheck agent-port 5555\n" >> $BACKEND
+  printf "  server $COUCHDB_SERVER $COUCHDB_SERVER:5984 check agent-check agent-inter 5s agent-addr $HEALTHCHECK_ADDR agent-port 5555\n" >> $BACKEND
 done
 
 # Place environment variables into config
