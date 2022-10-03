@@ -1,10 +1,10 @@
 const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const userFactory = require('../../../factories/cht/users/users');
 const gatewayApiUtils = require('../../../gateway-api.utils');
 const placeFactory = require('../../../factories/cht/contacts/place');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
-const contactPage = require('../../../page-objects/contacts/contacts.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 
 const formId = 'CASEID';

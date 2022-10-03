@@ -1,8 +1,8 @@
 const chai = require('chai');
 
-const contactPage = require('../../../page-objects/contacts/contacts.wdio.page');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
+const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 
 const centerName = 'Franklin';

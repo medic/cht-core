@@ -3,9 +3,9 @@ const expect = require('chai').expect;
 
 const utils = require('../../../utils');
 const sentinelUtils = require('../../../utils/sentinel');
-const analyticsPage = require('../../../page-objects/analytics/analytics.wdio.page');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
+const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const chtConfUtils = require('../../../cht-conf-utils');
 
 const contacts = [

@@ -1,9 +1,9 @@
 const utils = require('../../../utils');
 const sUtils = require('../../../utils/sentinel');
-const commonElements = require('../../../page-objects/common/common.po.js');
+const commonElements = require('../../../page-objects/protractor/common/common.po.js');
 const helper = require('../../../helper');
 const moment = require('moment');
-const reportsPo = require('../../../page-objects/reports/reports.po');
+const reportsPo = require('../../../page-objects/protractor/reports/reports.po');
 const dateFormatString = 'ddd, MMM Do, YYYY';
 
 const computeExpectedDate = async () => {

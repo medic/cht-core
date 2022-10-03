@@ -1,12 +1,5 @@
-import { find as _find, cloneDeep as _cloneDeep } from 'lodash-es';
-import {
-  AfterViewInit,
-  Component,
-  NgZone,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { cloneDeep as _cloneDeep, find as _find } from 'lodash-es';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,6 +19,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { AuthService } from '@mm-services/auth.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
+import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 
 const PAGE_SIZE = 50;
@@ -60,6 +54,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   enketoEdited;
   useSidebarFilter = true;
   isSidebarFilterOpen = false;
+  currentLevel;
 
   constructor(
     private store:Store,
@@ -73,6 +68,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
     private ngZone:NgZone,
+    private userContactService:UserContactService,
     private sessionService:SessionService,
     private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
@@ -143,6 +139,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
     this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
+
+    this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
+
   }
 
   async ngAfterViewInit() {
@@ -184,13 +183,15 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (report.validSubject) {
       return report.subject.value;
     }
-    if (report.subject.name) {
+    if (report.subject?.name) {
       return report.subject.name;
     }
     return this.translateService.instant('report.subject.unknown');
   }
 
-  private prepareReports(reports) {
+  private async prepareReports(reports) {
+    const userLineageLevel = await this.currentLevel;
+
     return reports.map(report => {
       const form = _find(this.forms, { code: report.form });
       report.icon = form && form.icon;
@@ -198,6 +199,15 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       report.summary = form ? form.title : report.form;
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       report.unread = !report.read;
+
+      // remove the lineage level that belongs to the offline logged-in user
+      if (userLineageLevel && report?.lineage?.length) {
+        report.lineage = report.lineage.filter(level => level);
+        const item = report.lineage[report.lineage.length -1];
+        if (item === userLineageLevel) {
+          report.lineage.pop();
+        }
+      }
 
       return report;
     });
@@ -228,9 +238,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.searchService
       .search('reports', this.filters, options)
       .then((reports) => this.addReadStatusService.updateReports(reports))
-      .then((updatedReports) => {
-        updatedReports = this.prepareReports(updatedReports);
-
+      .then(updatedReports => this.prepareReports(updatedReports))
+      .then(updatedReports => {
         this.reportsActions.updateReportsList(updatedReports);
 
         this.moreItems = updatedReports.length >= options.limit;
@@ -344,5 +353,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   resetFilter() {
     this.reportsSidebarFilter?.resetFilters();
+  }
+
+  private getCurrentLineageLevel(){
+    return this.userContactService.get().then(user => user?.parent?.name);
   }
 }

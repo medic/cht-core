@@ -1,7 +1,7 @@
-const commonElements = require('../../../page-objects/common/common.wdio.page.js');
-const contactPage = require('../../../page-objects/contacts/contacts.wdio.page.js');
+const commonElements = require('../../../page-objects/default/common/common.wdio.page.js');
+const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page.js');
 const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 
 const userFactory = require('../../../factories/cht/users/users');
 const placeFactory = require('../../../factories/cht/contacts/place');

@@ -2,12 +2,12 @@ const path = require('path');
 
 const utils = require('../../../utils');
 const sentinelUtils = require('../../../utils/sentinel');
-const tasksPage = require('../../../page-objects/tasks/tasks.wdio.page');
-const loginPage = require('../../../page-objects/login/login.wdio.page');
-const commonPage = require('../../../page-objects/common/common.wdio.page');
-const contactsPage = require('../../../page-objects/contacts/contacts.wdio.page');
+const tasksPage = require('../../../page-objects/default/tasks/tasks.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const chtConfUtils = require('../../../cht-conf-utils');
-const modalPage = require('../../../page-objects/common/modal.wdio.page');
+const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
 
 const places = [
   {

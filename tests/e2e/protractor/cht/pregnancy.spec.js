@@ -1,9 +1,9 @@
 const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/common/common.po');
-const loginPage = require('../../../page-objects/login/login.po');
-const contactsPage = require('../../../page-objects/contacts/contacts.po');
+const commonElements = require('../../../page-objects/protractor/common/common.po');
+const loginPage = require('../../../page-objects/protractor/login/login.po');
+const contactsPage = require('../../../page-objects/protractor/contacts/contacts.po');
 const helper = require('../../../helper');
-const analyticsPo = require('../../../page-objects/analytics/analytics.po');
+const analyticsPo = require('../../../page-objects/protractor/analytics/analytics.po');
 const moment = require('moment');
 const formFiller = require('../../../form-filling').fillForm;
 const pregnancyReport = require('../../../factories/cht/reports/pregnancy.js');
@@ -14,10 +14,10 @@ const personFactory = require('../../../factories/cht/contacts/person');
 const place = require('../../../factories/cht/contacts/place');
 const dateFormat = 'D MMM, YYYY';
 
-const genericFormPo = require('../../../page-objects/forms/generic-form.po');
-const chtPregnancy = require('../../../page-objects/forms/cht/pregnancy');
-const chtPregnancyVisit = require('../../../page-objects/forms/cht/pregnancy-visit');
-const chtDelivery = require('../../../page-objects/forms/cht/delivery');
+const genericFormPo = require('../../../page-objects/protractor/enketo/generic-form.po');
+const chtPregnancy = require('../../../page-objects/protractor/enketo/pregnancy');
+const chtPregnancyVisit = require('../../../page-objects/protractor/enketo/pregnancy-visit');
+const chtDelivery = require('../../../page-objects/protractor/enketo/delivery');
 const places = place.generateHierarchy();
 const healthCenter = places.find((place) => place.type === 'health_center');
 const clinic = places.find((place) => place.type === 'clinic');

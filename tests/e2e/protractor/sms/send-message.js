@@ -1,7 +1,7 @@
 const utils = require('../../../utils');
 const helper = require('../../../helper');
-const common = require('../../../page-objects/common/common.po');
-const messagesPo = require('../../../page-objects/messages/messages.po');
+const common = require('../../../page-objects/protractor/common/common.po');
+const messagesPo = require('../../../page-objects/protractor/sms/messages.po');
 const uuid = require('uuid').v4;
 const _ = require('lodash');
 
