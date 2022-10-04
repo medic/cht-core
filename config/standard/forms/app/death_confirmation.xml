@@ -327,7 +327,7 @@ Klik di sini untuk menelepon: <output value=" /death_confirmation/chw_phone "/>]
         </translation>
       </itext>
       <instance>
-        <death_confirmation id="death_confirmation" prefix="J1!death_confirmation!" delimiter="#" version="2019-05-10 10-56">
+        <death_confirmation id="death_confirmation" prefix="J1!death_confirmation!" delimiter="#" version="2022-09-26 12-31">
           <inputs>
             <meta>
               <location>
@@ -391,7 +391,7 @@ Klik di sini untuk menelepon: <output value=" /death_confirmation/chw_phone "/>]
       <bind nodeset="/death_confirmation/death_report/n_1" readonly="true()" type="string"/>
       <bind nodeset="/death_confirmation/death_report/n_2" readonly="true()" type="string"/>
       <bind nodeset="/death_confirmation/death_report/death" type="select1" required="true()"/>
-      <bind nodeset="/death_confirmation/death_report/date_of_death" type="date" required="true()" relevant=" /death_confirmation/death_report/death  = 'yes'"/>
+      <bind nodeset="/death_confirmation/death_report/date_of_death" type="date" required="true()" relevant=" /death_confirmation/death_report/death  = 'yes'" constraint=". &lt;= now()"/>
       <bind nodeset="/death_confirmation/death_report/place" type="select1" required="true()" relevant=" /death_confirmation/death_report/death  = 'yes'"/>
       <bind nodeset="/death_confirmation/death_report/other_place" type="string" required="true()" relevant=" /death_confirmation/death_report/place  = 'other'"/>
       <bind nodeset="/death_confirmation/death_report/n_3" readonly="true()" type="string" relevant=" /death_confirmation/death_report/death  = 'no'"/>
