@@ -164,14 +164,16 @@ describe('create_user_for_contacts', () => {
     const expectInitialDataRetrieved = (originalContact, newContact) => {
       expect(getOrCreatePerson.withArgs(newContact._id).callCount).to.equal(1);
       expect(getUserSettings.callCount).to.equal(1);
-      expect(getUserSettings.args[0]).to.deep.equal([{ contact_id: 'replaced-id' }]);
+      expect(getUserSettings.args[0]).to.deep.equal([{ contact_id: originalContact._id }]);
     };
 
     const expectUserCreated = (newContact, originalUser) => {
       expect(usersGet.callCount).to.equal(1);
       expect(usersGet.args[0][0]).to.match(/^org\.couchdb\.user:new-contact-\d\d\d\d/);
       expect(createUser.callCount).to.equal(1);
-      expect(createUser.args[0][0]).to.deep.include({
+      const username = usersGet.args[0][0].substring(17);
+      expect(createUser.args[0][0]).to.deep.equal({
+        username,
         token_login: true,
         roles: originalUser.roles,
         phone: newContact.phone,
@@ -194,7 +196,7 @@ describe('create_user_for_contacts', () => {
       return transition.onMatch({ doc }).then(result => {
         expect(result).to.be.true;
 
-        expectInitialDataRetrieved(ORIGINAL_CONTACT, NEW_CONTACT);
+        expectInitialDataRetrieved(doc, NEW_CONTACT);
         expectUserCreated(NEW_CONTACT, ORIGINAL_USER);
         expectUserDeleted(ORIGINAL_USER);
         expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
@@ -218,7 +220,9 @@ describe('create_user_for_contacts', () => {
         expect(usersGet.args[0][0]).to.not.equal(usersGet.args[2][0]);
 
         expect(createUser.callCount).to.equal(1);
-        expect(createUser.args[0][0]).to.deep.include({
+        const username = usersGet.args[2][0].substring(17);
+        expect(createUser.args[0][0]).to.deep.equal({
+          username,
           token_login: true,
           roles: ORIGINAL_USER.roles,
           phone: NEW_CONTACT.phone,
@@ -226,20 +230,21 @@ describe('create_user_for_contacts', () => {
           contact: NEW_CONTACT._id,
           fullname: NEW_CONTACT.name,
         });
-        expect(createUser.args[0][0].username).to.match(/^new-contact-\d\d\d\d$/);
         expect(createUser.args[0][1]).to.equal('https://my.cht.instance');
-        expect(usersGet.args[2][0]).to.include(createUser.args[0][0].username);
         expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
       });
     });
 
     [
+      ['P. Sherman 42 Wallaby Way, Sidney', 'p-sherman-42-wallaby-way-sidney'],
+      ['00101010', '00101010'],
       ['/strange/name-breaks', 'strangenamebreaks'],
       ['💚HEART', 'heart'],
       ['¤ us$ crypto₿ rial﷼', '-us-crypto-rial'],
       ['👾', ''],
       [' Peña Ziębówna Galván Dāwūd   ʾĀsif ', 'pena-ziebowna-galvan-dawud-asif'],
       ['بَرثُولَماوُس', ''],
+      ['पासाङ ल्हामु शेर्पा', '-'],
     ].forEach(([name, usernamePrefix]) => {
       it(`replaces user when new contact has name containing special characters [${name}]`, () => {
         const newContact = Object.assign({}, NEW_CONTACT, { name });
