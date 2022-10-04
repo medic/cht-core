@@ -14,16 +14,6 @@ describe('medic-xpath-extensions', function() {
     done();
   });
 
-  describe('today()', function() {
-    it('returns a result of type `date`', function() {
-      assert.equal(func.today().t, 'date');
-    });
-
-    it('returns a value which is instance of Date', function() {
-      assert.ok(func.today().v instanceof Date);
-    });
-  });
-
   describe('getTimezoneOffsetAsTime()', function() {
     it('returns the time zone offset in hours when given a time zone difference in minutes', function() {
       Date.prototype.getTimezoneOffset = () => -60;
