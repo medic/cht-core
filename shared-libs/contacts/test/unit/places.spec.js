@@ -62,8 +62,8 @@ describe('places controller', () => {
   let fetchHydratedDoc;
 
   beforeEach(() => {
-    config.init({ get: () => {} });
-    db.init({ medic: { post: () => {} } });
+    config.init({ get: sinon.stub() });
+    db.init({ medic: { post: sinon.stub() } });
     examplePlace = {
       type: 'clinic',
       name: 'St. Paul',

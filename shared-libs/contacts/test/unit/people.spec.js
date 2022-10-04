@@ -11,8 +11,8 @@ describe('people controller', () => {
   let fetchHydratedDoc;
 
   beforeEach(() => {
-    config.init({ get: () => {} });
-    db.init({ medic: { post: () => {} } });
+    config.init({ get: sinon.stub() });
+    db.init({ medic: { post: sinon.stub() } });
     const mockLineage = lineage.get();
     fetchHydratedDoc = sinon.stub(mockLineage, 'fetchHydratedDoc');
     sinon.stub(lineage, 'get').returns(mockLineage);

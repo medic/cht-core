@@ -24,13 +24,13 @@ let service;
 describe('Users service', () => {
   beforeEach(() => {
     config.init({
-      get: () => {},
-      getTransitionsLib: () => {},
+      get: sinon.stub(),
+      getTransitionsLib: sinon.stub(),
     });
     db.init({
-      medic: { get: () => {}, put: () => {}, allDocs: () => {}, query: () => {} },
-      medicLogs: { get: () => {}, put: () => {}, },
-      users: { get: () => {}, put: () => {} },
+      medic: { get: sinon.stub(), put: sinon.stub(), allDocs: sinon.stub(), query: sinon.stub() },
+      medicLogs: { get: sinon.stub(), put: sinon.stub(), },
+      users: { get: sinon.stub(), put: sinon.stub() },
     });
     addMessage = sinon.stub();
     sinon.stub(config, 'getTransitionsLib').returns({ messages: { addMessage } });

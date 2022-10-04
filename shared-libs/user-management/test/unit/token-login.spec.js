@@ -12,12 +12,12 @@ let clock;
 describe('TokenLogin service', () => {
   beforeEach(() => {
     config.init({
-      get: () => {},
-      getTransitionsLib: () => {},
+      get: sinon.stub(),
+      getTransitionsLib: sinon.stub(),
     });
     db.init({
-      medic: { get: () => {}, put: () => {}, allDocs: () => {} },
-      users: { get: () => {}, put: () => {} },
+      medic: { get: sinon.stub(), put: sinon.stub(), allDocs: sinon.stub() },
+      users: { get: sinon.stub(), put: sinon.stub() },
     });
     clock = sinon.useFakeTimers();
   });
