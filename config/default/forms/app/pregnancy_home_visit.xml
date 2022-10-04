@@ -755,7 +755,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_home_visit id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" delimiter="#" version="2022-08-19 15:52:36">
+        <pregnancy_home_visit id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" delimiter="#" version="2022-09-26 11:35:11">
           <inputs>
             <meta>
               <location>
@@ -1241,14 +1241,14 @@
       <bind nodeset="/pregnancy_home_visit/patient_short_name_start" type="string" calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_start_label)"/>
       <bind nodeset="/pregnancy_home_visit/lmp_date_8601" type="string" calculate="if(selected(../pregnancy_summary/g_age_correct, 'no'), ../update_g_age/lmp_date_8601_new, ../context_vars/lmp_date_8601_ctx)"/>
       <bind nodeset="/pregnancy_home_visit/edd_8601" type="string" calculate="if(selected(../pregnancy_summary/g_age_correct, 'no'), ../update_g_age/edd_8601_new, format-date-time(date-time(decimal-date-time(../context_vars/lmp_date_8601_ctx + 280)), &quot;%Y-%m-%d&quot;))"/>
-      <bind nodeset="/pregnancy_home_visit/days_since_lmp" type="string" calculate="floor(decimal-date-time(today())) - decimal-date-time(../lmp_date_8601)" relevant="../lmp_date_8601 != ''"/>
+      <bind nodeset="/pregnancy_home_visit/days_since_lmp" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time(../lmp_date_8601))" relevant="../lmp_date_8601 != ''"/>
       <bind nodeset="/pregnancy_home_visit/weeks_since_lmp" type="string" calculate="round(../days_since_lmp div 7, 2)" relevant="../lmp_date_8601 != ''"/>
       <bind nodeset="/pregnancy_home_visit/weeks_since_lmp_rounded" type="string" calculate="floor(../days_since_lmp div 7)" relevant="../lmp_date_8601 != ''"/>
       <bind nodeset="/pregnancy_home_visit/lmp_method_approx" type="string" calculate="if(selected(../update_g_age/update_method/g_age_update_method, 'method_weeks'), 'yes', 'no')"/>
       <bind nodeset="/pregnancy_home_visit/lmp_updated" type="string" calculate="if(selected(../pregnancy_summary/g_age_correct, 'no') and (decimal-date-time(../lmp_date_8601) - decimal-date-time(../context_vars/lmp_date_8601_ctx) != 0), 'yes', 'no')"/>
       <bind nodeset="/pregnancy_home_visit/t_pregnancy_follow_up_date" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date"/>
       <bind nodeset="/pregnancy_home_visit/t_pregnancy_follow_up" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known"/>
-      <bind nodeset="/pregnancy_home_visit/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(floor(decimal-date-time(today())) + 3)"/>
+      <bind nodeset="/pregnancy_home_visit/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
       <bind nodeset="/pregnancy_home_visit/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"/>
       <bind nodeset="/pregnancy_home_visit/hiv_status_known" type="string" calculate="if(../context_vars/hiv_tested_ctx = 'yes', 'yes', ../safe_pregnancy_practices/hiv_status/hiv_tested)"/>
       <bind nodeset="/pregnancy_home_visit/tt_received" type="string" calculate="if(../context_vars/tt_received_ctx = 'yes', 'yes', ../safe_pregnancy_practices/tetanus/tt_imm_received)"/>
@@ -1263,7 +1263,7 @@
       <bind nodeset="/pregnancy_home_visit/context_vars/deworming_med_received_ctx" type="string" calculate="if(instance('contact-summary')/context/deworming_med_received_past != '', instance('contact-summary')/context/deworming_med_received_past , .)"/>
       <bind nodeset="/pregnancy_home_visit/context_vars/edd_ctx" type="string" calculate="if(../lmp_date_8601_ctx = '', 'unknown', format-date-time(date-time(decimal-date-time(../lmp_date_8601_ctx) + 280), &quot;%e %b, %Y&quot;))"/>
       <bind nodeset="/pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx" type="string" calculate="if(../lmp_date_8601_ctx = '', 'unknown',
-floor((floor(decimal-date-time(today())) - decimal-date-time(../lmp_date_8601_ctx)) div 7))"/>
+floor((decimal-date-time(today()) - decimal-date-time(../lmp_date_8601_ctx)) div 7))"/>
       <bind nodeset="/pregnancy_home_visit/context_vars/pregnancy_uuid_ctx" type="string" calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_weeks_pregnant" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  != 'unknown'"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_weeks_pregnant_unknown" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  = 'unknown'"/>
@@ -1273,9 +1273,9 @@ floor((floor(decimal-date-time(today())) - decimal-date-time(../lmp_date_8601_ct
       <bind nodeset="/pregnancy_home_visit/pregnancy_summary/g_age_correct" type="select1" required="true()" relevant="selected(../visit_option, 'yes')"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_ended" relevant="not(selected(../pregnancy_summary/visit_option, 'yes'))"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_ended/miscarriage_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'miscarriage')"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/miscarriage_date" type="date" required="true()" constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today())) and ( /pregnancy_home_visit/lmp_date_8601  = '' or decimal-date-time(.) &gt;= (decimal-date-time( /pregnancy_home_visit/lmp_date_8601 )))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/pregnancy_ended/miscarriage_date:jr:constraintMsg')" relevant="selected(../../pregnancy_summary/visit_option, 'miscarriage')"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/miscarriage_date" type="date" relevant="selected(../../pregnancy_summary/visit_option, 'miscarriage')" constraint=". &lt;= today() and ( /pregnancy_home_visit/lmp_date_8601  = '' or . &gt;=  /pregnancy_home_visit/lmp_date_8601 )" required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/pregnancy_ended/miscarriage_date:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_ended/abortion_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'abortion')"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/abortion_date" type="date" required="true()" constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today())) and ( /pregnancy_home_visit/lmp_date_8601  = '' or decimal-date-time(.) &gt;= (decimal-date-time( /pregnancy_home_visit/lmp_date_8601 )))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/pregnancy_ended/abortion_date:jr:constraintMsg')" relevant="selected(../../pregnancy_summary/visit_option, 'abortion')"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/abortion_date" type="date" relevant="selected(../../pregnancy_summary/visit_option, 'abortion')" constraint=". &lt;= today() and ( /pregnancy_home_visit/lmp_date_8601  = '' or . &gt;=  /pregnancy_home_visit/lmp_date_8601 )" required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/pregnancy_ended/abortion_date:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_ended/refusing_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'refused')"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_ended/migrated_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'migrated')"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_ended/end_pregnancy_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'miscarriage') or
@@ -1290,8 +1290,8 @@ selected(../../pregnancy_summary/visit_option, 'migrated')"/>
 selected(../pregnancy_summary/g_age_correct, 'no')"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/g_age_update_method" type="select1" required="true()"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new" type="int" required="true()" constraint=". &gt;= 4 and . &lt;= 40" relevant="selected(../g_age_update_method, 'method_weeks')" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new:jr:constraintMsg')"/>
-      <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/u_edd_new" type="date" required="true()" constraint=". &gt;= date-time(floor(decimal-date-time(today()))) and
-. &lt;= date-time(floor(decimal-date-time(today())) + (9 * 30))" relevant="selected(../g_age_update_method, 'method_edd')" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/u_edd_new:jr:constraintMsg')"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/u_edd_new" type="date" relevant="selected(../g_age_update_method, 'method_edd')" constraint=". &gt;= today() and
+. &lt;= date-time(decimal-date-time(today()) + (9 * 30))" required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/u_edd_new:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/update_check_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_info" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_g_age" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  != 'unknown'"/>
@@ -1303,7 +1303,7 @@ selected(../pregnancy_summary/g_age_correct, 'no')"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/new_edd" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/edd_check_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/lmp_date_8601_new" type="string" calculate="format-date-time(
-if(selected(../update_method/g_age_update_method, 'method_weeks'), date-time(floor(decimal-date-time(today())) - (../update_method/lmp_weeks_new * 7)), 
+if(selected(../update_method/g_age_update_method, 'method_weeks'), date-time(decimal-date-time(today()) - (../update_method/lmp_weeks_new * 7)), 
 if(selected(../update_method/g_age_update_method, 'method_edd'), date-time(decimal-date-time(../update_method/u_edd_new) - 280), 0)
 ), &quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/lmp_date_new" type="string" calculate="format-date-time(../lmp_date_8601_new, &quot;%e %b, %Y&quot;)"/>
@@ -1316,13 +1316,13 @@ if(selected(../update_method/g_age_update_method, 'method_edd'), date-time(decim
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/report_other_visits" type="select1" required="true()"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count" type="int" required="true()" constraint=".&gt;= 0 and . &lt;= 9" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count:jr:constraintMsg')" relevant="selected(../report_other_visits, 'yes')"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_ask_single" type="select1" required="true()" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  = 1"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single" type="date" required="true()" constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today())) and decimal-date-time(.) &gt;= (decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single:jr:constraintMsg')" relevant="selected(../visited_date_ask_single, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single" type="date" relevant="selected(../visited_date_ask_single, 'yes')" constraint=". &lt;= today() and . &gt;=  /pregnancy_home_visit/lmp_date_8601 " required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_multiple_note" readonly="true()" type="string" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_multiple_note_section" readonly="true()" type="string" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_count" type="string" readonly="true()" calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count "/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date_ask_multiple" type="select1" required="true()" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date" type="date" required="true()" constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today())) and decimal-date-time(.) &gt;= (decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date:jr:constraintMsg')" relevant="selected(../visited_date_ask_multiple, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date" type="date" relevant="selected(../visited_date_ask_multiple, 'yes')" constraint=". &lt;= today() and . &gt;=  /pregnancy_home_visit/lmp_date_8601 " required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/previous_risk_factors_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/no_previous_risks_note" readonly="true()" type="string" relevant="../../../context_vars/risk_factors_ctx = ''"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/first_pregnancy_note" readonly="true()" type="string" relevant="contains(../../../context_vars/risk_factors_ctx, 'first_pregnancy')"/>
@@ -1348,8 +1348,8 @@ selected(../new_risks, 'diabetes') or
 selected(../additional_risk_check, 'yes')
 , 'yes', 'no')"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date" type="date" required="true()" constraint="(decimal-date-time(.) &gt;= floor(decimal-date-time(today()))) and
-(decimal-date-time(.) &lt;= floor(decimal-date-time(today() + 30)))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:jr:constraintMsg')" relevant="selected(../appointment_date_known, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date" type="date" relevant="selected(../appointment_date_known, 'yes')" constraint="(. &gt;= today()) and
+(decimal-date-time(.) &lt;= decimal-date-time(today() + 30))" required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note" relevant="selected(../anc_next_visit_date/appointment_date_known, 'no')"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/who_recommends_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/prenancy_age_note" readonly="true()" type="string"/>
@@ -1468,14 +1468,14 @@ selected(../../safe_pregnancy_practices/iron_folate/iron_folate_daily, 'no')"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_fup_hf_visit" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'yes')"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_fup_pregnancy_visit" readonly="true()" type="string" relevant="../../lmp_date_8601 != ''"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_fup_pregnancy_visit_2_weeks" readonly="true()" type="string" relevant="../../lmp_date_8601 = ''"/>
-      <bind nodeset="/pregnancy_home_visit/summary/next_visit_weeks" type="string" calculate="round((if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 12*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 12*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 20*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 20*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 26*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 26*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 30*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 30*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 34*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 34*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 36*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 36*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 38*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 38*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7, 0
+      <bind nodeset="/pregnancy_home_visit/summary/next_visit_weeks" type="string" calculate="round((if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 12*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 12*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 20*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 20*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 26*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 26*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 30*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 30*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 34*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 34*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 36*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 36*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 38*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 38*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7, 0
 )))))))) - decimal-date-time(today())) div 7, 0)"/>
       <bind nodeset="/pregnancy_home_visit/summary/edd_summary" type="string" calculate="format-date-time( /pregnancy_home_visit/edd_8601 , &quot;%e %b, %Y&quot;)"/>
       <bind nodeset="/pregnancy_home_visit/summary/next_appointment_date" type="string" calculate="format-date-time( /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date , &quot;%e %b, %Y&quot;)"/>
