@@ -20,21 +20,31 @@ const getNewContact = (contactId) => {
   return people.getOrCreatePerson(contactId);
 };
 
+const getRandomSuffix = () => Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+
+/**
+ * Generates a random valid username based on the given contact name. The username will begin with the normalized
+ * version of the contact name (lowercase, no spaces, only alphanumeric characters) and end with a random 4-digit
+ * number.
+ * @param {string} contactName the name of the contact
+ * @returns {string} the generated username
+ */
 const generateUsername = (contactName) => {
-  const randomNum = Math.floor(Math.random() * 9999).toString().padStart(4, '0');
-  const username = contactName.normalize('NFD') // split an accented letter in the base letter and the accent
+  const username = contactName
+    .normalize('NFD') // split an accented letter in the base letter and the accent
     .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9 ]/g, '') // remove all chars not letters, numbers and spaces (to be replaced)
     .replace(/\s+/g, '-'); // separator
 
-  return `${username}-${randomNum}`;
+  return `${username}-${getRandomSuffix()}`;
 };
 
 const generateUniqueUsername = (contactName) => {
   const username = generateUsername(contactName);
-  return db.users.get(`org.couchdb.user:${username}`)
+  return db.users
+    .get(`org.couchdb.user:${username}`)
     .then(() => generateUniqueUsername(contactName))
     .catch(error => {
       if (error.status === 404) {
@@ -72,11 +82,11 @@ const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
 };
 
 const replaceUser = (originalContact) => {
-  const { _id, user_for_contact : { replaced: { by } } } = originalContact;
+  const { user_for_contact: { replaced } } = originalContact;
   return Promise
     .all([
-      getNewContact(by),
-      users.getUserSettings({ contact_id: _id }),
+      getNewContact(replaced.by),
+      users.getUserSettings({ contact_id: originalContact._id }),
     ])
     .then(([newContact, originalUserSettings]) => {
       return createNewUser(originalUserSettings, newContact)
@@ -99,7 +109,7 @@ module.exports = {
     }
 
     const appUrl = config.get('app_url');
-    if(!appUrl) {
+    if (!appUrl) {
       throw new Error(
         'Configuration error. The app_url must be defined to use the create_user_for_contacts transition.'
       );
