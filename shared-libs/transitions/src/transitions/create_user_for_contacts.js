@@ -6,7 +6,7 @@ const { users } = require('@medic/user-management')(config, db);
 
 const NAME = 'create_user_for_contacts';
 
-const UserCreationStatus = {
+const USER_CREATION_STATUS = {
   // PENDING - Set by webapp while waiting for sync to complete
   READY: 'READY', // Ready to be replaced
   COMPLETE: 'COMPLETE', // The new user has been created
@@ -82,7 +82,7 @@ const replaceUser = (originalContact) => {
       return createNewUser(originalUserSettings, newContact)
         .then(() => users.deleteUser(originalUserSettings.name));
     })
-    .then(() => originalContact.user_for_contact.replaced.status = UserCreationStatus.COMPLETE);
+    .then(() => originalContact.user_for_contact.replaced.status = USER_CREATION_STATUS.COMPLETE);
 };
 
 /**
@@ -113,13 +113,13 @@ module.exports = {
 
     return doc.user_for_contact &&
       doc.user_for_contact.replaced &&
-      doc.user_for_contact.replaced.status === UserCreationStatus.READY;
+      doc.user_for_contact.replaced.status === USER_CREATION_STATUS.READY;
   },
   onMatch: change => {
     return replaceUser(change.doc)
       .then(() => true)
       .catch(err => {
-        change.doc.user_for_contact.replaced.status = UserCreationStatus.ERROR;
+        change.doc.user_for_contact.replaced.status = USER_CREATION_STATUS.ERROR;
         err.changed = true;
         throw err;
       });
