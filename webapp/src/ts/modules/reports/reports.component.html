@@ -19,44 +19,37 @@
 <div class="inner">
   <div class="inbox page">
 
-    <div
-      id="reports-list"
+    <div id="reports-list"
       class="inbox-items left-pane"
       [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen, 'select-mode-available': selectMode?.available }">
 
       <div class="selection-count" *ngIf="selectMode?.active">
-        <span *ngIf="selectedReports?.length === 1">{{'select.mode.count.singular' | translate}}</span>
+        <span *ngIf="selectedReports?.length === 1">{{ 'select.mode.count.singular' | translate }}</span>
         <span *ngIf="selectedReports?.length !== 1" translate [translateParams]="{ number: selectedReports?.length || 0 | localizeNumber }">select.mode.count.plural</span>
       </div>
+
       <ul [hidden]="loading && !appending">
         <li *ngFor="let report of reportsList; trackBy: listTrackBy"
-            [attr.data-record-id]="report._id"
-            [class.selected] = "report.selected"
-            [class.unread]="!report.read"
-            (click)="toggleSelected(report)"
-            class="content-row">
+          [attr.data-record-id]="report._id"
+          [class.selected] = "report.selected"
+          [class.unread]="!report.read"
+          class="content-row">
+          <input type="checkbox" (click)="toggleSelected(report)" [checked]="selectMode?.active && report.selected">
           <a [routerLink]="['/reports', report._id]">
-            <div><input type="checkbox" [checked]="report.selected"></div>
             <div *ngIf="report.icon" class="icon" [innerHTML]="report.icon | resourceIcon"></div>
             <div class="content">
               <div class="heading">
-                <h4>
-                  <span>{{report.heading}}</span>
-                </h4>
-                <div class="date">
-                  <span [innerHTML]="report.reported_date | relativeDate"></span>
-                </div>
+                <h4><span>{{ report.heading }}</span></h4>
+                <div class="date"><span [innerHTML]="report.reported_date | relativeDate"></span></div>
               </div>
 
               <div *ngIf="report.summary" class="summary">
-                <p>{{report.summary}}</p>
-
+                <p>{{ report.summary }}</p>
                 <div *ngIf="(!report.valid || report.verified !== undefined)" class="status">
                   <span [class.verified]="report.valid && report.verified" [class.error]="!(report.valid && report.verified)" class="verification-badge">
                     <report-verify-valid-icon *ngIf="report.valid && report.verified"></report-verify-valid-icon>
                     <report-verify-invalid-icon *ngIf="!(report.valid && report.verified)"></report-verify-invalid-icon>
                   </span>
-
                 </div>
               </div>
 
@@ -65,14 +58,13 @@
           </a>
         </li>
       </ul>
+
       <p *ngIf="error" class="alert alert-danger" role="alert">
-        <span *ngIf="errorSyntax">
-          <span>{{'invalid.query' | translate}}</span>
-        </span>
-        <span *ngIf="!errorSyntax">{{'Error fetching reports' | translate }}</span>
+        <span *ngIf="errorSyntax"><span>{{ 'invalid.query' | translate }}</span></span>
+        <span *ngIf="!errorSyntax">{{ 'Error fetching reports' | translate }}</span>
       </p>
-      <p class="loading-status" *ngIf="!error && !loading && !hasReports">{{'reports.none' | translate}}</p>
-      <p class="loading-status" *ngIf="!loading && hasReports && !moreItems">{{'No more reports' | translate}}</p>
+      <p class="loading-status" *ngIf="!error && !loading && !hasReports">{{ 'reports.none' | translate }}</p>
+      <p class="loading-status" *ngIf="!loading && hasReports && !moreItems">{{ 'No more reports' | translate }}</p>
       <div class="loader" *ngIf="loading"></div>
       <div class="padding"></div>
 

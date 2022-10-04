@@ -32,9 +32,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(ReportsSidebarFilterComponent)
   reportsSidebarFilter: ReportsSidebarFilterComponent;
 
-  private globalActions;
-  private reportsActions;
-  private servicesActions;
+  private globalActions: GlobalActions;
+  private reportsActions: ReportsActions;
+  private servicesActions: ServicesActions;
   private listContains;
   private destroyed;
 
@@ -328,23 +328,28 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   toggleSelected(report) {
-    if (!this.selectMode?.active) {
-      // let the routerLink handle navigation
-      return;
-    }
     if (!report?._id) {
       return;
     }
 
     const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
     if (!isSelected) {
-      // use the summary from LHS to set the report as selected quickly (and preserve old functionality)
+      // Use the summary from LHS to set the report as selected quickly (and preserve old functionality)
       // the selectReport action will actually get all details
       this.reportsActions.addSelectedReport(report);
       this.reportsActions.selectReport(report);
-    } else {
-      this.reportsActions.removeSelectedReport(report);
+      return;
     }
+
+    if (!this.selectMode?.active) {
+      // Report was previously selected to view content, but not selected (by clicking on the checkbox) for bulk delete.
+      // enabling the select for bulk delete.
+      this.reportsActions.selectReport(report);
+      this.reportsActions.setSelectMode(true);
+      return;
+    }
+
+    this.reportsActions.removeSelectedReport(report);
   }
 
   toggleFilter() {

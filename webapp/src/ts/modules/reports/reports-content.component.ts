@@ -27,7 +27,6 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   validChecks;
   summaries;
 
-
   constructor(
     private changesService:ChangesService,
     private store:Store,

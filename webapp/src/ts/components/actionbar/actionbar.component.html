@@ -120,7 +120,7 @@
         *ngIf="currentTab === 'reports'"
         [ngClass]="{ 'col-sm-6': sidebarFilter?.isOpen, 'col-sm-8': !sidebarFilter?.isOpen }">
         <div *ngIf="!selectModeActive">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && snapshotData?.name === 'reports.detail'">
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && !loadingContent && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p>{{'Send Message' | translate}}</p>

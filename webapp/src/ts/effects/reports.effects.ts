@@ -110,6 +110,32 @@ export class ReportsEffects {
     );
   }, { dispatch: false });
 
+  private toggleSelectMode(selectMode, selectedReports) {
+    if (selectMode?.active && !selectedReports?.length) {
+      this.reportActions.setSelectMode(false);
+      return;
+    }
+
+    if (!selectMode?.active && selectedReports?.length >= 1) {
+      this.reportActions.setSelectMode(true);
+      return;
+    }
+  }
+
+  activateSelectMode = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(
+        ReportActionList.removeSelectedReport,
+        ReportActionList.addSelectedReport,
+      ),
+      withLatestFrom(
+        this.store.pipe(select(Selectors.getSelectMode)),
+        this.store.pipe(select(Selectors.getSelectedReports)),
+      ),
+      exhaustMap(([, selectMode, selectedReports]) => of(this.toggleSelectMode(selectMode, selectedReports))),
+    );
+  }, { dispatch: false });
+
   setTitle = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.setTitle),
