@@ -728,7 +728,7 @@ const hydrateUserSettings = (userSettings) => {
 
 const getUserDocsByContactId = async(contact_id) => {
   const userSettingsDocs = await getAllUserSettings();
-  const medicUser = await userSettingsDocs.find(doc => doc.contact_id === contact_id);
+  const medicUser = userSettingsDocs.find(doc => doc.contact_id === contact_id);
   if (!medicUser) {
     return Promise.reject({
       status: 404,
