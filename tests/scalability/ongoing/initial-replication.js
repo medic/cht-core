@@ -4,7 +4,7 @@ PouchDB.plugin(require('pouchdb-adapter-leveldb'));
 
 const [,, instanceUrl, dataDir, threadId, skipUsers] = process.argv;
 const dataDirPath = path.resolve(dataDir || __dirname);
-const users = require(path.resolve(dataDirPath, 'users.json'));
+const users = require(path.resolve(dataDirPath, 'users-low.json'));
 
 const idx = ((+threadId || 0) + (+skipUsers || 0)) % users.length;
 const user = users[idx];

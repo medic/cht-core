@@ -8,7 +8,7 @@ module.exports = {
   },
   workflowContactsNbr: {
     person: 50,
-    iterations: 10,
+    iterations: 2,
   },
 };
 
