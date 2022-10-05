@@ -25,6 +25,7 @@ const ORIGINAL_USER = {
   phone: '+254712345678',
   contact: { _id: 'fixture:user:original_person', name: 'Original Person', role: 'chw' },
   roles: ['chw'],
+  known: true,
 };
 
 const ONLINE_USER = {
@@ -33,7 +34,8 @@ const ONLINE_USER = {
   place: DISTRICT._id,
   phone: '+254712345678',
   contact: { _id: 'fixture:user:online_person', name: 'Online Person', role: 'chw' },
-  roles: ['program_officer'],
+  roles: ['program_officer', 'mm-online'],
+  known: true,
 };
 
 const newUsers = [];
@@ -66,8 +68,6 @@ const loginAsOfflineUser = async () => {
   newUsers.push(ORIGINAL_USER.username);
   await loginPage.login(ORIGINAL_USER);
   await commonPage.waitForPageLoaded();
-  await commonPage.closeTour();
-  return ORIGINAL_USER.contact._id;
 };
 
 const loginAsOnlineUser = async () => {
@@ -75,8 +75,6 @@ const loginAsOnlineUser = async () => {
   newUsers.push(ONLINE_USER.username);
   await loginPage.login(ONLINE_USER);
   await commonPage.waitForPageLoaded();
-  await commonPage.closeTour();
-  return ONLINE_USER.contact._id;
 };
 
 const submitReplaceUserForm = async () => {
@@ -88,26 +86,19 @@ const submitReplaceUserForm = async () => {
   await replaceUserForm.selectContactAgeYears(22);
   await replaceUserForm.selectContactSex(replaceUserForm.SEX.female);
   await genericForm.nextPage();
-  await (await genericForm.submitButton()).click();
-  await commonPage.waitForPageLoaded();
+  await contactsPage.submitForm();
 };
 
 const sync = async () => {
   await commonPage.openHamburgerMenu();
   await (await commonPage.syncButton()).click();
-};
-
-const getLastSubmittedReportId = async () => {
-  await (await reportsPage.firstReport()).click();
-  return reportsPage.getCurrentReportId();
+  // Do not wait for success status to be displayed (may not be shown before logout is triggered)
 };
 
 const submitBasicForm = async () => {
   await (await reportsPage.submitReportButton()).click();
   await (await reportsPage.formActionsLink('basic_form')).click();
-  await (await genericForm.submitButton()).waitForDisplayed();
-  await (await genericForm.submitButton()).click();
-  await commonPage.waitForPageLoaded();
+  await reportsPage.submitForm();
   return reportsPage.getCurrentReportId();
 };
 
@@ -116,24 +107,20 @@ const assertReplaceUserReport = (replaceUserReport, originalContactId) => {
   expect(replaceUserReport.contact._id).to.equal(originalContactId);
 };
 
-const assertOriginalContactUpdated = async (originalContactId, newContactId) => {
-  const updatedOriginalContact = await utils.getDoc(originalContactId);
-  expect(updatedOriginalContact.user_for_contact).to.deep.equal({
+const assertOriginalContactUpdated = (originalContact, newContactId) => {
+  expect(originalContact.user_for_contact).to.deep.equal({
     replaced: {
       by: newContactId,
       status: 'COMPLETE'
     }
   });
-  return updatedOriginalContact;
 };
 
-const assertNewContact = async (originalUser, originalContact, newContactId) => {
-  const newContact = await utils.getDoc(newContactId);
+const assertNewContact = (newContact, originalUser, originalContact) => {
   expect(newContact.phone).to.equal(originalUser.phone);
   expect(newContact.parent._id).to.equal(originalContact.parent._id);
   expect(newContact.name).to.equal('Replacement User');
   expect(newContact.sex).to.equal('female');
-  return newContact;
 };
 
 const assertOriginalUserDisabled = async (contactId) => {
@@ -169,8 +156,11 @@ const getTextedLoginLink = async (newUserSettings) => {
 
 describe('Create user for contacts', () => {
   before(async () => {
-    await utils.getDoc(BASIC_FORM_DOC._id)
-      .catch(() => utils.saveDoc(BASIC_FORM_DOC));
+    try{
+      await utils.getDoc(BASIC_FORM_DOC._id);
+    } catch(_) {
+      await utils.saveDoc(BASIC_FORM_DOC);
+    }
   });
 
   beforeEach(async () => {
@@ -178,7 +168,6 @@ describe('Create user for contacts', () => {
   });
 
   afterEach(async () => {
-    // await utils.revertDb([], true);
     await utils.deleteUsers(newUsers.map(username => ({ username })));
     newUsers.length = 0;
     await utils.revertDb([/^form:/], true);
@@ -189,7 +178,8 @@ describe('Create user for contacts', () => {
   describe('for an offline user', () => {
     it('creates a new user and re-parents reports when the replace_user form is submitted', async () => {
       await utils.updateSettings(SETTINGS, 'sentinel');
-      const originalContactId = await loginAsOfflineUser();
+      await loginAsOfflineUser();
+      const originalContactId = ORIGINAL_USER.contact._id;
 
       await browser.throttle('offline');
 
@@ -198,7 +188,7 @@ describe('Create user for contacts', () => {
       const reportNames = await contactsPage.getAllRHSReportsNames();
       expect(reportNames.filter(name => name === 'Replace User')).to.have.lengthOf(1);
       await commonPage.goToReports();
-      const reportId = await getLastSubmittedReportId();
+      const reportId = await reportsPage.getLastSubmittedReportId();
       // Submit several forms to be re-parented
       const basicReportId0 = await submitBasicForm();
       const basicReportId1 = await submitBasicForm();
@@ -217,13 +207,15 @@ describe('Create user for contacts', () => {
       const basicReports = await utils.getDocs([basicReportId0, basicReportId1]);
       basicReports.forEach((report) => expect(report.contact._id).to.equal(replacement_contact_id));
 
-      await sentinelUtils.waitForSentinel(originalContactId);
+      await sentinelUtils.waitForSentinel();
       const { transitions } = await sentinelUtils.getInfoDoc(originalContactId);
 
       // Transition successful
       expect(transitions.create_user_for_contacts.ok).to.be.true;
-      const originalContact = await assertOriginalContactUpdated(originalContactId, replacement_contact_id);
-      const newContact = await assertNewContact(ORIGINAL_USER, originalContact, replacement_contact_id);
+      const originalContact = await utils.getDoc(originalContactId);
+      assertOriginalContactUpdated(originalContact, replacement_contact_id);
+      const newContact = await utils.getDoc(replacement_contact_id);
+      assertNewContact(newContact, ORIGINAL_USER, originalContact);
       await assertOriginalUserDisabled(originalContactId);
       // Set as primary contact
       expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal(replacement_contact_id);
@@ -243,7 +235,8 @@ describe('Create user for contacts', () => {
 
     it('creates a new user when the replace_user form is submitted while online', async () => {
       await utils.updateSettings(SETTINGS, 'sentinel');
-      const originalContactId = await loginAsOfflineUser();
+      await loginAsOfflineUser();
+      const originalContactId = ORIGINAL_USER.contact._id;
 
       await commonPage.goToPeople(originalContactId);
       await submitReplaceUserForm();
@@ -253,20 +246,22 @@ describe('Create user for contacts', () => {
 
       await loginPage.cookieLogin();
       await commonPage.goToReports();
-      const reportId = await getLastSubmittedReportId();
+      const reportId = await reportsPage.getLastSubmittedReportId();
 
       // Replace user report created
       const replaceUserReport = await utils.getDoc(reportId);
       assertReplaceUserReport(replaceUserReport, originalContactId);
       const { replacement_contact_id } = replaceUserReport.fields;
 
-      await sentinelUtils.waitForSentinel(originalContactId);
+      await sentinelUtils.waitForSentinel();
       const { transitions } = await sentinelUtils.getInfoDoc(originalContactId);
 
       // Transition successful
       expect(transitions.create_user_for_contacts.ok).to.be.true;
-      const originalContact = await assertOriginalContactUpdated(originalContactId, replacement_contact_id);
-      const newContact = await assertNewContact(ORIGINAL_USER, originalContact, replacement_contact_id);
+      const originalContact = await utils.getDoc(originalContactId);
+      assertOriginalContactUpdated(originalContact, replacement_contact_id);
+      const newContact = await utils.getDoc(replacement_contact_id);
+      assertNewContact(newContact, ORIGINAL_USER, originalContact);
       await assertOriginalUserDisabled(originalContactId);
       // Set as primary contact
       expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal(replacement_contact_id);
@@ -289,8 +284,8 @@ describe('Create user for contacts', () => {
       const district = await utils.getDoc(DISTRICT._id);
       district.contact = { _id: 'not-the-original-contact' };
       await utils.saveDoc(district);
-
-      const originalContactId = await loginAsOfflineUser();
+      await loginAsOfflineUser();
+      const originalContactId = ORIGINAL_USER.contact._id;
 
       await commonPage.goToPeople(originalContactId);
       await submitReplaceUserForm();
@@ -300,21 +295,22 @@ describe('Create user for contacts', () => {
 
       await loginPage.cookieLogin();
       await commonPage.goToReports();
-      const reportId = await getLastSubmittedReportId();
+      const reportId = await reportsPage.getLastSubmittedReportId();
 
       // Replace user report created
       const replaceUserReport = await utils.getDoc(reportId);
       assertReplaceUserReport(replaceUserReport, originalContactId);
       const { replacement_contact_id } = replaceUserReport.fields;
 
-      await sentinelUtils.waitForSentinel(originalContactId);
+      await sentinelUtils.waitForSentinel();
       const { transitions } = await sentinelUtils.getInfoDoc(originalContactId);
 
       // Transition successful
       expect(transitions.create_user_for_contacts.ok).to.be.true;
-      await assertOriginalContactUpdated(originalContactId, replacement_contact_id);
-      const originalContact = await assertOriginalContactUpdated(originalContactId, replacement_contact_id);
-      const newContact = await assertNewContact(ORIGINAL_USER, originalContact, replacement_contact_id);
+      const originalContact = await utils.getDoc(originalContactId);
+      assertOriginalContactUpdated(originalContact, replacement_contact_id);
+      const newContact = await utils.getDoc(replacement_contact_id);
+      assertNewContact(newContact, ORIGINAL_USER, originalContact);
       await assertOriginalUserDisabled(originalContactId);
       // Primary contact not updated
       expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal('not-the-original-contact');
@@ -335,13 +331,14 @@ describe('Create user for contacts', () => {
     it('does not create a new user or re-parent reports when the transition is disabled', async () => {
       const settings = Object.assign({}, SETTINGS, { transitions: { create_user_for_contacts: false } });
       await utils.updateSettings(settings, 'sentinel');
-      const originalContactId = await loginAsOfflineUser();
+      await loginAsOfflineUser();
+      const originalContactId = ORIGINAL_USER.contact._id;
 
       await commonPage.goToPeople(originalContactId);
       await submitReplaceUserForm();
       // No logout triggered
       await commonPage.goToReports();
-      const reportId = await getLastSubmittedReportId();
+      const reportId = await reportsPage.getLastSubmittedReportId();
       const basicReportId = await submitBasicForm();
 
       // Replace user report created
@@ -355,7 +352,7 @@ describe('Create user for contacts', () => {
       const basicReports = await utils.getDoc(basicReportId);
       expect(basicReports.contact._id).to.equal(originalContactId);
 
-      await sentinelUtils.waitForSentinel(originalContactId);
+      await sentinelUtils.waitForSentinel();
       const { transitions } = await sentinelUtils.getInfoDoc(originalContactId);
 
       // Transition not triggered
@@ -368,20 +365,21 @@ describe('Create user for contacts', () => {
 
   it('does not create a new user when the replace_user form is submitted for online user', async () => {
     await utils.updateSettings(SETTINGS, 'sentinel');
-    const originalContactId = await loginAsOnlineUser();
+    await loginAsOnlineUser();
+    const originalContactId = ONLINE_USER.contact._id;
     await commonPage.goToPeople(originalContactId);
 
     await submitReplaceUserForm();
     // No logout triggered
     await commonPage.goToReports();
-    const reportId = await getLastSubmittedReportId();
+    const reportId = await reportsPage.getLastSubmittedReportId();
 
     // Report is submitted successfully
     const replaceUserReport = await utils.getDoc(reportId);
     assertReplaceUserReport(replaceUserReport, originalContactId);
     const { replacement_contact_id } = replaceUserReport.fields;
 
-    await sentinelUtils.waitForSentinel(originalContactId);
+    await sentinelUtils.waitForSentinel();
     const { transitions } = await sentinelUtils.getInfoDoc(originalContactId);
 
     // Transition not triggered

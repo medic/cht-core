@@ -103,6 +103,12 @@ const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
 };
 
+const submitForm = async () => {
+  await (await genericForm.submitButton()).waitForDisplayed();
+  await (await genericForm.submitButton()).click();
+  await waitForContactLoaded();
+};
+
 const addPlace = async (type, placeName, contactName) => {
   const dashedType = type.replace('_', '-');
   await (await actionResourceIcon(dashedType)).waitForDisplayed();
@@ -135,7 +141,7 @@ const addPerson = async (name, params = {}) => {
   }
   await (await personSexField()).click();
   await (await notes('person')).addValue('some person notes');
-  await (await genericForm.submitButton()).click();
+  await submitForm();
   await (await contactCardIcon('person')).waitForDisplayed();
   return (await contactCard()).getText();
 };
@@ -151,8 +157,7 @@ const editPerson = async (name, updatedName) => {
   await (await personName()).clearValue();
   await (await personName()).addValue(updatedName);
 
-  await (await genericForm.submitButton()).click();
-  await waitForContactLoaded();
+  await submitForm();
   return (await contactCard()).getText();
 };
 
@@ -214,7 +219,7 @@ const editDistrict = async (districtName, editedName) => {
   await (await districtHospitalName()).setValue(editedName);
   // blur field to trigger Enketo validation
   await (await notes('district_hospital')).click();
-  await (await genericForm.submitButton()).click();
+  await submitForm();
 };
 
 const createNewAction = async (formName) => {
@@ -292,6 +297,7 @@ module.exports = {
   editDistrict,
   childrenCards,
   createNewAction,
+  submitForm,
   openReport,
   getContactCardTitle,
   getContactInfoName,
