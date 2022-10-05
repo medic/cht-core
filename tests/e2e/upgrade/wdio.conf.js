@@ -40,6 +40,8 @@ const getMainCHTDockerCompose = async () => {
   }
 };
 
+const TEST_TIMEOUT = 250 * 1000;
+
 const dockerComposeCmd = (...params) => {
   const env = {
     ...process.env,
@@ -71,6 +73,7 @@ const dockerComposeCmd = (...params) => {
     cmd.on('close', () => resolve(output));
   });
 };
+const exit = () => dockerComposeCmd('down');
 
 const startUpgradeService = async () => {
   await dockerComposeCmd('up', '-d');
@@ -82,6 +85,19 @@ const startUpgradeService = async () => {
     }
     await utils.delayPromise(500);
   } while (--retries);
+};
+
+const servicesStartTimeout = () => {
+  return setTimeout(async () => {
+    console.warn('Services took too long to start. Shutting down...');
+    console.info(`
+      If you are seeing this locally, it can mean that your internet is too slow to download all images in the 
+      allotted time. 
+      Either run the test multiple times until you load all images, download images manually or increase this timeout.
+    `);
+    await utils.tearDownServices();
+    process.exit(1);
+  }, TEST_TIMEOUT);
 };
 
 // Override specific properties from wdio base config
@@ -96,15 +112,15 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
     await getUpgradeServiceDockerCompose();
     await getMainCHTDockerCompose();
     await startUpgradeService();
+    const tooLongTimeout = servicesStartTimeout();
     await utils.listenForApi();
+    clearTimeout(tooLongTimeout);
   },
   mochaOpts: {
     ui: 'bdd',
-    timeout: 120 * 1000,
+    timeout: TEST_TIMEOUT,
   },
 });
-
-const exit = () => dockerComposeCmd('down');
 
 //do something when app is closing
 process.on('exit', exit);

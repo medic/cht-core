@@ -11,6 +11,7 @@ env:
   INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
   DOCKERHUB_USERNAME: 'dockermedic'
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
+  ECR_PUBLIC_REPO: 'public.ecr.aws/s5s3h4s7'
   COUCHDB_LOG_LEVEL: 'debug'
 
 jobs:
@@ -177,22 +178,37 @@ jobs:
 
     steps:
     - name: Delete image artifacts
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
       uses: geekyeggo/delete-artifact@v1
       with:
         name: cht-images
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+
     - name: Configure AWS credentials
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
         aws-region: eu-west-2
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-
     - name: Login to Amazon ECR
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Configure AWS credentials Public
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Login to Public Amazon ECR
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      id: login-ecr-public
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        registry-type: public
+
     - uses: actions/checkout@v2
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
@@ -214,18 +230,20 @@ jobs:
     if: ${{ github.event_name != 'pull_request' }}
 
     steps:
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials Public
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-2
+          aws-region: us-east-1
+      - name: Login to Public Amazon ECR
         if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      - uses: actions/checkout@v2
-      - name: Login to Amazon ECR
-        id: login-ecr
+        id: login-ecr-public
         uses: aws-actions/amazon-ecr-login@v1
-        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        with:
+          registry-type: public
+      - uses: actions/checkout@v2
       - name: Get branch name
         uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
       - name: Set ENV
