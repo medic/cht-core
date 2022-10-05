@@ -23,7 +23,7 @@ const UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('upgrade-service
 const CHT_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('cht-');
 const CHT_DATA_FOLDER = utils.makeTempDir('cht-');
 const UPGRADE_SERVICE_DC = path.join(UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
-const MAIN_BRANCH = 'medic:medic:7826-dupe-public-ecr';
+const MAIN_BRANCH = 'medic:medic:master';
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
@@ -40,7 +40,7 @@ const getMainCHTDockerCompose = async () => {
   }
 };
 
-const testTimeout = 250 * 1000;
+const TEST_TIMEOUT = 250 * 1000;
 
 const dockerComposeCmd = (...params) => {
   const env = {
@@ -97,7 +97,7 @@ const servicesStartTimeout = () => {
     `);
     await utils.tearDownServices();
     process.exit(1);
-  }, testTimeout);
+  }, TEST_TIMEOUT);
 };
 
 // Override specific properties from wdio base config
@@ -118,7 +118,7 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   },
   mochaOpts: {
     ui: 'bdd',
-    timeout: testTimeout,
+    timeout: TEST_TIMEOUT,
   },
 });
 
