@@ -28,43 +28,43 @@ describe('TokenLogin service', () => {
 
   describe('isTokenLoginEnabled', () => {
     it('should return falsy when no setting', () => {
-      sinon.stub(config, 'get').returns();
+      config.get.returns();
       chai.expect(service.isTokenLoginEnabled()).to.equal(false);
       chai.expect(config.get.callCount).to.deep.equal(1);
       chai.expect(config.get.args[0]).to.deep.equal(['token_login']);
     });
 
     it('should return falsy when not enabled', () => {
-      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: false });
+      config.get.withArgs('token_login').returns({ enabled: false });
       chai.expect(service.isTokenLoginEnabled()).to.equal(false);
     });
 
     it('should return true when enabled', () => {
-      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true });
+      config.get.withArgs('token_login').returns({ enabled: true });
       chai.expect(service.isTokenLoginEnabled()).to.equal(true);
     });
   });
 
   describe('shouldEnableTokenLogin', () => {
     it('should return falsey when not token login not configured', () => {
-      sinon.stub(config, 'get').returns({});
+      config.get.returns({});
       chai.expect(service.shouldEnableTokenLogin({ token_login: true })).to.equal(false);
     });
 
     it('should return falsey when data does not request token_login to be enabled', () => {
-      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true, message: 'message' });
+      config.get.withArgs('token_login').returns({ enabled: true, message: 'message' });
       chai.expect(service.shouldEnableTokenLogin({})).to.equal(false);
     });
 
     it('should return true when configured and requested', () => {
-      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true, message: 'message' });
+      config.get.withArgs('token_login').returns({ enabled: true, message: 'message' });
       chai.expect(service.shouldEnableTokenLogin({ token_login: true })).to.equal(true);
     });
   });
 
   describe('validateTokenLogin', () => {
     beforeEach(() => {
-      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true, message: 'message' });
+      config.get.withArgs('token_login').returns({ enabled: true, message: 'message' });
     });
 
     describe('on create', () => {
@@ -206,7 +206,6 @@ describe('TokenLogin service', () => {
 
   describe('getUserByToken', () => {
     it('should reject with no input', () => {
-      sinon.stub(db.users, 'get');
       return service
         .getUserByToken()
         .then(() => chai.assert.fail('Should have thrown'))
@@ -217,7 +216,7 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw when token_login doc not found', () => {
-      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      db.medic.get.rejects({ status: 404 });
       const token = 'my_token';
       return service
         .getUserByToken(token)
@@ -230,8 +229,8 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw when user not found', () => {
-      sinon.stub(db.medic, 'get').resolves({ user: 'org.couchdb.user:someuser' });
-      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      db.medic.get.resolves({ user: 'org.couchdb.user:someuser' });
+      db.users.get.rejects({ status: 404 });
       return service
         .getUserByToken('omgtoken')
         .then(() => chai.assert.fail('Should have thrown'))
@@ -245,8 +244,8 @@ describe('TokenLogin service', () => {
     });
 
     it('should return false when no matches found', () => {
-      sinon.stub(db.medic, 'get').resolves({ user: 'org.couchdb.user:otheruser' });
-      sinon.stub(db.users, 'get').resolves({ token_login: { token: 'not token' } });
+      db.medic.get.resolves({ user: 'org.couchdb.user:otheruser' });
+      db.users.get.resolves({ token_login: { token: 'not token' } });
       return service
         .getUserByToken('sometoken')
         .then(() => chai.assert.fail('Should have thrown'))
@@ -260,8 +259,8 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw when match is expired', () => {
-      sinon.stub(db.medic, 'get').resolves({ user: 'org.couchdb.user:user' });
-      sinon.stub(db.users, 'get').resolves({ token_login: { active: true, token: 'the_token', expiration_date: 0 } });
+      db.medic.get.resolves({ user: 'org.couchdb.user:user' });
+      db.users.get.resolves({ token_login: { active: true, token: 'the_token', expiration_date: 0 } });
       return service
         .getUserByToken('the_token')
         .then(() => chai.assert.fail('Should have thrown'))
@@ -276,8 +275,8 @@ describe('TokenLogin service', () => {
 
     it('should return the row id when match is not expired', () => {
       const future = new Date().getTime() + 1000;
-      sinon.stub(db.medic, 'get').resolves({ user: 'org.couchdb.user:user_id' });
-      sinon.stub(db.users, 'get').resolves({
+      db.medic.get.resolves({ user: 'org.couchdb.user:user_id' });
+      db.users.get.resolves({
         _id: 'org.couchdb.user:user_id',
         token_login: {
           active: true,
@@ -295,8 +294,8 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw when get errors', () => {
-      sinon.stub(db.medic, 'get').resolves({ user: 'org.couchdb.user:user_id' });
-      sinon.stub(db.users, 'get').rejects({ some: 'err' });
+      db.medic.get.resolves({ user: 'org.couchdb.user:user_id' });
+      db.users.get.rejects({ some: 'err' });
       return service
         .getUserByToken('t', 'h')
         .then(() => chai.assert.fail('should have thrown'))
@@ -304,7 +303,7 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw when get errors', () => {
-      sinon.stub(db.medic, 'get').rejects({ other: 'err' });
+      db.medic.get.rejects({ other: 'err' });
       return service
         .getUserByToken('t', 'h')
         .then(() => chai.assert.fail('should have thrown'))
@@ -314,7 +313,7 @@ describe('TokenLogin service', () => {
 
   describe('resetPassword', () => {
     it('should throw an error when user not found', () => {
-      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      db.users.get.rejects({ status: 404 });
 
       return service
         .resetPassword('userId')
@@ -325,7 +324,7 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw an error when user is invalid', () => {
-      sinon.stub(db.users, 'get').resolves({ name: 'user' });
+      db.users.get.resolves({ name: 'user' });
       return service
         .resetPassword('userId')
         .then(() => chai.assert.fail('should have thrown'))
@@ -335,7 +334,7 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw an error when user token not active', () => {
-      sinon.stub(db.users, 'get').resolves({ name: 'user', token_login: { active: false } });
+      db.users.get.resolves({ name: 'user', token_login: { active: false } });
       return service
         .resetPassword('userId')
         .then(() => chai.assert.fail('should have thrown'))
@@ -357,8 +356,8 @@ describe('TokenLogin service', () => {
         },
       };
 
-      sinon.stub(db.users, 'get').resolves(user);
-      sinon.stub(db.users, 'put').resolves();
+      db.users.get.resolves(user);
+      db.users.put.resolves();
 
       return service.resetPassword('userID').then(response => {
         chai.expect(response).to.deep.equal({
@@ -389,8 +388,8 @@ describe('TokenLogin service', () => {
 
   describe('deactivate token login', () => {
     it('should throw an error when user not found', () => {
-      sinon.stub(db.users, 'get').rejects({ status: 404 });
-      sinon.stub(db.medic, 'get').rejects({ status: 404 });
+      db.users.get.rejects({ status: 404 });
+      db.medic.get.rejects({ status: 404 });
 
       return service
         .deactivateTokenLogin('userId')
@@ -401,8 +400,8 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw an error when user is invalid', () => {
-      sinon.stub(db.users, 'get').resolves({ name: 'user' });
-      sinon.stub(db.medic, 'get').resolves({ name: 'user' });
+      db.users.get.resolves({ name: 'user' });
+      db.medic.get.resolves({ name: 'user' });
       return service
         .deactivateTokenLogin('userId')
         .then(() => chai.assert.fail('should have thrown'))
@@ -412,8 +411,8 @@ describe('TokenLogin service', () => {
     });
 
     it('should throw an error when user token not active', () => {
-      sinon.stub(db.users, 'get').resolves({ name: 'user', token_login: { active: false } });
-      sinon.stub(db.medic, 'get').resolves({ name: 'user', token_login: { active: false } });
+      db.users.get.resolves({ name: 'user', token_login: { active: false } });
+      db.medic.get.resolves({ name: 'user', token_login: { active: false } });
       return service
         .deactivateTokenLogin('userId')
         .then(() => chai.assert.fail('should have thrown'))
@@ -442,10 +441,10 @@ describe('TokenLogin service', () => {
         token_login: { active: true, expiration_date: 0 },
       };
 
-      sinon.stub(db.users, 'get').resolves(user);
-      sinon.stub(db.medic, 'get').resolves(userSettings);
-      sinon.stub(db.users, 'put').resolves();
-      sinon.stub(db.medic, 'put').resolves();
+      db.users.get.resolves(user);
+      db.medic.get.resolves(userSettings);
+      db.users.put.resolves();
+      db.medic.put.resolves();
       clock.tick(123);
 
       return service.deactivateTokenLogin('userID').then(() => {
@@ -487,7 +486,7 @@ describe('TokenLogin service', () => {
     });
 
     it('should do nothing when no config', () => {
-      sinon.stub(config, 'get').withArgs('token_login').returns();
+      config.get.withArgs('token_login').returns();
       return service.manageTokenLogin({ token_login: true }, '', { user: { id: 'user' } }).then(actual => {
         chai.expect(actual).to.deep.equal({ user: { id: 'user' } });
       });
@@ -496,8 +495,8 @@ describe('TokenLogin service', () => {
     describe('disabling token login', () => {
       it('should do nothing when user does not have token_login configured', () => {
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
-        sinon.stub(db.medic, 'get').withArgs('userID').resolves({ _id: 'userID' });
-        sinon.stub(db.users, 'get').withArgs('userID').resolves({ _id: 'userID' });
+        db.medic.get.withArgs('userID').resolves({ _id: 'userID' });
+        db.users.get.withArgs('userID').resolves({ _id: 'userID' });
 
         return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
           chai.expect(actual).to.deep.equal({ user: { id: 'userID' }, 'user-settings': { id: 'userID' } });
@@ -507,7 +506,7 @@ describe('TokenLogin service', () => {
       it('should disable token login when requested', () => {
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
         const responseCopy = Object.assign({}, response);
-        sinon.stub(db.medic, 'get')
+        db.medic.get
           .withArgs('userID').resolves({
             _id: 'userID',
             name: 'user',
@@ -523,7 +522,7 @@ describe('TokenLogin service', () => {
               { state: 'pending', messages: [{ message: 'sms2' }] },
             ]
           });
-        sinon.stub(db.users, 'get').withArgs('userID').resolves({
+        db.users.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'user',
           roles: ['a', 'b'],
@@ -534,8 +533,8 @@ describe('TokenLogin service', () => {
           }
         });
 
-        sinon.stub(db.medic, 'put').resolves();
-        sinon.stub(db.users, 'put').resolves();
+        db.medic.put.resolves();
+        db.users.put.resolves();
 
         return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
           chai.expect(db.medic.put.callCount).to.equal(2);
@@ -579,7 +578,7 @@ describe('TokenLogin service', () => {
       it('should only clear pending messages', () => {
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
         const responseCopy = Object.assign({}, response);
-        sinon.stub(db.medic, 'get')
+        db.medic.get
           .withArgs('userID').resolves({
             _id: 'userID',
             name: 'user',
@@ -595,7 +594,7 @@ describe('TokenLogin service', () => {
               { state: 'forwarded-by-gateway', messages: [{ message: 'sms2' }] },
             ]
           });
-        sinon.stub(db.users, 'get').withArgs('userID').resolves({
+        db.users.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'user',
           roles: ['a', 'b'],
@@ -606,8 +605,8 @@ describe('TokenLogin service', () => {
           }
         });
 
-        sinon.stub(db.medic, 'put').resolves();
-        sinon.stub(db.users, 'put').resolves();
+        db.medic.put.resolves();
+        db.users.put.resolves();
 
         return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
           chai.expect(db.medic.put.callCount).to.equal(1);
@@ -629,7 +628,7 @@ describe('TokenLogin service', () => {
 
       it('should work when old login token doc not found', () => {
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
-        sinon.stub(db.medic, 'get')
+        db.medic.get
           .withArgs('userID').resolves({
             _id: 'userID',
             name: 'user',
@@ -638,7 +637,7 @@ describe('TokenLogin service', () => {
           })
           .withArgs('token:login:ccc').rejects({ status: 404 });
 
-        sinon.stub(db.users, 'get').withArgs('userID').resolves({
+        db.users.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'user',
           roles: ['a', 'b'],
@@ -649,8 +648,8 @@ describe('TokenLogin service', () => {
           }
         });
 
-        sinon.stub(db.medic, 'put').resolves();
-        sinon.stub(db.users, 'put').resolves();
+        db.medic.put.resolves();
+        db.users.put.resolves();
 
         return service.manageTokenLogin({ token_login: false }, '', response).then(actual => {
           chai.expect(db.medic.put.callCount).to.equal(1);
@@ -676,31 +675,31 @@ describe('TokenLogin service', () => {
 
       beforeEach(() => {
         addMessage = sinon.stub();
-        sinon.stub(config, 'getTransitionsLib').returns({ messages: { addMessage } });
+        config.getTransitionsLib.returns({ messages: { addMessage } });
       });
 
       it('should generate password, token, create sms and update user docs', () => {
-        sinon.stub(config, 'get')
+        config.get
           .withArgs('token_login').returns({ message: 'the sms', enabled: true })
           .withArgs('app_url').returns('http://host');
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
-        sinon.stub(db.medic, 'get').withArgs('userID').resolves({
+        db.medic.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'user',
           roles: ['a', 'b'],
           phone: '+40755232323',
         });
 
-        sinon.stub(db.users, 'get').withArgs('userID').resolves({
+        db.users.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'user',
           roles: ['a', 'b'],
         });
 
-        sinon.stub(db.medic, 'put').resolves();
-        sinon.stub(db.users, 'put').resolves();
-        sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+        db.medic.put.resolves();
+        db.users.put.resolves();
+        db.medic.allDocs.resolves({ rows: [{ error: 'not_found' }] });
 
         clock.tick(2000);
 
@@ -766,12 +765,12 @@ describe('TokenLogin service', () => {
       });
 
       it('should clear previous token_login sms', () => {
-        sinon.stub(config, 'get')
+        config.get
           .withArgs('token_login').returns({ message: 'the sms', enabled: true })
           .withArgs('app_url').returns('http://host');
         const response = { user: { id: 'my_user' }, 'user-settings': { id: 'my_user' } };
 
-        sinon.stub(db.medic, 'get').withArgs('my_user').resolves({
+        db.medic.get.withArgs('my_user').resolves({
           _id: 'my_user',
           name: 'user',
           roles: ['a', 'b'],
@@ -795,7 +794,7 @@ describe('TokenLogin service', () => {
           ],
         });
 
-        sinon.stub(db.users, 'get').withArgs('my_user').resolves({
+        db.users.get.withArgs('my_user').resolves({
           _id: 'my_user',
           name: 'user',
           roles: ['a', 'b'],
@@ -806,9 +805,9 @@ describe('TokenLogin service', () => {
           },
         });
 
-        sinon.stub(db.medic, 'put').resolves();
-        sinon.stub(db.users, 'put').resolves();
-        sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+        db.medic.put.resolves();
+        db.users.put.resolves();
+        db.medic.allDocs.resolves({ rows: [{ error: 'not_found' }] });
 
         clock.tick(2000);
 
@@ -907,12 +906,12 @@ describe('TokenLogin service', () => {
       });
 
       it('should only clear pending tasks in previous token_login sms', () => {
-        sinon.stub(config, 'get')
+        config.get
           .withArgs('token_login').returns({ message: 'the sms', enabled: true })
           .withArgs('app_url').returns('http://host');
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
-        sinon.stub(db.medic, 'get').withArgs('userID').resolves({
+        db.medic.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'username',
           roles: ['a', 'b'],
@@ -936,7 +935,7 @@ describe('TokenLogin service', () => {
           ],
         });
 
-        sinon.stub(db.users, 'get').withArgs('userID').resolves({
+        db.users.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'username',
           roles: ['a', 'b'],
@@ -948,9 +947,9 @@ describe('TokenLogin service', () => {
           },
         });
 
-        sinon.stub(db.medic, 'put').resolves();
-        sinon.stub(db.users, 'put').resolves();
-        sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+        db.medic.put.resolves();
+        db.users.put.resolves();
+        db.medic.allDocs.resolves({ rows: [{ error: 'not_found' }] });
 
         clock.tick(5000);
 
@@ -1027,27 +1026,27 @@ describe('TokenLogin service', () => {
       });
 
       it('should try to generate a unique token', () => {
-        sinon.stub(config, 'get')
+        config.get
           .withArgs('token_login').returns({ message: 'the sms', enabled: true })
           .withArgs('app_url').returns('http://host');
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
-        sinon.stub(db.medic, 'get').withArgs('userID').resolves({
+        db.medic.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'user',
           roles: ['a', 'b'],
           phone: '+40755232323',
         });
 
-        sinon.stub(db.users, 'get').withArgs('userID').resolves({
+        db.users.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'user',
           roles: ['a', 'b'],
         });
 
-        sinon.stub(db.medic, 'put').resolves();
-        sinon.stub(db.users, 'put').resolves();
-        sinon.stub(db.medic, 'allDocs').resolves({ rows: [{}, {}, {}, { error: 'not_found' }] }); // 4th token
+        db.medic.put.resolves();
+        db.users.put.resolves();
+        db.medic.allDocs.resolves({ rows: [{}, {}, {}, { error: 'not_found' }] }); // 4th token
 
         clock.tick(2000);
 
@@ -1089,24 +1088,24 @@ describe('TokenLogin service', () => {
       });
 
       it('should throw an error when not able to generate a unique token', () => {
-        sinon.stub(config, 'get')
+        config.get
           .withArgs('token_login').returns({ message: 'the sms', enabled: true })
           .withArgs('app_url').returns('http://host');
         const response = { user: { id: 'userID' }, 'user-settings': { id: 'userID' } };
 
-        sinon.stub(db.medic, 'get').withArgs('userID').resolves({
+        db.medic.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'user',
           roles: ['a', 'b'],
           phone: '+40755232323',
         });
-        sinon.stub(db.users, 'get').withArgs('userID').resolves({
+        db.users.get.withArgs('userID').resolves({
           _id: 'userID',
           name: 'user',
           roles: ['a', 'b'],
         });
 
-        sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
+        db.medic.allDocs.resolves({ rows: [] });
 
         clock.tick(2000);
 
