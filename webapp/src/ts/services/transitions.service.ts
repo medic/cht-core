@@ -69,6 +69,10 @@ export class TransitionsService {
   }
 
   async applyTransitions(docs) {
+    if(!docs || !docs.every(doc => doc)) {
+      throw new Error('An array of valid doc objects must be provided.');
+    }
+
     if (!this.inited) {
       console.warn('Attempt to run transitions without initialization');
       return Promise.resolve(docs);

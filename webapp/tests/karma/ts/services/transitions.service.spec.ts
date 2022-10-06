@@ -239,5 +239,38 @@ describe('Transitions Service', () => {
       expect(mutingTransition.filter.callCount).to.equal(1);
       expect(mutingTransition.run.callCount).to.equal(1);
     });
+
+    [
+      null,
+      [null],
+      [{ _id: 'a' }, null]
+    ].forEach((docs) => {
+      it(`should throw error when trying to apply transitions for invalid docs: ${JSON.stringify(docs)}`, async () => {
+        const settings = {
+          transitions: {
+            update_clinics: true,
+            muting: { client_side: true },
+          },
+        };
+        settingsService.get.resolves(settings);
+        mutingTransition.init.returns(true);
+
+        await service.init();
+
+        expect(settingsService.get.callCount).to.equal(1);
+        expect(mutingTransition.init.callCount).to.equal(1);
+
+        try{
+          await service.applyTransitions(docs);
+          expect.fail('should have thrown an error');
+        } catch (err) {
+          expect(err.message).to.equal(`An array of valid doc objects must be provided.`);
+        }
+
+        expect(mutingTransition.filter.callCount).to.equal(0);
+        expect(mutingTransition.run.callCount).to.equal(0);
+        expect(validationService.init.callCount).to.equal(1);
+      });
+    });
   });
 });

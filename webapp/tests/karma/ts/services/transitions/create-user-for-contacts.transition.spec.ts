@@ -291,6 +291,29 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.isReplaced.callCount).to.equal(1);
       });
 
+      [
+        undefined,
+        {}
+      ].forEach(parent => {
+        it('does not assign new contact as primary contact when contact has no parent', async() => {
+          const originalUser = Object.assign({}, ORIGINAL_CONTACT);
+          createUserForContactsService.getUserContact.resolves(originalUser);
+          const newContact = Object.assign({}, NEW_CONTACT, { parent });
+          medicDb.get.withArgs(newContact._id).resolves(newContact);
+
+          const docs = await transition.run([REPLACE_USER_DOC]);
+
+          expect(docs).to.deep.equal([REPLACE_USER_DOC, originalUser]);
+          expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+          expect(dbService.get.callCount).to.equal(1);
+          expect(medicDb.get.callCount).to.equal(1);
+          expect(medicDb.get.args[0]).to.deep.equal([newContact._id]);
+          expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
+          expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, newContact]);
+          expect(createUserForContactsService.isReplaced.callCount).to.equal(1);
+        });
+      });
+
       it(`throws an error if the original contact being replaced does not match the user's contact`, async() => {
         createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
         const replaceUserDoc = Object.assign(
@@ -368,6 +391,26 @@ describe('Create User for Contacts Transition', () => {
         expect(dbService.get.callCount).to.equal(1);
         expect(medicDb.get.callCount).to.equal(1);
         expect(medicDb.get.args[0]).to.deep.equal([NEW_CONTACT._id]);
+        expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
+        expect(createUserForContactsService.isReplaced.callCount).to.equal(1);
+      });
+
+      it('throws an error if multiple replace user reports are submitted', async() => {
+        const originalUser = Object.assign({}, ORIGINAL_CONTACT);
+        createUserForContactsService.getUserContact.resolves(originalUser);
+        const parentPlace = Object.assign({}, PARENT_PLACE);
+        medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
+
+        try {
+          await transition.run([REPLACE_USER_DOC, NEW_CONTACT, REPLACE_USER_DOC]);
+          expect.fail('should have thrown an error');
+        } catch (err) {
+          expect(err.message).to.equal(`Only one user replace form is allowed to be submitted per transaction.`);
+        }
+
+        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(dbService.get.callCount).to.equal(0);
+        expect(medicDb.get.callCount).to.equal(0);
         expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
         expect(createUserForContactsService.isReplaced.callCount).to.equal(1);
       });
