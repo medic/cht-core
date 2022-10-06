@@ -1,6 +1,6 @@
 const chai = require('chai');
 const expect = chai.expect;
-const TestRunner = require('medic-conf-test-harness');
+const TestRunner = require('cht-conf-test-harness');
 const { MAX_DAYS_IN_PREGNANCY, getRangeForTask, getTaskTestDays } = require('../test-helpers');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
 const harness = new TestRunner();
