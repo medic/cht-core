@@ -158,4 +158,48 @@ describe('db', () => {
       expect(rpn.get.callCount).to.equal(1);
     });
   });
+
+  describe('exists', () => {
+    it('should resolve with db object if db exists', async () => {
+      const dbObject = {
+        info: sinon.stub().resolves({}),
+      };
+      const pouch = sinon.stub().returns(dbObject);
+      db.__set__('PouchDB', pouch);
+
+      const result = await db.exists('thedbname');
+      expect(result).to.equal(dbObject);
+      expect(pouch.callCount).to.equal(1);
+      expect(pouch.args[0][0]).to.equal(`${env.serverUrl}/thedbname`);
+      expect(pouch.args[0][1].skip_setup).to.equal(true);
+    });
+
+    it('should close db if info request throws', async () => {
+      const dbObject = {
+        info: sinon.stub().rejects(),
+      };
+      const pouch = sinon.stub().returns(dbObject);
+      db.__set__('PouchDB', pouch);
+      sinon.stub(db, 'close');
+
+      const result = await db.exists('thedbname');
+      expect(result).to.equal(false);
+      expect(db.close.callCount).to.equal(1);
+      expect(db.close.args).to.deep.equal([[dbObject]]);
+    });
+
+    it('should close db if info request returns an error', async () => {
+      const dbObject = {
+        info: sinon.stub().resolves({ error: 'something' }),
+      };
+      const pouch = sinon.stub().returns(dbObject);
+      db.__set__('PouchDB', pouch);
+      sinon.stub(db, 'close');
+
+      const result = await db.exists('thedbname');
+      expect(result).to.equal(false);
+      expect(db.close.callCount).to.equal(1);
+      expect(db.close.args).to.deep.equal([[dbObject]]);
+    });
+  });
 });

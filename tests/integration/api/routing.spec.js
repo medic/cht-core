@@ -894,4 +894,16 @@ describe('routing', () => {
         });
     });
   });
+
+  describe('admin access to Fauxton', () => {
+    it('should allow access with a trailing slash', async () => {
+      const response = await utils.request({ path: '/_utils/', json: false });
+      expect(response).to.include('Fauxton Release');
+    });
+
+    it('should allow access without a trailing slash', async () => {
+      const response = await utils.request({ path: '/_utils', json: false });
+      expect(response).to.include('Fauxton Release');
+    });
+  });
 });
