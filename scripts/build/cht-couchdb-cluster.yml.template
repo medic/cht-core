@@ -3,7 +3,6 @@ version: '3.9'
 services:
   couchdb.1:
     image: {{{ repo }}}/cht-couchdb:{{ tag }}
-    container_name: {{ couch1_container_name }}
     volumes:
       - ${DB1_DATA:-./srv1}:/opt/couchdb/data
       - cht-credentials:/opt/couchdb/etc/local.d/
@@ -22,11 +21,10 @@ services:
         max-file: "${LOG_MAX_FILES:-20}"
     restart: always
     networks:
-      {{ network }}:
+      cht-net:
 
   couchdb.2:
     image: {{{ repo }}}/cht-couchdb:{{ tag }}
-    container_name: {{ couch2_container_name }}
     volumes:
       - ${DB2_DATA:-./srv2}:/opt/couchdb/data
     environment:
@@ -44,11 +42,10 @@ services:
         max-file: "${LOG_MAX_FILES:-20}"
     restart: always
     networks:
-      {{ network }}:
+      cht-net:
 
   couchdb.3:
     image: {{{ repo }}}/cht-couchdb:{{ tag }}
-    container_name: {{ couch3_container_name }}
     volumes:
       - ${DB3_DATA:-./srv3}:/opt/couchdb/data
     environment:
@@ -66,11 +63,11 @@ services:
         max-file: "${LOG_MAX_FILES:-20}"
     restart: always
     networks:
-      {{ network }}:
+      cht-net:
 
 volumes:
   cht-credentials:
 
 networks:
-  {{ network }}:
-    name: {{ network }}
+  cht-net:
+     name: ${CHT_NETWORK:-cht-net}

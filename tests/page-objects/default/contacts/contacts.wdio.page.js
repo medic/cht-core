@@ -228,6 +228,7 @@ const openForm = async (name) => {
   const parent = await newActionContactButton().parentElement();
   await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
 
+  await browser.takeScreenshot();
   for (const form of await forms()) {
     if (await form.getText() === name) {
       await form.click();

@@ -16,18 +16,19 @@ process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
 
+const PROJECT_NAME = 'cht-e2e';
+const NETWORK = 'cht-net-e2e';
 const CONTAINER_NAMES = {
-  haproxy: 'cht-haproxy-e2e',
-  nginx: 'cht-nginx-e2e',
-  couch1: 'cht-couchdb.1-e2e',
-  couch2: 'cht-couchdb.2-e2e',
-  couch3: 'cht-couchdb.3-e2e',
-  api: 'cht-api-e2e',
-  sentinel: 'cht-sentinel-e2e',
-  haproxy_healthcheck: 'cht-haproxy-healthcheck-e2e',
-  upgrade: 'cht-upgrade-service'
+  haproxy: `${PROJECT_NAME}-haproxy-1`,
+  nginx: `${PROJECT_NAME}-nginx-1`,
+  couch1: `${PROJECT_NAME}-couch.1-1`,
+  couch2: `${PROJECT_NAME}-couch.2-1`,
+  couch3: `${PROJECT_NAME}-couch.3-1`,
+  api: `${PROJECT_NAME}-api-1`,
+  sentinel: `${PROJECT_NAME}-sentinel-1`,
+  haproxy_healthcheck: `${PROJECT_NAME}-haproxy-healthcheck-1`,
+  // upgrade: 'cht-upgrade-service'
 };
-
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 
 const PouchDB = require('pouchdb-core');
@@ -332,10 +333,14 @@ const deleteUsers = async (users, meta = false) => {
     .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
 
-  await Promise.all([
+  const results = await Promise.all([
     request({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } }),
     request({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } }),
   ]);
+  const errors = results.flat().filter(result => !result.ok);
+  if (errors) {
+    return deleteUsers(users, meta);
+  }
 
   if (!meta) {
     return;
@@ -598,15 +603,6 @@ const generateComposeFiles = async () => {
   const view = {
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
-    network: 'cht-net-e2e',
-    couch1_container_name: CONTAINER_NAMES.couch1,
-    couch2_container_name: CONTAINER_NAMES.couch2,
-    couch3_container_name: CONTAINER_NAMES.couch3,
-    haproxy_container_name: CONTAINER_NAMES.haproxy,
-    nginx_container_name: CONTAINER_NAMES.nginx,
-    api_container_name: CONTAINER_NAMES.api,
-    sentinel_container_name: CONTAINER_NAMES.sentinel,
-    haproxy_healthcheck_container_name: CONTAINER_NAMES.haproxy_healthcheck,
     db_name: 'medic-test',
     couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
   };
@@ -645,16 +641,18 @@ const dockerComposeCmd = (...params) => {
   const composeFilesParam = COMPOSE_FILES
     .map(file => ['-f', getTestComposeFilePath(file)])
     .flat();
+  const projectParams = ['-p', PROJECT_NAME];
 
   const env = {
     ...process.env,
+    CHT_NETWORK: NETWORK,
     DB1_DATA: db1Data,
     DB2_DATA: db2Data,
     DB3_DATA: db3Data,
   };
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', [ ...composeFilesParam, ...params ], { env });
+    const cmd = spawn('docker-compose', [ ...projectParams, ...composeFilesParam, ...params ], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -715,11 +713,11 @@ const stopServices = async (removeOrphans) => {
   await saveLogs();
 };
 const startService = async (service) => {
-  await dockerComposeCmd('start', `cht-${service}`);
+  await dockerComposeCmd('start', service);
 };
 
 const stopService = async (service) => {
-  await dockerComposeCmd('stop', '-t', 0, `cht-${service}`);
+  await dockerComposeCmd('stop', '-t', 0, service);
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
@@ -768,7 +766,7 @@ const parseCookieResponse = (cookieString) => {
 
 const dockerGateway = () => {
   try {
-    return JSON.parse(execSync(`docker network inspect cht-net-e2e --format='{{json .IPAM.Config}}'`));
+    return JSON.parse(execSync(`docker network inspect ${NETWORK} --format='{{json .IPAM.Config}}'`));
   } catch (error) {
     console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);

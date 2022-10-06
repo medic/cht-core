@@ -10,7 +10,7 @@ const getEstDeliveryDate = () => $(`${form} span[data-itext-id="/pregnancy/group
 const risksFac = () => $$(`${form} [name="/pregnancy/group_risk_factors"] label:not(:first-child) > [type="checkbox"]`);
 const dangerSigns = () => $$(`${form} input[name="/pregnancy/group_danger_signs/g_danger_signs"]`);
 const smsNote = () => $(`${form} textarea[name="/pregnancy/group_note/g_chw_sms"]`);
-const riskFactorsSummary = () => $$(`${form} :not(label.disabled):not(label.or-appearance-yellow)  > ` + 
+const riskFactorsSummary = () => $$(`${form} :not(label.disabled):not(label.or-appearance-yellow)  > ` +
   `span[data-itext-id*="/pregnancy/group_review/r_risk_factor"].active`);
 const dangerSignsSummary = () => $$(`${form} span[data-itext-id*="/pregnancy/group_review/r_danger_sign"].active`);
 const followUpSMS = () => $(`${form} [data-value=" /pregnancy/chw_sms "]`);
@@ -57,6 +57,7 @@ const getFollowUpSMS = async () => {
 };
 
 const submitPregnancy = async () => {
+  await browser.takeScreenshot();
   await contactPage.createNewAction('New Pregnancy');
   await selectKnowLMP();
   await selectAproxLMP(APROX_LMP.b7To8Months);
