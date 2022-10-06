@@ -21,6 +21,8 @@ import { AuthService } from '@mm-services/auth.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
+import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
 const PAGE_SIZE = 50;
 
@@ -28,9 +30,7 @@ const PAGE_SIZE = 50;
   templateUrl: './reports.component.html'
 })
 export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
-  subscription: Subscription = new Subscription();
-  @ViewChild(ReportsSidebarFilterComponent)
-  reportsSidebarFilter: ReportsSidebarFilterComponent;
+  @ViewChild(ReportsSidebarFilterComponent) reportsSidebarFilter: ReportsSidebarFilterComponent;
 
   private globalActions: GlobalActions;
   private reportsActions: ReportsActions;
@@ -38,6 +38,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private listContains;
   private destroyed;
 
+  subscription: Subscription = new Subscription();
   reportsList;
   selectedReports;
   forms;
@@ -72,6 +73,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private sessionService:SessionService,
     private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
+    private modalService:ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -327,6 +329,14 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     exportService.export('reports', exportFilters, { humanReadable: true });
   }
 
+  toggleAllSelected() {
+    if (this.reportsList?.length === this.selectedReports?.length) {
+      this.reportsActions.deselectAll();
+      return;
+    }
+    this.reportsActions.selectAll();
+  }
+
   toggleSelected(report) {
     if (!report?._id) {
       return;
@@ -360,7 +370,17 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportsSidebarFilter?.resetFilters();
   }
 
-  private getCurrentLineageLevel(){
+  bulkDeleteReports() {
+    if (!this.selectedReports?.length) {
+      return;
+    }
+
+    this.modalService
+      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs: this.selectedReports } } })
+      .catch(() => {});
+  }
+
+  private getCurrentLineageLevel() {
     return this.userContactService.get().then(user => user?.parent?.name);
   }
 }

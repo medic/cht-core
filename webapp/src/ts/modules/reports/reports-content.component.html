@@ -13,12 +13,6 @@
     class="report-wrap"
     *ngIf="selectModeActive || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
 
-    <div class="selection-count" *ngIf="selectModeActive && selectedReports.length">
-      <span *ngIf="selectedReports.length === 1">{{'select.mode.count.singular' | translate}}</span>
-      <span *ngIf="selectedReports.length !== 1" translate
-        [translateParams]="{ number: selectedReports?.length | localizeNumber }">select.mode.count.plural</span>
-    </div>
-
     <div *ngFor="let selection of selectedReports; trackBy: trackByFn; let $index = index;" class="body report-body">
 
       <div class="item-summary" (click)="toggleExpand(selection)">

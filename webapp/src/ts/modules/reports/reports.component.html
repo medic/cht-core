@@ -1,5 +1,5 @@
 <div class="filters">
-  <div class="inner">
+  <div class="inner" *ngIf="!selectMode?.active">
     <reports-filters
       *ngIf="!useSidebarFilter"
       (search)="search($event)"
@@ -23,9 +23,14 @@
       class="inbox-items left-pane"
       [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen, 'select-mode-available': selectMode?.available }">
 
-      <div class="selection-count" *ngIf="selectMode?.active">
-        <span *ngIf="selectedReports?.length === 1">{{ 'select.mode.count.singular' | translate }}</span>
-        <span *ngIf="selectedReports?.length !== 1" translate [translateParams]="{ number: selectedReports?.length || 0 | localizeNumber }">select.mode.count.plural</span>
+      <div class="select-all" *ngIf="selectMode?.available">
+        <input type="checkbox"
+          (click)="toggleAllSelected()"
+          [checked]="reportsList?.length === selectedReports?.length"
+          [indeterminate]="selectMode?.active && selectedReports?.length && reportsList?.length !== selectedReports?.length">
+        <span (click)="toggleAllSelected()">
+          {{ (reportsList?.length === selectedReports?.length ? 'select.mode.deselect.all' : 'select.mode.select.all') | translate }}
+        </span>
       </div>
 
       <ul [hidden]="loading && !appending">
@@ -72,8 +77,19 @@
 
     <div class="content-pane right-pane">
       <div class="item-content" [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
+        <div class="multi-select-bar" *ngIf="selectMode?.available && selectMode?.active && selectedReports?.length">
+          <div class="selection-count">
+            <span *ngIf="selectedReports?.length === 1">{{ 'select.mode.count.singular' | translate }}</span>
+            <span *ngIf="selectedReports?.length !== 1" translate [translateParams]="{ number: selectedReports?.length || 0 | localizeNumber }">select.mode.count.plural</span>
+          </div>
+          <a class="bulk-delete" (click)="bulkDeleteReports()">
+            <span class="fa fa-trash-o"></span>
+            <span>{{ 'select.mode.delete.all' | translate }}</span>
+          </a>
+        </div>
         <router-outlet></router-outlet>
       </div>
+
       <mm-reports-sidebar-filter
         class="col-sm-3 sidebar-filter-wrapper"
         *ngIf="useSidebarFilter"
