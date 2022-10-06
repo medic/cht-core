@@ -1,6 +1,6 @@
 const chai = require('chai');
 const expect = chai.expect;
-const TestRunner = require('cht-conf-test-harness');
+const TestRunner = require('medic-conf-test-harness');
 const { deliveryReportScenarios } = require('../form-inputs');
 const harness = new TestRunner();
 

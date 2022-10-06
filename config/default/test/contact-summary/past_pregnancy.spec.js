@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const TestRunner = require('cht-conf-test-harness');
+const TestRunner = require('medic-conf-test-harness');
 const moment = require('moment');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios, deliveryReportScenarios } = require('../form-inputs');
 const harness = new TestRunner();
@@ -16,7 +16,7 @@ describe('Tests for past pregnancy condition card', () => {
     await harness.setNow('2000-01-01');
 
     // Load the pregnancy form and fill in
-    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
+    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     expect(result.errors).to.be.empty;
 
     await harness.setNow('2000-04-30');
@@ -66,7 +66,7 @@ describe('Tests for past pregnancy condition card', () => {
   it('delivery with 2 children, both alive and healthy', async () => {
     await harness.setNow('2000-01-01');
     // Load the pregnancy form and fill in
-    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
+    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     expect(result.errors).to.be.empty;
 
     await harness.setNow('2000-04-30');
@@ -116,7 +116,7 @@ describe('Tests for past pregnancy condition card', () => {
   it('delivery with 3 children: 1 alive and healthy, 1 deceased, 1 stillbirth', async () => {
     await harness.setNow('2000-01-01');
     // Load the pregnancy form and fill in
-    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
+    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     expect(result.errors).to.be.empty;
 
     await harness.setNow('2000-04-30');
@@ -220,7 +220,7 @@ describe('Tests for past pregnancy condition card', () => {
     await harness.setNow('2000-01-01');
 
     // Load the pregnancy form and fill in
-    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
+    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     expect(result.errors).to.be.empty;
 
     await harness.setNow('2000-01-03');
@@ -272,7 +272,7 @@ describe('Tests for past pregnancy condition card', () => {
     await harness.setNow('2000-01-01');
 
     // Load the pregnancy form and fill in
-    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
+    let result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     expect(result.errors).to.be.empty;
 
     await harness.setNow('2000-01-03');

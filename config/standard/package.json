@@ -9,7 +9,7 @@
     "eslint": "eslint **.json **.js",
     "test": "npm run eslint && npm run test-contact-summary && npm run test-unit",
     "test-contact-summary": "medic-contact-summary-test . test/contact-summary",
-    "test-unit": "mocha --recursive --reporter spec test",
+    "test-unit": "mocha --reporter progress test/*.spec.js",
     "ci": "./test/check-app-settings-is-committed && npm test"
   },
   "devDependencies": {
@@ -19,7 +19,6 @@
     "eslint": "^6.5.1",
     "eslint-plugin-json": "^1.3.2",
     "cht-conf": "^3.7.0",
-    "cht-conf-test-harness": "^2.4.1",
     "medic-conf-test-harness": "^0.1.19",
     "mocha": "^5.1.1"
   },

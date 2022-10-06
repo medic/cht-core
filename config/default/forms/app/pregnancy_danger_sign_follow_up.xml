@@ -179,7 +179,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign_follow_up id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" delimiter="#" version="2022-08-19 15:27:41">
+        <pregnancy_danger_sign_follow_up id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" delimiter="#" version="2019-11-04 14:14:20">
           <inputs>
             <meta>
               <location>
@@ -322,7 +322,8 @@ or selected(../reduced_or_no_fetal_movements, 'yes')
 or selected(../breaking_water, 'yes')
 or selected(../easily_tired, 'yes')
 or selected(../face_hand_swelling, 'yes')
-or selected(../breathlessness, 'yes')), 
+or selected(../breathlessness, 'yes')
+or selected(../other_danger_sign, 'yes')), 
 'yes', 'no')"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator" type="select1" calculate="&quot;woman&quot;"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label" type="string" calculate="jr:choice-name( /pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator ,' /pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator ')"/>

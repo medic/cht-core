@@ -4,7 +4,7 @@ chai.use(require('chai-like'));
 chai.use(require('chai-things'));
 
 //const { Forms } = require('../../nools-extras');
-const TestRunner = require('cht-conf-test-harness');
+const TestRunner = require('medic-conf-test-harness');
 
 const { deliveryReportScenarios, pncDangerSignFollowUpScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
 const harness = new TestRunner();

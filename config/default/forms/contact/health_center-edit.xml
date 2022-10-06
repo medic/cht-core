@@ -270,7 +270,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" delimiter="#" version="2022-08-19 14-44">
+        <data id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" delimiter="#" version="2019-10-09_12-30">
           <inputs>
             <meta>
               <location>
@@ -364,7 +364,7 @@
           <hint ref="jr:itext('/data/health_center/contact/_id:hint')"/>
         </input>
       </group>
-      <select1 appearance="columns-pack" ref="/data/health_center/is_name_generated">
+      <select1 appearance="horizontal-compact" ref="/data/health_center/is_name_generated">
         <label ref="jr:itext('/data/health_center/is_name_generated:label')"/>
         <item>
           <label ref="jr:itext('/data/health_center/is_name_generated/true:label')"/>

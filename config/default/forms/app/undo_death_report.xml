@@ -14,9 +14,6 @@
           <text id="/undo_death_report/inputs/contact/name:label">
             <value>Name</value>
           </text>
-          <text id="/undo_death_report/inputs/contact/parent/_id:label">
-            <value>Household ID</value>
-          </text>
           <text id="/undo_death_report/inputs/contact/parent/parent/contact/name:label">
             <value>CHW name</value>
           </text>
@@ -47,7 +44,7 @@
         </translation>
       </itext>
       <instance>
-        <undo_death_report id="undo_death_report" prefix="J1!undo_death_report!" delimiter="#" version="2022-08-19 15:59:55">
+        <undo_death_report id="undo_death_report" prefix="J1!undo_death_report!" delimiter="#" version="2019-11-04 13:14:07">
           <inputs>
             <meta>
               <location>
@@ -67,7 +64,6 @@
               <date_of_birth>0</date_of_birth>
               <sex/>
               <parent>
-                <_id/>
                 <parent>
                   <contact>
                     <name/>
@@ -113,7 +109,6 @@
       <bind nodeset="/undo_death_report/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/undo_death_report/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/undo_death_report/inputs/contact/sex" type="string"/>
-      <bind nodeset="/undo_death_report/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/undo_death_report/inputs/contact/parent/parent/contact/name" type="string"/>
       <bind nodeset="/undo_death_report/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind nodeset="/undo_death_report/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /undo_death_report/inputs/contact/date_of_birth , today() ) div 12 )"/>

@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const TestRunner = require('cht-conf-test-harness');
+const TestRunner = require('medic-conf-test-harness');
 const moment = require('moment');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
 const harness = new TestRunner();
@@ -17,7 +17,7 @@ describe('Tests for active pregnancy condition card', () => {
 
   it('pregnancy registration with risk factors, danger signs, past and future visits', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
+    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
 
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
@@ -132,7 +132,7 @@ describe('Tests for active pregnancy condition card', () => {
 
   it('pregnancy registration updated by pregnancy home visit', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
+    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
 
@@ -198,7 +198,7 @@ describe('Tests for active pregnancy condition card', () => {
 
   it('pregnancy registration cleared by pregnancy home visit', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
+    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
 

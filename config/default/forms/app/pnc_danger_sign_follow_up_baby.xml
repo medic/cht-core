@@ -158,7 +158,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_baby id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" delimiter="#" version="2022-08-19 15:16:18">
+        <pnc_danger_sign_follow_up_baby id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" delimiter="#" version="2019-11-04 13:13:28">
           <inputs>
             <meta>
               <location>
@@ -310,7 +310,7 @@ selected(../blue_skin, 'no'), 'no', ''))"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__household_uuid" type="string" calculate="../../../inputs/contact/parent/_id"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__source" type="string" calculate="../../../inputs/source"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__delivery_uuid" type="string" calculate="../../../inputs/delivery_uuid"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/data/meta/__delivery_uuid" type="string" calculate="../../inputs/delivery_uuid"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
