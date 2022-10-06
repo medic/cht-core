@@ -2,6 +2,7 @@
 
 .content-row {
   cursor: pointer;
+  border-left: 5px solid transparent;
   border-bottom: 1px solid @separator-color;
   position: relative;
 
@@ -56,7 +57,6 @@
     min-height: 70px;
     padding: 10px 20px 10px 15px;
     color: inherit;
-    border-left: 5px solid transparent;
 
     &:hover,
     &:focus {
@@ -182,16 +182,18 @@
   background-color: @separator-color;
 }
 
-.contacts .action .content-row > a {
-  min-height: inherit;
-
+.contacts .action .content-row {
   &:hover {
     border-left-color: transparent;
   }
 
-  .fa {
-    right: 10px;
-    position: absolute;
+  & > a {
+    min-height: inherit;
+
+    .fa {
+      right: 10px;
+      position: absolute;
+    }
   }
 }
 
@@ -207,6 +209,10 @@
 
 .select-mode-available .content-row input[type="checkbox"] {
   display: inline;
+  margin: 20px 10px;
+  accent-color: @blue-dark;
+  width: 20px;
+  height: 20px;
 }
 
 .reports,
@@ -215,7 +221,7 @@
     &.selected {
       background-color: @reports-highlight;
     }
-    > a:hover {
+    &:hover {
       border-left-color: @reports-color;
     }
   }
@@ -229,7 +235,7 @@
   &.selected {
     background-color: @contacts-highlight;
   }
-  > a:hover {
+  &:hover {
     border-left-color: @contacts-color;
   }
 }
@@ -239,7 +245,7 @@
   &.selected {
     background-color: @messages-highlight;
   }
-  > a:hover {
+  &:hover {
     border-left-color: @messages-color;
   }
 }
@@ -250,8 +256,43 @@
     &.selected {
       background-color: @tasks-highlight;
     }
-    > a:hover {
+    &:hover {
       border-left-color: @tasks-color;
     }
   }
 }
+
+.page .select-all {
+  display: flex;
+  align-items: center;
+  border-bottom: solid 1px @gray-medium;
+  padding: 15px;
+
+  .select-all-label {
+    margin-left: 15px;
+    cursor: pointer;
+  }
+
+  input[type="checkbox"] {
+    accent-color: @blue-dark;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.page .multi-select-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  a.bulk-delete {
+    &:hover {
+      text-decoration: none;
+    }
+
+    * {
+      color: @black;
+    }
+  }
+}
+

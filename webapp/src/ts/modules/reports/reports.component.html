@@ -23,12 +23,12 @@
       class="inbox-items left-pane"
       [ngClass]="{ 'col-sm-3': isSidebarFilterOpen, 'col-sm-4': !isSidebarFilterOpen, 'select-mode-available': selectMode?.available }">
 
-      <div class="select-all" *ngIf="selectMode?.available">
+      <div class="select-all" *ngIf="!loading && selectMode?.available">
         <input type="checkbox"
           (click)="toggleAllSelected()"
           [checked]="reportsList?.length === selectedReports?.length"
           [indeterminate]="selectMode?.active && selectedReports?.length && reportsList?.length !== selectedReports?.length">
-        <span (click)="toggleAllSelected()">
+        <span class="select-all-label" (click)="toggleAllSelected()">
           {{ (reportsList?.length === selectedReports?.length ? 'select.mode.deselect.all' : 'select.mode.select.all') | translate }}
         </span>
       </div>
