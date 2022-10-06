@@ -42,7 +42,8 @@ const getSettings = ({
   app_url,
 });
 
-const getQueuedMessages = () => utils.db.query('medic-admin/message_queue', { reduce: false, include_docs: true })
+const getQueuedMessages = () => utils.db
+  .query('medic-admin/message_queue', { reduce: false, include_docs: true })
   .then(response => response.rows.map(row => row.doc));
 
 const expectError = async (errorPattern) => {
