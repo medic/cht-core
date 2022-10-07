@@ -79,7 +79,7 @@ const loginAsOnlineUser = async () => {
   await commonPage.waitForPageLoaded();
 };
 
-const submitReplaceUserForm = async () => {
+const submitReplaceUserForm = async (submitAction = () => contactsPage.submitForm() ) => {
   await contactsPage.createNewAction('Replace User');
   await replaceUserForm.selectAdminCode('secretCode');
   await genericForm.nextPage();
@@ -88,7 +88,7 @@ const submitReplaceUserForm = async () => {
   await replaceUserForm.selectContactAgeYears(22);
   await replaceUserForm.selectContactSex(replaceUserForm.SEX.female);
   await genericForm.nextPage();
-  await contactsPage.submitForm();
+  await submitAction();
 };
 
 const getLocalDocFromBrowser = async (docId) => {
@@ -268,10 +268,13 @@ describe('Create user for contacts', () => {
       const originalContactId = ORIGINAL_USER.contact._id;
 
       await commonPage.goToPeople(originalContactId);
-      await submitReplaceUserForm();
+      await submitReplaceUserForm(async () => {
+        await (await genericForm.submitButton()).waitForDisplayed();
+        await (await genericForm.submitButton()).click();
 
-      // Logout triggered immediately
-      await (await loginPage.loginButton()).waitForDisplayed();
+        // Logout triggered immediately
+        await (await loginPage.loginButton()).waitForDisplayed();
+      });
 
       await loginPage.cookieLogin();
       await commonPage.goToReports();
