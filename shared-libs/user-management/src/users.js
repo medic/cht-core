@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
 const db = require('./libs/db');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const lineage = require('./libs/lineage');
 const couchSettings = require('@medic/settings');
 const getRoles = require('./libs/types-and-roles');
 const roles = require('./roles');

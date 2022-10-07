@@ -3,7 +3,7 @@ const db = require('./libs/db');
 const config = require('./libs/config');
 const utils = require('./libs/utils');
 const places = require('./places');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const lineage = require('./libs/lineage');
 const contactTypeUtils = require('@medic/contact-types-utils');
 
 const getPerson = id => {

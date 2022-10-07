@@ -5,7 +5,7 @@ const db = require('../../src/libs/db');
 const controller = require('../../src/places');
 const people = require('../../src/people');
 const cutils = require('../../src/libs/utils');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const lineage = require('../../src/libs/lineage');
 
 let examplePlace;
 
@@ -70,6 +70,7 @@ describe('places controller', () => {
       parent: 'x'
     };
     config.get.returns({ contact_types: contactTypes });
+    lineage.init(require('@medic/lineage')(Promise, db.medic));
 
     fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc');
   });

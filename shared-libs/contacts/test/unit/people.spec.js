@@ -4,16 +4,19 @@ const places = require('../../src/places');
 const cutils = require('../../src/libs/utils');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const lineage = require('../../src/libs/lineage');
 const sinon = require('sinon');
 
 describe('people controller', () => {
   let fetchHydratedDoc;
+  let minifyLineage;
 
   beforeEach(() => {
     config.init({ get: sinon.stub() });
     db.init({ medic: { post: sinon.stub() } });
-    fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc');
+    fetchHydratedDoc = sinon.stub();
+    minifyLineage = sinon.stub();
+    lineage.init({ fetchHydratedDoc, minifyLineage });
   });
 
   afterEach(() => {
@@ -165,7 +168,7 @@ describe('people controller', () => {
       };
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
-      sinon.stub(lineage, 'minifyLineage').returns(minified);
+      lineage.minifyLineage.returns(minified);
       db.medic.post.resolves();
       return controller.createPerson(person).then(() => {
         const doc = db.medic.post.args[0][0];

@@ -6,6 +6,7 @@ const couchSettings = require('@medic/settings');
 const tokenLogin = require('../../src/token-login');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
+const lineage = require('../../src/libs/lineage');
 const roles = require('../../src/roles');
 const { people, places }  = require('@medic/contacts')(config, db);
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
@@ -32,6 +33,7 @@ describe('Users service', () => {
       medicLogs: { get: sinon.stub(), put: sinon.stub(), },
       users: { get: sinon.stub(), put: sinon.stub() },
     });
+    lineage.init(require('@medic/lineage')(Promise, db.medic));
     addMessage = sinon.stub();
     config.getTransitionsLib.returns({ messages: { addMessage } });
     service = rewire('../../src/users');
