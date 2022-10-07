@@ -13,6 +13,10 @@ const USER_CREATION_STATUS = {
   ERROR: 'ERROR', // The new user could not be created
 };
 
+const USERNAME_COLLISION_LIMIT = 10;
+const USERNAME_COLLISION_MAX = 100;
+const USERNAME_SUFFIX_BASE_LENGTH = 4;
+
 const getNewContact = (contactId) => {
   if (!contactId) {
     return Promise.reject(new Error('No id was provided for the new replacement contact.'));
@@ -20,16 +24,33 @@ const getNewContact = (contactId) => {
   return people.getOrCreatePerson(contactId);
 };
 
-const getRandomSuffix = () => Math.floor(Math.random() * 9999).toString().padStart(4, '0');
+/**
+ * Returns the length of the numerical suffix that will be appended to the end of the username. If there are collisions
+ * with existing usernames, the suffix length will increase by 1 digit for every USERNAME_COLLISION_LIMIT collisions.
+ * @param {number} collisionCount the number of collisions that have occurred trying to generate this username
+ * @returns {number} the number of digits to use in the suffix
+ */
+const getSuffixLength = (collisionCount) =>
+  Math.floor(collisionCount / USERNAME_COLLISION_LIMIT) + USERNAME_SUFFIX_BASE_LENGTH;
+
+const getRandomSuffix = (collisionCount) => {
+  const suffixLength = getSuffixLength(collisionCount);
+  return Math
+    .random()
+    .toString()
+    .substring(2, suffixLength + 2)
+    .padStart(suffixLength, '0');
+};
 
 /**
  * Generates a random valid username based on the given contact name. The username will begin with the normalized
  * version of the contact name (lowercase, no spaces, only alphanumeric characters) and end with a random 4-digit
  * number.
  * @param {string} contactName the name of the contact
+ * @param {number} collisionCount the number of collisions that have occurred trying to generate this username
  * @returns {string} the generated username
  */
-const generateUsername = (contactName) => {
+const generateUsername = (contactName, collisionCount) => {
   const username = contactName
     .normalize('NFD') // split an accented letter in the base letter and the accent
     .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
@@ -38,14 +59,17 @@ const generateUsername = (contactName) => {
     .replace(/[^a-z0-9 ]/g, '') // remove all chars not letters, numbers and spaces (to be replaced)
     .replace(/\s+/g, '-'); // separator
 
-  return `${username}-${getRandomSuffix()}`;
+  return `${username}-${getRandomSuffix(collisionCount)}`;
 };
 
-const generateUniqueUsername = (contactName) => {
-  const username = generateUsername(contactName);
+const generateUniqueUsername = (contactName, collisionCount = 0) => {
+  if(collisionCount > USERNAME_COLLISION_MAX) {
+    throw new Error(`Could not generate a unique username for contact [${contactName}].`);
+  }
+  const username = generateUsername(contactName, collisionCount);
   return db.users
     .get(`org.couchdb.user:${username}`)
-    .then(() => generateUniqueUsername(contactName))
+    .then(() => generateUniqueUsername(contactName, collisionCount + 1))
     .catch(error => {
       if (error.status === 404) {
         // this username is available

@@ -204,36 +204,68 @@ describe('create_user_for_contacts', () => {
       });
     });
 
-    it('replaces user when new username collision occurs', () => {
-      usersGet.onFirstCall().resolves();
-      usersGet.onSecondCall().resolves();
-      usersGet.onThirdCall().rejects({ status: 404 });
+    const getExpectedSuffixLength = (collisionCount) => Math.floor(collisionCount / 10) + 4;
+
+    [
+      [1, 4],
+      [9, 4],
+      [10, 5],
+      [19, 5],
+      [20, 6],
+      [29, 6],
+      [100, 14],
+    ].forEach(([collisionCount, suffixLength]) => {
+      it(`replaces user when ${collisionCount} username collisions occur`, () => {
+        usersGet.resolves();
+        usersGet.onCall(collisionCount).rejects({ status: 404 });
+        const doc = getReplacedContact('READY');
+
+        return transition.onMatch({ doc }).then(result => {
+          expect(result).to.be.true;
+
+          expect(usersGet.callCount).to.equal(collisionCount + 1);
+          const attemptedUsernames = usersGet.args.map(args => args[0]);
+          expect(new Set(attemptedUsernames).size).to.equal(attemptedUsernames.length);
+
+          attemptedUsernames.forEach((username, index) => {
+            const suffixLength = getExpectedSuffixLength(index);
+            const usernamePattern = `^org\\.couchdb\\.user:new-contact-\\d{${suffixLength}}$`;
+            expect(username).to.match(new RegExp(usernamePattern));
+          });
+
+          expect(createUser.callCount).to.equal(1);
+          const username = attemptedUsernames.pop().substring(17);
+          expect(username).to.match(new RegExp(`^new-contact-\\d{${suffixLength}}$`));
+          expect(createUser.args[0][0]).to.deep.equal({
+            username,
+            token_login: true,
+            roles: ORIGINAL_USER.roles,
+            phone: NEW_CONTACT.phone,
+            place: NEW_CONTACT.parent._id,
+            contact: NEW_CONTACT._id,
+            fullname: NEW_CONTACT.name,
+          });
+          expect(createUser.args[0][1]).to.equal('https://my.cht.instance');
+          expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
+        });
+      });
+    });
+
+    it('records error when more than 100 username collisions occur', () => {
+      usersGet.resolves();
       const doc = getReplacedContact('READY');
 
-      return transition.onMatch({ doc }).then(result => {
-        expect(result).to.be.true;
+      return transition
+        .onMatch({ doc })
+        .then(() => expect.fail('Should have thrown'))
+        .catch(err => {
+          expect(err.message).to.equal(`Could not generate a unique username for contact [${NEW_CONTACT.name}].`);
+          expect(err.changed).to.be.true;
 
-        expect(usersGet.callCount).to.equal(3);
-        expect(usersGet.args[0][0]).to.match(/^org\.couchdb\.user:new-contact-\d\d\d\d/);
-        expect(usersGet.args[1][0]).to.match(/^org\.couchdb\.user:new-contact-\d\d\d\d/);
-        expect(usersGet.args[2][0]).to.match(/^org\.couchdb\.user:new-contact-\d\d\d\d/);
-        expect(usersGet.args[0][0]).to.not.equal(usersGet.args[1][0]);
-        expect(usersGet.args[0][0]).to.not.equal(usersGet.args[2][0]);
-
-        expect(createUser.callCount).to.equal(1);
-        const username = usersGet.args[2][0].substring(17);
-        expect(createUser.args[0][0]).to.deep.equal({
-          username,
-          token_login: true,
-          roles: ORIGINAL_USER.roles,
-          phone: NEW_CONTACT.phone,
-          place: NEW_CONTACT.parent._id,
-          contact: NEW_CONTACT._id,
-          fullname: NEW_CONTACT.name,
+          expect(usersGet.callCount).to.equal(101);
+          expect(createUser.callCount).to.equal(0);
+          expect(doc.user_for_contact.replaced.status).to.equal('ERROR');
         });
-        expect(createUser.args[0][1]).to.equal('https://my.cht.instance');
-        expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
-      });
     });
 
     [
