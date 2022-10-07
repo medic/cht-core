@@ -127,8 +127,8 @@ const assertReplaceUserReport = (replaceUserReport, originalContactId) => {
 
 const assertOriginalContactUpdated = (originalContact, newContactId, status) => {
   expect(originalContact.user_for_contact).to.deep.equal({
-    replaced: {
-      by: newContactId,
+    replace: {
+      replacement_contact_id: newContactId,
       status,
     }
   });

@@ -57,23 +57,23 @@ export class CreateUserForContactsService {
     if(!originalContact.user_for_contact) {
       originalContact.user_for_contact = {};
     }
-    originalContact.user_for_contact.replaced = { status, by: newContact._id };
+    originalContact.user_for_contact.replace = { status, replacement_contact_id: newContact._id };
   }
 
   isReplaced(contact) {
-    return !!contact.user_for_contact?.replaced;
+    return !!contact.user_for_contact?.replace;
   }
 
   getReplacedBy(contact): string {
-    return contact.user_for_contact?.replaced?.by;
+    return contact.user_for_contact?.replace?.replacement_contact_id;
   }
 
   private getReplacedStatus(contact): UserCreationStatus {
-    return UserCreationStatus[contact.user_for_contact.replaced.status];
+    return UserCreationStatus[contact.user_for_contact.replace.status];
   }
 
   private setReplacedStatus(contact, status: UserCreationStatus) {
-    contact.user_for_contact.replaced.status = status;
+    contact.user_for_contact.replace.status = status;
   }
 
   private async syncStatusChanged({ to, from }: any) {

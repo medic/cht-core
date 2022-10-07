@@ -73,7 +73,7 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replaced: { by: NEW_PERSON._id, status: 'READY' } };
+    originalContact.user_for_contact = { replace: { replacement_contact_id: NEW_PERSON._id, status: 'READY' } };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -112,7 +112,7 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replaced: { by: NEW_PERSON._id, status: 'READY' } };
+    originalContact.user_for_contact = { replace: { replacement_contact_id: NEW_PERSON._id, status: 'READY' } };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -153,7 +153,7 @@ describe('create_user_for_contacts', () => {
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replaced: { by: NEW_PERSON._id, status: 'READY' } };
+    originalContact.user_for_contact = { replace: { replacement_contact_id: NEW_PERSON._id, status: 'READY' } };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -169,7 +169,7 @@ describe('create_user_for_contacts', () => {
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.saveDocs([ORIGINAL_PERSON, NEW_PERSON]);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replaced: { by: NEW_PERSON._id, status: 'READY' } };
+    originalContact.user_for_contact = { replace: { replacement_contact_id: NEW_PERSON._id, status: 'READY' } };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -189,7 +189,7 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(newPerson);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replaced: { by: newPerson._id, status: 'READY' } };
+    originalContact.user_for_contact = { replace: { replacement_contact_id: newPerson._id, status: 'READY' } };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -209,7 +209,7 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(newPerson);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replaced: { by: newPerson._id, status: 'READY' } };
+    originalContact.user_for_contact = { replace: { replacement_contact_id: newPerson._id, status: 'READY' } };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -229,7 +229,7 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(newPerson);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replaced: { by: newPerson._id, status: 'READY' } };
+    originalContact.user_for_contact = { replace: { replacement_contact_id: newPerson._id, status: 'READY' } };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -248,7 +248,7 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replaced: { status: 'READY' } };
+    originalContact.user_for_contact = { replace: { status: 'READY' } };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -258,13 +258,13 @@ describe('create_user_for_contacts', () => {
     await expectError(missingIdPattern);
   });
 
-  it('does not replace user when the replaced status is not READY', async () => {
+  it('does not replace user when the replace status is not READY', async () => {
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replaced: { by: NEW_PERSON._id, status: 'PENDING' } };
+    originalContact.user_for_contact = { replace: { by: NEW_PERSON._id, status: 'PENDING' } };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -306,7 +306,7 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
     const clinic = await utils.getDoc(CLINIC._id);
-    clinic.user_for_contact = { replaced: { by: NEW_PERSON._id, status: 'READY' } };
+    clinic.user_for_contact = { replace: { by: NEW_PERSON._id, status: 'READY' } };
     await utils.saveDoc(clinic);
     await sentinelUtils.waitForSentinel(clinic._id);
     const { transitions } = await sentinelUtils.getInfoDoc(clinic._id);

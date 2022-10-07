@@ -30,14 +30,14 @@ const ORIGINAL_USER = {
   roles: ['chw'],
 };
 
-const getReplacedContact = (status, by = NEW_CONTACT._id) => ({
+const getReplacedContact = (status, replacement_contact_id = NEW_CONTACT._id) => ({
   _id: 'replaced-id',
   parent: {
     _id: 'parent-id',
   },
   user_for_contact: {
-    replaced: {
-      by,
+    replace: {
+      replacement_contact_id,
       status,
     }
   }
@@ -200,7 +200,7 @@ describe('create_user_for_contacts', () => {
         expectInitialDataRetrieved(doc, NEW_CONTACT);
         expectUserCreated(NEW_CONTACT, ORIGINAL_USER);
         expectUserDeleted(ORIGINAL_USER);
-        expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
+        expect(doc.user_for_contact.replace.status).to.equal('COMPLETE');
       });
     });
 
@@ -246,7 +246,7 @@ describe('create_user_for_contacts', () => {
             fullname: NEW_CONTACT.name,
           });
           expect(createUser.args[0][1]).to.equal('https://my.cht.instance');
-          expect(doc.user_for_contact.replaced.status).to.equal('COMPLETE');
+          expect(doc.user_for_contact.replace.status).to.equal('COMPLETE');
         });
       });
     });
@@ -264,7 +264,7 @@ describe('create_user_for_contacts', () => {
 
           expect(usersGet.callCount).to.equal(101);
           expect(createUser.callCount).to.equal(0);
-          expect(doc.user_for_contact.replaced.status).to.equal('ERROR');
+          expect(doc.user_for_contact.replace.status).to.equal('ERROR');
         });
     });
 

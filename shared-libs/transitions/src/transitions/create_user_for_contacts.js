@@ -106,17 +106,17 @@ const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
 };
 
 const replaceUser = (originalContact) => {
-  const { user_for_contact: { replaced } } = originalContact;
+  const { user_for_contact: { replace } } = originalContact;
   return Promise
     .all([
-      getNewContact(replaced.by),
+      getNewContact(replace.replacement_contact_id),
       users.getUserSettings({ contact_id: originalContact._id }),
     ])
     .then(([newContact, originalUserSettings]) => {
       return createNewUser(originalUserSettings, newContact)
         .then(() => users.deleteUser(originalUserSettings.name));
     })
-    .then(() => originalContact.user_for_contact.replaced.status = USER_CREATION_STATUS.COMPLETE);
+    .then(() => originalContact.user_for_contact.replace.status = USER_CREATION_STATUS.COMPLETE);
 };
 
 /**
@@ -147,14 +147,14 @@ module.exports = {
     }
 
     return doc.user_for_contact &&
-      doc.user_for_contact.replaced &&
-      doc.user_for_contact.replaced.status === USER_CREATION_STATUS.READY;
+      doc.user_for_contact.replace &&
+      doc.user_for_contact.replace.status === USER_CREATION_STATUS.READY;
   },
   onMatch: change => {
     return replaceUser(change.doc)
       .then(() => true)
       .catch(err => {
-        change.doc.user_for_contact.replaced.status = USER_CREATION_STATUS.ERROR;
+        change.doc.user_for_contact.replace.status = USER_CREATION_STATUS.ERROR;
         err.changed = true;
         throw err;
       });
