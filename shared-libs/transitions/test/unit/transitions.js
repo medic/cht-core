@@ -14,7 +14,8 @@ const asyncOnlyTransitions = [
   'update_notifications',
   'multi_report_alerts',
   'generate_patient_id_on_people',
-  'generate_shortcode_on_contacts'
+  'generate_shortcode_on_contacts',
+  'create_user_for_contacts',
 ];
 
 describe('transitions', () => {
