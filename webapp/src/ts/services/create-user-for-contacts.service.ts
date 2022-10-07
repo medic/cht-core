@@ -16,13 +16,12 @@ export class CreateUserForContactsService {
     private dbSyncService: DBSyncService,
     private sessionService: SessionService,
   ) {
-    const that = this;
     this.settingsService
       .get()
       .then((settings) => {
         if (settings?.transitions?.create_user_for_contacts) {
-          that.dbSyncService.subscribe(async(status) => {
-            return that.syncStatusChanged(status);
+          this.dbSyncService.subscribe(async(status) => {
+            return this.syncStatusChanged(status);
           });
         }
       });
