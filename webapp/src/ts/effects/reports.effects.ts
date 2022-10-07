@@ -110,32 +110,6 @@ export class ReportsEffects {
     );
   }, { dispatch: false });
 
-  private toggleSelectMode(selectMode, selectedReports) {
-    if (selectMode?.active && !selectedReports?.length) {
-      this.reportActions.setSelectMode(false);
-      return;
-    }
-
-    if (!selectMode?.active && selectedReports?.length >= 1) {
-      this.reportActions.setSelectMode(true);
-      return;
-    }
-  }
-
-  activateSelectMode = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(
-        ReportActionList.removeSelectedReport,
-        ReportActionList.addSelectedReport,
-      ),
-      withLatestFrom(
-        this.store.pipe(select(Selectors.getSelectMode)),
-        this.store.pipe(select(Selectors.getSelectedReports)),
-      ),
-      exhaustMap(([, selectMode, selectedReports]) => of(this.toggleSelectMode(selectMode, selectedReports))),
-    );
-  }, { dispatch: false });
-
   setTitle = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.setTitle),
@@ -238,10 +212,22 @@ export class ReportsEffects {
   setSelectMode = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.setSelectMode),
-      tap(({ payload: { selectMode } }) => {
-        this.globalActions.setSelectModeStatus({ active: selectMode });
-        this.globalActions.unsetSelected();
-        this.router.navigate(['/reports']);
+      withLatestFrom(
+        this.store.pipe(select(Selectors.getSelectMode)),
+        this.store.pipe(select(Selectors.getSelectedReports)),
+      ),
+      tap(([, selectMode, selectedReports]) => {
+        if (selectMode?.active && !selectedReports?.length) {
+          this.globalActions.setSelectModeStatus({ active: false });
+          return;
+        }
+
+        if (!selectMode?.active && selectedReports?.length >= 1) {
+          this.globalActions.setSelectModeStatus({ active: true });
+          this.globalActions.unsetSelected(true);
+          this.router.navigate(['/reports']);
+          return;
+        }
       }),
     );
   }, { dispatch: false });
@@ -250,7 +236,7 @@ export class ReportsEffects {
     return this.actions$.pipe(
       ofType(ReportActionList.selectAll),
       withLatestFrom(this.store.select(Selectors.getFilters)),
-      tap(([, filters]) => {
+      exhaustMap(([, filters]) => {
         return this.searchService
           .search('reports', filters, { limit: 500, hydrateContactNames: true })
           .then((summaries) => {
@@ -266,9 +252,11 @@ export class ReportsEffects {
             this.reportActions.setSelectedReports(selected);
             this.globalActions.settingSelected();
             this.reportActions.setRightActionBar();
+            return of(this.reportActions.setSelectMode());
           })
           .catch(err => {
             console.error('Error selecting all', err);
+            return of();
           });
       }),
     );

@@ -27,7 +27,7 @@ export const Actions = {
 
   setRightActionBar: createAction('SET_RIGHT_ACTION_BAR_REPORTS'),
   setTitle: createSingleValueAction('SET_REPORTS_TITLE', 'selected'),
-  setSelectMode: createSingleValueAction('SET_REPORTS_SELECT_MODE', 'selectMode'),
+  setSelectMode: createAction('SET_REPORTS_SELECT_MODE'),
   selectAll: createAction('SELECT_ALL_REPORTS'),
 };
 
@@ -87,11 +87,10 @@ export class ReportsActions {
 
   clearSelection() {
     this.store.dispatch(Actions.setSelectedReports([]));
-    // setVerifyingReport(false);
   }
 
-  setSelectMode(value) {
-    return this.store.dispatch(Actions.setSelectMode(value));
+  setSelectMode() {
+    return this.store.dispatch(Actions.setSelectMode());
   }
 
   updateSelectedReportItem(id, selected) {

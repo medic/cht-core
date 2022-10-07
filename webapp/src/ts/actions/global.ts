@@ -123,12 +123,14 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setTitle(title));
   }
 
-  unsetSelected() {
+  unsetSelected(skipClearSelection = false) {
     this.setShowContent(false);
     this.setLoadingContent(false);
     this.setShowActionBar(false);
     this.setTitle();
-    this.clearSelected();
+    if (!skipClearSelection) {
+      this.clearSelected();
+    }
   }
 
   setCancelCallback(value) {

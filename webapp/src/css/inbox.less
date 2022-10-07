@@ -490,6 +490,16 @@ body {
   overflow-x: hidden;
   height: 100%;
   background-color: @background-color;
+
+  &.select-mode-available {
+    overflow-y: hidden;
+
+    .items-container {
+      overflow-y: auto;
+      overflow-x: hidden;
+      height: 100%;
+    }
+  }
 }
 
 .content .item-content .empty-selection,

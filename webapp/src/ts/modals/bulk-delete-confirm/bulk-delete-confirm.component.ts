@@ -37,7 +37,7 @@ export class BulkDeleteConfirmComponent extends MmModalAbstract {
       return window.location.reload();
     }
 
-    const docs = this.model?.docs || [];
+    const docs = (this.model?.docs || []).map(doc => ({ ...doc }));
     this.totalDocsSelected = docs.length;
     this.totalDocsDeleted = 0;
     this.setProcessing();
