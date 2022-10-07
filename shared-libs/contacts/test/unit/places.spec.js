@@ -5,7 +5,7 @@ const db = require('../../src/libs/db');
 const controller = require('../../src/places');
 const people = require('../../src/people');
 const cutils = require('../../src/libs/utils');
-const lineage = require('../../src/libs/lineage');
+const lineage = require('@medic/lineage')(Promise, db.medic);
 
 let examplePlace;
 
@@ -71,9 +71,7 @@ describe('places controller', () => {
     };
     config.get.returns({ contact_types: contactTypes });
 
-    const mockLineage = lineage.get();
-    fetchHydratedDoc = sinon.stub(mockLineage, 'fetchHydratedDoc');
-    sinon.stub(lineage, 'get').returns(mockLineage);
+    fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc');
   });
 
   afterEach(() => {

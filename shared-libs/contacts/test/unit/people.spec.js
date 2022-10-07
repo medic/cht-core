@@ -4,7 +4,7 @@ const places = require('../../src/places');
 const cutils = require('../../src/libs/utils');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
-const lineage = require('../../src/libs/lineage');
+const lineage = require('@medic/lineage')(Promise, db.medic);
 const sinon = require('sinon');
 
 describe('people controller', () => {
@@ -13,9 +13,7 @@ describe('people controller', () => {
   beforeEach(() => {
     config.init({ get: sinon.stub() });
     db.init({ medic: { post: sinon.stub() } });
-    const mockLineage = lineage.get();
-    fetchHydratedDoc = sinon.stub(mockLineage, 'fetchHydratedDoc');
-    sinon.stub(lineage, 'get').returns(mockLineage);
+    fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc');
   });
 
   afterEach(() => {
@@ -167,7 +165,7 @@ describe('people controller', () => {
       };
       config.get.returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
-      sinon.stub(lineage.get(), 'minifyLineage').returns(minified);
+      sinon.stub(lineage, 'minifyLineage').returns(minified);
       db.medic.post.resolves();
       return controller.createPerson(person).then(() => {
         const doc = db.medic.post.args[0][0];
@@ -175,8 +173,8 @@ describe('people controller', () => {
         chai.expect(doc.parent).to.deep.equal(minified);
         chai.expect(places.getOrCreatePlace.callCount).to.equal(1);
         chai.expect(places.getOrCreatePlace.args[0][0]).to.equal('a');
-        chai.expect(lineage.get().minifyLineage.callCount).to.equal(1);
-        chai.expect(lineage.get().minifyLineage.args[0][0]).to.deep.equal(place);
+        chai.expect(lineage.minifyLineage.callCount).to.equal(1);
+        chai.expect(lineage.minifyLineage.args[0][0]).to.deep.equal(place);
         chai.expect(config.get.args[0]).to.deep.equal([]);
       });
     });

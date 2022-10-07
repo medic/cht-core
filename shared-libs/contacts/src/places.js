@@ -3,12 +3,12 @@ const config = require('./libs/config');
 const people = require('./people');
 const utils = require('./libs/utils');
 const db = require('./libs/db');
-const lineage = require('./libs/lineage');
+const lineage = require('@medic/lineage')(Promise, db.medic);
 const contactTypesUtils = require('@medic/contact-types-utils');
 const PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'];
 
 const getPlace = id => {
-  return lineage.get().fetchHydratedDoc(id)
+  return lineage.fetchHydratedDoc(id)
     .then(doc => {
       if (!isAPlace(doc)) {
         return Promise.reject({ status: 404 });
@@ -90,12 +90,12 @@ const createPlace = place => {
       const date = place.reported_date ? utils.parseDate(place.reported_date) : new Date();
       place.reported_date = date.valueOf();
       if (place.parent) {
-        place.parent = lineage.get().minifyLineage(place.parent);
+        place.parent = lineage.minifyLineage(place.parent);
       }
       if (place.contact) {
         // also validates contact if creating
         return people.getOrCreatePerson(place.contact).then(person => {
-          place.contact = lineage.get().minifyLineage(person);
+          place.contact = lineage.minifyLineage(person);
         });
       }
     })
@@ -172,8 +172,8 @@ const updatePlace = (id, data) => {
     })
     .then(() => self._validatePlace(place))
     .then(() => {
-      place.contact = lineage.get().minifyLineage(place.contact);
-      place.parent = lineage.get().minifyLineage(place.parent);
+      place.contact = lineage.minifyLineage(place.contact);
+      place.parent = lineage.minifyLineage(place.parent);
       return db.medic.post(place);
     })
     .then(response => ({ id: response.id, rev: response.rev }));

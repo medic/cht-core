@@ -3,11 +3,11 @@ const db = require('./libs/db');
 const config = require('./libs/config');
 const utils = require('./libs/utils');
 const places = require('./places');
-const lineage = require('./libs/lineage');
+const lineage = require('@medic/lineage')(Promise, db.medic);
 const contactTypeUtils = require('@medic/contact-types-utils');
 
 const getPerson = id => {
-  return lineage.get().fetchHydratedDoc(id)
+  return lineage.fetchHydratedDoc(id)
     .catch(err => {
       if (err.status === 404) {
         throw { code: 404, message: 'Failed to find person.' };
@@ -75,7 +75,7 @@ const createPerson = data => {
     .then(() => {
       if (data.place) {
         return places.getOrCreatePlace(data.place).then(place => {
-          data.parent = lineage.get().minifyLineage(place);
+          data.parent = lineage.minifyLineage(place);
           delete data.place;
         });
       }
