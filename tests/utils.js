@@ -10,6 +10,7 @@ const os = require('os');
 const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
+const semver = require('semver');
 
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
@@ -18,18 +19,26 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
 
 const PROJECT_NAME = 'cht-e2e';
 const NETWORK = 'cht-net-e2e';
-const CONTAINER_NAMES = {
-  haproxy: `${PROJECT_NAME}-haproxy-1`,
-  nginx: `${PROJECT_NAME}-nginx-1`,
-  couch1: `${PROJECT_NAME}-couch.1-1`,
-  couch2: `${PROJECT_NAME}-couch.2-1`,
-  couch3: `${PROJECT_NAME}-couch.3-1`,
-  api: `${PROJECT_NAME}-api-1`,
-  sentinel: `${PROJECT_NAME}-sentinel-1`,
-  haproxy_healthcheck: `${PROJECT_NAME}-haproxy-healthcheck-1`,
-  // upgrade: 'cht-upgrade-service'
+const CONTAINERS = {
+  haproxy: 'haproxy',
+  nginx: 'nginx',
+  couch1: 'couch.1',
+  couch2: 'couch.2',
+  couch3: 'couch.3',
+  api: 'api',
+  sentinel: 'sentinel',
+  haproxy_healthcheck: 'haproxy-healthcheck',
 };
+const CONTAINER_NAMES = {};
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
+let dockerVersion = 2;
+const updateContainerNames = () => {
+  const separator = dockerVersion === 2 ? '-' : '_';
+  Object.entries(CONTAINERS).forEach(([key, service]) => {
+    CONTAINER_NAMES[key] = `${PROJECT_NAME}${separator}${service}${separator}1`;
+  });
+  CONTAINER_NAMES.upgrade = 'cht-upgrade-service';
+};
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -326,11 +335,12 @@ const deleteUsers = async (users, meta = false) => {
     method: 'POST',
     body: { keys: usernames }
   });
+
   const toDelete = userDocs.rows
-    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .map(row => row.value && !row.value.deleted && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
   const toDeleteMedic = medicDocs.rows
-    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .map(row => row.value && !row.value.deleted && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
 
   const results = await Promise.all([
@@ -338,7 +348,7 @@ const deleteUsers = async (users, meta = false) => {
     request({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } }),
   ]);
   const errors = results.flat().filter(result => !result.ok);
-  if (errors) {
+  if (errors.length) {
     return deleteUsers(users, meta);
   }
 
@@ -628,6 +638,9 @@ const prepServices = async (defaultSettings) => {
   await createLogDir();
   await generateComposeFiles();
 
+  dockerVersion = getDockerVersion();
+  updateContainerNames();
+
   await stopServices(true);
   await startServices();
   await listenForApi();
@@ -770,6 +783,17 @@ const dockerGateway = () => {
   } catch (error) {
     console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
+  }
+};
+
+const getDockerVersion = () => {
+  try {
+    const response = execSync('docker-compose -v').toString();
+    const version = response.match(semver.re[3])[1];
+    return semver.major(version);
+  } catch (err) {
+    console.error(err);
+    return 2;
   }
 };
 
