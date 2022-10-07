@@ -100,6 +100,7 @@ const replaceUser = (originalContact) => {
  */
 module.exports = {
   name: NAME,
+  asynchronousOnly: true,
   init: () => {
     const tokenLogin = config.get('token_login');
     if (!tokenLogin || !tokenLogin.enabled) {

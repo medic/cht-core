@@ -46,8 +46,9 @@ const getReplacedContact = (status, by = NEW_CONTACT._id) => ({
 describe('create_user_for_contacts', () => {
   afterEach(() => sinon.restore());
 
-  it('has the proper name', () => {
+  it('has the correct properties', () => {
     expect(transition.name).to.equal('create_user_for_contacts');
+    expect(transition.asynchronousOnly).to.equal(true);
   });
 
   describe('init', () => {
