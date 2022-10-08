@@ -50,7 +50,6 @@ const medicLogs = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`,
 let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
 const buildVersions = require('../scripts/build/versions');
-const {contactList} = require("./page-objects/default/contacts/contacts.wdio.page");
 
 let originalSettings;
 const originalTranslations = {};
