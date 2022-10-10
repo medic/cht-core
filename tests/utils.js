@@ -20,7 +20,7 @@ const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 
 const PROJECT_NAME = 'cht-e2e';
 const NETWORK = 'cht-net-e2e';
-const CONTAINERS = {
+const services = {
   haproxy: 'haproxy',
   nginx: 'nginx',
   couch1: 'couch.1',
@@ -33,13 +33,18 @@ const CONTAINERS = {
 const CONTAINER_NAMES = {};
 let dockerVersion;
 
-const updateContainerNames = () => {
-  const separator = dockerVersion === 2 ? '-' : '_';
-  Object.entries(CONTAINERS).forEach(([key, service]) => {
-    CONTAINER_NAMES[key] = `${PROJECT_NAME}${separator}${service}${separator}1`;
+const updateContainerNames = (project = PROJECT_NAME) => {
+  dockerVersion = getDockerVersion();
+
+  Object.entries(services).forEach(([key, service]) => {
+    CONTAINER_NAMES[key] = getContainerName(service, project);
   });
   CONTAINER_NAMES.upgrade = 'cht-upgrade-service';
   console.log(CONTAINER_NAMES);
+};
+const getContainerName = (service, project = PROJECT_NAME) => {
+  const separator = dockerVersion === 2 ? '-' : '_';
+  return `${project}${separator}${service}${separator}1`;
 };
 
 const PouchDB = require('pouchdb-core');
@@ -641,7 +646,6 @@ const prepServices = async (defaultSettings) => {
   await createLogDir();
   await generateComposeFiles();
 
-  dockerVersion = getDockerVersion();
   updateContainerNames();
 
   await stopServices(true);
@@ -792,7 +796,7 @@ const dockerGateway = () => {
 const getDockerVersion = () => {
   try {
     const response = execSync('docker-compose -v').toString();
-    const version = response.match(semver.re[3])[1];
+    const version = response.match(semver.re[3])[0];
     console.log(response, version);
     return semver.major(version);
   } catch (err) {
@@ -1293,10 +1297,10 @@ module.exports = {
   waitForDockerLogs,
   collectLogs,
 
-  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.api, ...regex),
-  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.sentinel, ...regex),
-  collectSentinelLogs: (...regex) => collectLogs(CONTAINER_NAMES.sentinel, ...regex),
-  collectApiLogs: (...regex) => collectLogs(CONTAINER_NAMES.api, ...regex),
+  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs(getContainerName('api'), ...regex),
+  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs(getContainerName('sentinel'), ...regex),
+  collectSentinelLogs: (...regex) => collectLogs(getContainerName('sentinel'), ...regex),
+  collectApiLogs: (...regex) => collectLogs(getContainerName('api'), ...regex),
 
   apiLogTestStart: (name) => {
     return module.exports.requestOnTestDb(`/?start=${name.replace(/\s/g, '_')}`);
@@ -1305,7 +1309,7 @@ module.exports = {
     return module.exports.requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
   },
   COMPOSE_FILES,
-  CONTAINER_NAMES,
+  updateContainerNames,
   listenForApi,
   makeTempDir,
   SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
