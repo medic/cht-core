@@ -9,7 +9,7 @@ services:
       - cht-credentials:/opt/couchdb/etc/local.d/
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:?COUCHDB_PASSWORD must be set}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
       - "SVC_NAME=${SVC1_NAME:-couchdb.1}"
@@ -31,7 +31,7 @@ services:
       - ${DB2_DATA:-./srv2}:/opt/couchdb/data
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:?COUCHDB_PASSWORD must be set}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
       - "SVC_NAME=${SVC2_NAME:-couchdb.2}"
@@ -53,7 +53,7 @@ services:
       - ${DB3_DATA:-./srv3}:/opt/couchdb/data
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:?COUCHDB_PASSWORD must be set}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
       - "SVC_NAME=${SVC3_NAME:-couchdb.3}"

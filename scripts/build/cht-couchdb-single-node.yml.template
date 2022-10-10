@@ -9,7 +9,7 @@ services:
       - cht-credentials:/opt/couchdb/etc/local.d/
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:?COUCHDB_PASSWORD must be set}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
       - "SVC_NAME=${SVC_NAME:-couchdb}"

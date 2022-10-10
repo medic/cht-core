@@ -165,6 +165,8 @@ pull_images(){
 get_docker_compose_yml_path(){
   if [ -f docker-compose-developer.yml ]; then
     echo "docker-compose-developer.yml"
+  elif [ -f docker-compose-developer-3.x-only.yml ]; then
+    echo "docker-compose-developer-3.x-only.yml"
   elif [ -f ../../docker-compose-developer.yml ]; then
     echo "../../docker-compose-developer.yml"
   else
@@ -378,7 +380,7 @@ main (){
   # very first thing check we have valid env file, exit if not
   validEnv=$(validate_env_file "$envFile")
   if [ -n "$validEnv" ]; then
-    window "CHT Docker Helper - WARNING - Missing or invalid .env File" "red" "100%"
+    window "CHT Docker Helper - WARNING - Missing or invalid .env File  -  (USE WITH CHT 3.x ONLY!)" "red" "100%"
     append "$validEnv"
     endwin
     set -e
@@ -397,7 +399,7 @@ main (){
   # with constants set, let's ensure all the apps are present, exit if not
   appStatus=$(required_apps_installed "$APP_STRING")
   if [ -n "$appStatus" ]; then
-    window "WARNING: Missing Apps" "red" "100%"
+    window "WARNING: Missing Apps  -  (USE WITH CHT 3.x ONLY!)" "red" "100%"
     append "Install before proceeding:"
     append "$appStatus"
     endwin
@@ -454,7 +456,7 @@ main (){
 
   # display only action so this paints on bash screen. next loop we'll quit and show nothing new
   if [ "$docker_action" = "destroy" ] || [ "$docker_action" = "down" ]; then
-    window "${docker_action}ing ${COMPOSE_PROJECT_NAME} " "red" "100%"
+    window "${docker_action}ing ${COMPOSE_PROJECT_NAME}   -  (USE WITH CHT 3.x ONLY!)" "red" "100%"
     append "Please wait... "
     endwin
     exitNext=$docker_action
@@ -465,7 +467,7 @@ main (){
     exit 0
   fi
 
-  window "CHT Docker Helper: ${COMPOSE_PROJECT_NAME}" "green" "100%"
+  window "CHT Docker Helper: ${COMPOSE_PROJECT_NAME}  -  (USE WITH CHT 3.x ONLY!)" "green" "100%"
   append_tabbed "CHT Health - Version|${overAllHealth} - ${chtVersion}" 2 "|"
   append_tabbed "CHT URL|${chtUrl}" 2 "|"
   append_tabbed "FAUXTON URL|${chtUrl}/_utils/" 2 "|"
@@ -478,7 +480,7 @@ main (){
   endwin
 
   if [ -z "$dockerComposePath" ]; then
-    window "WARNING: Missing Compose File " "red" "100%"
+    window "WARNING: Missing Compose File   -  (USE WITH CHT 3.x ONLY!)" "red" "100%"
     append "Download before proceeding: "
     append "wget https://github.com/medic/cht-core/blob/master/docker-compose-developer.yml"
     endwin
