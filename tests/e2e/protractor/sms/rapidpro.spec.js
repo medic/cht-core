@@ -65,7 +65,7 @@ describe('RapidPro SMS Gateway', () => {
   afterEach(() => utils.revertDb([], true));
 
   describe('Webapp Terminating messages', () => {
-    const endpoint = '/api/v1/sms/radpidpro/incoming-messages';
+    const endpoint = '/api/v2/sms/radidpro/incoming-messages';
     const smsSettings = { outgoing_service: 'rapidpro' };
 
     it('should fail with no incoming key configured', async () => {
