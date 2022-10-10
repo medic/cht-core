@@ -80,13 +80,18 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       callback: (change) => {
         if (change.deleted) {
           if (this.selectModeActive) {
-            this.reportsActions.removeSelectedReport(change.id);
-          } else {
-            return this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
+            this.deselect(change.id);
+            return;
           }
-        } else if (!this.route.snapshot.params?.id || isMatchingRouteParam(change)) {
+
+          this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
+          return;
+        }
+
+        if (!this.route.snapshot.params?.id || isMatchingRouteParam(change)) {
           // Avoid selecting this report if a different report is already being routed to
           this.reportsActions.selectReport(change.id, { silent: true });
+          return;
         }
       }
     });
@@ -99,7 +104,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
 
         $('.tooltip').remove();
       } else {
-        this.globalActions.unsetSelected();
+        this.globalActions.unsetSelected(this.selectModeActive);
       }
     });
     this.subscription.add(routeSubscription);
@@ -107,7 +112,6 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    this.reportsActions.setSelectedReports([]);
   }
 
   trackByFn(index, item) {
@@ -128,11 +132,17 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     }
   }
 
-  deselect(report, event) {
-    if (this.selectModeActive) {
-      event.stopPropagation();
-      this.reportsActions.removeSelectedReport(report);
+  deselect(report:string|Record<string, any>, event?) {
+    if (!this.selectModeActive) {
+      return;
     }
+
+    if (event) {
+      event.stopPropagation();
+    }
+
+    this.reportsActions.removeSelectedReport(report);
+    this.reportsActions.setSelectMode();
   }
 
   search(query) {

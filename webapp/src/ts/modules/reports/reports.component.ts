@@ -226,6 +226,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.errorSyntax = false;
       this.loading = true;
       if (this.selectedReports?.length && this.responsiveService.isMobile()) {
+        // TODO what to do here, skip clearSelected?
         this.globalActions.unsetSelected();
       }
 
@@ -334,6 +335,10 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    if (!this.selectMode?.active) {
+      this.reportsActions.setSelectedReports([]);
+    }
+
     if (this.isSidebarFilterOpen) {
       this.toggleFilter();
     }
@@ -368,7 +373,12 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.reportsActions.setSelectMode();
       return;
     }
+
     this.reportsActions.selectAll();
+
+    if (this.isSidebarFilterOpen) {
+      this.toggleFilter();
+    }
   }
 
   toggleFilter() {
@@ -387,6 +397,19 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.modalService
       .show(BulkDeleteConfirmComponent, { initialState: { model: { docs: this.selectedReports } } })
       .catch(() => {});
+  }
+
+  verifyMultiSelect(someSelected = false) {
+    if (!this.selectMode?.active || !this.selectedReports?.length) {
+      return false;
+    }
+
+    if (someSelected) {
+      return this.reportsList?.length !== this.selectedReports?.length;
+    }
+
+    // Verify all are selected.
+    return this.reportsList?.length === this.selectedReports?.length;
   }
 
   private getCurrentLineageLevel() {
