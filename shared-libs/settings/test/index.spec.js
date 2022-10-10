@@ -85,7 +85,7 @@ describe('Settings Shared Library', () => {
           expect(request.get.callCount).to.equal(2);
           expect(crypto.createDecipheriv.callCount).to.equal(1);
           expect(crypto.createDecipheriv.args[0][0]).to.equal('aes-256-cbc');
-          expect(crypto.createDecipheriv.args[0][1].toString()).to.equal('mysecret');
+          expect(crypto.createDecipheriv.args[0][1].toString()).to.equal('mysecretmysecretmysecretmysecret');
           expect(crypto.createDecipheriv.args[0][2].toString('hex')).to.equal(iv);
           expect(cipher.update.callCount).to.equal(1);
           expect(cipher.update.args[0][0].toString('hex')).to.equal(encryptedPass);
@@ -148,7 +148,7 @@ describe('Settings Shared Library', () => {
           expect(crypto.randomBytes.callCount).to.equal(1);
           expect(crypto.createCipheriv.callCount).to.equal(1);
           expect(crypto.createCipheriv.args[0][0]).to.equal('aes-256-cbc');
-          expect(crypto.createCipheriv.args[0][1].toString()).to.equal('mysecret');
+          expect(crypto.createCipheriv.args[0][1].toString()).to.equal('mysecretmysecretmysecretmysecret');
           expect(crypto.createCipheriv.args[0][2].toString('hex')).to.equal('myiv');
           expect(cipher.update.callCount).to.equal(1);
           expect(cipher.update.args[0][0]).to.equal('mypass');
@@ -174,7 +174,7 @@ describe('Settings Shared Library', () => {
           expect(crypto.randomBytes.callCount).to.equal(1);
           expect(crypto.createCipheriv.callCount).to.equal(1);
           expect(crypto.createCipheriv.args[0][0]).to.equal('aes-256-cbc');
-          expect(crypto.createCipheriv.args[0][1].toString()).to.equal('mysecret');
+          expect(crypto.createCipheriv.args[0][1].toString()).to.equal('mysecretmysecretmysecretmysecret');
           expect(crypto.createCipheriv.args[0][2].toString('hex')).to.equal('myiv');
           expect(cipher.update.callCount).to.equal(1);
           expect(cipher.update.args[0][0]).to.equal('mypass');
@@ -190,9 +190,27 @@ describe('Settings Shared Library', () => {
    */
   describe('crypto integration', () => {
 
-    const secret = 'myreallylongsecret - myreallylongsecret - myreallylongsecret'; // > 32 characters long
+    it('set and get credentials with long secret', () => {
+      const secret = 'myreallylongsecret - myreallylongsecret - myreallylongsecret'; // > 32 characters long
+      const requestGet = sinon.stub(request, 'get');
+      requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 });
+      requestGet.onCall(1).resolves(secret);
+      sinon.stub(request, 'put').resolves();
+      return lib
+        .setCredentials('mykey', 'mypass')
+        .then(() => {
+          const doc = request.put.args[0][1].body;
+          requestGet.onCall(2).resolves(doc);
+          requestGet.onCall(3).resolves(secret);
+          return lib.getCredentials('mykey');
+        })
+        .then(pass => {
+          expect(pass).to.equal('mypass');
+        });
+    });
 
-    it('set and get credentials', () => {
+    it('set and get credentials with short secret', () => {
+      const secret = 'secret'; // > 6 characters long
       const requestGet = sinon.stub(request, 'get');
       requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 });
       requestGet.onCall(1).resolves(secret);

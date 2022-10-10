@@ -41,7 +41,16 @@ const getKey = () => {
   const url = `${getCouchConfigUrl()}/couch_httpd_auth/secret`;
   return request
     .get(url, { json: true })
-    .then(key => Buffer.from(key).slice(0, KEY_LENGTH));
+    .then(key => {
+      let buffer = Buffer.from(key);
+      if (buffer.length < KEY_LENGTH) {
+        const duplicateCount = Math.ceil(KEY_LENGTH / buffer.length);
+        const bufferList = Array.from({ length: duplicateCount }).map(() => buffer);
+        buffer = Buffer.concat(bufferList);
+      }
+
+      return buffer.slice(0, KEY_LENGTH);
+    });
 };
 
 const encrypt = (text) => {
