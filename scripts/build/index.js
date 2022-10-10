@@ -11,6 +11,7 @@ const {
   BRANCH,
   BUILD_NUMBER,
   API_PORT,
+  ECR_PUBLIC_REPO,
 } = process.env;
 const DEFAULT_API_PORT = 5988;
 
@@ -119,8 +120,8 @@ const saveDockerComposeFiles = () => {
   const clusteredCouchDbTemplate = fs.readFileSync(clusteredCouchDbTemplatePath, 'utf-8');
 
   const view = {
-    repo: versions.getRepo(),
-    tag: versions.getImageTag(undefined, undefined, true),
+    repo: versions.getRepo(ECR_PUBLIC_REPO),
+    tag: versions.getImageTag(undefined, true),
     db_name: 'medic',
     couchdb_servers: 'couchdb',
   };
@@ -149,7 +150,7 @@ const saveDockerComposeFiles = () => {
 const saveServiceTags = () => {
   const tags = [...versions.SERVICES, ...versions.INFRASTRUCTURE].map(service => ({
     container_name: `cht-${service}`,
-    image: versions.getImageTag(service, undefined, true),
+    image: versions.getImageTag(service, true),
   }));
   const tagsFilePath = path.resolve(stagingPath, 'tags.json');
   fs.writeFileSync(tagsFilePath, JSON.stringify(tags));

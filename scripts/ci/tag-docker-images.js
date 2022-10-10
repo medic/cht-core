@@ -19,7 +19,7 @@ const dockerCmd = (...params) => new Promise((resolve, reject) => {
 (async () => {
   for (const service of [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]) {
     const existentTag = buildVersions.getImageTag(service);
-    const releaseTag = buildVersions.getImageTag(service, undefined, true);
+    const releaseTag = buildVersions.getImageTag(service, true);
 
     await dockerCmd('pull', existentTag);
     await dockerCmd('image', 'tag', existentTag, releaseTag);

@@ -3,6 +3,7 @@ const buildTime = new Date().getTime();
 
 const {
   ECR_REPO,
+  ECR_PUBLIC_REPO,
   BRANCH,
   BUILD_NUMBER,
   TAG,
@@ -32,8 +33,9 @@ const getVersion = (release) => {
   return `${packageJson.version}-dev.${buildTime}`;
 };
 
-const getImageTag = (service, repo = ECR_REPO, release = false) => {
+const getImageTag = (service, release = false) => {
   const version = getVersion(release);
+  const repo = release ? ECR_PUBLIC_REPO : ECR_REPO;
   const tag = version.replace(/\/|_/g, '-');
   return service ? `${getRepo(repo)}/cht-${service}:${tag}` : tag;
 };
