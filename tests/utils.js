@@ -38,6 +38,7 @@ const updateContainerNames = () => {
     CONTAINER_NAMES[key] = `${PROJECT_NAME}${separator}${service}${separator}1`;
   });
   CONTAINER_NAMES.upgrade = 'cht-upgrade-service';
+  console.log(CONTAINER_NAMES);
 };
 
 const PouchDB = require('pouchdb-core');
@@ -512,6 +513,7 @@ const waitForDockerLogs = (container, ...regex) => {
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterwards.
   const params = `logs ${container} -f --tail=1`;
+  console.log('docker', params);
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
