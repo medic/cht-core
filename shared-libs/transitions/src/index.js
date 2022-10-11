@@ -5,16 +5,17 @@ const infodoc = require('@medic/infodoc');
 
 let inited = false;
 
-module.exports = (sourceDb, settings, translations, sourceLogger) => {
+module.exports = (sourceDb, sourceConfig, sourceLogger) => {
   if (!inited) {
     logger.init(sourceLogger);
     db.init(sourceDb);
     infodoc.initLib(db.medic, db.sentinel);
     inited = true;
   }
+  config.init(sourceConfig);
 
   const transitions = require('./transitions');
-  const transitionsLib = {
+  return {
     loadTransitions: transitions.loadTransitions,
     processChange: transitions.processChange,
     processDocs: transitions.processDocs,
@@ -24,6 +25,4 @@ module.exports = (sourceDb, settings, translations, sourceLogger) => {
     infodoc: infodoc,
     dueTasks: require('./schedule/due_tasks')
   };
-  config.init(settings, translations, transitionsLib);
-  return transitionsLib;
 };
