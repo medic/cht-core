@@ -11,7 +11,7 @@ const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
-const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
+const reloadModalCancel = () => $('#update-available .btn.cancel.disabled)');
 const jsonError = async () => (await $('pre')).getText();
 
 //languages
@@ -106,6 +106,7 @@ const goToMessages = async () => {
 const goToTasks = async () => {
   await browser.url(`/#/tasks`);
   await (await taskTab()).waitForDisplayed();
+  await waitForPageLoaded();
 };
 
 const goToAnalytics = async () => {
