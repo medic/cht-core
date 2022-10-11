@@ -1,5 +1,15 @@
+let config = {};
+let translations = {};
+let transitionsLib = {};
 module.exports = {
-  init: function(config) {
-    Object.assign(module.exports, config, { init: this.init });
+  init: (sourceConfig, sourceTranslations, transitions) => {
+    config = sourceConfig;
+    translations = sourceTranslations;
+    transitionsLib = transitions;
   },
+
+  get: key => (key ? config[key] : config),
+  getAll: () => config,
+  getTranslations: () => translations,
+  getTransitionsLib: () => transitionsLib,
 };

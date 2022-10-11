@@ -36,7 +36,9 @@ const loadTranslations = () => {
 };
 
 const initTransitionLib = () => {
-  const transitionsLib = require('@medic/transitions')(db, config, logger);
+  const settings = config.get();
+  const translationCache = config.getTranslationValues();
+  const transitionsLib = require('@medic/transitions')(db, settings, translationCache, logger);
   // loadTransitions could throw errors when some transitions are misconfigured
   try {
     transitionsLib.loadTransitions(true);
