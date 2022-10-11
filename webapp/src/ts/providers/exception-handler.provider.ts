@@ -6,7 +6,7 @@ import { FeedbackService } from '../services/feedback.service';
 
 @Injectable()
 export class ExceptionHandlerProvider implements ErrorHandler {
-  // Whitelist of Error messages to not automatically log to feedback
+  // List of Error messages to not automatically log to feedback
   // Can be a lower-cased partial string or a regular expression
   private readonly NO_FEEDBACK_MESSAGES = [
     'failed to fetch'
