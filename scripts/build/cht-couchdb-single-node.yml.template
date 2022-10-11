@@ -9,9 +9,9 @@ services:
       - cht-credentials:/opt/couchdb/etc/local.d/
     environment:
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
-      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
-      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
-      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:?COUCHDB_PASSWORD must be set}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET}"
+      - "COUCHDB_UUID=${COUCHDB_UUID}"
       - "SVC_NAME=${SVC_NAME:-couchdb}"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
     restart: always
