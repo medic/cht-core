@@ -24,9 +24,6 @@ const baseConfig = {
       'e2e/protractor/!(cht)/**/*.js',
       'e2e/protractor/**/*.js'
     ],
-    cht: [
-      'e2e/protractor/cht/*.spec.js'
-    ],
     mobile: ['mobile/**/*.js'],
     // performance: 'performance/**/*.js'
   },
