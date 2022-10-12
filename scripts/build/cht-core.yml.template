@@ -81,7 +81,7 @@ services:
       - "${NGINX_HTTP_PORT:-80}:80"
       - "${NGINX_HTTPS_PORT:-443}:443"
     volumes:
-      - cht-ssl:/root/.acme.sh/
+      - cht-ssl:${SSL_VOLUME_MOUNT_PATH:-/root/.acme.sh/}
     environment:
       - "CERTIFICATE_MODE=${CERTIFICATE_MODE:-SELF_SIGNED}"
       - "SSL_CERT_FILE_PATH=${SSL_CERT_FILE_PATH:-/etc/nginx/private/cert.pem}"
