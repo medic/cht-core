@@ -528,10 +528,10 @@ describe('Reports Reducer', () => {
     });
   });
 
-  describe('updateSelectedReportItem', () => {
+  describe('updateSelectedReportsItem', () => {
     it('should work when no selected', () => {
       state.selected = undefined;
-      const newState = reportsReducer(state, Actions.updateSelectedReportItem({ id: 'aaaa' }));
+      const newState = reportsReducer(state, Actions.updateSelectedReportsItem({ id: 'aaaa' }));
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
@@ -547,7 +547,7 @@ describe('Reports Reducer', () => {
         { _id: 'sel2', doc: { _id: 'sel2', field: 2 } },
         { _id: 'sel3', doc: { _id: 'sel3', field: 3 } },
       ];
-      const newState = reportsReducer(state, Actions.updateSelectedReportItem({ id: 'aaaa' }));
+      const newState = reportsReducer(state, Actions.updateSelectedReportsItem({ id: 'aaaa' }));
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
@@ -574,7 +574,7 @@ describe('Reports Reducer', () => {
         { _id: 'report_3', loading: false, doc: { _id: 'report_3', field: 1 } },
         { _id: 'report_5', doc: { _id: 'report_4', field: 1 } },
       ];
-      const newState = reportsReducer(state, Actions.updateSelectedReportItem(payload));
+      const newState = reportsReducer(state, Actions.updateSelectedReportsItem(payload));
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
@@ -639,9 +639,9 @@ describe('Reports Reducer', () => {
     });
   });
 
-  describe('setFirstSelectedReportDocProperty', () => {
+  describe('setSelectedReportDocProperty', () => {
     it('should work with empty state', () => {
-      state = reportsReducer(state, Actions.setFirstSelectedReportDocProperty({ prop: true }));
+      state = reportsReducer(state, Actions.setSelectedReportDocProperty({ prop: true }));
       expect(state).to.deep.equal({
         reports: [],
         reportsById: new Map(),
@@ -657,7 +657,7 @@ describe('Reports Reducer', () => {
         { _id: 'doc2', doc: { _id: 'doc2', field: 2, _rev: 1 }, formatted: { a: 2 } },
         { _id: 'doc3', doc: { _id: 'doc3', field: 3, _rev: 1 }, formatted: { a: 3 } },
       ];
-      const newState = reportsReducer(state, Actions.setFirstSelectedReportDocProperty({ field: 3, other: 1 }));
+      const newState = reportsReducer(state, Actions.setSelectedReportDocProperty({ field: 3, other: 1 }));
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
@@ -672,9 +672,9 @@ describe('Reports Reducer', () => {
     });
   });
 
-  describe('setFirstSelectedReportFormattedProperty', () => {
+  describe('setSelectedReportFormattedProperty', () => {
     it('should work with empty state', () => {
-      state = reportsReducer(state, Actions.setFirstSelectedReportFormattedProperty({ prop: true }));
+      state = reportsReducer(state, Actions.setSelectedReportFormattedProperty({ prop: true }));
       expect(state).to.deep.equal({
         reports: [],
         reportsById: new Map(),
@@ -690,7 +690,7 @@ describe('Reports Reducer', () => {
         { _id: 'doc2', doc: { _id: 'doc2', field: 2, _rev: 1 }, formatted: { a: 2, b: 3 } },
         { _id: 'doc3', doc: { _id: 'doc3', field: 3, _rev: 1 }, formatted: { a: 3, b: 4 } },
       ];
-      const newState = reportsReducer(state, Actions.setFirstSelectedReportFormattedProperty({ b: 22, c: 44 }));
+      const newState = reportsReducer(state, Actions.setSelectedReportFormattedProperty({ b: 22, c: 44 }));
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),

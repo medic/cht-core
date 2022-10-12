@@ -451,7 +451,7 @@ describe('Reports effects', () => {
 
     it('should set empty model when in select mode and no selected docs', waitForAsync(() => {
       store.overrideSelector(Selectors.getSelectMode, { available: true, active: true });
-      store.overrideSelector(Selectors.getSelectedReportsDocs, []);
+      store.overrideSelector(Selectors.getSelectedReportDoc, undefined);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       actions$ = of(ReportActionList.setRightActionBar);
 
@@ -462,7 +462,7 @@ describe('Reports effects', () => {
 
     it('should set empty model when in select mode and selected docs', waitForAsync(() => {
       store.overrideSelector(Selectors.getSelectMode, { available: true, active: true });
-      store.overrideSelector(Selectors.getSelectedReportsDocs, [{ _id: 'doc' }]);
+      store.overrideSelector(Selectors.getSelectedReportDoc, { _id: 'doc' });
       store.overrideSelector(Selectors.getVerifyingReport, false);
       actions$ = of(ReportActionList.setRightActionBar);
 
@@ -473,7 +473,7 @@ describe('Reports effects', () => {
 
     it('should set empty model when not in select mode and no selected docs', waitForAsync(() => {
       store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
-      store.overrideSelector(Selectors.getSelectedReportsDocs, []);
+      store.overrideSelector(Selectors.getSelectedReportDoc, undefined);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       actions$ = of(ReportActionList.setRightActionBar);
 
@@ -489,7 +489,7 @@ describe('Reports effects', () => {
         content_type: 'xml',
       };
       store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
-      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getSelectedReportDoc, report);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       actions$ = of(ReportActionList.setRightActionBar);
 
@@ -509,7 +509,7 @@ describe('Reports effects', () => {
         contact: false,
       };
       store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
-      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getSelectedReportDoc, report);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       actions$ = of(ReportActionList.setRightActionBar);
 
@@ -530,7 +530,7 @@ describe('Reports effects', () => {
       };
       dbService.get.resolves({ _id: 'the_contact', phone: '12345' });
       store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
-      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getSelectedReportDoc, report);
       store.overrideSelector(Selectors.getVerifyingReport, true);
 
       actions$ = of(ReportActionList.setRightActionBar);
@@ -557,7 +557,7 @@ describe('Reports effects', () => {
       };
       dbService.get.rejects({ error: 'boom' });
       store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
-      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getSelectedReportDoc, report);
       store.overrideSelector(Selectors.getVerifyingReport, false);
 
       actions$ = of(ReportActionList.setRightActionBar);
@@ -577,7 +577,7 @@ describe('Reports effects', () => {
     it('openSendMessageModal function should open correct modal', () => {
       const report = {};
       store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
-      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getSelectedReportDoc, report);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       modalService.show.resolves();
 
@@ -598,7 +598,7 @@ describe('Reports effects', () => {
     it('should catch modal show promise rejections', () => {
       const report = {};
       store.overrideSelector(Selectors.getSelectMode, { available: false, active: false });
-      store.overrideSelector(Selectors.getSelectedReportsDocs, [report]);
+      store.overrideSelector(Selectors.getSelectedReportDoc, report);
       store.overrideSelector(Selectors.getVerifyingReport, false);
       modalService.show.rejects();
 
@@ -639,7 +639,7 @@ describe('Reports effects', () => {
     });
 
     it('should set select mode and redirect', () => {
-      actions$ = of(ReportActionList.setSelectMode(true));
+      actions$ = of(ReportActionList.setSelectMode());
       effects.setSelectMode.subscribe();
 
       expect(setSelectModeStatus.callCount).to.equal(1);
@@ -650,7 +650,7 @@ describe('Reports effects', () => {
     });
 
     it('should unset select mode and redirect', () => {
-      actions$ = of(ReportActionList.setSelectMode(false));
+      actions$ = of(ReportActionList.setSelectMode());
       effects.setSelectMode.subscribe();
 
       expect(setSelectModeStatus.callCount).to.equal(1);
@@ -845,12 +845,12 @@ describe('Reports effects', () => {
   });
 
   describe('verifyReport', () => {
-    let setFirstSelectedReportDocProperty;
-    let setFirstSelectedReportFormattedProperty;
+    let setSelectedReportDocProperty;
+    let setSelectedReportFormattedProperty;
 
     beforeEach(() => {
-      setFirstSelectedReportDocProperty = sinon.stub(ReportsActions.prototype, 'setFirstSelectedReportDocProperty');
-      setFirstSelectedReportDocProperty.callsFake(props => {
+      setSelectedReportDocProperty = sinon.stub(ReportsActions.prototype, 'setSelectedReportDocProperty');
+      setSelectedReportDocProperty.callsFake(props => {
         store
           .select(Selectors.getSelectedReports)
           .pipe(take(1))
@@ -863,8 +863,8 @@ describe('Reports effects', () => {
             store.refreshState();
           });
       });
-      setFirstSelectedReportFormattedProperty = sinon
-        .stub(ReportsActions.prototype, 'setFirstSelectedReportFormattedProperty');
+      setSelectedReportFormattedProperty = sinon
+        .stub(ReportsActions.prototype, 'setSelectedReportFormattedProperty');
       sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
     });
 
@@ -1025,7 +1025,7 @@ describe('Reports effects', () => {
       reportViewModelGeneratorService.get.withArgs('report2').resolves({_id: 'report2', model: true});
 
       // Assert that properties are only set on report (not report1 or report2)
-      setFirstSelectedReportDocProperty.callsFake(props => {
+      setSelectedReportDocProperty.callsFake(props => {
         store
           .select(Selectors.getSelectedReports)
           .pipe(take(1))
@@ -1039,7 +1039,7 @@ describe('Reports effects', () => {
             store.refreshState();
           });
       });
-      setFirstSelectedReportFormattedProperty.callsFake(() => {
+      setSelectedReportFormattedProperty.callsFake(() => {
         store
           .select(Selectors.getSelectedReports)
           .pipe(take(1))
@@ -1074,12 +1074,12 @@ describe('Reports effects', () => {
       expect(setSelected.args).to.deep.equal([[{_id: 'report2', model: true}]]);
 
       // Make sure we only end up setting the data we expect onto the report
-      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(1);
-      expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[0]).to.deep.equal(
+      expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).callCount).to.equal(1);
+      expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).args[0]).to.deep.equal(
         [{ verified: false, verified_date: 1000 }],
       );
-      expect((<any>ReportsActions.prototype.setFirstSelectedReportFormattedProperty).callCount).to.equal(1);
-      expect((<any>ReportsActions.prototype.setFirstSelectedReportFormattedProperty).args[0]).to.deep.equal(
+      expect((<any>ReportsActions.prototype.setSelectedReportFormattedProperty).callCount).to.equal(1);
+      expect((<any>ReportsActions.prototype.setSelectedReportFormattedProperty).args[0]).to.deep.equal(
         [{ oldVerified: undefined, verified: false }]);
     }));
 
@@ -1204,8 +1204,8 @@ describe('Reports effects', () => {
             verified_date: expectedDate,
             verified: expectVerified,
           }]);
-          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(1);
-          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).args[0]).to.deep.equal([{
+          expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).callCount).to.equal(1);
+          expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).args[0]).to.deep.equal([{
             verified: expectVerified,
             verified_date: expectedDate,
           }]);
@@ -1215,7 +1215,7 @@ describe('Reports effects', () => {
           ]);
         } else {
           expect(dbService.put.called).to.be.false;
-          expect((<any>ReportsActions.prototype.setFirstSelectedReportDocProperty).callCount).to.equal(0);
+          expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).callCount).to.equal(0);
           expect((<any>ServicesActions.prototype.setLastChangedDoc).callCount).to.equal(0);
         }
       }));

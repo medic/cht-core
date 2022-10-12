@@ -40,6 +40,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   subscription: Subscription = new Subscription();
   reportsList;
+  selectedReport;
   selectedReports;
   forms;
   error;
@@ -83,6 +84,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getReportsList),
+      this.store.select(Selectors.getSelectedReport),
       this.store.select(Selectors.getSelectedReports),
       this.store.select(Selectors.listContains),
       this.store.select(Selectors.getForms),
@@ -92,6 +94,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       reportsList,
+      selectedReport,
       selectedReports,
       listContains,
       forms,
@@ -106,6 +109,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       // where the summary is the data required for the collapsed view,
       // report is the db doc, and expanded is whether to how the details
       // or just the summary in the content pane.
+      this.selectedReport = selectedReport;
       this.selectedReports = selectedReports;
       this.listContains = listContains;
       this.forms = forms;

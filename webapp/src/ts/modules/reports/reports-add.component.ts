@@ -42,7 +42,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     this.reportsActions = new ReportsActions(this.store);
   }
 
-  selectedReports = [];
+  selectedReport;
   loadingContent;
   contentError;
   enketoError;
@@ -56,7 +56,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private geoHandle:any;
   private globalActions;
-  private reportsActions;
+  private reportsActions: ReportsActions;
   private telemetryData:any = {
     preRender: Date.now()
   };
@@ -66,7 +66,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   private subscribeToStore() {
     const reduxSubscription = combineLatest(
       this.store.select(Selectors.getLoadingContent),
-      this.store.select(Selectors.getSelectedReports),
+      this.store.select(Selectors.getSelectedReport),
       this.store.select(Selectors.getEnketoStatus),
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
@@ -74,14 +74,14 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       loadingContent,
-      selectedReports,
+      selectedReport,
       enketoStatus,
       enketoSaving,
       enketoError,
       cancelCallback,
       selectMode,
     ]) => {
-      this.selectedReports = selectedReports;
+      this.selectedReport = selectedReport;
       this.loadingContent = loadingContent;
       this.enketoStatus = enketoStatus;
       this.enketoEdited = enketoStatus.edited;
@@ -233,7 +233,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    this.reportsActions.setSelectedReports([]);
+    this.reportsActions.setSelectedReport();
     this.geoHandle && this.geoHandle.cancel();
     // old code checked whether the component is reused before unloading the form
     // this is because AngularJS created the new "controller" before destroying the old one
@@ -294,9 +294,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
-    const model = this.selectedReports[0];
-    const reportId = model?.doc?._id;
-    const formInternalId = model?.formInternalId;
+    const reportId = this.selectedReport?.doc?._id;
+    const formInternalId = this.selectedReport?.formInternalId;
 
     return this.enketoService
       .save(formInternalId, this.form, this.geoHandle, reportId)

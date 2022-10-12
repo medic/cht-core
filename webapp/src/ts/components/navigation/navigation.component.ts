@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -10,13 +10,13 @@ import { NavigationService } from '@mm-services/navigation.service';
   selector: 'mm-navigation',
   templateUrl: './navigation.component.html'
 })
-export class NavigationComponent implements OnInit, OnDestroy {
+export class NavigationComponent implements AfterViewInit, OnDestroy {
   private subscription: Subscription = new Subscription();
-  private globalActions;
+  private globalActions: GlobalActions;
 
-  cancelCallback;
-  title;
-  enketoSaving;
+  cancelCallback = false;
+  title = '';
+  enketoSaving = false;
 
   constructor(
     private store: Store,
@@ -25,7 +25,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.globalActions = new GlobalActions(store);
   }
 
-  ngOnInit(): void {
+  ngAfterViewInit() {
     const stateSubscription = combineLatest(
       this.store.select(Selectors.getCancelCallback),
       this.store.select(Selectors.getTitle),
@@ -35,8 +35,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
       title,
       enketoSaving,
     ]) => {
-      this.cancelCallback = cancelCallback;
-      this.title = title;
+      this.cancelCallback = !!cancelCallback;
+      this.title = title || '';
       this.enketoSaving = enketoSaving;
     });
     this.subscription.add(stateSubscription);

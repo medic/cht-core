@@ -37,7 +37,7 @@
         <ul [hidden]="loading && !appending">
           <li *ngFor="let report of reportsList; trackBy: listTrackBy"
             [attr.data-record-id]="report._id"
-            [class.selected] = "report.selected"
+            [class.selected-to-view] = "selectedReport?.doc?._id === report._id"
             [class.unread]="!report.read"
             class="content-row">
             <input type="checkbox" (click)="selectReport(report)" [checked]="selectMode?.active && report.selected">

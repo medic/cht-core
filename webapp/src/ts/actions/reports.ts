@@ -8,18 +8,16 @@ export const Actions = {
   setSelected: createSingleValueAction('SET_SELECTED_REPORT', 'selected'),
   addSelectedReport: createSingleValueAction('ADD_SELECTED_REPORT', 'report'),
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'report'),
-  setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
+  setSelectedReport: createSingleValueAction('SET_SELECTED_REPORT', 'selectedReport'),
+  setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selectedReports'),
   setVerifyingReport: createSingleValueAction('SET_VERIFYING_REPORT', 'verifyingReport'),
   toggleVerifyingReport: createAction('TOGGLE_VERIFYING_REPORT'),
   verifyReport: createSingleValueAction('VERIFY_REPORT', 'verified'),
-  updateSelectedReportItem: createMultiValueAction('UPDATE_SELECTED_REPORT_ITEM'),
+  updateSelectedReportsItem: createMultiValueAction('UPDATE_SELECTED_REPORTS_ITEM'),
   markReportRead: createSingleValueAction('MARK_REPORT_READ', 'id'),
   launchEditFacilityDialog: createAction('LAUNCH_EDIT_FACILITY_DIALOG'),
-  setFirstSelectedReportDocProperty: createSingleValueAction('SET_FIRST_SELECTED_REPORT_DOC_PROPERTY', 'doc'),
-  setFirstSelectedReportFormattedProperty: createSingleValueAction(
-    'SET_FIRST_SELECTED_REPORT_FORMATTED_PROPERTY',
-    'formatted'
-  ),
+  setSelectedReportDocProperty: createSingleValueAction('SET_SELECTED_REPORT_DOC_PROPERTY', 'doc'),
+  setSelectedReportFormattedProperty: createSingleValueAction('SET_SELECTED_REPORT_FORMATTED_PROPERTY', 'formatted'),
 
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
@@ -47,6 +45,10 @@ export class ReportsActions {
     const globalActions = new GlobalActions(this.store);
     globalActions.settingSelected();
     this.setRightActionBar();
+  }
+
+  setSelectedReport(selected?) {
+    return this.store.dispatch(Actions.setSelectedReport(selected));
   }
 
   setSelectedReports(selected) {
@@ -86,6 +88,7 @@ export class ReportsActions {
   }
 
   clearSelection() {
+    this.store.dispatch(Actions.setSelectedReport(undefined));
     this.store.dispatch(Actions.setSelectedReports([]));
   }
 
@@ -93,8 +96,8 @@ export class ReportsActions {
     return this.store.dispatch(Actions.setSelectMode());
   }
 
-  updateSelectedReportItem(id, selected) {
-    return this.store.dispatch(Actions.updateSelectedReportItem({ id, selected }));
+  updateSelectedReportsItem(id, selected) {
+    return this.store.dispatch(Actions.updateSelectedReportsItem({ id, selected }));
   }
 
   deselectAll() {
@@ -121,11 +124,11 @@ export class ReportsActions {
     return this.store.dispatch(Actions.verifyReport(verified));
   }
 
-  setFirstSelectedReportDocProperty(doc) {
-    return this.store.dispatch(Actions.setFirstSelectedReportDocProperty(doc));
+  setSelectedReportDocProperty(doc) {
+    return this.store.dispatch(Actions.setSelectedReportDocProperty(doc));
   }
 
-  setFirstSelectedReportFormattedProperty(formatted) {
-    return this.store.dispatch(Actions.setFirstSelectedReportFormattedProperty(formatted));
+  setSelectedReportFormattedProperty(formatted) {
+    return this.store.dispatch(Actions.setSelectedReportFormattedProperty(formatted));
   }
 }

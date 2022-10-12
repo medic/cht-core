@@ -19,7 +19,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   currentTab;
   snapshotData;
   selectModeActive;
-  selectedReportsDocs = [];
+  selectedReportDoc;
   actionBar;
   showActionBar;
   loadingContent;
@@ -44,7 +44,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getSelectMode),
       this.store.select(Selectors.getShowActionBar),
       this.store.select(Selectors.getSidebarFilter),
-      this.store.select(Selectors.getSelectedReportsDocs),
+      this.store.select(Selectors.getSelectedReportDoc),
       this.store.select(Selectors.getSelectedContactDoc),
     ).subscribe(([
       actionBar,
@@ -55,7 +55,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       selectMode,
       showActionBar,
       sidebarFilter,
-      selectedReportsDocs,
+      selectedReportDoc,
       selectedContactDoc
     ]) => {
       this.currentTab = currentTab;
@@ -66,7 +66,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
       this.sidebarFilter = sidebarFilter;
       this.loadingContent = loadingContent;
       this.loadingSubActionBar = loadingSubActionBar;
-      this.selectedReportsDocs = selectedReportsDocs;
+      this.selectedReportDoc = selectedReportDoc;
       this.selectedContactDoc = selectedContactDoc;
     });
     this.subscription.add(subscription);

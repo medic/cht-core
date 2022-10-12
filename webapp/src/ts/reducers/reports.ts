@@ -7,13 +7,14 @@ import { UniqueSortedList } from '@mm-reducers/utils';
 const initialState = {
   reports: [],
   reportsById: new Map(),
-  selected: [],
+  selectedReport: undefined,
+  selectedReports: [],
   verifyingReport: false,
   filters: {},
 };
 
 const isSelected = (state, report) => {
-  return !!state.selected?.find(selectedReport => selectedReport._id === report._id);
+  return !!state.selectedReports?.find(selectedReport => selectedReport._id === report._id);
 };
 
 const setSelected = (state, report) => ({
@@ -22,7 +23,7 @@ const setSelected = (state, report) => ({
 });
 
 const updateReports = (state, newReports) => {
-  const reports = [...state.reports];
+  const reports = [ ...state.reports ];
   const reportsById = new Map(state.reportsById);
 
   const list = new UniqueSortedList(reports, reportsById, 'reported_date');
@@ -36,7 +37,7 @@ const updateReports = (state, newReports) => {
 };
 
 const removeReport = (state, report) => {
-  const reports = [ ...state.reports];
+  const reports = [ ...state.reports ];
   const reportsById = new Map(state.reportsById);
 
   const list = new UniqueSortedList(reports, reportsById, 'reported_date');
@@ -54,7 +55,7 @@ const _reportsReducer = createReducer(
   on(Actions.addSelectedReport, (state, { payload: { report } }) => {
     return {
       ...state,
-      selected: [...state.selected, report],
+      selectedReports: [ ...state.selectedReports, report ],
     };
   }),
 
@@ -62,13 +63,20 @@ const _reportsReducer = createReducer(
     const reportId = report?._id || report;
     return {
       ...state,
-      selected: state.selected.filter(selectedReport => selectedReport._id !== reportId),
+      selectedReports: state.selectedReports.filter(selectedReport => selectedReport._id !== reportId),
     };
   }),
 
-  on(Actions.setSelectedReports, (state, { payload: { selected } }) => ({ ...state, selected })),
+  on(Actions.setSelectedReport, (state, { payload: { selectedReport } }) => ({ ...state, selectedReport })),
 
-  on(GlobalActions.clearSelected, (state) => ({ ...state, selected: [], verifyingReport: false })),
+  on(Actions.setSelectedReports, (state, { payload: { selectedReports } }) => ({ ...state, selectedReports })),
+
+  on(GlobalActions.clearSelected, (state) => ({
+    ...state,
+    selectedReports: [],
+    selectedReport: undefined,
+    verifyingReport: false,
+  })),
 
   on(
     Actions.addSelectedReport,
@@ -87,10 +95,10 @@ const _reportsReducer = createReducer(
     }
   ),
 
-  on(Actions.updateSelectedReportItem, (state, { payload }) => {
+  on(Actions.updateSelectedReportsItem, (state, { payload }) => {
     return {
       ...state,
-      selected: state.selected?.map(item => {
+      selectedReports: state.selectedReports?.map(item => {
         if (item._id === payload.id) {
           return { ...item, ...payload.selected };
         }
@@ -102,28 +110,17 @@ const _reportsReducer = createReducer(
   on(Actions.setVerifyingReport, (state, { payload: { verifyingReport } }) => ({ ...state, verifyingReport })),
   on(Actions.toggleVerifyingReport, (state) => ({ ...state, verifyingReport: !state.verifyingReport })),
 
-  on(Actions.setFirstSelectedReportDocProperty, (state, { payload: { doc } }) => {
+  on(Actions.setSelectedReportDocProperty, (state, { payload: { doc } }) => {
     return {
       ...state,
-      selected: state.selected?.map((item, idx) => {
-        if (idx === 0) {
-          return { ...item, doc: { ...item?.doc, ...doc } };
-        }
-
-        return item;
-      })
+      selectedReport: { ...state.selectedReport, doc: { ...state.selectedReport?.doc, ...doc } },
     };
   }),
 
-  on(Actions.setFirstSelectedReportFormattedProperty, (state, { payload: { formatted }}) => {
+  on(Actions.setSelectedReportFormattedProperty, (state, { payload: { formatted } }) => {
     return {
       ...state,
-      selected: state.selected?.map((item, idx) => {
-        if (idx === 0) {
-          return { ...item, formatted: { ...item.formatted, ...formatted } };
-        }
-        return item;
-      }),
+      selectedReport: { ...state.selectedReport, formatted: { ...state.selectedReport?.formatted, ...formatted } },
     };
   }),
 );

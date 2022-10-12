@@ -218,17 +218,13 @@
 .reports,
 .contacts .reports {
   .content-row {
-    &.selected {
+    &.selected, &.selected-to-view {
       background-color: @reports-highlight;
     }
     &:hover {
       border-left-color: @reports-color;
     }
   }
-}
-
-.select-mode.reports .content-row.selected {
-  background: @white;
 }
 
 .contacts .content-row {

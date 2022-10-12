@@ -41,30 +41,58 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const reduxSubscription = combineLatest(
+    this.subscribeToStore();
+    this.watchReportsContentChanges();
+
+    const routeSubscription =  this.route.params.subscribe((params) => {
+      if (params.id) {
+        this.reportsActions.selectReport(this.route.snapshot.params.id);
+        this.globalActions.clearNavigation();
+
+        $('.tooltip').remove();
+      } else {
+        this.globalActions.unsetSelected(this.selectModeActive);
+      }
+    });
+    this.subscription.add(routeSubscription);
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+    this.reportsActions.setSelectedReport();
+  }
+
+  private subscribeToStore() {
+    const reportsSubscription = combineLatest(
+      this.store.select(Selectors.getSelectedReport),
       this.store.select(Selectors.getSelectedReports),
-      this.store.select(Selectors.getSelectedReportsSummaries),
-      this.store.select(Selectors.getSelectedReportsValidChecks),
+    ).subscribe(([
+      selectedReport,
+      selectedReports,
+    ]) => {
+      this.selectedReports = selectedReport ? [ selectedReport ] : selectedReports || [];
+      this.summaries = this.selectedReports.map(item => item.formatted || item.summary);
+      this.validChecks = this.selectedReports.map(item => item.summary?.valid || !item.formatted?.errors?.length);
+    });
+    this.subscription.add(reportsSubscription);
+
+    const contextSubscription = combineLatest(
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getSelectMode),
     ).subscribe(([
-      selectedReports,
-      summaries,
-      validChecks,
       forms,
       loadingContent,
       selectMode,
     ]) => {
-      this.selectedReports = selectedReports;
-      this.summaries = summaries;
-      this.validChecks = validChecks;
       this.loadingContent = loadingContent;
       this.forms = forms;
-      this.selectModeActive = selectMode?.active;
+      this.selectModeActive = !!selectMode?.active;
     });
-    this.subscription.add(reduxSubscription);
+    this.subscription.add(contextSubscription);
+  }
 
+  private watchReportsContentChanges() {
     const isMatchingRouteParam = (change) => this.route.snapshot.params?.id === change.id;
 
     const changesSubscription = this.changesService.subscribe({
@@ -83,7 +111,6 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
             this.deselect(change.id);
             return;
           }
-
           this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
           return;
         }
@@ -96,22 +123,6 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       }
     });
     this.subscription.add(changesSubscription);
-
-    const routeSubscription =  this.route.params.subscribe((params) => {
-      if (params.id) {
-        this.reportsActions.selectReport(this.route.snapshot.params.id);
-        this.globalActions.clearNavigation();
-
-        $('.tooltip').remove();
-      } else {
-        this.globalActions.unsetSelected(this.selectModeActive);
-      }
-    });
-    this.subscription.add(routeSubscription);
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 
   trackByFn(index, item) {
@@ -125,9 +136,9 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
 
     const id = report._id;
     if (report.doc || report.expanded) {
-      this.reportsActions.updateSelectedReportItem(id, { expanded: !report.expanded });
+      this.reportsActions.updateSelectedReportsItem(id, { expanded: !report.expanded });
     } else {
-      this.reportsActions.updateSelectedReportItem(id, { loading: true, expanded: true });
+      this.reportsActions.updateSelectedReportsItem(id, { loading: true, expanded: true });
       this.reportsActions.selectReport(id, { silent: true });
     }
   }
