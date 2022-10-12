@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../../../utils/sentinel');
 const { expect } = require('chai');
+const chai = require('chai');
 
 const CLINIC = {
   _id: 'clinic',
@@ -46,6 +47,18 @@ const getQueuedMessages = () => utils.db
   .query('medic-admin/message_queue', { reduce: false, include_docs: true })
   .then(response => response.rows.map(row => row.doc));
 
+const loginAsUser = ({ username, password }) => {
+  const opts = {
+    path: '/medic/login',
+    method: 'POST',
+    simple: false,
+    noAuth: true,
+    body: { user: username, password },
+    followRedirect: false,
+  };
+  return utils.request(opts);
+};
+
 const expectError = async (errorPattern) => {
   // Error saved on the replace_user report
   const originalPerson_updated = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -71,6 +84,8 @@ describe('create_user_for_contacts', () => {
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
+    // Can log in as user
+    chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 302 });
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
     originalContact.user_for_contact = { replace: { replacement_contact_id: NEW_PERSON._id, status: 'READY' } };
@@ -83,6 +98,8 @@ describe('create_user_for_contacts', () => {
     // Original user is disabled
     const originalUserSettings = await utils.getUserSettings({ contactId: ORIGINAL_PERSON._id });
     expect(originalUserSettings.inactive).to.be.true;
+    // Can no longer log in as user
+    chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 401 });
     // New user created
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     newUsers.push(newUserSettings.name);
