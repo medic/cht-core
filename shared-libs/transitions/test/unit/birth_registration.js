@@ -2,52 +2,60 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const rewire = require('rewire');
 const  moment = require('moment');
-const transitionUtils = require('../../src/transitions/utils');
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 
-const transition = rewire('../../src/transitions/registration');
-transition.setBirthDate = transition.__get__('setBirthDate');
-
 describe('birth registration', () => {
-  afterEach(() => sinon.restore());
+  let transitionUtils;
+  let transition;
 
   beforeEach(() => {
-    sinon.stub(config, 'get').returns([{
-      form: 'BIR',
-      events: [
-        {
-          name: 'on_create',
-          trigger: 'add_patient_id',
-          params: '',
-          bool_expr: ''
-        },
-        {
-          name: 'on_create',
-          trigger: 'add_birth_date',
-          params: '',
-          bool_expr: ''
-        }
-      ],
-      validations: [
-        {
-          property: 'weeks_since_birth',
-          rule: 'min(0) && max(52)',
-          message: [{
-            content: 'Invalid DOB; must be between 0-52 weeks.',
-            locale: 'en'
-          }]
-        },
-        {
-          property: 'patient_name',
-          rule: 'lenMin(1) && lenMax(100)',
-          message: [{
-            content: 'Invalid patient name.',
-            locale: 'en'
-          }]
-        }
-      ]
-    }]);
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub().returns([{
+        form: 'BIR',
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'add_patient_id',
+            params: '',
+            bool_expr: ''
+          },
+          {
+            name: 'on_create',
+            trigger: 'add_birth_date',
+            params: '',
+            bool_expr: ''
+          }
+        ],
+        validations: [
+          {
+            property: 'weeks_since_birth',
+            rule: 'min(0) && max(52)',
+            message: [{
+              content: 'Invalid DOB; must be between 0-52 weeks.',
+              locale: 'en'
+            }]
+          },
+          {
+            property: 'patient_name',
+            rule: 'lenMin(1) && lenMax(100)',
+            message: [{
+              content: 'Invalid patient name.',
+              locale: 'en'
+            }]
+          }
+        ]
+      }]),
+    });
+    transitionUtils = require('../../src/transitions/utils');
+    transition = rewire('../../src/transitions/registration');
+    transition.setBirthDate = transition.__get__('setBirthDate');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
   });
 
   it('setBirthDate sets birth_date correctly for weeks_since_birth: 0', () => {

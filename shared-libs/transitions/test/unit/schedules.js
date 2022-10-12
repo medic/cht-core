@@ -7,7 +7,12 @@ const messageUtils = require('@medic/message-utils');
 const utils = require('../../src/lib/utils');
 
 describe('schedules', () => {
-  afterEach(() => sinon.restore());
+  beforeEach(() => config.init({ getAll: sinon.stub().returns({}), }));
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('getOffset returns false for bad syntax', () => {
     assert.equal(schedules.getOffset('x'), false);
@@ -383,7 +388,7 @@ describe('schedules', () => {
       locale_outgoing: 'sw',
       date_format: 'dddd, Do MMMM YYYY'
     };
-    sinon.stub(config, 'getAll').returns(configuration);
+    config.getAll.returns(configuration);
 
     schedules.assignSchedule(doc, {
       name: 'duckland',
@@ -498,7 +503,6 @@ describe('schedules', () => {
       const patientRegistrations = [{ _id: 'registration_1', reg_field: 'some reg field' }];
 
       sinon.spy(messageUtils, 'generate');
-      sinon.stub(config, 'getAll').returns({});
 
       schedules.assignSchedule(doc, schedule, { patient, patientRegistrations });
 
@@ -543,7 +547,6 @@ describe('schedules', () => {
       const placeRegistrations = [{ _id: 'registration_1', municipality: 'Theraria' }];
 
       sinon.spy(messageUtils, 'generate');
-      sinon.stub(config, 'getAll').returns({});
 
       schedules.assignSchedule(doc, schedule, { place, placeRegistrations });
 
@@ -590,7 +593,6 @@ describe('schedules', () => {
       const placeRegistrations = [{ _id: 'registration_1', municipality: 'Theraria' }];
 
       sinon.spy(messageUtils, 'generate');
-      sinon.stub(config, 'getAll').returns({});
 
       schedules.assignSchedule(doc, schedule, { place, placeRegistrations, patient, patientRegistrations });
 
@@ -634,7 +636,6 @@ describe('schedules', () => {
       };
 
       sinon.spy(messageUtils, 'generate');
-      sinon.stub(config, 'getAll').returns({});
 
       schedules.assignSchedule(doc, schedule);
 

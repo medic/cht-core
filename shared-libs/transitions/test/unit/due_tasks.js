@@ -9,9 +9,15 @@ const db = require('../../src/db');
 const rpn = require('request-promise-native');
 const schedule = require('../../src/schedule/due_tasks');
 const date = require('../../src/date');
+const config = require('../../src/config');
 
 describe('due tasks', () => {
-  afterEach(() => sinon.restore());
+  beforeEach(() => config.init({ getAll: sinon.stub().returns({}), }));
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('due_tasks handles view returning no rows', () => {
     const view = sinon.stub(rpn, 'get').resolves({

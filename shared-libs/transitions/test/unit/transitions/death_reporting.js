@@ -1,12 +1,22 @@
 require('chai').should();
 const sinon = require('sinon');
 const db = require('../../../src/db');
-const transition = require('../../../src/transitions/death_reporting');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 
 describe('death_reporting', () => {
+  let transition;
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+    });
+    transition = require('../../../src/transitions/death_reporting');
+  });
+
   afterEach(done => {
+    sinon.reset();
     sinon.restore();
     done();
   });
@@ -24,7 +34,7 @@ describe('death_reporting', () => {
           patient: patient, // lineage hydrates this patient property
         },
       };
-      sinon.stub(config, 'get').returns({
+      config.get.returns({
         mark_deceased_forms: ['death-confirm'],
         undo_deceased_forms: ['death-undo'],
         date_field: 'death.date',
@@ -57,7 +67,7 @@ describe('death_reporting', () => {
           patient: patient,
         },
       };
-      sinon.stub(config, 'get').returns({
+      config.get.returns({
         mark_deceased_forms: ['death-confirm'],
         undo_deceased_forms: ['death-undo'],
         date_field: 'death.date',
@@ -90,7 +100,7 @@ describe('death_reporting', () => {
           patient: patient,
         },
       };
-      sinon.stub(config, 'get').returns({
+      config.get.returns({
         mark_deceased_forms: ['death-confirm'],
         undo_deceased_forms: ['death-undo'],
         date_field: 'death.date',
@@ -126,7 +136,7 @@ describe('death_reporting', () => {
           patient: patient
         },
       };
-      sinon.stub(config, 'get').returns({
+      config.get.returns({
         mark_deceased_forms: ['death-confirm'],
         undo_deceased_forms: ['death-undo'],
         date_field: 'fields.death.date',
@@ -154,7 +164,7 @@ describe('death_reporting', () => {
           patient: patient,
         },
       };
-      sinon.stub(config, 'get').returns({
+      config.get.returns({
         mark_deceased_forms: ['death-confirm'],
         undo_deceased_forms: ['death-undo'],
       });
@@ -177,7 +187,7 @@ describe('death_reporting', () => {
           patient: patient
         },
       };
-      sinon.stub(config, 'get').returns({
+      config.get.returns({
         mark_deceased_forms: ['death-confirm'],
         undo_deceased_forms: ['death-undo'],
       });
@@ -198,7 +208,7 @@ describe('death_reporting', () => {
           patient: { empty: '????' },
         },
       };
-      sinon.stub(config, 'get').returns({
+      config.get.returns({
         mark_deceased_forms: ['death-confirm'],
         undo_deceased_forms: ['death-undo'],
       });
@@ -218,18 +228,18 @@ describe('death_reporting', () => {
     });
 
     it('no type returns false', () => {
-      sinon.stub(config, 'get').returns({ mark_deceased_forms: ['x', 'y'] });
+      config.get.returns({ mark_deceased_forms: ['x', 'y'] });
       transition.filter({ form: 'x' }).should.equal(false);
       transition.filter({ from: 'x' }).should.equal(false);
     });
 
     it('no patient returns false', () => {
-      sinon.stub(config, 'get').returns({ mark_deceased_forms: ['x', 'y'] });
+      config.get.returns({ mark_deceased_forms: ['x', 'y'] });
       transition.filter({ form: 'x', type: 'data_record' }).should.equal(false);
     });
 
     it('invalid submission returns false', () => {
-      sinon.stub(config, 'get').returns({
+      config.get.returns({
         mark_deceased_forms: ['x', 'y'],
         undo_deceased_forms: ['z', 't']
       });
@@ -242,7 +252,7 @@ describe('death_reporting', () => {
     });
 
     it('returns true', () => {
-      sinon.stub(config, 'get').returns({
+      config.get.returns({
         mark_deceased_forms: ['x', 'y'],
         undo_deceased_forms: ['z', 't']
       });

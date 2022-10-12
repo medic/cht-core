@@ -2,18 +2,27 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const db = require('../../../src/db');
 const config = require('../../../src/config');
-const transition = require('../../../src/transitions/update_clinics');
 const utils = require('../../../src/lib/utils');
 const phone = '+34567890123';
 
+let transition;
 let lineageStub;
 
 describe('update clinic', () => {
   beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+      getTranslations: sinon.stub().returns({})
+    });
+    transition = require('../../../src/transitions/update_clinics');
     lineageStub = sinon.stub(transition._lineage, 'fetchHydratedDoc');
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('filter includes docs with no clinic', () => {
     const doc = {
@@ -150,7 +159,7 @@ describe('update clinic', () => {
       },
     };
 
-    sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'clinic' } ] });
+    config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
     lineageStub.returns(Promise.resolve(contact));
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -202,7 +211,7 @@ describe('update clinic', () => {
       name: 'zenith',
       phone: '+12345',
     };
-    sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'clinic' } ] });
+    config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: clinic }] });
     lineageStub.resolves(contact);
     return transition.onMatch({ doc: doc }).then(changed => {
@@ -281,7 +290,7 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
-    sinon.stub(config, 'get').withArgs('forms').returns({ 'other': {} });
+    config.get.withArgs('forms').returns({ 'other': {} });
 
     return transition.onMatch({ doc }).then(changed => {
       assert(changed);
@@ -300,7 +309,7 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
-    const stubbedConfig = sinon.stub(config, 'get');
+    const stubbedConfig = config.get;
     stubbedConfig.returns([ {
       form: 'someForm',
       messages: [
@@ -341,7 +350,7 @@ describe('update clinic', () => {
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
     sinon.stub(utils, 'translate').returns('facility not found');
-    const stubbedConfig = sinon.stub(config, 'get');
+    const stubbedConfig = config.get;
     stubbedConfig.returns([ {
       form: 'someForm',
       messages: [
@@ -375,7 +384,7 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
-    sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': {} });
+    config.get.withArgs('forms').returns({ 'someForm': {} });
     sinon.stub(utils, 'translate').returns('facility not found');
 
     return transition.onMatch({ doc }).then(changed => {
@@ -399,7 +408,7 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
-    sinon.stub(config, 'get').withArgs('forms').returns({ 'other': {} });
+    config.get.withArgs('forms').returns({ 'other': {} });
 
     return transition.onMatch({ doc }).then(changed => {
       assert(changed);
@@ -435,7 +444,7 @@ describe('update clinic', () => {
     };
 
     sinon.stub(db.medic, 'query').resolves({ rows: [{ key: '123' }] });
-    sinon.stub(config, 'get').withArgs('forms').returns({ 'someForm': { public_form: true } });
+    config.get.withArgs('forms').returns({ 'someForm': { public_form: true } });
 
     return transition.onMatch({ doc }).then(changed => {
       assert(!changed);
@@ -478,7 +487,7 @@ describe('update clinic', () => {
       },
     };
 
-    sinon.stub(config, 'getAll').returns({ contact_types: [ { id: 'clinic' } ] });
+    config.getAll.returns({ contact_types: [ { id: 'clinic' } ] });
     sinon.stub(db.medic, 'query').resolves({ rows: [{ doc: contact }] });
     lineageStub.resolves(contact);
     return transition.onMatch({ doc: doc }).then(changed => {

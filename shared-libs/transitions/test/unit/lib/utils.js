@@ -4,13 +4,19 @@ const registrationUtils = require('@medic/registration-utils');
 const taskUtils = require('@medic/task-utils');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
+require('chai').should();
 
 describe('utils util', () => {
 
   beforeEach(() => {
+    config.init({ getAll: sinon.stub(), });
     sinon.stub(db.medic, 'query');
   });
-  afterEach(() => sinon.restore());
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   const utils = require('../../../src/lib/utils');
 
@@ -37,7 +43,7 @@ describe('utils util', () => {
 
   describe('getRegistrations', () => {
     it('works with single key', () => {
-      sinon.stub(config, 'getAll').returns({});
+      config.getAll.returns({});
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
       db.medic.query.resolves({ rows: [] });
       return utils.getRegistrations({ id: 'my_id' }).then((result) => {
@@ -52,7 +58,7 @@ describe('utils util', () => {
     });
 
     it('should work with multiple keys', () => {
-      sinon.stub(config, 'getAll').returns({});
+      config.getAll.returns({});
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
       db.medic.query.resolves({ rows: [] });
       return utils.getRegistrations({ ids: ['1', '2', '3'] }).then((result) => {
@@ -67,7 +73,6 @@ describe('utils util', () => {
     });
 
     it('should catch db errors', () => {
-      sinon.stub(config, 'getAll');
       sinon.stub(registrationUtils, 'isValidRegistration');
       db.medic.query.rejects({ some: 'error' });
       return utils
@@ -79,7 +84,7 @@ describe('utils util', () => {
     });
 
     it('should test each registration for validity and only return valid ones', () => {
-      sinon.stub(config, 'getAll').returns('config');
+      config.getAll.returns('config');
       sinon.stub(registrationUtils, 'isValidRegistration').callsFake(doc => !!doc.valid);
 
       const registrations = [
@@ -165,7 +170,7 @@ describe('utils util', () => {
       db.medic.query.resolves({ rows: reports.map(r => ({ doc: r })) });
 
       sinon.stub(registrationUtils, 'isValidRegistration');
-      sinon.stub(config, 'getAll').returns('config');
+      config.getAll.returns('config');
       registrationUtils.isValidRegistration
         .withArgs({ _id: 'r1' }).returns(true)
         .withArgs({ _id: 'r2' }).returns(true)
@@ -183,7 +188,7 @@ describe('utils util', () => {
     });
 
     it('should return unique docs', () => {
-      sinon.stub(config, 'getAll').returns({ config: 'all' });
+      config.getAll.returns({ config: 'all' });
       const docs = [
         { _id: 'a', fields: { patient_id: 'a', patient_uuid: 'uuid' } },
         { _id: 'b', fields: { patient_id: 'b', patient_uuid: 'uuidb' } },
@@ -265,7 +270,6 @@ describe('utils util', () => {
 
   describe('getLocale', () => {
     it('should return correct locale', () => {
-      sinon.stub(config, 'getAll');
       const docs = [
         { locale: 'one' },
         { locale: 'two', sms_message: {} },
@@ -274,8 +278,6 @@ describe('utils util', () => {
         { sms_message: { locale: '' } },
         { fields: {} }
       ];
-
-      sinon.stub(config, 'get');
 
       utils.getLocale(docs[0]).should.deep.equal('one');
       utils.getLocale(docs[1]).should.deep.equal('two');

@@ -44,7 +44,18 @@ const getReplacedContact = (status, replacement_contact_id = NEW_CONTACT._id) =>
 });
 
 describe('create_user_for_contacts', () => {
-  afterEach(() => sinon.restore());
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+    });
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('has the correct properties', () => {
     expect(transition.name).to.equal('create_user_for_contacts');
@@ -53,7 +64,7 @@ describe('create_user_for_contacts', () => {
 
   describe('init', () => {
     it('succeeds if token_login is enabled and an app_url is set', () => {
-      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true });
+      config.get.withArgs('token_login').returns({ enabled: true });
       config.get.withArgs('app_url').returns('https://my.cht.instance');
 
       expect(() => transition.init()).to.not.throw();
@@ -62,7 +73,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('fails if token_login is not enabled', () => {
-      sinon.stub(config, 'get').returns({ enabled: false });
+      config.get.returns({ enabled: false });
 
       expect(() => transition.init()).to
         .throw('Configuration error. Token login must be enabled to use the create_user_for_contacts transition.');
@@ -71,7 +82,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('fails if token_login config does not exist', () => {
-      sinon.stub(config, 'get').returns(undefined);
+      config.get.returns(undefined);
 
       expect(() => transition.init()).to
         .throw('Configuration error. Token login must be enabled to use the create_user_for_contacts transition.');
@@ -80,7 +91,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('fails if app_url is not set', () => {
-      sinon.stub(config, 'get').withArgs('token_login').returns({ enabled: true });
+      config.get.withArgs('token_login').returns({ enabled: true });
       config.get.withArgs('app_url').returns(undefined);
 
       expect(() => transition.init()).to
@@ -152,7 +163,7 @@ describe('create_user_for_contacts', () => {
     let usersGet;
 
     beforeEach(() => {
-      sinon.stub(config, 'get').withArgs('app_url').returns('https://my.cht.instance');
+      config.get.withArgs('app_url').returns('https://my.cht.instance');
       getOrCreatePerson = sinon.stub(people, 'getOrCreatePerson');
       getOrCreatePerson.withArgs(ORIGINAL_CONTACT._id).resolves(ORIGINAL_CONTACT);
       getOrCreatePerson.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);

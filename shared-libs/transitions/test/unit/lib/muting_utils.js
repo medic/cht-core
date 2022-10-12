@@ -7,6 +7,7 @@ const utils = require('../../../src/lib/utils');
 const moment = require('moment');
 const infodoc = require('@medic/infodoc');
 
+chai.should();
 let clock;
 
 describe('mutingUtils', () => {

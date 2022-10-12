@@ -5,19 +5,29 @@ const chaiExclude = require('chai-exclude');
 const db = require('../../src/db');
 const config = require('../../src/config');
 const infodoc = require('@medic/infodoc');
-const updateClinics = require('../../src/transitions/update_clinics');
 
 chai.use(chaiExclude);
 
+let updateClinics;
 let transitions;
 let configGet;
 
 describe('functional transitions', () => {
   beforeEach(() => {
-    configGet = sinon.stub(config, 'get');
+    configGet = sinon.stub();
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: configGet,
+      getTranslations: sinon.stub()
+    });
+    updateClinics = require('../../src/transitions/update_clinics');
     transitions = require('../../src/transitions/index');
   });
-  afterEach(() => sinon.restore());
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('transitions are only executed once if successful', done => {
     configGet.withArgs('transitions').returns({ conditional_alerts: {} });
@@ -512,7 +522,7 @@ describe('functional transitions', () => {
 
       sinon.stub(updateClinics._lineage, 'fetchHydratedDoc').withArgs('contact1').resolves(contact1);
 
-      sinon.stub(config, 'getTranslations').returns({
+      config.getTranslations.returns({
         en: {
           sms_received: 'SMS received'
         }
