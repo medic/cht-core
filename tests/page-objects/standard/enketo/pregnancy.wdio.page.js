@@ -57,7 +57,6 @@ const getFollowUpSMS = async () => {
 };
 
 const submitPregnancy = async () => {
-  await browser.takeScreenshot();
   await contactPage.createNewAction('New Pregnancy');
   await selectKnowLMP();
   await selectAproxLMP(APROX_LMP.b7To8Months);

@@ -23,8 +23,7 @@ const MAIN_BRANCH = 'medic:medic:master';
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
   const contents = (await rpn.get('https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml'));
-  const useTag = (contents) => contents.replace(':latest', ':1.0.0-16-docker-compose-project-name-.3180668835');
-  await fs.promises.writeFile(UPGRADE_SERVICE_DC, useTag(contents));
+  await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
 const getMainCHTDockerCompose = async () => {

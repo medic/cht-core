@@ -40,7 +40,6 @@ const updateContainerNames = (project = PROJECT_NAME) => {
     CONTAINER_NAMES[key] = getContainerName(service, project);
   });
   CONTAINER_NAMES.upgrade = 'cht-upgrade-service';
-  console.log(CONTAINER_NAMES);
 };
 const getContainerName = (service, project = PROJECT_NAME) => {
   const separator = dockerVersion === 2 ? '-' : '_';
@@ -797,7 +796,6 @@ const getDockerVersion = () => {
   try {
     const response = execSync('docker-compose -v').toString();
     const version = response.match(semver.re[3])[0];
-    console.log(response, version);
     return semver.major(version);
   } catch (err) {
     console.error(err);
