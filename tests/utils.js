@@ -31,7 +31,7 @@ const services = {
   haproxy_healthcheck: 'haproxy-healthcheck',
 };
 const CONTAINER_NAMES = {};
-let dockerVersion;
+let dockerVersion = 1;
 
 const updateContainerNames = (project = PROJECT_NAME) => {
   dockerVersion = getDockerVersion();

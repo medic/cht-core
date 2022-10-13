@@ -18,7 +18,7 @@ const UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('upgrade-service
 const CHT_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('cht-');
 const CHT_DATA_FOLDER = utils.makeTempDir('cht-');
 const UPGRADE_SERVICE_DC = path.join(UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER, 'cht-upgrade-service.yml');
-const MAIN_BRANCH = 'medic:medic:master';
+const MAIN_BRANCH = 'medic:medic:7802-dupe-compose-project-name';
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb'];
 const getUpgradeServiceDockerCompose = async () => {
@@ -50,6 +50,8 @@ const dockerComposeCmd = (...params) => {
     CHT_NETWORK: 'cht-net-upgrade',
   };
 
+  params.unshift('-p', 'upgrade');
+
   return new Promise((resolve, reject) => {
     console.log(...['docker-compose', '-f', UPGRADE_SERVICE_DC, ...params ]);
     const cmd = spawn('docker-compose', [ '-f', UPGRADE_SERVICE_DC, ...params ], { env });
@@ -73,7 +75,7 @@ const dockerComposeCmd = (...params) => {
 const exit = () => dockerComposeCmd('down');
 
 const startUpgradeService = async () => {
-  await dockerComposeCmd('-p', 'upgrade', 'up', '-d');
+  await dockerComposeCmd('up', '-d');
   let retries = 20;
   do {
     const response = await dockerComposeCmd('ps', '-q');
