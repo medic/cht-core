@@ -26,6 +26,9 @@ export class CreateUserForContactsTransition extends Transition {
    * @return {Boolean} - whether the required config is present
    */
   init(settings) {
+    if(!settings) {
+      return false;
+    }
     this.replaceForms = this.getReplaceForms(settings);
     if (!this.replaceForms || !Array.isArray(this.replaceForms) || !this.replaceForms.length) {
       console.warn(
@@ -42,7 +45,10 @@ export class CreateUserForContactsTransition extends Transition {
    * @return {Boolean} - whether any of the docs from the batch should be processed
    */
   filter(docs: Doc[]) {
-    return !!docs.filter(doc => doc.type === 'data_record').length;
+    if(!docs) {
+      return false;
+    }
+    return !!docs.filter(doc => doc?.type === 'data_record').length;
   }
 
   /**
@@ -50,6 +56,11 @@ export class CreateUserForContactsTransition extends Transition {
    * @returns {Promise<Array<Doc>>} - updated docs (may include additional docs)
    */
   async run(docs: Doc[]) {
+    if(!docs) {
+      return [];
+    }
+    docs = docs.filter(doc => doc);
+
     const originalContact = await this.createUserForContactsService.getUserContact();
     if (!originalContact) {
       return docs;
@@ -84,18 +95,18 @@ export class CreateUserForContactsTransition extends Transition {
   }
 
   private async replaceUser(docs: Doc[], userReplaceDoc: UserReplaceDoc, originalContact: Doc) {
-    const replacementContactId = userReplaceDoc.fields.replacement_contact_id;
+    const replacementContactId = userReplaceDoc.fields?.replacement_contact_id;
     if (!replacementContactId) {
       throw new Error('The form for replacing a user must include a replacement_contact_id field ' +
         'containing the id of the new contact.');
     }
 
-    const originalContactId = userReplaceDoc.contact._id;
+    const originalContactId = userReplaceDoc.contact?._id;
 
-    const isOriginalContact = () => originalContact._id === originalContactId;
-    const isReplacedContact = () => this.createUserForContactsService.isReplaced(originalContact) &&
+    const hasOriginalContactId = originalContact._id === originalContactId;
+    const hasReplacedContactId = this.createUserForContactsService.isReplaced(originalContact) &&
       this.createUserForContactsService.getReplacedBy(originalContact) === originalContactId;
-    if (!isOriginalContact() && !isReplacedContact()) {
+    if (!originalContactId || (!hasOriginalContactId && !hasReplacedContactId)) {
       throw new Error('Only the contact associated with the currently logged in user can be replaced.');
     }
     const newContact = await this.getNewContact(docs, replacementContactId);
