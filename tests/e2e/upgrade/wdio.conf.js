@@ -73,7 +73,7 @@ const dockerComposeCmd = (...params) => {
 const exit = () => dockerComposeCmd('down');
 
 const startUpgradeService = async () => {
-  await dockerComposeCmd('up', '-d');
+  await dockerComposeCmd('-p', 'upgrade', 'up', '-d');
   let retries = 20;
   do {
     const response = await dockerComposeCmd('ps', '-q');

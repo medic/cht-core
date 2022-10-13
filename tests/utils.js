@@ -39,7 +39,7 @@ const updateContainerNames = (project = PROJECT_NAME) => {
   Object.entries(services).forEach(([key, service]) => {
     CONTAINER_NAMES[key] = getContainerName(service, project);
   });
-  CONTAINER_NAMES.upgrade = 'cht-upgrade-service';
+  CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
 };
 const getContainerName = (service, project = PROJECT_NAME) => {
   const separator = dockerVersion === 2 ? '-' : '_';
