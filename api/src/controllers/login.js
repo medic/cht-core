@@ -97,7 +97,7 @@ const getTemplate = (page) => {
 
 const getTranslationsString = page => {
   const translationStrings = templates[page].translationStrings;
-  return encodeURIComponent(JSON.stringify(config.getTranslationValues(translationStrings)));
+  return encodeURIComponent(JSON.stringify(config.getTranslations(translationStrings)));
 };
 
 const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {

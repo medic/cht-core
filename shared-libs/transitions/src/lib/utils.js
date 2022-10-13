@@ -202,7 +202,7 @@ module.exports = {
    * @returns {String|undefined} - the translated message
    */
   translate: (key, locale) => {
-    const translations = config.getTranslationValues();
+    const translations = config.getTranslations();
     const msg =
       (translations[locale] && translations[locale][key]) ||
       (translations.en && translations.en[key]) ||

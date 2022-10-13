@@ -56,7 +56,7 @@ module.exports = {
 
   get: key => (key ? settings[key] : settings),
   getAll: () => settings,
-  getTranslationValues: keys => {
+  getTranslations: keys => {
     if (!keys) {
       return translationCache;
     }

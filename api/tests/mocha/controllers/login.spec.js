@@ -150,7 +150,7 @@ describe('login controller', () => {
       const send = sinon.stub(res, 'send');
       const setHeader = sinon.stub(res, 'setHeader');
       sinon.stub(fs.promises, 'readFile').resolves('LOGIN PAGE GOES HERE. {{ translations }}');
-      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      sinon.stub(config, 'getTranslations').returns({ en: { login: 'English' } });
       return controller.get(req, res).then(() => {
         chai.expect(brandingGet.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
@@ -173,7 +173,7 @@ describe('login controller', () => {
       const send = sinon.stub(res, 'send');
       const setHeader = sinon.stub(res, 'setHeader');
       sinon.stub(template, 'getTemplate').resolves(() => 'LOGIN PAGE GOES HERE.');
-      sinon.stub(config, 'getTranslationValues').returns({});
+      sinon.stub(config, 'getTranslations').returns({});
       return controller.get(req, res).then(() => {
         chai.expect(brandingGet.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
@@ -273,7 +273,7 @@ describe('login controller', () => {
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       sinon.stub(res, 'send');
       sinon.stub(fs.promises, 'readFile').resolves('TOKEN PAGE GOES HERE. {{ translations }}');
-      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      sinon.stub(config, 'getTranslations').returns({ en: { login: 'English' } });
       req.params = { token: 'my_token', hash: 'my_hash' };
       return controller.tokenGet(req, res).then(() => {
         chai.expect(branding.get.callCount).to.equal(1);
@@ -737,7 +737,7 @@ describe('login controller', () => {
       });
       sinon.stub(fs.promises, 'readFile')
         .resolves('LOGIN PAGE GOES HERE. {{ translations }} {{ branding.logo }} {{ branding.name }}');
-      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      sinon.stub(config, 'getTranslations').returns({ en: { login: 'English' } });
 
       return controller.renderLogin(req).then((loginPage) => {
         chai.expect(loginPage).to.equal(
@@ -754,7 +754,7 @@ describe('login controller', () => {
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       sinon.stub(fs.promises, 'readFile')
         .resolves('LOGIN PAGE GOES HERE. {{ translations }} {{ branding.logo }} {{ branding.name }}');
-      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      sinon.stub(config, 'getTranslations').returns({ en: { login: 'English' } });
 
       return controller.renderLogin().then((loginPage) => {
         chai.expect(loginPage).to.equal(
