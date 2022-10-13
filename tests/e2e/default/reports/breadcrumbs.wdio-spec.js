@@ -37,7 +37,7 @@ describe('Reports tab breadcrumbs', () => {
     },
   };
   const offlineUser = userFactory.build({
-    username: 'offlineuser',
+    username: 'offlineuser_breadcrumbs',
     isOffline: true,
     place: health_center._id,
     contact: contact._id,
