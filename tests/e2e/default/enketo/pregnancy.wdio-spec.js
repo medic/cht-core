@@ -26,14 +26,14 @@ describe('Pregnancy registration', () => {
   before(async () => {
     await utils.saveDocs([...places, pregnantWoman]);
     await utils.createUsers([offlineUser]);
-    await loginPage.login(offlineUser);
-    await commonPage.goToPeople(pregnantWoman._id);
+    await loginPage.login(offlineUser);    
   });
 
   it('Submit new pregnancy', async () => {
     const edd = moment().add(1, 'month');
     const nextANCVisit = moment().add(1, 'day');
 
+    await commonPage.goToPeople(pregnantWoman._id);
     await contactPage.createNewAction('Pregnancy registration');
     await pregnancyForm.selectGestationAge();
     await genericForm.nextPage();
