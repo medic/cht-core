@@ -12,7 +12,6 @@ const listMessageSummary = (listElement) => listElement.$('.summary p');
 const listMessageLineage = (listElement) => listElement.$('.detail');
 
 //RHS Elements
-
 const messageDetailsHeader = () => $('#message-header .name');
 
 const clickLhsEntry = async (entryId, entryName) => {
@@ -28,6 +27,28 @@ const messageContentIndex = (index = 1) => $(`#message-content li:nth-child(${in
 const messageContentText = (messageContentElement) => messageContentElement.$('.data p:first-child');
 const messageDetailStatus = async () => (await messageContentIndex()).$('.data .state.received');
 
+
+const messageText = text => $('#send-message textarea').setValue(text);
+const sendMessage = () => $('.general-actions .send-message');
+const sendMessageModal = () => $('#send-message');
+const sendMessageModalSubmit = () => $('a.btn.submit:not(.ng-hide)');
+const messageRecipientSelect = () => $('#send-message input.select2-search__field');
+
+const openSendMessageModal = async () => {
+  await (await sendMessage()).click();
+  await (await sendMessageModal()).waitForDisplayed();
+};
+const submitMessage = async () => {
+  await (await sendMessageModalSubmit()).click();
+};
+
+const searchSelect = async (searchText, entrySelector) => {
+  await messageRecipientSelect().setValue(searchText);
+  const elm = await $(entrySelector);
+  await elm.waitForDisplayed(2000);
+  elm.click();
+};
+
 module.exports = {
   messageByIndex,
   waitForMessagesInLHS,
@@ -39,5 +60,9 @@ module.exports = {
   messageContentText,
   messageContentIndex,
   messageDetailStatus,
-  messagesList
+  messagesList,
+  openSendMessageModal,
+  messageText,
+  submitMessage,
+  searchSelect,
 };
