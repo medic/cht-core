@@ -1,16 +1,16 @@
-const moment = require('moment');
+// const moment = require('moment');
 
 const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+// const commonElements = require('../../../page-objects/default/common/common.wdio.page');
+// const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+// const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const userFactory = require('../../../factories/cht/users/users');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const personFactory = require('../../../factories/cht/contacts/person');
-const reportFactory = require('../../../factories/cht/reports/generic-report');
+// const reportFactory = require('../../../factories/cht/reports/generic-report');
 
 describe('Tasks tab breadcrumbs', () => {
-  const today = moment();
+//  const today = moment();
   const places = placeFactory.generateHierarchy();
   const clinic = places.find(p => p.type === 'clinic');
   const health_center = places.find(p => p.type === 'health_center');
@@ -52,7 +52,6 @@ describe('Tasks tab breadcrumbs', () => {
     _id: 'patient1',
     parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
   });
-
 
   before(async () => {
     await utils.saveDocs([ ...places, contact, contact2, patient ]);

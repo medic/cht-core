@@ -1,5 +1,3 @@
-const moment = require('moment');
-
 const utils = require('../../../utils');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
