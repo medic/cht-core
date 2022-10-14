@@ -17,7 +17,7 @@
 
       <div class="item-summary" (click)="toggleExpand(selection)">
         <span class="icon" [innerHTML]="summaries[$index] | formIcon:forms"></span>
-        <a class="deselect" *ngIf="selectModeActive" (click)="deselect(selection, $event)">
+        <a class="deselect" *ngIf="selectModeActive && !isMobile()" (click)="deselect(selection, $event)">
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">

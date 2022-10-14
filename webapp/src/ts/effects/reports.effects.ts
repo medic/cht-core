@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
 import { from, of } from 'rxjs';
 import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap, switchMap } from 'rxjs/operators';
@@ -19,6 +19,7 @@ import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.co
 import { ServicesActions } from '@mm-actions/services';
 import { AuthService } from '@mm-services/auth.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 
 @Injectable()
@@ -37,6 +38,7 @@ export class ReportsEffects {
     private searchService:SearchService,
     private modalService:ModalService,
     private translateService:TranslateService,
+    private responsiveService:ResponsiveService,
     private authService:AuthService,
   ) {
     this.reportActions = new ReportsActions(store);
@@ -48,13 +50,13 @@ export class ReportsEffects {
     return this.actions$.pipe(
       ofType(ReportActionList.selectReport),
       filter(({ payload: { id } }) => !!id),
-      switchMap(({ payload: { id, silent } }) => {
+      switchMap(({ payload: { id, silent, forceSingleSelect } }) => {
         if (!silent) {
           this.globalActions.setLoadingShowContent(id);
         }
 
         return from(this.reportViewModelGeneratorService.get(id)).pipe(
-          map(model => this.reportActions.setSelected(model)),
+          map(model => this.reportActions.setSelected(model, { forceSingleSelect })),
           catchError(error => {
             console.error('Error selecting report', error);
             return of(this.globalActions.unsetSelected());
@@ -73,10 +75,10 @@ export class ReportsEffects {
         this.store.select(Selectors.getSelectedReport),
         this.store.select(Selectors.getSelectedReports),
       ),
-      tap(([{ payload: { selected } }, selectMode, selectedReport, selectedReports]) => {
+      tap(([{ payload: { selected, forceSingleSelect } }, selectMode, selectedReport, selectedReports]) => {
         const model = { ...selected };
 
-        if (selectMode?.active) {
+        if (selectMode?.active && !forceSingleSelect) {
           const existing = selectedReports?.find(report => report?._id === model?.doc?._id);
           if (existing) {
             model.loading = false;

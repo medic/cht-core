@@ -1,0 +1,17 @@
+<section class="multiselect-bar-container {{ display }}">
+  <div>
+    <a class="deselect-all fa fa-chevron-left" (click)="deselectAll()"></a>
+
+    <div class="selection-count">
+      <span class="minimal" *ngIf="selectedCount">{{ selectedCount }}</span>
+      <span class="count-label" *ngIf="selectedCount === 1">{{ 'select.mode.count.singular' | translate }}</span>
+      <span class="count-label" *ngIf="selectedCount !== 1" translate [translateParams]="{ number: selectedCount | localizeNumber }">select.mode.count.plural</span>
+    </div>
+
+    <a class="select-all-label" *ngIf="totalItems && selectedCount !== totalItems" (click)="selectAll()">{{ 'select.mode.select.all' | translate }}</a>
+  </div>
+  <a class="bulk-delete" (click)="bulkDeleteItems()">
+    <span class="bulk-delete-icon fa fa-trash"></span>
+    <span class="bulk-delete-label">{{ 'select.mode.delete.all' | translate }}</span>
+  </a>
+</section>

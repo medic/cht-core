@@ -1,18 +1,26 @@
 <div class="filters">
-  <div class="inner" *ngIf="!selectMode?.active">
+  <div class="inner">
     <reports-filters
-      *ngIf="!useSidebarFilter"
+      *ngIf="!useSidebarFilter && !selectMode?.active"
       (search)="search($event)"
       [disabled]="selectMode?.active && selectedReports?.length">
     </reports-filters>
     <mm-navigation></mm-navigation>
     <mm-search-bar
-      *ngIf="useSidebarFilter"
+      *ngIf="useSidebarFilter && !selectMode?.active"
       (toggleFilter)="toggleFilter()"
       (search)="search($event)"
       [disabled]="selectMode?.active && selectedReports?.length"
       [showFilter]="true">
     </mm-search-bar>
+    <mm-multiselect-bar *ngIf="selectMode?.available && selectMode?.active && selectedReports?.length"
+      [display]="'mobile'"
+      [selectedCount]="selectedReports?.length"
+      [totalItems]="reportsList?.length"
+      (deleteItems)="bulkDeleteReports()"
+      (selectItems)="toggleAllSelected()"
+      (deselectItems)="deselectAllReports()">
+    </mm-multiselect-bar>
   </div>
 </div>
 
@@ -78,16 +86,11 @@
 
     <div class="content-pane right-pane">
       <div class="item-content" [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
-        <div class="multi-select-bar" *ngIf="selectMode?.available && selectMode?.active && selectedReports?.length">
-          <div class="selection-count">
-            <span *ngIf="selectedReports?.length === 1">{{ 'select.mode.count.singular' | translate }}</span>
-            <span *ngIf="selectedReports?.length !== 1" translate [translateParams]="{ number: selectedReports?.length || 0 | localizeNumber }">select.mode.count.plural</span>
-          </div>
-          <a class="bulk-delete" (click)="bulkDeleteReports()">
-            <span class="fa fa-trash-o"></span>
-            <span>{{ 'select.mode.delete.all' | translate }}</span>
-          </a>
-        </div>
+        <mm-multiselect-bar *ngIf="selectMode?.available && selectMode?.active && selectedReports?.length"
+          [selectedCount]="selectedReports?.length"
+          [totalItems]="reportsList?.length"
+          (deleteItems)="bulkDeleteReports()">
+        </mm-multiselect-bar>
         <router-outlet></router-outlet>
       </div>
 

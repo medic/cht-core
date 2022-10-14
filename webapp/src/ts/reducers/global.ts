@@ -46,10 +46,6 @@ const initialState = {
 };
 
 const setShowContent = (state, showContent) => {
-  if (showContent && state.selectMode?.active) {
-    // when in select mode we never show the RHS on mobile
-    return state;
-  }
   if (showContent) {
     $('.app-root').addClass('show-content');
   } else {

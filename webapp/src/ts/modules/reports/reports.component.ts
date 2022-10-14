@@ -353,28 +353,21 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private toggleSelected(report) {
     const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
-    if (!isSelected) {
-      // Use the summary from LHS to set the report as selected quickly (and preserve old functionality)
-      // the selectReport action will actually get all details
-      this.reportsActions.addSelectedReport(report);
-      this.reportsActions.selectReport(report);
+    if (isSelected) {
+      this.reportsActions.removeSelectedReport(report);
       return;
     }
-
-    if (!this.selectMode?.active) {
-      // Report was previously selected to view content, so it already exists in `this.selectedReports` array,
-      // but it wasn't selected for bulk delete by clicking on the checkbox. So, let's select it for bulk delete.
+    // Use the summary from LHS to set the report as selected quickly (and preserve old functionality)
+    // the selectReport action will actually get all details
+    this.reportsActions.addSelectedReport(report);
+    if (!this.responsiveService.isMobile()) {
       this.reportsActions.selectReport(report);
-      return;
     }
-
-    this.reportsActions.removeSelectedReport(report);
   }
 
   toggleAllSelected() {
     if (this.reportsList?.length === this.selectedReports?.length) {
-      this.reportsActions.deselectAll();
-      this.reportsActions.setSelectMode();
+      this.deselectAllReports();
       return;
     }
 
@@ -383,6 +376,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.isSidebarFilterOpen) {
       this.toggleFilter();
     }
+  }
+
+  deselectAllReports() {
+    this.reportsActions.deselectAll();
+    this.reportsActions.setSelectMode();
   }
 
   toggleFilter() {

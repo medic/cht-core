@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsAddComponent } from '@mm-modules/reports/reports-add.component';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Injectable({
   providedIn: 'root'
@@ -36,6 +37,9 @@ export class ReportsAddDeactivationGuardProvider implements CanDeactivate<Report
   providedIn: 'root',
 })
 export class ReportsSelectModelDeactivationGuardProvider implements CanDeactivate<ReportsAddComponent> {
+
+  constructor(private responsiveService:ResponsiveService) { }
+
   canDeactivate(
     component:ReportsAddComponent,
     currentRoute:ActivatedRouteSnapshot,
@@ -45,6 +49,7 @@ export class ReportsSelectModelDeactivationGuardProvider implements CanDeactivat
     // when in select mode, we don't want to navigate away from the "empty" report detail page to the selected report
     // detail page, but we do want to navigate to other pages
     const navigateToReportsContent = nextState?.url?.startsWith('/reports');
-    return !navigateToReportsContent || (navigateToReportsContent && !component.selectModeActive);
+    const desktopSelectModeActive = component.selectModeActive && !this.responsiveService.isMobile();
+    return !navigateToReportsContent || (navigateToReportsContent && !desktopSelectModeActive);
   }
 }

@@ -12,14 +12,15 @@ import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { MessageStateService } from '@mm-services/message-state.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Component({
   templateUrl: './reports-content.component.html'
 })
 export class ReportsContentComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
-  private globalActions;
-  private reportsActions;
+  private globalActions: GlobalActions;
+  private reportsActions: ReportsActions;
   forms;
   loadingContent;
   selectedReports;
@@ -34,6 +35,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     private router:Router,
     private searchFiltersService:SearchFiltersService,
     private messageStateService:MessageStateService,
+    private responsiveService:ResponsiveService,
     private modalService:ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -46,9 +48,8 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
 
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
-        this.reportsActions.selectReport(this.route.snapshot.params.id);
+        this.reportsActions.selectReport(this.route.snapshot.params.id, { forceSingleSelect: this.isMobile() });
         this.globalActions.clearNavigation();
-
         $('.tooltip').remove();
       } else {
         this.globalActions.unsetSelected(this.selectModeActive);
@@ -70,7 +71,12 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       selectedReport,
       selectedReports,
     ]) => {
-      this.selectedReports = selectedReport ? [ selectedReport ] : selectedReports || [];
+      if (selectedReport) {
+        this.selectedReports = [ selectedReport ];
+      } else {
+        this.selectedReports = selectedReports && !this.isMobile() ? selectedReports: [];
+      }
+
       this.summaries = this.selectedReports.map(item => item.formatted || item.summary);
       this.validChecks = this.selectedReports.map(item => item.summary?.valid || !item.formatted?.errors?.length);
     });
@@ -195,5 +201,9 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
         { initialState: { model: { report, group: _.cloneDeep(group) } } },
       )
       .catch(() => {});
+  }
+
+  isMobile() {
+    return this.responsiveService.isMobile();
   }
 }

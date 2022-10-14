@@ -258,7 +258,7 @@
   }
 }
 
-.page .select-all {
+.select-all {
   display: flex;
   align-items: center;
   border-bottom: solid 1px @gray-medium;
@@ -276,10 +276,23 @@
   }
 }
 
-.page .multi-select-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+mm-multiselect-bar {
+  .multiselect-bar-container {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .desktop {
+    display: flex;
+  }
+
+  .select-all-label,
+  .selection-count .minimal,
+  .deselect-all {
+    display: none;
+  }
 
   a.bulk-delete {
     &:hover {
@@ -292,3 +305,48 @@
   }
 }
 
+@media (max-width: @media-mobile) {
+  .select-all {
+    display: none;
+  }
+
+  mm-multiselect-bar {
+    .multiselect-bar-container {
+      height: 50px;
+      margin: 0;
+    }
+
+    .mobile {
+      display: flex;
+    }
+
+    .desktop,
+    .bulk-delete .bulk-delete-label,
+    .selection-count .count-label {
+      display: none;
+    }
+
+    .select-all-label,
+    .selection-count,
+    .selection-count .minimal,
+    .deselect-all {
+      display: inline-block;
+    }
+
+    .bulk-delete-icon {
+      font-size: @font-extra-extra-large;
+      margin-right: 15px;
+    }
+
+    .select-all-label {
+      margin-left: 28px;
+      color: @black;
+    }
+
+    .deselect-all {
+      font-size: @font-extra-large;
+      color: @black;
+      margin: 0px 15px;
+    }
+  }
+}

@@ -30,6 +30,7 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { MultiselectBarComponent } from '@mm-components/multiselect-bar/multiselect-bar.component';
 import {
   AnalyticsTargetsProgressComponent
 } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
@@ -53,6 +54,7 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     StatusFilterComponent,
     FreetextFilterComponent,
     SearchBarComponent,
+    MultiselectBarComponent,
     ResetFiltersComponent,
     SortFilterComponent,
     SenderComponent,
@@ -85,6 +87,7 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     FormTypeFilterComponent,
     StatusFilterComponent,
     SearchBarComponent,
+    MultiselectBarComponent,
     FreetextFilterComponent,
     ResetFiltersComponent,
     SortFilterComponent,

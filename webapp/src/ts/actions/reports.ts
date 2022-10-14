@@ -5,7 +5,7 @@ import { GlobalActions } from '@mm-actions/global';
 
 export const Actions = {
   selectReport: createMultiValueAction('SELECT_REPORT'),
-  setSelected: createSingleValueAction('SET_SELECTED_REPORT', 'selected'),
+  setSelected: createMultiValueAction('SET_SELECTED_REPORT'),
   addSelectedReport: createSingleValueAction('ADD_SELECTED_REPORT', 'report'),
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'report'),
   setSelectedReport: createSingleValueAction('SET_SELECTED_REPORT', 'selectedReport'),
@@ -36,8 +36,8 @@ export class ReportsActions {
     return this.store.dispatch(Actions.addSelectedReport(selected));
   }
 
-  selectReport(id, { silent=false }={}) {
-    return this.store.dispatch(Actions.selectReport({ id, silent }));
+  selectReport(id, { silent=false, forceSingleSelect=false }={}) {
+    return this.store.dispatch(Actions.selectReport({ id, silent, forceSingleSelect }));
   }
 
   removeSelectedReport(id) {
@@ -67,8 +67,8 @@ export class ReportsActions {
     return this.store.dispatch(Actions.resetReportsList());
   }
 
-  setSelected(model) {
-    return this.store.dispatch(Actions.setSelected(model));
+  setSelected(selected, { forceSingleSelect=false }={}) {
+    return this.store.dispatch(Actions.setSelected({ selected, forceSingleSelect }));
   }
 
   setVerifyingReport(verifyingReport) {
