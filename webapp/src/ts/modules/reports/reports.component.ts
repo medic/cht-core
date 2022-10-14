@@ -353,14 +353,15 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private toggleSelected(report) {
     const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
+    const isMobile = this.responsiveService.isMobile();
     if (isSelected) {
-      this.reportsActions.removeSelectedReport(report);
+      this.reportsActions.removeSelectedReport(report, isMobile);
       return;
     }
     // Use the summary from LHS to set the report as selected quickly (and preserve old functionality)
     // the selectReport action will actually get all details
     this.reportsActions.addSelectedReport(report);
-    if (!this.responsiveService.isMobile()) {
+    if (!isMobile) {
       this.reportsActions.selectReport(report);
     }
   }

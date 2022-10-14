@@ -40,8 +40,11 @@ export class ReportsActions {
     return this.store.dispatch(Actions.selectReport({ id, silent, forceSingleSelect }));
   }
 
-  removeSelectedReport(id) {
+  removeSelectedReport(id, isMobile=false) {
     this.store.dispatch(Actions.removeSelectedReport(id));
+    if (isMobile) {
+      return;
+    }
     const globalActions = new GlobalActions(this.store);
     globalActions.settingSelected();
     this.setRightActionBar();

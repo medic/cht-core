@@ -240,8 +240,10 @@ export class ReportsEffects {
               };
             });
             this.reportActions.setSelectedReports(selected);
-            this.globalActions.settingSelected();
-            this.reportActions.setRightActionBar();
+            if (!this.responsiveService.isMobile()) {
+              this.globalActions.settingSelected();
+              this.reportActions.setRightActionBar();
+            }
             this.reportActions.setSelectMode();
           })
           .catch(err => {
