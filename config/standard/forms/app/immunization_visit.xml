@@ -5521,7 +5521,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
         </translation>
       </itext>
       <instance>
-        <immunization_visit id="immunization_visit" prefix="J1!immunization_visit!" delimiter="#" version="2022-03-03 14-27">
+        <immunization_visit id="immunization_visit" prefix="J1!immunization_visit!" delimiter="#" version="2022-10-17 14-11">
           <inputs>
             <meta>
               <location>
@@ -5757,7 +5757,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
       <bind nodeset="/immunization_visit/chw_phone" type="string" calculate="../inputs/contact/parent/contact/phone"/>
       <bind nodeset="/immunization_visit/chw_sms" type="string" calculate="if( /immunization_visit/group_note/g_chw_sms  != '', concat( /immunization_visit/group_note/default_chw_sms_text ,concat('
 ', /immunization_visit/group_note/g_chw_sms )),  /immunization_visit/group_note/default_chw_sms_text )"/>
-      <bind nodeset="/immunization_visit/visit_confirmed" type="string" calculate="coalesce( /immunization_visit/group_chw_info/attended_imm , 'yes')"/>
+      <bind nodeset="/immunization_visit/visit_confirmed" type="string" calculate="coalesce(  /immunization_visit/group_chw_info/attended_imm  , 'yes')"/>
       <bind nodeset="/immunization_visit/vaccines_received/received_bcg" type="string" calculate="if( /immunization_visit/group_bcg/g_bcg  = 'yes','yes','no')"/>
       <bind nodeset="/immunization_visit/vaccines_received/received_cholera_1" type="string" calculate="if(selected( /immunization_visit/group_cholera/g_cholera ,'CH1'),'yes','no')"/>
       <bind nodeset="/immunization_visit/vaccines_received/received_cholera_2" type="string" calculate="if(selected( /immunization_visit/group_cholera/g_cholera ,'CH2'),'yes','no')"/>
