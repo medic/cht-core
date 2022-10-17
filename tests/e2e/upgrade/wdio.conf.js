@@ -12,12 +12,7 @@ const constants = require('../../constants');
 
 constants.DB_NAME = 'medic';
 const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;
-
-utils.CONTAINER_NAMES.haproxy = 'cht-haproxy';
-utils.CONTAINER_NAMES.couch1 = 'cht-couchdb';
-utils.CONTAINER_NAMES.api = 'cht-api';
-utils.CONTAINER_NAMES.sentinel = 'cht-sentinel';
-utils.CONTAINER_NAMES.upgradeService = 'cht-upgrade-service';
+const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
 
 const UPGRADE_SERVICE_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('upgrade-service-');
 const CHT_DOCKER_COMPOSE_FOLDER = utils.makeTempDir('cht-');
@@ -51,7 +46,11 @@ const dockerComposeCmd = (...params) => {
     COUCHDB_PASSWORD: constants.PASSWORD,
     DOCKER_CONFIG_PATH: path.join(os.homedir(), '.docker'),
     COUCHDB_DATA: CHT_DATA_FOLDER,
+    CHT_COMPOSE_PROJECT_NAME: CHT_COMPOSE_PROJECT_NAME,
+    CHT_NETWORK: 'cht-net-upgrade',
   };
+
+  params.unshift('-p', 'upgrade');
 
   return new Promise((resolve, reject) => {
     console.log(...['docker-compose', '-f', UPGRADE_SERVICE_DC, ...params ]);
@@ -109,6 +108,7 @@ const upgradeConfig = Object.assign(wdioBaseConfig.config, {
   exclude: [],
 
   onPrepare: async () => {
+    utils.updateContainerNames(CHT_COMPOSE_PROJECT_NAME);
     await getUpgradeServiceDockerCompose();
     await getMainCHTDockerCompose();
     await startUpgradeService();
