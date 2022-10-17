@@ -17,12 +17,12 @@ import { TranslateService } from '@mm-services/translate.service';
 })
 export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
+  private selectModeActive;
+  static id = 'delete-doc-confirm-modal';
+
   subscriptions: Subscription = new Subscription();
-  selectModeActive;
   lineageLib;
   model = { doc: null }; // Automatically assigned by BsModalRef
-
-  static id = 'delete-doc-confirm-modal';
 
   constructor(
     private store: Store,
@@ -39,7 +39,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
   ngOnInit(): void {
     const subscription = this.store
       .select(Selectors.getSelectMode)
-      .subscribe((selectMode) => this.selectModeActive = selectMode);
+      .subscribe(selectMode => this.selectModeActive = selectMode?.active);
     this.subscriptions.add(subscription);
   }
 

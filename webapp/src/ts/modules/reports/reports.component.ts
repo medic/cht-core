@@ -230,7 +230,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.errorSyntax = false;
       this.loading = true;
       if (this.selectedReports?.length && this.responsiveService.isMobile()) {
-        // TODO what to do here, skip clearSelected?
         this.globalActions.unsetSelected();
       }
 
@@ -398,7 +397,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.modalService
-      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs: this.selectedReports } } })
+      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs: this.selectedReports, type: 'reports' } } })
       .catch(() => {});
   }
 

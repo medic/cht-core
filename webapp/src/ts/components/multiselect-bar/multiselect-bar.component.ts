@@ -13,16 +13,4 @@ export class MultiselectBarComponent {
   @Output() selectItems: EventEmitter<any> = new EventEmitter();
 
   constructor() { }
-
-  bulkDeleteItems() {
-    this.deleteItems.emit();
-  }
-
-  deselectAll() {
-    this.deselectItems.emit();
-  }
-
-  selectAll() {
-    this.selectItems.emit();
-  }
 }

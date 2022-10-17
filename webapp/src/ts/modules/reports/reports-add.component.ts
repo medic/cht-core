@@ -23,6 +23,7 @@ import { TranslateService } from '@mm-services/translate.service';
 })
 export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   subscription: Subscription = new Subscription();
+
   constructor(
     private store:Store,
     private dbService:DbService,
@@ -55,7 +56,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   selectModeActive;
 
   private geoHandle:any;
-  private globalActions;
+  private globalActions: GlobalActions;
   private reportsActions: ReportsActions;
   private telemetryData:any = {
     preRender: Date.now()

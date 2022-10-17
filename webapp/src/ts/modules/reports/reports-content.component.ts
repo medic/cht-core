@@ -46,14 +46,14 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.watchReportsContentChanges();
 
-    const routeSubscription =  this.route.params.subscribe((params) => {
+    const routeSubscription = this.route.params.subscribe(params => {
       if (params.id) {
         this.reportsActions.selectReport(this.route.snapshot.params.id, { forceSingleSelect: this.isMobile() });
         this.globalActions.clearNavigation();
         $('.tooltip').remove();
-      } else {
-        this.globalActions.unsetSelected(this.selectModeActive);
+        return;
       }
+      this.globalActions.unsetComponents();
     });
     this.subscription.add(routeSubscription);
   }

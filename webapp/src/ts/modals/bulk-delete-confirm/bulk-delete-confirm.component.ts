@@ -17,7 +17,7 @@ export class BulkDeleteConfirmComponent extends MmModalAbstract {
   totalDocsDeleted = 0;
   deleteComplete = false;
 
-  model = { docs: [] }; // assigned by bsModule
+  model = { docs: [], type: '' }; // assigned by bsModule
 
   constructor(
     bsModalRef: BsModalRef,
@@ -47,7 +47,7 @@ export class BulkDeleteConfirmComponent extends MmModalAbstract {
       .delete(docs, { progress: this.updateTotalDocsDeleted.bind(this) })
       .then(() => {
         this.deleteComplete = true;
-        this.telemetryService.record('bulk_delete:reports', this.totalDocsSelected);
+        this.telemetryService.record(`bulk_delete:${this.model?.type}`, this.totalDocsSelected);
         this.setFinished();
       })
       .catch((err) => {

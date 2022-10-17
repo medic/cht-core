@@ -214,7 +214,7 @@ export class ReportsEffects {
 
         if (!selectMode?.active && selectedReports?.length >= 1) {
           this.globalActions.setSelectModeStatus({ active: true });
-          this.globalActions.unsetSelected(true);
+          this.globalActions.unsetComponents();
           this.router.navigate(['/reports']);
           return;
         }
