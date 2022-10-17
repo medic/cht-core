@@ -14,10 +14,7 @@ const state = {
     snackbarContent: 'this is just some text',
     loadingContent: 'is loading content',
     showContent: 'is showing content',
-    selectMode: {
-      available: 'is available',
-      active: 'is active',
-    },
+    selectMode: 'is in select mode',
     showActionBar: 'is showing action bar',
     forms: ['these', 'are', 'some', 'forms'],
     filters: { some: 'filters' },
@@ -164,7 +161,7 @@ describe('Selectors', () => {
     });
 
     it('should getSelectMode', () => {
-      expect(Selectors.getSelectMode(state)).to.deep.equal(clonedState.global.selectMode);
+      expect(Selectors.getSelectMode(state)).to.equal(clonedState.global.selectMode);
     });
 
     it('should getShowActionBar', () => {

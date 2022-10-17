@@ -5,7 +5,7 @@
       <!-- LEFT PANE -->
       <div
         class="general-actions left-pane"
-        *ngIf="currentTab === 'reports' && !selectModeActive"
+        *ngIf="currentTab === 'reports' && !selectMode"
         [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
         <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!nonContactForms?.length">
           <a
@@ -119,7 +119,7 @@
         class="detail-actions right-pane"
         *ngIf="currentTab === 'reports'"
         [ngClass]="{ 'col-sm-6': sidebarFilter?.isOpen, 'col-sm-8': !sidebarFilter?.isOpen }">
-        <div *ngIf="!selectModeActive">
+        <div *ngIf="!selectMode">
           <div class="actions dropup" *ngIf="showActionBar && selectedReportDoc && !loadingContent && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>

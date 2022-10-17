@@ -24,7 +24,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   forms;
   loadingContent;
   selectedReports;
-  selectModeActive;
+  selectMode;
   validChecks;
   summaries;
 
@@ -93,7 +93,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     ]) => {
       this.loadingContent = loadingContent;
       this.forms = forms;
-      this.selectModeActive = !!selectMode?.active;
+      this.selectMode = selectMode;
     });
     this.subscription.add(contextSubscription);
   }
@@ -113,7 +113,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       },
       callback: (change) => {
         if (change.deleted) {
-          if (this.selectModeActive) {
+          if (this.selectMode) {
             this.deselect(change.id);
             return;
           }
@@ -136,7 +136,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   toggleExpand(report) {
-    if (!this.selectModeActive || !report?._id) {
+    if (!this.selectMode || !report?._id) {
       return;
     }
 
@@ -150,7 +150,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   deselect(report:string|Record<string, any>, event?) {
-    if (!this.selectModeActive) {
+    if (!this.selectMode) {
       return;
     }
 

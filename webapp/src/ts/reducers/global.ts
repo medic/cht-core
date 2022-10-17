@@ -29,10 +29,7 @@ const initialState = {
   loadingContent: false,
   loadingSubActionBar: false,
   replicationStatus: {},
-  selectMode: {
-    available: false,
-    active: false,
-  },
+  selectMode: false,
   privacyPolicyAccepted: false,
   showActionBar: false,
   showContent: false,
@@ -110,8 +107,8 @@ const _globalReducer = createReducer(
   on(Actions.setShowContent, (state, { payload: { showContent } }) => {
     return setShowContent(state, showContent);
   }),
-  on(Actions.setSelectModeStatus, (state, { payload: { selectModeStatus } }) => {
-    return { ...state, selectMode: { ...state.selectMode, ...selectModeStatus } };
+  on(Actions.setSelectMode, (state, { payload: { selectMode } }) => {
+    return { ...state, selectMode };
   }),
   on(Actions.setLeftActionBar, (state, { payload: { left } }) => {
     return {

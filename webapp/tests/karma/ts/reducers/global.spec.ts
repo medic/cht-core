@@ -376,14 +376,11 @@ describe('Global Reducer', () => {
   });
 
   it('should set selectMode in state', () => {
-    state = globalReducer(state, Actions.setSelectModeStatus({ active: true, available: true }));
-    expect(state).to.deep.equal({ selectMode: { active: true, available: true }});
+    state = globalReducer(state, Actions.setSelectMode(true));
+    expect(state).to.deep.equal({ selectMode: true });
 
-    state = globalReducer(state, Actions.setSelectModeStatus({ active: false, available: false }));
-    expect(state).to.deep.equal({ selectMode: { active: false, available: false }});
-
-    state = globalReducer(state, Actions.setSelectModeStatus({ active: true }));
-    expect(state).to.deep.equal({ selectMode: { active: true, available: false }});
+    state = globalReducer(state, Actions.setSelectMode(false));
+    expect(state).to.deep.equal({ selectMode: false });
   });
 
   it('should set loadingSubActionBar in state', () => {

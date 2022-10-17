@@ -50,7 +50,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   moreItems;
   filters:any = {};
   hasReports;
-  selectMode;
+  selectMode = false;
+  selectModeAvailable = false;
   verifyingReport;
   showContent;
   enketoEdited;
@@ -172,14 +173,15 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     // when navigating back from another tab, if there are reports in the state, angular will try to render them
     this.reportsActions.resetReportsList();
     this.reportsActions.setSelectedReports([]);
-    this.globalActions.setSelectModeStatus({ active: false, available: false });
+    this.globalActions.setSelectMode(false);
     this.globalActions.unsetSelected();
     this.globalActions.setLeftActionBar({});
   }
 
   private async enableBulkDelete() {
     const canBulkDelete = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
-    this.globalActions.setSelectModeStatus({ available: canBulkDelete, active: false });
+    this.selectModeAvailable = canBulkDelete;
+    this.globalActions.setSelectMode(false);
   }
 
   private getReportHeading(form, report) {
@@ -338,7 +340,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    if (!this.selectMode?.active) {
+    if (!this.selectMode) {
       this.reportsActions.setSelectedReports([]);
     }
 
@@ -402,7 +404,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   verifyMultiSelect(someSelected = false) {
-    if (!this.selectMode?.active || !this.selectedReports?.length) {
+    if (!this.selectMode || !this.selectedReports?.length) {
       return false;
     }
 

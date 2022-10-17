@@ -78,7 +78,7 @@ export class ReportsEffects {
       tap(([{ payload: { selected, forceSingleSelect } }, selectMode, selectedReport, selectedReports]) => {
         const model = { ...selected };
 
-        if (selectMode?.active && !forceSingleSelect) {
+        if (selectMode && !forceSingleSelect) {
           const existing = selectedReports?.find(report => report?._id === model?.doc?._id);
           if (existing) {
             model.loading = false;
@@ -170,7 +170,7 @@ export class ReportsEffects {
       ),
       tap(([, selectMode, selectedReportDoc, verifyingReport ]) => {
         const model:any = {};
-        const doc = !selectMode?.active && selectedReportDoc;
+        const doc = !selectMode && selectedReportDoc;
         if (!doc) {
           return this.globalActions.setRightActionBar(model);
         }
@@ -207,13 +207,13 @@ export class ReportsEffects {
         this.store.select(Selectors.getSelectedReports),
       ),
       tap(([, selectMode, selectedReports]) => {
-        if (selectMode?.active && !selectedReports?.length) {
-          this.globalActions.setSelectModeStatus({ active: false });
+        if (selectMode && !selectedReports?.length) {
+          this.globalActions.setSelectMode(false);
           return;
         }
 
-        if (!selectMode?.active && selectedReports?.length >= 1) {
-          this.globalActions.setSelectModeStatus({ active: true });
+        if (!selectMode && selectedReports?.length >= 1) {
+          this.globalActions.setSelectMode(true);
           this.globalActions.unsetComponents();
           this.router.navigate(['/reports']);
           return;

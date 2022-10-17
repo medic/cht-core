@@ -18,7 +18,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
 
   currentTab;
   snapshotData;
-  selectModeActive;
+  selectMode;
   selectedReportDoc;
   actionBar;
   showActionBar;
@@ -60,7 +60,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
     ]) => {
       this.currentTab = currentTab;
       this.snapshotData = snapshotData;
-      this.selectModeActive = !!selectMode?.active;
+      this.selectMode = selectMode;
       this.actionBar = actionBar;
       this.showActionBar = showActionBar;
       this.sidebarFilter = sidebarFilter;

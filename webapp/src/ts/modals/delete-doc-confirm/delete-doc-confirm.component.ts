@@ -17,7 +17,7 @@ import { TranslateService } from '@mm-services/translate.service';
 })
 export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
-  private selectModeActive;
+  private selectMode;
   static id = 'delete-doc-confirm-modal';
 
   subscriptions: Subscription = new Subscription();
@@ -39,7 +39,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
   ngOnInit(): void {
     const subscription = this.store
       .select(Selectors.getSelectMode)
-      .subscribe(selectMode => this.selectModeActive = selectMode?.active);
+      .subscribe(selectMode => this.selectMode = selectMode);
     this.subscriptions.add(subscription);
   }
 
@@ -75,7 +75,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
         this.globalActions.setSnackbarContent(text);
         this.close();
 
-        if (!this.selectModeActive && route?.name) {
+        if (!this.selectMode && route?.name) {
           this.router.navigate([route.name, route.parameter || '']);
         }
       })

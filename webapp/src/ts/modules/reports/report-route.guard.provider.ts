@@ -49,7 +49,7 @@ export class ReportsSelectModelDeactivationGuardProvider implements CanDeactivat
     // when in select mode, we don't want to navigate away from the "empty" report detail page to the selected report
     // detail page, but we do want to navigate to other pages
     const navigateToReportsContent = nextState?.url?.startsWith('/reports');
-    const desktopSelectModeActive = component.selectModeActive && !this.responsiveService.isMobile();
-    return !navigateToReportsContent || (navigateToReportsContent && !desktopSelectModeActive);
+    const desktopSelectMode = component.selectMode && !this.responsiveService.isMobile();
+    return !navigateToReportsContent || (navigateToReportsContent && !desktopSelectMode);
   }
 }

@@ -83,7 +83,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   privacyPolicyAccepted;
   isSidebarFilterOpen = false;
   showPrivacyPolicy;
-  selectModeActive;
+  selectMode;
   adminUrl;
   canLogOut;
   replicationStatus;
@@ -440,7 +440,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.currentTab = currentTab;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
-      this.selectModeActive = !!selectMode?.active;
+      this.selectMode = selectMode;
     });
   }
 
