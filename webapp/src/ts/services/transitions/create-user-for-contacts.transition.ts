@@ -13,7 +13,7 @@ export class CreateUserForContactsTransition extends Transition {
   constructor(
     private dbService: DbService,
     private createUserForContactsService: CreateUserForContactsService,
-    private extractLineageService:ExtractLineageService,
+    private extractLineageService: ExtractLineageService,
     private userContactService: UserContactService,
   ) {
     super();
@@ -63,7 +63,10 @@ export class CreateUserForContactsTransition extends Transition {
     }
     docs = docs.filter(doc => doc);
 
-    const originalContact = await this.userContactService.get({ hydrateLineage: false });
+    const [originalUserId, originalContact] = await Promise.all([
+      this.createUserForContactsService.getUserId(),
+      this.userContactService.get({ hydrateLineage: false }),
+    ]);
     if (!originalContact) {
       return docs;
     }
@@ -73,7 +76,12 @@ export class CreateUserForContactsTransition extends Transition {
     }
     const userReplaceDoc = this.getUserReplaceDoc(docs);
     if (userReplaceDoc) {
-      await this.replaceUser(docs, userReplaceDoc, originalContact);
+      await this.replaceUser({
+        docs,
+        userReplaceDoc,
+        originalContact,
+        originalUserId,
+      });
     }
 
     return docs;
@@ -96,7 +104,7 @@ export class CreateUserForContactsTransition extends Transition {
     return replaceDocs[0] as UserReplaceDoc;
   }
 
-  private async replaceUser(docs: Doc[], userReplaceDoc: UserReplaceDoc, originalContact: Doc) {
+  private async replaceUser({ docs, userReplaceDoc, originalContact, originalUserId }: ReplaceUserParams) {
     const replacementContactId = userReplaceDoc.fields?.replacement_contact_id;
     if (!replacementContactId) {
       throw new Error('The form for replacing a user must include a replacement_contact_id field ' +
@@ -115,7 +123,7 @@ export class CreateUserForContactsTransition extends Transition {
     if (!newContact) {
       throw new Error(`The new contact could not be found [${replacementContactId}].`);
     }
-    this.createUserForContactsService.setReplaced(originalContact, newContact);
+    this.createUserForContactsService.setReplaced(originalContact, newContact, originalUserId);
     docs.push(originalContact);
     await this.setPrimaryContactForParent(newContact, originalContactId, docs);
   }
@@ -177,6 +185,13 @@ export class CreateUserForContactsTransition extends Transition {
     this.getReportDocsForContact(docs, originalContact._id)
       .forEach(doc => doc.contact._id = replacedById);
   }
+}
+
+interface ReplaceUserParams {
+  docs: Doc[];
+  userReplaceDoc: UserReplaceDoc;
+  originalContact: Doc;
+  originalUserId: string;
 }
 
 interface UserReplaceDoc extends ReportDoc {

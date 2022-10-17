@@ -4,17 +4,19 @@ import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CreateUserForContactsService {
   constructor(
-    private settingsService: SettingsService,
-    private userContactService: UserContactService,
-    private dbService: DbService,
-    private dbSyncService: DBSyncService,
-    private sessionService: SessionService,
+      private settingsService: SettingsService,
+      private userContactService: UserContactService,
+      private dbService: DbService,
+      private dbSyncService: DBSyncService,
+      private sessionService: SessionService,
+      private userSettingsService: UserSettingsService,
   ) {
     this.settingsService
       .get()
@@ -27,7 +29,12 @@ export class CreateUserForContactsService {
       });
   }
 
-  setReplaced(originalContact, newContact) {
+  async getUserId() {
+    const userSettings: any = await this.userSettingsService.get();
+    return userSettings.id;
+  }
+
+  setReplaced(originalContact, newContact, originalUserId) {
     if (!originalContact) {
       throw new Error('The original contact could not be found when replacing the user.');
     }
@@ -41,7 +48,11 @@ export class CreateUserForContactsService {
     if (!originalContact.user_for_contact) {
       originalContact.user_for_contact = {};
     }
-    originalContact.user_for_contact.replace = { status, replacement_contact_id: newContact._id };
+    originalContact.user_for_contact.replace = {
+      status,
+      replacement_contact_id: newContact._id,
+      original_user_id: originalUserId,
+    };
   }
 
   isReplaced(contact) {

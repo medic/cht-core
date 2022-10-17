@@ -110,7 +110,7 @@ const replaceUser = (originalContact) => {
   return Promise
     .all([
       getNewContact(replace.replacement_contact_id),
-      users.getUserSettings({ contact_id: originalContact._id }),
+      users.getUserSettings({ contact_id: replace.original_user_id }),
     ])
     .then(([newContact, originalUserSettings]) => {
       return createNewUser(originalUserSettings, newContact)
