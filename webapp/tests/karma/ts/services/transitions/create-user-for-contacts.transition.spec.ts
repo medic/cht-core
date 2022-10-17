@@ -5,6 +5,7 @@ import { CreateUserForContactsService } from '@mm-services/create-user-for-conta
 import { CreateUserForContactsTransition } from '@mm-services/transitions/create-user-for-contacts.transition';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { UserContactService } from '@mm-services/user-contact.service';
 
 const deepFreeze = obj => {
   Object
@@ -65,23 +66,25 @@ describe('Create User for Contacts Transition', () => {
   let medicDb;
   let dbService;
   let createUserForContactsService;
+  let userContactService;
   let transition;
 
   beforeEach(() => {
     medicDb = { get: sinon.stub() };
     dbService = { get: sinon.stub().returns(medicDb) };
     createUserForContactsService = {
-      getUserContact: sinon.stub(),
       isReplaced: sinon.stub(),
       setReplaced: sinon.stub(),
       getReplacedBy: sinon.stub(),
     };
+    userContactService = { get: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
         provideMockStore(),
         { provide: DbService, useValue: dbService },
         { provide: CreateUserForContactsService, useValue: createUserForContactsService },
+        { provide: UserContactService, useValue: userContactService },
       ]
     });
 
@@ -159,7 +162,7 @@ describe('Create User for Contacts Transition', () => {
       const docs = await transition.run();
 
       expect(docs).to.be.empty;
-      expect(createUserForContactsService.getUserContact.callCount).to.equal(0);
+      expect(userContactService.get.callCount).to.equal(0);
       expect(dbService.get.callCount).to.equal(0);
       expect(medicDb.get.callCount).to.equal(0);
       expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
@@ -167,12 +170,12 @@ describe('Create User for Contacts Transition', () => {
     });
 
     it('does nothing when the user is not associated with a contact', async() => {
-      createUserForContactsService.getUserContact.resolves(null);
+      userContactService.get.resolves(null);
 
       const docs = await transition.run([REPLACE_USER_DOC]);
 
       expect(docs).to.deep.equal([REPLACE_USER_DOC]);
-      expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+      expect(userContactService.get.callCount).to.equal(1);
       expect(dbService.get.callCount).to.equal(0);
       expect(medicDb.get.callCount).to.equal(0);
       expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
@@ -180,7 +183,7 @@ describe('Create User for Contacts Transition', () => {
     });
 
     it('does nothing when the user is not being replaced and is not already replaced', async() => {
-      createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
+      userContactService.get.resolves(ORIGINAL_CONTACT);
       createUserForContactsService.isReplaced.returns(false);
       const submittedDocs = [getDataRecord(), null, getDataRecord(), NEW_CONTACT, undefined];
       submittedDocs.forEach(doc => Object.freeze(doc));
@@ -188,7 +191,7 @@ describe('Create User for Contacts Transition', () => {
       const docs = await transition.run(submittedDocs);
 
       expect(docs).to.deep.equal([submittedDocs[0], submittedDocs[2], submittedDocs[3]]);
-      expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+      expect(userContactService.get.callCount).to.equal(1);
       expect(dbService.get.callCount).to.equal(0);
       expect(medicDb.get.callCount).to.equal(0);
       expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
@@ -199,7 +202,7 @@ describe('Create User for Contacts Transition', () => {
     describe(`when the reports submitted include a replace user report`, () => {
       it('sets the contact as replaced when the new contact is existing', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
-        createUserForContactsService.getUserContact.resolves(originalUser);
+        userContactService.get.resolves(originalUser);
         medicDb.get.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
         const parentPlace = { ...PARENT_PLACE };
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
@@ -211,7 +214,7 @@ describe('Create User for Contacts Transition', () => {
           _id: NEW_CONTACT._id,
           parent: NEW_CONTACT.parent,
         });
-        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(userContactService.get.callCount).to.equal(1);
         expect(dbService.get.callCount).to.equal(2);
         expect(medicDb.get.callCount).to.equal(2);
         expect(medicDb.get.args[0]).to.deep.equal([NEW_CONTACT._id]);
@@ -223,7 +226,7 @@ describe('Create User for Contacts Transition', () => {
 
       it('sets the contact as replaced when the new contact is also being submitted', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
-        createUserForContactsService.getUserContact.resolves(originalUser);
+        userContactService.get.resolves(originalUser);
         const parentPlace = { ...PARENT_PLACE };
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
 
@@ -234,7 +237,7 @@ describe('Create User for Contacts Transition', () => {
           _id: NEW_CONTACT._id,
           parent: NEW_CONTACT.parent,
         });
-        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(userContactService.get.callCount).to.equal(1);
         expect(dbService.get.callCount).to.equal(1);
         expect(medicDb.get.callCount).to.equal(1);
         expect(medicDb.get.args[0]).to.deep.equal([parentPlace._id]);
@@ -245,7 +248,7 @@ describe('Create User for Contacts Transition', () => {
 
       it('re-parents new reports to existing user before replacing user again for existing replaced user', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
-        createUserForContactsService.getUserContact.resolves(originalUser);
+        userContactService.get.resolves(originalUser);
         const replaceUserDoc = { ...REPLACE_USER_DOC, contact: { ...REPLACE_USER_DOC.contact } };
         const parentPlace = { ...PARENT_PLACE };
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
@@ -280,7 +283,7 @@ describe('Create User for Contacts Transition', () => {
         expect(createUserForContactsService.getReplacedBy.callCount).to.equal(2);
         expect(createUserForContactsService.getReplacedBy.args).to.deep.equal([[originalUser], [originalUser]]);
         // User replaced again
-        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(userContactService.get.callCount).to.equal(1);
         expect(dbService.get.callCount).to.equal(1);
         expect(medicDb.get.callCount).to.equal(1);
         expect(medicDb.get.args[0]).to.deep.equal([parentPlace._id]);
@@ -290,7 +293,7 @@ describe('Create User for Contacts Transition', () => {
 
       it('does not assign new contact as primary contact when original contact was not primary', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
-        createUserForContactsService.getUserContact.resolves(originalUser);
+        userContactService.get.resolves(originalUser);
         medicDb.get.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
         const parentPlace = { ...PARENT_PLACE,  contact: { _id: 'different-contact', } };
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
@@ -299,7 +302,7 @@ describe('Create User for Contacts Transition', () => {
 
         expect(docs).to.deep.equal([REPLACE_USER_DOC, originalUser]);
         expect(parentPlace.contact).to.deep.equal({ _id: 'different-contact', });
-        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(userContactService.get.callCount).to.equal(1);
         expect(dbService.get.callCount).to.equal(2);
         expect(medicDb.get.callCount).to.equal(2);
         expect(medicDb.get.args[0]).to.deep.equal([NEW_CONTACT._id]);
@@ -311,14 +314,14 @@ describe('Create User for Contacts Transition', () => {
 
       it('does not assign new contact as primary contact when parent doc not found', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
-        createUserForContactsService.getUserContact.resolves(originalUser);
+        userContactService.get.resolves(originalUser);
         medicDb.get.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
         medicDb.get.withArgs(PARENT_PLACE._id).rejects({ status: 404 });
 
         const docs = await transition.run([REPLACE_USER_DOC]);
 
         expect(docs).to.deep.equal([REPLACE_USER_DOC, originalUser]);
-        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(userContactService.get.callCount).to.equal(1);
         expect(dbService.get.callCount).to.equal(2);
         expect(medicDb.get.callCount).to.equal(2);
         expect(medicDb.get.args[0]).to.deep.equal([NEW_CONTACT._id]);
@@ -334,14 +337,14 @@ describe('Create User for Contacts Transition', () => {
       ].forEach(parent => {
         it('does not assign new contact as primary contact when contact has no parent', async() => {
           const originalUser = { ...ORIGINAL_CONTACT };
-          createUserForContactsService.getUserContact.resolves(originalUser);
+          userContactService.get.resolves(originalUser);
           const newContact = { ...NEW_CONTACT, parent };
           medicDb.get.withArgs(newContact._id).resolves(newContact);
 
           const docs = await transition.run([REPLACE_USER_DOC]);
 
           expect(docs).to.deep.equal([REPLACE_USER_DOC, originalUser]);
-          expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+          expect(userContactService.get.callCount).to.equal(1);
           expect(dbService.get.callCount).to.equal(1);
           expect(medicDb.get.callCount).to.equal(1);
           expect(medicDb.get.args[0]).to.deep.equal([newContact._id]);
@@ -353,7 +356,7 @@ describe('Create User for Contacts Transition', () => {
 
       [undefined, { _id: 'different_contact', }].forEach(contact => {
         it(`throws an error if the original contact being replaced does not match the user's contact`, async() => {
-          createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
+          userContactService.get.resolves(ORIGINAL_CONTACT);
           const replaceUserDoc = { ...REPLACE_USER_DOC, contact };
 
           try {
@@ -364,7 +367,7 @@ describe('Create User for Contacts Transition', () => {
               .to.equal('Only the contact associated with the currently logged in user can be replaced.');
           }
 
-          expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+          expect(userContactService.get.callCount).to.equal(1);
           expect(dbService.get.callCount).to.equal(0);
           expect(medicDb.get.callCount).to.equal(0);
           expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
@@ -374,7 +377,7 @@ describe('Create User for Contacts Transition', () => {
 
       [undefined, {}].forEach(fields => {
         it(`throws an error when no replacement_contact_id is set`, async() => {
-          createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
+          userContactService.get.resolves(ORIGINAL_CONTACT);
           const replaceUserDoc = { ...REPLACE_USER_DOC, fields };
 
           try {
@@ -385,7 +388,7 @@ describe('Create User for Contacts Transition', () => {
               'containing the id of the new contact.');
           }
 
-          expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+          expect(userContactService.get.callCount).to.equal(1);
           expect(dbService.get.callCount).to.equal(0);
           expect(medicDb.get.callCount).to.equal(0);
           expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
@@ -394,7 +397,7 @@ describe('Create User for Contacts Transition', () => {
       });
 
       it(`throws an error if the new contact cannot be found`, async() => {
-        createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
+        userContactService.get.resolves(ORIGINAL_CONTACT);
         medicDb.get.rejects({ status: 404 });
 
         try {
@@ -405,7 +408,7 @@ describe('Create User for Contacts Transition', () => {
             .equal(`The new contact could not be found [${NEW_CONTACT._id}].`);
         }
 
-        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(userContactService.get.callCount).to.equal(1);
         expect(dbService.get.callCount).to.equal(1);
         expect(medicDb.get.callCount).to.equal(1);
         expect(medicDb.get.args[0]).to.deep.equal([NEW_CONTACT._id]);
@@ -414,7 +417,7 @@ describe('Create User for Contacts Transition', () => {
       });
 
       it(`throws an error if an error is encountered getting the new contact`, async() => {
-        createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
+        userContactService.get.resolves(ORIGINAL_CONTACT);
         medicDb.get.rejects({ message: 'Server Error' });
 
         try {
@@ -424,7 +427,7 @@ describe('Create User for Contacts Transition', () => {
           expect(err.message).to.equal(`Server Error`);
         }
 
-        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(userContactService.get.callCount).to.equal(1);
         expect(dbService.get.callCount).to.equal(1);
         expect(medicDb.get.callCount).to.equal(1);
         expect(medicDb.get.args[0]).to.deep.equal([NEW_CONTACT._id]);
@@ -434,7 +437,7 @@ describe('Create User for Contacts Transition', () => {
 
       it('throws an error if multiple replace user reports are submitted', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
-        createUserForContactsService.getUserContact.resolves(originalUser);
+        userContactService.get.resolves(originalUser);
         const parentPlace = { ...PARENT_PLACE };
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
 
@@ -445,7 +448,7 @@ describe('Create User for Contacts Transition', () => {
           expect(err.message).to.equal(`Only one user replace form is allowed to be submitted per transaction.`);
         }
 
-        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(userContactService.get.callCount).to.equal(1);
         expect(dbService.get.callCount).to.equal(0);
         expect(medicDb.get.callCount).to.equal(0);
         expect(createUserForContactsService.setReplaced.callCount).to.equal(0);
@@ -462,7 +465,7 @@ describe('Create User for Contacts Transition', () => {
       });
 
       it('re-parents the given reports to the new contact', async() => {
-        createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
+        userContactService.get.resolves(ORIGINAL_CONTACT);
         createUserForContactsService.isReplaced.returns(true);
         createUserForContactsService.getReplacedBy.returns(NEW_CONTACT._id);
         const submittedDocs: any = [
@@ -479,13 +482,13 @@ describe('Create User for Contacts Transition', () => {
         expect(docs).to.deep.equal([submittedDocs[0], ...submittedDocs.slice(2, 6)]);
         // Reports re-parented to original user
         [submittedDocs[0], submittedDocs[4]].forEach(doc => expect(doc.contact._id).to.equal(NEW_CONTACT._id));
-        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(userContactService.get.callCount).to.equal(1);
         expect(createUserForContactsService.getReplacedBy.callCount).to.equal(1);
         expect(createUserForContactsService.getReplacedBy.args[0]).to.deep.equal([ORIGINAL_CONTACT]);
       });
 
       it('does nothing if there is no replaced by id', async() => {
-        createUserForContactsService.getUserContact.resolves(ORIGINAL_CONTACT);
+        userContactService.get.resolves(ORIGINAL_CONTACT);
         createUserForContactsService.isReplaced.returns(true);
         createUserForContactsService.getReplacedBy.returns(null);
         const submittedDocs: any = [deepFreeze(getDataRecord())];
@@ -493,7 +496,7 @@ describe('Create User for Contacts Transition', () => {
         const docs = await transition.run(submittedDocs);
 
         expect(docs).to.deep.equal(submittedDocs);
-        expect(createUserForContactsService.getUserContact.callCount).to.equal(1);
+        expect(userContactService.get.callCount).to.equal(1);
         expect(createUserForContactsService.getReplacedBy.callCount).to.equal(1);
         expect(createUserForContactsService.getReplacedBy.args[0]).to.deep.equal([ORIGINAL_CONTACT]);
       });

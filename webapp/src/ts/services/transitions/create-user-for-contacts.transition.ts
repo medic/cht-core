@@ -4,6 +4,7 @@ import { DbService } from '@mm-services/db.service';
 import { Transition, Doc } from '@mm-services/transitions/transition';
 import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
+import { UserContactService } from '@mm-services/user-contact.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,7 @@ export class CreateUserForContactsTransition extends Transition {
     private dbService: DbService,
     private createUserForContactsService: CreateUserForContactsService,
     private extractLineageService:ExtractLineageService,
+    private userContactService: UserContactService,
   ) {
     super();
   }
@@ -56,12 +58,12 @@ export class CreateUserForContactsTransition extends Transition {
    * @returns {Promise<Array<Doc>>} - updated docs (may include additional docs)
    */
   async run(docs: Doc[]) {
-    if(!docs) {
+    if (!docs) {
       return [];
     }
     docs = docs.filter(doc => doc);
 
-    const originalContact = await this.createUserForContactsService.getUserContact();
+    const originalContact = await this.userContactService.get({ hydrateLineage: false });
     if (!originalContact) {
       return docs;
     }

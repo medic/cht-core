@@ -3,7 +3,7 @@ import { DbService } from '@mm-services/db.service';
 import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
-import { UserSettingsService } from '@mm-services/user-settings.service';
+import { UserContactService } from '@mm-services/user-contact.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 export class CreateUserForContactsService {
   constructor(
     private settingsService: SettingsService,
-    private userSettingsService: UserSettingsService,
+    private userContactService: UserContactService,
     private dbService: DbService,
     private dbSyncService: DBSyncService,
     private sessionService: SessionService,
@@ -20,26 +20,10 @@ export class CreateUserForContactsService {
       .get()
       .then((settings) => {
         if (settings?.transitions?.create_user_for_contacts) {
-          this.dbSyncService.subscribe(async(status) => {
+          this.dbSyncService.subscribe(async (status) => {
             return this.syncStatusChanged(status);
           });
         }
-      });
-  }
-
-  async getUserContact() {
-    const { contact_id }: any = await this.userSettingsService.get();
-    if (!contact_id) {
-      return;
-    }
-    return this.dbService
-      .get()
-      .get(contact_id)
-      .catch(err => {
-        if (err.status === 404) {
-          return;
-        }
-        throw err;
       });
   }
 
@@ -54,7 +38,7 @@ export class CreateUserForContactsService {
       throw new Error('The new contact must have the same parent as the original contact when replacing a user.');
     }
     const status = this.sessionService.isOnlineOnly() ? UserCreationStatus.READY : UserCreationStatus.PENDING;
-    if(!originalContact.user_for_contact) {
+    if (!originalContact.user_for_contact) {
       originalContact.user_for_contact = {};
     }
     originalContact.user_for_contact.replace = { status, replacement_contact_id: newContact._id };
@@ -81,7 +65,7 @@ export class CreateUserForContactsService {
       return;
     }
 
-    const contact = await this.getUserContact();
+    const contact = await this.userContactService.get({ hydrateLineage: false });
     if (!contact || !this.isReplaced(contact)) {
       return;
     }
@@ -93,7 +77,9 @@ export class CreateUserForContactsService {
     // After a user is replaced, the original contact will have status of PENDING.
     // Set to READY to trigger Sentinel to create a new user (now that all docs are synced).
     this.setReplacedStatus(contact, UserCreationStatus.READY);
-    await this.dbService.get().put(contact);
+    await this.dbService
+      .get()
+      .put(contact);
     // Make sure there is not an ongoing sync before pushing changes to contact
     if (this.dbSyncService.isSyncInProgress()) {
       await this.dbSyncService.sync();
