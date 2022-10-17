@@ -13,6 +13,12 @@
 
 set -e
 CLUSTER_CREDENTIALS="/opt/couchdb/etc/local.d/cluster-credentials.ini"
+if [[ "$COUCHDB_SYNC_ADMINS_NODE" || "$CLUSTER_PEER_IPS" ]]; then
+  IS_CLUSTER=true
+else
+  IS_CLUSTER=false
+fi
+
 # first arg is `-something` or `+something`
 if [ "${1#-}" != "$1" ] || [ "${1#+}" != "$1" ]; then
     set -- /opt/couchdb/bin/couchdb "$@"
@@ -23,6 +29,26 @@ if [ "$1" = 'couchdb' ]; then
     shift
     set -- /opt/couchdb/bin/couchdb "$@"
 fi
+
+setSecret() {
+  if [ -z "$COUCHDB_SECRET" ]; then
+    COUCHDB_SECRET=$(cat /proc/sys/kernel/random/uuid)
+  fi
+  # Set secret only if not already present
+  if [ -z $(grep -Pzoqr "\[couch_httpd_auth\]\nsecret =" /opt/couchdb/etc/local.d/*.ini)]; then
+    printf "\n[couch_httpd_auth]\nsecret = %s\n" "$COUCHDB_SECRET" >> $CLUSTER_CREDENTIALS
+  fi
+}
+
+setUuid() {
+  if [ -z "$COUCHDB_UUID" ]; then
+    COUCHDB_UUID=$(cat /proc/sys/kernel/random/uuid)
+  fi
+  # Set uuid only if not already present
+  if [ -z $(grep -Pzoqr "\[couchdb\]\nuuid =" /opt/couchdb/etc/local.d/*.ini)]; then
+    printf "\n[couchdb]\nuuid = %s\n" "$COUCHDB_UUID" >> $CLUSTER_CREDENTIALS
+  fi
+}
 
 if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 
@@ -57,27 +83,9 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
         if ! grep -Pzoqr "\[admins\]\n$COUCHDB_USER =" /opt/couchdb/etc/local.d/*.ini; then
             printf "\n[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" >> $CLUSTER_CREDENTIALS
         fi
-
     fi
 
-    if [ "$COUCHDB_SECRET" ]; then
-        # Set secret only if not already present
-        if ! grep -Pzoqr "\[couch_httpd_auth\]\nsecret =" /opt/couchdb/etc/local.d/*.ini; then
-            printf "\n[couch_httpd_auth]\nsecret = %s\n" "$COUCHDB_SECRET" >> $CLUSTER_CREDENTIALS
-        fi
-    fi
-
-
-
-    if [ "$COUCHDB_UUID" ]; then
-        # Set uuid only if not already present
-        if ! grep -Pzoqr "\[couchdb\]\nuuid =" /opt/couchdb/etc/local.d/*.ini; then
-            printf "\n[couchdb]\nuuid = %s\n" "$COUCHDB_UUID" >> $CLUSTER_CREDENTIALS
-        fi
-    fi
-
-
-    if [ "$SVC_NAME" ] && [[ "$COUCHDB_SYNC_ADMINS_NODE" || "$CLUSTER_PEER_IPS" ]]; then
+    if [ "$SVC_NAME" ] && [ "$IS_CLUSTER" = true ]; then
         # Since changing this name after it has been set can mess up clustering, this can only run once  so a new service name can not be set on subsequent runs
         # Should only run when creating a cluster
         if  grep "127.0.0.1" /opt/couchdb/etc/vm.args; then
@@ -91,6 +99,11 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
         fi
     fi
 
+    if [ "$CLUSTER_PEER_IPS" ]; then
+      setSecret
+      setUuid
+    fi
+
     if [ "$COUCHDB_SYNC_ADMINS_NODE" ]; then
         # Wait until couchdb1 node is ready and then retrieve salted password. We need to use same
         # hashed password across all nodes so that session cookies can be reused.
@@ -100,6 +113,12 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
         if ! grep -Pzoqr "$COUCHDB_USER = $COUCHDB_HASHED_PASSWORD" /opt/couchdb/etc/local.d/*.ini; then
             printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_HASHED_PASSWORD" >> $CLUSTER_CREDENTIALS
         fi
+
+        COUCHDB_SECRET=`curl http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/couch_httpd_auth/secret | sed "s/^\([\"]\)\(.*\)\1\$/\2/g"`
+        setSecret
+
+        COUCHDB_UUID=`curl http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/couchdb/uuid | sed "s/^\([\"]\)\(.*\)\1\$/\2/g"`
+        setUuid
     fi
 
 

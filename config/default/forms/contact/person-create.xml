@@ -807,7 +807,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2022-08-24 11-45">
+        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2022-09-26 12-15">
           <inputs>
             <meta>
               <location>
@@ -881,7 +881,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/short_name" type="string" jr:constraintMsg="jr:itext('/data/person/short_name:jr:constraintMsg')" constraint="string-length(.) &lt;= 10" required="false()"/>
       <bind nodeset="/data/person/date_of_birth" type="string" calculate="../ephemeral_dob/dob_iso" required="true()"/>
       <bind nodeset="/data/person/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
-      <bind nodeset="/data/person/ephemeral_dob/dob_calendar" type="date" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg')" relevant="not(selected(../dob_method,'approx'))" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" required="true()"/>
+      <bind nodeset="/data/person/ephemeral_dob/dob_calendar" type="date" relevant="not(selected(../dob_method,'approx'))" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg')" required="true()" constraint=". &lt;= now()"/>
       <bind nodeset="/data/person/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
       <bind nodeset="/data/person/ephemeral_dob/age_years" type="int" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_years:jr:constraintMsg')" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 130" required="true()"/>
       <bind nodeset="/data/person/ephemeral_dob/age_months" type="int" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_months:jr:constraintMsg')" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 11"/>

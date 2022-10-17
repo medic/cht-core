@@ -1428,7 +1428,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
         </translation>
       </itext>
       <instance>
-        <delivery id="delivery" prefix="J1!delivery!" delimiter="#" version="2022-08-19 16-27">
+        <delivery id="delivery" prefix="J1!delivery!" delimiter="#" version="2022-09-26 12-56">
           <inputs>
             <meta>
               <location>
@@ -1553,7 +1553,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
       <bind nodeset="/delivery/group_delivery_summary" relevant="selected(coalesce( /delivery/group_chw_info/still_pregnant , 'no'), 'no')"/>
       <bind nodeset="/delivery/group_delivery_summary/g_pregnancy_outcome" type="select1" required="true()"/>
       <bind nodeset="/delivery/group_delivery_summary/g_delivery_code" type="select1" required="true()" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'"/>
-      <bind nodeset="/delivery/group_delivery_summary/g_birth_date" type="date" constraint="(decimal-date-time(.) &lt;= decimal-date-time(today())) and ((decimal-date-time(today()) - decimal-date-time(.)) &lt; 365)" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'" jr:constraintMsg="jr:itext('/delivery/group_delivery_summary/g_birth_date:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/group_delivery_summary/g_birth_date" type="date" jr:constraintMsg="jr:itext('/delivery/group_delivery_summary/g_birth_date:jr:constraintMsg')" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'" constraint="(decimal-date-time(.) &lt;= decimal-date-time(now())) and ((decimal-date-time(now()) - decimal-date-time(.)) &lt; 365)"/>
       <bind nodeset="/delivery/group_delivery_summary/display_birth_date" type="string" calculate="format-date ( /delivery/group_delivery_summary/g_birth_date , '%b %e, %Y')"/>
       <bind nodeset="/delivery/group_delivery_summary/display_delivery_outcome" type="string" calculate="jr:choice-name( /delivery/group_delivery_summary/g_pregnancy_outcome ,' /delivery/group_delivery_summary/g_pregnancy_outcome ')"/>
       <bind nodeset="/delivery/group_note/default_chw_sms" type="select1" calculate="if(coalesce( /delivery/group_chw_info/still_pregnant , 'no') = 'yes',
