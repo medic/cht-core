@@ -4,6 +4,7 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { take } from 'rxjs/operators';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Component({
   selector: 'bulk-delete-confirm',
@@ -20,7 +21,8 @@ export class BulkDeleteConfirmComponent extends MmModalAbstract {
 
   constructor(
     bsModalRef: BsModalRef,
-    private deleteDocsService:DeleteDocsService,
+    private deleteDocsService: DeleteDocsService,
+    private telemetryService: TelemetryService,
   ) {
     super(bsModalRef);
     bsModalRef.onHidden
@@ -45,6 +47,7 @@ export class BulkDeleteConfirmComponent extends MmModalAbstract {
       .delete(docs, { progress: this.updateTotalDocsDeleted.bind(this) })
       .then(() => {
         this.deleteComplete = true;
+        this.telemetryService.record('bulk_delete:reports', this.totalDocsSelected);
         this.setFinished();
       })
       .catch((err) => {
