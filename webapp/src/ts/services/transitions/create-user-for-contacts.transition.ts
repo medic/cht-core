@@ -63,10 +63,8 @@ export class CreateUserForContactsTransition extends Transition {
     }
     docs = docs.filter(doc => doc);
 
-    const [originalUserId, originalContact] = await Promise.all([
-      this.createUserForContactsService.getUserId(),
-      this.userContactService.get({ hydrateLineage: false }),
-    ]);
+    const originalUsername = this.createUserForContactsService.getUsername();
+    const originalContact = await this.userContactService.get({ hydrateLineage: false });
     if (!originalContact) {
       return docs;
     }
@@ -80,7 +78,7 @@ export class CreateUserForContactsTransition extends Transition {
         docs,
         userReplaceDoc,
         originalContact,
-        originalUserId,
+        originalUsername,
       });
     }
 
@@ -104,7 +102,7 @@ export class CreateUserForContactsTransition extends Transition {
     return replaceDocs[0] as UserReplaceDoc;
   }
 
-  private async replaceUser({ docs, userReplaceDoc, originalContact, originalUserId }: ReplaceUserParams) {
+  private async replaceUser({ docs, userReplaceDoc, originalContact, originalUsername }: ReplaceUserParams) {
     const replacementContactId = userReplaceDoc.fields?.replacement_contact_id;
     if (!replacementContactId) {
       throw new Error('The form for replacing a user must include a replacement_contact_id field ' +
@@ -123,7 +121,7 @@ export class CreateUserForContactsTransition extends Transition {
     if (!newContact) {
       throw new Error(`The new contact could not be found [${replacementContactId}].`);
     }
-    this.createUserForContactsService.setReplaced(originalContact, newContact, originalUserId);
+    this.createUserForContactsService.setReplaced(originalContact, newContact, originalUsername);
     docs.push(originalContact);
     await this.setPrimaryContactForParent(newContact, originalContactId, docs);
   }
@@ -191,7 +189,7 @@ interface ReplaceUserParams {
   docs: Doc[];
   userReplaceDoc: UserReplaceDoc;
   originalContact: Doc;
-  originalUserId: string;
+  originalUsername: string;
 }
 
 interface UserReplaceDoc extends ReportDoc {

@@ -51,7 +51,7 @@ describe('Create User for Contacts service', () => {
   beforeEach(() => {
     settingsService = { get: sinon.stub().resolves({ transitions: { create_user_for_contacts: true } }) };
     userContactService = { get: sinon.stub() };
-    medicDb = { info: sinon.stub(), put: sinon.stub() };
+    medicDb = { put: sinon.stub() };
     dbService = { get: sinon.stub().returns(medicDb) };
     dbSyncService = {
       subscribe: sinon.stub(),
@@ -95,7 +95,7 @@ describe('Create User for Contacts service', () => {
       expect(originalContact.user_for_contact.replace).to.deep.equal({
         status: 'PENDING',
         replacement_contact_id: NEW_CONTACT._id,
-        original_user_id: originalUserId,
+        original_username: originalUserId,
       });
     });
 
@@ -108,7 +108,7 @@ describe('Create User for Contacts service', () => {
       expect(originalContact.user_for_contact.replace).to.deep.equal({
         status: 'READY',
         replacement_contact_id: NEW_CONTACT._id,
-        original_user_id: originalUserId,
+        original_username: originalUserId,
       });
     });
 
@@ -126,7 +126,7 @@ describe('Create User for Contacts service', () => {
           replace:{
             status: 'PENDING',
             replacement_contact_id: NEW_CONTACT._id,
-            original_user_id: originalUserId,
+            original_username: originalUserId,
           }
         });
       });
@@ -215,7 +215,7 @@ describe('Create User for Contacts service', () => {
       const syncStatusChanged = dbSyncService.subscribe.args[0][0];
       await syncStatusChanged(SYNC_STATUS);
 
-      expect(dbService.get.callCount).to.equal(3);
+      expect(dbService.get.callCount).to.equal(1);
       expect(userContactService.get.callCount).to.equal(1);
       expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
       expect(medicDb.put.callCount).to.equal(1);
@@ -243,7 +243,7 @@ describe('Create User for Contacts service', () => {
         await syncStatusChanged(syncStatus);
 
         expect(userContactService.get.callCount).to.equal(0);
-        expect(dbService.get.callCount).to.equal(2);
+        expect(dbService.get.callCount).to.equal(0);
         assertContactNotUpdated();
       });
     });
@@ -255,7 +255,7 @@ describe('Create User for Contacts service', () => {
       const syncStatusChanged = dbSyncService.subscribe.args[0][0];
       await syncStatusChanged(SYNC_STATUS);
 
-      expect(dbService.get.callCount).to.equal(2);
+      expect(dbService.get.callCount).to.equal(0);
       expect(userContactService.get.callCount).to.equal(1);
       expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
       expect(ORIGINAL_CONTACT.user_for_contact).to.be.undefined;
@@ -270,7 +270,7 @@ describe('Create User for Contacts service', () => {
       await syncStatusChanged(SYNC_STATUS);
 
       expect(userContactService.get.callCount).to.equal(1);
-      expect(dbService.get.callCount).to.equal(2);
+      expect(dbService.get.callCount).to.equal(0);
       assertContactNotUpdated();
     });
 
@@ -287,7 +287,7 @@ describe('Create User for Contacts service', () => {
         const syncStatusChanged = dbSyncService.subscribe.args[0][0];
         await syncStatusChanged(SYNC_STATUS);
 
-        expect(dbService.get.callCount).to.equal(2);
+        expect(dbService.get.callCount).to.equal(0);
         expect(userContactService.get.callCount).to.equal(1);
         expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
         expect(completeContact.user_for_contact.replace.status).to.equal(status);
@@ -304,7 +304,7 @@ describe('Create User for Contacts service', () => {
       const syncStatusChanged = dbSyncService.subscribe.args[0][0];
       await syncStatusChanged(SYNC_STATUS);
 
-      expect(dbService.get.callCount).to.equal(3);
+      expect(dbService.get.callCount).to.equal(1);
       expect(userContactService.get.callCount).to.equal(1);
       expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
       expect(medicDb.put.callCount).to.equal(1);
