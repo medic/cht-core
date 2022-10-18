@@ -11,12 +11,12 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 })
 export class CreateUserForContactsService {
   constructor(
-      private settingsService: SettingsService,
-      private userContactService: UserContactService,
-      private dbService: DbService,
-      private dbSyncService: DBSyncService,
-      private sessionService: SessionService,
-      private userSettingsService: UserSettingsService,
+    private settingsService: SettingsService,
+    private userContactService: UserContactService,
+    private dbService: DbService,
+    private dbSyncService: DBSyncService,
+    private sessionService: SessionService,
+    private userSettingsService: UserSettingsService,
   ) {
     this.settingsService
       .get()
