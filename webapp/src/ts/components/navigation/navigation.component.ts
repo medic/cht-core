@@ -14,7 +14,7 @@ export class NavigationComponent implements AfterViewInit, OnDestroy {
   private subscription: Subscription = new Subscription();
   private globalActions: GlobalActions;
 
-  cancelCallback = false;
+  cancelCallback;
   title = '';
   enketoSaving = false;
 
@@ -35,7 +35,7 @@ export class NavigationComponent implements AfterViewInit, OnDestroy {
       title,
       enketoSaving,
     ]) => {
-      this.cancelCallback = !!cancelCallback;
+      this.cancelCallback = cancelCallback;
       this.title = title || '';
       this.enketoSaving = enketoSaving;
     });

@@ -42,6 +42,7 @@ describe('Reports effects', () => {
     actions$ = new Observable<Action>();
     const mockedSelectors = [
       { selector: Selectors.getSelectMode, value: false },
+      { selector: Selectors.getSelectedReport, value: undefined },
       { selector: Selectors.getSelectedReports, value: [] },
       { selector: Selectors.getListReport, value: {} },
       { selector: Selectors.getForms, value: [] },
@@ -118,7 +119,10 @@ describe('Reports effects', () => {
       expect(reportViewModelGeneratorService.get.callCount).to.equal(1);
       expect(reportViewModelGeneratorService.get.args[0]).to.deep.equal(['reportID']);
       expect(setSelected.callCount).to.equal(1);
-      expect(setSelected.args[0]).to.deep.equal([{ _id: 'reportID', model: true }]);
+      expect(setSelected.args[0]).to.deep.equal([
+        { _id: 'reportID', model: true },
+        { forceSingleSelect: undefined },
+      ]);
       expect(unsetSelected.callCount).to.equal(0);
     });
 
@@ -136,7 +140,10 @@ describe('Reports effects', () => {
       expect(reportViewModelGeneratorService.get.callCount).to.equal(1);
       expect(reportViewModelGeneratorService.get.args[0]).to.deep.equal(['myreport']);
       expect(setSelected.callCount).to.equal(1);
-      expect(setSelected.args[0]).to.deep.equal([{ _id: 'myreport', model: 'yes' }]);
+      expect(setSelected.args[0]).to.deep.equal([
+        { _id: 'myreport', model: 'yes' },
+        { forceSingleSelect: undefined },
+      ]);
       expect(unsetSelected.callCount).to.equal(0);
     });
 
@@ -158,7 +165,10 @@ describe('Reports effects', () => {
       expect(reportViewModelGeneratorService.get.callCount).to.equal(2);
       expect(reportViewModelGeneratorService.get.args).to.deep.equal([['reportID0'], ['reportID1']]);
       expect(setSelected.callCount).to.equal(1);
-      expect(setSelected.args).to.deep.equal([[{_id: 'reportID1', model: true}]]);
+      expect(setSelected.args).to.deep.equal([[
+        {_id: 'reportID1', model: true},
+        { forceSingleSelect: undefined },
+      ]]);
 
       expect(unsetSelected.callCount).to.equal(0);
     });
@@ -185,7 +195,7 @@ describe('Reports effects', () => {
   });
 
   describe('setSelected', () => {
-    let setSelectedReports;
+    let setSelectedReport;
     let setVerifyingReport;
     let setTitle;
     let markReportRead;
@@ -193,7 +203,7 @@ describe('Reports effects', () => {
     let settingSelected;
 
     beforeEach(() => {
-      setSelectedReports = sinon.stub(ReportsActions.prototype, 'setSelectedReports');
+      setSelectedReport = sinon.stub(ReportsActions.prototype, 'setSelectedReport');
       setVerifyingReport = sinon.stub(ReportsActions.prototype, 'setVerifyingReport');
       setTitle = sinon.stub(ReportsActions.prototype, 'setTitle');
       markReportRead = sinon.stub(ReportsActions.prototype, 'markReportRead');
@@ -220,7 +230,10 @@ describe('Reports effects', () => {
           data: true,
         }
       };
-      actions$ = of(ReportActionList.setSelected(model));
+      actions$ = of(ReportActionList.setSelected({
+        selected: model,
+        forceSingleSelect: false,
+      }));
 
       const expandedModel = { ...model, expanded: true };
 
@@ -228,8 +241,8 @@ describe('Reports effects', () => {
 
       expect(setVerifyingReport.callCount).to.equal(1);
       expect(setVerifyingReport.args[0]).to.deep.equal([false]);
-      expect(setSelectedReports.callCount).to.equal(1);
-      expect(setSelectedReports.args[0]).to.deep.equal([[expandedModel]]);
+      expect(setSelectedReport.callCount).to.equal(1);
+      expect(setSelectedReport.args[0]).to.deep.equal([expandedModel]);
       expect(setTitle.callCount).to.equal(1);
       expect(setTitle.args[0]).to.deep.equal([expandedModel]);
       expect(markReportRead.callCount).to.equal(1);
@@ -240,7 +253,7 @@ describe('Reports effects', () => {
     });
 
     it('should call correct actions when not in select mode and refreshing', () => {
-      store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report' }]);
+      store.overrideSelector(Selectors.getSelectedReport, { _id: 'report' });
       store.refreshState();
       const model = {
         _id: 'report',
@@ -249,15 +262,18 @@ describe('Reports effects', () => {
           data: true,
         }
       };
-      actions$ = of(ReportActionList.setSelected(model));
+      actions$ = of(ReportActionList.setSelected({
+        selected: model,
+        forceSingleSelect: false,
+      }));
 
       const expandedModel = { ...model, expanded: true };
 
       effects.setSelected.subscribe();
 
       expect(setVerifyingReport.callCount).to.equal(0);
-      expect(setSelectedReports.callCount).to.equal(1);
-      expect(setSelectedReports.args[0]).to.deep.equal([[expandedModel]]);
+      expect(setSelectedReport.callCount).to.equal(1);
+      expect(setSelectedReport.args[0]).to.deep.equal([expandedModel]);
       expect(setTitle.callCount).to.equal(1);
       expect(setTitle.args[0]).to.deep.equal([expandedModel]);
       expect(markReportRead.callCount).to.equal(1);
@@ -619,11 +635,11 @@ describe('Reports effects', () => {
 
   describe('setSelectMode', () => {
     let setSelectMode;
-    let unsetSelected;
+    let unsetComponents;
 
     beforeEach(() => {
       setSelectMode = sinon.stub(GlobalActions.prototype, 'setSelectMode');
-      unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      unsetComponents = sinon.stub(GlobalActions.prototype, 'unsetComponents');
     });
 
     it('should not be triggered by random actions', () => {
@@ -635,29 +651,34 @@ describe('Reports effects', () => {
 
       effects.setSelectMode.subscribe();
       expect(setSelectMode.callCount).to.equal(0);
-      expect(unsetSelected.callCount).to.equal(0);
+      expect(unsetComponents.callCount).to.equal(0);
     });
 
     it('should set select mode and redirect', () => {
+      store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report' }]);
+      store.refreshState();
+
       actions$ = of(ReportActionList.setSelectMode());
       effects.setSelectMode.subscribe();
 
       expect(setSelectMode.callCount).to.equal(1);
       expect(setSelectMode.args[0]).to.deep.equal([true]);
-      expect(unsetSelected.callCount).to.equal(1);
+      expect(unsetComponents.callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
     });
 
     it('should unset select mode and redirect', () => {
+      store.overrideSelector(Selectors.getSelectMode, true);
+      store.refreshState();
+
       actions$ = of(ReportActionList.setSelectMode());
       effects.setSelectMode.subscribe();
 
       expect(setSelectMode.callCount).to.equal(1);
       expect(setSelectMode.args[0]).to.deep.equal([false]);
-      expect(unsetSelected.callCount).to.equal(1);
-      expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
+      expect(unsetComponents.notCalled).to.be.true;
+      expect(router.navigate.notCalled).to.be.true;
     });
   });
 
@@ -781,13 +802,10 @@ describe('Reports effects', () => {
       expect(modalService.show.callCount).to.equal(0);
     });
 
-    it('should pass 1st selected report doc to EditReport modal', () => {
-      const selectedReports = [
-        { _id: 'report1', doc: { _id: 'report1', contact: { _id: 'contact' } } },
-        { _id: 'report2', doc: { _id: 'report2', contact: { _id: 'contact2' } } },
-      ];
+    it('should pass selected report doc to EditReport modal', () => {
+      const selectedReport = { _id: 'report1', doc: { _id: 'report1', contact: { _id: 'contact' } } };
       modalService.show.resolves();
-      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
       effects.launchEditFacilityDialog.subscribe();
@@ -800,11 +818,9 @@ describe('Reports effects', () => {
     });
 
     it('should catch modal rejections', waitForAsync(() => {
-      const selectedReports = [
-        { _id: 'r', doc: { _id: 'r', contact: { _id: 'ct' } } },
-      ];
+      const selectedReport = { _id: 'r', doc: { _id: 'r', contact: { _id: 'ct' } } };
       modalService.show.rejects();
-      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
       effects.launchEditFacilityDialog.subscribe();
@@ -817,7 +833,7 @@ describe('Reports effects', () => {
     }));
 
     it('should handle undefined selected reports', () => {
-      store.overrideSelector(Selectors.getSelectedReports, undefined);
+      store.overrideSelector(Selectors.getSelectedReport, undefined);
       modalService.show.resolves();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
       effects.launchEditFacilityDialog.subscribe();
@@ -830,7 +846,7 @@ describe('Reports effects', () => {
     });
 
     it('should handle empty selected reports', () => {
-      store.overrideSelector(Selectors.getSelectedReports, []);
+      store.overrideSelector(Selectors.getSelectedReport, {});
       store.refreshState();
       modalService.show.resolves();
       actions$ = of(ReportActionList.launchEditFacilityDialog);
@@ -852,14 +868,14 @@ describe('Reports effects', () => {
       setSelectedReportDocProperty = sinon.stub(ReportsActions.prototype, 'setSelectedReportDocProperty');
       setSelectedReportDocProperty.callsFake(props => {
         store
-          .select(Selectors.getSelectedReports)
+          .select(Selectors.getSelectedReport)
           .pipe(take(1))
-          .subscribe(selectedReports => {
-            selectedReports[0] = {
-              ...selectedReports[0],
-              doc: { ...selectedReports[0].doc, ...props },
+          .subscribe(selectedReport => {
+            selectedReport = {
+              ...selectedReport,
+              doc: { ...selectedReport.doc, ...props },
             };
-            store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+            store.overrideSelector(Selectors.getSelectedReport, selectedReport);
             store.refreshState();
           });
       });
@@ -880,7 +896,7 @@ describe('Reports effects', () => {
     });
 
     it('should minify report contact before saving and use latest rev', fakeAsync(() => {
-      const selectedReports = [{
+      const selectedReport = {
         _id: 'report',
         doc: {
           _id: 'report',
@@ -965,9 +981,9 @@ describe('Reports effects', () => {
             _rev: 2
           },
         },
-      }];
+      };
       authService.has.resolves(true);
-      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
 
       sinon.stub(Date, 'now').returns(1000); // using faketimers breaks fakeAsync's tick :(
@@ -990,16 +1006,16 @@ describe('Reports effects', () => {
     }));
 
     it('should allow selecting a different report while completing verification', fakeAsync(() => {
-      const selectedReports = [{
+      const selectedReport = {
         _id: 'report',
         doc: {
           _id: 'report',
           _rev: 2,
           contact: { _id: 'contact', name: 'name', parent: { _id: 'parent', type: 'clinic' } },
         },
-      }];
+      };
       authService.has.resolves(true);
-      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
 
       sinon.stub(Date, 'now').returns(1000); // using faketimers breaks fakeAsync's tick :(
@@ -1017,7 +1033,7 @@ describe('Reports effects', () => {
       // Update the selected report when setSelected is called
       setSelected.callsFake(data => {
         const { _id } = data;
-        store.overrideSelector(Selectors.getSelectedReports, [{ _id }]);
+        store.overrideSelector(Selectors.getSelectedReport, { _id });
         store.refreshState();
       });
       reportViewModelGeneratorService.get.withArgs('report').resolves({_id: 'report', model: true});
@@ -1027,24 +1043,24 @@ describe('Reports effects', () => {
       // Assert that properties are only set on report (not report1 or report2)
       setSelectedReportDocProperty.callsFake(props => {
         store
-          .select(Selectors.getSelectedReports)
+          .select(Selectors.getSelectedReport)
           .pipe(take(1))
-          .subscribe(selectedReports => {
-            expect(selectedReports[0]._id).to.equal('report');
-            selectedReports[0] = {
-              ...selectedReports[0],
-              doc: { ...selectedReports[0].doc, ...props },
+          .subscribe(selectedReport => {
+            expect(selectedReport._id).to.equal('report');
+            selectedReport = {
+              ...selectedReport,
+              doc: { ...selectedReport.doc, ...props },
             };
-            store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+            store.overrideSelector(Selectors.getSelectedReport, selectedReport);
             store.refreshState();
           });
       });
       setSelectedReportFormattedProperty.callsFake(() => {
         store
-          .select(Selectors.getSelectedReports)
+          .select(Selectors.getSelectedReport)
           .pipe(take(1))
-          .subscribe(selectedReports => {
-            expect(selectedReports[0]._id).to.equal('report');
+          .subscribe(selectedReport => {
+            expect(selectedReport._id).to.equal('report');
           });
       });
 
@@ -1071,7 +1087,7 @@ describe('Reports effects', () => {
       expect(reportViewModelGeneratorService.get.callCount).to.equal(3);
       expect(reportViewModelGeneratorService.get.args).to.deep.equal([['report1'], ['report'], ['report2']]);
       expect(setSelected.callCount).to.equal(1);
-      expect(setSelected.args).to.deep.equal([[{_id: 'report2', model: true}]]);
+      expect(setSelected.args).to.deep.equal([[{_id: 'report2', model: true}, { forceSingleSelect: undefined }]]);
 
       // Make sure we only end up setting the data we expect onto the report
       expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).callCount).to.equal(1);
@@ -1084,12 +1100,12 @@ describe('Reports effects', () => {
     }));
 
     it('should launch modal with correct params on invalid', fakeAsync(() => {
-      const selectedReports = [{
+      const selectedReport = {
         _id: 'report',
         doc: { _id: 'report' },
-      }];
+      };
       authService.has.resolves(false);
-      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
       modalService.show.rejects(); // user clicks no
 
@@ -1108,9 +1124,9 @@ describe('Reports effects', () => {
     }));
 
     it('should launch modal with correct params on valid', fakeAsync(() => {
-      const selectedReports = [{ _id: 'report', doc: { _id: 'report' } }];
+      const selectedReport = { _id: 'report', doc: { _id: 'report' } };
       authService.has.resolves(false);
-      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
       modalService.show.rejects(); // user clicks no
 
@@ -1130,9 +1146,9 @@ describe('Reports effects', () => {
 
     it('should catch db put errors', fakeAsync(() => {
       const consoleErrorMock = sinon.stub(console, 'error');
-      const selectedReports = [{ _id: 'report', doc: { _id: 'report' } }];
+      const selectedReport = { _id: 'report', doc: { _id: 'report' } };
       authService.has.resolves(true);
-      store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+      store.overrideSelector(Selectors.getSelectedReport, selectedReport);
       store.refreshState();
 
       actions$ = of(ReportActionList.verifyReport(true));
@@ -1174,10 +1190,10 @@ describe('Reports effects', () => {
       const test = `user ${canEdit ? 'can' : 'cannot'} edit, ${initial}->${setTo} yields verified:${expectVerified}`;
 
       it(test, fakeAsync(() => {
-        const selectedReports = [{
+        const selectedReport = {
           _id: 'def',
           doc: { _id: 'def', name: 'hello', form: 'P', verified: initial },
-        }];
+        };
 
         sinon.stub(Date, 'now').returns(0); // using faketimers breaks fakeAsync's tick :(
 
@@ -1185,7 +1201,7 @@ describe('Reports effects', () => {
         confirm ? modalService.show.resolves() : modalService.show.rejects();
         dbService.put.resolves();
         dbService.get.resolves({ _id: 'def', name: 'hello', _rev: '1', form: 'P' });
-        store.overrideSelector(Selectors.getSelectedReports, selectedReports);
+        store.overrideSelector(Selectors.getSelectedReport, selectedReport);
         store.refreshState();
 
         actions$ = of(ReportActionList.verifyReport(setTo));

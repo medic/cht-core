@@ -171,7 +171,7 @@ describe('Reports Component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
-  describe('toggleSelected', () => {
+  describe('selectReport', () => {
     let addSelectedReport;
     let selectReport;
     let removeSelectedReport;
@@ -183,7 +183,7 @@ describe('Reports Component', () => {
     });
 
     it('should not crash when called without report (for some reason)', () => {
-      component.toggleSelected(undefined);
+      component.selectReport(undefined);
 
       expect(addSelectedReport.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
@@ -192,7 +192,7 @@ describe('Reports Component', () => {
 
     it('should do nothing when not in select mode', () => {
       component.selectMode = false;
-      component.toggleSelected({ _id: 'report_id' });
+      component.selectReport({ _id: 'report_id' });
 
       expect(addSelectedReport.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
@@ -203,7 +203,7 @@ describe('Reports Component', () => {
       component.selectMode = true;
       component.selectedReports = null;
 
-      component.toggleSelected({ _id: 'rid' });
+      component.selectReport({ _id: 'rid' });
       expect(addSelectedReport.callCount).to.equal(1);
       expect(addSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
       expect(selectReport.callCount).to.equal(1);
@@ -215,7 +215,7 @@ describe('Reports Component', () => {
       component.selectMode = true;
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
 
-      component.toggleSelected({ _id: 'rid' });
+      component.selectReport({ _id: 'rid' });
       expect(addSelectedReport.callCount).to.equal(1);
       expect(addSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
       expect(selectReport.callCount).to.equal(1);
@@ -227,7 +227,7 @@ describe('Reports Component', () => {
       component.selectMode = true;
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'rid' }];
 
-      component.toggleSelected({ _id: 'rid' });
+      component.selectReport({ _id: 'rid' });
       expect(addSelectedReport.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
       expect(removeSelectedReport.callCount).to.equal(1);

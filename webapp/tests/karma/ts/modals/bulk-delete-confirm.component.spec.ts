@@ -85,6 +85,7 @@ describe('SendMessageComponent', () => {
           { _id: 'doc2', field: 2 },
           { _id: 'doc3', field: 3 },
         ],
+        type: 'reports',
       };
       const promise = component.submit();
       expect(setProcessing.callCount).to.equal(1);
@@ -111,6 +112,7 @@ describe('SendMessageComponent', () => {
           { _id: 'doc1', field: 'a' },
           { _id: 'doc2', field: 'b' },
         ],
+        type: 'reports',
       };
       const promise = component.submit();
       expect(setProcessing.callCount).to.equal(1);
@@ -139,6 +141,7 @@ describe('SendMessageComponent', () => {
           { _id: 'doc1', field: 'a' },
           { _id: 'doc2', field: 'b' },
         ],
+        type: 'reports',
       };
       const promise = component.submit();
       const callback = deleteDocsService.delete.args[0][1].progress;

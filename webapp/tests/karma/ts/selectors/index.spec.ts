@@ -57,7 +57,7 @@ const state = {
       ['report3', { _id: 'report3' }],
       ['report4', { _id: 'report4' }],
     ]),
-    selectedReport: { _id: 'report2', summary: { valid: false }, doc: { _id: 'report2' } },
+    selectedReport: { _id: 'report2', summary: { valid: false } },
     selectedReports: [
       { _id: 'report1', formatted: { errors: ['one', 'two'] }, doc: { _id: 'report1' } },
       { _id: 'report2', summary: { valid: false }, doc: { _id: 'report2' } },
@@ -279,7 +279,7 @@ describe('Selectors', () => {
     });
 
     it('should getSelectedReport', () => {
-      expect(Selectors.getSelectedReport(state)).to.equal(clonedState.reports.selectedReport);
+      expect(Selectors.getSelectedReport(state)).to.deep.equal(clonedState.reports.selectedReport);
     });
 
     it('should getSelectedReports', () => {

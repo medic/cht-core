@@ -111,6 +111,10 @@ const _reportsReducer = createReducer(
   on(Actions.toggleVerifyingReport, (state) => ({ ...state, verifyingReport: !state.verifyingReport })),
 
   on(Actions.setSelectedReportDocProperty, (state, { payload: { doc } }) => {
+    if (!state.selectedReport) {
+      return state;
+    }
+
     return {
       ...state,
       selectedReport: { ...state.selectedReport, doc: { ...state.selectedReport?.doc, ...doc } },
@@ -118,6 +122,10 @@ const _reportsReducer = createReducer(
   }),
 
   on(Actions.setSelectedReportFormattedProperty, (state, { payload: { formatted } }) => {
+    if (!state.selectedReport) {
+      return state;
+    }
+
     return {
       ...state,
       selectedReport: { ...state.selectedReport, formatted: { ...state.selectedReport?.formatted, ...formatted } },

@@ -288,7 +288,7 @@ describe('Reports Add Component', () => {
 
     it('should call enketo save and update state when new report', fakeAsync(() => {
       component.form = { the: 'rendered form' };
-      component.selectedReports = [{ formInternalId: 'some_form' }];
+      component.selectedReport = { formInternalId: 'some_form' };
 
       const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       const setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
@@ -323,7 +323,7 @@ describe('Reports Add Component', () => {
     it('should catch enketo saving error', fakeAsync(() => {
       const consoleErrorMock = sinon.stub(console, 'error');
       component.form = { the: 'the form' };
-      component.selectedReports = [{ formInternalId: 'delivery' }];
+      component.selectedReport = { formInternalId: 'delivery' };
 
       const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       const setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
