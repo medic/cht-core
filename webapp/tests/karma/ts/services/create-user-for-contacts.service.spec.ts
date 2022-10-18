@@ -59,6 +59,7 @@ describe('Create User for Contacts service', () => {
       sync: sinon.stub().resolves(),
     };
     sessionService = {
+      userCtx: sinon.stub().returns({ name: originalUserId }),
       isOnlineOnly: sinon.stub().returns(false),
       logout: sinon.stub(),
     };
@@ -90,7 +91,7 @@ describe('Create User for Contacts service', () => {
     it('sets the given new contact and a status of PENDING when the user has offline role', () => {
       const originalContact = Object.assign({}, ORIGINAL_CONTACT);
 
-      service.setReplaced(originalContact, NEW_CONTACT, originalContact._id);
+      service.setReplaced(originalContact, NEW_CONTACT);
 
       expect(originalContact.user_for_contact.replace).to.deep.equal({
         status: 'PENDING',
@@ -103,7 +104,7 @@ describe('Create User for Contacts service', () => {
       const originalContact = Object.assign({}, ORIGINAL_CONTACT);
       sessionService.isOnlineOnly.returns(true);
 
-      service.setReplaced(originalContact, NEW_CONTACT, originalContact._id);
+      service.setReplaced(originalContact, NEW_CONTACT);
 
       expect(originalContact.user_for_contact.replace).to.deep.equal({
         status: 'READY',
@@ -119,7 +120,7 @@ describe('Create User for Contacts service', () => {
       it('sets the given new contact and status when the contact already has user_for_contact data', () => {
         const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
 
-        service.setReplaced(originalContact, NEW_CONTACT, originalContact._id);
+        service.setReplaced(originalContact, NEW_CONTACT);
 
         expect(originalContact.user_for_contact).to.deep.equal({
           hello: 'world',
@@ -145,14 +146,14 @@ describe('Create User for Contacts service', () => {
     it('throws an error when the original contact and the new contact do not have the same parent', () => {
       const originalContact = Object.assign({}, ORIGINAL_CONTACT, { parent: { _id: 'different-parent' } });
 
-      expect(() => service.setReplaced(originalContact, NEW_CONTACT, originalContact._id))
+      expect(() => service.setReplaced(originalContact, NEW_CONTACT))
         .to.throw('The new contact must have the same parent as the original contact when replacing a user.');
     });
 
     it('throws an error when the original contact does not have a parent', () => {
       const originalContact = Object.assign({}, ORIGINAL_CONTACT, { parent: undefined });
 
-      expect(() => service.setReplaced(originalContact, NEW_CONTACT, originalContact._id))
+      expect(() => service.setReplaced(originalContact, NEW_CONTACT))
         .to.throw('The new contact must have the same parent as the original contact when replacing a user.');
     });
 

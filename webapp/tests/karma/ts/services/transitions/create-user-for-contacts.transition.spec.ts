@@ -225,11 +225,7 @@ describe('Create User for Contacts Transition', () => {
         expect(medicDb.get.args[0]).to.deep.equal([NEW_CONTACT._id]);
         expect(medicDb.get.args[1]).to.deep.equal([parentPlace._id]);
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
-        expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([
-          originalUser,
-          NEW_CONTACT,
-          originalUser.id,
-        ]);
+        expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, NEW_CONTACT]);
         expect(createUserForContactsService.isReplaced.callCount).to.equal(2);
       });
 
@@ -252,11 +248,7 @@ describe('Create User for Contacts Transition', () => {
         expect(medicDb.get.callCount).to.equal(1);
         expect(medicDb.get.args[0]).to.deep.equal([parentPlace._id]);
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
-        expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([
-          originalUser,
-          NEW_CONTACT,
-          originalUser.id,
-        ]);
+        expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, NEW_CONTACT]);
         expect(createUserForContactsService.isReplaced.callCount).to.equal(2);
       });
 
@@ -303,11 +295,7 @@ describe('Create User for Contacts Transition', () => {
         expect(medicDb.get.callCount).to.equal(1);
         expect(medicDb.get.args[0]).to.deep.equal([parentPlace._id]);
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
-        expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([
-          originalUser,
-          secondNewContact,
-          originalUser.id,
-        ]);
+        expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, secondNewContact]);
       });
 
       it('does not assign new contact as primary contact when original contact was not primary', async() => {
@@ -328,11 +316,7 @@ describe('Create User for Contacts Transition', () => {
         expect(medicDb.get.args[0]).to.deep.equal([NEW_CONTACT._id]);
         expect(medicDb.get.args[1]).to.deep.equal([parentPlace._id]);
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
-        expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([
-          originalUser,
-          NEW_CONTACT,
-          originalUser.id,
-        ]);
+        expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, NEW_CONTACT]);
         expect(createUserForContactsService.isReplaced.callCount).to.equal(2);
       });
 
@@ -352,11 +336,7 @@ describe('Create User for Contacts Transition', () => {
         expect(medicDb.get.args[0]).to.deep.equal([NEW_CONTACT._id]);
         expect(medicDb.get.args[1]).to.deep.equal([PARENT_PLACE._id]);
         expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
-        expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([
-          originalUser,
-          NEW_CONTACT,
-          originalUser.id,
-        ]);
+        expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, NEW_CONTACT]);
         expect(createUserForContactsService.isReplaced.callCount).to.equal(2);
       });
 
@@ -379,11 +359,7 @@ describe('Create User for Contacts Transition', () => {
           expect(medicDb.get.callCount).to.equal(1);
           expect(medicDb.get.args[0]).to.deep.equal([newContact._id]);
           expect(createUserForContactsService.setReplaced.callCount).to.equal(1);
-          expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([
-            originalUser,
-            newContact,
-            originalUser.id,
-          ]);
+          expect(createUserForContactsService.setReplaced.args[0]).to.deep.equal([originalUser, newContact]);
           expect(createUserForContactsService.isReplaced.callCount).to.equal(2);
         });
       });
