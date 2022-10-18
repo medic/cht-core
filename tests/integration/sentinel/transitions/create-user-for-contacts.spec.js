@@ -296,7 +296,7 @@ describe('create_user_for_contacts', () => {
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
     originalContact.user_for_contact = {
-      replace: { original_username: ORIGINAL_USER.username, by: NEW_PERSON._id, status: 'PENDING' },
+      replace: { original_username: ORIGINAL_USER.username, replacement_contact_id: NEW_PERSON._id, status: 'PENDING' },
     };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
