@@ -32,7 +32,12 @@ export class AuthService {
 
         return chtApi.v1.hasPermissions(permissions, userCtx);
       })
-      .catch(() => false);
+      .catch((err) => {
+        if (err.status === 503) {
+          throw err;
+        }
+        return false;
+      });
   }
 
   /**
