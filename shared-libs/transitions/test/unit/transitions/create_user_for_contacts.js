@@ -48,7 +48,7 @@ const getReplacedContact = (
   }
 });
 
-describe.only('create_user_for_contacts', () => {
+describe('create_user_for_contacts', () => {
 
   beforeEach(() => {
     config.init({
