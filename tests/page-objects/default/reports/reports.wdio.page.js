@@ -171,6 +171,7 @@ const deleteSelectedReports = async () => {
   await (await bulkDeleteConfirmBtn()).click();
 
   await (await bulkDeleteModal()).waitForDisplayed({ reverse: true });
+  await commonElements.waitForPageLoaded();
   await (await firstReport()).waitForDisplayed();
 };
 
