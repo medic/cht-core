@@ -27,11 +27,7 @@ export class CreateUserForContactsService {
       });
   }
 
-  getUsername() {
-    return this.sessionService.userCtx()?.name as string | undefined;
-  }
-
-  setReplaced(originalContact, newContact, originalUsername) {
+  setReplaced(originalContact, newContact) {
     if (!originalContact) {
       throw new Error('The original contact could not be found when replacing the user.');
     }
@@ -48,7 +44,7 @@ export class CreateUserForContactsService {
     originalContact.user_for_contact.replace = {
       status,
       replacement_contact_id: newContact._id,
-      original_username: originalUsername,
+      original_username: this.sessionService.userCtx()?.name,
     };
   }
 
