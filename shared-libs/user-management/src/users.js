@@ -743,7 +743,17 @@ const getUserDocsByName = (name) => Promise
   .all([
     db.users.get('org.couchdb.user:' + name),
     db.medic.get('org.couchdb.user:' + name)
-  ]);
+  ])
+  .catch(error => {
+    if (error.status !== 404) {
+      return Promise.reject(error);
+    }
+
+    return Promise.reject({
+      status: 404,
+      message: `Failed to find user with name [${name}].`
+    });
+  });
 
 const getUserSettings = async({ name, contact_id }) => {
   const [ user, medicUser ] = await (name ? getUserDocsByName(name) : getUserDocsByContactId(contact_id));
