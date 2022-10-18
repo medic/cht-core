@@ -29,6 +29,8 @@ import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sideb
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { ResponsiveService } from '@mm-services/responsive.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -40,6 +42,8 @@ describe('Reports Component', () => {
   let listContains;
   let authService;
   let datePipe;
+  let responsiveService;
+  let modalService;
   let userContactService;
 
   const userContactGrandparent = { _id: 'grandparent' };
@@ -55,6 +59,7 @@ describe('Reports Component', () => {
   beforeEach(waitForAsync(() => {
     listContains = sinon.stub();
     const mockedSelectors = [
+      { selector: Selectors.getSelectedReport, value: undefined },
       { selector: Selectors.getSelectedReports, value: [] },
       { selector: Selectors.getReportsList, value: [] },
       { selector: Selectors.listContains, value: listContains },
@@ -78,6 +83,8 @@ describe('Reports Component', () => {
       isOnlineOnly: sinon.stub().returns(false)
     };
     datePipe = { transform: sinon.stub() };
+    responsiveService = { isMobile: sinon.stub() };
+    modalService = { show: sinon.stub().resolves() };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };
@@ -115,6 +122,8 @@ describe('Reports Component', () => {
           { provide: UserContactService, useValue: userContactService },
           { provide: NavigationService, useValue: {} },
           { provide: AuthService, useValue: authService },
+          { provide: ResponsiveService, useValue: responsiveService },
+          { provide: ModalService, useValue: modalService },
           { provide: DatePipe, useValue: datePipe },
         ]
       })
@@ -146,8 +155,9 @@ describe('Reports Component', () => {
     await component.ngAfterViewInit();
 
     expect(component.isSidebarFilterOpen).to.be.false;
-    expect(authService.has.calledOnce).to.be.true;
-    expect(authService.has.args[0][0]).to.equal('can_view_old_filter_and_search');
+    expect(authService.has.calledTwice).to.be.true;
+    expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
+    expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
     expect(searchService.search.calledOnce).to.be.true;
     expect(changesService.subscribe.calledOnce).to.be.true;
     expect(spySubscriptionsAdd.calledThrice).to.be.true;
@@ -190,20 +200,23 @@ describe('Reports Component', () => {
       expect(removeSelectedReport.callCount).to.equal(0);
     });
 
-    it('should do nothing when not in select mode', () => {
+    it('should not select when report does not have id', () => {
       component.selectMode = false;
-      component.selectReport({ _id: 'report_id' });
+      component.selectReport({ _id: '' });
+      component.selectMode = true;
+      component.selectReport({ _id: '' });
 
-      expect(addSelectedReport.callCount).to.equal(0);
-      expect(selectReport.callCount).to.equal(0);
-      expect(removeSelectedReport.callCount).to.equal(0);
+      expect(addSelectedReport.notCalled).to.be.true;
+      expect(selectReport.notCalled).to.be.true;
+      expect(removeSelectedReport.notCalled).to.be.true;
     });
 
-    it('should add selected report when in select mode and not already selected', () => {
+    it('should add selected report if not already selected', () => {
       component.selectMode = true;
       component.selectedReports = null;
 
       component.selectReport({ _id: 'rid' });
+
       expect(addSelectedReport.callCount).to.equal(1);
       expect(addSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
       expect(selectReport.callCount).to.equal(1);
@@ -211,11 +224,12 @@ describe('Reports Component', () => {
       expect(removeSelectedReport.callCount).to.equal(0);
     });
 
-    it('should add selected report when in select mode and not already selected with some selected reports', () => {
+    it('should add selected report if not already selected when there are some selected reports', () => {
       component.selectMode = true;
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
 
       component.selectReport({ _id: 'rid' });
+
       expect(addSelectedReport.callCount).to.equal(1);
       expect(addSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
       expect(selectReport.callCount).to.equal(1);
@@ -223,7 +237,7 @@ describe('Reports Component', () => {
       expect(removeSelectedReport.callCount).to.equal(0);
     });
 
-    it('should remove selected report if in select mode and already selected', () => {
+    it('should remove selected report if already selected', () => {
       component.selectMode = true;
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'rid' }];
 
@@ -231,7 +245,7 @@ describe('Reports Component', () => {
       expect(addSelectedReport.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
       expect(removeSelectedReport.callCount).to.equal(1);
-      expect(removeSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(removeSelectedReport.args[0]).to.deep.equal([ { _id: 'rid' }, undefined ]);
     });
   });
 

@@ -60,8 +60,7 @@ describe('NavigationComponent', () => {
 
     component.ngAfterViewInit();
 
-    expect(component.cancelCallback).to.be.a('function');
-    expect(component.cancelCallback()).to.equal('anything');
+    expect(component.isCancelCallbackSet).to.be.true;
     expect(component.title).to.equal('Something');
     expect(component.enketoSaving).to.be.true;
   });

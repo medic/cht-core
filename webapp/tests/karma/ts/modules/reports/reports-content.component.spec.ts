@@ -17,6 +17,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { MessageStateService } from '@mm-services/message-state.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 
 describe('Reports Content Component', () => {
@@ -28,6 +29,7 @@ describe('Reports Content Component', () => {
   let activatedRoute;
   let messageStateService;
   let router;
+  let responsiveService;
   let modalService;
 
   beforeEach(waitForAsync(() => {
@@ -42,6 +44,7 @@ describe('Reports Content Component', () => {
     activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
     router = { navigate: sinon.stub() };
     messageStateService = { any: sinon.stub(), set: sinon.stub().resolves() };
+    responsiveService = { isMobile: sinon.stub() };
     modalService = { show: sinon.stub().resolves() };
 
     return TestBed
@@ -62,6 +65,7 @@ describe('Reports Content Component', () => {
           { provide: ActivatedRoute, useValue: activatedRoute },
           { provide: Router, useValue: router },
           { provide: MessageStateService, useValue: messageStateService },
+          { provide: ResponsiveService, useValue: responsiveService },
           { provide: ModalService, useValue: modalService },
         ]
       })
@@ -92,7 +96,7 @@ describe('Reports Content Component', () => {
 
     expect(changesService.subscribe.callCount).to.equal(1);
     expect(activatedRoute.params.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(3);
+    expect(spySubscriptionsAdd.callCount).to.equal(4);
   });
 
   describe('Route subscription', () => {
@@ -105,7 +109,7 @@ describe('Reports Content Component', () => {
 
       callback({ id: 'id' });
       expect(selectReport.callCount).to.equal(1);
-      expect(selectReport.args[0]).to.deep.equal(['someID']);
+      expect(selectReport.args[0]).to.deep.equal([ 'someID', { forceSingleSelect: undefined } ]);
       expect(clearCancelCallback.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(0);
     });
@@ -114,13 +118,13 @@ describe('Reports Content Component', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
       const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
       const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
-      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      const unsetComponents = sinon.stub(GlobalActions.prototype, 'unsetComponents');
       activatedRoute.snapshot.params = { id: 'someID' };
 
       callback({ });
       expect(selectReport.callCount).to.equal(0);
       expect(clearCancelCallback.callCount).to.equal(0);
-      expect(unsetSelected.callCount).to.equal(1);
+      expect(unsetComponents.callCount).to.equal(1);
     });
   });
 
