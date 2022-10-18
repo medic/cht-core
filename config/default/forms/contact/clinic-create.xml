@@ -42,9 +42,7 @@
             <value>Age</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
-            <value>Months: <output value=" /data/contact/ephemeral_dob/ephemeral_months "/>
-Year: <output value=" /data/contact/ephemeral_dob/ephemeral_years "/>
-DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "/>
+            <value>DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "/>
 DOB Calendar: <output value=" /data/contact/ephemeral_dob/dob_calendar "/>
 DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/contact/ephemeral_dob/dob_iso:label">
@@ -917,7 +915,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:clinic:create" prefix="J1!contact:clinic:create!" delimiter="#" version="2022-06-13 17-11">
+        <data id="contact:clinic:create" prefix="J1!contact:clinic:create!" delimiter="#" version="2022-09-26 12-17">
           <inputs>
             <meta>
               <location>
@@ -974,8 +972,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
               <age_years/>
               <age_months/>
               <dob_method/>
-              <ephemeral_months/>
-              <ephemeral_years/>
               <dob_approx/>
               <dob_raw/>
               <dob_iso/>
@@ -1021,15 +1017,13 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/short_name" type="string" jr:constraintMsg="Short name can not be more than 10 characters long." constraint="string-length(.) &lt;= 10" required="false()"/>
       <bind nodeset="/data/contact/date_of_birth" type="string" calculate="../ephemeral_dob/dob_iso" required="true()"/>
       <bind nodeset="/data/contact/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" relevant="not(selected(../dob_method,'approx'))" jr:constraintMsg="Date must be before today" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" required="true()"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" relevant="not(selected(../dob_method,'approx'))" required="true()" constraint=". &lt;= now()" jr:constraintMsg="Date must be before today"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="Age must be between 0 and 130" constraint=". &gt;= 0 and . &lt;= 130" required="true()"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="Months must between 0 and 11" constraint=". &gt;= 0 and . &lt;= 11"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="select"/>
-      <bind nodeset="/data/contact/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) &lt; 0, format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) + 12, format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0))"/>
-      <bind nodeset="/data/contact/ephemeral_dob/ephemeral_years" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - coalesce(../age_months, 0) &lt; 0, format-date-time(today(),&quot;%Y&quot;) - ../age_years - 1, format-date-time(today(),&quot;%Y&quot;) -../age_years)"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="concat(string(if( /data/contact/ephemeral_dob/ephemeral_months  &gt; 0, /data/contact/ephemeral_dob/ephemeral_years , /data/contact/ephemeral_dob/ephemeral_years  - 1)),'-',if( /data/contact/ephemeral_dob/ephemeral_months  &gt; 0,if( /data/contact/ephemeral_dob/ephemeral_months &lt;10,concat('0',string( /data/contact/ephemeral_dob/ephemeral_months )), /data/contact/ephemeral_dob/ephemeral_months ),12),'-',string(format-date-time(today(), &quot;%d&quot;)))"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), 
+      <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/contact/ephemeral_dob/age_years , 0- /data/contact/ephemeral_dob/age_months )"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')),
 ../dob_calendar,
 ../dob_approx)"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
@@ -1067,7 +1061,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       </group>
     </group>
     <group appearance="field-list" ref="/data/init">
-      <select1 appearance="horizontal-compact" ref="/data/init/create_new_person">
+      <select1 appearance="columns-pack" ref="/data/init/create_new_person">
         <label ref="jr:itext('/data/init/create_new_person:label')"/>
         <item>
           <label ref="jr:itext('/data/init/create_new_person/new_person:label')"/>
@@ -1144,7 +1138,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <input ref="/data/contact/ephemeral_dob/age_months">
             <label ref="jr:itext('/data/contact/ephemeral_dob/age_months:label')"/>
           </input>
-          <select appearance="horizontal" ref="/data/contact/ephemeral_dob/dob_method">
+          <select appearance="columns" ref="/data/contact/ephemeral_dob/dob_method">
             <label ref="jr:itext('/data/contact/ephemeral_dob/dob_method:label')"/>
             <item>
               <label ref="jr:itext('/data/contact/ephemeral_dob/dob_method/approx:label')"/>
@@ -1162,7 +1156,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <input ref="/data/contact/phone_alternate">
         <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
       </input>
-      <select1 appearance="horizontal" ref="/data/contact/sex">
+      <select1 appearance="columns" ref="/data/contact/sex">
         <label ref="jr:itext('/data/contact/sex:label')"/>
         <item>
           <label ref="jr:itext('/data/contact/sex/female:label')"/>
@@ -1212,7 +1206,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <group appearance="hidden" ref="/data/contact/meta"/>
     </group>
     <group appearance="field-list" ref="/data/clinic">
-      <select1 appearance="horizontal-compact" ref="/data/clinic/is_name_generated">
+      <select1 appearance="columns-pack" ref="/data/clinic/is_name_generated">
         <label ref="jr:itext('/data/clinic/is_name_generated:label')"/>
         <item>
           <label ref="jr:itext('/data/clinic/is_name_generated/true:label')"/>

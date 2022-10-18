@@ -106,7 +106,7 @@
         </translation>
       </itext>
       <instance>
-        <child id="child" prefix="J1!child!" delimiter="#" version="2018-09-27_07-24">
+        <child id="child" prefix="J1!child!" delimiter="#" version="2022-09-26 12-41">
           <n/>
           <w/>
           <d/>
@@ -120,7 +120,7 @@
       <bind nodeset="/child/n" type="string" required="true()"/>
       <bind nodeset="/child/w" type="string" calculate="round(  /child/d  div 7, 0 )" required="true()"/>
       <bind nodeset="/child/d" type="string" calculate="today() -  /child/birth_date "/>
-      <bind nodeset="/child/birth_date" type="date" jr:constraintMsg="jr:itext('/child/birth_date:jr:constraintMsg')" constraint=". &lt;= today()" required="true()"/>
+      <bind nodeset="/child/birth_date" type="date" required="true()" jr:constraintMsg="jr:itext('/child/birth_date:jr:constraintMsg')" constraint=". &lt;= now()"/>
       <bind nodeset="/child/review" readonly="true()" type="string"/>
       <bind nodeset="/child/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>

@@ -1,31 +1,75 @@
 /* eslint-disable no-console */
 
 const _ = require('lodash');
-const auth = require('./auth')();
 const constants = require('./constants');
 const rpn = require('request-promise-native');
 const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
-const Tail = require('tail').Tail;
+const { execSync, spawn } = require('child_process');
+const mustache = require('mustache');
+const semver = require('semver');
+
+process.env.COUCHDB_USER = constants.USERNAME;
+process.env.COUCHDB_PASSWORD = constants.PASSWORD;
+process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
+process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
+const auth = { username: constants.USERNAME, password: constants.PASSWORD };
+
+const PROJECT_NAME = 'cht-e2e';
+const NETWORK = 'cht-net-e2e';
+const services = {
+  haproxy: 'haproxy',
+  nginx: 'nginx',
+  couch1: 'couch.1',
+  couch2: 'couch.2',
+  couch3: 'couch.3',
+  api: 'api',
+  sentinel: 'sentinel',
+  haproxy_healthcheck: 'haproxy-healthcheck',
+};
+const CONTAINER_NAMES = {};
+let dockerVersion = 1;
+
+const updateContainerNames = (project = PROJECT_NAME) => {
+  dockerVersion = getDockerVersion();
+
+  Object.entries(services).forEach(([key, service]) => {
+    CONTAINER_NAMES[key] = getContainerName(service, project);
+  });
+  CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
+};
+const getContainerName = (service, project = PROJECT_NAME) => {
+  const separator = dockerVersion === 2 ? '-' : '_';
+  return `${project}${separator}${service}${separator}1`;
+};
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
-const db = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`, { auth });
-const sentinel = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-sentinel`, { auth });
-const medicLogs = new PouchDB(`http://${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}-logs`, { auth });
+const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
+const sentinel = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
+const medicLogs = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 let browserLogStream;
 const userSettings = require('./factories/cht/users/user-settings');
+const buildVersions = require('../scripts/build/versions');
 
 let originalSettings;
 const originalTranslations = {};
 let e2eDebug;
 const hasModal = () => element(by.css('#update-available')).isPresent();
-const { execSync } = require('child_process');
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
+const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
+const getTemplateComposeFilePath = file => path.resolve(__dirname, '..', 'scripts', 'build', `${file}.yml.template`);
+const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml`);
+
+const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
+const db1Data = makeTempDir('ci-dbdata');
+const db2Data = makeTempDir('ci-dbdata');
+const db3Data = makeTempDir('ci-dbdata');
 
 // First Object is passed to http.request, second is for specific options / flags
 // for this wrapper
@@ -34,15 +78,12 @@ const request = (options, { debug } = {}) => {
   if (!options.noAuth) {
     options.auth = options.auth || auth;
   }
-  options.uri = options.uri || `http://${constants.API_HOST}:${options.port || constants.API_PORT}${options.path}`;
+  options.uri = options.uri || `${constants.BASE_URL}${options.path}`;
   options.json = options.json === undefined ? true : options.json;
 
   if (debug) {
-    console.log('!!!!!!!REQUEST!!!!!!!');
-    console.log('!!!!!!!REQUEST!!!!!!!');
+    console.log('SENDING REQUEST' );
     console.log(JSON.stringify(options, null, 2));
-    console.log('!!!!!!!REQUEST!!!!!!!');
-    console.log('!!!!!!!REQUEST!!!!!!!');
   }
 
   options.transform = (body, response, resolveWithFullResponse) => {
@@ -57,7 +98,7 @@ const request = (options, { debug } = {}) => {
 
   return rpn(options).catch(err => {
     err.responseBody = err.response && err.response.body;
-    debug && console.warn(`A request error occurred ${err.options.uri}`);
+    console.warn(`Error with request: ${options.method || 'GET'} ${options.uri}`);
     throw err;
   });
 };
@@ -244,22 +285,15 @@ const closeReloadModal = () => {
 
 const setUserContactDoc = (attempt=0) => {
   const {
-    DB_NAME: dbName,
     USER_CONTACT_ID: docId,
     DEFAULT_USER_CONTACT_DOC: defaultDoc
   } = constants;
 
-  return module.exports.getDoc(docId)
+  return db
+    .get(docId)
     .catch(() => ({}))
-    .then(existing => {
-      const rev = _.pick(existing, '_rev');
-      return Object.assign(defaultDoc, rev);
-    })
-    .then(newDoc => request({
-      path: `/${dbName}/${docId}`,
-      body: newDoc,
-      method: 'PUT',
-    }))
+    .then(existing => Object.assign(defaultDoc, { _rev: existing && existing._rev }))
+    .then(newDoc => db.put(newDoc))
     .catch(err => {
       if (attempt > 3) {
         throw err;
@@ -269,7 +303,7 @@ const setUserContactDoc = (attempt=0) => {
 };
 
 const revertDb = async (except, ignoreRefresh) => {
-  const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
+  const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
@@ -288,7 +322,7 @@ const revertDb = async (except, ignoreRefresh) => {
 };
 
 const getCreatedUsers = async () => {
-  const adminUserId = COUCH_USER_ID_PREFIX + auth.username;
+  const adminUserId = COUCH_USER_ID_PREFIX + constants.USERNAME;
   const users = await request({ path: `/_users/_all_docs?start_key="${COUCH_USER_ID_PREFIX}"` });
   return users.rows
     .filter(user => user.id !== adminUserId)
@@ -307,17 +341,22 @@ const deleteUsers = async (users, meta = false) => {
     method: 'POST',
     body: { keys: usernames }
   });
+
   const toDelete = userDocs.rows
-    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .map(row => row.value && !row.value.deleted && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
   const toDeleteMedic = medicDocs.rows
-    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .map(row => row.value && !row.value.deleted && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
 
-  await Promise.all([
+  const results = await Promise.all([
     request({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } }),
     request({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } }),
   ]);
+  const errors = results.flat().filter(result => !result.ok);
+  if (errors.length) {
+    return deleteUsers(users, meta);
+  }
 
   if (!meta) {
     return;
@@ -338,6 +377,8 @@ const createUsers = async (users, meta = false) => {
   for (const user of users) {
     await request(Object.assign({ body: user }, createUserOpts));
   }
+
+  await module.exports.delayPromise(1000);
 
   if (!meta) {
     return;
@@ -396,16 +437,127 @@ const deprecated = (name, replacement) => {
 
 const waitForSettingsUpdateLogs = (type) => {
   if (type === 'sentinel') {
-    return module.exports.waitForLogs(
-      module.exports.sentinelLogFile,
-      /Reminder messages allowed between/,
-    );
+    return module.exports.waitForSentinelLogs(/Reminder messages allowed between/);
   }
 
-  return module.exports.waitForLogs(
-    module.exports.apiLogFile,
-    /Settings updated/,
-  );
+  return module.exports.waitForApiLogs(/Settings updated/);
+};
+
+const killSpawnedProcess = (proc) => {
+  proc.stdout.destroy();
+  proc.stderr.destroy();
+  proc.kill('SIGINT');
+};
+
+/**
+ * Collector that listens to the given container logs and collects lines that match at least one of the
+ * given regular expressions
+ *
+ * To use, call before the action you wish to catch, and then execute the returned function after
+ * the action should have taken place. The function will return a promise that will succeed with
+ * the list of captured lines, or fail if there have been any errors with log capturing.
+ *
+ * @param      {string}    container    container name
+ * @param      {[RegExp]}  regex        matching expression(s) run against lines
+ * @return     {Promise<function>}      promise that returns a function that returns a promise
+ */
+const collectLogs = (container, ...regex) => {
+  const matches = [];
+  const errors = [];
+  let logs = '';
+
+  // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
+  // after watching results in a race condition, where the log is created before watching started.
+  // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
+  // steps of testing afterwards.
+  const params = `logs ${container} -f --tail=1`;
+  const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  let receivedFirstLine;
+  const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
+
+  proc.stdout.on('data', (data) => {
+    receivedFirstLine();
+    data = data.toString();
+    logs += data;
+    const lines = data.split('\n');
+    lines.forEach(line => regex.forEach(r => r.test(line) && matches.push(line)));
+  });
+  proc.stderr.on('err', err => {
+    receivedFirstLine();
+    errors.push(err.toString());
+  });
+
+  const collect = () => {
+    killSpawnedProcess(proc);
+
+    if (errors.length) {
+      return Promise.reject({ message: 'CollectLogs errored', errors, logs });
+    }
+
+    return Promise.resolve(matches);
+  };
+
+  return firstLineReceivedPromise.then(() => collect);
+};
+
+
+/**
+ * Watches a docker log until at least one line matches one of the given regular expressions.
+ * Watch expires after 10 seconds.
+ * @param {String} container - name of the container to watch
+ * @param {[RegExp]} regex - matching expression(s) run against lines
+ * @returns {Promise<Object>} that contains the promise to resolve when logs lines are matched and a cancel function
+ */
+const waitForDockerLogs = (container, ...regex) => {
+  let timeout;
+  let logs = '';
+  let firstLine = false;
+
+  // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
+  // after watching results in a race condition, where the log is created before watching started.
+  // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
+  // steps of testing afterwards.
+  const params = `logs ${container} -f --tail=1`;
+  console.log('docker', params);
+  const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
+  let receivedFirstLine;
+  const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
+
+  const promise = new Promise((resolve, reject) => {
+    timeout = setTimeout(() => {
+      console.log('Found logs', logs, 'watched for', ...regex);
+      reject(new Error('Timed out looking for details in logs.'));
+      killSpawnedProcess(proc);
+    }, 6000);
+
+    const checkOutput = (data) => {
+      if (!firstLine) {
+        firstLine = true;
+        receivedFirstLine();
+        return;
+      }
+
+      data = data.toString();
+      logs += data;
+      const lines = data.split('\n');
+      if (lines.find(line => regex.find(r => r.test(line)))) {
+        resolve();
+        clearTimeout(timeout);
+        killSpawnedProcess(proc);
+      }
+    };
+
+    proc.stdout.on('data', checkOutput);
+    proc.stderr.on('data', checkOutput);
+  });
+
+  return firstLineReceivedPromise.then(() => ({
+    promise,
+    cancel: () => {
+      clearTimeout(timeout);
+      killSpawnedProcess(proc);
+    }
+  }));
 };
 
 const apiRetry = () => {
@@ -444,13 +596,6 @@ const setupSettings = () => {
   });
 };
 
-const getLoginUrl = () => {
-  const redirectUrl = encodeURIComponent(
-    `/${constants.DB_NAME}/_design/${constants.MAIN_DDOC_NAME}/_rewrite/#/messages`
-  );
-  return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
-};
-
 const saveBrowserLogs = () => {
   // wdio also writes in this file
   if (!browserLogStream) {
@@ -471,22 +616,39 @@ const saveBrowserLogs = () => {
     });
 };
 
+const generateComposeFiles = async () => {
+  const view = {
+    repo: buildVersions.getRepo(),
+    tag: buildVersions.getImageTag(),
+    db_name: 'medic-test',
+    couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
+  };
+
+  for (const file of COMPOSE_FILES) {
+    const templatePath = getTemplateComposeFilePath(file);
+    const testComposePath = getTestComposeFilePath(file);
+
+    const template = await fs.promises.readFile(templatePath, 'utf-8');
+    await fs.promises.writeFile(testComposePath, mustache.render(template, view));
+  }
+};
+
+const createLogDir = async () => {
+  const logDirPath = path.join(__dirname, 'logs');
+  if (fs.existsSync(logDirPath)) {
+    await fs.promises.rmdir(logDirPath, { recursive: true });
+  }
+  await fs.promises.mkdir(logDirPath);
+};
 
 const prepServices = async (defaultSettings) => {
-  if (constants.IS_CI) {
-    console.log('On CI, waiting for horti to first boot api');
-    // CI' horti will be installing and then deploying api and sentinel, and those logs are
-    // getting pushed into horti.log Once horti has bootstrapped we want to restart everything so
-    // that the service processes get restarted with their logs separated and pointing to the
-    // correct logs for testing
-    await listenForApi();
-    console.log('Horti booted API, rebooting under our logging structure');
-    await rpn.post('http://localhost:31337/all/restart');
-  } else {
-    // Locally we just need to start them and can do so straight away
-    await rpn.post('http://localhost:31337/all/start');
-  }
+  await createLogDir();
+  await generateComposeFiles();
 
+  updateContainerNames();
+
+  await stopServices(true);
+  await startServices();
   await listenForApi();
   if (defaultSettings) {
     await runAndLogApiStartupMessage('Settings setup', setupSettings);
@@ -494,10 +656,93 @@ const prepServices = async (defaultSettings) => {
   await runAndLogApiStartupMessage('User contact doc setup', setUserContactDoc);
 };
 
+const dockerComposeCmd = (...params) => {
+  const composeFilesParam = COMPOSE_FILES
+    .map(file => ['-f', getTestComposeFilePath(file)])
+    .flat();
+  const projectParams = ['-p', PROJECT_NAME];
+
+  const env = {
+    ...process.env,
+    CHT_NETWORK: NETWORK,
+    DB1_DATA: db1Data,
+    DB2_DATA: db2Data,
+    DB3_DATA: db3Data,
+  };
+
+  return new Promise((resolve, reject) => {
+    const cmd = spawn('docker-compose', [ ...projectParams, ...composeFilesParam, ...params ], { env });
+    const output = [];
+    const log = (data, error) => {
+      data = data.toString();
+      output.push(data);
+      error ? console.error(data) : console.log(data);
+    };
+
+    cmd.on('error', (err) => {
+      console.error(err);
+      reject(err);
+    });
+    cmd.stdout.on('data', log);
+    cmd.stderr.on('data', log);
+
+    cmd.on('close', () => resolve(output));
+  });
+};
+
+const getDockerLogs = (container) => {
+  const logFile = path.resolve(__dirname, 'logs', `${container}.log`);
+  const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
+
+  return new Promise((resolve, reject) => {
+    const cmd = spawn('docker', ['logs', container]);
+
+    cmd.on('error', (err) => {
+      console.error('Error while collecting container logs', err);
+      reject(err);
+    });
+    cmd.stdout.pipe(logWriteStream, { end: false });
+    cmd.stderr.pipe(logWriteStream, { end: false });
+
+    cmd.on('close', () => {
+      resolve();
+      logWriteStream.end();
+    });
+  });
+};
+
+const saveLogs = async () => {
+  for (const containerName of Object.values(CONTAINER_NAMES)) {
+    await getDockerLogs(containerName);
+  }
+};
+
+const startServices = async () => {
+  await dockerComposeCmd('up', '-d');
+  const services = await dockerComposeCmd('ps', '-q');
+  if (!services.length) {
+    throw new Error('Errors when starting services');
+  }
+};
+
+const stopServices = async (removeOrphans) => {
+  if (removeOrphans) {
+    return dockerComposeCmd('down', '--remove-orphans', '--volumes');
+  }
+  await saveLogs();
+};
+const startService = async (service) => {
+  await dockerComposeCmd('start', service);
+};
+
+const stopService = async (service) => {
+  await dockerComposeCmd('stop', '-t', 0, service);
+};
+
 const protractorLogin = async (browser, timeout = 20) => {
-  await browser.driver.get(getLoginUrl());
-  await browser.driver.findElement(by.name('user')).sendKeys(auth.username);
-  await browser.driver.findElement(by.name('password')).sendKeys(auth.password);
+  await browser.driver.get(module.exports.getLoginUrl());
+  await browser.driver.findElement(by.name('user')).sendKeys(constants.USERNAME);
+  await browser.driver.findElement(by.name('password')).sendKeys(constants.PASSWORD);
   await browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
   const bootstrappedCheck = () =>
@@ -515,17 +760,12 @@ const setupUser = () => {
     .then(() => module.exports.closeTour());
 };
 
-const setupUserDoc = (userName = auth.username, userDoc = userSettings.build()) => {
+const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.build()) => {
   return module.exports.getDoc(COUCH_USER_ID_PREFIX + userName)
     .then(doc => {
       const finalDoc = Object.assign(doc, userDoc);
       return module.exports.saveDoc(finalDoc);
     });
-};
-
-
-const tearDownServices = () => {
-  return rpn.post('http://localhost:31337/die');
 };
 
 const parseCookieResponse = (cookieString) => {
@@ -544,14 +784,22 @@ const parseCookieResponse = (cookieString) => {
 };
 
 const dockerGateway = () => {
-  if (!constants.IS_CI) {
-    return;
-  }
   try {
-    return JSON.parse(execSync(`docker network inspect e2e --format='{{json .IPAM.Config}}'`));
+    return JSON.parse(execSync(`docker network inspect ${NETWORK} --format='{{json .IPAM.Config}}'`));
   } catch (error) {
     console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
+  }
+};
+
+const getDockerVersion = () => {
+  try {
+    const response = execSync('docker-compose -v').toString();
+    const version = response.match(semver.re[3])[0];
+    return semver.major(version);
+  } catch (err) {
+    console.error(err);
+    return 1;
   }
 };
 
@@ -561,6 +809,24 @@ const hostURL = (port = 80) => {
   const url = new URL(`http://${host}`);
   url.port = port;
   return url.href;
+};
+
+const formDocProcessing = async (docs) => {
+  if (!Array.isArray(docs)) {
+    docs = [docs];
+  }
+
+  const formsWatchers = docs
+    .filter(doc => doc.type === 'form')
+    .map(doc => new RegExp(`Form with ID "${doc._id}" does not need to be updated`))
+    .map(re => module.exports.waitForApiLogs(re));
+
+  const waitForForms = await Promise.all(formsWatchers);
+
+  return {
+    promise:() => Promise.all(waitForForms.map(wait => wait.promise)),
+    cancel: () => waitForForms.forEach(wait => wait.cancel),
+  };
 };
 
 module.exports = {
@@ -612,11 +878,15 @@ module.exports = {
    }
    */
   currentSpecReporter: {
-    specStarted: result => (jasmine.currentSpec = result),
-    specDone: result => (jasmine.currentSpec = result),
+    specStarted: result => {
+      jasmine.currentSpec = result;
+      return module.exports.apiLogTestStart(jasmine.currentSpec.fullName);
+    },
+    specDone: result => {
+      jasmine.currentSpec = result;
+      return module.exports.apiLogTestEnd(jasmine.currentSpec.fullName);
+    },
   },
-
-
 
   requestOnTestDb: (options, debug) => {
     if (typeof options === 'string') {
@@ -650,30 +920,36 @@ module.exports = {
     return request(options, { debug: debug });
   },
 
-  saveDoc: doc => {
-    return module.exports.requestOnTestDb({
-      path: '/', // so audit picks this up
-      method: 'POST',
-      headers: {
-        'Content-Length': JSON.stringify(doc).length,
-      },
-      body: doc,
-    });
+  saveDoc: async doc => {
+    const waitForForms = await formDocProcessing(doc);
+    try {
+      const result = module.exports.requestOnTestDb({
+        path: '/', // so audit picks this up
+        method: 'POST',
+        body: doc,
+      });
+      await waitForForms.promise();
+      return result;
+    } catch (err) {
+      waitForForms.cancel();
+      throw err;
+    }
   },
 
-  saveDocs: docs => {
-    return module.exports
-      .requestOnTestDb({
-        path: '/_bulk_docs',
-        method: 'POST',
-        body: { docs: docs }
-      })
-      .then(results => {
-        if (results.find(r => !r.ok)) {
-          throw Error(JSON.stringify(results, null, 2));
-        }
-        return results;
-      });
+  saveDocs: async docs => {
+    const waitForForms = await formDocProcessing(docs);
+    const results = await module.exports.requestOnTestDb({
+      path: '/_bulk_docs',
+      method: 'POST',
+      body: { docs }
+    });
+    if (results.find(r => !r.ok)) {
+      waitForForms.cancel();
+      throw Error(JSON.stringify(results, null, 2));
+    }
+
+    await waitForForms.promise();
+    return results;
   },
 
   saveMetaDocs: (user, docs) => {
@@ -780,17 +1056,15 @@ module.exports = {
    *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
    * @return {Promise}        completion promise
    */
-  updateSettings: (updates, ignoreReload) => {
+  updateSettings: async (updates, ignoreReload) => {
     const watcher = ignoreReload &&
       Object.keys(updates).length &&
-      waitForSettingsUpdateLogs(ignoreReload);
-
-    return updateSettings(updates).then(() => {
-      if (!ignoreReload) {
-        return refreshToGetNewSettings();
-      }
-      return watcher && watcher.promise;
-    });
+      await waitForSettingsUpdateLogs(ignoreReload);
+    await updateSettings(updates);
+    if (!ignoreReload) {
+      return await refreshToGetNewSettings();
+    }
+    return watcher && await watcher.promise;
   },
   /**
    * Revert settings and refresh if required
@@ -799,20 +1073,20 @@ module.exports = {
    *                                       and resolve when new settings are loaded.
    * @return {Promise}       completion promise
    */
-  revertSettings: ignoreRefresh => {
-    const watcher = ignoreRefresh && waitForSettingsUpdateLogs();
-    return revertSettings().then((needsRefresh) => {
-      if (!ignoreRefresh) {
-        return refreshToGetNewSettings();
-      }
+  revertSettings: async ignoreRefresh => {
+    const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
+    const needsRefresh = await revertSettings();
 
-      if (!needsRefresh) {
-        watcher && watcher.cancel();
-        return;
-      }
+    if (!ignoreRefresh) {
+      return await refreshToGetNewSettings();
+    }
 
-      return watcher.promise;
-    });
+    if (!needsRefresh) {
+      watcher && watcher.cancel();
+      return;
+    }
+
+    return await watcher.promise;
   },
 
   seedTestData: (userContactDoc, documents) => {
@@ -875,23 +1149,17 @@ module.exports = {
     };
   },
 
-  getCouchUrl: () =>
-    `http://${auth.username}:${auth.password}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`,
-
-  getInstanceUrl: () =>
-    `http://${auth.username}:${auth.password}@${constants.API_HOST}:${constants.API_PORT}`,
-
   getOrigin: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}`,
+    `${constants.BASE_URL}`,
 
   getBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/#/`,
+    `${constants.BASE_URL}/#/`,
 
   getAdminBaseUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/admin/#/`,
+    `${constants.BASE_URL}/admin/#/`,
 
   getLoginUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`,
+    `${constants.BASE_URL}/${constants.DB_NAME}/login`,
 
   // Deletes _users docs and medic/user-settings docs for specified users
   // @param {Array} usernames - list of users to be deleted
@@ -908,46 +1176,8 @@ module.exports = {
 
   setDebug: debug => e2eDebug = debug,
 
-  stopSentinel: () => rpn.post('http://localhost:31337/sentinel/stop'),
-  startSentinel: () => rpn.post('http://localhost:31337/sentinel/start'),
-
-  /**
-   * Collector that listens to the given logfile and collects lines that match at least one of the a
-   * given regular expressions
-   *
-   * To use, call before the action you wish to catch, and then execute the returned function after
-   * the action should have taken place. The function will return a promise that will succeed with
-   * the list of captured lines, or fail if there have been any errors with log capturing.
-   *
-   * @param      {string}    logFilename  filename of file in local logs directory
-   * @param      {[RegExp]}  regex        matching expression(s) run against lines
-   * @return     {function}  fn that returns a promise
-   */
-  collectLogs: (logFilename, ...regex) => {
-    const lines = [];
-    const errors = [];
-
-    const tail = new Tail(`./tests/logs/${logFilename}`);
-    tail.on('line', data => {
-      if (regex.find(r => r.test(data))) {
-        lines.push(data);
-      }
-    });
-    tail.on('error', err => {
-      errors.push(err);
-    });
-    tail.watch();
-
-    return function () {
-      tail.unwatch();
-
-      if (errors.length) {
-        return Promise.reject({ message: 'CollectLogs errored', errors: errors });
-      }
-
-      return Promise.resolve(lines);
-    };
-  },
+  stopSentinel: () => stopService('sentinel'),
+  startSentinel: () => startService('sentinel'),
 
   saveCredentials: (key, password) => {
     const options = {
@@ -962,47 +1192,13 @@ module.exports = {
     return request(options);
   },
 
-  /**
-   * Watches a given logfile until at least one line matches one of the given regular expressions.
-   * Watch expires after 10 seconds.
-   * @param {String} logFilename - filename of file in local logs directory
-   * @param {[RegExp]} regex - matching expression(s) run against lines
-   * @returns {Object} that contains the promise to resolve when logs lines are matched and a cancel function
-   */
-  waitForLogs: (logFilename, ...regex) => {
-    const tail = new Tail(`./tests/logs/${logFilename}`);
-    let timeout;
-    const promise = new Promise((resolve, reject) => {
-      timeout = setTimeout(() => {
-        tail.unwatch();
-        reject({ message: 'Timed out looking for details in log files.' });
-      }, 6000);
-
-      tail.on('line', data => {
-        if (regex.find(r => r.test(data))) {
-          tail.unwatch();
-          clearTimeout(timeout);
-          resolve();
-        }
-      });
-      tail.on('error', err => {
-        tail.unwatch();
-        clearTimeout(timeout);
-        reject(err);
-      });
-    });
-
-    return {
-      promise,
-      cancel: () => {
-        tail.unwatch();
-        clearTimeout(timeout);
-      },
-    };
-  },
-
   // delays executing a function that returns a promise with the provided interval (in ms)
   delayPromise: (promiseFn, interval) => {
+    if (typeof promiseFn === 'number') {
+      interval = promiseFn;
+      promiseFn = () => Promise.resolve();
+    }
+
     return new Promise((resolve, reject) => {
       setTimeout(() => promiseFn().then(resolve).catch(reject), interval);
     });
@@ -1084,9 +1280,9 @@ module.exports = {
   protractorLogin: protractorLogin,
 
   saveBrowserLogs: saveBrowserLogs,
-  tearDownServices,
+  tearDownServices: stopServices,
   endSession: async (exitCode) => {
-    await tearDownServices();
+    await module.exports.tearDownServices();
     return module.exports.reporter.afterLaunch(exitCode);
   },
 
@@ -1095,4 +1291,24 @@ module.exports = {
 
   apiLogFile: 'api.e2e.log',
   sentinelLogFile: 'sentinel.e2e.log',
+
+  waitForDockerLogs,
+  collectLogs,
+
+  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs(getContainerName('api'), ...regex),
+  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs(getContainerName('sentinel'), ...regex),
+  collectSentinelLogs: (...regex) => collectLogs(getContainerName('sentinel'), ...regex),
+  collectApiLogs: (...regex) => collectLogs(getContainerName('api'), ...regex),
+
+  apiLogTestStart: (name) => {
+    return module.exports.requestOnTestDb(`/?start=${name.replace(/\s/g, '_')}`);
+  },
+  apiLogTestEnd: (name) => {
+    return module.exports.requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
+  },
+  COMPOSE_FILES,
+  updateContainerNames,
+  listenForApi,
+  makeTempDir,
+  SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
 };

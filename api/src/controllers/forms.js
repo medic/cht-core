@@ -1,3 +1,4 @@
+const { Readable } = require('stream');
 const openrosaFormList = require('openrosa-formlist');
 const auth = require('../auth');
 const serverUtils = require('../server-utils');
@@ -27,11 +28,15 @@ const isCollectForm = doc => doc && doc.context && doc.context.collect;
 // @param {Object} data - couchdb view data
 // @param {Object} req - the request object
 const listFormsXML = (forms, req) => {
-  const urls = forms
+  const downloadUrl = `${req.protocol}://${req.headers.host}/api/v1/forms/` + '${formId}.xml'; // formId is replaced by openrosaFormList
+  const xmls = forms
     .filter(form => isCollectForm(form))
-    .map(form => `${req.protocol}://${req.headers.host}/api/v1/forms/${form.internalId}.xml`);
+    .map(form => formsService.getXFormAttachment(form))
+    .filter(attachment => !!attachment)
+    .map(attachment => Readable.from(attachment.data));
+
   return new Promise((resolve, reject) => {
-    openrosaFormList(urls, (err, xml) => {
+    openrosaFormList(xmls, { downloadUrl }, (err, xml) => {
       if (err) {
         return reject(err);
       }
@@ -51,6 +56,9 @@ const listFormsJSON = forms => {
 
 module.exports = {
   list: (req, res) => {
+    if (!req.userCtx) {
+      return serverUtils.notLoggedIn(req, res);
+    }
     return formsService.getFormDocs()
       .then(forms => {
         if (req.headers['x-openrosa-version']) {
@@ -66,6 +74,10 @@ module.exports = {
       .catch(err => serverUtils.error(err, req, res));
   },
   get: (req, res) => {
+    if (!req.userCtx) {
+      return serverUtils.notLoggedIn(req, res);
+    }
+
     const parts = req.params.form.split('.');
     const form = parts.slice(0, -1).join('.');
     const format = parts.slice(-1)[0];
@@ -99,7 +111,8 @@ module.exports = {
       .catch(err => serverUtils.error(err, req, res));
   },
   validate: (req, res) => {
-    return auth.check(req, 'can_configure')
+    return auth
+      .check(req, 'can_configure')
       .then(() => generateXform.generate(req.body))
       .then(() => res.json({ok: true}))
       .catch(err => {

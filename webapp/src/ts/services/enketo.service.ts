@@ -12,7 +12,7 @@ import {
   TranslationServices,
   XmlServices,
 } from '../../js/enketo/enketo-form-manager';
-import { AddAttachmentService } from '@mm-services/add-attachment.service';
+import { AttachmentService } from '@mm-services/attachment.service';
 import { DbService } from '@mm-services/db.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
@@ -39,7 +39,7 @@ import {UserSettingsService} from '@mm-services/user-settings.service';
 export class EnketoService {
   constructor(
     store:Store,
-    addAttachmentService:AddAttachmentService,
+    private attachmentService: AttachmentService,
     contactSummaryService:ContactSummaryService,
     contactTypesService:ContactTypesService,
     dbService:DbService,

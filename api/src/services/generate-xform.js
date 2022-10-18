@@ -5,7 +5,7 @@
 const childProcess = require('child_process');
 const htmlParser = require('node-html-parser');
 const logger = require('../logger');
-const markdown = require('enketo-transformer/src/markdown');
+const markdown = require('../enketo-transformer/markdown');
 const { FORM_STYLESHEET, MODEL_STYLESHEET } = require('../xsl/xsl-paths');
 
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';

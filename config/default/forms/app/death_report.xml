@@ -55,6 +55,9 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
           <text id="/death_report/inputs/contact/name:label">
             <value>Name</value>
           </text>
+          <text id="/death_report/inputs/contact/parent/_id:label">
+            <value>Household ID</value>
+          </text>
           <text id="/death_report/inputs/contact/parent/parent/contact/name:label">
             <value>CHW name</value>
           </text>
@@ -85,7 +88,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
         </translation>
       </itext>
       <instance>
-        <death_report id="death_report" prefix="J1!death_report!" delimiter="#" version="2019-11-04 13:12:55">
+        <death_report id="death_report" prefix="J1!death_report!" delimiter="#" version="2022-09-26 12:09:48">
           <inputs>
             <meta>
               <location>
@@ -105,6 +108,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
               <date_of_birth>0</date_of_birth>
               <sex/>
               <parent>
+                <_id/>
                 <parent>
                   <contact>
                     <name/>
@@ -167,6 +171,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
       <bind nodeset="/death_report/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/death_report/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/death_report/inputs/contact/sex" type="string"/>
+      <bind nodeset="/death_report/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/death_report/inputs/contact/parent/parent/contact/name" type="string"/>
       <bind nodeset="/death_report/inputs/contact/parent/parent/contact/phone" type="string"/>
       <bind nodeset="/death_report/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /death_report/inputs/contact/date_of_birth , today() ) div 12 )"/>
@@ -177,8 +182,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
       <bind nodeset="/death_report/patient_name" type="string" calculate="../inputs/contact/name"/>
       <bind nodeset="/death_report/patient_short_name" type="string" calculate="../inputs/contact/short_name"/>
       <bind nodeset="/death_report/patient_display_name" type="string" calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))"/>
-      <bind nodeset="/death_report/death_details/date_of_death" type="date" jr:constraintMsg="jr:itext('/death_report/death_details/date_of_death:jr:constraintMsg')" required="true()" constraint="(decimal-date-time(.) &lt;= decimal-date-time(today()))
-and floor(decimal-date-time(today()) - decimal-date-time(.)) &lt;= 365"/>
+      <bind nodeset="/death_report/death_details/date_of_death" type="date" required="true()" constraint="(. &lt;= now()) and floor(decimal-date-time(today()) - decimal-date-time(.)) &lt;= 365" jr:constraintMsg="jr:itext('/death_report/death_details/date_of_death:jr:constraintMsg')"/>
       <bind nodeset="/death_report/death_details/place_of_death" type="select1" required="true()"/>
       <bind nodeset="/death_report/death_details/place_of_death_other" type="string" required="true()" relevant="selected(../place_of_death, 'other')"/>
       <bind nodeset="/death_report/death_details/death_information" type="string"/>

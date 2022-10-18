@@ -1,7 +1,7 @@
-const commonElements = require('../../page-objects/common/common.po.js');
+const commonElements = require('../../page-objects/protractor/common/common.po.js');
 const utils = require('../../utils');
-const auth = require('../../auth')();
-const loginPage = require('../../page-objects/login/login.po');
+const loginPage = require('../../page-objects/protractor/login/login.po');
+const constants = require('../../constants.js');
 
 describe('Navigation tests : ', () => {
   beforeEach(utils.beforeEach);
@@ -20,7 +20,7 @@ describe('Navigation tests : ', () => {
   });
 
   it('should open Reports or History tab', async () => {
-    await commonElements.goToReportsNative();
+    await commonElements.goToReportsNative(true);
     expect(await commonElements.isAt('reports-list'));
   });
 
@@ -99,9 +99,9 @@ describe('Navigation tests : ', () => {
     afterAll(async () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
       await utils.deleteUsers([user]);
-      await utils.revertSettings();
+      await utils.revertSettings(true);
       await commonElements.goToLoginPageNative();
-      await loginPage.loginNative(auth.username, auth.password);
+      await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
       await commonElements.waitForLoaderToDisappear();
     });
 

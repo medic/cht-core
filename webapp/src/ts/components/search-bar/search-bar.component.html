@@ -1,0 +1,21 @@
+<section class="mm-search-bar-container" [class.open-search]="openSearch" [class.disabled]="disabled">
+  <div class="search-bar-left-icon">
+    <span class="fa fa-search" *ngIf="!openSearch && !freetextFilter?.inputText" (click)="toggleMobileSearch()"></span>
+    <a class="fa fa-chevron-left search-bar-clear" *ngIf="openSearch || !!freetextFilter?.inputText" (click)="clear()"></a>
+  </div>
+
+  <mm-freetext-filter class="filter" (search)="search.emit($event)" [disabled]="disabled"></mm-freetext-filter>
+
+  <mm-sort-filter
+    *ngIf="showSort"
+    [lastVisitedDateExtras]="lastVisitedDateExtras"
+    (sort)="applySort($event)"
+    [sortDirection]="sortDirection">
+  </mm-sort-filter>
+
+  <button class="btn open-filter" *ngIf="showFilter" (click)="toggleFilter.emit()">
+    <span class="fa fa-sliders"></span>
+    <span class="open-filter-label">{{ 'search_bar.filter.label' | translate }}</span>
+    <span class="filter-counter" *ngIf="activeFilters">{{ activeFilters.toString() | translate }}</span>
+  </button>
+</section>

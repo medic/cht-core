@@ -1,0 +1,6 @@
+backend couchdb-servers
+  balance leastconn
+  retry-on all-retryable-errors
+  log global
+  retries 5
+  # servers are added at runtime, in entrypoint.sh, based on $COUCHDB_SERVERS

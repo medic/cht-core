@@ -16,7 +16,7 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguageService } from '@mm-services/language.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
-import { AddAttachmentService } from '@mm-services/add-attachment.service';
+import { AttachmentService } from '@mm-services/attachment.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
 import { EnketoService } from '@mm-services/enketo.service';
@@ -59,6 +59,7 @@ describe('Enketo service', () => {
   let TranslateFrom;
   let form;
   let AddAttachment;
+  let removeAttachment;
   let EnketoForm;
   let Search;
   let LineageModelGenerator;
@@ -89,6 +90,7 @@ describe('Enketo service', () => {
       getDataStr: sinon.stub(),
     };
     AddAttachment = sinon.stub();
+    removeAttachment = sinon.stub();
     EnketoForm = sinon.stub();
     Search = sinon.stub();
     LineageModelGenerator = { contact: sinon.stub() };
@@ -141,7 +143,7 @@ describe('Enketo service', () => {
         { provide: UserSettingsService, useValue: { get: UserSettings } },
         { provide: LanguageService, useValue: { get: Language } },
         { provide: TranslateFromService, useValue: { get: TranslateFrom } },
-        { provide: AddAttachmentService, useValue: { add: AddAttachment } },
+        { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
         {
           provide: XmlFormsService,
           useValue: {

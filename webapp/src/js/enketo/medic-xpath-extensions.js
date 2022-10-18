@@ -125,6 +125,24 @@ const convertToBikramSambat = (value) => {
   return { t: 'str', v: convertedDate };
 };
 
+const addDate = function (date, years, months, days, hours, minutes) {
+  if (arguments.length > 6) {
+    throw new Error('Too many arguments.');
+  }
+  const moment = asMoment(date);
+  [
+    [years, 'years'],
+    [months, 'months'],
+    [days, 'days'],
+    [hours, 'hours'],
+    [minutes, 'minutes'],
+  ].filter(([value]) => value)
+    .map(([value, name]) => ([ +asString(value), name ]))
+    .filter(([value]) => value)
+    .forEach(([value, name]) => moment.add(value, name));
+  return XPR.date(moment.toDate());
+};
+
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
@@ -134,9 +152,7 @@ module.exports = {
     moment = _moment;
   },
   func: {
-    today: function() {
-      return XPR.date(new Date());
-    },
+    'add-date': addDate,
     'z-score': function() {
       const args = Array.from(arguments).map(function(arg) {
         return getValue(arg);

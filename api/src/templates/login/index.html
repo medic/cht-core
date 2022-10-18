@@ -12,6 +12,10 @@
     <div class="center">
       <form id="form" action="/medic/login" method="POST">
         <img class="logo" src="{{ branding.logo }}" title="{{ branding.name }}">
+        <p id="unsupported-browser" class="hidden">
+          <span translate="login.unsupported_browser"></span>
+          <span id="unsupported-browser-update"></span>
+        </p>
         <label for="user" translate="User Name"></label>
         <input id="user" name="user" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
         <label for="password" translate="Password"></label>
@@ -33,6 +37,7 @@
       </div>
       <% } %>
     </div>
+    <script src="/login/lib-bowser.js"></script>
     <script src="/login/script.js"></script>
   </body>
 </html>

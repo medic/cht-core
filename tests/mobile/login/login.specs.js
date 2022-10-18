@@ -1,7 +1,7 @@
-const auth = require('../../auth')();
 const utils = require('../../utils');
-const commonElements = require('../../page-objects/common/common.po.js');
-const loginPage = require('../../page-objects/login/login.po.js');
+const commonElements = require('../../page-objects/protractor/common/common.po.js');
+const loginPage = require('../../page-objects/protractor/login/login.po.js');
+const constants = require('../../constants');
 let branding;
 
 describe('Login tests : ', () => {
@@ -29,6 +29,6 @@ describe('Login tests : ', () => {
   it('should try to sign in and verify that credentials were incorrect', async () => {
     await commonElements.goToLoginPageNative();
     await loginPage.loginNative(wrongUsername, wrongPassword, true);
-    await loginPage.loginNative(auth.username, auth.password);
+    await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
   });
 });
