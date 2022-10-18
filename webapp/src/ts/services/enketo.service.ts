@@ -39,7 +39,7 @@ import {UserSettingsService} from '@mm-services/user-settings.service';
 export class EnketoService {
   constructor(
     store:Store,
-    private attachmentService: AttachmentService,
+    attachmentService: AttachmentService,
     contactSummaryService:ContactSummaryService,
     contactTypesService:ContactTypesService,
     dbService:DbService,
@@ -71,7 +71,7 @@ export class EnketoService {
       ),
       new TranslationServices(translateService, translateFromService),
       new XmlServices(
-        addAttachmentService,
+        attachmentService,
         getReportContentService,
         xmlFormsService
       ),

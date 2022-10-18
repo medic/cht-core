@@ -9,11 +9,6 @@ const nodesToJs = (data, repeatPaths, path) => {
   path = path || '';
   const result = {};
   withElements(data).forEach((n) => {
-    const dbDocAttribute = n.attributes.getNamedItem('db-doc');
-    if(dbDocAttribute && dbDocAttribute.value === 'true') {
-      return;
-    }
-
     const typeAttribute = n.attributes.getNamedItem('type');
     const updatedPath = path + '/' + n.nodeName;
     let value;
@@ -44,8 +39,8 @@ const getHiddenFieldListRecursive = (nodes, prefix, current) => {
   nodes.forEach(node => {
     const path = prefix + node.nodeName;
     const attr = node.attributes.getNamedItem('tag');
-    if(attr && attr.value === 'hidden') {
-      current.push(path);
+    if (attr && attr.value && attr.value.toLowerCase() === 'hidden') {
+      current.add(path);
     } else {
       const children = withElements(node.childNodes);
       getHiddenFieldListRecursive(children, path + '.', current);
@@ -60,12 +55,12 @@ const findCurrentElement = (elem, name, childMatcher) => {
     if(found.length > 1) {
       // eslint-disable-next-line no-console
       console.warn(`Enketo bindJsonToXml: Using the matcher "${matcher}" we found ${found.length} elements. ` +
-        'We should only ever bind one.', elem);
+        'We should only ever bind one.', elem, name);
     }
     return found;
-  } else {
-    return elem.children(name);
   }
+
+  return elem.children(name);
 };
 
 const findChildNode = (root, childNodeName) => {
@@ -93,20 +88,36 @@ const repeatsToJs = (data) => {
 };
 
 const bindJsonToXml = (elem, data, childMatcher) => {
+  // Enketo will remove all elements that have the "template" attribute
+  // https://github.com/enketo/enketo-core/blob/51c5c2f494f1515a67355543b435f6aaa4b151b4/src/js/form-model.js#L436-L451
+  elem.removeAttr('jr:template');
+  elem.removeAttr('template');
+
+  if (data === null || typeof data !== 'object') {
+    elem.text(data);
+    return;
+  }
+
+  if (Array.isArray(data)) {
+    const parent = elem.parent();
+    elem.remove();
+
+    data.forEach((dataEntry) => {
+      const clone = elem.clone();
+      bindJsonToXml(clone, dataEntry);
+      parent.append(clone);
+    });
+    return;
+  }
+
+  if (!elem.children().length) {
+    bindJsonToXml(elem, data._id);
+  }
+
   Object.keys(data).forEach((key) => {
     const value = data[key];
     const current = findCurrentElement(elem, key, childMatcher);
-    if(value !== null && typeof value === 'object') {
-      if(current.children().length) {
-        // childMatcher intentionally does not recurse. It exists to
-        // allow the initial layer of binding to be flexible.
-        bindJsonToXml(current, value);
-      } else {
-        current.text(value._id);
-      }
-    } else {
-      current.text(value);
-    }
+    bindJsonToXml(current, value);
   });
 };
 
@@ -131,15 +142,15 @@ const reportRecordToJs = (record, formXml) => {
 module.exports = {
   bindJsonToXml,
 
-  getHiddenFieldList: (model) => {
+  getHiddenFieldList: (model, dbDocFields) => {
     model = $.parseXML(model).firstChild;
     if(!model) {
       return;
     }
     const children = withElements(model.childNodes);
-    const fields = [];
+    const fields = new Set(dbDocFields);
     getHiddenFieldListRecursive(children, '', fields);
-    return fields;
+    return [...fields];
   },
 
   getRepeatPaths,

@@ -5,19 +5,26 @@ import { DbService } from '@mm-services/db.service';
 import { GetReportContentService } from '@mm-services/get-report-content.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { FileReaderService } from '@mm-services/file-reader.service';
-import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
+import { LanguageService } from '@mm-services/language.service';
+
+import EnketoDataPrepopulator from '../../js/enketo/enketo-data-prepopulator';
 
 @Injectable({
   providedIn: 'root'
 })
 export class Form2smsService {
+  private enketoDataPrepopulator: EnketoDataPrepopulator;
+
   constructor(
     private dbService:DbService,
     private getReportContentService:GetReportContentService,
     private fileReaderService: FileReaderService,
     private parseProvider:ParseProvider,
-    private enketoPrepopulationDataService: EnketoPrepopulationDataService,
+    userSettingsService:UserSettingsService,
+    languageService:LanguageService,
   ) {
+    this.enketoDataPrepopulator = new EnketoDataPrepopulator(userSettingsService, languageService);
   }
 
   private concat(...args) {
@@ -54,7 +61,7 @@ export class Form2smsService {
         this.getFormModel(form)
       ])
       .then(([reportModel, formModel]) => {
-        return this.enketoPrepopulationDataService.get(formModel, reportModel);
+        return this.enketoDataPrepopulator.get(formModel, reportModel);
       });
   }
 

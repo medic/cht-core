@@ -235,7 +235,7 @@ describe('EnketoDataTranslator', () => {
         </doc>`;
 
       // when
-      const hidden_fields = service.getHiddenFieldList(xml);
+      const hidden_fields = EnketoDataTranslator.getHiddenFieldList(xml);
 
       // then
       assert.deepEqual(hidden_fields, ['secret.first', 'lmp']);
@@ -486,7 +486,7 @@ describe('EnketoDataTranslator', () => {
           ]
         }
       };
-      service.bindJsonToXml(element, data, (name) => {
+      EnketoDataTranslator.bindJsonToXml(element, data, (name) => {
         return '>%, >inputs>%'.replace(/%/g, name);
       });
 
@@ -568,7 +568,7 @@ describe('EnketoDataTranslator', () => {
         },
       };
 
-      service.bindJsonToXml(element, data);
+      EnketoDataTranslator.bindJsonToXml(element, data);
 
       assert.equal(element.find('district_hospital')[0].hasAttribute('jr:template'), false);
       assert.equal(element.find('district_hospital')[0].hasAttribute('template'), false);

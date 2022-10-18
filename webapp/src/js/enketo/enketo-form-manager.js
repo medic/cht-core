@@ -166,6 +166,7 @@ const setFormTitle = (wrapper, title) => {
   } // else the title is hardcoded in the form definition - leave it alone
 };
 
+// eslint-disable-next-line func-style
 function handleKeypressOnInputField(e) {
   // Here we capture both CR and TAB characters, and handle field-skipping
   if(!window.medicmobile_android || (e.keyCode !== 9 && e.keyCode !== 13)) {
@@ -443,6 +444,7 @@ const xmlToDocs = (xmlServices, doc, formXml, xmlVersion, record) => {
     return $('<temproot>').append($(xml).clone()).html();
   };
 
+  const dbDocTags = [];
   $record
     .find('[db-doc]')
     .filter((idx, element) => {
@@ -450,6 +452,7 @@ const xmlToDocs = (xmlServices, doc, formXml, xmlVersion, record) => {
     })
     .each((idx, element) => {
       mapOrAssignId(element);
+      dbDocTags.push(element.tagName);
     });
 
   $record
@@ -477,7 +480,7 @@ const xmlToDocs = (xmlServices, doc, formXml, xmlVersion, record) => {
   if (xmlVersion) {
     doc.form_version = xmlVersion;
   }
-  doc.hidden_fields = EnketoDataTranslator.getHiddenFieldList(record);
+  doc.hidden_fields = EnketoDataTranslator.getHiddenFieldList(record, dbDocTags);
 
   const attach = (elem, file, type, alreadyEncoded, xpath) => {
     xpath = xpath || getElementXPath(elem);
@@ -510,7 +513,8 @@ const xmlToDocs = (xmlServices, doc, formXml, xmlVersion, record) => {
 
   record = getOuterHTML($record[0]);
 
-  xmlServices.addAttachment.add(doc, xmlServices.getReportContent.REPORT_ATTACHMENT_NAME, record, 'application/xml');
+  // remove old style content attachment
+  xmlServices.addAttachment.remove(doc, xmlServices.getReportContentService.REPORT_ATTACHMENT_NAME);
 
   docsToStore.unshift(doc);
 
