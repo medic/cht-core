@@ -228,6 +228,20 @@ describe('Settings Shared Library', () => {
         });
     });
 
+    it('should throw an error when couch secret is empty string', () => {
+      const requestGet = sinon.stub(request, 'get');
+      requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 });
+      requestGet.onCall(1).resolves('');
+
+      return lib
+        .setCredentials('mykey', 'mypass')
+        .then(() => expect.fail('Should have thrown'))
+        .catch((err) => {
+          expect(err.message)
+            .to.equal('Invalid cypher. CouchDB Secret needs to be set in order to use secure credentials.');
+        });
+    });
+
   });
 
 

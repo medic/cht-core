@@ -42,6 +42,10 @@ const getKey = () => {
   return request
     .get(url, { json: true })
     .then(key => {
+      if (!key.length) {
+        throw new Error('Invalid cypher. CouchDB Secret needs to be set in order to use secure credentials.');
+      }
+
       let buffer = Buffer.from(key);
       if (buffer.length < KEY_LENGTH) {
         const duplicateCount = Math.ceil(KEY_LENGTH / buffer.length);
