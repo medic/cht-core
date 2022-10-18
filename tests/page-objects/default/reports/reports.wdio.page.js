@@ -2,21 +2,22 @@ const commonElements = require('../common/common.wdio.page');
 const searchElements = require('../search/search.wdio.page');
 const utils = require('../../../utils');
 
-const reportListID = '#reports-list';
+const REPORTS_LIST_ID = '#reports-list';
 const reportBodyDetailsSelector = '#reports-content .report-body .details';
 const reportBodyDetails = () => $(reportBodyDetailsSelector);
 const reportTasks = () =>  $(`${reportBodyDetailsSelector} .scheduled-tasks`);
-const reportBody = '#reports-content .report-body';
+const REPORT_BODY = '#reports-content .report-body';
+const reportBody = () => $(REPORT_BODY);
 const selectedCaseId = () => $(`${reportBodyDetailsSelector} > ul > li > p > span > a`);
 const selectedCaseIdLabel = () => $(`${reportBodyDetailsSelector} ul > li > label > span`);
 const submitterPlace = () => $('.position a');
 const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
-const firstReport = () => $(`${reportListID} li:first-child`);
-const reportList = () => $(`${reportListID}`);
-const allReports = () => $$(`${reportListID} li.content-row`);
-const reportsByUUID = (uuid) => $$(`${reportListID} li.content-row[data-record-id="${uuid}"]`);
-const reportRowSelector = `${reportListID} .content-row`;
+const firstReport = () => $(`${REPORTS_LIST_ID} li:first-child`);
+const reportList = () => $(`${REPORTS_LIST_ID}`);
+const allReports = () => $$(`${REPORTS_LIST_ID} li.content-row`);
+const reportsByUUID = (uuid) => $$(`${REPORTS_LIST_ID} li.content-row[data-record-id="${uuid}"]`);
+const reportRowSelector = `${REPORTS_LIST_ID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const editReportButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
@@ -32,7 +33,10 @@ const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
 
 const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
-const deleteAllButton = () => $('.action-container .detail-actions .delete-all');
+const deleteAllButton = () => $('.desktop.multiselect-bar-container .bulk-delete');
+const selectedReportsCount = () => $('.desktop.multiselect-bar-container .count-label');
+const DELETE_CONFIRM_MODAL = 'mm-modal#bulk-delete-confirm';
+const bulkDeleteModal = () => $(DELETE_CONFIRM_MODAL);
 const dateFilter = () => $('#date-filter');
 const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]');
 const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
@@ -45,10 +49,10 @@ const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
-const deselectReport = () => $(`${reportBody} .deselect`);
-const itemSummary = () => $(`${reportBody} .item-summary`);
-const checkCss = 'input[type="checkbox"]';
-
+const deselectReport = () => $(`${REPORT_BODY} .deselect`);
+const itemSummary = () => $(`${REPORT_BODY} .item-summary`);
+const reportCheckbox = (uuid) => $(`${REPORTS_LIST_ID} li[data-record-id="${uuid}"] input[type="checkbox"]`);
+const reportSelectedCheckbox = () => $$(`${REPORTS_LIST_ID} li input[type="checkbox"]:checked`);
 const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
 const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
@@ -136,7 +140,7 @@ const getListReportInfo = async (listElement) => {
 };
 
 const reportsListDetails = async () => {
-  const reports = await $$(`${reportListID} li`);
+  const reports = await $$(`${REPORTS_LIST_ID} li`);
   const reportDetails = [];
   for (const report of reports) {
     reportDetails.push(await getListReportInfo(report));
@@ -150,55 +154,46 @@ const collapseSelection = async () => {
   expect(await (await reportBodyDetails()).isExisting()).to.be.false;
 };
 
-const deleteSelectedReports = async () => {
-  const confirmButton = () => $('.btn.submit.btn-danger');
-  const completeButton = () => $('a=Complete');
-  await (await deleteAllButton()).click();
-  await (await confirmButton()).click();
-  await (await completeButton()).click();
-  await (await completeButton()).waitForDisplayed({ reverse: true });
-  await (await firstReport()).waitForDisplayed();
-  return await $$(reportBody);
-};
-
-const deselectAll = async () => {
-  const deselectAllButton = await $('.action-container .deselect-all');
-  await deselectAllButton.click();
-  const count = await $('#reports-content .selection-count > span');
-  await count.waitForExist({ reverse: true });
-  return await $$(reportBody);
-};
-
 const expandSelection = async () => {
   await (await itemSummary()).click();
   await (await $(reportBodyDetailsSelector)).waitForDisplayed();
 };
 
-const selectAll = async () => {
-  await (await $('.action-container .select-all')).click();
-  await (await $('#reports-content .selection-count > span')).waitForDisplayed();
-  return await $$(reportBody);
+const deleteSelectedReports = async () => {
+  await (await deleteAllButton()).waitForDisplayed();
+  await (await deleteAllButton()).click();
+
+  await (await bulkDeleteModal()).waitForDisplayed();
+  await (await $(`${DELETE_CONFIRM_MODAL} .btn.submit.btn-danger`)).click();
+
+  const bulkDeleteConfirmBtn = () => $('a=Complete');
+  await (await bulkDeleteConfirmBtn()).waitForDisplayed();
+  await (await bulkDeleteConfirmBtn()).click();
+
+  await (await bulkDeleteModal()).waitForDisplayed({ reverse: true });
+  await (await firstReport()).waitForDisplayed();
 };
 
-const selectReports = async (uuids) => {
+const verifyMultiSelect = async (reverse=false) => {
+  await (await reportBody()).waitForDisplayed( { reverse });
+  await (await deleteAllButton()).waitForClickable( { reverse });
+  await (await selectedReportsCount()).waitForDisplayed({ reverse });
+  return {
+    countLabel: reverse ? false : await (await selectedReportsCount()).getText(),
+    selectedCount: (await reportSelectedCheckbox()).length,
+  };
+};
+
+const toggleSelectAll = async (reverse=false) => {
+  await (await $(`${REPORTS_LIST_ID} .select-all input[type="checkbox"]`)).click();
+  return verifyMultiSelect(reverse);
+};
+
+const selectReports = async (uuids, reverse=false) => {
   for (const uuid of uuids) {
-    await (await reportByUUID(uuid)).$(checkCss).click();
-    await (await deleteAllButton()).waitForClickable();
+    await (await reportCheckbox(uuid)).click();
   }
-  return await $$(reportBody);
-};
-
-const startSelectMode = async (savedUuids) => {
-  const selectModeButton = () => $('.action-container .select-mode-start');
-  await (await selectModeButton()).click();
-  const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
-  await checkbox.waitForDisplayed();
-};
-
-const stopSelectMode = async (savedUuids) => {
-  await (await $('.action-container .select-mode-stop')).click();
-  const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
-  await checkbox.waitForDisplayed({ reverse: true });
+  return verifyMultiSelect(reverse);
 };
 
 const filterByDate = async (startDate, endDate) => {
@@ -348,15 +343,12 @@ module.exports = {
   getSummaryField,
   submitForm,
   reportsListDetails,
-  stopSelectMode,
-  startSelectMode,
-  selectAll,
+  toggleSelectAll,
   selectReports,
   deselectReport,
   expandSelection,
   collapseSelection,
   deleteSelectedReports,
-  deselectAll,
   firstReportDetailField,
   reportByUUID,
   filterByDate,

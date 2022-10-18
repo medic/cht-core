@@ -1,6 +1,6 @@
 const utils = require('../../../utils');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const reports = require('../../../page-objects/default/reports/reports.wdio.page');
+const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 
 describe('Bulk delete reports', () => {
@@ -60,36 +60,33 @@ describe('Bulk delete reports', () => {
   before(async () => {
     await loginPage.cookieLogin();
     const results = await utils.saveDocs(docs);
-    results.forEach(result => {
-      savedUuids.push(result.id);
-    });
+    results.forEach(result => savedUuids.push(result.id));
   });
 
   it('should select, deselect and delete only selected reports', async () => {
     await commonElements.goToReports();
-    await reports.startSelectMode(savedUuids);
-    await reports.stopSelectMode(savedUuids);
-    // start select mode again
-    await reports.startSelectMode(savedUuids);
-    const selectedReport = await reports.selectReports([savedUuids[0]]);
-    expect(selectedReport.length).to.equal(1);
-    await reports.expandSelection();
-    await reports.collapseSelection();
-    // deselect
-    await (await reports.deselectReport()).click();
-    const selectedAll = await reports.selectAll();
-    expect(selectedAll.length).to.equal(3);
 
-    const deselect = await reports.deselectAll();
-    expect(deselect.length).to.equal(0);
+    const selectAllResult = await reportsPage.toggleSelectAll();
+    expect(selectAllResult.countLabel).to.equal('3 records selected');
+    expect(selectAllResult.selectedCount).to.equal(3);
+    await reportsPage.expandSelection();
+    await reportsPage.collapseSelection();
 
-    const selectedItems = await reports.selectReports([savedUuids[0], savedUuids[2]]);
-    expect(selectedItems.length).to.equal(2);
+    const deselectAllResult = await reportsPage.toggleSelectAll(true);
+    expect(deselectAllResult.selectedCount).to.equal(0);
 
-    await reports.deleteSelectedReports();
-    expect(await (await reports.reportsListDetails()).length).to.equal(1);
-    expect(await (await reports.reportByUUID(savedUuids[0])).isDisplayed()).to.be.false;
-    expect(await (await reports.reportByUUID(savedUuids[1])).isDisplayed()).to.be.true;
-    expect(await (await reports.reportByUUID(savedUuids[2])).isDisplayed()).to.be.false;
+    const selectSomeResult = await reportsPage.selectReports([ savedUuids[0], savedUuids[2] ]);
+    expect(selectSomeResult.countLabel).to.equal('2 records selected');
+    expect(selectSomeResult.selectedCount).to.equal(2);
+
+    const deselectSomeResult = await reportsPage.selectReports([ savedUuids[0] ]);
+    expect(deselectSomeResult.countLabel).to.equal('1 record selected');
+    expect(deselectSomeResult.selectedCount).to.equal(1);
+
+    await reportsPage.deleteSelectedReports();
+    expect(await (await reportsPage.reportsListDetails()).length).to.equal(2);
+    expect(await (await reportsPage.reportByUUID(savedUuids[0])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(savedUuids[1])).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(savedUuids[2])).isDisplayed()).to.be.false;
   });
 });
