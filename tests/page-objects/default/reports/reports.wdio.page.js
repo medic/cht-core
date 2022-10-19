@@ -150,6 +150,7 @@ const reportsListDetails = async () => {
 };
 
 const toggleSelectedReportSummary = async (reverse=false) => {
+  await (await itemSummary()).waitForClickable();
   await (await itemSummary()).click();
   await (await reportBodyDetails()).waitForDisplayed({ reverse });
 };
