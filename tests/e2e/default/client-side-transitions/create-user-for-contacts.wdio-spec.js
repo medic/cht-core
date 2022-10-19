@@ -143,12 +143,12 @@ const assertReplaceUserReport = (replaceUserReport, originalContactId) => {
   expect(replaceUserReport.contact._id).to.equal(originalContactId);
 };
 
-const assertOriginalContactUpdated = (originalContact, newContactId, status) => {
+const assertOriginalContactUpdated = (originalContact, originalUsername, newContactId, status) => {
   expect(originalContact.user_for_contact).to.deep.equal({
     replace: {
       status,
       replacement_contact_id: newContactId,
-      original_username: originalContact._id.substring('fixture:user:'.length),
+      original_username: originalUsername,
     }
   });
 };
@@ -253,7 +253,7 @@ describe('Create user for contacts', () => {
       basicReports.forEach((report) => expect(report.contact._id).to.equal(replacement_contact_id));
       // Original contact updated to PENDING
       const originalContact = await getLocalDocFromBrowser(originalContactId);
-      assertOriginalContactUpdated(originalContact, replacement_contact_id, 'PENDING');
+      assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacement_contact_id, 'PENDING');
       const newContact = await getLocalDocFromBrowser(replacement_contact_id);
       assertNewContact(newContact, ORIGINAL_USER, originalContact);
       // Set as primary contact
@@ -271,7 +271,7 @@ describe('Create user for contacts', () => {
       expect(transitions.create_user_for_contacts.ok).to.be.true;
       // Original contact updated to COMPLETE
       const finalOriginalContact = await utils.getDoc(originalContactId);
-      assertOriginalContactUpdated(finalOriginalContact, replacement_contact_id, 'COMPLETE');
+      assertOriginalContactUpdated(finalOriginalContact, ORIGINAL_USER.username, replacement_contact_id, 'COMPLETE');
       await assertOriginalUserDisabled();
       // New user created
       const newUserSettings = await utils.getUserSettings({ contactId: replacement_contact_id });
@@ -315,7 +315,7 @@ describe('Create user for contacts', () => {
       // Transition successful
       expect(transitions.create_user_for_contacts.ok).to.be.true;
       const originalContact = await utils.getDoc(originalContactId);
-      assertOriginalContactUpdated(originalContact, replacement_contact_id, 'COMPLETE');
+      assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacement_contact_id, 'COMPLETE');
       const newContact = await utils.getDoc(replacement_contact_id);
       assertNewContact(newContact, ORIGINAL_USER, originalContact);
       await assertOriginalUserDisabled();
@@ -364,7 +364,7 @@ describe('Create user for contacts', () => {
       // Transition successful
       expect(transitions.create_user_for_contacts.ok).to.be.true;
       const originalContact = await utils.getDoc(originalContactId);
-      assertOriginalContactUpdated(originalContact, replacement_contact_id, 'COMPLETE');
+      assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacement_contact_id, 'COMPLETE');
       const newContact = await utils.getDoc(replacement_contact_id);
       assertNewContact(newContact, ORIGINAL_USER, originalContact);
       await assertOriginalUserDisabled();
@@ -410,7 +410,7 @@ describe('Create user for contacts', () => {
       basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId0));
       // Original contact updated to PENDING
       let originalContact = await getLocalDocFromBrowser(originalContactId);
-      assertOriginalContactUpdated(originalContact, replacementContactId0, 'PENDING');
+      assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId0, 'PENDING');
       const newContact = await getLocalDocFromBrowser(replacementContactId0);
       assertNewContact(newContact, ORIGINAL_USER, originalContact);
       // Set as primary contact
@@ -436,7 +436,7 @@ describe('Create user for contacts', () => {
       basicReports1.forEach((report) => expect(report.contact._id).to.equal(replacementContactId1));
       // Original contact updated to have new replacement contact id
       originalContact = await getLocalDocFromBrowser(originalContactId);
-      assertOriginalContactUpdated(originalContact, replacementContactId1, 'PENDING');
+      assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId1, 'PENDING');
       const newContact1 = await getLocalDocFromBrowser(replacementContactId1);
       assertNewContact(newContact1, ORIGINAL_USER, originalContact);
       // Set as primary contact
@@ -454,7 +454,7 @@ describe('Create user for contacts', () => {
       expect(transitions.create_user_for_contacts.ok).to.be.true;
       // Original contact updated to COMPLETE
       originalContact = await utils.getDoc(originalContactId);
-      assertOriginalContactUpdated(originalContact, replacementContactId1, 'COMPLETE');
+      assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId1, 'COMPLETE');
       await assertOriginalUserDisabled();
       // New user created
       const newUserSettings = await utils.getUserSettings({ contactId: replacementContactId1 });
