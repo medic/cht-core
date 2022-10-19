@@ -149,14 +149,9 @@ const reportsListDetails = async () => {
   return reportDetails;
 };
 
-const collapseSelection = async () => {
+const toggleSelectedReportSummary = async (reverse=false) => {
   await (await itemSummary()).click();
-  expect(await (await reportBodyDetails()).isExisting()).to.be.false;
-};
-
-const expandSelection = async () => {
-  await (await itemSummary()).click();
-  await (await $(reportBodyDetailsSelector)).waitForDisplayed();
+  await (await reportBodyDetails()).waitForDisplayed({ reverse });
 };
 
 const deleteSelectedReports = async () => {
@@ -347,8 +342,7 @@ module.exports = {
   toggleSelectAll,
   selectReports,
   deselectReport,
-  expandSelection,
-  collapseSelection,
+  toggleSelectedReportSummary,
   deleteSelectedReports,
   firstReportDetailField,
   reportByUUID,
