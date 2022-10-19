@@ -251,26 +251,35 @@ describe('Reports Content Component', () => {
   });
 
   describe('deselect', () => {
-    let removeSelectedReport;
+    let removeSelectedReportStub;
+    let setSelectModeStub;
     let event;
+
     beforeEach(() => {
-      removeSelectedReport = sinon.stub(ReportsActions.prototype, 'removeSelectedReport');
+      removeSelectedReportStub = sinon.stub(ReportsActions.prototype, 'removeSelectedReport');
+      setSelectModeStub = sinon.stub(ReportsActions.prototype, 'setSelectMode');
       event = { stopPropagation: sinon.stub() };
     });
 
     it('should do nothing when not in select mode', () => {
       component.selectMode = false;
       const report = { _id: 'report' };
+
       component.deselect(report, event);
-      expect(removeSelectedReport.callCount).to.equal(0);
+
+      expect(removeSelectedReportStub.notCalled).to.be.true;
+      expect(setSelectModeStub.notCalled).to.be.true;
     });
 
     it('should call removeSelectedReport when in select mode', () => {
       component.selectMode = true;
       const report = { _id: 'report' };
+
       component.deselect(report, event);
-      expect(removeSelectedReport.callCount).to.equal(1);
-      expect(removeSelectedReport.args[0]).to.deep.equal([report]);
+
+      expect(setSelectModeStub.calledOnce).to.be.true;
+      expect(removeSelectedReportStub.calledOnce).to.be.true;
+      expect(removeSelectedReportStub.args[0]).to.deep.equal([ report ]);
     });
   });
 

@@ -31,6 +31,8 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { GlobalActions } from '@mm-actions/global';
+import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -148,6 +150,7 @@ describe('Reports Component', () => {
     changesService.subscribe.resetHistory();
     searchService.search.resetHistory();
     authService.has.resetHistory();
+    const setSelectModeStub = sinon.stub(GlobalActions.prototype, 'setSelectMode');
 
     const spySubscriptionsAdd = sinon.spy(component.subscription, 'add');
 
@@ -155,9 +158,12 @@ describe('Reports Component', () => {
     await component.ngAfterViewInit();
 
     expect(component.isSidebarFilterOpen).to.be.false;
+    expect(component.selectModeAvailable).to.be.false;
     expect(authService.has.calledTwice).to.be.true;
     expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
     expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
+    expect(setSelectModeStub.calledOnce).to.be.true;
+    expect(setSelectModeStub.args[0]).to.have.members([ false ]);
     expect(searchService.search.calledOnce).to.be.true;
     expect(changesService.subscribe.calledOnce).to.be.true;
     expect(spySubscriptionsAdd.calledThrice).to.be.true;
@@ -246,6 +252,107 @@ describe('Reports Component', () => {
       expect(selectReport.callCount).to.equal(0);
       expect(removeSelectedReport.callCount).to.equal(1);
       expect(removeSelectedReport.args[0]).to.deep.equal([ { _id: 'rid' }, undefined ]);
+    });
+  });
+
+  describe('toggleAllSelected', () => {
+    let setSelectModeStub;
+    let deselectAllStub;
+    let selectAllStub;
+
+    beforeEach(() => {
+      setSelectModeStub = sinon.stub(ReportsActions.prototype, 'setSelectMode');
+      deselectAllStub = sinon.stub(ReportsActions.prototype, 'deselectAll');
+      selectAllStub = sinon.stub(ReportsActions.prototype, 'selectAll');
+    });
+
+    it('should select all when not all reports have been selected yet', () => {
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
+
+      component.toggleAllSelected();
+
+      expect(selectAllStub.calledOnce).to.be.true;
+      expect(setSelectModeStub.notCalled).to.be.true;
+      expect(deselectAllStub.notCalled).to.be.true;
+    });
+
+    it('should deselect all when all reports have been selected', () => {
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
+
+      component.toggleAllSelected();
+
+      expect(selectAllStub.notCalled).to.be.true;
+      expect(setSelectModeStub.calledOnce).to.be.true;
+      expect(deselectAllStub.calledOnce).to.be.true;
+    });
+  });
+
+  describe('bulkDeleteReports', () => {
+    it('should do not open modal when there are not selected reports', () => {
+      component.selectedReports = [];
+
+      component.bulkDeleteReports();
+
+      expect(modalService.show.notCalled).to.be.true;
+    });
+
+    it('should open modal when there are selected reports', () => {
+      component.selectedReports = [{ _id: 'selected1' }];
+
+      component.bulkDeleteReports();
+
+      expect(modalService.show.calledOnce).to.be.true;
+      expect(modalService.show.args[0]).to.have.deep.members([
+        BulkDeleteConfirmComponent,
+        { initialState: { model: { docs: [{ _id: 'selected1' }], type: 'reports' } } }
+      ]);
+    });
+  });
+
+  describe('verifyMultiSelect', () => {
+    it('should return false when no in select mode and no selected reports', () => {
+      component.selectMode = false;
+      component.selectedReports = [];
+
+      expect(component.verifyMultiSelect()).to.be.false;
+    });
+
+    it('should verify if some reports are selected', () => {
+      component.selectMode = true;
+      component.selectedReports = [{ _id: 'selected1' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.verifyMultiSelect(true)).to.be.true;
+
+      component.selectedReports = [];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.verifyMultiSelect(true)).to.be.false;
+
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.verifyMultiSelect()).to.be.true;
+    });
+
+    it('should verify if all reports are selected', () => {
+      component.selectMode = true;
+      component.selectedReports = [{ _id: 'selected1' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.verifyMultiSelect()).to.be.false;
+
+      component.selectedReports = [];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.verifyMultiSelect()).to.be.false;
+
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.verifyMultiSelect()).to.be.true;
     });
   });
 

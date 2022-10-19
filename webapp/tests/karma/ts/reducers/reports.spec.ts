@@ -486,6 +486,38 @@ describe('Reports Reducer', () => {
     });
   });
 
+  describe('setSelectedReport', () => {
+    it('should select report when no report selected yet', () => {
+      const selected = { _id: 'one', reported_date: 100 };
+
+      const newState = reportsReducer(undefined, Actions.setSelectedReport(selected));
+
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selectedReport: { _id: 'one', reported_date: 100 },
+        selectedReports: [],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+
+    it('should select report when there is another report selected', () => {
+      state.selectedReport = { _id: 'one', reported_date: 100 };
+
+      const newState = reportsReducer(state, Actions.setSelectedReport({ _id: 'two', reported_date: 200 }));
+
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selectedReport: { _id: 'two', reported_date: 200 },
+        selectedReports: [],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+  });
+
   describe('setSelectedReports', () => {
     it('should set selected reports when list is empty', () => {
       const selected = [
@@ -541,12 +573,13 @@ describe('Reports Reducer', () => {
   });
 
   describe('clearSelected', () => {
-    it('should work on empty list', () => {
+    it('should work on empty selection', () => {
       const newState = reportsReducer(undefined, globalActions.clearSelected());
       expect(newState).to.deep.equal(state);
     });
 
-    it('should work on existent list', () => {
+    it('should work on existent selection', () => {
+      state.selectedReport = { _id: 'four', reported_date: 200 };
       state.selectedReports = [
         { _id: 'selected1' },
         { _id: 'two', reported_date: 200 },
