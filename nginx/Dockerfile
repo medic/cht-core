@@ -9,6 +9,7 @@ RUN apk add --update --no-cache \
 
 COPY ssl-install.sh /docker-entrypoint.d
 RUN chmod 755 /docker-entrypoint.d/ssl-install.sh
+COPY templates /etc/nginx/templates
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY mime.types /etc/nginx/mime.types
 

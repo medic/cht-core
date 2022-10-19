@@ -99,7 +99,7 @@ describe('Navigation tests : ', () => {
     afterAll(async () => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
       await utils.deleteUsers([user]);
-      await utils.revertSettings();
+      await utils.revertSettings(true);
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
       await commonElements.waitForLoaderToDisappear();
