@@ -6,7 +6,6 @@ import { CreateUserForContactsTransition } from '@mm-services/transitions/create
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { UserContactService } from '@mm-services/user-contact.service';
-import { SessionService } from '@mm-services/session.service';
 
 const deepFreeze = obj => {
   Object
@@ -69,7 +68,6 @@ describe('Create User for Contacts Transition', () => {
   let createUserForContactsService;
   let userContactService;
   let transition;
-  let sessionService;
 
   beforeEach(() => {
     medicDb = { get: sinon.stub() };
@@ -80,7 +78,6 @@ describe('Create User for Contacts Transition', () => {
       getReplacedBy: sinon.stub(),
     };
     userContactService = { get: sinon.stub() };
-    sessionService = { userCtx: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -88,7 +85,6 @@ describe('Create User for Contacts Transition', () => {
         { provide: DbService, useValue: dbService },
         { provide: CreateUserForContactsService, useValue: createUserForContactsService },
         { provide: UserContactService, useValue: userContactService },
-        { provide: SessionService, useValue: sessionService },
       ]
     });
 
@@ -207,7 +203,6 @@ describe('Create User for Contacts Transition', () => {
       it('sets the contact as replaced when the new contact is existing', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
         userContactService.get.resolves(originalUser);
-        sessionService.userCtx.returns({ name: originalUser.id });
         medicDb.get.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
         const parentPlace = { ...PARENT_PLACE };
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
@@ -232,7 +227,6 @@ describe('Create User for Contacts Transition', () => {
       it('sets the contact as replaced when the new contact is also being submitted', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
         userContactService.get.resolves(originalUser);
-        sessionService.userCtx.returns({ name: originalUser.id });
         const parentPlace = { ...PARENT_PLACE };
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
 
@@ -255,7 +249,6 @@ describe('Create User for Contacts Transition', () => {
       it('re-parents new reports to existing user before replacing user again for existing replaced user', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
         userContactService.get.resolves(originalUser);
-        sessionService.userCtx.returns({ name: originalUser.id });
         const replaceUserDoc = { ...REPLACE_USER_DOC, contact: { ...REPLACE_USER_DOC.contact } };
         const parentPlace = { ...PARENT_PLACE };
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
@@ -301,7 +294,6 @@ describe('Create User for Contacts Transition', () => {
       it('does not assign new contact as primary contact when original contact was not primary', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
         userContactService.get.resolves(originalUser);
-        sessionService.userCtx.returns({ name: originalUser.id });
         medicDb.get.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
         const parentPlace = { ...PARENT_PLACE,  contact: { _id: 'different-contact', } };
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
@@ -323,7 +315,6 @@ describe('Create User for Contacts Transition', () => {
       it('does not assign new contact as primary contact when parent doc not found', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
         userContactService.get.resolves(originalUser);
-        sessionService.userCtx.returns({ name: originalUser.id });
         medicDb.get.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
         medicDb.get.withArgs(PARENT_PLACE._id).rejects({ status: 404 });
 
@@ -347,7 +338,6 @@ describe('Create User for Contacts Transition', () => {
         it('does not assign new contact as primary contact when contact has no parent', async() => {
           const originalUser = { ...ORIGINAL_CONTACT };
           userContactService.get.resolves(originalUser);
-          sessionService.userCtx.returns({ name: originalUser.id });
           const newContact = { ...NEW_CONTACT, parent };
           medicDb.get.withArgs(newContact._id).resolves(newContact);
 
@@ -448,7 +438,6 @@ describe('Create User for Contacts Transition', () => {
       it('throws an error if multiple replace user reports are submitted', async() => {
         const originalUser = { ...ORIGINAL_CONTACT };
         userContactService.get.resolves(originalUser);
-        sessionService.userCtx.returns({ name: originalUser.id });
         const parentPlace = { ...PARENT_PLACE };
         medicDb.get.withArgs(PARENT_PLACE._id).resolves(parentPlace);
 

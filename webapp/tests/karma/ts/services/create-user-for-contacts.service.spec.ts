@@ -17,7 +17,7 @@ const ORIGINAL_CONTACT = {
   user_for_contact: undefined
 };
 
-const originalUserId = ORIGINAL_CONTACT._id;
+const ORIGINAL_USERNAME = 'original-username';
 
 const NEW_CONTACT = {
   _id: 'new-contact',
@@ -59,7 +59,7 @@ describe('Create User for Contacts service', () => {
       sync: sinon.stub().resolves(),
     };
     sessionService = {
-      userCtx: sinon.stub().returns({ name: originalUserId }),
+      userCtx: sinon.stub().returns({ name: ORIGINAL_USERNAME }),
       isOnlineOnly: sinon.stub().returns(false),
       logout: sinon.stub(),
     };
@@ -96,7 +96,7 @@ describe('Create User for Contacts service', () => {
       expect(originalContact.user_for_contact.replace).to.deep.equal({
         status: 'PENDING',
         replacement_contact_id: NEW_CONTACT._id,
-        original_username: originalUserId,
+        original_username: ORIGINAL_USERNAME,
       });
     });
 
@@ -109,7 +109,7 @@ describe('Create User for Contacts service', () => {
       expect(originalContact.user_for_contact.replace).to.deep.equal({
         status: 'READY',
         replacement_contact_id: NEW_CONTACT._id,
-        original_username: originalUserId,
+        original_username: ORIGINAL_USERNAME,
       });
     });
 
@@ -127,7 +127,7 @@ describe('Create User for Contacts service', () => {
           replace:{
             status: 'PENDING',
             replacement_contact_id: NEW_CONTACT._id,
-            original_username: originalUserId,
+            original_username: ORIGINAL_USERNAME,
           }
         });
       });
