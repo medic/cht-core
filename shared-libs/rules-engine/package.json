@@ -4,7 +4,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "mocha test/*.spec.js test/**/*.spec.js",
+    "test": "TZ=UTC mocha test/*.spec.js test/**/*.spec.js",
     "tz": "TZ=Canada/Pacific npm test && TZ=Africa/Monrovia npm test && TZ=Pacific/Auckland npm test"
   },
   "repository": {
