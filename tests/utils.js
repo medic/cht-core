@@ -372,8 +372,12 @@ const getAllUserSettings = () => db
   .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
   .then(response => response.rows.map(row => row.doc));
 
-const getUserSettings = ({ contactId }) => getAllUserSettings()
-  .then(docs => docs.find(doc => doc.contact_id === contactId));
+const getUserSettings = ({ contactId, name }) => getAllUserSettings()
+  .then(docs => docs.filter(doc => {
+    const nameMatches = !name || doc.name === name;
+    const contactIdMatches = !contactId || doc.contact_id === contactId;
+    return nameMatches && contactIdMatches;
+  }));
 
 const waitForDocRev = (ids) => {
   ids = ids.map(id => typeof id === 'string' ? { id: id, rev: 1 } : id);
@@ -1153,8 +1157,8 @@ module.exports = {
   // @return {Promise}
   createUsers: createUsers,
 
-  // Returns the user settings doc for the specified user.
-  // @param {{ contactId }} opts - object containing the contact id of the user
+  // Returns all the user settings docs matching the given criteria.
+  // @param {{ name, contactId }} opts - object containing the query parameters
   // @return {Promise}
   getUserSettings,
 

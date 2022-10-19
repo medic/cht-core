@@ -222,8 +222,6 @@ describe('create_user_for_contacts', () => {
       });
     });
 
-    const getExpectedSuffixLength = (collisionCount) => Math.floor(collisionCount / 10) + 4;
-
     [
       [1, 4],
       [9, 4],
@@ -244,6 +242,8 @@ describe('create_user_for_contacts', () => {
           expect(usersGet.callCount).to.equal(collisionCount + 1);
           const attemptedUsernames = usersGet.args.map(args => args[0]);
           expect(new Set(attemptedUsernames).size).to.equal(attemptedUsernames.length);
+
+          const getExpectedSuffixLength = (collisionCount) => Math.floor(collisionCount / 10) + 4;
 
           attemptedUsernames.forEach((username, index) => {
             const suffixLength = getExpectedSuffixLength(index);

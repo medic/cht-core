@@ -161,7 +161,7 @@ const assertNewContact = (newContact, originalUser, originalContact) => {
 };
 
 const assertOriginalUserDisabled = async () => {
-  const oldUserSettings = await utils.getUserSettings({ contactId: ORIGINAL_USER.contact._id });
+  const [oldUserSettings] = await utils.getUserSettings({ name: ORIGINAL_USER.username });
   expect(oldUserSettings.inactive).to.be.true;
 
   const opts = {
@@ -274,7 +274,8 @@ describe('Create user for contacts', () => {
       assertOriginalContactUpdated(finalOriginalContact, ORIGINAL_USER.username, replacement_contact_id, 'COMPLETE');
       await assertOriginalUserDisabled();
       // New user created
-      const newUserSettings = await utils.getUserSettings({ contactId: replacement_contact_id });
+      const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: replacement_contact_id });
+      expect(additionalUsers).to.be.empty;
       newUsers.push(newUserSettings.name);
       assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
       const loginLink = await getTextedLoginLink(newUserSettings);
@@ -322,7 +323,8 @@ describe('Create user for contacts', () => {
       // Set as primary contact
       expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal(replacement_contact_id);
       // New user created
-      const newUserSettings = await utils.getUserSettings({ contactId: replacement_contact_id });
+      const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: replacement_contact_id });
+      expect(additionalUsers).to.be.empty;
       newUsers.push(newUserSettings.name);
       assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
       const loginLink = await getTextedLoginLink(newUserSettings);
@@ -371,7 +373,8 @@ describe('Create user for contacts', () => {
       // Primary contact not updated
       expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal('not-the-original-contact');
       // New user created
-      const newUserSettings = await utils.getUserSettings({ contactId: replacement_contact_id });
+      const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: replacement_contact_id });
+      expect(additionalUsers).to.be.empty;
       newUsers.push(newUserSettings.name);
       assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
       const loginLink = await getTextedLoginLink(newUserSettings);
@@ -457,20 +460,89 @@ describe('Create user for contacts', () => {
       assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId1, 'COMPLETE');
       await assertOriginalUserDisabled();
       // New user created
-      const newUserSettings = await utils.getUserSettings({ contactId: replacementContactId1 });
+      const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: replacementContactId1 });
+      expect(additionalUsers).to.be.empty;
       newUsers.push(newUserSettings.name);
       assertNewUserSettings(newUserSettings, newContact1, ORIGINAL_USER);
       const loginLink = await getTextedLoginLink(newUserSettings);
 
       // User not created for first replacement contact
       const newUserSettings1 = await utils.getUserSettings({ contactId: replacementContactId0 });
-      expect(newUserSettings1).to.be.undefined;
+      expect(newUserSettings1).to.be.empty;
 
       // Open the texted link
       await browser.url(loginLink);
       await commonPage.waitForPageLoaded();
       const [cookie] = await browser.getCookies('userCtx');
       expect(cookie.value).to.contain(newUserSettings.name);
+    });
+
+    it('creates new user when replace_user form is submitted for contact associated with multiple users', async () => {
+      await utils.updateSettings(SETTINGS, 'sentinel');
+      await loginAsOfflineUser();
+
+      const otherUser = Object.assign({}, ORIGINAL_USER, {
+        username: 'other_user',
+        contact: ORIGINAL_USER.contact._id
+      });
+      await utils.createUsers([otherUser]);
+      newUsers.push(otherUser.username);
+
+      const originalContactId = ORIGINAL_USER.contact._id;
+
+      await commonPage.goToPeople(originalContactId);
+      await submitReplaceUserForm(REPLACE_USER_FORM_TITLE, async () => {
+        await (await genericForm.submitButton()).waitForDisplayed();
+        await (await genericForm.submitButton()).click();
+
+        // Logout triggered immediately
+        await (await loginPage.loginButton()).waitForDisplayed();
+      });
+
+      await loginPage.cookieLogin();
+      await commonPage.goToReports();
+      const reportId = await reportsPage.getLastSubmittedReportId();
+
+      // Replace user report created
+      const replaceUserReport = await utils.getDoc(reportId);
+      assertReplaceUserReport(replaceUserReport, originalContactId);
+      const { replacement_contact_id } = replaceUserReport.fields;
+
+      await sentinelUtils.waitForSentinel();
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContactId);
+
+      // Transition successful
+      expect(transitions.create_user_for_contacts.ok).to.be.true;
+      const originalContact = await utils.getDoc(originalContactId);
+      assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacement_contact_id, 'COMPLETE');
+      const newContact = await utils.getDoc(replacement_contact_id);
+      assertNewContact(newContact, ORIGINAL_USER, originalContact);
+      await assertOriginalUserDisabled();
+      // Set as primary contact
+      expect((await utils.getDoc(DISTRICT._id)).contact._id).to.equal(replacement_contact_id);
+      // New user created
+      const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: replacement_contact_id });
+      expect(additionalUsers).to.be.empty;
+      newUsers.push(newUserSettings.name);
+      assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
+      const loginLink = await getTextedLoginLink(newUserSettings);
+
+      // Open the texted link
+      await commonPage.logout();
+      await browser.url(loginLink);
+      await commonPage.waitForPageLoaded();
+      const [cookie] = await browser.getCookies('userCtx');
+      expect(cookie.value).to.contain(newUserSettings.name);
+
+      // Other user still associated with original contact
+      const [otherUserSettings] = await utils.getUserSettings({ name: otherUser.username });
+      expect(otherUserSettings.contact_id).to.equal(ORIGINAL_USER.contact._id);
+      // Can still log in as other user
+      await commonPage.closeTour();
+      await commonPage.logout();
+      await loginPage.login(otherUser);
+      await commonPage.waitForPageLoaded();
+      await commonPage.goToPeople(originalContactId);
     });
 
     it('does not create a new user or re-parent reports when the transition is disabled', async () => {
@@ -533,11 +605,11 @@ describe('Create user for contacts', () => {
     const updatedOriginalContact = await utils.getDoc(originalContactId);
     expect(updatedOriginalContact.user_for_contact).to.be.undefined;
     // Original user not disabled
-    const oldUserSettings = await utils.getUserSettings({ contactId: originalContactId });
+    const [oldUserSettings] = await utils.getUserSettings({ name: ONLINE_USER.username });
     expect(oldUserSettings.inactive).to.be.undefined;
     // New user not created
     const newUserSettings = await utils.getUserSettings({ contactId: replacement_contact_id });
-    expect(newUserSettings).to.be.undefined;
+    expect(newUserSettings).to.be.empty;
     // No messages sent
     const queuedMsgs = await getQueuedMessages();
     expect(queuedMsgs).to.have.lengthOf(0);
