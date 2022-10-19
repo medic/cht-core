@@ -146,6 +146,8 @@ describe('Rules Engine Integration Tests', () => {
     // the task is 5 days old when it is discovered
     const NOW = MS_IN_DAY * 5;
     sinon.useFakeTimers(NOW);
+    // Reset the "calculatedDate"
+    await rulesEngine.updateEmissionsFor(['patient']);
 
     await triggerFacilityReminderInReadyState(['patient']);
 
@@ -193,9 +195,15 @@ describe('Rules Engine Integration Tests', () => {
 
     // move forward 9 days, the contact is dirty, the task is recalculated
     sinon.useFakeTimers(MS_IN_DAY * 9);
+    // Reset the "calculatedDate"
+    await rulesEngine.updateEmissionsFor(['patient']);
     const noTasks = await rulesEngine.fetchTasksFor(['patient']);
     expect(db.query.args.map(args => args[0]))
-      .to.deep.eq([...expectedQueriesForFreshData, ...expectedQueriesForFreshData]);
+      .to.deep.eq([
+        ...expectedQueriesForFreshData,
+        'medic-client/contacts_by_reference',
+        ...expectedQueriesForFreshData
+      ]);
     expect(noTasks).to.have.property('length', 0);
     expect(db.bulkDocs.callCount).to.eq(2);
     expect(db.bulkDocs.args[1][0]).to.have.property('length', 1);
