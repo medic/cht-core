@@ -29,7 +29,7 @@ describe('Pregnancy registration', () => {
     await loginPage.login(offlineUser);    
   });
 
-  it('Submit new pregnancy', async () => {
+  it('Should submit a new pregnancy', async () => {
     const edd = moment().add(1, 'month');
     const nextANCVisit = moment().add(1, 'day');
 
@@ -90,27 +90,30 @@ describe('Pregnancy registration', () => {
     expect(await (await contactPage.pregnancyCard()).isDisplayed()).to.be.true;
 
     const pregnancyCardInfo = await contactPage.getPregnancyCardInfo();
-    expect(pregnancyCardInfo.weeksPreg).to.equal(confirmationDetails.weeksPregnantConfirm);
+    expect(pregnancyCardInfo.weeksPregnant).to.equal(confirmationDetails.weeksPregnantConfirm);
     expect(pregnancyCardInfo.deliveryDate).to.equal(edd.format('D MMM, YYYY'));
     expect(pregnancyCardInfo.risk).to.equal('High risk');
     expect(pregnancyCardInfo.ancVisit).to.equal(nextANCVisit.format('D MMM, YYYY'));
 
   });
 
-  it('Verify tasks created', async () => {
+  it('Should verify that all tasks related with the high risk pregnancy were created', async () => {
     const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Pregnancy home visit'];
 
     await commonPage.goToTasks();
+    await browser.pause(7000);
     const tasks = await tasksPage.getTasks();    
     expect(tasks.length).to.equal(3);
-    for(let i = 0; i < tasks.length; i++){
-      const task = await tasksPage.getTaskInfo(tasks[i]);
-      expect(task.contactName).to.equal(pregnantWoman.name);
-      expect(task.formTitle).to.equal(tasksTitles[i]);
+
+    for (const task of tasks) {
+      const taskInfo = await tasksPage.getTaskInfo(task);
+      expect(taskInfo.contactName).to.equal(pregnantWoman.name);
+      expect(tasksTitles).to.include(taskInfo.formTitle);
+      tasksTitles.splice(tasksTitles.indexOf(taskInfo.formTitle), 1);
     }
   });
 
-  it('Verify report created', async () => {
+  it('Should verify that the report related the pregnancy was created', async () => {
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
 
@@ -118,7 +121,7 @@ describe('Pregnancy registration', () => {
     expect(firstReport.form).to.equal('Pregnancy registration');
   });
 
-  it('Verify targets', async () => {
+  it('Should verify that the counters for the active pregnancies and the new pregnancies were updated.', async () => {
     await commonPage.goToAnalytics();
     const targets = await analyticsPage.getTargets();
 

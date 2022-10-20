@@ -644,14 +644,6 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
-      /*'e2e-cht-release-tests': {
-        options: {
-          configFile: 'tests/conf.js',
-          args: {
-            suite: 'cht',
-          }
-        }
-      },*/
       'e2e-web-tests': {
         options: {
           configFile: 'tests/conf.js',
@@ -1003,11 +995,6 @@ module.exports = function(grunt) {
     'exec:e2e-integration',
     'exec:eslint-sw',
   ]);
-
-  /*grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'protractor:e2e-cht-release-tests'
-  ]);*/
 
   grunt.registerTask('ci-webdriver-default', 'Run e2e tests using webdriverIO for default config', [
     'exec:wdio-run-default'

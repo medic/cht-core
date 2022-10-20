@@ -270,7 +270,7 @@ const getContactMedicID = async () => {
 const getPregnancyCardInfo = async () => {
   await pregnancyCard().waitForDisplayed();
   return {
-    weeksPreg: await weeksPregnant().getText(),
+    weeksPregnant: await weeksPregnant().getText(),
     deliveryDate: await edd().getText(),
     risk: await highRisk().getText(),
     ancVisit: await nextANCVisit().getText(),

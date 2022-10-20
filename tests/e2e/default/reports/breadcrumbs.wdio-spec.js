@@ -43,7 +43,7 @@ describe('Reports tab breadcrumbs', () => {
     contact: contact._id,
   });
   const onlineUser = userFactory.build({
-    username: 'onlineuser',
+    username: 'onlineuser_breadcrumbs',
     roles: [ 'program_officer' ],
     place: district_hospital._id,
     contact: contact2._id,
