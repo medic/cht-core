@@ -13,6 +13,10 @@ const BODY_LENGTH_LIMIT = 32000000; // 32 million
 // In order to enable a retry, and not incorrectly communicate success to the client, validate _changes
 // responses and update the response object accordingly, before passing it to PouchDb for processing.
 const processChangesResponse = (response) => {
+  if (!response.ok) {
+    return Promise.resolve(response);
+  }
+
   const clone = response.clone();
   return clone.json().then(json => {
     const validChangesResponse = json.results && !json.error;
