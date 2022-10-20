@@ -122,21 +122,11 @@ const saveDockerComposeFiles = () => {
   const view = {
     repo: versions.getRepo(ECR_PUBLIC_REPO),
     tag: versions.getImageTag(undefined, true),
-    network: 'cht-net',
-    couch_container_name: 'cht-couchdb',
-    nginx_container_name: 'cht-nginx',
-    haproxy_container_name: 'cht-haproxy',
-    api_container_name: 'cht-api',
-    sentinel_container_name: 'cht-sentinel',
-    haproxy_healthcheck_container_name: 'cht-haproxy-healthcheck',
     db_name: 'medic',
     couchdb_servers: 'couchdb',
   };
   const viewClustered = {
     ...view,
-    couch1_container_name: 'cht-couchdb.1',
-    couch2_container_name: 'cht-couchdb.2',
-    couch3_container_name: 'cht-couchdb.3',
     couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
   };
 

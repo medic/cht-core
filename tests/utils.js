@@ -10,25 +10,41 @@ const os = require('os');
 const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
+const semver = require('semver');
 
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
 process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
-
-const CONTAINER_NAMES = {
-  haproxy: 'cht-haproxy-e2e',
-  nginx: 'cht-nginx-e2e',
-  couch1: 'cht-couchdb.1-e2e',
-  couch2: 'cht-couchdb.2-e2e',
-  couch3: 'cht-couchdb.3-e2e',
-  api: 'cht-api-e2e',
-  sentinel: 'cht-sentinel-e2e',
-  haproxy_healthcheck: 'cht-haproxy-healthcheck-e2e',
-  upgrade: 'cht-upgrade-service'
-};
-
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
+
+const PROJECT_NAME = 'cht-e2e';
+const NETWORK = 'cht-net-e2e';
+const services = {
+  haproxy: 'haproxy',
+  nginx: 'nginx',
+  couch1: 'couch.1',
+  couch2: 'couch.2',
+  couch3: 'couch.3',
+  api: 'api',
+  sentinel: 'sentinel',
+  haproxy_healthcheck: 'haproxy-healthcheck',
+};
+const CONTAINER_NAMES = {};
+let dockerVersion = 1;
+
+const updateContainerNames = (project = PROJECT_NAME) => {
+  dockerVersion = getDockerVersion();
+
+  Object.entries(services).forEach(([key, service]) => {
+    CONTAINER_NAMES[key] = getContainerName(service, project);
+  });
+  CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
+};
+const getContainerName = (service, project = PROJECT_NAME) => {
+  const separator = dockerVersion === 2 ? '-' : '_';
+  return `${project}${separator}${service}${separator}1`;
+};
 
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -325,17 +341,22 @@ const deleteUsers = async (users, meta = false) => {
     method: 'POST',
     body: { keys: usernames }
   });
+
   const toDelete = userDocs.rows
-    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .map(row => row.value && !row.value.deleted && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
   const toDeleteMedic = medicDocs.rows
-    .map(row => row.value && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
+    .map(row => row.value && !row.value.deleted && ({ _id: row.id, _rev: row.value.rev, _deleted: true }))
     .filter(stub => stub);
 
-  await Promise.all([
+  const results = await Promise.all([
     request({ path: '/_users/_bulk_docs', method: 'POST', body: { docs: toDelete } }),
     request({ path: `/${constants.DB_NAME}/_bulk_docs`, method: 'POST', body: { docs: toDeleteMedic } }),
   ]);
+  const errors = results.flat().filter(result => !result.ok);
+  if (errors.length) {
+    return deleteUsers(users, meta);
+  }
 
   if (!meta) {
     return;
@@ -497,6 +518,7 @@ const waitForDockerLogs = (container, ...regex) => {
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterwards.
   const params = `logs ${container} -f --tail=1`;
+  console.log('docker', params);
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -598,15 +620,6 @@ const generateComposeFiles = async () => {
   const view = {
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
-    network: 'cht-net-e2e',
-    couch1_container_name: CONTAINER_NAMES.couch1,
-    couch2_container_name: CONTAINER_NAMES.couch2,
-    couch3_container_name: CONTAINER_NAMES.couch3,
-    haproxy_container_name: CONTAINER_NAMES.haproxy,
-    nginx_container_name: CONTAINER_NAMES.nginx,
-    api_container_name: CONTAINER_NAMES.api,
-    sentinel_container_name: CONTAINER_NAMES.sentinel,
-    haproxy_healthcheck_container_name: CONTAINER_NAMES.haproxy_healthcheck,
     db_name: 'medic-test',
     couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
   };
@@ -632,6 +645,8 @@ const prepServices = async (defaultSettings) => {
   await createLogDir();
   await generateComposeFiles();
 
+  updateContainerNames();
+
   await stopServices(true);
   await startServices();
   await listenForApi();
@@ -645,9 +660,11 @@ const dockerComposeCmd = (...params) => {
   const composeFilesParam = COMPOSE_FILES
     .map(file => ['-f', getTestComposeFilePath(file)])
     .flat();
+  const projectParams = ['-p', PROJECT_NAME];
 
   const env = {
     ...process.env,
+    CHT_NETWORK: NETWORK,
     DB1_DATA: db1Data,
     DB2_DATA: db2Data,
     DB3_DATA: db3Data,
@@ -655,7 +672,7 @@ const dockerComposeCmd = (...params) => {
   };
 
   return new Promise((resolve, reject) => {
-    const cmd = spawn('docker-compose', [ ...composeFilesParam, ...params ], { env });
+    const cmd = spawn('docker-compose', [ ...projectParams, ...composeFilesParam, ...params ], { env });
     const output = [];
     const log = (data, error) => {
       data = data.toString();
@@ -716,11 +733,11 @@ const stopServices = async (removeOrphans) => {
   await saveLogs();
 };
 const startService = async (service) => {
-  await dockerComposeCmd('start', `cht-${service}`);
+  await dockerComposeCmd('start', service);
 };
 
 const stopService = async (service) => {
-  await dockerComposeCmd('stop', '-t', 0, `cht-${service}`);
+  await dockerComposeCmd('stop', '-t', 0, service);
 };
 
 const protractorLogin = async (browser, timeout = 20) => {
@@ -769,10 +786,21 @@ const parseCookieResponse = (cookieString) => {
 
 const dockerGateway = () => {
   try {
-    return JSON.parse(execSync(`docker network inspect cht-net-e2e --format='{{json .IPAM.Config}}'`));
+    return JSON.parse(execSync(`docker network inspect ${NETWORK} --format='{{json .IPAM.Config}}'`));
   } catch (error) {
     console.log('docker network inspect failed. NOTE this error is not relevant if running outside of docker');
     console.log(error.message);
+  }
+};
+
+const getDockerVersion = () => {
+  try {
+    const response = execSync('docker-compose -v').toString();
+    const version = response.match(semver.re[3])[0];
+    return semver.major(version);
+  } catch (err) {
+    console.error(err);
+    return 1;
   }
 };
 
@@ -1268,10 +1296,10 @@ module.exports = {
   waitForDockerLogs,
   collectLogs,
 
-  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.api, ...regex),
-  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs(CONTAINER_NAMES.sentinel, ...regex),
-  collectSentinelLogs: (...regex) => collectLogs(CONTAINER_NAMES.sentinel, ...regex),
-  collectApiLogs: (...regex) => collectLogs(CONTAINER_NAMES.api, ...regex),
+  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs(getContainerName('api'), ...regex),
+  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs(getContainerName('sentinel'), ...regex),
+  collectSentinelLogs: (...regex) => collectLogs(getContainerName('sentinel'), ...regex),
+  collectApiLogs: (...regex) => collectLogs(getContainerName('api'), ...regex),
 
   apiLogTestStart: (name) => {
     return module.exports.requestOnTestDb(`/?start=${name.replace(/\s/g, '_')}`);
@@ -1280,7 +1308,7 @@ module.exports = {
     return module.exports.requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
   },
   COMPOSE_FILES,
-  CONTAINER_NAMES,
+  updateContainerNames,
   listenForApi,
   makeTempDir,
   SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
