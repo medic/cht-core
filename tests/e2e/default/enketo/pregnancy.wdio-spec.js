@@ -101,7 +101,6 @@ describe('Pregnancy registration', () => {
     const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Pregnancy home visit'];
 
     await commonPage.goToTasks();
-    await browser.pause(7000);
     const tasks = await tasksPage.getTasks();    
     expect(tasks.length).to.equal(3);
 

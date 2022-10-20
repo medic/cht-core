@@ -101,7 +101,6 @@ const goToPeople = async (contactId = '', shouldLoad = true) => {
 const goToMessages = async () => {
   await browser.url(`/#/messages`);
   await (await messagesTab()).waitForDisplayed();
-  await waitForPageLoaded();
 };
 
 const goToTasks = async () => {
