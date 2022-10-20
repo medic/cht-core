@@ -10,34 +10,31 @@ const contactsPage = require('../../../page-objects/default/contacts/contacts.wd
 const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 const replaceUserForm = require('../../../page-objects/default/enketo/replace-user.wdio.page');
+const personFactory = require('../../../factories/cht/contacts/person');
+const placeFactory = require('../../../factories/cht/contacts/place');
+const userFactory = require('../../../factories/cht/users/users');
 
-const DISTRICT = {
-  _id: 'fixture:district',
+const USER_CONTACT = personFactory.build({ role: 'chw' });
+
+const DISTRICT = placeFactory.place().build({
   type: 'district_hospital',
   contact: {
-    _id: 'fixture:user:original_person',
+    _id: USER_CONTACT._id,
   }
-};
+});
 
-const ORIGINAL_USER = {
-  username: `original_person`,
-  password: 'medic.123',
+const ORIGINAL_USER = userFactory.build({
+  username: `user_for_contacts_original_person`,
   place: DISTRICT._id,
-  phone: '+254712345678',
-  contact: { _id: 'fixture:user:original_person', name: 'Original Person', role: 'chw' },
-  roles: ['chw'],
-  known: true,
-};
+  contact: USER_CONTACT,
+});
 
-const ONLINE_USER = {
-  username: `online_user`,
-  password: 'medic.123',
+const ONLINE_USER = userFactory.build({
+  username: `user_for_contacts_online_user`,
   place: DISTRICT._id,
-  phone: '+254712345678',
-  contact: { _id: 'fixture:user:online_person', name: 'Online Person', role: 'chw' },
+  contact: USER_CONTACT,
   roles: ['program_officer', 'mm-online'],
-  known: true,
-};
+});
 
 const newUsers = [];
 
@@ -482,7 +479,7 @@ describe('Create user for contacts', () => {
       await loginAsOfflineUser();
 
       const otherUser = Object.assign({}, ORIGINAL_USER, {
-        username: 'other_user',
+        username: 'user_for_contacts_other_user',
         contact: ORIGINAL_USER.contact._id
       });
       await utils.createUsers([otherUser]);
