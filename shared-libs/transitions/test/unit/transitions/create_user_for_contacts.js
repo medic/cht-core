@@ -24,19 +24,24 @@ const NEW_CONTACT = {
 };
 
 const ORIGINAL_USER = {
-  _id: 'original-user-id',
+  _id: 'org.couchdb.user:original-user-id',
   name: `original-user`,
   contact: ORIGINAL_CONTACT,
   roles: ['chw'],
 };
 
-const getReplacedContact = (status, replacement_contact_id = NEW_CONTACT._id) => ({
+const getReplacedContact = (
+  status,
+  replacement_contact_id = NEW_CONTACT._id,
+  original_username = ORIGINAL_USER._id.substring('org.couchdb.user:'.length),
+) => ({
   _id: 'replaced-id',
   parent: {
     _id: 'parent-id',
   },
   user_for_contact: {
     replace: {
+      original_username,
       replacement_contact_id,
       status,
     }
@@ -176,7 +181,9 @@ describe('create_user_for_contacts', () => {
     const expectInitialDataRetrieved = (originalContact, newContact) => {
       expect(getOrCreatePerson.withArgs(newContact._id).callCount).to.equal(1);
       expect(getUserSettings.callCount).to.equal(1);
-      expect(getUserSettings.args[0]).to.deep.equal([{ contact_id: originalContact._id }]);
+      expect(getUserSettings.args[0]).to.deep.equal([{
+        name: originalContact.user_for_contact.replace.original_username,
+      }]);
     };
 
     const expectUserCreated = (newContact, originalUser) => {
@@ -215,8 +222,6 @@ describe('create_user_for_contacts', () => {
       });
     });
 
-    const getExpectedSuffixLength = (collisionCount) => Math.floor(collisionCount / 10) + 4;
-
     [
       [1, 4],
       [9, 4],
@@ -237,6 +242,8 @@ describe('create_user_for_contacts', () => {
           expect(usersGet.callCount).to.equal(collisionCount + 1);
           const attemptedUsernames = usersGet.args.map(args => args[0]);
           expect(new Set(attemptedUsernames).size).to.equal(attemptedUsernames.length);
+
+          const getExpectedSuffixLength = (collisionCount) => Math.floor(collisionCount / 10) + 4;
 
           attemptedUsernames.forEach((username, index) => {
             const suffixLength = getExpectedSuffixLength(index);

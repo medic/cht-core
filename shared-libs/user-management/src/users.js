@@ -726,27 +726,24 @@ const hydrateUserSettings = (userSettings) => {
     });
 };
 
-const getUserDocsByContactId = async(contact_id) => {
-  const userSettingsDocs = await getAllUserSettings();
-  const medicUser = userSettingsDocs.find(doc => doc.contact_id === contact_id);
-  if (!medicUser) {
-    return Promise.reject({
-      status: 404,
-      message: `Failed to find user setting with contact_id [${contact_id}].`
-    });
-  }
-  const user = await db.users.get('org.couchdb.user:' + medicUser.name);
-  return [user, medicUser];
-};
-
 const getUserDocsByName = (name) => Promise
   .all([
     db.users.get('org.couchdb.user:' + name),
     db.medic.get('org.couchdb.user:' + name)
-  ]);
+  ])
+  .catch(error => {
+    if (error.status !== 404) {
+      return Promise.reject(error);
+    }
 
-const getUserSettings = async({ name, contact_id }) => {
-  const [ user, medicUser ] = await (name ? getUserDocsByName(name) : getUserDocsByContactId(contact_id));
+    return Promise.reject({
+      status: 404,
+      message: `Failed to find user with name [${name}].`
+    });
+  });
+
+const getUserSettings = async({ name }) => {
+  const [ user, medicUser ] = await getUserDocsByName(name);
   Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
   return hydrateUserSettings(medicUser);
 };

@@ -41,7 +41,11 @@ export class CreateUserForContactsService {
     if (!originalContact.user_for_contact) {
       originalContact.user_for_contact = {};
     }
-    originalContact.user_for_contact.replace = { status, replacement_contact_id: newContact._id };
+    originalContact.user_for_contact.replace = {
+      status,
+      replacement_contact_id: newContact._id,
+      original_username: this.sessionService.userCtx()?.name,
+    };
   }
 
   isReplaced(contact) {

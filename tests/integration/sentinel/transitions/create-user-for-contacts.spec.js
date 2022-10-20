@@ -68,7 +68,7 @@ const expectError = async (errorPattern) => {
   expect(message).to.match(errorPattern);
   // New user not created
   const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-  expect(newUserSettings).to.be.undefined;
+  expect(newUserSettings).to.be.empty;
 };
 
 describe('create_user_for_contacts', () => {
@@ -88,7 +88,9 @@ describe('create_user_for_contacts', () => {
     chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 302 });
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replace: { replacement_contact_id: NEW_PERSON._id, status: 'READY' } };
+    originalContact.user_for_contact = {
+      replace: { original_username: ORIGINAL_USER.username, replacement_contact_id: NEW_PERSON._id, status: 'READY' },
+    };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -96,12 +98,13 @@ describe('create_user_for_contacts', () => {
     // Transition successful
     expect(transitions.create_user_for_contacts.ok).to.be.true;
     // Original user is disabled
-    const originalUserSettings = await utils.getUserSettings({ contactId: ORIGINAL_PERSON._id });
+    const [originalUserSettings] = await utils.getUserSettings({ name: ORIGINAL_USER.username });
     expect(originalUserSettings.inactive).to.be.true;
     // Can no longer log in as user
     chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 401 });
     // New user created
-    const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
+    const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: NEW_PERSON._id });
+    expect(additionalUsers).to.be.empty;
     newUsers.push(newUserSettings.name);
     expect(newUserSettings).to.deep.include({
       roles: ORIGINAL_USER.roles,
@@ -123,20 +126,77 @@ describe('create_user_for_contacts', () => {
     expect(queuedMsgs[0].tasks[0].messages[0].to).to.equal(NEW_PERSON.phone);
   });
 
+  it('replaces user when the replace_user form is submitted for a contact associated with multiple users', async () => {
+    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
+    const otherUser = Object.assign({}, ORIGINAL_USER, { username: 'other_user', contact: ORIGINAL_PERSON._id });
+    await utils.createUsers([otherUser]);
+    newUsers.push(otherUser.username);
+    // Can log in as user
+    chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 302 });
+    await utils.saveDoc(NEW_PERSON);
+    const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
+    originalContact.user_for_contact = {
+      replace: { original_username: ORIGINAL_USER.username, replacement_contact_id: NEW_PERSON._id, status: 'READY' },
+    };
+    await utils.saveDoc(originalContact);
+    await sentinelUtils.waitForSentinel(originalContact._id);
+    const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+    // Transition successful
+    expect(transitions.create_user_for_contacts.ok).to.be.true;
+    // Original user is disabled
+    const [originalUserSettings] = await utils.getUserSettings({ name: ORIGINAL_USER.username });
+    expect(originalUserSettings.inactive).to.be.true;
+    // Can no longer log in as user
+    chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 401 });
+    // New user created
+    const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: NEW_PERSON._id });
+    expect(additionalUsers).to.be.empty;
+    newUsers.push(newUserSettings.name);
+    expect(newUserSettings).to.deep.include({
+      roles: ORIGINAL_USER.roles,
+      phone: NEW_PERSON.phone,
+      facility_id: NEW_PERSON.parent._id,
+      contact_id: NEW_PERSON._id,
+      fullname: NEW_PERSON.name,
+    });
+    expect(newUserSettings.token_login.active).to.be.true;
+    expect(newUserSettings._id).to.match(/^org\.couchdb\.user:new-person-\d\d\d\d/);
+    expect(newUserSettings.name).to.match(/^new-person-\d\d\d\d$/);
+    // Login token sent
+    const queuedMsgs = await getQueuedMessages();
+    expect(queuedMsgs).to.have.lengthOf(1);
+    expect(queuedMsgs[0]).to.deep.include({
+      type: 'token_login',
+      user: newUserSettings._id
+    });
+    expect(queuedMsgs[0].tasks[0].messages[0].to).to.equal(NEW_PERSON.phone);
+
+    // Other user still associated with original contact
+    const [otherUserSettings] = await utils.getUserSettings({ name: otherUser.username });
+    expect(otherUserSettings.contact_id).to.equal(ORIGINAL_PERSON._id);
+    // Can still log in as other user
+    chai.expect(await loginAsUser(otherUser)).to.include({ statusCode: 302 });
+  });
+
   it('does not replace user when transition is disabled', async () => {
     await utils.updateSettings(getSettings({ transitions: { create_user_for_contacts: false } }), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replace: { replacement_contact_id: NEW_PERSON._id, status: 'READY' } };
+    originalContact.user_for_contact = {
+      replace: { original_username: ORIGINAL_USER.username, replacement_contact_id: NEW_PERSON._id, status: 'READY' },
+    };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
     expect(Object.keys(transitions)).to.be.empty;
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(newUserSettings).to.be.undefined;
+    expect(newUserSettings).to.be.empty;
   });
 
   it('disables transitions if replace_user is enabled but token_login is not enabled', async () => {
@@ -170,7 +230,9 @@ describe('create_user_for_contacts', () => {
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replace: { replacement_contact_id: NEW_PERSON._id, status: 'READY' } };
+    originalContact.user_for_contact = {
+      replace: { original_username: ORIGINAL_USER.username, replacement_contact_id: NEW_PERSON._id, status: 'READY' },
+    };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -181,12 +243,14 @@ describe('create_user_for_contacts', () => {
   });
 
   it('does not replace user when the original user does not exist', async () => {
-    const missingUserPattern = /Failed to find user setting with contact_id \[original_person]\./;
+    const missingUserPattern = /Failed to find user with name \[original_person]\./;
     const collectLogs = await utils.collectSentinelLogs(missingUserPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.saveDocs([ORIGINAL_PERSON, NEW_PERSON]);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replace: { replacement_contact_id: NEW_PERSON._id, status: 'READY' } };
+    originalContact.user_for_contact = {
+      replace: { original_username: ORIGINAL_USER.username, replacement_contact_id: NEW_PERSON._id, status: 'READY' },
+    };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -206,7 +270,9 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(newPerson);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replace: { replacement_contact_id: newPerson._id, status: 'READY' } };
+    originalContact.user_for_contact = {
+      replace: { original_username: ORIGINAL_USER.username, replacement_contact_id: newPerson._id, status: 'READY' },
+    };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -226,7 +292,9 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(newPerson);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replace: { replacement_contact_id: newPerson._id, status: 'READY' } };
+    originalContact.user_for_contact = {
+      replace: { original_username: ORIGINAL_USER.username, replacement_contact_id: newPerson._id, status: 'READY' },
+    };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -246,7 +314,9 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(newPerson);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replace: { replacement_contact_id: newPerson._id, status: 'READY' } };
+    originalContact.user_for_contact = {
+      replace: { original_username: ORIGINAL_USER.username, replacement_contact_id: newPerson._id, status: 'READY' },
+    };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -265,7 +335,7 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replace: { status: 'READY' } };
+    originalContact.user_for_contact = { replace: { original_username: ORIGINAL_USER.username, status: 'READY' } };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -281,7 +351,9 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.user_for_contact = { replace: { by: NEW_PERSON._id, status: 'PENDING' } };
+    originalContact.user_for_contact = {
+      replace: { original_username: ORIGINAL_USER.username, replacement_contact_id: NEW_PERSON._id, status: 'PENDING' },
+    };
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -293,7 +365,7 @@ describe('create_user_for_contacts', () => {
     expect(originalPerson.errors).to.be.undefined;
     // New user not created
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(newUserSettings).to.be.undefined;
+    expect(newUserSettings).to.be.empty;
   });
 
   it('does not replace user when the contact is not being replaced', async () => {
@@ -314,7 +386,7 @@ describe('create_user_for_contacts', () => {
     expect(originalPerson.errors).to.be.undefined;
     // New user not created
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(newUserSettings).to.be.undefined;
+    expect(newUserSettings).to.be.empty;
   });
 
   it('does not replace user when the contact being replaced is not a person', async () => {
@@ -335,6 +407,6 @@ describe('create_user_for_contacts', () => {
     expect(originalPerson.errors).to.be.undefined;
     // New user not created
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(newUserSettings).to.be.undefined;
+    expect(newUserSettings).to.be.empty;
   });
 });

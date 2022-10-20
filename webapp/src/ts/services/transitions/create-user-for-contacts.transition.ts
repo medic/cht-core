@@ -13,7 +13,7 @@ export class CreateUserForContactsTransition extends Transition {
   constructor(
     private dbService: DbService,
     private createUserForContactsService: CreateUserForContactsService,
-    private extractLineageService:ExtractLineageService,
+    private extractLineageService: ExtractLineageService,
     private userContactService: UserContactService,
   ) {
     super();
