@@ -668,6 +668,7 @@ const dockerComposeCmd = (...params) => {
     DB1_DATA: db1Data,
     DB2_DATA: db2Data,
     DB3_DATA: db3Data,
+    COUCHDB_SECRET: 'monkey',
   };
 
   return new Promise((resolve, reject) => {
