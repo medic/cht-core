@@ -1,0 +1,14 @@
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+
+  replace-pr-tokens-with-staging-URLs:
+    runs-on: ubuntu-latest
+    name: Updates pull request body with URLs we want to replace
+    steps:
+      - name: Search-Replace PR Body
+        uses: medic/cht-core/update-staging-url-placeholders@7848-add-gh-action-for-staging-urls
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
