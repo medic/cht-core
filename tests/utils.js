@@ -309,7 +309,7 @@ const setUserContactDoc = (attempt=0) => {
  * @param {boolean} ignoreRefresh 
  */
 const revertDb = async (except, ignoreRefresh) => {
-  if (except.length === 0) {
+  if (!except || except.length === 0) {
     console.warn('Not adding any values to the exceptions will delete everything from the config, '+
       'including all the enketo forms, any test that will need to test a form will fail after this call.');
   }

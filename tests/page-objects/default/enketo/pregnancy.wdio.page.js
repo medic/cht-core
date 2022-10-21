@@ -1,3 +1,11 @@
+/**
+ * Terminology.
+ *  lmp: Last Menstrual Period
+ *  lmpApprox: Approximate date of last cycle
+ *  edd: Estimate delivery date
+ *  LLIN: long-lasting insecticidal net
+ */
+
 const moment = require('moment');
 const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
 const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
@@ -23,7 +31,7 @@ const BREAKING_OF_WATER = 'input[name="/pregnancy/danger_signs/breaking_water"]'
 const EASILY_TIRED = 'input[name="/pregnancy/danger_signs/easily_tired"]';
 const SWELLING_HANDS = 'input[name="/pregnancy/danger_signs/face_hand_swelling"]';
 const BREATHLESSNESS = 'input[name="/pregnancy/danger_signs/breathlessness"]';
-const LLIN = 'input[name="/pregnancy/safe_pregnancy_practices/malaria/uses_llin"]';
+const LLIN = 'input[name="/pregnancy/safe_pregnancy_practices/malaria/uses_llin"]'; 
 const IRON_FOLATE = 'input[name="/pregnancy/safe_pregnancy_practices/iron_folate/iron_folate_daily"]';
 const DEWORMING_MEDICATION = 'input[name="/pregnancy/safe_pregnancy_practices/deworming/deworming_med"]';
 const HIV_TESTED = 'input[name="/pregnancy/safe_pregnancy_practices/hiv_status/hiv_tested"]';
