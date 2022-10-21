@@ -49,7 +49,7 @@ jobs:
 Make sure you install the packages with `npm install` in this directory, including NCC. You may need to install NCC
 globally with `npm -i -g install @vercel/ncc`
 
-To build, run `ncc build index.js -o dist`.  If you're testing in a branch, be sure to *temporarily* change your
+To build, run `ncc build index.js -o compiled`.  If you're testing in a branch, be sure to *temporarily* change your
 path in `uses` to be your branch from `master` to `BRANCH`.  Before:
 
 ```yaml
