@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: '7848-add-gh-action-for-staging-urls'
+          ref: 7848-add-gh-action-for-staging-urls
       - name: Check directory structure
         run: ls -R
       - name: Search-Replace PR Body
