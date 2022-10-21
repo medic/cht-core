@@ -69,7 +69,7 @@ if [ "$status" = "true" ]; then
   if [ "$result" != "" ]; then
     docker restart $container
     echo ""
-    echo "If no errors output above, ${result} certificate."
+    echo "If just container name is shown above, a fresh local-ip.co certificate was ${result}."
     echo ""
   else
     echo "Invalid action specified.  Use one of 'refresh', 'expire' or 'self'. Default is 'refresh'"
