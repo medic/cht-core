@@ -1,3 +1,5 @@
+name: Update compose URLs
+
 on:
   pull_request:
     types: [opened, reopened, synchronize]
