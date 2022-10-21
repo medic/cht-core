@@ -7,4 +7,4 @@ inputs:
 
 runs:
   using: 'node16'
-  main: 'dist_index.js'
+  main: './dist/index.js'

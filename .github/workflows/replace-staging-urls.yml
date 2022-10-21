@@ -16,7 +16,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: 7848-add-gh-action-for-staging-urls
       - name: Set ENV
-        run: ls -Ra .github
+        run: ls -Ra ls
+        .github
       - name: Search-Replace PR Body
         uses: ./.github/actions/update-staging-url-placeholders
         with:
