@@ -4,9 +4,6 @@ inputs:
   token:
     description: 'The token to use to access the GitHub API'
     required: true
-  search_replace:
-    description: 'Key values terms to replace'
-    required: true
 
 runs:
   using: 'node16'
