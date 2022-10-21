@@ -10,6 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Updates pull request body with URLs we want to replace
     steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: 7848-add-gh-action-for-staging-urls
       - name: Search-Replace PR Body
         uses: .github/actions/update-staging-url-placeholders
         with:
