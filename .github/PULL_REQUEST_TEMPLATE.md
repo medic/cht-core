@@ -12,11 +12,9 @@ medic/cht-core#[number]
 - [ ] Internationalised: All user facing text
 - [ ] Backwards compatible: Works with existing data and configuration or includes a migration. Any breaking changes documented in the release notes.
 
-# Compose URLs:
-<!-- After CI passes, PR submitter should manually replace these placeholders with deep links to staging. Makes for easier testing! -->
-<!-- e.g. https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-core.yml  -->
-<!-- e.g. https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-couchdb.yml   -->
-<!-- e.g. https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-couchdb-clustered.yml  -->
+# Compose URLs
+<!-- Do not change these!  CI will automatically update these to be the deep URLs -->
+If Build CI hasn't passed, these may 404:
 
 * CHT_CORE_COMPOSE_URL
 * COUCH_SINGLE_COMPOSE_URL

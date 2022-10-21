@@ -9,6 +9,8 @@ Search and replace in the body of a PR, currently hard coded for these strings. 
 ## Example workflow:
 
 ```yaml
+name: Update compose URLs
+
 on:
   pull_request:
     types: [opened, reopened, synchronize]
@@ -17,10 +19,15 @@ jobs:
 
   replace-pr-tokens-with-staging-URLs:
     runs-on: ubuntu-latest
-    name: Updates pull request body with URLs we want to replace
+    name: Updates pull requests body with URLs we want to replace
     steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # ref: 7848-add-gh-action-for-staging-urls
       - name: Search-Replace PR Body
-        uses: medic/cht-core/update-staging-url-placeholders@master
+        uses: ./.github/actions/update-staging-url-placeholders
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
