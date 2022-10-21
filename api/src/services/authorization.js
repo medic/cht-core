@@ -33,11 +33,11 @@ const getDepth = (userCtx) => {
   userCtx.roles.forEach(function(role) {
     // find the role with the deepest depth
     const setting = settings.find(setting => setting.role === role);
-    const settingDepth = setting && parseInt(setting.depth, 10);
+    const settingDepth = setting && parseFloat(setting.depth, 10);
     if (!isNaN(settingDepth) && settingDepth > depth.contactDepth) {
       depth.contactDepth = settingDepth;
 
-      const settingsReportDepth = setting && parseInt(setting.report_depth);
+      const settingsReportDepth = setting && parseFloat(setting.report_depth);
       depth.reportDepth = !isNaN(settingsReportDepth) ? settingsReportDepth : -1;
     }
   });
@@ -183,8 +183,8 @@ const alwaysAllowCreate = doc => {
 const getContactsByDepthKeys = (userCtx, depth) => {
   const keys = [];
   if (depth >= 0) {
-    for (let i = 0; i <= depth; i++) {
-      keys.push([ userCtx.facility_id, i ]);
+    for (let i = 0; i <= depth; i = i + 0.5) {
+      keys.push([ userCtx.facility_id, i ]); 
     }
   } else {
     // no configured depth limit

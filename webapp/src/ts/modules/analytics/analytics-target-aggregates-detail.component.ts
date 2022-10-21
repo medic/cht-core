@@ -47,11 +47,11 @@ export class AnalyticsTargetAggregatesDetailComponent implements OnInit, OnDestr
   }
 
   private subscribeToStore() {
-    const subscriptionStore = combineLatest(
+    const subscriptionStore = combineLatest([
       this.store.select(Selectors.getTargetAggregates),
       this.store.select(Selectors.getSelectedTargetAggregate),
       this.store.select(Selectors.getTargetAggregatesError)
-    ).subscribe(([aggregates, selected, error]) => {
+    ]).subscribe(([aggregates, selected, error]) => {
       this.aggregates = aggregates;
       this.selected = selected;
       this.error = error;

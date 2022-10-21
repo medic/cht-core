@@ -349,10 +349,10 @@ module.exports = function(grunt) {
       },
       'setup-admin': {
         cmd:
-          ` curl -X PUT ${couchConfig.withPathNoAuth(`_node/_local/_config/admins/${couchConfig.username}`)} -d '"${couchConfig.password}"'` +
-          ` && curl -X PUT --data '"true"' ${couchConfig.withPathNoAuth('_node/_local/_config/chttpd/require_valid_user')}` +
-          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/_local/_config/httpd/max_http_request_size')}` +
-          ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
+          ` curl -u medic:password -X PUT ${couchConfig.withPathNoAuth(`_node/_local/_config/admins/${couchConfig.username}`)} -d '"${couchConfig.password}"'` +
+          ` && curl -u medic:password -X PUT --data '"true"' ${couchConfig.withPathNoAuth('_node/_local/_config/chttpd/require_valid_user')}` +
+          ` && curl -u medic:password -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/_local/_config/httpd/max_http_request_size')}` +
+          ` && curl -u medic:password -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
       },
       'setup-test-database': {
         cmd: [

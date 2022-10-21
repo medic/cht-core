@@ -10,6 +10,10 @@ function(doc) {
       if (parent._id) {
         emit([parent._id], value);
         emit([parent._id, depth], value);
+        if(doc.type === 'person' && depth > 1){
+          var p_depth = depth - 0.5;
+          emit([parent._id, p_depth], value)
+        }
       }
       depth++;
       parent = parent.parent;
