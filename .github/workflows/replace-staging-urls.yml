@@ -15,7 +15,7 @@ jobs:
         with:
           ref: 7848-add-gh-action-for-staging-urls
       - name: Check directory structure
-        run: ls -R
+        run: ls -aR
       - name: Search-Replace PR Body
         uses: medic/cht-core/.github/actions/update-staging-url-placeholders@7848-add-gh-action-for-staging-urls
         with:
