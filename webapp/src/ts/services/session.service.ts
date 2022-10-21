@@ -2,7 +2,7 @@ const COOKIE_NAME = 'userCtx';
 const ONLINE_ROLE = 'mm-online';
 import * as _ from 'lodash-es';
 import { Injectable, Inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { DOCUMENT } from '@angular/common';
 
@@ -13,6 +13,7 @@ import { LocationService } from '@mm-services/location.service';
 })
 export class SessionService {
   userCtxCookieValue = null
+  httpOptions = { headers: new HttpHeaders({ Accept:  'application/json' }) };
 
   constructor(
     private cookieService: CookieService,
@@ -38,7 +39,7 @@ export class SessionService {
 
   logout() {
     return this.http
-      .delete('/_session')
+      .delete('/_session', this.httpOptions)
       .toPromise()
       .catch(() => {
         // Set cookie to force login before using app
@@ -86,7 +87,7 @@ export class SessionService {
     }
 
     return this.http
-      .get<{ userCtx: { name:string; roles:string[] } }>('/_session', { responseType: 'json' })
+      .get<{ userCtx: { name:string; roles:string[] } }>('/_session', { responseType: 'json', ...this.httpOptions })
       .toPromise()
       .then(value => {
         const name = value && value.userCtx && value.userCtx.name;
