@@ -10,4 +10,4 @@ inputs:
 
 runs:
   using: 'node16'
-  main: 'dist_index.js'
+  main: '../.github/actions/update-staging-url-placeholders/dist_index.js'
