@@ -2,13 +2,13 @@ require('chai').should();
 const sinon = require('sinon');
 const rewire = require('rewire');
 const db = require('../../../src/db');
-const schedules = require('../../../src/lib/schedules');
 const messages = require('../../../src/lib/messages');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
 const validation = require('@medic/validation');
 const contactTypeUtils = require('@medic/contact-types-utils');
 
+let schedules;
 let transitionUtils;
 let acceptPatientReports;
 let transition;
@@ -17,10 +17,16 @@ let settings;
 describe('registration', () => {
   beforeEach(() => {
     config.init({
-      getAll: sinon.stub().returns({}),
+      getAll: sinon
+        .stub()
+        .returns({}),
       get: sinon.stub(),
-      getTranslations: sinon.stub().returns({})
+      getTranslations: sinon
+        .stub()
+        .returns({})
     });
+
+    schedules = require('../../../src/lib/schedules');
     transitionUtils = require('../../../src/transitions/utils');
     acceptPatientReports = require('../../../src/transitions/accept_patient_reports');
     transition = rewire('../../../src/transitions/registration');

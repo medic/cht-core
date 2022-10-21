@@ -2,7 +2,6 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const moment = require('moment');
 const utils = require('../../src/lib/utils');
-const schedules = require('../../src/lib/schedules');
 const config = require('../../src/config');
 const contactTypeUtils = require('@medic/contact-types-utils');
 
@@ -36,10 +35,17 @@ const getScheduledMessage = (doc, idx) =>
   doc.scheduled_tasks[idx].messages[0];
 
 describe('functional schedules', () => {
+  let schedules;
   let transition;
 
   beforeEach(() => {
-    config.init({ getAll: sinon.stub().returns({}), get: sinon.stub() });
+    config.init({
+      getAll: sinon
+        .stub()
+        .returns({}),
+      get: sinon.stub()
+    });
+    schedules = require('../../src/lib/schedules');
     transition = require('../../src/transitions/registration');
   });
 

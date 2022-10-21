@@ -1,13 +1,22 @@
 const moment = require('moment');
 const assert = require('chai').assert;
-const schedules = require('../../src/lib/schedules');
 const config = require('../../src/config');
 const sinon = require('sinon');
 const messageUtils = require('@medic/message-utils');
 const utils = require('../../src/lib/utils');
 
 describe('schedules', () => {
-  beforeEach(() => config.init({ getAll: sinon.stub().returns({}), }));
+  let schedules;
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon
+        .stub()
+        .returns({}),
+    });
+
+    schedules = require('../../src/lib/schedules');
+  });
 
   afterEach(() => {
     sinon.reset();

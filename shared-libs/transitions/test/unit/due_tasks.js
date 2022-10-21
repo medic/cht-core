@@ -7,12 +7,22 @@ const moment = require('moment');
 const utils = require('../../src/lib/utils');
 const db = require('../../src/db');
 const rpn = require('request-promise-native');
-const schedule = require('../../src/schedule/due_tasks');
-const date = require('../../src/date');
 const config = require('../../src/config');
 
 describe('due tasks', () => {
-  beforeEach(() => config.init({ getAll: sinon.stub().returns({}), }));
+  let schedule;
+  let date;
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon
+        .stub()
+        .returns({}),
+    });
+
+    schedule = require('../../src/schedule/due_tasks');
+    date = require('../../src/date');
+  });
 
   afterEach(() => {
     sinon.reset();
@@ -20,9 +30,10 @@ describe('due tasks', () => {
   });
 
   it('due_tasks handles view returning no rows', () => {
-    const view = sinon.stub(rpn, 'get').resolves({
-      rows: [],
-    });
+    const view = sinon.stub(rpn, 'get')
+      .resolves({
+        rows: [],
+      });
     const saveDoc = sinon.stub(db.medic, 'put').resolves();
 
     return schedule.execute().then(() => {

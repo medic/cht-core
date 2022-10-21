@@ -6,7 +6,7 @@ const logger = require('./lib/logger');
 let synth_start_date;
 
 const load = () => {
-  const sd = config.get && config.get('synthetic_date');
+  const sd = config.get('synthetic_date');
   if (sd) {
     const matches = String(sd).match(DATE_RE);
     if (matches) {
