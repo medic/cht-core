@@ -18,9 +18,9 @@ medic/cht-core#[number]
 <!-- e.g. https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-couchdb.yml   -->
 <!-- e.g. https://staging.dev.medicmobile.org/_couch/builds/medic:medic:<branch>/docker-compose/cht-couchdb-clustered.yml  -->
 
-* CHT Core: CHT_CORE_COMPOSE_URL
-* CouchDB Single: COUCH_SINGLE_COMPOSE_URL
-* CouchDB Cluster: COUCH_CLUSTER_COMPOSE_URL
+* CHT_CORE_COMPOSE_URL
+* COUCH_SINGLE_COMPOSE_URL
+* COUCH_CLUSTER_COMPOSE_URL
  
 # License
 
