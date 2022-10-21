@@ -8,7 +8,7 @@ jobs:
 
   replace-pr-tokens-with-staging-URLs:
     runs-on: ubuntu-latest
-    name: Updates pull request body with URLs we want to replace
+    name: Updates pull requests body with URLs we want to replace
     steps:
       - name: checkout
         uses: actions/checkout@v3
