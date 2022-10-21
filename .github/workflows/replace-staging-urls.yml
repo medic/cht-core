@@ -16,7 +16,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: 7848-add-gh-action-for-staging-urls
       - name: Search-Replace PR Body
-        uses: .github/actions/update-staging-url-placeholders
+        uses: ./.github/actions/update-staging-url-placeholders
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: 7848-add-gh-action-for-staging-urls
