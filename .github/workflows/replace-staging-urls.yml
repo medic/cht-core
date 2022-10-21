@@ -11,6 +11,6 @@ jobs:
     name: Updates pull request body with URLs we want to replace
     steps:
       - name: Search-Replace PR Body
-        uses: medic/cht-core/.github/actions/update-staging-url-placeholders@7848-add-gh-action-for-staging-urls
+        uses: ./.github/actions/update-staging-url-placeholders@7848-add-gh-action-for-staging-urls
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
