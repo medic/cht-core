@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-########################################################################
-# THIS VERSION IS A HACK FOR 4.X RUNNING SELF SIGNED - DEV/QA USE ONLY #
-########################################################################
+############################################################################
+# THIS VERSION IS ONLY FOR 4.X RUNNING SELF SIGNED - DEV/QA/LOCAL USE ONLY #
+############################################################################
 
 # Helper script to download the certificate and private key
 # from the http://local-ip.co service and install it
