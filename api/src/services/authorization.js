@@ -37,7 +37,7 @@ const getDepth = (userCtx) => {
     if (!isNaN(settingDepth) && settingDepth > depth.contactDepth) {
       depth.contactDepth = settingDepth;
 
-      const settingsReportDepth = setting && parseFloat(setting.report_depth);
+      const settingsReportDepth = setting && parseFloat(setting.report_depth).toFixed(1);
       depth.reportDepth = !isNaN(settingsReportDepth) ? settingsReportDepth : -1;
     }
   });
@@ -184,7 +184,7 @@ const getContactsByDepthKeys = (userCtx, depth) => {
   const keys = [];
   if (depth >= 0) {
     for (let i = 0; i <= depth; i = i + 0.5) {
-      keys.push([ userCtx.facility_id, i ]); 
+      keys.push([ userCtx.facility_id, i ]);
     }
   } else {
     // no configured depth limit
