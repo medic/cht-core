@@ -9,6 +9,8 @@ import { UserContactService } from '@mm-services/user-contact.service';
   providedIn: 'root'
 })
 export class CreateUserForContactsService {
+  private currentUsername: string;
+
   constructor(
     private settingsService: SettingsService,
     private userContactService: UserContactService,
@@ -37,31 +39,46 @@ export class CreateUserForContactsService {
     if (!originalContact.parent?._id || originalContact.parent._id !== newContact.parent._id) {
       throw new Error('The new contact must have the same parent as the original contact when replacing a user.');
     }
+    const originalUsername = this.getCurrentUsername();
+    if (!originalUsername) {
+      throw new Error('The current username could not be found when replacing the user.');
+    }
+
     const status = this.sessionService.isOnlineOnly() ? UserCreationStatus.READY : UserCreationStatus.PENDING;
     if (!originalContact.user_for_contact) {
       originalContact.user_for_contact = {};
     }
-    originalContact.user_for_contact.replace = {
+    if (!originalContact.user_for_contact.replace) {
+      originalContact.user_for_contact.replace = {};
+    }
+    originalContact.user_for_contact.replace[originalUsername] = {
       status,
       replacement_contact_id: newContact._id,
-      original_username: this.sessionService.userCtx()?.name,
     };
   }
 
   isReplaced(contact) {
-    return !!contact.user_for_contact?.replace;
+    return !!contact.user_for_contact?.replace?.[this.getCurrentUsername()];
   }
 
   getReplacedBy(contact): string {
-    return contact.user_for_contact?.replace?.replacement_contact_id;
+    return contact.user_for_contact?.replace?.[this.getCurrentUsername()]?.replacement_contact_id;
+  }
+
+  private getCurrentUsername() {
+    if(!this.currentUsername) {
+      this.currentUsername = this.sessionService.userCtx()?.name;
+    }
+
+    return this.currentUsername;
   }
 
   private getReplacedStatus(contact): UserCreationStatus {
-    return UserCreationStatus[contact.user_for_contact.replace.status];
+    return UserCreationStatus[contact.user_for_contact.replace[this.getCurrentUsername()].status];
   }
 
   private setReplacedStatus(contact, status: UserCreationStatus) {
-    contact.user_for_contact.replace.status = status;
+    contact.user_for_contact.replace[this.getCurrentUsername()].status = status;
   }
 
   private async syncStatusChanged({ to, from }: any) {

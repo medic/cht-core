@@ -952,14 +952,14 @@ module.exports = {
       });
   },
 
-  getDoc: (id, rev) => {
+  getDoc: (id, rev, parameters = '') => {
     const params = {};
     if (rev) {
       params.rev = rev;
     }
 
     return module.exports.requestOnTestDb({
-      path: `/${id}`,
+      path: `/${id}${parameters}`,
       method: 'GET',
       params,
     });

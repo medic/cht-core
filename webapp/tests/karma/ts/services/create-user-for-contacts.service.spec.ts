@@ -33,8 +33,10 @@ const getContactWithStatus = (status: string) => ({
   },
   user_for_contact: {
     replace: {
-      status: status,
-      replacement_contact_id: NEW_CONTACT._id
+      [ORIGINAL_USERNAME]: {
+        status: status,
+        replacement_contact_id: NEW_CONTACT._id
+      }
     }
   }
 });
@@ -93,10 +95,9 @@ describe('Create User for Contacts service', () => {
 
       service.setReplaced(originalContact, NEW_CONTACT);
 
-      expect(originalContact.user_for_contact.replace).to.deep.equal({
+      expect(originalContact.user_for_contact.replace[ORIGINAL_USERNAME]).to.deep.equal({
         status: 'PENDING',
         replacement_contact_id: NEW_CONTACT._id,
-        original_username: ORIGINAL_USERNAME,
       });
     });
 
@@ -106,16 +107,15 @@ describe('Create User for Contacts service', () => {
 
       service.setReplaced(originalContact, NEW_CONTACT);
 
-      expect(originalContact.user_for_contact.replace).to.deep.equal({
+      expect(originalContact.user_for_contact.replace[ORIGINAL_USERNAME]).to.deep.equal({
         status: 'READY',
         replacement_contact_id: NEW_CONTACT._id,
-        original_username: ORIGINAL_USERNAME,
       });
     });
 
     [
       { hello: 'world' },
-      { hello: 'world', replace: { status: 'ERROR' } },
+      { hello: 'world', replace: { [ORIGINAL_USERNAME]: {status: 'ERROR' } } },
     ].forEach(user_for_contact => {
       it('sets the given new contact and status when the contact already has user_for_contact data', () => {
         const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
@@ -125,11 +125,38 @@ describe('Create User for Contacts service', () => {
         expect(originalContact.user_for_contact).to.deep.equal({
           hello: 'world',
           replace:{
-            status: 'PENDING',
-            replacement_contact_id: NEW_CONTACT._id,
-            original_username: ORIGINAL_USERNAME,
+            [ORIGINAL_USERNAME]: {
+              status: 'PENDING',
+              replacement_contact_id: NEW_CONTACT._id,
+            }
           }
         });
+      });
+    });
+
+    it('sets the given new contact and status when the contact already has replace data for a different user', () => {
+      const originalContact = Object.assign({}, ORIGINAL_CONTACT, {
+        user_for_contact: {
+          replace: {
+            otherUser: {
+              status: 'ERROR'
+            }
+          }
+        }
+      });
+
+      service.setReplaced(originalContact, NEW_CONTACT);
+
+      expect(originalContact.user_for_contact).to.deep.equal({
+        replace:{
+          otherUser: {
+            status: 'ERROR'
+          },
+          [ORIGINAL_USERNAME]: {
+            status: 'PENDING',
+            replacement_contact_id: NEW_CONTACT._id,
+          }
+        }
       });
     });
 
@@ -163,6 +190,17 @@ describe('Create User for Contacts service', () => {
       expect(() => service.setReplaced(ORIGINAL_CONTACT, newContact))
         .to.throw('The new contact must have the same parent as the original contact when replacing a user.');
     });
+
+    [
+      null,
+      {}
+    ].forEach(userCtx => {
+      it('throws an error when no username is found', () => {
+        sessionService.userCtx.returns(userCtx);
+        expect(() => service.setReplaced(ORIGINAL_CONTACT, NEW_CONTACT))
+          .to.throw('The current username could not be found when replacing the user.');
+      });
+    });
   });
 
   describe('isReplaced', () => {
@@ -182,9 +220,21 @@ describe('Create User for Contacts service', () => {
       expect(service.isReplaced(ORIGINAL_CONTACT)).to.be.false;
     });
 
-    it('returns false when the given contact has user_for_contact data but is not replaced', () => {
-      const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact: {} });
-      expect(service.isReplaced(originalContact)).to.be.false;
+    [
+      {},
+      { replace: {} },
+      { replace: { otheruser: { status: 'PENDING' } } },
+    ].forEach(user_for_contact => {
+      it('returns false when the given contact has user_for_contact data but is not replaced', () => {
+        const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
+        expect(service.isReplaced(originalContact)).to.be.false;
+      });
+    });
+
+    it('returns false when no username is found', () => {
+      sessionService.userCtx.returns(null);
+      const pendingContact = getContactWithStatus(status);
+      expect(service.isReplaced(pendingContact)).to.be.false;
     });
   });
 
@@ -198,9 +248,21 @@ describe('Create User for Contacts service', () => {
       expect(service.getReplacedBy(ORIGINAL_CONTACT)).to.equal(undefined);
     });
 
-    it('returns false when the given contact has user_for_contact data but is not replaced', () => {
-      const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact: {} });
-      expect(service.isReplaced(originalContact)).to.be.false;
+    [
+      {},
+      { replace: {} },
+      { replace: { otheruser: { status: 'PENDING' } } },
+    ].forEach(user_for_contact => {
+      it('returns undefined when the given contact has user_for_contact data but is not replaced', () => {
+        const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
+        expect(service.getReplacedBy(originalContact)).to.be.undefined;
+      });
+    });
+
+    it('returns undefined when no username is found', () => {
+      sessionService.userCtx.returns(null);
+      const pendingContact = getContactWithStatus('PENDING');
+      expect(service.getReplacedBy(pendingContact)).to.be.undefined;
     });
   });
 
@@ -220,7 +282,7 @@ describe('Create User for Contacts service', () => {
       expect(userContactService.get.callCount).to.equal(1);
       expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
       expect(medicDb.put.callCount).to.equal(1);
-      expect(pendingContact.user_for_contact.replace).to.deep.equal({
+      expect(pendingContact.user_for_contact.replace[ORIGINAL_USERNAME]).to.deep.equal({
         replacement_contact_id: NEW_CONTACT._id,
         status: 'READY'
       });
@@ -291,7 +353,7 @@ describe('Create User for Contacts service', () => {
         expect(dbService.get.callCount).to.equal(0);
         expect(userContactService.get.callCount).to.equal(1);
         expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
-        expect(completeContact.user_for_contact.replace.status).to.equal(status);
+        expect(completeContact.user_for_contact.replace[ORIGINAL_USERNAME].status).to.equal(status);
         assertContactNotUpdated();
       });
     });
@@ -309,7 +371,7 @@ describe('Create User for Contacts service', () => {
       expect(userContactService.get.callCount).to.equal(1);
       expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
       expect(medicDb.put.callCount).to.equal(1);
-      expect(pendingContact.user_for_contact.replace).to.deep.equal({
+      expect(pendingContact.user_for_contact.replace[ORIGINAL_USERNAME]).to.deep.equal({
         replacement_contact_id: NEW_CONTACT._id,
         status: 'READY'
       });

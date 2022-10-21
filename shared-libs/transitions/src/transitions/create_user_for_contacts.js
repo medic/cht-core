@@ -105,18 +105,28 @@ const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
     });
 };
 
-const replaceUser = (originalContact) => {
-  const { user_for_contact: { replace } } = originalContact;
-  return Promise
-    .all([
-      getNewContact(replace.replacement_contact_id),
-      users.getUserSettings({ name: replace.original_username }),
-    ])
-    .then(([newContact, originalUserSettings]) => {
-      return createNewUser(originalUserSettings, newContact)
-        .then(() => users.deleteUser(originalUserSettings.name));
-    })
-    .then(() => originalContact.user_for_contact.replace.status = USER_CREATION_STATUS.COMPLETE);
+const replaceUser = async (originalContact, { username, replacementContactId }) => {
+  try{
+    const [newContact, originalUserSettings] = await Promise
+      .all([
+        getNewContact(replacementContactId),
+        users.getUserSettings({ name: username }),
+      ]);
+
+    await createNewUser(originalUserSettings, newContact);
+    await users.deleteUser(originalUserSettings.name);
+    originalContact.user_for_contact.replace[username].status = USER_CREATION_STATUS.COMPLETE;
+  } catch (e) {
+    originalContact.user_for_contact.replace[username].status = USER_CREATION_STATUS.ERROR;
+    return e;
+  }
+};
+
+const getUsersToReplace = (originalContact) => {
+  return Object
+    .entries(originalContact.user_for_contact.replace)
+    .filter(([, { status }]) => status === USER_CREATION_STATUS.READY)
+    .map(([username, { replacement_contact_id }]) => ({ username, replacementContactId: replacement_contact_id }));
 };
 
 /**
@@ -142,21 +152,31 @@ module.exports = {
   },
   filter: (doc) => {
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
-    if (!contactType || !contactTypeUtils.isPersonType(contactType)) {
+    if (
+      !contactType
+      || !contactTypeUtils.isPersonType(contactType)
+      || !doc.user_for_contact
+      || !doc.user_for_contact.replace
+    ) {
       return false;
     }
 
-    return doc.user_for_contact &&
-      doc.user_for_contact.replace &&
-      doc.user_for_contact.replace.status === USER_CREATION_STATUS.READY;
+    return !!Object
+      .values(doc.user_for_contact.replace)
+      .find(({ status }) => status === USER_CREATION_STATUS.READY);
   },
   onMatch: change => {
-    return replaceUser(change.doc)
-      .then(() => true)
-      .catch(err => {
-        change.doc.user_for_contact.replace.status = USER_CREATION_STATUS.ERROR;
-        err.changed = true;
-        throw err;
+    const usersToReplace = getUsersToReplace(change.doc);
+    return Promise.all(usersToReplace.map(user => replaceUser(change.doc, user)))
+      .then(errors => {
+        errors = errors.filter(error => error);
+        if (errors.length) {
+          throw {
+            changed: true,
+            message: errors.map(error => error.message || JSON.stringify(error)).join(', '),
+          };
+        }
+        return true;
       });
   }
 };

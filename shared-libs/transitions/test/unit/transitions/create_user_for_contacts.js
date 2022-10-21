@@ -33,7 +33,6 @@ const ORIGINAL_USER = {
 const getReplacedContact = (
   status,
   replacement_contact_id = NEW_CONTACT._id,
-  original_username = ORIGINAL_USER._id.substring('org.couchdb.user:'.length),
 ) => ({
   _id: 'replaced-id',
   parent: {
@@ -41,9 +40,10 @@ const getReplacedContact = (
   },
   user_for_contact: {
     replace: {
-      original_username,
-      replacement_contact_id,
-      status,
+      [ORIGINAL_USER.name]: {
+        replacement_contact_id,
+        status,
+      }
     }
   }
 });
@@ -125,6 +125,15 @@ describe('create_user_for_contacts', () => {
       assertGetContactType(doc);
     });
 
+    it('includes person contact doc with multiple replaced users when one has status of READY', () => {
+      const doc = getReplacedContact('READY');
+      doc.user_for_contact.replace.a_user = { status: 'COMPLETE' };
+      doc.user_for_contact.replace.another_user = { status: 'PENDING' };
+
+      expect(transition.filter(doc)).to.be.true;
+      assertGetContactType(doc);
+    });
+
     it('excludes docs which do not have a contact type', () => {
       const doc = getReplacedContact('READY');
       contactTypeUtils.getContactType.returns(undefined);
@@ -142,18 +151,34 @@ describe('create_user_for_contacts', () => {
     });
 
     it('excludes person contacts which do not have user_for_contact data', () => {
-      expect(transition.filter(ORIGINAL_CONTACT)).to.be.undefined;
+      expect(transition.filter(ORIGINAL_CONTACT)).to.be.false;
       assertGetContactType(ORIGINAL_CONTACT);
     });
 
-    it('excludes person contacts which have user_for_contact data, but have not been replaced', () => {
-      const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact: { hello: 'world' } });
-      expect(transition.filter(originalContact)).to.be.undefined;
-      assertGetContactType(originalContact);
+    [
+      { hello: 'world' },
+      { replace: 'world' },
+      { replace: { a_user: 'world' } },
+      { replace: { a_user: { hello: 'world' } } },
+    ].forEach(user_for_contact => {
+      it('excludes person contacts which have user_for_contact data, but have not been replaced', () => {
+        const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
+        expect(transition.filter(originalContact)).to.be.false;
+        assertGetContactType(originalContact);
+      });
     });
 
     it('excludes replaced contacts which do not have a READY status', () => {
       const doc = getReplacedContact('PENDING');
+
+      expect(transition.filter(doc)).to.be.false;
+      assertGetContactType(doc);
+    });
+
+    it('excludes contact associated with multiple replaced users when none have a READY status', () => {
+      const doc = getReplacedContact('PENDING');
+      doc.user_for_contact.replace.a_user = { status: 'COMPLETE' };
+      doc.user_for_contact.replace.another_user = { status: 'ERROR' };
 
       expect(transition.filter(doc)).to.be.false;
       assertGetContactType(doc);
@@ -178,35 +203,42 @@ describe('create_user_for_contacts', () => {
       usersGet = sinon.stub(db.users, 'get').rejects({ status: 404 });
     });
 
-    const expectInitialDataRetrieved = (originalContact, newContact) => {
-      expect(getOrCreatePerson.withArgs(newContact._id).callCount).to.equal(1);
-      expect(getUserSettings.callCount).to.equal(1);
-      expect(getUserSettings.args[0]).to.deep.equal([{
-        name: originalContact.user_for_contact.replace.original_username,
-      }]);
+    const expectInitialDataRetrieved = (users) => {
+      expect(users).to.not.be.empty;
+      const newContactIdArgs = users
+        .filter(({ contact }) => contact)
+        .map(({ contact }) => ([contact._id]));
+      expect(getOrCreatePerson.args).to.deep.equal(newContactIdArgs);
+      const expectedUserSettingsArgs = users.map(({ username }) => ([{ name: username }]));
+      expect(getUserSettings.args).to.deep.equal(expectedUserSettingsArgs);
     };
 
-    const expectUserCreated = (newContact, originalUser) => {
-      expect(usersGet.callCount).to.equal(1);
-      expect(usersGet.args[0][0]).to.match(/^org\.couchdb\.user:new-contact-\d\d\d\d/);
-      expect(createUser.callCount).to.equal(1);
-      const username = usersGet.args[0][0].substring(17);
-      expect(createUser.args[0][0]).to.deep.equal({
-        username,
-        token_login: true,
-        roles: originalUser.roles,
-        phone: newContact.phone,
-        place: newContact.parent._id,
-        contact: newContact._id,
-        fullname: newContact.name,
+    const expectUsersCreated = (users) => {
+      expect(users).to.not.be.empty;
+      expect(usersGet.callCount).to.equal(users.length);
+      usersGet.args.forEach(([username]) => expect(username).to.match(/^org\.couchdb\.user:new-contact-\d\d\d\d/));
+
+      expect(createUser.callCount).to.equal(users.length);
+      users.forEach(({ contact, user }, index) => {
+        const username = usersGet.args[index][0].substring(17);
+        expect(createUser.args[index][0]).to.deep.equal({
+          username,
+          token_login: true,
+          roles: user.roles,
+          phone: contact.phone,
+          place: contact.parent._id,
+          contact: contact._id,
+          fullname: contact.name,
+        });
+
+        expect(createUser.args[index][0].username).to.match(/^new-contact-\d\d\d\d$/);
+        expect(createUser.args[index][1]).to.equal('https://my.cht.instance');
       });
-      expect(createUser.args[0][0].username).to.match(/^new-contact-\d\d\d\d$/);
-      expect(createUser.args[0][1]).to.equal('https://my.cht.instance');
     };
 
-    const expectUserDeleted = (originalUser) => {
-      expect(deleteUser.callCount).to.equal(1);
-      expect(deleteUser.args[0]).to.deep.equal([originalUser.name]);
+    const expectUserDeleted = (originalUsers) => {
+      const expectedDeleteUserArgs = originalUsers.map(({ name }) => ([name]));
+      expect(deleteUser.args).to.deep.equal(expectedDeleteUserArgs);
     };
 
     it('replaces user with READY status', () => {
@@ -215,10 +247,10 @@ describe('create_user_for_contacts', () => {
       return transition.onMatch({ doc }).then(result => {
         expect(result).to.be.true;
 
-        expectInitialDataRetrieved(doc, NEW_CONTACT);
-        expectUserCreated(NEW_CONTACT, ORIGINAL_USER);
-        expectUserDeleted(ORIGINAL_USER);
-        expect(doc.user_for_contact.replace.status).to.equal('COMPLETE');
+        expectInitialDataRetrieved([{ username: ORIGINAL_USER.name, contact: NEW_CONTACT }]);
+        expectUsersCreated([{ contact: NEW_CONTACT, user: ORIGINAL_USER }]);
+        expectUserDeleted([ORIGINAL_USER]);
+        expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
       });
     });
 
@@ -264,7 +296,7 @@ describe('create_user_for_contacts', () => {
             fullname: NEW_CONTACT.name,
           });
           expect(createUser.args[0][1]).to.equal('https://my.cht.instance');
-          expect(doc.user_for_contact.replace.status).to.equal('COMPLETE');
+          expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
         });
       });
     });
@@ -282,7 +314,7 @@ describe('create_user_for_contacts', () => {
 
           expect(usersGet.callCount).to.equal(101);
           expect(createUser.callCount).to.equal(0);
-          expect(doc.user_for_contact.replace.status).to.equal('ERROR');
+          expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('ERROR');
         });
     });
 
@@ -369,6 +401,150 @@ describe('create_user_for_contacts', () => {
           expect(err.message).to.equal('Error creating new user: "Invalid phone number"');
           expect(err.changed).to.be.true;
         });
+    });
+
+    describe('when the contact is associated with multiple replaced users', () => {
+      it('replaces all users with READY status and ignores users with other statuses', async () => {
+        const newContact1 = Object.assign({}, NEW_CONTACT, { _id: 'new-contact-1' });
+        getOrCreatePerson.withArgs(newContact1._id).resolves(newContact1);
+        const originalUser1 = Object.assign({}, ORIGINAL_USER, { _id: 'original-user-1-id', name: 'original-user-1' });
+        const originalUser2 = Object.assign({}, ORIGINAL_USER, { _id: 'original-user-2-id', name: 'original-user-2' });
+        getUserSettings.withArgs({ name: ORIGINAL_USER.name })
+          .resolves(ORIGINAL_USER);
+        getUserSettings.withArgs({ name: originalUser1.name })
+          .resolves(originalUser1);
+        getUserSettings.withArgs({ name: originalUser2.name })
+          .resolves(originalUser2);
+        const doc = getReplacedContact('READY');
+        doc.user_for_contact.replace.complete_user = { status: 'COMPLETE', replacement_contact_id: NEW_CONTACT._id };
+        doc.user_for_contact.replace[originalUser1.name] = { status: 'READY', replacement_contact_id: NEW_CONTACT._id };
+        doc.user_for_contact.replace.pending_user = { status: 'PENDING', replacement_contact_id: NEW_CONTACT._id };
+        doc.user_for_contact.replace[originalUser2.name] = { status: 'READY', replacement_contact_id: newContact1._id };
+        doc.user_for_contact.replace.error_user = { status: 'ERROR', replacement_contact_id: NEW_CONTACT._id };
+        doc.user_for_contact.replace.invalid_user = {  };
+
+        const result = await transition.onMatch({ doc });
+        expect(result).to.be.true;
+
+        expectInitialDataRetrieved([
+          { username: ORIGINAL_USER.name, contact: NEW_CONTACT },
+          { username: originalUser1.name, contact: NEW_CONTACT },
+          { username: originalUser2.name, contact: newContact1 },
+        ]);
+
+        expectUsersCreated([
+          { contact: NEW_CONTACT, user: ORIGINAL_USER },
+          { contact: NEW_CONTACT, user: originalUser1 },
+          { contact: newContact1, user: originalUser2 }
+        ]);
+        expectUserDeleted([ORIGINAL_USER, originalUser1, originalUser2]);
+        [ORIGINAL_USER.name, originalUser1.name, originalUser2.name].forEach(name => {
+          expect(doc.user_for_contact.replace[name].status)
+            .to
+            .equal('COMPLETE');
+        });
+      });
+
+      it('records errors when all READY users fail to be replaced', async () => {
+        const namelessContact = Object.assign({}, NEW_CONTACT, { _id: 'new-contact-1', name: '' });
+        getOrCreatePerson.withArgs(namelessContact._id).resolves(namelessContact);
+        const originalUser1 = Object.assign({}, ORIGINAL_USER, { _id: 'original-user-1-id', name: 'original-user-1' });
+        const originalUser2 = Object.assign({}, ORIGINAL_USER, { _id: 'original-user-2-id', name: 'original-user-2' });
+        getUserSettings.withArgs({ name: ORIGINAL_USER.name })
+          .resolves(ORIGINAL_USER);
+        getUserSettings.withArgs({ name: originalUser1.name })
+          .resolves(originalUser1);
+        getUserSettings.withArgs({ name: originalUser2.name })
+          .resolves(originalUser2);
+        const doc = getReplacedContact('READY', '');
+        doc.user_for_contact.replace[originalUser1.name] = { status: 'READY' };
+        doc.user_for_contact.replace[originalUser2.name] = {
+          status: 'READY',
+          replacement_contact_id: namelessContact._id
+        };
+
+        try {
+          await transition.onMatch({ doc });
+          expect.fail('Should have thrown');
+        } catch(err) {
+          const expectedMessage = [
+            'No id was provided for the new replacement contact.',
+            'No id was provided for the new replacement contact.',
+            `Replacement contact [${namelessContact._id}] must have a name.`,
+          ].join(', ');
+          expect(err.message).to.equal(expectedMessage);
+          expect(err.changed).to.be.true;
+        }
+
+        expectInitialDataRetrieved([
+          { username: ORIGINAL_USER.name, },
+          { username: originalUser1.name, },
+          { username: originalUser2.name, contact: namelessContact },
+        ]);
+        expect(usersGet.callCount).to.equal(0);
+        expect(createUser.callCount).to.equal(0);
+        expect(deleteUser.callCount).to.equal(0);
+
+        [ORIGINAL_USER.name, originalUser1.name, originalUser2.name].forEach(name => {
+          expect(doc.user_for_contact.replace[name].status)
+            .to
+            .equal('ERROR');
+        });
+      });
+
+
+      it('replaces some users and records errors for other that fail to be replaced', async () => {
+        const errorUser1 = Object.assign({}, ORIGINAL_USER, { _id: 'error-user-1-id', name: 'error-user-1' });
+        const originalUser1 = Object.assign({}, ORIGINAL_USER, { _id: 'original-user-1-id', name: 'original-user-1' });
+        const errorUser2 = Object.assign({}, ORIGINAL_USER, { _id: 'error-user-2-id', name: 'error-user-2' });
+        getUserSettings.withArgs({ name: ORIGINAL_USER.name })
+          .resolves(ORIGINAL_USER);
+        getUserSettings.withArgs({ name: errorUser1.name })
+          .resolves(errorUser1);
+        getUserSettings.withArgs({ name: originalUser1.name })
+          .resolves(originalUser1);
+        getUserSettings.withArgs({ name: errorUser2.name })
+          .resolves(errorUser2);
+        const doc = getReplacedContact('READY');
+        doc.user_for_contact.replace[errorUser1.name] = { status: 'READY' };
+        doc.user_for_contact.replace[originalUser1.name] = { status: 'READY', replacement_contact_id: NEW_CONTACT._id };
+        doc.user_for_contact.replace[errorUser2.name] = { status: 'READY' };
+
+        try {
+          await transition.onMatch({ doc });
+          expect.fail('Should have thrown');
+        } catch(err) {
+          const expectedMessage = [
+            'No id was provided for the new replacement contact.',
+            'No id was provided for the new replacement contact.',
+          ].join(', ');
+          expect(err.message).to.equal(expectedMessage);
+          expect(err.changed).to.be.true;
+        }
+
+        expectInitialDataRetrieved([
+          { username: ORIGINAL_USER.name, contact: NEW_CONTACT },
+          { username: errorUser1.name },
+          { username: originalUser1.name, contact: NEW_CONTACT },
+          { username: errorUser2.name },
+        ]);
+        expectUsersCreated([
+          { contact: NEW_CONTACT, user: ORIGINAL_USER },
+          { contact: NEW_CONTACT, user: originalUser1 },
+        ]);
+        expectUserDeleted([ORIGINAL_USER, originalUser1]);
+
+        [errorUser1.name, errorUser2.name, ].forEach(name => {
+          expect(doc.user_for_contact.replace[name].status)
+            .to
+            .equal('ERROR');
+        });
+        [ORIGINAL_USER.name, originalUser1.name, ].forEach(name => {
+          expect(doc.user_for_contact.replace[name].status)
+            .to
+            .equal('COMPLETE');
+        });
+      });
     });
   });
 });
