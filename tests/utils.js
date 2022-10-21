@@ -1180,6 +1180,14 @@ module.exports = {
     return request(options);
   },
 
+  deepFreeze: function(obj) {
+    Object
+      .keys(obj)
+      .filter(prop => typeof obj[prop] === 'object' && !Object.isFrozen(obj[prop]))
+      .forEach(prop => this.deepFreeze(obj[prop]));
+    return Object.freeze(obj);
+  },
+
   // delays executing a function that returns a promise with the provided interval (in ms)
   delayPromise: (promiseFn, interval) => {
     if (typeof promiseFn === 'number') {
@@ -1188,7 +1196,9 @@ module.exports = {
     }
 
     return new Promise((resolve, reject) => {
-      setTimeout(() => promiseFn().then(resolve).catch(reject), interval);
+      setTimeout(() => promiseFn()
+        .then(resolve)
+        .catch(reject), interval);
     });
   },
 

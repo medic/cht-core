@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
-import { expect } from 'chai';
+import { assert } from 'chai';
 import sinon from 'sinon';
 import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
 import { SettingsService } from '@mm-services/settings.service';
@@ -9,22 +9,30 @@ import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
 import { SessionService } from '@mm-services/session.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 
-const ORIGINAL_CONTACT = {
+const deepFreeze = obj => {
+  Object
+    .keys(obj)
+    .filter(prop => typeof obj[prop] === 'object' && !Object.isFrozen(obj[prop]))
+    .forEach(prop => deepFreeze(obj[prop]));
+  return Object.freeze(obj);
+};
+
+const ORIGINAL_CONTACT = deepFreeze({
   _id: 'original-contact',
   parent: {
     _id: 'parent-contact'
   },
   user_for_contact: undefined
-};
+});
 
 const ORIGINAL_USERNAME = 'original-username';
 
-const NEW_CONTACT = {
+const NEW_CONTACT = deepFreeze({
   _id: 'new-contact',
   parent: {
     _id: 'parent-contact'
   }
-};
+});
 
 const getContactWithStatus = (status: string) => ({
   _id: 'status-contact',
@@ -51,18 +59,34 @@ describe('Create User for Contacts service', () => {
   let service;
 
   beforeEach(() => {
-    settingsService = { get: sinon.stub().resolves({ transitions: { create_user_for_contacts: true } }) };
+    settingsService = {
+      get: sinon
+        .stub()
+        .resolves({ transitions: { create_user_for_contacts: true } })
+    };
     userContactService = { get: sinon.stub() };
     medicDb = { put: sinon.stub() };
-    dbService = { get: sinon.stub().returns(medicDb) };
+    dbService = {
+      get: sinon
+        .stub()
+        .returns(medicDb)
+    };
     dbSyncService = {
       subscribe: sinon.stub(),
-      isSyncInProgress: sinon.stub().returns(false),
-      sync: sinon.stub().resolves(),
+      isSyncInProgress: sinon
+        .stub()
+        .returns(false),
+      sync: sinon
+        .stub()
+        .resolves(),
     };
     sessionService = {
-      userCtx: sinon.stub().returns({ name: ORIGINAL_USERNAME }),
-      isOnlineOnly: sinon.stub().returns(false),
+      userCtx: sinon
+        .stub()
+        .returns({ name: ORIGINAL_USERNAME }),
+      isOnlineOnly: sinon
+        .stub()
+        .returns(false),
       logout: sinon.stub(),
     };
 
@@ -80,34 +104,32 @@ describe('Create User for Contacts service', () => {
     service = TestBed.inject(CreateUserForContactsService);
   });
 
-  afterEach(() => sinon.restore());
-
   const assertContactNotUpdated = () => {
-    expect(medicDb.put.callCount).to.equal(0);
-    expect(dbSyncService.isSyncInProgress.callCount).to.equal(0);
-    expect(dbSyncService.sync.callCount).to.equal(0);
-    expect(sessionService.logout.callCount).to.equal(0);
+    assert.equal(medicDb.put.callCount, 0);
+    assert.equal(dbSyncService.isSyncInProgress.callCount, 0);
+    assert.equal(dbSyncService.sync.callCount, 0);
+    assert.equal(sessionService.logout.callCount, 0);
   };
 
   describe('setReplaced', () => {
     it('sets the given new contact and a status of PENDING when the user has offline role', () => {
-      const originalContact = Object.assign({}, ORIGINAL_CONTACT);
+      const originalContact = { ...ORIGINAL_CONTACT };
 
       service.setReplaced(originalContact, NEW_CONTACT);
 
-      expect(originalContact.user_for_contact.replace[ORIGINAL_USERNAME]).to.deep.equal({
+      assert.deepEqual(originalContact.user_for_contact.replace[ORIGINAL_USERNAME], {
         status: 'PENDING',
         replacement_contact_id: NEW_CONTACT._id,
       });
     });
 
     it('sets the given new contact and a status of READY when the user has online role', () => {
-      const originalContact = Object.assign({}, ORIGINAL_CONTACT);
+      const originalContact = { ...ORIGINAL_CONTACT };
       sessionService.isOnlineOnly.returns(true);
 
       service.setReplaced(originalContact, NEW_CONTACT);
 
-      expect(originalContact.user_for_contact.replace[ORIGINAL_USERNAME]).to.deep.equal({
+      assert.deepEqual(originalContact.user_for_contact.replace[ORIGINAL_USERNAME], {
         status: 'READY',
         replacement_contact_id: NEW_CONTACT._id,
       });
@@ -115,16 +137,16 @@ describe('Create User for Contacts service', () => {
 
     [
       { hello: 'world' },
-      { hello: 'world', replace: { [ORIGINAL_USERNAME]: {status: 'ERROR' } } },
+      { hello: 'world', replace: { [ORIGINAL_USERNAME]: { status: 'ERROR' } } },
     ].forEach(user_for_contact => {
       it('sets the given new contact and status when the contact already has user_for_contact data', () => {
-        const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
+        const originalContact = { ...ORIGINAL_CONTACT, user_for_contact };
 
         service.setReplaced(originalContact, NEW_CONTACT);
 
-        expect(originalContact.user_for_contact).to.deep.equal({
+        assert.deepEqual(originalContact.user_for_contact, {
           hello: 'world',
-          replace:{
+          replace: {
             [ORIGINAL_USERNAME]: {
               status: 'PENDING',
               replacement_contact_id: NEW_CONTACT._id,
@@ -135,7 +157,8 @@ describe('Create User for Contacts service', () => {
     });
 
     it('sets the given new contact and status when the contact already has replace data for a different user', () => {
-      const originalContact = Object.assign({}, ORIGINAL_CONTACT, {
+      const originalContact = {
+        ...ORIGINAL_CONTACT,
         user_for_contact: {
           replace: {
             otherUser: {
@@ -143,12 +166,12 @@ describe('Create User for Contacts service', () => {
             }
           }
         }
-      });
+      };
 
       service.setReplaced(originalContact, NEW_CONTACT);
 
-      expect(originalContact.user_for_contact).to.deep.equal({
-        replace:{
+      assert.deepEqual(originalContact.user_for_contact, {
+        replace: {
           otherUser: {
             status: 'ERROR'
           },
@@ -161,34 +184,44 @@ describe('Create User for Contacts service', () => {
     });
 
     it('throws an error when no original contact is provided', () => {
-      expect(() => service.setReplaced(null, NEW_CONTACT))
-        .to.throw('The original contact could not be found when replacing the user.');
+      assert.throws(
+        () => service.setReplaced(null, NEW_CONTACT),
+        'The original contact could not be found when replacing the user.'
+      );
     });
 
     it('throws an error when no new contact is provided', () => {
-      expect(() => service.setReplaced(ORIGINAL_CONTACT, null))
-        .to.throw('The new contact could not be found when replacing the user.');
+      assert.throws(
+        () => service.setReplaced(ORIGINAL_CONTACT, null),
+        'The new contact could not be found when replacing the user.'
+      );
     });
 
     it('throws an error when the original contact and the new contact do not have the same parent', () => {
-      const originalContact = Object.assign({}, ORIGINAL_CONTACT, { parent: { _id: 'different-parent' } });
+      const originalContact = { ...ORIGINAL_CONTACT, parent: { _id: 'different-parent' } };
 
-      expect(() => service.setReplaced(originalContact, NEW_CONTACT))
-        .to.throw('The new contact must have the same parent as the original contact when replacing a user.');
+      assert.throws(
+        () => service.setReplaced(originalContact, NEW_CONTACT),
+        'The new contact must have the same parent as the original contact when replacing a user.'
+      );
     });
 
     it('throws an error when the original contact does not have a parent', () => {
-      const originalContact = Object.assign({}, ORIGINAL_CONTACT, { parent: undefined });
+      const originalContact = { ...ORIGINAL_CONTACT, parent: undefined };
 
-      expect(() => service.setReplaced(originalContact, NEW_CONTACT))
-        .to.throw('The new contact must have the same parent as the original contact when replacing a user.');
+      assert.throws(
+        () => service.setReplaced(originalContact, NEW_CONTACT),
+        'The new contact must have the same parent as the original contact when replacing a user.'
+      );
     });
 
     it('throws an error when the new contact does not have a parent', () => {
-      const newContact = Object.assign({}, NEW_CONTACT, { parent: {} });
+      const newContact = { ...NEW_CONTACT, parent: {} };
 
-      expect(() => service.setReplaced(ORIGINAL_CONTACT, newContact))
-        .to.throw('The new contact must have the same parent as the original contact when replacing a user.');
+      assert.throws(
+        () => service.setReplaced(ORIGINAL_CONTACT, newContact),
+        'The new contact must have the same parent as the original contact when replacing a user.'
+      );
     });
 
     [
@@ -197,8 +230,10 @@ describe('Create User for Contacts service', () => {
     ].forEach(userCtx => {
       it('throws an error when no username is found', () => {
         sessionService.userCtx.returns(userCtx);
-        expect(() => service.setReplaced(ORIGINAL_CONTACT, NEW_CONTACT))
-          .to.throw('The current username could not be found when replacing the user.');
+        assert.throws(
+          () => service.setReplaced(ORIGINAL_CONTACT, NEW_CONTACT),
+          'The current username could not be found when replacing the user.'
+        );
       });
     });
   });
@@ -212,12 +247,12 @@ describe('Create User for Contacts service', () => {
     ].forEach(status => {
       it(`returns true when the given contact is replaced with status: ${status}`, () => {
         const pendingContact = getContactWithStatus(status);
-        expect(service.isReplaced(pendingContact)).to.be.true;
+        assert.isTrue(service.isReplaced(pendingContact));
       });
     });
 
     it('returns false when the given contact is not replaced', () => {
-      expect(service.isReplaced(ORIGINAL_CONTACT)).to.be.false;
+      assert.isFalse(service.isReplaced(ORIGINAL_CONTACT));
     });
 
     [
@@ -226,26 +261,26 @@ describe('Create User for Contacts service', () => {
       { replace: { otheruser: { status: 'PENDING' } } },
     ].forEach(user_for_contact => {
       it('returns false when the given contact has user_for_contact data but is not replaced', () => {
-        const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
-        expect(service.isReplaced(originalContact)).to.be.false;
+        const originalContact = { ...ORIGINAL_CONTACT, user_for_contact };
+        assert.isFalse(service.isReplaced(originalContact));
       });
     });
 
     it('returns false when no username is found', () => {
       sessionService.userCtx.returns(null);
       const pendingContact = getContactWithStatus(status);
-      expect(service.isReplaced(pendingContact)).to.be.false;
+      assert.isFalse(service.isReplaced(pendingContact));
     });
   });
 
   describe('getReplacedBy', () => {
     it('returns the new contact when the given contact is replaced', () => {
       const pendingContact = getContactWithStatus('PENDING');
-      expect(service.getReplacedBy(pendingContact)).to.equal(NEW_CONTACT._id);
+      assert.equal(service.getReplacedBy(pendingContact), NEW_CONTACT._id);
     });
 
     it('returns undefined when the given contact is not replaced', () => {
-      expect(service.getReplacedBy(ORIGINAL_CONTACT)).to.equal(undefined);
+      assert.isUndefined(service.getReplacedBy(ORIGINAL_CONTACT));
     });
 
     [
@@ -254,43 +289,43 @@ describe('Create User for Contacts service', () => {
       { replace: { otheruser: { status: 'PENDING' } } },
     ].forEach(user_for_contact => {
       it('returns undefined when the given contact has user_for_contact data but is not replaced', () => {
-        const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
-        expect(service.getReplacedBy(originalContact)).to.be.undefined;
+        const originalContact = { ...ORIGINAL_CONTACT, user_for_contact };
+        assert.isUndefined(service.getReplacedBy(originalContact));
       });
     });
 
     it('returns undefined when no username is found', () => {
       sessionService.userCtx.returns(null);
       const pendingContact = getContactWithStatus('PENDING');
-      expect(service.getReplacedBy(pendingContact)).to.be.undefined;
+      assert.isUndefined(service.getReplacedBy(pendingContact));
     });
   });
 
   describe('syncStatusChanged', () => {
     const SYNC_STATUS = { to: SyncStatus.Success, from: SyncStatus.Success };
 
-    it('updates contact with PENDING status to READY and logs out the user', async() => {
+    it('updates contact with PENDING status to READY and logs out the user', async () => {
       const pendingContact = getContactWithStatus('PENDING');
       userContactService.get.resolves(pendingContact);
 
 
-      expect(dbSyncService.subscribe.callCount).to.equal(1);
+      assert.equal(dbSyncService.subscribe.callCount, 1);
       const syncStatusChanged = dbSyncService.subscribe.args[0][0];
       await syncStatusChanged(SYNC_STATUS);
 
-      expect(dbService.get.callCount).to.equal(1);
-      expect(userContactService.get.callCount).to.equal(1);
-      expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
-      expect(medicDb.put.callCount).to.equal(1);
-      expect(pendingContact.user_for_contact.replace[ORIGINAL_USERNAME]).to.deep.equal({
+      assert.equal(dbService.get.callCount, 1);
+      assert.equal(userContactService.get.callCount, 1);
+      assert.deepEqual(userContactService.get.args[0], [{ hydrateLineage: false }]);
+      assert.equal(medicDb.put.callCount, 1);
+      assert.deepEqual(pendingContact.user_for_contact.replace[ORIGINAL_USERNAME], {
         replacement_contact_id: NEW_CONTACT._id,
         status: 'READY'
       });
-      expect(medicDb.put.args[0]).to.deep.equal([pendingContact]);
-      expect(dbSyncService.isSyncInProgress.callCount).to.equal(1);
-      expect(dbSyncService.sync.callCount).to.equal(1);
-      expect(dbSyncService.sync.args[0]).to.deep.equal([true]);
-      expect(sessionService.logout.callCount).to.equal(1);
+      assert.deepEqual(medicDb.put.args[0], [pendingContact]);
+      assert.equal(dbSyncService.isSyncInProgress.callCount, 1);
+      assert.equal(dbSyncService.sync.callCount, 1);
+      assert.deepEqual(dbSyncService.sync.args[0], [true]);
+      assert.equal(sessionService.logout.callCount, 1);
     });
 
     [
@@ -300,40 +335,40 @@ describe('Create User for Contacts service', () => {
       { to: SyncStatus.Success },
       {}
     ].forEach(syncStatus => {
-      it(`does nothing when the sync status is: ${JSON.stringify(syncStatus)}`, async() => {
-        expect(dbSyncService.subscribe.callCount).to.equal(1);
+      it(`does nothing when the sync status is: ${JSON.stringify(syncStatus)}`, async () => {
+        assert.equal(dbSyncService.subscribe.callCount, 1);
         const syncStatusChanged = dbSyncService.subscribe.args[0][0];
         await syncStatusChanged(syncStatus);
 
-        expect(userContactService.get.callCount).to.equal(0);
-        expect(dbService.get.callCount).to.equal(0);
+        assert.equal(userContactService.get.callCount, 0);
+        assert.equal(dbService.get.callCount, 0);
         assertContactNotUpdated();
       });
     });
 
-    it('does not update contact that is not being replaced', async() => {
+    it('does not update contact that is not being replaced', async () => {
       userContactService.get.resolves(ORIGINAL_CONTACT);
 
-      expect(dbSyncService.subscribe.callCount).to.equal(1);
+      assert.equal(dbSyncService.subscribe.callCount, 1);
       const syncStatusChanged = dbSyncService.subscribe.args[0][0];
       await syncStatusChanged(SYNC_STATUS);
 
-      expect(dbService.get.callCount).to.equal(0);
-      expect(userContactService.get.callCount).to.equal(1);
-      expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
-      expect(ORIGINAL_CONTACT.user_for_contact).to.be.undefined;
+      assert.equal(dbService.get.callCount, 0);
+      assert.equal(userContactService.get.callCount, 1);
+      assert.deepEqual(userContactService.get.args[0], [{ hydrateLineage: false }]);
+      assert.isUndefined(ORIGINAL_CONTACT.user_for_contact);
       assertContactNotUpdated();
     });
 
-    it('does nothing when there is no contact associated with the user', async() => {
+    it('does nothing when there is no contact associated with the user', async () => {
       userContactService.get.resolves(undefined);
 
-      expect(dbSyncService.subscribe.callCount).to.equal(1);
+      assert.equal(dbSyncService.subscribe.callCount, 1);
       const syncStatusChanged = dbSyncService.subscribe.args[0][0];
       await syncStatusChanged(SYNC_STATUS);
 
-      expect(userContactService.get.callCount).to.equal(1);
-      expect(dbService.get.callCount).to.equal(0);
+      assert.equal(userContactService.get.callCount, 1);
+      assert.equal(dbService.get.callCount, 0);
       assertContactNotUpdated();
     });
 
@@ -342,45 +377,45 @@ describe('Create User for Contacts service', () => {
       'COMPLETE',
       'ERROR',
     ].forEach(status => {
-      it('does not update replaced contact that is not PENDING', async() => {
+      it('does not update replaced contact that is not PENDING', async () => {
         const completeContact = getContactWithStatus(status);
         userContactService.get.resolves(completeContact);
 
-        expect(dbSyncService.subscribe.callCount).to.equal(1);
+        assert.equal(dbSyncService.subscribe.callCount, 1);
         const syncStatusChanged = dbSyncService.subscribe.args[0][0];
         await syncStatusChanged(SYNC_STATUS);
 
-        expect(dbService.get.callCount).to.equal(0);
-        expect(userContactService.get.callCount).to.equal(1);
-        expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
-        expect(completeContact.user_for_contact.replace[ORIGINAL_USERNAME].status).to.equal(status);
+        assert.equal(dbService.get.callCount, 0);
+        assert.equal(userContactService.get.callCount, 1);
+        assert.deepEqual(userContactService.get.args[0], [{ hydrateLineage: false }]);
+        assert.equal(completeContact.user_for_contact.replace[ORIGINAL_USERNAME].status, status);
         assertContactNotUpdated();
       });
     });
 
-    it('waits for sync in progress to finish before syncing updated contact', async() => {
+    it('waits for sync in progress to finish before syncing updated contact', async () => {
       const pendingContact = getContactWithStatus('PENDING');
       userContactService.get.resolves(pendingContact);
       dbSyncService.isSyncInProgress.resolves(true);
 
-      expect(dbSyncService.subscribe.callCount).to.equal(1);
+      assert.equal(dbSyncService.subscribe.callCount, 1);
       const syncStatusChanged = dbSyncService.subscribe.args[0][0];
       await syncStatusChanged(SYNC_STATUS);
 
-      expect(dbService.get.callCount).to.equal(1);
-      expect(userContactService.get.callCount).to.equal(1);
-      expect(userContactService.get.args[0]).to.deep.equal([{ hydrateLineage: false }]);
-      expect(medicDb.put.callCount).to.equal(1);
-      expect(pendingContact.user_for_contact.replace[ORIGINAL_USERNAME]).to.deep.equal({
+      assert.equal(dbService.get.callCount, 1);
+      assert.equal(userContactService.get.callCount, 1);
+      assert.deepEqual(userContactService.get.args[0], [{ hydrateLineage: false }]);
+      assert.equal(medicDb.put.callCount, 1);
+      assert.deepEqual(pendingContact.user_for_contact.replace[ORIGINAL_USERNAME], {
         replacement_contact_id: NEW_CONTACT._id,
         status: 'READY'
       });
-      expect(medicDb.put.args[0]).to.deep.equal([pendingContact]);
-      expect(dbSyncService.isSyncInProgress.callCount).to.equal(1);
-      expect(dbSyncService.sync.callCount).to.equal(2);
-      expect(dbSyncService.sync.args[0]).to.deep.equal([]);
-      expect(dbSyncService.sync.args[1]).to.deep.equal([true]);
-      expect(sessionService.logout.callCount).to.equal(1);
+      assert.deepEqual(medicDb.put.args[0], [pendingContact]);
+      assert.equal(dbSyncService.isSyncInProgress.callCount, 1);
+      assert.equal(dbSyncService.sync.callCount, 2);
+      assert.deepEqual(dbSyncService.sync.args[0], []);
+      assert.deepEqual(dbSyncService.sync.args[1], [true]);
+      assert.equal(sessionService.logout.callCount, 1);
     });
   });
 });

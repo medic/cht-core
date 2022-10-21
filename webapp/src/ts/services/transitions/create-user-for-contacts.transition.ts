@@ -28,7 +28,7 @@ export class CreateUserForContactsTransition extends Transition {
    * @return {Boolean} - whether the required config is present
    */
   init(settings) {
-    if(!settings) {
+    if (!settings) {
       return false;
     }
     this.replaceForms = this.getReplaceForms(settings);
@@ -47,7 +47,7 @@ export class CreateUserForContactsTransition extends Transition {
    * @return {Boolean} - whether any of the docs from the batch should be processed
    */
   filter(docs: Doc[]) {
-    if(!docs) {
+    if (!docs) {
       return false;
     }
     return !!docs.filter(doc => doc?.type === 'data_record').length;
@@ -89,7 +89,7 @@ export class CreateUserForContactsTransition extends Transition {
 
   private getUserReplaceDoc(docs: Doc[]) {
     const replaceDocs = docs.filter(doc => this.replaceForms.includes(doc.form));
-    if(replaceDocs.length > 1) {
+    if (replaceDocs.length > 1) {
       throw new Error('Only one user replace form is allowed to be submitted per transaction.');
     }
 
@@ -129,7 +129,7 @@ export class CreateUserForContactsTransition extends Transition {
   }
 
   private async getParentDoc(doc: ContactDoc) {
-    if(!doc.parent?._id) {
+    if (!doc.parent?._id) {
       return;
     }
 
@@ -162,7 +162,7 @@ export class CreateUserForContactsTransition extends Transition {
 
   private getReportDocsForContact(docs: Doc[], originalContactId: string) {
     return docs.filter(doc => {
-      if(doc.type !== 'data_record') {
+      if (doc.type !== 'data_record') {
         return false;
       }
       return (<ReportDoc>doc).contact?._id === originalContactId;
@@ -174,7 +174,8 @@ export class CreateUserForContactsTransition extends Transition {
     if (!replacedById) {
       return;
     }
-    this.getReportDocsForContact(docs, originalContact._id)
+    this
+      .getReportDocsForContact(docs, originalContact._id)
       .forEach(doc => doc.contact._id = replacedById);
   }
 }

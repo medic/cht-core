@@ -62,51 +62,50 @@ const generateUsername = (contactName, collisionCount) => {
   return `${username}-${getRandomSuffix(collisionCount)}`;
 };
 
-const generateUniqueUsername = (contactName, collisionCount = 0) => {
-  if(collisionCount > USERNAME_COLLISION_MAX) {
+const generateUniqueUsername = async (contactName, collisionCount = 0) => {
+  if (collisionCount > USERNAME_COLLISION_MAX) {
     throw new Error(`Could not generate a unique username for contact [${contactName}].`);
   }
   const username = generateUsername(contactName, collisionCount);
-  return db.users
-    .get(`org.couchdb.user:${username}`)
-    .then(() => generateUniqueUsername(contactName, collisionCount + 1))
-    .catch(error => {
-      if (error.status === 404) {
-        // this username is available
-        return username;
-      }
-      throw error;
-    });
+  try {
+    await db.users.get(`org.couchdb.user:${username}`);
+    return generateUniqueUsername(contactName, collisionCount + 1);
+  } catch (error) {
+    if (error.status === 404) {
+      // this username is available
+      return username;
+    }
+    throw error;
+  }
 };
 
-const createNewUser = ({ roles }, { _id, name, phone, parent }) => {
+const createNewUser = async ({ roles }, { _id, name, phone, parent }) => {
   if (!name) {
     throw new Error(`Replacement contact [${_id}] must have a name.`);
   }
-  return generateUniqueUsername(name)
-    .then(username => {
-      const user = {
-        username,
-        token_login: true,
-        roles,
-        phone,
-        place: parent._id,
-        contact: _id,
-        fullname: name,
-      };
-      return users.createUser(user, config.get('app_url'))
-        .catch(err => {
-          if (!err.message || typeof err.message === 'string') {
-            throw err;
-          }
-          const message = err.message.message ? err.message.message : err.message;
-          throw new Error(`Error creating new user: ${JSON.stringify(message)}`);
-        });
-    });
+  const username = await generateUniqueUsername(name);
+  const user = {
+    username,
+    token_login: true,
+    roles,
+    phone,
+    place: parent._id,
+    contact: _id,
+    fullname: name,
+  };
+  try {
+    return await users.createUser(user, config.get('app_url'));
+  } catch (err) {
+    if (!err.message || typeof err.message === 'string') {
+      throw err;
+    }
+    const message = err.message.message ? err.message.message : err.message;
+    throw new Error(`Error creating new user: ${JSON.stringify(message)}`);
+  }
 };
 
 const replaceUser = async (originalContact, { username, replacementContactId }) => {
-  try{
+  try {
     const [newContact, originalUserSettings] = await Promise
       .all([
         getNewContact(replacementContactId),
@@ -165,18 +164,18 @@ module.exports = {
       .values(doc.user_for_contact.replace)
       .find(({ status }) => status === USER_CREATION_STATUS.READY);
   },
-  onMatch: change => {
+  onMatch: async change => {
     const usersToReplace = getUsersToReplace(change.doc);
-    return Promise.all(usersToReplace.map(user => replaceUser(change.doc, user)))
-      .then(errors => {
-        errors = errors.filter(error => error);
-        if (errors.length) {
-          throw {
-            changed: true,
-            message: errors.map(error => error.message || JSON.stringify(error)).join(', '),
-          };
-        }
-        return true;
-      });
+    const errors = (await Promise.all(usersToReplace.map(user => replaceUser(change.doc, user))))
+      .filter(error => error);
+    if (errors.length) {
+      throw {
+        changed: true,
+        message: errors
+          .map(error => error.message || JSON.stringify(error))
+          .join(', '),
+      };
+    }
+    return true;
   }
 };

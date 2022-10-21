@@ -1,35 +1,34 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../../../utils/sentinel');
-const { expect } = require('chai');
-const chai = require('chai');
+const { assert } = require('chai');
 
-const CLINIC = {
+const CLINIC = utils.deepFreeze({
   _id: 'clinic',
   type: 'clinic',
-};
+});
 
-const ORIGINAL_PERSON = {
+const ORIGINAL_PERSON = utils.deepFreeze({
   _id: 'original_person',
   type: 'person',
   name: 'Original Person',
   parent: { _id: CLINIC._id },
-};
+});
 
-const NEW_PERSON = {
+const NEW_PERSON = utils.deepFreeze({
   _id: 'new_person',
   type: 'person',
   name: 'New Person',
   phone: '+254712345678',
   parent: { _id: CLINIC._id },
-};
+});
 
-const ORIGINAL_USER = {
+const ORIGINAL_USER = utils.deepFreeze({
   username: 'original_person',
   password: 'Sup3rSecret!',
   place: CLINIC._id,
   contact: ORIGINAL_PERSON,
   roles: ['chw'],
-};
+});
 
 const newUsers = [];
 
@@ -62,13 +61,13 @@ const loginAsUser = ({ username, password }) => {
 const expectError = async (errorPattern) => {
   // Error saved on the contact
   const originalPerson_updated = await utils.getDoc(ORIGINAL_PERSON._id);
-  expect(originalPerson_updated.errors).to.have.lengthOf(1);
+  assert.lengthOf(originalPerson_updated.errors, 1);
   const [{ code, message }] = originalPerson_updated.errors;
-  expect(code).to.equal('create_user_for_contacts_error\'');
-  expect(message).to.match(errorPattern);
+  assert.equal(code, 'create_user_for_contacts_error\'');
+  assert.match(message, errorPattern);
   // New user not created
   const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-  expect(newUserSettings).to.be.empty;
+  assert.isEmpty(newUserSettings);
 };
 
 describe('create_user_for_contacts', () => {
@@ -85,7 +84,7 @@ describe('create_user_for_contacts', () => {
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
     // Can log in as user
-    chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 302 });
+    assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 302 });
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
     originalContact.user_for_contact = {
@@ -101,45 +100,45 @@ describe('create_user_for_contacts', () => {
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
     // Transition successful
-    expect(transitions.create_user_for_contacts.ok).to.be.true;
+    assert.isTrue(transitions.create_user_for_contacts.ok);
     // Original user is disabled
     const [originalUserSettings] = await utils.getUserSettings({ name: ORIGINAL_USER.username });
-    expect(originalUserSettings.inactive).to.be.true;
+    assert.isTrue(originalUserSettings.inactive);
     // Can no longer log in as user
-    chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 401 });
+    assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
     // New user created
     const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(additionalUsers).to.be.empty;
+    assert.isEmpty(additionalUsers);
     newUsers.push(newUserSettings.name);
-    expect(newUserSettings).to.deep.include({
+    assert.deepInclude(newUserSettings, {
       roles: ORIGINAL_USER.roles,
       phone: NEW_PERSON.phone,
       facility_id: NEW_PERSON.parent._id,
       contact_id: NEW_PERSON._id,
       fullname: NEW_PERSON.name,
     });
-    expect(newUserSettings.token_login.active).to.be.true;
-    expect(newUserSettings._id).to.match(/^org\.couchdb\.user:new-person-\d\d\d\d/);
-    expect(newUserSettings.name).to.match(/^new-person-\d\d\d\d$/);
+    assert.isTrue(newUserSettings.token_login.active);
+    assert.match(newUserSettings._id, /^org\.couchdb\.user:new-person-\d\d\d\d/);
+    assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
     // Login token sent
     const queuedMsgs = await getQueuedMessages();
-    expect(queuedMsgs).to.have.lengthOf(1);
-    expect(queuedMsgs[0]).to.deep.include({
+    assert.lengthOf(queuedMsgs, 1);
+    assert.deepInclude(queuedMsgs[0], {
       type: 'token_login',
       user: newUserSettings._id
     });
-    expect(queuedMsgs[0].tasks[0].messages[0].to).to.equal(NEW_PERSON.phone);
+    assert.equal(queuedMsgs[0].tasks[0].messages[0].to, NEW_PERSON.phone);
   });
 
   it('replaces user for a contact when the contact is associated with multiple users', async () => {
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
-    const otherUser = Object.assign({}, ORIGINAL_USER, { username: 'other_user', contact: ORIGINAL_PERSON._id });
+    const otherUser = { ...ORIGINAL_USER, ...{ username: 'other_user', contact: ORIGINAL_PERSON._id } };
     await utils.createUsers([otherUser]);
     newUsers.push(otherUser.username);
     // Can log in as user
-    chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 302 });
+    assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 302 });
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
     originalContact.user_for_contact = {
@@ -155,52 +154,52 @@ describe('create_user_for_contacts', () => {
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
     // Transition successful
-    expect(transitions.create_user_for_contacts.ok).to.be.true;
+    assert.isTrue(transitions.create_user_for_contacts.ok);
     // Original user is disabled
     const [originalUserSettings] = await utils.getUserSettings({ name: ORIGINAL_USER.username });
-    expect(originalUserSettings.inactive).to.be.true;
+    assert.isTrue(originalUserSettings.inactive);
     // Can no longer log in as user
-    chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 401 });
+    assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
     // New user created
     const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(additionalUsers).to.be.empty;
+    assert.isEmpty(additionalUsers);
     newUsers.push(newUserSettings.name);
-    expect(newUserSettings).to.deep.include({
+    assert.deepInclude(newUserSettings, {
       roles: ORIGINAL_USER.roles,
       phone: NEW_PERSON.phone,
       facility_id: NEW_PERSON.parent._id,
       contact_id: NEW_PERSON._id,
       fullname: NEW_PERSON.name,
     });
-    expect(newUserSettings.token_login.active).to.be.true;
-    expect(newUserSettings._id).to.match(/^org\.couchdb\.user:new-person-\d\d\d\d/);
-    expect(newUserSettings.name).to.match(/^new-person-\d\d\d\d$/);
+    assert.isTrue(newUserSettings.token_login.active);
+    assert.match(newUserSettings._id, /^org\.couchdb\.user:new-person-\d\d\d\d/);
+    assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
     // Login token sent
     const queuedMsgs = await getQueuedMessages();
-    expect(queuedMsgs).to.have.lengthOf(1);
-    expect(queuedMsgs[0]).to.deep.include({
+    assert.lengthOf(queuedMsgs, 1);
+    assert.deepInclude(queuedMsgs[0], {
       type: 'token_login',
       user: newUserSettings._id
     });
-    expect(queuedMsgs[0].tasks[0].messages[0].to).to.equal(NEW_PERSON.phone);
+    assert.equal(queuedMsgs[0].tasks[0].messages[0].to, NEW_PERSON.phone);
 
     // Other user still associated with original contact
     const [otherUserSettings] = await utils.getUserSettings({ name: otherUser.username });
-    expect(otherUserSettings.contact_id).to.equal(ORIGINAL_PERSON._id);
+    assert.equal(otherUserSettings.contact_id, ORIGINAL_PERSON._id);
     // Can still log in as other user
-    chai.expect(await loginAsUser(otherUser)).to.include({ statusCode: 302 });
+    assert.include(await loginAsUser(otherUser), { statusCode: 302 });
   });
 
   it('replaces multiple users for a contact', async () => {
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
-    const otherUser = Object.assign({}, ORIGINAL_USER, { username: 'other_user', contact: ORIGINAL_PERSON._id });
+    const otherUser = { ...ORIGINAL_USER, ...{ username: 'other_user', contact: ORIGINAL_PERSON._id } };
     await utils.createUsers([otherUser]);
     newUsers.push(otherUser.username);
     // Can log in as users
-    chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 302 });
-    chai.expect(await loginAsUser(otherUser)).to.include({ statusCode: 302 });
+    assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 302 });
+    assert.include(await loginAsUser(otherUser), { statusCode: 302 });
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
     originalContact.user_for_contact = {
@@ -220,46 +219,46 @@ describe('create_user_for_contacts', () => {
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
     // Transition successful
-    expect(transitions.create_user_for_contacts.ok).to.be.true;
+    assert.isTrue(transitions.create_user_for_contacts.ok);
     // Original users are disabled
     const [originalUserSettings] = await utils.getUserSettings({ name: ORIGINAL_USER.username });
     const [otherUserSettings] = await utils.getUserSettings({ name: otherUser.username });
-    [originalUserSettings, otherUserSettings].forEach(userSettings => expect(userSettings.inactive).to.be.true);
+    [originalUserSettings, otherUserSettings].forEach(userSettings => assert.isTrue(userSettings.inactive));
     // Can no longer log in as users
-    chai.expect(await loginAsUser(ORIGINAL_USER)).to.include({ statusCode: 401 });
-    chai.expect(await loginAsUser(otherUser)).to.include({ statusCode: 401 });
+    assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
+    assert.include(await loginAsUser(otherUser), { statusCode: 401 });
     // New users created
     const [newUserSettings0, newUserSettings1, ...additionalUsers] =
       await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(additionalUsers).to.be.empty;
+    assert.isEmpty(additionalUsers);
     newUsers.push(newUserSettings0.name);
     newUsers.push(newUserSettings1.name);
     [newUserSettings0, newUserSettings1].forEach(newUserSettings => {
-      expect(newUserSettings).to.deep.include({
+      assert.deepInclude(newUserSettings, {
         roles: ORIGINAL_USER.roles,
         phone: NEW_PERSON.phone,
         facility_id: NEW_PERSON.parent._id,
         contact_id: NEW_PERSON._id,
         fullname: NEW_PERSON.name,
       });
-      expect(newUserSettings.token_login.active).to.be.true;
-      expect(newUserSettings._id).to.match(/^org\.couchdb\.user:new-person-\d\d\d\d/);
-      expect(newUserSettings.name).to.match(/^new-person-\d\d\d\d$/);
+      assert.isTrue(newUserSettings.token_login.active);
+      assert.match(newUserSettings._id, /^org\.couchdb\.user:new-person-\d\d\d\d/);
+      assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
     });
 
     // Login tokens sent
     const queuedMsgs = await getQueuedMessages();
-    expect(queuedMsgs).to.have.lengthOf(2);
-    expect(queuedMsgs[0]).to.deep.include({
+    assert.lengthOf(queuedMsgs, 2);
+    assert.deepInclude(queuedMsgs[0], {
       type: 'token_login',
       user: newUserSettings0._id
     });
-    expect(queuedMsgs[0].tasks[0].messages[0].to).to.equal(NEW_PERSON.phone);
-    expect(queuedMsgs[1]).to.deep.include({
+    assert.equal(queuedMsgs[0].tasks[0].messages[0].to, NEW_PERSON.phone);
+    assert.deepInclude(queuedMsgs[1], {
       type: 'token_login',
       user: newUserSettings1._id
     });
-    expect(queuedMsgs[1].tasks[0].messages[0].to).to.equal(NEW_PERSON.phone);
+    assert.equal(queuedMsgs[1].tasks[0].messages[0].to, NEW_PERSON.phone);
   });
 
   it('does not replace user when transition is disabled', async () => {
@@ -280,9 +279,9 @@ describe('create_user_for_contacts', () => {
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
-    expect(Object.keys(transitions)).to.be.empty;
+    assert.isEmpty(Object.keys(transitions));
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(newUserSettings).to.be.empty;
+    assert.isEmpty(newUserSettings);
   });
 
   it('disables transitions if replace_user is enabled but token_login is not enabled', async () => {
@@ -293,8 +292,8 @@ describe('create_user_for_contacts', () => {
     const collectLogs = await utils.collectSentinelLogs(tokenLoginErrorPattern, transitionsDisabledPattern);
     await utils.updateSettings(getSettings({ token_login: { enabled: false } }), 'sentinel');
     const logs = await collectLogs();
-    expect(logs.find(log => log.match(tokenLoginErrorPattern))).to.exist;
-    expect(logs.find(log => log.match(transitionsDisabledPattern))).to.exist;
+    assert.exists(logs.find(log => log.match(tokenLoginErrorPattern)));
+    assert.exists(logs.find(log => log.match(transitionsDisabledPattern)));
   });
 
   it('disables transitions if replace_user is enabled but an app_url is not set', async () => {
@@ -305,8 +304,8 @@ describe('create_user_for_contacts', () => {
     const collectLogs = await utils.collectSentinelLogs(appUrlErrorPattern, transitionsDisabledPattern);
     await utils.updateSettings(getSettings({ app_url: '' }), 'sentinel');
     const logs = await collectLogs();
-    expect(logs.find(log => log.match(appUrlErrorPattern))).to.exist;
-    expect(logs.find(log => log.match(transitionsDisabledPattern))).to.exist;
+    assert.exists(logs.find(log => log.match(appUrlErrorPattern)));
+    assert.exists(logs.find(log => log.match(transitionsDisabledPattern)));
   });
 
   it('does not replace user when the new contact does not exist', async () => {
@@ -328,8 +327,8 @@ describe('create_user_for_contacts', () => {
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
-    expect(transitions.create_user_for_contacts.ok).to.be.false;
-    expect(await collectLogs()).to.not.be.empty;
+    assert.isFalse(transitions.create_user_for_contacts.ok);
+    assert.isNotEmpty(await collectLogs());
     await expectError(missingPersonPattern);
   });
 
@@ -351,14 +350,14 @@ describe('create_user_for_contacts', () => {
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
-    expect(transitions.create_user_for_contacts.ok).to.be.false;
-    expect(await collectLogs()).to.not.be.empty;
+    assert.isFalse(transitions.create_user_for_contacts.ok);
+    assert.isNotEmpty(await collectLogs());
     await expectError(missingUserPattern);
   });
 
   it('does not replace user when the new contact does not have a phone', async () => {
     const missingPhonePattern = /Missing required fields: phone/;
-    const newPerson = Object.assign({}, NEW_PERSON, { phone: undefined });
+    const newPerson = { ...NEW_PERSON, ...{ phone: undefined } };
 
     const collectLogs = await utils.collectSentinelLogs(missingPhonePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
@@ -378,14 +377,14 @@ describe('create_user_for_contacts', () => {
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
-    expect(transitions.create_user_for_contacts.ok).to.be.false;
-    expect(await collectLogs()).to.not.be.empty;
+    assert.isFalse(transitions.create_user_for_contacts.ok);
+    assert.isNotEmpty(await collectLogs());
     await expectError(missingPhonePattern);
   });
 
   it('does not replace user when the new contact has an invalid phone', async () => {
     const invalidPhonePattern = /A valid phone number is required for SMS login/;
-    const newPerson = Object.assign({}, NEW_PERSON, { phone: 12345 });
+    const newPerson = { ...NEW_PERSON, ...{ phone: 12345 } };
 
     const collectLogs = await utils.collectSentinelLogs(invalidPhonePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
@@ -405,14 +404,14 @@ describe('create_user_for_contacts', () => {
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
-    expect(transitions.create_user_for_contacts.ok).to.be.false;
-    expect(await collectLogs()).to.not.be.empty;
+    assert.isFalse(transitions.create_user_for_contacts.ok);
+    assert.isNotEmpty(await collectLogs());
     await expectError(invalidPhonePattern);
   });
 
   it('does not replace user when the new contact does not have a name', async () => {
     const missingNamePattern = /Replacement contact \[new_person] must have a name\./;
-    const newPerson = Object.assign({}, NEW_PERSON, { name: undefined });
+    const newPerson = { ...NEW_PERSON, ...{ name: undefined } };
 
     const collectLogs = await utils.collectSentinelLogs(missingNamePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
@@ -432,8 +431,8 @@ describe('create_user_for_contacts', () => {
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
-    expect(transitions.create_user_for_contacts.ok).to.be.false;
-    expect(await collectLogs()).to.not.be.empty;
+    assert.isFalse(transitions.create_user_for_contacts.ok);
+    assert.isNotEmpty(await collectLogs());
     await expectError(missingNamePattern);
   });
 
@@ -457,8 +456,8 @@ describe('create_user_for_contacts', () => {
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
-    expect(transitions.create_user_for_contacts.ok).to.be.false;
-    expect(await collectLogs()).to.not.be.empty;
+    assert.isFalse(transitions.create_user_for_contacts.ok);
+    assert.isNotEmpty(await collectLogs());
     await expectError(missingIdPattern);
   });
 
@@ -480,14 +479,14 @@ describe('create_user_for_contacts', () => {
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
-    expect(transitions.create_user_for_contacts).to.be.undefined;
+    assert.isUndefined(transitions.create_user_for_contacts);
 
     // Original contact not updated
     const originalPerson = await utils.getDoc(ORIGINAL_PERSON._id);
-    expect(originalPerson.errors).to.be.undefined;
+    assert.isUndefined(originalPerson.errors);
     // New user not created
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(newUserSettings).to.be.empty;
+    assert.isEmpty(newUserSettings);
   });
 
   it('does not replace user when the contact is not being replaced', async () => {
@@ -496,19 +495,19 @@ describe('create_user_for_contacts', () => {
     newUsers.push(ORIGINAL_USER.username);
     await utils.saveDoc(NEW_PERSON);
     const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-    originalContact.name ='Updated Person';
+    originalContact.name = 'Updated Person';
     await utils.saveDoc(originalContact);
     await sentinelUtils.waitForSentinel(originalContact._id);
     const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
 
-    expect(transitions.create_user_for_contacts).to.be.undefined;
+    assert.isUndefined(transitions.create_user_for_contacts);
 
     // Original contact not updated
     const originalPerson = await utils.getDoc(ORIGINAL_PERSON._id);
-    expect(originalPerson.errors).to.be.undefined;
+    assert.isUndefined(originalPerson.errors);
     // New user not created
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(newUserSettings).to.be.empty;
+    assert.isEmpty(newUserSettings);
   });
 
   it('does not replace user when the contact being replaced is not a person', async () => {
@@ -522,13 +521,13 @@ describe('create_user_for_contacts', () => {
     await sentinelUtils.waitForSentinel(clinic._id);
     const { transitions } = await sentinelUtils.getInfoDoc(clinic._id);
 
-    expect(transitions.create_user_for_contacts).to.be.undefined;
+    assert.isUndefined(transitions.create_user_for_contacts);
 
     // Original contact not updated
     const originalPerson = await utils.getDoc(ORIGINAL_PERSON._id);
-    expect(originalPerson.errors).to.be.undefined;
+    assert.isUndefined(originalPerson.errors);
     // New user not created
     const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-    expect(newUserSettings).to.be.empty;
+    assert.isEmpty(newUserSettings);
   });
 });

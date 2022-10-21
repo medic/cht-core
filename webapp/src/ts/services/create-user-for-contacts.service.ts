@@ -66,7 +66,7 @@ export class CreateUserForContactsService {
   }
 
   private getCurrentUsername() {
-    if(!this.currentUsername) {
+    if (!this.currentUsername) {
       this.currentUsername = this.sessionService.userCtx()?.name;
     }
 
