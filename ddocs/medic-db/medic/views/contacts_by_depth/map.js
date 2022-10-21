@@ -11,8 +11,8 @@ function(doc) {
         emit([parent._id], value);
         emit([parent._id, depth], value);
         if(doc.type === 'person' && depth > 1){
-          var p_depth = depth - 0.5;
-          emit([parent._id, p_depth], value)
+          var midDepth = depth - 0.5;
+          emit([parent._id, midDepth], value)
         }
       }
       depth++;
