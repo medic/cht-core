@@ -1094,30 +1094,30 @@ describe('messageUtils', () => {
     describe('bikram sambat', () => {
 
       it('integer', () => {
-        const date = 1457235941000;
+        const date = new Date(2016, 2, 6);
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}{{reported_date}}{{/bikram_sambat_date}}';
-        const doc = { reported_date: date };
+        const doc = { reported_date: date.getTime() };
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(expected);
       });
 
       it('Date object', () => {
-        const date = 1457235941000;
+        const date = new Date(2016, 2, 6);
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
-        const doc = { reported_date: date };
+        const doc = { reported_date: date.getTime() };
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(expected);
       });
 
       it('i18n has no influence', () => {
-        const date = 1457235941000;
+        const date = new Date(2016, 2, 6);
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
-        const doc = { reported_date: date, locale: 'sw' };
+        const doc = { reported_date: date.getTime(), locale: 'sw' };
         const config = { reported_date_format: 'ddd, MMM Do, YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(expected);
