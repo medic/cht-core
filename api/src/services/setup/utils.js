@@ -336,7 +336,7 @@ const upgradeResponseSuccess = (payload, response) => {
   }
 
   const sucessfullyUpdatedFiles = Object.keys(payload).filter(file => response[file] && response[file].ok);
-  return sucessfullyUpdatedFiles.length;
+  return !!sucessfullyUpdatedFiles.length;
 };
 
 module.exports = {
