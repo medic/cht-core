@@ -116,7 +116,20 @@ const complete = async (buildInfo) => {
   const stagingDoc = await upgradeUtils.getStagingDoc(buildInfo);
   const payload = upgradeUtils.getUpgradeServicePayload(stagingDoc);
 
-  return await upgradeUtils.makeUpgradeRequest(payload);
+  const response = await upgradeUtils.makeUpgradeRequest(payload);
+
+  if (!upgradeUtils.upgradeResponseSuccess(payload, response)) {
+    logger.error('No compose files were updated: %o', response);
+    throw new Error('No compose files were updated');
+  }
+
+  logger.warn(
+    'upgrade-service upgrade request succeeded, without CHT-API restarting. ' +
+    'This can potentially indicate that the upgrade was not successful. ' +
+    'Please inspect the upgrade response to determine whether all expected compose files were upgraded: %o',
+    response
+  );
+  return response;
 };
 
 module.exports = {

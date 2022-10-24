@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+require('chai').use(require('chai-as-promised'));
 const { expect } = require('chai');
 const rewire = require('rewire');
 const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
@@ -395,12 +396,12 @@ describe('Upgrade steps', () => {
     it('should get staging doc, prep payload and make upgrade request', async () => {
       sinon.stub(upgradeLogService, 'setCompleting');
       sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
-      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ the: 'payload' });
-      sinon.stub(upgradeUtils, 'makeUpgradeRequest').resolves('response');
+      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ 'doc.yml': 'payload' });
+      sinon.stub(upgradeUtils, 'makeUpgradeRequest').resolves({ 'doc.yml': { ok: true } });
 
       const buildInfo = { version: '4.0.0' };
 
-      expect(await upgradeSteps.complete({ ...buildInfo })).to.equal('response');
+      expect(await upgradeSteps.complete({ ...buildInfo })).to.deep.equal({ 'doc.yml': { ok: true } });
 
       expect(upgradeLogService.setCompleting.callCount).to.equal(1);
       expect(upgradeUtils.getStagingDoc.callCount).to.deep.equal(1);
@@ -408,7 +409,32 @@ describe('Upgrade steps', () => {
       expect(upgradeUtils.getUpgradeServicePayload.callCount).to.equal(1);
       expect(upgradeUtils.getUpgradeServicePayload.args[0]).to.deep.equal([{ the: 'staging_doc' }]);
       expect(upgradeUtils.makeUpgradeRequest.callCount).to.equal(1);
-      expect(upgradeUtils.makeUpgradeRequest.args[0]).to.deep.equal([{ the: 'payload' }]);
+      expect(upgradeUtils.makeUpgradeRequest.args[0]).to.deep.equal([{ 'doc.yml': 'payload' }]);
+    });
+
+    it('should throw error when response is invalid', async () => {
+      sinon.stub(upgradeLogService, 'setCompleting');
+      sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
+      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ 'doc.yml': 'payload' });
+      sinon.stub(upgradeUtils, 'makeUpgradeRequest').resolves('this is not an object');
+
+      const buildInfo = { version: '4.0.0' };
+
+      await expect(upgradeSteps.complete({ ...buildInfo })).to.be.rejectedWith('No compose files were updated');
+    });
+
+    it('should throw error when no files were updated', async () => {
+      sinon.stub(upgradeLogService, 'setCompleting');
+      sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
+      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ 'doc1.yml': 'payload', 'doc2.yml': 'payload' });
+      sinon.stub(upgradeUtils, 'makeUpgradeRequest').resolves({
+        'doc1.yml': { ok: false },
+        'doc2.yml': { ok: false },
+      });
+
+      const buildInfo = { version: '4.0.0' };
+
+      await expect(upgradeSteps.complete({ ...buildInfo })).to.be.rejectedWith('No compose files were updated');
     });
 
     it('should throw missing staging doc errors', async () => {

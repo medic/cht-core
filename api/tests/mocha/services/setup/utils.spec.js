@@ -929,4 +929,22 @@ describe('Setup utils', () => {
       await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('boom');
     });
   });
+
+  describe('upgradeResponseSuccess', () => {
+    it('should return false when response is falsy', () => {
+      expect(utils.upgradeResponseSuccess({}, false)).to.equal(false);
+    });
+
+    it('should return false when there are no successful upgrades', () => {
+      const payload = { a: 'a', b: 'b', c: 'c' };
+      const response = { a: { ok: false }, b: { ok: false }, c: { ok: false } };
+      expect(utils.upgradeResponseSuccess(payload, response)).to.equal(false);
+    });
+
+    it('should return true when there is at lease one successful upgrade', () => {
+      const payload = { a: 'a', b: 'b', c: 'c' };
+      const response = { a: { ok: true }, b: { ok: false }, c: { ok: false } };
+      expect(utils.upgradeResponseSuccess(payload, response)).to.equal(true);
+    });
+  });
 });

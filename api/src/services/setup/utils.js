@@ -330,6 +330,15 @@ const makeUpgradeRequest = (payload) => {
   return rpn.post({ url: url.toString(), json: true, body: payload });
 };
 
+const upgradeResponseSuccess = (payload, response) => {
+  if (!response) {
+    return false;
+  }
+
+  const sucessfullyUpdatedFiles = Object.keys(payload).filter(file => response[file] && response[file].ok);
+  return sucessfullyUpdatedFiles.length;
+};
+
 module.exports = {
   cleanup,
 
@@ -346,4 +355,5 @@ module.exports = {
   getStagingDoc,
   getUpgradeServicePayload,
   makeUpgradeRequest,
+  upgradeResponseSuccess,
 };
