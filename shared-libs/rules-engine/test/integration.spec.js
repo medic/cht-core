@@ -107,7 +107,7 @@ describe('Rules Engine Integration Tests', () => {
     configHashSalt++;
     const rulesSettings = chtRulesSettings({ configHashSalt });
     await rulesEngine.rulesConfigChange(rulesSettings);
-    clock = sinon.useFakeTimers(1);
+    clock = sinon.useFakeTimers(MS_IN_DAY);
     // make sure our "calculatedDate" isn't in the future! (and inherently outside the current reporting interval)
     // otherwise it will cause any operation tested below to update targets for the "stale" state.
     await rulesEngine.updateEmissionsFor(['patient']);
@@ -200,12 +200,12 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.bulkDocs.callCount).to.eq(2);
     expect(db.bulkDocs.args[1][0]).to.have.property('length', 1);
     expect(db.bulkDocs.args[1][0][0]).to.deep.include({
-      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~1',
+      _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${MS_IN_DAY}`,
       state: 'Failed',
       stateHistory: [
         {
           state: 'Ready',
-          timestamp: 1,
+          timestamp: MS_IN_DAY,
         },
         {
           state: 'Failed',
@@ -241,16 +241,16 @@ describe('Rules Engine Integration Tests', () => {
     expect(db.bulkDocs.callCount).to.eq(3);
     expect(db.bulkDocs.args[2][0]).to.have.property('length', 1);
     expect(db.bulkDocs.args[2][0][0]).to.deep.include({
-      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~1',
+      _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${MS_IN_DAY}`,
       state: 'Completed',
       stateHistory: [
         {
           state: 'Ready',
-          timestamp: 1,
+          timestamp: MS_IN_DAY,
         },
         {
           state: 'Completed',
-          timestamp: 1,
+          timestamp: MS_IN_DAY,
         },
       ]
     });
@@ -284,16 +284,16 @@ describe('Rules Engine Integration Tests', () => {
 
     const [taskDoc] = db.bulkDocs.args[2][0];
     expect(taskDoc).to.deep.include({
-      _id: 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~1',
+      _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${MS_IN_DAY}`,
       state: 'Cancelled',
       stateHistory: [
         {
           state: 'Ready',
-          timestamp: 1,
+          timestamp: MS_IN_DAY,
         },
         {
           state: 'Cancelled',
-          timestamp: 1,
+          timestamp: MS_IN_DAY,
         },
       ]
     });
