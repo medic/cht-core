@@ -252,12 +252,10 @@ describe('Reports Content Component', () => {
 
   describe('deselect', () => {
     let removeSelectedReportStub;
-    let setSelectModeStub;
     let event;
 
     beforeEach(() => {
       removeSelectedReportStub = sinon.stub(ReportsActions.prototype, 'removeSelectedReport');
-      setSelectModeStub = sinon.stub(ReportsActions.prototype, 'setSelectMode');
       event = { stopPropagation: sinon.stub() };
     });
 
@@ -268,7 +266,6 @@ describe('Reports Content Component', () => {
       component.deselect(report, event);
 
       expect(removeSelectedReportStub.notCalled).to.be.true;
-      expect(setSelectModeStub.notCalled).to.be.true;
     });
 
     it('should call removeSelectedReport when in select mode', () => {
@@ -277,7 +274,6 @@ describe('Reports Content Component', () => {
 
       component.deselect(report, event);
 
-      expect(setSelectModeStub.calledOnce).to.be.true;
       expect(removeSelectedReportStub.calledOnce).to.be.true;
       expect(removeSelectedReportStub.args[0]).to.deep.equal([ report ]);
     });

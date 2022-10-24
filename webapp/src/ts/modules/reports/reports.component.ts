@@ -83,44 +83,98 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
-    const reduxSubscription = combineLatest(
+    this.subscribeToStore();
+    this.watchReportList();
+
+    this.reportsActions.setSelectedReports([]);
+    this.appending = false;
+    this.error = false;
+    this.verifyingReport = false;
+
+    this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
+    this.tourService.startIfNeeded(this.route.snapshot);
+    this.setActionBarData();
+
+    this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
+  }
+
+  async ngAfterViewInit() {
+    this.selectModeAvailable = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
+    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    this.useSidebarFilter = !isDisabled;
+    this.search();
+    this.subscribeSidebarFilter();
+  }
+
+  ngOnDestroy() {
+    this.destroyed = true;
+    this.subscription.unsubscribe();
+    // when navigating back from another tab, if there are reports in the state, angular will try to render them
+    this.reportsActions.resetReportsList();
+    this.reportsActions.setSelectedReports([]);
+    this.globalActions.setSelectMode(false);
+    this.globalActions.unsetSelected();
+    this.globalActions.setLeftActionBar({});
+  }
+
+  private subscribeToStore() {
+    const storeSubscription = combineLatest(
       this.store.select(Selectors.getReportsList),
-      this.store.select(Selectors.getSelectedReport),
-      this.store.select(Selectors.getSelectedReports),
       this.store.select(Selectors.listContains),
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getFilters),
       this.store.select(Selectors.getShowContent),
       this.store.select(Selectors.getEnketoEditedStatus),
-      this.store.select(Selectors.getSelectMode),
     ).subscribe(([
       reportsList,
-      selectedReport,
-      selectedReports,
       listContains,
       forms,
       filters,
       showContent,
       enketoEdited,
-      selectMode,
     ]) => {
       this.reportsList = reportsList;
-      // selected objects have the form
-      //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
-      // where the summary is the data required for the collapsed view,
-      // report is the db doc, and expanded is whether to how the details
-      // or just the summary in the content pane.
-      this.selectedReport = selectedReport;
-      this.selectedReports = selectedReports;
       this.listContains = listContains;
       this.forms = forms;
       this.filters = filters;
       this.showContent = showContent;
       this.enketoEdited = enketoEdited;
-      this.selectMode = selectMode;
     });
-    this.subscription.add(reduxSubscription);
+    this.subscription.add(storeSubscription);
 
+    const selectSubscription = combineLatest(
+      this.store.select(Selectors.getSelectedReport),
+      this.store.select(Selectors.getSelectedReports),
+      this.store.select(Selectors.getSelectMode),
+    ).subscribe(([
+      selectedReport,
+      selectedReports,
+      selectMode,
+    ]) => {
+      // selected objects have the form
+      //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
+      // where the summary is the data required for the collapsed view,
+      // report is the db doc, and expanded is whether to show the details or just the summary in the content pane.
+      this.selectedReport = selectedReport;
+      this.selectedReports = selectedReports;
+      this.selectMode = selectMode;
+      this.setSelectMode();
+    });
+    this.subscription.add(selectSubscription);
+  }
+
+  private subscribeSidebarFilter() {
+    if (!this.useSidebarFilter) {
+      return;
+    }
+
+    const subscription = this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
+    this.subscription.add(subscription);
+  }
+
+  private watchReportList() {
     const dbSubscription = this.changesService.subscribe({
       key: 'reports-list',
       callback: (change) => {
@@ -136,52 +190,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         return change.doc && change.doc.form || this.listContains(change.id);
       },
     });
-
     this.subscription.add(dbSubscription);
-    this.reportsActions.setSelectedReports([]);
-    this.appending = false;
-    this.error = false;
-    this.verifyingReport = false;
-
-    this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
-    this.tourService.startIfNeeded(this.route.snapshot);
-    this.setActionBarData();
-
-    this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
-
-  }
-
-  async ngAfterViewInit() {
-    await this.enableBulkDelete();
-    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
-    this.useSidebarFilter = !isDisabled;
-    this.search();
-
-    if (!this.useSidebarFilter) {
-      return;
-    }
-
-    const subscription = this.store
-      .select(Selectors.getSidebarFilter)
-      .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
-    this.subscription.add(subscription);
-  }
-
-  ngOnDestroy() {
-    this.destroyed = true;
-    this.subscription.unsubscribe();
-    // when navigating back from another tab, if there are reports in the state, angular will try to render them
-    this.reportsActions.resetReportsList();
-    this.reportsActions.setSelectedReports([]);
-    this.globalActions.setSelectMode(false);
-    this.globalActions.unsetSelected();
-    this.globalActions.setLeftActionBar({});
-  }
-
-  private async enableBulkDelete() {
-    const canBulkDelete = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
-    this.selectModeAvailable = canBulkDelete;
-    this.globalActions.setSelectMode(false);
   }
 
   private getReportHeading(form, report) {
@@ -335,13 +344,23 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     exportService.export('reports', exportFilters, { humanReadable: true });
   }
 
-  selectReport(report) {
-    if (!report?._id) {
+  private setSelectMode() {
+    if (this.selectMode && !this.selectedReports?.length) {
+      this.globalActions.setSelectMode(false);
       return;
     }
 
-    if (!this.selectMode) {
-      this.reportsActions.setSelectedReports([]);
+    if (!this.selectMode && this.selectedReports?.length >= 1) {
+      this.globalActions.setSelectMode(true);
+      this.globalActions.unsetComponents();
+      this.router.navigate(['/reports']);
+      return;
+    }
+  }
+
+  selectReport(report) {
+    if (!report?._id) {
+      return;
     }
 
     if (this.isSidebarFilterOpen) {
@@ -352,7 +371,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     const isMobile = this.responsiveService.isMobile();
     if (isSelected) {
       this.reportsActions.removeSelectedReport(report, isMobile);
-      this.reportsActions.setSelectMode();
       return;
     }
 
@@ -362,8 +380,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!isMobile) {
       this.reportsActions.selectReport(report);
     }
-
-    this.reportsActions.setSelectMode();
   }
 
   selectAllReports() {
@@ -380,7 +396,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   deselectAllReports() {
     this.reportsActions.deselectAll();
-    this.reportsActions.setSelectMode();
   }
 
   toggleFilter() {

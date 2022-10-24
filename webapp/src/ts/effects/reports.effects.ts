@@ -199,29 +199,6 @@ export class ReportsEffects {
     );
   }, { dispatch: false });
 
-  setSelectMode = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ReportActionList.setSelectMode),
-      withLatestFrom(
-        this.store.select(Selectors.getSelectMode),
-        this.store.select(Selectors.getSelectedReports),
-      ),
-      tap(([, selectMode, selectedReports]) => {
-        if (selectMode && !selectedReports?.length) {
-          this.globalActions.setSelectMode(false);
-          return;
-        }
-
-        if (!selectMode && selectedReports?.length >= 1) {
-          this.globalActions.setSelectMode(true);
-          this.globalActions.unsetComponents();
-          this.router.navigate(['/reports']);
-          return;
-        }
-      }),
-    );
-  }, { dispatch: false });
-
   selectAll = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.selectAll),
@@ -244,7 +221,6 @@ export class ReportsEffects {
               this.globalActions.settingSelected();
               this.reportActions.setRightActionBar();
             }
-            this.reportActions.setSelectMode();
           })
           .catch(err => {
             console.error('Error selecting all', err);

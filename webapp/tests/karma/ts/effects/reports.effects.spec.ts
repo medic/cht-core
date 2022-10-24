@@ -633,55 +633,6 @@ describe('Reports effects', () => {
     });
   });
 
-  describe('setSelectMode', () => {
-    let setSelectMode;
-    let unsetComponents;
-
-    beforeEach(() => {
-      setSelectMode = sinon.stub(GlobalActions.prototype, 'setSelectMode');
-      unsetComponents = sinon.stub(GlobalActions.prototype, 'unsetComponents');
-    });
-
-    it('should not be triggered by random actions', () => {
-      actions$ = of([
-        ReportActionList.selectReport(''),
-        ReportActionList.removeSelectedReport({}),
-        ReportActionList.setSelected({}),
-      ]);
-
-      effects.setSelectMode.subscribe();
-      expect(setSelectMode.callCount).to.equal(0);
-      expect(unsetComponents.callCount).to.equal(0);
-    });
-
-    it('should set select mode and redirect', () => {
-      store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report' }]);
-      store.refreshState();
-
-      actions$ = of(ReportActionList.setSelectMode());
-      effects.setSelectMode.subscribe();
-
-      expect(setSelectMode.callCount).to.equal(1);
-      expect(setSelectMode.args[0]).to.deep.equal([true]);
-      expect(unsetComponents.callCount).to.equal(1);
-      expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
-    });
-
-    it('should unset select mode and redirect', () => {
-      store.overrideSelector(Selectors.getSelectMode, true);
-      store.refreshState();
-
-      actions$ = of(ReportActionList.setSelectMode());
-      effects.setSelectMode.subscribe();
-
-      expect(setSelectMode.callCount).to.equal(1);
-      expect(setSelectMode.args[0]).to.deep.equal([false]);
-      expect(unsetComponents.notCalled).to.be.true;
-      expect(router.navigate.notCalled).to.be.true;
-    });
-  });
-
   describe('selectAll', () => {
     let setSelectedReports;
     let settingSelected;
@@ -798,7 +749,7 @@ describe('Reports effects', () => {
         ReportActionList.setSelected({}),
       ]);
 
-      effects.setSelectMode.subscribe();
+      effects.setSelected.subscribe();
       expect(modalService.show.callCount).to.equal(0);
     });
 

@@ -159,7 +159,6 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     }
 
     this.reportsActions.removeSelectedReport(report);
-    this.reportsActions.setSelectMode();
   }
 
   search(query) {

@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { DatePipe } from '@angular/common';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
@@ -33,6 +33,7 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -47,6 +48,9 @@ describe('Reports Component', () => {
   let responsiveService;
   let modalService;
   let userContactService;
+  let store;
+  let route;
+  let router;
 
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
@@ -90,6 +94,8 @@ describe('Reports Component', () => {
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };
+    router = { navigate: sinon.stub() };
+    route = { snapshot: { queryParams: { query:'' } } };
 
     return TestBed
       .configureTestingModule({
@@ -127,12 +133,15 @@ describe('Reports Component', () => {
           { provide: ResponsiveService, useValue: responsiveService },
           { provide: ModalService, useValue: modalService },
           { provide: DatePipe, useValue: datePipe },
+          { provide: ActivatedRoute, useValue: route },
+          { provide: Router, useValue: router },
         ]
       })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ReportsComponent);
         component = fixture.componentInstance;
+        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));
@@ -150,7 +159,6 @@ describe('Reports Component', () => {
     changesService.subscribe.resetHistory();
     searchService.search.resetHistory();
     authService.has.resetHistory();
-    const setSelectModeStub = sinon.stub(GlobalActions.prototype, 'setSelectMode');
 
     const spySubscriptionsAdd = sinon.spy(component.subscription, 'add');
 
@@ -162,11 +170,9 @@ describe('Reports Component', () => {
     expect(authService.has.calledTwice).to.be.true;
     expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
     expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
-    expect(setSelectModeStub.calledOnce).to.be.true;
-    expect(setSelectModeStub.args[0]).to.have.members([ false ]);
     expect(searchService.search.calledOnce).to.be.true;
     expect(changesService.subscribe.calledOnce).to.be.true;
-    expect(spySubscriptionsAdd.calledThrice).to.be.true;
+    expect(spySubscriptionsAdd.callCount).to.equal(4);
   });
 
   it('listTrackBy() should return unique identifier', () => {
@@ -574,4 +580,34 @@ describe('Reports Component', () => {
 
   });
 
+  describe('setSelectMode', () => {
+    it('should set select mode and redirect when there are some reports selected', fakeAsync(() => {
+      const setSelectMode = sinon.spy(GlobalActions.prototype, 'setSelectMode');
+      const unsetComponents = sinon.spy(GlobalActions.prototype, 'unsetComponents');
+      store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report' }]);
+      store.refreshState();
+
+      flush();
+
+      expect(setSelectMode.callCount).to.equal(1);
+      expect(setSelectMode.args[0]).to.deep.equal([true]);
+      expect(unsetComponents.callCount).to.equal(1);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
+    }));
+
+    it('should unset select mode and redirect when there are no selected reports', fakeAsync(() => {
+      const setSelectMode = sinon.spy(GlobalActions.prototype, 'setSelectMode');
+      const unsetComponents = sinon.spy(GlobalActions.prototype, 'unsetComponents');
+      store.overrideSelector(Selectors.getSelectMode, true);
+      store.refreshState();
+
+      flush();
+
+      expect(setSelectMode.callCount).to.equal(1);
+      expect(setSelectMode.args[0]).to.deep.equal([false]);
+      expect(unsetComponents.notCalled).to.be.true;
+      expect(router.navigate.notCalled).to.be.true;
+    }));
+  });
 });
