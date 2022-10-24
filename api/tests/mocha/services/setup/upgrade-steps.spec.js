@@ -396,7 +396,7 @@ describe('Upgrade steps', () => {
     it('should get staging doc, prep payload and make upgrade request', async () => {
       sinon.stub(upgradeLogService, 'setCompleting');
       sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
-      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ 'doc.yml': 'payload' });
+      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ docker_compose: { 'doc.yml': 'payload' } });
       sinon.stub(upgradeUtils, 'makeUpgradeRequest').resolves({ 'doc.yml': { ok: true } });
 
       const buildInfo = { version: '4.0.0' };
@@ -409,13 +409,13 @@ describe('Upgrade steps', () => {
       expect(upgradeUtils.getUpgradeServicePayload.callCount).to.equal(1);
       expect(upgradeUtils.getUpgradeServicePayload.args[0]).to.deep.equal([{ the: 'staging_doc' }]);
       expect(upgradeUtils.makeUpgradeRequest.callCount).to.equal(1);
-      expect(upgradeUtils.makeUpgradeRequest.args[0]).to.deep.equal([{ 'doc.yml': 'payload' }]);
+      expect(upgradeUtils.makeUpgradeRequest.args[0]).to.deep.equal([{ docker_compose: { 'doc.yml': 'payload' } }]);
     });
 
     it('should throw error when response is invalid', async () => {
       sinon.stub(upgradeLogService, 'setCompleting');
       sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
-      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ 'doc.yml': 'payload' });
+      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ docker_compose: { 'doc.yml': 'payload' } });
       sinon.stub(upgradeUtils, 'makeUpgradeRequest').resolves('this is not an object');
 
       const buildInfo = { version: '4.0.0' };
@@ -426,7 +426,9 @@ describe('Upgrade steps', () => {
     it('should throw error when no files were updated', async () => {
       sinon.stub(upgradeLogService, 'setCompleting');
       sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
-      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ 'doc1.yml': 'payload', 'doc2.yml': 'payload' });
+      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({
+        docker_compose: { 'doc1.yml': 'payload', 'doc2.yml': 'payload' },
+      });
       sinon.stub(upgradeUtils, 'makeUpgradeRequest').resolves({
         'doc1.yml': { ok: false },
         'doc2.yml': { ok: false },

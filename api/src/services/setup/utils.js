@@ -335,7 +335,9 @@ const upgradeResponseSuccess = (payload, response) => {
     return false;
   }
 
-  const sucessfullyUpdatedFiles = Object.keys(payload).filter(file => response[file] && response[file].ok);
+  const sucessfullyUpdatedFiles = Object
+    .keys(payload.docker_compose)
+    .filter(file => response[file] && response[file].ok);
   return !!sucessfullyUpdatedFiles.length;
 };
 
