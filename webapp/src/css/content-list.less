@@ -253,7 +253,7 @@
 .select-mode-available {
   .content-row input[type="checkbox"],
   .select-all input[type="checkbox"] {
-    accent-color: @blue-dark;
+    accent-color: @checkbox-selected-color;
     display: inline;
     width: 20px;
     height: 20px;
@@ -263,7 +263,7 @@
   .select-all {
     display: flex;
     align-items: center;
-    border-bottom: solid 1px @gray-medium;
+    border-bottom: solid 1px @checkbox-border-color;
     padding: 15px;
 
     input[type="checkbox"] {
@@ -301,7 +301,7 @@ mm-multiselect-bar {
     }
 
     span {
-      color: @black;
+      color: @text-normal-color;
     }
   }
 }
@@ -341,12 +341,12 @@ mm-multiselect-bar {
 
     .select-all-label {
       margin-left: 28px;
-      color: @black;
+      color: @text-normal-color;
     }
 
     .deselect-all {
       font-size: @font-extra-large;
-      color: @black;
+      color: @text-normal-color;
       margin: 0px 15px;
     }
   }

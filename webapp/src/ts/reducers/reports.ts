@@ -96,15 +96,16 @@ const _reportsReducer = createReducer(
   ),
 
   on(Actions.updateSelectedReportsItem, (state, { payload }) => {
-    return {
-      ...state,
-      selectedReports: state.selectedReports?.map(item => {
-        if (item._id === payload.id) {
-          return { ...item, ...payload.selected };
-        }
-        return item;
-      }),
-    };
+    let selectedReport = state.selectedReport;
+    if (selectedReport?._id === payload.id) {
+      selectedReport = { ...selectedReport, ...payload.selected };
+    }
+
+    const selectedReports = state.selectedReports?.map(item => {
+      return item._id === payload.id ? { ...item, ...payload.selected } : item;
+    });
+
+    return { ...state, selectedReport, selectedReports };
   }),
 
   on(Actions.setVerifyingReport, (state, { payload: { verifyingReport } }) => ({ ...state, verifyingReport })),
@@ -115,10 +116,15 @@ const _reportsReducer = createReducer(
       return state;
     }
 
-    return {
-      ...state,
-      selectedReport: { ...state.selectedReport, doc: { ...state.selectedReport?.doc, ...doc } },
+    const selectedReport = {
+      ...state.selectedReport,
+      doc: { ...state.selectedReport?.doc, ...doc },
     };
+    const selectedReports = state.selectedReports?.map(item => {
+      return item._id === selectedReport._id ? { ...item, ...selectedReport } : item;
+    });
+
+    return { ...state, selectedReport, selectedReports };
   }),
 
   on(Actions.setSelectedReportFormattedProperty, (state, { payload: { formatted } }) => {
@@ -126,10 +132,15 @@ const _reportsReducer = createReducer(
       return state;
     }
 
-    return {
-      ...state,
-      selectedReport: { ...state.selectedReport, formatted: { ...state.selectedReport?.formatted, ...formatted } },
+    const selectedReport = {
+      ...state.selectedReport,
+      formatted: { ...state.selectedReport?.formatted, ...formatted },
     };
+    const selectedReports = state.selectedReports?.map(item => {
+      return item._id === selectedReport._id ? { ...item, ...selectedReport } : item;
+    });
+
+    return { ...state, selectedReport, selectedReports };
   }),
 );
 

@@ -647,6 +647,7 @@ describe('Reports Reducer', () => {
           expanded: true,
         },
       };
+      state.selectedReport = { _id: 'report_3', loading: false, doc: { _id: 'report_3', field: 1 } };
       state.selectedReports = [
         { _id: 'report_1', doc: { _id: 'report_1', field: 1 } },
         { _id: 'report_3', loading: false, doc: { _id: 'report_3', field: 1 } },
@@ -660,7 +661,7 @@ describe('Reports Reducer', () => {
         reportsById: new Map(),
         verifyingReport: false,
         filters: {},
-        selectedReport: undefined,
+        selectedReport: { _id: 'report_3', loading: true, expanded: true, doc: { _id: 'report_3', field: 1 } },
         selectedReports: [
           { _id: 'report_1', doc: { _id: 'report_1', field: 1 } },
           { _id: 'report_3', loading: true, expanded: true, doc: { _id: 'report_3', field: 1 } },
@@ -743,15 +744,22 @@ describe('Reports Reducer', () => {
     });
 
     it('should update the selected doc', () => {
-      state.selectedReport = { _id: 'doc', doc: { _id: 'doc', field: 1, _rev: 1 }, formatted: { a: 1 } };
+      state.selectedReport = { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1 } };
+      state.selectedReports = [
+        { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1 } },
+        { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1 } },
+      ];
 
       const newState = reportsReducer(state, Actions.setSelectedReportDocProperty({ field: 3, other: 1 }));
 
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selectedReport: { _id: 'doc', doc: { _id: 'doc', field: 3, _rev: 1, other: 1 }, formatted: { a: 1 } },
-        selectedReports: [],
+        selectedReport: { _id: 'doc-1', doc: { _id: 'doc-1', field: 3, _rev: 1, other: 1 }, formatted: { a: 1 } },
+        selectedReports: [
+          { _id: 'doc-1', doc: { _id: 'doc-1', field: 3, _rev: 1, other: 1 }, formatted: { a: 1 } },
+          { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1 } },
+        ],
         verifyingReport: false,
         filters: {},
       });
@@ -773,15 +781,22 @@ describe('Reports Reducer', () => {
     });
 
     it('should update the selected doc', () => {
-      state.selectedReport = { _id: 'doc', doc: { _id: 'doc', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } };
+      state.selectedReport = { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } };
+      state.selectedReports = [
+        { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } },
+        { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1, b: 2 } },
+      ];
 
       const newState = reportsReducer(state, Actions.setSelectedReportFormattedProperty({ b: 22, c: 44 }));
 
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selectedReport: { _id: 'doc', doc: { _id: 'doc', field: 1, _rev: 1 }, formatted: { a: 1, b: 22, c: 44 } },
-        selectedReports: [],
+        selectedReport: { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 22, c: 44 } },
+        selectedReports: [
+          { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 22, c: 44 } },
+          { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1, b: 2 } },
+        ],
         verifyingReport: false,
         filters: {},
       });

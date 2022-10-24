@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { clone as _clone, flattenDeep as _flattenDeep } from 'lodash-es';
+import { flattenDeep as _flattenDeep } from 'lodash-es';
 import * as partialParse from 'partial-json-parser';
 import * as utilsFactory from '@medic/bulk-docs-utils';
 
@@ -121,10 +121,9 @@ export class DeleteDocsService {
   delete(docs, eventListeners = {}) {
     if (!Array.isArray(docs)) {
       docs = [ docs ];
-    } else {
-      docs = _clone(docs);
     }
 
+    docs = docs.map(doc => ({ ...doc }));
     return this
       .deleteAndUpdateDocs(docs, eventListeners)
       // No silent fails! Throw on error.

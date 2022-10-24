@@ -91,8 +91,8 @@ export class ReportsActions {
   }
 
   clearSelection() {
-    this.store.dispatch(Actions.setSelectedReport(undefined));
-    this.store.dispatch(Actions.setSelectedReports([]));
+    this.setSelectedReport();
+    this.setSelectedReports([]);
   }
 
   setSelectMode() {

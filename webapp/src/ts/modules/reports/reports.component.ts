@@ -348,28 +348,26 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.toggleFilter();
     }
 
-    this.toggleSelected(report);
-    this.reportsActions.setSelectMode();
-  }
-
-  private toggleSelected(report) {
     const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
     const isMobile = this.responsiveService.isMobile();
     if (isSelected) {
       this.reportsActions.removeSelectedReport(report, isMobile);
+      this.reportsActions.setSelectMode();
       return;
     }
+
     // Use the summary from LHS to set the report as selected quickly (and preserve old functionality)
     // the selectReport action will actually get all details
     this.reportsActions.addSelectedReport(report);
     if (!isMobile) {
       this.reportsActions.selectReport(report);
     }
+
+    this.reportsActions.setSelectMode();
   }
 
-  toggleAllSelected() {
+  selectAllReports() {
     if (this.reportsList?.length === this.selectedReports?.length) {
-      this.deselectAllReports();
       return;
     }
 
@@ -403,7 +401,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .catch(() => {});
   }
 
-  verifyMultiSelect(someSelected = false) {
+  verifyMultiselect(someSelected = false) {
     if (!this.selectMode || !this.selectedReports?.length) {
       return false;
     }

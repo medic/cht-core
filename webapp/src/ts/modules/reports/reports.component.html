@@ -18,7 +18,7 @@
       [selectedCount]="selectedReports?.length"
       [totalItems]="reportsList?.length"
       (deleteItems)="bulkDeleteReports()"
-      (selectItems)="toggleAllSelected()"
+      (selectItems)="selectAllReports()"
       (deselectItems)="deselectAllReports()">
     </mm-multiselect-bar>
   </div>
@@ -33,11 +33,11 @@
 
       <div class="select-all" *ngIf="!loading && selectModeAvailable && reportsList?.length">
         <input type="checkbox"
-          (click)="toggleAllSelected()"
-          [checked]="verifyMultiSelect()"
-          [indeterminate]="verifyMultiSelect(true)">
-        <span class="select-all-label" (click)="toggleAllSelected()">
-          {{ (verifyMultiSelect() ? 'select.mode.deselect.all' : 'select.mode.select.all') | translate }}
+          (click)="verifyMultiselect() ? deselectAllReports() : selectAllReports()"
+          [checked]="verifyMultiselect()"
+          [indeterminate]="verifyMultiselect(true)">
+        <span class="select-all-label" (click)="verifyMultiselect() ? deselectAllReports() : selectAllReports()">
+          {{ (verifyMultiselect() ? 'select.mode.deselect.all' : 'select.mode.select.all') | translate }}
         </span>
       </div>
 

@@ -187,6 +187,50 @@ describe('Reports Component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
+  describe('selectAllReports', () => {
+    it('should select all when not all reports have been selected yet', () => {
+      const selectAllStub = sinon.stub(ReportsActions.prototype, 'selectAll');
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
+
+      component.selectAllReports();
+
+      expect(selectAllStub.calledOnce).to.be.true;
+    });
+
+    it('should not call select all when all reports have been selected', () => {
+      const selectAllStub = sinon.stub(ReportsActions.prototype, 'selectAll');
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
+
+      component.selectAllReports();
+
+      expect(selectAllStub.notCalled).to.be.true;
+    });
+  });
+
+  describe('deselectAllReports', () => {
+    it('should deselect all when all reports have been selected', () => {
+      const deselectAllStub = sinon.stub(ReportsActions.prototype, 'deselectAll');
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
+
+      component.deselectAllReports();
+
+      expect(deselectAllStub.calledOnce).to.be.true;
+    });
+
+    it('should deselect all even when not all reports have been selected yet', () => {
+      const deselectAllStub = sinon.stub(ReportsActions.prototype, 'deselectAll');
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
+
+      component.deselectAllReports();
+
+      expect(deselectAllStub.calledOnce).to.be.true;
+    });
+  });
+
   describe('selectReport', () => {
     let addSelectedReport;
     let selectReport;
@@ -255,42 +299,8 @@ describe('Reports Component', () => {
     });
   });
 
-  describe('toggleAllSelected', () => {
-    let setSelectModeStub;
-    let deselectAllStub;
-    let selectAllStub;
-
-    beforeEach(() => {
-      setSelectModeStub = sinon.stub(ReportsActions.prototype, 'setSelectMode');
-      deselectAllStub = sinon.stub(ReportsActions.prototype, 'deselectAll');
-      selectAllStub = sinon.stub(ReportsActions.prototype, 'selectAll');
-    });
-
-    it('should select all when not all reports have been selected yet', () => {
-      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
-      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
-
-      component.toggleAllSelected();
-
-      expect(selectAllStub.calledOnce).to.be.true;
-      expect(setSelectModeStub.notCalled).to.be.true;
-      expect(deselectAllStub.notCalled).to.be.true;
-    });
-
-    it('should deselect all when all reports have been selected', () => {
-      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
-      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
-
-      component.toggleAllSelected();
-
-      expect(selectAllStub.notCalled).to.be.true;
-      expect(setSelectModeStub.calledOnce).to.be.true;
-      expect(deselectAllStub.calledOnce).to.be.true;
-    });
-  });
-
   describe('bulkDeleteReports', () => {
-    it('should do not open modal when there are not selected reports', () => {
+    it('should not open modal when there are no selected reports', () => {
       component.selectedReports = [];
 
       component.bulkDeleteReports();
@@ -316,7 +326,7 @@ describe('Reports Component', () => {
       component.selectMode = false;
       component.selectedReports = [];
 
-      expect(component.verifyMultiSelect()).to.be.false;
+      expect(component.verifyMultiselect()).to.be.false;
     });
 
     it('should verify if some reports are selected', () => {
@@ -324,17 +334,17 @@ describe('Reports Component', () => {
       component.selectedReports = [{ _id: 'selected1' }];
       component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
 
-      expect(component.verifyMultiSelect(true)).to.be.true;
+      expect(component.verifyMultiselect(true)).to.be.true;
 
       component.selectedReports = [];
       component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
 
-      expect(component.verifyMultiSelect(true)).to.be.false;
+      expect(component.verifyMultiselect(true)).to.be.false;
 
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
       component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
 
-      expect(component.verifyMultiSelect()).to.be.true;
+      expect(component.verifyMultiselect()).to.be.true;
     });
 
     it('should verify if all reports are selected', () => {
@@ -342,17 +352,17 @@ describe('Reports Component', () => {
       component.selectedReports = [{ _id: 'selected1' }];
       component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
 
-      expect(component.verifyMultiSelect()).to.be.false;
+      expect(component.verifyMultiselect()).to.be.false;
 
       component.selectedReports = [];
       component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
 
-      expect(component.verifyMultiSelect()).to.be.false;
+      expect(component.verifyMultiselect()).to.be.false;
 
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
       component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
 
-      expect(component.verifyMultiSelect()).to.be.true;
+      expect(component.verifyMultiselect()).to.be.true;
     });
   });
 
