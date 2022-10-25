@@ -146,7 +146,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
       .getSelected()
       .then((model:any) => {
         console.debug('setting selected', model);
-        this.reportsActions.setSelected(model);
+        this.reportsActions.openReportContent(model);
         this.globalActions.setLoadingContent(true);
 
         return Promise

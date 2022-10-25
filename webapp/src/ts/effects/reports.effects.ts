@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Actions, ofType, createEffect } from '@ngrx/effects';
-import { from, of } from 'rxjs';
-import { map, exhaustMap, filter, catchError, withLatestFrom, concatMap, tap, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { exhaustMap, filter, withLatestFrom, concatMap, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
@@ -46,61 +46,96 @@ export class ReportsEffects {
     this.servicesActions = new ServicesActions(store);
   }
 
-  selectReport = createEffect(() => {
+  private setContentComponents(openReport=false) {
+    if (this.responsiveService.isMobile() && !openReport) {
+      return;
+    }
+    this.globalActions.settingSelected();
+    this.reportActions.setRightActionBar();
+  }
+
+  openReportContent = createEffect(() => {
     return this.actions$.pipe(
-      ofType(ReportActionList.selectReport),
-      filter(({ payload: { id } }) => !!id),
-      switchMap(({ payload: { id, silent, forceSingleSelect } }) => {
-        if (!silent) {
-          this.globalActions.setLoadingShowContent(id);
+      ofType(ReportActionList.openReportContent),
+      filter(({ payload: { report } }) => !!report),
+      withLatestFrom(this.store.select(Selectors.getSelectedReport)),
+      tap(([{ payload: { report } }, selectedReport]) => {
+        const model = { ...report };
+        if (selectedReport?._id !== report?.doc?._id) {
+          this.reportActions.setVerifyingReport(false);
         }
 
-        return from(this.reportViewModelGeneratorService.get(id)).pipe(
-          map(model => this.reportActions.setSelected(model, { forceSingleSelect })),
-          catchError(error => {
-            console.error('Error selecting report', error);
-            return of(this.globalActions.unsetSelected());
-          }),
-        );
+        model.expanded = true;
+        this.reportActions.setSelectedReport(model);
+        this.reportActions.setTitle(model);
+        this.reportActions.markReportRead(model?.doc?._id);
+        this.setContentComponents(true);
       }),
     );
   }, { dispatch: false });
 
-  setSelected = createEffect(() => {
+  selectReportToOpen = createEffect(() => {
     return this.actions$.pipe(
-      ofType(ReportActionList.setSelected),
-      filter(({ payload: { selected } }) => !!selected),
+      ofType(ReportActionList.selectReportToOpen),
+      filter(({ payload: { reportId } }) => !!reportId),
+      tap(({ payload: { reportId, silent } }) => {
+        if (!silent) {
+          this.globalActions.setLoadingShowContent(reportId);
+        }
+        return this.reportViewModelGeneratorService
+          .get(reportId)
+          .then(report => this.reportActions.openReportContent(report))
+          .catch(error => {
+            console.error('Error selecting report to open', error);
+            this.globalActions.unsetSelected();
+          });
+      }),
+    );
+  }, { dispatch: false });
+
+  /**
+   * Selecting report when Select Mode is active.
+   */
+  selectReport = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.selectReport),
       withLatestFrom(
         this.store.select(Selectors.getSelectMode),
-        this.store.select(Selectors.getSelectedReport),
         this.store.select(Selectors.getSelectedReports),
       ),
-      tap(([{ payload: { selected, forceSingleSelect } }, selectMode, selectedReport, selectedReports]) => {
-        const model = { ...selected };
-
-        if (selectMode && !forceSingleSelect) {
-          const existing = selectedReports?.find(report => report?._id === model?.doc?._id);
-          if (existing) {
-            model.loading = false;
-            this.reportActions.updateSelectedReportsItem(model._id, model);
-          } else {
-            model.expanded = false;
-            this.reportActions.addSelectedReport(model);
-          }
-        } else {
-          if (selectedReport?._id !== selected?.doc?._id) {
-            this.reportActions.setVerifyingReport(false);
-          }
-
-          model.expanded = true;
-          this.reportActions.setSelectedReport(model);
-          this.reportActions.setTitle(model);
-          this.reportActions.markReportRead(model?.doc?._id);
+      tap(([{ payload: { reportId } }, selectMode, selectedReports]) => {
+        if (!reportId || !selectMode) {
+          return;
         }
 
-        this.reportActions.setRightActionBar();
-        this.globalActions.settingSelected();
+        return this.reportViewModelGeneratorService
+          .get(reportId)
+          .then(report => {
+            const model = { ...report };
+            const exists = selectedReports?.find(selectedReport => selectedReport?._id === model?.doc?._id);
+
+            if (exists) {
+              model.loading = false;
+              this.reportActions.updateSelectedReportsItem(model._id, model);
+            } else {
+              model.expanded = false;
+              this.reportActions.addSelectedReport(model);
+            }
+
+            this.globalActions.setLoadingContent(false);
+          })
+          .catch(error => {
+            console.error('Error selecting report with select mode active', error);
+            return this.globalActions.unsetSelected();
+          });
       }),
+    );
+  }, { dispatch: false });
+
+  removeSelected = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(ReportActionList.removeSelectedReport),
+      tap(() => this.setContentComponents()),
     );
   }, { dispatch: false });
 
@@ -217,10 +252,7 @@ export class ReportsEffects {
               };
             });
             this.reportActions.setSelectedReports(selected);
-            if (!this.responsiveService.isMobile()) {
-              this.globalActions.settingSelected();
-              this.reportActions.setRightActionBar();
-            }
+            this.setContentComponents();
           })
           .catch(err => {
             console.error('Error selecting all', err);

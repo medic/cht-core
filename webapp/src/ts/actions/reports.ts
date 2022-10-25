@@ -4,8 +4,9 @@ import { createMultiValueAction, createSingleValueAction } from '@mm-actions/act
 import { GlobalActions } from '@mm-actions/global';
 
 export const Actions = {
-  selectReport: createMultiValueAction('SELECT_REPORT'),
-  setSelected: createMultiValueAction('SET_SELECTED_REPORT'),
+  openReportContent: createSingleValueAction('OPEN_REPORT_CONTENT', 'report'),
+  selectReportToOpen: createMultiValueAction('SELECT_REPORT_TO_OPEN'),
+  selectReport: createSingleValueAction('SELECT_REPORT', 'reportId'),
   addSelectedReport: createSingleValueAction('ADD_SELECTED_REPORT', 'report'),
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'report'),
   setSelectedReport: createSingleValueAction('SET_SELECTED_REPORT', 'selectedReport'),
@@ -31,22 +32,24 @@ export const Actions = {
 export class ReportsActions {
   constructor(private store: Store) {}
 
+  openReportContent(report) {
+    return this.store.dispatch(Actions.openReportContent(report));
+  }
+
   addSelectedReport(selected) {
     return this.store.dispatch(Actions.addSelectedReport(selected));
   }
 
-  selectReport(id, { silent=false, forceSingleSelect=false }={}) {
-    return this.store.dispatch(Actions.selectReport({ id, silent, forceSingleSelect }));
+  selectReport(reportId) {
+    return this.store.dispatch(Actions.selectReport(reportId));
   }
 
-  removeSelectedReport(id, isMobile=false) {
+  selectReportToOpen(reportId, { silent = false }={}) {
+    return this.store.dispatch(Actions.selectReportToOpen({ reportId, silent }));
+  }
+
+  removeSelectedReport(id) {
     this.store.dispatch(Actions.removeSelectedReport(id));
-    if (isMobile) {
-      return;
-    }
-    const globalActions = new GlobalActions(this.store);
-    globalActions.settingSelected();
-    this.setRightActionBar();
   }
 
   setSelectedReport(selected?) {
@@ -67,10 +70,6 @@ export class ReportsActions {
 
   resetReportsList() {
     return this.store.dispatch(Actions.resetReportsList());
-  }
-
-  setSelected(selected, { forceSingleSelect=false }={}) {
-    return this.store.dispatch(Actions.setSelected({ selected, forceSingleSelect }));
   }
 
   setVerifyingReport(verifyingReport) {

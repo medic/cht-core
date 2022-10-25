@@ -48,7 +48,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
 
     const routeSubscription = this.route.params.subscribe(params => {
       if (params.id) {
-        this.reportsActions.selectReport(this.route.snapshot.params.id, { forceSingleSelect: this.isMobile() });
+        this.reportsActions.selectReportToOpen(this.route.snapshot.params.id);
         this.globalActions.clearNavigation();
         $('.tooltip').remove();
         return;
@@ -123,7 +123,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
 
         if (!this.route.snapshot.params?.id || isMatchingRouteParam(change)) {
           // Avoid selecting this report if a different report is already being routed to
-          this.reportsActions.selectReport(change.id, { silent: true });
+          this.reportsActions.selectReportToOpen(change.id, { silent: true });
           return;
         }
       }
@@ -145,7 +145,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       this.reportsActions.updateSelectedReportsItem(id, { expanded: !report.expanded });
     } else {
       this.reportsActions.updateSelectedReportsItem(id, { loading: true, expanded: true });
-      this.reportsActions.selectReport(id, { silent: true });
+      this.reportsActions.selectReport(id);
     }
   }
 
