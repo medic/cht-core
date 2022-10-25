@@ -9,7 +9,7 @@ describe('bfcache', async () => {
       username: constants.USERNAME,
       password: constants.PASSWORD,
       createUser: true,
-    });
+    }); 
   });
 
   afterEach(async () => {
@@ -30,7 +30,7 @@ describe('bfcache', async () => {
     it('should redirect to login page when session is expired', async () => {
       await commonPage.goToPeople();
       await browser.deleteCookies('AuthSession');
-      await commonPage.goToMessages();
+      await commonPage.openHamburgerMenu();
       const redirectToLoginBtn = await $('#session-expired .btn.submit.btn-primary');
       await redirectToLoginBtn.click();
       await browser.waitUntil(async () => (await browser.getUrl()).includes('/login?redirect='), { timeout: 1000 });
