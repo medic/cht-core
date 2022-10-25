@@ -17,6 +17,7 @@ export class AuthService {
    * Returns true if the current user's role has all the permissions passed in as arguments.
    * If a permission has a '!' prefix, resolves true only if the user doesn't have the permission.
    * DB admins automatically have all permissions.
+   * Throws error when response has 503 status.
    * @param permissions {string | string[]}
    */
   has(permissions?: string | string[]): Promise<boolean> {
@@ -32,7 +33,12 @@ export class AuthService {
 
         return chtApi.v1.hasPermissions(permissions, userCtx);
       })
-      .catch(() => false);
+      .catch((err) => {
+        if (err?.status === 503) {
+          throw err;
+        }
+        return false;
+      });
   }
 
   /**

@@ -96,6 +96,8 @@ describe('Session service', () => {
     $httpBackend.get.withArgs('/_session').returns(throwError({ status: 0 }));
     await service.init();
     expect(cookieDelete.callCount).to.equal(0);
+    const headers = $httpBackend.get.args[0][1].headers;
+    expect(headers.get('Accept')).to.equal('application/json');
   });
 
   it('logs out if remote userCtx inconsistent', async () => {
