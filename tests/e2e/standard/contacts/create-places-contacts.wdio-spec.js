@@ -29,7 +29,8 @@ describe('Creating contacts with standard config. ', () => {
     await contactPage.addPlace(PLACE_TYPES.HEALTH_CENTER, healthCenterName, healthCenterName + CONTACT_NAME_SUFFIX);
     await commonPage.waitForPageLoaded();
     expect(await (await contactPage.contactPageDefault.contactCard()).getText()).to.equal(healthCenterName);
-    expect(await contactPage.contactPageDefault.getPrimaryContactName()).to.equal(healthCenterName + CONTACT_NAME_SUFFIX);
+    expect(await contactPage.contactPageDefault.getPrimaryContactName()).to.equal(healthCenterName
+      + CONTACT_NAME_SUFFIX);
   });
 
   it('should create a new clinic in the health center', async () => {
