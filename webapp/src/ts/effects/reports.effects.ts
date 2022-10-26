@@ -46,14 +46,6 @@ export class ReportsEffects {
     this.servicesActions = new ServicesActions(store);
   }
 
-  private setContentComponents(openReport=false) {
-    if (this.responsiveService.isMobile() && !openReport) {
-      return;
-    }
-    this.globalActions.settingSelected();
-    this.reportActions.setRightActionBar();
-  }
-
   openReportContent = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.openReportContent),
@@ -69,7 +61,8 @@ export class ReportsEffects {
         this.reportActions.setSelectedReport(model);
         this.reportActions.setTitle(model);
         this.reportActions.markReportRead(model?.doc?._id);
-        this.setContentComponents(true);
+        this.globalActions.settingSelected();
+        this.reportActions.setRightActionBar();
       }),
     );
   }, { dispatch: false });
@@ -129,13 +122,6 @@ export class ReportsEffects {
             return this.globalActions.unsetSelected();
           });
       }),
-    );
-  }, { dispatch: false });
-
-  removeSelected = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ReportActionList.removeSelectedReport),
-      tap(() => this.setContentComponents()),
     );
   }, { dispatch: false });
 
@@ -252,7 +238,7 @@ export class ReportsEffects {
               };
             });
             this.reportActions.setSelectedReports(selected);
-            this.setContentComponents();
+            this.globalActions.unsetComponents();
           })
           .catch(err => {
             console.error('Error selecting all', err);

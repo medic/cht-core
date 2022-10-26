@@ -99,7 +99,6 @@ export class ReportsActions {
 
   deselectAll() {
     this.store.dispatch(Actions.setSelectedReports([]));
-    this.setRightActionBar();
   }
 
   selectAll() {
