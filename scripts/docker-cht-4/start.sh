@@ -64,3 +64,17 @@ fi
 docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" down
 docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" up --detach
 docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" logs --follow
+
+echo "Adding local-ip.co certs to Docker container ${selectedProject}_nginx_1"
+isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2> /dev/null)
+while [ "$isNginxRunning" != "true" ]; do
+  echo "Waiting for the container ${selectedProject}_nginx_1 to be running, retrying..."
+  sleep 1
+  isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2> /dev/null)
+done
+docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
+docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
+docker exec -it "${selectedProject}_nginx_1" bash -c "cat server.pem chain.pem > /etc/nginx/private/cert.pem"
+docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o /etc/nginx/private/key.pem http://local-ip.co/cert/server.key"
+docker restart "${selectedProject}_nginx_1"
+echo "Added local-ip.co certs to ${selectedProject}_nginx_1 and restarted the container"
