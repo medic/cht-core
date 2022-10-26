@@ -100,7 +100,7 @@ const selectYesNoOption = async (selector, value = 'yes') => {
 const selectAllRiskFactors = async (value = FIRST_PREGNANCY_VALUE.no) => {
   const cbRisks = await riskFactors(value);
   for (const risk of cbRisks) {
-    if(await risk.getAttribute('value') !== 'none'){
+    if (await risk.getAttribute('value') !== 'none') {
       await risk.click();
     }
   }
