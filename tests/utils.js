@@ -303,7 +303,7 @@ const setUserContactDoc = (attempt=0) => {
 };
 
 /**
- * 
+ * Deletes documents from the database, including Enketo forms. Use with caution. 
  * @param {array} except - exeptions in the delete method. If this parameter is empty 
  *                         everything will be deleted from the config, including all the enketo forms.
  * @param {boolean} ignoreRefresh 
