@@ -13,57 +13,58 @@ if [ -n "${1-}" ]; then
     fi
 fi
 
-mkdir -p "$HOME/.medic/cht-docker/compose-files"
-curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-core.yml" https://staging.dev.medicmobile.org/_couch/builds/medic%3Amedic%3Amaster/docker-compose%2Fcht-core.yml
-curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-couchdb.yml" https://staging.dev.medicmobile.org/_couch/builds/medic%3Amedic%3Amaster/docker-compose%2Fcht-couchdb.yml
-
 if [ -z "$selectedProject" ]; then
     projects=$(find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//")
 
     if [ -z "$projects" ]; then
-        echo 'No project found, initialize a project with a "project-name.env" file.'
-        read -p "Would you like to initialize one now [y/N]? " yn
-        case $yn in
-        [Yy]*)
-            projectName=
-            while [ -z "${projectName}" ]; do
-                read -p "How do you want to name the project? " projectName
-
-                if test -f "./${projectName}.env"; then
-                    echo "./${projectName}.env already exists"
-                    projectName=
-                fi
-            done
-
-            selectedProject=$projectName
-            mkdir -p "$HOME/.medic/cht-docker/${projectName}/couch-${projectName}"
-            touch "./${projectName}.env"
-            echo "NGINX_HTTP_PORT=8080" >>"./${projectName}.env"
-            echo "NGINX_HTTPS_PORT=8443" >>"./${projectName}.env"
-            echo "COUCHDB_USER=medic" >>"./${projectName}.env"
-            echo "COUCHDB_PASSWORD=password" >>"./${projectName}.env"
-            echo "CHT_COMPOSE_PROJECT_NAME=${projectName}" >>"./${projectName}.env"
-            echo "DOCKER_CONFIG_PATH=$HOME/.medic/cht-docker/${projectName}" >>"./${projectName}.env"
-            echo "COUCHDB_SECRET=$(openssl rand -hex 16)" >>"./${projectName}.env"
-            echo "COUCHDB_DATA=$HOME/.medic/cht-docker/${projectName}/couch-${projectName}" >>"./${projectName}.env"
-            echo "CHT_COMPOSE_PATH=$HOME/.medic/cht-docker/compose-files" >>"./${projectName}.env"
-            ;;
-        *) exit ;;
-        esac
-    else
-        echo "Found the following project files, please pick the one you want to use:"
-        while [ -z "$selectedProject" ]; do
-            select project in $projects; do
-                selectedProject=$project
-                break
-            done
-        done
+        echo 'No project found, follow the prompts to create a project .env file.'
     fi
+
+    read -p "Would you like to initialize a new project [y/N]? " yn
+    case $yn in
+    [Yy]*)
+        projectName=
+        while [ -z "${projectName}" ]; do
+            read -p "How do you want to name the project? " projectName
+
+            if test -f "./${projectName}.env"; then
+                echo "./${projectName}.env already exists"
+                projectName=
+            fi
+        done
+
+        selectedProject=$projectName
+        mkdir -p "$HOME/.medic/cht-docker/${projectName}/couch-${projectName}"
+        touch "./${projectName}.env"
+        echo "NGINX_HTTP_PORT=8080" >>"./${projectName}.env"
+        echo "NGINX_HTTPS_PORT=8443" >>"./${projectName}.env"
+        echo "COUCHDB_USER=medic" >>"./${projectName}.env"
+        echo "COUCHDB_PASSWORD=password" >>"./${projectName}.env"
+        echo "CHT_COMPOSE_PROJECT_NAME=${projectName}" >>"./${projectName}.env"
+        echo "DOCKER_CONFIG_PATH=$HOME/.medic/cht-docker/${projectName}" >>"./${projectName}.env"
+        echo "COUCHDB_SECRET=$(openssl rand -hex 16)" >>"./${projectName}.env"
+        echo "COUCHDB_DATA=$HOME/.medic/cht-docker/${projectName}/couch-${projectName}" >>"./${projectName}.env"
+        echo "CHT_COMPOSE_PATH=$HOME/.medic/cht-docker/compose-files" >>"./${projectName}.env"
+        ;;
+    esac
+
+    while [ -z "$selectedProject" ]; do
+      echo "Which project do you want to use?"
+      select project in $projects; do
+          selectedProject=$project
+          break
+      done
+    done
 fi
 
-docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" down
+mkdir -p "$HOME/.medic/cht-docker/compose-files"
+curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-core.yml" https://staging.dev.medicmobile.org/_couch/builds/medic%3Amedic%3Amaster/docker-compose%2Fcht-core.yml
+curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-couchdb.yml" https://staging.dev.medicmobile.org/_couch/builds/medic%3Amedic%3Amaster/docker-compose%2Fcht-couchdb.yml
+
+# TODO: figure out where `cht-upgrade-service` is located
+#docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" down
 docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" up --detach
-docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" logs --follow
+#docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" logs --follow
 
 echo "Adding local-ip.co certs to Docker container ${selectedProject}_nginx_1"
 isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2> /dev/null)
