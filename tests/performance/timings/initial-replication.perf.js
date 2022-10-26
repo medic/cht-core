@@ -1,8 +1,8 @@
-const commonPage = require('../page-objects/default/common/common.wdio.page');
-const loginPage = require('../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../page-objects/default/common/common.wdio.page');
+const loginPage = require('../../page-objects/default/login/login.wdio.page');
 const performancetotal = require('wdio-performancetotal-service').performancetotal;
-const constants = require('../constants');
-const utils = require('../utils');
+const constants = require('../../constants');
+const utils = require('../../utils');
 const TABTIME = 2 * 1000; //2 seconds - to change once we have seeded data
 
 const loadTab  = async (entities, time = TABTIME) => {
