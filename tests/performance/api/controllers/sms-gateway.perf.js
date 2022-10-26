@@ -1,4 +1,3 @@
-const testUtils = require('../../../utils');
 const gatewayApiUtils = require('../../../gateway-api.utils');
 const api = gatewayApiUtils.api;
 const db = gatewayApiUtils.db;
@@ -7,9 +6,6 @@ const setup = gatewayApiUtils.setup;
 describe('/sms', function() {
 
   describe('POST', function() {
-
-    afterAll(() => testUtils.revertDb());
-
     afterEach(gatewayApiUtils.cleanUp);
 
     describe('for webapp-terminating message processing', function() {
@@ -26,7 +22,7 @@ describe('/sms', function() {
               const seconds = (end - start) / 1000;
               fail(`It took ${seconds}s to respond to the request. The endpoint should respond in ${maxMillis}ms.`);
             }
-            expect(response).toEqual({ messages:[] });
+            expect(response).to.equal({ messages:[] });
           });
       });
 
@@ -49,19 +45,19 @@ describe('/sms', function() {
                   const seconds = (end - start) / 1000;
                   fail(`It took ${seconds}s to respond to the request. The endpoint should respond in ${maxMillis}ms.`);
                 }
-                expect(response).toEqual({ messages:[] });
+                expect(response).to.equal({ messages:[] });
               })
 
               .then(() => db.getMessageStates())
               .then(states => {
-                expect(states.length).toBe(100);
+                expect(states.length).to.equal(100);
 
                 // expect: 1 state update per message
                 expect(
                   states
                     .map(s => s.states)
                     .every(stateHistory => stateHistory.length === 1))
-                  .toBe(true);
+                  .to.be.true;
               });
           });
       });
