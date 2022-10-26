@@ -310,7 +310,7 @@ const setUserContactDoc = (attempt=0) => {
  */
 const revertDb = async (except, ignoreRefresh) => {
   if (!except || except.length === 0) {
-    console.warn('Not adding any values to the exceptions will delete everything from the config, '+
+    console.warn('Utils :: revertDb() :: The 'except' parameter is empty, all documents from the database will be deleted, including Enketo forms from the config, this might cause some automated tests to fail.');
       'including all the enketo forms, any test that will need to test a form will fail after this call.');
   }
   const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
