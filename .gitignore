@@ -48,3 +48,4 @@ tests/cht-couchdb-test.yml
 tests/cht-couchdb-cluster-test.yml
 couchdb/srv*
 tests/scalability/jmeter/
+performance-results*
