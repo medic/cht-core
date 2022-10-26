@@ -58,13 +58,13 @@ if [ -z "$selectedProject" ]; then
 fi
 
 mkdir -p "$HOME/.medic/cht-docker/compose-files"
+curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
 curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-core.yml" https://staging.dev.medicmobile.org/_couch/builds/medic%3Amedic%3Amaster/docker-compose%2Fcht-core.yml
 curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-couchdb.yml" https://staging.dev.medicmobile.org/_couch/builds/medic%3Amedic%3Amaster/docker-compose%2Fcht-couchdb.yml
 
-# TODO: figure out where `cht-upgrade-service` is located
-#docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" down
-docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" up --detach
-#docker-compose --env-file "./$selectedProject.env" --file "$HOME/app/medic/cht-upgrade-service/docker-compose.yml" logs --follow
+#docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" down
+docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" up --detach
+#docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" logs --follow
 
 echo "Adding local-ip.co certs to Docker container ${selectedProject}_nginx_1"
 isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2> /dev/null)
