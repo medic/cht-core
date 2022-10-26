@@ -15,11 +15,11 @@ const FIRST_PREGNANCY_VALUE = {yes: 'primary', no: 'secondary'};
 
 const FORM = 'form[data-form-id="pregnancy"]';
 const SUMMARY_SECTION = `${FORM} section[name="/pregnancy/summary"]`;
-const KNOW_FUTURE_VISITS = 
+const KNOWN_FUTURE_VISITS = 
   'input[data-name="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known"]';
 const FIRST_PREGNANCY = 'input[data-name="/pregnancy/risk_factors/risk_factors_history/first_pregnancy"]';
 const MISCARRIAGE = 'input[name="/pregnancy/risk_factors/risk_factors_history/previous_miscarriage"]';
-const ADITIONAL_FACTORS = 'input[name="/pregnancy/risk_factors/risk_factors_present/additional_risk_check"]';
+const ADDITIONAL_FACTORS = 'input[name="/pregnancy/risk_factors/risk_factors_present/additional_risk_check"]';
 const VAGINAL_BLEEDING = 'input[name="/pregnancy/danger_signs/vaginal_bleeding"]';
 const FITS = 'input[name="/pregnancy/danger_signs/fits"]';
 const ABDOMINAL_PAIN = 'input[name="/pregnancy/danger_signs/severe_abdominal_pain"]';
@@ -151,14 +151,14 @@ const submitPregnancy = async ({
   await genericForm.nextPage();
   await setANCVisitsPast(ancVisitPastValue);
   await genericForm.nextPage();
-  await selectYesNoOption(KNOW_FUTURE_VISITS, knowFutureVisitsValue);
+  await selectYesNoOption(KNOWN_FUTURE_VISITS, knowFutureVisitsValue);
   await setFutureVisitDate(futureVisitDateValue);
   await genericForm.nextPage();
   await selectYesNoOption(FIRST_PREGNANCY, firstPregnancyValue);
   await selectYesNoOption(MISCARRIAGE, miscarriageValue);
   await genericForm.nextPage();
   await selectAllRiskFactors(firstPregnancySelectedValue);
-  await selectYesNoOption(ADITIONAL_FACTORS, aditionalFactorsValue);
+  await selectYesNoOption(ADDITIONAL_FACTORS, aditionalFactorsValue);
   await genericForm.nextPage();
   await selectYesNoOption(VAGINAL_BLEEDING, vaginalBleedingValue);
   await selectYesNoOption(FITS, fitsValue);
@@ -187,10 +187,10 @@ const submitPregnancy = async ({
 module.exports = {
   GESTATION_AGE,
   FIRST_PREGNANCY_VALUE,
-  KNOW_FUTURE_VISITS,
+  KNOWN_FUTURE_VISITS,
   FIRST_PREGNANCY,
   MISCARRIAGE,
-  ADITIONAL_FACTORS,
+  ADDITIONAL_FACTORS,
   VAGINAL_BLEEDING,
   FITS,
   ABDOMINAL_PAIN,
