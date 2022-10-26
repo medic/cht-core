@@ -63,13 +63,14 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
     const androidSoundSupport = window.medicmobile_android &&
                 typeof window.medicmobile_android.playAlert === 'function';
 
-    if(!androidSoundSupport) {
-      cached = loadSound();
-    }
 
     const loadSound = () => {
       return new Audio('/audio/alert.mp3');
     };
+
+    if(!androidSoundSupport) {
+      cached = loadSound();
+    }
 
     return {
       play: function() {
