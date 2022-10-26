@@ -46,14 +46,14 @@ describe('Pregnancy registration', () => {
     await genericForm.nextPage();
     await pregnancyForm.setANCVisitsPast();
     await genericForm.nextPage();
-    await pregnancyForm.selectYesNoOption(pregnancyForm.KNOW_FUTURE_VISITS);
+    await pregnancyForm.selectYesNoOption(pregnancyForm.KNOWN_FUTURE_VISITS);
     await pregnancyForm.setFutureVisitDate(nextANCVisit.format('YYYY-MM-DD'));
     await genericForm.nextPage();
     countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.FIRST_PREGNANCY, 'no');
     countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.MISCARRIAGE);
     await genericForm.nextPage();
     countRiskFactors += await pregnancyForm.selectAllRiskFactors(pregnancyForm.FIRST_PREGNANCY_VALUE.no);
-    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.ADITIONAL_FACTORS, 'no');
+    countRiskFactors += await pregnancyForm.selectYesNoOption(pregnancyForm.ADDITIONAL_FACTORS, 'no');
     await genericForm.nextPage();
     countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.VAGINAL_BLEEDING);
     countDangerSigns += await pregnancyForm.selectYesNoOption(pregnancyForm.FITS);
