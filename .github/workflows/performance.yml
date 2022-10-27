@@ -11,8 +11,8 @@ jobs:
 
   build:
     uses: ./.github/workflows/build.yml
-    # with:
-    #   config-path: .github/labeler.yml
+    with:
+      config-path: .github/labeler.yml
     #secrets: inherit
     #env: inherit
 
