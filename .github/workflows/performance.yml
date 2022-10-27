@@ -1,19 +1,23 @@
 name: Build and test performance
 
-on: push
-  # push:
-  #   branches: 
-  #     - "performancetotal"
+on: 
+  push:
+    branches: 
+      - performancetotal
 
 jobs: 
-  build:
-    uses: ./.github/workflows/build.yml@main
+
+  #job0: 
+
+  # build:
+  #   uses: ./.github/workflows/build.yml@main
 
   job2:
     runs-on: ubuntu-latest
-    needs: build
+    #needs: build
+    name: testing reusable
     steps:
-      - run: echo ${{ needs.build.outputs }}
+      - run: echo "${{ needs.build.outputs }}"
   # tests:
   #   uses: ./.github/workflows/reusable-workflow-example-called.yml
   #   with:
