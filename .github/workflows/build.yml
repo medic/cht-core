@@ -108,7 +108,7 @@ jobs:
         grunt-cmd: ['ci-webdriver-default']
         include:
           - branches: 'performancetotal'
-          grunt-cmd:'ci-perform'
+          grunt-cmd: 'ci-perform'
     
 
     steps:
