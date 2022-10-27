@@ -10,7 +10,7 @@ jobs:
   #job0: 
 
   build:
-    uses: ./.github/workflows/build.yml@main
+    uses: medic/cht-core/.github/workflows/build.yml@main
 
   job2:
     runs-on: ubuntu-latest
