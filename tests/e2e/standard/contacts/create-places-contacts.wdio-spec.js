@@ -27,9 +27,9 @@ describe('Creating contacts with standard config. ', () => {
     await contactPage.contactPageDefault.selectLHSRowByText(DISTRICT_NAME);
     await contactPage.addPlace(PLACE_TYPES.HEALTH_CENTER, HEALTH_CENTER_NAME, HEALTH_CENTER_NAME + CONTACT_NAME_SUFFIX);
     await commonPage.waitForPageLoaded();
+    const primaryContactName = await contactPage.contactPageDefault.getPrimaryContactName();
     expect(await (await contactPage.contactPageDefault.contactCard()).getText()).to.equal(HEALTH_CENTER_NAME);
-    expect(await contactPage.contactPageDefault.getPrimaryContactName()).to.equal(HEALTH_CENTER_NAME
-      + CONTACT_NAME_SUFFIX);
+    expect(primaryContactName).to.equal(HEALTH_CENTER_NAME + CONTACT_NAME_SUFFIX);
   });
 
   it('should create a new clinic in the health center', async () => {
@@ -37,7 +37,8 @@ describe('Creating contacts with standard config. ', () => {
     await contactPage.contactPageDefault.selectLHSRowByText(HEALTH_CENTER_NAME);
     await contactPage.addPlace(PLACE_TYPES.CLINIC, CLINIC_NAME, CLINIC_NAME + CONTACT_NAME_SUFFIX);
     await commonPage.waitForPageLoaded();
+    const primaryContactName = await contactPage.contactPageDefault.getPrimaryContactName();
     expect(await (await contactPage.contactPageDefault.contactCard()).getText()).to.equal(CLINIC_NAME);
-    expect(await contactPage.contactPageDefault.getPrimaryContactName()).to.equal(CLINIC_NAME + CONTACT_NAME_SUFFIX);
+    expect(primaryContactName).to.equal(CLINIC_NAME + CONTACT_NAME_SUFFIX);
   });
 });
