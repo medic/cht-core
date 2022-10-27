@@ -12,10 +12,24 @@ jobs:
 
   build:
     uses: ./.github/workflows/build.yml
+    secrets: inherit
     # with:
     #   #config-path: .github/labeler.yml
     #   secrets: inherit
     #   env: inherit
+
+  test: 
+ # uses: ./.github/workflows/build.yml
+  #secrets: inherit
+  name: Blippedy
+    runs-on: ubuntu-latest
+    steps:
+      - id: do-a-thing
+        run: |
+          echo "testing these"
+          echo "${BUILD_ENV} is ${TESTING}!"
+          echo $BUILD_ENV
+          echo "${{ inputs.BUILD_ENV }} ${{ secrets.TESTING }}"
 
   
   # tests:
