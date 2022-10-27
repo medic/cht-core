@@ -44,6 +44,7 @@ if [[ -z "$selectedProject" ]]; then
 		echo "COUCHDB_SECRET=$(openssl rand -hex 16)" >>"./$projectName.env"
 		echo "COUCHDB_DATA=$HOME/.medic/cht-docker/$projectName/couch-$projectName" >>"./$projectName.env"
 		echo "CHT_COMPOSE_PATH=$HOME/.medic/cht-docker/compose-files" >>"./$projectName.env"
+		echo "CHT_NETWORK=$projectName-cht-net" >>"./$projectName.env"
 		projects=$(find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//")
 		;;
 	esac
