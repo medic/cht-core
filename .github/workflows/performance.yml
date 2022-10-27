@@ -11,12 +11,14 @@ jobs:
 
   build:
     uses: ./.github/workflows/build.yml
+    secrets: inherit
+    env: inherit
 
   
   tests:
     uses: ./.github/workflows/build.yml
-    with:
-      grunt-cmd: ['ci-webdriver-default']
+    # with:
+    #   grunt-cmd: ['ci-webdriver-default']
     needs: build
     name: test reusable
     # env: inherit
