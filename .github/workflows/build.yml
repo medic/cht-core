@@ -1,6 +1,6 @@
 name: Build and test
 
-on: [pull_request]
+on: [workflow_call, pull_request]
 
 env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
