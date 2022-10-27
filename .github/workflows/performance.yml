@@ -1,6 +1,7 @@
 name: Build and test performance
 
 on: 
+  workflow_dispatch: 
   push:
     branches: 
       - performancetotal
