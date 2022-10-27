@@ -104,7 +104,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
+        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht', 'ci-perform']
+        exclude:
+          - branches: performancetotal
+            grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
     
     steps:
     - name: Login to Docker Hub
@@ -158,10 +161,8 @@ jobs:
       run:  npm install -g cht-conf
     - run: npm ci --legacy-peer-deps
     - name: Run tests
-      if: ${{github.ref != 'refs/heads/perfomancetotal'}}
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}    
     - name: Performance tests
-      if: ${{github.ref == 'refs/heads/perfomancetotal'}}
       run: node --stack_size=10000 `which grunt` ci-perform      
     - name: Archive Results
       uses: actions/upload-artifact@v2
