@@ -9,8 +9,8 @@ jobs:
 
   #job0: 
 
-  # build:
-  #   uses: ./.github/workflows/build.yml@main
+  build:
+    uses: ./.github/workflows/build.yml@main
 
   job2:
     runs-on: ubuntu-latest
