@@ -67,7 +67,7 @@ describe('Creating custom places', () => {
 
   afterEach(async () => {
     await utils.deleteDocs(forms.map(form => form._id));
-    await utils.revertDb([], true);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('the LHS add place button should show the appropriate title', async () => {
