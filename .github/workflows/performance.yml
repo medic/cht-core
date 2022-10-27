@@ -1,25 +1,26 @@
 name: Build and test performance
 
-on:
-  push:
-    branches: 
-      - "performancetotal"
+on: push
+  # push:
+  #   branches: 
+  #     - "performancetotal"
 
-jobs:
- 
+jobs: 
   build:
     uses: ./.github/workflows/build.yml@main
-    env: inherit
-    secrets: inherit
 
-
-  tests:
-    uses: ./.github/workflows/reusable-workflow-example-called.yml
-    with:
-      grunt-cmd: ['ci-webdriver-default']
+  job2:
+    runs-on: ubuntu-latest
     needs: build
-    name: test reusable
-    env: inherit
+    steps:
+      - run: echo ${{ needs.build.outputs }}
+  # tests:
+  #   uses: ./.github/workflows/reusable-workflow-example-called.yml
+  #   with:
+  #     grunt-cmd: ['ci-webdriver-default']
+  #   needs: build
+  #   name: test reusable
+  #   env: inherit
 
     
 
