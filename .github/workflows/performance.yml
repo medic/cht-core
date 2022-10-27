@@ -14,10 +14,10 @@ jobs:
       contents: read
       pull-requests: write
     
-    # with:
-    #   #config-path: .github/labeler.yml
-    #   secrets: inherit
-    #   env: inherit
+    with:
+      config-path: .github/labeler.yml
+    secrets: inherit
+    env: inherit
 
 #   test: 
 #  # uses: ./.github/workflows/build.yml
