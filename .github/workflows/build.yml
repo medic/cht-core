@@ -1,18 +1,38 @@
 name: Build and test
 
-on: [workflow_call, pull_request]
+on: 
+workflow_call:
+    inputs:
+      env:
+        COUCH_URL: http://admin:pass@localhost:5984/medic-test
+        BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
+        STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
+        MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
+        MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
+        INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
+        DOCKERHUB_USERNAME: 'dockermedic'
+        ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
+        ECR_PUBLIC_REPO: 'public.ecr.aws/s5s3h4s7'
+        COUCHDB_LOG_LEVEL: 'debug'
 
-env:
-  COUCH_URL: http://admin:pass@localhost:5984/medic-test
-  BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
-  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
-  MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
-  MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
-  INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
-  DOCKERHUB_USERNAME: 'dockermedic'
-  ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
-  ECR_PUBLIC_REPO: 'public.ecr.aws/s5s3h4s7'
-  COUCHDB_LOG_LEVEL: 'debug'
+      # config-path:
+      #   required: true
+      #   type: string
+    secrets:
+      envPAT:
+        required: true
+
+# env:
+#   COUCH_URL: http://admin:pass@localhost:5984/medic-test
+#   BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
+#   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
+#   MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
+#   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
+#   INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
+#   DOCKERHUB_USERNAME: 'dockermedic'
+#   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
+#   ECR_PUBLIC_REPO: 'public.ecr.aws/s5s3h4s7'
+#   COUCHDB_LOG_LEVEL: 'debug'
 
 jobs:
 

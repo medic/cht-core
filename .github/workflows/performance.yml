@@ -10,26 +10,26 @@ jobs:
 
   build:
     uses: ./.github/workflows/build.yml
-    permissions:
-      contents: read
-      pull-requests: write
+    # permissions:
+    #   contents: read
+    #   pull-requests: write
     
-    with:
-      config-path: .github/labeler.yml
-    secrets: inherit
+    # with:
+    #   config-path: .github/labeler.yml
+    #secrets: inherit
     env: inherit
 
-#   test: 
-#  # uses: ./.github/workflows/build.yml
-#   #secrets: inherit
-#   name: Blippedy
-#     runs-on: ubuntu-latest
-#     steps:
-#       - id: do-a-thing
-#         run: |
-#           echo "testing these"
-#           echo "${BUILD_ENV} is ${TESTING}!"
-#           echo $BUILD_ENV
+  test: 
+    uses: ./.github/workflows/build.yml
+    env: inherit
+    name: Blippedy
+    runs-on: ubuntu-latest
+    steps:
+      - id: do-a-thing
+        run: |
+          echo "testing these"
+          echo "${env.COUCH_URL} is here!"
+          
          
 
   
