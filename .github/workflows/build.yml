@@ -158,11 +158,11 @@ jobs:
       run:  npm install -g cht-conf
     - run: npm ci --legacy-peer-deps
     - name: Run tests
-      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
-      if: github.ref != 'refs/heads/perfomancetotal'
+      if: ${{github.ref != 'refs/heads/perfomancetotal'}}
+      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}    
     - name: Performance tests
-      run: node --stack_size=10000 `which grunt` ci-perform
-      if: github.ref == 'refs/heads/perfomancetotal'
+      if: ${{github.ref == 'refs/heads/perfomancetotal'}}
+      run: node --stack_size=10000 `which grunt` ci-perform      
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
