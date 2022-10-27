@@ -105,9 +105,9 @@ jobs:
       fail-fast: false
       matrix:
         grunt-cmd: ['ci-webdriver-default', 'ci-perform']
-        exclude: 
-          - ${{ contains(github.ref, 'performance')}}: false
-            grunt-cmd: ci-webdriver-default
+        # exclude: 
+        #   - ${{ contains(github.ref, 'performance')}}: false
+        #     grunt-cmd: ci-webdriver-default
     
 
     steps:
