@@ -48,7 +48,7 @@ export class ReportsEffects {
       ofType(ReportActionList.openReportContent),
       filter(({ payload: { report } }) => !!report),
       withLatestFrom(this.store.select(Selectors.getSelectedReport)),
-      tap(([{ payload: { report } }, selectedReport]) => {
+      exhaustMap(([{ payload: { report } }, selectedReport]) => {
         const model = { ...report };
         if (selectedReport?._id !== report?.doc?._id) {
           this.reportActions.setVerifyingReport(false);
@@ -59,7 +59,7 @@ export class ReportsEffects {
         this.reportActions.setTitle(model);
         this.reportActions.markReportRead(model?.doc?._id);
         this.globalActions.settingSelected();
-        this.reportActions.setRightActionBar();
+        return of(this.reportActions.setRightActionBar());
       }),
     );
   }, { dispatch: false });
@@ -68,17 +68,17 @@ export class ReportsEffects {
     return this.actions$.pipe(
       ofType(ReportActionList.selectReportToOpen),
       filter(({ payload: { reportId } }) => !!reportId),
-      tap(({ payload: { reportId, silent } }) => {
+      exhaustMap(({ payload: { reportId, silent } }) => {
         if (!silent) {
           this.globalActions.setLoadingShowContent(reportId);
         }
-        return this.reportViewModelGeneratorService
+        return of(this.reportViewModelGeneratorService
           .get(reportId)
           .then(report => this.reportActions.openReportContent(report))
           .catch(error => {
             console.error('Error selecting report to open', error);
             this.globalActions.unsetSelected();
-          });
+          }));
       }),
     );
   }, { dispatch: false });

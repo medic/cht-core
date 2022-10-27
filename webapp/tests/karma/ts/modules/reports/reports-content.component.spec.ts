@@ -102,29 +102,31 @@ describe('Reports Content Component', () => {
   describe('Route subscription', () => {
     it('should react correctly when route has id param', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
-      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
-      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      const selectReportToOpenStub = sinon.stub(ReportsActions.prototype, 'selectReportToOpen');
+      const clearNavigationStub = sinon.stub(GlobalActions.prototype, 'clearNavigation');
+      const unsetComponentsStub = sinon.stub(GlobalActions.prototype, 'unsetComponents');
       activatedRoute.snapshot.params = { id: 'someID' };
 
       callback({ id: 'id' });
-      expect(selectReport.callCount).to.equal(1);
-      expect(selectReport.args[0]).to.deep.equal([ 'someID', { forceSingleSelect: undefined } ]);
-      expect(clearCancelCallback.callCount).to.equal(1);
-      expect(unsetSelected.callCount).to.equal(0);
+
+      expect(selectReportToOpenStub.calledOnce).to.be.true;
+      expect(selectReportToOpenStub.args[0]).to.deep.equal([ 'someID' ]);
+      expect(clearNavigationStub.calledOnce).to.be.true;
+      expect(unsetComponentsStub.notCalled).to.be.true;
     });
 
     it('should react correctly when route does not have id param', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
-      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearNavigation');
-      const unsetComponents = sinon.stub(GlobalActions.prototype, 'unsetComponents');
+      const selectReportToOpenStub = sinon.stub(ReportsActions.prototype, 'selectReportToOpen');
+      const clearNavigationStub = sinon.stub(GlobalActions.prototype, 'clearNavigation');
+      const unsetComponentsStub = sinon.stub(GlobalActions.prototype, 'unsetComponents');
       activatedRoute.snapshot.params = { id: 'someID' };
 
       callback({ });
-      expect(selectReport.callCount).to.equal(0);
-      expect(clearCancelCallback.callCount).to.equal(0);
-      expect(unsetComponents.callCount).to.equal(1);
+
+      expect(selectReportToOpenStub.notCalled).to.be.true;
+      expect(clearNavigationStub.notCalled).to.be.true;
+      expect(unsetComponentsStub.calledOnce).to.be.true;
     });
   });
 
@@ -169,27 +171,33 @@ describe('Reports Content Component', () => {
 
     it('callback should handle report updates when not routing to any report', () => {
       const callback = changesService.subscribe.args[0][0].callback;
-      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      const selectReportToOpenStub = sinon.stub(ReportsActions.prototype, 'selectReportToOpen');
+
       callback({ id: 'reportID' });
-      expect(selectReport.callCount).to.equal(1);
-      expect(selectReport.args[0]).to.deep.equal([ 'reportID', { silent: true } ]);
+
+      expect(selectReportToOpenStub.calledOnce).to.be.true;
+      expect(selectReportToOpenStub.args[0]).to.deep.equal([ 'reportID', { silent: true } ]);
     });
 
     it('callback should handle report updates when routing to updated report', () => {
       activatedRoute.snapshot.params = { id: 'reportID' };
       const callback = changesService.subscribe.args[0][0].callback;
-      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      const selectReportToOpenStub = sinon.stub(ReportsActions.prototype, 'selectReportToOpen');
+
       callback({ id: 'reportID' });
-      expect(selectReport.callCount).to.equal(1);
-      expect(selectReport.args[0]).to.deep.equal([ 'reportID', { silent: true } ]);
+
+      expect(selectReportToOpenStub.calledOnce).to.be.true;
+      expect(selectReportToOpenStub.args[0]).to.deep.equal([ 'reportID', { silent: true } ]);
     });
 
     it('callback should ignore report updates when routing to different report', () => {
       activatedRoute.snapshot.params = { id: 'differentReportID' };
       const callback = changesService.subscribe.args[0][0].callback;
-      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      const selectReportToOpenStub = sinon.stub(ReportsActions.prototype, 'selectReportToOpen');
+
       callback({ id: 'reportID' });
-      expect(selectReport.callCount).to.equal(0);
+
+      expect(selectReportToOpenStub.notCalled).to.be.true;
     });
   });
 
@@ -228,7 +236,7 @@ describe('Reports Content Component', () => {
       expect(updateSelectedReportsItem.callCount).to.equal(1);
       expect(updateSelectedReportsItem.args[0]).to.deep.equal(['report_id', { loading: true, expanded: true }]);
       expect(selectReport.callCount).to.equal(1);
-      expect(selectReport.args[0]).to.deep.equal(['report_id', { silent: true }]);
+      expect(selectReport.args[0]).to.deep.equal([ 'report_id' ]);
     });
 
     it('should only toggle expanded when report already loaded', () => {

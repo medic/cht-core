@@ -298,10 +298,11 @@ describe('Reports Component', () => {
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'rid' }];
 
       component.selectReport({ _id: 'rid' });
+
       expect(addSelectedReport.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
       expect(removeSelectedReport.callCount).to.equal(1);
-      expect(removeSelectedReport.args[0]).to.deep.equal([ { _id: 'rid' }, undefined ]);
+      expect(removeSelectedReport.args[0]).to.deep.equal([ { _id: 'rid' } ]);
     });
   });
 
