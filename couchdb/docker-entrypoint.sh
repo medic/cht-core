@@ -99,7 +99,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
         fi
     fi
 
-    if [ "$CLUSTER_PEER_IPS" ]; then
+    if [ "$CLUSTER_PEER_IPS" ] || [ "$IS_CLUSTER" = false ]; then
       setSecret
       setUuid
     fi
