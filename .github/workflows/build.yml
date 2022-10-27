@@ -107,8 +107,8 @@ jobs:
         # grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
         grunt-cmd: ['ci-webdriver-default']
         include:
-          - branches: 'performancetotal'
-          grunt-cmd: 'ci-perform'
+          - branches: performancetotal
+            grunt-cmd: ci-perform
     
 
     steps:
