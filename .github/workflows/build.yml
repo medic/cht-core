@@ -18,9 +18,9 @@ workflow_call:
       # config-path:
       #   required: true
       #   type: string
-    secrets:
-      envPAT:
-        required: true
+    # secrets:
+    #   envPAT:
+    #     required: true
 
 # env:
 #   COUCH_URL: http://admin:pass@localhost:5984/medic-test
