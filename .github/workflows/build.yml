@@ -106,7 +106,7 @@ jobs:
       matrix:
         grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht', 'ci-perform']
         exclude:
-          - branches: performancetotal
+          - ${{ contains(github.ref, 'performancetotal') }}
             grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
     
     steps:
@@ -161,9 +161,7 @@ jobs:
       run:  npm install -g cht-conf
     - run: npm ci --legacy-peer-deps
     - name: Run tests
-      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}    
-    - name: Performance tests
-      run: node --stack_size=10000 `which grunt` ci-perform      
+      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }} 
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
