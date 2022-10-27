@@ -7,7 +7,6 @@ on:
 
 jobs: 
 
-  #job0: 
 
   build:
     uses: ./.github/workflows/build.yml
@@ -31,7 +30,7 @@ jobs:
 #           echo "testing these"
 #           echo "${BUILD_ENV} is ${TESTING}!"
 #           echo $BUILD_ENV
-          echo "${{ inputs.BUILD_ENV }} ${{ secrets.TESTING }}"
+         
 
   
   # tests:
