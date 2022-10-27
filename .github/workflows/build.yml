@@ -159,10 +159,10 @@ jobs:
     - run: npm ci --legacy-peer-deps
     - name: Run tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
-      if: ${{ !contains(github.ref, 'perfomancetotal')}}
+      if: github.ref != 'refs/heads/perfomancetotal'
     - name: Performance tests
       run: node --stack_size=10000 `which grunt` ci-perform
-      if: ${{ contains(github.ref, 'perfomancetotal')}}
+      if: github.ref == 'refs/heads/perfomancetotal'
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
