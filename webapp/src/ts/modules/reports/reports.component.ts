@@ -370,7 +370,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     const isSelected = this.selectedReports?.find(selectedReport => selectedReport._id === report._id);
     if (isSelected) {
       this.reportsActions.removeSelectedReport(report);
-      this.globalActions.unsetComponents();
       return;
     }
 
@@ -394,7 +393,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   deselectAllReports() {
     this.reportsActions.deselectAll();
-    this.globalActions.unsetComponents();
   }
 
   toggleFilter() {

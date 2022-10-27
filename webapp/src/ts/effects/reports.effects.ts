@@ -19,8 +19,6 @@ import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.co
 import { ServicesActions } from '@mm-actions/services';
 import { AuthService } from '@mm-services/auth.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { ResponsiveService } from '@mm-services/responsive.service';
-
 
 @Injectable()
 export class ReportsEffects {
@@ -38,7 +36,6 @@ export class ReportsEffects {
     private searchService:SearchService,
     private modalService:ModalService,
     private translateService:TranslateService,
-    private responsiveService:ResponsiveService,
     private authService:AuthService,
   ) {
     this.reportActions = new ReportsActions(store);
@@ -119,7 +116,7 @@ export class ReportsEffects {
           })
           .catch(error => {
             console.error('Error selecting report with select mode active', error);
-            return this.globalActions.unsetSelected();
+            this.globalActions.unsetSelected();
           });
       }),
     );

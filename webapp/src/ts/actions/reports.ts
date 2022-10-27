@@ -50,6 +50,8 @@ export class ReportsActions {
 
   removeSelectedReport(id) {
     this.store.dispatch(Actions.removeSelectedReport(id));
+    const globalActions = new GlobalActions(this.store);
+    globalActions.unsetComponents();
   }
 
   setSelectedReport(selected?) {
@@ -99,6 +101,8 @@ export class ReportsActions {
 
   deselectAll() {
     this.store.dispatch(Actions.setSelectedReports([]));
+    const globalActions = new GlobalActions(this.store);
+    globalActions.unsetComponents();
   }
 
   selectAll() {
