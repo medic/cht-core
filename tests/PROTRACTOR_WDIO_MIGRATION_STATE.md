@@ -18,7 +18,7 @@
 |e2e/protractor/navigation/common.specs.js	|Done	|Meghna	|[#7308](https://github.com/medic/cht-core/pull/7308)	|	|
 |e2e/protractor/navigation/hamburger-menu.js	|Done	|Meghna	|[#7308](https://github.com/medic/cht-core/pull/7308)	|	|
 |e2e/protractor/contacts/contact-create.specs.js	|	|	|	|	|
-|e2e/protractor/contacts/contact-edit.specs.js	|	|	|	|	|
+|e2e/protractor/contacts/contact-edit.specs.js	|Done	|Lorena	|	|	|
 |e2e/protractor/transitions/message_duplicates.spec.js	|Done	|	Bede|[#7316](https://github.com/medic/cht-core/pull/7316)	| Does not need browser	|
 |e2e/protractor/transitions/public_form_transitions.spec.js	|Done	|	Bede|[#7316](https://github.com/medic/cht-core/pull/7316)	| Does not need browser	|
 |e2e/protractor/transitions/sms_workflows.spec.js	|Done	|	Bede|[#7316](https://github.com/medic/cht-core/pull/7316)	| Does not need browser	|
