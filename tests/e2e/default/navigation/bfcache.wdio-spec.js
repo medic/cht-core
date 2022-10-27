@@ -9,7 +9,7 @@ describe('bfcache', async () => {
       username: constants.USERNAME,
       password: constants.PASSWORD,
       createUser: true,
-    });
+    }); 
   });
 
   afterEach(async () => {
