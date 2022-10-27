@@ -260,6 +260,11 @@ const getContactMedicID = async () => {
   return (await contactMedicID()).getText();
 };
 
+const getContactCardText = async () => {
+  await contactCard().waitForDisplayed();
+  return (await contactCard()).getText();
+};
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -305,4 +310,5 @@ module.exports = {
   notes,
   contactCardIcon,
   editContactButton,
+  getContactCardText,
 };

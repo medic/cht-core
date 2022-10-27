@@ -28,7 +28,8 @@ describe('Creating contacts with standard config. ', () => {
     await contactPage.addPlace(PLACE_TYPES.HEALTH_CENTER, HEALTH_CENTER_NAME, HEALTH_CENTER_NAME + CONTACT_NAME_SUFFIX);
     await commonPage.waitForPageLoaded();
     const primaryContactName = await contactPage.contactPageDefault.getPrimaryContactName();
-    expect(await (await contactPage.contactPageDefault.contactCard()).getText()).to.equal(HEALTH_CENTER_NAME);
+    const contactCardText = await contactPage.contactPageDefault.getContactCardText();
+    expect(contactCardText).to.equal(HEALTH_CENTER_NAME);
     expect(primaryContactName).to.equal(HEALTH_CENTER_NAME + CONTACT_NAME_SUFFIX);
   });
 
@@ -38,7 +39,8 @@ describe('Creating contacts with standard config. ', () => {
     await contactPage.addPlace(PLACE_TYPES.CLINIC, CLINIC_NAME, CLINIC_NAME + CONTACT_NAME_SUFFIX);
     await commonPage.waitForPageLoaded();
     const primaryContactName = await contactPage.contactPageDefault.getPrimaryContactName();
-    expect(await (await contactPage.contactPageDefault.contactCard()).getText()).to.equal(CLINIC_NAME);
+    const contactCardText = await contactPage.contactPageDefault.getContactCardText();
+    expect(contactCardText).to.equal(CLINIC_NAME);
     expect(primaryContactName).to.equal(CLINIC_NAME + CONTACT_NAME_SUFFIX);
   });
 });
