@@ -5,18 +5,18 @@ set -eu
 selectedProject=
 
 # can pass a project .env file as argument
-if [ -n "${1-}" ]; then
-    if test -f "$1"; then
+if [[ -n "${1-}" ]]; then
+    if [[ -f "$1" ]]; then
         selectedProject=$(echo "$1" | sed "s/\.\///" | sed "s/\.env//")
     else
         echo "File $1 doesnt exist"
     fi
 fi
 
-if [ -z "$selectedProject" ]; then
+if [[ -z "$selectedProject" ]]; then
     projects=$(find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//")
 
-    if [ -z "$projects" ]; then
+    if [[ -z "$projects" ]]; then
         echo 'No project found, follow the prompts to create a project .env file.'
     fi
 
@@ -24,7 +24,7 @@ if [ -z "$selectedProject" ]; then
     case $yn in
     [Yy]*)
         projectName=
-        while [ -z "$projectName" ]; do
+        while [[ -z "$projectName" ]]; do
             read -p "How do you want to name the project? " projectName
 
             if test -f "./$projectName.env"; then
@@ -44,10 +44,11 @@ if [ -z "$selectedProject" ]; then
         echo "COUCHDB_SECRET=$(openssl rand -hex 16)" >>"./$projectName.env"
         echo "COUCHDB_DATA=$HOME/.medic/cht-docker/$projectName/couch-$projectName" >>"./$projectName.env"
         echo "CHT_COMPOSE_PATH=$HOME/.medic/cht-docker/compose-files" >>"./$projectName.env"
+        projects=$(find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//")
         ;;
     esac
 
-    while [ -z "$selectedProject" ]; do
+    while [[ -z "$selectedProject" ]]; do
       echo "Which project do you want to use?"
       select project in $projects; do
           selectedProject=$project
@@ -65,9 +66,12 @@ curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-couchdb.yml
 docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" up --detach
 #docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" logs --follow
 
+set +e
+
 echo "Adding local-ip.co certs to Docker container ${selectedProject}_nginx_1"
 isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2> /dev/null)
-while [ "$isNginxRunning" != "true" ]; do
+echo "$isNginxRunning"
+while [[ "$isNginxRunning" != "true" ]]; do
   echo "Waiting for the container ${selectedProject}_nginx_1 to be running, retrying..."
   sleep 1
   isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2> /dev/null)
@@ -78,3 +82,5 @@ docker exec -it "${selectedProject}_nginx_1" bash -c "cat server.pem chain.pem >
 docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o /etc/nginx/private/key.pem http://local-ip.co/cert/server.key"
 docker restart "${selectedProject}_nginx_1" 1> /dev/null
 echo "Added local-ip.co certs to ${selectedProject}_nginx_1 and restarted the container"
+
+set -e
