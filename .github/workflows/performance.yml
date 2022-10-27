@@ -19,16 +19,16 @@ jobs:
     #secrets: inherit
     env: inherit
 
-  test: 
-    uses: ./.github/workflows/build.yml
-    env: inherit
-    name: Blippedy
-    runs-on: ubuntu-latest
-    steps:
-      - id: do-a-thing
-        run: |
-          echo "testing these"
-          echo "${env.COUCH_URL} is here!"
+  # test: 
+  #   uses: ./.github/workflows/build.yml
+  #   env: inherit
+  #   name: Blippedy
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - id: do-a-thing
+  #       run: |
+  #         echo "testing these"
+  #         echo "${env.COUCH_URL} is here!"
           
          
 
