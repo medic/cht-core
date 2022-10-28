@@ -16,8 +16,10 @@ env:
 
 jobs:
 
+  
+
   tests:
-    needs: build
+    #needs: build
     name: ${{ matrix.grunt-cmd }}
     runs-on: ubuntu-22.04
     env:
