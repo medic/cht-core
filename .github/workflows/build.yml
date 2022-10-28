@@ -104,12 +104,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-default','ci-webdriver-standard',  'ci-perform']
-        isMaster:
+        grunt-cmd: ['ci-webdriver-default','ci-webdriver-standard', 'test']
+        isPerformance:
           - ${{ contains(github.ref, 'performance') }}
         exclude: 
-          - isMaster: true
-            grunt-cmd: ['ci-webdriver-deafult', 'ci-webdriver-standard']
+          - isPerformance: true
+            grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard']
         # exclude: 
         #   - branches: performancetotal
         #     grunt-cmd: ci-webdriver-default
