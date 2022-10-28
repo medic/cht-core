@@ -105,6 +105,11 @@ jobs:
       fail-fast: false
       matrix:
         grunt-cmd: ['ci-webdriver-default', 'ci-perform']
+        isMaster:
+          - ${{ contains(github.ref, 'master') }}
+        exclude: 
+          - isMaster: false
+            grunt-cmd: ci-webdriver-default
         # exclude: 
         #   - branches: performancetotal
         #     grunt-cmd: ci-webdriver-default
@@ -169,7 +174,7 @@ jobs:
             echo "Testing E2E"
           else
             echo "Testing performance"
-            exit 1;
+        
           fi
       shell: bash
     
