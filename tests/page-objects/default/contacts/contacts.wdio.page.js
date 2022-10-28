@@ -329,5 +329,5 @@ module.exports = {
   editContactButton,
   getContactCardText,
   pregnancyCard,
-  getPregnancyCardInfo
+  getPregnancyCardInfo,
 };
