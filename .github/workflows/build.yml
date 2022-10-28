@@ -104,9 +104,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-default','ci-webdriver-standard', 'test']
+        grunt-cmd: ['ci-webdriver-default']
         isPerformance:
-          - ${{ contains(github.ref, 'performance') }}
+          - ${{ contains(github.ref, 'tested') }}
         include: 
           - isPerformance: true
             grunt-cmd: test2
