@@ -164,8 +164,13 @@ jobs:
     - name: Run tests
       #run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }} 
       run: |
-        echo "Testing performance" 
-        echo "Testing e2e"
+        
+        if [ 3+8 == 7 ]; then
+            echo "Testing E2E"
+          else
+            echo "Testing performance"
+            exit 1;
+          fi
       shell: bash
     
     - name: Archive Results
