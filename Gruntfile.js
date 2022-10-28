@@ -12,7 +12,7 @@ const {
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
-const WDIO_PARAMS ='--spec ./tests/performance/timings/*.perf.js';
+const WDIO_PARAMS ='npm run wdio --spec ./tests/performance/timings/*.perf.js';
 
 const buildUtils = require('./scripts/build');
 const buildVersions = require('./scripts/build/versions');
@@ -449,7 +449,7 @@ module.exports = function(grunt) {
       },
       'wdio-run-performance': {
         cmd: [
-          `npm run wdio ${WDIO_PARAMS}`
+          `${WDIO_PARAMS}`
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
