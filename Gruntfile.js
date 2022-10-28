@@ -448,7 +448,7 @@ module.exports = function(grunt) {
       },
       'wdio-run-performance': {
         cmd: [
-          'npm run perform'
+          'npm run wdio --spec ./tests/performance/timings/*.perf.js'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
