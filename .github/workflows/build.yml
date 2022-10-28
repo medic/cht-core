@@ -107,9 +107,9 @@ jobs:
         grunt-cmd: ['ci-webdriver-default','ci-webdriver-standard', 'test']
         isPerformance:
           - ${{ contains(github.ref, 'performance') }}
-        exclude: 
+        include: 
           - isPerformance: true
-            grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard']
+            grunt-cmd: test2
         # exclude: 
         #   - branches: performancetotal
         #     grunt-cmd: ci-webdriver-default
