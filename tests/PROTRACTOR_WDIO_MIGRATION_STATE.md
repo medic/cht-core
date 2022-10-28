@@ -38,7 +38,7 @@
 |e2e/protractor/sms-gateway.js	|Done	|Nick	|[#7367](https://github.com/medic/cht-core/pull/7367)	|	|
 |e2e/protractor/submit-enketo-form.js	|Done	|Bede	|[#7424](https://github.com/medic/cht-core/pull/7424)	|	|
 |e2e/protractor/target-aggregates.spec.js	|	|	|	|	|
-|e2e/protractor/cht/pregnancy.spec.js	|	|	|	|	|
+|e2e/protractor/cht/pregnancy.spec.js	|Done	|Tatiana	|[#7844](https://github.com/medic/cht-core/pull/7844)	|	|
 |mobile/common/common.specs.js	|	|	|	|	|
 |mobile/content-security-policy.specs.js	|	|	|	|	|
 |mobile/docs-by-replication-key-view.js	|Done	|Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|
