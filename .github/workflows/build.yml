@@ -105,64 +105,69 @@ jobs:
       fail-fast: false
       matrix:
         grunt-cmd: ['ci-webdriver-default', 'ci-perform']
-        exclude: 
-          - branches: performancetotal
-            grunt-cmd: ci-webdriver-default
+        # exclude: 
+        #   - branches: performancetotal
+        #     grunt-cmd: ci-webdriver-default
     
 
     steps:
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ env.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    # - name: Login to Docker Hub
+    #   uses: docker/login-action@v1
+    #   with:
+    #     username: ${{ env.DOCKERHUB_USERNAME }}
+    #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+    #   if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    # - name: Configure AWS credentials
+    #   uses: aws-actions/configure-aws-credentials@v1
+    #   with:
+    #     aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+    #     aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+    #     aws-region: eu-west-2
+    #   if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    # - name: Login to Amazon ECR
+    #   id: login-ecr
+    #   uses: aws-actions/amazon-ecr-login@v1
+    #   if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Get branch name
-      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
-    - name: Use Node.js 16.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 16.x
-    - uses: actions/checkout@v2
-    - name: Download docker images artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: cht-images
-        path: images/
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-    - name: Load docker images
-      run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
-      working-directory: images/
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    # - name: Get branch name
+    #   uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
+    # - name: Use Node.js 16.x
+    #   uses: actions/setup-node@v1
+    #   with:
+    #     node-version: 16.x
+    # - uses: actions/checkout@v2
+    # - name: Download docker images artifacts
+    #   uses: actions/download-artifact@v3
+    #   with:
+    #     name: cht-images
+    #     path: images/
+    #   if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    # - name: Load docker images
+    #   run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
+    #   working-directory: images/
+    #   if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Set ENV
-      run: |
-        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
-        echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
-    - name: Create logs directory
-      run: mkdir tests/logs
-    - name: Install pyxform
-      run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-    - name: Install cht-conf
-      run:  npm install -g cht-conf
-    - run: npm ci --legacy-peer-deps
+    # - name: Set ENV
+    #   run: |
+    #     echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
+    #     echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+    #     echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
+    # - name: Create logs directory
+    #   run: mkdir tests/logs
+    # - name: Install pyxform
+    #   run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+    # - name: Install cht-conf
+    #   run:  npm install -g cht-conf
+    # - run: npm ci --legacy-peer-deps
     - name: Run tests
-      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }} 
+      #run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }} 
+      run: |
+        echo "Testing performance" 
+        echo "Testing e2e"
+      shell: bash
+    
     - name: Archive Results
       uses: actions/upload-artifact@v2
       with:
