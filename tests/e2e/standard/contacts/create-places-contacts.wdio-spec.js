@@ -18,8 +18,10 @@ describe('Creating contacts with standard config. ', () => {
     await commonPage.goToPeople();
     await contactPage.addPlace(PLACE_TYPES.DISTRICT, DISTRICT_NAME, DISTRICT_NAME + CONTACT_NAME_SUFFIX);
     await commonPage.waitForPageLoaded();
-    expect(await (await contactPage.contactPageDefault.contactCard()).getText()).to.equal(DISTRICT_NAME);
-    expect(await contactPage.contactPageDefault.getPrimaryContactName()).to.equal(DISTRICT_NAME + CONTACT_NAME_SUFFIX);
+    const primaryContactName = await contactPage.contactPageDefault.getPrimaryContactName();
+    const contactCardText = await contactPage.contactPageDefault.getContactCardText();
+    expect(contactCardText).to.equal(DISTRICT_NAME);
+    expect(primaryContactName).to.equal(DISTRICT_NAME + CONTACT_NAME_SUFFIX);
   });
 
   it('should create a new health center in the district hospital', async () => {
