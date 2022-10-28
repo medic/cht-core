@@ -1,5 +1,6 @@
 const smsparser = require('../../../../src/services/report/smsparser');
 const chai = require('chai');
+const moment = require('moment');
 
 const def = {
   meta: {
@@ -42,7 +43,7 @@ describe('sms parser compact', () => {
     const expectedObj = {
       name: 'sarah',
       lmp: 24,
-      somedate: 1331510400000
+      somedate: moment('2012-03-12').valueOf()
     };
 
     const obj = smsparser.parse(def, doc);
@@ -104,7 +105,7 @@ describe('sms parser compact', () => {
     const expectedObj = {
       name: 'Sarah Connor',
       lmp: 24,
-      somedate: 1331510400000
+      somedate: moment('2012-03-12').valueOf()
     };
 
     const obj = smsparser.parse(def, doc);
@@ -120,7 +121,7 @@ describe('sms parser compact', () => {
     const expectedObj = {
       name: 'Sarah "killer bee" Connor',
       lmp: 24,
-      somedate: 1331510400000
+      somedate: moment('2012-03-12').valueOf()
     };
     const obj = smsparser.parse(def, doc);
     chai.expect(obj).to.deep.equal(expectedObj);
@@ -153,7 +154,7 @@ describe('sms parser compact', () => {
     const expectedObj = {
       name: 'Sarah Connor',
       lmp: 24,
-      somedate: 1331510400000
+      somedate: moment('2012-03-12').valueOf()
     };
 
     const obj = smsparser.parse(def, doc);
@@ -207,7 +208,7 @@ describe('sms parser compact', () => {
     const expectedObj = {
       name: 'sarah',
       lmp: null,
-      somedate: 1331510400000
+      somedate: moment('2012-03-12').valueOf()
     };
 
     const obj = smsparser.parse(def, doc);

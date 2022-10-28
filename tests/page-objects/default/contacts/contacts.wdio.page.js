@@ -57,6 +57,13 @@ const contactCardTitle = () => $('.inbox .content-pane .material .body .action-h
 const contactInfoName = () => $('.content-pane .material .body .card .row .heading-content');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
 
+const PREG_CARD_SELECTOR = 'div[test-id="contact.profile.pregnancy.active"]';
+const pregnancyCard = () => $(PREG_CARD_SELECTOR);
+const weeksPregnant = () => $(`${PREG_CARD_SELECTOR} div[test-id="Weeks Pregnant"] p.card-field-value`);
+const edd = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.profile.edd"] p.card-field-value`);
+const highRisk = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.profile.risk.high"] label`);
+const nextANCVisit = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.profile.anc.next"] p.card-field-value`);
+
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await browser.keys('Enter');
@@ -260,6 +267,16 @@ const getContactMedicID = async () => {
   return (await contactMedicID()).getText();
 };
 
+const getPregnancyCardInfo = async () => {
+  await pregnancyCard().waitForDisplayed();
+  return {
+    weeksPregnant: await weeksPregnant().getText(),
+    deliveryDate: await edd().getText(),
+    risk: await highRisk().getText(),
+    ancVisit: await nextANCVisit().getText(),
+  };
+};
+
 const getContactCardText = async () => {
   await contactCard().waitForDisplayed();
   return (await contactCard()).getText();
@@ -311,4 +328,6 @@ module.exports = {
   contactCardIcon,
   editContactButton,
   getContactCardText,
+  pregnancyCard,
+  getPregnancyCardInfo
 };

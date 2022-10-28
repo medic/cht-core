@@ -59,7 +59,7 @@ describe('Token login', () => {
 
   afterEach(async () => {
     await utils.deleteUsers([user]);
-    await utils.revertDb([], true);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('should redirect the user to the app if already logged in', async () => {

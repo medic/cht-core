@@ -106,11 +106,13 @@ const goToMessages = async () => {
 const goToTasks = async () => {
   await browser.url(`/#/tasks`);
   await (await taskTab()).waitForDisplayed();
+  await waitForPageLoaded();
 };
 
 const goToAnalytics = async () => {
   await browser.url(`/#/analytics`);
   await (await analyticsTab()).waitForDisplayed();
+  await waitForPageLoaded();
 };
 
 const goToAboutPage = async () => {
