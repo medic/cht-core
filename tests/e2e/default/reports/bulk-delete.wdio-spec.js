@@ -66,20 +66,22 @@ describe('Bulk delete reports', () => {
   it('should select, deselect and delete only selected reports', async () => {
     await commonElements.goToReports();
 
-    const selectAllResult = await reportsPage.toggleSelectAll();
+    const selectAllResult = await reportsPage.selectAll();
     expect(selectAllResult.countLabel).to.equal('3 records selected');
     expect(selectAllResult.selectedCount).to.equal(3);
-    await reportsPage.toggleSelectedReportSummary(); // Expand
-    await reportsPage.toggleSelectedReportSummary(true); // Collapse
 
-    const deselectAllResult = await reportsPage.toggleSelectAll(true);
+    await reportsPage.expandSelectedReportSummary();
+    await reportsPage.collapseSelectedReportSummary();
+
+    const deselectAllResult = await reportsPage.deselectAll();
     expect(deselectAllResult.selectedCount).to.equal(0);
 
     const selectSomeResult = await reportsPage.selectReports([ savedUuids[0], savedUuids[2] ]);
     expect(selectSomeResult.countLabel).to.equal('2 records selected');
     expect(selectSomeResult.selectedCount).to.equal(2);
 
-    const deselectSomeResult = await reportsPage.selectReports([ savedUuids[0] ]);
+    const deselectSomeResult = await reportsPage.deselectReports([ savedUuids[0] ]);
+
     expect(deselectSomeResult.countLabel).to.equal('1 record selected');
     expect(deselectSomeResult.selectedCount).to.equal(1);
 

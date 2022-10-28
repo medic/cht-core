@@ -132,7 +132,7 @@
             <div class="dropdown-menu sub-actions" *ngIf="actionBar?.right?.verifyingReport && loadingSubActionBar">
               <div class="loader"></div>
             </div>
-            <div class="dropdown-menu sub-actions" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportDoc?.verified === undefined && 'can_verify_reports']" *ngIf="actionBar?.right?.verifyingReport && !loadingSubActionBar">
+            <div test-id="report-review-menu" class="dropdown-menu sub-actions" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportDoc?.verified === undefined && 'can_verify_reports']" *ngIf="actionBar?.right?.verifyingReport && !loadingSubActionBar">
               <a class="mm-icon mm-icon-caption verify-error" [ngClass]="{ active: actionBar?.right?.verified === false }" (click)="verifyReport(false)">
                 <report-verify-invalid-icon class="verify-icon"></report-verify-invalid-icon>
                 <span>{{'reports.verify.invalid' | translate}}</span>
@@ -142,7 +142,7 @@
                 <span>{{'reports.verify.valid' | translate}}</span>
               </a>
             </div>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" [ngClass]="{ active: actionBar?.right?.verifyingReport }" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportDoc?.verified === undefined && 'can_verify_reports']" (click)="toggleVerifyingReport()">
+            <a test-id="report-review-button" class="mm-icon mm-icon-inverse mm-icon-caption" [ngClass]="{ active: actionBar?.right?.verifyingReport }" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportDoc?.verified === undefined && 'can_verify_reports']" (click)="toggleVerifyingReport()">
               <span class="fa fa-check"></span>
               <p>{{'reports.verify' | translate}}</p>
             </a>

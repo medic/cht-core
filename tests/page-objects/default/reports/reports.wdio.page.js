@@ -3,6 +3,7 @@ const searchElements = require('../search/search.wdio.page');
 const utils = require('../../../utils');
 
 const REPORTS_LIST_ID = '#reports-list';
+const SELECT_ALL_CHECKBOX = `${REPORTS_LIST_ID} .select-all input[type="checkbox"]`;
 const reportBodyDetailsSelector = '#reports-content .report-body .details';
 const reportBodyDetails = () => $(reportBodyDetailsSelector);
 const reportTasks = () =>  $(`${reportBodyDetailsSelector} .scheduled-tasks`);
@@ -49,10 +50,9 @@ const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
-const deselectReport = () => $(`${REPORT_BODY} .deselect`);
 const itemSummary = () => $(`${REPORT_BODY} .item-summary`);
 const reportCheckbox = (uuid) => $(`${REPORTS_LIST_ID} li[data-record-id="${uuid}"] input[type="checkbox"]`);
-const reportSelectedCheckbox = () => $$(`${REPORTS_LIST_ID} li input[type="checkbox"]:checked`);
+const selectedReportsCheckboxes = () => $$(`${REPORTS_LIST_ID} li input[type="checkbox"]:checked`);
 const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
 const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
@@ -149,10 +149,16 @@ const reportsListDetails = async () => {
   return reportDetails;
 };
 
-const toggleSelectedReportSummary = async (reverse=false) => {
+const expandSelectedReportSummary = async () => {
   await (await itemSummary()).waitForClickable();
   await (await itemSummary()).click();
-  await (await reportBodyDetails()).waitForDisplayed({ reverse });
+  await (await reportBodyDetails()).waitForDisplayed();
+};
+
+const collapseSelectedReportSummary = async () => {
+  await (await itemSummary()).waitForClickable();
+  await (await itemSummary()).click();
+  await (await reportBodyDetails()).waitForDisplayed({ reverse: true });
 };
 
 const deleteSelectedReports = async () => {
@@ -162,35 +168,66 @@ const deleteSelectedReports = async () => {
   await (await bulkDeleteModal()).waitForDisplayed();
   await (await $(`${DELETE_CONFIRM_MODAL} .btn.submit.btn-danger`)).click();
 
-  const bulkDeleteConfirmBtn = () => $('a=Complete');
+  const bulkDeleteConfirmBtn = () => $(`${DELETE_CONFIRM_MODAL} [test-id="bulkdelete.complete.action"]`);
   await (await bulkDeleteConfirmBtn()).waitForDisplayed();
   await (await bulkDeleteConfirmBtn()).click();
 
   await (await bulkDeleteModal()).waitForDisplayed({ reverse: true });
   await commonElements.waitForPageLoaded();
-  await (await firstReport()).waitForDisplayed();
+  await (await reportList()).waitForDisplayed();
 };
 
-const verifyMultiSelect = async (reverse=false) => {
-  await (await reportBody()).waitForDisplayed( { reverse });
-  await (await deleteAllButton()).waitForClickable( { reverse });
-  await (await selectedReportsCount()).waitForDisplayed({ reverse });
+const verifyMultiselectElementsDisplay = async (shouldHide=false) => {
+  await (await reportBody()).waitForDisplayed( { reverse: shouldHide });
+  await (await deleteAllButton()).waitForClickable( { reverse: shouldHide });
+  await (await selectedReportsCount()).waitForDisplayed({ reverse: shouldHide });
   return {
-    countLabel: reverse ? false : await (await selectedReportsCount()).getText(),
-    selectedCount: (await reportSelectedCheckbox()).length,
+    countLabel: shouldHide ? false : await (await selectedReportsCount()).getText(),
+    selectedCount: (await selectedReportsCheckboxes()).length,
   };
 };
 
-const toggleSelectAll = async (reverse=false) => {
-  await (await $(`${REPORTS_LIST_ID} .select-all input[type="checkbox"]`)).click();
-  return verifyMultiSelect(reverse);
+const isSelectAll = async () => {
+  return await (await $(`${SELECT_ALL_CHECKBOX}:checked`)).isExisting();
 };
 
-const selectReports = async (uuids, reverse=false) => {
-  for (const uuid of uuids) {
-    await (await reportCheckbox(uuid)).click();
+const selectAll = async () => {
+  if (await isSelectAll()) {
+    return;
   }
-  return verifyMultiSelect(reverse);
+  await (await $(SELECT_ALL_CHECKBOX)).click();
+  return await verifyMultiselectElementsDisplay();
+};
+
+const deselectAll = async () => {
+  if (!(await isSelectAll())) {
+    return;
+  }
+  await (await $(SELECT_ALL_CHECKBOX)).click();
+  return await verifyMultiselectElementsDisplay(true);
+};
+
+const isReportSelected = async (uuid) => {
+  const checkbox = $(`${REPORTS_LIST_ID} li[data-record-id="${uuid}"] input[type="checkbox"]:checked`);
+  return await (await checkbox).isExisting();
+};
+
+const selectReports = async (uuids) => {
+  for (const uuid of uuids) {
+    if (!(await isReportSelected(uuid))) {
+      await (await reportCheckbox(uuid)).click();
+    }
+  }
+  return verifyMultiselectElementsDisplay();
+};
+
+const deselectReports = async (uuids, shouldHideElements=false) => {
+  for (const uuid of uuids) {
+    if (await isReportSelected(uuid)) {
+      await (await reportCheckbox(uuid)).click();
+    }
+  }
+  return verifyMultiselectElementsDisplay(shouldHideElements);
 };
 
 const filterByDate = async (startDate, endDate) => {
@@ -340,10 +377,12 @@ module.exports = {
   getSummaryField,
   submitForm,
   reportsListDetails,
-  toggleSelectAll,
+  selectAll,
+  deselectAll,
   selectReports,
-  deselectReport,
-  toggleSelectedReportSummary,
+  deselectReports,
+  expandSelectedReportSummary,
+  collapseSelectedReportSummary,
   deleteSelectedReports,
   firstReportDetailField,
   reportByUUID,
