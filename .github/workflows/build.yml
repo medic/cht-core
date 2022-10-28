@@ -108,7 +108,7 @@ jobs:
         isMaster:
           - ${{ contains(github.ref, 'performance') }}
         exclude: 
-          - isMaster: false
+          - isMaster: true
             grunt-cmd: ci-webdriver-default
         # exclude: 
         #   - branches: performancetotal
