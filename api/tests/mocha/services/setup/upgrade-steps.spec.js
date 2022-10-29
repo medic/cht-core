@@ -412,33 +412,6 @@ describe('Upgrade steps', () => {
       expect(upgradeUtils.makeUpgradeRequest.args[0]).to.deep.equal([{ docker_compose: { 'doc.yml': 'payload' } }]);
     });
 
-    it('should throw error when response is invalid', async () => {
-      sinon.stub(upgradeLogService, 'setCompleting');
-      sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
-      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({ docker_compose: { 'doc.yml': 'payload' } });
-      sinon.stub(upgradeUtils, 'makeUpgradeRequest').resolves('this is not an object');
-
-      const buildInfo = { version: '4.0.0' };
-
-      await expect(upgradeSteps.complete({ ...buildInfo })).to.be.rejectedWith('No compose files were updated');
-    });
-
-    it('should throw error when no files were updated', async () => {
-      sinon.stub(upgradeLogService, 'setCompleting');
-      sinon.stub(upgradeUtils, 'getStagingDoc').resolves({ the: 'staging_doc' });
-      sinon.stub(upgradeUtils, 'getUpgradeServicePayload').returns({
-        docker_compose: { 'doc1.yml': 'payload', 'doc2.yml': 'payload' },
-      });
-      sinon.stub(upgradeUtils, 'makeUpgradeRequest').resolves({
-        'doc1.yml': { ok: false },
-        'doc2.yml': { ok: false },
-      });
-
-      const buildInfo = { version: '4.0.0' };
-
-      await expect(upgradeSteps.complete({ ...buildInfo })).to.be.rejectedWith('No compose files were updated');
-    });
-
     it('should throw missing staging doc errors', async () => {
       sinon.stub(upgradeLogService, 'setCompleting');
       sinon.stub(upgradeUtils, 'getStagingDoc').rejects({ status: 404 });

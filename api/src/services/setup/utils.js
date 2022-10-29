@@ -318,7 +318,7 @@ const getUpgradeServicePayload = (stagingDoc) => {
   };
 };
 
-const makeUpgradeRequest = (payload) => {
+const makeUpgradeRequest = async (payload) => {
   let url;
   try {
     url = new URL(UPGRADE_SERVICE_URL);
@@ -327,7 +327,14 @@ const makeUpgradeRequest = (payload) => {
     throw new Error(`Invalid UPGRADE_SERVICE_URL: ${UPGRADE_SERVICE_URL}`);
   }
 
-  return rpn.post({ url: url.toString(), json: true, body: payload });
+  const response = await rpn.post({ url: url.toString(), json: true, body: payload });
+  const success = upgradeResponseSuccess(payload, response);
+  if (!success) {
+    logger.error('No compose files were updated: %o', response);
+    throw new Error('No compose files were updated');
+  }
+
+  return response;
 };
 
 const upgradeResponseSuccess = (payload, response) => {

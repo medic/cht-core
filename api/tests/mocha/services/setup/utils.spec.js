@@ -9,6 +9,7 @@ const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
 const env = require('../../../../src/environment');
 const { DATABASES } = require('../../../../src/services/setup/databases');
 const ddocsService = require('../../../../src/services/setup/ddocs');
+const upgradeUtils = require('../../../../src/services/setup/utils');
 
 let utils;
 let clock;
@@ -886,10 +887,11 @@ describe('Setup utils', () => {
 
   describe('makeUpgradeRequest', () => {
     it('should call default upgrade service url', async () => {
-      const payload = { the: 'payload' };
-      sinon.stub(rpn, 'post').resolves('response');
+      const payload = { docker_compose: { 'doc.yml': 'payload' } };
+      const response = { 'doc.yml': { ok: true } };
+      sinon.stub(rpn, 'post').resolves({ 'doc.yml': { ok: true } });
 
-      expect(await utils.makeUpgradeRequest(payload)).to.deep.equal('response');
+      expect(await utils.makeUpgradeRequest(payload)).to.deep.equal(response);
       expect(rpn.post.callCount).to.equal(1);
       expect(rpn.post.args[0]).to.deep.equal([{
         url: 'http://localhost:5008/upgrade',
@@ -899,12 +901,13 @@ describe('Setup utils', () => {
     });
 
     it('should call env upgrade service url', async () => {
-      const payload = { tags: {}, 'docker-compose': {} };
-      sinon.stub(rpn, 'post').resolves('response');
+      const payload = { tags: {}, docker_compose: { 'doc.yml': 'payload' } };
+      const response = { 'doc.yml': { ok: true } };
+      sinon.stub(rpn, 'post').resolves(response);
       process.env.UPGRADE_SERVICE_URL = 'http://someurl';
       utils = rewire('../../../../src/services/setup/utils');
 
-      expect(await utils.makeUpgradeRequest(payload)).to.deep.equal('response');
+      expect(await utils.makeUpgradeRequest(payload)).to.deep.equal(response);
       expect(rpn.post.callCount).to.equal(1);
       expect(rpn.post.args[0]).to.deep.equal([{
         url: 'http://someurl/upgrade',
@@ -913,13 +916,13 @@ describe('Setup utils', () => {
       }]);
     });
 
-    it('should throw invalid url error', () => {
-      const payload = { tags: {}, 'docker-compose': {} };
-      sinon.stub(rpn, 'post').resolves('response');
+    it('should throw invalid url error', async () => {
+      const payload = { tags: {}, docker_compose: {} };
+      sinon.stub(rpn, 'post').resolves({});
       process.env.UPGRADE_SERVICE_URL = 'whatever';
       utils = rewire('../../../../src/services/setup/utils');
 
-      expect(utils.makeUpgradeRequest.bind({}, payload)).to.throw('Invalid UPGRADE_SERVICE_URL: whatever');
+      await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('Invalid UPGRADE_SERVICE_URL: whatever');
     });
 
     it('should throw request errors', async () => {
@@ -927,6 +930,23 @@ describe('Setup utils', () => {
       sinon.stub(rpn, 'post').rejects(new Error('boom'));
 
       await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('boom');
+    });
+
+    it('should throw error when response is invalid', async () => {
+      const payload = { docker_compose: { 'doc.yml': 'payload' } };
+      sinon.stub(rpn, 'post').resolves('this is not an object');
+
+      await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('No compose files were updated');
+    });
+
+    it('should throw error when no files were updated', async () => {
+      const payload = { docker_compose: { 'doc1.yml': 'payload', 'doc2.yml': 'payload' } };
+      sinon.stub(rpn, 'post').resolves({
+        'doc1.yml': { ok: false },
+        'doc2.yml': { ok: false },
+      });
+
+      await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('No compose files were updated');
     });
   });
 
