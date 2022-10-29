@@ -9,7 +9,6 @@ const upgradeLogService = require('../../../../src/services/setup/upgrade-log');
 const env = require('../../../../src/environment');
 const { DATABASES } = require('../../../../src/services/setup/databases');
 const ddocsService = require('../../../../src/services/setup/ddocs');
-const upgradeUtils = require('../../../../src/services/setup/utils');
 
 let utils;
 let clock;
