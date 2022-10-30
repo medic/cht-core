@@ -101,9 +101,15 @@ const compileAndUploadAppForms = async (formsDir) => {
   await runCommand('upload-app-forms', dir);
 };
 
+const uploadDocs = async () => {
+  await exec(`for i in {1..10000}; do cp report.pregnancy.csv "report1$i.csv"; done`, { cwd: 'config/default' });
+  await runCommand('csv-to-docs upload-docs create-users', 'config/default');
+};
+
 module.exports = {
   runCommand,
   compileNoolsConfig,
   initializeConfigDir,
   compileAndUploadAppForms,
+  uploadDocs,
 };

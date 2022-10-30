@@ -1,5 +1,6 @@
 const commonPage = require('../../page-objects/default/common/common.wdio.page');
 const loginPage = require('../../page-objects/default/login/login.wdio.page');
+const chtConfUtils = require('../../cht-conf-utils');
 const performancetotal = require('wdio-performancetotal-service').performancetotal;
 const constants = require('../../constants');
 const utils = require('../../utils');
@@ -13,10 +14,10 @@ const loadTab  = async (entities, time = TABTIME) => {
   expect(performancetotal.getSampleTime(entities)).to.be.at.most(time);
 };
 
-const docs = []; // to specify docs to load
 describe('Navigation tests', async () => {
   before(async () => {
-    await utils.seedTestData(constants.USER_CONTACT_ID, docs); //could use any other method - see sclability suite
+    await chtConfUtils.uploadDocs();
+    //await utils.seedTestData(constants.USER_CONTACT_ID, docs); //could use any other method - see sclability suite
   });
 
   it(`login within ${TABTIME} seconds`, async () => {
