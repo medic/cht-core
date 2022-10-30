@@ -104,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-default']
+        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
         isPerformance:
           - ${{ contains(github.ref, 'performance') }}
         include: 
