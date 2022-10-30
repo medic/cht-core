@@ -2,9 +2,10 @@ const commonPage = require('../../page-objects/default/common/common.wdio.page')
 const loginPage = require('../../page-objects/default/login/login.wdio.page');
 const chtConfUtils = require('../../cht-conf-utils');
 const performancetotal = require('wdio-performancetotal-service').performancetotal;
-const constants = require('../../constants');
-const utils = require('../../utils');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 const TABTIME = 1000; //1 seconds - to change once we have seeded data
+const DOCS_NUMBER = 10000;
 
 const loadTab  = async (entities, time = TABTIME) => {
   performancetotal.sampleStart(entities);
@@ -16,8 +17,11 @@ const loadTab  = async (entities, time = TABTIME) => {
 
 describe('Navigation tests', async () => {
   before(async () => {
-    await chtConfUtils.uploadDocs();
-    //await utils.seedTestData(constants.USER_CONTACT_ID, docs); //could use any other method - see sclability suite
+    await chtConfUtils.uploadDocs(DOCS_NUMBER);
+  });
+
+  after( async () => {
+    await exec('rm -rf report1*', { cwd: 'config/default/csv' });
   });
 
   it(`login within ${TABTIME} seconds`, async () => {
@@ -32,7 +36,7 @@ describe('Navigation tests', async () => {
   });
 
   it(`should open tasks tab within ${TABTIME} seconds`, async () => {
-    await loadTab('tasks');
+    await loadTab('tasks', 200);
     expect(await commonPage.isTasksListPresent());
   });
 
@@ -42,12 +46,12 @@ describe('Navigation tests', async () => {
   });
 
   it(`should load Contacts or Peoples within ${TABTIME} seconds`, async () => {
-    await loadTab('contacts');
+    await loadTab('contacts', 10);
     expect(await commonPage.isPeopleListPresent());
   });
 
   it(`should load Analytics within ${TABTIME} seconds`, async () => {
-    await loadTab('analytics');
+    await loadTab('analytics', 10);
     expect(await commonPage.isTargetMenuItemPresent());
     expect(await commonPage.isTargetAggregatesMenuItemPresent());
   });
