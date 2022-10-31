@@ -448,6 +448,7 @@ module.exports = function(grunt) {
       },
       'wdio-run-performance': {
         cmd: [
+          'for i in {1..10000}; do cp config/default/csv/report.pregnancy.csv config/default/csv/report1$i.csv; done', //seed data
           'npm run perform'
         ].join(' && '),
         stdio: 'inherit', // enable colors!

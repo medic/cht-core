@@ -5,7 +5,7 @@ const performancetotal = require('wdio-performancetotal-service').performancetot
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const TABTIME = 1000; //1 seconds - to change once we have seeded data
-const DOCS_NUMBER = 10000;
+//const DOCS_NUMBER = 10000;
 
 const loadTab  = async (entities, time = TABTIME) => {
   performancetotal.sampleStart(entities);
@@ -17,7 +17,7 @@ const loadTab  = async (entities, time = TABTIME) => {
 
 describe('Navigation tests', async () => {
   before(async () => {
-    await chtConfUtils.uploadDocs(DOCS_NUMBER);
+    await chtConfUtils.uploadDocs();
   });
 
   after( async () => {
@@ -36,7 +36,7 @@ describe('Navigation tests', async () => {
   });
 
   it(`should open tasks tab within ${TABTIME} seconds`, async () => {
-    await loadTab('tasks', 200);
+    await loadTab('tasks');
     expect(await commonPage.isTasksListPresent());
   });
 
@@ -46,12 +46,12 @@ describe('Navigation tests', async () => {
   });
 
   it(`should load Contacts or Peoples within ${TABTIME} seconds`, async () => {
-    await loadTab('contacts', 10);
+    await loadTab('contacts');
     expect(await commonPage.isPeopleListPresent());
   });
 
   it(`should load Analytics within ${TABTIME} seconds`, async () => {
-    await loadTab('analytics', 10);
+    await loadTab('analytics');
     expect(await commonPage.isTargetMenuItemPresent());
     expect(await commonPage.isTargetAggregatesMenuItemPresent());
   });
