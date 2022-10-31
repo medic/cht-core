@@ -56,6 +56,7 @@ const formTitle = () => $('#form-title');
 const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
 const contactInfoName = () => $('.content-pane .material .body .card .row .heading-content');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
+const contactStatus = () => $('.content-pane .material .body .card .row .heading-content > div');
 
 const PREG_CARD_SELECTOR = 'div[test-id="contact.profile.pregnancy.active"]';
 const pregnancyCard = () => $(PREG_CARD_SELECTOR);
@@ -63,6 +64,11 @@ const weeksPregnant = () => $(`${PREG_CARD_SELECTOR} div[test-id="Weeks Pregnant
 const edd = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.profile.edd"] p.card-field-value`);
 const highRisk = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.profile.risk.high"] label`);
 const nextANCVisit = () => $(`${PREG_CARD_SELECTOR} div[test-id="contact.profile.anc.next"] p.card-field-value`);
+
+const DEATH_CARD_SELECTOR = 'div[test-id="contact.profile.death.title"]';
+const deathCard = () => $(DEATH_CARD_SELECTOR);
+const deathDate = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.death.date"] p.card-field-value`);
+const deathPlace = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.death.place"] p.card-field-value`);
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
@@ -267,6 +273,12 @@ const getContactMedicID = async () => {
   return (await contactMedicID()).getText();
 };
 
+const getContactStatus = async () => {
+  const status = await contactStatus();
+  await status.waitForDisplayed();
+  return await status.getText();
+};
+
 const getPregnancyCardInfo = async () => {
   await pregnancyCard().waitForDisplayed();
   return {
@@ -274,6 +286,14 @@ const getPregnancyCardInfo = async () => {
     deliveryDate: await edd().getText(),
     risk: await highRisk().getText(),
     ancVisit: await nextANCVisit().getText(),
+  };
+};
+
+const getDeathCardInfo = async () => {
+  await deathCard().waitForDisplayed();
+  return {
+    deathDate: await deathDate().getText(),
+    deathPlace: await deathPlace().getText(),
   };
 };
 
@@ -318,6 +338,7 @@ module.exports = {
   getContactCardTitle,
   getContactInfoName,
   getContactMedicID,
+  getContactStatus,
   actionResourceIcon,
   newPrimaryContactButton,
   newPrimaryContactName,
@@ -330,4 +351,6 @@ module.exports = {
   getContactCardText,
   pregnancyCard,
   getPregnancyCardInfo,
+  deathCard,
+  getDeathCardInfo,
 };
