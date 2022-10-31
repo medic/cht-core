@@ -1,7 +1,7 @@
+const { expect } = require('chai');
 const utils = require('../../utils');
 const personFactory = require('../../factories/cht/contacts/person');
 const placeFactory = require('../../factories/cht/contacts/place');
-const {expect} = require('chai');
 
 describe('Editing contacts ', () => {
   const district = placeFactory.place().build({type:'district_hospital'});
