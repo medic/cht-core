@@ -204,8 +204,10 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   }
 
   private recordTelemetryQuitTraining() {
+    this.telemetryData.postQuit = Date.now();
     this.telemetryService.record(
-      `enketo:${this.telemetryData.form}:${this.telemetryData.action}:quit`
+      `enketo:${this.telemetryData.form}:${this.telemetryData.action}:quit`,
+      this.telemetryData.postQuit - this.telemetryData.postRender
     );
   }
 
