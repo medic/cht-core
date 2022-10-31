@@ -17,6 +17,9 @@ const loadTab  = async (entities, time = TABTIME) => {
 describe('Navigation tests', async () => {
   before(async () => {
     await chtConfUtils.uploadDocs();
+    
+    //seed data
+    await exec(`for i in {1..10000}; do cp report.pregnancy.csv "report1$i.csv"; done`, { cwd: 'config/default/csv' });
   });
 
   after( async () => {
