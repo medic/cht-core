@@ -5,6 +5,7 @@ const performancetotal = require('wdio-performancetotal-service').performancetot
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const TABTIME = 1000; //1 seconds - to change once we have seeded data
+const MUMBER_OF_DOCS = 10000;
 
 const loadTab  = async (entities, time = TABTIME) => {
   performancetotal.sampleStart(entities);
@@ -16,7 +17,7 @@ const loadTab  = async (entities, time = TABTIME) => {
 
 describe('Navigation tests', async () => {
   before(async () => {
-    await chtConfUtils.uploadDocs(true);
+    await chtConfUtils.uploadDocs(MUMBER_OF_DOCS);
   });
 
   after( async () => {

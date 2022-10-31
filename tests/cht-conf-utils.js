@@ -103,8 +103,9 @@ const compileAndUploadAppForms = async (formsDir) => {
 
 const uploadDocs = async seed => {
   if(seed){
-    await exec(`for i in {1..10000}; do cp report.pregnancy.csv "report1$i.csv"; done`, 
-      { cwd: 'config/default/csv' });
+    for(let i; i<seed; i++){
+      await exec(`cp report.pregnancy.csv "report1${i}i.csv"`, { cwd: 'config/default/csv' });
+    }
   }
   await runCommand('csv-to-docs upload-docs create-users', 'config/default');
 };
