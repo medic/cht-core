@@ -25,7 +25,6 @@ describe('functional transitions', () => {
   });
 
   afterEach(() => {
-    sinon.reset();
     sinon.restore();
   });
 

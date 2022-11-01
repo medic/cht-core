@@ -4,7 +4,6 @@ const registrationUtils = require('@medic/registration-utils');
 const taskUtils = require('@medic/task-utils');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-require('chai').should();
 
 describe('utils util', () => {
 
