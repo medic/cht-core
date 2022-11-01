@@ -310,7 +310,7 @@ export class ReportsEffects {
             verification = { verified, verified_date: Date.now() };
           }
 
-          this.reportActions.setSelectedReportDocProperty(verification);
+          this.reportActions.setSelectedReportDocProperty(report.doc._id, verification);
           this.servicesActions.setLastChangedDoc(report.doc);
 
           return this.dbService
@@ -321,7 +321,10 @@ export class ReportsEffects {
             .finally(() => {
               const oldVerified = report.formatted?.verified;
               const newVerified = oldVerified === verified ? undefined : verified;
-              this.reportActions.setSelectedReportFormattedProperty({ verified: newVerified, oldVerified });
+              this.reportActions.setSelectedReportFormattedProperty(
+                report.doc._id,
+                { verified: newVerified, oldVerified },
+              );
               this.globalActions.setRightActionBarVerified(newVerified);
             });
         };

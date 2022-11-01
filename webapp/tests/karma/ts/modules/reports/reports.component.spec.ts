@@ -597,7 +597,7 @@ describe('Reports Component', () => {
       expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
     }));
 
-    it('should unset select mode and redirect when there are no selected reports', fakeAsync(() => {
+    it('should unset select mode when there are no selected reports', fakeAsync(() => {
       const setSelectMode = sinon.spy(GlobalActions.prototype, 'setSelectMode');
       const unsetComponents = sinon.spy(GlobalActions.prototype, 'unsetComponents');
       store.overrideSelector(Selectors.getSelectMode, true);

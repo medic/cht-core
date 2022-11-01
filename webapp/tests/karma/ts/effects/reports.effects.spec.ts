@@ -102,7 +102,7 @@ describe('Reports effects', () => {
     }));
 
     it('should skip when no provided id', waitForAsync(() => {
-      actions$ = of(ReportActionList.selectReport({}));
+      actions$ = of(ReportActionList.selectReport(''));
       effects.selectReportToOpen.subscribe();
 
       expect(reportViewModelGeneratorService.get.notCalled).to.be.true;
@@ -112,7 +112,7 @@ describe('Reports effects', () => {
       store.overrideSelector(Selectors.getSelectMode, false);
       store.refreshState();
 
-      actions$ = of(ReportActionList.selectReport({}));
+      actions$ = of(ReportActionList.selectReport('reportID1'));
       effects.selectReport.subscribe();
 
       expect(reportViewModelGeneratorService.get.notCalled).to.be.true;
@@ -350,7 +350,7 @@ describe('Reports effects', () => {
       actions$ = of([
         ReportActionList.markReportRead(''),
         ReportActionList.removeSelectedReport({}),
-        ReportActionList.selectReport({}),
+        ReportActionList.selectReport(''),
       ]);
       effects.openReportContent.subscribe();
 
@@ -498,7 +498,7 @@ describe('Reports effects', () => {
   describe('markRead', () => {
     it('should not be triggered by random actions', () => {
       actions$ = of([
-        ReportActionList.selectReport({}),
+        ReportActionList.selectReport(''),
         ReportActionList.removeSelectedReport({}),
         ReportActionList.selectReportToOpen({}),
       ]);
@@ -583,7 +583,7 @@ describe('Reports effects', () => {
 
     it('should not be triggered by random actions', () => {
       actions$ = of([
-        ReportActionList.selectReport({}),
+        ReportActionList.selectReport(''),
         ReportActionList.removeSelectedReport({}),
         ReportActionList.selectReportToOpen({}),
       ]);
@@ -771,7 +771,7 @@ describe('Reports effects', () => {
 
     it('should not be triggered by random actions', () => {
       actions$ = of([
-        ReportActionList.selectReport({}),
+        ReportActionList.selectReport(''),
         ReportActionList.removeSelectedReport({}),
         ReportActionList.selectReportToOpen({}),
       ]);
@@ -866,7 +866,7 @@ describe('Reports effects', () => {
   describe('launchEditFacilityDialog', () => {
     it('should not be triggered by random actions', () => {
       actions$ = of([
-        ReportActionList.selectReport({}),
+        ReportActionList.selectReport(''),
         ReportActionList.removeSelectedReport({}),
         ReportActionList.selectReportToOpen({}),
       ]);
@@ -960,7 +960,7 @@ describe('Reports effects', () => {
 
     it('should not be triggered by random actions', () => {
       actions$ = of([
-        ReportActionList.selectReport({}),
+        ReportActionList.selectReport(''),
         ReportActionList.removeSelectedReport({}),
         ReportActionList.selectReportToOpen({}),
       ]);
@@ -1168,12 +1168,15 @@ describe('Reports effects', () => {
 
       // Make sure we only end up setting the data we expect onto the report
       expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).callCount).to.equal(1);
-      expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).args[0]).to.deep.equal(
-        [{ verified: false, verified_date: 1000 }],
-      );
+      expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).args[0]).to.deep.equal([
+        'report',
+        { verified: false, verified_date: 1000 },
+      ]);
       expect((<any>ReportsActions.prototype.setSelectedReportFormattedProperty).callCount).to.equal(1);
-      expect((<any>ReportsActions.prototype.setSelectedReportFormattedProperty).args[0]).to.deep.equal(
-        [{ oldVerified: undefined, verified: false }]);
+      expect((<any>ReportsActions.prototype.setSelectedReportFormattedProperty).args[0]).to.deep.equal([
+        'report',
+        { oldVerified: undefined, verified: false },
+      ]);
     }));
 
     it('should launch modal with correct params on invalid', fakeAsync(() => {
@@ -1298,10 +1301,10 @@ describe('Reports effects', () => {
             verified: expectVerified,
           }]);
           expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).callCount).to.equal(1);
-          expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).args[0]).to.deep.equal([{
-            verified: expectVerified,
-            verified_date: expectedDate,
-          }]);
+          expect((<any>ReportsActions.prototype.setSelectedReportDocProperty).args[0]).to.deep.equal([
+            'def',
+            { verified: expectVerified, verified_date: expectedDate },
+          ]);
           expect((<any>ServicesActions.prototype.setLastChangedDoc).callCount).to.equal(1);
           expect((<any>ServicesActions.prototype.setLastChangedDoc).args[0]).to.deep.equal([
             { _id: 'def', name: 'hello', form: 'P', verified: initial },

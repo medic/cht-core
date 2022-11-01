@@ -17,8 +17,8 @@ export const Actions = {
   updateSelectedReportsItem: createMultiValueAction('UPDATE_SELECTED_REPORTS_ITEM'),
   markReportRead: createSingleValueAction('MARK_REPORT_READ', 'id'),
   launchEditFacilityDialog: createAction('LAUNCH_EDIT_FACILITY_DIALOG'),
-  setSelectedReportDocProperty: createSingleValueAction('SET_SELECTED_REPORT_DOC_PROPERTY', 'doc'),
-  setSelectedReportFormattedProperty: createSingleValueAction('SET_SELECTED_REPORT_FORMATTED_PROPERTY', 'formatted'),
+  setSelectedReportDocProperty: createMultiValueAction('SET_SELECTED_REPORT_DOC_PROPERTY'),
+  setSelectedReportFormattedProperty: createMultiValueAction('SET_SELECTED_REPORT_FORMATTED_PROPERTY'),
 
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
@@ -124,11 +124,11 @@ export class ReportsActions {
     return this.store.dispatch(Actions.verifyReport(verified));
   }
 
-  setSelectedReportDocProperty(doc) {
-    return this.store.dispatch(Actions.setSelectedReportDocProperty(doc));
+  setSelectedReportDocProperty(id, doc) {
+    return this.store.dispatch(Actions.setSelectedReportDocProperty({ id, doc }));
   }
 
-  setSelectedReportFormattedProperty(formatted) {
-    return this.store.dispatch(Actions.setSelectedReportFormattedProperty(formatted));
+  setSelectedReportFormattedProperty(id, formatted) {
+    return this.store.dispatch(Actions.setSelectedReportFormattedProperty({ id, formatted }));
   }
 }

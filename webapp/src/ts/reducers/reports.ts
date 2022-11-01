@@ -111,14 +111,14 @@ const _reportsReducer = createReducer(
   on(Actions.setVerifyingReport, (state, { payload: { verifyingReport } }) => ({ ...state, verifyingReport })),
   on(Actions.toggleVerifyingReport, (state) => ({ ...state, verifyingReport: !state.verifyingReport })),
 
-  on(Actions.setSelectedReportDocProperty, (state, { payload: { doc } }) => {
-    if (!state.selectedReport) {
+  on(Actions.setSelectedReportDocProperty, (state, { payload }) => {
+    if (!state.selectedReport || state.selectedReport._id !== payload.id) {
       return state;
     }
 
     const selectedReport = {
       ...state.selectedReport,
-      doc: { ...state.selectedReport?.doc, ...doc },
+      doc: { ...state.selectedReport?.doc, ...payload.doc },
     };
     const selectedReports = state.selectedReports?.map(item => {
       return item._id === selectedReport._id ? { ...item, ...selectedReport } : item;
@@ -127,14 +127,14 @@ const _reportsReducer = createReducer(
     return { ...state, selectedReport, selectedReports };
   }),
 
-  on(Actions.setSelectedReportFormattedProperty, (state, { payload: { formatted } }) => {
-    if (!state.selectedReport) {
+  on(Actions.setSelectedReportFormattedProperty, (state, { payload }) => {
+    if (!state.selectedReport || state.selectedReport._id !== payload.id) {
       return state;
     }
 
     const selectedReport = {
       ...state.selectedReport,
-      formatted: { ...state.selectedReport?.formatted, ...formatted },
+      formatted: { ...state.selectedReport?.formatted, ...payload.formatted },
     };
     const selectedReports = state.selectedReports?.map(item => {
       return item._id === selectedReport._id ? { ...item, ...selectedReport } : item;
