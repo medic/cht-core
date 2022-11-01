@@ -9,13 +9,13 @@ const gatewayApiUtils = require('../../../gateway-api.utils');
 const messageValue = 'N Potu';
 
 const places = placeFactory.generateHierarchy();
-const hcId = places.find(x => x.type === 'health_center')._id;
+const hcId = places.get('health_center')._id;
 
 const user = userFactory.build({ place: hcId });
 
 describe('SMS Test Forms', async () => {
   beforeEach(async () => {
-    await utils.saveDocs([...places]);
+    await utils.saveDocs(places.values());
     await loginPage.cookieLogin();
   });
 

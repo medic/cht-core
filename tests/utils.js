@@ -1298,7 +1298,6 @@ module.exports = {
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
-  findDistrictHospitalFromPlaces: (places) => places.find((place) => place.type === 'district_hospital'),
 
   apiLogFile: 'api.e2e.log',
   sentinelLogFile: 'sentinel.e2e.log',

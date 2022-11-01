@@ -13,12 +13,12 @@ const undoDeathReportForm = require('../../../page-objects/default/enketo/undo-d
 
 describe('Submit an undo death report', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.find(place => place.type === 'health_center');
+  const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const person = personFactory.build({ parent: {_id: healthCenter._id, parent: healthCenter.parent} });
 
   before(async () => {
-    await utils.saveDocs([...places, person]);
+    await utils.saveDocs([...places.values(), person]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
 
@@ -28,9 +28,9 @@ describe('Submit an undo death report', () => {
     await commonPage.sync(true);
   });
 
-  it('Should submit ans undo death report', async () => {
+  it('Should submit an undo death report', async () => {
     await contactPage.createNewAction('Undo death report');
-    await undoDeathReportForm.selectSubmitReportConfirmation();
+    await undoDeathReportForm.setConfirmUndoDeathOption();
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
     await commonPage.sync(true);

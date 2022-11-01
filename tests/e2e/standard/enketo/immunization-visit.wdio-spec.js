@@ -12,14 +12,14 @@ const immVisitForm = require('../../../page-objects/standard/enketo/immunization
 
 describe('Immunization Visit', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.find(place => place.type === 'health_center');
+  const healthCenter = places.get('health_center');
   const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });
   const babyName = 'Baby1';
   let babyMedicID = '';
   let countAppliedVaccines = 0;
 
   before(async () => {
-    await utils.saveDocs(places);
+    await utils.saveDocs(places.values());
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
 

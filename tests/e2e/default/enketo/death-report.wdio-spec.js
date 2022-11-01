@@ -13,31 +13,31 @@ const deathReportForm = require('../../../page-objects/default/enketo/death-repo
 
 describe('Submit a death report', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.find(place => place.type === 'health_center');
+  const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const person = personFactory.build({ parent: {_id: healthCenter._id, parent: healthCenter.parent} });
 
   before(async () => {
-    await utils.saveDocs([...places, person]);
+    await utils.saveDocs([...places.values(), person]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
   });
 
   it('Should submit a death report', async () => {
-    const deathDate = moment().subtract(1, 'day');
+    const deathDate = moment();
     const deathNote = 'Test note';
 
     await commonPage.goToPeople(person._id);
     await contactPage.createNewAction('Death report');
-    await deathReportForm.selectDeathPlace();
+    await deathReportForm.selectDeathPlace(deathReportForm.PLACE_OF_DEATH.healthFacility);
     await deathReportForm.setDeathInformation(deathNote);
     await deathReportForm.setDeathDate(deathDate.format('YYYY-MM-DD'));
     await genericForm.nextPage();
 
     const summaryDetails = await deathReportForm.getSummaryDetails();
-    expect(summaryDetails.patientNameSummary).to.equal(person.name);
-    expect(summaryDetails.deathDateSummary).to.equal(deathDate.format('YYYY-MM-DD'));
-    expect(summaryDetails.deathInformationSummary).to.equal(deathNote);
+    expect(summaryDetails.patientName).to.equal(person.name);
+    expect(summaryDetails.deathDate).to.equal(deathDate.format('YYYY-MM-DD'));
+    expect(summaryDetails.deathInformation).to.equal(deathNote);
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
