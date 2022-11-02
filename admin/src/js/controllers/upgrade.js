@@ -1,4 +1,4 @@
-const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
+const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds_4';
 
 angular.module('controllers').controller('UpgradeCtrl',
   function(
