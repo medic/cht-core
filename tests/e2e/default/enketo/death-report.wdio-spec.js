@@ -43,7 +43,7 @@ describe('Submit a death report', () => {
     await commonPage.waitForPageLoaded();
     await commonPage.sync(true);
     
-    expect(await contactPage.getContactStatus()).to.equal('Deceased');
+    expect(await contactPage.getContactDeceasedStatus()).to.equal('Deceased');
     expect(await (await contactPage.deathCard()).isDisplayed()).to.be.true;
 
     const deathCardInfo = await contactPage.getDeathCardInfo();

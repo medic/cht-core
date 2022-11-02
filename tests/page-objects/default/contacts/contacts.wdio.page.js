@@ -54,9 +54,9 @@ const newActionContactButton = () => $('.action-container .right-pane .actions .
 const forms = () => $$('.action-container .detail-actions .actions.dropup .open .dropdown-menu li');
 const formTitle = () => $('#form-title');
 const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
-const contactInfoName = () => $('.content-pane .material .body .card .row .heading-content');
+const contactInfoName = () => $('h2[test-id="contact-name"]');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
-const contactStatus = () => $('.content-pane .material .body .card .row .heading-content > div');
+const contactDeceasedStatus = () => $('div[test-id="deceased-title"]');
 
 const PREG_CARD_SELECTOR = 'div[test-id="contact.profile.pregnancy.active"]';
 const pregnancyCard = () => $(PREG_CARD_SELECTOR);
@@ -273,10 +273,10 @@ const getContactMedicID = async () => {
   return (await contactMedicID()).getText();
 };
 
-const getContactStatus = async () => {
-  const status = await contactStatus();
-  await status.waitForDisplayed();
-  return await status.getText();
+const getContactDeceasedStatus = async () => {
+  const deceasedStatus = await contactDeceasedStatus();
+  await deceasedStatus.waitForDisplayed();
+  return await deceasedStatus.getText();
 };
 
 const getPregnancyCardInfo = async () => {
@@ -338,7 +338,7 @@ module.exports = {
   getContactCardTitle,
   getContactInfoName,
   getContactMedicID,
-  getContactStatus,
+  getContactDeceasedStatus,
   actionResourceIcon,
   newPrimaryContactButton,
   newPrimaryContactName,

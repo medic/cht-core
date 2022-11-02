@@ -21,7 +21,7 @@ describe('Delivery', () => {
   const pregnantWoman2 = 'Woman2';
 
   before(async () => {
-    await utils.saveDocs(places.values());
+    await utils.saveDocs([...places.values()]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
     await commonPage.goToPeople(healthCenter._id);
