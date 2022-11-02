@@ -15,7 +15,7 @@ const user = userFactory.build({ place: hcId });
 
 describe('SMS Test Forms', async () => {
   beforeEach(async () => {
-    await utils.saveDocs(places.values());
+    await utils.saveDocs([...places.values()]);
     await loginPage.cookieLogin();
   });
 
