@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  chttpd_call:
+    build: .
+    networks:
+      net:
+    environment:
+      - COUCH_AUTH
+
+networks:
+  net:
+    name: cht-net-e2e
