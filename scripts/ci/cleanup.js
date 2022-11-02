@@ -88,28 +88,40 @@ const externalBuilds = () => {
     .then(response => remove(externalDb, response));
 };
 
+const branchBuilds = (db) => {
+  return queryReleasesByDate(db, DAYS_TO_KEEP_BRANCH)
+    .then(response => remove(db, response));
+};
+
 const branchBuilds3 = () => {
   console.log('Querying for old branch builds in 3.x market...');
-  return queryReleasesByDate(stagingDb3, DAYS_TO_KEEP_BRANCH)
-    .then(response => remove(stagingDb3, response));
+  return branchBuilds(stagingDb3);
 };
 
 const branchBuilds4 = () => {
   console.log('Querying for old branch builds in 4.x market...');
-  return queryReleasesByDate(stagingDb4, DAYS_TO_KEEP_BRANCH)
-    .then(response => remove(stagingDb4, response));
+  return branchBuilds(stagingDb4);
 };
 
-const betaBuilds = () => {
-  console.log('Querying for old beta releases...');
-  return queryReleases(stagingDb, {
+const betaBuilds = (db) => {
+  return queryReleases(db, {
     startkey: [ 'beta', 'medic', 'medic', 10000 ],
     endkey: [ 'beta', 'medic', 'medic', 0 ],
     limit: MAX_BUILDS_TO_DELETE,
     descending: true,
     skip: BETAS_TO_KEEP // leave the last n beta releases
   })
-    .then(response => remove(stagingDb, response));
+    .then(response => remove(db, response));
+};
+
+const betaBuilds3 = () => {
+  console.log('Querying for old beta releases in 3.x market...');
+  return betaBuilds(stagingDb3);
+};
+
+const betaBuilds4 = () => {
+  console.log('Querying for old beta releases in 4.x market...');
+  return betaBuilds(stagingDb4);
 };
 
 Promise.resolve()
@@ -117,7 +129,8 @@ Promise.resolve()
   .then(externalBuilds)
   .then(branchBuilds3)
   .then(branchBuilds4)
-  .then(betaBuilds)
+  .then(betaBuilds3)
+  .then(betaBuilds4)
   .catch(err => {
     console.error(`Error deleting old CI builds: "${err.message}"`);
     process.exit(1);
