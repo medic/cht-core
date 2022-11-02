@@ -10,9 +10,9 @@ describe('Edit contacts with the default config. ', () => {
   const CONTACT_NAME = 'Maria Gomez';
   const CONTACT_UPDATED_NAME = 'Ana Paula Gonzalez';
   const places = placeFactory.generateHierarchy();
-  const districtHospital = places.find(place => place.type === 'district_hospital');
+  const districtHospital = places.get('district_hospital');
   const districtHospitalPrimaryContact = userFactory.build({ place: districtHospital._id });
-  const healthCenter = places.find(place => place.type === 'health_center');
+  const healthCenter = places.get('health_center');
   const parent = { _id: healthCenter._id, parent: healthCenter.parent };
   const healthCenterPrimaryContact = personFactory.build({ name: CONTACT_NAME, parent: parent });
   healthCenter.contact = {
@@ -20,7 +20,7 @@ describe('Edit contacts with the default config. ', () => {
     name: healthCenterPrimaryContact.name,
     phone: healthCenterPrimaryContact.phone
   };
-  const docs = [...places, districtHospitalPrimaryContact, healthCenterPrimaryContact];
+  const docs = [...places.values(), districtHospitalPrimaryContact, healthCenterPrimaryContact];
 
   before(async () => {
     await utils.saveDocs(docs);
