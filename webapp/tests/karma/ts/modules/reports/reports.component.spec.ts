@@ -237,6 +237,41 @@ describe('Reports Component', () => {
     });
   });
 
+  describe('selectReportRow', () => {
+    it('should not select report when select mode is inactive', () => {
+      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      component.selectMode = false;
+      component.selectedReports = [];
+      responsiveService.isMobile.returns(false);
+
+      component.selectReportRow({ _id: 'report-01' });
+
+      expect(selectReport.notCalled).to.be.true;
+    });
+
+    it('should not select report when it is mobile', () => {
+      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      component.selectMode = true;
+      component.selectedReports = [];
+      responsiveService.isMobile.returns(true);
+
+      component.selectReportRow({ _id: 'report-01' });
+
+      expect(selectReport.notCalled).to.be.true;
+    });
+
+    it('should select report when it is not mobile and select more is active', () => {
+      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      component.selectMode = true;
+      component.selectedReports = [];
+      responsiveService.isMobile.returns(false);
+
+      component.selectReportRow({ _id: 'report-01' });
+
+      expect(selectReport.calledOnce).to.be.true;
+    });
+  });
+
   describe('selectReport', () => {
     let addSelectedReport;
     let selectReport;

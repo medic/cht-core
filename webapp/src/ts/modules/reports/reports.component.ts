@@ -360,6 +360,14 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  selectReportRow(report) {
+    if (this.responsiveService.isMobile() || !this.selectMode) {
+      console.warn('selectReportRow - quit');
+      return;
+    }
+    this.selectReport(report);
+  }
+
   selectReport(report) {
     if (!report?._id) {
       return;
