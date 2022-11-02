@@ -285,11 +285,13 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private initScroll() {
-    this.scrollLoaderProvider.init(() => {
+    const scrollCallback = () => {
       if (!this.loading && this.moreItems) {
         this.query({ skip: true });
       }
-    });
+    };
+
+    this.scrollLoaderProvider.init(scrollCallback, '.items-container');
   }
 
   search(force = false) {

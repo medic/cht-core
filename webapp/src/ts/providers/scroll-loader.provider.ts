@@ -8,7 +8,7 @@ export class ScrollLoaderProvider {
     private ngZone:NgZone,
   ) { }
 
-  init(callback) {
+  init(callback, selector='.inbox-items') {
     const _check = (event) => {
       const element = event.target;
       if (element.scrollHeight - element.scrollTop - 10 < element.clientHeight) {
@@ -16,7 +16,7 @@ export class ScrollLoaderProvider {
       }
     };
     this.ngZone.runOutsideAngular(() => {
-      $('.inbox-items')
+      $(selector)
         .off('scroll', _check)
         .on('scroll', _check);
     });
