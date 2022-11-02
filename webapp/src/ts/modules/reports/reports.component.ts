@@ -59,6 +59,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   isSidebarFilterOpen = false;
   currentLevel;
 
+  LIMIT_SELECT_ALL_REPORTS = 500;
+
   constructor(
     private store:Store,
     private route:ActivatedRoute,
@@ -389,20 +391,41 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportsActions.selectReport(report);
   }
 
-  selectAllReports() {
-    if (this.reportsList?.length === this.selectedReports?.length) {
+  async selectAllReports() {
+    if (this.areAllReportsSelected()) {
       return;
     }
 
-    this.reportsActions.selectAll();
+    try {
+      if (this.isSidebarFilterOpen) {
+        this.toggleFilter();
+      }
 
-    if (this.isSidebarFilterOpen) {
-      this.toggleFilter();
+      this.globalActions.setLoadingContent(true);
+
+      const summaries = await this.searchService.search(
+        'reports',
+        this.filters,
+        { limit: this.LIMIT_SELECT_ALL_REPORTS, hydrateContactNames: true }
+      );
+      const selected = summaries.map(summary => ({
+        _id: summary?._id,
+        summary: summary,
+        expanded: false,
+        lineage: summary?.lineage,
+        contact: summary?.contact,
+      }));
+      this.reportsActions.setSelectedReports(selected);
+      this.globalActions.unsetComponents();
+
+    } catch(error) {
+      console.error('Error selecting all', error);
     }
   }
 
   deselectAllReports() {
-    this.reportsActions.deselectAll();
+    this.reportsActions.setSelectedReports([]);
+    this.globalActions.unsetComponents();
   }
 
   toggleFilter() {
@@ -423,17 +446,25 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .catch(() => {});
   }
 
-  verifyMultiselect(someSelected = false) {
+  /**
+   * Checks if some (but not all) reports are selected.
+   */
+  areSomeReportsSelected() {
     if (!this.selectMode || !this.selectedReports?.length) {
       return false;
     }
 
-    if (someSelected) {
-      return this.reportsList?.length !== this.selectedReports?.length;
+    const isMaxReportsSelected = this.selectedReports?.length >= this.LIMIT_SELECT_ALL_REPORTS;
+    return !isMaxReportsSelected && this.reportsList?.length !== this.selectedReports?.length;
+  }
+
+  areAllReportsSelected() {
+    if (!this.selectMode || !this.selectedReports?.length) {
+      return false;
     }
 
-    // Verify all are selected.
-    return this.reportsList?.length === this.selectedReports?.length;
+    const isMaxReportsSelected = this.selectedReports?.length >= this.LIMIT_SELECT_ALL_REPORTS;
+    return isMaxReportsSelected || this.reportsList?.length === this.selectedReports?.length;
   }
 
   private getCurrentLineageLevel() {

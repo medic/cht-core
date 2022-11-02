@@ -217,33 +217,6 @@ export class ReportsEffects {
     );
   }, { dispatch: false });
 
-  selectAll = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(ReportActionList.selectAll),
-      withLatestFrom(this.store.select(Selectors.getFilters)),
-      tap(([, filters]) => {
-        return this.searchService
-          .search('reports', filters, { limit: 500, hydrateContactNames: true })
-          .then((summaries) => {
-            const selected = summaries.map(summary => {
-              return {
-                _id: summary?._id,
-                summary: summary,
-                expanded: false,
-                lineage: summary?.lineage,
-                contact: summary?.contact,
-              };
-            });
-            this.reportActions.setSelectedReports(selected);
-            this.globalActions.unsetComponents();
-          })
-          .catch(err => {
-            console.error('Error selecting all', err);
-          });
-      }),
-    );
-  }, { dispatch: false });
-
   launchEditFacilityDialog = createEffect(() => {
     return this.actions$.pipe(
       ofType(ReportActionList.launchEditFacilityDialog),

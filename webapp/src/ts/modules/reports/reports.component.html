@@ -33,11 +33,11 @@
 
       <div class="select-all" *ngIf="!loading && selectModeAvailable && reportsList?.length">
         <input type="checkbox"
-          (click)="verifyMultiselect() ? deselectAllReports() : selectAllReports()"
-          [checked]="verifyMultiselect()"
-          [indeterminate]="verifyMultiselect(true)">
-        <span class="select-all-label" (click)="verifyMultiselect() ? deselectAllReports() : selectAllReports()">
-          {{ (verifyMultiselect() ? 'select.mode.deselect.all' : 'select.mode.select.all') | translate }}
+          (click)="areAllReportsSelected() ? deselectAllReports() : selectAllReports()"
+          [checked]="areAllReportsSelected()"
+          [indeterminate]="areSomeReportsSelected()">
+        <span class="select-all-label" (click)="areAllReportsSelected() ? deselectAllReports() : selectAllReports()">
+          {{ (areAllReportsSelected() ? 'select.mode.deselect.all' : 'select.mode.select.all') | translate }}
         </span>
       </div>
 
