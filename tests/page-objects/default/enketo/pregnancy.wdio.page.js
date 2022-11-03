@@ -142,7 +142,7 @@ const submitPregnancy = async ({
   ironFolate: ironFolateValue = 'yes',
   dewormingMedication: dewormingMedicationValue = 'yes',
   hivTested: hivTestedValue = 'yes'
-}) => {
+} = {}) => {
   await contactPage.createNewAction('Pregnancy registration');
   await selectGestationAge(gestationalAgeValue);
   await genericForm.nextPage();
