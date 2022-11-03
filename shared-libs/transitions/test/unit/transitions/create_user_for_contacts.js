@@ -248,7 +248,7 @@ describe('create_user_for_contacts', () => {
 
       expect(createUser.callCount).to.equal(users.length);
       users.forEach(({ contact, user }, index) => {
-        const username = usersGet.args[index][0].substring(17);
+        const username = stripCouchdbUserPrefix(usersGet.args[index][0]);
         expect(createUser.args[index][0]).to.deep.equal({
           username,
           token_login: true,
@@ -268,6 +268,8 @@ describe('create_user_for_contacts', () => {
       const expectedDeleteUserArgs = originalUsers.map(({ name }) => ([name]));
       expect(deleteUser.args).to.deep.equal(expectedDeleteUserArgs);
     };
+
+    const stripCouchdbUserPrefix = username => username.replace('org.couchdb.user:', '');
 
     it('replaces user with READY status', async () => {
       const doc = getReplacedContact('READY');
@@ -313,9 +315,7 @@ describe('create_user_for_contacts', () => {
         });
 
         expect(createUser.callCount).to.equal(1);
-        const username = attemptedUsernames
-          .pop()
-          .substring(17);
+        const username = stripCouchdbUserPrefix(attemptedUsernames.pop());
         expect(username).to.match(new RegExp(`^new-contact-\\d{${suffixLength}}$`));
         expect(createUser.args[0][0]).to.deep.equal({
           username,
