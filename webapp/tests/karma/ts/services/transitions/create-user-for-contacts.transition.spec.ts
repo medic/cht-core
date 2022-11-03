@@ -491,7 +491,7 @@ describe('Create User for Contacts Transition', () => {
         userContactService.get.resolves(ORIGINAL_CONTACT);
         createUserForContactsService.isReplaced.returns(true);
         createUserForContactsService.getReplacedBy.returns(NEW_CONTACT._id);
-        const submittedDocs: any = [
+        const submittedDocs: any = Object.freeze([
           getDataRecord(),
           undefined,
           deepFreeze(getDataRecord({ _id: undefined })),
@@ -499,7 +499,7 @@ describe('Create User for Contacts Transition', () => {
           getDataRecord(),
           NEW_CONTACT,
           null
-        ];
+        ]);
 
         const docs = await transition.run(submittedDocs);
         assert.deepEqual(docs, [submittedDocs[0], ...submittedDocs.slice(2, 6)]);
