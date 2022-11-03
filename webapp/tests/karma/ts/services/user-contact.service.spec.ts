@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
-import { assert } from 'chai';
+import { expect } from 'chai';
 
 import { UserContactService } from '@mm-services/user-contact.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
@@ -35,7 +35,7 @@ describe('UserContact service', () => {
   });
 
   afterEach(() => {
-    assert.equal(UserSettings.callCount, 1);
+    expect(UserSettings.callCount).to.equal(1);
     sinon.restore();
   });
 
@@ -43,38 +43,38 @@ describe('UserContact service', () => {
     UserSettings.rejects(new Error('boom'));
     try {
       await service.get();
-      assert.fail('Expected error to be thrown');
+      expect(true).to.equal('Expected error to be thrown');
     } catch (err) {
-      assert.equal(err.message, 'boom');
+      expect(err.message).to.equal('boom');
     }
 
-    assert.equal(contact.callCount, 0);
-    assert.equal(dbService.get.callCount, 0);
-    assert.equal(medicDb.get.callCount, 0);
+    expect(contact.callCount).to.equal(0);
+    expect(dbService.get.callCount).to.equal(0);
+    expect(medicDb.get.callCount).to.equal(0);
   });
 
   it('returns undefined when no configured contact', async () => {
     UserSettings.resolves({});
     const userContact = await service.get();
-    assert.isUndefined(userContact);
-    assert.equal(contact.callCount, 0);
-    assert.equal(dbService.get.callCount, 0);
-    assert.equal(medicDb.get.callCount, 0);
+    expect(userContact).to.be.undefined;
+    expect(contact.callCount).to.equal(0);
+    expect(dbService.get.callCount).to.equal(0);
+    expect(medicDb.get.callCount).to.equal(0);
   });
 
   describe('when hydrating lineage', () => {
     afterEach(() => {
-      assert.equal(dbService.get.callCount, 0);
-      assert.equal(medicDb.get.callCount, 0);
+      expect(dbService.get.callCount).to.equal(0);
+      expect(medicDb.get.callCount).to.equal(0);
     });
 
     it('returns undefined when configured contact not in the database', async () => {
       UserSettings.resolves({ contact_id: 'not-found' });
       contact.rejects({ code: 404, reason: 'missing' });
       const userContact = await service.get();
-      assert.isUndefined(userContact);
-      assert.equal(contact.callCount, 1);
-      assert.deepEqual(contact.args[0], ['not-found', { merge: true }]);
+      expect(userContact).to.be.undefined;
+      expect(contact.callCount).to.equal(1);
+      expect(contact.args[0]).to.deep.equal(['not-found', { merge: true }]);
     });
 
     it('returns error from getting contact', async () => {
@@ -82,13 +82,13 @@ describe('UserContact service', () => {
       contact.rejects(new Error('boom'));
       try {
         await service.get();
-        assert.fail('Expected error to be thrown');
+        expect(true).to.equal('Expected error to be thrown');
       } catch (err) {
-        assert.equal(err.message, 'boom');
+        expect(err.message).to.equal('boom');
       }
 
-      assert.equal(contact.callCount, 1);
-      assert.deepEqual(contact.args[0], ['nobody', { merge: true }]);
+      expect(contact.callCount).to.equal(1);
+      expect(contact.args[0]).to.deep.equal(['nobody', { merge: true }]);
     });
 
     it('returns contact', async () => {
@@ -96,25 +96,25 @@ describe('UserContact service', () => {
       UserSettings.resolves({ contact_id: 'somebody' });
       contact.resolves({ doc: expected });
       const actual = await service.get();
-      assert.deepEqual(actual, expected);
-      assert.equal(contact.callCount, 1);
-      assert.deepEqual(contact.args[0], ['somebody', { merge: true }]);
+      expect(actual).to.deep.equal(expected);
+      expect(contact.callCount).to.equal(1);
+      expect(contact.args[0]).to.deep.equal(['somebody', { merge: true }]);
     });
   });
 
   describe('when not hydrating lineage', () => {
     afterEach(() => {
-      assert.equal(contact.callCount, 0);
-      assert.equal(dbService.get.callCount, 1);
+      expect(contact.callCount).to.equal(0);
+      expect(dbService.get.callCount).to.equal(1);
     });
 
     it('returns undefined when configured contact not in the database', async () => {
       UserSettings.resolves({ contact_id: 'not-found' });
       medicDb.get.rejects({ code: 404, reason: 'missing' });
       const contact = await service.get({ hydrateLineage: false });
-      assert.isUndefined(contact);
-      assert.equal(medicDb.get.callCount, 1);
-      assert.deepEqual(medicDb.get.args[0], ['not-found']);
+      expect(contact).to.be.undefined;
+      expect(medicDb.get.callCount).to.equal(1);
+      expect(medicDb.get.args[0]).to.deep.equal(['not-found']);
     });
 
     it('returns error from getting contact', async () => {
@@ -122,13 +122,13 @@ describe('UserContact service', () => {
       medicDb.get.rejects(new Error('boom'));
       try {
         await service.get({ hydrateLineage: false });
-        assert.fail('Expected error to be thrown');
+        expect(true).to.equal('Expected error to be thrown');
       } catch (err) {
-        assert.equal(err.message, 'boom');
+        expect(err.message).to.equal('boom');
       }
 
-      assert.equal(medicDb.get.callCount, 1);
-      assert.equal(medicDb.get.args[0][0], 'nobody');
+      expect(medicDb.get.callCount).to.equal(1);
+      expect(medicDb.get.args[0][0], 'nobo).to.equal(');
     });
 
     it('returns contact', async () => {
@@ -136,9 +136,9 @@ describe('UserContact service', () => {
       UserSettings.resolves({ contact_id: 'somebody' });
       medicDb.get.resolves(expected);
       const actual = await service.get({ hydrateLineage: false });
-      assert.deepEqual(actual, expected);
-      assert.equal(medicDb.get.callCount, 1);
-      assert.deepEqual(medicDb.get.args[0], ['somebody']);
+      expect(actual).to.deep.equal(expected);
+      expect(medicDb.get.callCount).to.equal(1);
+      expect(medicDb.get.args[0]).to.deep.equal(['somebody']);
     });
   });
 });
