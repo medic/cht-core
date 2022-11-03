@@ -35,12 +35,12 @@ This field identifies each CouchDB instance. If you are adding a new node to a c
 
 This is an identifier by which other nodes can access this node. This value should contain either the node's IP address or the [FQDN](https://en.wikipedia.org/wiki/Fully_qualified_domain_name) of the node. 
 
-#### COUCHDB_SERVERS
+#### CLUSTER_PEER_IPS
 
 This field should only be set on the cluster set up coordination node aka `setup-coordination-node` . In other clustered database systems this is known as the master/main node, however, CouchDB does not have the master/slave concept as any node can be master. This field should contain a comma-separated list of IP addresses or FQDNs. If you are deploying a clustered setup on a basic docker network, please ensure there is a (.) in your service names, to validate the FQDN requirements for Erlang. 
 
 ```yaml
-COUCHDB_SERVERS="couchdb.1,couchdb.2,couchdb.3"
+CLUSTER_PEER_IPS="couchdb.2,couchdb.3"
 ```
 
 #### COUCHDB_SYNC_ADMINS_NODE
