@@ -12903,7 +12903,7 @@ const main = async () => {
     const { data: pr } = await octokit.rest.pulls.get({
       owner,
       repo,
-      pull_number: pull_number,
+      pull_number,
     });
 
     const branch = pr.head.ref;
