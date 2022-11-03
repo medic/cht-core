@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const { assert, expect } = require('chai');
+const { expect } = require('chai');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
 const transition = require('../../../src/transitions/create_user_for_contacts');
@@ -63,7 +63,7 @@ describe('create_user_for_contacts', () => {
     sinon.restore();
   });
 
-  it.only('has the correct properties', () => {
+  it('has the correct properties', () => {
     expect(transition.name).to.equal('create_user_for_contacts');
     expect(transition.asynchronousOnly).to.be.true;
   });
@@ -77,7 +77,7 @@ describe('create_user_for_contacts', () => {
         .withArgs('app_url')
         .returns('https://my.cht.instance');
 
-      assert.doesNotThrow(() => transition.init());
+      expect(() => transition.init()).to.not.throw();
       expect(config.get.callCount).to.equal(2);
       expect(config.get.args).to.deep.equal([['token_login'], ['app_url']]);
     });
@@ -85,8 +85,7 @@ describe('create_user_for_contacts', () => {
     it('fails if token_login is not enabled', () => {
       config.get.returns({ enabled: false });
 
-      assert.throws(
-        () => transition.init(),
+      expect(() => transition.init()).to.throw(
         'Configuration error. Token login must be enabled to use the create_user_for_contacts transition.'
       );
       expect(config.get.callCount).to.equal(1);
@@ -96,8 +95,7 @@ describe('create_user_for_contacts', () => {
     it('fails if token_login config does not exist', () => {
       config.get.returns(undefined);
 
-      assert.throws(
-        () => transition.init(),
+      expect(() => transition.init()).to.throw(
         'Configuration error. Token login must be enabled to use the create_user_for_contacts transition.'
       );
       expect(config.get.callCount).to.equal(1);
@@ -112,8 +110,7 @@ describe('create_user_for_contacts', () => {
         .withArgs('app_url')
         .returns(undefined);
 
-      assert.throws(
-        () => transition.init(),
+      expect(() => transition.init()).to.throw(
         'Configuration error. The app_url must be defined to use the create_user_for_contacts transition.'
       );
       expect(config.get.callCount).to.equal(2);
@@ -155,7 +152,7 @@ describe('create_user_for_contacts', () => {
       const doc = getReplacedContact('READY');
       contactTypeUtils.getContactType.returns(undefined);
 
-      assert.isFalse(transition.filter(doc));
+      expect(transition.filter(doc)).to.be.false;
       assertGetContactType(doc);
     });
 
@@ -163,12 +160,12 @@ describe('create_user_for_contacts', () => {
       const doc = getReplacedContact('READY');
       contactTypeUtils.getContactType.returns({ person: false });
 
-      assert.isFalse(transition.filter(doc));
+      expect(transition.filter(doc)).to.be.false;
       assertGetContactType(doc);
     });
 
     it('excludes person contacts which do not have user_for_contact data', () => {
-      assert.isFalse(transition.filter(ORIGINAL_CONTACT));
+      expect(transition.filter(ORIGINAL_CONTACT)).to.be.false;
       assertGetContactType(ORIGINAL_CONTACT);
     });
 
@@ -180,7 +177,7 @@ describe('create_user_for_contacts', () => {
     ].forEach(user_for_contact => {
       it('excludes person contacts which have user_for_contact data, but have not been replaced', () => {
         const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
-        assert.isFalse(transition.filter(originalContact));
+        expect(transition.filter(originalContact)).to.be.false;
         assertGetContactType(originalContact);
       });
     });
@@ -188,7 +185,7 @@ describe('create_user_for_contacts', () => {
     it('excludes replaced contacts which do not have a READY status', () => {
       const doc = getReplacedContact('PENDING');
 
-      assert.isFalse(transition.filter(doc));
+      expect(transition.filter(doc)).to.be.false;
       assertGetContactType(doc);
     });
 
@@ -197,7 +194,7 @@ describe('create_user_for_contacts', () => {
       doc.user_for_contact.replace.a_user = { status: 'COMPLETE' };
       doc.user_for_contact.replace.another_user = { status: 'ERROR' };
 
-      assert.isFalse(transition.filter(doc));
+      expect(transition.filter(doc)).to.be.false;
       assertGetContactType(doc);
     });
   });
@@ -235,7 +232,7 @@ describe('create_user_for_contacts', () => {
     });
 
     const expectInitialDataRetrieved = (users) => {
-      assert.isNotEmpty(users);
+      expect(users).to.not.be.empty;
       const newContactIdArgs = users
         .filter(({ contact }) => contact)
         .map(({ contact }) => ([contact._id]));
@@ -245,9 +242,9 @@ describe('create_user_for_contacts', () => {
     };
 
     const expectUsersCreated = (users) => {
-      assert.isNotEmpty(users);
+      expect(users).to.not.be.empty;
       expect(usersGet.callCount).to.equal(users.length);
-      usersGet.args.forEach(([username]) => assert.match(username, /^org\.couchdb\.user:new-contact-\d\d\d\d/));
+      usersGet.args.forEach(([username]) => expect(username).to.match(/^org\.couchdb\.user:new-contact-\d\d\d\d/));
 
       expect(createUser.callCount).to.equal(users.length);
       users.forEach(({ contact, user }, index) => {
@@ -262,7 +259,7 @@ describe('create_user_for_contacts', () => {
           fullname: contact.name,
         });
 
-        assert.match(createUser.args[index][0].username, /^new-contact-\d\d\d\d$/);
+        expect(createUser.args[index][0].username).to.match(/^new-contact-\d\d\d\d$/);
         expect(createUser.args[index][1]).to.equal('https://my.cht.instance');
       });
     };
@@ -312,14 +309,14 @@ describe('create_user_for_contacts', () => {
         attemptedUsernames.forEach((username, index) => {
           const suffixLength = getExpectedSuffixLength(index);
           const usernamePattern = `^org\\.couchdb\\.user:new-contact-\\d{${suffixLength}}$`;
-          assert.match(username, new RegExp(usernamePattern));
+          expect(username).to.match(new RegExp(usernamePattern));
         });
 
         expect(createUser.callCount).to.equal(1);
         const username = attemptedUsernames
           .pop()
           .substring(17);
-        assert.match(username, new RegExp(`^new-contact-\\d{${suffixLength}}$`));
+        expect(username).to.match(new RegExp(`^new-contact-\\d{${suffixLength}}$`));
         expect(createUser.args[0][0]).to.deep.equal({
           username,
           token_login: true,
@@ -340,7 +337,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        assert.fail('Should have thrown');
+        expect(true).to.equal('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Could not generate a unique username for contact [${NEW_CONTACT.name}].`);
         expect(err.changed).to.be.true;
@@ -373,7 +370,7 @@ describe('create_user_for_contacts', () => {
         expect(result).to.be.true;
 
         expect(createUser.callCount).to.equal(1);
-        assert.match(createUser.args[0][0].username, new RegExp(`^${usernamePrefix}-\\d\\d\\d\\d$`));
+        expect(createUser.args[0][0].username).to.match(new RegExp(`^${usernamePrefix}-\\d\\d\\d\\d$`));
       });
     });
 
@@ -383,7 +380,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        assert.fail('Should have thrown');
+        expect(true).to.equal('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Server error');
         expect(err.changed).to.be.true;
@@ -395,7 +392,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        assert.fail('Should have thrown');
+        expect(true).to.equal('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('No id was provided for the new replacement contact.');
         expect(err.changed).to.be.true;
@@ -411,7 +408,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        assert.fail('Should have thrown');
+        expect(true).to.equal('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Replacement contact [${newContact._id}] must have a name.`);
         expect(err.changed).to.be.true;
@@ -424,7 +421,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        assert.fail('Should have thrown');
+        expect(true).to.equal('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Server Error');
         expect(err.changed).to.be.true;
@@ -437,7 +434,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        assert.fail('Should have thrown');
+        expect(true).to.equal('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Error creating new user: "Invalid phone number"');
         expect(err.changed).to.be.true;
@@ -513,7 +510,7 @@ describe('create_user_for_contacts', () => {
 
         try {
           await transition.onMatch({ doc });
-          assert.fail('Should have thrown');
+          expect(true).to.equal('Should have thrown');
         } catch (err) {
           const expectedMessage = [
             'No id was provided for the new replacement contact.',
@@ -562,7 +559,7 @@ describe('create_user_for_contacts', () => {
 
         try {
           await transition.onMatch({ doc });
-          assert.fail('Should have thrown');
+          expect(true).to.equal('Should have thrown');
         } catch (err) {
           const expectedMessage = [
             'No id was provided for the new replacement contact.',
