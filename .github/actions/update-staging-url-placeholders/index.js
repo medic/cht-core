@@ -20,11 +20,11 @@ const main = async () => {
     let body = pr.body;
 
     const search_replace = {
-      CHT_CORE_COMPOSE_URL: '[Core](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:'
+      __CHT_CORE_COMPOSE_URL__: '[Core](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:'
         + branch + '/docker-compose/cht-core.yml)',
-      COUCH_SINGLE_COMPOSE_URL: '[CouchDB Single](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:'
+      __COUCH_SINGLE_COMPOSE_URL__: '[CouchDB Single](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:'
         + branch + '/docker-compose/cht-couchdb.yml)',
-      COUCH_CLUSTER_COMPOSE_URL: '[CouchDB Cluster](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:'
+      __COUCH_CLUSTER_COMPOSE_URL__: '[CouchDB Cluster](https://staging.dev.medicmobile.org/_couch/builds/medic:medic:'
         + branch + '/docker-compose/cht-couchdb-clustered.yml)',
     }
 

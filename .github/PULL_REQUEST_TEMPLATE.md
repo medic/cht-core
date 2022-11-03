@@ -16,9 +16,9 @@ medic/cht-core#[number]
 <!-- Do not change these!  CI will automatically update these to be the deep URLs -->
 If Build CI hasn't passed, these may 404:
 
-* CHT_CORE_COMPOSE_URL
-* COUCH_SINGLE_COMPOSE_URL
-* COUCH_CLUSTER_COMPOSE_URL
+* __CHT_CORE_COMPOSE_URL__
+* __COUCH_SINGLE_COMPOSE_URL__
+* __COUCH_CLUSTER_COMPOSE_URL__
  
 # License
 
