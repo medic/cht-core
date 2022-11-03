@@ -500,11 +500,12 @@ describe('Create User for Contacts Transition', () => {
           NEW_CONTACT,
           null
         ]);
+        const dataRecords = [submittedDocs[0], submittedDocs[4]];
 
         const docs = await transition.run(submittedDocs);
         assert.deepEqual(docs, [submittedDocs[0], ...submittedDocs.slice(2, 6)]);
         // Reports re-parented to original user
-        [submittedDocs[0], submittedDocs[4]].forEach(doc => assert.equal(doc.contact._id, NEW_CONTACT._id));
+        dataRecords.forEach(doc => assert.equal(doc.contact._id, NEW_CONTACT._id));
         assert.equal(userContactService.get.callCount, 1);
         assert.equal(createUserForContactsService.getReplacedBy.callCount, 1);
         assert.deepEqual(createUserForContactsService.getReplacedBy.args[0], [ORIGINAL_CONTACT]);
