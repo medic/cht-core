@@ -37,7 +37,12 @@ const main = async () => {
       }
     }
 
-    const updateme = { owner, repo, pull_number, body };
+    const updateme = {
+      owner: owner,
+      repo: repo,
+      pull_number: pull_number,
+      body: body
+    };
 
     await octokit.rest.pulls.update(updateme);
 
