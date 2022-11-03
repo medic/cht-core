@@ -60,9 +60,9 @@ const loginAsUser = ({ username, password }) => {
 
 const expectError = async (errorPattern) => {
   // Error saved on the contact
-  const originalPerson_updated = await utils.getDoc(ORIGINAL_PERSON._id);
-  assert.lengthOf(originalPerson_updated.errors, 1);
-  const [{ code, message }] = originalPerson_updated.errors;
+  const originalPersonUpdated = await utils.getDoc(ORIGINAL_PERSON._id);
+  assert.lengthOf(originalPersonUpdated.errors, 1);
+  const [{ code, message }] = originalPersonUpdated.errors;
   assert.equal(code, 'create_user_for_contacts_error\'');
   assert.match(message, errorPattern);
   // New user not created
@@ -134,7 +134,7 @@ describe('create_user_for_contacts', () => {
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
-    const otherUser = { ...ORIGINAL_USER, ...{ username: 'other_user', contact: ORIGINAL_PERSON._id } };
+    const otherUser = { ...ORIGINAL_USER, username: 'other_user', contact: ORIGINAL_PERSON._id };
     await utils.createUsers([otherUser]);
     newUsers.push(otherUser.username);
     // Can log in as user
@@ -194,7 +194,7 @@ describe('create_user_for_contacts', () => {
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
-    const otherUser = { ...ORIGINAL_USER, ...{ username: 'other_user', contact: ORIGINAL_PERSON._id } };
+    const otherUser = { ...ORIGINAL_USER, username: 'other_user', contact: ORIGINAL_PERSON._id };
     await utils.createUsers([otherUser]);
     newUsers.push(otherUser.username);
     // Can log in as users
@@ -357,7 +357,7 @@ describe('create_user_for_contacts', () => {
 
   it('does not replace user when the new contact does not have a phone', async () => {
     const missingPhonePattern = /Missing required fields: phone/;
-    const newPerson = { ...NEW_PERSON, ...{ phone: undefined } };
+    const newPerson = { ...NEW_PERSON, phone: undefined };
 
     const collectLogs = await utils.collectSentinelLogs(missingPhonePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
@@ -384,7 +384,7 @@ describe('create_user_for_contacts', () => {
 
   it('does not replace user when the new contact has an invalid phone', async () => {
     const invalidPhonePattern = /A valid phone number is required for SMS login/;
-    const newPerson = { ...NEW_PERSON, ...{ phone: 12345 } };
+    const newPerson = { ...NEW_PERSON, phone: 12345 };
 
     const collectLogs = await utils.collectSentinelLogs(invalidPhonePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
@@ -411,7 +411,7 @@ describe('create_user_for_contacts', () => {
 
   it('does not replace user when the new contact does not have a name', async () => {
     const missingNamePattern = /Replacement contact \[new_person] must have a name\./;
-    const newPerson = { ...NEW_PERSON, ...{ name: undefined } };
+    const newPerson = { ...NEW_PERSON, name: undefined };
 
     const collectLogs = await utils.collectSentinelLogs(missingNamePattern);
     await utils.updateSettings(getSettings(), 'sentinel');
