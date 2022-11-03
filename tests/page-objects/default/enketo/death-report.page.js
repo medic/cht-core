@@ -29,7 +29,7 @@ const selectDeathPlace = async (value = PLACE_OF_DEATH.healthFacility) => {
 };
 
 const setDeathInformation = async (text = 'Test note') => {
-  const note  = await deathInformation();
+  const note = await deathInformation();
   await note.waitForDisplayed();
   await note.setValue(text);
 };
