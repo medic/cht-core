@@ -115,7 +115,7 @@ describe('Bikram Sambat date display', () => {
   });
 
   after(async () => {
-    await utils.revertDb([], true);
+    await utils.revertDb([/^form:/], true);
   });
 
   it('enketo xpath extension function should display correct values when Nepali is not selected', async () => {

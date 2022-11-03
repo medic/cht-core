@@ -30,7 +30,7 @@ describe('Privacy policy', () => {
 
       after(async () => {
         await utils.deleteUsers([user]);
-        await utils.revertDb([], true);
+        await utils.revertDb([/^form:/], true);
       });
 
       it('should show the correct privacy policy on login', async () => {
