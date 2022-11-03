@@ -8,7 +8,7 @@
       <span class="count-label" *ngIf="selectedCount !== 1" translate [translateParams]="{ number: selectedCount | localizeNumber }">select.mode.count.plural</span>
     </div>
 
-    <a class="select-all-label" *ngIf="totalItems && selectedCount !== totalItems" (click)="selectItems.emit()">{{ 'select.mode.select.all' | translate }}</a>
+    <a class="select-all-label" *ngIf="!areAllReportsSelected" (click)="selectItems.emit()">{{ 'select.mode.select.all' | translate }}</a>
   </div>
   <a class="bulk-delete" (click)="deleteItems.emit()">
     <span class="bulk-delete-icon fa fa-trash"></span>

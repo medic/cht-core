@@ -16,7 +16,7 @@
     <mm-multiselect-bar *ngIf="selectModeAvailable && selectMode && selectedReports?.length"
       [display]="'mobile'"
       [selectedCount]="selectedReports?.length"
-      [totalItems]="reportsList?.length"
+      [areAllReportsSelected]="areAllReportsSelected()"
       (deleteItems)="bulkDeleteReports()"
       (selectItems)="selectAllReports()"
       (deselectItems)="deselectAllReports()">
@@ -89,7 +89,6 @@
       <div class="item-content" [ngClass]="{ 'col-sm-6': isSidebarFilterOpen, 'col-sm-8': !isSidebarFilterOpen }">
         <mm-multiselect-bar *ngIf="selectModeAvailable && selectMode && selectedReports?.length"
           [selectedCount]="selectedReports?.length"
-          [totalItems]="reportsList?.length"
           (deleteItems)="bulkDeleteReports()">
         </mm-multiselect-bar>
         <router-outlet></router-outlet>
