@@ -222,6 +222,7 @@ describe('Reports Component', () => {
       store.refreshState();
       sinon.resetHistory();
       component.selectMode = true;
+      component.currentLevel = Promise.resolve();
 
       await component.selectAllReports();
 
@@ -237,6 +238,10 @@ describe('Reports Component', () => {
       expect(setSelectedReportsStub.args[0]).to.deep.equal([[
         {
           _id: 'one',
+          form: 'the_form',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          unread: true,
           summary:  { _id: 'one', form: 'the_form', lineage: [], contact: { _id: 'contact', name: 'person' } },
           expanded: false,
           lineage: [],
@@ -244,31 +249,40 @@ describe('Reports Component', () => {
         },
         {
           _id: 'two',
+          form: 'form',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          unread: true,
           summary: { _id: 'two', form: 'form' },
           expanded: false,
           lineage: undefined,
-          contact: undefined,
         },
         {
           _id: 'three',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          unread: true,
           summary: { _id: 'three', lineage: 'lineage' },
           expanded: false,
           lineage: 'lineage',
-          contact: undefined,
         },
         {
           _id: 'four',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          unread: true,
           summary: { _id: 'four', expanded: true, lineage: [{ _id: 'parent' }] },
           expanded: false,
           lineage: [{ _id: 'parent' }],
-          contact: undefined,
         },
         {
           _id: 'five',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          unread: true,
           summary: { _id: 'five' },
           expanded: false,
           lineage: undefined,
-          contact: undefined,
         },
       ]]);
     });
@@ -611,6 +625,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -619,6 +634,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -627,6 +643,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -635,6 +652,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -643,6 +661,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -651,6 +670,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
 
         },
@@ -674,6 +694,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -682,6 +703,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -690,6 +712,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -698,6 +721,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -706,6 +730,7 @@ describe('Reports Component', () => {
           icon: undefined,
           lineage: [],
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -714,6 +739,7 @@ describe('Reports Component', () => {
           icon: undefined,
           lineage: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
       ];
