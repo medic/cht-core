@@ -54,7 +54,7 @@ describe('Tasks tab breadcrumbs', () => {
 
 
   before(async () => {
-    await utils.saveDocs([ ...places, contact, contact2, patient ]);
+    await utils.saveDocs([ ...places.values(), contact, contact2, patient ]);
     await utils.createUsers([ onlineUser, offlineUser ]);
   });
 

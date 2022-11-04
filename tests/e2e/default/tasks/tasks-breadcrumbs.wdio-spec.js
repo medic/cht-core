@@ -1,8 +1,4 @@
-// const moment = require('moment');
-
 const utils = require('../../../utils');
-// const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-// const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const userFactory = require('../../../factories/cht/users/users');
 const placeFactory = require('../../../factories/cht/contacts/place');
@@ -76,7 +72,7 @@ const getTasksInfos = async (tasks) => {
 
 describe('Tasks tab breadcrumbs', () => {
   before(async () => {
-    await utils.saveDocs([ ...places, contact, contact2, patient, patient2 ]);
+    await utils.saveDocs([ ...places.values(), contact, contact2, patient, patient2 ]);
     await utils.createUsers([ chw, supervisor ]);
     await sentinelUtils.waitForSentinel();
 
