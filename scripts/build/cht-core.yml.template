@@ -3,6 +3,7 @@ version: '3.9'
 services:
   haproxy:
     image: {{{ repo }}}/cht-haproxy:{{ tag }}
+    restart: always
     hostname: haproxy
     environment:
       - "HAPROXY_IP=${HAPROXY_IP:-haproxy}"
@@ -23,6 +24,7 @@ services:
 
   healthcheck:
     image: {{{ repo }}}/cht-haproxy-healthcheck:{{ tag }}
+    restart: always
     environment:
       - "COUCHDB_SERVERS=${COUCHDB_SERVERS:-{{ couchdb_servers }}}"
       - "COUCHDB_USER=${COUCHDB_USER:-admin}"
@@ -37,6 +39,7 @@ services:
 
   api:
     image: {{{ repo }}}/cht-api:{{ tag }}
+    restart: always
     depends_on:
       - haproxy
     expose:
@@ -55,6 +58,7 @@ services:
 
   sentinel:
     image: {{{ repo }}}/cht-sentinel:{{ tag }}
+    restart: always
     depends_on:
       - haproxy
     environment:
@@ -70,6 +74,7 @@ services:
 
   nginx:
     image: {{{ repo }}}/cht-nginx:{{ tag }}
+    restart: always
     depends_on:
       - api
       - haproxy
@@ -104,4 +109,4 @@ networks:
     name: ${CHT_NETWORK:-cht-net}
 
 volumes:
-    cht-ssl:
+  cht-ssl:
