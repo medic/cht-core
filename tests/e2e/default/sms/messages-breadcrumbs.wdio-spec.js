@@ -8,9 +8,9 @@ const messagesPo = require('../../../page-objects/default/sms/messages.wdio.page
 
 describe('Tasks tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
-  const clinic = places.find(p => p.type === 'clinic');
-  const health_center = places.find(p => p.type === 'health_center');
-  const district_hospital = places.find(p => p.type === 'district_hospital');
+  const clinic = places.get('clinic');
+  const health_center = places.get('health_center');
+  const district_hospital = places.get('district_hospital');
   const contact = {
     _id: 'fixture:user:user1',
     name: 'OfflineUser',
