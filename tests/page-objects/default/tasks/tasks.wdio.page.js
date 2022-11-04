@@ -24,7 +24,7 @@ const getTaskInfo = async (taskElement) => {
   const classAttr = await taskElement.getAttribute('class');
   const overdue = classAttr.split(' ').includes('overdue');
 
-  return { contactName, formTitle, lineage, dueDateText, overdue };
+  return { contactName, formTitle, dueDateText, overdue, lineage };
 };
 
 const getTaskByContactAndForm = async (name, title) => {
