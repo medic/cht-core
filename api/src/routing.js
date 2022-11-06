@@ -156,7 +156,7 @@ app.use(
         manifestSrc: [`'self'`],
         connectSrc: [
           `'self'`,
-          environment.buildsUrl,
+          environment.buildsUrl + '/',
           'maps.googleapis.com' // used for enketo geopoint widget
         ],
         childSrc:  [`'self'`],
