@@ -273,9 +273,9 @@ export class XmlFormsService {
       })
       .then(doc => {
         if (!this.findXFormAttachmentName(doc)) {
-          const errorMsg = `The form "${internalId}" doesn't have an xform attachment`;
-          console.log('Error in XMLFormService getByView : '+errorMsg);
-          return Promise.reject(new Error(errorMsg));
+          const errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
+          console.error('Error in XMLFormService getByView : '+errorMessage);
+          return Promise.reject(new Error(errorMessage));
         }
         return doc;
       });
