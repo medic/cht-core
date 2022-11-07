@@ -68,22 +68,18 @@ export class XmlFormsService {
   }
 
   private getByView(internalId) {
-    let errorMsg = '';
     return this
       .init
       .then(docs => docs?.filter(doc => doc.internalId === internalId))
       .then(docs => {
         if (!docs.length) {
-          errorMsg = `No form found for internalId "${internalId}"`;
-          return Promise.reject(new Error(errorMsg));
+          return Promise.reject(new Error(`No form found for internalId "${internalId}"`));
         }
         if (docs.length > 1) {
-          errorMsg = `Multiple forms found for internalId: "${internalId}"`;
-          return Promise.reject(new Error(errorMsg));
+          return Promise.reject(new Error(`Multiple forms found for internalId: "${internalId}"`));
         }
         return docs[0];
-      })
-      .catch(err => console.error('Error in XMLFormService getByView : ', errorMsg, err));
+      });
   }
 
   private evaluateExpression(expression, doc, user, contactSummary) {
@@ -268,13 +264,13 @@ export class XmlFormsService {
           // fallback for backwards compatibility
           return this.getByView(internalId);
         }
-        console.error(`Error in XMLFormService getByView : the form "${internalId}" was not found`);
+        console.error('Error in XMLFormService getByView : ', err?.message, err)
         throw err;
       })
       .then(doc => {
         if (!this.findXFormAttachmentName(doc)) {
           const errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
-          console.error('Error in XMLFormService getByView : '+errorMessage);
+          console.error('Error in XMLFormService get : ' + errorMessage);
           return Promise.reject(new Error(errorMessage));
         }
         return doc;
