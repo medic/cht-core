@@ -264,7 +264,7 @@ export class XmlFormsService {
           // fallback for backwards compatibility
           return this.getByView(internalId);
         }
-        console.error('Error in XMLFormService getByView : ', err?.message, err)
+        console.error('Error in XMLFormService getByView : ', err?.message, err);
         throw err;
       })
       .then(doc => {
