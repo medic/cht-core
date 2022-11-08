@@ -57,7 +57,6 @@ const adminAppReg = new RegExp(`/*${environment.db}/_design/medic-admin/_rewrite
 const serverUtils = require('./server-utils');
 const uuid = require('uuid');
 const compression = require('compression');
-const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const app = express.Router({ strict: true });
@@ -157,7 +156,7 @@ app.use(
         manifestSrc: [`'self'`],
         connectSrc: [
           `'self'`,
-          BUILDS_DB,
+          environment.buildsUrl + '/',
           'maps.googleapis.com' // used for enketo geopoint widget
         ],
         childSrc:  [`'self'`],
