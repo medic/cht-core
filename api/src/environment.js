@@ -3,7 +3,7 @@ const url = require('url');
 const logger = require('./logger');
 
 const { UNIT_TEST_ENV, COUCH_URL, BUILDS_URL } = process.env;
-const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds';
+const DEFAULT_BUILDS_URL = 'https://staging.dev.medicmobile.org/_couch/builds_4';
 
 if (UNIT_TEST_ENV) {
   module.exports = {
