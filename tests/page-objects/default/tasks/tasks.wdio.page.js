@@ -27,6 +27,14 @@ const getTaskInfo = async (taskElement) => {
   return { contactName, formTitle, dueDateText, overdue, lineage };
 };
 
+const getTasksListInfos = async (tasks) => {
+  const infos = [];
+  for (const task of tasks) {
+    infos.push(await getTaskInfo(task));
+  }
+  return infos;
+};
+
 const getTaskByContactAndForm = async (name, title) => {
   const tasks = await getTasks();
   for (const task of tasks) {
@@ -84,6 +92,7 @@ module.exports = {
   getTaskByContactAndForm,
   waitForTaskContentLoaded,
   getTaskInfo,
+  getTasksListInfos,
   submitTask,
   waitForTasksGroupLoaded,
   getTasksInGroup,

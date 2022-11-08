@@ -8,69 +8,62 @@ const chtConfUtils = require('../../../cht-conf-utils');
 const path = require('path');
 const sentinelUtils = require('../../../utils/sentinel');
 
-const places = placeFactory.generateHierarchy();
-const clinic = places.get('clinic');
-const health_center = places.get('health_center');
-const district_hospital = places.get('district_hospital');
-const contact = {
-  _id: 'fixture:user:user1',
-  name: 'chw',
-  phone: '+12068881234',
-  type: 'person',
-  place: health_center._id,
-  parent: {
-    _id: health_center._id,
-    parent: health_center.parent
-  },
-};
-const contact2 = {
-  _id: 'fixture:user:user2',
-  name: 'supervisor',
-  phone: '+12068881235',
-  type: 'person',
-  place: district_hospital._id,
-  parent: {
-    _id: district_hospital._id,
-  },
-};
-const chw = userFactory.build({
-  username: 'offlineuser',
-  isOffline: true,
-  place: health_center._id,
-  contact: contact._id,
-});
-const supervisor = userFactory.build({
-  username: 'supervisor',
-  roles: [ 'chw_supervisor' ],
-  place: district_hospital._id,
-  contact: contact2._id,
-});
-const patient = personFactory.build({
-  _id: 'patient1',
-  name: 'patient1',
-  type: 'person',
-  patient_id: 'patient1',
-  parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}},
-  reported_date: new Date().getTime(),
-});
-const patient2 = personFactory.build({
-  _id: 'patient2',
-  name: 'patient2',
-  type: 'person',
-  patient_id: 'patient2',
-  parent: { _id: health_center._id, parent: { _id: district_hospital._id }},
-  reported_date: new Date().getTime(),
-});
-
-const getTasksInfos = async (tasks) => {
-  const infos = [];
-  for (const task of tasks) {
-    infos.push(await tasksPage.getTaskInfo(task));
-  }
-  return infos;
-};
-
 describe('Tasks tab breadcrumbs', () => {
+
+  const places = placeFactory.generateHierarchy();
+  const clinic = places.get('clinic');
+  const health_center = places.get('health_center');
+  const district_hospital = places.get('district_hospital');
+  const contact = {
+    _id: 'fixture:user:user1',
+    name: 'chw',
+    phone: '+12068881234',
+    type: 'person',
+    place: health_center._id,
+    parent: {
+      _id: health_center._id,
+      parent: health_center.parent
+    },
+  };
+  const contact2 = {
+    _id: 'fixture:user:user2',
+    name: 'supervisor',
+    phone: '+12068881235',
+    type: 'person',
+    place: district_hospital._id,
+    parent: {
+      _id: district_hospital._id,
+    },
+  };
+  const chw = userFactory.build({
+    username: 'offlineuser',
+    isOffline: true,
+    place: health_center._id,
+    contact: contact._id,
+  });
+  const supervisor = userFactory.build({
+    username: 'supervisor',
+    roles: [ 'chw_supervisor' ],
+    place: district_hospital._id,
+    contact: contact2._id,
+  });
+  const patient = personFactory.build({
+    _id: 'patient1',
+    name: 'patient1',
+    type: 'person',
+    patient_id: 'patient1',
+    parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}},
+    reported_date: new Date().getTime(),
+  });
+  const patient2 = personFactory.build({
+    _id: 'patient2',
+    name: 'patient2',
+    type: 'person',
+    patient_id: 'patient2',
+    parent: { _id: health_center._id, parent: { _id: district_hospital._id }},
+    reported_date: new Date().getTime(),
+  });
+
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, contact2, patient, patient2 ]);
     await utils.createUsers([ chw, supervisor ]);
@@ -81,7 +74,7 @@ describe('Tasks tab breadcrumbs', () => {
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
 
-    const tasksFilePath = path.join(__dirname, 'tasks-breadcrumbs-config.js');
+    const tasksFilePath = path.join(__dirname, 'config/tasks-breadcrumbs-config.js');
     const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
     await utils.updateSettings({ tasks }, 'api');
   });
@@ -98,7 +91,7 @@ describe('Tasks tab breadcrumbs', () => {
 
     it('should display correct tasks with breadcrumbs for chw', async () => {
       await tasksPage.goToTasksTab();
-      const infos = await getTasksInfos(await tasksPage.getTasks());
+      const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 
       expect(infos).to.have.deep.members([
         {
@@ -131,7 +124,7 @@ describe('Tasks tab breadcrumbs', () => {
 
     it('should display correct tasks with breadcrumbs for supervisor', async () => {
       await tasksPage.goToTasksTab();
-      const infos = await getTasksInfos(await tasksPage.getTasks());
+      const infos = await tasksPage.getTasksListInfos(await tasksPage.getTasks());
 
       expect(infos).to.have.deep.members([
         {

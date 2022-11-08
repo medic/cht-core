@@ -43,7 +43,7 @@ const getTasksInfos = async (tasks) => {
 
 const updateSettings = async (updates = {}) => {
   await chtConfUtils.initializeConfigDir();
-  const tasksFilePath = path.join(__dirname, 'due-dates-config.js');
+  const tasksFilePath = path.join(__dirname, 'config/due-dates-config.js');
 
   const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
   updates.tasks = tasks;

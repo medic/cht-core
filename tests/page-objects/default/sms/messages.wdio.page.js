@@ -33,6 +33,7 @@ const sendMessage = () => $('.general-actions .send-message');
 const sendMessageModal = () => $('#send-message');
 const sendMessageModalSubmit = () => $('a.btn.submit:not(.ng-hide)');
 const messageRecipientSelect = () => $('#send-message input.select2-search__field');
+const contactNameSelector = ' .sender .name';
 
 const openSendMessageModal = async () => {
   await (await sendMessage()).click();
@@ -40,6 +41,13 @@ const openSendMessageModal = async () => {
 };
 const submitMessage = async () => {
   await (await sendMessageModalSubmit()).click();
+};
+
+const sendMessageToPhone = async (message, phone) => {
+  await openSendMessageModal();
+  await messageText(message);
+  await searchSelect(phone, contactNameSelector, phone);
+  await submitMessage();
 };
 
 const searchSelect = async (searchText, entrySelector) => {
@@ -65,4 +73,5 @@ module.exports = {
   messageText,
   submitMessage,
   searchSelect,
+  sendMessageToPhone,
 };
