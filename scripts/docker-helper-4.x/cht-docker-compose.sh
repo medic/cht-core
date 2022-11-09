@@ -74,7 +74,7 @@ docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-dock
 echo ""
 set +e
 
-echo "Adding local-ip.co certs to Docker container ${selectedProject}_nginx_1" | tr -d '\n'
+echo "Download images, starting services and adding local-ip.co certs to Docker container ${selectedProject}_nginx_1" | tr -d '\n'
 isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2>/dev/null)
 while [[ "$isNginxRunning" != "true" ]]; do
   echo '.' | tr -d '\n'
@@ -88,7 +88,8 @@ docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o /etc/nginx/priv
 docker restart "${selectedProject}_nginx_1" 1>/dev/null
 
 echo ""
-echo "Added local-ip.co certs to ${selectedProject}_nginx_1 and restarted the container"
+echo ""
+echo "All services started and local-ip.co certs add to ${selectedProject}_nginx_1"
 echo ""
 echo " --------------------------------------------------------------------------- "
 echo ""
