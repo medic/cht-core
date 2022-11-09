@@ -6,7 +6,7 @@ const placeFactory = require('../../../factories/cht/contacts/place');
 const personFactory = require('../../../factories/cht/contacts/person');
 const messagesPage = require('../../../page-objects/default/sms/messages.wdio.page');
 
-describe('Tasks tab breadcrumbs', () => {
+describe('Message tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const health_center = places.get('health_center');

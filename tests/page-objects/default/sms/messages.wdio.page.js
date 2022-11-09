@@ -46,7 +46,7 @@ const submitMessage = async () => {
 const sendMessageToPhone = async (message, phone) => {
   await openSendMessageModal();
   await messageText(message);
-  await searchSelect(phone, contactNameSelector, phone);
+  await searchSelect(phone, contactNameSelector);
   await submitMessage();
 };
 
