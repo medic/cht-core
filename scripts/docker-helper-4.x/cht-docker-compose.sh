@@ -49,13 +49,21 @@ if [[ -z "$selectedProject" ]]; then
 		;;
 	esac
 
-	while [[ -z "$selectedProject" ]]; do
-		echo "Which project do you want to use?"
-		select project in $projects; do
-			selectedProject=$project
-			break
-		done
-	done
+  envCount=$(ls *.env | wc -l)
+  if [ "$envCount" -gt 0 ]; then
+    while [[ -z "$selectedProject" ]]; do
+      echo "Which project do you want to use?"
+      select project in $projects; do
+        selectedProject=$project
+        break
+      done
+    done
+  else
+    echo ""
+    echo "No projects found, please create one."
+    echo ""
+    exit 1
+  fi
 fi
 
 mkdir -p "$HOME/.medic/cht-docker/compose-files"
@@ -89,9 +97,9 @@ docker restart "${selectedProject}_nginx_1" 1>/dev/null
 
 echo ""
 echo ""
-echo "All services started and local-ip.co certs add to ${selectedProject}_nginx_1"
+echo "All services started and local-ip.co certs added to ${selectedProject}_nginx_1"
 echo ""
-echo " --------------------------------------------------------------------------- "
+echo " -------------------------------------------------------- "
 echo ""
 echo "  Success! Local CHT instance is set up:"
 echo ""
@@ -100,7 +108,7 @@ echo ""
 echo "    Login: medic"
 echo "    Password: password"
 echo ""
-echo " --------------------------------------------------------------------------- "
+echo " -------------------------------------------------------- "
 echo ""
 echo " Have a great day!"
 echo ""
