@@ -35,17 +35,18 @@ if [[ -z "$selectedProject" ]]; then
 			fi
 		done
 
-		mkdir -p "$HOME/.medic/cht-docker/$projectName/couch-$projectName"
+		homeDir="$HOME/.medic/cht-docker/$projectName"
 		touch "./$projectName.env"
 		echo "NGINX_HTTP_PORT=8080" >>"./$projectName.env"
 		echo "NGINX_HTTPS_PORT=8443" >>"./$projectName.env"
 		echo "COUCHDB_USER=medic" >>"./$projectName.env"
 		echo "COUCHDB_PASSWORD=password" >>"./$projectName.env"
 		echo "CHT_COMPOSE_PROJECT_NAME=$projectName" >>"./$projectName.env"
-		echo "DOCKER_CONFIG_PATH=$HOME/.medic/cht-docker/$projectName" >>"./$projectName.env"
+		echo "DOCKER_CONFIG_PATH=$homeDir" >>"./$projectName.env"
 		echo "COUCHDB_SECRET=$(openssl rand -hex 16)" >>"./$projectName.env"
-		echo "COUCHDB_DATA=$HOME/.medic/cht-docker/$projectName/couch-$projectName" >>"./$projectName.env"
-		echo "CHT_COMPOSE_PATH=$HOME/.medic/cht-docker/compose-files" >>"./$projectName.env"
+		echo "COUCHDB_UUID=$(openssl rand -hex 16)" >>"./$projectName.env"
+		echo "COUCHDB_DATA=$homeDir/couch" >>"./$projectName.env"
+		echo "CHT_COMPOSE_PATH=$homeDir" >>"./$projectName.env"
 		echo "CHT_NETWORK=$projectName-cht-net" >>"./$projectName.env"
 		projects=$(find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//")
 		;;
@@ -57,6 +58,7 @@ if [[ -z "$selectedProject" ]]; then
       echo "Which project do you want to use?"
       select project in $projects; do
         selectedProject=$project
+        homeDir="$HOME/.medic/cht-docker/$selectedProject"
         break
       done
     done
@@ -68,24 +70,25 @@ if [[ -z "$selectedProject" ]]; then
   fi
 fi
 
-mkdir -p "$HOME/.medic/cht-docker/compose-files"
-curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" \
+mkdir -p "$homeDir/couch"
+curl -s -o "$homeDir/upgrade-service.yml" \
   https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
-curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-core.yml" \
-  https://staging.dev.medicmobile.org/_couch/builds_4/medic%3Amedic%3Amaster/docker-compose%2Fcht-core.yml
-curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-couchdb.yml" \
-  https://staging.dev.medicmobile.org/_couch/builds_4/medic%3Amedic%3Amaster/docker-compose%2Fcht-couchdb.yml
+curl -s -o "$homeDir/cht-core.yml" \
+  https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-core.yml
+curl -s -o "$homeDir/couchdb.yml" \
+  https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-couchdb.yml
+
+# shellcheck disable=SC1090
+source "./$selectedProject.env"
 
 echo ""
-#docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" down
-docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" up --detach
-#docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" logs --follow
+docker-compose --env-file "./$selectedProject.env" --file "$homeDir/upgrade-service.yml" up --detach
 
-echo ""
 set +e
-i=0
 echo "Starting project \"${selectedProject}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
 isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2>/dev/null)
+isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}-cht-upgrade-service-1" 2>/dev/null)
+i=0
 while [[ "$isNginxRunning" != "true" ]]; do
   if [[ $i -gt 300 ]]; then
     echo ""
@@ -94,12 +97,21 @@ while [[ "$isNginxRunning" != "true" ]]; do
     echo ""
     exit 1
   fi
+  if [[ "$isUpgradeRunning" != "true" ]]; then
+    echo ""
+    echo ""
+    echo "Upgrade service no longer running - check for port conflicts or other errors and try again."
+    echo ""
+    exit 1
+  fi
+
   echo '.' | tr -d '\n'
   ((i++))
 	sleep 1
 	isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2>/dev/null)
+  isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}-cht-upgrade-service-1" 2>/dev/null)
 done
-docker exec -it "${selectedProject}_nginx_1" bash -c "rm /etc/nginx/private/*.pem /etc/nginx/private/*.pem" 1>/dev/null
+
 docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
 docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
 docker exec -it "${selectedProject}_nginx_1" bash -c "cat server.pem chain.pem > /etc/nginx/private/cert.pem"
@@ -112,7 +124,7 @@ echo " -------------------------------------------------------- "
 echo ""
 echo "  Success! \"${selectedProject}\" is set up:"
 echo ""
-echo "    https://127-0-0-1.my.local-ip.co:8443/"
+echo "    https://127-0-0-1.my.local-ip.co:${NGINX_HTTPS_PORT}/"
 echo ""
 echo "    Login: medic"
 echo "    Password: password"
