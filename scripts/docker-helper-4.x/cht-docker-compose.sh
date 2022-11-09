@@ -83,14 +83,23 @@ docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-dock
 
 echo ""
 set +e
-
-echo "Download images, starting services and adding local-ip.co certs to Docker container ${selectedProject}_nginx_1" | tr -d '\n'
+i=0
+echo "Starting project \"${selectedProject}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
 isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2>/dev/null)
 while [[ "$isNginxRunning" != "true" ]]; do
+  if [[ $i -gt 300 ]]; then
+    echo ""
+    echo ""
+    echo "Failed to start - check docker logs for errors and try again."
+    echo ""
+    exit 1
+  fi
   echo '.' | tr -d '\n'
+  ((i++))
 	sleep 1
 	isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2>/dev/null)
 done
+docker exec -it "${selectedProject}_nginx_1" bash -c "rm /etc/nginx/private/*.pem /etc/nginx/private/*.pem" 1>/dev/null
 docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
 docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
 docker exec -it "${selectedProject}_nginx_1" bash -c "cat server.pem chain.pem > /etc/nginx/private/cert.pem"
@@ -99,11 +108,9 @@ docker restart "${selectedProject}_nginx_1" 1>/dev/null
 
 echo ""
 echo ""
-echo "All services started and local-ip.co certs added to ${selectedProject}_nginx_1"
-echo ""
 echo " -------------------------------------------------------- "
 echo ""
-echo "  Success! Local CHT instance is set up:"
+echo "  Success! \"${selectedProject}\" is set up:"
 echo ""
 echo "    https://127-0-0-1.my.local-ip.co:8443/"
 echo ""
