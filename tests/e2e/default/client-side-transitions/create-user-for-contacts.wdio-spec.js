@@ -317,6 +317,10 @@ describe('Create user for contacts', () => {
       assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
       const loginLink = await getTextedLoginLink(newUserSettings);
 
+      // Basic form reports were successfully synced to the server
+      const basicReportsFromRemote = await utils.getDocs([basicReportId0, basicReportId1]);
+      basicReportsFromRemote.forEach((report, index) => expect(report).to.deep.equal(basicReports[index]));
+
       // Open the texted link
       await browser.url(loginLink);
       await commonPage.waitForPageLoaded();
@@ -512,6 +516,10 @@ describe('Create user for contacts', () => {
       await commonPage.waitForPageLoaded();
       const [cookie] = await browser.getCookies('userCtx');
       expect(cookie.value).to.include(newUserSettings.name);
+
+      // Basic form reports were successfully synced to the server
+      const basicReportsFromRemote = await utils.getDocs([basicReportId0, basicReportId1]);
+      basicReportsFromRemote.forEach((report, index) => expect(report).to.deep.equal(basicReports[index]));
     });
 
     it('creates new user when replace_user form is submitted for contact associated with multiple users', async () => {
