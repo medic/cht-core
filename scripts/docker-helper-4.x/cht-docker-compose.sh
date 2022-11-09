@@ -59,21 +59,25 @@ if [[ -z "$selectedProject" ]]; then
 fi
 
 mkdir -p "$HOME/.medic/cht-docker/compose-files"
-curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
-curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-core.yml" https://staging.dev.medicmobile.org/_couch/builds/medic%3Amedic%3Amaster/docker-compose%2Fcht-core.yml
-curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-couchdb.yml" https://staging.dev.medicmobile.org/_couch/builds/medic%3Amedic%3Amaster/docker-compose%2Fcht-couchdb.yml
+curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" \
+  https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
+curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-core.yml" \
+  https://staging.dev.medicmobile.org/_couch/builds_4/medic%3Amedic%3Amaster/docker-compose%2Fcht-core.yml
+curl -s -o "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-couchdb.yml" \
+  https://staging.dev.medicmobile.org/_couch/builds_4/medic%3Amedic%3Amaster/docker-compose%2Fcht-couchdb.yml
 
+echo ""
 #docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" down
 docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" up --detach
 #docker-compose --env-file "./$selectedProject.env" --file "$HOME/.medic/cht-docker/compose-files/docker-compose_cht-upgrader-service.yml" logs --follow
 
+echo ""
 set +e
 
-echo "Adding local-ip.co certs to Docker container ${selectedProject}_nginx_1"
+echo "Adding local-ip.co certs to Docker container ${selectedProject}_nginx_1" | tr -d '\n'
 isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2>/dev/null)
-echo "$isNginxRunning"
 while [[ "$isNginxRunning" != "true" ]]; do
-	echo "Waiting for the container ${selectedProject}_nginx_1 to be running, retrying..."
+  echo '.' | tr -d '\n'
 	sleep 1
 	isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2>/dev/null)
 done
@@ -82,6 +86,22 @@ docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o chain.pem http:
 docker exec -it "${selectedProject}_nginx_1" bash -c "cat server.pem chain.pem > /etc/nginx/private/cert.pem"
 docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o /etc/nginx/private/key.pem http://local-ip.co/cert/server.key"
 docker restart "${selectedProject}_nginx_1" 1>/dev/null
+
+echo ""
 echo "Added local-ip.co certs to ${selectedProject}_nginx_1 and restarted the container"
+echo ""
+echo " --------------------------------------------------------------------------- "
+echo ""
+echo "  Success! Local CHT instance is set up:"
+echo ""
+echo "    https://127-0-0-1.my.local-ip.co:8443/"
+echo ""
+echo "    Login: medic"
+echo "    Password: password"
+echo ""
+echo " --------------------------------------------------------------------------- "
+echo ""
+echo " Have a great day!"
+echo ""
 
 set -e
