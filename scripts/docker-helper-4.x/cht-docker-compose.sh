@@ -62,7 +62,7 @@ if [[ -z "$selectedProject" ]]; then
     done
   else
     echo ""
-    echo "No projects found, please create one."
+    echo "No projects found, please initialize a new one."
     echo ""
     exit 1
   fi
