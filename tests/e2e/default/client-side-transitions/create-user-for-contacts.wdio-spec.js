@@ -162,8 +162,7 @@ const sync = async () => {
 };
 
 const submitBasicForm = async () => {
-  await (await reportsPage.submitReportButton()).click();
-  await (await reportsPage.formActionsLink('basic_form')).click();
+  await reportsPage.openForm('Form basic_form');
   await reportsPage.submitForm();
   return reportsPage.getCurrentReportId();
 };
