@@ -25,8 +25,9 @@ if [[ -z "$selectedProject" ]]; then
 	[Yy]*)
 		projectName=
 		while [[ -z "$projectName" ]]; do
-			read -p "How do you want to name the project? " projectName
+			read -p "How do you want to name the project? " projectNameTmp
 
+      projectName="${projectNameTmp//[^[:alnum:]]/_}"
 			if test -f "./$projectName.env"; then
 				echo "./$projectName.env already exists"
 				projectName=
