@@ -243,12 +243,16 @@ describe('Create User for Contacts service', () => {
       'PENDING',
       'READY',
       'COMPLETE',
-      'ERROR',
     ].forEach(status => {
       it(`returns true when the given contact is replaced with status: ${status}`, () => {
         const pendingContact = getContactWithStatus(status);
         assert.isTrue(service.isReplaced(pendingContact));
       });
+    });
+
+    it(`returns true when the given contact is replaced with status: ERROR`, () => {
+      const pendingContact = getContactWithStatus('ERROR');
+      assert.isFalse(service.isReplaced(pendingContact));
     });
 
     it('returns false when the given contact is not replaced', () => {

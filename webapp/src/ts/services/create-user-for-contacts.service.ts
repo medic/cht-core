@@ -58,11 +58,21 @@ export class CreateUserForContactsService {
   }
 
   isReplaced(contact) {
-    return !!contact.user_for_contact?.replace?.[this.getCurrentUsername()];
+    const replacement = contact.user_for_contact?.replace?.[this.getCurrentUsername()];
+    if (!replacement || replacement.status === UserCreationStatus.ERROR) {
+      return false;
+    }
+
+    return true;
   }
 
-  getReplacedBy(contact): string {
-    return contact.user_for_contact?.replace?.[this.getCurrentUsername()]?.replacement_contact_id;
+  getReplacedBy(contact): string | undefined {
+    const replacement = contact.user_for_contact?.replace?.[this.getCurrentUsername()];
+    if (!replacement || replacement.status === UserCreationStatus.ERROR) {
+      return;
+    }
+
+    return replacement.replacement_contact_id;
   }
 
   private getCurrentUsername() {
@@ -112,7 +122,7 @@ export class CreateUserForContactsService {
 
 enum UserCreationStatus {
   PENDING = 'PENDING', // Waiting on sync to complete
-  READY = 'READY' // Ready to be replaced
+  READY = 'READY', // Ready to be replaced
   // COMPLETE - Set by Sentinel when the new user has been created
-  // ERROR - Set by Sentinel if a new user could not be created
+  ERROR = 'ERROR', // - Set by Sentinel if a new user could not be created
 }

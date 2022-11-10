@@ -176,7 +176,8 @@ const assertOriginalContactUpdated = (originalContact, originalUsername, newCont
   expect(originalContact.user_for_contact).to.deep.equal({
     replace: {
       [originalUsername]: {
-        status, replacement_contact_id: newContactId,
+        status,
+        replacement_contact_id: newContactId,
       }
     }
   });
@@ -734,7 +735,7 @@ describe('Create user for contacts', () => {
       expect(updatedOriginalContact.user_for_contact).to.be.undefined;
     });
 
-    it('does not create any new user when the transition fails because of a missing phone number', async () => {
+    it('does not create any new user nor does it reparent new reports when the transition fails', async () => {
       await utils.updateSettings(SETTINGS, 'sentinel');
       await loginAsOfflineUser();
       const originalContactId = ORIGINAL_USER.contact._id;
@@ -798,6 +799,20 @@ describe('Create user for contacts', () => {
       // New contact is still place's primary contact
       const districtFromRemote = await utils.getDoc(DISTRICT._id);
       expect(districtFromRemote.contact._id).to.equal(replacementContactId);
+
+      // Subsequent form reports are *not* re-parented to the new contact
+      await browser.reloadSession();
+      await browser.url('/');
+      await loginPage.login(ORIGINAL_USER);
+      await commonPage.waitForPageLoaded();
+      await browser.throttle('offline');
+      const finalOriginalContactLocal = await getLocalDocFromBrowser(originalContactId);
+      assertOriginalContactUpdated(finalOriginalContactLocal, ORIGINAL_USER.username, replacementContactId, 'ERROR');
+      await commonPage.goToReports();
+      const basicReportId2 = await submitBasicForm();
+      const basicReportId3 = await submitBasicForm();
+      const subsequentBasicReports = await getManyLocalDocsFromBrowser([basicReportId2, basicReportId3]);
+      subsequentBasicReports.forEach((report) => expect(report.contact._id).to.equal(originalContactId));
     });
   });
 
