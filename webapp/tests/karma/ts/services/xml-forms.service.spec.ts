@@ -26,6 +26,7 @@ describe('XmlForms service', () => {
   let contextUtils;
   let pipesService;
   let error;
+  let warn;
   let fileReaderService;
 
   const mockEnketoDoc = (formInternalId?, docId?) => {
@@ -58,6 +59,7 @@ describe('XmlForms service', () => {
     getTypeId = sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type);
     contextUtils = {};
     error = sinon.stub(console, 'error');
+    warn = sinon.stub(console, 'warn');
 
     pipesService = {
       transform: sinon.stub().returnsArg(1),
@@ -1021,6 +1023,9 @@ describe('XmlForms service', () => {
         })
         .catch(err => {
           expect(err.message).to.equal(`The form "${internalId}" doesn't have an xform attachment`);
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal('Error in XMLFormService findXFormAttachmentName : ');
+
         });
     });
 
@@ -1039,6 +1044,8 @@ describe('XmlForms service', () => {
       });
       const service = getService();
       return service.get(internalId).then(actual => {
+        expect(warn.callCount).to.equal(1);
+        expect(warn.args[0][0]).to.equal('Error in XMLFormService getById, falls back to using view : ');
         expect(actual).to.deep.equal(expected);
         expect(dbQuery.callCount).to.equal(1);
         expect(dbQuery.args[0][0]).to.equal(`medic-client/doc_by_type`);
@@ -1069,6 +1076,9 @@ describe('XmlForms service', () => {
         })
         .catch(err => {
           expect(err.message).to.equal(`Multiple forms found for internalId: "${internalId}"`);
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal('Error in XMLFormService getByView : ');
+          expect(error.args[0][1]).to.equal(`Multiple forms found for internalId: "${internalId}"`);
         });
     });
 
@@ -1088,6 +1098,11 @@ describe('XmlForms service', () => {
         })
         .catch(err => {
           expect(err.message).to.equal(`No form found for internalId "${internalId}"`);
+          expect(warn.callCount).to.equal(1);
+          expect(warn.args[0][0]).to.equal('Error in XMLFormService getById, falls back to using view : ');
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal('Error in XMLFormService getByView : ');
+          expect(error.args[0][1]).to.equal(`No form found for internalId "${internalId}"`);
         });
     });
 
@@ -1112,6 +1127,9 @@ describe('XmlForms service', () => {
         })
         .catch(err => {
           expect(err.message).to.equal(`The form "${internalId}" doesn't have an xform attachment`);
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal('Error in XMLFormService getDocAndFormAttachment : ');
+          expect(error.args[0][1]).to.equal(`The form "${internalId}" doesn't have an xform attachment`);
         });
     });
 

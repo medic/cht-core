@@ -73,10 +73,14 @@ export class XmlFormsService {
       .then(docs => docs?.filter(doc => doc.internalId === internalId))
       .then(docs => {
         if (!docs.length) {
-          return Promise.reject(new Error(`No form found for internalId "${internalId}"`));
+          const message = `No form found for internalId "${internalId}"`;
+          console.error('Error in XMLFormService getByView : ', message);
+          return Promise.reject(new Error(message));
         }
         if (docs.length > 1) {
-          return Promise.reject(new Error(`Multiple forms found for internalId: "${internalId}"`));
+          const message = `Multiple forms found for internalId: "${internalId}"`;
+          console.error('Error in XMLFormService getByView : ', message);
+          return Promise.reject(new Error(message));
         }
         return docs[0];
       });
@@ -260,17 +264,17 @@ export class XmlFormsService {
     return this
       .getById(internalId)
       .catch(err => {
+        console.warn('Error in XMLFormService getById, falls back to using view : ', err?.message, err);
         if (err.status === 404) {
           // fallback for backwards compatibility
           return this.getByView(internalId);
         }
-        console.error('Error in XMLFormService getByView : ', err?.message, err);
         throw err;
       })
       .then(doc => {
         if (!this.findXFormAttachmentName(doc)) {
           const errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
-          console.error('Error in XMLFormService get : ' + errorMessage);
+          console.error('Error in XMLFormService findXFormAttachmentName : ', errorMessage);
           return Promise.reject(new Error(errorMessage));
         }
         return doc;
@@ -286,7 +290,9 @@ export class XmlFormsService {
           .then(xml => ({ doc, xml }))
           .catch(err => {
             if (err.status === 404) {
-              return Promise.reject(new Error(`The form "${internalId}" doesn't have an xform attachment`));
+              const errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
+              console.error('Error in XMLFormService getDocAndFormAttachment : ', errorMessage);
+              return Promise.reject(new Error(errorMessage));
             }
             throw err;
           });
