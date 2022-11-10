@@ -626,6 +626,13 @@ describe('Create user for contacts', () => {
       const district = await getLocalDocFromBrowser(DISTRICT._id);
       expect(district.contact._id).to.equal(replacementContactId);
 
+      // Submit several forms to be re-parented
+      const basicReportId0 = await submitBasicForm();
+      const basicReportId1 = await submitBasicForm();
+      // Basic form reports re-parented
+      const basicReports = await getManyLocalDocsFromBrowser([basicReportId0, basicReportId1]);
+      basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
+
       // Logout before syncing
       await commonPage.logout();
 
@@ -694,6 +701,10 @@ describe('Create user for contacts', () => {
       assertOriginalContactUpdated(originalContact, otherUser.username, otherReplacementContactId, 'COMPLETE');
       // Original user replace data is gone (because of the conflict)
       expect(originalContact.user_for_contact.replace[ORIGINAL_USER.username]).to.be.undefined;
+
+      // Basic form reports submitted earlier are still owned by the 1st replacement contact
+      const basicReportsFromRemote = await utils.getDocs([basicReportId0, basicReportId1]);
+      basicReportsFromRemote.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
 
       // Need to include an extra call to clean-up here since only the "winning" version of the conflicting docs will be
       // deleted. This first call will delete the current "winning" version and then the subsequent call in afterEach
