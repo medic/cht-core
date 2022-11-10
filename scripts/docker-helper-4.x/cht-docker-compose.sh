@@ -35,7 +35,7 @@ if [[ -z "$selectedProject" ]]; then
 			fi
 		done
 
-		homeDir="$HOME/.medic/cht-docker/$projectName"
+		homeDir="$HOME/.medic/cht-docker/$projectName-dir"
 		touch "./$projectName.env"
 		echo "NGINX_HTTP_PORT=8080" >>"./$projectName.env"
 		echo "NGINX_HTTPS_PORT=8443" >>"./$projectName.env"
@@ -58,7 +58,7 @@ if [[ -z "$selectedProject" ]]; then
       echo "Which project do you want to use?"
       select project in $projects; do
         selectedProject=$project
-        homeDir="$HOME/.medic/cht-docker/$selectedProject"
+        homeDir="$HOME/.medic/cht-docker/$selectedProject-dir"
         break
       done
     done
@@ -87,7 +87,7 @@ docker-compose --env-file "./$selectedProject.env" --file "$homeDir/upgrade-serv
 set +e
 echo "Starting project \"${selectedProject}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
 isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2>/dev/null)
-isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}-cht-upgrade-service-1" 2>/dev/null)
+isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}-dir-cht-upgrade-service-1" 2>/dev/null)
 i=0
 while [[ "$isNginxRunning" != "true" ]]; do
   if [[ $i -gt 300 ]]; then
@@ -109,7 +109,7 @@ while [[ "$isNginxRunning" != "true" ]]; do
   ((i++))
 	sleep 1
 	isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}_nginx_1" 2>/dev/null)
-  isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}-cht-upgrade-service-1" 2>/dev/null)
+  isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${selectedProject}-dir-cht-upgrade-service-1" 2>/dev/null)
 done
 
 docker exec -it "${selectedProject}_nginx_1" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
