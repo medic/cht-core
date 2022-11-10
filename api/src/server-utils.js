@@ -9,10 +9,12 @@ const cookie = require('./services/cookie');
 const wantsJSON = req => req.get('Accept') === 'application/json';
 
 const writeJSON = (res, code, error, details) => {
-  if (!res.headersSent && !res.ended) {
+  if (!res.headersSent) {
     res.status(code);
-    res.json({ code, error, details });
+    res.type('json');
   }
+  // using res.json would also automatically try to set the Content-Type header, which fails if headers are sent
+  res.end(JSON.stringify({ code, error, details }));
 };
 
 const respond = (req, res, code, message, details) => {

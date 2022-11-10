@@ -915,7 +915,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:health_center:create" prefix="J1!contact:health_center:create!" delimiter="#" version="2022-08-24 11-44">
+        <data id="contact:health_center:create" prefix="J1!contact:health_center:create!" delimiter="#" version="2022-09-26 12-17">
           <inputs>
             <meta>
               <location>
@@ -1017,7 +1017,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/short_name" type="string" jr:constraintMsg="Short name can not be more than 10 characters long." required="false()" constraint="string-length(.) &lt;= 10"/>
       <bind nodeset="/data/contact/date_of_birth" type="string" calculate="../ephemeral_dob/dob_iso" required="true()"/>
       <bind nodeset="/data/contact/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" relevant="not(selected(../dob_method,'approx'))" jr:constraintMsg="Date must be before today" required="true()" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" constraint=". &lt;= now()" relevant="not(selected(../dob_method,'approx'))" required="true()" jr:constraintMsg="Date must be before today"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="Age must be between 0 and 130" required="true()" constraint=". &gt;= 0 and . &lt;= 130"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="Months must between 0 and 11"/>

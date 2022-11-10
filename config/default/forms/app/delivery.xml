@@ -144,13 +144,13 @@
           <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour:label">
             <value>Were they initiated on breastfeeding within on hour of delivery?</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/no:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/no:label">
             <value>No</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/yes:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/yes:label">
             <value>Yes</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding:label">
             <value>Is the child exclusively breastfeeding?</value>
           </text>
           <text id="/delivery/babys_condition/baby_repeat/baby_details/convulsion/no:label">
@@ -795,7 +795,7 @@
         </translation>
       </itext>
       <instance>
-        <delivery id="delivery" prefix="J1!delivery!" delimiter="#" version="2022-08-23 13-48">
+        <delivery id="delivery" prefix="J1!delivery!" delimiter="#" version="2022-11-04 2-47">
           <inputs>
             <meta>
               <location>
@@ -940,7 +940,7 @@
                 <birth_length/>
                 <vaccines_received/>
                 <imm_counsel_note tag="hidden"/>
-                <breatfeeding/>
+                <breastfeeding/>
                 <breastfed_within_1_hour/>
                 <baby_danger_sign_note tag="hidden"/>
                 <infected_umbilical_cord/>
@@ -985,9 +985,9 @@
                     </parent>
                   </parent>
                   <type tag="hidden"/>
-                  <created_by_doc tag="hidden" db-doc-ref="/delivery"/>
+                  <created_by_doc db-doc-ref="/delivery" tag="hidden"/>
                 </baby_profile>
-                <child_doc tag="hidden" db-doc-ref=" /delivery/babys_condition/baby_repeat/baby_details/baby_profile "/>
+                <child_doc db-doc-ref=" /delivery/babys_condition/baby_repeat/baby_details/baby_profile " tag="hidden"/>
               </baby_details>
             </baby_repeat>
             <r_baby_danger_sign_present_joined/>
@@ -1208,28 +1208,28 @@
         <root>
           <item>
             <itextId>static_instance-babies_alive-0</itextId>
-            <count>0</count>
             <name>0</name>
+            <count>0</count>
           </item>
           <item>
             <itextId>static_instance-babies_alive-1</itextId>
-            <count>1</count>
             <name>1</name>
+            <count>1</count>
           </item>
           <item>
             <itextId>static_instance-babies_alive-2</itextId>
-            <count>2</count>
             <name>2</name>
+            <count>2</count>
           </item>
           <item>
             <itextId>static_instance-babies_alive-3</itextId>
-            <count>3</count>
             <name>3</name>
+            <count>3</count>
           </item>
           <item>
             <itextId>static_instance-babies_alive-4</itextId>
-            <count>4</count>
             <name>other</name>
+            <count>4</count>
           </item>
         </root>
       </instance>
@@ -1293,28 +1293,28 @@
         <root>
           <item>
             <itextId>static_instance-pnc_visits-0</itextId>
-            <count>0</count>
             <name>within_24_hrs</name>
+            <count>0</count>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-1</itextId>
-            <count>3</count>
             <name>3_days</name>
+            <count>3</count>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-2</itextId>
-            <count>7</count>
             <name>7_days</name>
+            <count>7</count>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-3</itextId>
-            <count>42</count>
             <name>6_weeks</name>
+            <count>42</count>
           </item>
           <item>
             <itextId>static_instance-pnc_visits-4</itextId>
-            <count>0</count>
             <name>none</name>
+            <count>0</count>
           </item>
         </root>
       </instance>
@@ -1361,7 +1361,7 @@
       <bind nodeset="/delivery/patient_short_name" type="string" calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_label)"/>
       <bind nodeset="/delivery/patient_short_name_start" type="string" calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_start_label)"/>
       <bind nodeset="/delivery/t_danger_signs_referral_follow_up" type="string" calculate="../pnc_danger_sign_check/r_pnc_danger_sign_present"/>
-      <bind nodeset="/delivery/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(floor(decimal-date-time(today())) + 3)"/>
+      <bind nodeset="/delivery/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
       <bind nodeset="/delivery/condition/woman_outcome" type="select1" required="true()"/>
       <bind nodeset="/delivery/pnc_danger_sign_check" relevant="selected(../condition/woman_outcome, 'alive_well') or
 selected(../condition/woman_outcome, 'alive_unwell')"/>
@@ -1377,10 +1377,10 @@ selected(../vaginal_bleeding, 'yes') or
 selected(../vaginal_discharge, 'yes') or
 selected(../convulsion, 'yes'), 'yes', 'no')"/>
       <bind nodeset="/delivery/death_info_woman" relevant="selected(../condition/woman_outcome, 'deceased')"/>
-      <bind nodeset="/delivery/death_info_woman/woman_death_date" type="date" constraint="decimal-date-time(.) &lt;= decimal-date-time(today()) and difference-in-months( ., today() ) &lt; 1" required="true()" jr:constraintMsg="jr:itext('/delivery/death_info_woman/woman_death_date:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/death_info_woman/woman_death_date" type="date" required="true()" jr:constraintMsg="jr:itext('/delivery/death_info_woman/woman_death_date:jr:constraintMsg')" constraint=". &lt;= now() and difference-in-months( ., today() ) &lt; 1"/>
       <bind nodeset="/delivery/death_info_woman/woman_death_place" type="select1" required="true()"/>
       <bind nodeset="/delivery/death_info_woman/woman_death_birth" type="select1" required="true()"/>
-      <bind nodeset="/delivery/death_info_woman/woman_death_add_notes" type="string" constraint="string-length(.) &lt;= 300" required="false()" jr:constraintMsg="jr:itext('/delivery/death_info_woman/woman_death_add_notes:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/death_info_woman/woman_death_add_notes" type="string" required="false()" jr:constraintMsg="jr:itext('/delivery/death_info_woman/woman_death_add_notes:jr:constraintMsg')" constraint="string-length(.) &lt;= 300"/>
       <bind nodeset="/delivery/death_info_woman/death_profile_note" readonly="true()" type="string" relevant="../woman_death_date != '' and ../woman_death_place != ''"/>
       <bind nodeset="/delivery/death_info_woman/death_baby_note" readonly="true()" type="string" relevant="../woman_death_date != '' and ../woman_death_place != '' and ../woman_death_birth = 'yes'"/>
       <bind nodeset="/delivery/death_info_woman/death_report/form" type="string" calculate="&quot;death_report&quot;"/>
@@ -1397,24 +1397,24 @@ selected(../convulsion, 'yes'), 'yes', 'no')"/>
       <bind nodeset="/delivery/death_info_woman/woman_death_report_doc" type="string" calculate=" /delivery/death_info_woman/death_report "/>
       <bind nodeset="/delivery/delivery_outcome" relevant="not(selected(../condition/woman_outcome, 'deceased')) or selected(../death_info_woman/woman_death_birth, 'yes')"/>
       <bind nodeset="/delivery/delivery_outcome/babies_delivered" type="select1" required="true()"/>
-      <bind nodeset="/delivery/delivery_outcome/babies_delivered_other" type="int" constraint=". &gt; 3" relevant="selected(../babies_delivered, 'other')" required="true()" jr:constraintMsg="jr:itext('/delivery/delivery_outcome/babies_delivered_other:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/delivery_outcome/babies_delivered_other" type="int" required="true()" jr:constraintMsg="jr:itext('/delivery/delivery_outcome/babies_delivered_other:jr:constraintMsg')" relevant="selected(../babies_delivered, 'other')" constraint=". &gt; 3"/>
       <bind nodeset="/delivery/delivery_outcome/babies_alive" type="select1" required="true()"/>
-      <bind nodeset="/delivery/delivery_outcome/babies_alive_other" type="int" constraint=". &lt;= ../babies_delivered_other" relevant="selected(../babies_alive, 'other')" required="true()" jr:constraintMsg="jr:itext('/delivery/delivery_outcome/babies_alive_other:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/delivery_outcome/babies_alive_other" type="int" required="true()" jr:constraintMsg="jr:itext('/delivery/delivery_outcome/babies_alive_other:jr:constraintMsg')" relevant="selected(../babies_alive, 'other')" constraint=". &lt;= ../babies_delivered_other"/>
       <bind nodeset="/delivery/delivery_outcome/babies_delivered_num" type="string" calculate="if(selected(../babies_delivered, '1'), 1, if(selected(../babies_delivered, '2'), 2, if(selected(../babies_delivered, '3'), 3, if(selected(../babies_delivered, 'other'), ../babies_delivered_other, 0))))"/>
       <bind nodeset="/delivery/delivery_outcome/babies_alive_num" type="string" calculate="if(selected(../babies_alive, '1'), 1, if(selected(../babies_alive, '2'), 2, if(selected(../babies_alive, '3'), 3, if(selected(../babies_alive, 'other'), ../babies_alive_other, 0))))"/>
       <bind nodeset="/delivery/delivery_outcome/babies_deceased_num" type="string" calculate="../babies_delivered_num - ../babies_alive_num"/>
-      <bind nodeset="/delivery/delivery_outcome/delivery_date" type="date" constraint="decimal-date-time(.) &lt;= decimal-date-time(today()) and difference-in-months( ., today() ) &lt; 1" required="true()" jr:constraintMsg="jr:itext('/delivery/delivery_outcome/delivery_date:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/delivery_outcome/delivery_date" type="date" required="true()" jr:constraintMsg="jr:itext('/delivery/delivery_outcome/delivery_date:jr:constraintMsg')" constraint=". &lt;= now() and difference-in-months( ., today() ) &lt; 1"/>
       <bind nodeset="/delivery/delivery_outcome/delivery_place" type="select1" required="true()"/>
-      <bind nodeset="/delivery/delivery_outcome/delivery_place_other" type="string" constraint="string-length(.) &lt;= 100" relevant="../delivery_place = 'other'" required="true()" jr:constraintMsg="jr:itext('/delivery/delivery_outcome/delivery_place_other:jr:constraintMsg')"/>
-      <bind nodeset="/delivery/delivery_outcome/delivery_mode" type="select1" relevant="../delivery_place = 'health_facility'" required="true()"/>
-      <bind nodeset="/delivery/delivery_outcome/delivery_conductor" type="select1" relevant="../delivery_place = 'home' or ../delivery_place = 'other'" required="true()"/>
-      <bind nodeset="/delivery/delivery_outcome/delivery_conductor_other" type="string" constraint="string-length(.) &lt;= 100" relevant="../delivery_conductor = 'other'" required="true()" jr:constraintMsg="jr:itext('/delivery/delivery_outcome/delivery_conductor_other:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/delivery_outcome/delivery_place_other" type="string" required="true()" jr:constraintMsg="jr:itext('/delivery/delivery_outcome/delivery_place_other:jr:constraintMsg')" relevant="../delivery_place = 'other'" constraint="string-length(.) &lt;= 100"/>
+      <bind nodeset="/delivery/delivery_outcome/delivery_mode" type="select1" required="true()" relevant="../delivery_place = 'health_facility'"/>
+      <bind nodeset="/delivery/delivery_outcome/delivery_conductor" type="select1" required="true()" relevant="../delivery_place = 'home' or ../delivery_place = 'other'"/>
+      <bind nodeset="/delivery/delivery_outcome/delivery_conductor_other" type="string" required="true()" jr:constraintMsg="jr:itext('/delivery/delivery_outcome/delivery_conductor_other:jr:constraintMsg')" relevant="../delivery_conductor = 'other'" constraint="string-length(.) &lt;= 100"/>
       <bind nodeset="/delivery/baby_death" relevant="../delivery_outcome/babies_deceased_num &gt; 0"/>
       <bind nodeset="/delivery/baby_death/baby_death_repeat_count" type="string" readonly="true()" calculate=" /delivery/delivery_outcome/babies_deceased_num "/>
-      <bind nodeset="/delivery/baby_death/baby_death_repeat/baby_death_date" type="date" constraint="decimal-date-time(.) &lt;= decimal-date-time(today()) and difference-in-months( ., today() ) &lt; 1" required="true()" jr:constraintMsg="jr:itext('/delivery/baby_death/baby_death_repeat/baby_death_date:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/baby_death/baby_death_repeat/baby_death_date" type="date" required="true()" jr:constraintMsg="jr:itext('/delivery/baby_death/baby_death_repeat/baby_death_date:jr:constraintMsg')" constraint=". &lt;= now() and difference-in-months( ., today() ) &lt; 1"/>
       <bind nodeset="/delivery/baby_death/baby_death_repeat/baby_death_place" type="select1" required="true()"/>
       <bind nodeset="/delivery/baby_death/baby_death_repeat/stillbirth" type="select1" required="true()"/>
-      <bind nodeset="/delivery/baby_death/baby_death_repeat/baby_death_add_notes" type="string" constraint="string-length(.) &lt;= 300" required="false()" jr:constraintMsg="jr:itext('/delivery/baby_death/baby_death_repeat/baby_death_add_notes:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/baby_death/baby_death_repeat/baby_death_add_notes" type="string" required="false()" jr:constraintMsg="jr:itext('/delivery/baby_death/baby_death_repeat/baby_death_add_notes:jr:constraintMsg')" constraint="string-length(.) &lt;= 300"/>
       <bind nodeset="/delivery/baby_death/baby_death_repeat/baby_death_profile/type" type="string" calculate="&quot;person&quot;"/>
       <bind nodeset="/delivery/baby_death/baby_death_repeat/baby_death_profile/name" type="string" calculate="&quot;Deceased baby&quot;"/>
       <bind nodeset="/delivery/baby_death/baby_death_repeat/baby_death_profile/sex" type="string" calculate="&quot;undefined&quot;"/>
@@ -1433,12 +1433,12 @@ selected(../convulsion, 'yes'), 'yes', 'no')"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_name" type="string" required="true()"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_sex" type="select1" required="true()"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/birth_weight_know" type="select1" required="true()"/>
-      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/birth_weight" type="decimal" constraint=". &gt;= 1500 and . &lt;= 5000" relevant="selected(../birth_weight_know, 'yes')" required="true()" jr:constraintMsg="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/birth_weight:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/birth_weight" type="decimal" required="true()" jr:constraintMsg="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/birth_weight:jr:constraintMsg')" relevant="selected(../birth_weight_know, 'yes')" constraint=". &gt;= 1500 and . &lt;= 5000"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/birth_length_know" type="select1" required="true()"/>
-      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/birth_length" type="decimal" constraint=". &gt;= 35.6 and . &lt;= 70" relevant="selected(../birth_length_know, 'yes')" required="true()" jr:constraintMsg="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/birth_length:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/birth_length" type="decimal" required="true()" jr:constraintMsg="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/birth_length:jr:constraintMsg')" relevant="selected(../birth_length_know, 'yes')" constraint=". &gt;= 35.6 and . &lt;= 70"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/vaccines_received" type="select1" required="true()"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/imm_counsel_note" readonly="true()" type="string" relevant="selected(../vaccines_received, 'none')"/>
-      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding" type="select1" required="true()"/>
+      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding" type="select1" required="true()"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour" type="select1" required="true()"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_danger_sign_note" readonly="true()" type="string"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/infected_umbilical_cord" type="select1" required="true()"/>
@@ -1464,7 +1464,7 @@ selected(../blue_skin, 'yes'), 'yes', 'no')"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_profile/date_of_birth" type="string" calculate="../../../../../delivery_outcome/delivery_date"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_profile/vaccines_received" type="string" calculate="../../vaccines_received"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_profile/t_danger_signs_referral_follow_up" type="string" calculate="../../r_baby_danger_sign_present"/>
-      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_profile/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(floor(decimal-date-time(today())) + 3)"/>
+      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_profile/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_profile/measurements/weight" type="string" calculate="../../../birth_weight"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_profile/measurements/length" type="string" calculate="../../../birth_length"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_profile/danger_signs/infected_umbilical_cord" type="string" calculate="../../../infected_umbilical_cord"/>
@@ -1494,9 +1494,9 @@ selected(../blue_skin, 'yes'), 'yes', 'no')"/>
 selected(../condition/woman_outcome, 'alive_unwell') or
 ../delivery_outcome/babies_alive_num &gt; 0"/>
       <bind nodeset="/delivery/pnc_visits/who_note" readonly="true()" type="string"/>
-      <bind nodeset="/delivery/pnc_visits/pnc_visits_attended" type="select" constraint="not(selected(.,'none')) or count-selected(.) &lt; 2" required="true()"/>
-      <bind nodeset="/delivery/pnc_visits/pnc_visits_additional" type="int" constraint=". &gt;=0 and . &lt;= 6" required="false()" jr:constraintMsg="jr:itext('/delivery/pnc_visits/pnc_visits_additional:jr:constraintMsg')"/>
-      <bind nodeset="/delivery/pnc_visits/days" type="string" calculate="floor(decimal-date-time(today())) - floor(decimal-date-time( /delivery/delivery_outcome/delivery_date ))"/>
+      <bind nodeset="/delivery/pnc_visits/pnc_visits_attended" type="select" required="true()" constraint="not(selected(.,'none')) or count-selected(.) &lt; 2"/>
+      <bind nodeset="/delivery/pnc_visits/pnc_visits_additional" type="int" required="false()" jr:constraintMsg="jr:itext('/delivery/pnc_visits/pnc_visits_additional:jr:constraintMsg')" constraint=". &gt;=0 and . &lt;= 6"/>
+      <bind nodeset="/delivery/pnc_visits/days" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time( /delivery/delivery_outcome/delivery_date ))"/>
       <bind nodeset="/delivery/summary/r_submit_note" readonly="true()" type="string"/>
       <bind nodeset="/delivery/summary/r_summary_details" readonly="true()" type="string"/>
       <bind nodeset="/delivery/summary/r_patient_details" readonly="true()" type="string"/>
@@ -1966,14 +1966,14 @@ if(selected( /delivery/pnc_visits/pnc_visits_attended , '6_weeks'), 1, 0))"/>
             <input ref="/delivery/babys_condition/baby_repeat/baby_details/imm_counsel_note">
               <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/imm_counsel_note:label')"/>
             </input>
-            <select1 ref="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding">
-              <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breatfeeding:label')"/>
+            <select1 ref="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding">
+              <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breastfeeding:label')"/>
               <item>
-                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/yes:label')"/>
+                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/yes:label')"/>
                 <value>yes</value>
               </item>
               <item>
-                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/no:label')"/>
+                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/no:label')"/>
                 <value>no</value>
               </item>
             </select1>

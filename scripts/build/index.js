@@ -11,6 +11,7 @@ const {
   BRANCH,
   BUILD_NUMBER,
   API_PORT,
+  ECR_PUBLIC_REPO,
 } = process.env;
 const DEFAULT_API_PORT = 5988;
 
@@ -119,23 +120,13 @@ const saveDockerComposeFiles = () => {
   const clusteredCouchDbTemplate = fs.readFileSync(clusteredCouchDbTemplatePath, 'utf-8');
 
   const view = {
-    repo: versions.getRepo(),
-    tag: versions.getImageTag(undefined, undefined, true),
-    network: 'cht-net',
-    couch_container_name: 'cht-couchdb',
-    nginx_container_name: 'cht-nginx',
-    haproxy_container_name: 'cht-haproxy',
-    api_container_name: 'cht-api',
-    sentinel_container_name: 'cht-sentinel',
-    haproxy_healthcheck_container_name: 'cht-haproxy-healthcheck',
+    repo: versions.getRepo(ECR_PUBLIC_REPO),
+    tag: versions.getImageTag(undefined, true),
     db_name: 'medic',
     couchdb_servers: 'couchdb',
   };
   const viewClustered = {
     ...view,
-    couch1_container_name: 'cht-couchdb.1',
-    couch2_container_name: 'cht-couchdb.2',
-    couch3_container_name: 'cht-couchdb.3',
     couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
   };
 
@@ -159,7 +150,7 @@ const saveDockerComposeFiles = () => {
 const saveServiceTags = () => {
   const tags = [...versions.SERVICES, ...versions.INFRASTRUCTURE].map(service => ({
     container_name: `cht-${service}`,
-    image: versions.getImageTag(service, undefined, true),
+    image: versions.getImageTag(service, true),
   }));
   const tagsFilePath = path.resolve(stagingPath, 'tags.json');
   fs.writeFileSync(tagsFilePath, JSON.stringify(tags));

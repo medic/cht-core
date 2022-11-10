@@ -11,7 +11,7 @@ const formId = 'CASEID';
 const formTitle = 'Case Id Form';
 
 const places = placeFactory.generateHierarchy();
-const hcId = places.find(p => p.type === 'health_center')._id;
+const hcId = places.get('health_center')._id;
 
 const user = userFactory.build({ place: hcId });
 
@@ -32,7 +32,7 @@ const transitions = {
 
 const self_report = [{ form: formId }];
 
-const docs = [...places, user];
+const docs = [...places.values(), user];
 
 describe('Link SMS to patient without passing id', () => {
   before(async () => {

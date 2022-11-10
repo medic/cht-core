@@ -12,9 +12,9 @@ const reportFactory = require('../../../factories/cht/reports/generic-report');
 describe('Reports tab breadcrumbs', () => {
   const today = moment();
   const places = placeFactory.generateHierarchy();
-  const clinic = places.find(p => p.type === 'clinic');
-  const health_center = places.find(p => p.type === 'health_center');
-  const district_hospital = places.find(p => p.type === 'district_hospital');
+  const clinic = places.get('clinic');
+  const health_center = places.get('health_center');
+  const district_hospital = places.get('district_hospital');
   const contact = {
     _id: 'fixture:user:user1',
     name: 'OfflineUser',
@@ -37,13 +37,13 @@ describe('Reports tab breadcrumbs', () => {
     },
   };
   const offlineUser = userFactory.build({
-    username: 'breadcrumb_offlineuser',
+    username: 'offlineuser_breadcrumbs',
     isOffline: true,
     place: health_center._id,
     contact: contact._id,
   });
   const onlineUser = userFactory.build({
-    username: 'breadcrumb_onlineuser',
+    username: 'onlineuser_breadcrumbs',
     roles: [ 'program_officer' ],
     place: district_hospital._id,
     contact: contact2._id,
@@ -66,7 +66,7 @@ describe('Reports tab breadcrumbs', () => {
   ];
 
   before(async () => {
-    await utils.saveDocs([ ...places, contact, contact2, patient, ...reports ]);
+    await utils.saveDocs([ ...places.values(), contact, contact2, patient, ...reports ]);
     await utils.createUsers([ onlineUser, offlineUser ]);
   });
 

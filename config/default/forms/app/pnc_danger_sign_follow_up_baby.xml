@@ -158,7 +158,7 @@
         </translation>
       </itext>
       <instance>
-        <pnc_danger_sign_follow_up_baby id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" delimiter="#" version="2022-08-19 15:16:18">
+        <pnc_danger_sign_follow_up_baby id="pnc_danger_sign_follow_up_baby" prefix="J1!pnc_danger_sign_follow_up_baby!" delimiter="#" version="2022-09-26 09:13:25">
           <inputs>
             <meta>
               <location>
@@ -258,7 +258,7 @@
       <bind nodeset="/pnc_danger_sign_follow_up_baby/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/patient_name" type="string" calculate="../inputs/contact/name"/>
-      <bind nodeset="/pnc_danger_sign_follow_up_baby/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(floor(decimal-date-time(today())) + 3)"/>
+      <bind nodeset="/pnc_danger_sign_follow_up_baby/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/visit_confirm" type="select1" required="true()"/>
       <bind nodeset="/pnc_danger_sign_follow_up_baby/danger_signs/danger_sign_present" type="select1" required="true()"/>

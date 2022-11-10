@@ -3,7 +3,7 @@ const loginPage = require('../../../page-objects/default/login/login.wdio.page')
 const placeFactory = require('../../../factories/cht/contacts/place');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const contactElements = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const district_hospital = placeFactory.generateHierarchy(['district_hospital'])[0];
+const district_hospital = placeFactory.generateHierarchy(['district_hospital']).get('district_hospital');
 
 describe('MessageFormat', () => {
   const createContact = async () => {
