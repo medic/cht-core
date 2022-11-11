@@ -886,10 +886,11 @@ describe('Setup utils', () => {
 
   describe('makeUpgradeRequest', () => {
     it('should call default upgrade service url', async () => {
-      const payload = { the: 'payload' };
-      sinon.stub(rpn, 'post').resolves('response');
+      const payload = { docker_compose: { 'doc.yml': 'payload' }, containers: [] };
+      const response = { 'doc.yml': { ok: true } };
+      sinon.stub(rpn, 'post').resolves({ 'doc.yml': { ok: true } });
 
-      expect(await utils.makeUpgradeRequest(payload)).to.deep.equal('response');
+      expect(await utils.makeUpgradeRequest(payload)).to.deep.equal(response);
       expect(rpn.post.callCount).to.equal(1);
       expect(rpn.post.args[0]).to.deep.equal([{
         url: 'http://localhost:5008/upgrade',
@@ -899,12 +900,13 @@ describe('Setup utils', () => {
     });
 
     it('should call env upgrade service url', async () => {
-      const payload = { tags: {}, 'docker-compose': {} };
-      sinon.stub(rpn, 'post').resolves('response');
+      const payload = { containers: [], docker_compose: { 'doc.yml': 'payload' } };
+      const response = { 'doc.yml': { ok: true } };
+      sinon.stub(rpn, 'post').resolves(response);
       process.env.UPGRADE_SERVICE_URL = 'http://someurl';
       utils = rewire('../../../../src/services/setup/utils');
 
-      expect(await utils.makeUpgradeRequest(payload)).to.deep.equal('response');
+      expect(await utils.makeUpgradeRequest(payload)).to.deep.equal(response);
       expect(rpn.post.callCount).to.equal(1);
       expect(rpn.post.args[0]).to.deep.equal([{
         url: 'http://someurl/upgrade',
@@ -913,20 +915,83 @@ describe('Setup utils', () => {
       }]);
     });
 
-    it('should throw invalid url error', () => {
-      const payload = { tags: {}, 'docker-compose': {} };
-      sinon.stub(rpn, 'post').resolves('response');
+    it('should throw invalid url error', async () => {
+      const payload = { containers: [], docker_compose: {} };
+      sinon.stub(rpn, 'post').resolves({});
       process.env.UPGRADE_SERVICE_URL = 'whatever';
       utils = rewire('../../../../src/services/setup/utils');
 
-      expect(utils.makeUpgradeRequest.bind({}, payload)).to.throw('Invalid UPGRADE_SERVICE_URL: whatever');
+      await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('Invalid UPGRADE_SERVICE_URL: whatever');
     });
 
     it('should throw request errors', async () => {
-      const payload = { tags: {}, 'docker-compose': {} };
+      const payload = { containers: [], 'docker-compose': {} };
       sinon.stub(rpn, 'post').rejects(new Error('boom'));
 
       await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('boom');
+    });
+
+    it('should throw error when response is invalid', async () => {
+      const payload = { docker_compose: { 'doc.yml': 'payload' }, containers: {} };
+      sinon.stub(rpn, 'post').resolves();
+
+      await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('No containers were updated');
+    });
+
+    it('should throw error when no docker-compose files were updated', async () => {
+      const payload = { docker_compose: { 'doc1.yml': 'payload', 'doc2.yml': 'payload' }, containers: [] };
+      sinon.stub(rpn, 'post').resolves({
+        'doc1.yml': { ok: false },
+        'doc2.yml': { ok: false },
+      });
+
+      await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('No containers were updated');
+    });
+
+    it('should throw error when no containers were upgraded', async () => {
+      const payload = {
+        docker_compose: { 'd1.yml': 'p', 'd2.yml': 'p' },
+        containers: [{ container_name: 'a' }, { container_name: 'b' }]
+      };
+      sinon.stub(rpn, 'post').resolves({
+        'a': { ok: false },
+        'b': { ok: false },
+      });
+
+      await expect(utils.makeUpgradeRequest(payload)).to.be.rejectedWith('No containers were updated');
+    });
+  });
+
+  describe('upgradeResponseSuccess', () => {
+    it('should return false when response is falsy', () => {
+      expect(utils.__get__('upgradeResponseSuccess')({}, false)).to.equal(false);
+    });
+
+    it('should return false when there are no successful docker-compose file upgrades', () => {
+      const payload = { docker_compose: { a: 'a', b: 'b', c: 'c' }, containers: [] };
+      const response = { a: { ok: false }, b: { ok: false }, c: { ok: false } };
+      expect(utils.__get__('upgradeResponseSuccess')(payload, response)).to.equal(false);
+    });
+
+    it('should return false when there are no successful k8s container upgrades', () => {
+      const payload = {
+        docker_compose: { a: 'a', b: 'b', c: 'c' },
+        containers: [{ container_name: 'c1', image: 'a' }, { container_name: 'c2', image: 'b' }]
+      };
+      const response = { c1: { ok: false }, c2: { ok: false } };
+      expect(utils.__get__('upgradeResponseSuccess')(payload, response)).to.equal(false);
+    });
+
+    it('should return true when there is at least one successful docker-compose file upgrade', () => {
+      const payload = { docker_compose: { a: 'a', b: 'b', c: 'c' }, containers: [] };
+      const response = { a: { ok: true }, b: { ok: false }, c: { ok: false } };
+      expect(utils.__get__('upgradeResponseSuccess')(payload, response)).to.equal(true);
+    });
+
+    it('should return true when there is at least one successful container upgrade', () => {
+      const payload = { docker_compose: { a: 'a' }, containers: [{ container_name: 'aa' }, { container_name: 'bb' }] };
+      const response = { aa: { ok: true }, bb: { ok: false } };
+      expect(utils.__get__('upgradeResponseSuccess')(payload, response)).to.equal(true);
     });
   });
 });

@@ -116,7 +116,17 @@ const complete = async (buildInfo) => {
   const stagingDoc = await upgradeUtils.getStagingDoc(buildInfo);
   const payload = upgradeUtils.getUpgradeServicePayload(stagingDoc);
 
-  return await upgradeUtils.makeUpgradeRequest(payload);
+  // The upgrade request will initiate container upgrades. If successful, the API container will stop and the execution
+  // of this code will be interrupted. 
+  const response = await upgradeUtils.makeUpgradeRequest(payload);
+
+  logger.warn(
+    'upgrade-service upgrade request succeeded, without CHT-API restarting. ' +
+    'This can potentially indicate that the upgrade was not successful. ' +
+    'Please inspect the upgrade response to determine whether all expected compose files were upgraded: %o',
+    response
+  );
+  return response;
 };
 
 module.exports = {
