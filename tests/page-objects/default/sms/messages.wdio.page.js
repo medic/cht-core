@@ -53,7 +53,7 @@ const sendMessageToPhone = async (message, phone) => {
 const searchSelect = async (searchText, entrySelector) => {
   await messageRecipientSelect().setValue(searchText);
   const elm = await $(entrySelector);
-  await elm.waitForDisplayed(2000);
+  await elm.waitForDisplayed(4000);
   elm.click();
 };
 
