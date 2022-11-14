@@ -270,7 +270,6 @@ export class XmlFormsService {
     return this
       .getById(internalId)
       .catch(err => {
-        this.feedbackService.submit(`Error in XMLFormService getById : "${err?.status}" ; "${err?.message}"`);
         console.warn('Error in XMLFormService getById : ', err?.message, err?.status, err);
         if (err.status === 404) {
           // fallback for backwards compatibility

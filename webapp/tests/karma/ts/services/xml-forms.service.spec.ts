@@ -1011,7 +1011,7 @@ describe('XmlForms service', () => {
       });
     });
 
-    it('returns error, logs and register feedback doc when getById fails', () => {
+    it('returns error, logs when getById fails', () => {
       const internalId = 'birth';
       dbGet.rejects('getById fails');
       dbQuery.rejects('getByView fails');
@@ -1022,8 +1022,6 @@ describe('XmlForms service', () => {
         })
         .catch(err => {
           expect(err.name).to.equal('getById fails');
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0].startsWith('Error in XMLFormService getById : ')).to.be.true;
           expect(warn.callCount).to.equal(1);
           expect(warn.args[0][0]).to.equal('Error in XMLFormService getById : ');
         });
@@ -1040,9 +1038,8 @@ describe('XmlForms service', () => {
         })
         .catch(err => {
           expect(err.message).to.equal('Error in XMLFormService getByView ');
-          expect(feedbackService.submit.callCount).to.equal(2);
-          expect(feedbackService.submit.args[0][0].startsWith('Error in XMLFormService getById ')).to.be.true;
-          expect(feedbackService.submit.args[1][0].startsWith('Error in XMLFormService getByView ')).to.be.true;
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0].startsWith('Error in XMLFormService getByView ')).to.be.true;
           expect(warn.callCount).to.equal(1);
           expect(warn.args[0][0]).to.equal('Error in XMLFormService getById : ');
           expect(error.callCount).to.equal(1);
@@ -1092,10 +1089,6 @@ describe('XmlForms service', () => {
       return service.get(internalId).then(actual => {
         expect(warn.callCount).to.equal(1);
         expect(warn.args[0][0]).to.equal('Error in XMLFormService getById : ');
-        expect(feedbackService.submit.callCount).to.equal(1);
-        expect(feedbackService.submit.args[0][0]
-          .startsWith('Error in XMLFormService getById'))
-          .to.be.true;
         expect(actual).to.deep.equal(expected);
         expect(dbQuery.callCount).to.equal(1);
         expect(dbQuery.args[0][0]).to.equal(`medic-client/doc_by_type`);
@@ -1131,14 +1124,11 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal('Error in XMLFormService getByView ');
           expect(error.args[0][1]).to.equal(`Multiple forms found for internalId : "${internalId}"`);
-          expect(feedbackService.submit.callCount).to.equal(2);
+          expect(feedbackService.submit.callCount).to.equal(1);
           expect(feedbackService.submit.args[0][0]
-            .startsWith('Error in XMLFormService getById : '))
-            .to.be.true;
-          expect(feedbackService.submit.args[1][0]
             .startsWith('Error in XMLFormService getByView '))
             .to.be.true;
-          expect(feedbackService.submit.args[1][0]
+          expect(feedbackService.submit.args[0][0]
             .includes(`Multiple forms found for internalId : "${internalId}"`))
             .to.be.true;
         });
@@ -1165,14 +1155,11 @@ describe('XmlForms service', () => {
           expect(error.callCount).to.equal(1);
           expect(error.args[0][0]).to.equal('Error in XMLFormService getByView ');
           expect(error.args[0][1]).to.equal(`No form found for internalId : "${internalId}"`);
-          expect(feedbackService.submit.callCount).to.equal(2);
+          expect(feedbackService.submit.callCount).to.equal(1);
           expect(feedbackService.submit.args[0][0]
-            .startsWith('Error in XMLFormService getById : '))
-            .to.be.true;
-          expect(feedbackService.submit.args[1][0]
             .startsWith('Error in XMLFormService getByView '))
             .to.be.true;
-          expect(feedbackService.submit.args[1][0]
+          expect(feedbackService.submit.args[0][0]
             .includes(`No form found for internalId : "${internalId}"`))
             .to.be.true;
         });
