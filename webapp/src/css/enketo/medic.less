@@ -421,11 +421,6 @@
   .select2-container--default .select2-selection--single .select2-selection__arrow {
     height: 39px;
   }
-  // Overwrite Enketo styles for Chrome 72+: https://github.com/medic/medic/issues/5380
-  .question input[type=checkbox]:checked {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' stroke='%234f93ce' fill='%234f93ce' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M25.1 12.5l-3.4-3.3-8 8-2.9-3-3.4 3.4 6.3 6.3z'/%3E%3C/svg%3E");
-  }
-
   .pages.or .or-repeat-info[role="page"] {
     display: block;
   }
@@ -439,13 +434,13 @@
     .option-wrapper > label:not(.filler) {
       padding-top: 10px;
       padding-bottom: 10px;
+
       &:hover {
-        background-color: #ffa500;
-        color: white;
+        background-color: inherit;
       }
-    }
-    input[data-mm-android-dp]:hover {
-      background-color: #ffa500;
+      &[data-checked=true] {
+        background-color: @enketo-hover-color;
+      }
     }
     .form-footer {
       .btn.btn-link.cancel {
