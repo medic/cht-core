@@ -9,6 +9,7 @@ import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +26,7 @@ export class XmlFormsService {
     private fileReaderService: FileReaderService,
     private userContactService:UserContactService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
+    private feedbackService:FeedbackService,
     private parseProvider:ParseProvider,
     private ngZone:NgZone,
   ) {
@@ -73,16 +75,20 @@ export class XmlFormsService {
       .then(docs => docs?.filter(doc => doc.internalId === internalId))
       .then(docs => {
         if (!docs.length) {
-          const message = `No form found for internalId "${internalId}"`;
-          console.error('Error in XMLFormService getByView : ', message);
+          const message = `No form found for internalId : "${internalId}"`;
           return Promise.reject(new Error(message));
         }
         if (docs.length > 1) {
-          const message = `Multiple forms found for internalId: "${internalId}"`;
-          console.error('Error in XMLFormService getByView : ', message);
+          const message = `Multiple forms found for internalId : "${internalId}"`;
           return Promise.reject(new Error(message));
         }
         return docs[0];
+      })
+      .catch(err => {
+        const errorMessage = 'Error in XMLFormService getByView ';
+        console.error(errorMessage, err.message);
+        this.feedbackService.submit(errorMessage + err.message, false);
+        return Promise.reject(new Error(errorMessage));
       });
   }
 
@@ -264,7 +270,8 @@ export class XmlFormsService {
     return this
       .getById(internalId)
       .catch(err => {
-        console.warn('Error in XMLFormService getById, falls back to using view : ', err?.message, err);
+        this.feedbackService.submit(`Error in XMLFormService getById : "${err?.status}" ; "${err?.message}"`);
+        console.warn('Error in XMLFormService getById : ', err?.message, err?.status, err);
         if (err.status === 404) {
           // fallback for backwards compatibility
           return this.getByView(internalId);
@@ -274,6 +281,7 @@ export class XmlFormsService {
       .then(doc => {
         if (!this.findXFormAttachmentName(doc)) {
           const errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
+          this.feedbackService.submit('Error in XMLFormService findXFormAttachmentName : ' + errorMessage, false);
           console.error('Error in XMLFormService findXFormAttachmentName : ', errorMessage);
           return Promise.reject(new Error(errorMessage));
         }
@@ -292,6 +300,7 @@ export class XmlFormsService {
             if (err.status === 404) {
               const errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
               console.error('Error in XMLFormService getDocAndFormAttachment : ', errorMessage);
+              this.feedbackService.submit('Error in XMLFormService getDocAndFormAttachment : ' + errorMessage, false);
               return Promise.reject(new Error(errorMessage));
             }
             throw err;
