@@ -26,8 +26,8 @@ const generatePlaces = (types = ['district_hospital', 'health_center', 'clinic']
 };
 
 const linkPlaces = (places) => {
-  const linkedPlaces = Object.assign(places);
-  linkedPlaces.forEach((place, index) => {
+  const linkedPlaces = new Map();
+  places.forEach((place, index) => {
     const parent = places[index - 1] ? {
       _id: places[index - 1]._id,
       parent: {
@@ -35,6 +35,7 @@ const linkPlaces = (places) => {
       }
     } : '';
     place.parent = parent;
+    linkedPlaces.set(place.type, place);
   });
   return linkedPlaces;
 };

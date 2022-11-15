@@ -1,0 +1,51 @@
+version: '3.7'
+
+
+###########################
+######### NOTICE ##########
+###########################
+# THIS COMPOSE FILE ONLY  #
+# WORKS WITH CHT 3.X. IT  #
+# WILL NOT WORK WITH      #
+# CHT 4.X!                #
+###########################
+
+# For more information on how to use this docker compose file see our docs page:
+#   https://docs.communityhealthtoolkit.org/apps/guides/hosting/app-developer/
+
+services:
+  medic-os:
+
+    image: medicmobile/medic-os:cht-3.9.0-rc.2
+    volumes:
+      - medic-data:/srv
+    ports:
+      - "${CHT_HTTP:-80}:80"
+      - "${CHT_HTTPS:-443}:443"
+    working_dir: /srv
+    depends_on:
+      - haproxy
+    networks:
+      - medic-net
+    environment:
+      - DOCKER_NETWORK_NAME=haproxy
+      - DOCKER_COUCHDB_ADMIN_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
+
+  haproxy:
+
+    image: medicmobile/haproxy:rc-1.17
+    volumes:
+      - medic-data:/srv
+    environment:
+      - COUCHDB_HOST=medic-os
+      - HA_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
+    networks:
+      - medic-net
+
+volumes:
+  medic-data:
+
+
+networks:
+  medic-net:
+

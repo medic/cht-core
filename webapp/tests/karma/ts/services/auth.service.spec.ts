@@ -116,6 +116,17 @@ describe('Auth Service', () => {
       expect(result).to.be.false;
     });
 
+    it('should throw error when server is offline', async () => {
+      settingsService.get.rejects({ status: 503 });
+      chtScriptApiService.init();
+      try {
+        await service.has(['']);
+        expect.fail();
+      } catch (err) {
+        expect(err).to.deep.equal({ status: 503 });
+      }
+    });
+
     describe('unconfigured permissions', () => {
 
       // Unconfigured permissions should behave the same as having the permission

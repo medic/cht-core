@@ -94,7 +94,7 @@ const page4 = [
   },
   {
     type: 'radio',
-    css: 'input[data-name="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding"]'
+    css: 'input[data-name="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding"]'
   },
   {
     type: 'radio',

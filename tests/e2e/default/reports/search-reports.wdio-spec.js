@@ -88,7 +88,7 @@ const REPORT2 = {
   reported_date: moment().subtract(10, 'minutes').valueOf()
 };
 
-const docs = [...places, sittuHospital, sittuPerson, potuHospital, potuPerson, REPORT1, REPORT2];
+const docs = [...places.values(), sittuHospital, sittuPerson, potuHospital, potuPerson, REPORT1, REPORT2];
 
 describe('Test Reports Search Functionality', async () => {
   before(async () => {

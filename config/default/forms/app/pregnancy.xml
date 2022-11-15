@@ -668,7 +668,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy id="pregnancy" prefix="J1!pregnancy!" delimiter="#" version="2022-08-19 16:05:54">
+        <pregnancy id="pregnancy" prefix="J1!pregnancy!" delimiter="#" version="2022-09-26 11:42:48">
           <inputs>
             <meta>
               <location>
@@ -995,20 +995,20 @@
       <bind nodeset="/pregnancy/tt_received" type="string" calculate="../safe_pregnancy_practices/tetanus/tt_imm_received"/>
       <bind nodeset="/pregnancy/t_pregnancy_follow_up_date" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date"/>
       <bind nodeset="/pregnancy/t_pregnancy_follow_up" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known"/>
-      <bind nodeset="/pregnancy/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(floor(decimal-date-time(today())) + 3)"/>
+      <bind nodeset="/pregnancy/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
       <bind nodeset="/pregnancy/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"/>
       <bind nodeset="/pregnancy/gestational_age/register_method/register_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy/gestational_age/register_method/lmp_method" type="select1" required="true()"/>
       <bind nodeset="/pregnancy/gestational_age/method_lmp" relevant="selected(../register_method/lmp_method, 'method_lmp')"/>
-      <bind nodeset="/pregnancy/gestational_age/method_lmp/u_lmp_date" type="date" required="true()" jr:constraintMsg="jr:itext('/pregnancy/gestational_age/method_lmp/u_lmp_date:jr:constraintMsg')" constraint=". &lt;= date-time(floor(decimal-date-time(today())) - (1 * 30)) and
-. &gt;= date-time(floor(decimal-date-time(today())) - (9 * 30))"/>
+      <bind nodeset="/pregnancy/gestational_age/method_lmp/u_lmp_date" type="date" required="true()" constraint=". &lt;= date-time(decimal-date-time(today()) - (1 * 30)) and
+. &gt;= date-time(decimal-date-time(today()) - (9 * 30))" jr:constraintMsg="jr:itext('/pregnancy/gestational_age/method_lmp/u_lmp_date:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy/gestational_age/method_approx" relevant="selected(../register_method/lmp_method, 'method_approx')"/>
       <bind nodeset="/pregnancy/gestational_age/method_approx/lmp_approx" type="select1" required="true()"/>
       <bind nodeset="/pregnancy/gestational_age/method_approx/lmp_approx_weeks" type="int" required="true()" relevant="selected(../lmp_approx, 'approx_weeks')" jr:constraintMsg="jr:itext('/pregnancy/gestational_age/method_approx/lmp_approx_weeks:jr:constraintMsg')" constraint=". &gt;= 4 and . &lt;= 40"/>
       <bind nodeset="/pregnancy/gestational_age/method_approx/lmp_approx_months" type="int" required="true()" relevant="selected(../lmp_approx, 'approx_months')" jr:constraintMsg="jr:itext('/pregnancy/gestational_age/method_approx/lmp_approx_months:jr:constraintMsg')" constraint=". &gt;= 1 and . &lt;= 9"/>
       <bind nodeset="/pregnancy/gestational_age/method_edd" relevant="selected(../register_method/lmp_method, 'method_edd')"/>
-      <bind nodeset="/pregnancy/gestational_age/method_edd/u_edd" type="date" required="true()" jr:constraintMsg="jr:itext('/pregnancy/gestational_age/method_edd/u_edd:jr:constraintMsg')" constraint=". &gt;= date-time(floor(decimal-date-time(today()))) and
-. &lt;= date-time(floor(decimal-date-time(today())) + (9 * 30))"/>
+      <bind nodeset="/pregnancy/gestational_age/method_edd/u_edd" type="date" required="true()" constraint=". &gt;= today() and
+. &lt;= date-time(decimal-date-time(today()) + (9 * 30))" jr:constraintMsg="jr:itext('/pregnancy/gestational_age/method_edd/u_edd:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy/gestational_age/method_lmp_summary" relevant="not(selected(../register_method/lmp_method, 'method_none'))"/>
       <bind nodeset="/pregnancy/gestational_age/method_lmp_summary/lmp_check_note" readonly="true()" type="string" relevant="selected(../../register_method/lmp_method, 'method_lmp')"/>
       <bind nodeset="/pregnancy/gestational_age/method_lmp_summary/lmp_approx_weeks_check_note" readonly="true()" type="string" relevant="selected(../../method_approx/lmp_approx, 'approx_weeks')"/>
@@ -1021,8 +1021,8 @@ or selected(../../method_approx/lmp_approx, 'approx_months')"/>
       <bind nodeset="/pregnancy/gestational_age/method_lmp_summary/edd_check_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy/gestational_age/g_lmp_date_8601" type="string" calculate="format-date-time(
 if(selected(../register_method/lmp_method, 'method_lmp'), ../method_lmp/u_lmp_date,
-if(selected(../method_approx/lmp_approx, 'approx_weeks'), date-time(floor(decimal-date-time(today())) - (../method_approx/lmp_approx_weeks * 7)), 
-if(selected(../method_approx/lmp_approx, 'approx_months'), date-time(floor(decimal-date-time(today())) - round(../method_approx/lmp_approx_months * 30.5)),
+if(selected(../method_approx/lmp_approx, 'approx_weeks'), date-time(decimal-date-time(today()) - (../method_approx/lmp_approx_weeks * 7)), 
+if(selected(../method_approx/lmp_approx, 'approx_months'), date-time(decimal-date-time(today()) - round(../method_approx/lmp_approx_months * 30.5)),
 if(selected(../register_method/lmp_method, 'method_edd'), date-time(decimal-date-time(../method_edd/u_edd) - 280), '')
 ))), &quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/pregnancy/gestational_age/g_lmp_date" type="string" calculate="format-date-time(../g_lmp_date_8601, &quot;%e %b, %Y&quot;)"/>
@@ -1037,16 +1037,16 @@ if(selected(../register_method/lmp_method, 'method_edd'), date-time(decimal-date
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_single" readonly="true()" type="string" relevant=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count  = 1"/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_count_confim_note_multiple" readonly="true()" type="string" relevant=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_ask_single" type="select1" required="true()" relevant=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count  = 1"/>
-      <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single" type="date" required="true()" relevant="selected(../visited_date_ask_single, 'yes')" jr:constraintMsg="jr:itext('/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single:jr:constraintMsg')" constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today())) and decimal-date-time(.) &gt;= (decimal-date-time( /pregnancy/gestational_age/g_lmp_date_8601 ))"/>
+      <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single" type="date" required="true()" relevant="selected(../visited_date_ask_single, 'yes')" constraint=". &lt;= today() and . &gt;=  /pregnancy/gestational_age/g_lmp_date_8601 " jr:constraintMsg="jr:itext('/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_date_single:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note" readonly="true()" type="string" relevant=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_multiple_note_section" readonly="true()" type="string" relevant=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates_count" type="string" readonly="true()" calculate=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count "/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates" relevant=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date_ask_multiple" type="select1" required="true()" relevant=" /pregnancy/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
-      <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date" type="date" required="true()" relevant="selected(../visited_date_ask_multiple, 'yes')" jr:constraintMsg="jr:itext('/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date:jr:constraintMsg')" constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today())) and decimal-date-time(.) &gt;= (decimal-date-time( /pregnancy/gestational_age/g_lmp_date_8601 ))"/>
+      <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date" type="date" required="true()" relevant="selected(../visited_date_ask_multiple, 'yes')" constraint=". &lt;= today() and . &gt;=  /pregnancy/gestational_age/g_lmp_date_8601 " jr:constraintMsg="jr:itext('/pregnancy/anc_visits_hf/anc_visits_hf_past/visited_dates_group/visited_dates/visited_date:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known" type="select1" required="true()"/>
-      <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date" type="date" required="true()" relevant="selected(../appointment_date_known, 'yes')" jr:constraintMsg="jr:itext('/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:jr:constraintMsg')" constraint="(decimal-date-time(.) &gt;= floor(decimal-date-time(today()))) and
-(decimal-date-time(.) &lt;= floor(decimal-date-time(today() + 30)))"/>
+      <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date" type="date" required="true()" relevant="selected(../appointment_date_known, 'yes')" constraint="(. &gt;= today()) and
+(decimal-date-time(.) &lt;= decimal-date-time(today()) + 30)" jr:constraintMsg="jr:itext('/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note" relevant="selected(../anc_next_visit_date/appointment_date_known, 'no')"/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/who_recommends_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/prenancy_age_note" readonly="true()" type="string"/>
@@ -1176,14 +1176,14 @@ selected(../iron_folate/iron_folate_daily, 'no')), 'yes', 'no')"/>
 ../next_visit_weeks &lt; 40 and
 ../next_visit_weeks &gt; 0"/>
       <bind nodeset="/pregnancy/summary/r_fup_pregnancy_visit_2_weeks" readonly="true()" type="string" relevant="selected(../../gestational_age/register_method/lmp_method, 'method_none')"/>
-      <bind nodeset="/pregnancy/summary/next_visit_weeks" type="string" calculate="round((if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 12*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy/lmp_date_8601 ) + 12*7,
-if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 20*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy/lmp_date_8601 ) + 20*7,
-if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 26*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy/lmp_date_8601 ) + 26*7,
-if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 30*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy/lmp_date_8601 ) + 30*7,
-if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 34*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy/lmp_date_8601 ) + 34*7,
-if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 36*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy/lmp_date_8601 ) + 36*7,
-if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 38*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy/lmp_date_8601 ) + 38*7,
-if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7, 0
+      <bind nodeset="/pregnancy/summary/next_visit_weeks" type="string" calculate="round((if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 12*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy/lmp_date_8601 ) + 12*7,
+if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 20*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy/lmp_date_8601 ) + 20*7,
+if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 26*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy/lmp_date_8601 ) + 26*7,
+if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 30*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy/lmp_date_8601 ) + 30*7,
+if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 34*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy/lmp_date_8601 ) + 34*7,
+if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 36*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy/lmp_date_8601 ) + 36*7,
+if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 38*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy/lmp_date_8601 ) + 38*7,
+if((decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy/lmp_date_8601 ) + 40*7, 0
 )))))))) - decimal-date-time(today())) div 7, 0)"/>
       <bind nodeset="/pregnancy/summary/edd_summary" type="string" calculate="format-date-time( /pregnancy/edd_8601 , &quot;%e %b, %Y&quot;)"/>
       <bind nodeset="/pregnancy/summary/next_appointment_date" type="string" calculate="format-date-time( /pregnancy/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date , &quot;%e %b, %Y&quot;)"/>
