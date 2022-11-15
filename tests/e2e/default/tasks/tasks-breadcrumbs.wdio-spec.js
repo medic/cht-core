@@ -36,13 +36,13 @@ describe('Tasks tab breadcrumbs', () => {
     },
   };
   const chw = userFactory.build({
-    username: 'offlineuser',
+    username: 'offlineuser_tasks',
     isOffline: true,
     place: health_center._id,
     contact: contact._id,
   });
   const supervisor = userFactory.build({
-    username: 'supervisor',
+    username: 'supervisor_tasks',
     roles: [ 'chw_supervisor' ],
     place: district_hospital._id,
     contact: contact2._id,
