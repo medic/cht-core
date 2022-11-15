@@ -35,7 +35,7 @@
           </div>
 
           <div *ngIf="summaries[$index]?.subject?.type" class="subject">
-            <a class="name" *ngIf="summaries[$index]?.subject._id || summaries[$index].patient._id"
+            <a class="name" *ngIf="summaries[$index]?.subject._id || summaries[$index]?.patient?._id"
               [routerLink]="['/contacts', summaries[$index].subject._id || summaries[$index].patient._id]"
               [innerHTML]="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
             </a>
