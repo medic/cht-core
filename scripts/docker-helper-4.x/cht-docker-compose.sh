@@ -28,9 +28,9 @@ if [[ -z "$projectName" ]]; then
 		while [[ -z "$projectName" ]]; do
 			read -p "How do you want to name the project? " projectName
 
-      projectName="${projectName//[^[:alnum:]]/_}"
-      projectName=$(echo $projectName | tr '[:upper:]' '[:lower:]')
-      projectFile="$projectName.env"
+			projectName="${projectName//[^[:alnum:]]/_}"
+			projectName=$(echo $projectName | tr '[:upper:]' '[:lower:]')
+			projectFile="$projectName.env"
 			if test -f "./$projectFile"; then
 				echo "./$projectFile already exists"
 				projectName=
@@ -55,32 +55,32 @@ if [[ -z "$projectName" ]]; then
 		;;
 	esac
 
-  envCount=$(ls *.env | wc -l)
-  if [ "$envCount" -gt 0 ]; then
-    while [[ -z "$projectName" ]]; do
-      echo "Which project do you want to use?"
-      select project in $projects; do
-        projectName=$project
-        projectFile="$project.env"
-        homeDir="$HOME/.medic/cht-docker/$projectName-dir"
-        break
-      done
-    done
-  else
-    echo ""
-    echo "No projects found, please initialize a new one."
-    echo ""
-    exit 1
-  fi
+	envCount=$(ls *.env | wc -l)
+	if [ "$envCount" -gt 0 ]; then
+		while [[ -z "$projectName" ]]; do
+			echo "Which project do you want to use?"
+			select project in $projects; do
+				projectName=$project
+				projectFile="$project.env"
+				homeDir="$HOME/.medic/cht-docker/$projectName-dir"
+				break
+			done
+		done
+	else
+		echo ""
+		echo "No projects found, please initialize a new one."
+		echo ""
+		exit 1
+	fi
 fi
 
 mkdir -p "$homeDir/couch"
 curl -s -o "$homeDir/upgrade-service.yml" \
-  https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
+	https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
 curl -s -o "$homeDir/cht-core.yml" \
-  https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-core.yml
+	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-core.yml
 curl -s -o "$homeDir/couchdb.yml" \
-  https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-couchdb.yml
+	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-couchdb.yml
 
 # shellcheck disable=SC1090
 source "./$projectFile"
@@ -94,26 +94,26 @@ isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}_ng
 isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}-dir-cht-upgrade-service-1" 2>/dev/null)
 i=0
 while [[ "$isNginxRunning" != "true" ]]; do
-  if [[ $i -gt 300 ]]; then
-    echo ""
-    echo ""
-    echo "Failed to start - check docker logs for errors and try again."
-    echo ""
-    exit 1
-  fi
-  if [[ "$isUpgradeRunning" != "true" ]]; then
-    echo ""
-    echo ""
-    echo "Upgrade service no longer running - check for port conflicts or other errors and try again."
-    echo ""
-    exit 1
-  fi
+	if [[ $i -gt 300 ]]; then
+		echo ""
+		echo ""
+		echo "Failed to start - check docker logs for errors and try again."
+		echo ""
+		exit 1
+	fi
+	if [[ "$isUpgradeRunning" != "true" ]]; then
+		echo ""
+		echo ""
+		echo "Upgrade service no longer running - check for port conflicts or other errors and try again."
+		echo ""
+		exit 1
+	fi
 
-  echo '.' | tr -d '\n'
-  ((i++))
+	echo '.' | tr -d '\n'
+	((i++))
 	sleep 1
 	isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}_nginx_1" 2>/dev/null)
-  isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}-dir-cht-upgrade-service-1" 2>/dev/null)
+	isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}-dir-cht-upgrade-service-1" 2>/dev/null)
 done
 
 docker exec -it "${projectName}_nginx_1" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
