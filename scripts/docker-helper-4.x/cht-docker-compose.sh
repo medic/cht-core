@@ -4,12 +4,14 @@ set -eu
 
 projectFile=
 projectName=
+homeDir=
 
 # can pass a project .env file as argument
 if [[ -n "${1-}" ]]; then
 	if [[ -f "$1" ]]; then
 		projectFile=$1
-		projectName=$(echo "$1" | sed "s/\.\///" | sed "s/\.env//")
+		projectName=$(echo "$projectFile" | sed "s/\.\///" | sed "s/\.env//")
+		homeDir="$HOME/.medic/cht-docker/$projectName-dir"
 	else
 		echo "File $1 doesnt exist"
 	fi
@@ -31,6 +33,7 @@ if [[ -z "$projectName" ]]; then
 			projectName="${projectName//[^[:alnum:]]/_}"
 			projectName=$(echo $projectName | tr '[:upper:]' '[:lower:]')
 			projectFile="$projectName.env"
+  		homeDir="$HOME/.medic/cht-docker/$projectName-dir"
 			if test -f "./$projectFile"; then
 				echo "./$projectFile already exists"
 				projectName=
@@ -38,7 +41,6 @@ if [[ -z "$projectName" ]]; then
 			fi
 		done
 
-		homeDir="$HOME/.medic/cht-docker/$projectName-dir"
 		touch "./$projectFile"
 		echo "NGINX_HTTP_PORT=8080" >>"./$projectFile"
 		echo "NGINX_HTTPS_PORT=8443" >>"./$projectFile"
@@ -55,7 +57,7 @@ if [[ -z "$projectName" ]]; then
 		;;
 	esac
 
-	envCount=$(ls *.env | wc -l)
+	envCount=$(find . -name "*.env" -type f | wc -l)
 	if [ "$envCount" -gt 0 ]; then
 		while [[ -z "$projectName" ]]; do
 			echo "Which project do you want to use?"
