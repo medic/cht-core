@@ -6,19 +6,44 @@ projectFile=
 projectName=
 homeDir=
 
+get_existing_projects() {
+	find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//"
+}
+
+init_env_file() {
+	touch "./$projectFile"
+	cat >"./$projectFile" <<EOL
+NGINX_HTTP_PORT=8080
+NGINX_HTTPS_PORT=8443
+COUCHDB_USER=medic
+COUCHDB_PASSWORD=password
+CHT_COMPOSE_PROJECT_NAME=$projectName
+DOCKER_CONFIG_PATH=$homeDir
+COUCHDB_SECRET=$(openssl rand -hex 16)
+COUCHDB_UUID=$(openssl rand -hex 16)
+COUCHDB_DATA=$homeDir/couch
+CHT_COMPOSE_PATH=$homeDir/compose
+CHT_NETWORK=$projectName-cht-net
+EOL
+}
+
+get_home_dir() {
+  echo "$HOME/.medic/cht-docker/$1-dir"
+}
+
 # can pass a project .env file as argument
 if [[ -n "${1-}" ]]; then
 	if [[ -f "$1" ]]; then
 		projectFile=$1
 		projectName=$(echo "$projectFile" | sed "s/\.\///" | sed "s/\.env//")
-		homeDir="$HOME/.medic/cht-docker/$projectName-dir"
+		homeDir=$(get_home_dir "$projectName")
 	else
 		echo "File $1 doesnt exist"
 	fi
 fi
 
 if [[ -z "$projectName" ]]; then
-	projects=$(find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//")
+	projects=$(get_existing_projects)
 
 	if [[ -z "$projects" ]]; then
 		echo 'No project found, follow the prompts to create a project .env file.'
@@ -33,27 +58,17 @@ if [[ -z "$projectName" ]]; then
 			projectName="${projectName//[^[:alnum:]]/_}"
 			projectName=$(echo $projectName | tr '[:upper:]' '[:lower:]')
 			projectFile="$projectName.env"
-  		homeDir="$HOME/.medic/cht-docker/$projectName-dir"
+			homeDir=$(get_home_dir "$projectName")
 			if test -f "./$projectFile"; then
 				echo "./$projectFile already exists"
 				projectName=
 				projectFile=
+				homeDir=
 			fi
 		done
 
-		touch "./$projectFile"
-		echo "NGINX_HTTP_PORT=8080" >>"./$projectFile"
-		echo "NGINX_HTTPS_PORT=8443" >>"./$projectFile"
-		echo "COUCHDB_USER=medic" >>"./$projectFile"
-		echo "COUCHDB_PASSWORD=password" >>"./$projectFile"
-		echo "CHT_COMPOSE_PROJECT_NAME=$projectName" >>"./$projectFile"
-		echo "DOCKER_CONFIG_PATH=$homeDir" >>"./$projectFile"
-		echo "COUCHDB_SECRET=$(openssl rand -hex 16)" >>"./$projectFile"
-		echo "COUCHDB_UUID=$(openssl rand -hex 16)" >>"./$projectFile"
-		echo "COUCHDB_DATA=$homeDir/couch" >>"./$projectFile"
-		echo "CHT_COMPOSE_PATH=$homeDir/compose" >>"./$projectFile"
-		echo "CHT_NETWORK=$projectName-cht-net" >>"./$projectFile"
-		projects=$(find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//")
+		init_env_file
+		projects=$(get_existing_projects)
 		;;
 	esac
 
@@ -63,8 +78,8 @@ if [[ -z "$projectName" ]]; then
 			echo "Which project do you want to use?"
 			select project in $projects; do
 				projectName=$project
-				projectFile="$project.env"
-				homeDir="$HOME/.medic/cht-docker/$projectName-dir"
+				projectFile="$projectName.env"
+				homeDir=$(get_home_dir "$projectName")
 				break
 			done
 		done
