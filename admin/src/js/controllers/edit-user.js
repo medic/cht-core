@@ -227,8 +227,8 @@ angular
       if (!$scope.roles) {
         return true;
       }
-      for (const [key, value] of Object.entries($scope.roles)) {
-        if (value.offline && roles.includes(key)) {
+      for (const [name, role] of Object.entries($scope.roles)) {
+        if (role.offline && roles.includes(name)) {
           return false;
         }
       }
