@@ -51,7 +51,7 @@ if [[ -z "$projectName" ]]; then
 		echo "COUCHDB_SECRET=$(openssl rand -hex 16)" >>"./$projectFile"
 		echo "COUCHDB_UUID=$(openssl rand -hex 16)" >>"./$projectFile"
 		echo "COUCHDB_DATA=$homeDir/couch" >>"./$projectFile"
-		echo "CHT_COMPOSE_PATH=$homeDir" >>"./$projectFile"
+		echo "CHT_COMPOSE_PATH=$homeDir/compose" >>"./$projectFile"
 		echo "CHT_NETWORK=$projectName-cht-net" >>"./$projectFile"
 		projects=$(find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//")
 		;;
@@ -77,11 +77,12 @@ if [[ -z "$projectName" ]]; then
 fi
 
 mkdir -p "$homeDir/couch"
+mkdir -p "$homeDir/compose"
 curl -s -o "$homeDir/upgrade-service.yml" \
 	https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
-curl -s -o "$homeDir/cht-core.yml" \
+curl -s -o "$homeDir/compose/cht-core.yml" \
 	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-core.yml
-curl -s -o "$homeDir/couchdb.yml" \
+curl -s -o "$homeDir/compose/couchdb.yml" \
 	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-couchdb.yml
 
 # shellcheck disable=SC1090
@@ -93,7 +94,6 @@ docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml"
 set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
 isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}_nginx_1" 2>/dev/null)
-isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}-dir-cht-upgrade-service-1" 2>/dev/null)
 i=0
 while [[ "$isNginxRunning" != "true" ]]; do
 	if [[ $i -gt 300 ]]; then
@@ -103,19 +103,11 @@ while [[ "$isNginxRunning" != "true" ]]; do
 		echo ""
 		exit 1
 	fi
-	if [[ "$isUpgradeRunning" != "true" ]]; then
-		echo ""
-		echo ""
-		echo "Upgrade service no longer running - check for port conflicts or other errors and try again."
-		echo ""
-		exit 1
-	fi
 
 	echo '.' | tr -d '\n'
 	((i++))
 	sleep 1
 	isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}_nginx_1" 2>/dev/null)
-	isUpgradeRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}-dir-cht-upgrade-service-1" 2>/dev/null)
 done
 
 docker exec -it "${projectName}_nginx_1" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
