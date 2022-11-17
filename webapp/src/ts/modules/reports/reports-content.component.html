@@ -39,7 +39,7 @@
               [routerLink]="['/contacts', summaries[$index].subject._id || summaries[$index].patient._id]"
               [innerHTML]="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
             </a>
-            <span class="name" *ngIf="!summaries[$index]?.subject._id && !summaries[$index].patient._id"
+            <span class="name" *ngIf="!summaries[$index]?.subject._id && !summaries[$index].patient?._id"
               [innerHTML]="(summaries[$index]?.subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
             </span>
           </div>

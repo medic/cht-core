@@ -96,7 +96,8 @@ const postNatalVisit = {
 const postNatalVisitBis = Object.assign({}, postNatalVisit, {
   _id: '4971a859-bde7-4ff0-a0ed-326925b83038-bis',
   fields: Object.assign({}, postNatalVisit.fields, {
-    patient_id: null
+    patient_id: null,
+    patient_uuid: null,
   })
 });
 
