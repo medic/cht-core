@@ -28,7 +28,7 @@ EOL
 }
 
 get_home_dir() {
-  echo "$HOME/.medic/cht-docker/$1-dir"
+	echo "$HOME/.medic/cht-docker/$1-dir"
 }
 
 # can pass a project .env file as argument
