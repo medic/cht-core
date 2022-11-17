@@ -3,6 +3,7 @@ describe('EditUserCtrl controller', () => {
 
   let jQuery;
   let mockCreateNewUser;
+  let mockGetReplicationLimit;
   let mockEditAUser;
   let mockEditCurrentUser;
   let scope;
@@ -45,7 +46,7 @@ describe('EditUserCtrl controller', () => {
       phone: 'user.phone',
       facility_id: 'abc',
       contact_id: 'xyz',
-      roles: [ 'district-manager' ],
+      roles: [ 'district-manager', 'supervisor' ],
       language: 'zz',
     };
     translate = sinon.stub();
@@ -120,6 +121,12 @@ describe('EditUserCtrl controller', () => {
       mockCreateNewUser = () => {
         // Don't mock UserSettings, we're not fetching current user.
         return createController({});
+      };
+
+      mockGetReplicationLimit = () => {
+        http.get
+          .withArgs('/api/v1/users-info')
+          .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
       };
     });
   });
@@ -211,7 +218,7 @@ describe('EditUserCtrl controller', () => {
         });
     });
 
-    it(`password doesn't need to be filled when editing user`, () => {
+    it('password does not need to be filled when editing user', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
@@ -259,6 +266,22 @@ describe('EditUserCtrl controller', () => {
         });
     });
 
+    it('should not update user when nothing has changed', () => {
+      mockContact(userToEdit.contact_id);
+      mockFacility(userToEdit.facility_id);
+      mockContactGet(userToEdit.contact_id);
+      mockGetReplicationLimit();
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.roles = [ 'supervisor', 'district-manager' ]; // reversed order from userToEdit
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.called).to.equal(false);
+        });
+    });
+
     it('must have associated place if user type is offline user', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
@@ -283,8 +306,7 @@ describe('EditUserCtrl controller', () => {
           mockFacility(userToEdit.facility_id);
           mockContact(null);
           Translate.fieldIsRequired.withArgs('associated.contact').resolves('An associated contact is required');
-
-          return  scope.editUser();
+          return scope.editUser();
         })
         .then(() => {
           chai.expect(scope.errors.contact).to.equal('An associated contact is required');
@@ -309,7 +331,7 @@ describe('EditUserCtrl controller', () => {
         });
     });
 
-    it(`doesn't need associated place and contact if user type is not restricted user`, () => {
+    it('does not need associated place and contact if user type is not restricted user', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
@@ -644,12 +666,11 @@ describe('EditUserCtrl controller', () => {
         }
       });
 
+      mockGetReplicationLimit();
+
       return mockCreateNewUser()
         .setupPromise
         .then(() => {
-          http.get
-            .withArgs('/api/v1/users-info')
-            .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
           scope.editUserModel.username = 'newuser';
           scope.editUserModel.roles = [ 'data-entry' ];
           scope.editUserModel.token_login = true;
@@ -680,9 +701,7 @@ describe('EditUserCtrl controller', () => {
           app_url: 'url',
         }
       });
-      http.get
-        .withArgs('/api/v1/users-info')
-        .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
+      mockGetReplicationLimit();
       Translate.fieldIsRequired.resolves('Facility field is a required field');
 
       userToEdit.token_login = true;
@@ -715,9 +734,7 @@ describe('EditUserCtrl controller', () => {
           app_url: 'url',
         }
       });
-      http.get
-        .withArgs('/api/v1/users-info')
-        .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
+      mockGetReplicationLimit();
       Translate.fieldIsRequired.withArgs('Password').resolves('password required');
 
       userToEdit.token_login = true;

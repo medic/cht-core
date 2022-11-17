@@ -4,6 +4,13 @@ const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
 const ADMIN_ROLE = '_admin';
+const FIELDS_TO_IGNORE = [
+  'currentPassword',
+  'passwordConfirm',
+  'facilitySelect',
+  'contactSelect',
+  'tokenLoginEnabled',
+];
 
 angular
   .module('controllers')
@@ -297,16 +304,19 @@ angular
           return false;
         }
         if (key === 'password') {
-          return model[key] && model[key] !== '';
+          return model.password && model.password !== '';
         }
-        const metaFields = [
-          'currentPassword',
-          'passwordConfirm',
-          'facilitySelect',
-          'contactSelect',
-          'tokenLoginEnabled',
-        ];
-        if (metaFields.includes(key)) {
+        if (key === 'roles') {
+          const updated = model.roles || [];
+          const existing = existingModel.roles || [];
+          if (updated.length !== existing.length) {
+            return true;
+          }
+          updated.sort();
+          existing.sort();
+          return !updated.every((role, i) => role === existing[i]);
+        }
+        if (FIELDS_TO_IGNORE.includes(key)) {
           // We don't want to return these 'meta' fields
           return false;
         }
