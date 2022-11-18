@@ -23,12 +23,12 @@ const NETWORK = 'cht-net-e2e';
 const services = {
   haproxy: 'haproxy',
   nginx: 'nginx',
-  couch1: 'couch.1',
-  couch2: 'couch.2',
-  couch3: 'couch.3',
+  couch1: 'couchdb.1',
+  couch2: 'couchdb.2',
+  couch3: 'couchdb.3',
   api: 'api',
   sentinel: 'sentinel',
-  haproxy_healthcheck: 'haproxy-healthcheck',
+  haproxy_healthcheck: 'healthcheck',
 };
 const CONTAINER_NAMES = {};
 let dockerVersion = 1;
@@ -303,10 +303,10 @@ const setUserContactDoc = (attempt=0) => {
 };
 
 /**
- * Deletes documents from the database, including Enketo forms. Use with caution. 
- * @param {array} except - exeptions in the delete method. If this parameter is empty 
+ * Deletes documents from the database, including Enketo forms. Use with caution.
+ * @param {array} except - exeptions in the delete method. If this parameter is empty
  *                         everything will be deleted from the config, including all the enketo forms.
- * @param {boolean} ignoreRefresh 
+ * @param {boolean} ignoreRefresh
  */
 const revertDb = async (except, ignoreRefresh) => {
   if (!except || !except.length) {
