@@ -250,7 +250,7 @@ describe('Create User for Contacts service', () => {
       });
     });
 
-    it(`returns true when the given contact is replaced with status: ERROR`, () => {
+    it(`returns false when the given contact is replaced with status: ERROR`, () => {
       const pendingContact = getContactWithStatus('ERROR');
       assert.isFalse(service.isReplaced(pendingContact));
     });

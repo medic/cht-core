@@ -67,12 +67,12 @@ const generateUniqueUsername = async (contactName, collisionCount = 0) => {
   }
   const username = generateUsername(contactName, collisionCount);
   try {
-    await db.users.get(`org.couchdb.user:${username}`);
-    return generateUniqueUsername(contactName, collisionCount + 1);
+    await users.validateNewUsername(username);
+    return username;
   } catch (error) {
-    if (error.status === 404) {
-      // this username is available
-      return username;
+    if (error.code === 400) {
+      // this username is used
+      return generateUniqueUsername(contactName, collisionCount + 1);
     }
     throw error;
   }
@@ -112,7 +112,7 @@ const replaceUser = async (originalContact, { username, replacementContactId }) 
       ]);
 
     await createNewUser(originalUserSettings, newContact);
-    await users.deleteUser(originalUserSettings.name);
+    await users.resetPassword(originalUserSettings.name);
     originalContact.user_for_contact.replace[username].status = USER_CREATION_STATUS.COMPLETE;
   } catch (e) {
     originalContact.user_for_contact.replace[username].status = USER_CREATION_STATUS.ERROR;

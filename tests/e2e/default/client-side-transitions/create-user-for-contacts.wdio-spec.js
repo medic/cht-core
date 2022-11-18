@@ -190,18 +190,31 @@ const assertNewContact = (newContact, originalUser, originalContact) => {
   expect(newContact.sex).to.equal('female');
 };
 
-const assertUserDisabled = async (user) => {
-  const [oldUserSettings] = await utils.getUserSettings({ name: user.username });
-  expect(oldUserSettings.inactive).to.be.true;
-
+const submitLoginRequest = ({ username, password }) => {
   const opts = {
     path: '/medic/login',
-    body: { user: user.username, password: user.password, locale: 'en' },
+    body: { user: username, password, locale: 'en' },
     method: 'POST',
     simple: false,
   };
-  const resp = await utils.request(opts);
-  expect(resp.statusCode).to.equal(401);
+  return utils.request(opts);
+};
+
+const assertUserDisabled = async (user) => {
+  // Cannot login because user's password has been automatically reset
+  const resp0 = await submitLoginRequest(user);
+  expect(resp0.statusCode).to.equal(401);
+
+  // Update user's password to something we know
+  await utils.request({
+    path: `/api/v1/users/${user.username}`,
+    method: 'POST',
+    body: { password: 'n3wPassword!' }
+  });
+
+  // Can login with new password
+  const resp1 = await submitLoginRequest({ ...user, password: 'n3wPassword!' });
+  expect(resp1.statusCode).to.equal(302);
 };
 
 const assertNewUserSettings = (newUserSettings, newContact, originalUser) => {
@@ -851,9 +864,9 @@ describe('Create user for contacts', () => {
     // Original contact not updated
     const updatedOriginalContact = await utils.getDoc(originalContactId);
     expect(updatedOriginalContact.user_for_contact).to.be.undefined;
-    // Original user not disabled
-    const [oldUserSettings] = await utils.getUserSettings({ name: ONLINE_USER.username });
-    expect(oldUserSettings.inactive).to.be.undefined;
+    // Can still login as original user
+    const resp1 = await submitLoginRequest(ONLINE_USER);
+    expect(resp1.statusCode).to.equal(302);
     // New user not created
     const newUserSettings = await utils.getUserSettings({ contactId: replacementContactId });
     expect(newUserSettings).to.be.empty;

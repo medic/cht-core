@@ -9,7 +9,8 @@ const tokenLogin = require('./token-login');
 const config = require('./libs/config');
 const moment = require('moment');
 const bulkUploadLog = require('./bulk-upload-log');
-const { people, places }  = require('@medic/contacts')(config, db);
+const passwords = require('./libs/passwords');
+const { people, places } = require('@medic/contacts')(config, db);
 
 const USER_PREFIX = 'org.couchdb.user:';
 
@@ -181,6 +182,9 @@ const validateNewUsernameForDb = (username, database) => {
     });
 };
 
+/**
+ * Resolves successfully if the username is valid and available (not used by another user). Otherwise, rejects.
+ */
 const validateNewUsername = username => {
   if (!USERNAME_WHITELIST.test(username)) {
     return Promise.reject(error400(
@@ -980,6 +984,20 @@ module.exports = {
 
     return tokenLogin.manageTokenLogin(data, appUrl, response);
   },
+
+  /**
+   * Updates the user with a new random password. Returns this password.
+   * @param {string} username the username of the user to update
+   * @returns {Promise<string>} the generated password
+   */
+  resetPassword: async (username) => {
+    const password = passwords.generate();
+    const user = await getUpdatedUserDoc(username, { password });
+    await saveUserUpdates(user);
+    return password;
+  },
+
+  validateNewUsername,
 
   /**
    * Parses a CSV of users to an array of objects.

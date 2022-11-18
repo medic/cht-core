@@ -7,6 +7,7 @@ const tokenLogin = require('../../src/token-login');
 const config = require('../../src/libs/config');
 const db = require('../../src/libs/db');
 const lineage = require('../../src/libs/lineage');
+const passwords = require('../../src/libs/passwords');
 const roles = require('../../src/roles');
 const { people, places }  = require('@medic/contacts')(config, db);
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
@@ -2977,6 +2978,74 @@ describe('Users service', () => {
           'user-settings': { id: 'org.couchdb.user:sally', rev: undefined },
         });
       });
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('should reset password for valid user', async () => {
+      const expectedPassword = 'newpassword';
+      sinon
+        .stub(passwords, 'generate')
+        .returns(expectedPassword);
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+      db.users.put.resolves({ id: 'org.couchdb.user:sally' });
+
+      const password = await service.resetPassword('sally');
+
+      chai.expect(password).to.equal(expectedPassword);
+      chai.expect(db.users.get.callCount).to.equal(1);
+      chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, });
+    });
+
+    it('should reset password for admin user', async () => {
+      const expectedPassword = 'newpassword';
+      sinon
+        .stub(passwords, 'generate')
+        .returns(expectedPassword);
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+      db.users.put.resolves({ id: 'org.couchdb.user:sally' });
+      couchSettings.getCouchConfig.resolves({ sally: 'oldpassword' });
+
+      const password = await service.resetPassword('sally');
+
+      chai.expect(password).to.equal(expectedPassword);
+      chai.expect(db.users.get.callCount).to.equal(1);
+      chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, });
+      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
+      chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
+      chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(1);
+      chai.expect(couchSettings.updateAdminPassword.args[0]).to.deep.equal(['sally', expectedPassword]);
+    });
+
+    it('should throw error for non-existent user', async () => {
+      db.users.get.rejects({ status: 404 });
+
+      try {
+        await service.resetPassword('sally');
+        chai.assert.fail('Should have thrown');
+      } catch (error) {
+        chai.expect(error).to.deep.nested.include({
+          status: 404,
+          message: 'Failed to find user.',
+        });
+        chai.expect(db.users.get.callCount).to.equal(1);
+        chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
+        chai.expect(db.users.put.callCount).to.equal(0);
+      }
     });
   });
 

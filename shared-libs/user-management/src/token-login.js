@@ -1,28 +1,10 @@
-const _ = require('lodash');
-const passwordTester = require('simple-password-tester');
 const db = require('./libs/db');
 const config = require('./libs/config');
+const { generate } = require('./libs/passwords');
 const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');
 const TOKEN_EXPIRE_TIME = 24 * 60 * 60 * 1000; // 24 hours
-const PASSWORD_MINIMUM_LENGTH = 20;
-const PASSWORD_MINIMUM_SCORE = 50;
 const TOKEN_LENGTH = 64;
-
-/**
- * Generates a complex enough password with a given length
- * @param {Number} length
- * @returns {string} - the generated password
- */
-const generatePassword = (length = PASSWORD_MINIMUM_LENGTH) => {
-  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,:!$-=';
-  let password;
-  do {
-    password = Array.from({ length }).map(() => _.sample(chars)).join('');
-  } while (passwordTester(password) < PASSWORD_MINIMUM_SCORE);
-
-  return password;
-};
 
 /**
  * Given user data, validates whether the phone field is filled with a valid phone number.
@@ -48,7 +30,7 @@ const validateAndNormalizePhone = (data) => {
  * @returns {String}
  */
 const generateToken = () => {
-  const tokens = Array.from({ length: 10 }).map(() => generatePassword(TOKEN_LENGTH));
+  const tokens = Array.from({ length: 10 }).map(() => generate(TOKEN_LENGTH));
   const docIds = tokens.map(token => getTokenLoginDocId(token));
   return db.medic.allDocs({ keys: docIds }).then(results => {
     const idx = results.rows.findIndex(row => row.error);
@@ -243,7 +225,7 @@ const validateTokenLoginCreate = (data) => {
   if (phoneError) {
     return phoneError;
   }
-  data.password = generatePassword();
+  data.password = generate();
 };
 
 const validateTokenLoginEdit = (data, user, userSettings) => {
@@ -261,7 +243,7 @@ const validateTokenLoginEdit = (data, user, userSettings) => {
     if (phoneError) {
       return phoneError;
     }
-    user.password = generatePassword();
+    user.password = generate();
   }
 };
 
@@ -324,7 +306,7 @@ const resetPassword = userId => {
       return Promise.reject({ code: 400, message: 'invalid user' });
     }
 
-    user.password = generatePassword();
+    user.password = generate();
     return db.users.put(user).then(() => ({ user: user.name, password: user.password }));
   });
 };

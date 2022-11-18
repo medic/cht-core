@@ -203,8 +203,8 @@ describe('create_user_for_contacts', () => {
     let getOrCreatePerson;
     let getUserSettings;
     let createUser;
-    let deleteUser;
-    let usersGet;
+    let resetPassword;
+    let validateNewUsername;
 
     beforeEach(() => {
       config.get
@@ -223,12 +223,12 @@ describe('create_user_for_contacts', () => {
       createUser = sinon
         .stub(users, 'createUser')
         .resolves();
-      deleteUser = sinon
-        .stub(users, 'deleteUser')
+      resetPassword = sinon
+        .stub(users, 'resetPassword')
         .resolves();
-      usersGet = sinon
-        .stub(db.users, 'get')
-        .rejects({ status: 404 });
+      validateNewUsername = sinon
+        .stub(users, 'validateNewUsername')
+        .resolves();
     });
 
     const expectInitialDataRetrieved = (users) => {
@@ -243,12 +243,12 @@ describe('create_user_for_contacts', () => {
 
     const expectUsersCreated = (users) => {
       expect(users).to.not.be.empty;
-      expect(usersGet.callCount).to.equal(users.length);
-      usersGet.args.forEach(([username]) => expect(username).to.match(/^org\.couchdb\.user:new-contact-\d\d\d\d/));
+      expect(validateNewUsername.callCount).to.equal(users.length);
+      validateNewUsername.args.forEach(([username]) => expect(username).to.match(/^new-contact-\d\d\d\d$/));
 
       expect(createUser.callCount).to.equal(users.length);
       users.forEach(({ contact, user }, index) => {
-        const username = stripCouchdbUserPrefix(usersGet.args[index][0]);
+        const username = validateNewUsername.args[index][0];
         expect(createUser.args[index][0]).to.deep.equal({
           username,
           token_login: true,
@@ -264,9 +264,9 @@ describe('create_user_for_contacts', () => {
       });
     };
 
-    const expectUserDeleted = (originalUsers) => {
-      const expectedDeleteUserArgs = originalUsers.map(({ name }) => ([name]));
-      expect(deleteUser.args).to.deep.equal(expectedDeleteUserArgs);
+    const expectUserPasswordReset = (originalUsers) => {
+      const expectedResetPasswordArgs = originalUsers.map(({ name }) => ([name]));
+      expect(resetPassword.args).to.deep.equal(expectedResetPasswordArgs);
     };
 
     const stripCouchdbUserPrefix = username => username.replace('org.couchdb.user:', '');
@@ -279,7 +279,7 @@ describe('create_user_for_contacts', () => {
 
       expectInitialDataRetrieved([{ username: ORIGINAL_USER.name, contact: NEW_CONTACT }]);
       expectUsersCreated([{ contact: NEW_CONTACT, user: ORIGINAL_USER }]);
-      expectUserDeleted([ORIGINAL_USER]);
+      expectUserPasswordReset([ORIGINAL_USER]);
       expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
     });
 
@@ -293,24 +293,24 @@ describe('create_user_for_contacts', () => {
       [100, 14],
     ].forEach(([collisionCount, suffixLength]) => {
       it(`replaces user when ${collisionCount} username collisions occur`, async () => {
-        usersGet.resolves();
-        usersGet
+        validateNewUsername.rejects({ code: 400 });
+        validateNewUsername
           .onCall(collisionCount)
-          .rejects({ status: 404 });
+          .resolves();
         const doc = getReplacedContact('READY');
 
         const result = await transition.onMatch({ doc });
         expect(result).to.be.true;
 
-        expect(usersGet.callCount).to.equal(collisionCount + 1);
-        const attemptedUsernames = usersGet.args.map(args => args[0]);
+        expect(validateNewUsername.callCount).to.equal(collisionCount + 1);
+        const attemptedUsernames = validateNewUsername.args.map(args => args[0]);
         expect(new Set(attemptedUsernames).size).to.equal(attemptedUsernames.length);
 
         const getExpectedSuffixLength = (collisionCount) => Math.floor(collisionCount / 10) + 4;
 
         attemptedUsernames.forEach((username, index) => {
           const suffixLength = getExpectedSuffixLength(index);
-          const usernamePattern = `^org\\.couchdb\\.user:new-contact-\\d{${suffixLength}}$`;
+          const usernamePattern = `^new-contact-\\d{${suffixLength}}$`;
           expect(username).to.match(new RegExp(usernamePattern));
         });
 
@@ -332,7 +332,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('records error when more than 100 username collisions occur', async () => {
-      usersGet.resolves();
+      validateNewUsername.rejects({ code: 400 });
       const doc = getReplacedContact('READY');
 
       try {
@@ -342,7 +342,7 @@ describe('create_user_for_contacts', () => {
         expect(err.message).to.equal(`Could not generate a unique username for contact [${NEW_CONTACT.name}].`);
         expect(err.changed).to.be.true;
 
-        expect(usersGet.callCount).to.equal(101);
+        expect(validateNewUsername.callCount).to.equal(101);
         expect(createUser.callCount).to.equal(0);
         expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('ERROR');
       }
@@ -375,7 +375,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('records error when replacing user when an error is thrown generating a new username', async () => {
-      usersGet.rejects({ status: 500, message: 'Server error' });
+      validateNewUsername.rejects({ status: 500, message: 'Server error' });
       const doc = getReplacedContact('READY');
 
       try {
@@ -480,7 +480,7 @@ describe('create_user_for_contacts', () => {
           { contact: NEW_CONTACT, user: originalUser1 },
           { contact: newContact1, user: originalUser2 }
         ]);
-        expectUserDeleted([ORIGINAL_USER, originalUser1, originalUser2]);
+        expectUserPasswordReset([ORIGINAL_USER, originalUser1, originalUser2]);
         [ORIGINAL_USER.name, originalUser1.name, originalUser2.name].forEach(name => {
           expect(doc.user_for_contact.replace[name].status).to.equal('COMPLETE');
         });
@@ -526,9 +526,9 @@ describe('create_user_for_contacts', () => {
           { username: originalUser1.name, },
           { username: originalUser2.name, contact: namelessContact },
         ]);
-        expect(usersGet.callCount).to.equal(0);
+        expect(validateNewUsername.callCount).to.equal(0);
         expect(createUser.callCount).to.equal(0);
-        expect(deleteUser.callCount).to.equal(0);
+        expect(resetPassword.callCount).to.equal(0);
 
         [ORIGINAL_USER.name, originalUser1.name, originalUser2.name].forEach(name => {
           expect(doc.user_for_contact.replace[name].status).to.equal('ERROR');
@@ -578,7 +578,7 @@ describe('create_user_for_contacts', () => {
         expectUsersCreated([
           { contact: NEW_CONTACT, user: ORIGINAL_USER }, { contact: NEW_CONTACT, user: originalUser1 },
         ]);
-        expectUserDeleted([ORIGINAL_USER, originalUser1]);
+        expectUserPasswordReset([ORIGINAL_USER, originalUser1]);
 
         [errorUser1.name, errorUser2.name, ].forEach(name => {
           expect(doc.user_for_contact.replace[name].status).to.equal('ERROR');

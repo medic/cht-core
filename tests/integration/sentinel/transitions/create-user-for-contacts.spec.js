@@ -58,6 +58,12 @@ const loginAsUser = ({ username, password }) => {
   return utils.request(opts);
 };
 
+const updateUserPassword = (username, password) => utils.request({
+  path: `/api/v1/users/${username}`,
+  method: 'POST',
+  body: { password }
+});
+
 const expectError = async (errorPattern) => {
   // Error saved on the contact
   const originalPersonUpdated = await utils.getDoc(ORIGINAL_PERSON._id);
@@ -101,11 +107,13 @@ describe('create_user_for_contacts', () => {
 
     // Transition successful
     assert.isTrue(transitions.create_user_for_contacts.ok);
-    // Original user is disabled
-    const [originalUserSettings] = await utils.getUserSettings({ name: ORIGINAL_USER.username });
-    assert.isTrue(originalUserSettings.inactive);
     // Can no longer log in as user
     assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
+    // User's password was automatically reset. Change it to something we know.
+    await updateUserPassword(ORIGINAL_USER.username, 'n3wPassword!');
+    // Can still login as original user with new password
+    assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { statusCode: 302 });
+
     // New user created
     const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     assert.isEmpty(additionalUsers);
@@ -155,11 +163,12 @@ describe('create_user_for_contacts', () => {
 
     // Transition successful
     assert.isTrue(transitions.create_user_for_contacts.ok);
-    // Original user is disabled
-    const [originalUserSettings] = await utils.getUserSettings({ name: ORIGINAL_USER.username });
-    assert.isTrue(originalUserSettings.inactive);
     // Can no longer log in as user
     assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
+    // User's password was automatically reset. Change it to something we know.
+    await updateUserPassword(ORIGINAL_USER.username, 'n3wPassword!');
+    // Can still login as original user with new password
+    assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { statusCode: 302 });
     // New user created
     const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: NEW_PERSON._id });
     assert.isEmpty(additionalUsers);
@@ -220,13 +229,15 @@ describe('create_user_for_contacts', () => {
 
     // Transition successful
     assert.isTrue(transitions.create_user_for_contacts.ok);
-    // Original users are disabled
-    const [originalUserSettings] = await utils.getUserSettings({ name: ORIGINAL_USER.username });
-    const [otherUserSettings] = await utils.getUserSettings({ name: otherUser.username });
-    [originalUserSettings, otherUserSettings].forEach(userSettings => assert.isTrue(userSettings.inactive));
     // Can no longer log in as users
     assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
     assert.include(await loginAsUser(otherUser), { statusCode: 401 });
+    // User's password was automatically reset. Change it to something we know.
+    await updateUserPassword(ORIGINAL_USER.username, 'n3wPassword!');
+    await updateUserPassword(otherUser.username, 'n3wPassword!');
+    // Can still login as original user with new password
+    assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { statusCode: 302 });
+    assert.include(await loginAsUser({ ...otherUser, password: 'n3wPassword!' }), { statusCode: 302 });
     // New users created
     const [newUserSettings0, newUserSettings1, ...additionalUsers] =
       await utils.getUserSettings({ contactId: NEW_PERSON._id });
@@ -249,16 +260,14 @@ describe('create_user_for_contacts', () => {
     // Login tokens sent
     const queuedMsgs = await getQueuedMessages();
     assert.lengthOf(queuedMsgs, 2);
-    assert.deepInclude(queuedMsgs[0], {
-      type: 'token_login',
-      user: newUserSettings0._id
+    queuedMsgs.forEach(msg => {
+      assert.equal(msg.type, 'token_login');
+      assert.equal(msg.tasks[0].messages[0].to, NEW_PERSON.phone);
     });
-    assert.equal(queuedMsgs[0].tasks[0].messages[0].to, NEW_PERSON.phone);
-    assert.deepInclude(queuedMsgs[1], {
-      type: 'token_login',
-      user: newUserSettings1._id
-    });
-    assert.equal(queuedMsgs[1].tasks[0].messages[0].to, NEW_PERSON.phone);
+    const queuedMsg0 = queuedMsgs.find(msg => msg.user === newUserSettings0._id);
+    assert.exists(queuedMsg0);
+    const queuedMsg1 = queuedMsgs.find(msg => msg.user === newUserSettings1._id);
+    assert.exists(queuedMsg1);
   });
 
   it('does not replace user when transition is disabled', async () => {
