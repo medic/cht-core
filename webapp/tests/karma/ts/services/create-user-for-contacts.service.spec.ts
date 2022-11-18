@@ -238,25 +238,29 @@ describe('Create User for Contacts service', () => {
     });
   });
 
-  describe('isReplaced', () => {
+  describe('isBeingReplaced', () => {
     [
       'PENDING',
       'READY',
-      'COMPLETE',
     ].forEach(status => {
       it(`returns true when the given contact is replaced with status: ${status}`, () => {
         const pendingContact = getContactWithStatus(status);
-        assert.isTrue(service.isReplaced(pendingContact));
+        assert.isTrue(service.isBeingReplaced(pendingContact));
       });
     });
 
-    it(`returns false when the given contact is replaced with status: ERROR`, () => {
-      const pendingContact = getContactWithStatus('ERROR');
-      assert.isFalse(service.isReplaced(pendingContact));
+    [
+      'ERROR',
+      'COMPLETE',
+    ].forEach(status => {
+      it(`returns false when the given contact is replaced with status: ${status}`, () => {
+        const pendingContact = getContactWithStatus(status);
+        assert.isFalse(service.isBeingReplaced(pendingContact));
+      });
     });
 
     it('returns false when the given contact is not replaced', () => {
-      assert.isFalse(service.isReplaced(ORIGINAL_CONTACT));
+      assert.isFalse(service.isBeingReplaced(ORIGINAL_CONTACT));
     });
 
     [
@@ -266,14 +270,14 @@ describe('Create User for Contacts service', () => {
     ].forEach(user_for_contact => {
       it('returns false when the given contact has user_for_contact data but is not replaced', () => {
         const originalContact = { ...ORIGINAL_CONTACT, user_for_contact };
-        assert.isFalse(service.isReplaced(originalContact));
+        assert.isFalse(service.isBeingReplaced(originalContact));
       });
     });
 
     it('returns false when no username is found', () => {
       sessionService.userCtx.returns(null);
       const pendingContact = getContactWithStatus(status);
-      assert.isFalse(service.isReplaced(pendingContact));
+      assert.isFalse(service.isBeingReplaced(pendingContact));
     });
   });
 

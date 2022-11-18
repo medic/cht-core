@@ -68,7 +68,7 @@ export class CreateUserForContactsTransition extends Transition {
       return docs;
     }
 
-    if (this.createUserForContactsService.isReplaced(originalContact)) {
+    if (this.createUserForContactsService.isBeingReplaced(originalContact)) {
       this.reparentReports(docs, originalContact);
     }
     const userReplaceDoc = this.getUserReplaceDoc(docs);
@@ -106,7 +106,7 @@ export class CreateUserForContactsTransition extends Transition {
     const originalContactId = userReplaceDoc.contact?._id;
 
     const hasOriginalContactId = originalContact._id === originalContactId;
-    const hasReplacedContactId = this.createUserForContactsService.isReplaced(originalContact) &&
+    const hasReplacedContactId = this.createUserForContactsService.isBeingReplaced(originalContact) &&
       this.createUserForContactsService.getReplacedBy(originalContact) === originalContactId;
     if (!originalContactId || (!hasOriginalContactId && !hasReplacedContactId)) {
       throw new Error('Only the contact associated with the currently logged in user can be replaced.');

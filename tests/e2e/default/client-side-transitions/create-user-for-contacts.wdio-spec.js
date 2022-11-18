@@ -200,6 +200,8 @@ const submitLoginRequest = ({ username, password }) => {
   return utils.request(opts);
 };
 
+const DISABLED_USER_PASSWORD = 'n3wPassword!';
+
 const assertUserDisabled = async (user) => {
   // Cannot login because user's password has been automatically reset
   const resp0 = await submitLoginRequest(user);
@@ -209,11 +211,11 @@ const assertUserDisabled = async (user) => {
   await utils.request({
     path: `/api/v1/users/${user.username}`,
     method: 'POST',
-    body: { password: 'n3wPassword!' }
+    body: { password: DISABLED_USER_PASSWORD }
   });
 
   // Can login with new password
-  const resp1 = await submitLoginRequest({ ...user, password: 'n3wPassword!' });
+  const resp1 = await submitLoginRequest({ ...user, password: DISABLED_USER_PASSWORD });
   expect(resp1.statusCode).to.equal(302);
 };
 
@@ -339,6 +341,18 @@ describe('Create user for contacts', () => {
       await commonPage.waitForPageLoaded();
       const [cookie] = await browser.getCookies('userCtx');
       expect(cookie.value).to.include(newUserSettings.name);
+
+      // Can still login as the original user (with the manually updated password)
+      await commonPage.closeTour();
+      await commonPage.logout();
+      await loginPage.login({ ...ORIGINAL_USER, password: DISABLED_USER_PASSWORD });
+      await commonPage.waitForPageLoaded();
+      await commonPage.sync();
+      await commonPage.goToReports();
+      const basicReportId3 = await submitBasicForm();
+      const basicReport3 = await utils.getDoc(basicReportId3);
+      // New reports written by the old user are not re-parented
+      expect(basicReport3.contact._id).to.equal(originalContactId);
     });
 
     it('creates a new user when the replace_user form is submitted while online', async () => {
