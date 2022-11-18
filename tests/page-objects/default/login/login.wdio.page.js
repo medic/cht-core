@@ -24,7 +24,7 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
   }
 
   if (loadPage) {
-    await commonPage.waitForLoaders();
+    await commonPage.waitForPageLoaded();
   }
 };
 
