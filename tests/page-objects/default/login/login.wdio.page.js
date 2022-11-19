@@ -1,6 +1,7 @@
 const constants = require('../../../constants');
 const utils = require('../../../utils');
 const commonPage = require('../common/common.wdio.page');
+const {load} = require("../../../../api/src/services/config-watcher");
 const loginButton = () => $('#login');
 const userField = () => $('#user');
 const passwordField = () => $('#password');
@@ -9,7 +10,7 @@ const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 
-const login = async ({ username, password, createUser = false, locale, loadPage = true }) => {
+const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy }) => {
   await (await userField()).setValue(username);
   await (await passwordField()).setValue(password);
   await changeLocale(locale);
@@ -24,7 +25,7 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
   }
 
   if (loadPage) {
-    await commonPage.waitForPageLoaded();
+    privacyPolicy ? await commonPage.waitForLoaders() : await commonPage.waitForPageLoaded();
   }
 };
 
