@@ -36,7 +36,7 @@
       <span class="help-block">{{errors.phone}}</span>
     </div>
 
-    <div id="role-select" class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.role}">
+    <div id="role-select" class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.roles}">
       <label translate>configuration.role</label> *
       <input type="text" class="form-control" ng-model="editUserModel.roles" disabled="disabled" ng-if="editUserModel.roles.indexOf('_admin') !== -1" />
       <ul>

@@ -307,13 +307,11 @@ angular
           return model.password && model.password !== '';
         }
         if (key === 'roles') {
-          const updated = model.roles || [];
-          const existing = existingModel.roles || [];
+          const updated = model.roles ? model.roles.sort() : [];
+          const existing = existingModel.roles ? existingModel.roles.sort() : [];
           if (updated.length !== existing.length) {
             return true;
           }
-          updated.sort();
-          existing.sort();
           return !updated.every((role, i) => role === existing[i]);
         }
         if (FIELDS_TO_IGNORE.includes(key)) {

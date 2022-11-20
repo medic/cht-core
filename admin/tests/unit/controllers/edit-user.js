@@ -413,6 +413,25 @@ describe('EditUserCtrl controller', () => {
         });
     });
 
+    it('sorts roles when saving', () => {
+      mockContact(userToEdit.contact_id);
+      mockFacility(userToEdit.facility_id);
+      mockContactGet(userToEdit.contact_id);
+      mockGetReplicationLimit();
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.roles = [ 'zesty', 'aardvark', 'supervisor' ];
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.called).to.equal(true);
+          const updateUserArgs = UpdateUser.getCall(0).args;
+          chai.expect(updateUserArgs[0]).to.equal('user.name');
+          chai.expect(updateUserArgs[1].roles).to.deep.equal([ 'aardvark', 'supervisor', 'zesty' ]);
+        });
+    });
+
     it('associated contact must have place when creating a new user', () => {
       return mockCreateNewUser()
         .setupPromise
