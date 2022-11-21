@@ -39,7 +39,7 @@ describe('Webapp after upgrade', () => {
   });
 
   it('should login with admin account', async () => {
-    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD });
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
     await common.closeTour();
   });
 

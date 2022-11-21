@@ -9,7 +9,7 @@ const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 
-const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy }) => {
+const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
   await (await userField()).setValue(username);
   await (await passwordField()).setValue(password);
   await changeLocale(locale);
@@ -24,7 +24,8 @@ const login = async ({ username, password, createUser = false, locale, loadPage 
   }
 
   if (loadPage) {
-    privacyPolicy ? await commonPage.waitForLoaders() : await commonPage.waitForPageLoaded();
+    const waitForPartialLoad = privacyPolicy || adminApp;
+    waitForPartialLoad ? await commonPage.waitForLoaders() : await commonPage.waitForPageLoaded();
   }
 };
 
