@@ -1,7 +1,6 @@
 const constants = require('../../../constants');
 const utils = require('../../../utils');
 const commonPage = require('../common/common.wdio.page');
-const {load} = require("../../../../api/src/services/config-watcher");
 const loginButton = () => $('#login');
 const userField = () => $('#user');
 const passwordField = () => $('#password');
