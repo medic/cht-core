@@ -21,8 +21,9 @@ const baseConfig = {
   ],
   suites: {
     web: [
-      'e2e/protractor/!(cht)/**/*.js',
-      'e2e/protractor/**/*.js'
+      // 'e2e/protractor/!(cht)/**/*.js',
+      // 'e2e/protractor/**/*.js'
+      'e2e/protractor/sms/rapidpro.spec.js'
     ],
     mobile: ['mobile/**/*.js'],
     // performance: 'performance/**/*.js'
