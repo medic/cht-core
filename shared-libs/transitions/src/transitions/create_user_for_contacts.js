@@ -116,7 +116,7 @@ const replaceUser = async (originalContact, { username, replacementContactId }) 
     originalContact.user_for_contact.replace[username].status = USER_CREATION_STATUS.COMPLETE;
   } catch (e) {
     originalContact.user_for_contact.replace[username].status = USER_CREATION_STATUS.ERROR;
-    return e;
+    throw e;
   }
 };
 
@@ -165,8 +165,10 @@ module.exports = {
   },
   onMatch: async change => {
     const usersToReplace = getUsersToReplace(change.doc);
-    const errors = (await Promise.all(usersToReplace.map(user => replaceUser(change.doc, user))))
-      .filter(error => error);
+    const replaceUsers = usersToReplace.map(user => replaceUser(change.doc, user));
+    const errors = (await Promise.allSettled(replaceUsers))
+      .filter(({ status }) => status === 'rejected')
+      .map(({ reason }) => reason);
     if (errors.length) {
       throw {
         changed: true,
