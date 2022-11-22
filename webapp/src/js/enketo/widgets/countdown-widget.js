@@ -23,10 +23,10 @@ const DIM = 320;
 const DEFAULT_TIME = 60;
 
 /**
-   * Countdown timer.
-   *
-   * @extends Widget
-   */
+ * Countdown timer.
+ *
+ * @extends Widget
+ */
 class Timerwidget extends Widget {
   static get selector() {
     return '.or-appearance-countdown-timer input';
@@ -56,31 +56,16 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
   const arcColor = '#cccccc';
   let running;
 
-  //> AUDIO
-  const audio = (function() {
-    let cached;
-
+  const getPlayAudioFunction = () => {
     const androidSoundSupport = window.medicmobile_android &&
-                typeof window.medicmobile_android.playAlert === 'function';
-
-    if(!androidSoundSupport) {
-      cached = loadSound();
+      typeof window.medicmobile_android.playAlert === 'function';
+    if (androidSoundSupport) {
+      return window.medicmobile_android.playAlert;
     }
+    return new Audio('/audio/alert.mp3').play;
+  };
 
-    const loadSound = () => {
-      return new Audio('/audio/alert.mp3');
-    };
-
-    return {
-      play: function() {
-        if(androidSoundSupport) {
-          window.medicmobile_android.playAlert();
-        } else {
-          cached.play();
-        }
-      },
-    };
-  }());
+  const playAudio = getPlayAudioFunction();
 
   //> UTILS
   const drawCircle = (ctx, c) => {
@@ -136,7 +121,7 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
       running = false;
       if ($(canvas).closest('body').length > 0) {
         // only beep if the canvas is still attached to the DOM
-        audio.play();
+        playAudio();
       }
     }
   };
