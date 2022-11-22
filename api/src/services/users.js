@@ -90,13 +90,6 @@ const error400 = (msg, key, params) => {
   return Object.assign(error, { details: key });
 };
 
-const getType = user => {
-  if (user.roles && user.roles.length) {
-    return user.roles[0];
-  }
-  return 'unknown';
-};
-
 const getDoc = (id, docs) =>  _.find(docs, { _id: id });
 
 const getDocID = doc => {
@@ -336,7 +329,6 @@ const mapUsers = (users, settings, facilities) => {
         email: setting.email,
         phone: setting.phone,
         place: getDoc(user.doc.facility_id, facilities),
-        type: getType(user.doc),
         roles: user.doc.roles,
         contact: getDoc(setting.contact_id, facilities),
         external_id: setting.external_id,

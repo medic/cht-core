@@ -119,19 +119,6 @@ describe('Users service', () => {
 
   });
 
-  describe('getType', () => {
-
-    it('returns unknown when roles is empty', () => {
-      const user = {
-        name: 'sam',
-        roles: []
-      };
-      const admins = {};
-      chai.expect(service.__get__('getType')(user, admins)).to.equal('unknown');
-    });
-
-  });
-
   describe('hasParent', () => {
 
     it('works as expected', () => {
@@ -187,19 +174,6 @@ describe('Users service', () => {
     });
   });
 
-  describe('getType', () => {
-    it('returns role when user is in admins list and has role', () => {
-      const user = {
-        name: 'sam',
-        roles: ['driver']
-      };
-      const admins = {
-        'sam': 'x'
-      };
-      chai.expect(service.__get__('getType')(user, admins)).to.equal('driver');
-    });
-  });
-
   describe('getList', () => {
 
     it('collects user infos', () => {
@@ -249,7 +223,6 @@ describe('Users service', () => {
         chai.expect(lucas.email).to.equal('l@m.com');
         chai.expect(lucas.phone).to.equal('123456789');
         chai.expect(lucas.place).to.deep.equal(facilityc);
-        chai.expect(lucas.type).to.equal('national-admin');
         chai.expect(lucas.roles).to.deep.equal([ 'national-admin', 'data-entry' ]);
         const milan = data[1];
         chai.expect(milan.id).to.equal('org.couchdb.user:y');
@@ -258,7 +231,6 @@ describe('Users service', () => {
         chai.expect(milan.email).to.equal('m@a.com');
         chai.expect(milan.phone).to.equal('987654321');
         chai.expect(milan.place).to.deep.equal(facilityb);
-        chai.expect(milan.type).to.equal('district-admin');
         chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
         chai.expect(milan.external_id).to.equal('LTT093');
       });
@@ -317,7 +289,7 @@ describe('Users service', () => {
         chai.expect(milan.email).to.equal('m@a.com');
         chai.expect(milan.phone).to.equal('987654321');
         chai.expect(milan.place).to.deep.equal(facilityb);
-        chai.expect(milan.type).to.equal('district-admin');
+        chai.expect(milan.roles).to.deep.equal([ 'district-admin' ]);
       });
 
     });
@@ -342,7 +314,6 @@ describe('Users service', () => {
         chai.expect(lucas.email).to.equal(undefined);
         chai.expect(lucas.phone).to.equal(undefined);
         chai.expect(lucas.facility).to.equal(undefined);
-        chai.expect(lucas.type).to.equal('unknown');
         chai.expect(lucas.roles).to.equal(undefined);
       });
     });

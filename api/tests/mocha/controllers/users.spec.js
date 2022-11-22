@@ -26,6 +26,72 @@ describe('Users Controller', () => {
   });
   afterEach(() => sinon.restore());
 
+  describe('get users list', () => {
+
+    beforeEach(() => {
+      req = { };
+      res = { json: sinon.stub() };
+      sinon.stub(users, 'getList').resolves([
+        { id: 'org.couchdb.user:admin', roles: [ '_admin' ] },
+        { id: 'org.couchdb.user:chw', roles: [ 'chw', 'district-admin' ] },
+        { id: 'org.couchdb.user:unknown' },
+      ]);
+    });
+
+    describe('v1', () => {
+
+      it('rejects if not permitted', async () => {
+        sinon.stub(auth, 'check').rejects(new Error('nope'));
+        await controller.get(req, res);
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+      });
+
+      it('gets the list of users', async () => {
+        sinon.stub(auth, 'check').resolves();
+
+        await controller.get(req, res);
+        const result = res.json.args[0][0];
+        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
+        chai.expect(result[0].type).to.equal('_admin');
+        chai.expect(result[0].roles).to.be.undefined;
+        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[1].type).to.deep.equal('chw');
+        chai.expect(result[1].roles).to.be.undefined;
+        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+        chai.expect(result[2].type).to.deep.equal('unknown');
+        chai.expect(result[2].roles).to.be.undefined;
+      });
+
+    });
+
+    describe('v2', () => {
+
+      it('rejects if not permitted', async () => {
+        sinon.stub(auth, 'check').rejects(new Error('nope'));
+        await controller.v2.get(req, res);
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+      });
+
+      it('gets the list of users', async () => {
+        sinon.stub(auth, 'check').resolves();
+
+        await controller.v2.get(req, res);
+        const result = res.json.args[0][0];
+        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
+        chai.expect(result[0].type).to.be.undefined;
+        chai.expect(result[0].roles).to.deep.equal([ '_admin' ]);
+        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[1].type).to.be.undefined;
+        chai.expect(result[1].roles).to.deep.equal([ 'chw', 'district-admin' ]);
+        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+        chai.expect(result[2].type).to.be.undefined;
+        chai.expect(result[2].roles).to.be.undefined;
+      });
+
+    });
+
+  });
+
   describe('info', () => {
     beforeEach(() => {
       userCtx = { name: 'user', roles: ['admin'] };
