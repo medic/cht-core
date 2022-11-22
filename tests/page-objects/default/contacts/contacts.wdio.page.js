@@ -1,5 +1,6 @@
 const genericForm = require('../enketo/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
+const sentinelUtils = require('../../../utils/sentinel');
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
@@ -107,7 +108,8 @@ const getReportTaskFiltersText = async () => {
   return await Promise.all((await taskFilters()).map(filter => filter.getText()));
 };
 
-const waitForContactLoaded = async () => {
+const waitForContactLoaded = async (type) => {
+  type && await (await contactCardIcon(type)).waitForDisplayed();
   await (await contactCard()).waitForDisplayed();
   await (await contactSummaryContainer()).waitForDisplayed();
 };
@@ -132,14 +134,14 @@ const addPlace = async (type, placeName, contactName) => {
   await (await externalIdField(type)).addValue('1234457');
   await (await notes(type)).addValue(`Some ${type} notes`);
   await (await genericForm.submitButton()).click();
-  await (await contactCardIcon(dashedType)).waitForDisplayed();
-  await (await contactCard()).waitForDisplayed();
+  await waitForContactLoaded(dashedType);
 };
 
 const addPerson = async (name, params = {}) => {
+  const type = 'person';
   const { dob = '2000-01-01', phone } = params;
-  await (await actionResourceIcon('person')).waitForDisplayed();
-  await (await actionResourceIcon('person')).click();
+  await (await actionResourceIcon(type)).waitForDisplayed();
+  await (await actionResourceIcon(type)).click();
   await (await personName()).addValue(name);
   await (await dateOfBirthField()).addValue(dob);
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
@@ -147,10 +149,10 @@ const addPerson = async (name, params = {}) => {
     await (await personPhoneField()).addValue(phone);
   }
   await (await personSexField()).click();
-  await (await notes('person')).addValue('some person notes');
+  await (await notes(type)).addValue('some person notes');
   await (await genericForm.submitButton()).click();
-  await (await contactCardIcon('person')).waitForDisplayed();
-  await waitForContactLoaded();
+  await waitForContactLoaded(type);
+  await sentinelUtils.waitForSentinel();
   return (await contactCard()).getText();
 };
 
