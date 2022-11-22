@@ -111,7 +111,7 @@ const postNatalVisitPatientIdNoUuid = Object.assign({}, postNatalVisit, {
 });
 
 const postNatalVisitPatientUuidNoId = Object.assign({}, postNatalVisit, {
-  _id: '4971a859-bde7-4ff0-a0ed-326925b83038-bis',
+  _id: '4971a859-bde7-4ff0-a0ed-326925b83038-uuidnoid',
   fields: Object.assign({}, postNatalVisit.fields, {
     patient_id: null,
     patient_uuid: 'a29c933c-90cb-4cb0-9e25-36403499aee7',
@@ -529,7 +529,7 @@ describe('doc_summaries_by_id view', () => {
     });
 
     assert.deepEqual(emitted[12], {
-      key: '4971a859-bde7-4ff0-a0ed-326925b83038',
+      key: '4971a859-bde7-4ff0-a0ed-326925b83038-idnouuid',
       value: {
         _rev: '1-daf9f65652fbe6da38911d3ffd6c1d77',
         from: undefined,
@@ -551,7 +551,7 @@ describe('doc_summaries_by_id view', () => {
     });
 
     assert.deepEqual(emitted[13], {
-      key: '4971a859-bde7-4ff0-a0ed-326925b83038',
+      key: '4971a859-bde7-4ff0-a0ed-326925b83038-uuidnoid',
       value: {
         _rev: '1-daf9f65652fbe6da38911d3ffd6c1d77',
         from: undefined,
