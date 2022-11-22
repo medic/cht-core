@@ -39,7 +39,6 @@ export class GetSummariesService {
     const reference =
       doc.patient_id ||
       (doc.fields && doc.fields.patient_id) ||
-      doc.patient_uuid ||
       (doc.fields && doc.fields.patient_uuid) ||
       doc.place_id ||
       (doc.fields && doc.fields.place_id);
