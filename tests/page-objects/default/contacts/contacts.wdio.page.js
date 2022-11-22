@@ -150,6 +150,7 @@ const addPerson = async (name, params = {}) => {
   await (await notes('person')).addValue('some person notes');
   await (await genericForm.submitButton()).click();
   await (await contactCardIcon('person')).waitForDisplayed();
+  await waitForContactLoaded();
   return (await contactCard()).getText();
 };
 
