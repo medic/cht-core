@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 const utils = require('../../../utils');
 const userData = require('../../../page-objects/default/users/user.data');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
@@ -8,23 +6,8 @@ const reportsPage = require('../../../page-objects/default/reports/reports.wdio.
 const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
 const pregnancyDangerSignForm = require('../../../page-objects/default/enketo/pregnancy-danger-sign.wdio.page');
 
-const xml = fs.readFileSync(`${__dirname}/forms/pregnancy-danger-sign-follow-up.xml`, 'utf8');
-const formDocument = {
-  _id: 'form:pregnancy-danger-sign-follow-up',
-  internalId: 'pregnancy-danger-sign-follow-up',
-  title: 'Pregnancy danger sign follow-up',
-  type: 'form',
-  _attachments: {
-    xml: {
-      content_type: 'application/octet-stream',
-      data: Buffer.from(xml).toString('base64')
-    }
-  }
-};
-
 describe('Pregnancy danger sign follow-up form', () => {
   before(async () => {
-    await utils.saveDoc(formDocument);
     await utils.seedTestData(userData.userContactDoc, userData.docs);
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();

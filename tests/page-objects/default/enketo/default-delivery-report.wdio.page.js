@@ -123,7 +123,7 @@ const populateAliveBabyInformation = async (index, data = { sex: 'male', danger:
   await (await section.$(`[data-name="${repeatPath}/birth_weight_know"][value="no"]`)).click();
   await (await section.$(`[data-name="${repeatPath}/birth_length_know"][value="no"]`)).click();
   await (await section.$(`[data-name="${repeatPath}/vaccines_received"][value="bcg_only"]`)).click();
-  await (await section.$(`[data-name="${repeatPath}/breatfeeding"][value="no"]`)).click();
+  await (await section.$(`[data-name="${repeatPath}/breastfeeding"][value="no"]`)).click();
   await (await section.$(`[data-name="${repeatPath}/breastfed_within_1_hour"][value="no"]`)).click();
 
   const dangerSigns = [

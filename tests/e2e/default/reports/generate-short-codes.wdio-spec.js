@@ -6,7 +6,7 @@ const reportsPage = require('../../../page-objects/default/reports/reports.wdio.
 const personFactory = require('../../../factories/cht/contacts/person');
 const place = require('../../../factories/cht/contacts/place');
 const places = place.generateHierarchy();
-const clinic = places.find((place) => place.type === 'clinic');
+const clinic = places.get('clinic');
 
 const contact = personFactory.build(
   {
@@ -17,7 +17,7 @@ const contact = personFactory.build(
     phone: '+254712345670'
   });
 
-const docs = [...places, contact];
+const docs = [...places.values(), contact];
 
 describe('generating short codes', () => {
   const forms = {

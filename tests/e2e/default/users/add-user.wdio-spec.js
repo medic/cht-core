@@ -10,7 +10,7 @@ const username = 'jackuser';
 const password = 'Jacktest@123';
 const incorrectpassword = 'Passwor';
 const places = placeFactory.generateHierarchy();
-const districtHospital = utils.findDistrictHospitalFromPlaces(places);
+const districtHospital = places.get('district_hospital');
 
 const person = personFactory.build(
   {
@@ -20,7 +20,7 @@ const person = personFactory.build(
     }
   });
 
-const docs = [...places, person];
+const docs = [...places.values(), person];
 
 describe('User Test Cases ->', () => {
 

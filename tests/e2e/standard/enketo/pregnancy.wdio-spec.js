@@ -14,13 +14,13 @@ const pregnancyForm = require('../../../page-objects/standard/enketo/pregnancy.w
 
 describe('New pregnancy', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.find(place => place.type === 'health_center');
+  const healthCenter = places.get('health_center');
   const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });
   const pregnantWoman1 = 'Woman1';
   const pregnantWoman2 = 'Woman2';
 
   before(async () => {
-    await utils.saveDocs(places);
+    await utils.saveDocs([...places.values()]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
   });

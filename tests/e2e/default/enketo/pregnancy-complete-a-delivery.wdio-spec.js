@@ -118,8 +118,8 @@ describe('Contact Delivery Form', () => {
     await deliveryForm.selectDeliveryBabysBirthWeightKnow(NO);
     await deliveryForm.selectDeliveryBabysBirthLengthKnow(NO);
     await deliveryForm.selectDeliveryBabysVaccinesReveived('none');
-    await deliveryForm.selectDeliveryBabyBreatfeeding(YES);
-    await deliveryForm.selectDeliveryBabyBreatfeedingWithin1Hour(YES);
+    await deliveryForm.selectDeliveryBabyBreastfeeding(YES);
+    await deliveryForm.selectDeliveryBabyBreastfeedingWithin1Hour(YES);
     await deliveryForm.selectDeliveryBabyInfectedUmbilicalCord(NO);
     await deliveryForm.selectDeliveryBabyConvulsion(NO);
     await deliveryForm.selectDeliveryBabyDifficultyFeeding(NO);

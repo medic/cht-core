@@ -47,7 +47,7 @@ const potuPerson = personFactory.build(
     }
   });
 
-const docs = [...places, sittuHospital, sittuPerson, potuHospital, potuPerson];
+const docs = [...places.values(), sittuHospital, sittuPerson, potuHospital, potuPerson];
 
 describe('Test Contact Search Functionality', async () => {
   before(async () => {
@@ -72,7 +72,7 @@ describe('Test Contact Search Functionality', async () => {
     expect(await contactPage.getAllLHSContactsNames()).to.have.members([
       potuHospital.name,
       sittuHospital.name,
-      places[0].name,
+      places.get('district_hospital').name,
     ]);
   });
 
