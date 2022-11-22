@@ -11,10 +11,26 @@ get_existing_projects() {
 }
 
 init_env_file() {
+	httpPort=10080
+	httpsPort=10443
+
+	projects=$(get_existing_projects)
+	for file in $projects; do
+		tmpHttpPort=$(tr <"$file.env" '\n' ' ' | sed "s/^.*NGINX_HTTP_PORT=\([0-9]\{3,5\}\).*$/\1/")
+		if [ "$tmpHttpPort" -ge "$httpPort" ]; then
+			httpPort=$((tmpHttpPort + 1))
+		fi
+
+		tmpHttpsPort=$(tr <"$file.env" '\n' ' ' | sed "s/^.*NGINX_HTTPS_PORT=\([0-9]\{3,5\}\).*$/\1/")
+		if [ "$tmpHttpsPort" -ge "$httpsPort" ]; then
+			httpsPort=$((tmpHttpsPort + 1))
+		fi
+	done
+
 	touch "./$projectFile"
 	cat >"./$projectFile" <<EOL
-NGINX_HTTP_PORT=8080
-NGINX_HTTPS_PORT=8443
+NGINX_HTTP_PORT=$httpPort
+NGINX_HTTPS_PORT=$httpsPort
 COUCHDB_USER=medic
 COUCHDB_PASSWORD=password
 CHT_COMPOSE_PROJECT_NAME=$projectName
