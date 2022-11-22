@@ -1023,12 +1023,13 @@ describe('XmlForms service', () => {
         .catch(err => {
           expect(err.name).to.equal('getById fails');
           expect(warn.callCount).to.equal(1);
-          expect(warn.args[0][0]).to.equal('Error in XMLFormService getById : ');
+          expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
         });
     });
 
     it('returns error, logs and register feedback doc when getByView fails', () => {
       const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : getByView : ';
       dbGet.rejects({status: 404 });
       dbQuery.rejects('getByView fails');
       const service = getService();
@@ -1037,18 +1038,20 @@ describe('XmlForms service', () => {
           assert.fail('getByView fails');
         })
         .catch(err => {
-          expect(err.message).to.equal('Error in XMLFormService getByView ');
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0].startsWith('Error in XMLFormService getByView ')).to.be.true;
+          expect(err.message).to.match(new RegExp(expectedErrorTitle));
           expect(warn.callCount).to.equal(1);
-          expect(warn.args[0][0]).to.equal('Error in XMLFormService getById : ');
+          expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
           expect(error.callCount).to.equal(1);
-          expect(error.args[0][0]).to.equal('Error in XMLFormService getByView ');
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0]).to.match(new RegExp(expectedErrorTitle));
         });
     });
 
     it('returns error when cannot find xform attachment', () => {
       const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : findXFormAttachmentName : ';
+      const expectedErrorDetail = `The form "${internalId}" doesn't have an xform attachment`;
       const expected = {
         type: 'form',
         _attachments: { 'something.txt': { stub: true } }
@@ -1062,13 +1065,12 @@ describe('XmlForms service', () => {
           assert.fail('expected error to be thrown');
         })
         .catch(err => {
-          expect(err.message).to.equal(`The form "${internalId}" doesn't have an xform attachment`);
+          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
           expect(error.callCount).to.equal(1);
-          expect(error.args[0][0]).to.equal('Error in XMLFormService findXFormAttachmentName : ');
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(error.args[0][1]).to.equal(expectedErrorDetail);
           expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]
-            .startsWith('Error in XMLFormService findXFormAttachmentName : '))
-            .to.be.true;
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
@@ -1088,7 +1090,7 @@ describe('XmlForms service', () => {
       const service = getService();
       return service.get(internalId).then(actual => {
         expect(warn.callCount).to.equal(1);
-        expect(warn.args[0][0]).to.equal('Error in XMLFormService getById : ');
+        expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
         expect(actual).to.deep.equal(expected);
         expect(dbQuery.callCount).to.equal(1);
         expect(dbQuery.args[0][0]).to.equal(`medic-client/doc_by_type`);
@@ -1100,6 +1102,8 @@ describe('XmlForms service', () => {
 
     it('query fails if multiple forms found', () => {
       const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : getByView : ';
+      const expectedErrorDetail = `Multiple forms found for internalId : "${internalId}"`;
       const expected = {
         internalId,
         _attachments: { 'something.xml': { stub: true } }
@@ -1118,24 +1122,21 @@ describe('XmlForms service', () => {
           assert.fail('expected error to be thrown');
         })
         .catch(err => {
-          expect(err.message).to.equal('Error in XMLFormService getByView ');
+          expect(err.message).to.equal(expectedErrorTitle  + expectedErrorDetail);
           expect(warn.callCount).to.equal(1);
-          expect(warn.args[0][0]).to.equal('Error in XMLFormService getById : ');
+          expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
           expect(error.callCount).to.equal(1);
-          expect(error.args[0][0]).to.equal('Error in XMLFormService getByView ');
-          expect(error.args[0][1]).to.equal(`Multiple forms found for internalId : "${internalId}"`);
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(error.args[0][1]).to.equal(expectedErrorDetail);
           expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]
-            .startsWith('Error in XMLFormService getByView '))
-            .to.be.true;
-          expect(feedbackService.submit.args[0][0]
-            .includes(`Multiple forms found for internalId : "${internalId}"`))
-            .to.be.true;
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
     it('query fails if no forms found', () => {
       const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : getByView : ';
+      const expectedErrorDetail = `No form found for internalId : "${internalId}"`;
       dbGet.rejects({ status: 404 });
       dbQuery.resolves({
         rows: [
@@ -1149,28 +1150,24 @@ describe('XmlForms service', () => {
           assert.fail('expected error to be thrown');
         })
         .catch(err => {
-          expect(err.message).to.equal('Error in XMLFormService getByView ');
+          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
           expect(warn.callCount).to.equal(1);
-          expect(warn.args[0][0]).to.equal('Error in XMLFormService getById : ');
+          expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
           expect(error.callCount).to.equal(1);
-          expect(error.args[0][0]).to.equal('Error in XMLFormService getByView ');
-          expect(error.args[0][1]).to.equal(`No form found for internalId : "${internalId}"`);
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(error.args[0][1]).to.equal(expectedErrorDetail);
           expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]
-            .startsWith('Error in XMLFormService getByView '))
-            .to.be.true;
-          expect(feedbackService.submit.args[0][0]
-            .includes(`No form found for internalId : "${internalId}"`))
-            .to.be.true;
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
-
   });
 
   describe('getDocAndFormAttachment', () => {
 
     it('fails if no forms found', () => {
       const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : getDocAndFormAttachment : ';
+      const expectedErrorDetail = `The form "${internalId}" doesn't have an xform attachment`;
       dbQuery.resolves([]);
       dbGet.resolves({
         _id: 'form:death',
@@ -1185,10 +1182,39 @@ describe('XmlForms service', () => {
           assert.fail('expected error to be thrown');
         })
         .catch(err => {
-          expect(err.message).to.equal(`The form "${internalId}" doesn't have an xform attachment`);
+          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
           expect(error.callCount).to.equal(1);
-          expect(error.args[0][0]).to.equal('Error in XMLFormService getDocAndFormAttachment : ');
-          expect(error.args[0][1]).to.equal(`The form "${internalId}" doesn't have an xform attachment`);
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(error.args[0][1]).to.equal(expectedErrorDetail);
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
+        });
+    });
+
+    it('fails if failed to get forms, but not 404', () => {
+      const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : getDocAndFormAttachment : ';
+      const expectedErrorDetail = `Failed to get the form "${internalId}" xform attachment`;
+      dbQuery.resolves([]);
+      dbGet.resolves({
+        _id: 'form:death',
+        _attachments: { 'something.xml': { stub: true } },
+        internalId: 'birth'
+      });
+      dbGetAttachment.rejects();
+      const service = getService();
+      return service
+        .getDocAndFormAttachment(internalId)
+        .then(() => {
+          assert.fail('expected error to be thrown');
+        })
+        .catch(err => {
+          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(error.args[0][1]).to.equal(expectedErrorDetail);
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
