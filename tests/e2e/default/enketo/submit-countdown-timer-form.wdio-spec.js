@@ -7,7 +7,7 @@ const loginPage = require('../../../page-objects/default/login/login.wdio.page')
 
 const { userContactDoc, docs } = userData;
 
-describe('Submit Photo Upload form', () => {
+describe('Countdown timer widget', () => {
   
   before(async () => {
     await utils.saveDocs(docs);
@@ -16,7 +16,7 @@ describe('Submit Photo Upload form', () => {
     await common.hideSnackbar();
   });
 
-  it('submit and edit (no changes)', async () => {
+  it('interact with timer and submit', async () => {
     await common.goToReports();
 
     await reportsPage.openForm(countdownTimerPage.TITLE);
