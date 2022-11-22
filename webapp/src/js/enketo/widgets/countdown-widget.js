@@ -56,16 +56,15 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
   const arcColor = '#cccccc';
   let running;
 
-  const getPlayAudioFunction = () => {
+  const audio = (function() {
     const androidSoundSupport = window.medicmobile_android &&
       typeof window.medicmobile_android.playAlert === 'function';
     if (androidSoundSupport) {
-      return window.medicmobile_android.playAlert;
+      return { play: () => window.medicmobile_android.playAlert() };
     }
-    return new Audio('/audio/alert.mp3').play;
-  };
-
-  const playAudio = getPlayAudioFunction();
+    const cached = new Audio('/audio/alert.mp3');
+    return { play: () => cached.play() };
+  }());
 
   //> UTILS
   const drawCircle = (ctx, c) => {
@@ -121,7 +120,7 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
       running = false;
       if ($(canvas).closest('body').length > 0) {
         // only beep if the canvas is still attached to the DOM
-        playAudio();
+        audio.play();
       }
     }
   };
