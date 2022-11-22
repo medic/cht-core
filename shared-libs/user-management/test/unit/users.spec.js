@@ -1089,7 +1089,7 @@ describe('Users service', () => {
           { error: 'Missing required fields: password, type or roles' },
         ]);
       } catch (error) {
-        chai.assert.fail('Should have not thrown');
+        chai.expect.fail('Should have not thrown');
       }
     });
 
@@ -1133,7 +1133,7 @@ describe('Users service', () => {
           },
         ]);
       } catch (error) {
-        chai.assert.fail('Should have not thrown');
+        chai.expect.fail('Should have not thrown');
       }
     });
 
@@ -1164,7 +1164,7 @@ describe('Users service', () => {
 
         chai.expect(result[1]).to.deep.equal({ error: 'Missing required fields: phone' });
       } catch (error) {
-        chai.assert.fail('Should have not thrown');
+        chai.expect.fail('Should have not thrown');
       }
     });
 
@@ -1196,7 +1196,7 @@ describe('Users service', () => {
 
         chai.expect(result[1]).to.deep.equal({ error: 'A valid phone number is required for SMS login.' });
       } catch (error) {
-        chai.assert.fail('Should have not thrown');
+        chai.expect.fail('Should have not thrown');
       }
     });
 
@@ -2610,7 +2610,7 @@ describe('Users service', () => {
       sinon.stub(roles, 'isOffline').returns(false);
 
       return service.createUser(user)
-        .then(() => chai.assert.fail('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.nested.include({
             code: 400,
@@ -2634,7 +2634,7 @@ describe('Users service', () => {
       sinon.stub(roles, 'isOffline').returns(false);
 
       return service.createUser(user)
-        .then(() => chai.assert.fail('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.nested.include({
             code: 400,
@@ -2790,7 +2790,7 @@ describe('Users service', () => {
       });
 
       return service.updateUser('sally', updates)
-        .then(() => chai.assert.fail('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.nested.include({
             code: 400,
@@ -2820,7 +2820,7 @@ describe('Users service', () => {
       });
 
       return service.updateUser('sally', updates)
-        .then(() => chai.assert.fail('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.nested.include({
             code: 400,
@@ -2942,7 +2942,7 @@ describe('Users service', () => {
       });
 
       return service.updateUser('sally', updates)
-        .then(() => chai.assert.fail('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.nested.include({
             code: 400,
@@ -3036,7 +3036,7 @@ describe('Users service', () => {
 
       try {
         await service.resetPassword('sally');
-        chai.assert.fail('Should have thrown');
+        chai.expect.fail('Should have thrown');
       } catch (error) {
         chai.expect(error).to.deep.nested.include({
           status: 404,
@@ -3053,14 +3053,14 @@ describe('Users service', () => {
     it('should throw error when csv is empty', async () => {
       try {
         await service.parseCsv('');
-        chai.assert.fail('Should have thrown');
+        chai.expect.fail('Should have thrown');
       } catch (error) {
         chai.expect(error.message).to.equal('CSV is empty.');
       }
 
       try {
         await service.parseCsv(null);
-        chai.assert.fail('Should have thrown');
+        chai.expect.fail('Should have thrown');
       } catch (error) {
         chai.expect(error.message).to.equal('CSV is empty.');
       }
