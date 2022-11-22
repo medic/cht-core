@@ -12,20 +12,20 @@ const baseConfig = {
   },
   SELENIUM_PROMISE_MANAGER: false,
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  exclude: [
-    '**/*wdio-spec.js',
-    'e2e/api/**/*.js',
-    'e2e/sentinel/**/*.js',
-    'e2e/transitions/**/*.js',
-    'e2e/**/*-config/*.js',
-  ],
+  // exclude: [
+  //   '**/*wdio-spec.js',
+  //   'e2e/api/**/*.js',
+  //   'e2e/sentinel/**/*.js',
+  //   'e2e/transitions/**/*.js',
+  //   'e2e/**/*-config/*.js',
+  // ],
   suites: {
     web: [
       // 'e2e/protractor/!(cht)/**/*.js',
       // 'e2e/protractor/**/*.js'
       'e2e/protractor/sms/rapidpro.spec.js'
     ],
-    mobile: ['mobile/**/*.js'],
+    //mobile: ['mobile/**/*.js'],
     // performance: 'performance/**/*.js'
   },
   framework: 'jasmine2',
