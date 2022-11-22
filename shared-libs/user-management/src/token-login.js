@@ -1,6 +1,6 @@
 const db = require('./libs/db');
 const config = require('./libs/config');
-const { generate } = require('./libs/passwords');
+const passwords = require('./libs/passwords');
 const taskUtils = require('@medic/task-utils');
 const phoneNumber = require('@medic/phone-number');
 const TOKEN_EXPIRE_TIME = 24 * 60 * 60 * 1000; // 24 hours
@@ -30,7 +30,7 @@ const validateAndNormalizePhone = (data) => {
  * @returns {String}
  */
 const generateToken = () => {
-  const tokens = Array.from({ length: 10 }).map(() => generate(TOKEN_LENGTH));
+  const tokens = Array.from({ length: 10 }).map(() => passwords.generate(TOKEN_LENGTH));
   const docIds = tokens.map(token => getTokenLoginDocId(token));
   return db.medic.allDocs({ keys: docIds }).then(results => {
     const idx = results.rows.findIndex(row => row.error);
@@ -225,7 +225,7 @@ const validateTokenLoginCreate = (data) => {
   if (phoneError) {
     return phoneError;
   }
-  data.password = generate();
+  data.password = passwords.generate();
 };
 
 const validateTokenLoginEdit = (data, user, userSettings) => {
@@ -243,7 +243,7 @@ const validateTokenLoginEdit = (data, user, userSettings) => {
     if (phoneError) {
       return phoneError;
     }
-    user.password = generate();
+    user.password = passwords.generate();
   }
 };
 
@@ -306,7 +306,7 @@ const resetPassword = userId => {
       return Promise.reject({ code: 400, message: 'invalid user' });
     }
 
-    user.password = generate();
+    user.password = passwords.generate();
     return db.users.put(user).then(() => ({ user: user.name, password: user.password }));
   });
 };
