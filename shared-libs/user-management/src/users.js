@@ -730,21 +730,25 @@ const hydrateUserSettings = (userSettings) => {
     });
 };
 
-const getUserDocsByName = (name) => Promise
-  .all([
-    db.users.get('org.couchdb.user:' + name),
-    db.medic.get('org.couchdb.user:' + name)
-  ])
-  .catch(error => {
-    if (error.status !== 404) {
-      return Promise.reject(error);
-    }
-
-    return Promise.reject({
-      status: 404,
-      message: `Failed to find user with name [${name}].`
-    });
+const getUserDoc = (username, dbName) => db[dbName]
+  .get(`org.couchdb.user:${username}`)
+  .catch(err => {
+    err.db = dbName;
+    throw err;
   });
+
+const getUserDocsByName = (name) =>
+  Promise
+    .all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)))
+    .catch(error => {
+      if (error.status !== 404) {
+        return Promise.reject(error);
+      }
+      return Promise.reject({
+        status: 404,
+        message: `Failed to find user with name [${name}] in the [${error.db}] database.`
+      });
+    });
 
 const getUserSettings = async({ name }) => {
   const [ user, medicUser ] = await getUserDocsByName(name);

@@ -668,13 +668,13 @@ describe('Users service', () => {
         .getUserSettings({ name: 'steve' })
         .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
-          chai.expect(err).to.deep.equal({ some: 'err' });
+          chai.expect(err).to.deep.equal({ some: 'err', db: 'users' });
         });
     });
 
     it('throws error if _users user returns an error when getting by contact_id', () => {
       db.users.get.rejects({ some: 'err' });
-      db.medic.query.resolves({
+      db.medic.get.resolves({
         rows: [{ doc: {
           name: 'steve',
           facility_id: 'otherville',
@@ -686,7 +686,7 @@ describe('Users service', () => {
         .getUserSettings({ contact_id: 'steve_contact' })
         .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
-          chai.expect(err).to.deep.equal({ some: 'err' });
+          chai.expect(err).to.deep.equal({ some: 'err', db: 'users' });
         });
     });
 
@@ -697,7 +697,7 @@ describe('Users service', () => {
         .getUserSettings({ name: 'steve' })
         .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
-          chai.expect(err).to.deep.equal({ some: 'err' });
+          chai.expect(err).to.deep.equal({ some: 'err', db: 'medic' });
         });
     });
 
@@ -709,7 +709,7 @@ describe('Users service', () => {
         .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({
-            message: 'Failed to find user with name [steve].',
+            message: 'Failed to find user with name [steve] in the [medic] database.',
             status: 404
           });
         });
@@ -723,7 +723,7 @@ describe('Users service', () => {
         .then(() => chai.expect.fail('should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.equal({
-            message: 'Failed to find user with name [steve].',
+            message: 'Failed to find user with name [steve] in the [users] database.',
             status: 404
           });
         });
