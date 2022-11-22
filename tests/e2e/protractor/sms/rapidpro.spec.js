@@ -201,53 +201,53 @@ describe('RapidPro SMS Gateway', () => {
     });
 
     //use new endpoint: '/api/v2/sms/rapidpro/incoming-messages' 
-    it('should create messages', async () => {
-      const message = {
-        id: 'the_gateway_ref',
-        from: 'the_phone',
-        content: 'the sms message content',
-      };
+    // it('should create messages with new endpoint', async () => {
+    //   const message = {
+    //     id: 'the_gateway_ref',
+    //     from: 'the_phone',
+    //     content: 'the sms message content',
+    //   };
 
-      await setIncomingKey();
-      await utils.updateSettings({ sms: smsSettings }, true);
-      const messageResult = await utils.request({
-        path: '/api/v2/sms/rapidpro/incoming-messages',
-        method: 'POST',
-        headers: { authorization: `Token ${INCOMING_KEY}` },
-        noAuth: true,
-        body: message,
-      });
+    //   await setIncomingKey();
+    //   await utils.updateSettings({ sms: smsSettings }, true);
+    //   const messageResult = await utils.request({
+    //     path: '/api/v2/sms/rapidpro/incoming-messages',
+    //     method: 'POST',
+    //     headers: { authorization: `Token ${INCOMING_KEY}` },
+    //     noAuth: true,
+    //     body: message,
+    //   });
 
-      expect(messageResult).toEqual({ saved: 1 });
-      await utils.resetBrowser();
-      await commonElements.goToMessagesNative();
+    //   expect(messageResult).toEqual({ saved: 1 });
+    //   await utils.resetBrowser();
+    //   await commonElements.goToMessagesNative();
 
-      // LHS
-      const firstMessage = messagesElements.messageByIndex(1);
-      await helper.waitElementToBeVisibleNative(firstMessage);
+    //   // LHS
+    //   const firstMessage = messagesElements.messageByIndex(1);
+    //   await helper.waitElementToBeVisibleNative(firstMessage);
 
-      const heading = messagesElements.listMessageHeading(firstMessage);
-      const summary = messagesElements.listMessageSummary(firstMessage);
-      expect(await helper.getTextFromElementNative(heading)).toEqual('the_phone');
-      expect(await helper.getTextFromElementNative(summary)).toEqual('the sms message content');
-      await helper.clickElementNative(summary);
+    //   const heading = messagesElements.listMessageHeading(firstMessage);
+    //   const summary = messagesElements.listMessageSummary(firstMessage);
+    //   expect(await helper.getTextFromElementNative(heading)).toEqual('the_phone');
+    //   expect(await helper.getTextFromElementNative(summary)).toEqual('the sms message content');
+    //   await helper.clickElementNative(summary);
 
-      const firstMessageContent = messagesElements.messageContentIndex(1);
-      await helper.waitElementToBeVisibleNative(firstMessageContent);
+    //   const firstMessageContent = messagesElements.messageContentIndex(1);
+    //   await helper.waitElementToBeVisibleNative(firstMessageContent);
 
-      const messageHeader = messagesElements.messageDetailsHeader();
-      const messageText = messagesElements.messageContentText(firstMessageContent);
-      const messageStatus = messagesElements.messageContentState(firstMessageContent);
+    //   const messageHeader = messagesElements.messageDetailsHeader();
+    //   const messageText = messagesElements.messageContentText(firstMessageContent);
+    //   const messageStatus = messagesElements.messageContentState(firstMessageContent);
 
-      expect(await helper.getTextFromElementNative(messageHeader)).toEqual('the_phone');
-      expect(await helper.getTextFromElementNative(messageText)).toEqual('the sms message content');
-      expect(await helper.getTextFromElementNative(messageStatus)).toEqual('received');
+    //   expect(await helper.getTextFromElementNative(messageHeader)).toEqual('the_phone');
+    //   expect(await helper.getTextFromElementNative(messageText)).toEqual('the sms message content');
+    //   expect(await helper.getTextFromElementNative(messageStatus)).toEqual('received');
 
-      // database
-      const id = await firstMessageContent.getAttribute('data-id');
-      const doc = await utils.getDoc(id);
-      expect(doc.sms_message && doc.sms_message.gateway_ref).toEqual('the_gateway_ref');
-    });
+    //   // database
+    //   const id = await firstMessageContent.getAttribute('data-id');
+    //   const doc = await utils.getDoc(id);
+    //   expect(doc.sms_message && doc.sms_message.gateway_ref).toEqual('the_gateway_ref');
+    // });
 
     it('should create reports', async () => {
       const forms = {
