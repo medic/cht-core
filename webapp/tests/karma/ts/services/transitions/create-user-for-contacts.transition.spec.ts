@@ -506,7 +506,7 @@ describe('Create User for Contacts Transition', () => {
         const docs = await transition.run(submittedDocs);
         expect(docs).to.deep.equal([submittedDocs[0], ...submittedDocs.slice(2, 6)]);
         // Reports re-parented to original user
-        dataRecords.forEach(doc => expect(doc.contact._id).to.equal(NEW_CONTACT._id));
+        dataRecords.forEach(doc => expect(doc).to.deep.equal(getDataRecord({ _id: NEW_CONTACT._id })));
         expect(userContactService.get.callCount).to.equal(1);
         expect(createUserForContactsService.getReplacedBy.callCount).to.equal(1);
         expect(createUserForContactsService.getReplacedBy.args[0]).to.deep.equal([ORIGINAL_CONTACT]);
