@@ -38,6 +38,12 @@
           <text id="/replace_user/inputs/user/phone:label">
             <value>Phone Number</value>
           </text>
+          <text id="/replace_user/intro/admin_code:hint">
+            <value>The code is '1234'</value>
+          </text>
+          <text id="/replace_user/intro/admin_code:jr:constraintMsg">
+            <value>Invalid code. Contact your administrator if you need access to this form.</value>
+          </text>
           <text id="/replace_user/intro/admin_code:label">
             <value>Admin Code</value>
           </text>
@@ -184,7 +190,7 @@ Please contact your administrator if you do not receive a login link.</value>
         </translation>
       </itext>
       <instance>
-        <replace_user id="replace_user" prefix="J1!replace_user!" delimiter="#" version="2022-09-28 21-40">
+        <replace_user id="replace_user" prefix="J1!replace_user!" delimiter="#" version="2022-11-23 11-51">
           <inputs>
             <meta>
               <location>
@@ -225,7 +231,7 @@ Please contact your administrator if you do not receive a login link.</value>
           <created_by/>
           <created_by_person_uuid/>
           <created_by_place_uuid/>
-          <intro db-doc="true">
+          <intro>
             <warning_header/>
             <warning/>
             <admin_code/>
@@ -275,7 +281,7 @@ Please contact your administrator if you do not receive a login link.</value>
           <replacement_contact_id db-doc-ref=" /replace_user/new_contact "/>
           <new_contact_name/>
           <new_contact_phone/>
-          <outro db-doc="true">
+          <outro>
             <warning_header/>
             <warning/>
           </outro>
@@ -308,7 +314,7 @@ Please contact your administrator if you do not receive a login link.</value>
       <bind nodeset="/replace_user/created_by_place_uuid" type="string" calculate="../inputs/user/facility_id"/>
       <bind nodeset="/replace_user/intro/warning_header" readonly="true()" type="string"/>
       <bind nodeset="/replace_user/intro/warning" readonly="true()" type="string"/>
-      <bind nodeset="/replace_user/intro/admin_code" type="string" required="true()"/>
+      <bind nodeset="/replace_user/intro/admin_code" type="string" constraint=". = '1234'" jr:constraintMsg="jr:itext('/replace_user/intro/admin_code:jr:constraintMsg')" required="true()"/>
       <bind nodeset="/replace_user/new_contact/parent/_id" type="string" calculate=" /replace_user/parent_1_id "/>
       <bind nodeset="/replace_user/new_contact/parent/parent" relevant=" /replace_user/parent_2_id  != ''"/>
       <bind nodeset="/replace_user/new_contact/parent/parent/_id" type="string" calculate=" /replace_user/parent_2_id "/>
@@ -374,6 +380,7 @@ Please contact your administrator if you do not receive a login link.</value>
       </input>
       <input ref="/replace_user/intro/admin_code">
         <label ref="jr:itext('/replace_user/intro/admin_code:label')"/>
+        <hint ref="jr:itext('/replace_user/intro/admin_code:hint')"/>
       </input>
     </group>
     <group appearance="field-list" ref="/replace_user/new_contact">
