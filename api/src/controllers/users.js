@@ -118,9 +118,8 @@ const getAllowedDocsCounts = async (userCtx) => {
 const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
 
 const getUserList = async (req) => {
-  return auth
-    .check(req, 'can_view_users')
-    .then(() => usersService.getList());
+  await auth.check(req, 'can_view_users');
+  return await usersService.getList();
 };
 
 const getType = user => {
@@ -248,9 +247,12 @@ module.exports = {
 
   v2: {
     get: async (req, res) => {
-      return getUserList(req, res)
-        .then(body => res.json(body))
-        .catch(err => serverUtils.error(err, req, res));
+      try {
+        const body = await getUserList(req, res);
+        res.json(body);
+      } catch(err) {
+        serverUtils.error(err, req, res);
+      }
     },
     create: async (req, res) => {
       try {
