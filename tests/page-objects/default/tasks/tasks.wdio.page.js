@@ -11,6 +11,11 @@ const getTasks = () => $$(`${taskListSelector} li.content-row`);
 const getTaskInfo = async (taskElement) => {
   const contactName = await (await taskElement.$('h4 span')).getText();
   const formTitle = await (await taskElement.$('.summary p')).getText();
+  let lineage = '';
+  if (await (await taskElement.$('.detail')).isExisting()){
+    lineage = await (await taskElement.$('.detail')).getText();
+  }
+
   let dueDateText = '';
   if (await (await taskElement.$('.date .relative-date-content')).isExisting()) {
     dueDateText = await (await taskElement.$('.date .relative-date-content')).getText();
@@ -19,7 +24,15 @@ const getTaskInfo = async (taskElement) => {
   const classAttr = await taskElement.getAttribute('class');
   const overdue = classAttr.split(' ').includes('overdue');
 
-  return { contactName, formTitle, dueDateText, overdue };
+  return { contactName, formTitle, dueDateText, overdue, lineage };
+};
+
+const getTasksListInfos = async (tasks) => {
+  const infos = [];
+  for (const task of tasks) {
+    infos.push(await getTaskInfo(task));
+  }
+  return infos;
 };
 
 const getTaskByContactAndForm = async (name, title) => {
@@ -79,6 +92,7 @@ module.exports = {
   getTaskByContactAndForm,
   waitForTaskContentLoaded,
   getTaskInfo,
+  getTasksListInfos,
   submitTask,
   waitForTasksGroupLoaded,
   getTasksInGroup,
