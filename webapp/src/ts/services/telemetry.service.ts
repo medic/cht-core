@@ -43,7 +43,7 @@ export class TelemetryService {
     return window.PouchDB(dbName); // avoid angular-pouch as digest isn't necessary here
   }
 
-  private getUniqueDeviceId() {
+   getUniqueDeviceId() {
     let uniqueDeviceId = window.localStorage.getItem(this.DEVICE_ID_KEY);
 
     if (!uniqueDeviceId) {
