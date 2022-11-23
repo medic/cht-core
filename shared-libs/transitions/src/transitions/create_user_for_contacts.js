@@ -166,7 +166,8 @@ module.exports = {
   onMatch: async change => {
     const usersToReplace = getUsersToReplace(change.doc);
     const replaceUsers = usersToReplace.map(user => replaceUser(change.doc, user));
-    const errors = (await Promise.allSettled(replaceUsers))
+    const replacementResults = await Promise.allSettled(replaceUsers);
+    const errors = replacementResults
       .filter(({ status }) => status === 'rejected')
       .map(({ reason }) => reason);
     if (errors.length) {
