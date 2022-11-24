@@ -124,7 +124,17 @@ docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml"
 
 set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
-isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}_nginx_1" 2>/dev/null)
+
+get_nginx_container_id() {
+  docker ps --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
+}
+
+get_is_nginx_running() {
+  docker inspect --format="{{.State.Running}}" "$nginxContainerId" 2>/dev/null
+}
+
+nginxContainerId=$(get_nginx_container_id)
+isNginxRunning=$(get_is_nginx_running)
 i=0
 while [[ "$isNginxRunning" != "true" ]]; do
 	if [[ $i -gt 300 ]]; then
@@ -138,14 +148,19 @@ while [[ "$isNginxRunning" != "true" ]]; do
 	echo '.' | tr -d '\n'
 	((i++))
 	sleep 1
-	isNginxRunning=$(docker inspect --format="{{.State.Running}}" "${projectName}_nginx_1" 2>/dev/null)
+
+	if [[ $nginxContainerId = "" ]]; then
+    nginxContainerId=$(get_nginx_container_id)
+  fi
+
+	isNginxRunning=$(get_is_nginx_running)
 done
 
-docker exec -it "${projectName}_nginx_1" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
-docker exec -it "${projectName}_nginx_1" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
-docker exec -it "${projectName}_nginx_1" bash -c "cat server.pem chain.pem > /etc/nginx/private/cert.pem"
-docker exec -it "${projectName}_nginx_1" bash -c "curl -s -o /etc/nginx/private/key.pem http://local-ip.co/cert/server.key"
-docker restart "${projectName}_nginx_1" 1>/dev/null
+docker exec -it "$nginxContainerId" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
+docker exec -it "$nginxContainerId" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
+docker exec -it "$nginxContainerId" bash -c "cat server.pem chain.pem > /etc/nginx/private/cert.pem"
+docker exec -it "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem http://local-ip.co/cert/server.key"
+docker restart "$nginxContainerId" 1>/dev/null
 
 echo ""
 echo ""
