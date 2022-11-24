@@ -126,15 +126,16 @@ set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
 
 get_nginx_container_id() {
-  docker ps --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
+	docker ps --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
 }
 
-get_is_nginx_running() {
-  docker inspect --format="{{.State.Running}}" "$nginxContainerId" 2>/dev/null
+get_is_container_running() {
+	containerId=$1
+	docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
 }
 
 nginxContainerId=$(get_nginx_container_id)
-isNginxRunning=$(get_is_nginx_running)
+isNginxRunning=$(get_is_container_running "$nginxContainerId")
 i=0
 while [[ "$isNginxRunning" != "true" ]]; do
 	if [[ $i -gt 300 ]]; then
@@ -150,10 +151,10 @@ while [[ "$isNginxRunning" != "true" ]]; do
 	sleep 1
 
 	if [[ $nginxContainerId = "" ]]; then
-    nginxContainerId=$(get_nginx_container_id)
-  fi
+		nginxContainerId=$(get_nginx_container_id)
+	fi
 
-	isNginxRunning=$(get_is_nginx_running)
+	isNginxRunning=$(get_is_container_running "$nginxContainerId")
 done
 
 docker exec -it "$nginxContainerId" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
