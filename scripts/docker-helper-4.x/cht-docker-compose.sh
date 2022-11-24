@@ -59,7 +59,7 @@ if [[ -n "${1-}" ]]; then
 fi
 
 if [[ -n "${2-}" && -n $projectName ]]; then
-  containerIds=$(docker ps --all --filter "name=${projectName}" --quiet)
+	containerIds=$(docker ps --all --filter "name=${projectName}" --quiet)
 	case $2 in
 	"down")
 		echo "Shutting down project \"${projectName}\"."
@@ -72,45 +72,45 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 	"nuke")
 		echo "Nuking project \"${projectName}\"."
 
-    if [[ -n $containerIds ]]; then
-       echo "Removing project's docker containers..."
+		if [[ -n $containerIds ]]; then
+			echo "Removing project's docker containers..."
 
-       docker stop $containerIds 1>/dev/null
-       docker rm $containerIds 1>/dev/null
+			docker stop $containerIds 1>/dev/null
+			docker rm $containerIds 1>/dev/null
 
-       echo "Done."
-    else
-      echo "No docker container found, skipping."
-    fi
+			echo "Done."
+		else
+			echo "No docker container found, skipping."
+		fi
 
-    networks=$(docker network ls --filter "name=${projectName}" --quiet)
-    if [[ -n $networks ]]; then
-      echo "Removing project's docker networks..."
-      docker network rm $networks 1>/dev/null
-      echo "Done."
-    else
-      echo "No docker network found, skipping."
-    fi
+		networks=$(docker network ls --filter "name=${projectName}" --quiet)
+		if [[ -n $networks ]]; then
+			echo "Removing project's docker networks..."
+			docker network rm $networks 1>/dev/null
+			echo "Done."
+		else
+			echo "No docker network found, skipping."
+		fi
 
-    volumes=$(docker volume ls --filter "name=${projectName}" --quiet)
-    if [[ -n $volumes ]]; then
-      echo "Removing project's docker volumes..."
-      docker volume rm $volumes 1>/dev/null
-      echo "Done."
-    else
-      echo "No docker container volume, skipping."
-    fi
+		volumes=$(docker volume ls --filter "name=${projectName}" --quiet)
+		if [[ -n $volumes ]]; then
+			echo "Removing project's docker volumes..."
+			docker volume rm $volumes 1>/dev/null
+			echo "Done."
+		else
+			echo "No docker container volume, skipping."
+		fi
 
-    if [[ -d $homeDir ]]; then
-      echo "Removing project-specific files..."
-      sudo rm -rf "$homeDir"
-      echo "Done."
-    else
-      echo "No project-specific found, skipping."
-    fi
+		if [[ -d $homeDir ]]; then
+			echo "Removing project-specific files..."
+			sudo rm -rf "$homeDir"
+			echo "Done."
+		else
+			echo "No project-specific found, skipping."
+		fi
 
 		echo "Project \"${projectName}\" successfully nuked from your computer."
-    exit 0
+		exit 0
 		;;
 	esac
 fi
