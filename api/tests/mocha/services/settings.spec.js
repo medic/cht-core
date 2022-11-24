@@ -6,6 +6,7 @@ const service = require('../../../src/services/settings');
 const db = require('../../../src/db');
 const environment = require('../../../src/environment');
 const defaults = require('../../../../build/ddocs/medic/_attachments/default-docs/settings.doc.json');
+const config = require('../../../src/config');
 
 let settings;
 let replace;
@@ -161,6 +162,31 @@ describe('settings service', () => {
           update.callCount.should.equal(1);
           update.args[0][0].settings.should.deep.equal(newSettings);
         });
+    });
+  });
+
+  describe('getDeprecatedTransitions', () => {
+    it('should return deprecated transitions', () => {
+      const getDeprecatedTransitions = sinon.stub().returns([
+        { name: 't1', deprecated: true, deprecatedIn: 1 },
+        { name: 't2', deprecated: true, deprecatedIn: 2, getDeprecationMessage: sinon.stub().returns('a') },
+        { name: 't3', deprecated: false, deprecatedIn: 3 },
+        { name: 't4', deprecated: true, deprecatedIn: 4, getDeprecationMessage: sinon.stub().returns('b') },
+      ]);
+      sinon.stub(config, 'getTransitionsLib').returns({ getDeprecatedTransitions });
+
+      expect(service.getDeprecatedTransitions()).to.deep.equal([
+        { name: 't1', deprecated: true, deprecatedIn: 1, deprecationMessage: '' },
+        { name: 't2', deprecated: true, deprecatedIn: 2, deprecationMessage: 'a' },
+        { name: 't3', deprecated: false, deprecatedIn: 3, deprecationMessage: '' },
+        { name: 't4', deprecated: true, deprecatedIn: 4, deprecationMessage: 'b' },
+      ]);
+      expect(config.getTransitionsLib.args).to.deep.equal([[]]);
+    });
+
+    it('should return empty array if transitions lib is not initialized', () => {
+      sinon.stub(config, 'getTransitionsLib').returns();
+      expect(service.getDeprecatedTransitions()).to.deep.equal([]);
     });
   });
 });
