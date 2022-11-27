@@ -73,7 +73,7 @@ describe('Enketo service', () => {
   let zScoreService;
   let zScoreUtil;
   let globalActions;
-  let error;
+  let consoleErrorMock;
   let feedbackService;
 
   beforeEach(() => {
@@ -125,7 +125,7 @@ describe('Enketo service', () => {
     zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
     globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
-    error = sinon.stub(console, 'error');
+    consoleErrorMock = sinon.stub(console, 'error');
     feedbackService = { submit: sinon.stub() };
 
     TestBed.configureTestingModule({
@@ -233,8 +233,8 @@ describe('Enketo service', () => {
         .catch(actual => {
           expect(enketoInit.callCount).to.equal(1);
           expect(actual.message).to.equal(expectedErrorMessage);
-          expect(error.callCount).to.equal(1);
-          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(consoleErrorMock.callCount).to.equal(1);
+          expect(consoleErrorMock.args[0][0]).to.equal(expectedErrorTitle);
           expect(feedbackService.submit.callCount).to.equal(1);
           expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorMessage);
         });
@@ -288,7 +288,6 @@ describe('Enketo service', () => {
     });
 
     it('leaves img wrapped and hides loader if failed to load', () => {
-      const consoleErrorMock = sinon.stub(console, 'error');
       UserContact.resolves({ contact_id: '123' });
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
