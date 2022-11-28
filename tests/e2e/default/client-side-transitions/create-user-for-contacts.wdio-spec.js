@@ -97,12 +97,12 @@ const loginAsOnlineUser = () => loginAsUser(ONLINE_USER);
 
 const populateReplaceUserForm = async (formTitle) => {
   await contactsPage.createNewAction(formTitle);
-  await replaceUserForm.selectAdminCode('secretCode');
+  await replaceUserForm.selectAdminCode('1234');
   await genericForm.nextPage();
   await replaceUserForm.selectContactFullName('Replacement User');
-  await replaceUserForm.selectContactSex(replaceUserForm.SEX.female);
   await replaceUserForm.selectContactDobUnknown();
   await replaceUserForm.selectContactAgeYears(22);
+  await replaceUserForm.selectContactSex(replaceUserForm.SEX.female);
   await genericForm.nextPage();
 };
 
