@@ -267,11 +267,14 @@ const saveDoc = (change, callback) => {
  * change/write.
  */
 const applyTransition = ({ key, change, transition, force }, callback) => {
-  if (!force && !canRun({ key, change, transition })) {
-    logger.debug(
-      `canRun test failed on transition ${key} for doc ${change.id} seq ${change.seq}`
-    );
-    return callback();
+  try {
+    if (!force && !canRun({ key, change, transition })) {
+      logger.debug(`canRun test failed on transition ${key} for doc ${change.id} seq ${change.seq}`);
+      return callback();
+    }
+  } catch (err) {
+    logger.error(`canRun test errored on transition ${key} for doc ${change.id}: %o`, err);
+    return callback(null, false);
   }
 
   logger.debug(
