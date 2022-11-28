@@ -342,7 +342,7 @@ describe('create_user_for_contacts', () => {
   });
 
   it('does not replace user when the original user does not exist', async () => {
-    const missingUserPattern = /Failed to find user with name \[original_person] in the \[medic] database\./;
+    const missingUserPattern = /Failed to find user with name \[original_person] in the \[(users|medic)] database\./;
     const collectLogs = await utils.collectSentinelLogs(missingUserPattern);
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.saveDocs([ORIGINAL_PERSON, NEW_PERSON]);
