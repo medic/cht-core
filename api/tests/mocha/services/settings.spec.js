@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 const path = require('path');
-require('chai').should();
+const { expect, should } = require('chai');
+should();
 
 const service = require('../../../src/services/settings');
 const db = require('../../../src/db');
