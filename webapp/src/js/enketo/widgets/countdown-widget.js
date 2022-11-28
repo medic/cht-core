@@ -23,10 +23,10 @@ const DIM = 320;
 const DEFAULT_TIME = 60;
 
 /**
-   * Countdown timer.
-   *
-   * @extends Widget
-   */
+ * Countdown timer.
+ *
+ * @extends Widget
+ */
 class Timerwidget extends Widget {
   static get selector() {
     return '.or-appearance-countdown-timer input';
@@ -56,30 +56,14 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
   const arcColor = '#cccccc';
   let running;
 
-  //> AUDIO
   const audio = (function() {
-    let cached;
-
     const androidSoundSupport = window.medicmobile_android &&
-                typeof window.medicmobile_android.playAlert === 'function';
-
-    if(!androidSoundSupport) {
-      cached = loadSound();
+      typeof window.medicmobile_android.playAlert === 'function';
+    if (androidSoundSupport) {
+      return { play: () => window.medicmobile_android.playAlert() };
     }
-
-    const loadSound = () => {
-      return new Audio('/audio/alert.mp3');
-    };
-
-    return {
-      play: function() {
-        if(androidSoundSupport) {
-          window.medicmobile_android.playAlert();
-        } else {
-          cached.play();
-        }
-      },
-    };
+    const cached = new Audio('/audio/alert.mp3');
+    return { play: () => cached.play() };
   }());
 
   //> UTILS

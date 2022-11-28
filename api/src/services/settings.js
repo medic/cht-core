@@ -1,10 +1,10 @@
 const _ = require('lodash');
 const path = require('path');
 
-const config = require('../config');
 const db = require('../db');
 const environment = require('../environment');
 const { info } = require('../logger');
+const config = require('../config');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
@@ -35,16 +35,18 @@ const doExtend = (target, source) => {
 const getDeprecatedTransitions = () => {
   const transitions = config.getTransitionsLib();
 
+  if (!transitions) {
+    return [];
+  }
+
   return transitions
     .getDeprecatedTransitions()
-    .map(transition => {
-      return {
-        name: transition.name,
-        deprecated: transition.deprecated,
-        deprecatedIn: transition.deprecatedIn,
-        deprecationMessage: transition.getDeprecationMessage ? transition.getDeprecationMessage() : ''
-      };
-    });
+    .map(transition => ({
+      name: transition.name,
+      deprecated: transition.deprecated,
+      deprecatedIn: transition.deprecatedIn,
+      deprecationMessage: transition.getDeprecationMessage ? transition.getDeprecationMessage() : ''
+    }));
 };
 
 module.exports = {
