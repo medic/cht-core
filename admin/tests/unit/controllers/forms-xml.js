@@ -9,13 +9,6 @@ describe('FormsXmlCtrl controller', () => {
   let utf8Stub;
 
   const nextTick = () => new Promise(r => setTimeout(r));
-  const jsonParseError = (notJson) => {
-    try {
-      JSON.parse(notJson);
-    } catch (err) {
-      return err.message;
-    }
-  };
   const digest = () => {
     return nextTick()
       .then(() => rootScope.$digest())
@@ -185,7 +178,9 @@ describe('FormsXmlCtrl controller', () => {
         .upload()
         .then(() => digest())
         .then(() => {
-          expectStatusError(`Upload failed: ${jsonParseError(notJson)}`);
+          expectStatusError(
+            'Upload failed: Unexpected token &#39;o&#39;, &quot;not a valid&quot;... is not valid JSON'
+          );
         });
     });
 
