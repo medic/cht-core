@@ -168,14 +168,19 @@ describe('FormsXmlCtrl controller', () => {
     it('should fail if invalid Meta', () => {
       mockFormUploader(['file.xml']);
       mockMetaUploader(['file.json']);
+      const notJson = 'not a valid JSON file';
       createController(
         '<instance><data id="contact:clinic:edit"><meta/><instanceID/></meta></data></instance>',
-        'not a valid JSON file');
+        notJson
+      );
+
       return scope
         .upload()
         .then(() => digest())
         .then(() => {
-          expectStatusError('Upload failed: Unexpected token o in JSON at position 1');
+          expectStatusError(
+            'Upload failed: Unexpected token &#39;o&#39;, &quot;not a valid&quot;... is not valid JSON'
+          );
         });
     });
 
