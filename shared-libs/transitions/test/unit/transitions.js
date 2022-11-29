@@ -1,8 +1,11 @@
 const sinon = require('sinon');
-const assert = require('chai').assert;
+const { assert, expect, ...chai } = require('chai');
+const chaiAsPromised = require('chai-as-promised');
+chai.use(chaiAsPromised);
 const transitions = require('../../src/transitions');
 const config = require('../../src/config');
 const _ = require('lodash');
+const infodoc = require('@medic/infodoc');
 
 const requiredFunctions = {
   onMatch: 1,
@@ -334,5 +337,186 @@ describe('transitions', () => {
     assert.isDefined(deprecatedTransitions);
     assert.equal(deprecatedTransitions.length, 3);
   });
+
+  describe('applyTransition',  () => {
+    it('should apply transition with change', async () => {
+      const transition = {
+        key: 'mytransition',
+        filter: sinon.stub().returns(true),
+        onMatch: sinon.stub().resolves(true),
+      };
+      sinon.stub(infodoc, 'updateTransition');
+      const change = { doc: {}, info: {} };
+
+      const result = await new Promise((resolve, reject) => {
+        transitions.applyTransition(
+          { key: transition.key, change, transition },
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      });
+
+      expect(result).to.equal(true);
+      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.onMatch.args).to.deep.equal([[change]]);
+      expect(infodoc.updateTransition.args).to.deep.equal([[change, transition.key, true]]);
+    });
+
+    it('should apply transition without change', async () => {
+      const transition = {
+        key: 'mytransition',
+        filter: sinon.stub().returns(true),
+        onMatch: sinon.stub().resolves(false),
+      };
+      sinon.stub(infodoc, 'updateTransition');
+      const change = { doc: {}, info: {} };
+
+      const result = await new Promise((resolve, reject) => {
+        transitions.applyTransition(
+          { key: transition.key, change, transition },
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      });
+
+      expect(result).to.equal(false);
+      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.onMatch.args).to.deep.equal([[change]]);
+      expect(infodoc.updateTransition.called).to.equal(false);
+    });
+
+    it('should skip transitions that dont pass filter', async () => {
+      const transition = {
+        key: 'mytransition',
+        filter: sinon.stub().returns(false),
+        onMatch: sinon.stub(),
+      };
+      sinon.stub(infodoc, 'updateTransition');
+      const change = { doc: {}, info: {} };
+
+      const result = await new Promise((resolve, reject) => {
+        transitions.applyTransition(
+          { key: transition.key, change, transition },
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      });
+
+      expect(result).to.equal(undefined);
+      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.onMatch.called).to.equal(false);
+      expect(infodoc.updateTransition.called).to.equal(false);
+    });
+
+    it('should skip transitions that cant run', async () => {
+      const transition = {
+        key: 'mytransition',
+        filter: sinon.stub(),
+        onMatch: sinon.stub(),
+      };
+
+      sinon.stub(infodoc, 'updateTransition');
+      const change = { deleted: true, doc: {}, info: {} };
+
+      const result = await new Promise((resolve, reject) => {
+        transitions.applyTransition(
+          { key: transition.key, change, transition },
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      });
+
+      expect(result).to.equal(undefined);
+      expect(transition.filter.called).to.equal(false);
+      expect(transition.onMatch.called).to.equal(false);
+      expect(infodoc.updateTransition.called).to.equal(false);
+    });
+
+    it('should force running a transition', async () => {
+      const transition = {
+        key: 'mytransition',
+        filter: sinon.stub(),
+        onMatch: sinon.stub().resolves(true),
+      };
+
+      sinon.stub(transitions, 'canRun').returns(false);
+      sinon.stub(infodoc, 'updateTransition');
+      const change = { doc: {}, info: {} };
+
+      const result = await new Promise((resolve, reject) => {
+        transitions.applyTransition(
+          { key: transition.key, change, transition, force: true },
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      });
+
+      expect(result).to.equal(true);
+      expect(transitions.canRun.called).to.equal(false);
+      expect(transition.onMatch.args).to.deep.equal([[change]]);
+      expect(infodoc.updateTransition.args).to.deep.equal([[change, transition.key, true]]);
+    });
+
+    it('should catch transition filter errors', async () => {
+      const transition = {
+        key: 'mytransition',
+        filter: sinon.stub().throws(new Error('boom')),
+        onMatch: sinon.stub(),
+      };
+      sinon.stub(infodoc, 'updateTransition');
+      const change = { doc: {}, info: {} };
+
+      const result = await new Promise((resolve, reject) => {
+        transitions.applyTransition(
+          { key: transition.key, change, transition },
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      });
+      expect(result).to.equal(false);
+      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.onMatch.called).to.equal(false);
+      expect(infodoc.updateTransition.called).to.equal(false);
+    });
+
+    it('should catch transition onMatch errors without changes', async () => {
+      const transition = {
+        key: 'mytransition',
+        filter: sinon.stub().returns(true),
+        onMatch: sinon.stub().rejects(new Error('and its gone')),
+      };
+      sinon.stub(infodoc, 'updateTransition');
+      const change = { doc: {}, info: {} };
+
+      const result = await new Promise((resolve, reject) => {
+        transitions.applyTransition(
+          { key: transition.key, change, transition },
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      });
+
+      expect(result).to.equal(false);
+      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.onMatch.called).to.equal(true);
+      expect(infodoc.updateTransition.called).to.equal(false);
+    });
+
+    it('should catch transition onMatch errors with changes', async () => {
+      const transition = {
+        key: 'mytransition',
+        filter: sinon.stub().returns(true),
+        onMatch: sinon.stub().rejects({ changed: true }),
+      };
+      sinon.stub(infodoc, 'updateTransition');
+      const change = { doc: {}, info: {} };
+
+      const result = await new Promise((resolve, reject) => {
+        transitions.applyTransition(
+          { key: transition.key, change, transition },
+          (err, result) => err ? reject(err) : resolve(result)
+        );
+      });
+
+      expect(result).to.equal(true);
+      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.onMatch.called).to.equal(true);
+      expect(infodoc.updateTransition.args).to.deep.equal([[change, transition.key, false]]);
+    });
+  });
+
 });
 
