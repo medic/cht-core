@@ -5,6 +5,9 @@ set -eu
 projectFile=
 projectName=
 homeDir=
+green='\033[0;32m'   #'0;32' is Green's ANSI color code
+red='\033[0;31m'   #'0;31' is Red's ANSI color code
+noColor='\033[0m'
 
 get_existing_projects() {
 	find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//"
@@ -54,7 +57,7 @@ create_compose_files() {
   curl -s -o "$homeDir/compose/couchdb.yml" \
   	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-couchdb.yml
 
-  echo "Done!"
+  echo -e "${green} done${noColor} "
 }
 
 get_home_dir() {
@@ -68,7 +71,7 @@ if [[ -n "${1-}" ]]; then
 		projectName=$(echo "$projectFile" | sed "s/\.\///" | sed "s/\.env//")
 		homeDir=$(get_home_dir "$projectName")
 	else
-		echo "File $1 doesnt exist"
+		echo -e "${red}File $1 doesnt exist${noColor}"
 	fi
 fi
 
@@ -76,54 +79,59 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 	containerIds=$(docker ps --all --filter "name=${projectName}" --quiet)
 	case $2 in
 	"down")
-		echo "Shutting down project \"${projectName}\"."
-
+		echo "Shutting down project \"${projectName}\"..." | tr -d '\n'
 		docker stop $containerIds 1>/dev/null
-
-		echo "Done."
+		echo -e "${green} done${noColor} "
 		exit 0
 		;;
-	"nuke")
-		echo "Nuking project \"${projectName}\"."
+	"destroy")
+		echo "Destroying project \"${projectName}\"."
 
 		if [[ -n $containerIds ]]; then
-			echo "Removing project's docker containers..."
-
+			echo "Removing project's docker containers..." | tr -d '\n'
 			docker stop $containerIds 1>/dev/null
 			docker rm $containerIds 1>/dev/null
-
-			echo "Done."
+			echo -e "${green} done${noColor} "
 		else
 			echo "No docker container found, skipping."
 		fi
 
 		networks=$(docker network ls --filter "name=${projectName}" --quiet)
 		if [[ -n $networks ]]; then
-			echo "Removing project's docker networks..."
+			echo "Removing project's docker networks..." | tr -d '\n'
 			docker network rm $networks 1>/dev/null
-			echo "Done."
+			echo -e "${green} done${noColor} "
 		else
 			echo "No docker network found, skipping."
 		fi
 
 		volumes=$(docker volume ls --filter "name=${projectName}" --quiet)
 		if [[ -n $volumes ]]; then
-			echo "Removing project's docker volumes..."
+			echo "Removing project's docker volumes..." | tr -d '\n'
 			docker volume rm $volumes 1>/dev/null
-			echo "Done."
+			echo -e "${green} done${noColor} "
 		else
 			echo "No docker container volume, skipping."
 		fi
 
 		if [[ -d $homeDir ]]; then
-			echo "Removing project-specific files..."
+			echo "Removing project files which needs sudo..."
 			sudo rm -rf "$homeDir"
-			echo "Done."
+			echo -e "${green} done${noColor} "
 		else
 			echo "No project-specific found, skipping."
 		fi
 
-		echo "Project \"${projectName}\" successfully nuked from your computer."
+		if [[ -f "${projectName}.env" ]]; then
+			echo "Removing .env file in this directory..." | tr -d '\n'
+			rm ${projectName}.env
+			echo -e "${green} done${noColor} "
+		else
+			echo "No .env file found, skipping."
+		fi
+
+
+		echo "Project \"${projectName}\" successfully removed from your computer."
 		exit 0
 		;;
 	esac
@@ -163,7 +171,7 @@ if [[ -z "$projectName" ]]; then
 	envCount=$(find . -name "*.env" -type f | wc -l)
 	if [ "$envCount" -gt 0 ]; then
 		while [[ -z "$projectName" ]]; do
-			echo "Which project do you want to use?"
+			echo "Which project do you want to use? (ctrl + c to quit) "
 			select project in $projects; do
 				projectName=$project
 				projectFile="$projectName.env"
@@ -173,7 +181,7 @@ if [[ -z "$projectName" ]]; then
 		done
 	else
 		echo ""
-		echo "No projects found, please initialize a new one."
+		echo -e "${red}No projects found, please initialize a new one.${noColor}"
 		echo ""
 		exit 1
 	fi
@@ -204,7 +212,7 @@ while [[ "$isNginxRunning" != "true" ]]; do
 	if [[ $i -gt 300 ]]; then
 		echo ""
 		echo ""
-		echo "Failed to start - check docker logs for errors and try again."
+		echo "${red}Failed to start - check docker logs for errors and try again.${noColor}"
 		echo ""
 		exit 1
 	fi
@@ -240,7 +248,7 @@ echo "    Password: ${COUCHDB_PASSWORD}"
 echo ""
 echo " -------------------------------------------------------- "
 echo ""
-echo " Have a great day!"
+echo -e "${green} Have a great day!${noColor} "
 echo ""
 
 set -e
