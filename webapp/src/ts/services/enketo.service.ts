@@ -28,6 +28,7 @@ import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
 
 @Injectable({
@@ -54,6 +55,7 @@ export class EnketoService {
     private zScoreService: ZScoreService,
     private transitionsService: TransitionsService,
     private translateService: TranslateService,
+    private feedbackService:FeedbackService,
     private ngZone: NgZone,
   ) {
     this.inited = this.init();
@@ -441,6 +443,11 @@ export class EnketoService {
 
         window.CHTCore.debugFormModel = () => form.model.getStr();
         return form;
+      }).catch(err => {
+        const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
+        console.error(errorMessage, err.message);
+        this.feedbackService.submit(errorMessage + err.message, false);
+        return Promise.reject(new Error(errorMessage + err.message));
       });
   }
 

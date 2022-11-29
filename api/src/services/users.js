@@ -16,7 +16,7 @@ const DOC_IDS_WARN_LIMIT = 10000;
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
-const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
 
 const MAX_CONFLICT_RETRY = 3;
 
@@ -183,7 +183,7 @@ const validateNewUsernameForDb = (username, database) => {
 };
 
 const validateNewUsername = username => {
-  if (!USERNAME_WHITELIST.test(username)) {
+  if (!USERNAME_ALLOWED_CHARS.test(username)) {
     return Promise.reject(error400(
       'Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).',
       'username.invalid'

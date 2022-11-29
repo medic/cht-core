@@ -21,6 +21,7 @@ function(doc) {
     }
 
     if (error.fields.indexOf('patient_id') !== -1 ||
+      error.fields.indexOf('patient_uuid') !== -1 ||
       error.fields.indexOf('patient_name') !== -1 ||
       error.fields.indexOf('place_id') !== -1) {
       return true;
@@ -33,6 +34,7 @@ function(doc) {
     var subject = {};
     var reference = doc.patient_id ||
                     (doc.fields && doc.fields.patient_id) ||
+                    (doc.fields && doc.fields.patient_uuid) ||
                     doc.place_id ||
                     (doc.fields && doc.fields.place_id);
 
