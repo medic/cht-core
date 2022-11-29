@@ -66,7 +66,7 @@
           throw remote;
         }
 
-        if (statusCode !== 200) {
+        if (statusCode !== 200 && statusCode !== 304) {
           console.warn('Error fetching users-info - ignoring', remote);
         }
 
@@ -195,6 +195,8 @@
   const getDdoc = localDb => localDb.get('_design/medic-client');
   const getSettingsDoc = localDb => localDb.get('settings');
 
+
+  /* pouch db set up function */
   module.exports = function(POUCHDB_OPTIONS, callback) {
 
     const dbInfo = getDbInfo();
@@ -233,6 +235,7 @@
 
         if (isInitialReplicationNeeded) {
           const replicationStarted = performance.now();
+          // Polling the document count from the db.
           return docCountPoll(localDb)
             .then(() => initialReplication(localDb, remoteDb))
             .then(testReplicationNeeded)

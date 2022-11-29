@@ -30,7 +30,7 @@ describe('Users Controller', () => {
     beforeEach(() => {
       userCtx = { name: 'user', roles: ['admin'] };
       req = { query: {}, userCtx };
-      res = { json: sinon.stub() };
+      res = { json: sinon.stub(), statusCode: 200 };
     });
 
     it('should catch auth context errors', () => {
@@ -194,7 +194,13 @@ describe('Users Controller', () => {
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
           chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['some_role'], docIds]);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 9, warn_docs: 7, warn: false, limit: 10000 }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{ 
+            total_docs: 9, 
+            warn_docs: 7, 
+            warn: false, 
+            limit: 10000, 
+            code: res.statusCode 
+          }]);
 
           chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
           chai.expect(auth.isOnlineOnly.args[0]).to.deep.equal([userCtx]);
@@ -248,7 +254,13 @@ describe('Users Controller', () => {
             { includeTombstones: false, includeTasks: false },
           ]);
           chai.expect(res.json.callCount).to.equal(1);
-          chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 9, warn_docs: 7, warn: false, limit: 10000 }]);
+          chai.expect(res.json.args[0]).to.deep.equal([{ 
+            total_docs: 9, 
+            warn_docs: 7, 
+            warn: false, 
+            limit: 10000, 
+            code: res.statusCode 
+          }]);
         });
       });
 
@@ -279,7 +291,8 @@ describe('Users Controller', () => {
             total_docs: 15000,
             warn_docs: 10200,
             warn: true,
-            limit: 10000
+            limit: 10000,
+            code: res.statusCode,
           }]);
         });
       });
@@ -310,7 +323,8 @@ describe('Users Controller', () => {
             total_docs: 15000,
             warn_docs: 9800,
             warn: false,
-            limit: 10000
+            limit: 10000,
+            code: res.statusCode,
           }]);
         });
       });
@@ -344,7 +358,8 @@ describe('Users Controller', () => {
             total_docs: unpurgedIds.length,
             warn_docs: unpurgedIds.length,
             warn: false,
-            limit: 10000
+            limit: 10000,
+            code: res.statusCode,
           }]);
         });
       });
@@ -382,6 +397,7 @@ describe('Users Controller', () => {
             warn_docs: 1000,
             warn: false,
             limit: 10000,
+            code: res.statusCode,
           }]);
 
           chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
@@ -392,7 +408,7 @@ describe('Users Controller', () => {
       });
 
       describe('roles scenarios', () => {
-        const expected = { total_docs: 3, warn_docs: 3, warn: false, limit: 10000 };
+        const expected = { total_docs: 3, warn_docs: 3, warn: false, limit: 10000};
         const scenarios = [
           { role: 'aaaa', name: 'string single role' },
           { role: JSON.stringify('aaaa'), name: 'json single role' },
@@ -419,6 +435,8 @@ describe('Users Controller', () => {
 
         scenarios.forEach(scenario => {
           it(scenario.name, () => {
+            expected.code = res.statusCode;
+
             req.query = {
               role: scenario.role,
               facility_id: 'some_facility_id'
@@ -443,7 +461,7 @@ describe('Users Controller', () => {
       beforeEach(() => {
         userCtx = { name: 'user', roles: ['offline'], facility_id: 'some_facility_id' };
         req = { userCtx };
-        res = { json: sinon.stub() };
+        res = { json: sinon.stub(), statusCode: 200 };
         auth.isOnlineOnly.returns(false);
       });
 
@@ -468,6 +486,7 @@ describe('Users Controller', () => {
             warn_docs: 8000,
             warn: false,
             limit: 10000,
+            code: res.statusCode,
           }]);
 
           chai.expect(authorization.getAuthorizationContext.callCount).to.equal(1);
@@ -513,6 +532,7 @@ describe('Users Controller', () => {
             warn_docs: 11000,
             warn: true,
             limit: 10000,
+            code: res.statusCode,
           }]);
         });
       });
@@ -540,6 +560,7 @@ describe('Users Controller', () => {
             warn_docs: 9600,
             warn: false,
             limit: 10000,
+            code: res.statusCode,
           }]);
         });
       });
@@ -566,6 +587,7 @@ describe('Users Controller', () => {
             warn_docs: unpurgedIds.length,
             warn: false,
             limit: 10000,
+            code: res.statusCode
           }]);
         });
       });
@@ -597,6 +619,7 @@ describe('Users Controller', () => {
           warn_docs: 2, // 2, 4
           warn: false,
           limit: 10000,
+          code: res.statusCode,
         }]);
       });
     });
@@ -617,7 +640,7 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'check').resolves();
       sinon.stub(users, 'createUser').rejects({ some: 'err' });
       req = { protocol: 'http', hostname: 'thehost.com', body: { name: 'user' } };
-      res = { json: sinon.stub() };
+      res = { json: sinon.stub(), statusCode: 200 };
       return controller.create(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ some: 'err' }, req, res]);
@@ -632,7 +655,7 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'check').resolves();
       sinon.stub(users, 'createUser').resolves({ user: { id: 'aaa' } });
       req = { protocol: 'https', hostname: 'host.com', body: { name: 'user' } };
-      res = { json: sinon.stub() };
+      res = { json: sinon.stub(), statusCode: 200 };
       return controller.create(req, res).then(() => {
         chai.expect(serverUtils.error.callCount).to.equal(0);
         chai.expect(users.createUser.callCount).to.equal(1);
@@ -679,7 +702,7 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'basicAuthCredentials').returns({ username: 'alpha' });
       sinon.stub(auth, 'validateBasicAuth').resolves();
       req = { params: { username: 'alpha' }, protocol: 'http', hostname: 'myhost.net', body: { field: 'update' } };
-      res = { json: sinon.stub() };
+      res = { json: sinon.stub(), statusCode: 200 };
       sinon.stub(users, 'updateUser').resolves({ response: true });
 
       return controller.update(req, res).then(() => {
@@ -697,7 +720,7 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'basicAuthCredentials').returns({ username: 'alpha' });
       sinon.stub(auth, 'validateBasicAuth').resolves();
       req = { params: { username: 'beta' }, protocol: 'https', hostname: 'myhost.io', body: { field: 'update' } };
-      res = { json: sinon.stub() };
+      res = { json: sinon.stub(), statusCode: 200 };
       sinon.stub(users, 'updateUser').resolves({ updated: true });
 
       return controller.update(req, res).then(() => {
