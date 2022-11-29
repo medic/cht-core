@@ -43,6 +43,20 @@ CHT_NETWORK=$projectName-cht-net
 EOL
 }
 
+create_compose_files() {
+  echo "Downloading compose files ..." | tr -d '\n'
+  mkdir -p "$homeDir/couch"
+  mkdir -p "$homeDir/compose"
+  curl -s -o "$homeDir/upgrade-service.yml" \
+  	https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
+  curl -s -o "$homeDir/compose/cht-core.yml" \
+  	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-core.yml
+  curl -s -o "$homeDir/compose/couchdb.yml" \
+  	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-couchdb.yml
+
+  echo "Done!"
+}
+
 get_home_dir() {
 	echo "$HOME/.medic/cht-docker/$1-dir"
 }
@@ -141,6 +155,7 @@ if [[ -z "$projectName" ]]; then
 		done
 
 		init_env_file
+		create_compose_files
 		projects=$(get_existing_projects)
 		;;
 	esac
@@ -163,15 +178,6 @@ if [[ -z "$projectName" ]]; then
 		exit 1
 	fi
 fi
-
-mkdir -p "$homeDir/couch"
-mkdir -p "$homeDir/compose"
-curl -s -o "$homeDir/upgrade-service.yml" \
-	https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
-curl -s -o "$homeDir/compose/cht-core.yml" \
-	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-core.yml
-curl -s -o "$homeDir/compose/couchdb.yml" \
-	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-couchdb.yml
 
 # shellcheck disable=SC1090
 source "./$projectFile"
