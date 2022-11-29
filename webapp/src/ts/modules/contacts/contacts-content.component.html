@@ -21,8 +21,8 @@
           <div class="row heading" [ngClass]="{'deceased': selectedContact?.doc?.date_of_death, 'muted':selectedContact?.doc?.muted }">
             <span [innerHTML]="selectedContact?.type?.icon | resourceIcon"></span>
             <div class="heading-content">
-              <h2>{{selectedContact?.doc?.name}}</h2>
-              <div *ngIf="selectedContact?.doc?.date_of_death">{{'contact.deceased.title' | translate}}</div>
+              <h2 [attr.test-id]="'contact-name'">{{selectedContact?.doc?.name}}</h2>
+              <div [attr.test-id]="'deceased-title'" *ngIf="selectedContact?.doc?.date_of_death">{{'contact.deceased.title' | translate}}</div>
               <div class="primary-contact" *ngIf="selectedContact?.isPrimaryContact">
                 <i class="fa fa-star primary"></i>
                 <span>{{selectedContact?.type?.primary_contact_key || 'Primary contact' | translate}}</span>

@@ -1055,4 +1055,73 @@ describe('transitions', () => {
         chai.expect(updatedPerson.patient_id).to.be.ok;
       });
   });
+
+  it('calling getDeprecatedTransitions endpoint does not break API transitions', () => {
+    const settings = {
+      transitions: { death_reporting: true, update_clinics: true },
+      death_reporting: {
+        mark_deceased_forms: ['DR'],
+        date_field: 'fields.time_of_death'
+      },
+      forms: {
+        DR: {
+          meta: {
+            code: 'DR',
+            icon: 'icon-death-general',
+            translation_key: 'form.dr.title'
+          },
+          fields: {
+            patient_id: {
+              labels: { short: { translation_key: 'patient_id' } },
+              position: 0,
+              type: 'string',
+              required: true
+            }
+          },
+        },
+      },
+    };
+
+    const person1 = {
+      _id: 'a_person',
+      name: 'My Favorite Person',
+      type: 'person',
+      reported_date: new Date().getTime(),
+      patient_id: 'a_person',
+      parent: { _id: 'district_hospital' },
+    };
+
+    const person2 = {
+      _id: 'another_person',
+      name: 'My Favorite Person',
+      type: 'person',
+      reported_date: new Date().getTime(),
+      patient_id: 'another_person',
+      parent: { _id: 'district_hospital' },
+    };
+
+    const recordsBody = (person) => ({ _meta: { form: 'DR', from: 'phone1' }, patient_id: person.patient_id });
+
+    return utils
+      .updateSettings(settings, true)
+      .then(() => utils.saveDocs([person1, person2]))
+      .then(() => sentinelUtils.waitForSentinel())
+      .then(() => utils.request({ path: '/api/v2/records', method: 'POST', body: recordsBody(person1) }))
+      .then(response => {
+        chai.expect(response.success).to.equal(true);
+        return sentinelUtils.getInfoDocs(response.id);
+      })
+      .then(([infodoc]) => {
+        expectTransitions(infodoc, 'death_reporting', 'update_clinics');
+      })
+      .then(() => utils.request({ path: '/api/v1/settings/deprecated-transitions' }))
+      .then(() => utils.request({ path: '/api/v2/records', method: 'POST', body: recordsBody(person2) }))
+      .then(response => {
+        chai.expect(response.success).to.equal(true);
+        return sentinelUtils.getInfoDocs(response.id);
+      })
+      .then(([infodoc]) => {
+        expectTransitions(infodoc, 'death_reporting', 'update_clinics');
+      });
+  });
 });

@@ -144,13 +144,13 @@
           <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour:label">
             <value>Were they initiated on breastfeeding within on hour of delivery?</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/no:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/no:label">
             <value>No</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/yes:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/yes:label">
             <value>Yes</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding:label">
             <value>Is the child exclusively breastfeeding?</value>
           </text>
           <text id="/delivery/babys_condition/baby_repeat/baby_details/convulsion/no:label">
@@ -940,7 +940,7 @@
                 <birth_length/>
                 <vaccines_received/>
                 <imm_counsel_note tag="hidden"/>
-                <breatfeeding/>
+                <breastfeeding/>
                 <breastfed_within_1_hour/>
                 <baby_danger_sign_note tag="hidden"/>
                 <infected_umbilical_cord/>
@@ -1438,7 +1438,7 @@ selected(../convulsion, 'yes'), 'yes', 'no')"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/birth_length" type="decimal" relevant="selected(../birth_length_know, 'yes')" constraint=". &gt;= 35.6 and . &lt;= 70" required="true()" jr:constraintMsg="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/birth_length:jr:constraintMsg')"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/vaccines_received" type="select1" required="true()"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/imm_counsel_note" readonly="true()" type="string" relevant="selected(../vaccines_received, 'none')" required="true()"/>
-      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding" type="select1" required="true()"/>
+      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding" type="select1" required="true()"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour" type="select1" required="true()"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_danger_sign_note" readonly="true()" type="string" required="true()"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/infected_umbilical_cord" type="select1" required="true()"/>
@@ -1967,14 +1967,14 @@ if(selected( /delivery/pnc_visits/pnc_visits_attended , '6_weeks'), 1, 0))"/>
             <input ref="/delivery/babys_condition/baby_repeat/baby_details/imm_counsel_note">
               <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/imm_counsel_note:label')"/>
             </input>
-            <select1 ref="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding">
-              <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breatfeeding:label')"/>
+            <select1 ref="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding">
+              <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breastfeeding:label')"/>
               <item>
-                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/yes:label')"/>
+                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/yes:label')"/>
                 <value>yes</value>
               </item>
               <item>
-                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/no:label')"/>
+                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/no:label')"/>
                 <value>no</value>
               </item>
             </select1>

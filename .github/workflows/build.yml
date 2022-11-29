@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
   BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
-  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds' || '_couch/builds_external' }}
+  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_4' || '_couch/builds_external' }}
   MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
   MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
   INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
@@ -104,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-e2e-cht']
+        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile']
 
     steps:
     - name: Login to Docker Hub

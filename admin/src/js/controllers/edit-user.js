@@ -2,7 +2,7 @@ const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
-const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
 const ADMIN_ROLE = '_admin';
 
 angular
@@ -221,7 +221,7 @@ angular
       if (!validateRequired('username', 'User Name')) {
         return false;
       }
-      if (!USERNAME_WHITELIST.test($scope.editUserModel.username)) {
+      if (!USERNAME_ALLOWED_CHARS.test($scope.editUserModel.username)) {
         $translate('username.invalid').then(value => {
           $scope.errors.username = value;
         });

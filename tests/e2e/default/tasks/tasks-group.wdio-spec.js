@@ -181,7 +181,7 @@ describe('Tasks group landing page', () => {
     const formsPath = path.join(__dirname, 'forms');
     await chtConfUtils.compileAndUploadAppForms(formsPath);
 
-    const tasksFilePath = path.join(__dirname, 'tasks-group-config.js');
+    const tasksFilePath = path.join(__dirname, 'config/tasks-group-config.js');
     const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
     await utils.updateSettings({ tasks }, 'api');
   });

@@ -37,10 +37,10 @@ This is an identifier by which other nodes can access this node. This value shou
 
 #### CLUSTER_PEER_IPS
 
-This field should only be set on the cluster set up coordination node aka `setup-coordination-node` . In other clustered database systems this is known as the master/main node, however, CouchDB does not have the master/slave concept as any node can be master. This field should contain a comma-separated list of IP addresses or FQDNs. If you are deploying a clustered setup on a basic docker network, please ensure there is a (.) in your service names, to validate the FQDN requirements for Erlang. 
+This field should only be set on the cluster set up coordination node aka `setup-coordination-node`. In other clustered database systems this is known as the main node, however in CouchDB any node can be main. This field should contain a comma-separated list of IP addresses or FQDNs. If you are deploying a clustered setup on a basic docker network, please ensure there is a (.) in your service names, to validate the FQDN requirements for Erlang. 
 
 ```yaml
-CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
+CLUSTER_PEER_IPS="couchdb.2,couchdb.3"
 ```
 
 #### COUCHDB_SYNC_ADMINS_NODE
