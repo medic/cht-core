@@ -255,6 +255,7 @@ describe('Settings Shared Library', () => {
           requestGet.onCall(3).resolves('newsecret');
           return lib.getCredentials('mykey');
         })
+        .then(() => expect.fail('Should have thrown'))
         .catch(err => {
           expect(err.message).to.equal('Error decrypting credential. Try setting the credential again.');
         });
