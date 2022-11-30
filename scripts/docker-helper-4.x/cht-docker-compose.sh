@@ -64,9 +64,36 @@ get_home_dir() {
 	echo "$HOME/.medic/cht-docker/$1-dir"
 }
 
+show_help_intro() {
+    echo ""
+    echo "Helper script to start a CHT 4.x instance in docker."
+    echo ""
+    echo "Start new project:"
+    echo "    ./cht-docker-compose.sh"
+}
+
+show_help_existing_stop_and_destroy() {
+    echo ""
+    echo "Start existing project"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env"
+    echo ""
+    echo "Stop and keep project:"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env down"
+    echo ""
+    echo "Stop and destroy all project data:"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env destroy"
+    echo ""
+    echo "https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/"
+    echo ""
+}
+
 # can pass a project .env file as argument
 if [[ -n "${1-}" ]]; then
-	if [[ -f "$1" ]]; then
+	if [[ "$1" == "--help" ]] || [[  "$1" == "-h" ]]; then
+    show_help_intro
+    show_help_existing_stop_and_destroy
+    exit 0
+	elif [[ -f "$1" ]]; then
 		projectFile=$1
 		projectName=$(echo "$projectFile" | sed "s/\.\///" | sed "s/\.env//")
 		homeDir=$(get_home_dir "$projectName")
@@ -247,6 +274,7 @@ echo "    Login: ${COUCHDB_USER}"
 echo "    Password: ${COUCHDB_PASSWORD}"
 echo ""
 echo " -------------------------------------------------------- "
+show_help_existing_stop_and_destroy
 echo ""
 echo -e "${green} Have a great day!${noColor} "
 echo ""
