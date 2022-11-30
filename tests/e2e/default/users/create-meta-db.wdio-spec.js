@@ -21,7 +21,7 @@ describe('Create user meta db : ', () => {
   it('should allow a new user to read/write from meta db', async () => {
     await usersPage.goToAdminUser();
     await usersPage.openAddUserDialog();
-    await usersPage.inputAddUserFields(username, fullName, 'Program Officer', '', '', password);
+    await usersPage.inputAddUserFields(username, fullName, 'program_officer', '', '', password);
     await usersPage.saveUser();
     await commonElements.goToMessages();
     await commonElements.logout();
