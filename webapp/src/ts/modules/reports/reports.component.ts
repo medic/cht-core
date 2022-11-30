@@ -437,8 +437,12 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    // The report might not have the doc ready at this point of time, but we can use the summary.
+    const docs = this.selectedReports
+      .map(report => report.doc || report.summary)
+      .filter(report => !!report);
     this.modalService
-      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs: this.selectedReports, type: 'reports' } } })
+      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs, type: 'reports' } } })
       .catch(() => {});
   }
 
