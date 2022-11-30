@@ -98,7 +98,8 @@ if [[ -n "${1-}" ]]; then
 		projectName=$(echo "$projectFile" | sed "s/\.\///" | sed "s/\.env//")
 		homeDir=$(get_home_dir "$projectName")
 	else
-		echo -e "${red}File $1 doesnt exist${noColor}"
+		echo -e "${red}File \"$1\" doesnt exist - be sure to include \".env\" at the end!${noColor}"
+    exit 0
 	fi
 fi
 
