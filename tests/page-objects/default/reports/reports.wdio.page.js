@@ -331,7 +331,6 @@ const resetFilter = async () => {
 };
 
 const openReport = async (reportId) => {
-  await resetFilter();
   await (await firstReport()).waitForDisplayed();
   const reportListItem = await reportByUUID(reportId);
   await reportListItem.waitForDisplayed();
@@ -398,6 +397,7 @@ module.exports = {
   getReportSubject,
   getReportType,
   getListReportInfo,
+  resetFilter,
   openReport,
   reportTasks,
   editReport,

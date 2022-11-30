@@ -2,65 +2,37 @@ const utils = require('../../../utils');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const reportsPage = require('../../../page-objects/default-mobile/reports/reports.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const userFactory = require('../../../factories/cht/users/users');
+const placeFactory = require('../../../factories/cht/contacts/place');
+const reportFactory = require('../../../factories/cht/reports/generic-report');
+const personFactory = require('../../../factories/cht/contacts/person');
 
 describe('Bulk delete reports', () => {
-  const docs = [
-    {
-      fields: {
-        lmp_date: 'Feb 3, 2016'
-      },
-      form: 'P',
-      type: 'data_record',
-      content_type: 'xml',
-      reported_date: 1462333250374,
-      contact: {
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-      },
-      from: '+555',
-      hidden_fields: []
-    },
-    {
-      fields: {
-        lmp_date: 'Feb 15, 2016'
-      },
-      form: 'P',
-      type: 'data_record',
-      content_type: 'xml',
-      reported_date: 1462338250374,
-      contact: {
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-      },
-      from: '+555',
-      hidden_fields: []
-    },
-    {
-      fields: {
-        ok: 'Yes!'
-      },
-      form: 'V',
-      type: 'data_record',
-      content_type: 'xml',
-      reported_date: 1462538250374,
-      contact: {
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-      },
-      from: '+555',
-      hidden_fields: []
-    },
-    {
-      name: 'Sharon',
-      phone: '+555',
-      type: 'person',
-      reported_date: 1462538250374,
-      _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
-    }
+  const places = placeFactory.generateHierarchy();
+  const healthCenter = places.find(place => place.type === 'health_center');
+  const offlineUser = userFactory.build({ username: 'offline_chw_bulk_delete', place: healthCenter._id });
+  const patient = personFactory.build({ parent: { _id: healthCenter._id } });
+  const reports = [
+    reportFactory.build(
+      { form: 'P' },
+      { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' }}
+    ),
+    reportFactory.build(
+      { form: 'P' },
+      { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' }}
+    ),
+    reportFactory.build(
+      { form: 'V' },
+      { patient, submitter: offlineUser.contact, fields: { ok: 'Yes!' }}
+    ),
   ];
 
   const savedUuids = [];
   before(async () => {
-    await loginPage.cookieLogin();
-    const results = await utils.saveDocs(docs);
-    results.forEach(result => savedUuids.push(result.id));
+    await utils.saveDocs([ ...places, patient ]);
+    await utils.createUsers([ offlineUser ]);
+    await loginPage.login(offlineUser);
+    (await utils.saveDocs(reports)).forEach(savedReport => savedUuids.push(savedReport.id));
   });
 
   it('should select, deselect and delete only selected reports', async () => {
@@ -97,10 +69,16 @@ describe('Bulk delete reports', () => {
     expect(selectOne.countLabel).to.equal('1');
     expect(selectOne.selectedCount).to.equal(1);
 
-    await reportsPage.openReport(savedUuids[0]);
+    await reportsPage.reportsPageDefault.openReport(savedUuids[0]);
     await reportsPage.closeReport();
+    let currentCount = await reportsPage.verifyMultiselectElementsDisplay();
+    expect(currentCount.countLabel).to.equal('1');
+    expect(currentCount.selectedCount).to.equal(1);
 
-    await reportsPage.openReport(savedUuids[1]);
+    await reportsPage.reportsPageDefault.openReport(savedUuids[1]);
     await reportsPage.closeReport();
+    currentCount = await reportsPage.verifyMultiselectElementsDisplay();
+    expect(currentCount.countLabel).to.equal('1');
+    expect(currentCount.selectedCount).to.equal(1);
   });
 });

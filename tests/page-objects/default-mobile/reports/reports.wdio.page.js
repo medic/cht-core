@@ -64,14 +64,6 @@ const deleteSelectedReports = async () => {
   await (await reportsPageDefault.reportList()).waitForDisplayed();
 };
 
-const openReport = async (reportId) => {
-  await (await reportsPageDefault.firstReport()).waitForDisplayed();
-  const reportListItem = await reportsPageDefault.reportByUUID(reportId);
-  await reportListItem.waitForDisplayed();
-  await reportListItem.click();
-  await reportsPageDefault.reportBodyDetails().waitForDisplayed();
-};
-
 const closeReport = async () => {
   await (await closeOpenReportBtn()).waitForDisplayed();
   await (await closeOpenReportBtn()).click();
@@ -86,5 +78,5 @@ module.exports = {
   deselectReports,
   deleteSelectedReports,
   closeReport,
-  openReport,
+  verifyMultiselectElementsDisplay,
 };
