@@ -78,7 +78,7 @@ show_help_existing_stop_and_destroy() {
     echo "    ./cht-docker-compose.sh ENV-FILE.env"
     echo ""
     echo "Stop and keep project:"
-    echo "    ./cht-docker-compose.sh ENV-FILE.env down"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env stop"
     echo ""
     echo "Stop and destroy all project data:"
     echo "    ./cht-docker-compose.sh ENV-FILE.env destroy"
@@ -98,7 +98,9 @@ if [[ -n "${1-}" ]]; then
 		projectName=$(echo "$projectFile" | sed "s/\.\///" | sed "s/\.env//")
 		homeDir=$(get_home_dir "$projectName")
 	else
+	  echo ""
 		echo -e "${red}File \"$1\" doesnt exist - be sure to include \".env\" at the end!${noColor}"
+    show_help_existing_stop_and_destroy
     exit 0
 	fi
 fi
@@ -106,8 +108,8 @@ fi
 if [[ -n "${2-}" && -n $projectName ]]; then
 	containerIds=$(docker ps --all --filter "name=${projectName}" --quiet)
 	case $2 in
-	"down")
-		echo "Shutting down project \"${projectName}\"..." | tr -d '\n'
+	"stop")
+		echo "Stopping project \"${projectName}\"..." | tr -d '\n'
 		docker stop $containerIds 1>/dev/null
 		echo -e "${green} done${noColor} "
 		exit 0
@@ -210,7 +212,7 @@ if [[ -z "$projectName" ]]; then
 	else
 		echo ""
 		echo -e "${red}No projects found, please initialize a new one.${noColor}"
-		echo ""
+		show_help_existing_stop_and_destroy
 		exit 1
 	fi
 fi
