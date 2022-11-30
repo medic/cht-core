@@ -222,7 +222,6 @@ module.exports = {
         warn_docs: warn,
         warn: warn >= usersService.DOC_IDS_WARN_LIMIT,
         limit: usersService.DOC_IDS_WARN_LIMIT,
-        code: res.statusCode,
       }))
       .catch(err => serverUtils.error(err, req, res));
   },
