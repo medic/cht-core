@@ -36,10 +36,10 @@ const babysBirthLengthKnowField = (value) =>
 const babysVaccinesReveivedField = (value) =>
   $(`input[type="radio"]` +
     `[data-name="/delivery/babys_condition/baby_repeat/baby_details/vaccines_received"][value="${value}"]`);
-const babyBreatfeedingField = (value) =>
+const babyBreastfeedingField = (value) =>
   $(`input[type="radio"]` +
-    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding"][value="${value}"]`);
-const babyBreatfeedingWithin1HourField = (value) =>
+    `[data-name="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding"][value="${value}"]`);
+const babyBreastfeedingWithin1HourField = (value) =>
   $(`input[type="radio"]` +
     `[data-name="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour"][value="${value}"]`);
 const babyInfectedUmbilicalCordField = (value) =>
@@ -143,12 +143,12 @@ const selectDeliveryBabysVaccinesReveived = async (value) => {
   return (await babysVaccinesReveivedField(value)).click();
 };
 
-const selectDeliveryBabyBreatfeeding = async (value) => {
-  return (await babyBreatfeedingField(value)).click();
+const selectDeliveryBabyBreastfeeding = async (value) => {
+  return (await babyBreastfeedingField(value)).click();
 };
 
-const selectDeliveryBabyBreatfeedingWithin1Hour = async (value) => {
-  return (await babyBreatfeedingWithin1HourField(value)).click();
+const selectDeliveryBabyBreastfeedingWithin1Hour = async (value) => {
+  return (await babyBreastfeedingWithin1HourField(value)).click();
 };
 
 const selectDeliveryBabyInfectedUmbilicalCord = async (value) => {
@@ -213,8 +213,8 @@ module.exports = {
   selectDeliveryBabysBirthWeightKnow,
   selectDeliveryBabysBirthLengthKnow,
   selectDeliveryBabysVaccinesReveived,
-  selectDeliveryBabyBreatfeeding,
-  selectDeliveryBabyBreatfeedingWithin1Hour,
+  selectDeliveryBabyBreastfeeding,
+  selectDeliveryBabyBreastfeedingWithin1Hour,
   selectDeliveryBabyInfectedUmbilicalCord,
   selectDeliveryBabyConvulsion,
   selectDeliveryBabyDifficultyFeeding,

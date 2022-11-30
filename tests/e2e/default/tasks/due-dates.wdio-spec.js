@@ -43,7 +43,7 @@ const getTasksInfos = async (tasks) => {
 
 const updateSettings = async (updates = {}) => {
   await chtConfUtils.initializeConfigDir();
-  const tasksFilePath = path.join(__dirname, 'due-dates-config.js');
+  const tasksFilePath = path.join(__dirname, 'config/due-dates-config.js');
 
   const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
   updates.tasks = tasks;
@@ -74,14 +74,32 @@ describe('Task list due dates', () => {
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
     expect(infos).to.have.deep.members([
-      { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_1', dueDateText: '1 day left', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_0', dueDateText: 'Due today', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_1', dueDateText: 'Due today', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_2', dueDateText: 'Due today', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_5', dueDateText: 'Due today', overdue: true },
+      { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_1', dueDateText: '1 day left', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_0', dueDateText: 'Due today', overdue: true, lineage: '' },
+      {
+        contactName: 'Bob',
+        formTitle: 'person_create_overdue_1',
+        dueDateText: 'Due today',
+        overdue: true,
+        lineage: ''
+      },
+      {
+        contactName: 'Bob',
+        formTitle: 'person_create_overdue_2',
+        dueDateText: 'Due today',
+        overdue: true,
+        lineage: ''
+      },
+      {
+        contactName: 'Bob',
+        formTitle: 'person_create_overdue_5',
+        dueDateText: 'Due today',
+        overdue: true,
+        lineage: ''
+      },
     ]);
   });
 
@@ -92,14 +110,32 @@ describe('Task list due dates', () => {
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
     expect(infos).to.have.deep.members([
-      { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_1', dueDateText: '1 day left', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_0', dueDateText: 'Due today', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_1', dueDateText: 'Due yesterday', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_2', dueDateText: 'Due 2 days ago', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_5', dueDateText: 'Due 5 days ago', overdue: true },
+      { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_1', dueDateText: '1 day left', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_0', dueDateText: 'Due today', overdue: true, lineage: '' },
+      {
+        contactName: 'Bob',
+        formTitle: 'person_create_overdue_1',
+        dueDateText: 'Due yesterday',
+        overdue: true,
+        lineage: ''
+      },
+      {
+        contactName: 'Bob',
+        formTitle: 'person_create_overdue_2',
+        dueDateText: 'Due 2 days ago',
+        overdue: true,
+        lineage: ''
+      },
+      {
+        contactName: 'Bob',
+        formTitle: 'person_create_overdue_5',
+        dueDateText: 'Due 5 days ago',
+        overdue: true,
+        lineage: ''
+      },
     ]);
   });
 
@@ -111,14 +147,14 @@ describe('Task list due dates', () => {
     const infos = await getTasksInfos(await tasksPage.getTasks());
 
     expect(infos).to.have.deep.members([
-      { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_1', dueDateText: '1 day left', overdue: false },
-      { contactName: 'Bob', formTitle: 'person_create_0', dueDateText: 'Late', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_1', dueDateText: 'Late', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_2', dueDateText: 'Late', overdue: true },
-      { contactName: 'Bob', formTitle: 'person_create_overdue_5', dueDateText: 'Late', overdue: true },
+      { contactName: 'Bob', formTitle: 'person_create_7', dueDateText: '', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_5', dueDateText: '', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_2', dueDateText: '2 days left', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_1', dueDateText: '1 day left', overdue: false, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_0', dueDateText: 'Late', overdue: true, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_overdue_1', dueDateText: 'Late', overdue: true, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_overdue_2', dueDateText: 'Late', overdue: true, lineage: '' },
+      { contactName: 'Bob', formTitle: 'person_create_overdue_5', dueDateText: 'Late', overdue: true, lineage: '' },
     ]);
   });
 });

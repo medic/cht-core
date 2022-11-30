@@ -299,12 +299,11 @@ exports.parse = (def, doc) => {
       }
     }
 
-    if(!bsYear) {      
+    if (bsYear) {
+      formData[aggregateBSDateField] = bsToEpoch(bsYear, bsMonth, bsDay);
+    } else {
       logger.error('Can not aggregate bsAggreDate without bsYear');
-      return;
     }
-    
-    formData[aggregateBSDateField] = bsToEpoch(bsYear, bsMonth, bsDay);
   }
 
   // pass along some system generated fields

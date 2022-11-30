@@ -89,7 +89,7 @@ const defaultFields = {
           'birth_length_know': 'yes',
           'birth_length': '40',
           'vaccines_received': 'bcg_only',
-          'breatfeeding': 'yes',
+          'breastfeeding': 'yes',
           'breastfed_within_1_hour': 'no',
           'baby_danger_sign_note': '',
           'infected_umbilical_cord': 'no',

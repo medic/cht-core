@@ -6,7 +6,7 @@ const utils = require('../../../utils');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const personFactory = require('../../../factories/cht/contacts/person');
 const places = placeFactory.generateHierarchy(); // This generates ['district_hospital', 'health_center', 'clinic']
-const districtHospital = utils.findDistrictHospitalFromPlaces(places);
+const districtHospital = places.get('district_hospital');
 
 const username = 'jack_test';
 const password = 'Jacktest@123';
@@ -23,13 +23,13 @@ const healthCenter2 = placeFactory.place().build({
   }
 });
 
-const healthCenters = places.filter((place) => place.type === 'health_center');
+const healthCenters = places.get('health_center');
 
 const person1 = personFactory.build(
   {
     parent: {
-      _id: healthCenters[0]._id,
-      parent: healthCenters[0].parent
+      _id: healthCenters._id,
+      parent: healthCenters.parent
     }
   });
 const person2 = personFactory.build(
@@ -41,7 +41,7 @@ const person2 = personFactory.build(
     }
   });
 
-const docs = [...places, healthCenter2, person1, person2];
+const docs = [...places.values(), healthCenter2, person1, person2];
 
 describe('Create Person Under Area', async () => {
   beforeEach(async () => {

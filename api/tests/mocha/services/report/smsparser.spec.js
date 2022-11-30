@@ -634,7 +634,7 @@ describe('sms parser', () => {
       lmp_date: moment('2012-03-12').valueOf()
     });
   });
-  
+
 
   it('BS date parts with invalid bsYear yyys: compact textforms', () => {
     const doc = { message: 'YYYS 12345 123 11 29' };
@@ -646,6 +646,16 @@ describe('sms parser', () => {
       lmp_date: null
     });
   });
+
+  it('BS date parts with missing bsYear yyys: compact textforms', () => {
+    const doc = { message: 'YYYS 12345' };
+    const def = definitions.forms.YYYS;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({
+      patient_id: '12345',
+    });
+  });
+
 
   it('BS date parts without bsMonth & bsDay yyyr: compact textforms', () => {
     const doc = { message: 'YYYR 12345 2068' };
@@ -1474,7 +1484,7 @@ describe('sms parser', () => {
           type: 'string',
           labels: {
             tiny: 'ch'
-          } 
+          }
         }
       }
     };

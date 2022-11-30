@@ -153,13 +153,13 @@
           <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour:label">
             <value>Were they initiated on breastfeeding within on hour of delivery?</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/no:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/no:label">
             <value>No</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/yes:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/yes:label">
             <value>Yes</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding:label">
             <value>Is the child exclusively breastfeeding?</value>
           </text>
           <text id="/delivery/babys_condition/baby_repeat/baby_details/convulsion/no:label">
@@ -1094,13 +1094,13 @@
           <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour:label">
             <value>-</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/no:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/no:label">
             <value>-</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/yes:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/yes:label">
             <value>-</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding:label">
             <value>-</value>
           </text>
           <text id="/delivery/babys_condition/baby_repeat/baby_details/child_doc:label">
@@ -2176,13 +2176,13 @@
           <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour:label">
             <value>-</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/no:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/no:label">
             <value>-</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/yes:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/yes:label">
             <value>-</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding:label">
             <value>-</value>
           </text>
           <text id="/delivery/babys_condition/baby_repeat/baby_details/child_doc:label">
@@ -3258,13 +3258,13 @@
           <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour:label">
             <value>-</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/no:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/no:label">
             <value>-</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/yes:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/yes:label">
             <value>-</value>
           </text>
-          <text id="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding:label">
+          <text id="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding:label">
             <value>-</value>
           </text>
           <text id="/delivery/babys_condition/baby_repeat/baby_details/child_doc:label">
@@ -4225,7 +4225,7 @@
                 <birth_length/>
                 <vaccines_received/>
                 <imm_counsel_note tag="hidden"/>
-                <breatfeeding/>
+                <breastfeeding/>
                 <breastfed_within_1_hour/>
                 <baby_danger_sign_note tag="hidden"/>
                 <infected_umbilical_cord/>
@@ -4690,7 +4690,7 @@ selected(../convulsion, 'yes'), 'yes', 'no')" nodeset="/delivery/pnc_danger_sign
       <bind constraint=". &gt;= 35.6 and . &lt;= 70" jr:constraintMsg="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/birth_length:jr:constraintMsg')" nodeset="/delivery/babys_condition/baby_repeat/baby_details/birth_length" relevant="selected(../birth_length_know, 'yes')" required="true()" type="decimal"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/vaccines_received" required="true()" type="select1"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/imm_counsel_note" readonly="true()" relevant="selected(../vaccines_received, 'none')" required="true()" type="string"/>
-      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding" required="true()" type="select1"/>
+      <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding" required="true()" type="select1"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/breastfed_within_1_hour" required="true()" type="select1"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/baby_danger_sign_note" readonly="true()" required="true()" type="string"/>
       <bind nodeset="/delivery/babys_condition/baby_repeat/baby_details/infected_umbilical_cord" required="true()" type="select1"/>
@@ -5196,14 +5196,14 @@ selected(../../condition/woman_outcome, 'alive_unwell')" type="string"/>
             <input ref="/delivery/babys_condition/baby_repeat/baby_details/imm_counsel_note">
               <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/imm_counsel_note:label')"/>
             </input>
-            <select1 ref="/delivery/babys_condition/baby_repeat/baby_details/breatfeeding">
-              <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breatfeeding:label')"/>
+            <select1 ref="/delivery/babys_condition/baby_repeat/baby_details/breastfeeding">
+              <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breastfeeding:label')"/>
               <item>
-                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/yes:label')"/>
+                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/yes:label')"/>
                 <value>yes</value>
               </item>
               <item>
-                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breatfeeding/no:label')"/>
+                <label ref="jr:itext('/delivery/babys_condition/baby_repeat/baby_details/breastfeeding/no:label')"/>
                 <value>no</value>
               </item>
             </select1>
