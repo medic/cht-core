@@ -9,7 +9,7 @@ const personFactory = require('../../../factories/cht/contacts/person');
 
 describe('Bulk delete reports', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.find(place => place.type === 'health_center');
+  const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ username: 'offline_chw_bulk_delete', place: healthCenter._id });
   const patient = personFactory.build({ parent: { _id: healthCenter._id } });
   const reports = [
@@ -29,7 +29,7 @@ describe('Bulk delete reports', () => {
 
   const savedUuids = [];
   before(async () => {
-    await utils.saveDocs([ ...places, patient ]);
+    await utils.saveDocs([ ...places.values(), patient ]);
     await utils.createUsers([ offlineUser ]);
     await loginPage.login(offlineUser);
     (await utils.saveDocs(reports)).forEach(savedReport => savedUuids.push(savedReport.id));
