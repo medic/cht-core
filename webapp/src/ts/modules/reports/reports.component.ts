@@ -208,14 +208,16 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.translateService.instant('report.subject.unknown');
   }
 
-  private async prepareReports(reports) {
+  private async prepareReports(reports, isContent=false) {
     const userLineageLevel = await this.currentLevel;
 
     return reports.map(report => {
       const form = _find(this.forms, { code: report.form });
+      const subTitle = form ? form.title : report.form;
+      report.summary = isContent ? { ...report } : subTitle;
+      report.expanded = false;
       report.icon = form && form.icon;
       report.heading = this.getReportHeading(form, report);
-      report.summary = form ? form.title : report.form;
       report.lineage = report.subject && report.subject.lineage || report.lineage;
       report.unread = !report.read;
 
@@ -364,7 +366,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectReportRow(report) {
     if (this.responsiveService.isMobile() || !this.selectMode) {
-      console.warn('selectReportRow - quit');
       return;
     }
     this.selectReport(report);
@@ -403,19 +404,14 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.globalActions.setLoadingContent(true);
 
-      const summaries = await this.searchService.search(
+      const reports = await this.searchService.search(
         'reports',
         this.filters,
         { limit: this.LIMIT_SELECT_ALL_REPORTS, hydrateContactNames: true }
       );
-      const selected = summaries.map(summary => ({
-        _id: summary?._id,
-        summary: summary,
-        expanded: false,
-        lineage: summary?.lineage,
-        contact: summary?.contact,
-      }));
-      this.reportsActions.setSelectedReports(selected);
+
+      const preparedReports = await this.prepareReports(reports, true);
+      this.reportsActions.setSelectedReports(preparedReports);
       this.globalActions.unsetComponents();
 
     } catch(error) {
@@ -441,8 +437,12 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    // The report might not have the doc ready at this point of time, but we can use the summary.
+    const docs = this.selectedReports
+      .map(report => report.doc || report.summary)
+      .filter(report => !!report);
     this.modalService
-      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs: this.selectedReports, type: 'reports' } } })
+      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs, type: 'reports' } } })
       .catch(() => {});
   }
 
