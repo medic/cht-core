@@ -4,13 +4,13 @@ const placeFactory = require('../../../factories/cht/contacts/place');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const personFactory = require('../../../factories/cht/contacts/person');
 
-const onlineUserRole = 'Program Officer';
-const offlineUserRole = 'CHW';
+const onlineUserRole = 'program_officer';
+const offlineUserRole = 'chw';
 const username = 'jackuser';
 const password = 'Jacktest@123';
 const incorrectpassword = 'Passwor';
 const places = placeFactory.generateHierarchy();
-const districtHospital = utils.findDistrictHospitalFromPlaces(places);
+const districtHospital = places.get('district_hospital');
 
 const person = personFactory.build(
   {
@@ -20,7 +20,7 @@ const person = personFactory.build(
     }
   });
 
-const docs = [...places, person];
+const docs = [...places.values(), person];
 
 describe('User Test Cases ->', () => {
 

@@ -14,7 +14,7 @@ const pregnancyForm = require('../../../page-objects/default/enketo/pregnancy.wd
 
 describe('Pregnancy registration', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.find(place => place.type === 'health_center');
+  const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const pregnantWoman = personFactory.build({
     date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'), 
@@ -24,7 +24,7 @@ describe('Pregnancy registration', () => {
   let countDangerSigns = 0;
 
   before(async () => {
-    await utils.saveDocs([...places, pregnantWoman]);
+    await utils.saveDocs([...places.values(), pregnantWoman]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);    
   });

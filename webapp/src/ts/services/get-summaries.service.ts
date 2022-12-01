@@ -15,7 +15,7 @@ export class GetSummariesService {
   ) {
   }
 
-  private readonly SUBJECT_FIELDS = [ 'patient_id', 'patient_name', 'place_id' ];
+  private readonly SUBJECT_FIELDS = [ 'patient_id', 'patient_uuid', 'patient_name', 'place_id' ];
 
   private getLineage(contact) {
     const parts = [];
@@ -39,6 +39,7 @@ export class GetSummariesService {
     const reference =
       doc.patient_id ||
       (doc.fields && doc.fields.patient_id) ||
+      (doc.fields && doc.fields.patient_uuid) ||
       doc.place_id ||
       (doc.fields && doc.fields.place_id);
     const patientName = doc.fields && doc.fields.patient_name;

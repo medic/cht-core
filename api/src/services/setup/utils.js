@@ -318,7 +318,7 @@ const getUpgradeServicePayload = (stagingDoc) => {
   };
 };
 
-const makeUpgradeRequest = (payload) => {
+const makeUpgradeRequest = async (payload) => {
   let url;
   try {
     url = new URL(UPGRADE_SERVICE_URL);
@@ -327,7 +327,32 @@ const makeUpgradeRequest = (payload) => {
     throw new Error(`Invalid UPGRADE_SERVICE_URL: ${UPGRADE_SERVICE_URL}`);
   }
 
-  return rpn.post({ url: url.toString(), json: true, body: payload });
+  const response = await rpn.post({ url: url.toString(), json: true, body: payload });
+  const success = upgradeResponseSuccess(payload, response);
+  if (!success) {
+    logger.error('None of the docker-compose files or containers were updated: %o', response);
+    logger.error('If deploying through docker-compose, please make sure that the CHT docker-compose files ' +
+                 'that you wish to be updated match the naming convention.');
+    logger.error('If deploying through kubernetes, please make sure the containers you wish to be upgraded ' +
+                 'match the naming convention.');
+    throw new Error('No containers were updated');
+  }
+
+  return response;
+};
+
+const upgradeResponseSuccess = (payload, response) => {
+  if (!response) {
+    return false;
+  }
+
+  const sucessfullyUpdatedFiles = Object
+    .keys(payload.docker_compose)
+    .filter(file => response[file] && response[file].ok);
+  const successfullyUpdatedContainers = payload.containers
+    .filter(({ container_name }) => response[container_name] && response[container_name].ok);
+
+  return !!sucessfullyUpdatedFiles.length || !!successfullyUpdatedContainers.length;
 };
 
 module.exports = {

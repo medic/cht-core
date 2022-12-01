@@ -14,7 +14,7 @@ const pregnancyVisitForm = require('../../../page-objects/standard/enketo/pregna
 
 describe('Pregnancy Visit', () => {
   const places = placeFactory.generateHierarchy();
-  const healthCenter = places.find(place => place.type === 'health_center');
+  const healthCenter = places.get('health_center');
   const user = userFactory.build({ place: healthCenter._id, roles: ['district_admin'] });
   const pregnantWoman = personFactory.build({ 
     patient_id: '12345', 
@@ -23,7 +23,7 @@ describe('Pregnancy Visit', () => {
   });
 
   before(async () => {
-    await utils.saveDocs([...places, pregnantWoman]);
+    await utils.saveDocs([...places.values(), pregnantWoman]);
     await utils.createUsers([user]);
     await loginPage.cookieLogin();
     await commonPage.goToPeople(pregnantWoman._id);

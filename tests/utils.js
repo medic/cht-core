@@ -529,7 +529,6 @@ const waitForDockerLogs = (container, ...regex) => {
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
   // steps of testing afterwards.
   const params = `logs ${container} -f --tail=1`;
-  console.log('docker', params);
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
@@ -1299,7 +1298,6 @@ module.exports = {
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
-  findDistrictHospitalFromPlaces: (places) => places.find((place) => place.type === 'district_hospital'),
 
   apiLogFile: 'api.e2e.log',
   sentinelLogFile: 'sentinel.e2e.log',

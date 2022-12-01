@@ -57,7 +57,6 @@ const adminAppReg = new RegExp(`/*${environment.db}/_design/medic-admin/_rewrite
 const serverUtils = require('./server-utils');
 const uuid = require('uuid');
 const compression = require('compression');
-const BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds/'; // jshint ignore:line
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const app = express.Router({ strict: true });
@@ -157,7 +156,7 @@ app.use(
         manifestSrc: [`'self'`],
         connectSrc: [
           `'self'`,
-          BUILDS_DB,
+          environment.buildsUrl + '/',
           'maps.googleapis.com' // used for enketo geopoint widget
         ],
         childSrc:  [`'self'`],
@@ -402,6 +401,7 @@ app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalk
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);
 
 app.post('/api/v1/sms/radpidpro/incoming-messages', jsonParser, rapidPro.incomingMessages);
+app.post('/api/v2/sms/rapidpro/incoming-messages', jsonParser, rapidPro.incomingMessages);
 
 app.get('/api/sms/', (req, res) => res.redirect(301, '/api/sms'));
 app.get('/api/sms', smsGateway.get);
@@ -423,6 +423,7 @@ app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
 app.get('/api/v1/users', users.get);
+app.get('/api/v2/users', users.v2.get);
 app.postJson('/api/v1/users', users.create);
 app.postJsonOrCsv('/api/v2/users', users.v2.create);
 app.postJson('/api/v1/users/:username', users.update);

@@ -16,7 +16,7 @@ const DOC_IDS_WARN_LIMIT = 10000;
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
-const USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
+const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
 
 const MAX_CONFLICT_RETRY = 3;
 
@@ -88,13 +88,6 @@ const error400 = (msg, key, params) => {
   }
 
   return Object.assign(error, { details: key });
-};
-
-const getType = user => {
-  if (user.roles && user.roles.length) {
-    return user.roles[0];
-  }
-  return 'unknown';
 };
 
 const getDoc = (id, docs) =>  _.find(docs, { _id: id });
@@ -183,7 +176,7 @@ const validateNewUsernameForDb = (username, database) => {
 };
 
 const validateNewUsername = username => {
-  if (!USERNAME_WHITELIST.test(username)) {
+  if (!USERNAME_ALLOWED_CHARS.test(username)) {
     return Promise.reject(error400(
       'Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).',
       'username.invalid'
@@ -336,7 +329,7 @@ const mapUsers = (users, settings, facilities) => {
         email: setting.email,
         phone: setting.phone,
         place: getDoc(user.doc.facility_id, facilities),
-        type: getType(user.doc),
+        roles: user.doc.roles,
         contact: getDoc(setting.contact_id, facilities),
         external_id: setting.external_id,
         known: user.doc.known
