@@ -427,7 +427,7 @@ body {
   .mobile-freetext-filter {
     &.disabled {
       input, .btn, .mm-button-icon {
-        color: @gray-dark;
+        color: @text-secondary-color;
       }
     }
   }
@@ -1310,7 +1310,7 @@ mm-search-bar {
         box-shadow: 0 6px 12px rgb(0 0 0 / 40%);
 
         .dropdown-header {
-          color: @gray-medium;
+          color: @filter-text-color;
         }
       }
     }
@@ -1349,9 +1349,9 @@ mm-search-bar {
       }
 
       .filter-counter {
-        color: @white;
+        color: @chip-text-color;
         font-size: @font-extra-extra-small;
-        background: @blue-dark;
+        background: @chip-background-color;
         border-radius: 50%;
         padding: 1px 5px;
         vertical-align: middle;
@@ -1360,11 +1360,11 @@ mm-search-bar {
 
     .fa {
       font-size: @font-extra-large;
-      color: @black;
+      color: @filter-icon-color;
     }
 
     &.disabled .search-bar-left-icon .fa {
-      color: @gray-medium;
+      color: @inactive-color;
     }
   }
 }
@@ -1675,7 +1675,7 @@ mm-search-bar {
           position: absolute;
           top: 3px;
           right: -2px;
-          border: 1px solid @white;
+          border: 1px solid @chip-border-color;
         }
       }
 

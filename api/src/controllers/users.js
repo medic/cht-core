@@ -119,11 +119,30 @@ const getAllowedDocsCounts = async (userCtx) => {
 // In express4, req.host strips off the port number: https://expressjs.com/en/guide/migrating-5.html#req.host
 const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
 
+const getUserList = async (req) => {
+  await auth.check(req, 'can_view_users');
+  return await users.getList();
+};
+
+const getType = user => {
+  if (user.roles && user.roles.length) {
+    return user.roles[0];
+  }
+  return 'unknown';
+};
+
+const convertUserListToV1 = (users=[]) => {
+  users.forEach(user => {
+    user.type = getType(user);
+    delete user.roles;
+  });
+  return users;
+};
+
 module.exports = {
   get: (req, res) => {
-    auth
-      .check(req, 'can_view_users')
-      .then(() => users.getList())
+    return getUserList(req)
+      .then(list => convertUserListToV1(list))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -229,6 +248,14 @@ module.exports = {
   },
 
   v2: {
+    get: async (req, res) => {
+      try {
+        const body = await getUserList(req, res);
+        res.json(body);
+      } catch(err) {
+        serverUtils.error(err, req, res);
+      }
+    },
     create: async (req, res) => {
       try {
         await auth.check(req, ['can_edit', 'can_create_users']);
