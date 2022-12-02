@@ -11,7 +11,8 @@ describe('Reports Reducer', () => {
     state = {
       reports: [],
       reportsById: new Map(),
-      selected: [],
+      selectedReport: undefined,
+      selectedReports: [],
       verifyingReport: false,
       filters: {},
     };
@@ -27,7 +28,9 @@ describe('Reports Reducer', () => {
         { _id: 'r5', reported_date: 500, form: 'form2', other: 'data' },
         { _id: 'r6', reported_date: 1000, form: 'form', other: 'data' },
       ];
+
       const newState = reportsReducer(undefined, Actions.updateReportsList(reports));
+
       expect(newState).to.deep.equal({
         reports: [
           // sorted by reported_date
@@ -46,7 +49,8 @@ describe('Reports Reducer', () => {
           ['r5', { _id: 'r5', reported_date: 500, form: 'form2', other: 'data', selected: false }],
           ['r6', { _id: 'r6', reported_date: 1000, form: 'form', other: 'data', selected: false }],
         ]),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: false,
         filters: {},
       });
@@ -73,6 +77,7 @@ describe('Reports Reducer', () => {
       ];
 
       const newState = reportsReducer(state, Actions.updateReportsList(newReports));
+
       expect(newState).to.deep.equal({
         reports: [
           // sorted by reported_date
@@ -106,7 +111,7 @@ describe('Reports Reducer', () => {
           ['r2', { _id: 'r2', reported_date: 500, form: 'form2', selected: true }],
           ['r3', { _id: 'r3', reported_date: 200, form: 'form1', selected: false }],
         ]),
-        selected: [
+        selectedReports: [
           { _id: 'r5', reported_date: 100 },
           { _id: 'r2', reported_date: 500, form: 'form2' },
         ],
@@ -119,6 +124,7 @@ describe('Reports Reducer', () => {
       ];
 
       const newState = reportsReducer(state, Actions.updateReportsList(newReports));
+
       expect(newState).to.deep.equal({
         reports: [
           // sorted by reported_date
@@ -137,7 +143,7 @@ describe('Reports Reducer', () => {
           ['r5', { _id: 'r5', reported_date: 100, selected: true }],
           ['r6', { _id: 'r6', reported_date: 300, selected: false }],
         ]),
-        selected: [
+        selectedReports: [
           { _id: 'r5', reported_date: 100 },
           { _id: 'r2', reported_date: 500, form: 'form2' },
         ],
@@ -165,6 +171,7 @@ describe('Reports Reducer', () => {
       ];
 
       const newState = reportsReducer(state, Actions.updateReportsList(updatedReports));
+
       expect(newState).to.deep.equal({
         reports: [
           // sorted by reported_date
@@ -194,7 +201,7 @@ describe('Reports Reducer', () => {
           ['r2', { _id: 'r2', reported_date: 500, form: 'form2', selected: true }],
           ['r3', { _id: 'r3', reported_date: 200, form: 'form1', selected: true }],
         ]),
-        selected: [
+        selectedReports: [
           { _id: 'r2', reported_date: 500, form: 'form2' },
           { _id: 'r3', reported_date: 200, form: 'form1' },
           { _id: 'r5', reported_date: 300 },
@@ -208,6 +215,7 @@ describe('Reports Reducer', () => {
       ];
 
       const newState = reportsReducer(state, Actions.updateReportsList(updatedReports));
+
       expect(newState).to.deep.equal({
         reports: [
           // sorted by reported_date
@@ -222,7 +230,7 @@ describe('Reports Reducer', () => {
           ['r3', { _id: 'r3', reported_date: 200, form: 'otherform', selected: true }],
           ['r5', { _id: 'r5', reported_date: 300, selected: true }],
         ]),
-        selected: [
+        selectedReports: [
           { _id: 'r2', reported_date: 500, form: 'form2' },
           { _id: 'r3', reported_date: 200, form: 'form1' },
           { _id: 'r5', reported_date: 300 },
@@ -248,6 +256,7 @@ describe('Reports Reducer', () => {
 
       const report = { _id: 'r2' };
       const newState = reportsReducer(state, Actions.removeReportFromList(report));
+
       expect(newState).to.deep.equal({
         reports: [
           { _id: 'r1', reported_date: 1000, form: 'form' },
@@ -276,6 +285,7 @@ describe('Reports Reducer', () => {
 
       const report = { _id: 'r12' };
       const newState = reportsReducer(state, Actions.removeReportFromList(report));
+
       expect(newState).to.deep.equal({
         reports: [
           { _id: 'r1', reported_date: 1000, form: 'form' },
@@ -292,7 +302,9 @@ describe('Reports Reducer', () => {
 
     it('should work when no state', () => {
       const report = { _id: 'r12' };
+
       const newState = reportsReducer(undefined, Actions.removeReportFromList(report));
+
       expect(newState).to.deep.equal(state);
     });
   });
@@ -310,16 +322,19 @@ describe('Reports Reducer', () => {
           ['r2', { _id: 'r2', reported_date: 500, form: 'form2' }],
           ['r3', { _id: 'r3', reported_date: 200, form: 'form1' }],
         ]),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: false,
         filters: {},
       };
 
       const newState = reportsReducer(state, Actions.resetReportsList());
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: false,
         filters: {},
       });
@@ -329,11 +344,14 @@ describe('Reports Reducer', () => {
   describe('addSelectedReport', () => {
     it('should add selected report to empty list', () => {
       const selected = { _id: 'selected_report', some: 'data' };
+
       const newState = reportsReducer(state, Actions.addSelectedReport(selected));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [{ _id: 'selected_report', some: 'data' }],
+        selectedReport: undefined,
+        selectedReports: [{ _id: 'selected_report', some: 'data' }],
         verifyingReport: false,
         filters: {},
       });
@@ -353,14 +371,16 @@ describe('Reports Reducer', () => {
           ['three', { _id: 'three', report: true, form: 'a', selected: false }],
           ['four', { _id: 'four', report: true, form: 'a', selected: false }],
         ]),
-        selected: [
+        selectedReports: [
           { _id: 'one', report: true },
           { _id: 'two', report: true, form: 'a' }
         ],
       };
 
       const selected =  { _id: 'four', report: true, form: 'a' };
+
       const newState = reportsReducer(state, Actions.addSelectedReport(selected));
+
       expect(newState).to.deep.equal({
         reports: [
           { _id: 'one', report: true, selected: true },
@@ -374,7 +394,7 @@ describe('Reports Reducer', () => {
           ['three', { _id: 'three', report: true, form: 'a', selected: false }],
           ['four', { _id: 'four', report: true, form: 'a', selected: true }],
         ]),
-        selected: [
+        selectedReports: [
           { _id: 'one', report: true },
           { _id: 'two', report: true, form: 'a' },
           { _id: 'four', report: true, form: 'a' },
@@ -386,22 +406,27 @@ describe('Reports Reducer', () => {
   describe('removeSelectedReport', () => {
     it('should work on empty list', () => {
       const report = { _id: 'selected_report' };
+
       const newState = reportsReducer(undefined, Actions.removeSelectedReport(report));
+
       expect(newState).to.deep.equal(state);
     });
 
     it('should work when report is not selected', () => {
       const report = { _id: 'selected_report' };
-      state.selected = [
+      state.selectedReports = [
         { _id: 'report1' },
         { _id: 'report2', some: 'data' },
         { _id: 'report3', reported_date: 200 },
       ];
+
       const newState = reportsReducer(state, Actions.removeSelectedReport(report));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [
+        selectedReport: undefined,
+        selectedReports: [
           { _id: 'report1' },
           { _id: 'report2', some: 'data' },
           { _id: 'report3', reported_date: 200 },
@@ -413,17 +438,20 @@ describe('Reports Reducer', () => {
 
     it('should work when report is selected', () => {
       const selected = { _id: 'selected_report' };
-      state.selected = [
+      state.selectedReports = [
         { _id: 'report1' },
         { _id: 'report2', some: 'data' },
         { _id: 'selected_report', reported_date: 1000, some: 'value' },
         { _id: 'report3', reported_date: 200 },
       ];
+
       const newState = reportsReducer(state, Actions.removeSelectedReport(selected));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [
+        selectedReport: undefined,
+        selectedReports: [
           { _id: 'report1' },
           { _id: 'report2', some: 'data' },
           { _id: 'report3', reported_date: 200 },
@@ -434,21 +462,56 @@ describe('Reports Reducer', () => {
     });
 
     it('should work when report is selected with ID', () => {
-      state.selected = [
+      state.selectedReports = [
         { _id: 'report1' },
         { _id: 'report2', some: 'data' },
         { _id: 'selected_report', reported_date: 1000, some: 'value' },
         { _id: 'report3', reported_date: 200 },
       ];
+
       const newState = reportsReducer(state, Actions.removeSelectedReport('selected_report'));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [
+        selectedReport: undefined,
+        selectedReports: [
           { _id: 'report1' },
           { _id: 'report2', some: 'data' },
           { _id: 'report3', reported_date: 200 },
         ],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+  });
+
+  describe('setSelectedReport', () => {
+    it('should select report when no report selected yet', () => {
+      const selected = { _id: 'one', reported_date: 100 };
+
+      const newState = reportsReducer(undefined, Actions.setSelectedReport(selected));
+
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selectedReport: { _id: 'one', reported_date: 100 },
+        selectedReports: [],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+
+    it('should select report when there is another report selected', () => {
+      state.selectedReport = { _id: 'one', reported_date: 100 };
+
+      const newState = reportsReducer(state, Actions.setSelectedReport({ _id: 'two', reported_date: 200 }));
+
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selectedReport: { _id: 'two', reported_date: 200 },
+        selectedReports: [],
         verifyingReport: false,
         filters: {},
       });
@@ -464,10 +527,12 @@ describe('Reports Reducer', () => {
       ];
 
       const newState = reportsReducer(undefined, Actions.setSelectedReports(selected));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [
+        selectedReport: undefined,
+        selectedReports: [
           { _id: 'one', reported_date: 100 },
           { _id: 'two', reported_date: 200 },
           { _id: 'three', reported_date: 300 },
@@ -478,7 +543,7 @@ describe('Reports Reducer', () => {
     });
 
     it('should set selected reports when not empty list', () => {
-      state.selected = [
+      state.selectedReports = [
         { _id: 'selected1' },
         { _id: 'two', reported_date: 200 },
         { _id: 'selected3' },
@@ -491,10 +556,12 @@ describe('Reports Reducer', () => {
       ];
 
       const newState = reportsReducer(state, Actions.setSelectedReports(selected));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [
+        selectedReport: undefined,
+        selectedReports: [
           { _id: 'one', reported_date: 100 },
           { _id: 'two', reported_date: 200 },
           { _id: 'three', reported_date: 300 },
@@ -506,54 +573,65 @@ describe('Reports Reducer', () => {
   });
 
   describe('clearSelected', () => {
-    it('should work on empty list', () => {
+    it('should work on empty selection', () => {
       const newState = reportsReducer(undefined, globalActions.clearSelected());
       expect(newState).to.deep.equal(state);
     });
 
-    it('should work on existent list', () => {
-      state.selected = [
+    it('should work on existent selection', () => {
+      state.selectedReport = { _id: 'four', reported_date: 200 };
+      state.selectedReports = [
         { _id: 'selected1' },
         { _id: 'two', reported_date: 200 },
         { _id: 'selected3' },
       ];
+
       const newState = reportsReducer(state, globalActions.clearSelected());
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: false,
         filters: {},
       });
     });
   });
 
-  describe('updateSelectedReportItem', () => {
+  describe('updateSelectedReportsItem', () => {
     it('should work when no selected', () => {
-      state.selected = undefined;
-      const newState = reportsReducer(state, Actions.updateSelectedReportItem({ id: 'aaaa' }));
+      state.selectedReport = undefined;
+      state.selectedReports = undefined;
+
+      const newState = reportsReducer(state, Actions.updateSelectedReportsItem({ id: 'aaaa' }));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: undefined,
+        selectedReport: undefined,
+        selectedReports: undefined,
         verifyingReport: false,
         filters: {},
       });
     });
 
     it('should work when item not found', () => {
-      state.selected = [
+      state.selectedReports = [
         { _id: 'sel1', doc: { _id: 'sel1', field: 1 } },
         { _id: 'sel2', doc: { _id: 'sel2', field: 2 } },
         { _id: 'sel3', doc: { _id: 'sel3', field: 3 } },
       ];
-      const newState = reportsReducer(state, Actions.updateSelectedReportItem({ id: 'aaaa' }));
+
+      const newState = reportsReducer(state, Actions.updateSelectedReportsItem({ id: 'aaaa' }));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
         verifyingReport: false,
         filters: {},
-        selected: [
+        selectedReport: undefined,
+        selectedReports: [
           { _id: 'sel1', doc: { _id: 'sel1', field: 1 } },
           { _id: 'sel2', doc: { _id: 'sel2', field: 2 } },
           { _id: 'sel3', doc: { _id: 'sel3', field: 3 } },
@@ -569,18 +647,22 @@ describe('Reports Reducer', () => {
           expanded: true,
         },
       };
-      state.selected = [
+      state.selectedReport = { _id: 'report_3', loading: false, doc: { _id: 'report_3', field: 1 } };
+      state.selectedReports = [
         { _id: 'report_1', doc: { _id: 'report_1', field: 1 } },
         { _id: 'report_3', loading: false, doc: { _id: 'report_3', field: 1 } },
         { _id: 'report_5', doc: { _id: 'report_4', field: 1 } },
       ];
-      const newState = reportsReducer(state, Actions.updateSelectedReportItem(payload));
+
+      const newState = reportsReducer(state, Actions.updateSelectedReportsItem(payload));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
         verifyingReport: false,
         filters: {},
-        selected: [
+        selectedReport: { _id: 'report_3', loading: true, expanded: true, doc: { _id: 'report_3', field: 1 } },
+        selectedReports: [
           { _id: 'report_1', doc: { _id: 'report_1', field: 1 } },
           { _id: 'report_3', loading: true, expanded: true, doc: { _id: 'report_3', field: 1 } },
           { _id: 'report_5', doc: { _id: 'report_4', field: 1 } },
@@ -595,15 +677,18 @@ describe('Reports Reducer', () => {
       expect(state).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: true,
         filters: {},
       });
+
       state  = reportsReducer(state, Actions.setVerifyingReport(false));
       expect(state).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: false,
         filters: {},
       });
@@ -616,55 +701,92 @@ describe('Reports Reducer', () => {
       expect(state).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: true,
         filters: {},
       });
+
       state = reportsReducer(state, Actions.toggleVerifyingReport());
       expect(state).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: false,
         filters: {},
       });
+
       state = reportsReducer(state, Actions.toggleVerifyingReport());
       expect(state).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: true,
         filters: {},
       });
     });
   });
 
-  describe('setFirstSelectedReportDocProperty', () => {
+  describe('setSelectedReportDocProperty', () => {
     it('should work with empty state', () => {
-      state = reportsReducer(state, Actions.setFirstSelectedReportDocProperty({ prop: true }));
+      state = reportsReducer(state, Actions.setSelectedReportDocProperty({ prop: true }));
+
       expect(state).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: false,
         filters: {},
       });
     });
 
-    it('should update the 1st selected doc', () => {
-      state.selected = [
-        { _id: 'doc', doc: { _id: 'doc', field: 1, _rev: 1 }, formatted: { a: 1 } },
-        { _id: 'doc2', doc: { _id: 'doc2', field: 2, _rev: 1 }, formatted: { a: 2 } },
-        { _id: 'doc3', doc: { _id: 'doc3', field: 3, _rev: 1 }, formatted: { a: 3 } },
+    it('should not update the selectedReport when the payload id is different from selectedReport id', () => {
+      state.selectedReport = { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1 } };
+      state.selectedReports = [
+        { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1 } },
+        { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1 } },
       ];
-      const newState = reportsReducer(state, Actions.setFirstSelectedReportDocProperty({ field: 3, other: 1 }));
+
+      const newState = reportsReducer(state, Actions.setSelectedReportDocProperty({
+        id: 'doc-2',
+        doc: { field: 3, other: 1 },
+      }));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [
-          { _id: 'doc', doc: { _id: 'doc', field: 3, _rev: 1, other: 1 }, formatted: { a: 1 } },
-          { _id: 'doc2', doc: { _id: 'doc2', field: 2, _rev: 1 }, formatted: { a: 2 } },
-          { _id: 'doc3', doc: { _id: 'doc3', field: 3, _rev: 1 }, formatted: { a: 3 } },
+        selectedReport: { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1 } },
+        selectedReports: [
+          { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1 } },
+          { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1 } },
+        ],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+
+    it('should update the selected doc', () => {
+      state.selectedReport = { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1 } };
+      state.selectedReports = [
+        { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1 } },
+        { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1 } },
+      ];
+
+      const newState = reportsReducer(state, Actions.setSelectedReportDocProperty({
+        id: 'doc-1',
+        doc: { field: 3, other: 1 },
+      }));
+
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selectedReport: { _id: 'doc-1', doc: { _id: 'doc-1', field: 3, _rev: 1, other: 1 }, formatted: { a: 1 } },
+        selectedReports: [
+          { _id: 'doc-1', doc: { _id: 'doc-1', field: 3, _rev: 1, other: 1 }, formatted: { a: 1 } },
+          { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1 } },
         ],
         verifyingReport: false,
         filters: {},
@@ -672,32 +794,64 @@ describe('Reports Reducer', () => {
     });
   });
 
-  describe('setFirstSelectedReportFormattedProperty', () => {
+  describe('setSelectedReportFormattedProperty', () => {
     it('should work with empty state', () => {
-      state = reportsReducer(state, Actions.setFirstSelectedReportFormattedProperty({ prop: true }));
+      state = reportsReducer(state, Actions.setSelectedReportFormattedProperty({ prop: true }));
+
       expect(state).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [],
+        selectedReport: undefined,
+        selectedReports: [],
         verifyingReport: false,
         filters: {},
       });
     });
 
-    it('should update the 1st selected doc', () => {
-      state.selected = [
-        { _id: 'doc', doc: { _id: 'doc', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } },
-        { _id: 'doc2', doc: { _id: 'doc2', field: 2, _rev: 1 }, formatted: { a: 2, b: 3 } },
-        { _id: 'doc3', doc: { _id: 'doc3', field: 3, _rev: 1 }, formatted: { a: 3, b: 4 } },
+    it('should not update the selectedReport when the payload id is different from selectedReport id', () => {
+      state.selectedReport = { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } };
+      state.selectedReports = [
+        { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } },
+        { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1, b: 2 } },
       ];
-      const newState = reportsReducer(state, Actions.setFirstSelectedReportFormattedProperty({ b: 22, c: 44 }));
+
+      const newState = reportsReducer(state, Actions.setSelectedReportFormattedProperty({
+        id: 'doc-2',
+        formatted: { b: 22, c: 44 },
+      }));
+
       expect(newState).to.deep.equal({
         reports: [],
         reportsById: new Map(),
-        selected: [
-          { _id: 'doc', doc: { _id: 'doc', field: 1, _rev: 1 }, formatted: { a: 1, b: 22, c: 44 } },
-          { _id: 'doc2', doc: { _id: 'doc2', field: 2, _rev: 1 }, formatted: { a: 2, b: 3 } },
-          { _id: 'doc3', doc: { _id: 'doc3', field: 3, _rev: 1 }, formatted: { a: 3, b: 4 } },
+        selectedReport: { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } },
+        selectedReports: [
+          { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } },
+          { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1, b: 2 } },
+        ],
+        verifyingReport: false,
+        filters: {},
+      });
+    });
+
+    it('should update the selected doc', () => {
+      state.selectedReport = { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } };
+      state.selectedReports = [
+        { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 2 } },
+        { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1, b: 2 } },
+      ];
+
+      const newState = reportsReducer(state, Actions.setSelectedReportFormattedProperty({
+        id: 'doc-1',
+        formatted: { b: 22, c: 44 },
+      }));
+
+      expect(newState).to.deep.equal({
+        reports: [],
+        reportsById: new Map(),
+        selectedReport: { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 22, c: 44 } },
+        selectedReports: [
+          { _id: 'doc-1', doc: { _id: 'doc-1', field: 1, _rev: 1 }, formatted: { a: 1, b: 22, c: 44 } },
+          { _id: 'doc-2', doc: { _id: 'doc-2', field: 1, _rev: 2 }, formatted: { a: 1, b: 2 } },
         ],
         verifyingReport: false,
         filters: {},

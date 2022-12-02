@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import * as LineageFactory from '@medic/lineage';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { DbService } from '@mm-services/db.service';
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
@@ -17,12 +17,12 @@ import { TranslateService } from '@mm-services/translate.service';
 })
 export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
+  private selectMode;
+  static id = 'delete-doc-confirm-modal';
+
   subscriptions: Subscription = new Subscription();
-  selectMode;
   lineageLib;
   model = { doc: null }; // Automatically assigned by BsModalRef
-
-  static id = 'delete-doc-confirm-modal';
 
   constructor(
     private store: Store,
@@ -37,14 +37,9 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
   }
 
   ngOnInit(): void {
-    const subscription = combineLatest(
-      this.store.select(Selectors.getSelectMode),
-    )
-      .subscribe(([
-        selectMode,
-      ]) => {
-        this.selectMode = selectMode;
-      });
+    const subscription = this.store
+      .select(Selectors.getSelectMode)
+      .subscribe(selectMode => this.selectMode = selectMode);
     this.subscriptions.add(subscription);
   }
 

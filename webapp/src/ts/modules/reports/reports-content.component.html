@@ -9,19 +9,15 @@
     <div>{{'No report selected' | translate }}</div>
   </div>
 
-  <div id="reports-content" class="report-wrap" *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
-
-    <div class="selection-count" *ngIf="selectMode && selectedReports.length">
-      <span *ngIf="selectedReports.length === 1">{{'select.mode.count.singular' | translate}}</span>
-      <span *ngIf="selectedReports.length !== 1" translate
-        [translateParams]="{ number: selectedReports?.length | localizeNumber }">select.mode.count.plural</span>
-    </div>
+  <div id="reports-content"
+    class="report-wrap"
+    *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
 
     <div *ngFor="let selection of selectedReports; trackBy: trackByFn; let $index = index;" class="body report-body">
 
       <div class="item-summary" (click)="toggleExpand(selection)">
         <span class="icon" [innerHTML]="summaries[$index] | formIcon:forms"></span>
-        <a class="deselect" *ngIf="selectMode" (click)="deselect(selection, $event)">
+        <a class="deselect" *ngIf="selectMode && !isMobile()" (click)="deselect(selection, $event)">
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">

@@ -493,6 +493,18 @@ body {
   background-color: @background-color;
 }
 
+.reports .inbox-items {
+  overflow-y: hidden;
+  overflow-x: hidden;
+  height: 100%;
+
+  .items-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+  }
+}
+
 .content .item-content .empty-selection,
 .content .item-content.empty-selection {
   height: 100%;
@@ -567,7 +579,7 @@ body {
   }
 }
 
-.reports.select-mode .report-body .item-summary {
+.reports .select-mode-available .report-body .item-summary {
   cursor: pointer;
 }
 
@@ -1577,7 +1589,9 @@ mm-search-bar {
   }
 
   .app-root.show-content {
-    .header {
+    .header,
+    mm-multiselect-bar,
+    mm-search-bar {
       display: none;
     }
     .content .page {
@@ -1588,9 +1602,6 @@ mm-search-bar {
     }
     .right-pane {
       left: 0;
-    }
-    mm-search-bar {
-      display: none;
     }
   }
 

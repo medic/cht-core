@@ -5,30 +5,6 @@
       <!-- LEFT PANE -->
       <div
         class="general-actions left-pane"
-        *ngIf="currentTab === 'reports' && selectMode"
-        [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
-        <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" (click)="selectAll()" mmAuth="can_edit">
-            <span class="fa fa-check-square-o"></span>
-            <p>{{'select.mode.select.all' | translate}}</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption deselect-all" (click)="deselectAll()" mmAuth="can_edit">
-            <span class="fa fa-square-o"></span>
-            <p>{{'select.mode.deselect.all' | translate}}</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_edit,can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)" [ngClass]="{'mm-icon-disabled': !selectedReportsDocs.length}">
-            <span class="fa fa-trash-o"></span>
-            <p>{{'select.mode.delete.all' | translate}}</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" (click)="setSelect(false)" mmAuth="can_edit">
-            <span class="fa fa-times-circle"></span>
-            <p>{{'select.mode.stop' | translate}}</p>
-          </a>
-        </div>
-      </div>
-
-      <div
-        class="general-actions left-pane"
         *ngIf="currentTab === 'reports' && !selectMode"
         [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
         <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!nonContactForms?.length">
@@ -49,10 +25,6 @@
               </a>
             </li>
           </ul>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mmAuth="can_edit,can_bulk_delete_reports" (click)="setSelect(true)" [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}">
-            <span class="fa fa-check-circle"></span>
-            <p>{{'select.mode.start' | translate}}</p>
-          </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption"
              mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_messages']"
              *ngIf="actionBar?.left?.exportFn"
@@ -147,17 +119,8 @@
         class="detail-actions right-pane"
         *ngIf="currentTab === 'reports'"
         [ngClass]="{ 'col-sm-6': sidebarFilter?.isOpen, 'col-sm-8': !sidebarFilter?.isOpen }">
-        <div *ngIf="selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs?.length && (!loadingContent) && snapshotData?.name === 'reports.detail'">
-            <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mmAuth="can_edit,can_bulk_delete_reports" (click)="bulkDelete(selectedReportsDocs)">
-              <span class="fa fa-trash-o"></span>
-              <p>{{'select.mode.delete.all' | translate}}</p>
-            </a>
-          </div>
-        </div>
-
         <div *ngIf="!selectMode">
-          <div class="actions dropup" *ngIf="showActionBar && selectedReportsDocs && !loadingContent && snapshotData?.name === 'reports.detail'">
+          <div class="actions dropup" *ngIf="showActionBar && selectedReportDoc && !loadingContent && snapshotData?.name === 'reports.detail'">
             <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" [attr.href]="'sms:' + actionBar?.right?.sendTo?.phone | safeHtml:'url'" [ngClass]="{'mm-icon-disabled': !actionBar?.right?.sendTo?.phone}">
               <span class="fa fa-envelope"></span>
               <p>{{'Send Message' | translate}}</p>
@@ -169,7 +132,7 @@
             <div class="dropdown-menu sub-actions" *ngIf="actionBar?.right?.verifyingReport && loadingSubActionBar">
               <div class="loader"></div>
             </div>
-            <div class="dropdown-menu sub-actions" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportsDocs[0]?.verified === undefined && 'can_verify_reports']" *ngIf="actionBar?.right?.verifyingReport && !loadingSubActionBar">
+            <div test-id="report-review-menu" class="dropdown-menu sub-actions" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportDoc?.verified === undefined && 'can_verify_reports']" *ngIf="actionBar?.right?.verifyingReport && !loadingSubActionBar">
               <a class="mm-icon mm-icon-caption verify-error" [ngClass]="{ active: actionBar?.right?.verified === false }" (click)="verifyReport(false)">
                 <report-verify-invalid-icon class="verify-icon"></report-verify-invalid-icon>
                 <span>{{'reports.verify.invalid' | translate}}</span>
@@ -179,11 +142,11 @@
                 <span>{{'reports.verify.valid' | translate}}</span>
               </a>
             </div>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" [ngClass]="{ active: actionBar?.right?.verifyingReport }" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportsDocs[0]?.verified === undefined && 'can_verify_reports']" (click)="toggleVerifyingReport()">
+            <a test-id="report-review-button" class="mm-icon mm-icon-inverse mm-icon-caption" [ngClass]="{ active: actionBar?.right?.verifyingReport }" mmAuth="can_edit" [mmAuthAny]="[['can_verify_reports', 'can_edit_verification'], selectedReportDoc?.verified === undefined && 'can_verify_reports']" (click)="toggleVerifyingReport()">
               <span class="fa fa-check"></span>
               <p>{{'reports.verify' | translate}}</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_edit,can_update_reports" [routerLink]="['/reports', 'edit', selectedReportsDocs[0]?._id]">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_edit,can_update_reports" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
               <span class="fa fa-pencil"></span>
               <p>{{'Edit' | translate}}</p>
             </a>
@@ -191,7 +154,7 @@
               <span class="fa fa-pencil"></span>
               <p>{{'Update Facility' | translate}}</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" (click)="deleteDoc(selectedReportsDocs[0])" mmAuth="can_edit,can_delete_reports">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" (click)="deleteDoc(selectedReportDoc)" mmAuth="can_edit,can_delete_reports">
               <span class="fa fa-trash-o"></span>
               <p>{{'Delete' | translate}}</p>
             </a>
