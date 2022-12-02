@@ -53,9 +53,9 @@ create_compose_files() {
   curl -s -o "$homeDir/upgrade-service.yml" \
   	https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
   curl -s -o "$homeDir/compose/cht-core.yml" \
-  	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-core.yml
+  	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:4.0.1/docker-compose/cht-core.yml
   curl -s -o "$homeDir/compose/couchdb.yml" \
-  	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-couchdb.yml
+  	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:4.0.1/docker-compose/cht-couchdb.yml
 
   echo -e "${green} done${noColor} "
 }
@@ -110,7 +110,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 	case $2 in
 	"stop")
 		echo "Stopping project \"${projectName}\"..." | tr -d '\n'
-		docker stop $containerIds 1>/dev/null
+		docker kill $containerIds 1>/dev/null
 		echo -e "${green} done${noColor} "
 		exit 0
 		;;
@@ -119,7 +119,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 
 		if [[ -n $containerIds ]]; then
 			echo "Removing project's docker containers..." | tr -d '\n'
-			docker stop $containerIds 1>/dev/null
+			docker kill $containerIds 1>/dev/null
 			docker rm $containerIds 1>/dev/null
 			echo -e "${green} done${noColor} "
 		else
