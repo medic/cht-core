@@ -331,7 +331,6 @@ const resetFilter = async () => {
 };
 
 const openReport = async (reportId) => {
-  await resetFilter();
   await (await firstReport()).waitForDisplayed();
   const reportListItem = await reportByUUID(reportId);
   await reportListItem.waitForDisplayed();
@@ -379,11 +378,15 @@ module.exports = {
   reportsListDetails,
   selectAll,
   deselectAll,
+  reportCheckbox,
+  isReportSelected,
   selectReports,
   deselectReports,
+  selectedReportsCheckboxes,
   expandSelectedReportSummary,
   collapseSelectedReportSummary,
   deleteSelectedReports,
+  bulkDeleteModal,
   firstReportDetailField,
   reportByUUID,
   filterByDate,
@@ -394,6 +397,7 @@ module.exports = {
   getReportSubject,
   getReportType,
   getListReportInfo,
+  resetFilter,
   openReport,
   reportTasks,
   editReport,
