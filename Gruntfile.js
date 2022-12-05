@@ -452,6 +452,12 @@ module.exports = function(grunt) {
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
+      'wdio-run-performance': {
+        cmd: [
+          'npm run perform'
+        ].join(' && '),
+        stdio: 'inherit', // enable colors!
+      },
       'test-config-default': {
         cmd: [
           'cd config/default',
@@ -1017,6 +1023,10 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'start-webdriver',
     'protractor:performance-tests-and-services',
+  ]);
+  
+  grunt.registerTask('ci-perform', 'Run performance tests on CI', [
+    'exec:wdio-run-performance'
   ]);
 
   // Dev tasks
