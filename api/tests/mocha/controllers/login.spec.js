@@ -4,13 +4,13 @@ const chai = require('chai');
 const environment = require('../../../src/environment');
 const auth = require('../../../src/auth');
 const cookie = require('../../../src/services/cookie');
-const users = require('../../../src/services/users');
-const tokenLogin = require('../../../src/services/token-login');
 const branding = require('../../../src/services/branding');
+const db = require('../../../src/db').medic;
 const translations = require('../../../src/translations');
 const privacyPolicy = require('../../../src/services/privacy-policy');
 const sinon = require('sinon');
 const config = require('../../../src/config');
+const { tokenLogin, roles, users } = require('@medic/user-management')(config, db);
 const request = require('request-promise-native');
 const template = require('../../../src/services/template');
 const fs = require('fs');
@@ -57,7 +57,7 @@ describe('login controller', () => {
     sinon.stub(environment, 'port').get(() => 1234);
     sinon.stub(environment, 'isTesting').get(() => false);
 
-    sinon.stub(auth, 'isOnlineOnly').returns(false);
+    sinon.stub(roles, 'isOnlineOnly').returns(false);
     sinon.stub(privacyPolicy, 'exists').resolves(false);
   });
 
@@ -150,7 +150,7 @@ describe('login controller', () => {
       const send = sinon.stub(res, 'send');
       const setHeader = sinon.stub(res, 'setHeader');
       sinon.stub(fs.promises, 'readFile').resolves('LOGIN PAGE GOES HERE. {{ translations }}');
-      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      sinon.stub(config, 'getTranslations').returns({ en: { login: 'English' } });
       return controller.get(req, res).then(() => {
         chai.expect(brandingGet.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
@@ -173,7 +173,7 @@ describe('login controller', () => {
       const send = sinon.stub(res, 'send');
       const setHeader = sinon.stub(res, 'setHeader');
       sinon.stub(template, 'getTemplate').resolves(() => 'LOGIN PAGE GOES HERE.');
-      sinon.stub(config, 'getTranslationValues').returns({});
+      sinon.stub(config, 'getTranslations').returns({});
       return controller.get(req, res).then(() => {
         chai.expect(brandingGet.callCount).to.equal(1);
         chai.expect(send.callCount).to.equal(1);
@@ -273,7 +273,7 @@ describe('login controller', () => {
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       sinon.stub(res, 'send');
       sinon.stub(fs.promises, 'readFile').resolves('TOKEN PAGE GOES HERE. {{ translations }}');
-      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      sinon.stub(config, 'getTranslations').returns({ en: { login: 'English' } });
       req.params = { token: 'my_token', hash: 'my_hash' };
       return controller.tokenGet(req, res).then(() => {
         chai.expect(branding.get.callCount).to.equal(1);
@@ -637,7 +637,7 @@ describe('login controller', () => {
       const userCtx = { name: 'shazza', roles: [ 'project-stuff' ] };
       const cookie = sinon.stub(res, 'cookie').returns(res);
       const getUserCtx = sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      auth.isOnlineOnly.returns(true);
+      roles.isOnlineOnly.returns(true);
       sinon.stub(auth, 'hasAllPermissions').returns(true);
       sinon.stub(auth, 'getUserSettings').resolves({ language: 'es' });
       return controller.post(req, res).then(() => {
@@ -669,16 +669,16 @@ describe('login controller', () => {
       sinon.stub(users, 'createAdmin').resolves();
       const userCtx = { name: 'shazza', roles: [ '_admin' ] };
       sinon.stub(auth, 'getUserCtx').resolves(userCtx);
-      auth.isOnlineOnly.returns(true);
-      sinon.stub(auth, 'isDbAdmin').returns(true);
+      roles.isOnlineOnly.returns(true);
+      sinon.stub(roles, 'isDbAdmin').returns(true);
       sinon.stub(auth, 'hasAllPermissions').returns(true);
       sinon.stub(auth, 'getUserSettings');
       return controller.post(req, res).then(() => {
         chai.expect(request.post.callCount).to.equal(1);
         chai.expect(auth.getUserCtx.callCount).to.equal(1);
         chai.expect(auth.getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
-        chai.expect(auth.isDbAdmin.callCount).to.equal(1);
-        chai.expect(auth.isDbAdmin.args[0]).to.deep.equal([userCtx]);
+        chai.expect(roles.isDbAdmin.callCount).to.equal(1);
+        chai.expect(roles.isDbAdmin.args[0]).to.deep.equal([userCtx]);
         chai.expect(users.createAdmin.callCount).to.equal(1);
         chai.expect(users.createAdmin.args[0]).to.deep.equal([userCtx]);
         chai.expect(auth.getUserSettings.callCount).to.equal(0);
@@ -737,7 +737,7 @@ describe('login controller', () => {
       });
       sinon.stub(fs.promises, 'readFile')
         .resolves('LOGIN PAGE GOES HERE. {{ translations }} {{ branding.logo }} {{ branding.name }}');
-      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      sinon.stub(config, 'getTranslations').returns({ en: { login: 'English' } });
 
       return controller.renderLogin(req).then((loginPage) => {
         chai.expect(loginPage).to.equal(
@@ -754,7 +754,7 @@ describe('login controller', () => {
       sinon.stub(branding, 'get').resolves(DEFAULT_BRANDING);
       sinon.stub(fs.promises, 'readFile')
         .resolves('LOGIN PAGE GOES HERE. {{ translations }} {{ branding.logo }} {{ branding.name }}');
-      sinon.stub(config, 'getTranslationValues').returns({ en: { login: 'English' } });
+      sinon.stub(config, 'getTranslations').returns({ en: { login: 'English' } });
 
       return controller.renderLogin().then((loginPage) => {
         chai.expect(loginPage).to.equal(

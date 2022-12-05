@@ -1,12 +1,23 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const transition = require('../../../src/transitions/update_notifications');
 const utils = require('../../../src/lib/utils');
 const mutingUtils = require('../../../src/lib/muting_utils');
 const logger = require('../../../src/lib/logger.js');
+const config = require('../../../src/config');
 
 describe('update_notifications', () => {
+  let transition;
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+    });
+    transition = require('../../../src/transitions/update_notifications');
+  });
+
   afterEach(done => {
+    sinon.reset();
     sinon.restore();
     done();
   });

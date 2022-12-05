@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@medic/bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
+    "@medic/contacts": "file:../shared-libs/contacts",
     "@medic/contact-types-utils": "file:../shared-libs/contact-types-utils",
     "@medic/infodoc": "file:../shared-libs/infodoc",
     "@medic/lineage": "file:../shared-libs/lineage",
@@ -30,6 +31,7 @@
     "@medic/tombstone-utils": "file:../shared-libs/tombstone-utils",
     "@medic/transitions": "file:../shared-libs/transitions",
     "@medic/translation-utils": "file:../shared-libs/translation-utils",
+    "@medic/user-management": "file:../shared-libs/user-management",
     "@medic/validation": "file:../shared-libs/validation",
     "@medic/view-map-utils": "file:../shared-libs/view-map-utils",
     "async": "^3.2.1",

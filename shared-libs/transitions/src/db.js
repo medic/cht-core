@@ -32,6 +32,10 @@ if (UNIT_TEST_ENV) {
     get: stubMe('get'),
     changes: stubMe('changes'),
   };
+
+  module.exports.users = {
+    get: stubMe('get'),
+  };
 }
 
 module.exports.init = db => module.exports = db;
