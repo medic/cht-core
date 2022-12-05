@@ -107,7 +107,7 @@ const seedData = async seed => {
       await exec(`cp report.pregnancy.csv "report1${i}i.csv"`, { cwd: 'config/default/csv' });
     }
   }
-  await runCommand('csv-to-docs upload-docs create-users', 'config/default');
+  await runCommand('csv-to-docs upload-docs', 'config/default');
 };
 
 module.exports = {
