@@ -1381,6 +1381,18 @@ mm-search-bar {
   }
 }
 
+.filters.tab-bar .inner {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  mm-search-bar,
+  contacts-filters,
+  reports-filters {
+    flex-grow: 2;
+  }
+}
+
 @media (max-width: @content-width) {
   mm-search-bar {
     padding: 4px 8px;
@@ -1443,7 +1455,8 @@ mm-search-bar {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      width: 100%;
+      width: 87%; // Give space to "more options" menu
+      text-align: left;
     }
     .dropdown,
     .navigation .mm-button {

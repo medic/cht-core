@@ -1,4 +1,4 @@
-<div class="filters">
+<div class="filters tab-bar">
   <div class="inner">
     <contacts-filters
       *ngIf="!useSearchNewDesign"
@@ -17,6 +17,25 @@
       (sort)="sort($event)"
       (search)="search()">
     </mm-search-bar>
+    <div class="more-options-menu-container">
+      <button mat-icon-button [matMenuTriggerFor]="moreOptionsMenu" aria-label="Actions menu">
+        <mat-icon fontIcon="fa-ellipsis-v"></mat-icon>
+      </button>
+      <mat-menu #moreOptionsMenu="matMenu" xPosition="before">
+        <button mat-menu-item>
+          <mat-icon fontIcon="fa-arrow-down"></mat-icon>
+          <span>{{ 'Export' | translate }}</span>
+        </button>
+        <button mat-menu-item disabled>
+          <mat-icon fontIcon="fa-pencil"></mat-icon>
+          <span>{{ 'Edit' | translate }}</span>
+        </button>
+        <button mat-menu-item>
+          <mat-icon fontIcon="fa-trash"></mat-icon>
+          <span>{{ 'Delete' | translate }}</span>
+        </button>
+      </mat-menu>
+    </div>
   </div>
 </div>
 
