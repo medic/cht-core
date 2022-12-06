@@ -27,7 +27,7 @@ describe('Navigation tests', async () => {
   it(`login within ${TABTIME} seconds`, async () => {
     performancetotal.sampleStart('login');
     await loginPage.cookieLogin();
-    expect(performancetotal.getSampleTime('login')).to.be.at.most(1 * 60 * 1000);
+    expect(performancetotal.getSampleTime('login')).to.be.at.most(1 * 60 * TABTIME);
   });
 
   it(`should load Messages within ${TABTIME} seconds`, async () => {
