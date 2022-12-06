@@ -30,6 +30,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -57,6 +58,7 @@ export class EnketoService {
     private translateService: TranslateService,
     private feedbackService:FeedbackService,
     private ngZone: NgZone,
+    private chtScriptApiService: CHTScriptApiService
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -79,7 +81,9 @@ export class EnketoService {
     return this.zScoreService
       .getScoreUtil()
       .then((zscoreUtil) => {
-        medicXpathExtensions.init(zscoreUtil, toBik_text, moment);
+        return this.chtScriptApiService.getApi().then(api => {
+          medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
+        });
       })
       .catch((err) => {
         console.error('Error initialising zscore util', err);

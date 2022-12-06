@@ -70,6 +70,9 @@ export class CHTScriptApiService {
               const userRoles = this.getRolesFromUser(user);
               const chtPermissionsSettings = this.getChtPermissionsFromSettings(chtSettings);
               return chtScriptApiFactory.v1.hasAnyPermission(permissionsGroupList, userRoles, chtPermissionsSettings);
+            },
+            getLibrary: (id) => {
+              return (window as any).__api[id];
             }
           }
         };

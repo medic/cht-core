@@ -9,6 +9,7 @@ const XPR = {
 let zscoreUtil;
 let toBikramSambat;
 let moment;
+let chtScriptApi;
 
 const isObject = (value) => {
   const type = typeof value;
@@ -146,10 +147,11 @@ const addDate = function (date, years, months, days, hours, minutes) {
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
-  init: function(_zscoreUtil, _toBikramSambat, _moment) {
+  init: function(_zscoreUtil, _toBikramSambat, _moment, _chtScriptApi) {
     zscoreUtil = _zscoreUtil;
     toBikramSambat = _toBikramSambat;
     moment = _moment;
+    chtScriptApi = _chtScriptApi;
   },
   func: {
     'add-date': addDate,
@@ -176,6 +178,11 @@ module.exports = {
       const months = d2Moment.diff(d1Moment, 'months');
       return XPR.number(months);
     },
+    'test-api': function(libId) {
+      const lib = chtScriptApi.v1.getLibrary(libId.v);
+      const result = lib();
+      return XPR.string(result);
+    }
   },
   process: {
     toExternalResult: function(r) {
