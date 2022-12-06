@@ -79,6 +79,9 @@ const decrypt = (text) => {
       const start = decipher.update(encryptedText);
       const final = decipher.final();
       return Buffer.concat([ start, final ]).toString();
+    })
+    .catch(() => {
+      throw new Error('Error decrypting credential. Try setting the credential again.');
     });
 };
 
