@@ -1,0 +1,20 @@
+<section class="more-options-menu-container" *ngIf="displayExportOption() || displayDeleteOption() || displayEditOption()">
+  <button mat-icon-button [matMenuTriggerFor]="moreOptionsMenu" aria-label="Actions menu">
+    <mat-icon fontIcon="fa-ellipsis-v"></mat-icon>
+  </button>
+
+  <mat-menu #moreOptionsMenu="matMenu" xPosition="before">
+    <button mat-menu-item type="button" *ngIf="displayExportOption()" (click)="exportContacts.emit()" [disabled]="!contactsList?.length">
+      <mat-icon fontIcon="fa-arrow-down"></mat-icon>
+      <span>{{ 'Export' | translate }}</span>
+    </button>
+    <a mat-menu-item *ngIf="displayEditOption()" [routerLink]="['/', 'contacts', selectedContactDoc?._id, 'edit']">
+      <mat-icon fontIcon="fa-pencil"></mat-icon>
+      <span>{{ 'Edit' | translate }}</span>
+    </a>
+    <button mat-menu-item *ngIf="displayDeleteOption()" [disabled]="hasNestedContacts" (click)="deleteContact()">
+      <mat-icon fontIcon="fa-trash"></mat-icon>
+      <span>{{ 'Delete' | translate }}</span>
+    </button>
+  </mat-menu>
+</section>

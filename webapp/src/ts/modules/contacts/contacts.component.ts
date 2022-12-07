@@ -31,9 +31,9 @@ import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filte
 export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
   private readonly PAGE_SIZE = 50;
   private subscription: Subscription = new Subscription();
-  private globalActions;
-  private contactsActions;
-  private servicesActions;
+  private globalActions: GlobalActions;
+  private contactsActions: ContactsActions;
+  private servicesActions: ServicesActions;
   private listContains;
   private destroyed;
   private isOnlineOnly;
@@ -86,20 +86,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
 
   ngOnInit() {
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
-
     this.globalActions.clearFilters(); // clear any global filters first
-    const reduxSubscription = combineLatest(
-      this.store.select(Selectors.getContactsList),
-      this.store.select(Selectors.getFilters),
-      this.store.select(Selectors.contactListContains),
-      this.store.select(Selectors.getSelectedContact),
-    ).subscribe(([contactsList, filters, listContains, selectedContact]) => {
-      this.contactsList = contactsList;
-      this.filters = filters;
-      this.listContains = listContains;
-      this.selectedContact = selectedContact;
-    });
-    this.subscription.add(reduxSubscription);
+    this.subscribeToStore();
 
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
@@ -182,6 +170,26 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
     this.globalActions.clearFilters();
     this.globalActions.unsetSelected();
     this.globalActions.setLeftActionBar({});
+  }
+
+  private subscribeToStore() {
+    const reduxSubscription = combineLatest(
+      this.store.select(Selectors.getContactsList),
+      this.store.select(Selectors.getFilters),
+      this.store.select(Selectors.contactListContains),
+      this.store.select(Selectors.getSelectedContact),
+    ).subscribe(([
+      contactsList,
+      filters,
+      listContains,
+      selectedContact,
+    ]) => {
+      this.contactsList = contactsList;
+      this.filters = filters;
+      this.listContains = listContains;
+      this.selectedContact = selectedContact;
+    });
+    this.subscription.add(reduxSubscription);
   }
 
   private isRelevantVisitReport (doc) {
@@ -422,16 +430,19 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
       return;
     }
 
+    const exportFn = function () {
+      this.exportContacts();
+    };
     this.globalActions.setLeftActionBar({
+      exportFn: exportFn.bind(this),
       hasResults: this.hasContacts,
       userFacilityId: this.usersHomePlace?._id,
       childPlaces: this.allowedChildPlaces,
-      exportFn: this.exportFn.bind({}, this.exportService, this.filters),
     });
   }
 
-  private exportFn(exportService, filters) {
-    exportService.export('contacts', filters, { humanReadable: true });
+  exportContacts() {
+    this.exportService.export('contacts', this.filters, { humanReadable: true });
   }
 
   private subscribeToAllContactXmlForms() {

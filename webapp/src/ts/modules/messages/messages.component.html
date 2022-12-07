@@ -1,17 +1,7 @@
 <div class="filters tab-bar">
   <div class="inner">
     <mm-navigation></mm-navigation>
-    <div class="more-options-menu-container">
-      <button mat-icon-button [matMenuTriggerFor]="moreOptionsMenu" aria-label="Actions menu">
-        <mat-icon fontIcon="fa-ellipsis-v"></mat-icon>
-      </button>
-      <mat-menu #moreOptionsMenu="matMenu" xPosition="before">
-        <button mat-menu-item>
-          <mat-icon fontIcon="fa-arrow-down"></mat-icon>
-          <span>{{ 'Export' | translate }}</span>
-        </button>
-      </mat-menu>
-    </div>
+    <mm-messages-more-menu (exportMessages)="exportMessages()" [conversations]="conversations"></mm-messages-more-menu>
   </div>
 </div>
 
