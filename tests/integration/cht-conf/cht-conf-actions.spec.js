@@ -84,6 +84,7 @@ describe('cht-conf actions tests', () => {
       'pregnancy_danger_sign_follow_up.xml',
       'pregnancy_facility_visit_reminder.xml',
       'pregnancy_home_visit.xml',
+      'replace_user.xml',
       'undo_death_report.xml'
     ]);
   });

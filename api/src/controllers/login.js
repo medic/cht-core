@@ -5,10 +5,10 @@ const _ = require('lodash');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
-const users = require('../services/users');
-const tokenLogin = require('../services/token-login');
 const privacyPolicy = require('../services/privacy-policy');
 const logger = require('../logger');
+const db = require('../db');
+const { tokenLogin, roles, users } = require('@medic/user-management')(config, db);
 const localeUtils = require('locale');
 const cookie = require('../services/cookie');
 const brandingService = require('../services/branding');
@@ -53,7 +53,7 @@ const templates = {
 const getHomeUrl = userCtx => {
   // https://github.com/medic/medic/issues/5035
   // For Test DB, always redirect to the application, the tests rely on the UI elements of application page
-  if (auth.isOnlineOnly(userCtx) &&
+  if (roles.isOnlineOnly(userCtx) &&
       auth.hasAllPermissions(userCtx, 'can_configure') &&
       !environment.isTesting) {
     return '/admin/';
@@ -97,7 +97,7 @@ const getTemplate = (page) => {
 
 const getTranslationsString = page => {
   const translationStrings = templates[page].translationStrings;
-  return encodeURIComponent(JSON.stringify(config.getTranslationValues(translationStrings)));
+  return encodeURIComponent(JSON.stringify(config.getTranslations(translationStrings)));
 };
 
 const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
@@ -182,7 +182,7 @@ const setCookies = (req, res, sessionRes) => {
 
       return Promise.resolve()
         .then(() => {
-          if (auth.isDbAdmin(userCtx)) {
+          if (roles.isDbAdmin(userCtx)) {
             return users.createAdmin(userCtx);
           }
         })

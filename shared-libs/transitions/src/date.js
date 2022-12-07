@@ -1,11 +1,12 @@
 const DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/;
-const sd = require('./config').get('synthetic_date');
+const config = require('./config');
 const start_date = new Date();
 const moment = require('moment');
 const logger = require('./lib/logger');
 let synth_start_date;
 
 const load = () => {
+  const sd = config.get('synthetic_date');
   if (sd) {
     const matches = String(sd).match(DATE_RE);
     if (matches) {

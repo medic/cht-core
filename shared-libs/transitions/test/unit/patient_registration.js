@@ -4,10 +4,7 @@ const assert = require('chai').assert;
 const rewire = require('rewire');
 const db = require('../../src/db');
 const utils = require('../../src/lib/utils');
-const transitionUtils = require('../../src/transitions/utils');
 const config = require('../../src/config');
-
-const transition = rewire('../../src/transitions/registration');
 
 const getMessage = (doc, idx) => {
   if (!doc || !doc.tasks) {
@@ -22,82 +19,95 @@ const getMessage = (doc, idx) => {
 };
 
 describe('patient registration', () => {
-  afterEach(() => sinon.restore());
+  let transitionUtils;
+  let transition;
 
   beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub().returns([
+        {
+          form: 'PATR',
+          events: [
+            {
+              name: 'on_create',
+              trigger: 'add_patient_id',
+              params: '',
+              bool_expr: '',
+            },
+          ],
+          validations: [
+            {
+              property: 'patient_name',
+              rule: 'lenMin(1) && lenMax(100)',
+              message: 'Invalid patient name.',
+            },
+          ],
+          messages: [
+            {
+              message: [
+                {
+                  content: 'thanks {{contact.name}}',
+                  locale: 'en',
+                },
+                {
+                  content: 'gracias {{contact.name}}',
+                  locale: 'es',
+                },
+              ],
+              recipient: 'reporting_unit',
+            },
+            {
+              message: [
+                {
+                  content: 'thanks {{fields.caregiver_name}}',
+                  locale: 'en',
+                },
+                {
+                  content: 'gracias {{fields.caregiver_name}}',
+                  locale: 'es',
+                },
+              ],
+              recipient: 'caregiver_phone',
+            },
+          ],
+        },
+        {
+          form: 'P',
+          validations: {
+            join_responses: true,
+            list: [
+              {
+                property: 'last_menstrual_period',
+                rule: 'integer && between(2,42)',
+                message: [
+                  {
+                    content: 'Something something {{patient_name}}',
+                    locale: 'en',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      ]),
+      getTranslations: sinon.stub().returns({})
+    });
+
+    transitionUtils = require('../../src/transitions/utils');
+    transition = rewire('../../src/transitions/registration');
+
     transition.getWeeksSinceLMP = transition.__get__('getWeeksSinceLMP');
     transition.getYearsSinceDOB = transition.__get__('getYearsSinceDOB');
     transition.getMonthsSinceDOB = transition.__get__('getMonthsSinceDOB');
     transition.getWeeksSinceDOB = transition.__get__('getWeeksSinceDOB');
     transition.getDaysSinceDOB = transition.__get__('getDaysSinceDOB');
     transition.getDOB = transition.__get__('getDOB');
+  });
 
-    sinon.stub(config, 'get').returns([
-      {
-        form: 'PATR',
-        events: [
-          {
-            name: 'on_create',
-            trigger: 'add_patient_id',
-            params: '',
-            bool_expr: '',
-          },
-        ],
-        validations: [
-          {
-            property: 'patient_name',
-            rule: 'lenMin(1) && lenMax(100)',
-            message: 'Invalid patient name.',
-          },
-        ],
-        messages: [
-          {
-            message: [
-              {
-                content: 'thanks {{contact.name}}',
-                locale: 'en',
-              },
-              {
-                content: 'gracias {{contact.name}}',
-                locale: 'es',
-              },
-            ],
-            recipient: 'reporting_unit',
-          },
-          {
-            message: [
-              {
-                content: 'thanks {{fields.caregiver_name}}',
-                locale: 'en',
-              },
-              {
-                content: 'gracias {{fields.caregiver_name}}',
-                locale: 'es',
-              },
-            ],
-            recipient: 'caregiver_phone',
-          },
-        ],
-      },
-      {
-        form: 'P',
-        validations: {
-          join_responses: true,
-          list: [
-            {
-              property: 'last_menstrual_period',
-              rule: 'integer && between(2,42)',
-              message: [
-                {
-                  content: 'Something something {{patient_name}}',
-                  locale: 'en',
-                },
-              ],
-            },
-          ],
-        },
-      },
-    ]);
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
   });
 
   it('getWeeksSinceLMP returns 0 not NaN or null', () => {
@@ -244,7 +254,7 @@ describe('patient registration', () => {
   it('valid form adds patient_id and patient document', () => {
     sinon.stub(utils, 'getContactUuid').resolves();
     sinon.stub(transitionUtils, 'getUniqueId').resolves('12345');
-    sinon.stub(config, 'getAll').returns({
+    config.getAll.returns({
       contact_types: [
         { id: 'some_place' },
         { id: 'person', parents: ['some_place'], person: true }
@@ -492,7 +502,7 @@ describe('patient registration', () => {
       sinon.stub(utils, 'getRegistrations');
       sinon.stub(utils, 'getContactUuid').resolves(false);
       sinon.stub(transitionUtils, 'getUniqueId');
-      sinon.stub(config, 'getAll').returns({
+      config.getAll.returns({
         contact_types: [
           { id: 'place' },
           { id: 'person', person: true, parents: ['place'] },
@@ -542,7 +552,7 @@ describe('patient registration', () => {
 
       sinon.stub(db.medic, 'query');
 
-      sinon.stub(config, 'getAll').returns({
+      config.getAll.returns({
         contact_types: [
           { id: 'place' },
           { id: 'person', person: true, parents: ['place'] }
@@ -600,7 +610,7 @@ describe('patient registration', () => {
       sinon.stub(utils, 'getContactUuid').resolves(false);
       sinon.stub(transitionUtils, 'getUniqueId');
 
-      sinon.stub(config, 'getAll').returns({
+      config.getAll.returns({
         contact_types: [
           { id: 'place' },
           { id: 'person', person: true, parents: ['place'] }

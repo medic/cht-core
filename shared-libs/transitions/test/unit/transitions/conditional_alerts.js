@@ -2,10 +2,20 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const messages = require('../../../src/lib/messages');
 const utils = require('../../../src/lib/utils');
-const transition = require('../../../src/transitions/conditional_alerts');
+const config = require('../../../src/config');
 
 describe('conditional alerts', () => {
-  afterEach(() => sinon.restore());
+  let transition;
+
+  beforeEach(() => {
+    config.init({ getAll: sinon.stub(), });
+    transition = require('../../../src/transitions/conditional_alerts');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('when document type is unknown do not pass filter', () => {
     assert.equal(transition.filter({}), false);

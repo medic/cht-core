@@ -103,7 +103,7 @@ describe('Config', () => {
 
   });
 
-  describe('getTranslationValues', () => {
+  describe('getTranslations', () => {
 
     beforeEach(() => {
       config.setTranslationCache({
@@ -119,7 +119,7 @@ describe('Config', () => {
     });
 
     it('returns map of values for given keys for all locales', () => {
-      const actual = config.getTranslationValues([ 'test.key', 'test.key2' ]);
+      const actual = config.getTranslations([ 'test.key', 'test.key2' ]);
       chai.expect(actual).to.deep.equal({
         'fr': {
           'test.key': 'french value',

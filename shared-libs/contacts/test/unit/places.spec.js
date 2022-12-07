@@ -1,10 +1,11 @@
 const chai = require('chai');
 const sinon = require('sinon');
-const config = require('../../../src/config');
-const db = require('../../../src/db');
-const controller = require('../../../src/controllers/places');
-const people = require('../../../src/controllers/people');
-const cutils = require('../../../src/controllers/utils');
+const config = require('../../src/libs/config');
+const db = require('../../src/libs/db');
+const controller = require('../../src/places');
+const people = require('../../src/people');
+const cutils = require('../../src/libs/utils');
+const lineage = require('../../src/libs/lineage');
 
 let examplePlace;
 
@@ -58,14 +59,20 @@ const contactTypes = [
 ];
 
 describe('places controller', () => {
+  let fetchHydratedDoc;
 
   beforeEach(() => {
+    config.init({ get: sinon.stub() });
+    db.init({ medic: { post: sinon.stub() } });
     examplePlace = {
       type: 'clinic',
       name: 'St. Paul',
       parent: 'x'
     };
-    sinon.stub(config, 'get').returns({ contact_types: contactTypes });
+    config.get.returns({ contact_types: contactTypes });
+    lineage.init(require('@medic/lineage')(Promise, db.medic));
+
+    fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc');
   });
 
   afterEach(() => {
@@ -185,7 +192,7 @@ describe('places controller', () => {
   describe('getPlace', () => {
 
     it('returns custom message on 404 errors.', done => {
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.reject({status: 404}));
+      fetchHydratedDoc.rejects({ status: 404 });
       controller.getPlace('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find place.');
         done();
@@ -201,7 +208,7 @@ describe('places controller', () => {
         name: 'CHP Family',
         type: 'food'
       };
-      const post = sinon.stub(db.medic, 'post');
+      const post = db.medic.post;
       controller._createPlaces(place).catch(err => {
         chai.expect(err.message).to.equal('Wrong type, object  is not a place.');
         chai.expect(post.callCount).to.equal(0);
@@ -218,7 +225,7 @@ describe('places controller', () => {
           type: 'food'
         }
       };
-      const post = sinon.stub(db.medic, 'post');
+      const post = db.medic.post;
       controller._createPlaces(place).catch(err => {
         chai.expect(err.message).to.equal('Wrong type, object  is not a place.');
         chai.expect(post.callCount).to.equal(0);
@@ -232,7 +239,7 @@ describe('places controller', () => {
         type: 'food',
         parent: 'x'
       };
-      const post = sinon.stub(db.medic, 'post');
+      const post = db.medic.post;
       sinon.stub(controller, 'getPlace').returns(Promise.reject('boom'));
       controller._createPlaces(place).catch(err => {
         chai.expect(err).to.equal('boom');
@@ -254,7 +261,7 @@ describe('places controller', () => {
           }
         }
       };
-      sinon.stub(db.medic, 'post').callsFake(doc => {
+      db.medic.post.callsFake(doc => {
         if (doc.name === 'CHP Branch One') {
           return Promise.resolve({id: 'abc'});
         }
@@ -276,7 +283,7 @@ describe('places controller', () => {
           return Promise.resolve({id: 'ghi'});
         }
       });
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').callsFake(id => {
+      fetchHydratedDoc.callsFake(id => {
         if (id === 'abc') {
           return Promise.resolve({
             _id: 'abc',
@@ -334,12 +341,12 @@ describe('places controller', () => {
         name: 'Jim',
         type: 'person'
       });
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.resolve({
+      fetchHydratedDoc.resolves({
         _id: 'ad06d137',
         name: 'CHP Branch One',
         type: 'district_hospital'
-      }));
-      sinon.stub(db.medic, 'post').callsFake(doc => {
+      });
+      db.medic.post.callsFake(doc => {
         chai.expect(doc.contact._id).to.equal('qwe');
         chai.expect(doc.contact.name).to.equal(undefined); // minified
         chai.expect(doc.contact.type).to.equal(undefined); // minified
@@ -356,12 +363,12 @@ describe('places controller', () => {
         type: 'health_center',
         parent: 'ad06d137'
       };
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.resolve({
+      fetchHydratedDoc.resolves({
         _id: 'ad06d137',
         name: 'CHP Branch One',
         type: 'district_hospital'
-      }));
-      sinon.stub(db.medic, 'post').callsFake(doc => {
+      });
+      db.medic.post.callsFake(doc => {
         // the parent should be created/resolved, parent id should be set.
         chai.expect(doc.name).to.equal('CHP Area One');
         chai.expect(doc.type).to.equal('health_center');
@@ -395,7 +402,7 @@ describe('places controller', () => {
         type: 'district_hospital',
         reported_date: '123'
       };
-      sinon.stub(db.medic, 'post');
+      db.medic.post;
       return controller._createPlaces(place).then(() => {
         chai.expect(db.medic.post.args[0][0].reported_date).to.equal(123);
       });
@@ -408,7 +415,7 @@ describe('places controller', () => {
         reported_date: '2011-10-10T14:48:00-0300'
       };
       const expected = new Date('2011-10-10T14:48:00-0300').valueOf();
-      sinon.stub(db.medic, 'post');
+      db.medic.post;
       return controller._createPlaces(place).then(() => {
         chai.expect(db.medic.post.args[0][0].reported_date).to.equal(expected);
       });
@@ -419,7 +426,7 @@ describe('places controller', () => {
         name: 'Test',
         type: 'district_hospital'
       };
-      sinon.stub(db.medic, 'post');
+      db.medic.post;
       return controller._createPlaces(place).then(() => {
         // should be set to within 5 seconds of now
         const expected = new Date().valueOf();
@@ -447,7 +454,7 @@ describe('places controller', () => {
       sinon.stub(controller, 'getPlace').resolves({});
       sinon.stub(controller, '_validatePlace').resolves();
       sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'a', name: 'Jack' });
-      sinon.stub(db.medic, 'post').callsFake(doc => {
+      db.medic.post.callsFake(doc => {
         chai.expect(doc.contact._id).to.equal('a');
         chai.expect(doc.contact.name).to.equal(undefined); // minified
         return Promise.resolve({id: 'x', rev: 'y'});
@@ -464,7 +471,7 @@ describe('places controller', () => {
       sinon.stub(controller, 'getPlace').resolves({});
       sinon.stub(controller, '_validatePlace').resolves();
       sinon.stub(controller, 'getOrCreatePlace').resolves({ _id: 'a', name: 'Jack' });
-      sinon.stub(db.medic, 'post').callsFake(doc => {
+      db.medic.post.callsFake(doc => {
         chai.expect(doc.parent._id).to.equal('a');
         chai.expect(doc.parent.name).to.equal(undefined); // minified
         return Promise.resolve({id: 'x', rev: 'y'});

@@ -2,13 +2,22 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const config = require('../../../src/config');
 const messages = require('../../../src/lib/messages');
-const transition = require('../../../src/transitions/default_responses');
 
 describe('default responses', () => {
-  afterEach(() => sinon.restore());
+  let transition;
 
   beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+    });
+    transition = require('../../../src/transitions/default_responses');
     sinon.stub(transition, '_isReportedAfterStartDate').returns(true);
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
   });
 
   it('when document type is unknown do not pass filter', () => {
@@ -192,7 +201,7 @@ describe('default responses', () => {
   });
 
   it('add response if form not found and forms_only_mode', () => {
-    sinon.stub(config, 'get').withArgs('forms_only_mode').returns(true);
+    config.get.withArgs('forms_only_mode').returns(true);
     const messageFn = sinon.spy(messages, 'addMessage');
     const doc = {
       from: '+444',
@@ -208,7 +217,7 @@ describe('default responses', () => {
   });
 
   it('add response to empty message', () => {
-    sinon.stub(config, 'get').withArgs('forms_only_mode').returns(true);
+    config.get.withArgs('forms_only_mode').returns(true);
     const messageFn = sinon.spy(messages, 'addMessage');
     const doc = {
       from: '+23',
