@@ -8,24 +8,37 @@ const reportFactory = require('../../../factories/cht/reports/generic-report');
 const utils = require('../../../utils');
 
 describe('Set contact summary and validate the info correspond', () => {
-  const CONTACT_NAME = 'Maria Gomez';
   const places = placeFactory.generateHierarchy();
-  const districtHospital = places.get('district_hospital');
-  const districtHospitalPrimaryContact = userFactory.build({ place: districtHospital._id });
-  const healthCenter = places.get('health_center');
-  const parent = { _id: healthCenter._id, parent: healthCenter.parent };
-  const healthCenterPrimaryContact = personFactory.build({ name: CONTACT_NAME, parent: parent });
-  healthCenter.contact = {
-    _id: healthCenterPrimaryContact._id,
-    name: healthCenterPrimaryContact.name,
-    phone: healthCenterPrimaryContact.phone
+  const bobPlace = places.get('clinic');
+  const contactAlice = personFactory.build({ name: 'Alice Alison', phone: '+447765902001' });
+  const contactDavid = personFactory.build({ name: 'David Davidson', phone: '+447765902002' });
+  const contactCarol = personFactory.build({ name: 'Carol Carolina', parent: { _id: bobPlace._id } });
+  const userHomeVisits = userFactory.build({
+    username: 'user-home-visits',
+    password: 'Sup3rSecret!',
+    place: bobPlace._id,
+    roles: ['national_admin'],
+    contact: {
+      _id: 'fixture:user-home-visits:offline',
+      name: 'user-home-visits'
+    }
+  });
+  const userDistrict = {
+    username: 'user-district',
+    password: 'Sup3rSecret!',
+    place: bobPlace._id,
+    roles: ['district_admin'],
+    contact: {
+      _id: 'fixture:user-district:offline',
+      name: 'user-district'
+    }
   };
-  const docs = [...places.values(), districtHospitalPrimaryContact, healthCenterPrimaryContact];
+  const docs = [...places.values(), contactAlice, contactDavid, contactCarol];
 
   before(async () => {
     await utils.saveDocs(docs);
-    await utils.createUsers([districtHospitalPrimaryContact]);
-    await loginPage.login(districtHospitalPrimaryContact);
-    await commonPage.waitForPageLoaded();
+    await utils.createUsers([userHomeVisits, userDistrict]);
   });
+
+
 });
