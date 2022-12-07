@@ -20,7 +20,6 @@ When development is ready to begin one of the engineers should be nominated as a
 
 - [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`.
 - [ ] Raise a new issue called `Update dependencies for <version>` with a description that links to [the documentation](https://docs.communityhealthtoolkit.org/core/guides/update-dependencies/). This should be done early in the release cycle so find a volunteer to take this on and assign it to them.
-- [ ] Raise a new issue called `Update Docker Helper for <version>` with a two line change to update the compose file versions that are used in the staging URLs. You'll need to change the two instances of `staging.dev.medicmobile.org/_couch/builds_4/medic:medic:4.X.X` so `4.x.x` in [this bash script](https://github.com/medic/cht-core/blob/master/scripts/docker-helper-4.x/cht-docker-compose.sh) is the new version being released.
 - [ ] Write an update in the weekly [Medic Product Team call agenda](https://docs.google.com/document/d/14AuJ7SerLuOPESBjQlJqpBtzwSAoVf5ykTT7fjyJBT0/edit) summarising development and acceptance testing progress and identifying any blockers (the [milestone-status](https://github.com/medic/support-scripts/tree/master/milestone-status) script can be used to get a breakdown of the issues). The release Engineer is to update this every week until the version is released.
 
 # Releasing - Release Engineer
