@@ -1,4 +1,4 @@
-<section class="more-options-menu-container" *ngIf="displayExportOption() || displayDeleteOption() || displayEditOption()">
+<section class="more-options-menu-container" *ngIf="(displayExportOption() || displayDeleteOption() || displayEditOption()) && !useOldActionBar">
   <button mat-icon-button [matMenuTriggerFor]="moreOptionsMenu" aria-label="Actions menu">
     <mat-icon fontIcon="fa-ellipsis-v"></mat-icon>
   </button>

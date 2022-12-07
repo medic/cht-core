@@ -7,6 +7,8 @@ import { Selectors } from '@mm-selectors/index';
 import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { SessionService } from '@mm-services/session.service';
+import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 
 @Component({
   selector: 'mm-reports-more-menu',
@@ -28,6 +30,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
   reportsList;
   selectedReportDoc;
+  useOldActionBar = false;
 
   constructor(
     private store:Store,
@@ -35,6 +38,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
     private router:Router,
     private authService:AuthService,
     private responsiveService: ResponsiveService,
+    private sessionService: SessionService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -77,6 +81,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
     this.hasUpdatePermission = await this.authService.has('can_update_reports');
     this.hasDeletePermission = await this.authService.has('can_delete_reports');
     this.hasExportPermission = await this.authService.any([[ 'can_export_all' ], [ 'can_export_messages' ]]);
+    this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   deleteReport() {
