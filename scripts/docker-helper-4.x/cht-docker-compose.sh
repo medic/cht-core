@@ -114,7 +114,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 	case $2 in
 	"stop")
 		echo "Stopping project \"${projectName}\"..." | tr -d '\n'
-		docker stop $containerIds 1>/dev/null
+		docker kill $containerIds 1>/dev/null
 		echo -e "${green} done${noColor} "
 		exit 0
 		;;
@@ -123,7 +123,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 
 		if [[ -n $containerIds ]]; then
 			echo "Removing project's docker containers..." | tr -d '\n'
-			docker stop $containerIds 1>/dev/null
+			docker kill $containerIds 1>/dev/null
 			docker rm $containerIds 1>/dev/null
 			echo -e "${green} done${noColor} "
 		else
