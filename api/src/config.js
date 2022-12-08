@@ -55,7 +55,8 @@ module.exports = {
   setTransitionsLib: (newTransitionsLib) => transitionsLib = newTransitionsLib,
 
   get: key => (key ? settings[key] : settings),
-  getTranslationValues: keys => {
+  getAll: () => settings,
+  getTranslations: keys => {
     if (!keys) {
       return translationCache;
     }

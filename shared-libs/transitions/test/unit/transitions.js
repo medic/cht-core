@@ -17,11 +17,22 @@ const asyncOnlyTransitions = [
   'update_notifications',
   'multi_report_alerts',
   'generate_patient_id_on_people',
-  'generate_shortcode_on_contacts'
+  'generate_shortcode_on_contacts',
+  'create_user_for_contacts',
 ];
 
 describe('transitions', () => {
-  afterEach(() => sinon.restore());
+  beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+    });
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('canRun returns false if filter returns false', () => {
     assert.equal(
@@ -237,7 +248,7 @@ describe('transitions', () => {
   ];
   loadTests.forEach(loadTest => {
     it(`loadTransitions loads configured transitions: ${loadTest.name}`, () => {
-      sinon.stub(config, 'get').returns(loadTest.given);
+      config.get.returns(loadTest.given);
       const load = sinon.stub(transitions, '_loadTransition');
       try {
         transitions.loadTransitions();
@@ -249,39 +260,43 @@ describe('transitions', () => {
   });
 
   transitions.availableTransitions().forEach(name => {
-    const transition = require(`../../src/transitions/${name}`);
     Object.keys(requiredFunctions).forEach(key => {
-      it(`Checking ${key} signature for ${name} transition`, () => {
-        assert(_.isFunction(transition[key]), 'Required function not found');
-        assert.equal(
-          transition[key].length,
-          requiredFunctions[key],
-          'Function takes the wrong number of parameters'
-        );
-      });
+      describe(`${name} transition fields`, () => {
+        let transition;
+        before(() => transition = require(`../../src/transitions/${name}`));
 
-      it('Checking for asynchronousOnly flag', () => {
-        assert(asyncOnlyTransitions.includes(name) ? transition.asynchronousOnly : !transition.asynchronousOnly);
+        it(`Checking ${key} signature for ${name} transition`, () => {
+          assert(_.isFunction(transition[key]), 'Required function not found');
+          assert.equal(
+            transition[key].length,
+            requiredFunctions[key],
+            'Function takes the wrong number of parameters'
+          );
+        });
+
+        it('Checking for asynchronousOnly flag', () => {
+          assert(asyncOnlyTransitions.includes(name) ? transition.asynchronousOnly : !transition.asynchronousOnly);
+        });
       });
     });
   });
 
   it('loadTransitions does not load system transitions that have been explicitly disabled', () => {
-    sinon.stub(config, 'get').returns({ death_reporting: { disable: true } });
+    config.get.returns({ death_reporting: { disable: true } });
     const stub = sinon.stub(transitions, '_loadTransition');
     transitions.loadTransitions();
     assert.equal(stub.calledWith('death_reporting'), false);
   });
 
   it('loadTransitions loads system transitions by default', () => {
-    sinon.stub(config, 'get').returns({});
+    config.get.returns({});
     const stub = sinon.stub(transitions, '_loadTransition');
     transitions.loadTransitions();
     assert.equal(stub.callCount, 0);
   });
 
   it('loadTransitions loads synchronous transitions only', () => {
-    sinon.stub(config, 'get').returns({
+    config.get.returns({
       death_reporting: { disable: true },
       update_clinics: true,
       default_responses: true,
@@ -297,7 +312,7 @@ describe('transitions', () => {
   });
 
   it('loads all enabled transitions when async', () => {
-    sinon.stub(config, 'get').returns({
+    config.get.returns({
       death_reporting: { disable: true },
       update_clinics: true,
       default_responses: true,
@@ -317,7 +332,7 @@ describe('transitions', () => {
   });
 
   it('should empty transitions list when one fails', () => {
-    sinon.stub(config, 'get').returns({
+    config.get.returns({
       death_reporting: { disable: true },
       update_clinics: true,
       default_responses: true,

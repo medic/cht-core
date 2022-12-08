@@ -7,9 +7,18 @@ const registrationUtils = require('@medic/registration-utils');
 
 describe('utils', () => {
   beforeEach(() => {
+    config.init({
+      getAll: sinon.stub(),
+      get: sinon.stub(),
+      getTranslations: sinon.stub()
+    });
     sinon.stub(db.medic, 'query');
   });
-  afterEach(() => sinon.restore());
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('getReportsWithSameClinicAndForm calls through to db view correctly', () => {
 
@@ -42,14 +51,14 @@ describe('utils', () => {
   });
 
   it('translate returns message if key found in translations', () => {
-    sinon.stub(config, 'getTranslations').returns({
+    config.getTranslations.returns({
       en: { sms_received: 'got it!' }
     });
     assert.equal(utils.translate('sms_received'), 'got it!');
   });
 
   it('translate returns key if translations not found', () => {
-    sinon.stub(config, 'getTranslations').returns({});
+    config.getTranslations.returns({});
     assert.equal(utils.translate('sms_received'), 'sms_received');
   });
 
@@ -130,7 +139,7 @@ describe('utils', () => {
 
     it('queries by id if given', () => {
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
-      sinon.stub(config, 'getAll').returns({ config: 'all' });
+      config.getAll.returns({ config: 'all' });
       const expectedDoc = { _id: 'a' };
       const expected = [ { doc: expectedDoc } ];
       const given = '22222';
@@ -148,7 +157,7 @@ describe('utils', () => {
 
     it('queries by ids if given', () => {
       sinon.stub(registrationUtils, 'isValidRegistration').returns(true);
-      sinon.stub(config, 'getAll').returns({ config: 'all' });
+      config.getAll.returns({ config: 'all' });
       const expectedDoc1 = { id: 'a' };
       const expectedDoc2 = { id: 'b' };
       const expected = [ { doc: expectedDoc1 }, { doc: expectedDoc2 } ];
@@ -176,7 +185,7 @@ describe('utils', () => {
 
     it('only returns valid registrations', () => {
       sinon.stub(registrationUtils, 'isValidRegistration');
-      sinon.stub(config, 'getAll').returns({ config: 'all' });
+      config.getAll.returns({ config: 'all' });
       const docs = [{ _id: 'a' }, { _id: 'b' }, { _id: 'c' }, { _id: 'd' }, { _id: 'e' }, { _id: 'f' }];
       db.medic.query.resolves({ rows: docs.map(doc => ({ doc: doc })) });
 
@@ -203,7 +212,7 @@ describe('utils', () => {
 
     it('returns false for reports for unknown json form', () => {
       const doc = { form: 'R', type: 'data_record' };
-      sinon.stub(config, 'get').withArgs('forms').resolves({ F: { public_form: true } });
+      config.get.withArgs('forms').resolves({ F: { public_form: true } });
       sinon.spy(utils, 'getForm');
       assert(!utils.isValidSubmission(doc));
       assert.equal(utils.getForm.callCount, 1);
@@ -213,7 +222,7 @@ describe('utils', () => {
 
     it('returns false for reports from unknown clinic', () => {
       const doc = { form: 'R', type: 'data_record' };
-      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false }});
+      config.get.withArgs('forms').returns({ R: { public_form: false }});
       sinon.spy(utils, 'hasKnownSender');
       assert(!utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);
@@ -224,7 +233,7 @@ describe('utils', () => {
 
     it('returns true for reports for public forms from unknown clinic', () => {
       const doc = { form: 'R', type: 'data_record' };
-      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: true } });
+      config.get.withArgs('forms').returns({ R: { public_form: true } });
       sinon.spy(utils, 'hasKnownSender');
       assert(utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);
@@ -234,7 +243,7 @@ describe('utils', () => {
 
     it('returns true for xforms reports', () => {
       const doc = { form: 'R', content_type: 'xml', type: 'data_record' };
-      sinon.stub(config, 'get').withArgs('forms').returns({ OTHER: {} });
+      config.get.withArgs('forms').returns({ OTHER: {} });
       assert(utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);
       assert.equal(config.get.args[0][0], 'forms');
@@ -242,7 +251,7 @@ describe('utils', () => {
 
     it('returns true for reports for non-public forms from known clinics', () => {
       const doc = { form: 'R', type: 'data_record' };
-      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false } });
+      config.get.withArgs('forms').returns({ R: { public_form: false } });
       sinon.stub(utils, 'hasKnownSender').returns(true);
       assert(utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);
@@ -251,7 +260,7 @@ describe('utils', () => {
 
     it('returns true for reports for non-public forms from known submitters', () => {
       const doc = { form: 'R', type: 'data_record', contact: { phone: '12345' } };
-      sinon.stub(config, 'get').withArgs('forms').returns({ R: { public_form: false } });
+      config.get.withArgs('forms').returns({ R: { public_form: false } });
       sinon.spy(utils, 'hasKnownSender');
       assert(utils.isValidSubmission(doc));
       assert.equal(config.get.callCount, 1);

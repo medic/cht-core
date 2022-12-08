@@ -47,11 +47,11 @@
     height: 100%;
     z-index: 1030;
     overflow: hidden;
-    background-color: @white;
+    background-color: @sidebar-background-color;
     background-clip: padding-box;
     display: flex;
     flex-direction: column;
-    color: @gray-ultra-dark;
+    color: @text-normal-color;
 
     .sidebar-header,
     .sidebar-footer,
@@ -67,7 +67,7 @@
 
     .sidebar-header {
       justify-content: flex-start;
-      border-bottom: 1px solid @gray-light;
+      border-bottom: 1px solid @separator-color;
 
       .sidebar-title {
         font-size: @font-extra-large;
@@ -81,7 +81,7 @@
         margin-right: 20px;
 
         &.disabled {
-          color: @gray-medium;
+          color: @inactive-color;
           cursor: not-allowed;
         }
       }
@@ -89,7 +89,7 @@
       .sidebar-close {
         font-size: @font-large;
         font-weight: lighter;
-        color: @gray-ultra-dark;
+        color: @text-normal-color;
       }
     }
 
@@ -105,7 +105,7 @@
 
         .panel-heading .accordion-toggle {
           .btn-link {
-            color: @gray-ultra-dark;
+            color: @text-normal-color;
             font-size: @font-medium;
             font-weight: bold;
             padding: 0;
@@ -135,15 +135,15 @@
           }
 
           .chip {
-            background: @blue-dark;
-            color: @white;
+            background: @chip-background-color;
+            color: @chip-text-color;
             border-radius: 100px;
             padding: 2px 15px;
             margin-left: 10px;
             display: inline-block;
 
             &.disabled {
-              background: @gray-medium !important;
+              background: @inactive-color !important;
             }
 
             .fa {
@@ -186,8 +186,8 @@
         .mm-button {
           display: block;
           box-shadow: none;
-          border: 1px solid @gray-light;
-          background: @white;
+          border: 1px solid @button-text-inverse-color;
+          background: @button-background-inverse-color;
           border-radius: 5px;
           margin-right: 8px;
 
@@ -205,7 +205,7 @@
 
           &.group-header {
             font-size: @font-medium;
-            color: @gray-medium;
+            color: @filter-text-color;
             padding: 3px 0px;
 
             &:not(:first-child) {
@@ -220,7 +220,7 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             white-space: normal;
-            color: @gray-ultra-dark;
+            color: @text-normal-color;
             font-size: @font-medium;
             padding-left: 30px;
             margin-bottom: 5px;
@@ -229,7 +229,7 @@
               content: '\f096'; // http://fontawesome.io/icon/square-o/
               font-family: FontAwesome;
               font-size: @font-extra-extra-large;
-              color: @gray-medium;
+              color: @filter-text-color;
               vertical-align: middle;
               margin: 5px 7px 5px -30px;
             }
@@ -237,12 +237,12 @@
 
           &.selected a:before {
             content: '\f14a'; // https://fontawesome.com/v4/icon/check-square
-            color: @blue-dark;
+            color: @checkbox-selected-color;
           }
 
           &.disabled *,
           &.disabled a:before {
-            color: @gray-medium !important;
+            color: @inactive-color !important;
           }
         }
 
@@ -265,7 +265,7 @@
               cursor: pointer;
               width: @accordion-chevron-width;
               font-size: @font-extra-large;
-              color: @gray-medium;
+              color: @filter-text-color;
               display: block;
               position: absolute;
               top: 0;
@@ -283,14 +283,14 @@
 
           .accordion-facility-check {
             font-size: @font-extra-extra-large;
-            color: @gray-medium;
+            color: @checkbox-border-color;
             display: block;
             position: absolute;
             top: 0;
             left: 0;
 
             &.fa-check-square {
-              color: @blue-dark;
+              color: @checkbox-selected-color;
             }
           }
         }
@@ -347,7 +347,7 @@
       overflow-x: hidden;
       overflow-y: auto;
       opacity: 0.4;
-      background-color: @black;
+      background-color: @backdrop-color;
     }
 
     .sidebar-main {

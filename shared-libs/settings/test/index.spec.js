@@ -242,6 +242,25 @@ describe('Settings Shared Library', () => {
         });
     });
 
+    it('should handle error gracefully when secret is changed', () => {
+      const requestGet = sinon.stub(request, 'get');
+      requestGet.onCall(0).rejects({ message: 'missing', statusCode: 404 });
+      requestGet.onCall(1).resolves('oldsecret');
+      sinon.stub(request, 'put').resolves();
+      return lib
+        .setCredentials('mykey', 'mypass')
+        .then(() => {
+          const doc = request.put.args[0][1].body;
+          requestGet.onCall(2).resolves(doc);
+          requestGet.onCall(3).resolves('newsecret');
+          return lib.getCredentials('mykey');
+        })
+        .then(() => expect.fail('Should have thrown'))
+        .catch(err => {
+          expect(err.message).to.equal('Error decrypting credential. Try setting the credential again.');
+        });
+    });
+
   });
 
 

@@ -43,11 +43,6 @@ const initialState = {
 };
 
 const setShowContent = (state, showContent) => {
-  const selectMode = state.selectMode;
-  if (showContent && selectMode) {
-    // when in select mode we never show the RHS on mobile
-    return state;
-  }
   if (showContent) {
     $('.app-root').addClass('show-content');
   } else {
@@ -106,7 +101,7 @@ const _globalReducer = createReducer(
   on(Actions.clearSidebarFilter, (state) => {
     return { ...state, sidebarFilter: {} };
   }),
-  on(Actions.setTitle, (state, { payload: { title} }) => {
+  on(Actions.setTitle, (state, { payload: { title } }) => {
     return { ...state, title };
   }),
   on(Actions.setShowContent, (state, { payload: { showContent } }) => {

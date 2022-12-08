@@ -136,4 +136,27 @@ describe('Feedback service', () => {
     expect(submittedDoc.meta.version).to.equal('0.5.0');
     expect(submittedDoc.meta.time).to.equal('1970-01-01T00:00:00.000Z');
   });
+
+  it('should record device id in feedback doc', async () => {
+    post.resolves();
+    getLocal.resolves(({ version: '0.5.0' }));
+    languageService.get.resolves('en');
+    service.init();
+    service._setOptions({
+      console: mockConsole,
+      window: mockWindow,
+      document: mockDocument
+    });
+
+    await service.submit({ message: 'hello world' }, true);
+
+    expect(post.calledOnce).to.be.true;
+    const submittedDoc = post.args[0][0];
+    expect(submittedDoc.meta.source).to.equal('manual');
+    expect(submittedDoc.meta.language).to.equal('en');
+    expect(submittedDoc.meta.deviceId).to.exist;
+
+  });
+
+
 });

@@ -865,6 +865,8 @@ describe('DBSync service', () => {
     });
 
     it('"denied" from handle does nothing', () => {
+      const onUpdate = sinon.stub();
+      service.subscribe(onUpdate);
       const consoleErrorMock = sinon.stub(console, 'error');
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
@@ -875,6 +877,9 @@ describe('DBSync service', () => {
         expect(consoleErrorMock.args[0][0]).to.equal('Denied replicating from remote server');
         expect(telemetryService.record.args).to.include.deep.members([['replication:medic:from:denied']]);
         expect(telemetryService.record.args).to.not.include.deep.members([['replication:medic:to:denied']]);
+        expect(onUpdate.callCount).to.eq(2);
+        expect(onUpdate.args[0][0]).to.deep.eq({ state: 'inProgress' });
+        expect(onUpdate.args[1][0]).to.deep.eq({ from: 'success', to: 'success' });
       });
     });
 

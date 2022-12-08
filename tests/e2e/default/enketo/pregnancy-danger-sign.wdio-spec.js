@@ -23,21 +23,7 @@ describe('Pregnancy danger sign follow-up form', () => {
     await pregnancyDangerSignForm.selectDangerSigns(false);
     await reportsPage.submitForm();
 
-    const reportId = await reportsPage.getCurrentReportId();
-    const initialReport = await utils.getDoc(reportId);
-    expect(initialReport.verified).to.be.undefined;
-
-    await genericForm.openReportReviewMenu();
-    await genericForm.invalidateReport();
-
-    const invalidatedReport = await utils.getDoc(reportId);
-    expect(invalidatedReport.verified).to.be.false;
-    expect(invalidatedReport.patient).to.be.undefined;
-
-    await genericForm.validateReport();
-    const validatedReport = await utils.getDoc(reportId);
-    expect(validatedReport.verified).to.be.true;
-    expect(validatedReport.patient).to.be.undefined;
+    await genericForm.verifyReport();
   });
 
   it('should submit and edit Pregnancy danger sign follow-up form (no changes)', async () => {

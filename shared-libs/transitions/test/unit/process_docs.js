@@ -9,11 +9,21 @@ const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
 
 describe('processDocs', () => {
-  afterEach(() => sinon.restore());
+  beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+    });
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('should save original docs if no transitions are present', () => {
     const docs = [{ from: 1 }, { from: 2 }, { from: 3 }];
-    sinon.stub(config, 'get').withArgs('transitions').returns({});
+    config.get.withArgs('transitions').returns({});
     sinon.stub(db.medic, 'bulkDocs').resolves([{ ok: true }, { ok: true }, { ok: true }]);
     transitions.loadTransitions();
 
@@ -29,7 +39,7 @@ describe('processDocs', () => {
     const docs = [{ from: 1 }, { from: 2 }, { from: 3 }];
 
     sinon.stub(db.medic, 'bulkDocs').resolves([{ ok: true }, { ok: true }, { ok: true }]);
-    sinon.stub(config, 'get').withArgs('transitions').returns({ update_clinics: true });
+    config.get.withArgs('transitions').returns({ update_clinics: true });
     sinon.stub(transitions._lineage, 'hydrateDocs').rejects({ some: 'err' });
 
     transitions.loadTransitions();
@@ -49,7 +59,7 @@ describe('processDocs', () => {
     let hydratedDocs;
 
     sinon.stub(db.medic, 'bulkDocs').resolves([{ ok: true }, { ok: true }, { ok: true }]);
-    sinon.stub(config, 'get').withArgs('transitions').returns({ update_clinics: true });
+    config.get.withArgs('transitions').returns({ update_clinics: true });
     sinon.stub(transitions._lineage, 'hydrateDocs').callsFake(docs => {
       docs.forEach(doc => doc.patient = `patient_${doc.from}`);
       hydratedDocs = docs;
@@ -83,7 +93,7 @@ describe('processDocs', () => {
       { _id: '1-info', doc_id: '1' }, { _id: '2-info', doc_id: '2' }, { _id: '3-info', doc_id: '3' }
     ];
 
-    sinon.stub(config, 'get').withArgs('transitions').returns({ update_clinics: true });
+    config.get.withArgs('transitions').returns({ update_clinics: true });
     sinon.stub(transitions._lineage, 'hydrateDocs').resolves(hydratedDocs);
 
     sinon.stub(infodoc, 'bulkGet').resolves(infoDocs);
@@ -148,7 +158,7 @@ describe('processDocs', () => {
       { _id: '4-info', doc_id: '4' }
     ];
 
-    sinon.stub(config, 'get').withArgs('transitions').returns({ update_clinics: true });
+    config.get.withArgs('transitions').returns({ update_clinics: true });
     sinon.stub(transitions._lineage, 'hydrateDocs').resolves(hydratedDocs);
 
     sinon.stub(infodoc, 'bulkGet').resolves(infoDocs);

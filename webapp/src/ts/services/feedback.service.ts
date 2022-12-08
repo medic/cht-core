@@ -7,6 +7,7 @@ import { VersionService } from '@mm-services/version.service';
 import { environment } from '@mm-environments/environment';
 import { DebugService } from '@mm-services/debug.service';
 import { LanguageService } from '@mm-services/language.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,7 @@ export class FeedbackService {
     private versionService:VersionService,
     private debugService: DebugService,
     private languageService: LanguageService,
+    private telemetryService : TelemetryService,
   ) {
   }
 
@@ -102,7 +104,8 @@ export class FeedbackService {
         language,
         url: this.getUrl(),
         version,
-        source: isManual ? 'manual' : 'automatic'
+        source: isManual ? 'manual' : 'automatic',
+        deviceId : this.telemetryService.getUniqueDeviceId(),
       },
       info,
       log: this.getLog(),

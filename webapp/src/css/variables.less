@@ -1,27 +1,4 @@
-/* Basic colors. WARNING: Don't use these outside this file as the variable names are not useful */
-@white: #FFFFFF;
-@gray-ultra-light: #F2F2F2;
-@gray-light: #E0E0E0;
-@gray-medium: #A0A0A0;
-@gray-dark: #777777;
-@gray-ultra-dark: #333333;
-@black: #000000;
-@blue: #63A2C6;
-@periwinkle: #7193EE;
-@yellow: #E9AA22;
-@pink: #F47B63;
-@teal: #76B0B0;
-@blue-highlight: #EFF5F9;
-@periwinkle-highlight: #F0F4FD;
-@yellow-highlight: #FCF6E7;
-@pink-highlight: #FDF1EF;
-@teal-highlight: #e4efef;
-@red: #E33030;
-@yellow-dark: #C78330;
-@teal-dark: #218E7F;
-@blue-dark: #007AC0;
-@blue-ultra-dark: #23527C;
-@green: #A0BA62;
+@import (reference) "private-vars";
 
 /* app colors */
 @top-header-color: @gray-ultra-dark;
@@ -31,6 +8,7 @@
 @separator-color: @gray-light;
 @button-text-color: @gray-ultra-dark;
 @button-text-inverse-color: @gray-light;
+@button-background-inverse-color: @white;
 @text-normal-color: @gray-ultra-dark;
 @label-color: @gray-dark;
 @text-secondary-color: @gray-dark;
@@ -48,6 +26,17 @@
 @report-review-verified-color: @teal-dark;
 @overdue-color: @red;
 @button-color: @blue-dark;
+@checkbox-selected-color: @blue-dark;
+@checkbox-border-color: @gray-medium;
+@chip-background-color: @blue-dark;
+@chip-text-color: @white;
+@chip-border-color: @white;
+@sidebar-background-color: @white;
+@filter-icon-color: @black;
+@filter-text-color: @gray-medium;
+@progress-bar-background-color: @white;
+@backdrop-color: @black;
+@enketo-hover-color: @blue-highlight;
 
 /* tab colors */
 @messages-color: @blue;
@@ -59,6 +48,7 @@
 @reports-color: @yellow;
 @reports-highlight: @yellow-highlight;
 @analytics-color: @teal;
+@analytics-highlight: @teal-highlight;
 @admin-color: @gray-dark;
 @help-color: @gray-dark;
 

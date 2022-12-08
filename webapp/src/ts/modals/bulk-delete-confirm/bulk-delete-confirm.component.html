@@ -5,6 +5,7 @@
   [titleKey]="deleteComplete ? 'bulkdelete.complete.title' : 'bulkdelete.confirm.title'"
   [submitKey]="deleteComplete ? 'bulkdelete.complete.action' : 'bulkdelete.confirm.action'"
   [submittingKey]="'Deleting'"
+  [cancelKey]="deleteComplete ? false : 'Cancel'"
   (onCancel)="cancel()"
   (onSubmit)="submit()"
 >

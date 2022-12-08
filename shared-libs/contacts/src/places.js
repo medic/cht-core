@@ -1,9 +1,9 @@
 const _ = require('lodash');
-const config = require('../config');
+const config = require('./libs/config');
 const people = require('./people');
-const utils = require('./utils');
-const db = require('../db');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const utils = require('./libs/utils');
+const db = require('./libs/db');
+const lineage = require('./libs/lineage');
 const contactTypesUtils = require('@medic/contact-types-utils');
 const PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'];
 
@@ -204,7 +204,6 @@ const getOrCreatePlace = place => {
 module.exports = {
   _createPlace: createPlace,
   _createPlaces: createPlaces,
-  _lineage: lineage,
   _updateFields: updateFields,
   _validatePlace: validatePlace,
   createPlace: createPlaces,

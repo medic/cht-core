@@ -1,14 +1,26 @@
 const config = require('../../src/config');
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const transition = require('../../src/transitions/accept_patient_reports');
 
 describe('functional validations', () => {
+  let transition;
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+      getTranslations: sinon.stub()
+    });
+    transition = require('../../src/transitions/accept_patient_reports');
+  });
   /*
    * Eventually transitions/registration.js and accept_patient_reports.js will
    * be merged one transition, probably called form events.
    */
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    sinon.reset();
+  });
 
   it('patient id failing validation adds error', () => {
     const doc = {
@@ -16,7 +28,7 @@ describe('functional validations', () => {
       form: 'x'
     };
 
-    sinon.stub(config, 'get').withArgs('patient_reports').returns([{
+    config.get.withArgs('patient_reports').returns([{
       validations: {
         list: [{
           property: 'patient_id',
@@ -38,14 +50,14 @@ describe('functional validations', () => {
   });
 
   it('validations use translation_key', () => {
-    sinon.stub(config, 'getTranslations').returns({ en: { 'error.patient.id': 'bad id {{patient_id}}' } });
+    config.getTranslations.returns({ en: { 'error.patient.id': 'bad id {{patient_id}}' } });
 
     const doc = {
       patient_id: 'xxxx',
       form: 'x'
     };
 
-    sinon.stub(config, 'get').withArgs('patient_reports').returns([{
+    config.get.withArgs('patient_reports').returns([{
       validations: {
         list: [{
           property: 'patient_id',
@@ -71,7 +83,7 @@ describe('functional validations', () => {
       form: 'x'
     };
 
-    sinon.stub(config, 'get').withArgs('patient_reports').returns([{
+    config.get.withArgs('patient_reports').returns([{
       validations: {
         join_responses: true,
         list: [
@@ -125,7 +137,7 @@ describe('functional validations', () => {
       form: 'x'
     };
 
-    sinon.stub(config, 'get').withArgs('patient_reports').returns([{
+    config.get.withArgs('patient_reports').returns([{
       validations: {
         join_responses: false,
         list: [
@@ -178,7 +190,7 @@ describe('functional validations', () => {
       form: 'x'
     };
 
-    sinon.stub(config, 'get').withArgs('patient_reports').returns([{
+    config.get.withArgs('patient_reports').returns([{
       validations: {
         list: [
           {

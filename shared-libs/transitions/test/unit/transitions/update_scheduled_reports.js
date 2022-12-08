@@ -2,19 +2,28 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const db = require('../../../src/db');
 const config = require('../../../src/config');
-const transition = require('../../../src/transitions/update_scheduled_reports');
-const transitionUtils = require('../../../src/transitions/utils');
 
 describe('update_scheduled_reports', () => {
+  let transition;
+  let transitionUtils;
 
   beforeEach(() => {
-    sinon.stub(config, 'get').returns([
-      { id: 'person', parents: ['clinic'], person: true },
-      { id: 'clinic', parents: ['health_center'] },
-      { id: 'health_center' }
-    ]);
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub().returns([
+        { id: 'person', parents: ['clinic'], person: true },
+        { id: 'clinic', parents: ['health_center'] },
+        { id: 'health_center' }
+      ]),
+    });
+    transition = require('../../../src/transitions/update_scheduled_reports');
+    transitionUtils = require('../../../src/transitions/utils');
   });
-  afterEach(() => sinon.restore());
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   describe('filter', () => {
     it('fails when scheduled form not present', () => {

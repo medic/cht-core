@@ -3,6 +3,7 @@ describe('EditUserCtrl controller', () => {
 
   let jQuery;
   let mockCreateNewUser;
+  let mockGetReplicationLimit;
   let mockEditAUser;
   let mockEditCurrentUser;
   let scope;
@@ -30,9 +31,10 @@ describe('EditUserCtrl controller', () => {
     UserSettings = sinon.stub();
     Settings = sinon.stub().resolves({
       roles: {
-        'district-manager': { name: 'xyz', offline: true }, 'data-entry': { name: 'abc' },
+        'district-manager': { name: 'xyz', offline: true },
+        'data-entry': { name: 'abc' },
         supervisor: { name: 'qrt', offline: true },
-        'national-manager': { name: 'national-manager', offline: false }
+        'national-manager': { name: 'national-manager', offline: false },
       }
     });
     http = { get: sinon.stub() };
@@ -44,7 +46,7 @@ describe('EditUserCtrl controller', () => {
       phone: 'user.phone',
       facility_id: 'abc',
       contact_id: 'xyz',
-      roles: ['district-manager'],
+      roles: [ 'district-manager', 'supervisor' ],
       language: 'zz',
     };
     translate = sinon.stub();
@@ -120,6 +122,12 @@ describe('EditUserCtrl controller', () => {
         // Don't mock UserSettings, we're not fetching current user.
         return createController({});
       };
+
+      mockGetReplicationLimit = () => {
+        http.get
+          .withArgs('/api/v1/users-info')
+          .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
+      };
     });
   });
 
@@ -170,7 +178,7 @@ describe('EditUserCtrl controller', () => {
           phone: userToEdit.phone,
           facilitySelect: userToEdit.facility_id,
           place: userToEdit.facility_id,
-          role: userToEdit.roles[0],
+          roles: userToEdit.roles,
           contactSelect: userToEdit.contact_id,
           contact: userToEdit.contact_id,
           tokenLoginEnabled: undefined,
@@ -184,7 +192,7 @@ describe('EditUserCtrl controller', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          Translate.fieldIsRequired.withArgs('User Name').returns(Promise.resolve('User Name field must be filled'));
+          Translate.fieldIsRequired.withArgs('User Name').resolves('User Name field must be filled');
           scope.editUserModel.id = null;
           scope.editUserModel.username = '';
 
@@ -201,9 +209,8 @@ describe('EditUserCtrl controller', () => {
       return mockCreateNewUser().setupPromise
         .then(() => {
           scope.editUserModel.username = 'newuser';
-          scope.editUserModel.role = 'data-entry';
-          Translate.fieldIsRequired.withArgs('Password').returns(Promise.resolve('Password field is a required field'));
-
+          scope.editUserModel.roles = [ 'data-entry' ];
+          Translate.fieldIsRequired.withArgs('Password').resolves('Password field is a required field');
           return scope.editUser();
         })
         .then(() => {
@@ -211,7 +218,7 @@ describe('EditUserCtrl controller', () => {
         });
     });
 
-    it(`password doesn't need to be filled when editing user`, () => {
+    it('password does not need to be filled when editing user', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
@@ -230,7 +237,7 @@ describe('EditUserCtrl controller', () => {
         .setupPromise
         .then(() => {
           scope.editUserModel.username = 'newuser';
-          scope.editUserModel.role = 'data-entry';
+          scope.editUserModel.roles = [ 'data-entry' ];
           translate.withArgs('Passwords must match').resolves('wrong');
           const password = '1QrAs$$3%%kkkk445234234234';
           scope.editUserModel.password = password;
@@ -242,7 +249,6 @@ describe('EditUserCtrl controller', () => {
     });
 
     it('should not change password when none is supplied', () => {
-      // given
       mockContact(userToEdit.contact_id);
       mockFacility(userToEdit.facility_id);
       mockContactGet(userToEdit.contact_id);
@@ -260,11 +266,27 @@ describe('EditUserCtrl controller', () => {
         });
     });
 
+    it('should not update user when nothing has changed', () => {
+      mockContact(userToEdit.contact_id);
+      mockFacility(userToEdit.facility_id);
+      mockContactGet(userToEdit.contact_id);
+      mockGetReplicationLimit();
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.roles = [ 'supervisor', 'district-manager' ]; // reversed order from userToEdit
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.called).to.equal(false);
+        });
+    });
+
     it('must have associated place if user type is offline user', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          scope.editUserModel.role = 'district-manager';
+          scope.editUserModel.roles = [ 'district-manager' ];
           mockFacility(null);
           mockContact(userToEdit.contact_id);
           Translate.fieldIsRequired.withArgs('Facility').resolves('Facility field is a required field');
@@ -280,13 +302,11 @@ describe('EditUserCtrl controller', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          scope.editUserModel.role = 'district-manager';
+          scope.editUserModel.roles = [ 'district-manager' ];
           mockFacility(userToEdit.facility_id);
           mockContact(null);
-          Translate.fieldIsRequired.withArgs('associated.contact')
-            .returns(Promise.resolve('An associated contact is required'));
-
-          return  scope.editUser();
+          Translate.fieldIsRequired.withArgs('associated.contact').resolves('An associated contact is required');
+          return scope.editUser();
         })
         .then(() => {
           chai.expect(scope.errors.contact).to.equal('An associated contact is required');
@@ -297,11 +317,10 @@ describe('EditUserCtrl controller', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          scope.editUserModel.role = 'district-manager';
+          scope.editUserModel.roles = [ 'district-manager' ];
           mockFacility(null);
           mockContact(null);
-          Translate.fieldIsRequired.withArgs('associated.contact')
-            .returns(Promise.resolve('An associated contact is required'));
+          Translate.fieldIsRequired.withArgs('associated.contact').resolves('An associated contact is required');
           Translate.fieldIsRequired.withArgs('Facility').resolves('Facility field is required');
 
           return scope.editUser();
@@ -312,11 +331,11 @@ describe('EditUserCtrl controller', () => {
         });
     });
 
-    it(`doesn't need associated place and contact if user type is not restricted user`, () => {
+    it('does not need associated place and contact if user type is not restricted user', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          scope.editUserModel.role = 'some-other-type';
+          scope.editUserModel.roles = [ 'some-other-type' ];
           mockFacility(null);
           mockContact(null);
 
@@ -332,7 +351,7 @@ describe('EditUserCtrl controller', () => {
       return mockEditAUser(userToEdit)
         .setupPromise
         .then(() => {
-          scope.editUserModel.type = 'district-manager';
+          scope.editUserModel.roles = [ 'district-manager' ];
           mockContact(userToEdit.contact_id);
           mockFacility(userToEdit.facility_id);
           mockContactGet('some-other-id');
@@ -364,7 +383,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.contactSelect = 'contact_id';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
-          scope.editUserModel.role = 'supervisor';
+          scope.editUserModel.roles = [ 'supervisor' ];
 
           return scope.editUser();
         })
@@ -380,17 +399,36 @@ describe('EditUserCtrl controller', () => {
           chai.expect(updates.phone).to.equal(scope.editUserModel.phone);
           chai.expect(updates.place).to.equal(scope.editUserModel.facility_id);
           chai.expect(updates.contact).to.equal(scope.editUserModel.contact_id);
-          chai.expect(updates.roles[0]).to.equal(scope.editUserModel.role);
+          chai.expect(updates.roles).to.deep.equal(scope.editUserModel.roles);
           chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
           chai.expect(http.get.callCount).to.equal(1);
           chai.expect(http.get.args[0]).to.deep.equal([
             '/api/v1/users-info',
             { params: {
-              role: 'supervisor',
+              role: [ 'supervisor' ],
               facility_id: scope.editUserModel.place,
               contact_id: scope.editUserModel.contact
             }}
           ]);
+        });
+    });
+
+    it('sorts roles when saving', () => {
+      mockContact(userToEdit.contact_id);
+      mockFacility(userToEdit.facility_id);
+      mockContactGet(userToEdit.contact_id);
+      mockGetReplicationLimit();
+      return mockEditAUser(userToEdit)
+        .setupPromise
+        .then(() => {
+          scope.editUserModel.roles = [ 'zesty', 'aardvark', 'supervisor' ];
+          return scope.editUser();
+        })
+        .then(() => {
+          chai.expect(UpdateUser.called).to.equal(true);
+          const updateUserArgs = UpdateUser.getCall(0).args;
+          chai.expect(updateUserArgs[0]).to.equal('user.name');
+          chai.expect(updateUserArgs[1].roles).to.deep.equal([ 'aardvark', 'supervisor', 'zesty' ]);
         });
     });
 
@@ -399,7 +437,7 @@ describe('EditUserCtrl controller', () => {
         .setupPromise
         .then(() => {
           scope.editUserModel.username = 'newuser';
-          scope.editUserModel.role = 'data-entry';
+          scope.editUserModel.roles = [ 'data-entry' ];
           mockContact('xyz');
 
           Translate.fieldIsRequired.withArgs('Facility').resolves('Facility field is a required field');
@@ -425,7 +463,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.contactSelect = 'contact_id';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
-          scope.editUserModel.role = 'national-manager';
+          scope.editUserModel.roles = [ 'national-manager' ];
 
           return scope.editUser();
         })
@@ -463,7 +501,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.contactSelect = 'new_contact';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
-          scope.editUserModel.role = 'supervisor';
+          scope.editUserModel.roles = [ 'supervisor' ];
           translate.resolves('translation result');
 
           return scope.editUser();
@@ -473,7 +511,7 @@ describe('EditUserCtrl controller', () => {
           chai.expect(http.get.callCount).to.equal(1);
           chai.expect(http.get.args[0]).to.deep.equal([
             '/api/v1/users-info',
-            { params: { role: 'supervisor', facility_id: 'new_facility_id', contact_id: 'new_contact_id' }}
+            { params: { role: [ 'supervisor' ], facility_id: 'new_facility_id', contact_id: 'new_contact_id' }}
           ]);
           chai.expect(scope.setError.callCount).to.equal(1);
           chai.expect(scope.setError.args[0]).to.deep.equal([
@@ -510,7 +548,7 @@ describe('EditUserCtrl controller', () => {
           scope.editUserModel.contactSelect = 'new_contact';
           scope.editUserModel.password = 'medic.1234';
           scope.editUserModel.passwordConfirm = 'medic.1234';
-          scope.editUserModel.role = 'supervisor';
+          scope.editUserModel.roles = [ 'supervisor' ];
 
           return scope.editUser();
         })
@@ -519,7 +557,7 @@ describe('EditUserCtrl controller', () => {
           chai.expect(http.get.callCount).to.equal(1);
           chai.expect(http.get.args[0]).to.deep.equal([
             '/api/v1/users-info',
-            { params: { role: 'supervisor', facility_id: 'new_facility_id', contact_id: 'new_contact_id' }}
+            { params: { role: [ 'supervisor' ], facility_id: 'new_facility_id', contact_id: 'new_contact_id' }}
           ]);
 
           chai.expect(translate.callCount).to.equal(1);
@@ -540,7 +578,7 @@ describe('EditUserCtrl controller', () => {
           chai.expect(updates.fullname).to.equal(scope.editUserModel.fullname);
           chai.expect(updates.email).to.equal(scope.editUserModel.email);
           chai.expect(updates.phone).to.equal(scope.editUserModel.phone);
-          chai.expect(updates.roles[0]).to.equal(scope.editUserModel.role);
+          chai.expect(updates.roles).to.deep.equal(scope.editUserModel.roles);
           chai.expect(updates.password).to.deep.equal(scope.editUserModel.password);
         });
     });
@@ -562,7 +600,7 @@ describe('EditUserCtrl controller', () => {
         .setupPromise
         .then(() => {
           scope.editUserModel.username = 'newuser';
-          scope.editUserModel.role = 'data-entry';
+          scope.editUserModel.roles = [ 'data-entry' ];
           scope.editUserModel.token_login = true;
 
           translate.withArgs('configuration.enable.token.login.phone').resolves('phone required');
@@ -591,7 +629,7 @@ describe('EditUserCtrl controller', () => {
         .setupPromise
         .then(() => {
           scope.editUserModel.username = 'newuser';
-          scope.editUserModel.role = 'data-entry';
+          scope.editUserModel.roles = [ 'data-entry' ];
           scope.editUserModel.token_login = true;
           scope.editUserModel.phone = '';
 
@@ -621,7 +659,7 @@ describe('EditUserCtrl controller', () => {
         .setupPromise
         .then(() => {
           scope.editUserModel.username = 'newuser';
-          scope.editUserModel.role = 'data-entry';
+          scope.editUserModel.roles = [ 'data-entry' ];
           scope.editUserModel.token_login = true;
           scope.editUserModel.phone = 'gfdkjlg';
 
@@ -647,14 +685,13 @@ describe('EditUserCtrl controller', () => {
         }
       });
 
+      mockGetReplicationLimit();
+
       return mockCreateNewUser()
         .setupPromise
         .then(() => {
-          http.get
-            .withArgs('/api/v1/users-info')
-            .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
           scope.editUserModel.username = 'newuser';
-          scope.editUserModel.role = 'data-entry';
+          scope.editUserModel.roles = [ 'data-entry' ];
           scope.editUserModel.token_login = true;
           scope.editUserModel.phone = '+40755696969';
 
@@ -683,9 +720,7 @@ describe('EditUserCtrl controller', () => {
           app_url: 'url',
         }
       });
-      http.get
-        .withArgs('/api/v1/users-info')
-        .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
+      mockGetReplicationLimit();
       Translate.fieldIsRequired.resolves('Facility field is a required field');
 
       userToEdit.token_login = true;
@@ -693,7 +728,7 @@ describe('EditUserCtrl controller', () => {
         .setupPromise
         .then(() => {
           scope.editUserModel.phone = '+40755696969';
-          scope.editUserModel.role = 'data-entry';
+          scope.editUserModel.roles = [ 'data-entry' ];
 
           return scope.editUser();
         })
@@ -718,9 +753,7 @@ describe('EditUserCtrl controller', () => {
           app_url: 'url',
         }
       });
-      http.get
-        .withArgs('/api/v1/users-info')
-        .resolves({ data: { warn: false, total_docs: 100, warn_docs: 100, limit: 10000 } });
+      mockGetReplicationLimit();
       Translate.fieldIsRequired.withArgs('Password').resolves('password required');
 
       userToEdit.token_login = true;
@@ -729,7 +762,7 @@ describe('EditUserCtrl controller', () => {
         .then(() => {
           scope.editUserModel.token_login = false;
           scope.editUserModel.phone = '';
-          scope.editUserModel.role = 'data-entry';
+          scope.editUserModel.roles = [ 'data-entry' ];
 
           return scope.editUser();
         })

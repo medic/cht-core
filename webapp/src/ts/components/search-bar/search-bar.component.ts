@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import { combineLatest, Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
@@ -33,9 +33,16 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    const subscription = this.store
-      .select(Selectors.getSidebarFilter)
-      .subscribe(({ filterCount }) => this.activeFilters = filterCount?.total || 0);
+    const subscription = combineLatest(
+      this.store.select(Selectors.getSidebarFilter),
+      this.store.select(Selectors.getFilters),
+    ).subscribe(([sidebarFilter, filters]) => {
+      this.activeFilters = sidebarFilter?.filterCount?.total || 0;
+
+      if (!this.openSearch && filters?.search) {
+        this.toggleMobileSearch();
+      }
+    });
     this.subscription.add(subscription);
   }
 

@@ -123,11 +123,15 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setTitle(title));
   }
 
-  unsetSelected() {
+  unsetComponents() {
     this.setShowContent(false);
     this.setLoadingContent(false);
     this.setShowActionBar(false);
     this.setTitle();
+  }
+
+  unsetSelected() {
+    this.unsetComponents();
     this.clearSelected();
   }
 
