@@ -51,9 +51,3 @@ module.exports = {
   SERVICES: ['api', 'sentinel'],
   INFRASTRUCTURE: ['couchdb', 'haproxy', 'haproxy-healthcheck', 'nginx'],
 };
-
-const hello = () => ({});
-hello();
-
-const thatSameHello = hello;
-thatSameHello();
