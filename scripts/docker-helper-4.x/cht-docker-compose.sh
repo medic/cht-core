@@ -46,14 +46,14 @@ CHT_NETWORK=$projectName-cht-net
 EOL
 }
 
-get_staging_url_base() {
+get_latest_release_url() {
   latest=$(curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases\?limit\=1\&descending\=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*')
   echo "https://staging.dev.medicmobile.org/_couch/builds_4/${latest}"
 }
 
 create_compose_files() {
   echo "Downloading compose files ..." | tr -d '\n'
-  stagingUrlBase=$(get_staging_url_base)
+  stagingUrlBase=$(get_latest_release_url)
   mkdir -p "$homeDir/couch"
   mkdir -p "$homeDir/compose"
   curl -s -o "$homeDir/upgrade-service.yml" \
