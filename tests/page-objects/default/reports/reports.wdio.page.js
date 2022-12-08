@@ -344,7 +344,7 @@ const editReport = async (reportId) => {
   await openReport(reportId);
   await (await moreOptionsMenu()).waitForDisplayed();
   await (await moreOptionsMenu()).click();
-  await (await editReportButton()).waitForDisplayed();
+  await (await editReportButton()).waitForClickable();
   await (await editReportButton()).click();
   await (await formTitle()).waitForDisplayed();
 };

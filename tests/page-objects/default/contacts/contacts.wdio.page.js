@@ -159,7 +159,7 @@ const editPerson = async (name, updatedName) => {
   await waitForContactLoaded();
   await (await moreOptionsMenu()).waitForDisplayed();
   await (await moreOptionsMenu()).click();
-  await (await editContactButton()).waitForDisplayed();
+  await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
   await (await genericForm.nextPage());
@@ -229,7 +229,7 @@ const editDistrict = async (districtName, editedName) => {
 
   await (await moreOptionsMenu()).waitForDisplayed();
   await (await moreOptionsMenu()).click();
-  await (await editContactButton()).waitForDisplayed();
+  await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
   await (await districtHospitalName()).setValue(editedName);

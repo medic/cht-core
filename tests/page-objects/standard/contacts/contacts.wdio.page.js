@@ -56,7 +56,7 @@ const addAllVaccines = async () => {
 const addHealthPrograms = async (program = HEALTH_PROGRAMS.ANC) => {
   await (await contactPageDefault.moreOptionsMenu()).waitForDisplayed();
   await (await contactPageDefault.moreOptionsMenu()).click();
-  await (await contactPageDefault.editContactButton()).waitForDisplayed();
+  await (await contactPageDefault.editContactButton()).waitForClickable();
   await (await contactPageDefault.editContactButton()).click();
   await (await healthProgram(program)).waitForDisplayed();
   await (await healthProgram(program)).click();
