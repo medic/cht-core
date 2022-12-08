@@ -64,8 +64,10 @@ const selectContact = async (inputName, contactName) => {
   );
 };
 const editForm = async () => {
-  const editFormBtn = await $('[href^="#/reports/edit"]>.fa-pencil');
-  await editFormBtn.click();
+  await (await reportsPage.moreOptionsMenu()).waitForDisplayed();
+  await (await reportsPage.moreOptionsMenu()).click();
+  await (await reportsPage.editReportButton()).waitForDisplayed();
+  await (await reportsPage.editReportButton()).click();
 };
 
 const verifyReport = async () => {

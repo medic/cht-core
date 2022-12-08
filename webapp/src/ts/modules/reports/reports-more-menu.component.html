@@ -5,14 +5,14 @@
 
   <mat-menu #moreOptionsMenu="matMenu" xPosition="before">
     <button mat-menu-item *ngIf="displayExportOption()" (click)="exportReports.emit()" [disabled]="!reportsList?.length">
-      <mat-icon fontIcon="fa-arrow-down"></mat-icon>
+      <mat-icon test-id="export-reports" fontIcon="fa-arrow-down"></mat-icon>
       <span>{{ 'Export' | translate }}</span>
     </button>
-    <a mat-menu-item *ngIf="displayEditOption()" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
+    <a mat-menu-item test-id="edit-reports" *ngIf="displayEditOption()" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
       <mat-icon fontIcon="fa-pencil"></mat-icon>
       <span>{{ 'Edit' | translate }}</span>
     </a>
-    <button mat-menu-item *ngIf="displayDeleteOption()" (click)="deleteReport()">
+    <button mat-menu-item test-id="delete-reports" *ngIf="displayDeleteOption()" (click)="deleteReport()">
       <mat-icon fontIcon="fa-trash"></mat-icon>
       <span>{{ 'Delete' | translate }}</span>
     </button>

@@ -4,7 +4,7 @@
   </button>
 
   <mat-menu #moreOptionsMenu="matMenu" xPosition="before">
-    <button mat-menu-item type="button" (click)="exportMessages.emit()" [disabled]="!conversations?.length">
+    <button mat-menu-item test-id="export-messages" type="button" (click)="exportMessages.emit()" [disabled]="!conversations?.length">
       <mat-icon fontIcon="fa-arrow-down"></mat-icon>
       <span>{{ 'Export' | translate }}</span>
     </button>

@@ -54,9 +54,12 @@ const addAllVaccines = async () => {
  *                            "imm" for Immunizations and "gpm" for Growth monitoring (nutrition)
  */
 const addHealthPrograms = async (program = HEALTH_PROGRAMS.ANC) => {
+  await (await contactPageDefault.moreOptionsMenu()).waitForDisplayed();
+  await (await contactPageDefault.moreOptionsMenu()).click();
   await (await contactPageDefault.editContactButton()).waitForDisplayed();
   await (await contactPageDefault.editContactButton()).click();
-  await healthProgram(program).click();
+  await (await healthProgram(program)).waitForDisplayed();
+  await (await healthProgram(program)).click();
   if (program === HEALTH_PROGRAMS.IMM) {
     await addAllVaccines();
   }

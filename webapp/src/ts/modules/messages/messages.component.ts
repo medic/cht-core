@@ -24,7 +24,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
   private messagesActions: MessagesActions;
   private destroyed = false;
-  private isOnlineOnly;
 
   subscriptions: Subscription = new Subscription();
   loading = true;
@@ -54,8 +53,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
-    this.isOnlineOnly = this.authService.online(true);
-    this.currentLevel = this.isOnlineOnly ? Promise.resolve() : this.getCurrentLineageLevel();
+
+    this.currentLevel = this.authService.online(true) ? Promise.resolve() : this.getCurrentLineageLevel();
 
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();

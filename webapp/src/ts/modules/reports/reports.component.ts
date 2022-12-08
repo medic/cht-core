@@ -37,7 +37,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private servicesActions: ServicesActions;
   private listContains;
   private destroyed;
-  private isOnlineOnly;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -98,8 +97,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
     this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
-    this.isOnlineOnly = this.authService.online(true);
-    this.currentLevel = this.isOnlineOnly ? Promise.resolve() : this.getCurrentLineageLevel();
+
+    this.currentLevel = this.authService.online(true) ? Promise.resolve() : this.getCurrentLineageLevel();
   }
 
   async ngAfterViewInit() {

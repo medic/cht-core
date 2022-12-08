@@ -4,15 +4,15 @@
   </button>
 
   <mat-menu #moreOptionsMenu="matMenu" xPosition="before">
-    <button mat-menu-item type="button" *ngIf="displayExportOption()" (click)="exportContacts.emit()" [disabled]="!contactsList?.length">
+    <button mat-menu-item test-id="export-contacts" type="button" *ngIf="displayExportOption()" (click)="exportContacts.emit()" [disabled]="!contactsList?.length">
       <mat-icon fontIcon="fa-arrow-down"></mat-icon>
       <span>{{ 'Export' | translate }}</span>
     </button>
-    <a mat-menu-item *ngIf="displayEditOption()" [routerLink]="['/', 'contacts', selectedContactDoc?._id, 'edit']">
+    <a mat-menu-item test-id="edit-contacts" *ngIf="displayEditOption()" [routerLink]="['/', 'contacts', selectedContactDoc?._id, 'edit']">
       <mat-icon fontIcon="fa-pencil"></mat-icon>
       <span>{{ 'Edit' | translate }}</span>
     </a>
-    <button mat-menu-item *ngIf="displayDeleteOption()" [disabled]="hasNestedContacts" (click)="deleteContact()">
+    <button mat-menu-item test-id="delete-contacts" *ngIf="displayDeleteOption()" [disabled]="hasNestedContacts" (click)="deleteContact()">
       <mat-icon fontIcon="fa-trash"></mat-icon>
       <span>{{ 'Delete' | translate }}</span>
     </button>
