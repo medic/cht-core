@@ -4,8 +4,8 @@
   </button>
 
   <mat-menu #moreOptionsMenu="matMenu" xPosition="before">
-    <button mat-menu-item *ngIf="displayExportOption()" (click)="exportReports.emit()" [disabled]="!reportsList?.length">
-      <mat-icon test-id="export-reports" fontIcon="fa-arrow-down"></mat-icon>
+    <button mat-menu-item test-id="export-reports" *ngIf="displayExportOption()" (click)="exportReports.emit()" [disabled]="!reportsList?.length">
+      <mat-icon fontIcon="fa-arrow-down"></mat-icon>
       <span>{{ 'Export' | translate }}</span>
     </button>
     <a mat-menu-item test-id="edit-reports" *ngIf="displayEditOption()" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
