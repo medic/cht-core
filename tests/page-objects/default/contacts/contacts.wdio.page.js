@@ -57,6 +57,7 @@ const contactCardTitle = () => $('.inbox .content-pane .material .body .action-h
 const contactInfoName = () => $('h2[test-id="contact-name"]');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
 const contactDeceasedStatus = () => $('div[test-id="deceased-title"]');
+const contactMuted = () => $('.heading-content .muted');
 
 const PREG_CARD_SELECTOR = 'div[test-id="contact.profile.pregnancy.active"]';
 const pregnancyCard = () => $(PREG_CARD_SELECTOR);
@@ -235,21 +236,23 @@ const editDistrict = async (districtName, editedName) => {
   await submitForm();
 };
 
-const createNewAction = async (formName) => {
+const createNewAction = async (formName, waitForDisplayedForm = true) => {
   await (await newActionContactButton()).waitForDisplayed();
   await (await newActionContactButton()).waitForClickable();
   await (await newActionContactButton()).click();
-  await openForm(formName);
+  await openForm(formName, waitForDisplayedForm);
 };
 
-const openForm = async (name) => {
+const openForm = async (name, waitForDisplayed = true) => {
   const parent = await newActionContactButton().parentElement();
   await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
 
   for (const form of await forms()) {
     if (await form.getText() === name) {
       await form.click();
-      await (await formTitle()).waitForDisplayed();
+      if(waitForDisplayed) {
+        await (await formTitle()).waitForDisplayed();
+      }
       return;
     }
   }
@@ -359,4 +362,5 @@ module.exports = {
   getPregnancyCardInfo,
   deathCard,
   getDeathCardInfo,
+  contactMuted,
 };
