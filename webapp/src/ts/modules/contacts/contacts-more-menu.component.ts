@@ -1,14 +1,8 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output, Input } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
-import { ChangesService } from '@mm-services/changes.service';
-import { TranslateService } from '@mm-services/translate.service';
-import { SearchService } from '@mm-services/search.service';
-import { ContactTypesService } from '@mm-services/contact-types.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { GetDataRecordsService } from '@mm-services/get-data-records.service';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -42,13 +36,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
 
   constructor(
     private store: Store,
-    private route: ActivatedRoute,
-    private changesService: ChangesService,
-    private translateService: TranslateService,
-    private searchService: SearchService,
-    private contactTypesService: ContactTypesService,
     private userSettingsService: UserSettingsService,
-    private getDataRecordsService: GetDataRecordsService,
     private sessionService: SessionService,
     private authService: AuthService,
     private responsiveService: ResponsiveService,
@@ -135,7 +123,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
   displayExportOption() {
     return this.isOnlineOnly
       && this.hasExportPermission
-      && (this.allowedChildPlaces ? this.hasCreatePlacesPermission : true)
+      && (this.allowedChildPlaces?.length ? this.hasCreatePlacesPermission : true)
       && !this.responsiveService.isMobile();
   }
 }

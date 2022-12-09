@@ -1,5 +1,4 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
@@ -33,10 +32,8 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   useOldActionBar = false;
 
   constructor(
-    private store:Store,
-    private route:ActivatedRoute,
-    private router:Router,
-    private authService:AuthService,
+    private store: Store,
+    private authService: AuthService,
     private responsiveService: ResponsiveService,
     private sessionService: SessionService,
   ) {
