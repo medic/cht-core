@@ -283,49 +283,19 @@ describe('Contacts More Menu Component', () => {
 
   describe('displayExportOption', () => {
     it('should display export option when user has all conditions okay', fakeAsync(() => {
-      authService.has.withArgs('can_create_places').resolves(true);
       authService.any.withArgs([[ 'can_export_all' ], [ 'can_export_contacts' ]]).resolves(true);
       authService.online.returns(true);
-      component.allowedChildPlaces = [{ _id: 'clinic-1' }];
       responsiveService.isMobile.returns(false);
 
       component.ngOnInit();
       flush();
 
       expect(component.displayExportOption()).to.be.true;
-    }));
-
-    it('should display export option when user has all conditions okay and no allowed child places', fakeAsync(() => {
-      authService.has.withArgs('can_create_places').resolves(true);
-      authService.any.withArgs([[ 'can_export_all' ], [ 'can_export_contacts' ]]).resolves(true);
-      authService.online.returns(true);
-      component.allowedChildPlaces = [];
-      responsiveService.isMobile.returns(false);
-
-      component.ngOnInit();
-      flush();
-
-      expect(component.displayExportOption()).to.be.true;
-    }));
-
-    it('should not display export option when user not have create places permission', fakeAsync(() => {
-      authService.has.withArgs('can_create_places').resolves(false);
-      authService.any.withArgs([[ 'can_export_all' ], [ 'can_export_contacts' ]]).resolves(true);
-      authService.online.returns(true);
-      component.allowedChildPlaces = [{ _id: 'clinic-1' }];
-      responsiveService.isMobile.returns(false);
-
-      component.ngOnInit();
-      flush();
-
-      expect(component.displayExportOption()).to.be.false;
     }));
 
     it('should not display export option when user not have export permission', fakeAsync(() => {
-      authService.has.withArgs('can_create_places').resolves(false);
       authService.any.withArgs([[ 'can_export_all' ], [ 'can_export_contacts' ]]).resolves(false);
       authService.online.returns(true);
-      component.allowedChildPlaces = [{ _id: 'clinic-1' }];
       responsiveService.isMobile.returns(false);
 
       component.ngOnInit();
@@ -335,10 +305,8 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should not display export option when user is offline', fakeAsync(() => {
-      authService.has.withArgs('can_create_places').resolves(false);
       authService.any.withArgs([[ 'can_export_all' ], [ 'can_export_contacts' ]]).resolves(true);
       authService.online.returns(false);
-      component.allowedChildPlaces = [{ _id: 'clinic-1' }];
       responsiveService.isMobile.returns(false);
 
       component.ngOnInit();
@@ -348,11 +316,9 @@ describe('Contacts More Menu Component', () => {
     }));
 
     it('should not display export option when user is in mobile', fakeAsync(() => {
-      authService.has.withArgs('can_create_places').resolves(false);
       authService.any.withArgs([[ 'can_export_all' ], [ 'can_export_contacts' ]]).resolves(true);
       authService.online.returns(true);
-      component.allowedChildPlaces = [{ _id: 'clinic-1' }];
-      responsiveService.isMobile.returns(false);
+      responsiveService.isMobile.returns(true);
 
       component.ngOnInit();
       flush();

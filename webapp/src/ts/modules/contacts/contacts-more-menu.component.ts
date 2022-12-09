@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output, Input } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -15,14 +15,12 @@ import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.co
   templateUrl: './contacts-more-menu.component.html'
 })
 export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
-  @Input() allowedChildPlaces;
   @Output() exportContacts: EventEmitter<any> = new EventEmitter();
 
   private subscription: Subscription = new Subscription();
   private globalActions: GlobalActions;
   private hasExportPermission = false;
   private hasEditPermission = false;
-  private hasCreatePlacesPermission = false;
   private hasDeletePermission = false;
   private isOnlineOnly = false;
   private loadingContent = true;
@@ -86,7 +84,6 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
     this.hasEditPermission = await this.authService.has('can_edit');
     this.hasDeletePermission = await this.authService.has('can_delete_contacts');
     this.hasExportPermission = await this.authService.any([[ 'can_export_all' ], [ 'can_export_contacts' ]]);
-    this.hasCreatePlacesPermission = await this.authService.has('can_create_places');
     this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
@@ -123,7 +120,6 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
   displayExportOption() {
     return this.isOnlineOnly
       && this.hasExportPermission
-      && (this.allowedChildPlaces?.length ? this.hasCreatePlacesPermission : true)
       && !this.responsiveService.isMobile();
   }
 }
