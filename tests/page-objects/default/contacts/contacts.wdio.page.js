@@ -174,9 +174,9 @@ const deletePerson = async (name) => {
   await selectLHSRowByText(name);
   await waitForContactLoaded();
   await commonElements.openMoreOptionsMenu();
-  await (await deleteContactButton()).waitForDisplayed();
+  await (await deleteContactButton()).waitForClickable();
   await (await deleteContactButton()).click();
-  await (await deleteConfirmationModalButton()).waitForDisplayed();
+  await (await deleteConfirmationModalButton()).waitForClickable();
   await (await deleteConfirmationModalButton()).click();
 };
 
