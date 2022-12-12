@@ -1,4 +1,5 @@
 const contactPageDefault = require('../../default/contacts/contacts.wdio.page');
+const commonPageDefault = require('../../default/common/common.wdio.page');
 
 const HEALTH_PROGRAMS = { ANC: 'anc', PNC: 'pnc', IMM: 'imm', GPM: 'gpm'};
 const healthProgram = (program) => $(`input[name="/data/health_center/use_cases"][value="${program}"]`);
@@ -54,8 +55,7 @@ const addAllVaccines = async () => {
  *                            "imm" for Immunizations and "gpm" for Growth monitoring (nutrition)
  */
 const addHealthPrograms = async (program = HEALTH_PROGRAMS.ANC) => {
-  await (await contactPageDefault.moreOptionsMenu()).waitForDisplayed();
-  await (await contactPageDefault.moreOptionsMenu()).click();
+  await commonPageDefault.openMoreOptionsMenu();
   await (await contactPageDefault.editContactButton()).waitForClickable();
   await (await contactPageDefault.editContactButton()).click();
   await (await healthProgram(program)).waitForDisplayed();

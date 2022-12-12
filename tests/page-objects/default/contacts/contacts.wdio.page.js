@@ -39,7 +39,6 @@ const rhsReportElementList = () => $$(rhsReportListSelector);
 
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
-const moreOptionsMenu = () => $('.more-options-menu-container>.mat-menu-trigger');
 const editContactButton = () => $('.mat-menu-content .mat-menu-item[test-id="edit-contacts"]');
 const deleteContactButton = () => $('.mat-menu-content .mat-menu-item[test-id="delete-contacts"]');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
@@ -157,8 +156,7 @@ const addPerson = async (name, params = {}) => {
 const editPerson = async (name, updatedName) => {
   await selectLHSRowByText(name);
   await waitForContactLoaded();
-  await (await moreOptionsMenu()).waitForDisplayed();
-  await (await moreOptionsMenu()).click();
+  await commonElements.openMoreOptionsMenu();
   await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
@@ -175,8 +173,7 @@ const editPerson = async (name, updatedName) => {
 const deletePerson = async (name) => {
   await selectLHSRowByText(name);
   await waitForContactLoaded();
-  await (await moreOptionsMenu()).waitForDisplayed();
-  await (await moreOptionsMenu()).click();
+  await commonElements.openMoreOptionsMenu();
   await (await deleteContactButton()).waitForDisplayed();
   await (await deleteContactButton()).click();
   await (await deleteConfirmationModalButton()).waitForDisplayed();
@@ -227,8 +224,7 @@ const editDistrict = async (districtName, editedName) => {
   await selectLHSRowByText(districtName, true);
   await waitForContactLoaded();
 
-  await (await moreOptionsMenu()).waitForDisplayed();
-  await (await moreOptionsMenu()).click();
+  await commonElements.openMoreOptionsMenu();
   await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
@@ -355,7 +351,6 @@ module.exports = {
   externalIdField,
   notes,
   contactCardIcon,
-  moreOptionsMenu,
   editContactButton,
   getContactCardText,
   pregnancyCard,

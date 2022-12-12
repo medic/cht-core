@@ -64,8 +64,7 @@ const selectContact = async (inputName, contactName) => {
   );
 };
 const editForm = async () => {
-  await (await reportsPage.moreOptionsMenu()).waitForDisplayed();
-  await (await reportsPage.moreOptionsMenu()).click();
+  await commonPage.openMoreOptionsMenu();
   await (await reportsPage.editReportButton()).waitForDisplayed();
   await (await reportsPage.editReportButton()).click();
 };

@@ -21,7 +21,6 @@ const reportsByUUID = (uuid) => $$(`${REPORTS_LIST_ID} li.content-row[data-recor
 const reportRowSelector = `${REPORTS_LIST_ID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
-const moreOptionsMenu = () => $('.more-options-menu-container>.mat-menu-trigger');
 const editReportButton = () => $('.mat-menu-content .mat-menu-item[test-id="edit-reports"]');
 
 const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
@@ -342,8 +341,7 @@ const openReport = async (reportId) => {
 const editReport = async (reportId) => {
   await commonElements.goToReports();
   await openReport(reportId);
-  await (await moreOptionsMenu()).waitForDisplayed();
-  await (await moreOptionsMenu()).click();
+  await commonElements.openMoreOptionsMenu();
   await (await editReportButton()).waitForClickable();
   await (await editReportButton()).click();
   await (await formTitle()).waitForDisplayed();
@@ -404,7 +402,6 @@ module.exports = {
   resetFilter,
   openReport,
   reportTasks,
-  moreOptionsMenu,
   editReportButton,
   editReport,
   fieldByIndex,
