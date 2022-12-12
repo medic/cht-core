@@ -10,7 +10,7 @@
   "dependencies": {
     "@medic/phone-number": "file:../phone-number",
     "bikram-sambat-bootstrap": "^1.5.0",
-    "google-libphonenumber": "^3.2.30",
+    "google-libphonenumber": "^3.2.31",
     "gsm": "^0.1.4",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",

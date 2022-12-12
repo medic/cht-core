@@ -411,7 +411,6 @@ module.exports = function(grunt) {
             'enketo-core',
             'font-awesome',
             'moment',
-            'pouchdb-browser',
           ];
           return modulesToPatch.map(module => {
             const backupPath = `webapp/node_modules_backup/${module}`;
@@ -498,10 +497,6 @@ module.exports = function(grunt) {
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
-
-            // patch pouchdb to catch unhandled rejections
-            // https://github.com/medic/cht-core/issues/6626
-            'patch webapp/node_modules/pouchdb-browser/lib/index.js < webapp/patches/pouchdb-unhandled-rejection.patch',
           ];
           return patches.join(' && ');
         },
