@@ -1,0 +1,29 @@
+{
+  "type": "module",
+  "name": "set_cht_default_contact",
+  "version": "1.0.0",
+  "description": "Find users who's contact's places don't have a default contact, and set them to the user's contact",
+  "repository": {
+    "type": "git",
+    "url": "git@https://github.com/medic/set_cht_default_contact"
+  },
+  "author": "Medic",
+  "scripts": {
+    "start": "babel-node index.js"
+  },
+  "dependencies": {
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.7.2",
+    "@babel/node": "^7.7.0",
+    "@babel/preset-env": "^7.7.1",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.9",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.8",
+    "node-yaml-config": "^0.0.6"
+  },
+  "main": "index.js",
+  "devDependencies": {},
+  "keywords": [],
+  "license": "ISC"
+}
