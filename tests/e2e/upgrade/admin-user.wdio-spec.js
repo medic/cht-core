@@ -29,6 +29,6 @@ describe('admin users', () => {
       body: { password: newPassword }
     });
 
-    await loginPage.login({ username: adminUser.username, password: newPassword });
+    await loginPage.login({ username: adminUser.username, password: newPassword, adminApp: true });
   });
 });
