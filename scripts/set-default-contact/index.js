@@ -14,7 +14,7 @@ const compileUrl = (path) => {
     }
 };
 
-const getChtUsers = async function(){
+const getChtUsers = async () => {
     console.log('   Using URL taken from COUCH_URL env var: ', process.env.COUCH_URL)
     console.log('')
     const url = compileUrl('/api/v2/users');
