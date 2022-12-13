@@ -10,6 +10,7 @@ node_modules_backup
 /config.js
 /tests/results
 /tests/logs/
+/tests/tempDownload/
 *.sublime-project
 *.sublime-workspace
 /.env

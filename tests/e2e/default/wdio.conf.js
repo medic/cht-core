@@ -79,11 +79,6 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      prefs: {
-        'directory_upgrade': true,
-        'prompt_for_download': false,
-        'download.default_directory': fileDownloadUtils.getDownloadPath()
-      },
       args: ['--headless', '--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']
     }
 
@@ -189,8 +184,6 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    */
   onPrepare: async function () {
-    fileDownloadUtils.createDownloadDirectory();
-
     // delete all previous test
     if (fs.existsSync(ALLURE_OUTPUT)) {
       const files = fs.readdirSync(ALLURE_OUTPUT) || [];
@@ -360,12 +353,11 @@ const baseConfig = {
    * @param {<Object>} results object containing test results
    */
   onComplete: async () => {
+    fileDownloadUtils.deleteDownloadDirectory();
     await utils.tearDownServices();
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');
     const generation = allure(['generate', 'allure-results', '--clean']);
-
-    fileDownloadUtils.deleteDownloadDirectory();
 
     return new Promise((resolve, reject) => {
       const generationTimeout = setTimeout(
