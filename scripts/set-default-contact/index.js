@@ -9,7 +9,8 @@ const compileUrl = (path) => {
     try {
         return new URL(path, process.env.COUCH_URL);
     } catch(e) {
-        throw new Error(`Error while creating url: ${e.message}`);
+        throw new Error(`Error in compileUrl() while creating URL from ${process.env.COUCH_URL}${path},` +
+          ` error is: ${e.message}`);
     }
 };
 
@@ -48,10 +49,6 @@ const getObjectFromMedicDb = async function(id){
 const hasDefaultContact = async function(user){
     if(typeof user.place == 'object' && typeof user.contact == 'object' &&  user.place._id  ){
         const place = await getObjectFromMedicDb(user.place._id);
-        if (process.env.DEBUG === "True"){
-            console.log("place",place);
-            console.log("user",user);
-        }
         return !(typeof place.contact == 'object' && !place.contact._id);
     } else {
         // return true for invalid users like admin or medic so we don't process them
@@ -72,6 +69,7 @@ const filterUsersForDefaultPlace = async function(users){
 
 const savePlace = async (placeId, contactId) => {
     const url = compileUrl('/medic/' + placeId);
+    // # fetch the place fresh because we need to ensure revision ID is current
     const placeObj = await getObjectFromMedicDb(placeId);
     placeObj.contact._id = contactId;
     placeObj.contact.parent = {_id: placeId};
@@ -87,11 +85,8 @@ const savePlace = async (placeId, contactId) => {
 const setContactsAsPlacesDefaults = async function (filteredUsers){
     let count = 0;
     for (const user of filteredUsers) {
-        const defaultSet = await hasDefaultContact(user);
-        const placeId = user.place._id;
-        const contactId = user.contact._id;
         console.log('   Setting default place for user', user.id)
-        await savePlace(placeId, contactId);
+        await savePlace(user.place._id, user.contact._id);
         count++;
     }
     return count;
@@ -108,9 +103,9 @@ const go = async () => {
         if (e.statusCode === 401) {
             console.log('   Bad authentication for CouchDB. Check that COUCH_URL has correct username and password.');
         } else {
-            console.log("   Error!! " + e.message);
+            console.log("   " + e.message);
             if (process.env.DEBUG === "True"){
-                console.log("\n" + e.stack);
+                console.log("\n   " + e.stack);
             } else {
                 console.log("\n   Pass DEBUG=True to see stack trace");
             }
@@ -118,6 +113,4 @@ const go = async () => {
     }
 };
 
-
-const myArgs = process.argv.slice(2);
 go().then(() => console.log('\nEnd\n'));
