@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  couchdb.1:
+  couchdb-1.local:
     image: {{{ repo }}}/cht-couchdb:{{ tag }}
     volumes:
       - ${DB1_DATA:-./srv1}:/opt/couchdb/data
@@ -11,8 +11,8 @@ services:
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:?COUCHDB_PASSWORD must be set}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
-      - "SVC_NAME=${SVC1_NAME:-couchdb.1}"
-      - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
+      - "SVC_NAME=${SVC1_NAME:-couchdb-1.local}"
+      - "CLUSTER_PEER_IPS=couchdb-2.local,couchdb-3.local"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
     logging:
       driver: "local"
@@ -23,7 +23,7 @@ services:
     networks:
       cht-net:
 
-  couchdb.2:
+  couchdb-2.local:
     image: {{{ repo }}}/cht-couchdb:{{ tag }}
     volumes:
       - ${DB2_DATA:-./srv2}:/opt/couchdb/data
@@ -32,9 +32,9 @@ services:
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:?COUCHDB_PASSWORD must be set}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
-      - "SVC_NAME=${SVC2_NAME:-couchdb.2}"
+      - "SVC_NAME=${SVC2_NAME:-couchdb-2.local}"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
-      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb-1.local}"
     logging:
       driver: "local"
       options:
@@ -44,7 +44,7 @@ services:
     networks:
       cht-net:
 
-  couchdb.3:
+  couchdb-3.local:
     image: {{{ repo }}}/cht-couchdb:{{ tag }}
     volumes:
       - ${DB3_DATA:-./srv3}:/opt/couchdb/data
@@ -53,9 +53,9 @@ services:
       - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD:?COUCHDB_PASSWORD must be set}"
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
-      - "SVC_NAME=${SVC3_NAME:-couchdb.3}"
+      - "SVC_NAME=${SVC3_NAME:-couchdb-3.local}"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
-      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb-1.local}"
     logging:
       driver: "local"
       options:

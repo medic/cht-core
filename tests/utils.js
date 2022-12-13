@@ -23,9 +23,9 @@ const NETWORK = 'cht-net-e2e';
 const services = {
   haproxy: 'haproxy',
   nginx: 'nginx',
-  couch1: 'couchdb.1',
-  couch2: 'couchdb.2',
-  couch3: 'couchdb.3',
+  couch1: 'couchdb-1.local',
+  couch2: 'couchdb-2.local',
+  couch3: 'couchdb-3.local',
   api: 'api',
   sentinel: 'sentinel',
   haproxy_healthcheck: 'healthcheck',
@@ -645,7 +645,7 @@ const generateComposeFiles = async () => {
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
     db_name: 'medic-test',
-    couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
+    couchdb_servers: 'couchdb-1.local,couchdb-2.local,couchdb-3.local',
   };
 
   for (const file of COMPOSE_FILES) {
