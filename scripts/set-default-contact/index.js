@@ -102,13 +102,14 @@ const go = async () => {
     } catch (e) {
         if (e.statusCode === 401) {
             console.log('   Bad authentication for CouchDB. Check that COUCH_URL has correct username and password.');
+            return;
+        }
+
+        console.log("   " + e.message);
+        if (process.env.DEBUG === "True"){
+            console.log("\n   " + e.stack);
         } else {
-            console.log("   " + e.message);
-            if (process.env.DEBUG === "True"){
-                console.log("\n   " + e.stack);
-            } else {
-                console.log("\n   Pass DEBUG=True to see stack trace");
-            }
+            console.log("\n   Pass DEBUG=True to see stack trace");
         }
     }
 };
