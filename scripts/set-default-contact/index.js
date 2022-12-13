@@ -1,5 +1,5 @@
-import request from 'request-promise-native';
-import express from 'express';
+const request = require('request-promise-native');
+const express = require('express');
 
 const app = express();
 app.use(express.json());
