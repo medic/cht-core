@@ -1,6 +1,6 @@
 # Set default contact for places of users
 
-This script goes through all users and checks if the places they're assigned to has a default contact.  If the place does not have a default contact set, it uses the contact defined for that user to set it as the places default contact.
+This script goes through all users and checks if the places they're assigned to has a default contact.  If the place does not have a default contact set, it uses the contact defined for that user to set it as the place's default contact.
 
 A requirement is that each user has both a place and a contact assigned to them.
 
@@ -8,7 +8,7 @@ A requirement is that each user has both a place and a contact assigned to them.
 
 To install, `cd` into this directory and call `npm install`
 
-To run, call `COUCH_URL=https://USER:PASSWORD@CHT-URL node index.js`. So if your URL was `127-0-0-1.my.local-ip.co:10445` and your login was `medic` and password was `password`, you would call `COUCH_URL=https://medic:password@127-0-0-1.my.local-ip.co:10445 node index.js`.
+To run, call `COUCH_URL=https://USER:PASSWORD@CHT-URL node index.js`. So if your CHT URL was `127-0-0-1.my.local-ip.co:10445` and your admin user login was `medic` and password was `password`, you would call `COUCH_URL=https://medic:password@127-0-0-1.my.local-ip.co:10445 node index.js`.
 
 ### Sample output
 
