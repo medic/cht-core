@@ -1,17 +1,18 @@
 const allure = require('allure-commandline');
 const fs = require('fs');
-const constants = require('../../constants');
-const utils = require('../../utils');
 const path = require('path');
-
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 
+const constants = require('../../constants');
+const utils = require('../../utils');
+const fileDownloadUtils = require('../../utils/file-download');
+const browserUtils = require('../../utils/browser');
+
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
-const browserUtils = require('../../utils/browser');
-const existingFeedBackDocIds = [];
 const logLevels = ['error', 'warning', 'debug'];
+const existingFeedBackDocIds = [];
 let testTile;
 
 const baseConfig = {
@@ -78,6 +79,11 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
+      prefs: {
+        'directory_upgrade': true,
+        'prompt_for_download': false,
+        'download.default_directory': fileDownloadUtils.getDownloadPath()
+      },
       args: ['--headless', '--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']
     }
 
@@ -183,6 +189,8 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    */
   onPrepare: async function () {
+    fileDownloadUtils.createDownloadDirectory();
+
     // delete all previous test
     if (fs.existsSync(ALLURE_OUTPUT)) {
       const files = fs.readdirSync(ALLURE_OUTPUT) || [];
@@ -356,6 +364,8 @@ const baseConfig = {
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');
     const generation = allure(['generate', 'allure-results', '--clean']);
+
+    fileDownloadUtils.deleteDownloadDirectory();
 
     return new Promise((resolve, reject) => {
       const generationTimeout = setTimeout(
