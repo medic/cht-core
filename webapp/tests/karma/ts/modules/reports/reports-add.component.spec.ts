@@ -159,26 +159,26 @@ describe('Reports Add Component', () => {
 
     it('route params subscription should not fire when params do not change', fakeAsync(() => {
       route.snapshot.params = { formId: 'some_form' };
-      const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
-      const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      const openReportContentStub = sinon.stub(ReportsActions.prototype, 'openReportContent');
+      const setEnketoErrorStub = sinon.stub(GlobalActions.prototype, 'setEnketoError');
 
       component.enketoError = 'some_error';
       route.params.next({ formId: 'some_form' });
       tick();
-      expect(setSelected.callCount).to.equal(0);
-      expect(setEnketoError.callCount).to.equal(0);
+      expect(openReportContentStub.notCalled).to.be.true;
+      expect(setEnketoErrorStub.notCalled).to.be.true;
     }));
 
     it('route params subscription should fire when params change', fakeAsync(() => {
       route.snapshot.params = { formId: 'some_form' };
-      const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
-      const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      const openReportContentStub = sinon.stub(ReportsActions.prototype, 'openReportContent');
+      const setEnketoErrorStub = sinon.stub(GlobalActions.prototype, 'setEnketoError');
 
       component.enketoError = 'some_error';
       route.params.next({ formId: 'otherform' });
       tick();
-      expect(setSelected.callCount).to.equal(1);
-      expect(setEnketoError.callCount).to.equal(1);
+      expect(openReportContentStub.calledOnce).to.be.true;
+      expect(setEnketoErrorStub.calledOnce).to.be.true;
       // the 2 count is because we've actually subscribed to the params change twice by calling ngOnInit manually
     }));
   });
@@ -189,28 +189,28 @@ describe('Reports Add Component', () => {
         sinon.resetHistory();
 
         route.snapshot.params = { formId: 'my_form' };
-        const setSelected = sinon.stub(ReportsActions.prototype, 'setSelected');
+        const openReportContentStub = sinon.stub(ReportsActions.prototype, 'openReportContent');
         getReportContentService.getReportContent.resolves();
         const xmlForm = { _id: 'my_form', some: 'content' };
         const renderedForm = { rendered: 'form', model: {}, instance: {} };
         xmlFormsService.get.resolves(xmlForm);
         enketoService.render.resolves(renderedForm);
-        const setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
-        const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
+        const setEnketoEditedStatusStub = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
+        const setEnketoErrorStub = sinon.stub(GlobalActions.prototype, 'setEnketoError');
 
         component.ngAfterViewInit();
         tick();
 
-        expect(geolocationService.init.callCount).to.equal(1);
-        expect(setSelected.callCount).to.equal(1);
-        expect(setSelected.args[0]).to.deep.equal([{ formInternalId: 'my_form' }]);
-        expect(getReportContentService.getReportContent.callCount).to.equal(1);
+        expect(geolocationService.init.calledOnce).to.be.true;
+        expect(openReportContentStub.calledOnce).to.be.true;
+        expect(openReportContentStub.args[0]).to.deep.equal([{ formInternalId: 'my_form' }]);
+        expect(getReportContentService.getReportContent.calledOnce).to.be.true;
         expect(getReportContentService.getReportContent.args[0]).to.deep.equal([undefined]);
-        expect(xmlFormsService.get.callCount).to.equal(1);
+        expect(xmlFormsService.get.calledOnce).to.be.true;
         expect(xmlFormsService.get.args[0]).to.deep.equal(['my_form']);
-        expect(setEnketoEditedStatus.callCount).to.equal(1);
-        expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
-        expect(enketoService.render.callCount).to.equal(1);
+        expect(setEnketoEditedStatusStub.calledOnce).to.be.true;
+        expect(setEnketoEditedStatusStub.args[0]).to.deep.equal([false]);
+        expect(enketoService.render.calledOnce).to.be.true;
         expect(enketoService.render.args[0][1]).to.deep.equal(xmlForm);
         expect(enketoService.render.args[0][2]).to.equal(undefined);
         expect(component.form).to.equal(renderedForm);
@@ -219,15 +219,15 @@ describe('Reports Add Component', () => {
         const resetFormError = enketoService.render.args[0][4];
 
         markFormEdited();
-        expect(setEnketoEditedStatus.callCount).to.equal(2);
-        expect(setEnketoEditedStatus.args[1]).to.deep.equal([true]);
+        expect(setEnketoEditedStatusStub.calledTwice).to.be.true;
+        expect(setEnketoEditedStatusStub.args[1]).to.deep.equal([true]);
 
         resetFormError();
-        expect(setEnketoError.callCount).to.equal(0); // no error so no call
+        expect(setEnketoErrorStub.notCalled).to.be.true; // no error so no call
         component.enketoError = 'some error';
         resetFormError();
-        expect(setEnketoError.callCount).to.equal(1);
-        expect(setEnketoError.args[0]).to.deep.equal([null]);
+        expect(setEnketoErrorStub.calledOnce).to.be.true;
+        expect(setEnketoErrorStub.args[0]).to.deep.equal([null]);
       }));
 
       it('should reset geohandle on reload', fakeAsync(() => {
@@ -288,7 +288,7 @@ describe('Reports Add Component', () => {
 
     it('should call enketo save and update state when new report', fakeAsync(() => {
       component.form = { the: 'rendered form' };
-      component.selectedReports = [{ formInternalId: 'some_form' }];
+      component.selectedReport = { formInternalId: 'some_form' };
 
       const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       const setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
@@ -323,7 +323,7 @@ describe('Reports Add Component', () => {
     it('should catch enketo saving error', fakeAsync(() => {
       const consoleErrorMock = sinon.stub(console, 'error');
       component.form = { the: 'the form' };
-      component.selectedReports = [{ formInternalId: 'delivery' }];
+      component.selectedReport = { formInternalId: 'delivery' };
 
       const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       const setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');

@@ -1,10 +1,12 @@
 const chai = require('chai');
 const sinon = require('sinon');
+const _ = require('lodash');
 const config = require('../../../src/config');
 const serverUtils = require('../../../src/server-utils');
 const privacyPolicyController = require('../../../src/controllers/privacy-policy');
 const privacyPolicyService = require('../../../src/services/privacy-policy');
 const cookieService = require('../../../src/services/cookie');
+const templateService = require('../../../src/services/template');
 
 describe('Privacy Policy Controller', () => {
   
@@ -12,6 +14,7 @@ describe('Privacy Policy Controller', () => {
   let res;
 
   beforeEach(() => {
+    templateService.clear();
     req = {
       query: { },
       headers: { }
@@ -21,6 +24,7 @@ describe('Privacy Policy Controller', () => {
     sinon.stub(serverUtils, 'error');
     sinon.stub(config, 'translate');
     sinon.stub(cookieService, 'get');
+    sinon.stub(templateService, 'getTemplate');
   });
 
   afterEach(() => {
@@ -42,18 +46,21 @@ describe('Privacy Policy Controller', () => {
 
     it('sends html response', () => {
       privacyPolicyService.get.resolves('my-template');
+      templateService.getTemplate.returns(_.template('<html>{{policy}}</html>'));
 
       return privacyPolicyController
         .get(req, res)
         .then(() => {
+          chai.expect(templateService.getTemplate.callCount).to.equal(1);
           chai.expect(res.send.callCount).to.equal(1);
-          chai.expect(res.send.args[0][0]).to.contain('my-template');
+          chai.expect(res.send.args[0][0]).to.equal('<html>my-template</html>');
         });
     });
 
     it('uses cookie locale', () => {
       privacyPolicyService.get.resolves('my-template');
       cookieService.get.returns('fr');
+      templateService.getTemplate.returns(_.template('<html>{{policy}}</html>'));
 
       return privacyPolicyController
         .get(req, res)
@@ -71,6 +78,7 @@ describe('Privacy Policy Controller', () => {
     it('uses configured default language if no cookie found', () => {
       privacyPolicyService.get.resolves('my-template');
       cookieService.get.returns(null);
+      templateService.getTemplate.returns(_.template('<html>{{policy}}</html>'));
 
       return privacyPolicyController
         .get(req, res)

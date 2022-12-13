@@ -1,9 +1,11 @@
 const utils = require('../../../utils');
+const commonPage = require('../common/common.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
+
+const REVIEW_MENU = '[test-id="report-review-menu"]';
 const submitButton = () => $('.enketo .submit');
 const nextButton = () => $('button.btn.btn-primary.next-page');
 const nameField = () => $('#report-form form [name="/data/name"]');
-
 
 const nextPage = async (numberOfPages = 1) => {
   for (let i = 0; i < numberOfPages; i++) {
@@ -14,24 +16,39 @@ const nextPage = async (numberOfPages = 1) => {
 
 const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
 
-const openReportReviewMenu = async () => {
-  const reviewButton = await $('.actions>.mm-icon-inverse>.fa-check');
-  await reviewButton.click();
+const isReportReviewMenuOpen = async () => {
+  return await (await $(REVIEW_MENU)).isExisting();
 };
 
+const openReportReviewMenu = async () => {
+  if (await isReportReviewMenuOpen()) {
+    return;
+  }
+  const reviewButton = $('[test-id="report-review-button"]');
+  await (await reviewButton).waitForDisplayed();
+  await (await reviewButton).click();
+};
 
 const invalidateReport = async () => {
-  const reportInvalidBtn = await $('.actions .sub-actions .verify-error');
-  await reportInvalidBtn.click();
-  const reportInvalidMessage = await $('.actions .sub-actions .verify-error.active');
-  expect(await reportInvalidMessage.getText()).to.equal('Has errors');
+  await openReportReviewMenu();
+  await (await $(`${REVIEW_MENU} .verify-error`)).click();
+  await commonPage.waitForPageLoaded();
+  // Opening again the menu because it was automatically closed after selecting a menu option.
+  await openReportReviewMenu();
+  const reportInvalidMessage = $(`${REVIEW_MENU} .verify-error.active`);
+  await (await reportInvalidMessage).waitForDisplayed();
+  expect((await reportInvalidMessage.getText()).trim()).to.equal('Has errors');
 };
 
 const validateReport = async () => {
-  const reportValidBtn = await $('.actions .sub-actions .verify-valid');
-  await reportValidBtn.click();
-  const reportValidMessage = await $('.actions .sub-actions .verify-valid.active');
-  expect(await reportValidMessage.getText()).to.equal('Correct');
+  await openReportReviewMenu();
+  await (await $(`${REVIEW_MENU} .verify-valid`)).click();
+  await commonPage.waitForPageLoaded();
+  // Opening again the menu because it was automatically closed after selecting a menu option.
+  await openReportReviewMenu();
+  const reportValidMessage = $(`${REVIEW_MENU} .verify-valid.active`);
+  await (await reportValidMessage).waitForDisplayed();
+  expect((await reportValidMessage.getText()).trim()).to.equal('Correct');
 };
 
 const selectContact = async (inputName, contactName) => {
@@ -56,9 +73,7 @@ const verifyReport = async () => {
   const initialReport = await utils.getDoc(reportId);
   expect(initialReport.verified).to.be.undefined;
 
-  await openReportReviewMenu();
   await invalidateReport();
-
   const invalidatedReport = await utils.getDoc(reportId);
   expect(invalidatedReport.verified).to.be.false;
   expect(invalidatedReport.patient).to.be.undefined;
@@ -74,7 +89,6 @@ const submitForm = () => submitButton().click();
 module.exports = {
   submitButton,
   nextPage,
-  openReportReviewMenu,
   invalidateReport,
   validateReport,
   nameField,

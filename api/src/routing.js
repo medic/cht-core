@@ -4,6 +4,7 @@ const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const environment = require('./environment');
+const config = require('./config');
 const db = require('./db');
 const path = require('path');
 const auth = require('./auth');
@@ -25,8 +26,7 @@ const exportData = require('./controllers/export-data');
 const records = require('./controllers/records');
 const forms = require('./controllers/forms');
 const users = require('./controllers/users');
-const places = require('./controllers/places');
-const people = require('./controllers/people');
+const { people, places } = require('@medic/contacts')(config, db);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
@@ -401,6 +401,7 @@ app.post('/api/v1/sms/africastalking/incoming-messages', formParser, africasTalk
 app.post('/api/v1/sms/africastalking/delivery-reports', formParser, africasTalking.deliveryReports);
 
 app.post('/api/v1/sms/radpidpro/incoming-messages', jsonParser, rapidPro.incomingMessages);
+app.post('/api/v2/sms/rapidpro/incoming-messages', jsonParser, rapidPro.incomingMessages);
 
 app.get('/api/sms/', (req, res) => res.redirect(301, '/api/sms'));
 app.get('/api/sms', smsGateway.get);
@@ -422,6 +423,7 @@ app.get('/api/v1/forms/:form', forms.get);
 app.post('/api/v1/forms/validate', textParser, forms.validate);
 
 app.get('/api/v1/users', users.get);
+app.get('/api/v2/users', users.v2.get);
 app.postJson('/api/v1/users', users.create);
 app.postJsonOrCsv('/api/v2/users', users.v2.create);
 app.postJson('/api/v1/users/:username', users.update);

@@ -66,19 +66,12 @@ export const Selectors = {
   listContains: createSelector(getReportsState, (reportsState) => {
     return (id) => reportsState.reportsById.has(id);
   }),
-  getSelectedReports: createSelector(getReportsState, (reportsState) => reportsState.selected),
-  getSelectedReportsSummaries: createSelector(getReportsState, (reportsState) => {
-    return reportsState.selected?.map(item => item.formatted || item.summary);
-  }),
-  getSelectedReportsDocs: createSelector(getReportsState, (reportsState) => {
-    return reportsState.selected?.map(item => item.doc || item.summary);
+  getSelectedReport: createSelector(getReportsState, (reportsState) => reportsState.selectedReport),
+  getSelectedReports: createSelector(getReportsState, (reportsState) => reportsState.selectedReports),
+  getSelectedReportDoc: createSelector(getReportsState, (reportsState) => {
+    return reportsState.selectedReport?.doc || reportsState.selectedReport?.summary;
   }),
   getVerifyingReport: createSelector(getReportsState, (reportsState) => reportsState.verifyingReport),
-  getSelectedReportsValidChecks: createSelector(getReportsState, (reportsState) => {
-    return reportsState.selected?.map(item => {
-      return item.summary?.valid || !item.formatted?.errors?.length;
-    });
-  }),
 
   // messages
   getMessagesError: createSelector(getMessagesState, (messagesState) => messagesState.error),

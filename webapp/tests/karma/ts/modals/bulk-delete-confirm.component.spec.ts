@@ -9,8 +9,9 @@ import { Subject } from 'rxjs';
 import { MmModal, MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
-describe('SendMessageComponent', () => {
+describe('BulkDeleteConfirmComponent', () => {
   let component: BulkDeleteConfirmComponent;
   let fixture: ComponentFixture<BulkDeleteConfirmComponent>;
   let deleteDocsService;
@@ -18,6 +19,7 @@ describe('SendMessageComponent', () => {
   let setProcessing;
   let setFinished;
   let setError;
+  let telemetryService;
 
   beforeEach(waitForAsync(() => {
     bdModalRef = {
@@ -26,6 +28,7 @@ describe('SendMessageComponent', () => {
       onHide: new Subject(),
     };
     deleteDocsService = { delete: sinon.stub().resolves() };
+    telemetryService = { record: sinon.stub() };
 
     setProcessing = sinon.stub(MmModalAbstract.prototype, 'setProcessing');
     setFinished = sinon.stub(MmModalAbstract.prototype, 'setFinished');
@@ -44,6 +47,7 @@ describe('SendMessageComponent', () => {
         providers: [
           { provide: BsModalRef, useValue: bdModalRef },
           { provide: DeleteDocsService, useValue: deleteDocsService },
+          { provide: TelemetryService, useValue: telemetryService },
         ]
       })
       .compileComponents()
@@ -85,6 +89,7 @@ describe('SendMessageComponent', () => {
           { _id: 'doc2', field: 2 },
           { _id: 'doc3', field: 3 },
         ],
+        type: 'reports',
       };
       const promise = component.submit();
       expect(setProcessing.callCount).to.equal(1);
@@ -102,6 +107,8 @@ describe('SendMessageComponent', () => {
         { _id: 'doc3', field: 3 },
       ]);
       expect(component.deleteComplete).to.equal(true);
+      expect(telemetryService.record.calledOnce).to.be.true;
+      expect(telemetryService.record.args[0]).to.have.members([ 'bulk_delete:reports', 3 ]);
     });
 
     it('should catch deletion errors', async () => {
@@ -111,6 +118,7 @@ describe('SendMessageComponent', () => {
           { _id: 'doc1', field: 'a' },
           { _id: 'doc2', field: 'b' },
         ],
+        type: 'reports',
       };
       const promise = component.submit();
       expect(setProcessing.callCount).to.equal(1);
@@ -131,6 +139,7 @@ describe('SendMessageComponent', () => {
         { _id: 'doc2', field: 'b' },
       ]);
       expect(component.deleteComplete).to.equal(false);
+      expect(telemetryService.record.notCalled).to.be.true;
     });
 
     it('progress callback should work correctly', async () => {
@@ -139,6 +148,7 @@ describe('SendMessageComponent', () => {
           { _id: 'doc1', field: 'a' },
           { _id: 'doc2', field: 'b' },
         ],
+        type: 'reports',
       };
       const promise = component.submit();
       const callback = deleteDocsService.delete.args[0][1].progress;

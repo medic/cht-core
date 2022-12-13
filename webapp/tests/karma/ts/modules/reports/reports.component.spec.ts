@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { DatePipe } from '@angular/common';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
@@ -29,6 +29,11 @@ import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sideb
 import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { ResponsiveService } from '@mm-services/responsive.service';
+import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { GlobalActions } from '@mm-actions/global';
+import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -40,7 +45,12 @@ describe('Reports Component', () => {
   let listContains;
   let authService;
   let datePipe;
+  let responsiveService;
+  let modalService;
   let userContactService;
+  let store;
+  let route;
+  let router;
 
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
@@ -55,6 +65,7 @@ describe('Reports Component', () => {
   beforeEach(waitForAsync(() => {
     listContains = sinon.stub();
     const mockedSelectors = [
+      { selector: Selectors.getSelectedReport, value: undefined },
       { selector: Selectors.getSelectedReports, value: [] },
       { selector: Selectors.getReportsList, value: [] },
       { selector: Selectors.listContains, value: listContains },
@@ -78,9 +89,13 @@ describe('Reports Component', () => {
       isOnlineOnly: sinon.stub().returns(false)
     };
     datePipe = { transform: sinon.stub() };
+    responsiveService = { isMobile: sinon.stub() };
+    modalService = { show: sinon.stub().resolves() };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };
+    router = { navigate: sinon.stub() };
+    route = { snapshot: { queryParams: { query:'' } } };
 
     return TestBed
       .configureTestingModule({
@@ -115,13 +130,18 @@ describe('Reports Component', () => {
           { provide: UserContactService, useValue: userContactService },
           { provide: NavigationService, useValue: {} },
           { provide: AuthService, useValue: authService },
+          { provide: ResponsiveService, useValue: responsiveService },
+          { provide: ModalService, useValue: modalService },
           { provide: DatePipe, useValue: datePipe },
+          { provide: ActivatedRoute, useValue: route },
+          { provide: Router, useValue: router },
         ]
       })
       .compileComponents()
       .then(() => {
         fixture = TestBed.createComponent(ReportsComponent);
         component = fixture.componentInstance;
+        store = TestBed.inject(MockStore);
         fixture.detectChanges();
       });
   }));
@@ -146,11 +166,13 @@ describe('Reports Component', () => {
     await component.ngAfterViewInit();
 
     expect(component.isSidebarFilterOpen).to.be.false;
-    expect(authService.has.calledOnce).to.be.true;
-    expect(authService.has.args[0][0]).to.equal('can_view_old_filter_and_search');
+    expect(component.selectModeAvailable).to.be.false;
+    expect(authService.has.calledTwice).to.be.true;
+    expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
+    expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
     expect(searchService.search.calledOnce).to.be.true;
     expect(changesService.subscribe.calledOnce).to.be.true;
-    expect(spySubscriptionsAdd.calledThrice).to.be.true;
+    expect(spySubscriptionsAdd.callCount).to.equal(4);
   });
 
   it('listTrackBy() should return unique identifier', () => {
@@ -171,7 +193,183 @@ describe('Reports Component', () => {
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
-  describe('toggleSelected', () => {
+  it('should deselect all and unset components', () => {
+    const setSelectedReportsStub = sinon.stub(ReportsActions.prototype, 'setSelectedReports');
+    const unsetComponentsStub = sinon.stub(GlobalActions.prototype, 'unsetComponents');
+
+    component.deselectAllReports();
+
+    expect(setSelectedReportsStub.calledOnce).to.be.true;
+    expect(setSelectedReportsStub.args[0]).to.deep.equal([ [] ]);
+    expect(unsetComponentsStub.calledOnce).to.be.true;
+  });
+
+  describe('selectAllReports', () => {
+    it('should select all when not all reports have been selected yet', async () => {
+      const setLoadingContentStub = sinon.stub(GlobalActions.prototype, 'setLoadingContent');
+      const unsetComponentsStub = sinon.stub(GlobalActions.prototype, 'unsetComponents');
+      const setSelectedReportsStub = sinon.stub(ReportsActions.prototype, 'setSelectedReports');
+      searchService.search.resolves([
+        { _id: 'one', form: 'the_form', lineage: [], contact: { _id: 'contact', name: 'person' } },
+        { _id: 'two', form: 'form' },
+        { _id: 'three', lineage: 'lineage' },
+        { _id: 'four', expanded: true, lineage: [{ _id: 'parent' }] },
+        { _id: 'five' },
+      ]);
+      store.overrideSelector(Selectors.getFilters, { form: 'some_form', facility: 'one' });
+      store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'six' }, { _id: 'seven' }]);
+      store.overrideSelector(Selectors.getReportsList, [{ _id: 'six' }, { _id: 'seven' }, { _id: 'eight' }]);
+      store.refreshState();
+      sinon.resetHistory();
+      component.selectMode = true;
+      component.currentLevel = Promise.resolve();
+
+      await component.selectAllReports();
+
+      expect(searchService.search.callCount).to.equal(1);
+      expect(searchService.search.args[0]).to.deep.equal([
+        'reports',
+        { form: 'some_form', facility: 'one' },
+        { limit: 500, hydrateContactNames: true },
+      ]);
+      expect(setLoadingContentStub.calledOnce).to.be.true;
+      expect(unsetComponentsStub.calledOnce).to.be.true;
+      expect(setSelectedReportsStub.calledOnce).to.be.true;
+      expect(setSelectedReportsStub.args[0]).to.deep.equal([[
+        {
+          _id: 'one',
+          form: 'the_form',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          unread: true,
+          summary:  { _id: 'one', form: 'the_form', lineage: [], contact: { _id: 'contact', name: 'person' } },
+          expanded: false,
+          lineage: [],
+          contact: { _id: 'contact', name: 'person' }
+        },
+        {
+          _id: 'two',
+          form: 'form',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          unread: true,
+          summary: { _id: 'two', form: 'form' },
+          expanded: false,
+          lineage: undefined,
+        },
+        {
+          _id: 'three',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          unread: true,
+          summary: { _id: 'three', lineage: 'lineage' },
+          expanded: false,
+          lineage: 'lineage',
+        },
+        {
+          _id: 'four',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          unread: true,
+          summary: { _id: 'four', expanded: true, lineage: [{ _id: 'parent' }] },
+          expanded: false,
+          lineage: [{ _id: 'parent' }],
+        },
+        {
+          _id: 'five',
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          unread: true,
+          summary: { _id: 'five' },
+          expanded: false,
+          lineage: undefined,
+        },
+      ]]);
+    });
+
+    it('should catch errors', async () => {
+      const consoleErrorMock = sinon.stub(console, 'error');
+      const setLoadingContentStub = sinon.stub(GlobalActions.prototype, 'setLoadingContent');
+      const unsetComponentsStub = sinon.stub(GlobalActions.prototype, 'unsetComponents');
+      const setSelectedReportsStub = sinon.stub(ReportsActions.prototype, 'setSelectedReports');
+      searchService.search.rejects({ error: 'boom' });
+      store.overrideSelector(Selectors.getFilters, { form: 'some_form', facility: 'one' });
+      store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'six' }, { _id: 'seven' }]);
+      store.overrideSelector(Selectors.getReportsList, [{ _id: 'six' }, { _id: 'seven' }, { _id: 'eight' }]);
+      store.refreshState();
+      sinon.resetHistory();
+      component.selectMode = true;
+
+      await component.selectAllReports();
+
+      expect(searchService.search.callCount).to.equal(1);
+      expect(searchService.search.args[0]).to.deep.equal([
+        'reports',
+        { form: 'some_form', facility: 'one' },
+        { limit: 500, hydrateContactNames: true },
+      ]);
+      expect(setLoadingContentStub.calledOnce).to.be.true;
+      expect(unsetComponentsStub.notCalled).to.be.true;
+      expect(setSelectedReportsStub.notCalled).to.be.true;
+      expect(consoleErrorMock.calledOnce).to.be.true;
+      expect(consoleErrorMock.args[0][0]).to.equal('Error selecting all');
+    });
+
+    it('should not call select all when all reports have been selected', async () => {
+      const setLoadingContentStub = sinon.stub(GlobalActions.prototype, 'setLoadingContent');
+      const unsetComponentsStub = sinon.stub(GlobalActions.prototype, 'unsetComponents');
+      const setSelectedReportsStub = sinon.stub(ReportsActions.prototype, 'setSelectedReports');
+      store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'six' }, { _id: 'seven' }]);
+      store.overrideSelector(Selectors.getReportsList, [{ _id: 'six' }, { _id: 'seven' }]);
+      store.refreshState();
+      sinon.resetHistory();
+      component.selectMode = true;
+
+      await component.selectAllReports();
+
+      expect(searchService.search.notCalled).to.be.true;
+      expect(setLoadingContentStub.notCalled).to.be.true;
+      expect(unsetComponentsStub.notCalled).to.be.true;
+      expect(setSelectedReportsStub.notCalled).to.be.true;
+    });
+  });
+
+  describe('selectReportRow', () => {
+    it('should not select report when select mode is inactive', () => {
+      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      component.selectMode = false;
+      component.selectedReports = [];
+      responsiveService.isMobile.returns(false);
+
+      component.selectReportRow({ _id: 'report-01' });
+
+      expect(selectReport.notCalled).to.be.true;
+    });
+
+    it('should not select report when it is mobile', () => {
+      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      component.selectMode = true;
+      component.selectedReports = [];
+      responsiveService.isMobile.returns(true);
+
+      component.selectReportRow({ _id: 'report-01' });
+
+      expect(selectReport.notCalled).to.be.true;
+    });
+
+    it('should select report when it is not mobile and select more is active', () => {
+      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      component.selectMode = true;
+      component.selectedReports = [];
+      responsiveService.isMobile.returns(false);
+
+      component.selectReportRow({ _id: 'report-01' });
+
+      expect(selectReport.calledOnce).to.be.true;
+    });
+  });
+
+  describe('selectReport', () => {
     let addSelectedReport;
     let selectReport;
     let removeSelectedReport;
@@ -183,27 +381,30 @@ describe('Reports Component', () => {
     });
 
     it('should not crash when called without report (for some reason)', () => {
-      component.toggleSelected(undefined);
+      component.selectReport(undefined);
 
       expect(addSelectedReport.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
       expect(removeSelectedReport.callCount).to.equal(0);
     });
 
-    it('should do nothing when not in select mode', () => {
+    it('should not select when report does not have id', () => {
       component.selectMode = false;
-      component.toggleSelected({ _id: 'report_id' });
+      component.selectReport({ _id: '' });
+      component.selectMode = true;
+      component.selectReport({ _id: '' });
 
-      expect(addSelectedReport.callCount).to.equal(0);
-      expect(selectReport.callCount).to.equal(0);
-      expect(removeSelectedReport.callCount).to.equal(0);
+      expect(addSelectedReport.notCalled).to.be.true;
+      expect(selectReport.notCalled).to.be.true;
+      expect(removeSelectedReport.notCalled).to.be.true;
     });
 
-    it('should add selected report when in select mode and not already selected', () => {
+    it('should add selected report if not already selected', () => {
       component.selectMode = true;
       component.selectedReports = null;
 
-      component.toggleSelected({ _id: 'rid' });
+      component.selectReport({ _id: 'rid' });
+
       expect(addSelectedReport.callCount).to.equal(1);
       expect(addSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
       expect(selectReport.callCount).to.equal(1);
@@ -211,11 +412,12 @@ describe('Reports Component', () => {
       expect(removeSelectedReport.callCount).to.equal(0);
     });
 
-    it('should add selected report when in select mode and not already selected with some selected reports', () => {
+    it('should add selected report if not already selected when there are some selected reports', () => {
       component.selectMode = true;
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
 
-      component.toggleSelected({ _id: 'rid' });
+      component.selectReport({ _id: 'rid' });
+
       expect(addSelectedReport.callCount).to.equal(1);
       expect(addSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
       expect(selectReport.callCount).to.equal(1);
@@ -223,15 +425,120 @@ describe('Reports Component', () => {
       expect(removeSelectedReport.callCount).to.equal(0);
     });
 
-    it('should remove selected report if in select mode and already selected', () => {
+    it('should remove selected report if already selected', () => {
       component.selectMode = true;
       component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'rid' }];
 
-      component.toggleSelected({ _id: 'rid' });
+      component.selectReport({ _id: 'rid' });
+
       expect(addSelectedReport.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
       expect(removeSelectedReport.callCount).to.equal(1);
-      expect(removeSelectedReport.args[0]).to.deep.equal([{ _id: 'rid' }]);
+      expect(removeSelectedReport.args[0]).to.deep.equal([ { _id: 'rid' } ]);
+    });
+  });
+
+  describe('bulkDeleteReports', () => {
+    it('should not open modal when there are no selected reports', () => {
+      component.selectedReports = [];
+
+      component.bulkDeleteReports();
+
+      expect(modalService.show.notCalled).to.be.true;
+    });
+
+    it('should open modal when there are selected reports', () => {
+      component.selectedReports = [
+        { _id: 'selected1', doc: { _id: 'selected1' } },
+        { _id: 'selected2', summary: { _id: 'selected2' } },
+        { _id: 'selected3' },
+      ];
+
+      component.bulkDeleteReports();
+
+      expect(modalService.show.calledOnce).to.be.true;
+      expect(modalService.show.args[0]).to.have.deep.members([ BulkDeleteConfirmComponent, {
+        initialState: {
+          model: {
+            docs: [ { _id: 'selected1' }, { _id: 'selected2' } ],
+            type: 'reports',
+          },
+        },
+      }]);
+    });
+  });
+
+  describe('areAllReportsSelected', () => {
+    it('should return false when no in select mode and no selected reports', () => {
+      component.selectMode = false;
+      expect(component.areAllReportsSelected()).to.be.false;
+
+      component.selectedReports = [];
+      expect(component.areAllReportsSelected()).to.be.false;
+    });
+
+    it('should return true when maximum possible reports are selected', () => {
+      component.selectMode = true;
+      component.LIMIT_SELECT_ALL_REPORTS = 2;
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected2' }];
+
+      expect(component.areAllReportsSelected()).to.be.true;
+    });
+
+    it('should verify if all reports are selected', () => {
+      component.selectMode = true;
+      component.selectedReports = [{ _id: 'selected1' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.areAllReportsSelected()).to.be.false;
+
+      component.selectedReports = [];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.areAllReportsSelected()).to.be.false;
+
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.areAllReportsSelected()).to.be.true;
+    });
+  });
+
+  describe('areSomeReportsSelected', () => {
+    it('should return false when no in select mode and no selected reports', () => {
+      component.selectMode = false;
+      expect(component.areSomeReportsSelected()).to.be.false;
+
+      component.selectedReports = [];
+      expect(component.areSomeReportsSelected()).to.be.false;
+    });
+
+    it('should return false when maximum possible reports are selected', () => {
+      component.selectMode = true;
+      component.LIMIT_SELECT_ALL_REPORTS = 2;
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }, { _id: 'selected3' }];
+
+      expect(component.areSomeReportsSelected()).to.be.false;
+    });
+
+    it('should verify if some (but not all) reports are selected', () => {
+      component.selectMode = true;
+      component.selectedReports = [{ _id: 'selected1' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.areSomeReportsSelected()).to.be.true;
+
+      component.selectedReports = [];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.areSomeReportsSelected()).to.be.false;
+
+      component.selectedReports = [{ _id: 'selected1' }, { _id: 'selected2' }];
+      component.reportsList = [{ _id: 'selected1' }, { _id: 'selected2' }];
+
+      expect(component.areSomeReportsSelected()).to.be.false;
     });
   });
 
@@ -326,6 +633,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -334,6 +642,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -342,6 +651,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -350,6 +660,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -358,6 +669,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -366,6 +678,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
 
         },
@@ -389,6 +702,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -397,6 +711,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -405,6 +720,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -413,6 +729,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -421,6 +738,7 @@ describe('Reports Component', () => {
           icon: undefined,
           lineage: [],
           summary: undefined,
+          expanded: false,
           unread: true,
         },
         {
@@ -429,6 +747,7 @@ describe('Reports Component', () => {
           icon: undefined,
           lineage: undefined,
           summary: undefined,
+          expanded: false,
           unread: true,
         },
       ];
@@ -443,4 +762,34 @@ describe('Reports Component', () => {
 
   });
 
+  describe('setSelectMode', () => {
+    it('should set select mode and redirect when there are some reports selected', fakeAsync(() => {
+      const setSelectMode = sinon.spy(GlobalActions.prototype, 'setSelectMode');
+      const unsetComponents = sinon.spy(GlobalActions.prototype, 'unsetComponents');
+      store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report' }]);
+      store.refreshState();
+
+      flush();
+
+      expect(setSelectMode.callCount).to.equal(1);
+      expect(setSelectMode.args[0]).to.deep.equal([true]);
+      expect(unsetComponents.callCount).to.equal(1);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([['/reports']]);
+    }));
+
+    it('should unset select mode when there are no selected reports', fakeAsync(() => {
+      const setSelectMode = sinon.spy(GlobalActions.prototype, 'setSelectMode');
+      const unsetComponents = sinon.spy(GlobalActions.prototype, 'unsetComponents');
+      store.overrideSelector(Selectors.getSelectMode, true);
+      store.refreshState();
+
+      flush();
+
+      expect(setSelectMode.callCount).to.equal(1);
+      expect(setSelectMode.args[0]).to.deep.equal([false]);
+      expect(unsetComponents.notCalled).to.be.true;
+      expect(router.navigate.notCalled).to.be.true;
+    }));
+  });
 });

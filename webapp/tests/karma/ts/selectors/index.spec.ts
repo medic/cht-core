@@ -57,7 +57,8 @@ const state = {
       ['report3', { _id: 'report3' }],
       ['report4', { _id: 'report4' }],
     ]),
-    selected: [
+    selectedReport: { _id: 'report2', summary: { valid: false } },
+    selectedReports: [
       { _id: 'report1', formatted: { errors: ['one', 'two'] }, doc: { _id: 'report1' } },
       { _id: 'report2', summary: { valid: false }, doc: { _id: 'report2' } },
       { _id: 'report3', summary: { valid: true }, doc: { _id: 'report3' } },
@@ -277,38 +278,24 @@ describe('Selectors', () => {
       expect(listContains('report1')).to.equal(true);
     });
 
+    it('should getSelectedReport', () => {
+      expect(Selectors.getSelectedReport(state)).to.deep.equal(clonedState.reports.selectedReport);
+    });
+
     it('should getSelectedReports', () => {
-      expect(Selectors.getSelectedReports(state)).to.deep.equal(clonedState.reports.selected);
+      expect(Selectors.getSelectedReports(state)).to.deep.equal(clonedState.reports.selectedReports);
     });
 
-    it('should getSelectedReportsSummaries', () => {
-      expect(Selectors.getSelectedReportsSummaries(state)).to.deep.equal(
-        clonedState.reports.selected.map(item => item.formatted || item.summary)
-      );
-    });
-
-    it('should getSelectedReportsDocs', () => {
-      expect(Selectors.getSelectedReportsDocs(state)).to.deep.equal(
-        clonedState.reports.selected.map(item => item.doc || item.summary)
-      );
+    it('should getSelectedReportDoc', () => {
+      expect(Selectors.getSelectedReportDoc(state)).to.deep.equal(clonedState.reports.selectedReport.summary);
     });
 
     it('should getVerifyingReport', () => {
       expect(Selectors.getVerifyingReport(state)).to.equal(clonedState.reports.verifyingReport);
     });
 
-    it('should getSelectedReportsValidChecks', () => {
-      expect(Selectors.getSelectedReportsValidChecks(state)).to.deep.equal(
-        clonedState.reports.selected.map(item => item.summary?.valid || !item.formatted?.errors?.length)
-      );
-    });
-
     it('should null check reports state', () => {
       expect(Selectors.getSelectedReports({})).to.deep.equal(undefined);
-    });
-
-    it('should null check selected in getSelectedReportsSummaries', () => {
-      expect(Selectors.getSelectedReportsSummaries({})).to.deep.equal(undefined);
     });
   });
 

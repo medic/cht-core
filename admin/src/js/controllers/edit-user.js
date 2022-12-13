@@ -4,6 +4,13 @@ const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
 const USERNAME_ALLOWED_CHARS = /^[a-z0-9_-]+$/;
 const ADMIN_ROLE = '_admin';
+const FIELDS_TO_IGNORE = [
+  'currentPassword',
+  'passwordConfirm',
+  'facilitySelect',
+  'contactSelect',
+  'tokenLoginEnabled',
+];
 
 angular
   .module('controllers')
@@ -32,28 +39,21 @@ angular
 
     Languages().then(languages => $scope.enabledLocales = languages);
 
-    const getRole = roles => {
+    const getRoles = roles => {
       if (!roles || !roles.length) {
-        return;
+        return [];
       }
       if (roles.indexOf(ADMIN_ROLE) !== -1) {
-        return ADMIN_ROLE;
+        return [ ADMIN_ROLE ];
       }
       if (!$scope.roles) {
         // no configured roles
-        return;
+        return [];
       }
       // find all the users roles that are specified in the configuration
-      const knownRoles = roles.filter(function(role) {
+      return roles.filter(function(role) {
         return !!$scope.roles[role];
       });
-      if (knownRoles.length) {
-        // Pre 2.16.0 versions stored the role we care about at the end
-        // of the roles array so for backwards compatibility return the
-        // last element.
-        // From 2.16.0 onwards users only have one role.
-        return knownRoles[knownRoles.length - 1];
-      }
     };
 
     const allowTokenLogin = settings => settings.token_login && settings.token_login.enabled;
@@ -89,7 +89,7 @@ angular
             // compare to later to see if it's changed once we've run computeFields();
             facilitySelect: $scope.model.facility_id,
             place: $scope.model.facility_id,
-            role: getRole($scope.model.roles),
+            roles: getRoles($scope.model.roles),
             // ^ Same with contactSelect vs. contact
             contactSelect: $scope.model.contact_id,
             contact: $scope.model.contact_id,
@@ -230,9 +230,21 @@ angular
       return true;
     };
 
+    const isOnlineUser = (roles) => {
+      if (!$scope.roles) {
+        return true;
+      }
+      for (const [name, role] of Object.entries($scope.roles)) {
+        if (role.offline && roles.includes(name)) {
+          return false;
+        }
+      }
+      return true;
+    };
+
     const validateContactAndFacility = () => {
-      const role = $scope.roles && $scope.roles[$scope.editUserModel.role];
-      if (!role || !role.offline) {
+      const isOnline = isOnlineUser($scope.editUserModel.roles);
+      if (isOnline) {
         return !$scope.editUserModel.contact || validateRequired('place', 'Facility');
       }
       const hasPlace = validateRequired('place', 'Facility');
@@ -274,7 +286,17 @@ angular
         });
     };
 
-    const validateRole = () => validateRequired('role', 'configuration.role');
+    const validateRole = () => {
+      const roles = $scope.editUserModel.roles || [];
+      if (!roles.length) {
+        Translate.fieldIsRequired('configuration.role')
+          .then(function(value) {
+            $scope.errors.roles = value;
+          });
+        return false;
+      }
+      return true;
+    };
 
     const getUpdatedKeys = (model, existingModel) => {
       return Object.keys(model).filter(key => {
@@ -282,16 +304,17 @@ angular
           return false;
         }
         if (key === 'password') {
-          return model[key] && model[key] !== '';
+          return model.password && model.password !== '';
         }
-        const metaFields = [
-          'currentPassword',
-          'passwordConfirm',
-          'facilitySelect',
-          'contactSelect',
-          'tokenLoginEnabled',
-        ];
-        if (metaFields.includes(key)) {
+        if (key === 'roles') {
+          const updated = model.roles ? model.roles.sort() : [];
+          const existing = existingModel.roles ? existingModel.roles.sort() : [];
+          if (updated.length !== existing.length) {
+            return true;
+          }
+          return !updated.every((role, i) => role === existing[i]);
+        }
+        if (FIELDS_TO_IGNORE.includes(key)) {
           // We don't want to return these 'meta' fields
           return false;
         }
@@ -305,11 +328,7 @@ angular
         .then(existingModel => {
           const updates = {};
           getUpdatedKeys(model, existingModel).forEach(key => {
-            if (key === 'role') {
-              updates.roles = [model[key]];
-            } else {
-              updates[key] = model[key];
-            }
+            updates[key] = model[key];
           });
 
           return updates;
@@ -318,13 +337,13 @@ angular
 
     let previousQuery;
     const validateReplicationLimit = () => {
-      const role = $scope.roles && $scope.roles[$scope.editUserModel.role];
-      if (!role || !role.offline) {
+      const isOnline = isOnlineUser($scope.editUserModel.roles);
+      if (isOnline) {
         return $q.resolve();
       }
 
       const query = {
-        role: $scope.editUserModel.role,
+        role: $scope.editUserModel.roles,
         facility_id: $scope.editUserModel.place,
         contact_id: $scope.editUserModel.contact
       };
@@ -409,6 +428,15 @@ angular
         });
     };
 
+    $scope.toggleRole = (role) => {
+      const index = $scope.editUserModel.roles.indexOf(role);
+      if (index === -1) {
+        $scope.editUserModel.roles.push(role);
+      } else {
+        $scope.editUserModel.roles.splice(index, 1);
+      }
+    };
+
     // #edit-user-profile is the admin view, which has additional fields.
     $scope.editUser = () => {
       $scope.setProcessing();
@@ -452,3 +480,4 @@ angular
 
     };
   });
+

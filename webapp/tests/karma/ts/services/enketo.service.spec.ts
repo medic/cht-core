@@ -26,6 +26,7 @@ import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { GlobalActions } from '@mm-actions/global';
+import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 
 describe('Enketo service', () => {
@@ -72,6 +73,8 @@ describe('Enketo service', () => {
   let zScoreService;
   let zScoreUtil;
   let globalActions;
+  let consoleErrorMock;
+  let feedbackService;
 
   beforeEach(() => {
     enketoInit = sinon.stub();
@@ -122,6 +125,8 @@ describe('Enketo service', () => {
     zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
     globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
+    consoleErrorMock = sinon.stub(console, 'error');
+    feedbackService = { submit: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -154,6 +159,7 @@ describe('Enketo service', () => {
         { provide: ZScoreService, useValue: zScoreService },
         { provide: TransitionsService, useValue: transitionsService },
         { provide: TranslateService, useValue: translateService },
+        { provide: FeedbackService, useValue: feedbackService },
       ],
     });
 
@@ -215,8 +221,10 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
       EnketoPrepopulationData.resolves('<xml></xml>');
-      const expected = ['nope', 'still nope'];
-      enketoInit.returns(expected);
+      const expectedErrorTitle = `Failed during the form "myform" rendering : `;
+      const expectedErrorDetail = ['nope', 'still nope'];
+      const expectedErrorMessage = expectedErrorTitle + JSON.stringify(expectedErrorDetail);
+      enketoInit.returns(expectedErrorDetail);
       return service
         .render($('<div></div>'), mockEnketoDoc('myform'))
         .then(() => {
@@ -224,7 +232,11 @@ describe('Enketo service', () => {
         })
         .catch(actual => {
           expect(enketoInit.callCount).to.equal(1);
-          expect(actual.message).to.equal(JSON.stringify(expected));
+          expect(actual.message).to.equal(expectedErrorMessage);
+          expect(consoleErrorMock.callCount).to.equal(1);
+          expect(consoleErrorMock.args[0][0]).to.equal(expectedErrorTitle);
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorMessage);
         });
     });
 
@@ -276,7 +288,6 @@ describe('Enketo service', () => {
     });
 
     it('leaves img wrapped and hides loader if failed to load', () => {
-      const consoleErrorMock = sinon.stub(console, 'error');
       UserContact.resolves({ contact_id: '123' });
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')

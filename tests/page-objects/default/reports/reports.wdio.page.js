@@ -2,21 +2,23 @@ const commonElements = require('../common/common.wdio.page');
 const searchElements = require('../search/search.wdio.page');
 const utils = require('../../../utils');
 
-const reportListID = '#reports-list';
+const REPORTS_LIST_ID = '#reports-list';
+const SELECT_ALL_CHECKBOX = `${REPORTS_LIST_ID} .select-all input[type="checkbox"]`;
 const reportBodyDetailsSelector = '#reports-content .report-body .details';
 const reportBodyDetails = () => $(reportBodyDetailsSelector);
 const reportTasks = () =>  $(`${reportBodyDetailsSelector} .scheduled-tasks`);
-const reportBody = '#reports-content .report-body';
+const REPORT_BODY = '#reports-content .report-body';
+const reportBody = () => $(REPORT_BODY);
 const selectedCaseId = () => $(`${reportBodyDetailsSelector} > ul > li > p > span > a`);
 const selectedCaseIdLabel = () => $(`${reportBodyDetailsSelector} ul > li > label > span`);
 const submitterPlace = () => $('.position a');
 const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
-const firstReport = () => $(`${reportListID} li:first-child`);
-const reportList = () => $(`${reportListID}`);
-const allReports = () => $$(`${reportListID} li.content-row`);
-const reportsByUUID = (uuid) => $$(`${reportListID} li.content-row[data-record-id="${uuid}"]`);
-const reportRowSelector = `${reportListID} .content-row`;
+const firstReport = () => $(`${REPORTS_LIST_ID} li:first-child`);
+const reportList = () => $(`${REPORTS_LIST_ID}`);
+const allReports = () => $$(`${REPORTS_LIST_ID} li.content-row`);
+const reportsByUUID = (uuid) => $$(`${REPORTS_LIST_ID} li.content-row[data-record-id="${uuid}"]`);
+const reportRowSelector = `${REPORTS_LIST_ID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const editReportButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
@@ -32,7 +34,10 @@ const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
 
 const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
-const deleteAllButton = () => $('.action-container .detail-actions .delete-all');
+const deleteAllButton = () => $('.desktop.multiselect-bar-container .bulk-delete');
+const selectedReportsCount = () => $('.desktop.multiselect-bar-container .count-label');
+const DELETE_CONFIRM_MODAL = 'mm-modal#bulk-delete-confirm';
+const bulkDeleteModal = () => $(DELETE_CONFIRM_MODAL);
 const dateFilter = () => $('#date-filter');
 const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]');
 const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
@@ -45,10 +50,9 @@ const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
-const deselectReport = () => $(`${reportBody} .deselect`);
-const itemSummary = () => $(`${reportBody} .item-summary`);
-const checkCss = 'input[type="checkbox"]';
-
+const itemSummary = () => $(`${REPORT_BODY} .item-summary`);
+const reportCheckbox = (uuid) => $(`${REPORTS_LIST_ID} li[data-record-id="${uuid}"] input[type="checkbox"]`);
+const selectedReportsCheckboxes = () => $$(`${REPORTS_LIST_ID} li input[type="checkbox"]:checked`);
 const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
 const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
@@ -136,7 +140,7 @@ const getListReportInfo = async (listElement) => {
 };
 
 const reportsListDetails = async () => {
-  const reports = await $$(`${reportListID} li`);
+  const reports = await $$(`${REPORTS_LIST_ID} li`);
   const reportDetails = [];
   for (const report of reports) {
     reportDetails.push(await getListReportInfo(report));
@@ -145,60 +149,85 @@ const reportsListDetails = async () => {
   return reportDetails;
 };
 
-const collapseSelection = async () => {
+const expandSelectedReportSummary = async () => {
+  await (await itemSummary()).waitForClickable();
   await (await itemSummary()).click();
-  expect(await (await reportBodyDetails()).isExisting()).to.be.false;
+  await (await reportBodyDetails()).waitForDisplayed();
+};
+
+const collapseSelectedReportSummary = async () => {
+  await (await itemSummary()).waitForClickable();
+  await (await itemSummary()).click();
+  await (await reportBodyDetails()).waitForDisplayed({ reverse: true });
 };
 
 const deleteSelectedReports = async () => {
-  const confirmButton = () => $('.btn.submit.btn-danger');
-  const completeButton = () => $('a=Complete');
+  await (await deleteAllButton()).waitForDisplayed();
   await (await deleteAllButton()).click();
-  await (await confirmButton()).click();
-  await (await completeButton()).click();
-  await (await completeButton()).waitForDisplayed({ reverse: true });
-  await (await firstReport()).waitForDisplayed();
-  return await $$(reportBody);
+
+  await (await bulkDeleteModal()).waitForDisplayed();
+  await (await $(`${DELETE_CONFIRM_MODAL} .btn.submit.btn-danger`)).click();
+
+  const bulkDeleteConfirmBtn = () => $(`${DELETE_CONFIRM_MODAL} [test-id="bulkdelete.complete.action"]`);
+  await (await bulkDeleteConfirmBtn()).waitForDisplayed();
+  await (await bulkDeleteConfirmBtn()).click();
+
+  await (await bulkDeleteModal()).waitForDisplayed({ reverse: true });
+  await commonElements.waitForPageLoaded();
+  await (await reportList()).waitForDisplayed();
 };
 
-const deselectAll = async () => {
-  const deselectAllButton = await $('.action-container .deselect-all');
-  await deselectAllButton.click();
-  const count = await $('#reports-content .selection-count > span');
-  await count.waitForExist({ reverse: true });
-  return await $$(reportBody);
+const verifyMultiselectElementsDisplay = async (shouldHide=false) => {
+  await (await reportBody()).waitForDisplayed( { reverse: shouldHide });
+  await (await deleteAllButton()).waitForClickable( { reverse: shouldHide });
+  await (await selectedReportsCount()).waitForDisplayed({ reverse: shouldHide });
+  return {
+    countLabel: shouldHide ? false : await (await selectedReportsCount()).getText(),
+    selectedCount: (await selectedReportsCheckboxes()).length,
+  };
 };
 
-const expandSelection = async () => {
-  await (await itemSummary()).click();
-  await (await $(reportBodyDetailsSelector)).waitForDisplayed();
+const isSelectAll = async () => {
+  return await (await $(`${SELECT_ALL_CHECKBOX}:checked`)).isExisting();
 };
 
 const selectAll = async () => {
-  await (await $('.action-container .select-all')).click();
-  await (await $('#reports-content .selection-count > span')).waitForDisplayed();
-  return await $$(reportBody);
+  if (await isSelectAll()) {
+    return;
+  }
+  await (await $(SELECT_ALL_CHECKBOX)).click();
+  return await verifyMultiselectElementsDisplay();
+};
+
+const deselectAll = async () => {
+  if (!(await isSelectAll())) {
+    return;
+  }
+  await (await $(SELECT_ALL_CHECKBOX)).click();
+  return await verifyMultiselectElementsDisplay(true);
+};
+
+const isReportSelected = async (uuid) => {
+  const checkbox = $(`${REPORTS_LIST_ID} li[data-record-id="${uuid}"] input[type="checkbox"]:checked`);
+  return await (await checkbox).isExisting();
 };
 
 const selectReports = async (uuids) => {
   for (const uuid of uuids) {
-    await (await reportByUUID(uuid)).$(checkCss).click();
-    await (await deleteAllButton()).waitForClickable();
+    if (!(await isReportSelected(uuid))) {
+      await (await reportCheckbox(uuid)).click();
+    }
   }
-  return await $$(reportBody);
+  return verifyMultiselectElementsDisplay();
 };
 
-const startSelectMode = async (savedUuids) => {
-  const selectModeButton = () => $('.action-container .select-mode-start');
-  await (await selectModeButton()).click();
-  const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
-  await checkbox.waitForDisplayed();
-};
-
-const stopSelectMode = async (savedUuids) => {
-  await (await $('.action-container .select-mode-stop')).click();
-  const checkbox = (await reportByUUID(savedUuids[0])).$(checkCss);
-  await checkbox.waitForDisplayed({ reverse: true });
+const deselectReports = async (uuids, shouldHideElements=false) => {
+  for (const uuid of uuids) {
+    if (await isReportSelected(uuid)) {
+      await (await reportCheckbox(uuid)).click();
+    }
+  }
+  return verifyMultiselectElementsDisplay(shouldHideElements);
 };
 
 const filterByDate = async (startDate, endDate) => {
@@ -269,6 +298,11 @@ const getCurrentReportId = async () => {
   return currentUrl.slice(reportBaseUrl.length);
 };
 
+const getLastSubmittedReportId = async () => {
+  await (await firstReport()).click();
+  return getCurrentReportId();
+};
+
 const getReportDetailFieldValueByLabel = async (label) => {
   await reportBodyDetails().waitForDisplayed();
   for (const field of await reportDetailsFields()) {
@@ -302,7 +336,6 @@ const resetFilter = async () => {
 };
 
 const openReport = async (reportId) => {
-  await resetFilter();
   await (await firstReport()).waitForDisplayed();
   const reportListItem = await reportByUUID(reportId);
   await reportListItem.waitForDisplayed();
@@ -323,6 +356,7 @@ const fieldByIndex = async (index) => {
 
 module.exports = {
   getCurrentReportId,
+  getLastSubmittedReportId,
   reportList,
   firstReport,
   submitterName,
@@ -348,15 +382,17 @@ module.exports = {
   getSummaryField,
   submitForm,
   reportsListDetails,
-  stopSelectMode,
-  startSelectMode,
   selectAll,
-  selectReports,
-  deselectReport,
-  expandSelection,
-  collapseSelection,
-  deleteSelectedReports,
   deselectAll,
+  reportCheckbox,
+  isReportSelected,
+  selectReports,
+  deselectReports,
+  selectedReportsCheckboxes,
+  expandSelectedReportSummary,
+  collapseSelectedReportSummary,
+  deleteSelectedReports,
+  bulkDeleteModal,
   firstReportDetailField,
   reportByUUID,
   filterByDate,
@@ -367,6 +403,7 @@ module.exports = {
   getReportSubject,
   getReportType,
   getListReportInfo,
+  resetFilter,
   openReport,
   reportTasks,
   editReport,

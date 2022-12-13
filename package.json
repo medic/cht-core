@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -16,10 +16,12 @@
     "webdriver": "webdriver-manager update && webdriver-manager start",
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js",
     "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js",
+    "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
     "wdio": "wdio run ./tests/e2e/default/wdio.conf.js",
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
-    "standard-wdio": "wdio run ./tests/e2e/standard/wdio.conf.js"
+    "standard-wdio": "wdio run ./tests/e2e/standard/wdio.conf.js",
+    "default-wdio-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^12.1.0",

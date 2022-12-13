@@ -5,7 +5,6 @@ const cancelUserModalButton = () => $('[test-id="modal-cancel-btn"]');
 const addUserDialog = () => $('div#edit-user-profile');
 const userName = () => $('#edit-username');
 const userFullName = () => $('#fullname');
-const userRole = () => $('#role');
 const userPlace = () => $('//span[@aria-labelledby="select2-facilitySelect-container"]');
 const userAssociatedContact = () => $('//span[@aria-labelledby="select2-contactSelect-container"]');
 const userPassword = () => $('#edit-password');
@@ -57,7 +56,7 @@ const inputAddUserFields = async (username, fullname, role, place, associatedCon
   confirmPassword = password) => {
   await (await userName()).addValue(username);
   await (await userFullName()).addValue(fullname);
-  await (await userRole()).selectByVisibleText(role);
+  await (await $(`#role-select input[value="${role}"]`)).click();
 
   if (!_.isEmpty(place)) {
     await selectPlace(place);

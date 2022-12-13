@@ -2,8 +2,6 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const moment = require('moment');
 const utils = require('../../src/lib/utils');
-const transition = require('../../src/transitions/registration');
-const schedules = require('../../src/lib/schedules');
 const config = require('../../src/config');
 const contactTypeUtils = require('@medic/contact-types-utils');
 
@@ -37,10 +35,27 @@ const getScheduledMessage = (doc, idx) =>
   doc.scheduled_tasks[idx].messages[0];
 
 describe('functional schedules', () => {
-  afterEach(() => sinon.restore());
+  let schedules;
+  let transition;
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon
+        .stub()
+        .returns({}),
+      get: sinon.stub()
+    });
+    schedules = require('../../src/lib/schedules');
+    transition = require('../../src/transitions/registration');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('registration sets up schedule', () => {
-    sinon.stub(config, 'get').returns([{
+    config.get.returns([{
       form: 'PATR',
       events: [
         {
@@ -113,7 +128,7 @@ describe('functional schedules', () => {
 
   it('registration sets up schedule using translation_key', () => {
 
-    sinon.stub(config, 'get').withArgs('registrations').returns([{
+    config.get.withArgs('registrations').returns([{
       form: 'PATR',
       events: [{
         name: 'on_create',
@@ -171,7 +186,7 @@ describe('functional schedules', () => {
   });
 
   it('registration sets up schedule using bool_expr', () => {
-    sinon.stub(config, 'get').returns([{
+    config.get.returns([{
       form: 'PATR',
       events: [
         {
@@ -243,7 +258,7 @@ describe('functional schedules', () => {
   });
 
   it('patients chp is resolved correctly as recipient with hardcoded contact types', () => {
-    sinon.stub(config, 'get').returns([{
+    config.get.returns([{
       form: 'PATR',
       events: [],
       validations: [],
@@ -279,7 +294,7 @@ describe('functional schedules', () => {
   });
 
   it('patients chp is resolved correctly as recipient with configurable contact types', () => {
-    sinon.stub(config, 'get').returns([{
+    config.get.returns([{
       form: 'PATR',
       events: [],
       validations: [],
@@ -291,7 +306,7 @@ describe('functional schedules', () => {
     sinon.stub(schedules, 'getScheduleConfig').returns({});
     sinon.stub(utils, 'getRegistrations').resolves([]);
     sinon.stub(utils, 'translate').withArgs('thanks', 'en').returns('Thanks');
-    sinon.stub(config, 'getAll').returns({ contact_types: [{ id: 'patient', person: true }] });
+    config.getAll.returns({ contact_types: [{ id: 'patient', person: true }] });
 
     const doc = {
       reported_date: moment().toISOString(),
@@ -322,7 +337,7 @@ describe('functional schedules', () => {
 
   it('two phase registration sets up schedule using bool_expr', () => {
 
-    sinon.stub(config, 'get').returns([{
+    config.get.returns([{
       form: 'PATR',
       events: [
         {
@@ -378,7 +393,7 @@ describe('functional schedules', () => {
         patient_id: '123',
       }
     };
-    sinon.stub(config, 'getAll').returns({ contact_types: [{ id: 'some_patient', person: true }, { id: 'place' }] });
+    config.getAll.returns({ contact_types: [{ id: 'some_patient', person: true }, { id: 'place' }] });
 
     return transition.onMatch({ doc: doc }).then(complete => {
       assert.equal(complete, true);
@@ -412,7 +427,7 @@ describe('functional schedules', () => {
 
   it('no schedule using false bool_expr', () => {
 
-    sinon.stub(config, 'get').returns([{
+    config.get.returns([{
       form: 'PATR',
       events: [
         {
@@ -473,7 +488,7 @@ describe('functional schedules', () => {
   });
 
   it('sets correct task state when patient is muted', () => {
-    sinon.stub(config, 'get').returns([{
+    config.get.returns([{
       form: 'PATR',
       events: [{
         name: 'on_create',
@@ -516,7 +531,7 @@ describe('functional schedules', () => {
       fields: { patient_id: '98765' },
       patient: patient
     };
-    sinon.stub(config, 'getAll').returns({ contact_types: [{ id: 'chp', person: true }, { id: 'place' }] });
+    config.getAll.returns({ contact_types: [{ id: 'chp', person: true }, { id: 'place' }] });
 
     return transition.onMatch({ doc: doc })
       .then(complete => {
@@ -530,7 +545,7 @@ describe('functional schedules', () => {
   });
 
   it('sets correct task state when patient is not muted', () => {
-    sinon.stub(config, 'get').returns([{
+    config.get.returns([{
       form: 'PATR',
       events: [{
         name: 'on_create',
@@ -579,7 +594,7 @@ describe('functional schedules', () => {
       fields: { patient_id: '98765' },
       patient: patient
     };
-    sinon.stub(config, 'getAll').returns({ contact_types: [{ id: 'person', person: true }, { id: 'place' }] });
+    config.getAll.returns({ contact_types: [{ id: 'person', person: true }, { id: 'place' }] });
 
     return transition.onMatch({ doc: doc })
       .then(complete => {
@@ -593,7 +608,7 @@ describe('functional schedules', () => {
   });
 
   it('sets correct task state when place is muted', () => {
-    sinon.stub(config, 'get').returns([{
+    config.get.returns([{
       form: 'PATR',
       events: [{
         name: 'on_create',
@@ -651,7 +666,7 @@ describe('functional schedules', () => {
   });
 
   it('sets correct task state when place is not muted', () => {
-    sinon.stub(config, 'get').returns([{
+    config.get.returns([{
       form: 'PATR',
       events: [{
         name: 'on_create',

@@ -401,6 +401,17 @@ const createUsers = async (users, meta = false) => {
   }
 };
 
+const getAllUserSettings = () => db
+  .query('medic-client/doc_by_type', { include_docs: true, key: ['user-settings'] })
+  .then(response => response.rows.map(row => row.doc));
+
+const getUserSettings = ({ contactId, name }) => getAllUserSettings()
+  .then(docs => docs.filter(doc => {
+    const nameMatches = !name || doc.name === name;
+    const contactIdMatches = !contactId || doc.contact_id === contactId;
+    return nameMatches && contactIdMatches;
+  }));
+
 const waitForDocRev = (ids) => {
   ids = ids.map(id => typeof id === 'string' ? { id: id, rev: 1 } : id);
 
@@ -983,14 +994,14 @@ module.exports = {
       });
   },
 
-  getDoc: (id, rev) => {
+  getDoc: (id, rev, parameters = '') => {
     const params = {};
     if (rev) {
       params.rev = rev;
     }
 
     return module.exports.requestOnTestDb({
-      path: `/${id}`,
+      path: `/${id}${parameters}`,
       method: 'GET',
       params,
     });
@@ -1188,6 +1199,11 @@ module.exports = {
   // @return {Promise}
   createUsers: createUsers,
 
+  // Returns all the user settings docs matching the given criteria.
+  // @param {{ name, contactId }} opts - object containing the query parameters
+  // @return {Promise}
+  getUserSettings,
+
   setDebug: debug => e2eDebug = debug,
 
   stopSentinel: () => stopService('sentinel'),
@@ -1206,6 +1222,14 @@ module.exports = {
     return request(options);
   },
 
+  deepFreeze: function(obj) {
+    Object
+      .keys(obj)
+      .filter(prop => typeof obj[prop] === 'object' && !Object.isFrozen(obj[prop]))
+      .forEach(prop => this.deepFreeze(obj[prop]));
+    return Object.freeze(obj);
+  },
+
   // delays executing a function that returns a promise with the provided interval (in ms)
   delayPromise: (promiseFn, interval) => {
     if (typeof promiseFn === 'number') {
@@ -1214,7 +1238,9 @@ module.exports = {
     }
 
     return new Promise((resolve, reject) => {
-      setTimeout(() => promiseFn().then(resolve).catch(reject), interval);
+      setTimeout(() => promiseFn()
+        .then(resolve)
+        .catch(reject), interval);
     });
   },
 

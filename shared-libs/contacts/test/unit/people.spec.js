@@ -1,12 +1,23 @@
-const controller = require('../../../src/controllers/people');
+const controller = require('../../src/people');
 const chai = require('chai');
-const places = require('../../../src/controllers/places');
-const cutils = require('../../../src/controllers/utils');
-const config = require('../../../src/config');
-const db = require('../../../src/db');
+const places = require('../../src/places');
+const cutils = require('../../src/libs/utils');
+const config = require('../../src/libs/config');
+const db = require('../../src/libs/db');
+const lineage = require('../../src/libs/lineage');
 const sinon = require('sinon');
 
 describe('people controller', () => {
+  let fetchHydratedDoc;
+  let minifyLineage;
+
+  beforeEach(() => {
+    config.init({ get: sinon.stub() });
+    db.init({ medic: { post: sinon.stub() } });
+    fetchHydratedDoc = sinon.stub();
+    minifyLineage = sinon.stub();
+    lineage.init({ fetchHydratedDoc, minifyLineage });
+  });
 
   afterEach(() => {
     sinon.restore();
@@ -20,31 +31,31 @@ describe('people controller', () => {
     });
 
     it('returns error on wrong doc type', () => {
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      config.get.returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'shoe' });
       chai.expect(actual).to.equal('Wrong type, this is not a person.');
     });
 
     it('returns error on wrong doc contact_type', () => {
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      config.get.returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'contact', contact_type: 'shoe' });
       chai.expect(actual).to.equal('Wrong type, this is not a person.');
     });
 
     it('returns error if missing name property', () => {
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      config.get.returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'person' });
       chai.expect(actual).to.equal('Person is missing a "name" property.');
     });
 
     it('returns error if name is an integer', () => {
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      config.get.returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'person', name: 1 });
       chai.expect(actual).to.equal('Property "name" must be a string.');
     });
 
     it('returns error if name is an object', () => {
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
+      config.get.returns([{ id: 'person', person: true }]);
       const actual = controller._validatePerson({ type: 'person', name: {} });
       chai.expect(actual).to.equal('Property "name" must be a string.');
     });
@@ -54,7 +65,7 @@ describe('people controller', () => {
   describe('getPerson', () => {
 
     it('returns custom message on 404 errors.', done => {
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').returns(Promise.reject({status: 404}));
+      fetchHydratedDoc.rejects({status: 404});
       controller._getPerson('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find person.');
         done();
@@ -62,7 +73,7 @@ describe('people controller', () => {
     });
 
     it('returns not found message if doc is wrong type.', done => {
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').resolves({type: 'clinic'});
+      fetchHydratedDoc.resolves({type: 'clinic'});
       controller._getPerson('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find person.');
         done();
@@ -70,8 +81,8 @@ describe('people controller', () => {
     });
 
     it('succeeds and returns doc when person type.', () => {
-      sinon.stub(config, 'get').returns([{ id: 'person', person: true }]);
-      sinon.stub(controller._lineage, 'fetchHydratedDoc').resolves({type: 'person'});
+      config.get.returns([{ id: 'person', person: true }]);
+      fetchHydratedDoc.resolves({type: 'person'});
       return controller._getPerson('x').then(doc => {
         chai.expect(doc).to.deep.equal({ type: 'person' });
       });
@@ -84,7 +95,7 @@ describe('people controller', () => {
     it('returns error from db insert', done => {
       sinon.stub(controller, '_validatePerson').returns();
       sinon.stub(places, 'getOrCreatePlace').resolves();
-      sinon.stub(db.medic, 'post').returns(Promise.reject('yucky'));
+      db.medic.post.returns(Promise.reject('yucky'));
       controller.createPerson({}).catch(err => {
         chai.expect(err).to.equal('yucky');
         done();
@@ -96,7 +107,7 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: 'x'
       };
-      sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
+      config.get.returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
       sinon.stub(cutils, 'isDateStrValid').returns(false);
       controller.createPerson(person).catch(err => {
@@ -112,9 +123,9 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: '123'
       };
-      sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
+      config.get.returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
-      const post = sinon.stub(db.medic, 'post').resolves();
+      const post = db.medic.post.resolves();
       return controller.createPerson(person).then(() => {
         chai.expect(post.args[0][0].reported_date).to.equal(123);
         chai.expect(config.get.args[0]).to.deep.equal([]);
@@ -126,9 +137,9 @@ describe('people controller', () => {
         name: 'Test',
         reported_date: '2011-10-10T14:48:00-0300'
       };
-      sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
+      config.get.returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves();
-      const post = sinon.stub(db.medic, 'post').resolves();
+      const post = db.medic.post.resolves();
       return controller.createPerson(person).then(() => {
         chai.expect(post.args[0][0].reported_date).to.equal(new Date('2011-10-10T14:48:00-0300').valueOf());
         chai.expect(config.get.args[0]).to.deep.equal([]);
@@ -155,18 +166,18 @@ describe('people controller', () => {
           _id: 'b'
         }
       };
-      sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
+      config.get.returns({ contact_types: [{ id: 'person', person: true }] });
       sinon.stub(places, 'getOrCreatePlace').resolves(place);
-      sinon.stub(controller._lineage, 'minifyLineage').returns(minified);
-      sinon.stub(db.medic, 'post').resolves();
+      lineage.minifyLineage.returns(minified);
+      db.medic.post.resolves();
       return controller.createPerson(person).then(() => {
         const doc = db.medic.post.args[0][0];
         chai.expect(!doc.place).to.equal(true);
         chai.expect(doc.parent).to.deep.equal(minified);
         chai.expect(places.getOrCreatePlace.callCount).to.equal(1);
         chai.expect(places.getOrCreatePlace.args[0][0]).to.equal('a');
-        chai.expect(controller._lineage.minifyLineage.callCount).to.equal(1);
-        chai.expect(controller._lineage.minifyLineage.args[0][0]).to.deep.equal(place);
+        chai.expect(lineage.minifyLineage.callCount).to.equal(1);
+        chai.expect(lineage.minifyLineage.args[0][0]).to.deep.equal(place);
         chai.expect(config.get.args[0]).to.deep.equal([]);
       });
     });
@@ -175,8 +186,8 @@ describe('people controller', () => {
       const person = {
         name: 'Test'
       };
-      sinon.stub(config, 'get').returns({ contact_types: [{ id: 'person', person: true }] });
-      sinon.stub(db.medic, 'post').resolves();
+      config.get.returns({ contact_types: [{ id: 'person', person: true }] });
+      db.medic.post.resolves();
       return controller.createPerson(person).then(() => {
         const doc = db.medic.post.args[0][0];
         // should be set to within 5 seconds of now

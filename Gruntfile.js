@@ -446,6 +446,12 @@ module.exports = function(grunt) {
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
+      'wdio-run-default-mobile': {
+        cmd: [
+          'npm run default-wdio-mobile'
+        ].join(' && '),
+        stdio: 'inherit', // enable colors!
+      },
       'test-config-default': {
         cmd: [
           'cd config/default',
@@ -1002,6 +1008,10 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-webdriver-standard', 'Run e2e tests using webdriverIO for standard config', [
     'exec:wdio-run-standard'
+  ]);
+
+  grunt.registerTask('ci-webdriver-default-mobile', 'Run e2e tests using webdriverIO for default config in mobile screen', [
+    'exec:wdio-run-default-mobile'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
