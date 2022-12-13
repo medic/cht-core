@@ -1,0 +1,72 @@
+{
+  "extends": "@medic",
+  "parserOptions": {
+    "ecmaVersion": 6
+  },
+  "plugins": ["promise", "node"],
+  "rules": {
+    "array-bracket-newline": ["error", "consistent"],
+    "array-callback-return": ["error", { "allowImplicit": true }],
+    "arrow-spacing": ["error", { "before": true, "after": true }],
+    "brace-style": ["error", "1tbs"],
+    "comma-spacing": ["error", { "before": false, "after": true }],
+    "comma-style": ["error", "last"],
+    "default-param-last": "error",
+    "dot-location": ["error", "property"],
+    "dot-notation": ["error", { "allowKeywords": true }],
+    "func-call-spacing": ["error", "never"],
+    "func-style": ["error", "expression"],
+    "linebreak-style": ["error", "unix"],
+    "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
+    "no-alert": "error",
+    "no-extra-bind": "error",
+    "no-lone-blocks": "error",
+    "no-nested-ternary": "error",
+    "no-undef-init": "error",
+    "no-useless-rename": "error",
+    "no-whitespace-before-property": "error",
+    "node/no-exports-assign": "error",
+    "rest-spread-spacing": ["error", "never"],
+    "semi-spacing": ["error", { "before": false, "after": true }],
+    "semi-style": ["error", "last"],
+    "template-curly-spacing": "error",
+    "unicode-bom": ["error", "never"]
+  },
+  "overrides": [
+    {
+      "files": [ "Gruntfile.js" ],
+      "env": {
+        "node": true
+      }
+    },
+    {
+      "files": [ "build/service-worker.js" ],
+      "rules": {
+        "max-len": "off",
+        "no-console": "off",
+        "no-var": "off"
+      }
+    },
+    {
+      "files": [ "**/test/**", "**/tests/**" ],
+      "rules": {
+        "promise/catch-or-return": "error"
+      }
+    },
+    {
+      "files": ["config/**/**"],
+      "rules": {
+        "brace-style": "off",
+        "array-bracket-newline": "off",
+        "func-style": "off"
+      }
+    },
+    {
+      "files": ["build/service-worker.js"],
+      "rules": {
+        "array-callback-return": "off",
+        "func-style": "off"
+      }
+    }
+  ]
+}

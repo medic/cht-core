@@ -4,7 +4,7 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-const compileUrl = (path) => {
+const compileUrl = path => {
     try {
         return new URL(path, process.env.COUCH_URL);
     } catch(e) {
@@ -14,8 +14,8 @@ const compileUrl = (path) => {
 };
 
 const getChtUsers = async () => {
-    console.log('   Using URL taken from COUCH_URL env var: ', process.env.COUCH_URL)
-    console.log('')
+    console.log('   Using URL taken from COUCH_URL env var: ', process.env.COUCH_URL);
+    console.log('');
     const url = compileUrl('/api/v2/users');
     const options = {
         uri: url.href,
@@ -24,14 +24,14 @@ const getChtUsers = async () => {
 
     return request.get(options)
         .then(users => {
-            if (typeof users == 'object' ){
-                console.log('   Found' , users.length, "users\n")
-                return users
+            if (typeof users === 'object' ){
+                console.log('   Found', users.length, 'users\n');
+                return users;
             }
         });
 };
 
-const getObjectFromMedicDb = async function(id){
+const getObjectFromMedicDb = async id => {
     const url = compileUrl('/medic/' + id);
     const options = {
         uri: url.href,
@@ -41,22 +41,22 @@ const getObjectFromMedicDb = async function(id){
     return request.get(options)
         .then(object => {
             return object;
-        })
+        });
 
 };
 
-const hasDefaultContact = async function(user){
-    if(typeof user.place == 'object' && typeof user.contact == 'object' &&  user.place._id  ){
+const hasDefaultContact = async user => {
+    if(typeof user.place === 'object' && typeof user.contact === 'object' &&  user.place._id  ){
         const place = await getObjectFromMedicDb(user.place._id);
-        return !(typeof place.contact == 'object' && !place.contact._id);
+        return !(typeof place.contact === 'object' && !place.contact._id);
     } else {
         // return true for invalid users like admin or medic so we don't process them
         return true;
     }
 };
 
-const filterUsersForDefaultPlace = async function(users){
-    let filteredUsers = [];
+const filterUsersForDefaultPlace = async users => {
+    const filteredUsers = [];
     for (const user of users) {
         const defaultSet = await hasDefaultContact(user);
         if(!defaultSet){
@@ -81,10 +81,10 @@ const savePlace = async (placeId, contactId) => {
 };
 
 
-const setContactsAsPlacesDefaults = async function (filteredUsers){
+const setContactsAsPlacesDefaults = async filteredUsers => {
     let count = 0;
     for (const user of filteredUsers) {
-        console.log('   Setting default place for user', user.id)
+        console.log('   Setting default place for user', user.id);
         await savePlace(user.place._id, user.contact._id);
         count++;
     }
@@ -92,23 +92,23 @@ const setContactsAsPlacesDefaults = async function (filteredUsers){
 };
 
 const go = async () => {
-    console.log("\nStart\n");
+    console.log('\nStart\n');
     try {
         const allUsers = await getChtUsers();
         const filteredUsers = await filterUsersForDefaultPlace(allUsers);
         const updatedCount = await setContactsAsPlacesDefaults(filteredUsers);
-        console.log("\n   Updated", updatedCount, 'users');
+        console.log('\n   Updated', updatedCount, 'users');
     } catch (e) {
         if (e.statusCode === 401) {
             console.log('   Bad authentication for CouchDB. Check that COUCH_URL has correct username and password.');
             return;
         }
 
-        console.log("   " + e.message);
-        if (process.env.DEBUG === "True"){
-            console.log("\n   " + e.stack);
+        console.log('   ' + e.message);
+        if (process.env.DEBUG === 'True'){
+            console.log('\n   ' + e.stack);
         } else {
-            console.log("\n   Pass DEBUG=True to see stack trace");
+            console.log('\n   Pass DEBUG=True to see stack trace');
         }
     }
 };
