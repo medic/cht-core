@@ -1,4 +1,3 @@
-'use strict'
 import request from 'request-promise-native';
 import express from 'express';
 
