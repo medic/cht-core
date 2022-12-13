@@ -8,12 +8,12 @@ A requirement is that each user has both a place and a contact assigned to them.
 
 To install, `cd` into this directory and call `npm install`
 
-To run, call `COUCH_URL=https://USER:PASSWORD@CHT-URL node index.js`. So if your CHT URL was `127-0-0-1.my.local-ip.co:10445` and your admin user login was `medic` and password was `password`, you would call `COUCH_URL=https://medic:password@127-0-0-1.my.local-ip.co:10445 node index.js`.
+To run, call `COUCH_URL=https://USER:PASSWORD@CHT-URL node index.cjs`. So if your CHT URL was `127-0-0-1.my.local-ip.co:10445` and your admin user login was `medic` and password was `password`, you would call `COUCH_URL=https://medic:password@127-0-0-1.my.local-ip.co:10445 node index.cjs`.
 
 ### Sample output
 
 ```shell
-COUCH_URL=https://medic:password@127-0-0-1.my.local-ip.co:10445 node index.js
+COUCH_URL=https://medic:password@127-0-0-1.my.local-ip.co:10445 node index.cjs
 
 Start
 
