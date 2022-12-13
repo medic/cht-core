@@ -31,42 +31,5 @@
     "semi-style": ["error", "last"],
     "template-curly-spacing": "error",
     "unicode-bom": ["error", "never"]
-  },
-  "overrides": [
-    {
-      "files": [ "Gruntfile.js" ],
-      "env": {
-        "node": true
-      }
-    },
-    {
-      "files": [ "build/service-worker.js" ],
-      "rules": {
-        "max-len": "off",
-        "no-console": "off",
-        "no-var": "off"
-      }
-    },
-    {
-      "files": [ "**/test/**", "**/tests/**" ],
-      "rules": {
-        "promise/catch-or-return": "error"
-      }
-    },
-    {
-      "files": ["config/**/**"],
-      "rules": {
-        "brace-style": "off",
-        "array-bracket-newline": "off",
-        "func-style": "off"
-      }
-    },
-    {
-      "files": ["build/service-worker.js"],
-      "rules": {
-        "array-callback-return": "off",
-        "func-style": "off"
-      }
-    }
-  ]
+  }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const request = require('request-promise-native');
 const express = require('express');
 
