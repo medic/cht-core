@@ -25,7 +25,7 @@ describe('Privacy policy', () => {
         await browser.url('/');
         await utils.saveDocs([parent, privacyPolicy]);
         await utils.createUsers([user]);
-        await loginPage.login({ username: user.username, password: user.password });
+        await loginPage.login({ username: user.username, password: user.password, privacyPolicy: true });
       });
 
       after(async () => {
@@ -60,7 +60,7 @@ describe('Privacy policy', () => {
       it('should show french policy on secondary login', async () => {
         await browser.reloadSession();
         await browser.url('/');
-        await loginPage.login({ username: user.username, password: user.password, locale: 'fr' });
+        await loginPage.login({ username: user.username, password: user.password, locale: 'fr', privacyPolicy: true });
         await privacyPage.waitAndAcceptPolicy(await privacyPage.privacyWrapper(), frenchTexts);
         expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       });
@@ -113,7 +113,7 @@ describe('Privacy policy', () => {
       await utils.createUsers([conflictUser]);
       await browser.reloadSession();
       await browser.url('/');
-      await loginPage.login({ username: conflictUser.username, password: conflictUser.password });
+      await loginPage.login({ username: conflictUser.username, password: conflictUser.password, privacyPolicy: true });
     });
 
     afterEach(async () => {

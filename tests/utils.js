@@ -23,18 +23,18 @@ const NETWORK = 'cht-net-e2e';
 const services = {
   haproxy: 'haproxy',
   nginx: 'nginx',
-  couch1: 'couch.1',
-  couch2: 'couch.2',
-  couch3: 'couch.3',
+  couch1: 'couchdb.1',
+  couch2: 'couchdb.2',
+  couch3: 'couchdb.3',
   api: 'api',
   sentinel: 'sentinel',
-  haproxy_healthcheck: 'haproxy-healthcheck',
+  haproxy_healthcheck: 'healthcheck',
 };
 const CONTAINER_NAMES = {};
-let dockerVersion = 1;
+let dockerVersion;
 
 const updateContainerNames = (project = PROJECT_NAME) => {
-  dockerVersion = getDockerVersion();
+  dockerVersion = dockerVersion || getDockerVersion();
 
   Object.entries(services).forEach(([key, service]) => {
     CONTAINER_NAMES[key] = getContainerName(service, project);
@@ -42,6 +42,7 @@ const updateContainerNames = (project = PROJECT_NAME) => {
   CONTAINER_NAMES.upgrade = getContainerName('cht-upgrade-service', 'upgrade');
 };
 const getContainerName = (service, project = PROJECT_NAME) => {
+  dockerVersion = dockerVersion || getDockerVersion();
   const separator = dockerVersion === 2 ? '-' : '_';
   return `${project}${separator}${service}${separator}1`;
 };
@@ -303,10 +304,10 @@ const setUserContactDoc = (attempt=0) => {
 };
 
 /**
- * Deletes documents from the database, including Enketo forms. Use with caution. 
- * @param {array} except - exeptions in the delete method. If this parameter is empty 
+ * Deletes documents from the database, including Enketo forms. Use with caution.
+ * @param {array} except - exeptions in the delete method. If this parameter is empty
  *                         everything will be deleted from the config, including all the enketo forms.
- * @param {boolean} ignoreRefresh 
+ * @param {boolean} ignoreRefresh
  */
 const revertDb = async (except, ignoreRefresh) => {
   if (!except || !except.length) {
@@ -484,6 +485,7 @@ const killSpawnedProcess = (proc) => {
  * @return     {Promise<function>}      promise that returns a function that returns a promise
  */
 const collectLogs = (container, ...regex) => {
+  container = getContainerName(container);
   const matches = [];
   const errors = [];
   let logs = '';
@@ -531,6 +533,7 @@ const collectLogs = (container, ...regex) => {
  * @returns {Promise<Object>} that contains the promise to resolve when logs lines are matched and a cancel function
  */
 const waitForDockerLogs = (container, ...regex) => {
+  container = getContainerName(container);
   let timeout;
   let logs = '';
   let firstLine = false;
@@ -1331,10 +1334,10 @@ module.exports = {
   waitForDockerLogs,
   collectLogs,
 
-  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs(getContainerName('api'), ...regex),
-  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs(getContainerName('sentinel'), ...regex),
-  collectSentinelLogs: (...regex) => collectLogs(getContainerName('sentinel'), ...regex),
-  collectApiLogs: (...regex) => collectLogs(getContainerName('api'), ...regex),
+  waitForApiLogs: (...regex) => module.exports.waitForDockerLogs('api', ...regex),
+  waitForSentinelLogs: (...regex) => module.exports.waitForDockerLogs('sentinel', ...regex),
+  collectSentinelLogs: (...regex) => collectLogs('sentinel', ...regex),
+  collectApiLogs: (...regex) => collectLogs('api', ...regex),
 
   apiLogTestStart: (name) => {
     return module.exports.requestOnTestDb(`/?start=${name.replace(/\s/g, '_')}`);

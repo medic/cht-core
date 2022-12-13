@@ -27,23 +27,27 @@ describe('Delivery', () => {
     await commonPage.goToPeople(healthCenter._id);
 
     //Create Woman1
-    await contactPage.contactPageDefault.addPerson(pregnantWoman1, 
-      {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
+    await contactPage.contactPageDefault.addPerson(
+      pregnantWoman1,
+      { dob: moment().subtract(25, 'years').format('YYYY-MM-DD') }
+    );
 
     // Submit new pregnancy for Woman1
     await pregnancyForm.submitPregnancy();
     await commonPage.waitForPageLoaded();
 
     // Submit 4 pregnancy visits for Woman1 to see the update in the targets
-    for(let i = 0; i < 4; i++){
+    for (let i = 0; i < 4; i++) {
       await pregnancyVisitForm.submitPregnancyVisit();
       await commonPage.waitForPageLoaded();
     }
 
     // Create Woman2
     await commonPage.goToPeople(healthCenter._id);
-    await contactPage.contactPageDefault.addPerson(pregnantWoman2, 
-      {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
+    await contactPage.contactPageDefault.addPerson(
+      pregnantWoman2,
+      { dob: moment().subtract(25, 'years').format('YYYY-MM-DD') }
+    );
 
 
     // Submit new pregnancy for Woman2
@@ -53,6 +57,7 @@ describe('Delivery', () => {
     // Submit 1 pregnancy visit for Woman2 to see the update in the targets
     await pregnancyVisitForm.submitPregnancyVisit();
     await commonPage.waitForPageLoaded();
+
   });
 
   it('Delivery - Woman1 - webapp', async () => {
@@ -112,7 +117,7 @@ describe('Delivery', () => {
     });
 
     await browser.refresh();
-    await commonPage.waitForPageLoaded();    
+    await commonPage.waitForPageLoaded();
     expect(await (await contactPage.pastPregnancyCard()).isDisplayed()).to.be.true;
     expect(await contactPage.getDeliveryCode()).to.equal('Facility birth');
     const visits = (await contactPage.getAncVisits()).split(' of ')[0];
@@ -152,6 +157,6 @@ describe('Delivery', () => {
       { title: 'Active SAM cases', count: '0' },
       { title: 'Active OTP cases', count: '0' },
       { title: 'Active SFP cases', count: '0' }
-    ]);  
+    ]);
   });
 });
