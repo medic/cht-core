@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "name": "set-default-contact",
   "version": "1.0.0",
   "description": "Find users who's contact's places don't have a default contact, and set them to the user's contact",
