@@ -69,7 +69,7 @@ const filterUsersForDefaultPlace = async function(users){
 
 const savePlace = async (placeId, contactId) => {
     const url = compileUrl('/medic/' + placeId);
-    // # fetch the place fresh because we need to ensure revision ID is current
+    // fetch the place fresh because we need to ensure revision ID is current
     const placeObj = await getObjectFromMedicDb(placeId);
     placeObj.contact._id = contactId;
     placeObj.contact.parent = {_id: placeId};
