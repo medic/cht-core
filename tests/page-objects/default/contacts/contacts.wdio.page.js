@@ -1,5 +1,6 @@
 const genericForm = require('../enketo/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
+const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
@@ -236,27 +237,41 @@ const editDistrict = async (districtName, editedName) => {
   await submitForm();
 };
 
-const createNewAction = async (formName, waitForDisplayedForm = true) => {
+const createNewAction = async (formName) => {
   await (await newActionContactButton()).waitForDisplayed();
   await (await newActionContactButton()).waitForClickable();
   await (await newActionContactButton()).click();
-  await openForm(formName, waitForDisplayedForm);
+  await openForm(formName);
 };
 
-const openForm = async (name, waitForDisplayed = true) => {
+const openForm = async (name) => {
   const parent = await newActionContactButton().parentElement();
   await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
 
   for (const form of await forms()) {
     if (await form.getText() === name) {
       await form.click();
-      if(waitForDisplayed) {
-        await (await formTitle()).waitForDisplayed();
-      }
+      await (await formTitle()).waitForDisplayed();
       return;
     }
   }
   throw new Error(`Form with name: "${name}" not found`);
+};
+
+const openFormWithWarning = async (formName) => {
+  await (await newActionContactButton()).waitForClickable();
+  await (await newActionContactButton()).click();
+  const parent = await newActionContactButton().parentElement();
+  await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
+
+  for (const form of await forms()) {
+    if (await form.getText() === formName) {
+      await form.click();
+      await (await modalPage.body()).waitForExist();
+      return modalPage.getModalDetails();
+    }
+  }
+  throw new Error(`Form with name: "${formName}" not found`);
 };
 
 const openReport = async () => {
@@ -363,4 +378,5 @@ module.exports = {
   deathCard,
   getDeathCardInfo,
   contactMuted,
+  openFormWithWarning,
 };
