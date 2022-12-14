@@ -1381,6 +1381,15 @@ mm-search-bar {
   }
 }
 
+.more-options-menu-container {
+  .mat-icon[fonticon="fa-ellipsis-v"] {
+    height: 24px;
+    &:before {
+      font-size: @font-extra-extra-large;
+    }
+  }
+}
+
 .filters.tab-bar .inner {
   display: flex;
   justify-content: flex-end;
@@ -1400,6 +1409,10 @@ mm-search-bar {
 }
 
 @media (max-width: @media-mobile) {
+  .more-options-menu-container {
+    padding: 0 5px;
+  }
+
   #mobile-detection {
     display: inline;
   }
