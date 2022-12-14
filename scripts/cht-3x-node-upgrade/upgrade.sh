@@ -19,7 +19,7 @@ apt  -qq install -y zip
 #curl -o node.12.22.12.zip https://github.com/medic/cht-core/raw/master/scripts/cht-3x-node-upgrade/node.12.22.12.zip
 curl -so /srv/node.12.22.12.zip https://github.com/medic/cht-core/raw/7957-node-upgrade-script/scripts/cht-3x-node-upgrade/node.12.22.12.zip
 
-unzip node.12.22.12.zip
+unzip /srv/node.12.22.12.zip
 chmod +x node
 mv /srv/node /srv/software/medic-core/v2.1.1/x64/bin/node
 rm /srv/node.12.22.12.zip
