@@ -86,9 +86,7 @@ const writeServiceWorkerFile = async () => {
     dynamicUrlToDependencies: {
       '/': [path.join(webappDirectoryPath, 'index.html')], // Webapp's entry point
       '/medic/login': await getLoginPageContents(),
-      '/medic/_design/medic/_rewrite/': [path.join(webappDirectoryPath, 'appcache-upgrade.html')],
-      // TODO iterate over all attachments so they are cached separately
-      '/libs/bar.js': (await getLibs.getAll())['bar.js']
+      '/medic/_design/medic/_rewrite/': [path.join(webappDirectoryPath, 'appcache-upgrade.html')]
     },
     ignoreUrlParametersMatching: [/redirect/, /username/],
     stripPrefixMulti: {
@@ -98,6 +96,13 @@ const writeServiceWorkerFile = async () => {
     maximumFileSizeToCacheInBytes: 1048576 * 30,
     verbose: true,
   };
+
+  const libs = await getLibs.getAll();
+  const bar = libs && libs['bar.js'];
+  if (bar) {
+    // TODO iterate over all attachments so they are cached separately
+    config.dynamicUrlToDependencies['/libs/bar.js'] = bar;
+  }
 
   return swPrecache.write(scriptOutputPath, config);
 };
