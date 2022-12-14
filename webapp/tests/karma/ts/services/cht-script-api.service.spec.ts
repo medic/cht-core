@@ -52,9 +52,10 @@ describe('CHTScriptApiService service', () => {
     const result = await service.getApi();
 
     expect(result).to.have.all.keys([ 'v1' ]);
-    expect(result.v1).to.have.all.keys([ 'hasPermissions', 'hasAnyPermission' ]);
+    expect(result.v1).to.have.all.keys([ 'hasPermissions', 'hasAnyPermission', 'getLibrary' ]);
     expect(result.v1.hasPermissions).to.be.a('function');
     expect(result.v1.hasAnyPermission).to.be.a('function');
+    expect(result.v1.getLibrary).to.be.a('function');
   });
 
   describe('v1.hasPermissions()', () => {
