@@ -3,8 +3,8 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
-import { toBik_text } from 'bikram-sambat';
-import * as moment from 'moment';
+// import { toBik_text } from 'bikram-sambat';
+// import * as moment from 'moment';
 
 import { DbService } from '@mm-services/db.service';
 import { Form2smsService } from '@mm-services/form2sms.service';
@@ -27,7 +27,7 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { GlobalActions } from '@mm-actions/global';
 import { FeedbackService } from '@mm-services/feedback.service';
-import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
+// import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 describe('Enketo service', () => {
