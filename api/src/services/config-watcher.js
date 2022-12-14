@@ -114,6 +114,10 @@ const handleBrandingChanges = () => {
     .then(() => updateServiceWorker());
 };
 
+const handleLibsChanges = () => {
+  return updateServiceWorker();
+};
+
 const updateManifest = () => {
   return manifest.generate().catch(err => {
     logger.error('Failed to generate manifest: %o', err);
@@ -162,6 +166,10 @@ const listen = () => {
 
       if (change.id === 'branding') {
         return handleBrandingChanges();
+      }
+
+      if (change.id === 'libs') {
+        return handleLibsChanges();
       }
     })
     .on('error', err => {

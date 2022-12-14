@@ -178,10 +178,11 @@ module.exports = {
       const months = d2Moment.diff(d1Moment, 'months');
       return XPR.number(months);
     },
-    'test-api': function(libId) {
+    'test-api': function() {
+      const args = Array.from(arguments);
+      const libId = args.shift();
       const lib = chtScriptApi.v1.getLibrary(libId.v);
-      const result = lib();
-      return XPR.string(result);
+      return lib.apply(null, args);
     }
   },
   process: {
