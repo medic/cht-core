@@ -47,5 +47,5 @@ echo ""
 
 echo ""
 echo "Upgrade complete!  Node version installed:"
-echo ""
 /srv/software/medic-core/v2.1.1/x64/bin/node -v
+echo ""
