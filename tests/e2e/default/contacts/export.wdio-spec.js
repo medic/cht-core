@@ -12,7 +12,7 @@ const utils = require('../../../utils');
 describe('Export Contacts', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
-  const onlineUser = userFactory.build({ place: healthCenter._id, roles: ['program_officer'] });
+  const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
   const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const today = moment();
 

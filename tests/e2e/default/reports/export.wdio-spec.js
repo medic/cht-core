@@ -13,18 +13,18 @@ const utils = require('../../../utils');
 describe('Export Reports', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
-  const onlineUser = userFactory.build({ place: healthCenter._id, roles: ['program_officer'] });
+  const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
   const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
   const today = moment();
   const reports = [
     reportFactory.build(
       { form: 'P', reported_date: moment([today.year(), today.month() - 4, 1, 23, 30]).valueOf() },
-      { patient, submitter: onlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' },
-      }),
+      { patient, submitter: onlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' } },
+    ),
     reportFactory.build(
       { form: 'P', reported_date: moment([today.year(), today.month() - 1, 16, 0, 30]).valueOf() },
-      { patient, submitter: onlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' },
-      })
+      { patient, submitter: onlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' } },
+    ),
   ];
 
   const savedReportIds = [];

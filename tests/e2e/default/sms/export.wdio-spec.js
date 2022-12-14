@@ -12,7 +12,7 @@ const utils = require('../../../utils');
 describe('Export Messages', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
-  const onlineUser = userFactory.build({ place: healthCenter._id, roles: ['program_officer'] });
+  const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
   const patient = personFactory.build({
     phone: '+12068881234',
     parent: { _id: healthCenter._id, parent: healthCenter.parent },
