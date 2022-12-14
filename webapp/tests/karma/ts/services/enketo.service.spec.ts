@@ -28,6 +28,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { GlobalActions } from '@mm-actions/global';
 import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -72,6 +73,8 @@ describe('Enketo service', () => {
   let xmlFormGetWithAttachment;
   let zScoreService;
   let zScoreUtil;
+  let chtScriptApiService;
+  let chtScriptApi;
   let globalActions;
   let consoleErrorMock;
   let feedbackService;
@@ -122,6 +125,8 @@ describe('Enketo service', () => {
     };
     zScoreUtil = sinon.stub();
     zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
+    chtScriptApi = sinon.stub();
+    chtScriptApiService = { getApi: sinon.stub().resolves(chtScriptApi) };
     globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
     consoleErrorMock = sinon.stub(console, 'error');
@@ -156,6 +161,7 @@ describe('Enketo service', () => {
           }
         },
         { provide: ZScoreService, useValue: zScoreService },
+        { provide: CHTScriptApiService, useValue: chtScriptApiService },
         { provide: TransitionsService, useValue: transitionsService },
         { provide: TranslateService, useValue: translateService },
         { provide: FeedbackService, useValue: feedbackService },
@@ -182,8 +188,9 @@ describe('Enketo service', () => {
       await service.init();
 
       expect(zScoreService.getScoreUtil.callCount).to.equal(1);
+      expect(chtScriptApiService.getApi.callCount).to.equal(1);
       expect(medicXpathExtensions.init.callCount).to.equal(1);
-      expect(medicXpathExtensions.init.args[0]).to.deep.equal([zScoreUtil, toBik_text, moment]);
+      expect(medicXpathExtensions.init.args[0]).to.deep.equal([zScoreUtil, toBik_text, moment, chtScriptApi]);
     });
 
     it('should catch errors', async () => {
