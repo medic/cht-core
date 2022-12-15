@@ -1,8 +1,14 @@
 #!/bin/bash
 
-###############################
-# Upgrade node from 8 -> 12   #
-###############################
+#####################################################
+# Upgrade node from 8 -> 12                         #
+#                                                   #
+# Only for use on CHT 3.x instances that have       #
+# TLS issues on outbound push                       #
+#                                                   #
+# see https://github.com/medic/cht-core/issues/7957 #
+#                                                   #
+#####################################################
 
 echo "Start...Node version installed:"
 /srv/software/medic-core/v2.1.1/x64/bin/node -v
