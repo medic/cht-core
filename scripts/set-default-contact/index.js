@@ -50,10 +50,9 @@ const hasDefaultContact = async user => {
   if(typeof user.place === 'object' && typeof user.contact === 'object' &&  user.place._id  ){
     const place = await getObjectFromMedicDb(user.place._id);
     return !(typeof place.contact === 'object' && !place.contact._id);
-  } else {
-    // return true for invalid users like admin or medic so we don't process them
-    return true;
   }
+  // return true for invalid users like admin or medic so we don't process them
+  return true;
 };
 
 const filterUsersForDefaultPlace = async users => {
