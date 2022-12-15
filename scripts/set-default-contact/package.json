@@ -12,10 +12,8 @@
   },
   "dependencies": {
     "express": "^4.17.1",
-    "nodemon": "^2.0.9",
     "request": "^2.88.2",
-    "request-promise-native": "^1.0.8",
-    "node-yaml-config": "^0.0.6"
+    "request-promise-native": "^1.0.8"
   },
   "main": "index.js",
   "devDependencies": {},
