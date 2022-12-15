@@ -35,3 +35,13 @@ End
 * Only places with no default contact will be updated
 * If a place had a contact set as default, but that contact was deleted, it is still considered as having a default contact already and will be skipped. The fix to this is to manually set the place to another contact and then unset that to be empty.
 * If two users are assigned to the same place, the one that is processed first will be set.  The second (or Nth) user will be skipped because the place will already have a user
+
+## Development
+
+This script has it's own ESLint rules found in the `.eslintrc` file. As of Dec 2022, the main difference is that it uses `ecmaVersion` of `8` instead of `6` like in `cht-core`.  To ensure any changes comply, use this call before committing:
+
+```shell
+../../node_modules/.bin/eslint index.js
+```
+
+Otherwise, use Docker Helper to spin up a local instance to test against to ensure contacts are set as default for places when users have them both assigned.
