@@ -17,7 +17,7 @@ const compileUrl = path => {
 const getChtUsers = async () => {
   console.log('   Using URL taken from COUCH_URL env var: ', process.env.COUCH_URL);
   console.log('');
-  const url = compileUrl('/api/v2/users');
+  const url = compileUrl('/api/v1/users');
   const options = {
     uri: url.href,
     json: true
@@ -49,7 +49,7 @@ const getObjectFromMedicDb = async id => {
 const hasDefaultContact = async user => {
   if(typeof user.place === 'object' && typeof user.contact === 'object' &&  user.place._id  ){
     const place = await getObjectFromMedicDb(user.place._id);
-    return !(typeof place.contact === 'object' && !place.contact._id);
+    return !((typeof place.contact === 'object' && !place.contact._id) || typeof place.contact !== 'object');
   }
   // return true for invalid users like admin or medic so we don't process them
   return true;
@@ -70,6 +70,9 @@ const savePlace = async (placeId, contactId) => {
   const url = compileUrl('/medic/' + placeId);
   // fetch the place fresh because we need to ensure revision ID is current
   const placeObj = await getObjectFromMedicDb(placeId);
+  if(!placeObj.contact){
+    placeObj.contact = {};
+  }
   placeObj.contact._id = contactId;
   placeObj.contact.parent = {_id: placeId};
   const options = {
