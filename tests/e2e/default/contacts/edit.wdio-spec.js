@@ -43,13 +43,16 @@ describe('Edit contacts with the default config. ', () => {
     await commonPage.goToPeople();
     await commonPage.waitForPageLoaded();
 
+    await contactPage.selectLHSRowByText(healthCenter.name);
+    await contactPage.waitForContactLoaded();
+    expect(await contactPage.getAllRHSPeopleNames()).to.have.members([ CONTACT_UPDATED_NAME ]);
+
     await contactPage.selectLHSRowByText(CONTACT_UPDATED_NAME);
     await contactPage.waitForContactLoaded();
     await contactPage.deletePerson();
 
     await contactPage.selectLHSRowByText(healthCenter.name);
     await contactPage.waitForContactLoaded();
-    const peopleNames = await contactPage.getAllRHSPeopleNames();
-    expect(peopleNames.length).to.equal(0);
+    expect(await contactPage.getAllRHSPeopleNames()).to.not.have.members([ CONTACT_UPDATED_NAME ]);
   });
 });
