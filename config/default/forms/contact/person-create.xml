@@ -23,6 +23,9 @@
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID of the logged in user</value>
           </text>
+          <text id="/data/inputs/user/ddd:label">
+            <value>This is a test field hardcoded in the db</value>
+          </text>
           <text id="/data/inputs/user/facility_id:label">
             <value>Place ID of the logged in user</value>
           </text>
@@ -162,6 +165,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Identifiant du contact</value>
+          </text>
+          <text id="/data/inputs/user/ddd:label">
+            <value>-</value>
           </text>
           <text id="/data/inputs/user/facility_id:label">
             <value>Identifiant du centre</value>
@@ -306,6 +312,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID of the logged in user</value>
           </text>
+          <text id="/data/inputs/user/ddd:label">
+            <value>-</value>
+          </text>
           <text id="/data/inputs/user/facility_id:label">
             <value>लॉग इन यूज़र के स्थान का ID</value>
           </text>
@@ -448,6 +457,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID of the logged in user</value>
+          </text>
+          <text id="/data/inputs/user/ddd:label">
+            <value>-</value>
           </text>
           <text id="/data/inputs/user/facility_id:label">
             <value>ID Tempat dari login user</value>
@@ -592,6 +604,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/contact_id:label">
             <value>लग इन गरेको प्रयोगकर्ताको सम्पर्क ID</value>
           </text>
+          <text id="/data/inputs/user/ddd:label">
+            <value>-</value>
+          </text>
           <text id="/data/inputs/user/facility_id:label">
             <value>लग इन गरेको प्रयोगकर्ताको स्थानको ID</value>
           </text>
@@ -735,6 +750,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Namba ya Usajilisho ya mtumiaji wa huduma hii</value>
           </text>
+          <text id="/data/inputs/user/ddd:label">
+            <value>-</value>
+          </text>
           <text id="/data/inputs/user/facility_id:label">
             <value>Kitambulisho cha mahali cha mtumizi wa huduma hii</value>
           </text>
@@ -861,7 +879,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2022-12-15  14-26">
+        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2022-12-15  16-46">
           <inputs>
             <meta>
               <location>
@@ -875,6 +893,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
               <contact_id/>
               <facility_id/>
               <name/>
+              <ddd/>
             </user>
           </inputs>
           <person>
@@ -925,7 +944,8 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
-      <bind nodeset="/data/init/parent_id" type="string" calculate=" /data/person/parent " readonly="true()"/>
+      <bind nodeset="/data/inputs/user/ddd" type="string"/>
+      <bind nodeset="/data/init/parent_id" type="string" readonly="true()" calculate=" /data/person/parent "/>
       <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/type" type="string"/>
       <bind nodeset="/data/init/type_selector" type="select1" calculate="../type"/>
@@ -933,13 +953,13 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/parent" type="string"/>
       <bind nodeset="/data/person/type" type="string"/>
       <bind nodeset="/data/person/name" type="string" required="true()"/>
-      <bind nodeset="/data/person/short_name" type="string" required="false()" jr:constraintMsg="jr:itext('/data/person/short_name:jr:constraintMsg')" constraint="string-length(.) &lt;= 10"/>
+      <bind nodeset="/data/person/short_name" type="string" jr:constraintMsg="jr:itext('/data/person/short_name:jr:constraintMsg')" required="false()" constraint="string-length(.) &lt;= 10"/>
       <bind nodeset="/data/person/date_of_birth" type="string" required="true()" calculate="../ephemeral_dob/dob_iso"/>
       <bind nodeset="/data/person/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
-      <bind nodeset="/data/person/ephemeral_dob/dob_calendar" type="date" required="true()" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg')" relevant="not(selected(../dob_method,'approx'))" constraint=". &lt;= now()"/>
+      <bind nodeset="/data/person/ephemeral_dob/dob_calendar" type="date" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/dob_calendar:jr:constraintMsg')" required="true()" constraint=". &lt;= now()" relevant="not(selected(../dob_method,'approx'))"/>
       <bind nodeset="/data/person/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
-      <bind nodeset="/data/person/ephemeral_dob/age_years" type="int" required="true()" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_years:jr:constraintMsg')" relevant="selected(../dob_method,'approx')" constraint=". &gt;= 0 and . &lt;= 130"/>
-      <bind nodeset="/data/person/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_months:jr:constraintMsg')" constraint=". &gt;= 0 and . &lt;= 11"/>
+      <bind nodeset="/data/person/ephemeral_dob/age_years" type="int" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_years:jr:constraintMsg')" required="true()" constraint=". &gt;= 0 and . &lt;= 130" relevant="selected(../dob_method,'approx')"/>
+      <bind nodeset="/data/person/ephemeral_dob/age_months" type="int" jr:constraintMsg="jr:itext('/data/person/ephemeral_dob/age_months:jr:constraintMsg')" constraint=". &gt;= 0 and . &lt;= 11" relevant="selected(../dob_method,'approx')"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_method" type="select"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/person/ephemeral_dob/age_years , 0- /data/person/ephemeral_dob/age_months )"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected(  /data/person/ephemeral_dob/dob_method ,'approx')), 
@@ -948,13 +968,13 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
       <bind nodeset="/data/person/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="false()"/>
       <bind nodeset="/data/person/sex" type="select1" required="true()"/>
-      <bind nodeset="/data/person/phone" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')"/>
-      <bind nodeset="/data/person/phone_alternate" type="tel" constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')"/>
+      <bind nodeset="/data/person/phone" type="tel" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" constraint="true()"/>
+      <bind nodeset="/data/person/phone_alternate" type="tel" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')" constraint="true()"/>
       <bind nodeset="/data/person/role" type="select1"/>
       <bind nodeset="/data/person/role_other" type="string" required="true()" relevant="selected(  /data/person/role ,'other')"/>
       <bind nodeset="/data/person/external_id" type="string"/>
       <bind nodeset="/data/person/notes" type="string"/>
-      <bind nodeset="/data/person/should_create_user" type="select1" required="true()"/>
+      <bind nodeset="/data/person/should_create_user" type="select1" required="true()" relevant="../../../inputs/user/ddd = 'chw_supervisor'"/>
       <bind nodeset="/data/person/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/person/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/person/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
@@ -972,6 +992,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </input>
         <input ref="/data/inputs/user/name">
           <label ref="jr:itext('/data/inputs/user/name:label')"/>
+        </input>
+        <input ref="/data/inputs/user/ddd">
+          <label ref="jr:itext('/data/inputs/user/ddd:label')"/>
         </input>
       </group>
     </group>
