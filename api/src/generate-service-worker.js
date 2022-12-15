@@ -97,11 +97,16 @@ const writeServiceWorkerFile = async () => {
     verbose: true,
   };
 
-  const libs = await getLibs.getAll();
-  const bar = libs && libs['bar.js'];
-  if (bar) {
-    // TODO iterate over all attachments so they are cached separately
-    config.dynamicUrlToDependencies['/libs/bar.js'] = bar;
+  try {
+    const libs = await getLibs.getAll();
+    const bar = libs && libs['bar.js'];
+    if (bar) {
+      // TODO iterate over all attachments so they are cached separately
+      config.dynamicUrlToDependencies['/libs/bar.js'] = bar;
+    }
+  } catch (err) {
+    // probably a 404, no problem.
+    // TODO check for other errors and report
   }
 
   return swPrecache.write(scriptOutputPath, config);

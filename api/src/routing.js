@@ -251,9 +251,19 @@ app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUse
 app.use(express.static(environment.staticPath));
 app.use(express.static(environment.webappPath));
 app.get('/libs/:name', async (req, res) => {
-  const lib = await getLibs.get(req.params.name);
-  res.set('Content-Type', lib.contentType);
-  res.send(Buffer.from(lib.data, 'base64'));
+  try {
+    const lib = await getLibs.get(req.params.name);
+    if (lib && lib.data) {
+      res.set('Content-Type', lib.contentType);
+      res.send(Buffer.from(lib.data, 'base64'));
+    } else {
+      serverUtils.error({ message: 'Not found', status: 404 }, req, res);
+    }
+  } catch (err) {
+    // probably a 404, no problem.
+    // TODO check for other errors and report
+    serverUtils.error(err, req, res);
+  }
 });
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
