@@ -17,7 +17,7 @@ const compileUrl = path => {
 const getChtUsers = async () => {
   console.log('   Using URL taken from COUCH_URL env var: ', process.env.COUCH_URL);
   console.log('');
-  const url = compileUrl('/api/v2/users');
+  const url = compileUrl('/api/v1/users');
   const options = {
     uri: url.href,
     json: true
