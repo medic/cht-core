@@ -1,6 +1,7 @@
 const genericForm = require('../enketo/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
+const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
@@ -58,6 +59,7 @@ const contactCardTitle = () => $('.inbox .content-pane .material .body .action-h
 const contactInfoName = () => $('h2[test-id="contact-name"]');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
 const contactDeceasedStatus = () => $('div[test-id="deceased-title"]');
+const contactMuted = () => $('.heading-content .muted');
 
 const PREG_CARD_SELECTOR = 'div[test-id="contact.profile.pregnancy.active"]';
 const pregnancyCard = () => $(PREG_CARD_SELECTOR);
@@ -259,6 +261,22 @@ const openForm = async (name) => {
   throw new Error(`Form with name: "${name}" not found`);
 };
 
+const openFormWithWarning = async (formName) => {
+  await (await newActionContactButton()).waitForClickable();
+  await (await newActionContactButton()).click();
+  const parent = await newActionContactButton().parentElement();
+  await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
+
+  for (const form of await forms()) {
+    if (await form.getText() === formName) {
+      await form.click();
+      await (await modalPage.body()).waitForExist();
+      return modalPage.getModalDetails();
+    }
+  }
+  throw new Error(`Form with name: "${formName}" not found`);
+};
+
 const openReport = async () => {
   await commonElements.toggleActionbar(true);
   await (await rhsReportListElement()).waitForDisplayed();
@@ -362,4 +380,6 @@ module.exports = {
   getPregnancyCardInfo,
   deathCard,
   getDeathCardInfo,
+  contactMuted,
+  openFormWithWarning,
 };
