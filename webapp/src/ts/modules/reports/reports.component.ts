@@ -330,11 +330,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const exportFn = function () {
-      this.exportReports();
-    };
     this.globalActions.setLeftActionBar({
-      exportFn: exportFn.bind(this),
+      exportFn: () => this.exportReports(),
       hasResults: this.hasReports,
     });
   }

@@ -430,11 +430,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
       return;
     }
 
-    const exportFn = function () {
-      this.exportContacts();
-    };
     this.globalActions.setLeftActionBar({
-      exportFn: exportFn.bind(this),
+      exportFn: () => this.exportContacts(),
       hasResults: this.hasContacts,
       userFacilityId: this.usersHomePlace?._id,
       childPlaces: this.allowedChildPlaces,

@@ -1,4 +1,5 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Data } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
@@ -24,7 +25,7 @@ export class ContactsMoreMenuComponent implements OnInit, OnDestroy {
   private hasDeletePermission = false;
   private isOnlineOnly = false;
   private loadingContent = true;
-  private snapshotData;
+  private snapshotData: Data | undefined;
   private userSettings;
 
   selectedContactDoc;
