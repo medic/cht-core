@@ -15,7 +15,7 @@ const compileUrl = path => {
 };
 
 const getChtUsers = async () => {
-  console.log('   Using URL taken from COUCH_URL env var: ', process.env.COUCH_URL);
+  console.log('   Using COUCH_URL env var:', process.env.COUCH_URL);
   console.log('');
   //  pin  to v1 of API so it is backwards compatible with CHT 3.x
   const url = compileUrl('/api/v1/users');
