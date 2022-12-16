@@ -1,6 +1,6 @@
 const assert = require('chai').assert;
 
-const getRoles = require('../../../src/services/types-and-roles');
+const getRoles = require('../../../src/libs/types-and-roles');
 
 describe('types-and-roles', function() {
 

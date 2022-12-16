@@ -5,14 +5,14 @@ const infodoc = require('@medic/infodoc');
 
 let inited = false;
 
-module.exports = (sourceDb, settings, translations, sourceLogger) => {
+module.exports = (sourceDb, sourceConfig, sourceLogger) => {
   if (!inited) {
     logger.init(sourceLogger);
     db.init(sourceDb);
     infodoc.initLib(db.medic, db.sentinel);
     inited = true;
   }
-  config.init(settings, translations);
+  config.init(sourceConfig);
 
   const transitions = require('./transitions');
   return {

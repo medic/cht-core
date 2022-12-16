@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@medic/contact-types-utils": "file:../contact-types-utils",
+    "@medic/contacts": "file:../contacts",
     "@medic/infodoc": "file:../infodoc",
     "@medic/lineage": "file:../lineage",
     "@medic/message-utils": "file:../message-utils",
@@ -20,6 +21,7 @@
     "@medic/registration-utils": "file:../registration-utils",
     "@medic/settings": "file:../settings",
     "@medic/task-utils": "file:../task-utils",
+    "@medic/user-management": "file:../user-management",
     "@medic/validation": "file:../validation",
     "async": "^3.2.3",
     "bikram-sambat": "^1.7.0",

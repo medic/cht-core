@@ -1,8 +1,8 @@
 export abstract class Transition {
   abstract name:string;
   abstract init(Object):void;
-  abstract filter(Object):boolean;
-  abstract run(Object):Promise<any>;
+  abstract filter(docs: Doc[]):boolean;
+  abstract run(docs: Doc[]):Promise<any>;
 
   CLIENT_SIDE_TRANSITIONS = 'client_side_transitions';
 
@@ -10,4 +10,10 @@ export abstract class Transition {
     doc[this.CLIENT_SIDE_TRANSITIONS] = doc[this.CLIENT_SIDE_TRANSITIONS] || {};
     doc[this.CLIENT_SIDE_TRANSITIONS][this.name] = true;
   }
+}
+
+export interface Doc {
+  _id:string;
+  type:string;
+  [other:string]:unknown;
 }

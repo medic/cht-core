@@ -1,11 +1,13 @@
 const _ = require('lodash');
+const db = require('../db');
+const config = require('../config');
+const { bulkUploadLog, roles, users } = require('@medic/user-management')(config, db);
 const auth = require('../auth');
 const logger = require('../logger');
 const serverUtils = require('../server-utils');
-const usersService = require('../services/users');
 const authorization = require('../services/authorization');
 const purgedDocs = require('../services/purged-docs');
-const bulkUploadLog = require('../services/bulk-upload-log');
+const { DOC_IDS_WARN_LIMIT } = require('../services/replication-limit-log');
 
 const hasFullPermission = req => {
   return auth
@@ -71,7 +73,7 @@ const getRoles = req => {
 };
 
 const getInfoUserCtx = req => {
-  if (!auth.isOnlineOnly(req.userCtx)) {
+  if (!roles.isOnlineOnly(req.userCtx)) {
     return req.userCtx;
   }
 
@@ -83,13 +85,13 @@ const getInfoUserCtx = req => {
     throw { code: 400, reason: 'Missing required query params: role and/or facility_id' };
   }
 
-  const roles = getRoles(req);
-  if (auth.hasOnlineRole(roles)) {
+  const userRoles = getRoles(req);
+  if (roles.hasOnlineRole(userRoles)) {
     throw { code: 400, reason: 'Provided role is not offline' };
   }
 
   return {
-    roles: roles,
+    roles: userRoles,
     facility_id: params.facility_id,
     contact_id: params.contact_id,
   };
@@ -119,7 +121,7 @@ const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
 
 const getUserList = async (req) => {
   await auth.check(req, 'can_view_users');
-  return await usersService.getList();
+  return await users.getList();
 };
 
 const getType = user => {
@@ -147,7 +149,7 @@ module.exports = {
   create: (req, res) => {
     return auth
       .check(req, ['can_edit', 'can_create_users'])
-      .then(() => usersService.createUsers(req.body, getAppUrl(req)))
+      .then(() => users.createUsers(req.body, getAppUrl(req)))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -203,7 +205,7 @@ module.exports = {
             }
           }
 
-          return usersService
+          return users
             .updateUser(username, req.body, !!fullPermission, getAppUrl(req))
             .then(result => {
               logger.info(
@@ -224,7 +226,7 @@ module.exports = {
   delete: (req, res) => {
     auth
       .check(req, ['can_edit', 'can_delete_users'])
-      .then(() => usersService.deleteUser(req.params.username))
+      .then(() => users.deleteUser(req.params.username))
       .then(result => res.json(result))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -239,8 +241,8 @@ module.exports = {
       .then(({ total, warn }) => res.json({
         total_docs: total,
         warn_docs: warn,
-        warn: warn >= usersService.DOC_IDS_WARN_LIMIT,
-        limit: usersService.DOC_IDS_WARN_LIMIT,
+        warn: warn >= DOC_IDS_WARN_LIMIT,
+        limit: DOC_IDS_WARN_LIMIT,
       }))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -257,20 +259,21 @@ module.exports = {
     create: async (req, res) => {
       try {
         await auth.check(req, ['can_edit', 'can_create_users']);
-        const logId = await bulkUploadLog.createLog(req, 'user');
-        let users;
+        const user = await auth.getUserCtx(req);
+        const logId = await bulkUploadLog.createLog(user, 'user');
+        let usersToCreate;
         let ignoredUsers;
 
         if (typeof req.body === 'string') {
-          const parsedCsv = await usersService.parseCsv(req.body, logId);
-          users = parsedCsv.users;
+          const parsedCsv = await users.parseCsv(req.body, logId);
+          usersToCreate = parsedCsv.users;
           ignoredUsers = parsedCsv.ignoredUsers;
         } else {
-          users = req.body;
+          usersToCreate = req.body;
         }
 
-        const response = await usersService.createUsers(
-          users,
+        const response = await users.createUsers(
+          usersToCreate,
           getAppUrl(req),
           ignoredUsers,
           logId

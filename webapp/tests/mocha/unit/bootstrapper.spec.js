@@ -214,6 +214,7 @@ describe('bootstrapper', () => {
     localAllDocs.resolves({ total_rows: 0 });
 
     sinon.stub(utils, 'fetchJSON').resolves({ total_docs: 99, warn: false });
+    sinon.stub(console, 'warn');
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
@@ -244,6 +245,7 @@ describe('bootstrapper', () => {
 
       assert.equal(utils.fetchJSON.callCount, 1);
       assert.deepEqual(utils.fetchJSON.args[0][0], '/api/v1/users-info');
+      assert.equal(console.warn.callCount, 0);
       done();
     });
   });
@@ -264,6 +266,7 @@ describe('bootstrapper', () => {
     sinon.stub(utils, 'setOptions');
     sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
     sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
+    sinon.stub(console, 'warn');
 
     bootstrapper(pouchDbOptions, err => {
       assert.equal(null, err);
@@ -292,6 +295,7 @@ describe('bootstrapper', () => {
       assert.deepEqual(localAllDocs.args[0], [{ limit: 1 }]);
       assert.equal(utils.fetchJSON.callCount, 1);
       assert.deepEqual(utils.fetchJSON.args[0][0], '/api/v1/users-info');
+      assert.deepEqual(console.warn.callCount, 0);
       done();
     });
   });
@@ -302,10 +306,12 @@ describe('bootstrapper', () => {
 
     localAllDocs.resolves({ total_rows: 0 });
     sinon.stub(utils, 'fetchJSON').resolves({ total_docs: 2500, warn: false });
+    sinon.stub(console, 'warn');
 
     bootstrapper(pouchDbOptions, () => assert.fail('should not have executed callback'));
 
     await wait(100);
+    assert.equal(console.warn.callCount, 1);
     assert.equal(
       window.location.href,
       '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
@@ -324,9 +330,12 @@ describe('bootstrapper', () => {
 
     localAllDocs.resolves({ total_rows: 0 });
     sinon.stub(utils, 'fetchJSON').resolves({ total_docs: 2500, warn: false });
+    sinon.stub(console, 'warn');
+
     bootstrapper(pouchDbOptions, () => assert.fail('should not have executed callback'));
 
     await wait(100);
+    assert.equal(console.warn.callCount, 1);
     assert.equal(
       window.location.href,
       '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
@@ -344,8 +353,10 @@ describe('bootstrapper', () => {
 
     localAllDocs.resolves({ total_rows: 0 });
     sinon.stub(utils, 'fetchJSON').resolves({ total_docs: 2500, warn: false });
+    sinon.stub(console, 'warn');
 
     bootstrapper(pouchDbOptions, err => {
+      assert.equal(console.warn.callCount, 0);
       assert.equal(err.status, 404);
       assert.equal(err.redirect, null);
       done();
@@ -367,10 +378,12 @@ describe('bootstrapper', () => {
 
     localAllDocs.resolves({ total_rows: 0 });
     sinon.stub(utils, 'fetchJSON').resolves({ total_docs: 2500, warn: false });
+    sinon.stub(console, 'warn');
 
     localGet.withArgs('_design/medic-client').onCall(1).rejects();
 
     bootstrapper(pouchDbOptions, err => {
+      assert.equal(console.warn.callCount, 0);
       assert.equal(err.message, 'Initial replication failed');
       assert.equal(localGet.callCount, 4);
       assert.equal(utils.setOptions.callCount, 1);
@@ -427,10 +440,12 @@ describe('bootstrapper', () => {
     localId.resolves('some random string');
     localAllDocs.resolves({ total_rows: 0 });
     sinon.stub(utils, 'fetchJSON').resolves({ code: 401, error: 'user is not authenticated' });
+    sinon.stub(console, 'warn');
 
     bootstrapper(pouchDbOptions, () => assert.fail('should not have executed callback'));
 
     await wait(100);
+    assert.equal(console.warn.callCount, 1);
     assert.equal(
       window.location.href,
       '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages'
@@ -490,6 +505,7 @@ describe('bootstrapper', () => {
 
     localAllDocs.resolves({ total_rows: 0 });
     sinon.stub(utils, 'fetchJSON').resolves({ total_docs: 2500, warn: false });
+    sinon.stub(console, 'warn');
     localId.resolves('some random string');
 
     bootstrapper(pouchDbOptions, err => {
@@ -518,6 +534,7 @@ describe('bootstrapper', () => {
 
       assert.equal(localClose.callCount, 1);
       assert.equal(remoteClose.callCount, 1);
+      assert.equal(console.warn.callCount, 0);
       done();
     });
   });
