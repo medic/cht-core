@@ -30,8 +30,18 @@ const isHamburgerMenuOpen = async () => {
 };
 
 const openMoreOptionsMenu = async () => {
-  await (await moreOptionsMenu()).waitForDisplayed();
+  await (await moreOptionsMenu()).waitForClickable();
   await (await moreOptionsMenu()).click();
+};
+
+const isOptionEnabled = async (action, item) => {
+  const element = await $(`.mat-menu-content .mat-menu-item[test-id="${action}-${item}"]`);
+  return await element.isEnabled();
+};
+
+const isOptionVisible= async (action, item) => {
+  const element = await $(`.mat-menu-content .mat-menu-item[test-id="${action}-${item}"]`);
+  return await element.isDisplayed();
 };
 
 const isMessagesListPresent = () => {
@@ -271,7 +281,6 @@ const getTextForElements = async (elements) => {
 };
 
 module.exports = {
-  openMoreOptionsMenu,
   logout,
   logoutButton,
   getLogoutMessage,
@@ -315,4 +324,7 @@ module.exports = {
   getTextForElements,
   toggleActionbar,
   jsonError,
+  openMoreOptionsMenu,
+  isOptionEnabled,
+  isOptionVisible,
 };
