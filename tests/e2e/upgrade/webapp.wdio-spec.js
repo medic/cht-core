@@ -3,7 +3,7 @@ const reportsPage = require('../../page-objects/default/reports/reports.wdio.pag
 const peoplePage = require('../../page-objects/default/contacts/contacts.wdio.page');
 const utils = require('../../utils');
 
-const { BRANCH } = process.env;
+const { BRANCH, TAG } = process.env;
 
 const loginPage = require('../../page-objects/default/login/login.wdio.page');
 const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
@@ -39,7 +39,7 @@ describe('Webapp after upgrade', () => {
   });
 
   it('should login with admin account', async () => {
-    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD });
+    await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
     await common.closeTour();
   });
 
@@ -59,6 +59,6 @@ describe('Webapp after upgrade', () => {
 
   it('should display correct version on the about page', async () => {
     await common.goToAboutPage();
-    expect(await upgradePage.getCurrentVersion()).to.include(`${BRANCH} (`);
+    expect(await upgradePage.getCurrentVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
   });
 });

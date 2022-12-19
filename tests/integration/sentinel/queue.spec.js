@@ -118,5 +118,5 @@ describe('Sentinel queue drain', () => {
           expect(tombstone.tombstone).to.have.property('type', 'data_record');
         });
       });
-  });
+  }).timeout(300 * 1000);
 });

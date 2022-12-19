@@ -5,8 +5,8 @@ const cancelUpgradeButton = () => $('button*=Cancel');
 const deploymentInProgress = () => $('legend*=Deployment in progress');
 const deploymentComplete = () => $('div*=Deployment complete');
 
-const getInstallButton = async (branch) => {
-  const element = await $(`span*=${branch} (`);
+const getInstallButton = async (branch, tag) => {
+  const element = tag ? await $(`span=${tag}`) : await $(`span*=${branch} (`);
   const parent = await (await element.parentElement()).parentElement();
   return await parent.$('.btn-primary');
 };
