@@ -58,6 +58,8 @@ describe('Export tests', async () => {
     it(' - Contact Tab : contact selected', async () => {
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText(seeder.contact.name);
+      await contactPage.waitForContactLoaded();
+      await contactPage.selectRHSRowById(seeder.contact._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
       expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.true;
