@@ -736,7 +736,7 @@ module.exports = function(grunt) {
     },
     sass: {
       options: {
-        implementation: require('node-sass'),
+        implementation: require('sass'),
       },
       compile: {
         cwd: 'webapp/src/css/',
