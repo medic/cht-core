@@ -21,7 +21,7 @@ describe('Export enabled when there are items: messages, contacts, peope', async
   it('- Contact tab: no contact selected', async () => {
     await commonPage.goToPeople();
     //parent contact
-    await commonPage.openKebabMenu();
+    await commonPage.openMoreOptionsMenu();
     expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
     expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.false;
     expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.false;
@@ -31,7 +31,7 @@ describe('Export enabled when there are items: messages, contacts, peope', async
     await commonPage.goToPeople();
     //contact selected
     await contactPage.selectLHSRowByText(seeder.contact.name);
-    await commonPage.openKebabMenu();
+    await commonPage.openMoreOptionsMenu();
     expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
     expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
     expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
@@ -41,7 +41,7 @@ describe('Export enabled when there are items: messages, contacts, peope', async
     await commonPage.goToReports();
     expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
     (await reportPage.firstReport()).click();
-    await commonPage.openKebabMenu();
+    await commonPage.openMoreOptionsMenu();
     expect(await commonPage.isOptionVisible('export', 'reports')).to.be.false;
     expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false; //not xml report
     expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     

@@ -327,4 +327,5 @@ module.exports = {
   openMoreOptionsMenu,
   isOptionEnabled,
   isOptionVisible,
+  moreOptionsMenu,
 };

@@ -13,13 +13,13 @@ describe('Export tests', async () => {
     //empty db
     it('- Message tab', async () => {
       await commonPage.goToMessages();
-      await commonPage.openKebabMenu();
+      await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'messages')).to.be.false;    
     });
 
     it(' - Contact tab', async () => {
       await commonPage.goToPeople();
-      await commonPage.openKebabMenu();
+      await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.false;
       expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.false;
       expect(await commonPage.isOptionVisible('delete', 'contacts')).to.be.false;     
@@ -27,7 +27,7 @@ describe('Export tests', async () => {
 
     it('- Report tab', async () => {
       await commonPage.goToReports();
-      await commonPage.openKebabMenu();
+      await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'reports')).to.be.false;
       expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false;
       expect(await commonPage.isOptionVisible('delete', 'reports')).to.be.false;     
@@ -43,13 +43,13 @@ describe('Export tests', async () => {
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
-      await commonPage.openKebabMenu();
+      await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'messages')).to.be.true;    
     });
 
     it('- Contact tab: no contact selected', async () => {
       await commonPage.goToPeople();
-      await commonPage.openKebabMenu();
+      await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
       expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.false;
       expect(await commonPage.isOptionVisible('delete', 'contacts')).to.be.false;
@@ -58,7 +58,7 @@ describe('Export tests', async () => {
     it(' - Contact Tab : contact selected', async () => {
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText(seeder.contact.name);
-      await commonPage.openKebabMenu();
+      await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
       expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.true;
       expect(await commonPage.isOptionVisible('delete', 'contacts')).to.be.true;
@@ -67,7 +67,7 @@ describe('Export tests', async () => {
     it('- options enabled when report selected', async () => {
       await commonPage.goToReports();
       (await reportPage.firstReport()).click();
-      await commonPage.openKebabMenu();
+      await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'reports')).to.be.true;
       expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false; //not xml report
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
