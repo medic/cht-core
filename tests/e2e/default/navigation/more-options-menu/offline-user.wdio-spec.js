@@ -14,7 +14,6 @@ describe('Export enabled when there are items: messages, contacts, peope', async
   it('- Message tab', async () => {
     await commonPage.goToMessages();
     await seeder.sendMessage();
-    await browser.pause(60000);
     expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
   });
 

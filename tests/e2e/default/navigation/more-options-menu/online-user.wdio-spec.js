@@ -58,12 +58,13 @@ describe('Export tests', async () => {
     it(' - Contact Tab : contact selected', async () => {
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText(seeder.contact.name);
+      await (await contactPage.contentRow()).waitForDisplayed();
+      await (await contactPage.contentRow()).click();
       await contactPage.waitForContactLoaded();
-      await contactPage.selectRHSRowById(seeder.contact._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
-      expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.true;
-      expect(await commonPage.isOptionVisible('delete', 'contacts')).to.be.true;
+      expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
+      expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
     });
 
     it('- options enabled when report selected', async () => {

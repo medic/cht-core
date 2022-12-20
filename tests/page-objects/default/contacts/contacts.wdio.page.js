@@ -386,4 +386,5 @@ module.exports = {
   getDeathCardInfo,
   contactMuted,
   openFormWithWarning,
+  contentRow,
 };
