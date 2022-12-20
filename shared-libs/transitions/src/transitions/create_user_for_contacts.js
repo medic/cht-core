@@ -154,30 +154,49 @@ module.exports = {
       !contactType
       || !contactTypeUtils.isPersonType(contactType)
       || !doc.user_for_contact
-      || !doc.user_for_contact.replace
     ) {
       return false;
     }
 
-    return !!Object
-      .values(doc.user_for_contact.replace)
-      .find(({ status }) => status === USER_CREATION_STATUS.READY);
+    if (doc.user_for_contact.replace) {
+      return !!Object
+        .values(doc.user_for_contact.replace)
+        .find(({ status }) => status === USER_CREATION_STATUS.READY);
+    }
+
+    if (doc.user_for_contact.add) {
+      return doc.user_for_contact.add.status === USER_CREATION_STATUS.READY;
+    }
+
+    return false;
   },
   onMatch: async change => {
-    const usersToReplace = getUsersToReplace(change.doc);
-    const replaceUsers = usersToReplace.map(user => replaceUser(change.doc, user));
-    const replacementResults = await Promise.allSettled(replaceUsers);
-    const errors = replacementResults
-      .filter(({ status }) => status === 'rejected')
-      .map(({ reason }) => reason);
-    if (errors.length) {
-      throw {
-        changed: true,
-        message: errors
-          .map(error => error.message || JSON.stringify(error))
-          .join(', '),
-      };
+    const isReplacingUser = Boolean(change.doc.user_for_contact.replace);
+    if (isReplacingUser) {
+      const usersToReplace = getUsersToReplace(change.doc);
+      const replaceUsers = usersToReplace.map(user => replaceUser(change.doc, user));
+      const replacementResults = await Promise.allSettled(replaceUsers);
+      const errors = replacementResults
+        .filter(({ status }) => status === 'rejected')
+        .map(({ reason }) => reason);
+      if (errors.length) {
+        throw {
+          changed: true,
+          message: errors
+            .map(error => error.message || JSON.stringify(error))
+            .join(', '),
+        };
+      }
+      return true;
     }
-    return true;
+
+    try {
+      const contact = await people.getOrCreatePerson(change.doc._id);
+      await createNewUser({ roles: [change.doc.role] }, contact);
+      change.doc.user_for_contact.add.status = USER_CREATION_STATUS.COMPLETE;
+    } catch (e) {
+      change.doc.user_for_contact.add.status = USER_CREATION_STATUS.ERROR;
+      throw e;
+    }
   }
 };
