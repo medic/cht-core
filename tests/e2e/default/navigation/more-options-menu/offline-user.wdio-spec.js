@@ -7,7 +7,7 @@ const seeder = require('./seeder');
 describe('Export enabled when there are items: messages, contacts, peope', async () => {
   before(async () => {
     await seeder.saveDocs();
-    await utils.createUsers([seeder.offlineUser]);
+    await utils.createUsers([seeder.offlineUser]); //offline user
     await seeder.newLogin(seeder.offlineUser);
   });
 
