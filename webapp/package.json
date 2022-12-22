@@ -17,14 +17,6 @@
     "npm": ">=8.3.1"
   },
   "dependencies": {
-    "@angular/animations": "^13.3.12",
-    "@angular/common": "^13.3.12",
-    "@angular/compiler": "^13.3.12",
-    "@angular/core": "^13.3.12",
-    "@angular/forms": "^13.3.12",
-    "@angular/platform-browser": "^13.3.12",
-    "@angular/platform-browser-dynamic": "^13.3.12",
-    "@angular/router": "^13.3.12",
     "@medic/bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
     "@medic/calendar-interval": "file:../shared-libs/calendar-interval",
     "@medic/cht-script-api": "file:../shared-libs/cht-script-api",
@@ -80,5 +72,15 @@
     "**/jquery": "3.2.x",
     "**/pouchdb-browser": "^7.2.2",
     "**/moment": "^2.26.2"
+  },
+  "devDependencies": {
+    "@angular/animations": "^14.2.12",
+    "@angular/common": "^14.2.12",
+    "@angular/compiler": "^14.2.12",
+    "@angular/core": "^14.2.12",
+    "@angular/forms": "^14.2.12",
+    "@angular/platform-browser": "^14.2.12",
+    "@angular/platform-browser-dynamic": "^14.2.12",
+    "@angular/router": "^14.2.12"
   }
 }
