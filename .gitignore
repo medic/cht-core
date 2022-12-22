@@ -49,3 +49,4 @@ tests/cht-couchdb-cluster-test.yml
 couchdb/srv*
 tests/scalability/jmeter/
 webapp/analyzer.report.html
+/webapp/.angular/
