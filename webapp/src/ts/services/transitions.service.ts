@@ -21,7 +21,7 @@ export class TransitionsService {
   private readonly AVAILABLE_TRANSITIONS = [
     this.mutingTransition,
     this.createUserForContactsTransition,
-  ];
+  ].filter(transition => transition.isEnabled);
 
   private loadedTransitions = [];
 
