@@ -5,7 +5,7 @@ import {
   PropertyRead,
   ImplicitReceiver,
   LiteralPrimitive,
-  MethodCall,
+  Call,
   Conditional,
   Binary,
   PrefixNot,
@@ -331,7 +331,7 @@ class ASTCompiler {
       return this.processBinary();
     } else if (ast instanceof Conditional) {
       return this.processConditional();
-    } else if (ast instanceof MethodCall) {
+    } else if (ast instanceof Call) {
       return this.processMethod();
     } else if (ast instanceof BindingPipe) {
       return this.processPipe();

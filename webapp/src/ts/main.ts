@@ -50,7 +50,7 @@ bootstrapper(POUCHDB_OPTIONS, (err) => {
     console.error('Error bootstrapping', err);
     setTimeout(() => {
       // retry initial replication automatically after one minute
-      window.location.reload(false);
+      window.location.reload();
     }, 60 * 1000);
 
     return;

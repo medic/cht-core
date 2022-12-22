@@ -823,7 +823,7 @@ export class EnketoService {
 
 interface ContactSummary {
   id: string;
-  xmlStr: string;
+  xmlStr?: string;
 }
 
 interface EnketoOptions {
