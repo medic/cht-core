@@ -48,7 +48,8 @@ export class TransitionsService {
       await this.validationService.init();
 
       this.AVAILABLE_TRANSITIONS.forEach((transition) => {
-        if (!this.isEnabled(transition.name)) {
+        // if (!this.isEnabled(transition.name)) { // TODO
+        if (!transition.isEnabled) {
           return;
         }
 

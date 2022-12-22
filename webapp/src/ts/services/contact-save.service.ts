@@ -9,7 +9,6 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TransitionsService } from '@mm-services/transitions.service';
-import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,7 +25,6 @@ export class ContactSaveService {
     private extractLineageService:ExtractLineageService,
     private transitionsService:TransitionsService,
     private ngZone:NgZone,
-    private createUserForContactsService: CreateUserForContactsService,
   ) {
     this.servicesActions = new ServicesActions(store);
   }
@@ -89,11 +87,6 @@ export class ContactSaveService {
 
     if (!doc._rev) {
       doc.reported_date = Date.now();
-    }
-
-    if (doc.create_user_for_contact === 'true') {
-      this.createUserForContactsService.setAddUser(doc);
-      delete doc.create_user_for_contact;
     }
 
     return doc;

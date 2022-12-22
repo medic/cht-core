@@ -1,17 +1,18 @@
 import { Injectable } from '@angular/core';
 
 import { Transition, Doc } from '@mm-services/transitions/transition';
+import {CreateUserForContactsService, UserCreationStatus} from '@mm-services/create-user-for-contacts.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TestUserForContactsTransition extends Transition {
-  constructor(
-  ) {
+  constructor(private createUserForContactsService: CreateUserForContactsService) {
     super();
   }
 
   readonly name = 'test_user_for_contacts';
+  public readonly isEnabled = true;
 
   init() {
     return true;
@@ -21,8 +22,8 @@ export class TestUserForContactsTransition extends Transition {
     if (!docs) {
       return false;
     }
-    // TODO: keep only contact docs
-    return !!docs.filter(doc => doc?.type === 'data_record').length;
+
+    return !!docs.filter(doc => doc?.should_create_user === 'true').length;
   }
 
   async run(docs: Doc[]) {
@@ -30,13 +31,10 @@ export class TestUserForContactsTransition extends Transition {
       return [];
     }
 
-    docs = docs.filter(Boolean);
-
-    /*if (doc.should_create_user === 'true') {
-      doc.user_for_contact = {
-        add: { status: UserCreationStatus.READY, roles: [doc.role] },
-      };
-    }*/
+    docs = docs.filter(Boolean).map(doc => {
+      this.createUserForContactsService.setAddUser(doc);
+      return doc;
+    });
 
     return docs;
   }
