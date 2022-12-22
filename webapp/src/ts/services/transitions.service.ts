@@ -5,6 +5,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ValidationService } from '@mm-services/validation.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { CreateUserForContactsTransition } from '@mm-services/transitions/create-user-for-contacts.transition';
+import { TestUserForContactsTransition } from '@mm-services/transitions/test-user-for-contact.transition';
 
 @Injectable({
   providedIn: 'root'
@@ -15,12 +16,14 @@ export class TransitionsService {
     private validationService:ValidationService,
     private mutingTransition:MutingTransition,
     private createUserForContactsTransition:CreateUserForContactsTransition,
+    private testUserForContactsTransition:TestUserForContactsTransition,
   ) {
   }
 
   private readonly AVAILABLE_TRANSITIONS = [
     this.mutingTransition,
     this.createUserForContactsTransition,
+    this.testUserForContactsTransition,
   ].filter(transition => transition.isEnabled);
 
   private loadedTransitions = [];
