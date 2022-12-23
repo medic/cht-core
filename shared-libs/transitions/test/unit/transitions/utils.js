@@ -2,10 +2,24 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const messages = require('../../../src/lib/messages');
 const utils = require('../../../src/lib/utils');
-const transitionUtils = require('../../../src/transitions/utils');
+const config = require('../../../src/config');
 
 describe('unit transition utils', () => {
-  afterEach(() => sinon.restore());
+  let transitionUtils;
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+      getTranslations: sinon.stub().returns({})
+    });
+    transitionUtils = require('../../../src/transitions/utils');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   describe('addRejectionMessage', () => {
     it('handles no configured messages', () => {

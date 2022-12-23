@@ -4,12 +4,7 @@ const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
-/**
- * this role is used in webapp bootstrap and session service to mainly determine whether the user should
- * replicate or not, without requiring access to server settings.
- */
-const ONLINE_ROLE = 'mm-online';
-const DB_ADMIN_ROLE = '_admin';
+const { roles, users } = require('@medic/user-management')(config, db);
 
 const get = (path, headers) => {
   const dbUrl = url.parse(environment.serverUrl);
@@ -25,13 +20,6 @@ const get = (path, headers) => {
   });
 };
 
-// TODO Use a shared library for this duplicated code #4021
-const hasRole = (userCtx, role) => {
-  return _.includes(userCtx && userCtx.roles, role);
-};
-
-const isDbAdmin = userCtx => hasRole(userCtx, DB_ADMIN_ROLE);
-
 const hasPermission = (userCtx, permission) => {
   const roles = config.get('permissions')[permission];
   if (!roles) {
@@ -40,53 +28,12 @@ const hasPermission = (userCtx, permission) => {
   return _.some(roles, role => _.includes(userCtx.roles, role));
 };
 
-const hydrateUserSettings = (userSettings) => {
-  return db.medic
-    .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
-    .then((response) => {
-      if (!Array.isArray(response.rows) || response.rows.length !== 2) { // malformed response
-        return userSettings;
-      }
-
-      const [facilityRow, contactRow] = response.rows;
-      if (!facilityRow || !contactRow) { // malformed response
-        return userSettings;
-      }
-
-      userSettings.facility = facilityRow.doc;
-      userSettings.contact = contactRow.doc;
-
-      return userSettings;
-    });
-};
-
 module.exports = {
-  hasOnlineRole: roles => {
-    if (!Array.isArray(roles) || !roles.length) {
-      return false;
-    }
-
-    const onlineRoles = [
-      DB_ADMIN_ROLE,
-      ONLINE_ROLE,
-      'national_admin', // kept for backwards compatibility
-    ];
-    return roles.some(role => onlineRoles.includes(role));
-  },
-
-  isOnlineOnly: userCtx => {
-    return userCtx && module.exports.hasOnlineRole(userCtx.roles);
-  },
-
-  isOffline: roles => {
-    const configured = config.get('roles') || {};
-    const configuredRole = roles.some(role => configured[role]);
-    return !isDbAdmin({ roles }) &&
-           (!configuredRole || roles.some(role => configured[role] && configured[role].offline));
-  },
-
+  isOnlineOnly: roles.isOnlineOnly,
+  isDbAdmin: roles.isDbAdmin,
+  getUserSettings: users.getUserSettings,
   hasAllPermissions: (userCtx, permissions) => {
-    if (isDbAdmin(userCtx)) {
+    if (roles.isDbAdmin(userCtx)) {
       return true;
     }
     if (!permissions || !userCtx || !userCtx.roles) {
@@ -192,19 +139,4 @@ module.exports = {
         return username;
       });
   },
-
-  getUserSettings: userCtx => {
-    return Promise
-      .all([
-        db.users.get('org.couchdb.user:' + userCtx.name),
-        db.medic.get('org.couchdb.user:' + userCtx.name)
-      ])
-      .then(([ user, medicUser ]) => {
-        Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
-        return hydrateUserSettings(medicUser);
-      });
-  },
-
-  isDbAdmin: isDbAdmin,
-  ONLINE_ROLE: ONLINE_ROLE,
 };

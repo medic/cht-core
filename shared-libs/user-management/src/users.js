@@ -1,18 +1,18 @@
 const _ = require('lodash');
 const passwordTester = require('simple-password-tester');
-const people  = require('../controllers/people');
-const places = require('../controllers/places');
-const db = require('../db');
-const lineage = require('@medic/lineage')(Promise, db.medic);
+const db = require('./libs/db');
+const lineage = require('./libs/lineage');
 const couchSettings = require('@medic/settings');
-const getRoles = require('./types-and-roles');
-const auth = require('../auth');
+const getRoles = require('./libs/types-and-roles');
+const roles = require('./roles');
 const tokenLogin = require('./token-login');
+const config = require('./libs/config');
 const moment = require('moment');
-const bulkUploadLog = require('../services/bulk-upload-log');
+const bulkUploadLog = require('./bulk-upload-log');
+const passwords = require('./libs/passwords');
+const { people, places } = require('@medic/contacts')(config, db);
 
 const USER_PREFIX = 'org.couchdb.user:';
-const DOC_IDS_WARN_LIMIT = 10000;
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -175,6 +175,9 @@ const validateNewUsernameForDb = (username, database) => {
     });
 };
 
+/**
+ * Resolves successfully if the username is valid and available (not used by another user). Otherwise, rejects.
+ */
 const validateNewUsername = username => {
   if (!USERNAME_ALLOWED_CHARS.test(username)) {
     return Promise.reject(error400(
@@ -356,15 +359,15 @@ const getSettingsUpdates = (username, data) => {
     settings.roles = getRoles(data.type);
   }
   if (settings.roles) {
-    const index = settings.roles.indexOf(auth.ONLINE_ROLE);
-    if (auth.isOffline(settings.roles)) {
+    const index = settings.roles.indexOf(roles.ONLINE_ROLE);
+    if (roles.isOffline(settings.roles)) {
       if (index !== -1) {
         // remove the online role
         settings.roles.splice(index, 1);
       }
     } else if (index === -1) {
       // add the online role
-      settings.roles.push(auth.ONLINE_ROLE);
+      settings.roles.push(roles.ONLINE_ROLE);
     }
   }
   if (data.place) {
@@ -395,8 +398,8 @@ const getUserUpdates = (username, data) => {
     // deprecated: use 'roles' instead
     user.roles = getRoles(data.type);
   }
-  if (user.roles && !auth.isOffline(user.roles)) {
-    user.roles.push(auth.ONLINE_ROLE);
+  if (user.roles && !roles.isOffline(user.roles)) {
+    user.roles.push(roles.ONLINE_ROLE);
   }
   if (data.place) {
     user.facility_id = getDocID(data.place);
@@ -449,7 +452,7 @@ const missingFields = data => {
     required.push('password');
   }
 
-  if (data.roles && auth.isOffline(data.roles)) {
+  if (data.roles && roles.isOffline(data.roles)) {
     required.push('place', 'contact');
   }
 
@@ -515,7 +518,7 @@ const validateUserFacility = (data, user, userSettings) => {
   }
 
   if (_.isNull(data.place)) {
-    if (userSettings.roles && auth.isOffline(userSettings.roles)) {
+    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
       return Promise.reject(error400(
         'Place field is required for offline users',
         'field is required',
@@ -533,7 +536,7 @@ const validateUserContact = (data, user, userSettings) => {
   }
 
   if (_.isNull(data.contact)) {
-    if (userSettings.roles && auth.isOffline(userSettings.roles)) {
+    if (userSettings.roles && roles.isOffline(userSettings.roles)) {
       return Promise.reject(error400(
         'Contact field is required for offline users',
         'field is required',
@@ -700,6 +703,52 @@ const createRecordBulkLog = (record, status, error, message) => {
   return recordBulkLog;
 };
 
+const hydrateUserSettings = (userSettings) => {
+  return db.medic
+    .allDocs({ keys: [ userSettings.facility_id, userSettings.contact_id ], include_docs: true })
+    .then((response) => {
+      if (!Array.isArray(response.rows) || response.rows.length !== 2) { // malformed response
+        return userSettings;
+      }
+
+      const [facilityRow, contactRow] = response.rows;
+      if (!facilityRow || !contactRow) { // malformed response
+        return userSettings;
+      }
+
+      userSettings.facility = facilityRow.doc;
+      userSettings.contact = contactRow.doc;
+
+      return userSettings;
+    });
+};
+
+const getUserDoc = (username, dbName) => db[dbName]
+  .get(`org.couchdb.user:${username}`)
+  .catch(err => {
+    err.db = dbName;
+    throw err;
+  });
+
+const getUserDocsByName = (name) =>
+  Promise
+    .all(['users', 'medic'].map(dbName => getUserDoc(name, dbName)))
+    .catch(error => {
+      if (error.status !== 404) {
+        return Promise.reject(error);
+      }
+      return Promise.reject({
+        status: 404,
+        message: `Failed to find user with name [${name}] in the [${error.db}] database.`
+      });
+    });
+
+const getUserSettings = async({ name }) => {
+  const [ user, medicUser ] = await getUserDocsByName(name);
+  Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
+  return hydrateUserSettings(medicUser);
+};
+
 /*
  * Everything not exported directly is private.  Underscore prefix is only used
  * to export functions needed for testing.
@@ -717,6 +766,7 @@ module.exports = {
         return mapUsers(users, settings, facilities);
       });
   },
+  getUserSettings,
   /* eslint-disable max-len */
   /**
    * Take the request data and create valid user, user-settings and contact
@@ -895,8 +945,8 @@ module.exports = {
 
     // Online users can remove place or contact
     if (!_.isNull(data.place) &&
-        !_.isNull(data.contact) &&
-        !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
+      !_.isNull(data.contact) &&
+      !_.some(props, key => (!_.isNull(data[key]) && !_.isUndefined(data[key])))
     ) {
       return Promise.reject(error400(
         'One of the following fields are required: ' + props.join(', '),
@@ -933,11 +983,23 @@ module.exports = {
   },
 
   /**
+   * Updates the user with a new random password. Returns this password.
+   * @param {string} username the username of the user to update
+   * @returns {Promise<string>} the generated password
+   */
+  resetPassword: async (username) => {
+    const password = passwords.generate();
+    const user = await getUpdatedUserDoc(username, { password });
+    await saveUserUpdates(user);
+    return password;
+  },
+
+  validateNewUsername,
+
+  /**
    * Parses a CSV of users to an array of objects.
    *
    * @param {string} csv CSV of users.
    */
   parseCsv,
-
-  DOC_IDS_WARN_LIMIT,
 };

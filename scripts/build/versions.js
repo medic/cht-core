@@ -14,13 +14,17 @@ const getBranchVersion = (release) => {
   return release ? base : `${base}.${BUILD_NUMBER}`;
 };
 
+const getTagVersion = (release) => {
+  return release ? TAG : `${TAG}.${BUILD_NUMBER}`;
+};
+
 const getRepo = (repo) => {
   return repo || ECR_REPO || 'medicmobile';
 };
 
 const getVersion = (release) => {
   if (TAG) {
-    return TAG;
+    return getTagVersion(release);
   }
   if (BRANCH) {
     return getBranchVersion(release);

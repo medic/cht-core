@@ -1,7 +1,7 @@
 /**
  * If publishing a tag, check to ensure the package.json version matches
  */
-const {TAG } = process.env;
+const { TAG } = process.env;
 const packageVersion = require('../../package.json').version;
 
 if (TAG && !TAG.startsWith(packageVersion)) {

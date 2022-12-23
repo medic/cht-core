@@ -300,6 +300,11 @@ const getCurrentReportId = async () => {
   return currentUrl.slice(reportBaseUrl.length);
 };
 
+const getLastSubmittedReportId = async () => {
+  await (await firstReport()).click();
+  return getCurrentReportId();
+};
+
 const getReportDetailFieldValueByLabel = async (label) => {
   await reportBodyDetails().waitForDisplayed();
   for (const field of await reportDetailsFields()) {
@@ -367,6 +372,7 @@ const deleteReport = async () => {
 
 module.exports = {
   getCurrentReportId,
+  getLastSubmittedReportId,
   reportList,
   firstReport,
   submitterName,

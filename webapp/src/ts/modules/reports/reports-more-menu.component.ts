@@ -1,4 +1,5 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Data } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 
@@ -22,9 +23,9 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   private hasDeletePermission = false;
   private hasUpdatePermission = false;
   private selectMode = false;
-  private loadingContent;
-  private snapshotData;
-  private isOnlineOnly;
+  private loadingContent: boolean;
+  private snapshotData: Data | undefined;
+  private isOnlineOnly: boolean;
 
   subscription: Subscription = new Subscription();
   reportsList;

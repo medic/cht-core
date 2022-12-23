@@ -23,8 +23,11 @@
 }
 
 .mat-icon.fa {
+  vertical-align: middle;
+  height: 20px;
+  width: 20px;
   &:before {
-    font-size: @font-extra-extra-large;
+    font-size: @font-extra-large;
     color: @mat-icon-color;
   }
 }
@@ -42,6 +45,9 @@
     &:disabled :after,
     &:disabled :before {
       color: @inactive-color;
+    }
+    .mat-icon {
+      margin-right: 5px;
     }
   }
 }

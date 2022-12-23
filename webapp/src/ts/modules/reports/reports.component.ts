@@ -36,25 +36,25 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private reportsActions: ReportsActions;
   private servicesActions: ServicesActions;
   private listContains;
-  private destroyed;
+  private destroyed: boolean;
 
   subscription: Subscription = new Subscription();
   reportsList;
   selectedReport;
   selectedReports;
   forms;
-  error;
-  errorSyntax;
+  error: boolean;
+  errorSyntax: boolean;
   loading = true;
   appending = false;
-  moreItems;
+  moreItems: boolean;
   filters:any = {};
-  hasReports;
+  hasReports: boolean;
   selectMode = false;
   selectModeAvailable = false;
-  verifyingReport;
-  showContent;
-  enketoEdited;
+  verifyingReport: boolean;
+  showContent: boolean;
+  enketoEdited: boolean;
   useSidebarFilter = true;
   isSidebarFilterOpen = false;
   isExporting = false;
@@ -330,11 +330,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const exportFn = function () {
-      this.exportReports();
-    };
     this.globalActions.setLeftActionBar({
-      exportFn: exportFn.bind(this),
+      exportFn: () => this.exportReports(),
       hasResults: this.hasReports,
     });
   }

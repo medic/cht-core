@@ -2,13 +2,13 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 const assert = require('chai').assert;
 const moment = require('moment');
-const transitionUtils = require('../../src/transitions/utils');
 const utils = require('../../src/lib/utils');
 const config = require('../../src/config');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const db = require('../../src/db');
 
-const transition = rewire('../../src/transitions/registration');
+let transitionUtils;
+let transition;
 
 const getMessage = doc => {
   if (!doc || !doc.tasks) {
@@ -18,89 +18,99 @@ const getMessage = doc => {
 };
 
 describe('pregnancy registration with weeks since LMP', () => {
-  afterEach(() => sinon.restore());
-
   beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub().returns([{
+        form: 'p',
+        type: 'pregnancy',
+        events: [
+          {
+            name: 'on_create',
+            trigger: 'add_patient_id',
+            params: '',
+            bool_expr: ''
+          },
+          {
+            name: 'on_create',
+            trigger: 'add_expected_date',
+            params: '',
+            bool_expr: 'typeof doc.getid === "undefined"'
+          }
+        ],
+        validations: {
+          join_responses: true,
+          list: [
+            {
+              property: 'lmp',
+              rule: 'min(0) && max(40)',
+              message: [{
+                content: 'Invalid LMP; must be between 0-40 weeks.',
+                locale: 'en'
+              }]
+            },
+            {
+              property: 'patient_name',
+              rule: 'lenMin(1) && lenMax(100)',
+              message: [{
+                content: 'Invalid patient name.',
+                locale: 'en'
+              }]
+            }
+          ]
+        }
+      }, {
+        // Pregnancy for existing patient
+        form: 'ep',
+        type: 'pregnancy',
+        events: [
+          // See, no patient id creation!
+          // {
+          //     name: 'on_create',
+          //     trigger: 'add_patient_id',
+          //     params: '',
+          //     bool_expr: ''
+          // },
+          {
+            name: 'on_create',
+            trigger: 'add_expected_date',
+            params: '',
+            bool_expr: 'typeof doc.getid === "undefined"'
+          }
+        ],
+        validations: {
+          join_responses: true,
+          list: [
+            {
+              property: 'lmp',
+              rule: 'min(0) && max(40)',
+              message: [{
+                content: 'Invalid LMP; must be between 0-40 weeks.',
+                locale: 'en'
+              }]
+            },
+            {
+              property: 'patient_id',
+              rule: 'len(5)',
+              message: [{
+                content: 'Invalid patient Id.',
+                locale: 'en'
+              }]
+            }
+          ]
+        }
+      }]),
+      getTranslations: sinon.stub().returns({})
+    });
+    transitionUtils = require('../../src/transitions/utils');
+    transition = rewire('../../src/transitions/registration');
+
     transition.setExpectedBirthDate = transition.__get__('setExpectedBirthDate');
-    sinon.stub(config, 'get').returns([{
-      form: 'p',
-      type: 'pregnancy',
-      events: [
-        {
-          name: 'on_create',
-          trigger: 'add_patient_id',
-          params: '',
-          bool_expr: ''
-        },
-        {
-          name: 'on_create',
-          trigger: 'add_expected_date',
-          params: '',
-          bool_expr: 'typeof doc.getid === "undefined"'
-        }
-      ],
-      validations: {
-        join_responses: true,
-        list: [
-          {
-            property: 'lmp',
-            rule: 'min(0) && max(40)',
-            message: [{
-              content: 'Invalid LMP; must be between 0-40 weeks.',
-              locale: 'en'
-            }]
-          },
-          {
-            property: 'patient_name',
-            rule: 'lenMin(1) && lenMax(100)',
-            message: [{
-              content: 'Invalid patient name.',
-              locale: 'en'
-            }]
-          }
-        ]
-      }
-    }, {
-      // Pregnancy for existing patient
-      form: 'ep',
-      type: 'pregnancy',
-      events: [
-        // See, no patient id creation!
-        // {
-        //     name: 'on_create',
-        //     trigger: 'add_patient_id',
-        //     params: '',
-        //     bool_expr: ''
-        // },
-        {
-          name: 'on_create',
-          trigger: 'add_expected_date',
-          params: '',
-          bool_expr: 'typeof doc.getid === "undefined"'
-        }
-      ],
-      validations: {
-        join_responses: true,
-        list: [
-          {
-            property: 'lmp',
-            rule: 'min(0) && max(40)',
-            message: [{
-              content: 'Invalid LMP; must be between 0-40 weeks.',
-              locale: 'en'
-            }]
-          },
-          {
-            property: 'patient_id',
-            rule: 'len(5)',
-            message: [{
-              content: 'Invalid patient Id.',
-              locale: 'en'
-            }]
-          }
-        ]
-      }
-    }]);
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
   });
 
   it('filter fails with empty doc', () => {
@@ -405,82 +415,93 @@ describe('pregnancy registration with weeks since LMP', () => {
 describe('pregnancy registration with exact LMP date', () => {
   const today = moment('2000-01-01');
   const eightWeeksAgo = today.clone().subtract(8, 'weeks').startOf('day');
-  afterEach(() => sinon.restore());
 
   beforeEach(() => {
-    transition.setExpectedBirthDate = transition.__get__('setExpectedBirthDate');
-    sinon.stub(config, 'get').returns([{
-      form: 'l',
-      type: 'pregnancy',
-      events: [
-        {
-          name: 'on_create',
-          trigger: 'add_patient',
-          params: '',
-          bool_expr: ''
-        },
-        {
-          name: 'on_create',
-          trigger: 'add_expected_date',
-          params: '',
-          bool_expr: 'typeof doc.getid === "undefined"'
-        }
-      ],
-      validations: {
-        join_responses: true,
-        list: [          
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub().returns([{
+        form: 'l',
+        type: 'pregnancy',
+        events: [
           {
-            property: 'lmp_date',
-            rule: 'isAfter("-40 weeks")',
-            message: [{
-              content: 'Date should be later than 40 weeks ago.',
-              locale: 'en'
-            }]
-          },          
-          {
-            property: 'lmp_date',
-            rule: 'isBefore("8 weeks")',
-            message: [{
-              content: 'Date should be older than 8 weeks ago.',
-              locale: 'en'
-            }]
+            name: 'on_create',
+            trigger: 'add_patient',
+            params: '',
+            bool_expr: ''
           },
           {
-            property: 'patient_name',
-            rule: 'lenMin(1) && lenMax(100)',
-            message: [{
-              content: 'Invalid patient name.',
-              locale: 'en'
-            }]
+            name: 'on_create',
+            trigger: 'add_expected_date',
+            params: '',
+            bool_expr: 'typeof doc.getid === "undefined"'
           }
-        ]
-      }
-    }, {
-      // Pregnancy for existing patient
-      form: 'ep',
-      type: 'pregnancy',
-      events: [
-        {
-          name: 'on_create',
-          trigger: 'add_expected_date',
-          params: '',
-          bool_expr: 'typeof doc.getid === "undefined"'
+        ],
+        validations: {
+          join_responses: true,
+          list: [
+            {
+              property: 'lmp_date',
+              rule: 'isAfter("-40 weeks")',
+              message: [{
+                content: 'Date should be later than 40 weeks ago.',
+                locale: 'en'
+              }]
+            },
+            {
+              property: 'lmp_date',
+              rule: 'isBefore("8 weeks")',
+              message: [{
+                content: 'Date should be older than 8 weeks ago.',
+                locale: 'en'
+              }]
+            },
+            {
+              property: 'patient_name',
+              rule: 'lenMin(1) && lenMax(100)',
+              message: [{
+                content: 'Invalid patient name.',
+                locale: 'en'
+              }]
+            }
+          ]
         }
-      ],
-      validations: {
-        join_responses: true,
-        list: [
+      }, {
+        // Pregnancy for existing patient
+        form: 'ep',
+        type: 'pregnancy',
+        events: [
           {
-            property: 'patient_id',
-            rule: 'len(5)',
-            message: [{
-              content: 'Invalid patient Id.',
-              locale: 'en'
-            }]
+            name: 'on_create',
+            trigger: 'add_expected_date',
+            params: '',
+            bool_expr: 'typeof doc.getid === "undefined"'
           }
-        ]
-      }
-    }]);
+        ],
+        validations: {
+          join_responses: true,
+          list: [
+            {
+              property: 'patient_id',
+              rule: 'len(5)',
+              message: [{
+                content: 'Invalid patient Id.',
+                locale: 'en'
+              }]
+            }
+          ]
+        }
+      }]),
+      getTranslations: sinon.stub().returns({})
+    });
+
+    transitionUtils = require('../../src/transitions/utils');
+    transition = rewire('../../src/transitions/registration');
+    transition.setExpectedBirthDate = transition.__get__('setExpectedBirthDate');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
   });
 
   it('setExpectedBirthDate sets lmp_date and expected_date correctly for 8 weeks ago', () => {

@@ -4,6 +4,7 @@ const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const environment = require('./environment');
+const config = require('./config');
 const db = require('./db');
 const path = require('path');
 const auth = require('./auth');
@@ -25,8 +26,7 @@ const exportData = require('./controllers/export-data');
 const records = require('./controllers/records');
 const forms = require('./controllers/forms');
 const users = require('./controllers/users');
-const places = require('./controllers/places');
-const people = require('./controllers/people');
+const { people, places } = require('@medic/contacts')(config, db);
 const upgrade = require('./controllers/upgrade');
 const settings = require('./controllers/settings');
 const bulkDocs = require('./controllers/bulk-docs');
@@ -43,6 +43,7 @@ const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
 const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
+const faviconController = require('./controllers/favicon');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
@@ -237,22 +238,7 @@ app.all('/+medic(/*)?', (req, res, next) => {
   next();
 });
 
-app.get('/favicon.ico', (req, res) => {
-  // Cache for a week. Normally we don't interfere with couch headers, but
-  // due to Chrome (including Android WebView) aggressively requesting
-  // favicons on every page change and window.history update
-  // ( https://github.com/medic/medic/issues/1913 ), we have to
-  // stage an intervention
-  writeHeaders(req, res, [['Cache-Control', 'public, max-age=604800']]);
-  db.medic.get('branding').then(doc => {
-    db.medic.getAttachment(doc._id, doc.resources.favicon).then(blob => {
-      res.send(blob);
-    });
-  }).catch(err => {
-    res.sendFile('resources/ico/favicon.ico', { root : __dirname });
-    logger.warn('Branding doc or/and favicon missing: %o', err);
-  });
-});
+app.get('/favicon.ico', faviconController.get);
 
 // saves CouchDB _session information as `userCtx` in the `req` object
 app.use(authorization.getUserCtx);
