@@ -1,4 +1,4 @@
-<div class="filters">
+<div class="filters tab-bar">
   <div class="inner">
     <contacts-filters
       *ngIf="!useSearchNewDesign"
@@ -17,6 +17,7 @@
       (sort)="sort($event)"
       (search)="search()">
     </mm-search-bar>
+    <mm-contacts-more-menu (exportContacts)="exportContacts()"></mm-contacts-more-menu>
   </div>
 </div>
 
