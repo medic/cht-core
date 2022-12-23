@@ -1,6 +1,6 @@
 const utils = require('../../utils');
 
-const { BRANCH } = process.env;
+const { BRANCH, TAG } = process.env;
 const loginPage = require('../../page-objects/default/login/login.wdio.page');
 const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
 const constants = require('../../constants');
@@ -28,7 +28,7 @@ describe('Performing an upgrade', () => {
     await upgradePage.goToUpgradePage();
     await upgradePage.expandPreReleasesAccordion();
 
-    const installButton = await upgradePage.getInstallButton(BRANCH);
+    const installButton = await upgradePage.getInstallButton(BRANCH, TAG);
     await installButton.click();
 
     const confirm = await upgradePage.upgradeModalConfirm();

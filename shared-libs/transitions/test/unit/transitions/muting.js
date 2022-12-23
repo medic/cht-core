@@ -2,17 +2,20 @@ const sinon = require('sinon');
 const moment = require('moment');
 const config = require('../../../src/config');
 const chai = require('chai');
-const transitionUtils = require('../../../src/transitions/utils');
 const mutingUtils = require('../../../src/lib/muting_utils');
-const transition = require('../../../src/transitions/muting');
 const utils = require('../../../src/lib/utils');
 const transitionsIndex = require('../../../src/transitions/index');
 
 describe('Muting transition', () => {
-  afterEach(() => sinon.restore());
+  let transitionUtils;
+  let transition;
+
   beforeEach(() => {
-    sinon.stub(config, 'get');
-    sinon.stub(config, 'getAll').returns({ });
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+    });
+    transitionUtils = require('../../../src/transitions/utils');
     sinon.stub(transitionUtils, 'hasRun');
 
     sinon.stub(mutingUtils, 'isMutedInLineage');
@@ -22,6 +25,13 @@ describe('Muting transition', () => {
     sinon.stub(mutingUtils, 'updateMutingHistory');
 
     sinon.stub(utils, 'getSubjectIds');
+
+    transition = require('../../../src/transitions/muting');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
   });
 
   describe('init', () => {

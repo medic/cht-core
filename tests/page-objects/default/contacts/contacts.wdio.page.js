@@ -1,5 +1,7 @@
 const genericForm = require('../enketo/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
+const sentinelUtils = require('../../../utils/sentinel');
+const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
@@ -58,6 +60,7 @@ const contactCardTitle = () => $('.inbox .content-pane .material .body .action-h
 const contactInfoName = () => $('h2[test-id="contact-name"]');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
 const contactDeceasedStatus = () => $('div[test-id="deceased-title"]');
+const contactMuted = () => $('.heading-content .muted');
 
 const PREG_CARD_SELECTOR = 'div[test-id="contact.profile.pregnancy.active"]';
 const pregnancyCard = () => $(PREG_CARD_SELECTOR);
@@ -108,13 +111,20 @@ const getReportTaskFiltersText = async () => {
   return await Promise.all((await taskFilters()).map(filter => filter.getText()));
 };
 
-const waitForContactLoaded = async () => {
+const waitForContactLoaded = async (type) => {
+  type && await (await contactCardIcon(type)).waitForDisplayed();
   await (await contactCard()).waitForDisplayed();
   await (await contactSummaryContainer()).waitForDisplayed();
 };
 
 const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
+};
+
+const submitForm = async () => {
+  await (await genericForm.submitButton()).waitForDisplayed();
+  await (await genericForm.submitButton()).click();
+  await waitForContactLoaded();
 };
 
 const addPlace = async (type, placeName, contactName) => {
@@ -133,14 +143,14 @@ const addPlace = async (type, placeName, contactName) => {
   await (await externalIdField(type)).addValue('1234457');
   await (await notes(type)).addValue(`Some ${type} notes`);
   await (await genericForm.submitButton()).click();
-  await (await contactCardIcon(dashedType)).waitForDisplayed();
-  await (await contactCard()).waitForDisplayed();
+  await waitForContactLoaded(dashedType);
 };
 
 const addPerson = async (name, params = {}) => {
+  const type = 'person';
   const { dob = '2000-01-01', phone } = params;
-  await (await actionResourceIcon('person')).waitForDisplayed();
-  await (await actionResourceIcon('person')).click();
+  await (await actionResourceIcon(type)).waitForDisplayed();
+  await (await actionResourceIcon(type)).click();
   await (await personName()).addValue(name);
   await (await dateOfBirthField()).addValue(dob);
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
@@ -148,8 +158,9 @@ const addPerson = async (name, params = {}) => {
     await (await personPhoneField()).addValue(phone);
   }
   await (await personSexField()).click();
-  await (await notes('person')).addValue('some person notes');
-  await (await genericForm.submitButton()).click();
+  await (await notes(type)).addValue('some person notes');
+  await submitForm();
+  await sentinelUtils.waitForSentinel();
   await (await contactCardIcon('person')).waitForDisplayed();
   return (await contactCard()).getText();
 };
@@ -166,8 +177,7 @@ const editPerson = async (name, updatedName) => {
   await (await personName()).clearValue();
   await (await personName()).addValue(updatedName);
 
-  await (await genericForm.submitButton()).click();
-  await waitForContactLoaded();
+  await submitForm();
   return (await contactCard()).getText();
 };
 
@@ -232,7 +242,7 @@ const editDistrict = async (districtName, editedName) => {
   await (await districtHospitalName()).setValue(editedName);
   // blur field to trigger Enketo validation
   await (await notes('district_hospital')).click();
-  await (await genericForm.submitButton()).click();
+  await submitForm();
 };
 
 const createNewAction = async (formName) => {
@@ -254,6 +264,22 @@ const openForm = async (name) => {
     }
   }
   throw new Error(`Form with name: "${name}" not found`);
+};
+
+const openFormWithWarning = async (formName) => {
+  await (await newActionContactButton()).waitForClickable();
+  await (await newActionContactButton()).click();
+  const parent = await newActionContactButton().parentElement();
+  await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
+
+  for (const form of await forms()) {
+    if (await form.getText() === formName) {
+      await form.click();
+      await (await modalPage.body()).waitForExist();
+      return modalPage.getModalDetails();
+    }
+  }
+  throw new Error(`Form with name: "${formName}" not found`);
 };
 
 const openReport = async () => {
@@ -346,6 +372,7 @@ module.exports = {
   editDistrict,
   childrenCards,
   createNewAction,
+  submitForm,
   openReport,
   getContactCardTitle,
   getContactInfoName,
@@ -365,4 +392,6 @@ module.exports = {
   getPregnancyCardInfo,
   deathCard,
   getDeathCardInfo,
+  contactMuted,
+  openFormWithWarning,
 };

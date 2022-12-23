@@ -36,9 +36,7 @@ const loadTranslations = () => {
 };
 
 const initTransitionLib = () => {
-  const settings = config.get();
-  const translationCache = config.getTranslationValues();
-  const transitionsLib = require('@medic/transitions')(db, settings, translationCache, logger);
+  const transitionsLib = require('@medic/transitions')(db, config, logger);
   // loadTransitions could throw errors when some transitions are misconfigured
   try {
     transitionsLib.loadTransitions(true);
@@ -101,6 +99,7 @@ const handleTranslationsChange = () => {
 };
 
 const handleFormChange = (change) => {
+  logger.info('Detected form change for', change.id);
   if (change.deleted) {
     return Promise.resolve();
   }

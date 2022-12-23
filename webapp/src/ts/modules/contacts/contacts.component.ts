@@ -35,13 +35,13 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
   private contactsActions: ContactsActions;
   private servicesActions: ServicesActions;
   private listContains;
-  private destroyed;
-  private isOnlineOnly;
+  private destroyed: boolean;
+  private isOnlineOnly: boolean;
 
   contactsList;
   loading = false;
   error;
-  appending;
+  appending: boolean;
   hasContacts = true;
   filters:any = {};
   defaultFilters:any = {};
@@ -56,7 +56,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
   sortDirection = this.defaultSortDirection;
   additionalListItem = false;
   useSearchNewDesign = true;
-  enketoEdited;
+  enketoEdited: boolean;
   selectedContact;
 
   constructor(
@@ -430,11 +430,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
       return;
     }
 
-    const exportFn = function () {
-      this.exportContacts();
-    };
     this.globalActions.setLeftActionBar({
-      exportFn: exportFn.bind(this),
+      exportFn: () => this.exportContacts(),
       hasResults: this.hasContacts,
       userFacilityId: this.usersHomePlace?._id,
       childPlaces: this.allowedChildPlaces,

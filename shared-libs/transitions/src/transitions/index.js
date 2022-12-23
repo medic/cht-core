@@ -38,7 +38,8 @@ const AVAILABLE_TRANSITIONS = [
   'update_scheduled_reports',
   'resolve_pending',
   'muting',
-  'mark_for_outbound'
+  'mark_for_outbound',
+  'create_user_for_contacts'
 ];
 
 const transitions = [];

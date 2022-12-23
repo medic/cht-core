@@ -10,12 +10,14 @@ describe('history utility', () => {
   let clock = null;
 
   beforeEach(() => {
+    config.init({ get: sinon.stub() });
     history = rewire('../../../src/lib/history');
     clock = sinon.useFakeTimers();
   });
 
   afterEach(() => {
     clock.restore();
+    sinon.reset();
     sinon.restore();
   });
 
@@ -41,7 +43,7 @@ describe('history utility', () => {
   });
 
   it('should return false when duplicate with configured limit', () => {
-    sinon.stub(config, 'get').returns({ duplicate_limit: 3 });
+    config.get.returns({ duplicate_limit: 3 });
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), false);
@@ -53,7 +55,7 @@ describe('history utility', () => {
   });
 
   it('should use default maximum limit when configured limit is too high', () => {
-    sinon.stub(config, 'get').returns({ duplicate_limit: 300 });
+    config.get.returns({ duplicate_limit: 300 });
     for (let i = 0; i < 20; i++) {
       should.equal(history.check('to1', 'msg1'), false);
     }
@@ -61,7 +63,7 @@ describe('history utility', () => {
   });
 
   it('should normalize limit', () => {
-    sinon.stub(config, 'get').returns({ duplicate_limit: 'not a number' });
+    config.get.returns({ duplicate_limit: 'not a number' });
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), false);
@@ -95,7 +97,7 @@ describe('history utility', () => {
   });
 
   it('tracks keys', () => {
-    sinon.stub(config, 'get').returns({ duplicate_limit: 1 });
+    config.get.returns({ duplicate_limit: 1 });
     should.equal(history.check('to1', 'msg1'), false);
     should.equal(history.check('to1', 'msg1'), true); // duplicate
 

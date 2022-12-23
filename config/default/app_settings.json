@@ -422,6 +422,11 @@
       ]
     }
   },
+  "create_user_for_contacts": {
+    "replace_forms": [
+      "replace_user"
+    ]
+  },
   "transitions": {
     "accept_patient_reports": false,
     "conditional_alerts": false,
@@ -432,6 +437,7 @@
     "update_notifications": false,
     "update_scheduled_reports": false,
     "generate_patient_id_on_people": true,
-    "death_reporting": true
+    "death_reporting": true,
+    "create_user_for_contacts": false
   }
 }

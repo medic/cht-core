@@ -3,12 +3,13 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 
 const couchSettings = require('@medic/settings');
-const people = require('../../../src/controllers/people');
-const places = require('../../../src/controllers/places');
-const tokenLogin = require('../../../src/services/token-login');
-const config = require('../../../src/config');
-const db = require('../../../src/db');
-const auth = require('../../../src/auth');
+const tokenLogin = require('../../src/token-login');
+const config = require('../../src/libs/config');
+const db = require('../../src/libs/db');
+const lineage = require('../../src/libs/lineage');
+const passwords = require('../../src/libs/passwords');
+const roles = require('../../src/roles');
+const { people, places }  = require('@medic/contacts')(config, db);
 const COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
 const facilitya = { _id: 'a', name: 'aaron' };
@@ -17,13 +18,26 @@ const facilityc = { _id: 'c', name: 'cathy' };
 
 let userData;
 let clock;
+let addMessage;
 const oneDayInMS = 24 * 60 * 60 * 1000;
 
 let service;
 
 describe('Users service', () => {
   beforeEach(() => {
-    service = rewire('../../../src/services/users');
+    config.init({
+      get: sinon.stub(),
+      getTransitionsLib: sinon.stub(),
+    });
+    db.init({
+      medic: { get: sinon.stub(), put: sinon.stub(), allDocs: sinon.stub(), query: sinon.stub() },
+      medicLogs: { get: sinon.stub(), put: sinon.stub(), },
+      users: { get: sinon.stub(), put: sinon.stub() },
+    });
+    lineage.init(require('@medic/lineage')(Promise, db.medic));
+    addMessage = sinon.stub();
+    config.getTransitionsLib.returns({ messages: { addMessage } });
+    service = rewire('../../src/users');
     service.__set__('getFacilities', sinon.stub().returns([
       facilitya,
       facilityb,
@@ -158,7 +172,7 @@ describe('Users service', () => {
 
   describe('validateUser', () => {
     it('defines custom error when not found', () => {
-      sinon.stub(db.users, 'get').returns(Promise.reject({ status: 404 }));
+      db.users.get.returns(Promise.reject({ status: 404 }));
       return service.__get__('validateUser')('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find user.');
       });
@@ -167,7 +181,7 @@ describe('Users service', () => {
 
   describe('validateUserSettings', () => {
     it('defines custom error when not found', () => {
-      sinon.stub(db.medic, 'get').returns(Promise.reject({ status: 404 }));
+      db.medic.get.returns(Promise.reject({ status: 404 }));
       return service.__get__('validateUserSettings')('x').catch(err => {
         chai.expect(err.message).to.equal('Failed to find user settings.');
       });
@@ -361,13 +375,370 @@ describe('Users service', () => {
 
   });
 
+  describe('getUserSettings', () => {
+
+    it('returns medic user doc with facility from couchdb user doc', () => {
+      db.users.get.resolves({ name: 'steve', facility_id: 'steveVille', roles: ['b'] });
+      db.medic.get.resolves({ name: 'steve2', facility_id: 'otherville', contact_id: 'steve', roles: ['c'] });
+      db.medic.allDocs.resolves({
+        rows: [
+          { id: 'steveVille', key: 'steveVille', doc: { _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' } },
+          { id: 'steve', key: 'steve', doc: { _id: 'steve', patient_id: 'steve', name: 'steve' } },
+        ],
+      });
+
+      return service
+        .getUserSettings({ name: 'steve' })
+        .then(result => {
+          chai.expect(result).to.deep.equal({
+            name: 'steve',
+            facility_id: 'steveVille',
+            contact_id: 'steve',
+            roles: ['b'],
+            facility: { _id: 'steveVille', place_id: 'steve_ville', name: 'steve V' },
+            contact: { _id: 'steve', patient_id: 'steve', name: 'steve' },
+          });
+
+          chai.expect(db.users.get.callCount).to.equal(1);
+          chai.expect(db.users.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.withArgs('org.couchdb.user:steve').callCount).to.equal(1);
+          chai.expect(db.medic.allDocs.callCount).to.equal(1);
+          chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{ keys: ['steveVille', 'steve'], include_docs: true }]);
+          chai.expect(db.medic.query.callCount).to.equal(0);
+        });
+    });
+
+    it('returns name and roles from provided userCtx', () => {
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user',
+        roles: [ 'a' ],
+        type: 'user',
+        password_scheme: 'abcd',
+        facility_id: 'myUserVille'
+      });
+      db.medic.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-edited',
+        roles: [ '_admin' ],
+        type: 'user-settings',
+        some: 'field',
+        contact_id: 'my-user-contact',
+        facility_id: 'otherVille'
+      });
+      db.medic.allDocs.resolves({
+        rows: [
+          { id: 'myUserVille', key: 'myUserVille', doc: { _id: 'myUserVille', place_id: 'user_ville' } },
+          { id: 'my-user-contact', key: 'my-user-contact', doc: { _id: 'my-user-contact', patient_id: 'contact' } },
+        ],
+      });
+
+      return service
+        .getUserSettings({ name: 'my-user' })
+        .then(result => {
+          chai.expect(result).to.deep.equal({
+            _id: 'org.couchdb.user:my-user',
+            name: 'my-user',
+            roles: [ 'a' ],
+            type: 'user-settings',
+            some: 'field',
+            contact_id: 'my-user-contact',
+            facility_id: 'myUserVille',
+            facility: { _id: 'myUserVille', place_id: 'user_ville' },
+            contact: { _id: 'my-user-contact', patient_id: 'contact' },
+          });
+        });
+    });
+
+    it('should not use malformed results from all docs', () => {
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user',
+        roles: [ 'a' ],
+        type: 'user',
+        password_scheme: 'abcd',
+        facility_id: 'myUserVille'
+      });
+      db.medic.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-edited',
+        roles: [ '_admin' ],
+        type: 'user-settings',
+        some: 'field',
+        contact_id: 'my-user-contact',
+        facility_id: 'otherVille'
+      });
+      db.medic.allDocs.resolves({
+        rows: [{ id: 'malformed' }],
+      });
+
+      return service
+        .getUserSettings({ name: 'my-user' })
+        .then(result => {
+          chai.expect(result).to.deep.equal({
+            _id: 'org.couchdb.user:my-user',
+            name: 'my-user',
+            roles: [ 'a' ],
+            type: 'user-settings',
+            some: 'field',
+            contact_id: 'my-user-contact',
+            facility_id: 'myUserVille',
+          });
+        });
+    });
+
+    it('should not use malformed results from all docs', () => {
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user',
+        roles: [ 'a' ],
+        type: 'user',
+        password_scheme: 'abcd',
+        facility_id: 'myUserVille'
+      });
+      db.medic.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-edited',
+        roles: [ '_admin' ],
+        type: 'user-settings',
+        some: 'field',
+        contact_id: 'my-user-contact',
+        facility_id: 'otherVille'
+      });
+      db.medic.allDocs.resolves({});
+
+      return service
+        .getUserSettings({ name: 'my-user' })
+        .then(result => {
+          chai.expect(result).to.deep.equal({
+            _id: 'org.couchdb.user:my-user',
+            name: 'my-user',
+            roles: [ 'a' ],
+            type: 'user-settings',
+            some: 'field',
+            contact_id: 'my-user-contact',
+            facility_id: 'myUserVille',
+          });
+        });
+    });
+
+    it('should not use malformed results from all docs', () => {
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user',
+        roles: [ 'a' ],
+        type: 'user',
+        password_scheme: 'abcd',
+        facility_id: 'myUserVille'
+      });
+      db.medic.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-edited',
+        roles: [ '_admin' ],
+        type: 'user-settings',
+        some: 'field',
+        contact_id: 'my-user-contact',
+        facility_id: 'otherVille'
+      });
+      db.medic.allDocs.resolves({ rows: {} });
+
+      return service
+        .getUserSettings({ name: 'my-user' })
+        .then(result => {
+          chai.expect(result).to.deep.equal({
+            _id: 'org.couchdb.user:my-user',
+            name: 'my-user',
+            roles: [ 'a' ],
+            type: 'user-settings',
+            some: 'field',
+            contact_id: 'my-user-contact',
+            facility_id: 'myUserVille',
+          });
+        });
+    });
+
+    it('should not use malformed results from all docs', () => {
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user',
+        roles: [ 'a' ],
+        type: 'user',
+        password_scheme: 'abcd',
+        facility_id: 'myUserVille'
+      });
+      db.medic.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-edited',
+        roles: [ '_admin' ],
+        type: 'user-settings',
+        some: 'field',
+        contact_id: 'my-user-contact',
+        facility_id: 'otherVille'
+      });
+      db.medic.allDocs.resolves({ rows: [ undefined, {} ] });
+
+      return service
+        .getUserSettings({ name: 'my-user' })
+        .then(result => {
+          chai.expect(result).to.deep.equal({
+            _id: 'org.couchdb.user:my-user',
+            name: 'my-user',
+            roles: [ 'a' ],
+            type: 'user-settings',
+            some: 'field',
+            contact_id: 'my-user-contact',
+            facility_id: 'myUserVille',
+          });
+        });
+    });
+
+    it('should work with not found contact', () => {
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user',
+        roles: [ 'a' ],
+        type: 'user',
+        password_scheme: 'abcd',
+        facility_id: 'myUserVille'
+      });
+      db.medic.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-edited',
+        roles: [ '_admin' ],
+        type: 'user-settings',
+        some: 'field',
+        contact_id: 'my-user-contact',
+        facility_id: 'otherVille'
+      });
+      db.medic.allDocs.resolves({
+        rows: [
+          { id: 'myUserVille', key: 'myUserVille', doc: { _id: 'myUserVille' } },
+          { key: 'my-user-contact', error: 'not_found' },
+        ],
+      });
+
+      return service
+        .getUserSettings({ name: 'my-user' })
+        .then(result => {
+          chai.expect(result).to.deep.equal({
+            _id: 'org.couchdb.user:my-user',
+            name: 'my-user',
+            roles: [ 'a' ],
+            type: 'user-settings',
+            some: 'field',
+            contact_id: 'my-user-contact',
+            facility_id: 'myUserVille',
+            facility: { _id: 'myUserVille' },
+            contact: undefined,
+          });
+        });
+    });
+
+    it('throws error if _users user returns an error', () => {
+      db.users.get.rejects({ some: 'err' });
+      db.medic.get.resolves({});
+      return service
+        .getUserSettings({ name: 'steve' })
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ some: 'err', db: 'users' });
+        });
+    });
+
+    it('throws error if _users user returns an error when getting by contact_id', () => {
+      db.users.get.rejects({ some: 'err' });
+      db.medic.get.resolves({
+        rows: [{ doc: {
+          name: 'steve',
+          facility_id: 'otherville',
+          contact_id: 'steve_contact',
+          roles: ['c']
+        } }]
+      });
+      return service
+        .getUserSettings({ contact_id: 'steve_contact' })
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ some: 'err', db: 'users' });
+        });
+    });
+
+    it('throws error if medic user-settings returns an error', () => {
+      db.users.get.resolves({});
+      db.medic.get.rejects({ some: 'err' });
+      return service
+        .getUserSettings({ name: 'steve' })
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ some: 'err', db: 'medic' });
+        });
+    });
+
+    it('throws error if medic database returns no matching users', () => {
+      db.users.get.resolves({});
+      db.medic.get.rejects({ some: 'err', status: 404 });
+      return service
+        .getUserSettings({ name: 'steve' })
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({
+            message: 'Failed to find user with name [steve] in the [medic] database.',
+            status: 404
+          });
+        });
+    });
+
+    it('throws error if users database returns no matching users', () => {
+      db.users.get.rejects({ some: 'err', status: 404 });
+      db.medic.get.resolves({});
+      return service
+        .getUserSettings({ name: 'steve' })
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({
+            message: 'Failed to find user with name [steve] in the [users] database.',
+            status: 404
+          });
+        });
+    });
+
+    it('should throw an error if medic all docs returns an error', () => {
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user',
+        roles: [ 'a' ],
+        type: 'user',
+        password_scheme: 'abcd',
+        facility_id: 'myUserVille'
+      });
+      db.medic.get.resolves({
+        _id: 'org.couchdb.user:my-user',
+        name: 'my-user-edited',
+        roles: [ '_admin' ],
+        type: 'user-settings',
+        some: 'field',
+        contact_id: 'my-user-contact',
+        facility_id: 'otherVille'
+      });
+      db.medic.allDocs.rejects({ error: 'boom' });
+
+      return service
+        .getUserSettings({ name: 'steve' })
+        .then(() => chai.expect.fail('should have thrown'))
+        .catch(err => {
+          chai.expect(err).to.deep.equal({ error: 'boom' });
+        });
+    });
+  });
+
   describe('deleteUser', () => {
 
     it('returns _users insert errors', () => {
-      sinon.stub(db.users, 'get').resolves({});
-      sinon.stub(db.medic, 'get').resolves({});
-      const put = sinon.stub(db.users, 'put').rejects('Not Found');
-      sinon.stub(db.medic, 'put').rejects('Not Found');
+      db.users.get.resolves({});
+      db.medic.get.resolves({});
+      const put = db.users.put.rejects('Not Found');
+      db.medic.put.rejects('Not Found');
       return service.deleteUser('foo').catch(err => {
         chai.expect(err.name).to.equal('Not Found');
         chai.expect(put.callCount).to.equal(1);
@@ -386,16 +757,16 @@ describe('Users service', () => {
         inactive: true,
         deletion_date: (new Date()).valueOf()
       };
-      sinon.stub(db.users, 'get').resolves({
+      db.users.get.resolves({
         _id: 'foo_1',
         starsign: 'aries',
       });
-      sinon.stub(db.medic, 'get').resolves({
+      db.medic.get.resolves({
         _id: 'foo_2',
         starsign: 'taurus',
       });
-      const usersInsert = sinon.stub(db.users, 'put').resolves();
-      const medicUsersInsert = sinon.stub(db.medic, 'put').resolves();
+      const usersInsert = db.users.put.resolves();
+      const medicUsersInsert = db.medic.put.resolves();
       return service.deleteUser('org.couchdb.user:gareth').then(() => {
         chai.expect(usersInsert.callCount).to.equal(1);
         chai.expect(usersInsert.firstCall.args[0]).to.deep.equal(userExpected);
@@ -417,14 +788,14 @@ describe('Users service', () => {
   describe('createUserSettings', () => {
 
     it('returns error from db insert', () => {
-      sinon.stub(db.medic, 'put').rejects('yucky');
+      db.medic.put.rejects('yucky');
       return service.__get__('createUserSettings')(userData).catch(err => {
         chai.expect(err.name).to.equal('yucky');
       });
     });
 
     it('sets up response', () => {
-      sinon.stub(db.medic, 'put').resolves({
+      db.medic.put.resolves({
         id: 'abc',
         rev: '1-xyz'
       });
@@ -476,14 +847,14 @@ describe('Users service', () => {
   describe('createUser', () => {
 
     it('returns error from db insert', () => {
-      sinon.stub(db.users, 'put').rejects('yucky');
+      db.users.put.rejects('yucky');
       return service.__get__('createUser')(userData, {}).catch(err => {
         chai.expect(err.name).to.equal('yucky');
       });
     });
 
     it('sets up response', () => {
-      sinon.stub(db.users, 'put').resolves({
+      db.users.put.resolves({
         id: 'abc',
         rev: '1-xyz'
       });
@@ -614,7 +985,7 @@ describe('Users service', () => {
 
     it('fails if new username does not validate', () => {
       service.__set__('validateNewUsername', sinon.stub().rejects('sorry'));
-      const insert = sinon.stub(db.medic, 'put');
+      const insert = db.medic.put;
       return service.createUser(userData).catch(err => {
         chai.expect(err.name).to.equal('sorry');
         chai.expect(insert.callCount).to.equal(0);
@@ -622,9 +993,9 @@ describe('Users service', () => {
     });
 
     it('errors if username exists in _users db', () => {
-      sinon.stub(db.users, 'get').resolves('bob lives here already.');
-      sinon.stub(db.medic, 'get').resolves();
-      const insert = sinon.stub(db.medic, 'put');
+      db.users.get.resolves('bob lives here already.');
+      db.medic.get.resolves();
+      const insert = db.medic.put;
       return service.createUser(userData).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal('Username "x" already taken.');
@@ -635,9 +1006,9 @@ describe('Users service', () => {
     });
 
     it('errors if username exists in medic db', () => {
-      sinon.stub(db.users, 'get').resolves();
-      sinon.stub(db.medic, 'get').resolves('jane lives here too.');
-      const insert = sinon.stub(db.medic, 'put');
+      db.users.get.resolves();
+      db.medic.get.resolves('jane lives here too.');
+      const insert = db.medic.put;
       return service.createUser(userData).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.message).to.equal('Username "x" already taken.');
@@ -671,8 +1042,8 @@ describe('Users service', () => {
 
     it('returns error if one of the users has missing fields', async () => {
       try {
-        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-        sinon.stub(db.medicLogs, 'put').resolves({});
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
 
         const result = await service.createUsers([
           {},
@@ -692,14 +1063,14 @@ describe('Users service', () => {
           { error: 'Missing required fields: password, type or roles' },
         ]);
       } catch (error) {
-        chai.assert.fail('Should have not thrown');
+        chai.expect.fail('Should have not thrown');
       }
     });
 
     it('returns error if one of the users has password errors', async () => {
       try {
-        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-        sinon.stub(db.medicLogs, 'put').resolves({});
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
 
         const results = await service.createUsers([
           {
@@ -736,20 +1107,20 @@ describe('Users service', () => {
           },
         ]);
       } catch (error) {
-        chai.assert.fail('Should have not thrown');
+        chai.expect.fail('Should have not thrown');
       }
     });
 
     it('returns error if one of the users has a missing phone number and should login by SMS', async () => {
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
-      sinon.stub(db.users, 'get').resolves({});
-      sinon.stub(db.medic, 'get').resolves({});
+      sinon.stub(roles, 'isOffline').returns(false);
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
+      db.users.get.resolves({});
+      db.medic.get.resolves({});
       try {
         const result = await service.createUsers([
           {
@@ -767,20 +1138,20 @@ describe('Users service', () => {
 
         chai.expect(result[1]).to.deep.equal({ error: 'Missing required fields: phone' });
       } catch (error) {
-        chai.assert.fail('Should have not thrown');
+        chai.expect.fail('Should have not thrown');
       }
     });
 
     it('returns error if one of the users has an invalid phone number and should login by SMS', async () => {
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
-      sinon.stub(db.users, 'get').resolves({});
-      sinon.stub(db.medic, 'get').resolves({});
+      sinon.stub(roles, 'isOffline').returns(false);
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
+      db.users.get.resolves({});
+      db.medic.get.resolves({});
       try {
         const result = await service.createUsers([
           {
@@ -799,19 +1170,19 @@ describe('Users service', () => {
 
         chai.expect(result[1]).to.deep.equal({ error: 'A valid phone number is required for SMS login.' });
       } catch (error) {
-        chai.assert.fail('Should have not thrown');
+        chai.expect.fail('Should have not thrown');
       }
     });
 
     it('should normalize phone number and change provided password if should login by SMS', async () => {
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
       const tokenLoginConfig = { message: 'sms', enabled: true };
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('');
 
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       const users = [{
         username: 'sally',
@@ -821,12 +1192,12 @@ describe('Users service', () => {
         token_login: true,
       }];
 
-      sinon.stub(db.medic, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+      db.medic.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
         .resolves({ id: 'org.couchdb.user:sally' });
-      sinon.stub(db.users, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+      db.users.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
         .resolves({ id: 'org.couchdb.user:sally' });
 
-      sinon.stub(db.users, 'get').withArgs('org.couchdb.user:sally')
+      db.users.get.withArgs('org.couchdb.user:sally')
         .onCall(0).rejects({ status: 404 })
         .onCall(1).resolves({
           _id: 'org.couchdb.user:sally',
@@ -834,7 +1205,7 @@ describe('Users service', () => {
           roles: ['a', 'b', 'mm-online'],
           name: 'sally',
         });
-      sinon.stub(db.medic, 'get').withArgs('org.couchdb.user:sally')
+      db.medic.get.withArgs('org.couchdb.user:sally')
         .onCall(0).rejects({ status: 404 })
         .onCall(1).resolves({
           _id: 'org.couchdb.user:sally',
@@ -843,7 +1214,7 @@ describe('Users service', () => {
           phone: '+40755696969',
           name: 'sally',
         });
-      sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+      db.medic.allDocs.resolves({ rows: [{ error: 'not_found' }] });
 
       const response = await service.createUsers(users, 'http://realhost');
       chai.expect(response).to.deep.equal([
@@ -899,18 +1270,34 @@ describe('Users service', () => {
       const token = db.users.put.args[1][0].token_login.token;
       chai.expect(token.length).to.equal(64);
 
-      chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+      const expectedDoc = {
         _id: `token:login:${token}`,
         type: 'token_login',
         reported_date: 0,
         user: 'org.couchdb.user:sally',
-        'tasks[0].messages[0].to': '+40755696969',
-        'tasks[0].messages[0].message': 'sms',
-        'tasks[0].state': 'pending',
-        'tasks[1].messages[0].to': '+40755696969',
-        'tasks[1].messages[0].message': `http://realhost/medic/login/token/${token}`,
-        'tasks[1].state': 'pending',
-      });
+        tasks: []
+      };
+      chai.expect(db.medic.put.args[1][0]).to.deep.equal(expectedDoc);
+      chai.expect(addMessage.callCount).to.equal(2);
+      chai.expect(addMessage.args[0]).to.deep.equal([
+        expectedDoc,
+        { enabled: true, message: 'sms' },
+        '+40755696969',
+        {
+          templateContext: {
+            _id: 'org.couchdb.user:sally',
+            name: 'sally',
+            phone: '+40755696969',
+            roles: ['a', 'b', 'mm-online'],
+            type: 'user'
+          }
+        }
+      ]);
+      chai.expect(addMessage.args[1]).to.deep.equal([
+        expectedDoc,
+        { message: `http://realhost/medic/login/token/${token}` },
+        '+40755696969',
+      ]);
     });
 
     describe('errors at insertion', () => {
@@ -925,8 +1312,8 @@ describe('Users service', () => {
         service.__set__('validateNewUsername', sinon.stub().resolves());
         service.__set__('createPlace', sinon.stub().resolves());
         service.__set__('setContactParent', sinon.stub().rejects(new Error('kablooey')));
-        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-        sinon.stub(db.medicLogs, 'put').resolves({});
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
 
         const response = await service.createUsers([userData]);
 
@@ -943,8 +1330,8 @@ describe('Users service', () => {
         };
         service.__set__('validateNewUsername', sinon.stub().resolves());
         service.__set__('createPlace', sinon.stub().rejects(new Error('fail')));
-        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-        sinon.stub(db.medicLogs, 'put').resolves({});
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
 
         const response = await service.createUsers([userData]);
 
@@ -960,8 +1347,8 @@ describe('Users service', () => {
           type: 'national-manager'
         };
         service.__set__('validateNewUsername', sinon.stub().rejects(new Error('fail username validation')));
-        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-        sinon.stub(db.medicLogs, 'put').resolves({});
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
 
         const response = await service.createUsers([userData]);
 
@@ -981,8 +1368,8 @@ describe('Users service', () => {
         service.__set__('createUser', sinon.stub().resolves());
         service.__set__('setContactParent', sinon.stub().resolves());
         service.__set__('createContact', sinon.stub().rejects(new Error('fail contact creation')));
-        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-        sinon.stub(db.medicLogs, 'put').resolves({});
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
 
         const response = await service.createUsers([userData]);
 
@@ -1003,8 +1390,8 @@ describe('Users service', () => {
         service.__set__('setContactParent', sinon.stub().resolves());
         service.__set__('createContact', sinon.stub().resolves());
         service.__set__('storeUpdatedPlace', sinon.stub().rejects(new Error('fail place update')));
-        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-        sinon.stub(db.medicLogs, 'put').resolves({});
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
 
         const response = await service.createUsers([userData]);
 
@@ -1013,10 +1400,10 @@ describe('Users service', () => {
 
       it('returns responses with errors if token login fails to be enabled', async () => {
         const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-        sinon.stub(config, 'get')
+        config.get
           .withArgs('token_login').returns(tokenLoginConfig)
           .withArgs('app_url').returns('url');
-        sinon.stub(auth, 'isOffline').returns(false);
+        sinon.stub(roles, 'isOffline').returns(false);
 
         const userData = {
           username: 'x',
@@ -1034,8 +1421,8 @@ describe('Users service', () => {
         service.__set__('createUser', sinon.stub().resolves());
         service.__set__('createUserSettings', sinon.stub().resolves());
         sinon.stub(tokenLogin, 'manageTokenLogin').rejects(new Error('fail to enable token login'));
-        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-        sinon.stub(db.medicLogs, 'put').resolves({});
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
 
         const response = await service.createUsers([userData]);
 
@@ -1058,8 +1445,8 @@ describe('Users service', () => {
             _id: 'florida'
           }
         });
-        sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-        sinon.stub(db.medicLogs, 'put').resolves({});
+        db.medicLogs.get.resolves({ progress: {} });
+        db.medicLogs.put.resolves({});
 
         const response = await service.createUsers([userData]);
 
@@ -1069,7 +1456,7 @@ describe('Users service', () => {
     });
 
     it('succeeds and returns responses if some users fail to be inserted', async () => {
-      sinon.stub(db.medic, 'get').resolves({});
+      db.medic.get.resolves({});
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('createPlace', sinon.stub().resolves());
       service.__set__('createUser', sinon.stub().resolves());
@@ -1084,8 +1471,8 @@ describe('Users service', () => {
         parent: 'user1-contact'
       });
       getPlaceStub.withArgs('user2-contact').resolves();
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
       const response = await service.createUsers([
         {
           username: 'user1',
@@ -1124,8 +1511,8 @@ describe('Users service', () => {
       service.__set__('createUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
       userData.place = 'foo';
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
 
       const response = await service.createUsers([userData]);
 
@@ -1149,10 +1536,10 @@ describe('Users service', () => {
           password: 'Sup3rSecret!',
         },
       ];
-      const medicGet = sinon.stub(db.medic, 'get');
-      const medicPut = sinon.stub(db.medic, 'put');
-      const medicQuery = sinon.stub(db.medic, 'query');
-      const usersPut = sinon.stub(db.users, 'put');
+      const medicGet = db.medic.get;
+      const medicPut = db.medic.put;
+      const medicQuery = db.medic.query;
+      const usersPut = db.users.put;
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('storeUpdatedPlace', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
@@ -1165,8 +1552,12 @@ describe('Users service', () => {
       usersPut.callsFake(user => Promise.resolve({ id: user._id, rev: 1 }));
       medicQuery.resolves({ rows: [] });
       medicPut.callsFake(userSettings => Promise.resolve({ id: userSettings._id, rev: 1 }));
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
+      const getOrCreatePerson = sinon.stub(people, 'getOrCreatePerson').resolves({
+        _id: 'contact_id',
+        _rev: 1,
+      });
 
       const response = await service.createUsers(users);
 
@@ -1200,6 +1591,8 @@ describe('Users service', () => {
           },
         },
       ]);
+      chai.expect(getOrCreatePerson.callCount).to.equal(2);
+      chai.expect(getOrCreatePerson.args).to.deep.equal([['user1'], ['user2']]);
     });
 
     it('succeeds if contact is within place', async () => {
@@ -1223,8 +1616,8 @@ describe('Users service', () => {
         }
       });
       userData.place = 'florida';
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
 
       const response = await service.createUsers([userData]);
 
@@ -1239,11 +1632,11 @@ describe('Users service', () => {
         contact: { 'parent': 'x' },
         type: 'national-manager'
       };
-      sinon.stub(db.users, 'get').resolves('bob lives here already.');
-      sinon.stub(db.medic, 'get').rejects({ status: 404 });
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
-      const insert = sinon.stub(db.medic, 'put');
+      db.users.get.resolves('bob lives here already.');
+      db.medic.get.rejects({ status: 404 });
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
+      const insert = db.medic.put;
 
       const response = await service.createUsers([userData]);
 
@@ -1261,11 +1654,11 @@ describe('Users service', () => {
         contact: { 'parent': 'x' },
         type: 'national-manager'
       };
-      sinon.stub(db.users, 'get').rejects({ status: 404 });
-      sinon.stub(db.medic, 'get').resolves('jane lives here too.');
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
-      const insert = sinon.stub(db.medic, 'put');
+      db.users.get.rejects({ status: 404 });
+      db.medic.get.resolves('jane lives here too.');
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
+      const insert = db.medic.put;
 
       const response = await service.createUsers([userData]);
 
@@ -1306,7 +1699,7 @@ describe('Users service', () => {
       };
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('createPlace', sinon.stub().resolves());
-      sinon.stub(db.medic, 'get').resolves({
+      db.medic.get.resolves({
         _id: 'def',
         type: 'person',
         name: 'greg',
@@ -1332,7 +1725,7 @@ describe('Users service', () => {
       };
       service.__set__('validateNewUsername', sinon.stub().resolves());
       service.__set__('createPlace', sinon.stub().resolves());
-      sinon.stub(db.medic, 'get').resolves({
+      db.medic.get.resolves({
         _id: 'def',
         type: 'person',
         name: 'greg',
@@ -1375,8 +1768,8 @@ describe('Users service', () => {
         _id: 'b',
         name: 'mickey'
       });
-      sinon.stub(db.medic, 'get').resolves(place);
-      sinon.stub(db.medic, 'put').resolves();
+      db.medic.get.resolves(place);
+      db.medic.put.resolves();
       service.__set__('createUser', sinon.stub().resolves());
       service.__set__('createUserSettings', sinon.stub().resolves());
       return service.createUser(userData).then(() => {
@@ -1410,10 +1803,10 @@ describe('Users service', () => {
         _id: 'b',
         name: 'mickey'
       });
-      sinon.stub(db.medic, 'get')
+      db.medic.get
         .onCall(0).resolves(placeRev1)
         .onCall(1).resolves(placeRev2);
-      sinon.stub(db.medic, 'put')
+      db.medic.put
         .onCall(0).rejects({ status: 409, reason: 'conflict' })
         .onCall(1).resolves();
       service.__set__('createUser', sinon.stub().resolves());
@@ -1451,12 +1844,12 @@ describe('Users service', () => {
       sinon.stub(places, 'getOrCreatePlace').resolves(placeRev1);
       sinon.stub(places, 'getPlace').resolves(placeRev1);
       sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'b', name: 'mickey' });
-      sinon.stub(db.medic, 'get')
+      db.medic.get
         .onCall(0).resolves(placeRev1)
         .onCall(1).resolves(placeRev2)
         .onCall(2).resolves(placeRev3)
         .onCall(3).resolves(placeRev4);
-      sinon.stub(db.medic, 'put')
+      db.medic.put
         .onCall(0).rejects({ status: 409, reason: 'conflict' })
         .onCall(1).rejects({ status: 409, reason: 'conflict' })
         .onCall(2).rejects({ status: 409, reason: 'conflict' })
@@ -1497,7 +1890,7 @@ describe('Users service', () => {
       sinon.stub(places, 'getOrCreatePlace').resolves(placeRev1);
       sinon.stub(places, 'getPlace').resolves(placeRev1);
       sinon.stub(people, 'getOrCreatePerson').resolves({ _id: 'b', name: 'mickey' });
-      sinon.stub(db.medic, 'get')
+      db.medic.get
         .onCall(0).resolves(placeRev1)
         .onCall(1).resolves(placeRev2)
         .onCall(2).resolves(placeRev3)
@@ -1505,7 +1898,7 @@ describe('Users service', () => {
         .onCall(4).resolves(placeRev5);
       const conflictErr = new Error('conflict');
       conflictErr.status = 409;
-      sinon.stub(db.medic, 'put')
+      db.medic.put
         .onCall(0).rejects(conflictErr)
         .onCall(1).rejects(conflictErr)
         .onCall(2).rejects(conflictErr)
@@ -1548,8 +1941,8 @@ describe('Users service', () => {
         _id: 'b',
         name: 'mickey'
       });
-      sinon.stub(db.medic, 'get').resolves(place);
-      sinon.stub(db.medic, 'put').rejects({ status: 400, reason: 'not-a-conflict' });
+      db.medic.get.resolves(place);
+      db.medic.put.rejects({ status: 400, reason: 'not-a-conflict' });
       service.__set__('createUser', sinon.stub().resolves());
       service.__set__('createUserSettings', sinon.stub().resolves());
       return service
@@ -1590,7 +1983,7 @@ describe('Users service', () => {
       service.__set__('validateUser', sinon.stub().resolves());
       service.__set__('validateUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').rejects('Not today pal.');
-      const update = sinon.stub(db.medic, 'put');
+      const update = db.medic.put;
       return service.updateUser('paul', data, true).catch(() => {
         chai.expect(update.callCount).to.equal(0);
       });
@@ -1602,7 +1995,7 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().rejects('not found'));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      const update = sinon.stub(db.medic, 'put');
+      const update = db.medic.put;
       return service.updateUser('paul', data, true).catch(() => {
         chai.expect(update.callCount).to.equal(0);
       });
@@ -1614,7 +2007,7 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().rejects('too rainy today'));
-      const update = sinon.stub(db.medic, 'put');
+      const update = db.medic.put;
       return service.updateUser('paul', data, true).catch(() => {
         chai.expect(update.callCount).to.equal(0);
       });
@@ -1623,8 +2016,8 @@ describe('Users service', () => {
     it('fails if users db insert fails', () => {
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves();
-      sinon.stub(db.users, 'put').returns(Promise.reject('shiva was here'));
+      db.medic.put.resolves();
+      db.users.put.returns(Promise.reject('shiva was here'));
       return service.updateUser('georgi', {type: 'x'}, true).catch(err => {
         chai.expect(err).to.equal('shiva was here');
       });
@@ -1633,8 +2026,8 @@ describe('Users service', () => {
     it('fails if medic db insert fails', () => {
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').returns(Promise.reject('shiva strikes again'));
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.returns(Promise.reject('shiva strikes again'));
+      db.users.put.resolves({});
       return service.updateUser('georgi', {type: 'x'}, true).catch(err => {
         chai.expect(err).to.equal('shiva strikes again');
       });
@@ -1646,8 +2039,8 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -1660,8 +2053,8 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -1675,8 +2068,8 @@ describe('Users service', () => {
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(places, 'getPlace').resolves();
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -1689,9 +2082,9 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
-      sinon.stub(auth, 'isOffline').withArgs(['rebel']).returns(false);
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
+      sinon.stub(roles, 'isOffline').withArgs(['rebel']).returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0][0].roles).to.deep.equal(['rebel', 'mm-online']);
@@ -1706,9 +2099,9 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
-      sinon.stub(auth, 'isOffline').withArgs(['rebel']).returns(true);
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
+      sinon.stub(roles, 'isOffline').withArgs(['rebel']).returns(true);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0][0].roles).to.deep.equal(['rebel']);
@@ -1724,8 +2117,8 @@ describe('Users service', () => {
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
       sinon.stub(places, 'getPlace').resolves();
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
@@ -1737,8 +2130,8 @@ describe('Users service', () => {
       const data = {
         password: 'short'
       };
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
       return service.updateUser('paul', data, true).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.translationKey).to.equal('password.length.minimum');
@@ -1753,8 +2146,8 @@ describe('Users service', () => {
       const data = {
         password: 'aaaaaaaa'
       };
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
       return service.updateUser('paul', data, true).catch(err => {
         chai.expect(err.code).to.equal(400);
         chai.expect(err.message.translationKey).to.equal('password.weak');
@@ -1772,8 +2165,8 @@ describe('Users service', () => {
       service.__set__('validateUser', sinon.stub().resolves({ facility_id: 'maine' }));
       service.__set__('validateUserSettings', sinon.stub().resolves({ facility_id: 'maine' }));
       sinon.stub(places, 'getPlace').resolves();
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.medic.put.args[0][0].facility_id).to.equal('paris');
@@ -1795,8 +2188,8 @@ describe('Users service', () => {
         facility_id: 'maine',
         contact_id: 1
       }));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         const settings = db.medic.put.args[0][0];
@@ -1826,9 +2219,9 @@ describe('Users service', () => {
         known: false
       }));
       sinon.stub(places, 'getPlace').resolves();
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
-      sinon.stub(auth, 'isOffline').withArgs(['rambler']).returns(false);
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
+      sinon.stub(roles, 'isOffline').withArgs(['rambler']).returns(false);
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         const settings = db.medic.put.args[0][0];
@@ -1864,10 +2257,10 @@ describe('Users service', () => {
         phone: '123',
         known: false
       }));
-      sinon.stub(config, 'get').returns({ chp: { offline: true } });
+      config.get.returns({ chp: { offline: true } });
       sinon.stub(places, 'getPlace').resolves();
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         const settings = db.medic.put.args[0][0];
@@ -1885,8 +2278,8 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({ id: 'abc', rev: '1-xyz' });
-      sinon.stub(db.users, 'put').resolves({ id: 'def', rev: '1-uvw' });
+      db.medic.put.resolves({ id: 'abc', rev: '1-xyz' });
+      db.users.put.resolves({ id: 'def', rev: '1-uvw' });
       return service.updateUser('georgi', data, true).then(resp => {
         chai.expect(resp.user).to.deep.equal({
           id: 'def',
@@ -1905,8 +2298,8 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      const medicPut = sinon.stub(db.medic, 'put').resolves({});
-      const usersPut = sinon.stub(db.users, 'put').resolves({});
+      const medicPut = db.medic.put.resolves({});
+      const usersPut = db.users.put.resolves({});
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(medicPut.callCount).to.equal(1);
         chai.expect(medicPut.args[0]).to.deep.equal([ {
@@ -1929,8 +2322,8 @@ describe('Users service', () => {
       };
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      const medicPut = sinon.stub(db.medic, 'put').resolves({});
-      const usersPut = sinon.stub(db.users, 'put').resolves({});
+      const medicPut = db.medic.put.resolves({});
+      const usersPut = db.users.put.resolves({});
       return service.updateUser('paul', data, false).then(() => {
         chai.expect(medicPut.callCount).to.equal(1);
         chai.expect(medicPut.args[0]).to.deep.equal([ {
@@ -1955,8 +2348,8 @@ describe('Users service', () => {
       });
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
 
       await service.updateUser('admin2', data, true);
 
@@ -1987,8 +2380,8 @@ describe('Users service', () => {
       });
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
 
       await service.updateUser('admin2', data, true);
 
@@ -2017,8 +2410,8 @@ describe('Users service', () => {
       });
       service.__set__('validateUser', sinon.stub().resolves({}));
       service.__set__('validateUserSettings', sinon.stub().resolves({}));
-      sinon.stub(db.medic, 'put').resolves({});
-      sinon.stub(db.users, 'put').resolves({});
+      db.medic.put.resolves({});
+      db.users.put.resolves({});
 
       await service.updateUser('anne', data, true);
 
@@ -2044,8 +2437,8 @@ describe('Users service', () => {
   describe('validateNewUsername', () => {
 
     it('fails if a user already exists with that name', () => {
-      const usersGet = sinon.stub(db.users, 'get').resolves({ id: 'abc', rev: '1-xyz' });
-      sinon.stub(db.medic, 'get').returns(Promise.reject({ status: 404 }));
+      const usersGet = db.users.get.resolves({ id: 'abc', rev: '1-xyz' });
+      db.medic.get.returns(Promise.reject({ status: 404 }));
       return service.__get__('validateNewUsername')('georgi').catch(err => {
         chai.expect(usersGet.callCount).to.equal(1);
         chai.expect(usersGet.args[0][0]).to.equal('org.couchdb.user:georgi');
@@ -2057,8 +2450,8 @@ describe('Users service', () => {
     });
 
     it('fails if a user settings already exists with that name', () => {
-      sinon.stub(db.users, 'get').returns(Promise.reject({ status: 404 }));
-      const medicGet = sinon.stub(db.medic, 'get').resolves({ id: 'abc', rev: '1-xyz' });
+      db.users.get.returns(Promise.reject({ status: 404 }));
+      const medicGet = db.medic.get.resolves({ id: 'abc', rev: '1-xyz' });
       return service.__get__('validateNewUsername')('georgi').catch(err => {
         chai.expect(medicGet.callCount).to.equal(1);
         chai.expect(medicGet.args[0][0]).to.equal('org.couchdb.user:georgi');
@@ -2080,8 +2473,8 @@ describe('Users service', () => {
     });
 
     it('passes if no user exists', () => {
-      sinon.stub(db.users, 'get').returns(Promise.reject({ status: 404 }));
-      sinon.stub(db.medic, 'get').returns(Promise.reject({ status: 404 }));
+      db.users.get.returns(Promise.reject({ status: 404 }));
+      db.medic.get.returns(Promise.reject({ status: 404 }));
       return service.__get__('validateNewUsername')('georgi');
     });
 
@@ -2089,8 +2482,8 @@ describe('Users service', () => {
 
   describe('createAdmin', () => {
     it('should throw if username already exists', () => {
-      sinon.stub(db.medic, 'get').resolves({});
-      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      db.medic.get.resolves({});
+      db.users.get.rejects({ status: 404 });
       return service
         .createAdmin({ name: 'my_user' })
         .then(() => chai.expect().to.equal('should have thrown'))
@@ -2104,10 +2497,10 @@ describe('Users service', () => {
     });
 
     it('should throw if _users doc creation fails', () => {
-      sinon.stub(db.medic, 'get').rejects({ status: 404 });
-      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      db.medic.get.rejects({ status: 404 });
+      db.users.get.rejects({ status: 404 });
 
-      sinon.stub(db.users, 'put').rejects({ some: 'err' });
+      db.users.put.rejects({ some: 'err' });
       return service
         .createAdmin({ name: 'agatha' })
         .then(() => chai.expect().to.equal('should have thrown'))
@@ -2121,11 +2514,11 @@ describe('Users service', () => {
     });
 
     it('should throw if user-settings doc creation fails', () => {
-      sinon.stub(db.medic, 'get').rejects({ status: 404 });
-      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      db.medic.get.rejects({ status: 404 });
+      db.users.get.rejects({ status: 404 });
 
-      sinon.stub(db.users, 'put').resolves({ id: 'org.couchdb.user:agatha', rev: 1 });
-      sinon.stub(db.medic, 'put').rejects({ some: 'err' });
+      db.users.put.resolves({ id: 'org.couchdb.user:agatha', rev: 1 });
+      db.medic.put.rejects({ some: 'err' });
       return service
         .createAdmin({ name: 'agatha' })
         .then(() => chai.expect().to.equal('should have thrown'))
@@ -2143,10 +2536,10 @@ describe('Users service', () => {
     });
 
     it('should throw if validating user fails for something other than a 404', () => {
-      sinon.stub(db.users, 'get').rejects({ status: 500 });
+      db.users.get.rejects({ status: 500 });
 
-      sinon.stub(db.users, 'put');
-      sinon.stub(db.medic, 'put');
+      db.users.put;
+      db.medic.put;
       return service
         .createAdmin({ name: 'agatha' })
         .then(() => chai.expect().to.equal('should have thrown'))
@@ -2158,11 +2551,11 @@ describe('Users service', () => {
     });
 
     it('should return new user-settings when successfull', () => {
-      sinon.stub(db.medic, 'get').rejects({ status: 404 });
-      sinon.stub(db.users, 'get').rejects({ status: 404 });
+      db.medic.get.rejects({ status: 404 });
+      db.users.get.rejects({ status: 404 });
 
-      sinon.stub(db.users, 'put').resolves({ id: 'org.couchdb.user:perseus', rev: 1 });
-      sinon.stub(db.medic, 'put').resolves({ id: 'org.couchdb.user:perseus', rev: 1 });
+      db.users.put.resolves({ id: 'org.couchdb.user:perseus', rev: 1 });
+      db.medic.put.resolves({ id: 'org.couchdb.user:perseus', rev: 1 });
       return service.createAdmin({ name: 'perseus' }).then(() => {
         chai.expect(db.users.put.callCount).to.equal(1);
         chai.expect(db.users.put.args[0]).to.deep.equal([
@@ -2185,13 +2578,13 @@ describe('Users service', () => {
       };
 
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       return service.createUser(user)
-        .then(() => chai.assert.fail('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.nested.include({
             code: 400,
@@ -2209,13 +2602,13 @@ describe('Users service', () => {
       };
 
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       return service.createUser(user)
-        .then(() => chai.assert.fail('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.nested.include({
             code: 400,
@@ -2226,11 +2619,11 @@ describe('Users service', () => {
 
     it('should normalize phone number and change password (if provided)', () => {
       const tokenLoginConfig = { message: 'sms', enabled: true };
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('');
 
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       const user = {
         username: 'sally',
@@ -2240,12 +2633,12 @@ describe('Users service', () => {
         token_login: true,
       };
 
-      sinon.stub(db.medic, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+      db.medic.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
         .resolves({ id: 'org.couchdb.user:sally' });
-      sinon.stub(db.users, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+      db.users.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
         .resolves({ id: 'org.couchdb.user:sally' });
 
-      sinon.stub(db.users, 'get').withArgs('org.couchdb.user:sally')
+      db.users.get.withArgs('org.couchdb.user:sally')
         .onCall(0).rejects({ status: 404 })
         .onCall(1).resolves({
           _id: 'org.couchdb.user:sally',
@@ -2253,7 +2646,7 @@ describe('Users service', () => {
           roles: ['a', 'b', 'mm-online'],
           name: 'sally',
         });
-      sinon.stub(db.medic, 'get').withArgs('org.couchdb.user:sally')
+      db.medic.get.withArgs('org.couchdb.user:sally')
         .onCall(0).rejects({ status: 404 })
         .onCall(1).resolves({
           _id: 'org.couchdb.user:sally',
@@ -2263,7 +2656,7 @@ describe('Users service', () => {
           name: 'sally',
         });
 
-      sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+      db.medic.allDocs.resolves({ rows: [{ error: 'not_found' }] });
 
       return service.createUser(user, 'http://realhost').then(response => {
         chai.expect(response).to.deep.equal({
@@ -2317,18 +2710,34 @@ describe('Users service', () => {
         const token = db.users.put.args[1][0].token_login.token;
         chai.expect(token.length).to.equal(64);
 
-        chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+        const expectedDoc = {
           _id: `token:login:${token}`,
           type: 'token_login',
           reported_date: 0,
           user: 'org.couchdb.user:sally',
-          'tasks[0].messages[0].to': '+40755696969',
-          'tasks[0].messages[0].message': 'sms',
-          'tasks[0].state': 'pending',
-          'tasks[1].messages[0].to': '+40755696969',
-          'tasks[1].messages[0].message': `http://realhost/medic/login/token/${token}`,
-          'tasks[1].state': 'pending',
-        });
+          tasks: []
+        };
+        chai.expect(db.medic.put.args[1][0]).to.deep.equal(expectedDoc);
+        chai.expect(addMessage.callCount).to.equal(2);
+        chai.expect(addMessage.args[0]).to.deep.equal([
+          expectedDoc,
+          { enabled: true, message: 'sms' },
+          '+40755696969',
+          {
+            templateContext: {
+              _id: 'org.couchdb.user:sally',
+              name: 'sally',
+              phone: '+40755696969',
+              roles: ['a', 'b', 'mm-online'],
+              type: 'user'
+            }
+          }
+        ]);
+        chai.expect(addMessage.args[1]).to.deep.equal([
+          expectedDoc,
+          { message: `http://realhost/medic/login/token/${token}` },
+          '+40755696969',
+        ]);
       });
     });
   });
@@ -2338,24 +2747,24 @@ describe('Users service', () => {
       const updates = { token_login: true };
 
       const tokenLoginConfig = { translation_key: 'sms', enabled: true};
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
-      sinon.stub(db.medic, 'get').resolves({
+      db.medic.get.resolves({
         _id: 'org.couchdb.user:sally',
         type: 'user-settings',
         roles: ['a', 'b', 'mm-online'],
       });
-      sinon.stub(db.users, 'get').resolves({
+      db.users.get.resolves({
         _id: 'org.couchdb.user:sally',
         type: 'user',
         roles: ['a', 'b', 'mm-online'],
       });
 
       return service.updateUser('sally', updates)
-        .then(() => chai.assert.fail('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.nested.include({
             code: 400,
@@ -2367,25 +2776,25 @@ describe('Users service', () => {
     it('should require a valid phone number', () => {
       const updates = { token_login: true, phone: '456' };
       const tokenLoginConfig = { translation_key: 'sms', enabled: true };
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('url');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
-      sinon.stub(db.medic, 'get').resolves({
+      db.medic.get.resolves({
         _id: 'org.couchdb.user:sally',
         type: 'user-settings',
         roles: ['a', 'b', 'mm-online'],
         phone: '123',
       });
-      sinon.stub(db.users, 'get').resolves({
+      db.users.get.resolves({
         _id: 'org.couchdb.user:sally',
         type: 'user',
         roles: ['a', 'b', 'mm-online'],
       });
 
       return service.updateUser('sally', updates)
-        .then(() => chai.assert.fail('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.nested.include({
             code: 400,
@@ -2396,29 +2805,29 @@ describe('Users service', () => {
 
     it('should normalize phone number and change password', () => {
       const tokenLoginConfig = { message: 'the sms', enabled: true };
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('http://host');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: true, phone: '+40 755 89-89-89' };
-      sinon.stub(db.medic, 'get').resolves({
+      db.medic.get.resolves({
         _id: 'org.couchdb.user:sally',
         type: 'user-settings',
         roles: ['a', 'b', 'mm-online'],
         phone: '123',
       });
-      sinon.stub(db.users, 'get').resolves({
+      db.users.get.resolves({
         _id: 'org.couchdb.user:sally',
         type: 'user',
         roles: ['a', 'b', 'mm-online'],
       });
-      sinon.stub(db.medic, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+      db.medic.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
         .resolves({ id: 'org.couchdb.user:sally' });
-      sinon.stub(db.users, 'put').withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
+      db.users.put.withArgs(sinon.match({ _id: 'org.couchdb.user:sally' }))
         .resolves({ id: 'org.couchdb.user:sally' });
 
-      sinon.stub(db.medic, 'allDocs').resolves({ rows: [{ error: 'not_found' }] });
+      db.medic.allDocs.resolves({ rows: [{ error: 'not_found' }] });
       clock.tick(5000);
 
       return service.updateUser('sally', updates, true, 'https://realhost').then(response => {
@@ -2458,36 +2867,48 @@ describe('Users service', () => {
         const token = db.users.put.args[0][0].token_login.token;
         chai.expect(token.length).to.equal(64);
 
-        chai.expect(db.medic.put.args[1][0]).to.deep.nested.include({
+        const expectedDoc = {
           _id: `token:login:${token}`,
           type: 'token_login',
-          user: 'org.couchdb.user:sally',
           reported_date: 5000,
-          'tasks[0].messages[0].to': '+40755898989',
-          'tasks[0].messages[0].message': 'the sms',
-          'tasks[0].state': 'pending',
-          'tasks[1].messages[0].to': '+40755898989',
-          'tasks[1].messages[0].message': `http://host/medic/login/token/${token}`,
-          'tasks[1].state': 'pending',
+          user: 'org.couchdb.user:sally',
+          tasks: []
+        };
+        chai.expect(db.medic.put.args[1][0]).to.deep.equal(expectedDoc);
+        chai.expect(addMessage.callCount).to.equal(2);
+        chai.expect(addMessage.args[0][0]).to.deep.equal(expectedDoc);
+        chai.expect(addMessage.args[0][1]).to.deep.equal({ enabled: true, message: 'the sms' });
+        chai.expect(addMessage.args[0][2]).to.equal('+40755898989');
+        chai.expect(addMessage.args[0][3].templateContext).to.deep.include({
+          _id: 'org.couchdb.user:sally',
+          name: 'sally',
+          phone: '+40755898989',
+          roles: ['a', 'b', 'mm-online'],
+          type: 'user'
         });
+        chai.expect(addMessage.args[1]).to.deep.equal([
+          expectedDoc,
+          { message: `http://host/medic/login/token/${token}` },
+          '+40755898989',
+        ]);
       });
     });
 
     it('should require password when removing token_login', () => {
       const tokenLoginConfig = { message: 'the sms', enabled: true };
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('http://host');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: false };
-      sinon.stub(db.medic, 'get').resolves({
+      db.medic.get.resolves({
         _id: 'org.couchdb.user:sally',
         type: 'user-settings',
         roles: ['a', 'b', 'mm-online'],
         token_login: { active: true },
       });
-      sinon.stub(db.users, 'get').resolves({
+      db.users.get.resolves({
         _id: 'org.couchdb.user:sally',
         type: 'user',
         roles: ['a', 'b', 'mm-online'],
@@ -2495,7 +2916,7 @@ describe('Users service', () => {
       });
 
       return service.updateUser('sally', updates)
-        .then(() => chai.assert.fail('Should have thrown'))
+        .then(() => chai.expect.fail('Should have thrown'))
         .catch(err => {
           chai.expect(err).to.deep.nested.include({
             code: 400,
@@ -2506,24 +2927,24 @@ describe('Users service', () => {
 
     it('should not require password when not changing token_login', () => {
       const tokenLoginConfig = { message: 'the sms', enabled: true };
-      sinon.stub(config, 'get')
+      config.get
         .withArgs('token_login').returns(tokenLoginConfig)
         .withArgs('app_url').returns('http://host');
-      sinon.stub(auth, 'isOffline').returns(false);
+      sinon.stub(roles, 'isOffline').returns(false);
 
       const updates = { token_login: false };
-      sinon.stub(db.medic, 'get').withArgs('org.couchdb.user:sally').resolves({
+      db.medic.get.withArgs('org.couchdb.user:sally').resolves({
         _id: 'org.couchdb.user:sally',
         type: 'user-settings',
         roles: ['a', 'b', 'mm-online'],
       });
-      sinon.stub(db.users, 'get').withArgs('org.couchdb.user:sally').resolves({
+      db.users.get.withArgs('org.couchdb.user:sally').resolves({
         _id: 'org.couchdb.user:sally',
         type: 'user',
         roles: ['a', 'b', 'mm-online'],
       });
-      sinon.stub(db.users, 'put').resolves({ id: 'org.couchdb.user:sally' });
-      sinon.stub(db.medic, 'put').resolves({ id: 'org.couchdb.user:sally' });
+      db.users.put.resolves({ id: 'org.couchdb.user:sally' });
+      db.medic.put.resolves({ id: 'org.couchdb.user:sally' });
 
       return service.updateUser('sally', updates).then(response => {
         chai.expect(response).to.deep.equal({
@@ -2534,18 +2955,86 @@ describe('Users service', () => {
     });
   });
 
+  describe('resetPassword', () => {
+    it('should reset password for valid user', async () => {
+      const expectedPassword = 'newpassword';
+      sinon
+        .stub(passwords, 'generate')
+        .returns(expectedPassword);
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+      db.users.put.resolves({ id: 'org.couchdb.user:sally' });
+
+      const password = await service.resetPassword('sally');
+
+      chai.expect(password).to.equal(expectedPassword);
+      chai.expect(db.users.get.callCount).to.equal(1);
+      chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, });
+    });
+
+    it('should reset password for admin user', async () => {
+      const expectedPassword = 'newpassword';
+      sinon
+        .stub(passwords, 'generate')
+        .returns(expectedPassword);
+      db.users.get.resolves({
+        _id: 'org.couchdb.user:sally',
+        name: 'sally',
+        type: 'user',
+        roles: ['a', 'b', 'mm-online'],
+      });
+      db.users.put.resolves({ id: 'org.couchdb.user:sally' });
+      couchSettings.getCouchConfig.resolves({ sally: 'oldpassword' });
+
+      const password = await service.resetPassword('sally');
+
+      chai.expect(password).to.equal(expectedPassword);
+      chai.expect(db.users.get.callCount).to.equal(1);
+      chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
+      chai.expect(db.users.put.callCount).to.equal(1);
+      chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, });
+      chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
+      chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
+      chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(1);
+      chai.expect(couchSettings.updateAdminPassword.args[0]).to.deep.equal(['sally', expectedPassword]);
+    });
+
+    it('should throw error for non-existent user', async () => {
+      db.users.get.rejects({ status: 404 });
+
+      try {
+        await service.resetPassword('sally');
+        chai.expect.fail('Should have thrown');
+      } catch (error) {
+        chai.expect(error).to.deep.nested.include({
+          status: 404,
+          message: 'Failed to find user.',
+        });
+        chai.expect(db.users.get.callCount).to.equal(1);
+        chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
+        chai.expect(db.users.put.callCount).to.equal(0);
+      }
+    });
+  });
+
   describe('parseCsv', () => {
     it('should throw error when csv is empty', async () => {
       try {
         await service.parseCsv('');
-        chai.assert.fail('Should have thrown');
+        chai.expect.fail('Should have thrown');
       } catch (error) {
         chai.expect(error.message).to.equal('CSV is empty.');
       }
 
       try {
         await service.parseCsv(null);
-        chai.assert.fail('Should have thrown');
+        chai.expect.fail('Should have thrown');
       } catch (error) {
         chai.expect(error.message).to.equal('CSV is empty.');
       }
@@ -2555,8 +3044,8 @@ describe('Users service', () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
         'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n' +
         'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
 
       const result = await service.parseCsv(csv);
 
@@ -2586,8 +3075,8 @@ describe('Users service', () => {
         'Secret1144,jeff,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,,jeff,26599102,"27 King ST, Kent Town, 55555"\n' +
         'Secret5678, peter ,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,FALSE,Peter, 2652279,"15 King ST, Kent Town, 55555 "';
       /* eslint-enable max-len */
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
 
       const result = await service.parseCsv(csv);
 
@@ -2629,8 +3118,8 @@ describe('Users service', () => {
 
     it('should return empty array when there is not users in the csv', async () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n';
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
 
       const result = await service.parseCsv(csv);
 
@@ -2640,8 +3129,8 @@ describe('Users service', () => {
     it('should ignore empty header columns', async () => {
       const csv = 'password,username,type,,contact.name,,contact.address\n' +
         'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,2652527222,"1 King ST, Kent Town, 55555"\n';
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
 
       const result = await service.parseCsv(csv);
 
@@ -2658,8 +3147,8 @@ describe('Users service', () => {
     it('should keep attributes if there is not value', async () => {
       const csv = 'password,username,type,place,contact.name,contact.phone,contact.address\n' +
         'Secret1234,mary,person,,mary,     ,"1 King ST, Kent Town, 55555"\n';
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
 
       const result = await service.parseCsv(csv);
 
@@ -2679,8 +3168,8 @@ describe('Users service', () => {
         ',contact.address.city.street,contact.address.city.name\n' +
         'Secret1234,mary,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,mary,US,"5th ST", Kent Town\n' +
         'Secret555,peter,person,498a394e-f98b-4e48-8c50-f12aeb018fcc,Peter,CA,,Victoria Town\n';
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
 
       const result = await service.parseCsv(csv);
 
@@ -2725,8 +3214,8 @@ describe('Users service', () => {
         'Secret1234,mary,person,498a394e-f98,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
         'Secret5678, peter ,person,498a394e-f99,Peter,"ce fût une belle saison, le maïs sera prêt à partir ' +
         'de l’été c’est-à-dire dès demain, d’où l’invaitation"';
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
 
       const result = await service.parseCsv(csv);
 
@@ -2759,8 +3248,8 @@ describe('Users service', () => {
         'Secret1234,mary,person,498a394e-f98,excluded column,Mary\'s name!,"#1 @ "King ST"$^&%~`=}{][:;.><?/|*+-_"\n' +
         'Secret5678, peter ,person,498a394e-f99,excluded column,Peter,' +
         '"ce fût une belle saison, le maïs sera prêt à partir de l’été c’est-à-dire dès demain, d’où l’invaitation"';
-      sinon.stub(db.medicLogs, 'get').resolves({ progress: {} });
-      sinon.stub(db.medicLogs, 'put').resolves({});
+      db.medicLogs.get.resolves({ progress: {} });
+      db.medicLogs.put.resolves({});
 
       const result = await service.parseCsv(csv);
 

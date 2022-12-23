@@ -46,16 +46,20 @@ CHT_NETWORK=$projectName-cht-net
 EOL
 }
 
+get_latest_release_url() {
+  latest=$(curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases\?limit\=1\&descending\=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*')
+  echo "https://staging.dev.medicmobile.org/_couch/builds_4/${latest}"
+}
+
 create_compose_files() {
   echo "Downloading compose files ..." | tr -d '\n'
+  stagingUrlBase=$(get_latest_release_url)
   mkdir -p "$homeDir/couch"
   mkdir -p "$homeDir/compose"
   curl -s -o "$homeDir/upgrade-service.yml" \
   	https://raw.githubusercontent.com/medic/cht-upgrade-service/main/docker-compose.yml
-  curl -s -o "$homeDir/compose/cht-core.yml" \
-  	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-core.yml
-  curl -s -o "$homeDir/compose/couchdb.yml" \
-  	https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:master/docker-compose/cht-couchdb.yml
+  curl -s -o "$homeDir/compose/cht-core.yml" ${stagingUrlBase}/docker-compose/cht-core.yml
+  curl -s -o "$homeDir/compose/couchdb.yml" ${stagingUrlBase}/docker-compose/cht-couchdb.yml
 
   echo -e "${green} done${noColor} "
 }
@@ -110,7 +114,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 	case $2 in
 	"stop")
 		echo "Stopping project \"${projectName}\"..." | tr -d '\n'
-		docker stop $containerIds 1>/dev/null
+		docker kill $containerIds 1>/dev/null
 		echo -e "${green} done${noColor} "
 		exit 0
 		;;
@@ -119,7 +123,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 
 		if [[ -n $containerIds ]]; then
 			echo "Removing project's docker containers..." | tr -d '\n'
-			docker stop $containerIds 1>/dev/null
+			docker kill $containerIds 1>/dev/null
 			docker rm $containerIds 1>/dev/null
 			echo -e "${green} done${noColor} "
 		else

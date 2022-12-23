@@ -121,11 +121,8 @@ export class MessagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const exportFn = function () {
-      this.exportMessages();
-    };
     const leftActionBar = {
-      exportFn: exportFn.bind(this),
+      exportFn: () => this.exportMessages(),
       hasResults: this.conversations && this.conversations.length > 0,
       openSendMessageModal: this.openSendMessageModal.bind({}, this.modalService),
     };
