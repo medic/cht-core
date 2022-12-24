@@ -41,6 +41,7 @@ const rhsReportElementList = () => $$(rhsReportListSelector);
 
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
+const exportButton = () => $('.mat-menu-content .mat-menu-item[test-id="export-contacts"]');
 const editContactButton = () => $('.mat-menu-content .mat-menu-item[test-id="edit-contacts"]');
 const deleteContactButton = () => $('.mat-menu-content .mat-menu-item[test-id="delete-contacts"]');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
@@ -332,6 +333,12 @@ const getContactCardText = async () => {
   return (await contactCard()).getText();
 };
 
+const exportContacts = async () => {
+  await commonElements.openMoreOptionsMenu();
+  await (await exportButton()).waitForClickable();
+  await (await exportButton()).click();
+};
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -349,6 +356,7 @@ module.exports = {
   waitForContactUnloaded,
   contactCard,
   editPerson,
+  exportContacts,
   getContactSummaryField,
   getAllRHSReportsNames,
   rhsReportListElement,

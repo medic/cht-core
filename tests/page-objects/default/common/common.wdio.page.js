@@ -30,7 +30,7 @@ const isHamburgerMenuOpen = async () => {
 };
 
 const openMoreOptionsMenu = async () => {
-  await (await moreOptionsMenu()).waitForDisplayed();
+  await (await moreOptionsMenu()).waitForClickable();
   await (await moreOptionsMenu()).click();
 };
 

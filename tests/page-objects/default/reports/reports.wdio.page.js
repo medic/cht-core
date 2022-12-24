@@ -22,6 +22,7 @@ const reportRowSelector = `${REPORTS_LIST_ID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const editReportButton = () => $('.mat-menu-content .mat-menu-item[test-id="edit-reports"]');
+const exportButton = () => $('.mat-menu-content .mat-menu-item[test-id="export-reports"]');
 
 const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
 const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
@@ -356,6 +357,12 @@ const fieldByIndex = async (index) => {
   return await (await $(`${reportBodyDetailsSelector} li:nth-child(${index}) p`)).getText();
 };
 
+const exportReports = async () => {
+  await commonElements.openMoreOptionsMenu();
+  await (await exportButton()).waitForClickable();
+  await (await exportButton()).click();
+};
+
 module.exports = {
   getCurrentReportId,
   getLastSubmittedReportId,
@@ -410,6 +417,7 @@ module.exports = {
   reportTasks,
   editReportButton,
   editReport,
+  exportReports,
   fieldByIndex,
   reportBodyDetails,
   openSelectedReport,
