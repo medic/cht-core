@@ -191,8 +191,10 @@ module.exports = {
     }
 
     try {
-      const contact = await people.getOrCreatePerson(change.doc._id);
-      await createNewUser({ roles: [change.doc.role] }, contact);
+      const roles = Array.isArray(change.doc.roles) && change.doc.roles.length > 0 ?
+        change.doc.roles :
+        change.doc.user_for_contact.add.roles;
+      await createNewUser({ roles }, change.doc);
       change.doc.user_for_contact.add.status = USER_CREATION_STATUS.COMPLETE;
     } catch (e) {
       change.doc.user_for_contact.add.status = USER_CREATION_STATUS.ERROR;
