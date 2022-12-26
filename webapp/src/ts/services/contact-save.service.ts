@@ -56,7 +56,7 @@ export class ContactSaveService {
     }
 
     const doc = this.prepare(submitted.doc);
-    if (typeof original === 'undefined' && doc.should_create_user === true) {
+    if (typeof original === 'undefined' && doc.should_create_user === 'true') {
       doc.user_for_contact = {};
       doc.user_for_contact.add = { status: UserCreationStatus.READY, roles: [doc.role] };
     }
