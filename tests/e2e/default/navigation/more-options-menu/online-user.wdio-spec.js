@@ -2,7 +2,58 @@ const commonPage = require('../../../../page-objects/default/common/common.wdio.
 const loginPage = require('../../../../page-objects/default/login/login.wdio.page');
 const contactPage = require('../../../../page-objects/default/contacts/contacts.wdio.page');
 const reportPage = require('../../../../page-objects/default/reports/reports.wdio.page');
-const seeder = require('./seeder');
+const placeFactory = require('../../../../factories/cht/contacts/place');
+const reportFactory = require('../../../../factories/cht/reports/generic-report');
+const personFactory = require('../../../../factories/cht/contacts/person');
+const uuid = require('uuid').v4;
+const utils = require('../../../../utils');
+
+const places = placeFactory.generateHierarchy();
+const clinic = places.get('clinic');
+const health_center = places.get('health_center');
+const district_hospital = places.get('district_hospital');
+
+const contact = personFactory.build({
+  _id: uuid(),
+  name: 'contact',
+  phone: '+12068881234',
+  place: health_center._id,
+  type: 'person',
+  parent: {
+    _id: health_center._id,
+    parent: health_center.parent
+  },
+});
+
+const patient = personFactory.build({
+  _id: uuid(),
+  parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
+});
+
+
+const reports = [
+  reportFactory.build(
+    {
+      form: 'P',
+      reported_date: 'now',
+      patient_id: patient._id,
+    },
+    {
+      patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id},
+    },
+  ),
+];  
+
+const sendMessage = async (message = 'Testing', phone = contact.phone) => {
+  await utils.request({
+    method: 'POST',
+    path: '/api/v2/records',
+    headers: {
+      'Content-type': 'application/x-www-form-urlencoded'
+    },
+    body:`message=${message}&from=${phone}`,
+  });  
+};
 
 describe('Export tests', async () => {
   before(async () => {
@@ -10,7 +61,6 @@ describe('Export tests', async () => {
   });
 
   describe('Export disabled when no items: messages, contacts, people', async () => {
-    //empty db
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.openMoreOptionsMenu();
@@ -36,8 +86,8 @@ describe('Export tests', async () => {
 
   describe('Export enabled when there are items: messages, contacts, peope', async () => {
     before(async () => {
-      await seeder.saveDocs();
-      await seeder.sendMessage();
+      await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
+      await sendMessage();
       await browser.pause(10000);     
     });
 
@@ -57,7 +107,7 @@ describe('Export tests', async () => {
 
     it(' - Contact Tab : contact selected', async () => {
       await commonPage.goToPeople();
-      await contactPage.selectLHSRowByText(seeder.contact.name);
+      await contactPage.selectLHSRowByText(contact.name);
       await (await contactPage.contentRow()).waitForDisplayed();
       await (await contactPage.contentRow()).click();
       await contactPage.waitForContactLoaded();
@@ -72,10 +122,12 @@ describe('Export tests', async () => {
       (await reportPage.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'reports')).to.be.true;
-      expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false; //not xml report
+      expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false; // not xml report
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
     });
   });
+
+  //permission disabled...
 });
 
 
