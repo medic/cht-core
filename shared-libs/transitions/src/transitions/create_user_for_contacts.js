@@ -171,10 +171,19 @@ module.exports = {
       return false;
     }
 
-    if (doc.user_for_contact.replace) {
-      return !!Object
+    if (doc.user_for_contact.replace && doc.user_for_contact.add) {
+      const hasFinishedReplacing = Object
         .values(doc.user_for_contact.replace)
-        .find(({ status }) => status === USER_CREATION_STATUS.READY);
+        .every(({ status }) => [USER_CREATION_STATUS.COMPLETE, USER_CREATION_STATUS.ERROR].includes(status));
+      const isAddingUser = doc.user_for_contact.add.status === USER_CREATION_STATUS.READY;
+
+      return hasFinishedReplacing && isAddingUser;
+    }
+
+    if (doc.user_for_contact.replace) {
+      return Object
+        .values(doc.user_for_contact.replace)
+        .some(({ status }) => status === USER_CREATION_STATUS.READY);
     }
 
     if (doc.user_for_contact.add) {
