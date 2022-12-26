@@ -127,6 +127,19 @@ const getUsersToReplace = (originalContact) => {
     .map(([username, { replacement_contact_id }]) => ({ username, replacementContactId: replacement_contact_id }));
 };
 
+const addUser = async (contact) => {
+  try {
+    const roles = Array.isArray(contact.roles) && contact.roles.length > 0 ?
+      contact.roles :
+      contact.user_for_contact.add.roles;
+    await createNewUser({ roles }, contact);
+    contact.user_for_contact.add.status = USER_CREATION_STATUS.COMPLETE;
+  } catch (error) {
+    contact.user_for_contact.add.status = USER_CREATION_STATUS.ERROR;
+    throw error;
+  }
+};
+
 /**
  * Replace a user whose contact has been marked as ready to be replaced with a new user.
  */
@@ -191,14 +204,14 @@ module.exports = {
     }
 
     try {
-      const roles = Array.isArray(change.doc.roles) && change.doc.roles.length > 0 ?
-        change.doc.roles :
-        change.doc.user_for_contact.add.roles;
-      await createNewUser({ roles }, change.doc);
-      change.doc.user_for_contact.add.status = USER_CREATION_STATUS.COMPLETE;
-    } catch (e) {
-      change.doc.user_for_contact.add.status = USER_CREATION_STATUS.ERROR;
-      throw e;
+      await addUser(change.doc);
+    } catch (error) {
+      throw {
+        changed: true,
+        message: error.message || JSON.stringify(error),
+      };
     }
+
+    return true;
   }
 };
