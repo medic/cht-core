@@ -9,7 +9,7 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TransitionsService } from '@mm-services/transitions.service';
-import { UserCreationStatus } from '@mm-services/create-user-for-contacts.service';
+import {CreateUserForContactsService, UserCreationStatus} from '@mm-services/create-user-for-contacts.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +26,7 @@ export class ContactSaveService {
     private extractLineageService:ExtractLineageService,
     private transitionsService:TransitionsService,
     private ngZone:NgZone,
+    private createUserForContactsService: CreateUserForContactsService,
   ) {
     this.servicesActions = new ServicesActions(store);
   }
@@ -57,8 +58,7 @@ export class ContactSaveService {
 
     const doc = this.prepare(submitted.doc);
     if (typeof original === 'undefined' && doc.should_create_user === 'true') {
-      doc.user_for_contact = {};
-      doc.user_for_contact.add = { status: UserCreationStatus.READY, roles: [doc.role] };
+      this.createUserForContactsService.setAddUser(doc);
     }
 
     return this
