@@ -57,9 +57,6 @@ export class ContactSaveService {
     }
 
     const doc = this.prepare(submitted.doc);
-    if (typeof original === 'undefined' && doc.create_user_for_contact === 'true') {
-      this.createUserForContactsService.setAddUser(doc);
-    }
 
     return this
       .prepareAndAttachSiblingDocs(submitted.doc, original, submitted.siblings)
@@ -92,6 +89,11 @@ export class ContactSaveService {
 
     if (!doc._rev) {
       doc.reported_date = Date.now();
+    }
+
+    if (doc.create_user_for_contact === 'true') {
+      this.createUserForContactsService.setAddUser(doc);
+      delete doc.create_user_for_contact;
     }
 
     return doc;
