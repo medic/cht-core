@@ -101,6 +101,13 @@ const selectLHSRowByText = async (text, executeSearch = true) => {
   return await row.click();
 };
 
+const selectRHSRowById = async (id) => {
+  const contact = await $(`.card.children.persons .content-row > a[href="#/contacts/${id}"]`);
+  await contact.waitForClickable();
+  await contact.click();
+  await waitForContactLoaded();
+};
+
 const getReportFiltersText = async () => {
   await (await reportFilter()).waitForDisplayed();
   return Promise.all((await reportFilters()).map(filter => filter.getText()));
@@ -181,9 +188,7 @@ const editPerson = async (name, updatedName) => {
   return (await contactCard()).getText();
 };
 
-const deletePerson = async (name) => {
-  await selectLHSRowByText(name);
-  await waitForContactLoaded();
+const deletePerson = async () => {
   await commonElements.openMoreOptionsMenu();
   await (await deleteContactButton()).waitForClickable();
   await (await deleteContactButton()).click();
@@ -342,6 +347,7 @@ const exportContacts = async () => {
 module.exports = {
   genericForm,
   selectLHSRowByText,
+  selectRHSRowById,
   reportFilters,
   getReportFiltersText,
   getReportTaskFiltersText,
