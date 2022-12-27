@@ -9,7 +9,7 @@ import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TransitionsService } from '@mm-services/transitions.service';
-import {CreateUserForContactsService, UserCreationStatus} from '@mm-services/create-user-for-contacts.service';
+import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
 
 @Injectable({
   providedIn: 'root'
@@ -57,7 +57,7 @@ export class ContactSaveService {
     }
 
     const doc = this.prepare(submitted.doc);
-    if (typeof original === 'undefined' && doc.should_create_user === 'true') {
+    if (typeof original === 'undefined' && doc.create_user_for_contact === 'true') {
       this.createUserForContactsService.setAddUser(doc);
     }
 
