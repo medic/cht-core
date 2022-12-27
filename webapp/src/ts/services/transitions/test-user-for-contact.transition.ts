@@ -23,7 +23,7 @@ export class TestUserForContactsTransition extends Transition {
       return false;
     }
 
-    return !!docs.filter(doc => doc?.should_create_user === 'true').length;
+    return !!docs.filter(doc => doc?.create_user_for_contact === 'true').length;
   }
 
   async run(docs: Doc[]) {
