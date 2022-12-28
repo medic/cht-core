@@ -426,10 +426,6 @@
       "replace_user"
     ]
   },
-  "token_login": {
-    "enabled": true
-  },
-  "app_url": "http://localhost:5988",
   "transitions": {
     "accept_patient_reports": false,
     "conditional_alerts": false,
@@ -441,6 +437,6 @@
     "update_scheduled_reports": false,
     "generate_patient_id_on_people": true,
     "death_reporting": true,
-    "create_user_for_contacts": true
+    "create_user_for_contacts": false
   }
 }
