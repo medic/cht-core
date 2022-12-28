@@ -129,10 +129,6 @@ describe('- permissions disabled', async () => {
       await updatePermissions(onlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
       await commonPage.closeReloadModal();
     });
-    beforeEach(async () => {
-      const settings = await utils.getSettings();
-      console.log('new_permissons:', settings.permissions);
-    });
 
     after(async () => {
       await utils.revertSettings(true);
@@ -158,11 +154,7 @@ describe('- permissions disabled', async () => {
       await updatePermissions(onlineUser.roles, [], ['can_edit']);
       await commonPage.closeReloadModal();
     });
-    beforeEach(async () => {
-      const settings = await utils.getSettings();
-      console.log('new_permissonss:', settings.permissions);
-    });
-
+    
     after(async () => {
       await utils.revertSettings(true);
     });

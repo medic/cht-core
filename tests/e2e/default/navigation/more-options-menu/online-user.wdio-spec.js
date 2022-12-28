@@ -86,8 +86,7 @@ describe('Online User', async () => {
   describe(' - Options enabled when there are items: messages, contacts, peope', async () => {
     before(async () => {
       await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
-      await sendMessage();
-      await browser.pause(1000);     
+      await sendMessage();    
     });
 
     it('- Message tab', async () => {

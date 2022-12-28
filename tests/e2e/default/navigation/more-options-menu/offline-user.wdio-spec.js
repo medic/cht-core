@@ -138,7 +138,6 @@ describe('More Options Menu - Offline User', async () => {
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
 
       await commonPage.goToPeople();
-      await browser.pause(10000);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
         
       await contactPage.selectLHSRowByText(contact.name);
