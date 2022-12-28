@@ -93,7 +93,12 @@ module.exports = {
       return false;
     }
 
-    const startFrom = schedule.start_from || 'reported_date';
+    // start_from default to 'reported_date' it isn't set or 'undefined'
+    let startFrom = schedule.start_from;
+    if (typeof startFrom === 'undefined') {
+      startFrom = 'reported_date';
+    }
+
     const docStart = objectPath.get(doc, startFrom);
 
     // if the document does not have the `start_from` property (or its

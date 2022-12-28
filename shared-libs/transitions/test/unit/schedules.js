@@ -110,6 +110,32 @@ describe('schedules', () => {
     assert.equal(moment(doc.scheduled_tasks[1].due).diff(doc.reported_date, 'days'), 81);
   });
 
+  it('schedule uses `reported_date` when start_from is not set', () => {
+    const doc = {
+      form: 'x',
+      reported_date: moment().valueOf()
+    };
+
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      messages: [
+        {
+          group: 1,
+          offset: '1 week',
+          message: [{
+            content: 'Test content.',
+            locale: 'en'
+          }]
+        },
+      ]
+    });
+
+    assert.equal(added, true);
+    assert(doc.scheduled_tasks);
+    assert.equal(doc.scheduled_tasks.length, 1);
+    assert.equal(moment(doc.scheduled_tasks[0].due).diff(doc.reported_date, 'weeks'), 1);
+  });
+
   it('scheduled due timestamp respects timezone', () => {
     const doc = {
       form: 'x',
