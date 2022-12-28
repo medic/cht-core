@@ -66,6 +66,15 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   });  
 };
 
+const updatePermissions = async (role, addPermissions, removePermissions = []) => {
+  const settings = await utils.getSettings();
+  addPermissions.map(permission => settings.permissions[permission].push(role));
+  removePermissions.forEach(permission => {
+    settings.permissions[permission] = [''];//settings.permissions[permission].filter(r => r !== role);
+  });
+  await utils.updateSettings({ roles: settings.roles, permissions: settings.permissions }, true);
+};
+
 describe('More Options Menu - Offline User', async () => {
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
@@ -73,41 +82,73 @@ describe('More Options Menu - Offline User', async () => {
     await loginPage.login(offlineUser);
   });
 
-  it('- Message tab', async () => {
-    await commonPage.goToMessages();
-    await sendMessage();
-    expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
-  });
+  describe('all permissions enabled', async () => {
+    it('- Message tab', async () => {
+      await commonPage.goToMessages();
+      await sendMessage();
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
+    });
 
-  it('- Contact tab: no contact selected', async () => {
-    await commonPage.goToPeople();
-    //parent contact
-    await commonPage.openMoreOptionsMenu();
-    expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
-    expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.false;
-    expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.false;
-  });
+    it('- Contact tab: no contact selected', async () => {
+      await commonPage.goToPeople();
+      //parent contact
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
+      expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.false;
+      expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.false;
+    });
 
-  it(' - Contact Tab : contact selected', async () => {
-    await commonPage.goToPeople();
-    //contact selected
-    await contactPage.selectLHSRowByText(contact.name);
-    await commonPage.openMoreOptionsMenu();
-    expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
-    expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
-    expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
-  });
+    it(' - Contact Tab : contact selected', async () => {
+      await commonPage.goToPeople();
+      //contact selected
+      await contactPage.selectLHSRowByText(contact.name);
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
+      expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
+      expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
+    });
 
-  it('- options enabled when report selected', async () => {
-    await commonPage.goToReports();
-    expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
-    (await reportPage.firstReport()).click();
-    await commonPage.openMoreOptionsMenu();
-    expect(await commonPage.isOptionVisible('export', 'reports')).to.be.false;
-    expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false; //not xml report
-    expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
+    it('- options enabled when report selected', async () => {
+      await commonPage.goToReports();
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
+      (await reportPage.firstReport()).click();
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isOptionVisible('export', 'reports')).to.be.false;
+      expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false; //not xml report
+      expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
+    });
   });
 
   //permissions disabled
+  describe('all permissions disabled', async () => {
+    const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all', 
+      'can_export_contacts', 'can_export_messages', 
+      'can_delete_reports', 'can_update_reports'];
+
+    before(async () => {
+      await updatePermissions(offlineUser.roles, [], allPermissions);
+      await commonPage.closeReloadModal();
+    });
+  
+    it(' - all tabs, kebab menu not available', async () => {
+      const settings = await utils.getSettings();
+      console.log('settings: ', settings.permissions);
+      await commonPage.goToMessages();
+      await sendMessage();
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+
+      await commonPage.goToPeople();
+      await browser.pause(10000);
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+        
+      await contactPage.selectLHSRowByText(contact.name);
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;  
+    
+      await commonPage.goToReports();
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
+      (await reportPage.firstReport()).click();
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;   
+    });    
+  });
 });
 

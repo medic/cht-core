@@ -30,12 +30,11 @@ const patient = personFactory.build({
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
 
-
 const reports = [
   reportFactory.build(
     {
       form: 'P',
-      reported_date: 'now',
+      reported_date: '26-12-2022',
       patient_id: patient._id,
     },
     {
@@ -55,12 +54,12 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   });  
 };
 
-describe('Export tests', async () => {
-  before(async () => {
-    await loginPage.cookieLogin();
-  });
+describe('Online User', async () => {  
 
-  describe('Export disabled when no items: messages, contacts, people', async () => {
+  describe('Options disabled when no items: messages, contacts, people', async () => {
+    before(async () => {
+      await loginPage.cookieLogin();
+    });
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.openMoreOptionsMenu();
@@ -84,15 +83,16 @@ describe('Export tests', async () => {
     });
   });
 
-  describe('Export enabled when there are items: messages, contacts, peope', async () => {
+  describe(' - Options enabled when there are items: messages, contacts, peope', async () => {
     before(async () => {
       await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
       await sendMessage();
-      await browser.pause(10000);     
+      await browser.pause(1000);     
     });
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
+      await commonPage.waitForLoaderToDisappear();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'messages')).to.be.true;    
     });
@@ -126,8 +126,6 @@ describe('Export tests', async () => {
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
     });
   });
-
-  //permission disabled...
 });
 
 
