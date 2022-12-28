@@ -93,7 +93,8 @@ module.exports = {
       return false;
     }
 
-    const docStart = objectPath.get(doc, schedule.start_from);
+    const startFrom = schedule.start_from || 'reported_date';
+    const docStart = objectPath.get(doc, startFrom);
 
     // if the document does not have the `start_from` property (or its
     // falsey) do nothing; this will be rerun on next document change
