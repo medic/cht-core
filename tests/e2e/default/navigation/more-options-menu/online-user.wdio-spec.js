@@ -30,18 +30,7 @@ const patient = personFactory.build({
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
 
-const reports = [
-  reportFactory.build(
-    {
-      form: 'P',
-      reported_date: '26-12-2022',
-      patient_id: patient._id,
-    },
-    {
-      patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id},
-    },
-  ),
-];  
+const report = reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
 
 const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   await utils.request({
@@ -55,11 +44,10 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
 };
 
 describe('Online User', async () => {  
-
+  before(async () => {
+    await loginPage.cookieLogin();
+  });
   describe('Options disabled when no items: messages, contacts, people', async () => {
-    before(async () => {
-      await loginPage.cookieLogin();
-    });
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.openMoreOptionsMenu();
@@ -85,15 +73,8 @@ describe('Online User', async () => {
 
   describe(' - Options enabled when there are items: messages, contacts, peope', async () => {
     before(async () => {
-      await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
+      await utils.saveDocs([ ...places.values(), contact, patient, report ]);
       await sendMessage();    
-    });
-
-    it('- Message tab', async () => {
-      await commonPage.goToMessages();
-      await commonPage.waitForLoaderToDisappear();
-      await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isOptionEnabled('export', 'messages')).to.be.true;    
     });
 
     it('- Contact tab: no contact selected', async () => {
@@ -119,10 +100,18 @@ describe('Online User', async () => {
     it('- options enabled when report selected', async () => {
       await commonPage.goToReports();
       (await reportPage.firstReport()).click();
+      await reportPage.reportBodyDetails().waitForDisplayed();      
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'reports')).to.be.true;
-      expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false; // not xml report
+      expect(await commonPage.isOptionEnabled('edit', 'reports')).to.be.true; // xml report
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
+    });
+
+    it('- Message tab', async () => {
+      await commonPage.goToMessages();
+      await commonPage.waitForLoaderToDisappear();
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isOptionEnabled('export', 'messages')).to.be.true;    
     });
   });
 });
