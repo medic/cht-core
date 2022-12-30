@@ -70,7 +70,7 @@ const updatePermissions = async (role, addPermissions, removePermissions = []) =
   const settings = await utils.getSettings();
   addPermissions.map(permission => settings.permissions[permission].push(role));
   removePermissions.forEach(permission => {
-    settings.permissions[permission] = [''];//settings.permissions[permission].filter(r => r !== role);
+    settings.permissions[permission] = [''];
   });
   await utils.updateSettings({ roles: settings.roles, permissions: settings.permissions }, true);
 };
