@@ -129,10 +129,11 @@ describe('More Options Menu - Offline User', async () => {
       await updatePermissions(offlineUser.roles, [], allPermissions);
       await commonPage.closeReloadModal();
     });
+    after(async () => {
+      await utils.revertSettings(true);
+    });
   
     it(' - all tabs, kebab menu not available', async () => {
-      const settings = await utils.getSettings();
-      console.log('settings: ', settings.permissions);
       await commonPage.goToMessages();
       await sendMessage();
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
@@ -148,6 +149,52 @@ describe('More Options Menu - Offline User', async () => {
       (await reportPage.firstReport()).click();
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;   
     });    
+  });
+
+  describe('- DELETE permissions disabled', async () => {
+    before(async () => {
+      await updatePermissions(offlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
+      await commonPage.closeReloadModal();
+    });
+
+    after(async () => {
+      await utils.revertSettings(true);
+    });
+
+    it(' - Contact Tab : contact selected', async () => {
+      await commonPage.goToPeople();
+      await contactPage.selectLHSRowByText(contact.name);
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+    });
+  
+    it('- options enabled when report selected', async () => {
+      await commonPage.goToReports();
+      (await reportPage.firstReport()).click();
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;     
+    });  
+  });
+
+  describe('- EDIT permissions disabled', async () => {
+    before(async () => {
+      await updatePermissions(offlineUser.roles, [], ['can_edit']);
+      await commonPage.closeReloadModal();
+    });
+    
+    after(async () => {
+      await utils.revertSettings(true);
+    });
+    
+    it(' - Contact Tab : contact selected', async () => {
+      await commonPage.goToPeople();
+      await contactPage.selectLHSRowByText(contact.name);
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+    });
+  
+    it('- options enabled when report selected', async () => {
+      await commonPage.goToReports();
+      (await reportPage.firstReport()).click();
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
+    });  
   });
 });
 
