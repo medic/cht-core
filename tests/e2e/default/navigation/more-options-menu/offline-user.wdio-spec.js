@@ -180,10 +180,6 @@ describe('More Options Menu - Offline User', async () => {
       await commonPage.closeReloadModal();
     });
     
-    after(async () => {
-      await utils.revertSettings(true);
-    });
-    
     it(' - Contact Tab : contact selected', async () => {
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText(contact.name);
