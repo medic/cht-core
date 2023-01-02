@@ -45,7 +45,6 @@ import { AnalyticsModulesService } from '@mm-services/analytics-modules.service'
 import { Selectors } from '@mm-selectors/index';
 
 describe('AppComponent', () => {
-  let getComponent;
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let store;
@@ -89,7 +88,13 @@ describe('AppComponent', () => {
   const changesListener:any = {};
   let consoleErrorStub;
 
-  beforeEach(waitForAsync(() => {
+  const getComponent = () => {
+    fixture = TestBed.createComponent(AppComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  };
+
+  beforeEach(async () => {
     // set this in index.html
     window.startupTimes = {};
 
@@ -162,64 +167,56 @@ describe('AppComponent', () => {
       { selector: Selectors.getSidebarFilter, value: {} },
     ];
 
-    TestBed.configureTestingModule({
-      declarations: [
-        AppComponent,
-        ActionbarComponent,
-        SnackbarComponent,
-      ],
-      imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-      ],
-      providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: DBSyncService, useValue: dbSyncService },
-        { provide: TranslateService, useValue: translateService },
-        { provide: LanguageService, useValue: languageService },
-        { provide: SetLanguageService, useValue: setLanguageService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: AuthService, useValue: authService },
-        { provide: ResourceIconsService, useValue: resourceIconsService },
-        { provide: ChangesService, useValue: changesService },
-        { provide: UpdateServiceWorkerService, useValue: {} },
-        { provide: LocationService, useValue: locationService },
-        { provide: ModalService, useValue: modalService },
-        { provide: FeedbackService, useValue: feedbackService },
-        { provide: FormatDateService, useValue: formatDateService },
-        { provide: XmlFormsService, useValue: xmlFormsService },
-        { provide: JsonFormsService, useValue: jsonFormsService },
-        { provide: TranslateFromService, useValue: {} },
-        { provide: CountMessageService, useValue: countMessageService },
-        { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
-        { provide: RouteSnapshotService, useValue: {} },
-        { provide: StartupModalsService, useValue: startupModalsService },
-        { provide: TourService, useValue: tourService },
-        { provide: CheckDateService, useValue: checkDateService },
-        { provide: UnreadRecordsService, useValue: unreadRecordsService },
-        { provide: RulesEngineService, useValue: rulesEngineService },
-        { provide: RecurringProcessManagerService, useValue: recurringProcessManagerService },
-        { provide: WealthQuintilesWatcherService, useValue: wealthQuintilesWatcherService },
-        { provide: DatabaseConnectionMonitorService, useValue: databaseConnectionMonitorService },
-        { provide: TranslateLocaleService, useValue: translateLocaleService },
-        { provide: TelemetryService, useValue: telemetryService },
-        { provide: TransitionsService, useValue: transitionsService },
-        { provide: CHTScriptApiService, useValue: chtScriptApiService },
-        { provide: AnalyticsModulesService, useValue: analyticsModulesService },
-      ]
-    });
-
-    getComponent = () => {
-      return TestBed
-        .compileComponents()
-        .then(() => {
-          fixture = TestBed.createComponent(AppComponent);
-          component = fixture.componentInstance;
-          fixture.detectChanges();
-          store = TestBed.inject(MockStore);
-        });
-    };
-  }));
+    await TestBed
+      .configureTestingModule({
+        declarations: [
+          AppComponent,
+          ActionbarComponent,
+          SnackbarComponent,
+        ],
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: DBSyncService, useValue: dbSyncService },
+          { provide: TranslateService, useValue: translateService },
+          { provide: LanguageService, useValue: languageService },
+          { provide: SetLanguageService, useValue: setLanguageService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: AuthService, useValue: authService },
+          { provide: ResourceIconsService, useValue: resourceIconsService },
+          { provide: ChangesService, useValue: changesService },
+          { provide: UpdateServiceWorkerService, useValue: {} },
+          { provide: LocationService, useValue: locationService },
+          { provide: ModalService, useValue: modalService },
+          { provide: FeedbackService, useValue: feedbackService },
+          { provide: FormatDateService, useValue: formatDateService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: JsonFormsService, useValue: jsonFormsService },
+          { provide: TranslateFromService, useValue: {} },
+          { provide: CountMessageService, useValue: countMessageService },
+          { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
+          { provide: RouteSnapshotService, useValue: {} },
+          { provide: StartupModalsService, useValue: startupModalsService },
+          { provide: TourService, useValue: tourService },
+          { provide: CheckDateService, useValue: checkDateService },
+          { provide: UnreadRecordsService, useValue: unreadRecordsService },
+          { provide: RulesEngineService, useValue: rulesEngineService },
+          { provide: RecurringProcessManagerService, useValue: recurringProcessManagerService },
+          { provide: WealthQuintilesWatcherService, useValue: wealthQuintilesWatcherService },
+          { provide: DatabaseConnectionMonitorService, useValue: databaseConnectionMonitorService },
+          { provide: TranslateLocaleService, useValue: translateLocaleService },
+          { provide: TelemetryService, useValue: telemetryService },
+          { provide: TransitionsService, useValue: transitionsService },
+          { provide: CHTScriptApiService, useValue: chtScriptApiService },
+          { provide: AnalyticsModulesService, useValue: analyticsModulesService },
+        ]
+      })
+      .compileComponents();
+    store = TestBed.inject(MockStore);
+  });
 
   afterEach(() => {
     sinon.restore();
