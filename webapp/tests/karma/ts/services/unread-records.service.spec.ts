@@ -23,7 +23,7 @@ describe('UnreadRecordsService', () => {
       query: sinon.stub()
     };
     dbService = { get: () => dbInstance };
-    changesService = { subscribe: sinon.stub().resolves(of({})) };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     sessionService = { isOnlineOnly: sinon.stub() };
     
     TestBed.configureTestingModule({

@@ -44,9 +44,7 @@ describe('Messages Component', () => {
       getList: sinon.stub().resolves([]),
       isRelevantChange: sinon.stub()
     };
-    changesService = {
-      subscribe: sinon.stub().resolves(of({}))
-    };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };

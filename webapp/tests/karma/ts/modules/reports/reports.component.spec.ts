@@ -3,7 +3,6 @@ import { DatePipe } from '@angular/common';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -81,7 +80,7 @@ describe('Reports Component', () => {
     (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
 
     searchService = { search: sinon.stub().resolves([]) };
-    changesService = { subscribe: sinon.stub().resolves(of({})) };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     addReadStatusService = { updateReports: sinon.stub().resolvesArg(0) };
     authService = { has: sinon.stub().resolves(false) };
     sessionService = {

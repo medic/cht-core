@@ -17,7 +17,7 @@ describe('Form2Sms service', () => {
   const TEST_FORM_ID = `form:${TEST_FORM_NAME}`;
 
   /** @return a mock form ready for putting in #dbContent */
-  let service;
+  let service: Form2smsService;
   let dbGet;
   let dbGetAttachment;
   let GetReportContent;

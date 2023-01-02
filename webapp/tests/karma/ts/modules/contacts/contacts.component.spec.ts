@@ -66,9 +66,7 @@ describe('Contacts component', () => {
     };
     tourService = { startIfNeeded: sinon.stub() };
     authService = { has: sinon.stub().resolves(false) };
-    changesService = {
-      subscribe: sinon.stub().resolves(of({}))
-    };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: district._id })
     };
@@ -93,7 +91,7 @@ describe('Contacts component', () => {
       }
     };
     exportService = { export: sinon.stub() };
-    xmlFormsService = { subscribe: sinon.stub() };
+    xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
 
     contactListContains = sinon.stub();
     const selectedContact =  {
