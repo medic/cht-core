@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { Transition, Doc } from '@mm-services/transitions/transition';
-import {CreateUserForContactsService, UserCreationStatus} from '@mm-services/create-user-for-contacts.service';
+import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
 
 @Injectable({
   providedIn: 'root'
