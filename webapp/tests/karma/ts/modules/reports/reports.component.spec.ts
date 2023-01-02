@@ -146,6 +146,7 @@ describe('Reports Component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

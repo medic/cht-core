@@ -42,7 +42,10 @@ describe('NavigationService', () => {
     store = TestBed.inject(MockStore);
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    store.resetSelectors();
+    sinon.restore();
+  });
 
   describe('goBack()', () => {
     it('should navigate to contacts from deceased', () => {

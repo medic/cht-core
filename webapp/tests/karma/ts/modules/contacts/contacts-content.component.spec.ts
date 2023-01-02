@@ -143,6 +143,7 @@ describe('Contacts content component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

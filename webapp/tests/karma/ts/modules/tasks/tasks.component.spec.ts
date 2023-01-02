@@ -99,6 +99,7 @@ describe('TasksComponent', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
     clock?.restore();
   });

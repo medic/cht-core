@@ -86,6 +86,7 @@ describe('Reports Content Component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

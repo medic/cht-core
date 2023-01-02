@@ -219,6 +219,7 @@ describe('AppComponent', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
     clock && clock.restore();
     window.PouchDB = originalPouchDB;
