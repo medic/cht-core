@@ -93,7 +93,6 @@ module.exports = {
       return false;
     }
 
-    // start_from default to 'reported_date' it isn't set or 'undefined'
     let startFrom = schedule.start_from;
     if (typeof startFrom === 'undefined') {
       startFrom = 'reported_date';
