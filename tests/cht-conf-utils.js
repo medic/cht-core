@@ -67,7 +67,6 @@ const compileNoolsConfig = async ({ tasks, targets, contactSummary }) => {
     fs.copyFileSync(targets, path.join(dir, 'targets.js'));
   }
   if (contactSummary && fs.existsSync(contactSummary)) {
-    fs.unlinkSync(path.join(dir, 'contact-summary.js'));
     fs.copyFileSync(contactSummary, path.join(dir, 'contact-summary.templated.js'));
   }
 
