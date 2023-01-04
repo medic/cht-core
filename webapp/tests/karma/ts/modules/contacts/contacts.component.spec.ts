@@ -5,7 +5,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { of } from 'rxjs';
 
 import { ContactsComponent } from '@mm-modules/contacts/contacts.component';
 import { Selectors } from '@mm-selectors/index';

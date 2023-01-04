@@ -1,7 +1,6 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { of } from 'rxjs';
 
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { DbService } from '@mm-services/db.service';
