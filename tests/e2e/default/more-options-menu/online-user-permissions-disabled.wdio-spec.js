@@ -62,20 +62,6 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   });  
 };
 
-const updatePermissions = async (role, addPermissions, removePermissions = []) => {
-  const settings = await utils.getSettings();
-  settings.roles[role] = { offline: true };
-  addPermissions.map(permission => settings.permissions[permission].push(role));
-  removePermissions.forEach(permission => {
-    settings.permissions[permission] = ['analytics'];
-  });
-  try {
-    await utils.updateSettings({ roles: settings.roles, permissions: settings.permissions }, true);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 describe('- permissions disabled', async () => {
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
@@ -89,7 +75,7 @@ describe('- permissions disabled', async () => {
   describe('- export permissions disabled', async () => {
     const exportPermissions = ['can_export_all', 'can_export_contacts', 'can_export_messages'];
     before(async () => {
-      await updatePermissions(onlineUser.roles, [], exportPermissions );
+      await utils.updatePermissions(onlineUser.roles, [], exportPermissions );
       await commonPage.closeReloadModal();
     });
 
@@ -126,7 +112,7 @@ describe('- permissions disabled', async () => {
 
   describe('- DELETE permissions disabled', async () => {
     before(async () => {
-      await updatePermissions(onlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
+      await utils.updatePermissions(onlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
       await commonPage.closeReloadModal();
     });
 
@@ -151,7 +137,7 @@ describe('- permissions disabled', async () => {
 
   describe('- EDIT permissions disabled', async () => {
     before(async () => {
-      await updatePermissions(onlineUser.roles, [], ['can_edit']);
+      await utils.updatePermissions(onlineUser.roles, [], ['can_edit']);
       await commonPage.closeReloadModal();
     });
     

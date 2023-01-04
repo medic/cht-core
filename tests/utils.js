@@ -134,6 +134,19 @@ const updateSettings = updates => {
     });
 };
 
+const updatePermissions = async (role, addPermissions, removePermissions = []) => {
+  const settings = await module.exports.getSettings();
+  addPermissions.map(permission => settings.permissions[permission].push(role));
+  removePermissions.forEach(permission => {
+    settings.permissions[permission] = [];
+  });
+  try {
+    await updateSettings({ roles: settings.roles, permissions: settings.permissions }, true);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const revertTranslations = async () => {
   const updatedTranslations = Object.keys(originalTranslations);
   if (!updatedTranslations.length) {
@@ -863,6 +876,7 @@ module.exports = {
   medicLogsDb: medicLogs,
   setupUserDoc,
   request: request,
+  updatePermissions,
 
   reporter: new htmlScreenshotReporter({
     reportTitle: 'e2e Test Report',

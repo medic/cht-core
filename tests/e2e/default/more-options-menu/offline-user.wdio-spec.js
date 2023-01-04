@@ -66,15 +66,6 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   });  
 };
 
-const updatePermissions = async (role, addPermissions, removePermissions = []) => {
-  const settings = await utils.getSettings();
-  addPermissions.map(permission => settings.permissions[permission].push(role));
-  removePermissions.forEach(permission => {
-    settings.permissions[permission] = [''];
-  });
-  await utils.updateSettings({ roles: settings.roles, permissions: settings.permissions }, true);
-};
-
 describe('More Options Menu - Offline User', async () => {
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
@@ -130,7 +121,7 @@ describe('More Options Menu - Offline User', async () => {
       'can_delete_reports', 'can_update_reports'];
 
     before(async () => {
-      await updatePermissions(offlineUser.roles, [], allPermissions);
+      await utils.updatePermissions(offlineUser.roles, [], allPermissions);
       await commonPage.closeReloadModal();
     });
     after(async () => {
@@ -157,7 +148,7 @@ describe('More Options Menu - Offline User', async () => {
 
   describe('- DELETE permissions disabled', async () => {
     before(async () => {
-      await updatePermissions(offlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
+      await utils.updatePermissions(offlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
       await commonPage.closeReloadModal();
     });
 
@@ -180,7 +171,7 @@ describe('More Options Menu - Offline User', async () => {
 
   describe('- EDIT permissions disabled', async () => {
     before(async () => {
-      await updatePermissions(offlineUser.roles, [], ['can_edit']);
+      await utils.updatePermissions(offlineUser.roles, [], ['can_edit']);
       await commonPage.closeReloadModal();
     });
     
