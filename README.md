@@ -24,7 +24,7 @@ If you are a developer looking to contribute to the Core Framework itself, you s
 
 If you wish to evaluate the Core Framework, _or_ you are a developer looking to create or modify applications built with the Core Framework, you can instead follow the [easy deployment](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/) instructions, which will get the latest stable release running locally via Docker.
 
-You will need to also familiarise yourself with [medic-conf](https://github.com/medic/medic-conf), a tool to manage and configure your apps built using the Core Framework. A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [cht-docs](https://docs.communityhealthtoolkit.org/apps/).
+You will need to also familiarise yourself with [cht-conf](https://github.com/medic/cht-conf), a tool to manage and configure your apps built using the Core Framework. A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [cht-docs](https://docs.communityhealthtoolkit.org/apps/).
 
 ### Supported Browsers
 
@@ -57,7 +57,7 @@ Builds brought to you courtesy of GitHub Actions.
 
 ## Copyright
 
-Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>
+Copyright 2013-2022 Medic Mobile, Inc. <hello@medic.org>
 
 ## License
 

@@ -30,6 +30,7 @@ module.exports = {
 
   // nginx certificate setting
   CERTIFICATE_MODE: 'SELF_SIGNED',
+  DOWNLOAD_DIRECTORY: 'tempDownload',
 
   USERNAME,
   PASSWORD

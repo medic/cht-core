@@ -1,4 +1,4 @@
-<div class="filters">
+<div class="filters tab-bar">
   <div class="inner">
     <reports-filters
       *ngIf="!useSidebarFilter && !selectMode"
@@ -21,6 +21,7 @@
       (selectItems)="selectAllReports()"
       (deselectItems)="deselectAllReports()">
     </mm-multiselect-bar>
+    <mm-reports-more-menu (exportReports)="exportReports()"></mm-reports-more-menu>
   </div>
 </div>
 

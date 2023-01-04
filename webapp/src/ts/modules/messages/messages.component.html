@@ -1,6 +1,7 @@
-<div class="filters">
+<div class="filters tab-bar">
   <div class="inner">
     <mm-navigation></mm-navigation>
+    <mm-messages-more-menu (exportMessages)="exportMessages()" [conversations]="conversations"></mm-messages-more-menu>
   </div>
 </div>
 

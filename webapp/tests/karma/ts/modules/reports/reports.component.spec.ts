@@ -82,7 +82,10 @@ describe('Reports Component', () => {
     searchService = { search: sinon.stub().resolves([]) };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     addReadStatusService = { updateReports: sinon.stub().resolvesArg(0) };
-    authService = { has: sinon.stub().resolves(false) };
+    authService = {
+      has: sinon.stub().resolves(false),
+      online: sinon.stub().resolves(false),
+    };
     sessionService = {
       isDbAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false)
@@ -625,7 +628,7 @@ describe('Reports Component', () => {
     });
 
     it('should not change the reports lineage if user is online only', fakeAsync(() => {
-      sessionService.isOnlineOnly.returns(true);
+      authService.online.returns(true);
       const expectedReports = [
         {
           _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
@@ -694,7 +697,7 @@ describe('Reports Component', () => {
 
     it('should remove current level from reports lineage when user is offline', fakeAsync(() => {
       userContactService.get.resolves(offlineUserContactDoc);
-      sessionService.isOnlineOnly.returns(false);
+      authService.online.returns(false);
       const expectedReports = [
         {
           _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
