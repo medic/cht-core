@@ -28,12 +28,16 @@ describe('Session service', () => {
       get: sinon.stub(),
       delete: sinon.stub(),
     };
+    const documentMock = {
+      location: location,
+      querySelectorAll: sinon.stub().returns([]),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: CookieService, useValue: { get: cookieGet, set: cookieSet, delete: cookieDelete } },
         { provide: LocationService, useValue: Location },
-        { provide: DOCUMENT, useValue: { location: location } },
+        { provide: DOCUMENT, useValue: documentMock },
         { provide: HttpClient, useValue: $httpBackend },
       ],
     });
@@ -43,7 +47,6 @@ describe('Session service', () => {
   afterEach(() => {
     sinon.restore();
   });
-
 
   it('gets the user context', () => {
     const expected = { name: 'bryan' };
