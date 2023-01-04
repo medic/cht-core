@@ -97,7 +97,7 @@ describe('Online User', async () => {
       expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
     });
 
-    it('- options enabled when report selected', async () => {
+    it('- Reports tab: options enabled when report selected', async () => {
       await commonPage.goToReports();
       (await reportPage.firstReport()).click();
       await reportPage.reportBodyDetails().waitForDisplayed();      
