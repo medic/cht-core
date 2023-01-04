@@ -41,6 +41,7 @@ const rhsReportElementList = () => $$(rhsReportListSelector);
 
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
+const exportButton = () => $('.mat-menu-content .mat-menu-item[test-id="export-contacts"]');
 const editContactButton = () => $('.mat-menu-content .mat-menu-item[test-id="edit-contacts"]');
 const deleteContactButton = () => $('.mat-menu-content .mat-menu-item[test-id="delete-contacts"]');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
@@ -98,6 +99,13 @@ const selectLHSRowByText = async (text, executeSearch = true) => {
     throw new Error(`Contact "${text}" was not found`);
   }
   return await row.click();
+};
+
+const selectRHSRowById = async (id) => {
+  const contact = await $(`.card.children.persons .content-row > a[href="#/contacts/${id}"]`);
+  await contact.waitForClickable();
+  await contact.click();
+  await waitForContactLoaded();
 };
 
 const getReportFiltersText = async () => {
@@ -180,9 +188,7 @@ const editPerson = async (name, updatedName) => {
   return (await contactCard()).getText();
 };
 
-const deletePerson = async (name) => {
-  await selectLHSRowByText(name);
-  await waitForContactLoaded();
+const deletePerson = async () => {
   await commonElements.openMoreOptionsMenu();
   await (await deleteContactButton()).waitForClickable();
   await (await deleteContactButton()).click();
@@ -332,9 +338,16 @@ const getContactCardText = async () => {
   return (await contactCard()).getText();
 };
 
+const exportContacts = async () => {
+  await commonElements.openMoreOptionsMenu();
+  await (await exportButton()).waitForClickable();
+  await (await exportButton()).click();
+};
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
+  selectRHSRowById,
   reportFilters,
   getReportFiltersText,
   getReportTaskFiltersText,
@@ -349,6 +362,7 @@ module.exports = {
   waitForContactUnloaded,
   contactCard,
   editPerson,
+  exportContacts,
   getContactSummaryField,
   getAllRHSReportsNames,
   rhsReportListElement,

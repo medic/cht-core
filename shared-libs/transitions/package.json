@@ -26,7 +26,7 @@
     "async": "^3.2.3",
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
-    "google-libphonenumber": "^3.2.30",
+    "google-libphonenumber": "^3.2.31",
     "gsm": "^0.1.4",
     "lodash": "4.17.19",
     "moment": "^2.29.1",

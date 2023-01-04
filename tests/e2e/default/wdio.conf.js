@@ -1,17 +1,18 @@
 const allure = require('allure-commandline');
 const fs = require('fs');
-const constants = require('../../constants');
-const utils = require('../../utils');
 const path = require('path');
-
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 
+const constants = require('../../constants');
+const utils = require('../../utils');
+const fileDownloadUtils = require('../../utils/file-download');
+const browserUtils = require('../../utils/browser');
+
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
-const browserUtils = require('../../utils/browser');
-const existingFeedBackDocIds = [];
 const logLevels = ['error', 'warning', 'debug'];
+const existingFeedBackDocIds = [];
 let testTile;
 
 const baseConfig = {
@@ -352,6 +353,7 @@ const baseConfig = {
    * @param {<Object>} results object containing test results
    */
   onComplete: async () => {
+    fileDownloadUtils.deleteDownloadDirectory();
     await utils.tearDownServices();
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');

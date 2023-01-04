@@ -281,6 +281,7 @@ const getTextForElements = async (elements) => {
 };
 
 module.exports = {
+  openMoreOptionsMenu,
   logout,
   logoutButton,
   getLogoutMessage,
