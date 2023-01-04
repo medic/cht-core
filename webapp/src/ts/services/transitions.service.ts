@@ -48,8 +48,7 @@ export class TransitionsService {
       await this.validationService.init();
 
       this.AVAILABLE_TRANSITIONS.forEach((transition) => {
-        // if (!this.isEnabled(transition.name)) { // TODO
-        if (!transition.isEnabled) {
+        if (!this.isEnabled(transition)) {
           return;
         }
 
@@ -64,12 +63,19 @@ export class TransitionsService {
     }
   }
 
-  private isEnabled(transitionName) {
+  private isEnabled(transition) {
     const transitionsConfig = this.settings.transitions || {};
-    const transitionConfig = transitionsConfig[transitionName];
-    if (transitionConfig && !transitionConfig.disable && transitionConfig.client_side !== false) {
+    const transitionConfig = transitionsConfig[transition.name];
+    if (
+      transition.isEnabled &&
+      transitionConfig &&
+      !transitionConfig.disable &&
+      transitionConfig.client_side !== false
+    ) {
       return true;
     }
+
+    return false;
   }
 
   async applyTransitions(docs) {
