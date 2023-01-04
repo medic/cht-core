@@ -325,7 +325,6 @@ module.exports = {
   getTextForElements,
   toggleActionbar,
   jsonError,
-  openMoreOptionsMenu,
   isOptionEnabled,
   isOptionVisible,
   moreOptionsMenu,
