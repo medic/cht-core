@@ -8,15 +8,24 @@ import { SettingsService } from '@mm-services/settings.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ValidationService } from '@mm-services/validation.service';
 import { CreateUserForContactsTransition } from '@mm-services/transitions/create-user-for-contacts.transition';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { DbService } from '@mm-services/db.service';
+import { DBSyncService } from '@mm-services/db-sync.service';
+import { SessionService } from '@mm-services/session.service';
 
 describe('Transitions Service', () => {
   let settingsService;
   let mutingTransition;
   let validationService;
   let service: TransitionsService;
+  let medicDb;
+  let dbService;
+  let dbSyncService;
+  let userContactService;
+  let sessionService;
 
   beforeEach(() => {
-    settingsService = { get: sinon.stub() };
+    settingsService = { get: sinon.stub().resolves() };
     mutingTransition = {
       name: 'muting',
       init: sinon.stub(),
@@ -24,13 +33,33 @@ describe('Transitions Service', () => {
       run: sinon.stub(),
     };
     validationService = { init: sinon.stub() };
-
+    medicDb = { get: sinon.stub() };
+    dbService = {
+      get: sinon
+        .stub()
+        .returns(medicDb)
+    };
+    dbSyncService = { subscribe: sinon.stub() };
+    userContactService = { get: sinon.stub() };
+    sessionService = {
+      userCtx: sinon
+        .stub()
+        .returns({ name: 'ORIGINAL_USERNAME' }),
+      isOnlineOnly: sinon
+        .stub()
+        .returns(false),
+      logout: sinon.stub(),
+    };
     TestBed.configureTestingModule({
       providers: [
         { provide: SettingsService, useValue: settingsService },
         { provide: MutingTransition, useValue: mutingTransition },
         { provide: CreateUserForContactsTransition, useValue: { name: 'create_user_for_contacts' } },
         { provide: ValidationService, useValue: validationService },
+        { provide: DbService, useValue: dbService },
+        { provide: DBSyncService, useValue: dbSyncService },
+        { provide: UserContactService, useValue: userContactService },
+        { provide: SessionService, useValue: sessionService },
       ]
     });
     service = TestBed.inject(TransitionsService);
