@@ -29,7 +29,7 @@ const contact = personFactory.build({
 });
 
 const offlineUser = userFactory.build({
-  username: 'offlineuser',
+  username: 'offlineUser',
   isOffline: true,
   roles:['chw'],
   place: health_center._id,
