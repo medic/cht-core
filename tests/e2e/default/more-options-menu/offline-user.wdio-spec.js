@@ -62,7 +62,7 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
     headers: {
       'Content-type': 'application/x-www-form-urlencoded'
     },
-    body:`message=${message}&from=${phone}`,
+    body: `message=${message}&from=${phone}`,
   });  
 };
 
