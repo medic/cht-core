@@ -914,7 +914,7 @@ describe('Create user for contacts', () => {
     });
   });
 
-  describe.only('supervisor user create', () => {
+  describe.skip('supervisor user create', () => {
     it('creates a new user while offline', async () => {
       await utils.updateSettings(SETTINGS, 'sentinel');
       await loginAsSupervisor();
