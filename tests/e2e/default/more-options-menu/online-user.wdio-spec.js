@@ -47,6 +47,7 @@ describe('Online User', async () => {
   before(async () => {
     await loginPage.cookieLogin();
   });
+
   describe('Options disabled when no items: messages, contacts, people', async () => {
     it('- Message tab', async () => {
       await commonPage.goToMessages();
