@@ -770,6 +770,7 @@ describe('Reports Component', () => {
       const setSelectMode = sinon.spy(GlobalActions.prototype, 'setSelectMode');
       const unsetComponents = sinon.spy(GlobalActions.prototype, 'unsetComponents');
       store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report' }]);
+      store.overrideSelector(Selectors.getSelectMode, false);
       store.refreshState();
 
       flush();
@@ -784,6 +785,7 @@ describe('Reports Component', () => {
     it('should unset select mode when there are no selected reports', fakeAsync(() => {
       const setSelectMode = sinon.spy(GlobalActions.prototype, 'setSelectMode');
       const unsetComponents = sinon.spy(GlobalActions.prototype, 'unsetComponents');
+      store.overrideSelector(Selectors.getSelectedReports, []);
       store.overrideSelector(Selectors.getSelectMode, true);
       store.refreshState();
 
