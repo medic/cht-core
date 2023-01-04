@@ -29,7 +29,7 @@ const contact = personFactory.build({
 });
 
 const offlineUser = userFactory.build({
-  username: 'offlineUser',
+  username: 'offlineuser',
   isOffline: true,
   roles:['chw'],
   place: health_center._id,
@@ -91,7 +91,6 @@ describe('More Options Menu - Offline User', async () => {
 
     it('- Contact tab: no contact selected', async () => {
       await commonPage.goToPeople();
-      //parent contact
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
       expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.false;
@@ -99,13 +98,19 @@ describe('More Options Menu - Offline User', async () => {
     });
 
     it(' - Contact Tab : contact selected', async () => {
-      await commonPage.goToPeople();
-      //contact selected
-      await contactPage.selectLHSRowByText(contact.name);
+      await commonPage.goToPeople(patient._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
       expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
       expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
+    });
+
+    it(' - Contact Tab : with same facility_id', async () => {
+      await commonPage.goToPeople(offlineUser.place);
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
+      expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
+      expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.false;
     });
 
     it('- options enabled when report selected', async () => {
@@ -119,7 +124,6 @@ describe('More Options Menu - Offline User', async () => {
     });
   });
 
-  //permissions disabled
   describe('all permissions disabled', async () => {
     const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all', 
       'can_export_contacts', 'can_export_messages', 
