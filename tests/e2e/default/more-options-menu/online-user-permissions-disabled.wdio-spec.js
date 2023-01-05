@@ -39,16 +39,7 @@ const patient = personFactory.build({
 });
 
 const reports = [
-  reportFactory.build(
-    {
-      form: 'P',
-      reported_date: '26-12-2022',
-      patient_id: patient._id,
-    },
-    {
-      patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id},
-    },
-  )
+  reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact })
 ];  
 
 const sendMessage = async (message = 'Testing', phone = contact.phone) => {
@@ -98,7 +89,7 @@ describe('- permissions disabled', async () => {
       (await reportPage.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('export', 'reports')).to.be.false;
-      expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false; //not xml report
+      expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.true;
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
     }); 
 

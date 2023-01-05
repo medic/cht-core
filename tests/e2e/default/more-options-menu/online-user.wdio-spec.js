@@ -124,13 +124,13 @@ describe('Online User', async () => {
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
     });
 
-    it('- Reports tab: options enabled when NON XML report selected', async () => {
+    it('- Reports tab: Edit/export invisible when NON XML report selected', async () => {
       await reportPage.goToReportById(smsReportId);
       await reportPage.reportBodyDetails().waitForDisplayed();      
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isOptionEnabled('export', 'reports')).to.be.true;
-      expect(await commonPage.isOptionEnabled('edit', 'reports')).to.be.false;
-      expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
+      expect(await commonPage.isOptionVisible('export', 'reports')).to.be.false;
+      expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false;
+      expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;       
     });
 
     it('- Message tab', async () => {
