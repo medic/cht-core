@@ -8,6 +8,7 @@ import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ValidationService } from '@mm-services/validation.service';
+import { SessionService } from '@mm-services/session.service';
 
 describe('Muting Transition', () => {
   let transition:MutingTransition;
@@ -17,6 +18,7 @@ describe('Muting Transition', () => {
   let contactTypesService;
   let validationService;
   let clock;
+  let sessionService;
 
   beforeEach(() => {
     dbService = { get: sinon.stub(), query: sinon.stub() };
@@ -24,6 +26,15 @@ describe('Muting Transition', () => {
     contactMutedService = { getMutedDoc: sinon.stub(), getMuted: sinon.stub() };
     contactTypesService = { includes: sinon.stub() };
     validationService = { validate: sinon.stub() };
+    sessionService = {
+      userCtx: sinon
+        .stub()
+        .returns({ name: 'username' }),
+      isOnlineOnly: sinon
+        .stub()
+        .returns(false),
+      logout: sinon.stub(),
+    };
 
     contactTypesService.includes.withArgs(sinon.match({ type: 'person' })).returns(true);
     contactTypesService.includes.withArgs(sinon.match({ type: 'clinic' })).returns(true);
@@ -35,6 +46,7 @@ describe('Muting Transition', () => {
         { provide: ContactMutedService, useValue: contactMutedService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: ValidationService, useValue: validationService },
+        { provide: SessionService, useValue: sessionService },
       ],
     });
     transition = TestBed.inject(MutingTransition);
