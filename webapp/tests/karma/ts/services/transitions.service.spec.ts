@@ -25,12 +25,14 @@ describe('Transitions Service', () => {
   let sessionService;
 
   beforeEach(() => {
+    const isOnlineOnly = false;
     settingsService = { get: sinon.stub().resolves() };
     mutingTransition = {
       name: 'muting',
       init: sinon.stub(),
       filter: sinon.stub(),
       run: sinon.stub(),
+      isEnabled: !isOnlineOnly,
     };
     validationService = { init: sinon.stub() };
     medicDb = { get: sinon.stub() };
@@ -44,10 +46,10 @@ describe('Transitions Service', () => {
     sessionService = {
       userCtx: sinon
         .stub()
-        .returns({ name: 'ORIGINAL_USERNAME' }),
+        .returns({ name: 'username' }),
       isOnlineOnly: sinon
         .stub()
-        .returns(false),
+        .returns(isOnlineOnly),
       logout: sinon.stub(),
     };
     TestBed.configureTestingModule({
@@ -84,7 +86,7 @@ describe('Transitions Service', () => {
 
     await service.init();
 
-    expect(settingsService.get.callCount).to.equal(1);
+    expect(settingsService.get.callCount).to.equal(2);
     expect(mutingTransition.init.callCount).to.equal(1);
 
     const docs = [{ _id: 'a' }, { _id: 'b' }];
@@ -108,7 +110,7 @@ describe('Transitions Service', () => {
 
     await service.init();
 
-    expect(settingsService.get.callCount).to.equal(1);
+    expect(settingsService.get.callCount).to.equal(2);
     expect(mutingTransition.init.callCount).to.equal(0);
 
     const docs = [{ _id: 'a' }, { _id: 'b' }];
@@ -124,7 +126,7 @@ describe('Transitions Service', () => {
 
     await service.init();
 
-    expect(settingsService.get.callCount).to.equal(1);
+    expect(settingsService.get.callCount).to.equal(2);
     expect(mutingTransition.init.callCount).to.equal(0);
 
     const docs = [{ _id: 'a' }, { _id: 'b' }];
@@ -140,7 +142,7 @@ describe('Transitions Service', () => {
 
     await service.init();
 
-    expect(settingsService.get.callCount).to.equal(1);
+    expect(settingsService.get.callCount).to.equal(2);
     expect(mutingTransition.init.callCount).to.equal(0);
 
     const docs = [{ _id: 'a' }, { _id: 'b' }];
@@ -156,7 +158,7 @@ describe('Transitions Service', () => {
 
     await service.init();
 
-    expect(settingsService.get.callCount).to.equal(1);
+    expect(settingsService.get.callCount).to.equal(2);
     expect(mutingTransition.init.callCount).to.equal(0);
 
     const docs = [{ _id: 'a' }, { _id: 'b' }];
@@ -174,7 +176,7 @@ describe('Transitions Service', () => {
 
     expect(mutingTransition.filter.callCount).to.equal(0);
     expect(mutingTransition.run.callCount).to.equal(0);
-    expect(settingsService.get.callCount).to.equal(0);
+    expect(settingsService.get.callCount).to.equal(1);
   });
 
   it('should not init more than once', async () => {
@@ -186,7 +188,7 @@ describe('Transitions Service', () => {
     service.init();
     await service.init();
 
-    expect(settingsService.get.callCount).to.equal(1);
+    expect(settingsService.get.callCount).to.equal(2);
   });
 
   it('should not run transitions that fail initialization', async () => {
@@ -229,7 +231,7 @@ describe('Transitions Service', () => {
 
       await service.init();
 
-      expect(settingsService.get.callCount).to.equal(1);
+      expect(settingsService.get.callCount).to.equal(2);
       expect(mutingTransition.init.callCount).to.equal(0);
 
       expect(await service.applyTransitions([{ _id: 'a'}])).to.deep.equal([{ _id: 'a' }]);
@@ -242,7 +244,7 @@ describe('Transitions Service', () => {
       mutingTransition.init.throws();
 
       await service.init();
-      expect(settingsService.get.callCount).to.equal(1);
+      expect(settingsService.get.callCount).to.equal(2);
       expect(mutingTransition.init.callCount).to.equal(1);
 
       expect(await service.applyTransitions([{ _id: 'a'}])).to.deep.equal([{ _id: 'a' }]);
@@ -286,7 +288,7 @@ describe('Transitions Service', () => {
 
         await service.init();
 
-        expect(settingsService.get.callCount).to.equal(1);
+        expect(settingsService.get.callCount).to.equal(2);
         expect(mutingTransition.init.callCount).to.equal(1);
 
         try{
