@@ -10,6 +10,7 @@ import { TitlePipe } from '@mm-pipes/message.pipe';
 import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
+import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 
 describe('Parse provider', () => {
   let provider:ParseProvider;
@@ -142,19 +143,36 @@ describe('Parse provider', () => {
         (!contact.sex || contact.sex === 'female') && 
         (!contact.date_of_birth || (ageInYears(contact) >= 12 && ageInYears(contact) <= 49))
       `;
-      const userContactDoc = {
-        date_of_birth: '1998-05-13',
+      const context = new XmlFormsContextUtilsService();
+      const user = {
+        parent: { type: 'health_center' },
+      };
+      const contact = {
+        date_of_birth: '2007-05-13',
         date_of_birth_method: 'approx',
-        name: 'peanuts',
+        name: 'Laura',
         patient_id: '03451',
-        reported_date: 1589367057387,
-        role: 'nurse',
+        reported_date: 1672900567448,
+        role: 'patient',
         sex: 'female',
         type: 'person',
       };
+      const summaryAlive = {
+        alive: true,
+        muted: false,
+        show_delivery_form: true,
+      };
+      const summaryDeceased = {
+        alive: false,
+        muted: false,
+        show_delivery_form: true,
+      };
 
-      const result = parse(expression, {}, { user: userContactDoc, contact: undefined, summary: undefined });
-      expect(result).to.equal(false);
+      const trueResult = parse(expression, context, { user, contact, summary: summaryAlive });
+      const falseResult = parse(expression, context, { user, contact, summary: summaryDeceased });
+
+      expect(trueResult).to.equal(true);
+      expect(falseResult).to.equal(false);
     });
   });
 

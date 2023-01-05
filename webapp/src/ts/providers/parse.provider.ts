@@ -357,8 +357,8 @@ class ASTCompiler {
   extendCtxWithLocals() {
     const v1 = this.createVar();
     this.stmts.push(
-      `${v1}={ ...(locals || {}) }`,
-      `ctx={ ...(ctx || {}), ...${v1} }`
+      `${v1}=Object.assign({}, locals || {})`,
+      `ctx=Object.setPrototypeOf(${v1}, ctx || {})`
     );
   }
 
