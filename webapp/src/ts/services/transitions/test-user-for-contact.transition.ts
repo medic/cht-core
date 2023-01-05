@@ -11,7 +11,7 @@ export class TestUserForContactsTransition extends Transition {
     super();
   }
 
-  readonly name = 'test_user_for_contacts';
+  readonly name = 'create_user_for_contacts';
   public readonly isEnabled = true;
 
   init() {
