@@ -30,7 +30,17 @@ const patient = personFactory.build({
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
 
-const report = reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
+const xmlReport = reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
+const smsReport = reportFactory.build(
+  {
+    form: 'P',
+    reported_date: '26-12-2022',
+    patient_id: patient._id,
+  },
+  {
+    patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id},
+  },
+);
 
 const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   await utils.request({
@@ -42,6 +52,9 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
     body:`message=${message}&from=${phone}`,
   });  
 };
+
+let xmlReportId;
+let smsReportId;
 
 describe('Online User', async () => {  
   before(async () => {
@@ -72,9 +85,13 @@ describe('Online User', async () => {
     });
   });
 
-  describe(' - Options enabled when there are items: messages, contacts, peope', async () => {
+  describe(' - Options enabled when there are items: messages, contacts, people', async () => {
     before(async () => {
-      await utils.saveDocs([ ...places.values(), contact, patient, report ]);
+      await utils.saveDocs([ ...places.values(), contact, patient]);
+      let result = await utils.saveDoc(xmlReport);
+      xmlReportId = result.id;
+      result = await utils.saveDoc(smsReport);
+      smsReportId = result.id;
       await sendMessage();    
     });
 
@@ -98,13 +115,21 @@ describe('Online User', async () => {
       expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
     });
 
-    it('- Reports tab: options enabled when report selected', async () => {
-      await commonPage.goToReports();
-      (await reportPage.firstReport()).click();
+    it('- Reports tab: options enabled when XML report selected', async () => {
+      await reportPage.goToReportById(xmlReportId);
       await reportPage.reportBodyDetails().waitForDisplayed();      
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'reports')).to.be.true;
-      expect(await commonPage.isOptionEnabled('edit', 'reports')).to.be.true; // xml report
+      expect(await commonPage.isOptionEnabled('edit', 'reports')).to.be.true; 
+      expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
+    });
+
+    it('- Reports tab: options enabled when NON XML report selected', async () => {
+      await reportPage.goToReportById(smsReportId);
+      await reportPage.reportBodyDetails().waitForDisplayed();      
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isOptionEnabled('export', 'reports')).to.be.true;
+      expect(await commonPage.isOptionEnabled('edit', 'reports')).to.be.false;
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
     });
 
