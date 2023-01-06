@@ -124,9 +124,7 @@ describe('More Options Menu - Offline User', async () => {
       await utils.updatePermissions(offlineUser.roles, [], allPermissions);
       await commonPage.closeReloadModal();
     });
-    after(async () => {
-      await utils.revertSettings(true);
-    });
+    after(async () => await utils.revertSettings(true));
   
     it(' - all tabs, kebab menu not available', async () => {
       await commonPage.goToMessages();
@@ -152,9 +150,7 @@ describe('More Options Menu - Offline User', async () => {
       await commonPage.closeReloadModal();
     });
 
-    after(async () => {
-      await utils.revertSettings(true);
-    });
+    after(async () => await utils.revertSettings(true));
 
     it(' - Contact Tab : contact selected', async () => {
       await commonPage.goToPeople();

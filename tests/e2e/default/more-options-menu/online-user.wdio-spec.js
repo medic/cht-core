@@ -12,6 +12,7 @@ const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 const health_center = places.get('health_center');
 const district_hospital = places.get('district_hospital');
+const userFactory = require('../../../factories/cht/users/users');
 
 const contact = personFactory.build({
   _id: uuid(),
@@ -29,12 +30,17 @@ const patient = personFactory.build({
   _id: uuid(),
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
+const onlineUser = userFactory.build({
+  username: 'onlineuser',
+  roles: [ 'program_officer' ],
+  place: district_hospital._id,
+  contact: contact._id,
+});
 
 const xmlReport = reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
 const smsReport = reportFactory.build(
   {
     form: 'P',
-    reported_date: '26-12-2022',
     patient_id: patient._id,
   },
   {
@@ -57,11 +63,11 @@ let xmlReportId;
 let smsReportId;
 
 describe('Online User', async () => {  
-  before(async () => {
-    await loginPage.cookieLogin();
-  });
-
+  
   describe('Options disabled when no items: messages, contacts, people', async () => {
+    before(async () => await loginPage.cookieLogin());
+    after(async () => await commonPage.logout());
+
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.openMoreOptionsMenu();
@@ -92,6 +98,8 @@ describe('Online User', async () => {
       xmlReportId = result.id;
       result = await utils.saveDoc(smsReport);
       smsReportId = result.id;
+      await utils.createUsers([onlineUser]);
+      await loginPage.login(onlineUser);
       await sendMessage();    
     });
 
