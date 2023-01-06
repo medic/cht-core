@@ -64,7 +64,7 @@ describe('Message tab breadcrumbs', () => {
     await loginPage.login(onlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
-    await messagesPage.sendMessageToPhone('Contact', patient.phone);
+    await messagesPage.sendMessage('Contact', patient.phone, messagesPage.contactNameSelector, patient.name);
 
     await messagesPage.waitForMessagesInLHS();
     const message = await messagesPage.messageByIndex(1);

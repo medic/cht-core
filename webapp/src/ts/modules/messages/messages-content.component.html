@@ -29,7 +29,7 @@
                 <div class="data">
                   <p>
                     {{message.doc?.sms_message?.message}}
-                    <span *ngIf="message.doc?.kujua_message && message.doc?.tasks && message.doc?.tasks[0]?.messages">
+                    <span [attr.test-id]="'sms-content'" *ngIf="message.doc?.kujua_message && message.doc?.tasks && message.doc?.tasks[0]?.messages">
                       {{message.doc?.tasks[0]?.messages[0]?.message}}
                     </span>
                   </p>

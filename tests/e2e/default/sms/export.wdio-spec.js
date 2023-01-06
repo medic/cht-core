@@ -29,7 +29,7 @@ describe('Export Messages', () => {
   });
 
   it('Should download export file', async () => {
-    await messagesPage.sendMessageToPhone('It is working!', patient.phone);
+    await messagesPage.sendMessage('It is working!', patient.phone, messagesPage.contactNameSelector, patient.name);
     await messagesPage.waitForMessagesInLHS();
 
     await messagesPage.exportMessages();

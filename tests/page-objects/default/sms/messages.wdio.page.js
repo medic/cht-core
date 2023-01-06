@@ -30,16 +30,19 @@ const messageContentText = (messageContentElement) => messageContentElement.$('.
 const messageDetailStatus = async () => (await messageContentIndex()).$('.data .state.received');
 
 const messageText = text => $('#send-message textarea').setValue(text);
-const sendMessage = () => $('.general-actions .send-message');
+const sendMessageButton = () => $('.general-actions .send-message');
 const sendMessageModal = () => $('#send-message');
 const sendMessageModalSubmit = () => $('a.btn.submit:not(.ng-hide)');
-const messageRecipientSelect = () => $('#send-message input.select2-search__field');
-const contactNameSelector = () => $('.sender .name');
+const recipientField = () => $('#send-message input.select2-search__field');
 const exportButton = () => $('.mat-menu-content .mat-menu-item[test-id="export-messages"]');
+const lastMessageText = () => $('#message-content li:first-child span[test-id="sms-content"]').getText();
+
+const selectOptions = '.select2-results__option';
+const contactNameSelector = '.sender .name';
 
 const openSendMessageModal = async () => {
-  await (await sendMessage()).waitForClickable();
-  await (await sendMessage()).click();
+  await (await sendMessageButton()).waitForClickable();
+  await (await sendMessageButton()).click();
   await (await sendMessageModal()).waitForDisplayed();
 };
 const submitMessage = async () => {
@@ -47,17 +50,20 @@ const submitMessage = async () => {
   await (await sendMessageModalSubmit()).click();
 };
 
-const sendMessageToPhone = async (message, phone) => {
+const sendMessage = async (message, recipient, entrySelector, entryText) => {
   await openSendMessageModal();
   await messageText(message);
-  await searchSelect(phone);
+  await searchSelect(recipient, entrySelector, entryText);
   await submitMessage();
+  await commonElements.waitForPageLoaded();
 };
 
-const searchSelect = async (searchText) => {
-  await messageRecipientSelect().setValue(searchText);
-  await (await contactNameSelector()).waitForClickable(5000);
-  await (await contactNameSelector()).click();
+const searchSelect = async (recipient, entrySelector, entryText) => {
+  await recipientField().setValue(recipient);
+  //Selector needs review, not sure how it works :S
+  const recipientOption = $(`${selectOptions} ${entrySelector}`).$(`//*[text()='${entryText}']`);
+  await recipientOption.waitForDisplayed();
+  await (await recipientOption).click();
 };
 
 const exportMessages = async () => {
@@ -83,5 +89,7 @@ module.exports = {
   messageText,
   submitMessage,
   searchSelect,
-  sendMessageToPhone,
+  sendMessage,
+  lastMessageText,
+  contactNameSelector,
 };
