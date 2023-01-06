@@ -6,6 +6,7 @@ import { CreateUserForContactsTransition } from '@mm-services/transitions/create
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { UserContactService } from '@mm-services/user-contact.service';
+import { SessionService } from '@mm-services/session.service';
 
 const deepFreeze = obj => {
   Object
@@ -68,6 +69,7 @@ describe('Create User for Contacts Transition', () => {
   let createUserForContactsService;
   let userContactService;
   let transition;
+  let sessionService;
 
   beforeEach(() => {
     medicDb = { get: sinon.stub() };
@@ -82,6 +84,15 @@ describe('Create User for Contacts Transition', () => {
       getReplacedBy: sinon.stub(),
     };
     userContactService = { get: sinon.stub() };
+    sessionService = {
+      userCtx: sinon
+        .stub()
+        .returns({ name: 'username' }),
+      isOnlineOnly: sinon
+        .stub()
+        .returns(false),
+      logout: sinon.stub(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -89,6 +100,7 @@ describe('Create User for Contacts Transition', () => {
         { provide: DbService, useValue: dbService },
         { provide: CreateUserForContactsService, useValue: createUserForContactsService },
         { provide: UserContactService, useValue: userContactService },
+        { provide: SessionService, useValue: sessionService },
       ]
     });
 
