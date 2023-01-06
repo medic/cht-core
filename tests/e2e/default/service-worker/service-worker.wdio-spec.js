@@ -90,12 +90,8 @@ describe('Service worker cache', () => {
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
 
-    console.warn('<<<<< DEBUG TEST >>>>>>');
-    console.warn('cacheDetails.name -->', cacheDetails.name);
-    console.warn('cacheDetails.urls -->', cacheDetails.urls);
-    console.warn('<<<<< END DEBUG TEST >>>>>>');
     expect(cacheDetails.name.startsWith('sw-precache-v3-cache-')).to.be.true;
-    expect(cacheDetails.urls).to.have.members([
+    expect(cacheDetails.urls.sort()).to.have.members([
       '/',
       '/audio/alert.mp3',
       '/fontawesome-webfont.woff2',
@@ -123,7 +119,7 @@ describe('Service worker cache', () => {
       '/runtime.js',
       '/scripts.js',
       '/styles.css'
-    ]);
+    ].sort());
   });
 
   it('branding updates trigger login page refresh', async () => {
