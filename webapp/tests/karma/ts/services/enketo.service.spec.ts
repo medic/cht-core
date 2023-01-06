@@ -92,18 +92,6 @@ describe('Enketo service', () => {
     form = {
       validate: sinon.stub(),
       getDataStr: sinon.stub(),
-    };
-    AddAttachment = sinon.stub();
-    removeAttachment = sinon.stub();
-    EnketoForm = sinon.stub();
-    EnketoPrepopulationData = sinon.stub();
-    Search = sinon.stub();
-    LineageModelGenerator = { contact: sinon.stub() };
-    xmlFormGet = sinon.stub().resolves({ _id: 'abc' });
-    xmlFormGetWithAttachment = sinon.stub().resolves({ doc: { _id: 'abc', xml: '<form/>' } });
-    window.EnketoForm = EnketoForm;
-    window.URL.createObjectURL = createObjectURL;
-    EnketoForm.returns({
       view: {
         $: { on: sinon.stub() },
         html: document.createElement('div'),
@@ -115,7 +103,18 @@ describe('Enketo service', () => {
       },
       calc: { update: () => { } },
       output: { update: () => { } },
-    });
+    };
+    AddAttachment = sinon.stub();
+    removeAttachment = sinon.stub();
+    EnketoForm = sinon.stub();
+    EnketoPrepopulationData = sinon.stub();
+    Search = sinon.stub();
+    LineageModelGenerator = { contact: sinon.stub() };
+    xmlFormGet = sinon.stub().resolves({ _id: 'abc' });
+    xmlFormGetWithAttachment = sinon.stub().resolves({ doc: { _id: 'abc', xml: '<form/>' } });
+    window.EnketoForm = EnketoForm;
+    window.URL.createObjectURL = createObjectURL;
+    EnketoForm.returns(form);
     transitionsService = { applyTransitions: sinon.stub().resolvesArg(0) };
     translateService = {
       instant: sinon.stub().returnsArg(0),
@@ -241,6 +240,7 @@ describe('Enketo service', () => {
     });
 
     it('return form when everything works', () => {
+      expect(form.editStatus).to.be.undefined;
       UserContact.resolves({ contact_id: '123' });
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
@@ -255,6 +255,7 @@ describe('Enketo service', () => {
         expect(FileReader.utf8.args[0][0]).to.equal('<div>my form</div>');
         expect(FileReader.utf8.args[1][0]).to.equal(VISIT_MODEL);
         expect(enketoInit.callCount).to.equal(1);
+        expect(form.editStatus).to.equal(false);
         expect(dbGetAttachment.callCount).to.equal(2);
         expect(dbGetAttachment.args[0][0]).to.equal('form:myform');
         expect(dbGetAttachment.args[0][1]).to.equal('form.html');
