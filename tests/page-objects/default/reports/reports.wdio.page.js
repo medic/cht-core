@@ -9,6 +9,7 @@ const reportBodyDetails = () => $(reportBodyDetailsSelector);
 const reportTasks = () =>  $(`${reportBodyDetailsSelector} .scheduled-tasks`);
 const REPORT_BODY = '#reports-content .report-body';
 const reportBody = () => $(REPORT_BODY);
+const noReportSelectedLabel = () => $('.empty-selection');
 const selectedCaseId = () => $(`${reportBodyDetailsSelector} > ul > li > p > span > a`);
 const selectedCaseIdLabel = () => $(`${reportBodyDetailsSelector} ul > li > label > span`);
 const submitterPlace = () => $('.position a');
@@ -373,6 +374,7 @@ const deleteReport = async () => {
 module.exports = {
   getCurrentReportId,
   getLastSubmittedReportId,
+  noReportSelectedLabel,
   reportList,
   firstReport,
   submitterName,
