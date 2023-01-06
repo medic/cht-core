@@ -90,6 +90,10 @@ describe('Service worker cache', () => {
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
 
+    console.log('<<<<< DEBUG TEST >>>>>>');
+    console.log('cacheDetails.name -->', cacheDetails.name);
+    console.log('cacheDetails.urls -->', cacheDetails.urls);
+    console.log('<<<<< END DEBUG TEST >>>>>>');
     expect(cacheDetails.name.startsWith('sw-precache-v3-cache-')).to.be.true;
     expect(cacheDetails.urls).to.have.members([
       '/',
