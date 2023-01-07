@@ -80,7 +80,7 @@ describe('More Options Menu - Offline User', async () => {
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
     });
 
-    it('- Contact tab: no contact selected', async () => {
+    it('- Contact tab - no contact selected', async () => {
       await commonPage.goToPeople();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
@@ -88,7 +88,7 @@ describe('More Options Menu - Offline User', async () => {
       expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.false;
     });
 
-    it(' - Contact Tab : contact selected', async () => {
+    it(' - Contact Tab - contact selected', async () => {
       await commonPage.goToPeople(patient._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
@@ -96,7 +96,7 @@ describe('More Options Menu - Offline User', async () => {
       expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
     });
 
-    it(' - Contact Tab : with same facility_id', async () => {
+    it(' - Contact Tab - with same facility_id', async () => {
       await commonPage.goToPeople(offlineUser.place);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
@@ -152,7 +152,7 @@ describe('More Options Menu - Offline User', async () => {
 
     after(async () => await utils.revertSettings(true));
 
-    it(' - Contact Tab : contact selected', async () => {
+    it(' - Contact Tab - contact selected', async () => {
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText(contact.name);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
@@ -171,7 +171,7 @@ describe('More Options Menu - Offline User', async () => {
       await commonPage.closeReloadModal();
     });
     
-    it(' - Contact Tab : contact selected', async () => {
+    it(' - Contact Tab - contact selected', async () => {
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText(contact.name);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;

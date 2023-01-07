@@ -64,7 +64,7 @@ let smsReportId;
 
 describe('Online User', async () => {  
   
-  describe('Options disabled when no items: messages, contacts, people', async () => {
+  describe('Options disabled when no items - messages, contacts, people', async () => {
     before(async () => await loginPage.cookieLogin());
     after(async () => await commonPage.logout());
 
@@ -91,7 +91,7 @@ describe('Online User', async () => {
     });
   });
 
-  describe(' - Options enabled when there are items: messages, contacts, people', async () => {
+  describe(' - Options enabled when there are items', async () => {
     before(async () => {
       await utils.saveDocs([ ...places.values(), contact, patient]);
       let result = await utils.saveDoc(xmlReport);
@@ -103,7 +103,7 @@ describe('Online User', async () => {
       await sendMessage();    
     });
 
-    it('- Contact tab: no contact selected', async () => {
+    it('- Contact tab - no contact selected', async () => {
       await commonPage.goToPeople();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
@@ -111,7 +111,7 @@ describe('Online User', async () => {
       expect(await commonPage.isOptionVisible('delete', 'contacts')).to.be.false;
     });
 
-    it(' - Contact Tab : contact selected', async () => {
+    it(' - Contact Tab  - contact selected', async () => {
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText(contact.name);
       await (await contactPage.contentRow()).waitForDisplayed();
@@ -123,7 +123,7 @@ describe('Online User', async () => {
       expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
     });
 
-    it('- Reports tab: options enabled when XML report selected', async () => {
+    it('- Reports tab - options enabled when XML report selected', async () => {
       await reportPage.goToReportById(xmlReportId);
       await reportPage.reportBodyDetails().waitForDisplayed();      
       await commonPage.openMoreOptionsMenu();
@@ -132,7 +132,7 @@ describe('Online User', async () => {
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
     });
 
-    it('- Reports tab: Edit/export invisible when NON XML report selected', async () => {
+    it('- Reports tab - Edit/export invisible when NON XML report selected', async () => {
       await reportPage.goToReportById(smsReportId);
       await reportPage.reportBodyDetails().waitForDisplayed();      
       await commonPage.openMoreOptionsMenu();

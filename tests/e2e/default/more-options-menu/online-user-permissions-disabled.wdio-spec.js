@@ -71,7 +71,7 @@ describe('- permissions disabled', async () => {
 
     after(async () => await utils.revertSettings(true));
   
-    it(' - Contact Tab : contact selected', async () => {
+    it(' - Contact Tab - contact selected', async () => {
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText(contact.name);
       await commonPage.openMoreOptionsMenu();
@@ -106,7 +106,7 @@ describe('- permissions disabled', async () => {
 
     after(async () => await utils.revertSettings(true));
 
-    it(' - Contact Tab : contact selected', async () => {
+    it(' - Contact Tab - contact selected', async () => {
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText(contact.name);
       await commonPage.openMoreOptionsMenu();
@@ -129,7 +129,7 @@ describe('- permissions disabled', async () => {
     
     after(async () => await utils.revertSettings(true));
     
-    it(' - Contact Tab : contact selected', async () => {
+    it(' - Contact Tab - contact selected', async () => {
       await commonPage.goToPeople();
       await contactPage.selectLHSRowByText(contact.name);
       await commonPage.openMoreOptionsMenu();
