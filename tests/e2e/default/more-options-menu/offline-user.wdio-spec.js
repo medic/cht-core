@@ -153,8 +153,7 @@ describe('More Options Menu - Offline User', async () => {
     after(async () => await utils.revertSettings(true));
 
     it(' - Contact Tab - contact selected', async () => {
-      await commonPage.goToPeople();
-      await contactPage.selectLHSRowByText(contact.name);
+      await commonPage.goToPeople(contact._id);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
     });
   
@@ -172,8 +171,7 @@ describe('More Options Menu - Offline User', async () => {
     });
     
     it(' - Contact Tab - contact selected', async () => {
-      await commonPage.goToPeople();
-      await contactPage.selectLHSRowByText(contact.name);
+      await commonPage.goToPeople(contact._id);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
     });
   

@@ -1,6 +1,5 @@
 const uuid = require('uuid').v4;
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const reportPage = require('../../../page-objects/default/reports/reports.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const utils = require('../../../utils');
@@ -72,8 +71,7 @@ describe('- permissions disabled', async () => {
     after(async () => await utils.revertSettings(true));
   
     it(' - Contact Tab - contact selected', async () => {
-      await commonPage.goToPeople();
-      await contactPage.selectLHSRowByText(contact.name);
+      await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
       expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
@@ -107,8 +105,7 @@ describe('- permissions disabled', async () => {
     after(async () => await utils.revertSettings(true));
 
     it(' - Contact Tab - contact selected', async () => {
-      await commonPage.goToPeople();
-      await contactPage.selectLHSRowByText(contact.name);
+      await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('delete', 'contacts')).to.be.false;
     });
@@ -130,8 +127,7 @@ describe('- permissions disabled', async () => {
     after(async () => await utils.revertSettings(true));
     
     it(' - Contact Tab - contact selected', async () => {
-      await commonPage.goToPeople();
-      await contactPage.selectLHSRowByText(contact.name);
+      await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.false;
     });

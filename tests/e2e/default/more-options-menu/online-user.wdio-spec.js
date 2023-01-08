@@ -1,6 +1,5 @@
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const reportPage = require('../../../page-objects/default/reports/reports.wdio.page');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const reportFactory = require('../../../factories/cht/reports/generic-report');
@@ -115,11 +114,7 @@ describe('Online User', async () => {
     });
 
     it(' - Contact Tab  - contact selected', async () => {
-      await commonPage.goToPeople();
-      await contactPage.selectLHSRowByText(contact.name);
-      await (await contactPage.contentRow()).waitForDisplayed();
-      await (await contactPage.contentRow()).click();
-      await contactPage.waitForContactLoaded();
+      await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
       expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
