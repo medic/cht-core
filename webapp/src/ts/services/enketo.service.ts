@@ -302,6 +302,8 @@ export class EnketoService {
         this.overrideNavigationButtons(this.currentForm, wrapper);
         this.addPopStateHandler(this.currentForm, wrapper);
         this.forceRecalculate(this.currentForm);
+        // forceRecalculate can cause form to be marked as edited
+        this.currentForm.editStatus = false;
         this.setupNavButtons(wrapper, 0);
         return this.currentForm;
       });

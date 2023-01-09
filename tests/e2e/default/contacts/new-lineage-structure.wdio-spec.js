@@ -75,8 +75,16 @@ describe('Create new lineage structure', () => {
 
   it('should delete the primary contact of health facility', async () => {
     await contactPage.selectLHSRowByText(area);
-    await contactPage.deletePerson(centerContact);
-    chai.expect(await contactPage.getAllRHSPeopleNames()).to.not.have.members([centerContact]);
+    await contactPage.waitForContactLoaded();
+    chai.expect(await contactPage.getAllRHSPeopleNames()).to.have.members([ areaContact ]);
+
+    await contactPage.selectLHSRowByText(areaContact);
+    await contactPage.waitForContactLoaded();
+    await contactPage.deletePerson();
+
+    await contactPage.selectLHSRowByText(area);
+    await contactPage.waitForContactLoaded();
+    chai.expect(await contactPage.getAllRHSPeopleNames()).to.not.have.members([ areaContact ]);
   });
 
   it('should edit the name of the CHW area', async () => {

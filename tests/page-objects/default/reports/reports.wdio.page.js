@@ -9,6 +9,7 @@ const reportBodyDetails = () => $(reportBodyDetailsSelector);
 const reportTasks = () =>  $(`${reportBodyDetailsSelector} .scheduled-tasks`);
 const REPORT_BODY = '#reports-content .report-body';
 const reportBody = () => $(REPORT_BODY);
+const noReportSelectedLabel = () => $('.empty-selection');
 const selectedCaseId = () => $(`${reportBodyDetailsSelector} > ul > li > p > span > a`);
 const selectedCaseIdLabel = () => $(`${reportBodyDetailsSelector} ul > li > label > span`);
 const submitterPlace = () => $('.position a');
@@ -21,7 +22,9 @@ const reportsByUUID = (uuid) => $$(`${REPORTS_LIST_ID} li.content-row[data-recor
 const reportRowSelector = `${REPORTS_LIST_ID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
-const editReportButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
+const editReportButton = () => $('.mat-menu-content .mat-menu-item[test-id="edit-reports"]');
+const deleteButton = () => $('.mat-menu-content .mat-menu-item[test-id="delete-reports"]');
+const exportButton = () => $('.mat-menu-content .mat-menu-item[test-id="export-reports"]');
 
 const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
 const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
@@ -346,6 +349,8 @@ const openReport = async (reportId) => {
 const editReport = async (reportId) => {
   await commonElements.goToReports();
   await openReport(reportId);
+  await commonElements.openMoreOptionsMenu();
+  await (await editReportButton()).waitForClickable();
   await (await editReportButton()).click();
   await (await formTitle()).waitForDisplayed();
 };
@@ -354,9 +359,22 @@ const fieldByIndex = async (index) => {
   return await (await $(`${reportBodyDetailsSelector} li:nth-child(${index}) p`)).getText();
 };
 
+const exportReports = async () => {
+  await commonElements.openMoreOptionsMenu();
+  await (await exportButton()).waitForClickable();
+  await (await exportButton()).click();
+};
+
+const deleteReport = async () => {
+  await commonElements.openMoreOptionsMenu();
+  await (await deleteButton()).waitForClickable();
+  await (await deleteButton()).click();
+};
+
 module.exports = {
   getCurrentReportId,
   getLastSubmittedReportId,
+  noReportSelectedLabel,
   reportList,
   firstReport,
   submitterName,
@@ -406,7 +424,10 @@ module.exports = {
   resetFilter,
   openReport,
   reportTasks,
+  editReportButton,
   editReport,
+  deleteReport,
+  exportReports,
   fieldByIndex,
   reportBodyDetails,
   openSelectedReport,

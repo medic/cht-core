@@ -1381,6 +1381,27 @@ mm-search-bar {
   }
 }
 
+.more-options-menu-container {
+  .mat-icon[fonticon="fa-ellipsis-v"] {
+    height: 24px;
+    &:before {
+      font-size: @font-extra-extra-large;
+    }
+  }
+}
+
+.filters.tab-bar .inner {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  mm-search-bar,
+  contacts-filters,
+  reports-filters {
+    flex-grow: 2;
+  }
+}
+
 @media (max-width: @content-width) {
   mm-search-bar {
     padding: 4px 8px;
@@ -1388,6 +1409,10 @@ mm-search-bar {
 }
 
 @media (max-width: @media-mobile) {
+  .more-options-menu-container {
+    padding: 0 5px;
+  }
+
   #mobile-detection {
     display: inline;
   }
@@ -1443,7 +1468,8 @@ mm-search-bar {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      width: 100%;
+      width: calc(100vw - 100px); // Give space to "more options" menu
+      text-align: left;
     }
     .dropdown,
     .navigation .mm-button {
