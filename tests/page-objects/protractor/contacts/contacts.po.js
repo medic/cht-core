@@ -15,7 +15,6 @@ const rows = element.all(by.css('#contacts-list .content-row'));
 const dateOfBirthField = element(by.css('[placeholder="yyyy-mm-dd"]'));
 const contactSexField = element(by.css('[data-name="/data/contact/sex"][value="female"]'));
 const peopleRows = element.all(by.css('.right-pane .card.children li'));
-const deleteContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-trash-o'));
 const editContact = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('fa fa-pencil'));
 const newActions = element(by.css('.detail-actions:not(.ng-hide)')).element(by.className('dropdown-toggle'));
 const contactsTab = element(by.css('#contacts-tab'));
@@ -171,11 +170,6 @@ module.exports = {
     // this element shows up underneath the actionbar, so the actionbar can intercept the click
     await browser.executeScript(`arguments[0].scrollIntoView({block: "center"});`, peopleRow);
     await helper.clickElementNative(peopleRow);
-  },
-
-  deleteContactByName: async (contactName) => {
-    await module.exports.selectContactByName(contactName);
-    await helper.clickElementNative(deleteContact);
   },
 
   getReportsFilters: () => element.all(by.css('.card.reports .table-filter a')),
