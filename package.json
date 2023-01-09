@@ -148,10 +148,6 @@
       "maxSize": "950 kB"
     },
     {
-      "path": "./api/build/static/webapp/polyfills-es5.js",
-      "maxSize": "55 kB"
-    },
-    {
       "path": "./api/build/static/webapp/polyfills.js",
       "maxSize": "20 kB"
     },

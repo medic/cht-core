@@ -114,7 +114,6 @@ describe('Service worker cache', () => {
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
       '/medic/login',
-      '/polyfills-es5.js',
       '/polyfills.js',
       '/runtime.js',
       '/scripts.js',
