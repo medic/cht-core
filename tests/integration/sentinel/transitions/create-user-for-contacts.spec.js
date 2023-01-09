@@ -61,18 +61,6 @@ const updateUserPassword = (username, password) => utils.request({
   body: { password }
 });
 
-const expectError = async (errorPattern) => {
-  // Error saved on the contact
-  const originalPersonUpdated = await utils.getDoc(ORIGINAL_PERSON._id);
-  assert.lengthOf(originalPersonUpdated.errors, 1);
-  const [{ code, message }] = originalPersonUpdated.errors;
-  assert.equal(code, 'create_user_for_contacts_error\'');
-  assert.match(message, errorPattern);
-  // New user not created
-  const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-  assert.isEmpty(newUserSettings);
-};
-
 describe('create_user_for_contacts', () => {
   beforeEach(() => utils.saveDoc(CLINIC));
 
@@ -82,7 +70,64 @@ describe('create_user_for_contacts', () => {
     newUsers.length = 0;
   });
 
+  it('disables transitions if create_user_for_contacts is enabled but token_login is not enabled', async () => {
+    const tokenLoginErrorPattern =
+      /Configuration error\. Token login must be enabled to use the create_user_for_contacts transition\./;
+    const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
+
+    const collectLogs = await utils.collectSentinelLogs(tokenLoginErrorPattern, transitionsDisabledPattern);
+    await utils.updateSettings(getSettings({ token_login: { enabled: false } }), 'sentinel');
+    const logs = await collectLogs();
+    assert.exists(logs.find(log => log.match(tokenLoginErrorPattern)));
+    assert.exists(logs.find(log => log.match(transitionsDisabledPattern)));
+  });
+
+  it('disables transitions if create_user_for_contacts is enabled but an app_url is not set', async () => {
+    const appUrlErrorPattern =
+      /Configuration error\. The app_url must be defined to use the create_user_for_contacts transition\./;
+    const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
+
+    const collectLogs = await utils.collectSentinelLogs(appUrlErrorPattern, transitionsDisabledPattern);
+    await utils.updateSettings(getSettings({ app_url: '' }), 'sentinel');
+    const logs = await collectLogs();
+    assert.exists(logs.find(log => log.match(appUrlErrorPattern)));
+    assert.exists(logs.find(log => log.match(transitionsDisabledPattern)));
+  });
+
+  it('does nothing when no users should be created for the contact', async () => {
+    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
+    await utils.saveDoc(NEW_PERSON);
+    const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
+    originalContact.name = 'Updated Person';
+    await utils.saveDoc(originalContact);
+    await sentinelUtils.waitForSentinel(originalContact._id);
+    const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+    assert.isUndefined(transitions.create_user_for_contacts);
+
+    // Original contact not updated
+    const originalPerson = await utils.getDoc(ORIGINAL_PERSON._id);
+    assert.isUndefined(originalPerson.errors);
+    // New user not created
+    const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
+    assert.isEmpty(newUserSettings);
+  });
+
   describe('user replace', () => {
+    const expectError = async (errorPattern) => {
+      // Error saved on the contact
+      const originalPersonUpdated = await utils.getDoc(ORIGINAL_PERSON._id);
+      assert.lengthOf(originalPersonUpdated.errors, 1);
+      const [{ code, message }] = originalPersonUpdated.errors;
+      assert.equal(code, 'create_user_for_contacts_error\'');
+      assert.match(message, errorPattern);
+      // New user not created
+      const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
+      assert.isEmpty(newUserSettings);
+    };
+
     it('replaces user for contact', async () => {
       await utils.updateSettings(getSettings(), 'sentinel');
       await utils.createUsers([ORIGINAL_USER]);
@@ -291,30 +336,6 @@ describe('create_user_for_contacts', () => {
       assert.isEmpty(newUserSettings);
     });
 
-    it('disables transitions if replace_user is enabled but token_login is not enabled', async () => {
-      const tokenLoginErrorPattern =
-        /Configuration error\. Token login must be enabled to use the create_user_for_contacts transition\./;
-      const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
-
-      const collectLogs = await utils.collectSentinelLogs(tokenLoginErrorPattern, transitionsDisabledPattern);
-      await utils.updateSettings(getSettings({ token_login: { enabled: false } }), 'sentinel');
-      const logs = await collectLogs();
-      assert.exists(logs.find(log => log.match(tokenLoginErrorPattern)));
-      assert.exists(logs.find(log => log.match(transitionsDisabledPattern)));
-    });
-
-    it('disables transitions if replace_user is enabled but an app_url is not set', async () => {
-      const appUrlErrorPattern =
-        /Configuration error\. The app_url must be defined to use the create_user_for_contacts transition\./;
-      const transitionsDisabledPattern = /Transitions are disabled until the above configuration errors are fixed\./;
-
-      const collectLogs = await utils.collectSentinelLogs(appUrlErrorPattern, transitionsDisabledPattern);
-      await utils.updateSettings(getSettings({ app_url: '' }), 'sentinel');
-      const logs = await collectLogs();
-      assert.exists(logs.find(log => log.match(appUrlErrorPattern)));
-      assert.exists(logs.find(log => log.match(transitionsDisabledPattern)));
-    });
-
     it('does not replace user when the new contact does not exist', async () => {
       const missingPersonPattern = /Failed to find person/;
       const collectLogs = await utils.collectSentinelLogs(missingPersonPattern);
@@ -496,27 +517,6 @@ describe('create_user_for_contacts', () => {
       assert.isEmpty(newUserSettings);
     });
 
-    it('does not replace user when the contact is not being replaced', async () => {
-      await utils.updateSettings(getSettings(), 'sentinel');
-      await utils.createUsers([ORIGINAL_USER]);
-      newUsers.push(ORIGINAL_USER.username);
-      await utils.saveDoc(NEW_PERSON);
-      const originalContact = await utils.getDoc(ORIGINAL_PERSON._id);
-      originalContact.name = 'Updated Person';
-      await utils.saveDoc(originalContact);
-      await sentinelUtils.waitForSentinel(originalContact._id);
-      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
-
-      assert.isUndefined(transitions.create_user_for_contacts);
-
-      // Original contact not updated
-      const originalPerson = await utils.getDoc(ORIGINAL_PERSON._id);
-      assert.isUndefined(originalPerson.errors);
-      // New user not created
-      const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
-      assert.isEmpty(newUserSettings);
-    });
-
     it('does not replace user when the contact being replaced is not a person', async () => {
       await utils.updateSettings(getSettings(), 'sentinel');
       await utils.createUsers([ORIGINAL_USER]);
@@ -535,6 +535,255 @@ describe('create_user_for_contacts', () => {
       assert.isUndefined(originalPerson.errors);
       // New user not created
       const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
+      assert.isEmpty(newUserSettings);
+    });
+  });
+
+  describe('user add', () => {
+    const expectError = async (errorPattern) => {
+      // Error saved on the contact
+      const originalPersonUpdated = await utils.getDoc(NEW_PERSON._id);
+      assert.lengthOf(originalPersonUpdated.errors, 1);
+      const [{ code, message }] = originalPersonUpdated.errors;
+      assert.equal(code, 'create_user_for_contacts_error\'');
+      assert.match(message, errorPattern);
+      // New user not created
+      const newUserSettings = await utils.getUserSettings({ contactId: NEW_PERSON._id });
+      assert.isEmpty(newUserSettings);
+    };
+
+    it('adds user for new contact with multiple roles', async () => {
+      await utils.updateSettings(getSettings(), 'sentinel');
+
+      const originalContact = Object.assign(
+        {
+          roles: ['chw', 'other-role'],
+          user_for_contact: { add: { status: 'READY' }, }
+        },
+        NEW_PERSON
+      );
+      await utils.saveDoc(originalContact);
+      await sentinelUtils.waitForSentinel(originalContact._id);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+      // Transition successful
+      assert.isTrue(transitions.create_user_for_contacts.ok);
+      // Contact updated
+      const updatedContact = await utils.getDoc(originalContact._id);
+      assert.equal(updatedContact.user_for_contact.add.status, 'COMPLETE');
+
+      // New user created
+      const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: originalContact._id });
+      assert.isEmpty(additionalUsers);
+      newUsers.push(newUserSettings.name);
+      assert.deepInclude(newUserSettings, {
+        roles: originalContact.roles,
+        phone: originalContact.phone,
+        facility_id: originalContact.parent._id,
+        contact_id: originalContact._id,
+        fullname: originalContact.name,
+      });
+      assert.isTrue(newUserSettings.token_login.active);
+      assert.match(newUserSettings._id, /^org\.couchdb\.user:new-person-\d\d\d\d/);
+      assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
+      // Login token sent
+      const queuedMsgs = await getQueuedMessages();
+      assert.lengthOf(queuedMsgs, 1);
+      assert.deepInclude(queuedMsgs[0], {
+        type: 'token_login',
+        user: newUserSettings._id
+      });
+      assert.equal(queuedMsgs[0].tasks[0].messages[0].to, NEW_PERSON.phone);
+    });
+
+    // TODO Need to add support for this scenario
+    it.skip('adds user for new contact with single role', async () => {
+      await utils.updateSettings(getSettings(), 'sentinel');
+
+      const originalContact = Object.assign(
+        {
+          role: 'chw',
+          user_for_contact: { add: { status: 'READY' }, }
+        },
+        NEW_PERSON
+      );
+      await utils.saveDoc(originalContact);
+      await sentinelUtils.waitForSentinel(originalContact._id);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+      // Transition successful
+      assert.isTrue(transitions.create_user_for_contacts.ok);
+      // Contact updated
+      const updatedContact = await utils.getDoc(originalContact._id);
+      assert.equal(updatedContact.user_for_contact.add.status, 'COMPLETE');
+
+      // New user created
+      const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: originalContact._id });
+      assert.isEmpty(additionalUsers);
+      newUsers.push(newUserSettings.name);
+      assert.deepInclude(newUserSettings, {
+        roles: [originalContact.role],
+        phone: originalContact.phone,
+        facility_id: originalContact.parent._id,
+        contact_id: originalContact._id,
+        fullname: originalContact.name,
+      });
+      assert.isTrue(newUserSettings.token_login.active);
+      assert.match(newUserSettings._id, /^org\.couchdb\.user:new-person-\d\d\d\d/);
+      assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
+      // Login token sent
+      const queuedMsgs = await getQueuedMessages();
+      assert.lengthOf(queuedMsgs, 1);
+      assert.deepInclude(queuedMsgs[0], {
+        type: 'token_login',
+        user: newUserSettings._id
+      });
+      assert.equal(queuedMsgs[0].tasks[0].messages[0].to, NEW_PERSON.phone);
+    });
+
+    it('does not add user when transition is disabled', async () => {
+      await utils.updateSettings(getSettings({ transitions: { create_user_for_contacts: false } }), 'sentinel');
+
+      const originalContact = Object.assign(
+        {
+          roles: ['chw', 'other-role'],
+          user_for_contact: { add: { status: 'READY' }, }
+        },
+        NEW_PERSON
+      );
+      await utils.saveDoc(originalContact);
+      await sentinelUtils.waitForSentinel(originalContact._id);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+      assert.isEmpty(Object.keys(transitions));
+      const newUserSettings = await utils.getUserSettings({ contactId: originalContact._id });
+      assert.isEmpty(newUserSettings);
+    });
+
+    it('does not add user when the new contact does not have a role', async () => {
+      const missingRolePattern = /Missing required fields: type or roles/;
+      const collectLogs = await utils.collectSentinelLogs(missingRolePattern);
+
+      await utils.updateSettings(getSettings(), 'sentinel');
+
+      const originalContact = {
+        ...NEW_PERSON,
+        user_for_contact: { add: { status: 'READY' }, },
+      };
+      await utils.saveDoc(originalContact);
+      await sentinelUtils.waitForSentinel(originalContact._id);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+      assert.isFalse(transitions.create_user_for_contacts.ok);
+      assert.isNotEmpty(await collectLogs());
+      await expectError(missingRolePattern);
+    });
+
+    it('does not add user when the new contact does not have a phone', async () => {
+      const missingPhonePattern = /Missing required fields: phone/;
+      const collectLogs = await utils.collectSentinelLogs(missingPhonePattern);
+
+      await utils.updateSettings(getSettings(), 'sentinel');
+
+      const originalContact = {
+        ...NEW_PERSON,
+        roles: ['chw', 'other-role'],
+        user_for_contact: { add: { status: 'READY' }, },
+        phone: undefined
+      };
+      await utils.saveDoc(originalContact);
+      await sentinelUtils.waitForSentinel(originalContact._id);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+      assert.isFalse(transitions.create_user_for_contacts.ok);
+      assert.isNotEmpty(await collectLogs());
+      await expectError(missingPhonePattern);
+    });
+
+    it('does not add user when the new contact has an invalid phone', async () => {
+      const invalidPhonePattern = /A valid phone number is required for SMS login/;
+      const collectLogs = await utils.collectSentinelLogs(invalidPhonePattern);
+
+      await utils.updateSettings(getSettings(), 'sentinel');
+
+      const originalContact = {
+        ...NEW_PERSON,
+        roles: ['chw', 'other-role'],
+        user_for_contact: { add: { status: 'READY' }, },
+        phone: 12345
+      };
+      await utils.saveDoc(originalContact);
+      await sentinelUtils.waitForSentinel(originalContact._id);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+      assert.isFalse(transitions.create_user_for_contacts.ok);
+      assert.isNotEmpty(await collectLogs());
+      await expectError(invalidPhonePattern);
+    });
+
+    it('does not add user when the new contact does not have a name', async () => {
+      const missingNamePattern = /Replacement contact \[new_person] must have a name\./;
+      const collectLogs = await utils.collectSentinelLogs(missingNamePattern);
+
+      await utils.updateSettings(getSettings(), 'sentinel');
+
+      const originalContact = {
+        ...NEW_PERSON,
+        roles: ['chw', 'other-role'],
+        user_for_contact: { add: { status: 'READY' }, },
+        name: undefined
+      };
+      await utils.saveDoc(originalContact);
+      await sentinelUtils.waitForSentinel(originalContact._id);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+      assert.isFalse(transitions.create_user_for_contacts.ok);
+      assert.isNotEmpty(await collectLogs());
+      await expectError(missingNamePattern);
+    });
+
+    it('does not add user when the add status is not READY', async () => {
+      await utils.updateSettings(getSettings(), 'sentinel');
+      const originalContact = {
+        ...NEW_PERSON,
+        roles: ['chw', 'other-role'],
+        user_for_contact: { add: { status: 'COMPLETE' }, },
+      };
+      await utils.saveDoc(originalContact);
+      await sentinelUtils.waitForSentinel(originalContact._id);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+      assert.isUndefined(transitions.create_user_for_contacts);
+
+      // Original contact not updated
+      const updatedContact = await utils.getDoc(originalContact._id);
+      assert.deepEqualExcluding(originalContact, updatedContact, ['_rev']);
+      // New user not created
+      const newUserSettings = await utils.getUserSettings({ contactId: originalContact._id });
+      assert.isEmpty(newUserSettings);
+    });
+
+    it('does not add user when the contact being added is not a person', async () => {
+      await utils.updateSettings(getSettings(), 'sentinel');
+      await utils.createUsers([ORIGINAL_USER]);
+      newUsers.push(ORIGINAL_USER.username);
+      await utils.saveDoc(NEW_PERSON);
+      const clinic = await utils.getDoc(CLINIC._id);
+      const originalContact = {
+        ...clinic,
+        user_for_contact: { add: { status: 'READY' }, },
+      };
+      await utils.saveDoc(originalContact);
+      await sentinelUtils.waitForSentinel(originalContact._id);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+      assert.isUndefined(transitions.create_user_for_contacts);
+
+      // Original contact not updated
+      const updatedContact = await utils.getDoc(originalContact._id);
+      assert.deepEqualExcluding(originalContact, updatedContact, ['_rev']);
+      // New user not created
+      const newUserSettings = await utils.getUserSettings({ contactId: originalContact._id });
       assert.isEmpty(newUserSettings);
     });
   });
