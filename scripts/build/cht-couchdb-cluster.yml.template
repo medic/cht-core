@@ -12,7 +12,7 @@ services:
       - "COUCHDB_SECRET=${COUCHDB_SECRET}"
       - "COUCHDB_UUID=${COUCHDB_UUID}"
       - "SVC_NAME=${SVC1_NAME:-couchdb-1.local}"
-      - "CLUSTER_PEER_IPS=couchdb-2.local,couchdb-3.local"
+      - "CLUSTER_PEER_IPS=${CLUSTER_PEER_IPS:-couchdb-2.local,couchdb-3.local}"
       - "COUCHDB_LOG_LEVEL=${COUCHDB_LOG_LEVEL:-error}"
     logging:
       driver: "local"
