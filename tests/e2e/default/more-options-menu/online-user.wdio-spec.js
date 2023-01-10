@@ -104,15 +104,7 @@ describe('Online User', async () => {
       await loginPage.login(onlineUser);
       await sendMessage();    
     });
-
-    // it('- Contact tab - no contact selected', async () => {
-    //   await commonPage.goToPeople();
-    //   await commonPage.openMoreOptionsMenu();
-    //   expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
-    //   expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.false;
-    //   expect(await commonPage.isOptionVisible('delete', 'contacts')).to.be.false;
-    // });
-
+    
     it(' - Contact Tab  - contact selected', async () => {
       await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
