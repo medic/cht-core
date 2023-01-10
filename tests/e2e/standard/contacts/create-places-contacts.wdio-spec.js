@@ -16,10 +16,7 @@ describe('Creating contacts with standard config. ', () => {
 
   it('should create a new district hospital', async () => {
     await commonPage.goToPeople();
-    await contactPage.addPlace({ 
-      type: PLACE_TYPES.DISTRICT, 
-      placeName: DISTRICT_NAME, 
-      contactName: DISTRICT_NAME + CONTACT_NAME_SUFFIX });
+    await contactPage.addPlace(PLACE_TYPES.DISTRICT, DISTRICT_NAME, DISTRICT_NAME + CONTACT_NAME_SUFFIX);
     await commonPage.waitForPageLoaded();
     const primaryContactName = await contactPage.contactPageDefault.getPrimaryContactName();
     const contactCardText = await contactPage.contactPageDefault.getContactCardText();
@@ -30,10 +27,7 @@ describe('Creating contacts with standard config. ', () => {
   it('should create a new health center in the district hospital', async () => {
     await commonPage.goToPeople();
     await contactPage.contactPageDefault.selectLHSRowByText(DISTRICT_NAME);
-    await contactPage.addPlace({ 
-      type: PLACE_TYPES.HEALTH_CENTER, 
-      placeName: HEALTH_CENTER_NAME, 
-      contactName: HEALTH_CENTER_NAME + CONTACT_NAME_SUFFIX });
+    await contactPage.addPlace(PLACE_TYPES.HEALTH_CENTER, HEALTH_CENTER_NAME, HEALTH_CENTER_NAME + CONTACT_NAME_SUFFIX);
     await commonPage.waitForPageLoaded();
     const primaryContactName = await contactPage.contactPageDefault.getPrimaryContactName();
     const contactCardText = await contactPage.contactPageDefault.getContactCardText();
@@ -44,10 +38,7 @@ describe('Creating contacts with standard config. ', () => {
   it('should create a new clinic in the health center', async () => {
     await commonPage.goToPeople();
     await contactPage.contactPageDefault.selectLHSRowByText(HEALTH_CENTER_NAME);
-    await contactPage.addPlace({ 
-      type: PLACE_TYPES.CLINIC, 
-      placeName: CLINIC_NAME, 
-      contactName: CLINIC_NAME + CONTACT_NAME_SUFFIX });
+    await contactPage.addPlace(PLACE_TYPES.CLINIC, CLINIC_NAME, CLINIC_NAME + CONTACT_NAME_SUFFIX);
     await commonPage.waitForPageLoaded();
     const primaryContactName = await contactPage.contactPageDefault.getPrimaryContactName();
     const contactCardText = await contactPage.contactPageDefault.getContactCardText();
