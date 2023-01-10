@@ -6,6 +6,7 @@ const reportFactory = require('../../../factories/cht/reports/generic-report');
 const personFactory = require('../../../factories/cht/contacts/person');
 const uuid = require('uuid').v4;
 const utils = require('../../../utils');
+const { USERNAME } = require('../../../constants');
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 const health_center = places.get('health_center');
@@ -116,7 +117,7 @@ describe('Online User', async () => {
   describe(' - Options enabled when there are items', async () => {
     before(async () => {
       //await utils.saveDocs([ ...places.values(), contact, patient]);
-      await updateUser('medic', { place: district_hospital._id, contact: contact._id });
+      await updateUser(USERNAME, { place: district_hospital._id, contact: contact._id });
       let result = await utils.saveDoc(xmlReport);
       xmlReportId = result.id;
       result = await utils.saveDoc(smsReport);
