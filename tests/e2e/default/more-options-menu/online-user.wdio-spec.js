@@ -6,11 +6,11 @@ const reportFactory = require('../../../factories/cht/reports/generic-report');
 const personFactory = require('../../../factories/cht/contacts/person');
 const uuid = require('uuid').v4;
 const utils = require('../../../utils');
-const { USERNAME } = require('../../../constants');
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 const health_center = places.get('health_center');
 const district_hospital = places.get('district_hospital');
+const userFactory = require('../../../factories/cht/users/users');
 
 const contact = personFactory.build({
   _id: uuid(),
@@ -40,6 +40,13 @@ const smsReport = reportFactory.build(
   },
 );
 
+const onlineUser = userFactory.build({
+  username: 'onlineuser',
+  roles:['program-officer'],
+  place: district_hospital._id,
+  contact: contact._id,
+});
+
 const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   await utils.request({
     method: 'POST',
@@ -51,12 +58,6 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   });  
 };
 
-const updateUser = (username, data) => utils.request({
-  path: `/api/v1/users/${username}`,
-  method: 'POST',
-  body: data 
-});
-
 let xmlReportId;
 let smsReportId;
 
@@ -64,6 +65,7 @@ describe('Online User', async () => {
   
   describe('Options disabled when no items - messages, contacts, people', async () => {
     before(async () => await loginPage.cookieLogin());
+    after(async () => await browser.reloadSession());
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
@@ -102,7 +104,9 @@ describe('Online User', async () => {
 
   describe(' - Options enabled when there are items', async () => {
     before(async () => {
-      await updateUser(USERNAME, { place: district_hospital._id, contact: contact._id });
+      await utils.createUsers([onlineUser]);
+      await browser.url('/');
+      await loginPage.login(onlineUser);
       let result = await utils.saveDoc(xmlReport);
       xmlReportId = result.id;
       result = await utils.saveDoc(smsReport);
