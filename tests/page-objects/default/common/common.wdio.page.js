@@ -24,6 +24,7 @@ const activeSnackbar = () => $('#snackbar.active');
 const inactiveSnackbar = () => $('#snackbar:not(.active)');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
+const optionSelector = (action, item) => $(`.mat-menu-content .mat-menu-item[test-id="${action}-${item}"]`);
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
@@ -35,13 +36,11 @@ const openMoreOptionsMenu = async () => {
 };
 
 const isOptionEnabled = async (action, item) => {
-  const element = await $(`.mat-menu-content .mat-menu-item[test-id="${action}-${item}"]`);
-  return await element.isEnabled();
+  return await (await optionSelector(action, item)).isEnabled();
 };
 
-const isOptionVisible= async (action, item) => {
-  const element = await $(`.mat-menu-content .mat-menu-item[test-id="${action}-${item}"]`);
-  return await element.isDisplayed();
+const isOptionVisible = async (action, item) => {
+  return await (await optionSelector(action, item)).isDisplayed();
 };
 
 const isMessagesListPresent = () => {
