@@ -58,6 +58,8 @@
       <p ng-hide="currentDeploy" translate>instance.upgrade.no_details</p>
       <dl ng-show="currentDeploy" class="horizontal">
         <dt translate>instance.upgrade.version</dt>
+        <dd>{{currentDeploy | buildVersion:true}}</dd>
+        <dt translate>instance.upgrade.build.version</dt>
         <dd>{{currentDeploy | buildVersion}}</dd>
         <dt translate>instance.upgrade.deployed_by</dt>
         <dd>{{currentDeploy.user}}</dd>
