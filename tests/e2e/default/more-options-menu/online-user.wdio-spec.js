@@ -10,7 +10,7 @@ const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 const health_center = places.get('health_center');
 const district_hospital = places.get('district_hospital');
-const userFactory = require('../../../factories/cht/users/users');
+//const userFactory = require('../../../factories/cht/users/users');
 
 const contact = personFactory.build({
   _id: uuid(),
@@ -28,12 +28,12 @@ const patient = personFactory.build({
   _id: uuid(),
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
-const onlineUser = userFactory.build({
-  username: 'onlineuser',
-  roles: [ 'program_officer' ],
-  place: district_hospital._id,
-  contact: contact._id,
-});
+// const onlineUser = userFactory.build({
+//   username: 'onlineuser',
+//   roles: [ 'program_officer' ],
+//   place: district_hospital._id,
+//   contact: contact._id,
+// });
 
 const xmlReport = reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
 const smsReport = reportFactory.build(
@@ -57,6 +57,12 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   });  
 };
 
+const updateUser = (username, data) => utils.request({
+  path: `/api/v1/users/${username}`,
+  method: 'POST',
+  body: data 
+});
+
 let xmlReportId;
 let smsReportId;
 
@@ -64,10 +70,6 @@ describe('Online User', async () => {
   
   describe('Options disabled when no items - messages, contacts, people', async () => {
     before(async () => await loginPage.cookieLogin());
-    after(async () => {
-      await browser.reloadSession();
-      await browser.url('/');
-    });
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
@@ -92,16 +94,45 @@ describe('Online User', async () => {
     });
   });
 
+  describe(' - Contact tab - user has no contact ', async () => {
+    before(async () => await utils.saveDocs([ ...places.values(), contact, patient]));
+    //updateUser('medic', { place: district_hospital._id, contact: contact._id });
+
+    // after(async () => {
+    //   // await browser.reloadSession();
+    //   // await browser.url('/');
+    //   await updateUser('medic', { place: district_hospital._id, contact: contact._id });
+    // });
+
+    it('- Contact tab - no contact selected', async () => {
+      await commonPage.goToPeople();
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
+      expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.false;
+      expect(await commonPage.isOptionVisible('delete', 'contacts')).to.be.false;
+    });
+  });
+
   describe(' - Options enabled when there are items', async () => {
     before(async () => {
-      await utils.saveDocs([ ...places.values(), contact, patient]);
+      //await utils.saveDocs([ ...places.values(), contact, patient]);
+      await updateUser('medic', { place: district_hospital._id, contact: contact._id });
       let result = await utils.saveDoc(xmlReport);
       xmlReportId = result.id;
       result = await utils.saveDoc(smsReport);
       smsReportId = result.id;
-      await utils.createUsers([onlineUser]);
-      await loginPage.login(onlineUser);
+      // await utils.createUsers([onlineUser]);
+      // await loginPage.login(onlineUser);
+      //updateUser('medic', { place: district_hospital._id, contact: contact._id });
       await sendMessage();    
+    });
+
+    it('- Contact tab - no contact selected and user has no contact', async () => {
+      await commonPage.goToPeople();
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isOptionVisible('export', 'contacts')).to.be.false;
+      expect(await commonPage.isOptionVisible('edit', 'contacts')).to.be.false;
+      expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.false;
     });
 
     it(' - Contact Tab  - contact selected', async () => {
