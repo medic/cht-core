@@ -49,7 +49,7 @@ describe('Create new lineage structure', () => {
 
   it('Create new person', async () => {
     await contactPage.selectLHSRowByText(household);
-    chai.expect(await contactPage.addPerson('James')).to.equal('James');
+    chai.expect(await contactPage.addPerson({ name: 'James' })).to.equal('James');
   });
 
   it('should edit a person with a phone number', async () => {
@@ -57,7 +57,7 @@ describe('Create new lineage structure', () => {
 
     const name = 'Padishah Emperor';
     const phone = '+40755789789';
-    chai.expect(await contactPage.addPerson(name, { phone })).to.equal(name);
+    chai.expect(await contactPage.addPerson({ name, phone })).to.equal(name);
     chai.expect(await contactPage.getContactSummaryField('person.field.phone')).to.equal(phone);
 
     const updatedName = 'Paul Atreides';
@@ -68,7 +68,7 @@ describe('Create new lineage structure', () => {
   it('should edit a name of the health facility', async () => {
     await contactPage.selectLHSRowByText(centerName);
     const name = 'Georgiana';
-    chai.expect(await contactPage.addPerson(name)).to.equal(name);
+    chai.expect(await contactPage.addPerson({ name })).to.equal(name);
     const updatedName = 'Karina';
     chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
   });
@@ -90,7 +90,7 @@ describe('Create new lineage structure', () => {
   it('should edit the name of the CHW area', async () => {
     await contactPage.selectLHSRowByText(area);
     const name = 'Paul Luca';
-    chai.expect(await contactPage.addPerson(name)).to.equal(name);
+    chai.expect(await contactPage.addPerson({ name })).to.equal(name);
     const updatedName = 'Cora Mi';
     chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
   });
@@ -98,7 +98,7 @@ describe('Create new lineage structure', () => {
   it('should edit the name of the Family', async () => {
     await contactPage.selectLHSRowByText(household);
     const name = 'Sumeria';
-    chai.expect(await contactPage.addPerson(name)).to.equal(name);
+    chai.expect(await contactPage.addPerson({ name })).to.equal(name);
     const updatedName = 'Kaleb';
     chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
   });
