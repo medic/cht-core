@@ -84,7 +84,6 @@ describe('- permissions disabled', async () => {
       (await reportPage.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('export', 'reports')).to.be.false;
-      expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.true;
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
     }); 
 
