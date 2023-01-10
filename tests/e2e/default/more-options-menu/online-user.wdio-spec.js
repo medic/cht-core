@@ -6,7 +6,6 @@ const reportFactory = require('../../../factories/cht/reports/generic-report');
 const personFactory = require('../../../factories/cht/contacts/person');
 const uuid = require('uuid').v4;
 const utils = require('../../../utils');
-
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 const health_center = places.get('health_center');
@@ -104,7 +103,7 @@ describe('Online User', async () => {
       await loginPage.login(onlineUser);
       await sendMessage();    
     });
-    
+
     it(' - Contact Tab  - contact selected', async () => {
       await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
