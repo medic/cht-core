@@ -1,6 +1,7 @@
 const genericForm = require('../enketo/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
+const utils = require('../../../utils');
 const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
@@ -19,7 +20,9 @@ const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
 const actionResourceIcon = (name) => $(`.actions.dropup .mm-icon .resource-icon[title="medic-${name}"]`);
 const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
-const contactSexField = () => $('[data-name="/data/contact/sex"][value="female"]');
+const contactSexField = (value) => $(`[data-name="/data/contact/sex"][value="${value}"]`);
+const contactRoleField = (role) => $(`span[data-itext-id="/data/contact/role/${role}:label"].active`);
+const contactPhoneField = () => $('span[data-itext-id="/data/contact/phone:label"] + input[type="tel"]');
 const personName = () => $('[name="/data/person/name"]');
 const personSexField = () => $('[data-name="/data/person/sex"][value="female"]');
 const personPhoneField = () => $('input.ignore[type="tel"]');
@@ -134,21 +137,32 @@ const submitForm = async () => {
   await waitForContactLoaded();
 };
 
-const addPlace = async (type, placeName, contactName) => {
-  const dashedType = type.replace('_', '-');
+const addPlace = async ({
+  type: typeValue = 'district_hospital',
+  placeName: placeNameValue = 'District Test',
+  contactName: contactNameValue = 'Person1',
+  dob: dobValue = '2000-01-01',
+  phone: phoneValue = '+50689999999',
+  sex: sexValue = 'female',
+  role: roleValue = 'chw',
+  externalID: externalIDValue = '12345678',
+  notes: notesValue = 'Some test notes',
+} = {}) => {
+  const dashedType = typeValue.replace('_', '-');
   await (await actionResourceIcon(dashedType)).waitForDisplayed();
   await (await actionResourceIcon(dashedType)).click();
-
   await (await newPrimaryContactButton()).waitForDisplayed();
   await (await newPrimaryContactButton()).click();
-  await (await newPrimaryContactName()).addValue(contactName);
-  await (await dateOfBirthField()).addValue('2000-01-01');
-  await (await contactSexField()).click();
+  await (await newPrimaryContactName()).addValue(contactNameValue);
+  await (await contactPhoneField()).addValue(phoneValue);  
+  await (await dateOfBirthField()).addValue(dobValue);  
+  await (await contactSexField(sexValue)).click();
+  await (await contactRoleField(roleValue)).click();
   await genericForm.nextPage();
-  await (await writeNamePlace(type)).click();
-  await (await newPlaceName()).addValue(placeName);
-  await (await externalIdField(type)).addValue('1234457');
-  await (await notes(type)).addValue(`Some ${type} notes`);
+  await (await writeNamePlace(typeValue)).click();
+  await (await newPlaceName()).addValue(placeNameValue);
+  await (await externalIdField(typeValue)).addValue(externalIDValue);
+  await (await notes(typeValue)).addValue(notesValue);
   await (await genericForm.submitButton()).click();
   await waitForContactLoaded(dashedType);
 };
@@ -344,6 +358,16 @@ const exportContacts = async () => {
   await (await exportButton()).click();
 };
 
+const getCurrentContactId = async () => {
+  const currentUrl = await browser.getUrl();
+  const contactBaseUrl = utils.getBaseUrl() + 'contacts/';
+  if (!currentUrl.startsWith(contactBaseUrl)) {
+    return;
+  }
+
+  return currentUrl.slice(contactBaseUrl.length);
+};
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -400,4 +424,5 @@ module.exports = {
   getDeathCardInfo,
   contactMuted,
   openFormWithWarning,
+  getCurrentContactId,
 };
