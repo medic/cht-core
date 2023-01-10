@@ -1,5 +1,4 @@
 /* global window */
-const { expect } = require('chai');
 const fs = require('fs');
 const utils = require('../../../utils');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
@@ -163,12 +162,6 @@ const getManyLocalDocsFromBrowser = async (docIds) => {
   return result;
 };
 
-const sync = async () => {
-  await commonPage.openHamburgerMenu();
-  await (await commonPage.syncButton()).click();
-  // Do not wait for success status to be displayed (may not be shown before logout is triggered)
-};
-
 const submitBasicForm = async () => {
   await reportsPage.openForm('Form basic_form');
   await reportsPage.submitForm();
@@ -330,7 +323,7 @@ describe('Create user for contacts', () => {
         expect(district.contact._id).to.equal(replacementContactId);
 
         await browser.throttle('online');
-        await sync();
+        await commonPage.syncWithoutWaitForSuccess();
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -535,7 +528,7 @@ describe('Create user for contacts', () => {
         expect(district.contact._id).to.equal(replacementContactId1);
 
         await browser.throttle('online');
-        await sync();
+        await commonPage.syncWithoutWaitForSuccess();
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -836,7 +829,7 @@ describe('Create user for contacts', () => {
         });
 
         await browser.throttle('online');
-        await sync();
+        await commonPage.syncWithoutWaitForSuccess();
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -923,7 +916,7 @@ describe('Create user for contacts', () => {
       // TODO create contact
 
       await browser.throttle('online');
-      await sync();
+      await commonPage.syncWithoutWaitForSuccess();
 
       await sentinelUtils.waitForSentinel();
       const chwContactId = 'TODO';

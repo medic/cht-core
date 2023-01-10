@@ -7,19 +7,19 @@ const loginPage = require('../../../page-objects/default/login/login.wdio.page')
 const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const { BASE_URL } = require('../../../constants');
 
-
-const sync = async () => {
-  await commonPage.openHamburgerMenu();
-  await (await commonPage.syncButton()).click();
-  // Do not wait for success status to be displayed (may not be shown before logout is triggered)
-};
-
 describe('supervisor user create', () => {
   const district = utils.deepFreeze(placeFactory.place().build({ type: 'district_hospital' }));
   const newUsers = [];
+  const contactName = 'Bob_chw';
 
   const settings = utils.deepFreeze({
     transitions: { create_user_for_contacts: true},
+    token_login: { enabled: true },
+    app_url: BASE_URL
+  });
+  
+  const settingsNoTransitions = utils.deepFreeze({
+    transitions: { create_user_for_contacts: false},
     token_login: { enabled: true },
     app_url: BASE_URL
   });
@@ -31,7 +31,6 @@ describe('supervisor user create', () => {
 
   beforeEach(async () => {
     await utils.saveDocs([district]);
-    await utils.updateSettings(settings, 'sentinel');
     await utils.createUsers([supervisorUser]);
     newUsers.push(supervisorUser.username);
   });
@@ -45,14 +44,13 @@ describe('supervisor user create', () => {
   });
 
   it('Creates a new user when adding a person while adding a place', async () => {
+    await utils.updateSettings(settings, 'sentinel');
     await loginPage.login(supervisorUser);
     await commonPage.goToPeople(district._id);
-    const contactName = 'Bob_chw';
     await contactsPage.addPlace({ type: 'health_center', placeName: 'HC1', contactName: contactName });
     
-    await sync();
+    await commonPage.syncWithoutWaitForSuccess();
     await sentinelUtils.waitForSentinel();
-    await browser.pause(5000);
     await contactsPage.selectLHSRowByText(contactName);
     const chwContactId = await contactsPage.getCurrentContactId();
     const { transitions } = await sentinelUtils.getInfoDoc(chwContactId);
@@ -69,5 +67,14 @@ describe('supervisor user create', () => {
     const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: chwContactId });
     expect(additionalUsers).to.be.empty;
     newUsers.push(newUserSettings.name);
+  });
+
+  it.skip('Does not create a new user when the transition is disabled', async () => {
+    await utils.updateSettings(settingsNoTransitions, 'sentinel');
+    await loginPage.login(supervisorUser);
+    await commonPage.goToPeople(district._id);
+
+    await contactsPage.addPerson(contactName, );
+
   });
 });
