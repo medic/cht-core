@@ -65,7 +65,6 @@ describe('Online User', async () => {
   
   describe('Options disabled when no items - messages, contacts, people', async () => {
     before(async () => await loginPage.cookieLogin());
-    after(async () => await browser.reloadSession());
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
@@ -92,7 +91,8 @@ describe('Online User', async () => {
 
   describe(' - Contact tab - user has no contact ', async () => {
     before(async () => await utils.saveDocs([ ...places.values(), contact, patient]));
-
+    after(async () => await browser.reloadSession());
+    
     it(' - no contact selected', async () => {
       await commonPage.goToPeople();
       await commonPage.openMoreOptionsMenu();
