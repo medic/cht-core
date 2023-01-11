@@ -74,8 +74,7 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
   const drawArc = (ctx, c, arc) => {
     const arcRadians = pi*arc/180;
     ctx.beginPath();
-    ctx.arc(c.x, c.y, c.r, -pi/2,
-      arcRadians-(pi/2), false);
+    ctx.arc(c.x, c.y, c.r, -pi/2, arcRadians-(pi/2), false);
     ctx.lineTo(c.x, c.y);
     ctx.fillStyle = c.color;
     ctx.fill();
@@ -91,9 +90,11 @@ const TimerAnimation = function(canvas, canvasW, canvasH, duration) {
       x: centre.x, y: centre.y, r: radius, color: color });
   };
   const drawTimerArc = (offset) => {
-    drawArc(ctx, {
-      x: centre.x, y: centre.y, r: radius, color: arcColor },
-    offset * 180 / LIM);
+    drawArc(
+      ctx,
+      { x: centre.x, y: centre.y, r: radius, color: arcColor },
+      offset * 180 / LIM
+    );
   };
 
   const startTimer = () => {
