@@ -1,20 +1,20 @@
 /* global window */
 const fs = require('fs');
 const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('../../../constants');
-const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
-const replaceUserForm = require('../../../page-objects/default/enketo/replace-user.wdio.page');
+const messagesUtils = require('../../../utils/messages');
 const personFactory = require('../../../factories/cht/contacts/person');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const userFactory = require('../../../factories/cht/users/users');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
+const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
+const replaceUserForm = require('../../../page-objects/default/enketo/replace-user.wdio.page');
+const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('../../../constants');
 
 const USER_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw' }));
-const SUPERVISOR_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw_supervisor' }));
 
 const DISTRICT = utils.deepFreeze(placeFactory
   .place()
@@ -31,12 +31,6 @@ const ORIGINAL_USER = utils.deepFreeze(userFactory.build({
   contact: USER_CONTACT,
 }));
 
-const SUPERVISOR_USER = utils.deepFreeze(userFactory.build({
-  username: `user_for_contacts_supervisor_person`,
-  place: DISTRICT._id,
-  contact: SUPERVISOR_CONTACT,
-}));
-
 const ONLINE_USER = utils.deepFreeze(userFactory.build({
   username: `user_for_contacts_online_user`,
   place: DISTRICT._id,
@@ -45,10 +39,6 @@ const ONLINE_USER = utils.deepFreeze(userFactory.build({
 }));
 
 const newUsers = [];
-
-const getQueuedMessages = () => utils.db
-  .query('medic-admin/message_queue', { reduce: false, include_docs: true })
-  .then(response => response.rows.map(row => row.doc));
 
 const REPLACE_USER_FORM_TITLE = 'Replace User';
 const REPLACE_USER_FORM_ID = 'replace_user';
@@ -98,8 +88,6 @@ const loginAsUser = async (user) => {
 };
 
 const loginAsOfflineUser = () => loginAsUser(ORIGINAL_USER);
-
-const loginAsSupervisor = () => loginAsUser(SUPERVISOR_USER);
 
 const loginAsOnlineUser = () => loginAsUser(ONLINE_USER);
 
@@ -233,18 +221,6 @@ const assertNewUserSettings = (newUserSettings, newContact, originalUser) => {
   expect(newUserSettings.name).to.match(/^replacement-user-\d\d\d\d$/);
 };
 
-const getTextedLoginLink = async (newUserSettings) => {
-  const queuedMsgs = await getQueuedMessages();
-  expect(queuedMsgs).to.have.lengthOf(1);
-  const [queuedMsg] = queuedMsgs;
-  expect(queuedMsg).to.deep.include({
-    type: 'token_login', user: newUserSettings._id
-  });
-  const [{ to, message }] = queuedMsg.tasks[1].messages;
-  expect(to).to.equal(newUserSettings.phone);
-  return message;
-};
-
 const saveDocIfNotExists = async (doc) => {
   try {
     await utils.getDoc(doc._id);
@@ -340,7 +316,7 @@ describe('Create user for contacts', () => {
         expect(additionalUsers).to.be.empty;
         newUsers.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
-        const loginLink = await getTextedLoginLink(newUserSettings);
+        const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
         // Basic form reports were successfully synced to the server
         const basicReportsFromRemote = await utils.getDocs([basicReportId0, basicReportId1]);
@@ -404,7 +380,7 @@ describe('Create user for contacts', () => {
         expect(additionalUsers).to.be.empty;
         newUsers.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
-        const loginLink = await getTextedLoginLink(newUserSettings);
+        const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
         // Open the texted link
         await commonPage.logout();
@@ -456,7 +432,7 @@ describe('Create user for contacts', () => {
         expect(additionalUsers).to.be.empty;
         newUsers.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
-        const loginLink = await getTextedLoginLink(newUserSettings);
+        const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
         // Open the texted link
         await commonPage.logout();
@@ -545,7 +521,7 @@ describe('Create user for contacts', () => {
         expect(additionalUsers).to.be.empty;
         newUsers.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, newContact1, ORIGINAL_USER);
-        const loginLink = await getTextedLoginLink(newUserSettings);
+        const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
         // User not created for first replacement contact
         const newUserSettings1 = await utils.getUserSettings({ contactId: replacementContactId0 });
@@ -611,7 +587,7 @@ describe('Create user for contacts', () => {
         expect(additionalUsers).to.be.empty;
         newUsers.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, newContact, ORIGINAL_USER);
-        const loginLink = await getTextedLoginLink(newUserSettings);
+        const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
         // Open the texted link
         await commonPage.logout();
@@ -717,7 +693,7 @@ describe('Create user for contacts', () => {
         expect(additionalUsers).to.be.empty;
         newUsers.push(newUserSettings.name);
         assertNewUserSettings(newUserSettings, otherNewContact, otherUser);
-        const loginLink = await getTextedLoginLink(newUserSettings);
+        const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
 
         // Open the texted link
         await commonPage.logout();
@@ -902,53 +878,8 @@ describe('Create user for contacts', () => {
       const newUserSettings = await utils.getUserSettings({ contactId: replacementContactId });
       expect(newUserSettings).to.be.empty;
       // No messages sent
-      const queuedMsgs = await getQueuedMessages();
+      const queuedMsgs = await messagesUtils.getQueuedMessages();
       expect(queuedMsgs).to.be.empty;
-    });
-  });
-
-  describe.skip('supervisor user create', () => {
-    it('creates a new user while offline', async () => {
-      await utils.updateSettings(SETTINGS, 'sentinel');
-      await loginAsSupervisor();
-      await browser.throttle('offline');
-
-      // TODO create contact
-
-      await browser.throttle('online');
-      await commonPage.syncWithoutWaitForSuccess();
-
-      await sentinelUtils.waitForSentinel();
-      const chwContactId = 'TODO';
-      const { transitions } = await sentinelUtils.getInfoDoc(chwContactId);
-
-      // Transition successful
-      expect(transitions.create_user_for_contacts.ok).to.be.true;
-      // Original contact updated to COMPLETE
-      const finalChwContact = await utils.getDoc(chwContactId);
-      expect(finalChwContact.user_for_contact).to.deep.equal({
-        add: { status: 'COMPLETE' }
-      });
-
-      // New user created
-      const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: chwContactId });
-      expect(additionalUsers).to.be.empty;
-      newUsers.push(newUserSettings.name);
-      const loginLink = await getTextedLoginLink(newUserSettings);
-
-      // TODO log out
-      // Open the texted link
-      await browser.url(loginLink);
-      await commonPage.waitForPageLoaded();
-      const [cookie] = await browser.getCookies('userCtx');
-      expect(cookie.value).to.include(newUserSettings.name);
-    });
-
-    it.skip('creates a new user while online', async () => {
-      await utils.updateSettings(SETTINGS, 'sentinel');
-      await loginAsSupervisor();
-
-      // create contact
     });
   });
 });

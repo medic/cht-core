@@ -1,5 +1,6 @@
 const utils = require('../../../utils');
 const sentinelUtils = require('../../../utils/sentinel');
+const messagesUtils = require('../../../utils/messages');
 const { assert } = require('chai');
 
 const CLINIC = utils.deepFreeze({
@@ -41,10 +42,6 @@ const getSettings = ({
   token_login: { enabled },
   app_url,
 });
-
-const getQueuedMessages = () => utils.db
-  .query('medic-admin/message_queue', { reduce: false, include_docs: true })
-  .then(response => response.rows.map(row => row.doc));
 
 const loginAsUser = ({ username, password }) => {
   const opts = {
@@ -129,7 +126,7 @@ describe('create_user_for_contacts', () => {
     assert.match(newUserSettings._id, /^org\.couchdb\.user:new-person-\d\d\d\d/);
     assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
     // Login token sent
-    const queuedMsgs = await getQueuedMessages();
+    const queuedMsgs = await messagesUtils.getQueuedMessages();
     assert.lengthOf(queuedMsgs, 1);
     assert.deepInclude(queuedMsgs[0], {
       type: 'token_login',
@@ -184,7 +181,7 @@ describe('create_user_for_contacts', () => {
     assert.match(newUserSettings._id, /^org\.couchdb\.user:new-person-\d\d\d\d/);
     assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
     // Login token sent
-    const queuedMsgs = await getQueuedMessages();
+    const queuedMsgs = await messagesUtils.getQueuedMessages();
     assert.lengthOf(queuedMsgs, 1);
     assert.deepInclude(queuedMsgs[0], {
       type: 'token_login',
@@ -258,7 +255,7 @@ describe('create_user_for_contacts', () => {
     });
 
     // Login tokens sent
-    const queuedMsgs = await getQueuedMessages();
+    const queuedMsgs = await messagesUtils.getQueuedMessages();
     assert.lengthOf(queuedMsgs, 2);
     queuedMsgs.forEach(msg => {
       assert.equal(msg.type, 'token_login');
