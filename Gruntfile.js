@@ -8,7 +8,7 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
-  ECR_REPO,
+  INTERNAL_CONTRIBUTOR,
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
@@ -1062,7 +1062,7 @@ module.exports = function(grunt) {
       return [];
     }
 
-    if (ECR_REPO) {
+    if (INTERNAL_CONTRIBUTOR) {
       return ['exec:push-service-images'];
     }
 
