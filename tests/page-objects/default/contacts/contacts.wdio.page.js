@@ -41,9 +41,9 @@ const rhsReportElementList = () => $$(rhsReportListSelector);
 
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
-const exportButton = () => $('.mat-menu-content .mat-menu-item[test-id="export-contacts"]');
-const editContactButton = () => $('.mat-menu-content .mat-menu-item[test-id="edit-contacts"]');
-const deleteContactButton = () => $('.mat-menu-content .mat-menu-item[test-id="delete-contacts"]');
+const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-contacts"]');
+const editContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]');
+const deleteContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
 const leftAddPlace = () => $('.dropup a.create-place');
 const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
