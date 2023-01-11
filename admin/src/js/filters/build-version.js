@@ -4,7 +4,7 @@ angular.module('filters').filter('buildVersion',
     'use strict';
     'ngInject';
 
-    return function(buildInfo, displayBaseVersion) {
+    return function(buildInfo, displayBaseVersion {
       if (buildInfo) {
         if (buildInfo.version === buildInfo.base_version || !buildInfo.base_version) {
           return buildInfo.version;
