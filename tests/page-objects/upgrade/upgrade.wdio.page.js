@@ -31,7 +31,11 @@ const upgradeModalConfirm = async () => {
 };
 
 const getCurrentVersion = async () => {
-  const version = () => $('dl.horizontal dd#build_version');
+  const version = async () => {
+    const ddRows = await $$('dl.horizontal dd');
+    const idx = ddRows.length > 3 ? 1 : 0;
+    return (await $$('dl.horizontal dd'))[idx];
+  };
   await browser.waitUntil(async () => await (await version()).getText());
   return await (await version()).getText();
 };
