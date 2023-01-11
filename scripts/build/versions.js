@@ -24,7 +24,7 @@ const getRepo = (repo) => {
     return repo;
   }
 
-  if (INTERNAL_CONTRIBUTOR) {
+  if (!INTERNAL_CONTRIBUTOR) {
     return 'medicmobile';
   }
 
