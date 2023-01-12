@@ -91,8 +91,6 @@ describe('Online User', async () => {
 
   describe(' - Contact tab - user has no contact ', async () => {
     before(async () => await utils.saveDocs([ ...places.values(), contact, patient]));
-    after(async () => await browser.reloadSession());
-    
     it(' - no contact selected', async () => {
       await commonPage.goToPeople();
       await commonPage.openMoreOptionsMenu();
@@ -104,8 +102,9 @@ describe('Online User', async () => {
 
   describe(' - Options enabled when there are items', async () => {
     before(async () => {
-      await utils.createUsers([onlineUser]);
+      await browser.reloadSession();
       await browser.url('/');
+      await utils.createUsers([onlineUser]);
       await loginPage.login(onlineUser);
       let result = await utils.saveDoc(xmlReport);
       xmlReportId = result.id;
@@ -115,7 +114,7 @@ describe('Online User', async () => {
     });
 
     it(' - Contact Tab  - contact selected', async () => {
-      await commonPage.goToPeople(contact._id);
+      await commonPage.goToPeople();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
       expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
