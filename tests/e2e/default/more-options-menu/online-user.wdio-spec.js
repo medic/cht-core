@@ -10,7 +10,7 @@ const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 const health_center = places.get('health_center');
 const district_hospital = places.get('district_hospital');
-const userFactory = require('../../../factories/cht/users/users');
+//const userFactory = require('../../../factories/cht/users/users');
 
 const contact = personFactory.build({
   _id: uuid(),
@@ -40,12 +40,12 @@ const smsReport = reportFactory.build(
   },
 );
 
-const onlineUser = userFactory.build({
-  username: 'onlineuser',
-  roles:['program-officer'],
-  place: district_hospital._id,
-  contact: contact._id,
-});
+// const onlineUser = userFactory.build({
+//   username: 'onlineuser',
+//   roles:['program-officer'],
+//   place: district_hospital._id,
+//   contact: contact._id,
+// });
 
 const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   await utils.request({
@@ -57,7 +57,11 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
     body:`message=${message}&from=${phone}`,
   });  
 };
-
+const updateUser = (username, data) => utils.request({
+  path: `/api/v1/users/${username}`,
+  method: 'POST',
+  body: data
+});
 let xmlReportId;
 let smsReportId;
 
@@ -102,10 +106,11 @@ describe('Online User', async () => {
 
   describe(' - Options enabled when there are items', async () => {
     before(async () => {
-      await browser.reloadSession();
-      await browser.url('/');
-      await utils.createUsers([onlineUser]);
-      await loginPage.login(onlineUser);
+      // await browser.reloadSession();
+      // await browser.url('/');
+      // await utils.createUsers([onlineUser]);
+      // await loginPage.login(onlineUser);
+      await updateUser('admin', { place : district_hospital._id, contact: contact._id });
       let result = await utils.saveDoc(xmlReport);
       xmlReportId = result.id;
       result = await utils.saveDoc(smsReport);
