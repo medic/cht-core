@@ -106,15 +106,6 @@ describe('Online User', async () => {
       await sendMessage();    
     });
 
-    it(' - Contact Tab  - contact selected', async () => {
-      await commonPage.goToPeople(contact._id);
-      await browser.pause(500);
-      await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
-      expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
-      expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
-    });
-
     it('- Reports tab - options enabled when XML report selected', async () => {
       await reportPage.goToReportById(xmlReportId);
       await reportPage.reportBodyDetails().waitForDisplayed();      
@@ -138,6 +129,14 @@ describe('Online User', async () => {
       expect(await commonPage.isOptionVisible('export', 'reports')).to.be.false;
       expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false;
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;       
+    });
+
+    it(' - Contact Tab  - contact selected', async () => {
+      await commonPage.goToPeople(contact._id);
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
+      expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
+      expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.true;
     });
   });
 });
