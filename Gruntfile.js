@@ -1051,6 +1051,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('create-staging-doc', buildUtils.createStagingDoc);
   grunt.registerTask('populate-staging-doc', buildUtils.populateStagingDoc);
+  grunt.registerTask('create-local-docker-compose-files', buildUtils.localDockerComposeFiles);
   grunt.registerTask('update-service-worker', function () {
     const done = this.async();
     buildUtils.updateServiceWorker().then(done);
