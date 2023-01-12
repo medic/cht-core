@@ -1,11 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+const constants = require('./constants');
 const exec = util.promisify(require('child_process').exec);
-const utils = require('./utils');
 
 const runCommand = async (action, dirPath) => {
-  const url = utils.getInstanceUrl();
+  const url = constants.BASE_URL_AUTH;
   try {
     const chtConfPath = path.resolve(process.cwd(), './node_modules/.bin/cht');
     const { stdout } = await exec(`${chtConfPath} --url=${url} ${action} --force --debug`, { cwd: dirPath });
@@ -67,7 +67,6 @@ const compileNoolsConfig = async ({ tasks, targets, contactSummary }) => {
     fs.copyFileSync(targets, path.join(dir, 'targets.js'));
   }
   if (contactSummary && fs.existsSync(contactSummary)) {
-    fs.unlinkSync(path.join(dir, 'contact-summary.js'));
     fs.copyFileSync(contactSummary, path.join(dir, 'contact-summary.templated.js'));
   }
 

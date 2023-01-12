@@ -1,8 +1,8 @@
-import { Component, EventEmitter, OnDestroy, Input, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, Input, Output, OnInit, ViewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { combineLatest, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
-import { Selectors } from '../../../selectors';
+import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 
@@ -16,10 +16,10 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   subscription: Subscription = new Subscription();
   inputText;
 
-  currentTab;
-
   @Input() disabled;
+  @Input() mobileDropdown;
   @Output() search: EventEmitter<any> = new EventEmitter();
+  @ViewChild('freetextInput') inputElement;
 
   constructor(
     private store: Store,
@@ -28,16 +28,9 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   ngOnInit() {
-    const subscription = combineLatest(
-      this.store.select(Selectors.getCurrentTab),
-      this.store.select(Selectors.getFilters),
-    ).subscribe(([
-      currentTab,
-      filters,
-    ]) => {
-      this.currentTab = currentTab;
-      this.inputText = filters?.search;
-    });
+    const subscription = this.store
+      .select(Selectors.getFilters)
+      .subscribe(filters => this.inputText = filters?.search);
     this.subscription.add(subscription);
   }
 
@@ -47,18 +40,30 @@ export class FreetextFilterComponent implements OnDestroy, OnInit, AbstractFilte
   }
 
   applyFilter() {
+    if (this.disabled) {
+      return;
+    }
+
     this.globalActions.setFilter({ search: this.inputText });
     // always force the search, so the user is taken from the report detail page to the list page on mobile,
     // when clicking on a case_id link
     this.search.emit(true);
+
+    if (this.inputElement) {
+      // Closing mobile's soft keyboard when search is triggered.
+      this.inputElement.nativeElement.blur();
+    }
   }
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
-  clear() {
-    this.applyFieldChange('');
+  clear(apply?) {
+    if (this.disabled) {
+      return;
+    }
+    this.applyFieldChange('', apply);
   }
 }
 

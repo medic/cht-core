@@ -1,14 +1,17 @@
 const _ = require('lodash');
+const db = require('../db');
+const config = require('../config');
+const { bulkUploadLog, roles, users } = require('@medic/user-management')(config, db);
 const auth = require('../auth');
 const logger = require('../logger');
 const serverUtils = require('../server-utils');
-const usersService = require('../services/users');
 const authorization = require('../services/authorization');
 const purgedDocs = require('../services/purged-docs');
+const { DOC_IDS_WARN_LIMIT } = require('../services/replication-limit-log');
 
 const hasFullPermission = req => {
   return auth
-    .check(req, 'can_update_users')
+    .check(req, ['can_edit', 'can_update_users'])
     .then(() => true)
     .catch(err => {
       if (err.code === 403) {
@@ -70,7 +73,7 @@ const getRoles = req => {
 };
 
 const getInfoUserCtx = req => {
-  if (!auth.isOnlineOnly(req.userCtx)) {
+  if (!roles.isOnlineOnly(req.userCtx)) {
     return req.userCtx;
   }
 
@@ -82,13 +85,13 @@ const getInfoUserCtx = req => {
     throw { code: 400, reason: 'Missing required query params: role and/or facility_id' };
   }
 
-  const roles = getRoles(req);
-  if (auth.hasOnlineRole(roles)) {
+  const userRoles = getRoles(req);
+  if (roles.hasOnlineRole(userRoles)) {
     throw { code: 400, reason: 'Provided role is not offline' };
   }
 
   return {
-    roles: roles,
+    roles: userRoles,
     facility_id: params.facility_id,
     contact_id: params.contact_id,
   };
@@ -116,18 +119,37 @@ const getAllowedDocsCounts = async (userCtx) => {
 // In express4, req.host strips off the port number: https://expressjs.com/en/guide/migrating-5.html#req.host
 const getAppUrl = (req) => `${req.protocol}://${req.hostname}`;
 
+const getUserList = async (req) => {
+  await auth.check(req, 'can_view_users');
+  return await users.getList();
+};
+
+const getType = user => {
+  if (user.roles && user.roles.length) {
+    return user.roles[0];
+  }
+  return 'unknown';
+};
+
+const convertUserListToV1 = (users=[]) => {
+  users.forEach(user => {
+    user.type = getType(user);
+    delete user.roles;
+  });
+  return users;
+};
+
 module.exports = {
   get: (req, res) => {
-    auth
-      .check(req, 'can_view_users')
-      .then(() => usersService.getList())
+    return getUserList(req)
+      .then(list => convertUserListToV1(list))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
   create: (req, res) => {
     return auth
-      .check(req, 'can_create_users')
-      .then(() => usersService.createUsers(req.body, getAppUrl(req)))
+      .check(req, ['can_edit', 'can_create_users'])
+      .then(() => users.createUsers(req.body, getAppUrl(req)))
       .then(body => res.json(body))
       .catch(err => serverUtils.error(err, req, res));
   },
@@ -183,7 +205,7 @@ module.exports = {
             }
           }
 
-          return usersService
+          return users
             .updateUser(username, req.body, !!fullPermission, getAppUrl(req))
             .then(result => {
               logger.info(
@@ -203,12 +225,11 @@ module.exports = {
   },
   delete: (req, res) => {
     auth
-      .check(req, 'can_delete_users')
-      .then(() => usersService.deleteUser(req.params.username))
+      .check(req, ['can_edit', 'can_delete_users'])
+      .then(() => users.deleteUser(req.params.username))
       .then(result => res.json(result))
       .catch(err => serverUtils.error(err, req, res));
   },
-
   info: (req, res) => {
     let userCtx;
     try {
@@ -220,9 +241,47 @@ module.exports = {
       .then(({ total, warn }) => res.json({
         total_docs: total,
         warn_docs: warn,
-        warn: warn >= usersService.DOC_IDS_WARN_LIMIT,
-        limit: usersService.DOC_IDS_WARN_LIMIT,
+        warn: warn >= DOC_IDS_WARN_LIMIT,
+        limit: DOC_IDS_WARN_LIMIT,
       }))
       .catch(err => serverUtils.error(err, req, res));
   },
+
+  v2: {
+    get: async (req, res) => {
+      try {
+        const body = await getUserList(req, res);
+        res.json(body);
+      } catch(err) {
+        serverUtils.error(err, req, res);
+      }
+    },
+    create: async (req, res) => {
+      try {
+        await auth.check(req, ['can_edit', 'can_create_users']);
+        const user = await auth.getUserCtx(req);
+        const logId = await bulkUploadLog.createLog(user, 'user');
+        let usersToCreate;
+        let ignoredUsers;
+
+        if (typeof req.body === 'string') {
+          const parsedCsv = await users.parseCsv(req.body, logId);
+          usersToCreate = parsedCsv.users;
+          ignoredUsers = parsedCsv.ignoredUsers;
+        } else {
+          usersToCreate = req.body;
+        }
+
+        const response = await users.createUsers(
+          usersToCreate,
+          getAppUrl(req),
+          ignoredUsers,
+          logId
+        );
+        res.json(response);
+      } catch (error) {
+        serverUtils.error(error, req, res);
+      }
+    },
+  }
 };

@@ -4,7 +4,6 @@ import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.ser
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
-import { SimprintsService } from '@mm-services/simprints.service';
 import { NavigationService } from '@mm-services/navigation.service';
 
 /**
@@ -23,7 +22,6 @@ export class AndroidApiService {
     private geolocationService:GeolocationService,
     private mrdtService:MRDTService,
     private sessionService:SessionService,
-    private simprintsService:SimprintsService,
     private zone:NgZone,
     private navigationService:NavigationService,
   ) { }
@@ -203,32 +201,6 @@ export class AndroidApiService {
     }
   }
 
-  /**
-   * Handle the response from the simprints device
-   *
-   * @param requestType Indicates the response handler to call. Either 'identify' or 'register'.
-   * @param requestIdString The unique ID of the request to the simprints device.
-   * @param response The stringified JSON response from the simprints device.
-   */
-  simprintsResponse(requestType, requestIdString, response) {
-    const requestId = parseInt(requestIdString, 10);
-    if (isNaN(requestId)) {
-      return console.error(new Error('Unable to parse requestId: "' + requestIdString + '"'));
-    }
-    try {
-      response = JSON.parse(response);
-    } catch(e) {
-      return console.error(new Error('Unable to parse JSON response from android app: "' + response + '"'));
-    }
-    if (requestType === 'identify') {
-      this.simprintsService.identifyResponse(requestId, response);
-    } else if (requestType === 'register') {
-      this.simprintsService.registerResponse(requestId, response);
-    } else {
-      return console.error(new Error('Unknown request type: "' + requestType + '"'));
-    }
-  }
-
   smsStatusUpdate(id, destination, content, status, detail) {
     console.debug('smsStatusUpdate() :: ' +
       ' id=' + id +
@@ -252,7 +224,6 @@ export class AndroidApiService {
     logout: () => this.runInZone('logout'),
     mrdtResponse: (...args) => this.runInZone('mrdtResponse', args),
     mrdtTimeTakenResponse: (...args) => this.runInZone('mrdtTimeTakenResponse', args),
-    simprintsResponse: (...args) => this.runInZone('simprintsResponse', args),
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
     resolveCHTExternalAppResponse: (...args) => this.runInZone('resolveCHTExternalAppResponse', args),

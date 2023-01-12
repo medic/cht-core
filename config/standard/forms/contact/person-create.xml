@@ -576,7 +576,7 @@
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2019-01-22_12-31">
+        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2022-09-26 12-44">
           <inputs>
             <meta>
               <location>
@@ -626,7 +626,7 @@
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
-      <bind nodeset="/data/init/parent_id" type="string" readonly="true()" calculate=" /data/person/parent "/>
+      <bind nodeset="/data/init/parent_id" type="string" calculate=" /data/person/parent " readonly="true()"/>
       <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/type" type="string"/>
       <bind nodeset="/data/init/type_selector" type="select1" calculate="../type"/>
@@ -634,7 +634,7 @@
       <bind nodeset="/data/person/parent" type="string"/>
       <bind nodeset="/data/person/type" type="string"/>
       <bind nodeset="/data/person/name" type="string" required="true()"/>
-      <bind nodeset="/data/person/date_of_birth" type="date" jr:constraintMsg="jr:itext('/data/person/date_of_birth:jr:constraintMsg')" constraint=". &lt;= today()"/>
+      <bind nodeset="/data/person/date_of_birth" type="date" constraint=". &lt;= now()" jr:constraintMsg="jr:itext('/data/person/date_of_birth:jr:constraintMsg')"/>
       <bind nodeset="/data/person/phone" type="tel" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" constraint="true()"/>
       <bind nodeset="/data/person/phone_alternate" type="tel" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')" constraint="true()"/>
       <bind nodeset="/data/person/sex" type="select1"/>

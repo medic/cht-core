@@ -1,64 +1,28 @@
 /* eslint-disable max-len */
 
-const url = require('url');
-const packageJson = require('./package.json');
 const fs = require('fs');
 const path = require('path');
 
 const {
-  TAG,
-  BRANCH,
-  COUCH_URL,
-  COUCH_NODE_NAME,
   MARKET_URL,
-  STAGING_SERVER,
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
+  ECR_REPO,
 } = process.env;
 
-const releaseName = TAG || BRANCH || 'local-development';
+const DEV = !BUILD_NUMBER;
+
+const buildUtils = require('./scripts/build');
+const buildVersions = require('./scripts/build/versions');
+const couchConfig = buildUtils.getCouchConfig();
+
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
-
-const couchConfig = (() => {
-  if (!COUCH_URL) {
-    throw 'Required environment variable COUCH_URL is undefined. (eg. http://your:pass@localhost:5984/medic)';
-  }
-  const parsedUrl = url.parse(COUCH_URL);
-  if (!parsedUrl.auth) {
-    throw 'COUCH_URL must contain admin authentication information';
-  }
-
-  const [ username, password ] = parsedUrl.auth.split(':', 2);
-
-  return {
-    username,
-    password,
-    dbName: parsedUrl.path.substring(1),
-    withPath: path => `${parsedUrl.protocol}//${parsedUrl.auth}@${parsedUrl.host}/${path}`,
-    withPathNoAuth: path => `${parsedUrl.protocol}//${parsedUrl.host}/${path}`,
-  };
-})();
 
 const getSharedLibDirs = () => {
   return fs
     .readdirSync('shared-libs')
     .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
-};
-
-const copySharedLibs = [
-  'rm -rf ../shared-libs/*/node_modules/@medic',
-  'mkdir ./node_modules/@medic',
-  'cp -RP ../shared-libs/* ./node_modules/@medic'
-].join( '&& ');
-
-const linkSharedLibs = dir => {
-  const sharedLibPath = lib => path.resolve(__dirname, 'shared-libs', lib);
-  const symlinkPath = lib => path.resolve(__dirname, dir, 'node_modules', '@medic', lib);
-  return [
-    'mkdir ./node_modules/@medic',
-    ...getSharedLibDirs().map(lib => `ln -s ${sharedLibPath(lib)} ${symlinkPath(lib)}`)
-  ].join(' && ');
 };
 
 module.exports = function(grunt) {
@@ -69,39 +33,30 @@ module.exports = function(grunt) {
     'couch-push': 'grunt-couch',
     ngtemplates: 'grunt-angular-templates',
     protractor: 'grunt-protractor-runner',
-    replace: 'grunt-text-replace',
     uglify: 'grunt-contrib-uglify-es',
   });
   require('time-grunt')(grunt);
 
   // Project configuration
   grunt.initConfig({
-    replace: {
-      'change-ddoc-id-for-testing': {
-        src: ['build/ddocs/medic.json'],
-        overwrite: true,
-        replacements: [
-          {
-            from: '"_id": "_design/medic"',
-            to: `"_id": "medic:medic:test-${BUILD_NUMBER}"`,
-          },
-        ],
-      },
-    },
     'couch-compile': {
       primary: {
         files: {
-          'build/ddocs/medic.json': 'build/ddocs/medic/',
+          'build/ddocs/medic.json': 'build/ddocs/medic-db/*',
         },
       },
       secondary: {
         files: {
-          'build/ddocs/medic/_attachments/ddocs/medic.json': 'build/ddocs/medic-db/*',
-          'build/ddocs/medic/_attachments/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
-          'build/ddocs/medic/_attachments/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
-          'build/ddocs/medic/_attachments/ddocs/logs.json': 'build/ddocs/logs-db/*',
+          'build/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
+          'build/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
+          'build/ddocs/logs.json': 'build/ddocs/logs-db/*',
         },
       },
+      staging: {
+        files: {
+          'build/staging.json': 'build/staging',
+        }
+      }
     },
     'couch-push': {
       localhost: {
@@ -120,29 +75,21 @@ module.exports = function(grunt) {
           pass: couchConfig.password,
         },
         files: {
-          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic/_attachments/ddocs/medic.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/medic/_attachments/ddocs/sentinel.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/medic/_attachments/ddocs/users-meta.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-logs')]: 'build/ddocs/medic/_attachments/ddocs/logs.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/sentinel.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/users-meta.json',
+          [couchConfig.withPathNoAuth(couchConfig.dbName + '-logs')]: 'build/ddocs/logs.json',
         }
       },
       test: {
         files: {
           ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
+          ['http://admin:pass@localhost:4984/medic-test-logs']: 'build/ddocs/medic/_attachments/ddocs/logs.json',
         },
-      },
-      staging: {
-        files: [
-          {
-            src: 'build/ddocs/medic.json',
-            dest: `${MARKET_URL}/${STAGING_SERVER}`,
-          },
-        ],
       },
       testing: {
         files: [
           {
-            src: 'build/ddocs/medic.json',
+            src: 'build/staging.json',
             dest: `${MARKET_URL}/${BUILDS_SERVER}`,
           },
         ],
@@ -156,7 +103,7 @@ module.exports = function(grunt) {
       },
       admin: {
         src: 'admin/src/js/main.js',
-        dest: 'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
+        dest: 'api/build/static/admin/js/main.js',
         options: {
           transform: ['browserify-ngannotate'],
           alias: {
@@ -176,16 +123,17 @@ module.exports = function(grunt) {
         banner:
           '/*! Medic <%= grunt.template.today("yyyy-mm-dd") %> */\n',
       },
-      web: {
+      admin: {
         files: {
-          'build/ddocs/medic-db/medic-admin/_attachments/js/main.js': 'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
-          'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js': 'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js'
+          'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
+          'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js'
         },
       },
       api: {
         files: {
-          // public api files
-          'api/build/public/login/script.js': 'api/build/public/login/script.js',
+          // static api files
+          'api/build/static/login/script.js': 'api/build/static/login/script.js',
+          'api/build/static/login/lib-bowser.js': 'api/build/static/login/lib-bowser.js',
         }
       }
     },
@@ -196,23 +144,29 @@ module.exports = function(grunt) {
             UNIT_TEST_ENV: '1',
           },
         },
+      },
+      'version': {
+        options: {
+          add: {
+            VERSION: buildVersions.getVersion(),
+          },
+        },
       }
     },
     less: {
       admin: {
         files: {
-          'build/ddocs/medic-db/medic-admin/_attachments/css/main.css':
-            'admin/src/css/main.less',
+          'api/build/static/admin/css/main.css': 'admin/src/css/main.less',
         },
       },
     },
     cssmin: {
-      web: {
+      admin: {
         options: {
           keepSpecialComments: 0,
         },
         files: {
-          'build/ddocs/medic-db/medic-admin/_attachments/css/main.css': 'build/ddocs/medic-db/medic-admin/_attachments/css/main.css',
+          'api/build/static/admin/css/main.css': 'api/build/static/admin/css/main.css',
         },
       },
       api: {
@@ -220,7 +174,7 @@ module.exports = function(grunt) {
           keepSpecialComments: 0,
         },
         files: {
-          'api/build/public/login/style.css': 'api/build/public/login/style.css',
+          'api/build/static/login/style.css': 'api/build/static/login/style.css',
         },
       }
     },
@@ -231,30 +185,45 @@ module.exports = function(grunt) {
         src: '**/*',
         dest: 'build/ddocs/',
       },
-      'ddoc-attachments': {
+      'api-ddocs': {
+        expand: true,
+        cwd: 'build/ddocs/',
+        src: '*.json',
+        dest: 'api/build/ddocs/',
+      },
+      'webapp-static': {
         expand: true,
         cwd: 'webapp/src/',
         src: [
           'audio/**/*',
           'fonts/**/*',
           'img/**/*',
-          'ddocs/medic/_attachments/**/*',
         ],
-        dest: 'build/ddocs/medic/_attachments/',
+        dest: 'api/build/static/webapp/',
       },
       'api-resources': {
         expand: true,
         cwd: 'api/src/public/',
         src: '**/*',
-        dest: 'api/build/public/',
+        dest: 'api/build/static/',
       },
-      'admin-resources': {
+      'built-resources': {
+        expand: true,
+        cwd: 'build/static',
+        src: '**/*',
+        dest: 'api/build/static/',
+      },
+      'api-bowser': {
+        src: 'api/node_modules/bowser/bundled.js',
+        dest: 'api/src/public/login/lib-bowser.js',
+      },
+      'admin-static': {
         files: [
           {
             expand: true,
             flatten: true,
             src: 'admin/src/templates/index.html',
-            dest: 'build/ddocs/medic-db/medic-admin/_attachments/',
+            dest: 'api/build/static/admin',
           },
           {
             expand: true,
@@ -263,7 +232,7 @@ module.exports = function(grunt) {
               'admin/node_modules/font-awesome/fonts/*',
               'webapp/src/fonts/**/*'
             ],
-            dest: 'build/ddocs/medic-db/medic-admin/_attachments/fonts/',
+            dest: 'api/build/static/admin/fonts/',
           },
         ],
       },
@@ -307,11 +276,13 @@ module.exports = function(grunt) {
           const ignore = [
             'webapp/src/ts/providers/xpath-element-path.provider.ts',
             'webapp/src/js/bootstrap-tour-standalone.js',
+            'api/src/public/login/lib-bowser.js',
             'api/extracted-resources/**/*',
             'api/build/**/*',
             '**/node_modules/**',
             'build/**',
             '**/pupil/**',
+            'api/src/enketo-transformer/**',
           ];
 
           return [ESLINT_COMMAND]
@@ -322,63 +293,48 @@ module.exports = function(grunt) {
         stdio: 'inherit', // enable colors!
       },
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
-      'pack-node-modules': {
-        cmd: ['api', 'sentinel']
-          .map(module =>
+      'build-service-images': {
+        cmd: () => buildVersions.SERVICES
+          .map(service =>
             [
-              `cd ${module}`,
+              `cd ${service}`,
               `npm ci --production`,
-              `${copySharedLibs}`,
               `npm dedupe`,
-              `npm pack`,
-              `ls -l medic-${module}-0.1.0.tgz`,
-              `mv medic-*.tgz ../build/ddocs/medic/_attachments/`,
-              `cd ..`,
+              `cd ../`,
+              `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
             ].join(' && ')
           )
           .join(' && '),
       },
-      'bundle-dependencies': {
-        cmd: () => {
-          ['api', 'sentinel'].forEach(module => {
-            const filePath = `${module}/package.json`;
-            const pkg = this.file.readJSON(filePath);
-            pkg.bundledDependencies = Object.keys(pkg.dependencies);
-            if (pkg.sharedLibs) {
-              pkg.sharedLibs.forEach(lib => pkg.bundledDependencies.push(`@medic/${lib}`));
-            }
-            this.file.write(filePath, JSON.stringify(pkg, undefined, '  ') + '\n');
-            console.log(`Updated 'bundledDependencies' for ${filePath}`); // eslint-disable-line no-console
-          });
-          return 'echo "Node module dependencies updated"';
-        },
+      'build-images': {
+        cmd: () => buildVersions.INFRASTRUCTURE
+          .map(service =>
+            [
+              `cd ${service}`,
+              `docker build -f ./Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
+              'cd ../',
+            ].join(' && ')
+          )
+          .join(' && '),
       },
-      'set-ddoc-version': {
-        cmd: () => {
-          let version;
-          if (TAG) {
-            version = TAG;
-          } else {
-            version = packageJson.version;
-            if (BRANCH === 'master') {
-              version += `-alpha.${BUILD_NUMBER}`;
-            }
-          }
-          return `echo "${version}" > build/ddocs/medic/version`;
-        },
+      'save-service-images': {
+        cmd: () => buildVersions.SERVICES
+          .map(service =>
+            [
+              `mkdir -p images`,
+              `docker save ${buildVersions.getImageTag(service)} > images/${service}.tar`,
+            ].join(' && ')
+          )
+          .join(' && '),
       },
-      'set-horticulturalist-metadata': {
-        cmd: () => `
-          mkdir -p build/ddocs/medic/build_info;
-          cd build/ddocs/medic/build_info;
-          echo "${releaseName}" > version;
-          echo "${packageJson.version}" > base_version;
-          echo "${new Date().toISOString()}" > time;
-          echo "grunt on \`whoami\`" > author;`,
+      'push-service-images': {
+        cmd: () => [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]
+          .map(service => `docker push ${buildVersions.getImageTag(service)}`)
+          .join(' && '),
       },
       'api-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/extracted-resources/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
+          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/build/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:
@@ -393,26 +349,16 @@ module.exports = function(grunt) {
       },
       'setup-admin': {
         cmd:
-          ` curl -X PUT ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/admins/admin')} -d '"${couchConfig.password}"'` +
-          ` && curl -X PUT --data '"true"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/chttpd/require_valid_user')}` +
-          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/' + COUCH_NODE_NAME + '/_config/httpd/max_http_request_size')}` +
+          ` curl -X PUT ${couchConfig.withPathNoAuth(`_node/_local/_config/admins/${couchConfig.username}`)} -d '"${couchConfig.password}"'` +
+          ` && curl -X PUT --data '"true"' ${couchConfig.withPathNoAuth('_node/_local/_config/chttpd/require_valid_user')}` +
+          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/_local/_config/httpd/max_http_request_size')}` +
           ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
       },
       'setup-test-database': {
         cmd: [
-          `docker run -d -p 4984:5984 -p 4986:5986 --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data couchdb:2`,
-          'sh scripts/wait_for_response_code.sh 4984 200 couch',
-          `curl 'http://localhost:4984/_cluster_setup' -H 'Content-Type: application/json' --data-binary '{"action":"enable_single_node","username":"admin","password":"pass","bind_address":"0.0.0.0","port":5984,"singlenode":true}'`,
-          'COUCH_URL=http://admin:pass@localhost:4984/medic COUCH_NODE_NAME=nonode@nohost grunt secure-couchdb', // yo dawg, I heard you like grunt...
-          // Useful for debugging etc, as it allows you to use Fauxton easily
-          `curl -X PUT "http://admin:pass@localhost:4984/_node/nonode@nohost/_config/httpd/WWW-Authenticate" -d '"Basic realm=\\"administrator\\""' -H "Content-Type: application/json"`
+          `docker run -d -p 4984:5984 -p 4986:5986 -e COUCHDB_PASSWORD=pass -e COUCHDB_USER=admin --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data medicmobile/cht-couchdb:clustered-test4`,
+          'sh tests/scripts/wait_for_response_code.sh 4984 401 couch',
         ].join('&& ')
-      },
-      'wait_for_api_down': {
-        cmd: [
-          'sh scripts/wait_for_response_code.sh 4988 000 api',
-        ].join('&& '),
-        exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
       'clean-test-database': {
         cmd: [
@@ -420,14 +366,11 @@ module.exports = function(grunt) {
         ].join('&& '),
         exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
       },
-      'e2e-servers': {
-        cmd: `${BUILD_NUMBER ? 'echo running in CI' :'node ./tests/scripts/e2e-servers.js &'}`
-      },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
-      'setup-api-integration': {
-        cmd: `cd api && npm ci && ${linkSharedLibs('api')}`,
+      'npm-ci-api': {
+        cmd: `cd api && npm ci`,
       },
       'npm-ci-shared-libs': {
         cmd: (production) => {
@@ -442,7 +385,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && ${linkSharedLibs(dir)} && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci --legacy-peer-deps && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
@@ -457,9 +400,9 @@ module.exports = function(grunt) {
           'tests/scripts/start_webdriver.sh'
       },
       'check-env-vars':
-        'if [ -z $COUCH_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
+        'if [ -z $COUCH_URL ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
-        'COUCH_URL, COUCH_NODE_NAME" && exit 1; fi',
+        'COUCH_URL" && exit 1; fi',
       'check-version': `node scripts/ci/check-versions.js`,
       'undo-patches': {
         cmd: function() {
@@ -468,11 +411,10 @@ module.exports = function(grunt) {
             'enketo-core',
             'font-awesome',
             'moment',
-            'pouchdb-browser',
           ];
           return modulesToPatch.map(module => {
-            const backupPath = 'webapp/node_modules_backup/' + module;
-            const modulePath = 'webapp/node_modules/' + module;
+            const backupPath = `webapp/node_modules_backup/${module}`;
+            const modulePath = `webapp/node_modules/${module}`;
             return `
               [ -d ${backupPath} ] &&
               rm -rf ${modulePath} &&
@@ -499,7 +441,13 @@ module.exports = function(grunt) {
       },
       'wdio-run-standard': {
         cmd: [
-          'npm run wdio-standard'
+          'npm run standard-wdio'
+        ].join(' && '),
+        stdio: 'inherit', // enable colors!
+      },
+      'wdio-run-default-mobile': {
+        cmd: [
+          'npm run default-wdio-mobile'
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
@@ -540,39 +488,36 @@ module.exports = function(grunt) {
             'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
 
             // patch enketo to always mark the /inputs group as relevant
-            'patch webapp/node_modules/enketo-core/src/js/Form.js < webapp/patches/enketo-inputs-always-relevant.patch',
+            'patch webapp/node_modules/enketo-core/src/js/form.js < webapp/patches/enketo-inputs-always-relevant_form.patch',
+            'patch webapp/node_modules/enketo-core/src/js/relevant.js < webapp/patches/enketo-inputs-always-relevant_relevant.patch',
 
-            // patch enketo so forms with no active pages are considered valid
-            // https://github.com/medic/medic/issues/5484
-            'patch webapp/node_modules/enketo-core/src/js/page.js < webapp/patches/enketo-handle-no-active-pages.patch',
+            // patch enketo to fix repeat name collision bug - this should be removed when upgrading to a new version of enketo-core
+            // https://github.com/enketo/enketo-core/issues/815
+            'patch webapp/node_modules/enketo-core/src/js/calculate.js < webapp/patches/enketo-repeat-name-collision.patch',
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
-
-            // patch pouchdb to catch unhandled rejections
-            // https://github.com/medic/cht-core/issues/6626
-            'patch webapp/node_modules/pouchdb-browser/lib/index.js < webapp/patches/pouchdb-unhandled-rejection.patch',
           ];
           return patches.join(' && ');
         },
       },
       audit: { cmd: 'node ./scripts/audit-all.js' },
-      'audit-whitelist': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
+      'audit-allowed-list': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
       'build-config': {
         cmd: () => {
           const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
           const configPath = path.resolve('./config/default');
-          const buildPath = path.resolve('./build/ddocs/medic/_attachments/default-docs');
+          const buildPath = path.resolve('./api/build/default-docs');
           const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
           return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
         }
       },
       'build-webapp': {
         cmd: () => {
-          const configuration = BUILD_NUMBER ? 'production' : 'development';
+          const configuration = DEV ? 'development' : 'production';
           return [
             `cd webapp`,
-            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${DEV ? 'true' : 'false'}`,
             `../node_modules/.bin/ngc`,
             'cd ../',
           ].join(' && ');
@@ -581,7 +526,7 @@ module.exports = function(grunt) {
       },
       'watch-webapp': {
         cmd: () => {
-          const configuration = BUILD_NUMBER ? 'production' : 'development';
+          const configuration = DEV ? 'development' : 'production';
           return `
             cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true &
             cd ../
@@ -593,7 +538,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            `../node_modules/.bin/ng test webapp --watch=false --progress=${BUILD_NUMBER ? 'false' : 'true'}`,
+            `../node_modules/.bin/ng test webapp --watch=false --progress=${DEV ? 'true' : 'false'}`,
             'cd ../',
           ].join(' && ');
         },
@@ -628,8 +573,6 @@ module.exports = function(grunt) {
         files: ['admin/src/css/**/*'],
         tasks: [
           'less:admin',
-          'couch-compile:secondary',
-          'couch-push:localhost-secondary',
           'notify:deployed',
         ],
       },
@@ -637,17 +580,13 @@ module.exports = function(grunt) {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: [
           'browserify:admin',
-          'couch-compile:secondary',
-          'couch-push:localhost-secondary',
           'notify:deployed',
         ],
       },
       'admin-index': {
         files: ['admin/src/templates/index.html'],
         tasks: [
-          'copy:admin-resources',
-          'couch-compile:secondary',
-          'couch-push:localhost-secondary',
+          'copy:admin-static',
           'notify:deployed',
         ],
       },
@@ -655,32 +594,40 @@ module.exports = function(grunt) {
         files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
         tasks: [
           'ngtemplates:adminApp',
-          'couch-compile:secondary',
-          'couch-push:localhost-secondary',
           'notify:deployed',
         ],
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
-        files: ['build/ddocs/medic/_attachments/**/*'],
-        tasks: [
-          'couch-compile:primary',
-          'deploy',
-        ],
+        files: ['api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js'],
+        tasks: ['update-service-worker', 'notify:deployed'],
       },
       'primary-ddoc': {
-        files: ['ddocs/medic/**/*'],
-        tasks: ['copy:ddocs', 'couch-compile:primary', 'deploy'],
-      },
-      'secondary-ddocs': {
-        files: ['ddocs/*-db/**/*'],
+        files: ['ddocs/medic-db/**/*'],
         tasks: [
           'copy:ddocs',
+          'set-ddocs-version',
+          'couch-compile:primary',
+          'couch-push:localhost',
+          'notify:deployed',
+          'copy:api-ddocs',
+        ],
+      },
+      'secondary-ddocs': {
+        files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
+        tasks: [
+          'copy:ddocs',
+          'set-ddocs-version',
           'couch-compile:secondary',
           'couch-push:localhost-secondary',
           'notify:deployed',
+          'copy:api-ddocs',
         ],
       },
+      'api-public-files': {
+        files: ['api/src/public/**/*'],
+        tasks: ['copy:api-resources'],
+      }
     },
     notify: {
       deployed: {
@@ -698,14 +645,6 @@ module.exports = function(grunt) {
       },
     },
     protractor: {
-      'e2e-cht-release-tests': {
-        options: {
-          configFile: 'tests/conf.js',
-          args: {
-            suite: 'cht',
-          }
-        }
-      },
       'e2e-web-tests': {
         options: {
           configFile: 'tests/conf.js',
@@ -721,7 +660,7 @@ module.exports = function(grunt) {
             suite: 'mobile',
             capabilities: {
               chromeOptions: {
-                'args': ['headless', 'disable-gpu'],
+                'args': ['headless', 'disable-gpu', 'ignore-certificate-errors'],
                 mobileEmulation: { 'deviceName': 'Nexus 5' }
               }
             }
@@ -736,7 +675,7 @@ module.exports = function(grunt) {
           },
           capabilities: {
             chromeOptions: {
-              args: ['window-size=1024,768']
+              args: ['window-size=1024,768', 'ignore-certificate-errors']
             }
           }
         }
@@ -780,7 +719,7 @@ module.exports = function(grunt) {
       adminApp: {
         cwd: 'admin/src',
         src: ['templates/**/*.html', '!templates/index.html'],
-        dest: 'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js',
+        dest: 'api/build/static/admin/js/templates.js',
         options: {
           htmlmin: {
             collapseBooleanAttributes: true,
@@ -797,12 +736,12 @@ module.exports = function(grunt) {
     },
     sass: {
       options: {
-        implementation: require('node-sass'),
+        implementation: require('sass'),
       },
       compile: {
         cwd: 'webapp/src/css/',
         src: 'enketo/enketo.scss',
-        dest: 'build',
+        dest: 'api/build/static/webapp',
         ext: '.less',
         expand: true,
         outputStyle: 'expanded',
@@ -811,10 +750,8 @@ module.exports = function(grunt) {
       },
     },
     'optimize-js': {
-      'build/ddocs/medic-db/medic-admin/_attachments/js/main.js':
-        'build/ddocs/medic-db/medic-admin/_attachments/js/main.js',
-      'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js':
-        'build/ddocs/medic-db/medic-admin/_attachments/js/templates.js',
+      'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
+      'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js',
     },
     jsdoc: {
       admin: {
@@ -863,64 +800,78 @@ module.exports = function(grunt) {
     'exec:apply-patches',
   ]);
 
-  grunt.registerTask('build-js', 'Build the JS resources', [
+  grunt.registerTask('build-webapp', 'Build webapp resources', [
+    'build-enketo-css',
     'exec:build-webapp',
   ]);
 
-  grunt.registerTask('build-css', 'Build the CSS resources', [
-    'sass'
+  grunt.registerTask('build-enketo-css', 'Build Enketo css', [
+    'sass',
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
     'exec:clean-build-dir',
-    'copy:ddocs',
-    'build-common',
-    'build-node-modules',
-    'minify',
-    'couch-compile:primary',
+    'build-ddocs',
+    'build-webapp',
+    //'exec:bundlesize', // bundlesize only checks webapp build files
+    'build-admin',
+    'build-config',
+    'create-staging-doc',
+    'populate-staging-doc',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
     'exec:clean-build-dir',
-    'copy:ddocs',
-    'copy:api-resources',
-    'build-common',
-    'couch-compile:primary',
+    'build-ddocs',
+    'build-webapp',
+    'build-admin',
+    'build-config',
+    'copy-static-files-to-api',
   ]);
 
-  grunt.registerTask('build-common', 'Build the static resources', [
-    'build-css',
-    'build-js',
-    'exec:set-ddoc-version',
-    'exec:set-horticulturalist-metadata',
-    'build-admin',
-    'build-ddoc',
+  grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
+    'copy:api-resources',
+    'copy:api-bowser',
+    'copy:built-resources',
+    'copy:webapp-static',
+    'copy:admin-static',
+  ]);
+
+  grunt.registerTask('set-build-info', buildUtils.setBuildInfo);
+
+  grunt.registerTask('build-ddocs', 'Builds the ddocs', [
+    'copy:ddocs',
+    'set-ddocs-version',
+    'set-build-info',
+    'couch-compile:primary',
+    'couch-compile:secondary',
+    'copy:api-ddocs',
+  ]);
+
+  grunt.registerTask('build-config', 'Build default configuration', [
     'exec:build-config',
   ]);
 
-  grunt.registerTask('build-ddoc', 'Build the main ddoc', [
-    'couch-compile:secondary',
-    'copy:ddoc-attachments',
-  ]);
-
   grunt.registerTask('build-admin', 'Build the admin app', [
-    'copy:admin-resources',
     'ngtemplates:adminApp',
     'browserify:admin',
     'less:admin',
+    'minify-admin',
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'couch-push:localhost',
+    'couch-push:localhost-secondary',
     'notify:deployed',
   ]);
 
-  grunt.registerTask('build-node-modules', 'Build and pack api and sentinel bundles', [
-    'copy:api-resources',
+  grunt.registerTask('build-service-images', 'Build api and sentinel images', [
+    'copy-static-files-to-api',
     'uglify:api',
     'cssmin:api',
-    'exec:bundle-dependencies',
-    'exec:pack-node-modules',
+    'env:version',
+    'exec:build-service-images',
+    'exec:build-images',
   ]);
 
   grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
@@ -934,21 +885,16 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e-env-setup', 'Deploy app for testing', [
-    'exec:clean-test-database',
-    'exec:setup-test-database',
-    'couch-push:test',
-    'exec:e2e-servers',
+    'build-service-images',
   ]);
 
   grunt.registerTask('e2e-web', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-web-tests',
-    'exec:clean-test-database',
   ]);
   grunt.registerTask('e2e-mobile', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
     'protractor:e2e-mobile-tests',
-    'exec:clean-test-database',
   ]);
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'e2e-deploy',
@@ -970,10 +916,11 @@ module.exports = function(grunt) {
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
     'exec:clean-test-database',
     'exec:setup-test-database',
-    'build-node-modules',
-    'build-ddoc',
+    'build-service-images',
+    'couch-compile:secondary',
     'couch-compile:primary',
     'couch-push:test',
+    'copy:api-ddocs',
     'protractor:performance-tests-and-services',
   ]);
 
@@ -996,7 +943,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
     'exec:check-env-vars',
-    'exec:setup-api-integration',
+    'exec:npm-ci-api',
     'mochaTest:api-integration',
   ]);
 
@@ -1020,22 +967,10 @@ module.exports = function(grunt) {
   ]);
 
   // CI tasks
-  grunt.registerTask('minify', 'Minify JS and CSS', [
-    'uglify:web',
+  grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
+    'uglify:admin',
     'optimize-js',
-    'cssmin:web',
-    'exec:bundlesize',
-  ]);
-
-  grunt.registerTask('ci-compile', 'build, lint, unit, integration test', [
-    'exec:check-version',
-    'static-analysis',
-    'install-dependencies',
-    'build',
-    'mochaTest:api-integration',
-    'unit',
-    'exec:test-config-default',
-    'exec:test-config-standard',
+    'cssmin:admin',
   ]);
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
@@ -1049,41 +984,33 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'start-webdriver',
-    'exec:e2e-servers',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
   ]);
   grunt.registerTask('ci-e2e-mobile', 'Run e2e tests for CI', [
     'start-webdriver',
-    'exec:e2e-servers',
     'protractor:e2e-mobile-tests',
   ]);
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
-    'exec:e2e-servers',
     'exec:e2e-integration',
     'exec:eslint-sw',
   ]);
 
-  grunt.registerTask('ci-e2e-cht', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'exec:e2e-servers',
-    'protractor:e2e-cht-release-tests'
-  ]);
-
   grunt.registerTask('ci-webdriver-default', 'Run e2e tests using webdriverIO for default config', [
-    'exec:e2e-servers',
     'exec:wdio-run-default'
   ]);
 
   grunt.registerTask('ci-webdriver-standard', 'Run e2e tests using webdriverIO for standard config', [
-    'exec:e2e-servers',
     'exec:wdio-run-standard'
+  ]);
+
+  grunt.registerTask('ci-webdriver-default-mobile', 'Run e2e tests using webdriverIO for default config in mobile screen', [
+    'exec:wdio-run-default-mobile'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'start-webdriver',
-    'exec:e2e-servers',
     'protractor:performance-tests-and-services',
   ]);
 
@@ -1110,6 +1037,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
+    'copy:api-bowser',
     'exec:api-dev',
   ]);
 
@@ -1121,8 +1049,30 @@ module.exports = function(grunt) {
     'exec:sentinel-dev',
   ]);
 
-  grunt.registerTask('publish-for-testing', 'Publish the ddoc to the testing server', [
-    'replace:change-ddoc-id-for-testing',
+  grunt.registerTask('create-staging-doc', buildUtils.createStagingDoc);
+  grunt.registerTask('populate-staging-doc', buildUtils.populateStagingDoc);
+  grunt.registerTask('update-service-worker', function () {
+    const done = this.async();
+    buildUtils.updateServiceWorker().then(done);
+  });
+  grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
+
+  grunt.registerTask('publish-service-images', 'Publish service images', (() => {
+    if (!BUILD_NUMBER) {
+      return [];
+    }
+
+    if (ECR_REPO) {
+      return ['exec:push-service-images'];
+    }
+
+    return ['exec:save-service-images'];
+  })());
+
+  grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
+    'build-service-images',
+    'publish-service-images',
+    'couch-compile:staging',
     'couch-push:testing',
   ]);
 

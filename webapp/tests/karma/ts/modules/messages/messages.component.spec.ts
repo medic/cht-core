@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -15,6 +15,8 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
 import { NavigationService } from '@mm-services/navigation.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { AuthService } from '@mm-services/auth.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -23,6 +25,18 @@ describe('Messages Component', () => {
   let changesService;
   let exportService;
   let modalService;
+  let userContactService;
+  let authService;
+
+  const userContactGrandparent = { _id: 'grandparent' };
+  const userContactDoc = {
+    _id: 'user',
+    parent: {
+      _id: 'parent',
+      name: 'parent',
+      parent: userContactGrandparent,
+    },
+  };
 
   beforeEach(waitForAsync(() => {
     modalService = { show: sinon.stub() };
@@ -33,12 +47,15 @@ describe('Messages Component', () => {
     changesService = {
       subscribe: sinon.stub().resolves(of({}))
     };
+    userContactService = {
+      get: sinon.stub().resolves(userContactDoc),
+    };
+    authService = { online: sinon.stub().returns(false) };
     const tourServiceMock = {
       startIfNeeded: () => {}
     };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
-      { selector: 'getConversations', value: []},
       { selector: 'getLoadingContent', value: false },
       { selector: 'getMessagesError', value: false },
     ];
@@ -63,6 +80,8 @@ describe('Messages Component', () => {
           { provide: ModalService, useValue: modalService },
           { provide: TourService, useValue: tourServiceMock },
           { provide: NavigationService, useValue: {} },
+          { provide: UserContactService, useValue: userContactService },
+          { provide: AuthService, useValue: authService },
         ]
       })
       .compileComponents()
@@ -102,6 +121,14 @@ describe('Messages Component', () => {
 
     expect(resultWithDoc).to.equal('134xyz567');
     expect(resultNoDoc).to.equal('134abc');
+  });
+
+  it('ngOnDestroy() should unsubscribe from observables', () => {
+    const spySubscriptionsUnsubscribe = sinon.spy(component.subscriptions, 'unsubscribe');
+
+    component.ngOnDestroy();
+
+    expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
   });
 
   describe('updateConversations()', () => {
@@ -174,11 +201,108 @@ describe('Messages Component', () => {
     });
   });
 
-  it('ngOnDestroy() should unsubscribe from observables', () => {
-    const spySubscriptionsUnsubscribe = sinon.spy(component.subscriptions, 'unsubscribe');
+  describe('Messages breadcrumbs', () => {
+    const bettyOfflineUserContactDoc = {
+      _id: 'user',
+      parent: {
+        _id: 'parent',
+        name: 'CHW Bettys Area',
+        parent: userContactGrandparent,
+      },
+    };
+    const conversations =  [
+      { key: 'a',
+        message: { inAllMessages: true },
+        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null]
+      },
+      { key: 'b',
+        message: { inAllMessages: true },
+        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+      },
+      { key: 'c',
+        message: { inAllMessages: true },
+        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place', null, null]
+      },
+      { key: 'd',
+        message: { inAllMessages: true },
+        lineage : []
+      },
+      { key: 'e',
+        message: { inAllMessages: true },
+      },
+    ];
 
-    component.ngOnDestroy();
+    it('it should retrieve the hierarchy level of the connected user', async () => {
+      expect(await component.currentLevel).to.equal('parent');
+    });
 
-    expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+    it('should not alter conversations when user is offline and parent place is not relevant to the conversation',
+      fakeAsync(() => {
+        sinon.resetHistory();
+
+        messageContactService.getList.resolves(conversations);
+        userContactService.get.resolves(userContactDoc);
+        authService.online.returns(false);
+
+        component.ngOnInit();
+        tick();
+        component.updateConversations({ merge: true });
+        tick();
+
+        expect(component.conversations).to.deep.equal(conversations);
+      }));
+
+    it('should not change the conversations lineage if the connected user is online only', fakeAsync(() => {
+      sinon.resetHistory();
+
+      messageContactService.getList.resolves(conversations);
+      userContactService.get.resolves(bettyOfflineUserContactDoc);
+      authService.online.returns(true);
+
+      component.ngOnInit();
+      tick();
+      component.updateConversations({ merge: true });
+      tick();
+
+      expect(component.conversations).to.deep.equal(conversations);
+    }));
+
+    it('should remove current level from lineage when user is offline and parent place relevant to the conversation',
+      fakeAsync(() => {
+        sinon.resetHistory();
+        const updatedConversations = [
+          { key: 'a',
+            message: { inAllMessages: true },
+            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+          },
+          { key: 'b',
+            message: { inAllMessages: true },
+            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+          },
+          { key: 'c',
+            message: { inAllMessages: true },
+            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
+          },
+          { key: 'd',
+            message: { inAllMessages: true },
+            lineage : []
+          },
+          { key: 'e',
+            message: { inAllMessages: true },
+          },
+        ];
+
+        messageContactService.getList.resolves(conversations);
+        userContactService.get.resolves(bettyOfflineUserContactDoc);
+        authService.online.returns(false);
+
+        component.ngOnInit();
+        tick();
+        component.updateConversations({ merge: true });
+        tick();
+
+        expect(component.conversations).to.deep.equal(updatedConversations);
+      }));
   });
 });
+

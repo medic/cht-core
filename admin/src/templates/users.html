@@ -1,11 +1,12 @@
 <div mm-auth="can_configure">
 
   <legend translate>Users</legend>
-
-  <div class="tab-content">
+  <div class="btn-toolbar">
     <a id="add-user" class="btn btn-primary" ng-click="editUser({})">
-      <i class="fa fa-plus"></i>
-      <span translate>Add User</span>
+      <span translate>users.manage.add_single_user</span>
+    </a>
+    <a id="add-users" class="btn btn-primary" ng-click="showAddMultipleUsersModal()" href="#">
+      <span translate>users.manage.import_users</span>
     </a>
   </div>
 
@@ -16,20 +17,18 @@
     <p ng-show="error" class="alert alert-danger" role="alert" translate>Error fetching users</p>
     <div class="container-fluid">
       <div class="row selection-heading" ng-hide="error">
-        <div class="col-xs-2" translate>User Name</div>
-        <div class="col-xs-2" translate>Full Name</div>
-        <div class="col-xs-3" translate>configuration.role</div>
-        <div class="col-xs-2" translate>Phone Number</div>
+        <div class="col-xs-3" translate>User Name</div>
+        <div class="col-xs-3" translate>Full Name</div>
+        <div class="col-xs-3" translate>Phone Number</div>
         <div class="col-xs-1" translate>Facility</div>
         <div class="col-xs-1" translate>Contact</div>
         <div class="col-xs-1"></div>
       </div>
 
       <div class="row selection" test-id="user-list" ng-repeat="user in users" ng-click="!user.inactive && editUser(user)" ng-class="{'inactive': user.inactive}" translate-attr="{'title': user.inactive ? 'Deleted user' : ''}">
-        <div class="col-xs-2" test-id="username-list">{{user.name}}</div>
-        <div class="col-xs-2">{{user.fullname}}</div>
-        <div class="col-xs-3"><span ng-if="user.roles[0]" translate>{{(roles[user.roles[0]].name) || ('usertype.' + user.roles[0])}}</span></div>
-        <div class="col-xs-2">{{user.phone}}</div>
+        <div class="col-xs-3" test-id="username-list">{{user.name}}</div>
+        <div class="col-xs-3">{{user.fullname}}</div>
+        <div class="col-xs-3">{{user.phone}}</div>
         <div class="col-xs-1"><i class="fa fa-check" ng-if="user.facility_id"></i></div>
         <div class="col-xs-1"><i class="fa fa-check" ng-if="user.contact_id"></i></div>
         <div class="col-xs-1 delete">

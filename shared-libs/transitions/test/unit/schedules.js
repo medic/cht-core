@@ -1,13 +1,27 @@
 const moment = require('moment');
 const assert = require('chai').assert;
-const schedules = require('../../src/lib/schedules');
 const config = require('../../src/config');
 const sinon = require('sinon');
 const messageUtils = require('@medic/message-utils');
 const utils = require('../../src/lib/utils');
 
 describe('schedules', () => {
-  afterEach(() => sinon.restore());
+  let schedules;
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon
+        .stub()
+        .returns({}),
+    });
+
+    schedules = require('../../src/lib/schedules');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('getOffset returns false for bad syntax', () => {
     assert.equal(schedules.getOffset('x'), false);
@@ -94,6 +108,32 @@ describe('schedules', () => {
     assert(doc.scheduled_tasks);
     assert.equal(doc.scheduled_tasks.length, 2);
     assert.equal(moment(doc.scheduled_tasks[1].due).diff(doc.reported_date, 'days'), 81);
+  });
+
+  it('schedule uses `reported_date` when start_from is not set', () => {
+    const doc = {
+      form: 'x',
+      reported_date: moment().valueOf()
+    };
+
+    const added = schedules.assignSchedule(doc, {
+      name: 'duckland',
+      messages: [
+        {
+          group: 1,
+          offset: '1 week',
+          message: [{
+            content: 'Test content.',
+            locale: 'en'
+          }]
+        },
+      ]
+    });
+
+    assert.equal(added, true);
+    assert(doc.scheduled_tasks);
+    assert.equal(doc.scheduled_tasks.length, 1);
+    assert.equal(moment(doc.scheduled_tasks[0].due).diff(doc.reported_date, 'weeks'), 1);
   });
 
   it('scheduled due timestamp respects timezone', () => {
@@ -383,7 +423,7 @@ describe('schedules', () => {
       locale_outgoing: 'sw',
       date_format: 'dddd, Do MMMM YYYY'
     };
-    sinon.stub(config, 'getAll').returns(configuration);
+    config.getAll.returns(configuration);
 
     schedules.assignSchedule(doc, {
       name: 'duckland',
@@ -498,7 +538,6 @@ describe('schedules', () => {
       const patientRegistrations = [{ _id: 'registration_1', reg_field: 'some reg field' }];
 
       sinon.spy(messageUtils, 'generate');
-      sinon.stub(config, 'getAll').returns({});
 
       schedules.assignSchedule(doc, schedule, { patient, patientRegistrations });
 
@@ -543,7 +582,6 @@ describe('schedules', () => {
       const placeRegistrations = [{ _id: 'registration_1', municipality: 'Theraria' }];
 
       sinon.spy(messageUtils, 'generate');
-      sinon.stub(config, 'getAll').returns({});
 
       schedules.assignSchedule(doc, schedule, { place, placeRegistrations });
 
@@ -590,7 +628,6 @@ describe('schedules', () => {
       const placeRegistrations = [{ _id: 'registration_1', municipality: 'Theraria' }];
 
       sinon.spy(messageUtils, 'generate');
-      sinon.stub(config, 'getAll').returns({});
 
       schedules.assignSchedule(doc, schedule, { place, placeRegistrations, patient, patientRegistrations });
 
@@ -634,7 +671,6 @@ describe('schedules', () => {
       };
 
       sinon.spy(messageUtils, 'generate');
-      sinon.stub(config, 'getAll').returns({});
 
       schedules.assignSchedule(doc, schedule);
 

@@ -1,5 +1,15 @@
 module.exports = {
 
+  deathReportScenarios: {
+    withDeathDate: deathDate => [
+      [deathDate, 'health_facility', 'Died while sleeping.'],
+      [],
+    ],
+    undo:[
+      ['yes']
+    ]
+  },
+
   pregnancyRegistrationScenarios: {
     safe: [
       ['method_lmp'],
@@ -198,25 +208,33 @@ module.exports = {
       []
 
     ],
-    riskDanger: [
-      ['method_lmp'],
-      ['1999-08-01'],
-      [],
-      ['1'],
-      ['yes', '1999-12-15'],
-      ['yes', '2000-01-15'],
-      ['no', 'no'],
-      ['asthma', 'yes', 'underweight'],
-      ['yes', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'],
-      ['no'],
-      ['no'],
-      ['no'],
-      [],
-      ['no'],
-      ['no'],
-      []
-    ],
-
+    riskDanger: opts => {
+      const content = {
+        firstPregnancy: 'no',
+        miscarriages: 'no',
+        conditions: ['asthma'],
+        additionalFactors: ['yes', 'underweight']
+      };
+      Object.assign(content, opts);
+      return [
+        ['method_lmp'],
+        ['1999-08-01'],
+        [],
+        ['1'],
+        ['yes', '1999-12-15'],
+        ['yes', '2000-01-15'],
+        [content.firstPregnancy, content.miscarriages],
+        [content.conditions, ...content.additionalFactors],
+        ['yes', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no'],
+        ['no'],
+        ['no'],
+        ['no'],
+        [],
+        ['no'],
+        ['no'],
+        []
+      ];
+    },
   },
 
   pregnancyHomeVisitScenarios: {
@@ -340,6 +358,20 @@ module.exports = {
       ['yes'],
       ['yes'],
       []
+    ],
+    attendedLastANCVisit: ({ ttReceivedPast } = {}) => [
+      ['yes', 'yes'],
+      ['yes', 'no'],
+      ['none', 'no'],
+      ['no'],
+      [],
+      Array(11).fill('yes'),
+      ['yes'],
+      ['yes'],
+      ['yes'],
+      [],
+      ['yes'],
+      ...(ttReceivedPast ? [] : [['yes']]),
     ]
   },
   pregnancyDangerSignScenarios: {
@@ -405,6 +437,39 @@ module.exports = {
       ['within_24_hrs'],
       []
     ],
+    babyDeceased: (deliveryDate, motherOutcome) => [
+      [motherOutcome],
+      Array(5).fill('no'),
+      [1, 0, deliveryDate, 'health_facility', 'vaginal'],
+      [deliveryDate, 'health_facility', 'yes', 'Baby Death Notes'],
+      ['none', ''],
+      [],
+    ],
+    motherDeceased: deliveryDate => [
+      ['deceased'],
+      [deliveryDate, 'health_facility', 'yes', 'Additional Notes'],
+      [1, 1, deliveryDate, 'health_facility', 'vaginal'],
+      ['alive_well', 'Baby Name', 'female', 'yes', 2000, 'yes', 50, 'bcg_and_birth_polio', ...Array(11).fill('no')],
+      [],
+      ['none', ''],
+      [],
+    ],
+    babyDeceased_motherDeceased: (deliveryDate) => [
+      ['deceased'],
+      [deliveryDate, 'health_facility', 'yes', 'Mother Death Notes'],
+      [1, 0, deliveryDate, 'health_facility', 'vaginal'],
+      [deliveryDate, 'health_facility', 'yes', 'Baby Death Notes'],
+      [],
+    ],
+    pncVisits: (deliveryDate, pncVisitsAttended, pncVisitsAdditional) => [
+      ['alive_well'],
+      Array(5).fill('no'),
+      [1, 1, deliveryDate, 'health_facility', 'vaginal'],
+      ['alive_well', 'Baby Name', 'female', 'yes', 2000, 'yes', 50, 'bcg_and_birth_polio', 'yes', 'yes', ...Array(9).fill('no')],
+      [],
+      [pncVisitsAttended, pncVisitsAdditional],
+      [],
+    ]
   },
 
   pncDangerSignFollowUpScenarios: {

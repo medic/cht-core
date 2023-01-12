@@ -4,6 +4,7 @@ const path = require('path');
 const db = require('../db');
 const environment = require('../environment');
 const { info } = require('../logger');
+const config = require('../config');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
@@ -32,18 +33,20 @@ const doExtend = (target, source) => {
 };
 
 const getDeprecatedTransitions = () => {
-  const transitions = require('@medic/transitions')();
+  const transitions = config.getTransitionsLib();
+
+  if (!transitions) {
+    return [];
+  }
 
   return transitions
     .getDeprecatedTransitions()
-    .map(transition => {
-      return {
-        name: transition.name,
-        deprecated: transition.deprecated,
-        deprecatedIn: transition.deprecatedIn,
-        deprecationMessage: transition.getDeprecationMessage ? transition.getDeprecationMessage() : ''
-      };
-    });
+    .map(transition => ({
+      name: transition.name,
+      deprecated: transition.deprecated,
+      deprecatedIn: transition.deprecatedIn,
+      deprecationMessage: transition.getDeprecationMessage ? transition.getDeprecationMessage() : ''
+    }));
 };
 
 module.exports = {
@@ -71,7 +74,7 @@ module.exports = {
    * @returns Boolean whether or not settings doc has been updated
    */
   update: (body, replace, overwrite) => {
-    const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.doc.json');
+    const pathToDefaultConfig = path.join(environment.defaultDocsPath, 'settings.doc.json');
     const defaultConfig = require(pathToDefaultConfig);
 
     return getDoc()

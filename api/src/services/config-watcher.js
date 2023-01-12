@@ -1,11 +1,10 @@
 const db = require('../db');
 const logger = require('../logger');
 const translationUtils = require('@medic/translation-utils');
+const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
 const settingsService = require('./settings');
 const translations = require('../translations');
-const ddocExtraction = require('../ddoc-extraction');
-const resourceExtraction = require('../resource-extraction');
 const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const manifest = require('./manifest');
@@ -15,21 +14,21 @@ const MEDIC_DDOC_ID = '_design/medic';
 
 const loadTranslations = () => {
   const translationCache = {};
-  const options = { key: ['translations', true], include_docs: true };
-  return db.medic
-    .query('medic-client/doc_by_type', options)
+  return translations
+    .getTranslationDocs()
     .catch(err => {
       logger.error('Error loading translations - starting up anyway: %o', err);
     })
-    .then(result => {
-      if (!result) {
+    .then(translationDocs => {
+      if (!translationDocs) {
         return;
       }
-      result.rows.forEach(row => {
+
+      translationDocs.forEach(doc => {
         // If the field generic does not exist then we assume that the translation document
         // has not been converted to the new format so we will use the field values
-        const values = row.doc.generic ? Object.assign(row.doc.generic, row.doc.custom || {}) : row.doc.values;
-        translationCache[row.doc.code] = translationUtils.loadTranslations(values);
+        const values = doc.generic ? Object.assign(doc.generic, doc.custom || {}) : doc.values;
+        translationCache[doc.code] = translationUtils.loadTranslations(values);
       });
 
       config.setTranslationCache(translationCache);
@@ -37,9 +36,7 @@ const loadTranslations = () => {
 };
 
 const initTransitionLib = () => {
-  const settings = config.get();
-  const translationCache = config.getTranslationValues();
-  const transitionsLib = require('@medic/transitions')(db, settings, translationCache, logger);
+  const transitionsLib = require('@medic/transitions')(db, config, logger);
   // loadTransitions could throw errors when some transitions are misconfigured
   try {
     transitionsLib.loadTransitions(true);
@@ -80,18 +77,7 @@ const handleDdocChange = () => {
     .run()
     .catch(err => {
       logger.error('Failed to update translation docs: %o', err);
-    })
-    .then(() => ddocExtraction.run())
-    .catch(err => {
-      logger.error('Something went wrong trying to extract ddocs: %o', err);
-      process.exit(1);
-    })
-    .then(() => resourceExtraction.run())
-    .catch(err => {
-      logger.error('Something went wrong trying to extract resources: %o', err);
-      process.exit(1);
-    })
-    .then(() => updateServiceWorker());
+    });
 };
 
 const handleSettingsChange = () => {
@@ -113,6 +99,10 @@ const handleTranslationsChange = () => {
 };
 
 const handleFormChange = (change) => {
+  logger.info('Detected form change for', change.id);
+  if (change.deleted) {
+    return Promise.resolve();
+  }
   logger.info('Detected form change - generating attachments');
   return generateXform.update(change.id).catch(err => {
     logger.error('Failed to update xform: %o', err);
@@ -141,13 +131,19 @@ const load = () => {
   loadViewMaps();
   return loadTranslations()
     .then(() => loadSettings())
-    .then(() => initTransitionLib());
+    .then(() => initTransitionLib())
+    .then(() => db.createVault());
 };
 
 const listen = () => {
   db.medic
     .changes({ live: true, since: 'now', return_docs: false })
     .on('change', change => {
+
+      if (tombstoneUtils.isTombstoneId(change.id)) {
+        return Promise.resolve();
+      }
+
       if (change.id === MEDIC_DDOC_ID) {
         return handleDdocChange();
       }
@@ -177,4 +173,6 @@ const listen = () => {
 module.exports = {
   load,
   listen,
+  updateServiceWorker,
+  loadTranslations,
 };

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Support Request
+    url: https://forum.communityhealthtoolkit.org/
+    about: Request support from the community
+  - name: Security Vulnerability
+    url: https://docs.communityhealthtoolkit.org/contribute/code/#disclosing-vulnerabilities
+    about: Report a security vulnerability.

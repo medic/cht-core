@@ -52,6 +52,14 @@ angular.module('controllers').controller('UsersCtrl',
       });
     };
 
+    $scope.showAddMultipleUsersModal = function() {
+      Modal({
+        templateUrl: 'templates/multiple_user_modal.html',
+        controller: 'MultipleUserCtrl',
+        model: {},
+      });
+    };
+
     $scope.$on('UsersUpdated', function() {
       $scope.updateList();
     });

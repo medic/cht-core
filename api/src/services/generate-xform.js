@@ -4,18 +4,19 @@
  */
 const childProcess = require('child_process');
 const path = require('path');
+const htmlParser = require('node-html-parser');
 const logger = require('../logger');
 const db = require('../db');
 const formsService = require('./forms');
+const markdown = require('../enketo-transformer/markdown');
 
-const FORM_ROOT_OPEN = '<root xmlns:xf="http://www.w3.org/2002/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:enk="http://enketo.org/xforms" xmlns:kb="http://kobotoolbox.org/xforms" xmlns:esri="http://esri.com/xforms" xmlns:oc="http://openclinica.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">';
 const MODEL_ROOT_OPEN = '<root xmlns="http://www.w3.org/2002/xforms" xmlns:xf="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
 const ROOT_CLOSE = '</root>';
 const JAVAROSA_SRC = / src="jr:\/\//gi;
 const MEDIA_SRC_ATTR = ' data-media-src="';
 
 const FORM_STYLESHEET = path.join(__dirname, '../xsl/openrosa2html5form.xsl');
-const MODEL_STYLESHEET = path.join(__dirname, '../../node_modules/enketo-xslt/xsl/openrosa2xmlmodel.xsl');
+const MODEL_STYLESHEET = path.join(__dirname, '../enketo-transformer/xsl/openrosa2xmlmodel.xsl');
 const XSLTPROC_CMD = 'xsltproc';
 
 const processErrorHandler = (xsltproc, err, reject) => {
@@ -70,33 +71,93 @@ const transform = (formXml, stylesheet) => {
   });
 };
 
-const removeLast = (haystack, needle) => {
-  const index = haystack.lastIndexOf(needle);
-  if (index === -1) {
-    return haystack;
-  }
-  return haystack.slice(0, index) + haystack.slice(index + needle.length);
+const convertDynamicUrls = (original) => original.replace(
+  /<a[^>]+href="([^"]*---output[^"]*)"[^>]*>(.*?)<\/a>/gm,
+  '<a href="#" target="_blank" rel="noopener" class="dynamic-url">' +
+  '$2<span class="url hidden">$1</span>' +
+  '</a>');
+
+const convertEmbeddedHtml = (original) => original
+  .replace(/&lt;\s*(\/)?\s*([\s\S]*?)\s*&gt;/gm, '<$1$2>')
+  .replace(/&quot;/g, '"')
+  .replace(/&#039;/g, '\'')
+  .replace(/&amp;/g, '&');
+
+const replaceNode = (currentNode, newNode) => {
+  const { parentNode } = currentNode;
+  const idx = parentNode.childNodes.findIndex((child) => child === currentNode);
+  parentNode.childNodes = [
+    ...parentNode.childNodes.slice(0, idx),
+    newNode,
+    ...parentNode.childNodes.slice(idx + 1),
+  ];
 };
 
-const removeRootNode = (string, node) => {
-  return removeLast(string.replace(node, ''), ROOT_CLOSE);
+// Based on enketo/enketo-transformer
+// https://github.com/enketo/enketo-transformer/blob/377caf14153586b040367f8c2de53c9d794c19d4/src/transformer.js#L430
+const replaceAllMarkdown = (formString) => {
+  const replacements = {};
+  const form = htmlParser.parse(formString).querySelector('form');
+
+  // First turn all outputs into text so *<span class="or-output></span>* can be detected
+  form.querySelectorAll('span.or-output').forEach((el, index) => {
+    const key = `---output-${index}`;
+    const textNode = el.childNodes[0];
+    replacements[key] = el.toString();
+    textNode.textContent = key;
+    replaceNode(el, textNode);
+    // Note that we end up in a situation where we likely have sibling text nodes...
+  });
+
+  // Now render markdown
+  const questions = form.querySelectorAll('span.question-label');
+  const hints = form.querySelectorAll('span.or-hint');
+  questions.concat(hints).forEach((el, index) => {
+    const original = el.innerHTML;
+    let rendered = markdown.toHtml(original);
+    rendered = convertDynamicUrls(rendered);
+    rendered = convertEmbeddedHtml(rendered);
+
+    if (original !== rendered) {
+      const key = `$$$${index}`;
+      replacements[key] = rendered;
+      el.innerHTML = key;
+    }
+  });
+
+  let result = form.toString();
+
+  // Now replace the placeholders with the rendered HTML
+  // in reverse order so outputs are done last
+  Object.keys(replacements).reverse().forEach(key => {
+    const replacement = replacements[key];
+    if (replacement) {
+      result = result.replace(key, replacement);
+    }
+  });
+
+  return result;
 };
 
 const generateForm = formXml => {
   return transform(formXml, FORM_STYLESHEET).then(form => {
+    form = replaceAllMarkdown(form);
     // rename the media src attributes so the browser doesn't try and
     // request them, instead leaving it to custom code in the Enketo
     // service to load them asynchronously
-    form = form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
-    // remove the root node leaving just the HTML to be rendered
-    return removeRootNode(form, FORM_ROOT_OPEN);
+    return form.replace(JAVAROSA_SRC, MEDIA_SRC_ATTR);
   });
 };
 
 const generateModel = formXml => {
   return transform(formXml, MODEL_STYLESHEET).then(model => {
     // remove the root node leaving just the model
-    return removeRootNode(model, MODEL_ROOT_OPEN);
+    model = model.replace(MODEL_ROOT_OPEN, '');
+    const index = model.lastIndexOf(ROOT_CLOSE);
+    if (index === -1) {
+      return model;
+    }
+    return model.slice(0, index) + model.slice(index + ROOT_CLOSE.length);
   });
 };
 

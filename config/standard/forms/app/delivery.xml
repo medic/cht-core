@@ -372,6 +372,18 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/inputs/contact/_id:label">
             <value>-</value>
           </text>
+          <text id="/delivery/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta:label">
+            <value>-</value>
+          </text>
           <text id="/delivery/inputs:label">
             <value>-</value>
           </text>
@@ -565,6 +577,18 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/inputs/contact/_id:label">
             <value>Quel est le nom du patient ?</value>
           </text>
+          <text id="/delivery/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta:label">
+            <value>-</value>
+          </text>
           <text id="/delivery/inputs:label">
             <value>Patient</value>
           </text>
@@ -756,6 +780,18 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/inputs/contact/_id:label">
             <value>मरीज का नाम क्या है?</value>
           </text>
+          <text id="/delivery/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta:label">
+            <value>-</value>
+          </text>
           <text id="/delivery/inputs:label">
             <value>मरीज</value>
           </text>
@@ -946,6 +982,18 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           </text>
           <text id="/delivery/inputs/contact/_id:label">
             <value>Apa nama pasien?</value>
+          </text>
+          <text id="/delivery/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta:label">
+            <value>-</value>
           </text>
           <text id="/delivery/inputs:label">
             <value>Pasien</value>
@@ -1139,6 +1187,18 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
             <value>-</value>
           </text>
           <text id="/delivery/inputs/contact/_id:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta:label">
             <value>-</value>
           </text>
           <text id="/delivery/inputs:label">
@@ -1335,6 +1395,18 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <text id="/delivery/inputs/contact/_id:label">
             <value>-</value>
           </text>
+          <text id="/delivery/inputs/meta/location/lat:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location/long:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta/location:label">
+            <value>-</value>
+          </text>
+          <text id="/delivery/inputs/meta:label">
+            <value>-</value>
+          </text>
           <text id="/delivery/inputs:label">
             <value>-</value>
           </text>
@@ -1356,7 +1428,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
         </translation>
       </itext>
       <instance>
-        <delivery id="delivery" prefix="J1!delivery!" delimiter="#" version="2018-11-14_10-20">
+        <delivery id="delivery" prefix="J1!delivery!" delimiter="#" version="2022-09-26 12-56">
           <inputs>
             <meta>
               <location>
@@ -1387,6 +1459,12 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
                 </parent>
               </parent>
             </contact>
+            <meta tag="hidden">
+              <location>
+                <lat/>
+                <long/>
+              </location>
+            </meta>
           </inputs>
           <patient_uuid tag="hidden"/>
           <patient_id/>
@@ -1405,7 +1483,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
           <group_chw_info tag="hidden">
             <chw_information/>
             <call_button/>
-            <still_pregnant>no</still_pregnant>
+            <still_pregnant/>
           </group_chw_info>
           <group_delivery_summary tag="hidden">
             <g_pregnancy_outcome/>
@@ -1451,6 +1529,8 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
       <bind nodeset="/delivery/inputs/contact/parent/contact/phone" type="string"/>
       <bind nodeset="/delivery/inputs/contact/parent/contact/name" type="string"/>
       <bind nodeset="/delivery/inputs/contact/parent/parent/parent/use_cases" type="string"/>
+      <bind nodeset="/delivery/inputs/meta/location/lat" type="string"/>
+      <bind nodeset="/delivery/inputs/meta/location/long" type="string"/>
       <bind nodeset="/delivery/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
       <bind nodeset="/delivery/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
       <bind nodeset="/delivery/patient_name" type="string" calculate="../inputs/contact/name"/>
@@ -1463,20 +1543,20 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
       <bind nodeset="/delivery/label_pregnancy_outcome" type="string" calculate="jr:choice-name( /delivery/group_delivery_summary/g_pregnancy_outcome ,' /delivery/group_delivery_summary/g_pregnancy_outcome ')"/>
       <bind nodeset="/delivery/chw_sms" type="string" calculate="if( /delivery/group_note/g_chw_sms  != '', concat( /delivery/group_note/default_chw_sms_text ,concat('
 ', /delivery/group_note/g_chw_sms )),  /delivery/group_note/default_chw_sms_text )"/>
-      <bind nodeset="/delivery/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
+      <bind nodeset="/delivery/geolocation" type="string" calculate="concat(../inputs/meta/location/lat, concat(' ', ../inputs/meta/location/long))"/>
       <bind nodeset="/delivery/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /delivery/inputs/contact/date_of_birth , today() ) div 12 )"/>
-      <bind nodeset="/delivery/patient_contact_phone" type="string" calculate="coalesce(/postnatal_care/inputs/contact/phone,/postnatal_care/inputs/contact/parent/contact/phone)"/>
+      <bind nodeset="/delivery/patient_contact_phone" type="string" calculate="coalesce(../inputs/contact/phone,../inputs/contact/parent/contact/phone)"/>
       <bind nodeset="/delivery/group_chw_info" relevant=" /delivery/inputs/source  = 'task'"/>
       <bind nodeset="/delivery/group_chw_info/chw_information" readonly="true()" type="string"/>
       <bind nodeset="/delivery/group_chw_info/call_button" readonly="true()" type="string"/>
-      <bind nodeset="/delivery/group_chw_info/still_pregnant" type="select1" constraint="selected(.,'no')" jr:constraintMsg="jr:itext('/delivery/group_chw_info/still_pregnant:jr:constraintMsg')" required="true()"/>
-      <bind nodeset="/delivery/group_delivery_summary" relevant="selected( /delivery/group_chw_info/still_pregnant , 'no')"/>
+      <bind nodeset="/delivery/group_chw_info/still_pregnant" type="select1" required="true()" constraint="selected(.,'no')" jr:constraintMsg="jr:itext('/delivery/group_chw_info/still_pregnant:jr:constraintMsg')"/>
+      <bind nodeset="/delivery/group_delivery_summary" relevant="selected(coalesce( /delivery/group_chw_info/still_pregnant , 'no'), 'no')"/>
       <bind nodeset="/delivery/group_delivery_summary/g_pregnancy_outcome" type="select1" required="true()"/>
       <bind nodeset="/delivery/group_delivery_summary/g_delivery_code" type="select1" required="true()" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'"/>
-      <bind nodeset="/delivery/group_delivery_summary/g_birth_date" type="date" constraint="(decimal-date-time(.) &lt;= decimal-date-time(today())) and ((decimal-date-time(today()) - decimal-date-time(.)) &lt; 365)" jr:constraintMsg="jr:itext('/delivery/group_delivery_summary/g_birth_date:jr:constraintMsg')" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'"/>
+      <bind nodeset="/delivery/group_delivery_summary/g_birth_date" type="date" jr:constraintMsg="jr:itext('/delivery/group_delivery_summary/g_birth_date:jr:constraintMsg')" relevant=" /delivery/group_delivery_summary/g_pregnancy_outcome  != 'miscarriage'" constraint="(decimal-date-time(.) &lt;= decimal-date-time(now())) and ((decimal-date-time(now()) - decimal-date-time(.)) &lt; 365)"/>
       <bind nodeset="/delivery/group_delivery_summary/display_birth_date" type="string" calculate="format-date ( /delivery/group_delivery_summary/g_birth_date , '%b %e, %Y')"/>
       <bind nodeset="/delivery/group_delivery_summary/display_delivery_outcome" type="string" calculate="jr:choice-name( /delivery/group_delivery_summary/g_pregnancy_outcome ,' /delivery/group_delivery_summary/g_pregnancy_outcome ')"/>
-      <bind nodeset="/delivery/group_note/default_chw_sms" type="select1" calculate="if( /delivery/group_chw_info/still_pregnant  = 'yes',
+      <bind nodeset="/delivery/group_note/default_chw_sms" type="select1" calculate="if(coalesce( /delivery/group_chw_info/still_pregnant , 'no') = 'yes',
  'still_pregnant',
  if( /delivery/inputs/contact/parent/parent/parent/use_cases  = 'anc',
  if( /delivery/pregnancy_outcome  = 'healthy',
@@ -1566,6 +1646,9 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
             </group>
           </group>
         </group>
+      </group>
+      <group ref="/delivery/inputs/meta">
+        <group ref="/delivery/inputs/meta/location"/>
       </group>
     </group>
     <group appearance="field-list" ref="/delivery/group_chw_info">

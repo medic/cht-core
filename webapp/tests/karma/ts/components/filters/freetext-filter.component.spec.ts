@@ -79,4 +79,14 @@ describe('Freetext Filter Component', () => {
     expect(emitSpy.callCount).to.equal(1);
     expect(emitSpy.args[0]).to.deep.equal([true]);
   });
+
+  it('should do nothing if component is disabled', () => {
+    const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+    component.disabled = true;
+
+    component.applyFieldChange('value', true);
+    component.clear();
+
+    expect(setFilter.notCalled).to.be.true;
+  });
 });

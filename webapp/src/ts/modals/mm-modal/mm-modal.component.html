@@ -7,7 +7,7 @@
   <div class="modal-footer" *ngIf="!hideFooter">
     <p class="note" *ngIf="status?.error">{{status?.error | translate}}</p>
     <a class="btn cancel" [ngClass]="{ 'disabled': status?.processing }" (click)="onCancel.emit()" *ngIf="cancelKey !== false">{{cancelKey || 'Cancel' | translate}}</a>
-    <a class="btn submit" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger, 'disabled': disableSubmit }" (click)="onSubmit.emit()" *ngIf="submitKey && !status?.processing">{{submitKey | translate}}</a>
+    <a class="btn submit" [attr.test-id]="submitKey" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger, 'disabled': disableSubmit }" (click)="onSubmit.emit()" *ngIf="submitKey && !status?.processing">{{submitKey | translate}}</a>
     <a class="btn submit disabled" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger }" *ngIf="status?.processing">{{submittingKey || submitKey | translate}}</a>
   </div>
 </div>

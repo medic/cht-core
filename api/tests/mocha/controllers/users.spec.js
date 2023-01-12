@@ -5,7 +5,9 @@ const auth = require('../../../src/auth');
 const authorization = require('../../../src/services/authorization');
 const serverUtils = require('../../../src/server-utils');
 const purgedDocs = require('../../../src/services/purged-docs');
-const users = require('../../../src/services/users');
+const config = require('../../../src/config');
+const db = require('../../../src/db');
+const { roles, users } = require('@medic/user-management')(config, db);
 
 let req;
 let userCtx;
@@ -19,12 +21,78 @@ describe('Users Controller', () => {
     sinon.stub(authorization, 'getDocsByReplicationKey');
     sinon.stub(authorization, 'filterAllowedDocIds');
 
-    sinon.stub(auth, 'isOnlineOnly');
-    sinon.stub(auth, 'hasOnlineRole');
+    sinon.stub(roles, 'isOnlineOnly');
+    sinon.stub(roles, 'hasOnlineRole');
     sinon.stub(auth, 'hasAllPermissions');
     sinon.stub(serverUtils, 'error');
   });
   afterEach(() => sinon.restore());
+
+  describe('get users list', () => {
+
+    beforeEach(() => {
+      req = { };
+      res = { json: sinon.stub() };
+      sinon.stub(users, 'getList').resolves([
+        { id: 'org.couchdb.user:admin', roles: [ '_admin' ] },
+        { id: 'org.couchdb.user:chw', roles: [ 'chw', 'district-admin' ] },
+        { id: 'org.couchdb.user:unknown' },
+      ]);
+    });
+
+    describe('v1', () => {
+
+      it('rejects if not permitted', async () => {
+        sinon.stub(auth, 'check').rejects(new Error('nope'));
+        await controller.get(req, res);
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+      });
+
+      it('gets the list of users', async () => {
+        sinon.stub(auth, 'check').resolves();
+
+        await controller.get(req, res);
+        const result = res.json.args[0][0];
+        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
+        chai.expect(result[0].type).to.equal('_admin');
+        chai.expect(result[0].roles).to.be.undefined;
+        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[1].type).to.deep.equal('chw');
+        chai.expect(result[1].roles).to.be.undefined;
+        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+        chai.expect(result[2].type).to.deep.equal('unknown');
+        chai.expect(result[2].roles).to.be.undefined;
+      });
+
+    });
+
+    describe('v2', () => {
+
+      it('rejects if not permitted', async () => {
+        sinon.stub(auth, 'check').rejects(new Error('nope'));
+        await controller.v2.get(req, res);
+        chai.expect(serverUtils.error.callCount).to.equal(1);
+      });
+
+      it('gets the list of users', async () => {
+        sinon.stub(auth, 'check').resolves();
+
+        await controller.v2.get(req, res);
+        const result = res.json.args[0][0];
+        chai.expect(result[0].id).to.equal('org.couchdb.user:admin');
+        chai.expect(result[0].type).to.be.undefined;
+        chai.expect(result[0].roles).to.deep.equal([ '_admin' ]);
+        chai.expect(result[1].id).to.equal('org.couchdb.user:chw');
+        chai.expect(result[1].type).to.be.undefined;
+        chai.expect(result[1].roles).to.deep.equal([ 'chw', 'district-admin' ]);
+        chai.expect(result[2].id).to.equal('org.couchdb.user:unknown');
+        chai.expect(result[2].type).to.be.undefined;
+        chai.expect(result[2].roles).to.be.undefined;
+      });
+
+    });
+
+  });
 
   describe('info', () => {
     beforeEach(() => {
@@ -77,7 +145,7 @@ describe('Users Controller', () => {
 
     describe('online users', () => {
       beforeEach(() => {
-        auth.isOnlineOnly.returns(true);
+        roles.isOnlineOnly.returns(true);
       });
 
       it('should respond with error when user does not have required permissions', () => {
@@ -136,15 +204,15 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOnlineOnly.returns(true);
-        auth.hasOnlineRole.returns(true);
+        roles.isOnlineOnly.returns(true);
+        roles.hasOnlineRole.returns(true);
         auth.hasAllPermissions.returns(true);
         return controller.info(req, res).then(() => {
           chai.expect(serverUtils.error.callCount).to.equal(1);
           chai.expect(serverUtils.error.args[0])
             .to.deep.equal([{ code: 400, reason: 'Provided role is not offline' }, req, res]);
-          chai.expect(auth.hasOnlineRole.callCount).to.equal(1);
-          chai.expect(auth.hasOnlineRole.args[0]).to.deep.equal([['some_role']]);
+          chai.expect(roles.hasOnlineRole.callCount).to.equal(1);
+          chai.expect(roles.hasOnlineRole.args[0]).to.deep.equal([['some_role']]);
         });
       });
 
@@ -153,8 +221,8 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOnlineOnly.returns(true);
-        auth.hasOnlineRole.returns(false);
+        roles.isOnlineOnly.returns(true);
+        roles.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
@@ -196,10 +264,10 @@ describe('Users Controller', () => {
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 9, warn_docs: 7, warn: false, limit: 10000 }]);
 
-          chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
-          chai.expect(auth.isOnlineOnly.args[0]).to.deep.equal([userCtx]);
-          chai.expect(auth.hasOnlineRole.callCount).to.equal(1);
-          chai.expect(auth.hasOnlineRole.args[0]).to.deep.equal([['some_role']]);
+          chai.expect(roles.isOnlineOnly.callCount).to.equal(1);
+          chai.expect(roles.isOnlineOnly.args[0]).to.deep.equal([userCtx]);
+          chai.expect(roles.hasOnlineRole.callCount).to.equal(1);
+          chai.expect(roles.hasOnlineRole.args[0]).to.deep.equal([['some_role']]);
         });
       });
 
@@ -209,8 +277,8 @@ describe('Users Controller', () => {
           facility_id: 'some_facility_id',
           contact_id: 'some_contact_id'
         };
-        auth.isOnlineOnly.returns(true);
-        auth.hasOnlineRole.returns(false);
+        roles.isOnlineOnly.returns(true);
+        roles.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id, contact_id: 'some_contact_id' },
@@ -257,8 +325,8 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOnlineOnly.returns(true);
-        auth.hasOnlineRole.returns(false);
+        roles.isOnlineOnly.returns(true);
+        roles.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
@@ -289,7 +357,7 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOnlineOnly.returns(false);
+        roles.isOnlineOnly.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['some_role'], facility_id: req.query.facility_id },
@@ -320,8 +388,8 @@ describe('Users Controller', () => {
           role: 'some_role',
           facility_id: 'some_facility_id'
         };
-        auth.isOnlineOnly.returns(true);
-        auth.hasOnlineRole.returns(false);
+        roles.isOnlineOnly.returns(true);
+        roles.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: [req.query.role], facility_id: req.query.facility_id },
@@ -354,8 +422,8 @@ describe('Users Controller', () => {
           role: JSON.stringify(['role1', 'role2']),
           facility_id: 'some_facility_id'
         };
-        auth.isOnlineOnly.returns(true);
-        auth.hasOnlineRole.returns(false);
+        roles.isOnlineOnly.returns(true);
+        roles.hasOnlineRole.returns(false);
         auth.hasAllPermissions.returns(true);
         const authContext = {
           userCtx: { roles: ['role1', 'role2'], facility_id: req.query.facility_id },
@@ -384,10 +452,10 @@ describe('Users Controller', () => {
             limit: 10000,
           }]);
 
-          chai.expect(auth.isOnlineOnly.callCount).to.equal(1);
-          chai.expect(auth.isOnlineOnly.args[0]).to.deep.equal([userCtx]);
-          chai.expect(auth.hasOnlineRole.callCount).to.equal(1);
-          chai.expect(auth.hasOnlineRole.args[0]).to.deep.equal([['role1', 'role2']]);
+          chai.expect(roles.isOnlineOnly.callCount).to.equal(1);
+          chai.expect(roles.isOnlineOnly.args[0]).to.deep.equal([userCtx]);
+          chai.expect(roles.hasOnlineRole.callCount).to.equal(1);
+          chai.expect(roles.hasOnlineRole.args[0]).to.deep.equal([['role1', 'role2']]);
         });
       });
 
@@ -411,8 +479,8 @@ describe('Users Controller', () => {
           authorization.getDocsByReplicationKey.resolves({ docs: 'by replication key'});
           authorization.filterAllowedDocIds.returns(['1', '2', '3']);
           sinon.stub(purgedDocs, 'getUnPurgedIds').resolves(['1', '2', '3']);
-          auth.isOnlineOnly.returns(true);
-          auth.hasOnlineRole.returns(false);
+          roles.isOnlineOnly.returns(true);
+          roles.hasOnlineRole.returns(false);
           auth.hasAllPermissions.returns(true);
           serverUtils.error.resolves();
         });
@@ -444,7 +512,7 @@ describe('Users Controller', () => {
         userCtx = { name: 'user', roles: ['offline'], facility_id: 'some_facility_id' };
         req = { userCtx };
         res = { json: sinon.stub() };
-        auth.isOnlineOnly.returns(false);
+        roles.isOnlineOnly.returns(false);
       });
 
       it('should query authorization with correct context', () => {
@@ -607,7 +675,7 @@ describe('Users Controller', () => {
       sinon.stub(auth, 'check').rejects({ status: 403 });
       return controller.create(req, res).then(() => {
         chai.expect(auth.check.callCount).to.equal(1);
-        chai.expect(auth.check.args[0]).to.deep.equal([req, 'can_create_users']);
+        chai.expect(auth.check.args[0]).to.deep.equal([req, ['can_edit', 'can_create_users']]);
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([{ status: 403 }, req, res]);
       });
@@ -668,7 +736,7 @@ describe('Users Controller', () => {
           res,
         ]);
         chai.expect(auth.check.callCount).to.equal(1);
-        chai.expect(auth.check.args[0]).to.deep.equal([req, 'can_update_users']);
+        chai.expect(auth.check.args[0]).to.deep.equal([req, ['can_edit', 'can_update_users']]);
         chai.expect(auth.getUserCtx.callCount).to.equal(2);
       });
     });

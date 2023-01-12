@@ -4,6 +4,8 @@ import { Injectable } from '@angular/core';
 import { DbService } from '@mm-services/db.service';
 import { GetReportContentService } from '@mm-services/get-report-content.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
+import { FileReaderService } from '@mm-services/file-reader.service';
+import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +14,9 @@ export class Form2smsService {
   constructor(
     private dbService:DbService,
     private getReportContentService:GetReportContentService,
+    private fileReaderService: FileReaderService,
     private parseProvider:ParseProvider,
+    private enketoPrepopulationDataService: EnketoPrepopulationDataService,
   ) {
   }
 
@@ -36,6 +40,23 @@ export class Form2smsService {
     return matchMap[val] || '';
   }
 
+  private getFormModel(form) {
+    return this.dbService
+      .get()
+      .getAttachment(form, 'model')
+      .then(blob => this.fileReaderService.utf8(blob));
+  }
+
+  private getReportXml(form, doc) {
+    return Promise
+      .all([
+        this.getReportContentService.getReportContent(doc),
+        this.getFormModel(form)
+      ])
+      .then(([reportModel, formModel]) => {
+        return this.enketoPrepopulationDataService.get(formModel, reportModel);
+      });
+  }
 
   transform(doc) {
     if(!doc) {
@@ -61,7 +82,7 @@ export class Form2smsService {
           return this.parseProvider.parse(form.xml2sms)(context, { doc:doc.fields });
         } else {
           console.debug('Checking for standard odk tags in form submission...');
-          return this.getReportContentService.getReportContent(doc).then(odkForm2sms);
+          return this.getReportXml(doc.form, doc).then(odkForm2sms);
         }
       })
       .catch((err) => {

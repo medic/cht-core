@@ -13,6 +13,16 @@ describe('enketo translator', () => {
     };
   });
 
+  const assertPassedThroughAs = (expected, key) => {
+    it(`should pass through ${key} to $translate.instant as ${expected}`, () => {
+      // when
+      const actual = translator.t(key);
+
+      // then
+      assert.equal(actual, expected);
+    });
+  };
+
   describe('#t()', () => {
 
     _.forEach({
@@ -45,15 +55,5 @@ describe('enketo translator', () => {
     }, assertPassedThroughAs);
 
   });
-
-  function assertPassedThroughAs(expected, key) {
-    it(`should pass through ${key} to $translate.instant as ${expected}`, () => {
-      // when
-      const actual = translator.t(key);
-
-      // then
-      assert.equal(actual, expected);
-    });
-  }
 
 });

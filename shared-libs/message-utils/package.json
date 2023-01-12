@@ -7,15 +7,10 @@
   },
   "author": "",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "chai": "^4.3.6",
-    "mocha": "^7.2.0",
-    "rewire": "^5.0.0"
-  },
   "dependencies": {
     "@medic/phone-number": "file:../phone-number",
     "bikram-sambat-bootstrap": "^1.5.0",
-    "google-libphonenumber": "^3.2.27",
+    "google-libphonenumber": "^3.2.31",
     "gsm": "^0.1.4",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",

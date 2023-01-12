@@ -17,11 +17,12 @@ export const Actions = {
   setRightActionBar: createSingleValueAction('SET_RIGHT_ACTION_BAR', 'right'),
   setRightActionBarVerified: createSingleValueAction('SET_ACTION_BAR_RIGHT_VERIFIED', 'verified'),
   updateRightActionBar: createSingleValueAction('UPDATE_RIGHT_ACTION_BAR', 'right'),
-  clearFilters: createAction('CLEAR_FILTERS'),
+  clearFilters: createSingleValueAction('CLEAR_FILTERS', 'skip'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
+  setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
+  clearSidebarFilter: createAction('CLEAR_SIDEBAR_FILTER'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
-  setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
   setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
@@ -90,8 +91,8 @@ export class GlobalActions {
     this.setShowActionBar(true);
   }
 
-  clearFilters() {
-    return this.store.dispatch(Actions.clearFilters());
+  clearFilters(skip?) {
+    return this.store.dispatch(Actions.clearFilters(skip));
   }
 
   setFilter(filter) {
@@ -102,12 +103,16 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setFilters(filters));
   }
 
-  setSelectMode(selectMode) {
-    return this.store.dispatch(Actions.setSelectMode(selectMode));
+  setSidebarFilter(sidebarFilter) {
+    return this.store.dispatch(Actions.setSidebarFilter(sidebarFilter));
   }
 
-  setIsAdmin(isAdmin) {
-    return this.store.dispatch(Actions.setIsAdmin(isAdmin));
+  clearSidebarFilter() {
+    return this.store.dispatch(Actions.clearSidebarFilter());
+  }
+
+  setSelectMode(selectMode) {
+    return this.store.dispatch(Actions.setSelectMode(selectMode));
   }
 
   setLoadingShowContent(id) {
@@ -119,11 +124,15 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setTitle(title));
   }
 
-  unsetSelected() {
+  unsetComponents() {
     this.setShowContent(false);
     this.setLoadingContent(false);
     this.setShowActionBar(false);
     this.setTitle();
+  }
+
+  unsetSelected() {
+    this.unsetComponents();
     this.clearSelected();
   }
 

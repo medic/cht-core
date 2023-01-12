@@ -1,3 +1,60 @@
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/**
+ * Material color's override
+ */
+.mat-primary {
+  background-color: @mm-mat-primary !important;
+}
+
+.mat-accent {
+  background-color: @button-background-inverse-color !important;
+  color: @mm-mat-primary !important;
+}
+
+.mat-warn {
+  background-color: @error-color !important;
+}
+
+.mat-button-toggle-disabled,
+.mat-button-disabled {
+  background-color: @inactive-color !important;
+  color: @button-text-inverse-color !important;
+}
+
+.mat-icon.fa {
+  vertical-align: middle;
+  height: 20px;
+  width: 20px;
+  &:before {
+    font-size: @font-extra-large;
+    color: @mat-icon-color;
+  }
+}
+
+.mat-menu-panel {
+  .mat-menu-item {
+    font-size: @font-medium;
+    color: @mat-font-color;
+    text-decoration: none;
+    outline: none;
+    * {
+      vertical-align: middle;
+    }
+    &:disabled,
+    &:disabled :after,
+    &:disabled :before {
+      color: @inactive-color;
+    }
+    .mat-icon {
+      margin-right: 5px;
+    }
+  }
+}
+
+/**
+ * Medic's custom component style
+ */
 .material {
   .card {
     border: 1px solid @separator-color;
@@ -171,7 +228,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: @media-mobile) {
   .material {
     .card {
       border-radius: 0;

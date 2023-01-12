@@ -40,7 +40,7 @@ const TYPES = [
   { labels: ['Type: Security'], title: 'Security fixes' },
   { labels: ['Type: Performance'], title: 'Performance improvements' },
   { labels: ['bug', 'Type: Bug'], title: 'Bug fixes' },
-  { labels: ['Type: Technical issue'], title: 'Technical improvements' },
+  { labels: ['Type: Technical issue', 'Type: Internal process'], title: 'Technical improvements' },
 ];
 
 const PREFIXES_TO_IGNORE = [

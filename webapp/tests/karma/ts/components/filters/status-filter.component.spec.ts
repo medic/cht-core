@@ -57,11 +57,37 @@ describe('Status Filter Component', () => {
     ]);
   });
 
-  it('clear should clear dropdown filter', () => {
+  it('should clear dropdown filter', () => {
     const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
+
     component.clear();
+
     expect(dropdownFilterClearSpy.callCount).to.equal(1);
     expect(dropdownFilterClearSpy.args[0]).to.deep.equal([false]);
+  });
+
+  it('should clear inline filter', () => {
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
+    component.inlineFilter.selected.add('valid');
+    component.inlineFilter.selected.add('unverified');
+    component.inline = true;
+
+    component.clear();
+
+    expect(inlineFilterClearSpy.calledOnce).to.be.true;
+    expect(component.inlineFilter.selected.size).to.equal(0);
+  });
+
+  it('should count selected items in inline filter', () => {
+    const inlineFilterCountSelectedSpy = sinon.spy(component.inlineFilter, 'countSelected');
+    component.inlineFilter.selected.add('valid');
+    component.inlineFilter.selected.add('unverified');
+    component.inline = true;
+
+    const result = component.countSelected();
+
+    expect(inlineFilterCountSelectedSpy.calledOnce).to.be.true;
+    expect(result).to.equal(2);
   });
 
   describe('apply filter', () => {
@@ -70,21 +96,21 @@ describe('Status Filter Component', () => {
       component.applyFilter(['valid']);
       expect(setFilter.args).to.deep.equal([
         [{ valid: true }],
-        [{ verified: [] }],
+        [{ verified: undefined }],
       ]);
 
       setFilter.reset();
       component.applyFilter(['invalid']);
       expect(setFilter.args).to.deep.equal([
         [{ valid: false }],
-        [{ verified: [] }],
+        [{ verified: undefined }],
       ]);
 
       setFilter.reset();
       component.applyFilter(['valid', 'invalid']);
       expect(setFilter.args).to.deep.equal([
         [{ valid: undefined }],
-        [{ verified: [] }],
+        [{ verified: undefined }],
       ]);
     });
 
@@ -127,5 +153,18 @@ describe('Status Filter Component', () => {
         [{ verified: [undefined, true] }],
       ]);
     });
+  });
+
+  it('should do nothing if component is disabled', () => {
+    const dropdownFilterClearSpy = sinon.spy(component.dropdownFilter, 'clear');
+    const inlineFilterClearSpy = sinon.spy(component.inlineFilter, 'clear');
+    component.disabled = true;
+
+    component.clear();
+    component.inline = true;
+    component.clear();
+
+    expect(dropdownFilterClearSpy.notCalled).to.be.true;
+    expect(inlineFilterClearSpy.notCalled).to.be.true;
   });
 });

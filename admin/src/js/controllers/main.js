@@ -3,11 +3,12 @@ angular.module('controllers').controller('MainCtrl',
     $log,
     $scope,
     $state,
-    $translate,
     $window,
     Auth,
+    Language,
     Location,
-    Session
+    Session,
+    SetLanguage
   ) {
     'ngInject';
 
@@ -21,9 +22,9 @@ angular.module('controllers').controller('MainCtrl',
           }
           return response;
         });
-    };   
-    
-    $translate.use('en');
+    };
+
+    Language().then(locale => SetLanguage(locale));
     $scope.authorized = false;
     $scope.navbarCollapsed = true;
     Auth.any([['can_configure'], ['can_view_outgoing_messages'], ['can_export_all']])

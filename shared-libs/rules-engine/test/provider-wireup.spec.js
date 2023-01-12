@@ -10,7 +10,7 @@ const {
 
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
-const PouchDB = require('pouchdb');
+const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -22,7 +22,7 @@ const { assert, expect } = chai;
 chai.use(chaiExclude);
 
 const rulesStateStore = RestorableRulesStateStore();
-const NOW = 50000;
+const NOW = moment([1970, 0, 1, 0, 0, 50]).valueOf();
 const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;
 
 const reportConnectedByPlace = {
@@ -267,7 +267,7 @@ describe('provider-wireup integration tests', () => {
           emission: {},
           stateHistory: [{
             state: 'Cancelled',
-            timestamp: 50000,
+            timestamp: NOW,
           }]
         }],
         userSettingsId: 'org.couchdb.user:username',

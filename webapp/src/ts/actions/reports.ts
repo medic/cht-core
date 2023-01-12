@@ -4,22 +4,21 @@ import { createMultiValueAction, createSingleValueAction } from '@mm-actions/act
 import { GlobalActions } from '@mm-actions/global';
 
 export const Actions = {
-  selectReport: createMultiValueAction('SELECT_REPORT'),
-  setSelected: createSingleValueAction('SET_SELECTED_REPORT', 'selected'),
+  openReportContent: createSingleValueAction('OPEN_REPORT_CONTENT', 'report'),
+  selectReportToOpen: createMultiValueAction('SELECT_REPORT_TO_OPEN'),
+  selectReport: createSingleValueAction('SELECT_REPORT', 'reportId'),
   addSelectedReport: createSingleValueAction('ADD_SELECTED_REPORT', 'report'),
   removeSelectedReport: createSingleValueAction('REMOVE_SELECTED_REPORT', 'report'),
-  setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selected'),
+  setSelectedReport: createSingleValueAction('SET_SELECTED_REPORT', 'selectedReport'),
+  setSelectedReports: createSingleValueAction('SET_SELECTED_REPORTS', 'selectedReports'),
   setVerifyingReport: createSingleValueAction('SET_VERIFYING_REPORT', 'verifyingReport'),
   toggleVerifyingReport: createAction('TOGGLE_VERIFYING_REPORT'),
   verifyReport: createSingleValueAction('VERIFY_REPORT', 'verified'),
-  updateSelectedReportItem: createMultiValueAction('UPDATE_SELECTED_REPORT_ITEM'),
+  updateSelectedReportsItem: createMultiValueAction('UPDATE_SELECTED_REPORTS_ITEM'),
   markReportRead: createSingleValueAction('MARK_REPORT_READ', 'id'),
   launchEditFacilityDialog: createAction('LAUNCH_EDIT_FACILITY_DIALOG'),
-  setFirstSelectedReportDocProperty: createSingleValueAction('SET_FIRST_SELECTED_REPORT_DOC_PROPERTY', 'doc'),
-  setFirstSelectedReportFormattedProperty: createSingleValueAction(
-    'SET_FIRST_SELECTED_REPORT_FORMATTED_PROPERTY',
-    'formatted'
-  ),
+  setSelectedReportDocProperty: createMultiValueAction('SET_SELECTED_REPORT_DOC_PROPERTY'),
+  setSelectedReportFormattedProperty: createMultiValueAction('SET_SELECTED_REPORT_FORMATTED_PROPERTY'),
 
   updateReportsList: createSingleValueAction('UPDATE_REPORTS_LIST', 'reports'),
   removeReportFromList: createSingleValueAction('REMOVE_REPORT_FROM_LIST', 'report'),
@@ -27,26 +26,35 @@ export const Actions = {
 
   setRightActionBar: createAction('SET_RIGHT_ACTION_BAR_REPORTS'),
   setTitle: createSingleValueAction('SET_REPORTS_TITLE', 'selected'),
-  setSelectMode: createSingleValueAction('SET_REPORTS_SELECT_MODE', 'selectMode'),
-  selectAll: createAction('SELECT_ALL_REPORTS'),
 };
 
 export class ReportsActions {
   constructor(private store: Store) {}
 
+  openReportContent(report) {
+    return this.store.dispatch(Actions.openReportContent(report));
+  }
+
   addSelectedReport(selected) {
     return this.store.dispatch(Actions.addSelectedReport(selected));
   }
 
-  selectReport(id, { silent=false }={}) {
-    return this.store.dispatch(Actions.selectReport({ id, silent }));
+  selectReport(reportId) {
+    return this.store.dispatch(Actions.selectReport(reportId));
+  }
+
+  selectReportToOpen(reportId, { silent = false }={}) {
+    return this.store.dispatch(Actions.selectReportToOpen({ reportId, silent }));
   }
 
   removeSelectedReport(id) {
     this.store.dispatch(Actions.removeSelectedReport(id));
     const globalActions = new GlobalActions(this.store);
-    globalActions.settingSelected();
-    this.setRightActionBar();
+    globalActions.unsetComponents();
+  }
+
+  setSelectedReport(selected?) {
+    return this.store.dispatch(Actions.setSelectedReport(selected));
   }
 
   setSelectedReports(selected) {
@@ -63,10 +71,6 @@ export class ReportsActions {
 
   resetReportsList() {
     return this.store.dispatch(Actions.resetReportsList());
-  }
-
-  setSelected(model) {
-    return this.store.dispatch(Actions.setSelected(model));
   }
 
   setVerifyingReport(verifyingReport) {
@@ -86,27 +90,12 @@ export class ReportsActions {
   }
 
   clearSelection() {
-    this.store.dispatch(Actions.setSelectedReports([]));
-    // setVerifyingReport(false);
+    this.setSelectedReport();
+    this.setSelectedReports([]);
   }
 
-  setSelectMode(value) {
-    return this.store.dispatch(Actions.setSelectMode(value));
-  }
-
-  updateSelectedReportItem(id, selected) {
-    return this.store.dispatch(Actions.updateSelectedReportItem({ id, selected }));
-  }
-
-  deselectAll() {
-    this.store.dispatch(Actions.setSelectedReports([]));
-    this.setRightActionBar();
-  }
-
-  selectAll() {
-    const globalActions = new GlobalActions(this.store);
-    globalActions.setLoadingContent(true);
-    this.store.dispatch(Actions.selectAll());
+  updateSelectedReportsItem(id, selected) {
+    return this.store.dispatch(Actions.updateSelectedReportsItem({ id, selected }));
   }
 
   launchEditFacilityDialog() {
@@ -122,11 +111,11 @@ export class ReportsActions {
     return this.store.dispatch(Actions.verifyReport(verified));
   }
 
-  setFirstSelectedReportDocProperty(doc) {
-    return this.store.dispatch(Actions.setFirstSelectedReportDocProperty(doc));
+  setSelectedReportDocProperty(id, doc) {
+    return this.store.dispatch(Actions.setSelectedReportDocProperty({ id, doc }));
   }
 
-  setFirstSelectedReportFormattedProperty(formatted) {
-    return this.store.dispatch(Actions.setFirstSelectedReportFormattedProperty(formatted));
+  setSelectedReportFormattedProperty(id, formatted) {
+    return this.store.dispatch(Actions.setSelectedReportFormattedProperty({ id, formatted }));
   }
 }

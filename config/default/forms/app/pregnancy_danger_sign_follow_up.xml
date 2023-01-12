@@ -179,7 +179,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_danger_sign_follow_up id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" delimiter="#" version="2019-11-04 14:14:20">
+        <pregnancy_danger_sign_follow_up id="pregnancy_danger_sign_follow_up" prefix="J1!pregnancy_danger_sign_follow_up!" delimiter="#" version="2022-09-26 11:22:25">
           <inputs>
             <meta>
               <location>
@@ -292,7 +292,7 @@
       <bind nodeset="/pregnancy_danger_sign_follow_up/patient_name" type="string" calculate="../inputs/contact/name"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/patient_short_name" type="string" calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_label)"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/patient_short_name_start" type="string" calculate="coalesce(../inputs/contact/short_name, ../danger_signs/custom_translations/custom_woman_start_label)"/>
-      <bind nodeset="/pregnancy_danger_sign_follow_up/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(floor(decimal-date-time(today())) + 3)"/>
+      <bind nodeset="/pregnancy_danger_sign_follow_up/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/pregnancy_uuid_ctx" type="string" calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/visit_confirm" type="select1" required="true()"/>
@@ -322,8 +322,7 @@ or selected(../reduced_or_no_fetal_movements, 'yes')
 or selected(../breaking_water, 'yes')
 or selected(../easily_tired, 'yes')
 or selected(../face_hand_swelling, 'yes')
-or selected(../breathlessness, 'yes')
-or selected(../other_danger_sign, 'yes')), 
+or selected(../breathlessness, 'yes')), 
 'yes', 'no')"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator" type="select1" calculate="&quot;woman&quot;"/>
       <bind nodeset="/pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label" type="string" calculate="jr:choice-name( /pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator ,' /pregnancy_danger_sign_follow_up/danger_signs/custom_translations/custom_woman_label_translator ')"/>

@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Noto';
+  src: url(/fonts/NotoSans-Regular.ttf) format("truetype");
+  font-weight: normal;
+}
+body, input {
+  font-family: Noto, sans-serif;
+}
 body {
   background-color: #323232;
   color: #FFFFFF;
@@ -5,9 +13,6 @@ body {
   height: 100%;
   padding: 0;
   margin: 0;
-}
-body, input {
-  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 .logo {
   width: 14.2em;
@@ -60,23 +65,26 @@ form {
   width: 300px;
   margin: 0 auto;
 }
-.locale-wrapper {
+.wrapper {
   max-width: 800px;
   text-align: center;
   margin: 1em auto;
   padding: 0 20px;
 }
-.locale {
+.wrapper a {
   color: #bbbbbb;
   text-decoration: none;
   padding: 5px 10px;
   display: inline-block;
 }
-.locale.selected {
+.wrapper a.selected {
   color: #ffffff;
 }
-.locale:hover {
+.wrapper a:hover {
   text-decoration: underline;
+}
+.legal {
+  font-size: 0.8rem;
 }
 .error {
   color: #DA4548;
@@ -129,6 +137,21 @@ form {
   width: 4em;
   height: 4em;
 }
+
+#unsupported-browser {
+  text-align: center;
+  border: 2px solid darkred;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 1em;
+  text-decoration: none;
+}
+
+.hidden {
+  display: none;
+  visibility: hidden;
+}
+
 @-webkit-keyframes loader {
   0% {
     -webkit-transform: rotate(0deg);

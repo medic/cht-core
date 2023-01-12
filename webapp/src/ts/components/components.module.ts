@@ -23,13 +23,14 @@ import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
-import { SimprintsFilterComponent} from '@mm-components/filters/simprints-filter/simprints-filter.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { SenderComponent } from '@mm-components/sender/sender.component';
 import { ReportImageComponent } from '@mm-components/report-image/report-image.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { ActionbarComponent } from '@mm-components/actionbar/actionbar.component';
 import { EnketoComponent } from '@mm-components/enketo/enketo.component';
+import { SearchBarComponent } from '@mm-components/search-bar/search-bar.component';
+import { MultiselectBarComponent } from '@mm-components/multiselect-bar/multiselect-bar.component';
 import {
   AnalyticsTargetsProgressComponent
 } from '@mm-components/analytics-targets-progress/analytics-targets-progress.component';
@@ -52,8 +53,9 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     FormTypeFilterComponent,
     StatusFilterComponent,
     FreetextFilterComponent,
+    SearchBarComponent,
+    MultiselectBarComponent,
     ResetFiltersComponent,
-    SimprintsFilterComponent,
     SortFilterComponent,
     SenderComponent,
     ReportImageComponent,
@@ -84,9 +86,10 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     FacilityFilterComponent,
     FormTypeFilterComponent,
     StatusFilterComponent,
+    SearchBarComponent,
+    MultiselectBarComponent,
     FreetextFilterComponent,
     ResetFiltersComponent,
-    SimprintsFilterComponent,
     SortFilterComponent,
     SenderComponent,
     ReportImageComponent,

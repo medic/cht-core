@@ -160,14 +160,58 @@ describe('task-states', () => {
   });
 
   describe('isTimely', () => {
-    it('old emission is not timely', () => {
-      const emission = mockEmission(-MS_IN_DAY * 90);
-      expect(TaskStates.isTimely(emission)).to.be.false;
+
+    let OUTSIDE_WINDOW_START;
+    let OUTSIDE_WINDOW_END;
+    let WITHIN_WINDOW_START;
+    let WITHIN_WINDOW_END;
+
+    before(() => {
+      OUTSIDE_WINDOW_START = new Date(Date.now() - (MS_IN_DAY * 61)); // one day before window start
+      OUTSIDE_WINDOW_END = new Date(Date.now() + (MS_IN_DAY * 181)); // one day after window end
+      WITHIN_WINDOW_START = new Date(Date.now() - (MS_IN_DAY * 59)); // one day after window start
+      WITHIN_WINDOW_END = new Date(Date.now() + (MS_IN_DAY * 179)); // one day before window end
     });
 
-    it('new emission is timely', () => {
-      const emission = mockEmission(-MS_IN_DAY);
-      expect(TaskStates.isTimely(emission)).to.be.true;
+    it('old emission is not timely', () => {
+      const emission = mockEmission(0, { date: OUTSIDE_WINDOW_START });
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.false;
+    });
+
+    it('future emission is not timely', () => {
+      const emission = mockEmission(0, { date: OUTSIDE_WINDOW_END });
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.false;
+    });
+
+    it('invalid date is not timely', () => {
+      const emission = mockEmission(0, { date: 'abc' });
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.false;
+    });
+
+    it('59 day old emission is timely', () => {
+      const emission = mockEmission(0, { date: WITHIN_WINDOW_START });
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.true;
+    });
+
+    it('emission for 179 days away is timely', () => {
+      const emission = mockEmission(0, { date: WITHIN_WINDOW_END });
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.true;
+    });
+
+    it('emission with custom window uses end date for start of window', () => {
+      const emission = mockEmission(0, {
+        startDate: OUTSIDE_WINDOW_START,
+        endDate: WITHIN_WINDOW_START
+      });
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.true;
+    });
+
+    it('emission with custom window uses start date for end of window', () => {
+      const emission = mockEmission(0, {
+        startDate: WITHIN_WINDOW_END,
+        endDate: OUTSIDE_WINDOW_END
+      });
+      expect(TaskStates.isTimely(emission, Date.now())).to.be.true;
     });
   });
 

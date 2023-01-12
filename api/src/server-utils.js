@@ -9,10 +9,12 @@ const cookie = require('./services/cookie');
 const wantsJSON = req => req.get('Accept') === 'application/json';
 
 const writeJSON = (res, code, error, details) => {
-  if (!res.headersSent && !res.ended) {
+  if (!res.headersSent) {
     res.status(code);
-    res.json({ code, error, details });
+    res.type('json');
   }
+  // using res.json would also automatically try to set the Content-Type header, which fails if headers are sent
+  res.end(JSON.stringify({ code, error, details }));
 };
 
 const respond = (req, res, code, message, details) => {
@@ -109,6 +111,9 @@ module.exports = {
     if (err.type === 'entity.too.large') {
       return respond(req, res, 413, 'Payload Too Large');
     }
+    if (err.type === 'upgrade.connection.refused') {
+      return respond(req, res, 503, 'Connection refused');
+    }
     respond(req, res, 500, 'Server error', err.publicMessage);
   },
 
@@ -119,4 +124,6 @@ module.exports = {
     };
     return module.exports.error(err, req, res);
   },
+
+  wantsJSON,
 };

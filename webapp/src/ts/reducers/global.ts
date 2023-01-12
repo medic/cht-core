@@ -22,9 +22,9 @@ const initialState = {
     error: null
   },
   facilities: [],
-  filters: {},
+  filters: {}, // Selected criteria to filter data.
+  sidebarFilter: {}, // Component state.
   forms: null,
-  isAdmin: false,
   lastChangedDoc: false,
   loadingContent: false,
   loadingSubActionBar: false,
@@ -44,11 +44,6 @@ const initialState = {
 };
 
 const setShowContent = (state, showContent) => {
-  const selectMode = state.selectMode;
-  if (showContent && selectMode) {
-    // when in select mode we never show the RHS on mobile
-    return state;
-  }
   if (showContent) {
     $('.app-root').addClass('show-content');
   } else {
@@ -85,8 +80,9 @@ const _globalReducer = createReducer(
   on(Actions.setForms, (state, { payload: { forms } }) => {
     return { ...state, forms };
   }),
-  on(Actions.clearFilters, (state) => {
-    return { ...state, filters: {} };
+  on(Actions.clearFilters, (state, { payload: { skip } }) => {
+    const newValue = skip && state.filters[skip] ? { [skip]: state.filters[skip] } : {};
+    return { ...state, filters: newValue };
   }),
   on(Actions.setFilters, (state, { payload: { filters } }) => {
     return { ...state, filters };
@@ -97,10 +93,16 @@ const _globalReducer = createReducer(
       filters: { ...state.filters, ...filter }
     };
   }),
-  on(Actions.setIsAdmin, (state, { payload: { isAdmin } }) => {
-    return { ...state, isAdmin };
+  on(Actions.setSidebarFilter, (state, { payload: { sidebarFilter } }) => {
+    return {
+      ...state,
+      sidebarFilter: { ...state.sidebarFilter, ...sidebarFilter }
+    };
   }),
-  on(Actions.setTitle, (state, { payload: { title} }) => {
+  on(Actions.clearSidebarFilter, (state) => {
+    return { ...state, sidebarFilter: {} };
+  }),
+  on(Actions.setTitle, (state, { payload: { title } }) => {
     return { ...state, title };
   }),
   on(Actions.setShowContent, (state, { payload: { showContent } }) => {

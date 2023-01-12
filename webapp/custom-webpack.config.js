@@ -4,13 +4,14 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 module.exports = {
   resolve: {
     alias: {
-      'enketo-config': 'src/js/enketo/config.json',
-      'widgets': 'src/js/enketo/widgets',
-      './xpath-evaluator-binding': 'src/js/enketo/OpenrosaXpathEvaluatorBinding',
+      'enketo/config': 'src/js/enketo/config.js',
+      'enketo/widgets': 'src/js/enketo/widgets',
+      'enketo/xpath-evaluator-binding': 'src/js/enketo/OpenrosaXpathEvaluatorBinding',
+      'enketo/file-manager': 'src/js/enketo/file-manager',
+      'enketo/translator': 'src/js/enketo/translator',
+      './repeat': 'src/js/enketo/repeat',
       'extended-xpath': 'node_modules/openrosa-xpath-evaluator/src/extended-xpath',
-      'openrosa-xpath-extensions': 'node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-      // translator for enketo's internal i18n
-      'translator': 'src/js/enketo/translator',
+      'openrosa-extensions': 'node_modules/openrosa-xpath-evaluator/src/openrosa-extensions',
       // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream
       // https://github.com/enketo/enketo-core/issues/454
       '../../js/dropdown.jquery': 'node_modules/bootstrap/js/dropdown',
@@ -27,8 +28,16 @@ module.exports = {
       // they don't exist in the enketo source and the styles are commented out in the latest version
       // https://github.com/enketo/enketo-core/blob/master/src/widget/geo/geopicker.scss#L1119
       // the builder throws an error if the paths are not resolved
-      '../../../build/images/layers.png': 'src/img/layers.png',
-      '../../../build/images/layers-2x.png': 'src/img/layers.png',
+      '../../../api/build/static/webapp/images/layers.png': 'src/img/layers.png',
+      '../../../api/build/static/webapp/images/layers-2x.png': 'src/img/layers.png',
+      // Exclude the node-forge dependency from the bundle. This breaks the `digest` xForm function from
+      // openrosa-xpath-evaluator, but keeping it in adds 72.51KB to the bundle size.
+      // https://github.com/medic/cht-core/issues/7324
+      'node-forge': false,
+      // Only include the jquery version from the package.json (and not any different versions pulled in transitively).
+      // Once https://github.com/select2/select2/issues/5993 is resolved, we should try to coalesce back on one version
+      // of jquery and remove this alias.
+      'jquery': __dirname + '/node_modules/jquery'
     },
     fallback: {
       path: false,
@@ -44,7 +53,7 @@ module.exports = {
     }),
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
-      reportFilename: '../../../analyzer.report.html',
+      reportFilename: __dirname + '/analyzer.report.html',
       openAnalyzer: false,
     }),
   ]

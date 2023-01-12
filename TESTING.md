@@ -4,15 +4,15 @@ An overview of testing within CHT-CORE. Check out the [Gruntfile](Gruntfile.js) 
 
 ## Unit tests
 
-They live in the `tests` directories of each app. Run them with grunt: `grunt unit-continuous`.
-
-## API integration tests
-
-`grunt api-e2e`
+They live in the `tests` directories of each app. Run them with grunt: `grunt unit`.
 
 ## Integration tests
 
-[Github Actions](https://github.com/medic/cht-core/actions) runs `grunt ci` every time some new code is pushed to github.
+They are located in `tests/integration`. Run them with grunt: `grunt e2e-integration`
+
+## Continuous integration
+
+We use [Github Actions](https://github.com/medic/cht-core/actions) which runs `grunt ci` every time some new code is pushed to GitHub.
 
 # End to End Testing 
 ## Stack overview
@@ -42,41 +42,28 @@ They live in the `tests` directories of each app. Run them with grunt: `grunt un
 2. Extract it anyhere
 3. From your cht-core directory, run `npx allure open <path>/allure-report/`.
 
-### Github Actions Protractor Run 
+### GitHub Actions Protractor Run 
 
 The build process compiles our application. Then installs horticulturalist to run the app. This puts us closer to production. Executes `grunt ci-e2e`. Which then installs and runs chromedriver. Runs the protractor tests against the installed app version. Currently there are 3 jobs that execute in the supported node environments.  
 
-### WebdriverIO Github Actions Run
+### WebdriverIO GitHub Actions Run
 
 The main difference now is that `grunt ci-webdriver` is executed now instead of `ci-e2e`. This executes the Webdriver IO tests.
 
-## Protractor Tips
+## Tips to write automated tests
 
-### File Structure
-Test files should represent a feature within the application. Using `describe` to identify the feature and `it` to detail the individual functions of the feature.
-
-EX: `describe('Users can login')`  `it('with valid credentials')`.
-
-### Page Object Model
-We are leveraging the [page object model](https://www.thoughtworks.com/insights/blog/using-page-objects-overcome-protractors-shortcomings) for structure. When identifying elements they should be added to a page object and not within a test file. Add functions that perform actions to the page within the page object. Keep expects outside of page objects. The tests should be self-documenting. 
-
-### Adding identifiers
-In some cases, adding a unique identifier to an element may be necessary. This could be a piece of data related to the element, or a unique name (which can be done by adding a `test-` attribute to the app code).
-
-Ex:  `attr.test-id="{{ msg.key }}" ` Will add a `test-id` attribute with the data from the app. 
-
-Then it can be consumed in the test by getting an element by css. EX: ``element(by.css(`#message-list li[test-id="${identifier}"]`)),``
-
-Adding a test identifier a good option for cases where a CSS selector would otherwise be fragile such as selecting based on an assumed element structure or selecting on CSS classes intended for visual design that may change.
+Please read the [style guide for automated tests](tests/AUTOMATE_TEST_GUIDE.md) which provides editorial guidelines for anyone creating new automated test cases for CHT-Core.
 
 ## Debugging
 Documented here are two ways to run individual tests and have your IDE break on the specific test.
 
-When debugging it can be helpful to disable the headless browser mode so that you can see the browser window as the tests run. To do this, remove `--headless` from the [tests/conf.js](tests/conf.js) file for the Protractor tests and the [tests/wdio.conf.js](tests/wdio.conf.js) file for the WebdriverID tests.
+When debugging it can be helpful to disable the headless browser mode so that you can see the browser window as the tests run. To do this, remove `--headless` from the [tests/conf.js](tests/conf.js) file for the Protractor tests and the [tests/e2e/default/wdio.conf.js](tests/e2e/default/wdio.conf.js) file for the WebdriverID tests.
 
 ### WebdriverIO
 
-To run just a single test file in WebdriverIO, update the `specs` config in [tests/wdio.conf.js](tests/wdio.conf.js) to refer to the desired test file.
+To run just a single test file in WebdriverIO, update the `specs` config in the `wdio.confi.js` to refer to the desired test file.
+* Default config: [`tests/e2e/default/wdio.confi.js`](tests/e2e/default/wdio.conf.js)
+* Standard config: [`tests/e2e/standard/wdio.confi.js`](tests/e2e/standard/wdio.conf.js)
 
 #### IntelliJ Based
 
@@ -118,8 +105,8 @@ To run just a single test file in WebdriverIO, update the `specs` config in [tes
 1. Set Protractor package is set to the `<cht-core-repo>/node_modules/protractor`.
 1. Optionally set the Protractor options to `--capabilities.chromeOptions.args=start-maximized --jasmine.DEFAULT_TIMEOUT_INTERVAL=120000`.
 1. Select the radio button for Test.
-1. Enter the path to the Test file Ex: `<cht-core-repo>/tests/e2e/login/login.specs.js`.
-1. Enter the test name. This is a bit of a chore. IntelliJ will automatically add the regex flags for begins(`^`) of line and end of line(`$`). Protractor presents the name for matching as the Describe description followed by the It description. To run the login test for should have a title you would need to put this as your matcher. `Login tests : should have a title`. An alternative would be to select Test File and run the entire file. You can add an `x` in front of `it` to disable the ones you do not need. EX: `xit('should login')`.
+1. Enter the path to the Test file Ex: `<cht-core-repo>/tests/e2e/protractor/sms/send-message.js`.
+1. Enter the test name. This is a bit of a chore. IntelliJ will automatically add the regex flags for begins(`^`) of line and end of line(`$`). Protractor presents the name for matching as the Describe description followed by the It description. To run the pregnancy test for should have a title you would need to put this as your matcher. `Send message : should have a title`. An alternative would be to select Test File and run the entire file. You can add an `x` in front of `it` to disable the ones you do not need. EX: `xit('should send a message')`.
 1. Click ok.
 1. Click the run configuration dropdown and select the protractor config. 
 1. In a terminal run `grunt e2e-deploy`   NOTE: This has to happen each time you run. 
@@ -134,12 +121,11 @@ Each spec file runs independently. There is no need to manage browser state betw
 
 ### Saving artifacts
 
-Github actions will artifact all files in tests/logs. This is the directory any logs, results, images, etc... should save to if you want to review them if a build fails. 
+GitHub actions will artifact all files in tests/logs. This is the directory any logs, results, images, etc... should save to if you want to review them if a build fails. 
 
 ### Test Architecture
 
-Our github actions spin up an ubuntu-18.04 machine. Installs software and then launches Couchdb and Horticulturalist in a docker container. This is needed to run our applications in the specific node versions we support while allowing our test code to run in versions of node it they support. This creates a paradigm to keep in mind when writing tests. Tests run on the ubuntu machine. Any test code that starts a server or runs an executable is running outside of the horti container. The ports are exposed for all our services and horti has access to the cht-core root via a volume. Horti can also talk to the host by getting the gateway of the docker network. 
-
+Our GitHub actions spin up an ubuntu-22.04 machine. Installs software and then launches Couchdb and Horticulturalist in a docker container. This is needed to run our applications in the specific node versions we support while allowing our test code to run in versions of node it they support. This creates a paradigm to keep in mind when writing tests. Tests run on the ubuntu machine. Any test code that starts a server or runs an executable is running outside of the horti container. The ports are exposed for all our services and horti has access to the cht-core root via a volume. Horti can also talk to the host by getting the gateway of the docker network. 
 
 ### Glossary 
 

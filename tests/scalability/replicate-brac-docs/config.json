@@ -1,0 +1,20 @@
+{
+  "url": "https://127-0-0-1.my.local-ip.co:8443/medic",
+  "users": [
+    {
+      "name": "lilianatestcomplete2-districthospitaldistricthospital0healthcenter0user0",
+      "pass": "Secret_1",
+      "contact": "f10da95d-2b13-44c8-a633-388187c53681"
+    },
+    {
+      "name": "jamietestcomplete2-districthospitaldistricthospital0healthcenter1user0",
+      "pass": "Secret_1",
+      "contact": "39fe4393-8d34-4885-a989-668f409a5e3c"
+    },
+    {
+      "name": "ashlytestcomplete2-districthospitaldistricthospital0healthcenter2user0",
+      "pass": "Secret_1",
+      "contact": "e5a20af5-2bba-468b-b315-00db6833ff1d"
+    }
+  ]
+}

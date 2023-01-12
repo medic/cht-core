@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,7 +14,6 @@ import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
-import { SimprintsService } from '@mm-services/simprints.service';
 import { Selectors } from '@mm-selectors/index';
 import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -24,24 +23,25 @@ import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 
 @Component({
   templateUrl: './contacts.component.html'
 })
-export class ContactsComponent implements OnInit, OnDestroy{
+export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
   private readonly PAGE_SIZE = 50;
   private subscription: Subscription = new Subscription();
-  private globalActions;
-  private contactsActions;
-  private servicesActions;
+  private globalActions: GlobalActions;
+  private contactsActions: ContactsActions;
+  private servicesActions: ServicesActions;
   private listContains;
-  private destroyed;
-  private isOnlineOnly;
+  private destroyed: boolean;
+  private isOnlineOnly: boolean;
 
   contactsList;
   loading = false;
   error;
-  appending;
+  appending: boolean;
   hasContacts = true;
   filters:any = {};
   defaultFilters:any = {};
@@ -55,8 +55,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
   defaultSortDirection = 'alpha';
   sortDirection = this.defaultSortDirection;
   additionalListItem = false;
-  simprintsEnabled;
-  enketoEdited;
+  useSearchNewDesign = true;
+  enketoEdited: boolean;
   selectedContact;
 
   constructor(
@@ -72,7 +72,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
     private authService: AuthService,
     private settingsService: SettingsService,
     private UHCSettings: UHCSettingsService,
-    private simprintsService: SimprintsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private relativeDateService: RelativeDateService,
     private tourService: TourService,
@@ -87,20 +86,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
   ngOnInit() {
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
-
     this.globalActions.clearFilters(); // clear any global filters first
-    const reduxSubscription = combineLatest(
-      this.store.select(Selectors.getContactsList),
-      this.store.select(Selectors.getFilters),
-      this.store.select(Selectors.contactListContains),
-      this.store.select(Selectors.getSelectedContact),
-    ).subscribe(([contactsList, filters, listContains, selectedContact]) => {
-      this.contactsList = contactsList;
-      this.filters = filters;
-      this.listContains = listContains;
-      this.selectedContact = selectedContact;
-    });
-    this.subscription.add(reduxSubscription);
+    this.subscribeToStore();
 
     const changesSubscription = this.changesService.subscribe({
       key: 'contacts-list',
@@ -130,7 +117,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
       },
     });
     this.subscription.add(changesSubscription);
-    this.simprintsEnabled = this.simprintsService.enabled();
 
     Promise
       .all([
@@ -170,6 +156,11 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.tourService.startIfNeeded(this.route.snapshot);
   }
 
+  async ngAfterViewInit() {
+    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    this.useSearchNewDesign = !isDisabled;
+  }
+
   ngOnDestroy() {
     this.destroyed = true;
     this.subscription.unsubscribe();
@@ -179,6 +170,26 @@ export class ContactsComponent implements OnInit, OnDestroy{
     this.globalActions.clearFilters();
     this.globalActions.unsetSelected();
     this.globalActions.setLeftActionBar({});
+  }
+
+  private subscribeToStore() {
+    const reduxSubscription = combineLatest(
+      this.store.select(Selectors.getContactsList),
+      this.store.select(Selectors.getFilters),
+      this.store.select(Selectors.contactListContains),
+      this.store.select(Selectors.getSelectedContact),
+    ).subscribe(([
+      contactsList,
+      filters,
+      listContains,
+      selectedContact,
+    ]) => {
+      this.contactsList = contactsList;
+      this.filters = filters;
+      this.listContains = listContains;
+      this.selectedContact = selectedContact;
+    });
+    this.subscription.add(reduxSubscription);
   }
 
   private isRelevantVisitReport (doc) {
@@ -231,7 +242,6 @@ export class ContactsComponent implements OnInit, OnDestroy{
       contact.valid = true;
       contact.summary = null;
       contact.primary = contact.home;
-      contact.simprintsTier = contact.simprints && contact.simprints.tierNumber;
       contact.dod = contact.date_of_death;
       if (type && type.count_visits && Number.isInteger(contact.lastVisitedDate)) {
         if (contact.lastVisitedDate === 0) {
@@ -332,7 +342,7 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
 
     let searchFilters = this.defaultFilters;
-    if (this.filters.search || this.filters.simprintsIdentities) {
+    if (this.filters.search) {
       searchFilters = this.filters;
     }
 
@@ -354,15 +364,14 @@ export class ContactsComponent implements OnInit, OnDestroy{
 
     return this.searchService
       .search('contacts', searchFilters, options, extensions, docIds)
-      .then((updatedContacts) => {
+      .then(updatedContacts => {
         // If you have a home place make sure its at the top
-        if(this.usersHomePlace) {
+        if (this.usersHomePlace) {
           const homeIndex = _findIndex(updatedContacts, (contact:any) => {
             return contact._id === this.usersHomePlace._id;
           });
           this.additionalListItem =
             !this.filters.search &&
-            !this.filters.simprintsIdentities &&
             (this.additionalListItem || !this.appending) &&
             homeIndex === -1;
 
@@ -371,25 +380,8 @@ export class ContactsComponent implements OnInit, OnDestroy{
               // move it to the top
               updatedContacts.splice(homeIndex, 1);
               updatedContacts.unshift(this.usersHomePlace);
-            } else if (
-              !this.filters.search &&
-              !this.filters.simprintsIdentities
-            ) {
-
+            } else if (!this.filters.search) {
               updatedContacts.unshift(this.usersHomePlace);
-            }
-            if (this.filters.simprintsIdentities) {
-              updatedContacts.forEach((contact) => {
-                const identity = this.filters.simprintsIdentities.find(
-                  function(identity) {
-                    return identity.id === contact.simprints_id;
-                  }
-                );
-                contact.simprints = identity || {
-                  confidence: 0,
-                  tierNumber: 5,
-                };
-              });
             }
           }
         }
@@ -419,26 +411,12 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
 
     this.loading = true;
-    if (this.filters.search || this.filters.simprintsIdentities) {
-      return this.query();
-    } else {
-      return this.query();
-    }
+    return this.query();
   }
 
   sort(sortDirection?) {
     this.sortDirection = sortDirection ? sortDirection : this.defaultSortDirection;
     this.query();
-  }
-
-  simprintsIdentify() {
-    this.loading = true;
-    this.simprintsService
-      .identify()
-      .then((identities) => {
-        this.filters.simprintsIdentities = identities;
-        this.search();
-      });
   }
 
   listTrackBy(index, contact) {
@@ -453,15 +431,15 @@ export class ContactsComponent implements OnInit, OnDestroy{
     }
 
     this.globalActions.setLeftActionBar({
+      exportFn: () => this.exportContacts(),
       hasResults: this.hasContacts,
       userFacilityId: this.usersHomePlace?._id,
       childPlaces: this.allowedChildPlaces,
-      exportFn: this.exportFn.bind({}, this.exportService, this.filters),
     });
   }
 
-  private exportFn(exportService, filters) {
-    exportService.export('contacts', filters, { humanReadable: true });
+  exportContacts() {
+    this.exportService.export('contacts', this.filters, { humanReadable: true });
   }
 
   private subscribeToAllContactXmlForms() {

@@ -13,6 +13,7 @@ import { enableProdMode } from '@angular/core';
 import '@angular/compiler';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import pouchdbDebug from 'pouchdb-debug';
+import * as $ from 'jquery';
 
 import { AppModule } from './app.module';
 import { environment } from '@mm-environments/environment';
@@ -35,6 +36,14 @@ require('moment/locale/sw');
 require('select2');
 require('../js/enketo/main');
 
+// Enable jQuery support for self-closing xml tags
+// https://jquery.com/upgrade-guide/3.5/
+const rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([a-z][^/\0>\x20\t\r\n\f]*)[^>]*)\/>/gi;
+// eslint-disable-next-line no-import-assign
+Object.defineProperties($, {
+  htmlPrefilter: { value: (html) => html.replace(rxhtmlTag, '<$1></$2>') }
+});
+
 window.PouchDB.plugin(pouchdbDebug);
 bootstrapper(POUCHDB_OPTIONS, (err) => {
   if (err) {
@@ -43,6 +52,7 @@ bootstrapper(POUCHDB_OPTIONS, (err) => {
       // retry initial replication automatically after one minute
       window.location.reload(false);
     }, 60 * 1000);
+
     return;
   }
 

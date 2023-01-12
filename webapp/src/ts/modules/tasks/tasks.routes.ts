@@ -13,7 +13,7 @@ export const routes:Routes = [
   {
     path: 'tasks',
     component: TasksComponent,
-    data: { permissions: ['can_view_tasks'], tab: 'tasks' },
+    data: { permissions: ['can_edit', 'can_view_tasks'], tab: 'tasks' },
     canActivate: [AppRouteGuardProvider],
     children: [
       {

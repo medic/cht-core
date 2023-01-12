@@ -1,16 +1,20 @@
-module.exports={
+const chaiExclude = require('chai-exclude');
+const chaiAsPromised = require('chai-as-promised');
+const chai = require('chai');
+chai.use(chaiExclude);
+chai.use(chaiAsPromised);
+
+module.exports = {
   allowUncaught: false,
   color: true,
   checkLeaks: true,
   fullTrace: true,
   asyncOnly: false,
   spec: [
-    'tests/e2e/api/**/*.js',
-    'tests/integration/**/*.js',
-    'tests/e2e/sentinel/**/*.js',
-    'tests/e2e/transitions/**/*.js',
+    'tests/integration/!(cht-conf)/**/*.spec.js',
+    'tests/integration/cht-conf/**/*.spec.js', // Executing last to not side-effect sentinel tests.
   ],
-  timeout: 135 * 1000, //API takes a little long to start up
+  timeout: 200 * 1000, //API takes a little long to start up
   reporter: 'spec',
   require: [ 'tests/integration/hooks.js' ],
   captureFile: 'tests/results/results.txt',

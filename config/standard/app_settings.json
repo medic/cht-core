@@ -228,7 +228,9 @@
     "can_export_all": [
       "national_admin"
     ],
-    "can_view_uhc_stats": []
+    "can_view_uhc_stats": [],
+    "can_view_old_filter_and_search": [],
+    "can_view_old_action_bar": []
   },
   "setup_complete": true,
   "outgoing_phone_replace": {
@@ -3901,7 +3903,6 @@
     "registration": true,
     "update_scheduled_reports": false,
     "multi_report_alerts": false,
-    "update_sent_forms": false,
     "generate_patient_id_on_people": true,
     "death_reporting": true,
     "resolve_pending": false
