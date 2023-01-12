@@ -10,7 +10,6 @@ const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 const health_center = places.get('health_center');
 const district_hospital = places.get('district_hospital');
-//const userFactory = require('../../../factories/cht/users/users');
 
 const contact = personFactory.build({
   _id: uuid(),
@@ -39,13 +38,6 @@ const smsReport = reportFactory.build(
     patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id},
   },
 );
-
-// const onlineUser = userFactory.build({
-//   username: 'onlineuser',
-//   roles:['program-officer'],
-//   place: district_hospital._id,
-//   contact: contact._id,
-// });
 
 const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   await utils.request({
@@ -106,10 +98,6 @@ describe('Online User', async () => {
 
   describe(' - Options enabled when there are items', async () => {
     before(async () => {
-      // await browser.reloadSession();
-      // await browser.url('/');
-      // await utils.createUsers([onlineUser]);
-      // await loginPage.login(onlineUser);
       await updateUser('admin', { place : district_hospital._id, contact: contact._id });
       let result = await utils.saveDoc(xmlReport);
       xmlReportId = result.id;
@@ -119,7 +107,8 @@ describe('Online User', async () => {
     });
 
     it(' - Contact Tab  - contact selected', async () => {
-      await commonPage.goToPeople();
+      await commonPage.goToPeople(contact._id);
+      await browser.pause(500);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionEnabled('export', 'contacts')).to.be.true;
       expect(await commonPage.isOptionEnabled('edit', 'contacts')).to.be.true;
