@@ -23,6 +23,7 @@ const state = {
       filterCount: { total: 5, placeFilter: 3, formFilter: 2 },
       trainingCard: 'form:training:new_change',
     },
+    trainingCard: 'form:training:new_change',
     navigation: {
       cancelCallback: function() {},
       preventNavigation: 'prevent',

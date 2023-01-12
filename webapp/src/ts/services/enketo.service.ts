@@ -356,7 +356,6 @@ export class EnketoService {
           .then(valid => {
             if (valid) {
               const currentIndex = form.pages._getCurrentIndex();
-
               if (!isFormInModal) {
                 window.history.pushState({ enketo_page_number: currentIndex }, '');
               }
@@ -373,11 +372,10 @@ export class EnketoService {
       .off('.pagemode')
       .on('click.pagemode', () => {
         if (isFormInModal) {
-          form.pages.prev();
+          form.pages._prev();
         } else {
           window.history.back();
         }
-
         this.setupNavButtons($wrapper, form.pages._getCurrentIndex() - 1);
         this.forceRecalculate(form);
         this.pauseMultimedia($wrapper);

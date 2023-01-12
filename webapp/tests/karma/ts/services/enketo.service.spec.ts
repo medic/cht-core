@@ -634,11 +634,9 @@ describe('Enketo service', () => {
           expect(actual.from).to.equal('555');
           expect(xmlFormGetWithAttachment.callCount).to.equal(1);
           expect(xmlFormGetWithAttachment.args[0][0]).to.equal('training:a_new_training');
-          expect(AddAttachment.callCount).to.equal(1);
-          expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
-          expect(AddAttachment.args[0][1]).to.equal('content');
-          expect(AddAttachment.args[0][2]).to.equal(content.replace(/\n$/, ''));
-          expect(AddAttachment.args[0][3]).to.equal('application/xml');
+          expect(AddAttachment.callCount).to.equal(0);
+          expect(removeAttachment.callCount).to.equal(1);
+          expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
         });
     });
 
