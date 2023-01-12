@@ -579,29 +579,30 @@ describe('db-doc handler', () => {
 
       it('reports about deleted patients and deleted patients', () => {
 
-        const patientWithShort6code = 'temp:offline:clinic:patient_to_delete_with_shortcode';
+        const patientWithShortcode = 'temp:offline:clinic:patient_to_delete_with_shortcode';
         const patientWithoutShortcode = 'temp:offline:clinic:patient_to_delete_no_shortcode';
         const onlinePatientWithShortcode = 'temp:online:clinic:patient_to_delete_with_shortcode';
         const onlinePatientWithoutShortcode = 'temp:online:clinic:patient_to_delete_no_shortcode';
 
-        const generateReport = reportForPatient.bind({}, _, _, _, false, patientsToDelete);
+        const generateReport = (patientUuid, username, fields) =>
+          reportForPatient(patientUuid, username, fields, false, patientsToDelete);
 
         const reportScenarios = [
-          { doc: generateReport(patientWithShort6code, null, ['patient_id']), allowed: true },
-          { doc: generateReport(patientWithShort6code, null, ['patient_uuid']), allowed: true },
-          { doc: generateReport(patientWithShort6code, null, ['patient_uuid', 'patient_id']), allowed: true },
+          { doc: generateReport(patientWithShortcode, null, ['patient_id']), allowed: true },
+          { doc: generateReport(patientWithShortcode, null, ['patient_uuid']), allowed: true },
+          { doc: generateReport(patientWithShortcode, null, ['patient_uuid', 'patient_id']), allowed: true },
           { doc: generateReport(patientWithoutShortcode, null, ['patient_uuid']), allowed: true },
-          { doc: generateReport(patientWithShort6code, submittersToDelete[0], ['patient_id']), allowed: true },
-          { doc: generateReport(patientWithShort6code, submittersToDelete[0], ['patient_uuid']), allowed: true },
+          { doc: generateReport(patientWithShortcode, submittersToDelete[0], ['patient_id']), allowed: true },
+          { doc: generateReport(patientWithShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
           {
-            doc: generateReport(patientWithShort6code, submittersToDelete[0], ['patient_uuid', 'patient_id']),
+            doc: generateReport(patientWithShortcode, submittersToDelete[0], ['patient_uuid', 'patient_id']),
             allowed: true
           },
           { doc: generateReport(patientWithoutShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
-          { doc: generateReport(patientWithShort6code, submittersToDelete[1], ['patient_id']), allowed: true },
-          { doc: generateReport(patientWithShort6code, submittersToDelete[1], ['patient_uuid']), allowed: true },
+          { doc: generateReport(patientWithShortcode, submittersToDelete[1], ['patient_id']), allowed: true },
+          { doc: generateReport(patientWithShortcode, submittersToDelete[1], ['patient_uuid']), allowed: true },
           {
-            doc: generateReport(patientWithShort6code, submittersToDelete[1], ['patient_uuid', 'patient_id']),
+            doc: generateReport(patientWithShortcode, submittersToDelete[1], ['patient_uuid', 'patient_id']),
             allowed: true
           },
           { doc: generateReport(patientWithoutShortcode, submittersToDelete[1], ['patient_uuid']), allowed: true },
@@ -665,9 +666,11 @@ describe('db-doc handler', () => {
             // can read reports about deleted patients
             results.forEach((result, idx) => {
               if (reportScenarios[idx].allowed) {
-                chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+                console.log(idx, reportScenarios[idx].doc);
+                chai.expect(result).to.deep.include(reportScenarios[idx].doc, idx);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+                console.log(idx);
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'}, idx);
               }
             });
           })
@@ -680,9 +683,10 @@ describe('db-doc handler', () => {
             // can read reports about deleted patients and submitted by deleted contacts
             results.forEach((result, idx) => {
               if (reportScenarios[idx].allowed) {
-                chai.expect(result).to.deep.include(reportScenarios[idx].doc);
+                chai.expect(result).to.deep.include(reportScenarios[idx].doc, idx);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+                console.log(idx);
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'}, idx);
               }
             });
           })
@@ -711,53 +715,57 @@ describe('db-doc handler', () => {
         const onlineWithShortcode = 'temp:online:clinic:patient_to_delete_with_shortcode';
         const onlineWithoutShortcode = 'temp:online:clinic:patient_to_delete_no_shortcode';
 
-        const genReport = reportForPatient.bind({}, _, _, _, true, patientsToDelete);
+        const generateReport = (patientUuid, username, fields) =>
+          reportForPatient(patientUuid, username, fields, true, patientsToDelete);
 
         const reportScenarios = [
-          { doc: genReport(offlineWithShortcode, null, ['patient_id']), allowed: false },
-          { doc: genReport(offlineWithShortcode, null, ['patient_uuid']), allowed: false },
-          { doc: genReport(offlineWithShortcode, null, ['patient_uuid', 'patient_id']), allowed: false },
+          { doc: generateReport(offlineWithShortcode, null, ['patient_id']), allowed: false },
+          { doc: generateReport(offlineWithShortcode, null, ['patient_uuid']), allowed: false },
+          { doc: generateReport(offlineWithShortcode, null, ['patient_uuid', 'patient_id']), allowed: false },
 
-          { doc: genReport(offlineWithoutShortcode, null, ['patient_uuid']), allowed: false },
+          { doc: generateReport(offlineWithoutShortcode, null, ['patient_uuid']), allowed: false },
 
-          { doc: genReport(offlineWithShortcode, submittersToDelete[0], ['patient_id']), allowed: true },
-          { doc: genReport(offlineWithShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
+          { doc: generateReport(offlineWithShortcode, submittersToDelete[0], ['patient_id']), allowed: true },
+          { doc: generateReport(offlineWithShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
           {
-            doc: genReport(offlineWithShortcode, submittersToDelete[0], ['patient_uuid', 'patient_id']),
+            doc: generateReport(offlineWithShortcode, submittersToDelete[0], ['patient_uuid', 'patient_id']),
             allowed: true
           },
 
-          { doc: genReport(offlineWithoutShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
+          { doc: generateReport(offlineWithoutShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
 
-          { doc: genReport(offlineWithShortcode, submittersToDelete[1], ['patient_id']), allowed: false },
-          { doc: genReport(offlineWithShortcode, submittersToDelete[1], ['patient_uuid']), allowed: false },
+          { doc: generateReport(offlineWithShortcode, submittersToDelete[1], ['patient_id']), allowed: false },
+          { doc: generateReport(offlineWithShortcode, submittersToDelete[1], ['patient_uuid']), allowed: false },
           {
-            doc: genReport(offlineWithShortcode, submittersToDelete[1], ['patient_uuid', 'patient_id']),
+            doc: generateReport(offlineWithShortcode, submittersToDelete[1], ['patient_uuid', 'patient_id']),
             allowed: false
           },
 
-          { doc: genReport(offlineWithoutShortcode, submittersToDelete[1], ['patient_uuid']), allowed: false },
+          { doc: generateReport(offlineWithoutShortcode, submittersToDelete[1], ['patient_uuid']), allowed: false },
 
-          { doc: genReport(onlineWithShortcode, null, ['patient_id']), allowed: false },
-          { doc: genReport(onlineWithShortcode, null, ['patient_uuid']), allowed: false },
-          { doc: genReport(onlineWithShortcode, null, ['patient_uuid', 'patient_id']), allowed: false },
+          { doc: generateReport(onlineWithShortcode, null, ['patient_id']), allowed: false },
+          { doc: generateReport(onlineWithShortcode, null, ['patient_uuid']), allowed: false },
+          { doc: generateReport(onlineWithShortcode, null, ['patient_uuid', 'patient_id']), allowed: false },
 
-          { doc: genReport(onlineWithoutShortcode, null, ['patient_uuid']), allowed: false },
+          { doc: generateReport(onlineWithoutShortcode, null, ['patient_uuid']), allowed: false },
 
-          { doc: genReport(onlineWithShortcode, submittersToDelete[0], ['patient_id']), allowed: true },
-          { doc: genReport(onlineWithShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
-          { doc: genReport(onlineWithShortcode, submittersToDelete[0], ['patient_uuid', 'patient_id']), allowed: true },
-
-          { doc: genReport(onlineWithoutShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
-
-          { doc: genReport(onlineWithShortcode, submittersToDelete[1], ['patient_id']), allowed: false },
-          { doc: genReport(onlineWithShortcode, submittersToDelete[1], ['patient_uuid']), allowed: false },
+          { doc: generateReport(onlineWithShortcode, submittersToDelete[0], ['patient_id']), allowed: true },
+          { doc: generateReport(onlineWithShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
           {
-            doc: genReport(onlineWithShortcode, submittersToDelete[1], ['patient_uuid', 'patient_id']),
+            doc: generateReport(onlineWithShortcode, submittersToDelete[0], ['patient_uuid', 'patient_id']),
+            allowed: true
+          },
+
+          { doc: generateReport(onlineWithoutShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
+
+          { doc: generateReport(onlineWithShortcode, submittersToDelete[1], ['patient_id']), allowed: false },
+          { doc: generateReport(onlineWithShortcode, submittersToDelete[1], ['patient_uuid']), allowed: false },
+          {
+            doc: generateReport(onlineWithShortcode, submittersToDelete[1], ['patient_uuid', 'patient_id']),
             allowed: false
           },
 
-          { doc: genReport(onlineWithoutShortcode, submittersToDelete[1], ['patient_uuid']), allowed: false },
+          { doc: generateReport(onlineWithoutShortcode, submittersToDelete[1], ['patient_uuid']), allowed: false },
         ];
 
         const docs = reportScenarios.map(scenario => scenario.doc);
