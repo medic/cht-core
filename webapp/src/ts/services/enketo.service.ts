@@ -280,11 +280,6 @@ export class EnketoService {
 
   private renderFromXmls(xmlFormContext: XmlFormContext) {
     const { doc, instanceData, titleKey, wrapper, isFormInModal } = xmlFormContext;
-    wrapper
-      .find('.form-footer')
-      .addClass('end')
-      .find('.previous-page,.next-page')
-      .addClass('disabled');
 
     const formContainer = wrapper.find('.container').first();
     formContainer.html(doc.html.get(0));
