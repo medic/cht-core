@@ -43,11 +43,15 @@ describe('Performing an upgrade', () => {
     const currentVersion = await upgradePage.getCurrentVersion();
     expect(currentVersion).to.include(version.getVersion());
 
+    await browser.refresh(); // load updated code of admin app
+    await upgradePage.goToUpgradePage();
+    const currentBuild = await upgradePage.getBuild();
+
     // there should be no staged ddocs
     const ddocs = await getDdocs();
     const staged = ddocs.filter(ddoc => ddoc._id.includes('staged'));
     expect(staged.length).to.equal(0);
 
-    ddocs.forEach(ddoc => expect(ddoc.version).to.equal(currentVersion));
+    ddocs.forEach(ddoc => expect(ddoc.version).to.equal(currentBuild));
   });
 });

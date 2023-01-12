@@ -31,11 +31,13 @@ const upgradeModalConfirm = async () => {
 };
 
 const getCurrentVersion = async () => {
-  const version = async () => {
-    const ddRows = await $$('dl.horizontal dd');
-    const idx = ddRows.length > 3 ? 1 : 0;
-    return (await $$('dl.horizontal dd'))[idx];
-  };
+  const version = () => $('dl.horizontal dd');
+  await browser.waitUntil(async () => await (await version()).getText());
+  return await (await version()).getText();
+};
+
+const getBuild = async () => {
+  const version = () => $('dl.horizontal dd:nth-child(4)');
   await browser.waitUntil(async () => await (await version()).getText());
   return await (await version()).getText();
 };
@@ -49,4 +51,5 @@ module.exports = {
   goToUpgradePage,
   expandPreReleasesAccordion,
   upgradeModalConfirm,
+  getBuild,
 };
