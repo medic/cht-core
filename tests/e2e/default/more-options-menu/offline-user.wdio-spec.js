@@ -41,19 +41,18 @@ const patient = personFactory.build({
   _id: uuid(),
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
+const xmlReport = reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
 
-const reports = [
-  reportFactory.build(
-    {
-      form: 'P',
-      reported_date: moment([ today.year(), today.month() - 4, 1, 23, 30 ]).valueOf(),
-      patient_id: patient._id,
-    },
-    {
-      patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id},
-    },
-  ),
-];
+const smsReport = reportFactory.build(
+  {
+    form: 'P',
+    reported_date: moment([ today.year(), today.month() - 4, 1, 23, 30 ]).valueOf(),
+    patient_id: patient._id,
+  },
+  {
+    patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id},
+  },
+);
 
 const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   await utils.request({
@@ -66,9 +65,16 @@ const sendMessage = async (message = 'Testing', phone = contact.phone) => {
   });  
 };
 
+let xmlReportId;
+let smsReportId;
+
 describe('More Options Menu - Offline User', async () => {
   before(async () => {
-    await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
+    await utils.saveDocs([ ...places.values(), contact, patient]);
+    let result = await utils.saveDoc(xmlReport);
+    xmlReportId = result.id;
+    result = await utils.saveDoc(smsReport);
+    smsReportId = result.id;
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
   });
@@ -104,13 +110,21 @@ describe('More Options Menu - Offline User', async () => {
       expect(await commonPage.isOptionEnabled('delete', 'contacts')).to.be.false;
     });
 
-    it('- options enabled when report selected', async () => {
+    it('Report tab - options enabled when sms report selected', async () => {
       await commonPage.goToReports();
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
-      (await reportPage.firstReport()).click();
+      await reportPage.goToReportById(smsReportId);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isOptionVisible('export', 'reports')).to.be.false;
-      expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false; //not xml report
+      expect(await commonPage.isOptionVisible('edit', 'reports')).to.be.false;
+      expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
+    });
+
+    it('Report tab - options enabled when xml report selected', async () => {  
+      await reportPage.goToReportById(xmlReportId);
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isOptionVisible('export', 'reports')).to.be.false;
+      expect(await commonPage.isOptionEnabled('edit', 'reports')).to.be.true;
       expect(await commonPage.isOptionEnabled('delete', 'reports')).to.be.true;     
     });
   });
@@ -139,7 +153,9 @@ describe('More Options Menu - Offline User', async () => {
     
       await commonPage.goToReports();
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
-      (await reportPage.firstReport()).click();
+      await reportPage.goToReportById(smsReportId);
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      await reportPage.goToReportById(xmlReportId);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;   
     });    
   });
@@ -157,11 +173,15 @@ describe('More Options Menu - Offline User', async () => {
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
     });
   
-    it('- options enabled when report selected', async () => {
-      await commonPage.goToReports();
-      (await reportPage.firstReport()).click();
+    it('-Report tab - options enabled when sms report selected', async () => {
+      await reportPage.goToReportById(smsReportId);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;     
-    });  
+    });
+    
+    it('-Report tab - options enabled when xml report selected', async () => {
+      await reportPage.goToReportById(xmlReportId);
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;     
+    });
   });
 
   describe('- EDIT permissions disabled', async () => {
@@ -175,11 +195,15 @@ describe('More Options Menu - Offline User', async () => {
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
     });
   
-    it('- options enabled when report selected', async () => {
-      await commonPage.goToReports();
-      (await reportPage.firstReport()).click();
+    it('- Report tab - options enabled when sms report selected', async () => {
+      await reportPage.goToReportById(smsReportId);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
-    });  
+    });
+
+    it('- Report tab - options enabled when xml report selected', async () => {
+      await reportPage.goToReportById(xmlReportId);
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
+    });    
   });
 });
 

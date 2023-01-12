@@ -24,6 +24,7 @@ const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
 const editReportButton = () => $('.mat-menu-content .mat-menu-item[test-id="edit-reports"]');
 const deleteButton = () => $('.mat-menu-content .mat-menu-item[test-id="delete-reports"]');
 const exportButton = () => $('.mat-menu-content .mat-menu-item[test-id="export-reports"]');
+
 const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
 const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
 const sidebarFilterToDate = () => $('#toDateFilter');
