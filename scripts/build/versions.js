@@ -20,12 +20,12 @@ const getTagVersion = (release) => {
 };
 
 const getRepo = (repo) => {
-  if (repo) {
-    return repo;
-  }
-
   if (!INTERNAL_CONTRIBUTOR) {
     return 'medicmobile';
+  }
+
+  if (repo) {
+    return repo;
   }
 
   return ECR_REPO;
