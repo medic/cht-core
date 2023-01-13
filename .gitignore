@@ -33,6 +33,7 @@ config/*/backups/*
 config/*/json_docs/*
 config/*/upload-docs.*
 config/*/users.csv
+dummy/
 config/*/forms/contact/*.xlsx
 !config/*/forms/contact/PLACE_TYPE-create.xlsx
 !config/*/forms/contact/PLACE_TYPE-edit.xlsx
