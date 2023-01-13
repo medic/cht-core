@@ -1,5 +1,8 @@
 name: Update compose URLs
 
+env:
+  INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
+
 on:
   pull_request:
     types: [opened, reopened, synchronize]
@@ -8,6 +11,7 @@ jobs:
 
   replace-pr-tokens-with-staging-URLs:
     runs-on: ubuntu-latest
+    if: ${{ env.INTERNAL_CONTRIBUTOR }}
     name: Updates pull requests body with URLs we want to replace
     steps:
       - name: checkout
