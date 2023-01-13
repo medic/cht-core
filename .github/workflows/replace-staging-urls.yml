@@ -1,25 +1,26 @@
 name: Update compose URLs
 
-env:
-  INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
-
 on:
   pull_request:
     types: [opened, reopened, synchronize]
+
+env:
+  INTERNAL_CONTRIBUTOR: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
 
   replace-pr-tokens-with-staging-URLs:
     runs-on: ubuntu-latest
-    if: ${{ env.INTERNAL_CONTRIBUTOR }}
     name: Updates pull requests body with URLs we want to replace
     steps:
       - name: checkout
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           #ref: 7848-add-gh-action-for-staging-urls
       - name: Search-Replace PR Body
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
         uses: ./.github/actions/update-staging-url-placeholders
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
