@@ -825,7 +825,7 @@ export class EnketoService {
 
 interface ContactSummary {
   id: string;
-  xmlStr?: string;
+  xml: Document;
 }
 
 interface EnketoOptions {

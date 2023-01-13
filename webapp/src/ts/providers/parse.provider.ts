@@ -288,10 +288,10 @@ class ASTCompiler {
     }
 
     const functionName = ast.receiver.name;
-    const parent = this.build(ast.receiver.receiver);
+    const receiver = this.build(ast.receiver.receiver);
     const v = this.createVar();
 
-    stmts.push(`${v}=${parent}&&${parent}.${functionName}&&${parent}.${functionName}(${_args.join(',')})`);
+    stmts.push(`${v}=${receiver}&&${receiver}.${functionName}&&${receiver}.${functionName}(${_args.join(',')})`);
     return v;
   }
 

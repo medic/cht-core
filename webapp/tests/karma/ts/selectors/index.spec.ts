@@ -181,16 +181,16 @@ describe('Selectors', () => {
     });
 
     it('should getCancelCallback', () => {
-      expect(Selectors.getCancelCallback.projector(state.global.navigation))
+      expect(Selectors.getCancelCallback.projector(state.global))
         .to.deep.equal(clonedState.global.navigation.cancelCallback);
     });
 
     it('should getNavigation', () => {
-      expect(Selectors.getNavigation.projector(state.global.navigation)).to.deep.equal(clonedState.global.navigation);
+      expect(Selectors.getNavigation.projector(state.global)).to.deep.equal(clonedState.global.navigation);
     });
 
     it('should getPreventNavigation', () => {
-      expect(Selectors.getPreventNavigation.projector(state.global.navigation))
+      expect(Selectors.getPreventNavigation.projector(state.global))
         .to.deep.equal(clonedState.global.navigation.preventNavigation);
     });
 
@@ -220,28 +220,23 @@ describe('Selectors', () => {
     });
 
     it('should getEnketoStatus', () => {
-      expect(Selectors.getEnketoStatus.projector(state.global.enketoStatus))
-        .to.deep.equal(clonedState.global.enketoStatus);
+      expect(Selectors.getEnketoStatus.projector(state.global)).to.deep.equal(clonedState.global.enketoStatus);
     });
 
     it('should getEnketoEditedStatus', () => {
-      expect(Selectors.getEnketoEditedStatus.projector(state.global.enketoStatus))
-        .to.equal(clonedState.global.enketoStatus.edited);
+      expect(Selectors.getEnketoEditedStatus.projector(state.global)).to.equal(clonedState.global.enketoStatus.edited);
     });
 
     it('should getEnketoSavingStatus', () => {
-      expect(Selectors.getEnketoSavingStatus.projector(state.global.enketoStatus))
-        .to.equal(clonedState.global.enketoStatus.saving);
+      expect(Selectors.getEnketoSavingStatus.projector(state.global)).to.equal(clonedState.global.enketoStatus.saving);
     });
 
     it('should getEnketoForm', () => {
-      expect(Selectors.getEnketoForm.projector(state.global.enketoStatus))
-        .to.equal(clonedState.global.enketoStatus.form);
+      expect(Selectors.getEnketoForm.projector(state.global)).to.equal(clonedState.global.enketoStatus.form);
     });
 
     it('should getEnketoError', () => {
-      expect(Selectors.getEnketoError.projector(state.global.enketoStatus))
-        .to.equal(clonedState.global.enketoStatus.error);
+      expect(Selectors.getEnketoError.projector(state.global)).to.equal(clonedState.global.enketoStatus.error);
     });
 
     // null checks
@@ -338,32 +333,31 @@ describe('Selectors', () => {
     });
 
     it('should getSelectedContact', () => {
-      expect(Selectors.getSelectedContact.projector(state.contacts.selected))
-        .to.deep.equal(clonedState.contacts.selected);
+      expect(Selectors.getSelectedContact.projector(state.contacts)).to.deep.equal(clonedState.contacts.selected);
     });
 
     it('should getSelectedContactDoc', () => {
-      expect(Selectors.getSelectedContactDoc.projector(state.contacts.selected))
+      expect(Selectors.getSelectedContactDoc.projector(state.contacts))
         .to.deep.equal(clonedState.contacts.selected.doc);
     });
 
     it('should getSelectedContactSummary', () => {
-      expect(Selectors.getSelectedContactSummary.projector(state.contacts.selected))
+      expect(Selectors.getSelectedContactSummary.projector(state.contacts))
         .to.deep.equal(clonedState.contacts.selected.summary);
     });
 
     it('should getSelectedContactChildren', () => {
-      expect(Selectors.getSelectedContactChildren.projector(state.contacts.selected))
+      expect(Selectors.getSelectedContactChildren.projector(state.contacts))
         .to.deep.equal(clonedState.contacts.selected.children);
     });
 
     it('should getSelectedContactReports', () => {
-      expect(Selectors.getSelectedContactReports.projector(state.contacts.selected))
+      expect(Selectors.getSelectedContactReports.projector(state.contacts))
         .to.deep.equal(clonedState.contacts.selected.reports);
     });
 
     it('should getSelectedContactTasks', () => {
-      expect(Selectors.getSelectedContactTasks.projector(state.contacts.selected))
+      expect(Selectors.getSelectedContactTasks.projector(state.contacts))
         .to.deep.equal(clonedState.contacts.selected.tasks);
     });
 
