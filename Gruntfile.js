@@ -318,7 +318,7 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'save-service-images': {
-        cmd: () => buildVersions.SERVICES
+        cmd: () => [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]
           .map(service =>
             [
               `mkdir -p images`,
