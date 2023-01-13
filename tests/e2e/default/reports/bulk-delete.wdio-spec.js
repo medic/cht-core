@@ -72,6 +72,7 @@ describe('Bulk delete reports', () => {
     expect(selectAllResult.countLabel).to.equal('3 records selected');
     expect(selectAllResult.selectedCount).to.equal(3);
 
+    await browser.waitUntil(async () => await reportsPage.selectedReportsDetailsCount() === 3);
     await reportsPage.expandSelectedReportSummary();
     await reportsPage.collapseSelectedReportSummary();
 
