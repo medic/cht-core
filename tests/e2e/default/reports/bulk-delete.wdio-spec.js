@@ -2,6 +2,7 @@ const utils = require('../../../utils');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const sentinelUtils = require('../../../utils/sentinel');
 
 describe('Bulk delete reports', () => {
   const docs = [
@@ -61,6 +62,7 @@ describe('Bulk delete reports', () => {
     await loginPage.cookieLogin();
     const results = await utils.saveDocs(docs);
     results.forEach(result => savedUuids.push(result.id));
+    await sentinelUtils.waitForSentinel();
   });
 
   it('should select, deselect and delete only selected reports', async () => {
