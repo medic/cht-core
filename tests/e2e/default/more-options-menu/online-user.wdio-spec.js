@@ -54,11 +54,10 @@ const updateUser = (username, data) => utils.request({
   method: 'POST',
   body: data
 });
-let xmlReportId;
-let smsReportId;
 
 describe('Online User', async () => {  
-  
+  let xmlReportId;
+  let smsReportId;  
   describe('Options disabled when no items - messages, contacts, people', async () => {
     before(async () => await loginPage.cookieLogin());
 
