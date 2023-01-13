@@ -6,11 +6,12 @@ const reportFactory = require('../../../factories/cht/reports/generic-report');
 const personFactory = require('../../../factories/cht/contacts/person');
 const uuid = require('uuid').v4;
 const utils = require('../../../utils');
+const sms = require('../../../utils/sms');
+
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 const health_center = places.get('health_center');
 const district_hospital = places.get('district_hospital');
-
 const contact = personFactory.build({
   _id: uuid(),
   name: 'contact',
@@ -39,16 +40,6 @@ const smsReport = reportFactory.build(
   },
 );
 
-const sendMessage = async (message = 'Testing', phone = contact.phone) => {
-  await utils.request({
-    method: 'POST',
-    path: '/api/v2/records',
-    headers: {
-      'Content-type': 'application/x-www-form-urlencoded'
-    },
-    body:`message=${message}&from=${phone}`,
-  });  
-};
 const updateUser = (username, data) => utils.request({
   path: `/api/v1/users/${username}`,
   method: 'POST',
@@ -102,7 +93,7 @@ describe('Online User', async () => {
       xmlReportId = result.id;
       result = await utils.saveDoc(smsReport);
       smsReportId = result.id;
-      await sendMessage();    
+      await sms.sendSms('testing', contact.phone);    
     });
 
     it('- Reports tab - options enabled when XML report selected', async () => {

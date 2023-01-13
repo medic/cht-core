@@ -7,11 +7,12 @@ const reportFactory = require('../../../factories/cht/reports/generic-report');
 const personFactory = require('../../../factories/cht/contacts/person');
 const userFactory = require('../../../factories/cht/users/users');
 const placeFactory = require('../../../factories/cht/contacts/place');
+const sms = require('../../../utils/sms');
+
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 const health_center = places.get('health_center');
 const district_hospital = places.get('district_hospital');
-
 const contact = personFactory.build({
   _id: uuid(),
   name: 'contact',
@@ -40,21 +41,10 @@ const reports = [
   reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact })
 ];  
 
-const sendMessage = async (message = 'Testing', phone = contact.phone) => {
-  await utils.request({
-    method: 'POST',
-    path: '/api/v2/records',
-    headers: {
-      'Content-type': 'application/x-www-form-urlencoded'
-    },
-    body:`message=${message}&from=${phone}`,
-  });  
-};
-
 describe('- permissions disabled', async () => {
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient, ...reports ]);
-    await sendMessage();
+    await sms.sendSms('testing', contact.phone);
     await utils.createUsers([onlineUser]);
     await loginPage.login(onlineUser);
     await commonPage.waitForLoaderToDisappear();

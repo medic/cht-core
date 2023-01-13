@@ -1,3 +1,4 @@
+const uuid = require('uuid').v4;
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const reportPage = require('../../../page-objects/default/reports/reports.wdio.page');
@@ -7,9 +8,7 @@ const reportFactory = require('../../../factories/cht/reports/generic-report');
 const personFactory = require('../../../factories/cht/contacts/person');
 const userFactory = require('../../../factories/cht/users/users');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const uuid = require('uuid').v4;
-const moment = require('moment');
-const today = moment();
+const sms = require('../../../utils/sms');
 
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
@@ -46,24 +45,12 @@ const xmlReport = reportFactory.build({ form: 'home_visit', content_type: 'xml' 
 const smsReport = reportFactory.build(
   {
     form: 'P',
-    reported_date: moment([ today.year(), today.month() - 4, 1, 23, 30 ]).valueOf(),
     patient_id: patient._id,
   },
   {
     patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: patient._id},
   },
 );
-
-const sendMessage = async (message = 'Testing', phone = contact.phone) => {
-  await utils.request({
-    method: 'POST',
-    path: '/api/v2/records',
-    headers: {
-      'Content-type': 'application/x-www-form-urlencoded'
-    },
-    body: `message=${message}&from=${phone}`,
-  });  
-};
 
 let xmlReportId;
 let smsReportId;
@@ -82,7 +69,7 @@ describe('More Options Menu - Offline User', async () => {
   describe('all permissions enabled', async () => {
     it('- Message tab', async () => {
       await commonPage.goToMessages();
-      await sendMessage();
+      await sms.sendSms('testing', contact.phone);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
     });
 
@@ -130,19 +117,20 @@ describe('More Options Menu - Offline User', async () => {
   });
 
   describe('all permissions disabled', async () => {
-    const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all', 
-      'can_export_contacts', 'can_export_messages', 
-      'can_delete_reports', 'can_update_reports'];
 
     before(async () => {
+      const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all', 
+        'can_export_contacts', 'can_export_messages', 
+        'can_delete_reports', 'can_update_reports'];
       await utils.updatePermissions(offlineUser.roles, [], allPermissions);
       await commonPage.closeReloadModal();
     });
+
     after(async () => await utils.revertSettings(true));
   
     it(' - all tabs, kebab menu not available', async () => {
       await commonPage.goToMessages();
-      await sendMessage();
+      await sms.sendSms('testing', contact.phone);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
 
       await commonPage.goToPeople();
