@@ -54,6 +54,7 @@ const submitButton = () => $('#report-form .form-footer .btn.submit');
 
 const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
 const itemSummary = () => $(`${REPORT_BODY} .item-summary`);
+const itemSummaries = () => $$(`${REPORT_BODY} .item-summary`);
 const reportCheckbox = (uuid) => $(`${REPORTS_LIST_ID} li[data-record-id="${uuid}"] input[type="checkbox"]`);
 const selectedReportsCheckboxes = () => $$(`${REPORTS_LIST_ID} li input[type="checkbox"]:checked`);
 const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
@@ -150,6 +151,11 @@ const reportsListDetails = async () => {
   }
 
   return reportDetails;
+};
+
+const selectedReportsDetailsCount = async () => {
+  const summaries = await itemSummaries();
+  return summaries.length;
 };
 
 const expandSelectedReportSummary = async () => {
@@ -431,4 +437,5 @@ module.exports = {
   fieldByIndex,
   reportBodyDetails,
   openSelectedReport,
+  selectedReportsDetailsCount,
 };
