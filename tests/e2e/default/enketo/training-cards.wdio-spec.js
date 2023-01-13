@@ -3,6 +3,7 @@ const fs = require('fs');
 const utils = require('../../../utils');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
 const trainingCardsPage = require('../../../page-objects/default/enketo/training-cards.wdio.page');
 const genericFormPage = require('../../../page-objects/default/enketo/generic-form.wdio.page');
 const placeFactory = require('../../../factories/cht/contacts/place');
@@ -10,10 +11,11 @@ const userFactory = require('../../../factories/cht/users/users');
 const personFactory = require('../../../factories/cht/contacts/person');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const reportsPo = require('../../../page-objects/default/reports/reports.wdio.page');
 
 describe('Training Cards', () => {
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
-  const user = userFactory.build({ roles: ['nurse', 'chw'] });
+  const user = userFactory.build({ roles: [ 'nurse', 'chw' ] });
   const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
   const formDoc = {
     _id: 'form:training:text_only',
@@ -21,7 +23,7 @@ describe('Training Cards', () => {
     title: 'Text Only Training',
     type: 'form',
     start_date: new Date().getTime(),
-    user_roles: ['nurse'],
+    user_roles: [ 'nurse' ],
     duration: 5,
     _attachments: {
       xml: {
@@ -38,10 +40,29 @@ describe('Training Cards', () => {
     await utils.createUsers([ user ]);
     await loginPage.login(user);
     await commonElements.waitForPageLoaded();
-    await commonPage.goToMessages();
   });
 
-  it('should display training cards', async () => {
+  it('should cancel training', async () => {
+    await commonPage.goToMessages();
+    await trainingCardsPage.waitForTrainingCards();
+    await genericFormPage.cancelForm();
+
+    const modal = await modalPage.getModalDetails();
+    expect(modal.header).to.equal('Important changes');
+    expect(modal.body).to.contain(
+      'This training is not finished. You will lose your progress if you leave now. Are you sure you want to leave?'
+    );
+    await trainingCardsPage.quitTraining();
+
+    await commonPage.goToReports();
+    await commonElements.waitForPageLoaded();
+    await (await reportsPo.noReportSelectedLabel()).waitForDisplayed();
+  });
+
+  it('should complete training', async () => {
+    await commonPage.goToMessages();
+    await commonElements.waitForPageLoaded();
+    browser.refresh();
     await trainingCardsPage.waitForTrainingCards();
 
     const introCard = await trainingCardsPage.getCardContent('intro/intro_note_1:label"]');
