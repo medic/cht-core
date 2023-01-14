@@ -177,7 +177,9 @@ const toggleActionbar = (hide) => {
 
 const waitForLoaders = async () => {
   for (const loader of await loaders()) {
-    await loader.waitForDisplayed({ reverse: true, timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+    await loader.waitForDisplayed({ 
+      timeout: 10000, reverse: true, timeoutMsg: 'Waiting for Loading spinners to hide timed out.' 
+    });
   }
 
   // await browser.waitUntil(async () => {
