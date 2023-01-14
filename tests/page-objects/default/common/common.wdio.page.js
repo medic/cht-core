@@ -183,7 +183,7 @@ const waitForLoaders = async () => {
       }
     }
     return true;
-  }, {  timeout: 10000, timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
 const waitForPageLoaded = async () => {
