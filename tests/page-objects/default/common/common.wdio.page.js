@@ -175,10 +175,10 @@ const toggleActionbar = (hide) => {
   }, hide);
 };
 
-const waitForLoaders = async () => {
+const waitForLoaders = async (timeout = 30000) => {
   for (const loader of await loaders()) {
     await loader.waitForDisplayed({ 
-      timeout: 10000, reverse: true, timeoutMsg: 'Waiting for Loading spinners to hide timed out.' 
+      timeout: timeout, reverse: true, timeoutMsg: `Waiting for Loading spinners to hide timed out after ${timeout}.` 
     });
   }
 
