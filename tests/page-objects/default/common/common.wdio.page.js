@@ -175,13 +175,7 @@ const toggleActionbar = (hide) => {
   }, hide);
 };
 
-const waitForLoaders = async (timeout = 30000) => {
-  for (const loader of await loaders()) {
-    await loader.waitForDisplayed({ 
-      timeout: timeout, reverse: true, timeoutMsg: `Waiting for Loading spinners to hide timed out after ${timeout}.` 
-    });
-  }
-
+const waitForLoaders = async () => {
   // await browser.waitUntil(async () => {
   //   for (const loader of await loaders()) {
   //     if (await loader.isDisplayed()) {
@@ -190,6 +184,7 @@ const waitForLoaders = async (timeout = 30000) => {
   //   }
   //   return true;
   // }, { timeout: 10000, timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
+  await browser.pause(5000);
 };
 
 const waitForPageLoaded = async () => {
