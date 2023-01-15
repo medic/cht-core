@@ -125,7 +125,7 @@ const baseConfig = {
   //
   // Default timeout in milliseconds for request
   // if browser driver or grid doesn't send response
-  connectionRetryTimeout: 300000,
+  connectionRetryTimeout: 120000,
   //
   // Default request retries count
   connectionRetryCount: 3,
@@ -168,7 +168,7 @@ const baseConfig = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: 120000,
+    timeout: 300000,
   },
   //
   // =====
