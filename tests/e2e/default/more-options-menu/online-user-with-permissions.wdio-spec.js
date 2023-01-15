@@ -4,6 +4,7 @@ const reportPage = require('../../../page-objects/default/reports/reports.wdio.p
 const placeFactory = require('../../../factories/cht/contacts/place');
 const reportFactory = require('../../../factories/cht/reports/generic-report');
 const personFactory = require('../../../factories/cht/contacts/person');
+const userFactory = require('../../../factories/cht/users/users');
 const uuid = require('uuid').v4;
 const utils = require('../../../utils');
 const sms = require('../../../utils/sms');
@@ -24,6 +25,13 @@ const contact = personFactory.build({
   },
 });
 
+const onlineUser = userFactory.build({
+  username: 'onlineuser',
+  roles: [ 'program_officer' ],
+  place: district_hospital._id,
+  contact: contact._id,
+});
+
 const patient = personFactory.build({
   _id: uuid(),
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
@@ -39,12 +47,6 @@ const smsReport = reportFactory.build(
     patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id},
   },
 );
-
-const updateUser = (username, data) => utils.request({
-  path: `/api/v1/users/${username}`,
-  method: 'POST',
-  body: data
-});
 
 describe('Online User', async () => {  
   let xmlReportId;
@@ -88,7 +90,8 @@ describe('Online User', async () => {
 
   describe(' - Options enabled when there are items', async () => {
     before(async () => {
-      await updateUser('admin', { place : district_hospital._id, contact: contact._id });
+      await utils.createUsers([onlineUser]);
+      await loginPage.cookieLogin({ ...onlineUser, createUser: false });
       let result = await utils.saveDoc(xmlReport);
       xmlReportId = result.id;
       result = await utils.saveDoc(smsReport);

@@ -176,15 +176,14 @@ const toggleActionbar = (hide) => {
 };
 
 const waitForLoaders = async () => {
-  // await browser.waitUntil(async () => {
-  //   for (const loader of await loaders()) {
-  //     if (await loader.isDisplayed()) {
-  //       return false;
-  //     }
-  //   }
-  //   return true;
-  // }, { timeout: 10000, timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
-  await browser.pause(5000);
+  await browser.waitUntil(async () => {
+    for (const loader of await loaders()) {
+      if (await loader.isDisplayed()) {
+        return false;
+      }
+    }
+    return true;
+  }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
 const waitForPageLoaded = async () => {
