@@ -1,6 +1,6 @@
 const utils = require('../utils');
 
-const sendSms = async (phone, message = 'Testing') => {
+const sendSms = async (phone, message = 'Testing Sms') => {
   await utils.request({
     method: 'POST',
     path: '/api/v2/records',
