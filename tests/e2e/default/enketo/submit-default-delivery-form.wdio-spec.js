@@ -265,7 +265,6 @@ describe('Submit Default Delivery Report', () => {
 
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
-    console.log(JSON.stringify(initialReport, null, 2));
     expect(initialReport._attachments).to.equal(undefined);
 
     await reportsPage.editReport(reportId);
