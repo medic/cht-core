@@ -136,15 +136,14 @@ const updateSettings = updates => {
 
 const updatePermissions = async (role, addPermissions, removePermissions = []) => {
   const settings = await module.exports.getSettings();
-  addPermissions.map(permission => settings.permissions[permission].push(role));
+  if(!('permissions' in settings)){ 
+    settings.permissions = [];
+  }
+  addPermissions.forEach(permission => settings.permissions[permission].push(...role));
   removePermissions.forEach(permission => {
     settings.permissions[permission] = [];
   });
-  try {
-    await updateSettings({ roles: settings.roles, permissions: settings.permissions }, true);
-  } catch (error) {
-    console.log(error);
-  }
+  await module.exports.updateSettings({ permissions: settings.permissions }, true);
 };
 
 const revertTranslations = async () => {

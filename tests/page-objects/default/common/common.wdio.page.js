@@ -35,11 +35,11 @@ const openMoreOptionsMenu = async () => {
   await (await moreOptionsMenu()).click();
 };
 
-const isOptionEnabled = async (action, item) => {
+const isMenuOptionEnabled = async (action, item) => {
   return await (await optionSelector(action, item)).isEnabled();
 };
 
-const isOptionVisible = async (action, item) => {
+const isMenuOptionVisible = async (action, item) => {
   return await (await optionSelector(action, item)).isDisplayed();
 };
 
@@ -324,7 +324,7 @@ module.exports = {
   getTextForElements,
   toggleActionbar,
   jsonError,
-  isOptionEnabled,
-  isOptionVisible,
+  isMenuOptionEnabled,
+  isMenuOptionVisible,
   moreOptionsMenu,
 };
