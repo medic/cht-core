@@ -23,6 +23,7 @@ dist
 .vscode/
 .idea/
 /build/
+/local-build/
 api/**/extracted-resources/**/*
 api/build/**/*
 jsdocs
