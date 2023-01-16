@@ -36,6 +36,9 @@ describe('Parse provider', () => {
       expect(parse('1+1')).to.equal(2);
       expect(parse('5*8')).to.equal(40);
       expect(parse('200-100')).to.equal(100);
+      expect(parse('"Hello" + " " + "world"')).to.equal('Hello world');
+      expect(isNaN(parse('-"Hello"'))).to.be.true;
+      expect(isNaN(parse('+"Hello"'))).to.be.true;
     });
 
     it('should crash when parser throws', () => {
