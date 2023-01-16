@@ -647,8 +647,11 @@ describe('EnketoTranslation service', () => {
 
       service.bindJsonToXml(element, data);
 
-      assert.equal(element.find('contact > name').text(), '',
-        'The contact name should not get the value of the district hospital');
+      assert.equal(
+        element.find('contact > name').text(),
+        '',
+        'The contact name should not get the value of the district hospital'
+      );
     });
 
     it('preferentially binds to more specific data structures', () => {
