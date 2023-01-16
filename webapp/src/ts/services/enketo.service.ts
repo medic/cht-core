@@ -366,12 +366,17 @@ export class EnketoService {
       .find('.btn.previous-page')
       .off('.pagemode')
       .on('click.pagemode', () => {
+        let pageIndex;
+
         if (isFormInModal) {
           form.pages._prev();
+          pageIndex = form.pages._getCurrentIndex();
         } else {
           window.history.back();
+          pageIndex = form.pages._getCurrentIndex() - 1;
         }
-        this.setupNavButtons($wrapper, form.pages._getCurrentIndex() - 1);
+
+        this.setupNavButtons($wrapper, pageIndex);
         this.forceRecalculate(form);
         this.pauseMultimedia($wrapper);
         return false;
