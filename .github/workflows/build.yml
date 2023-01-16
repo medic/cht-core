@@ -23,7 +23,7 @@ jobs:
 
     steps:
     - name: Login to Docker Hub
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -48,9 +48,9 @@ jobs:
       run: |
         echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
         echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js 16.x
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: 16.x
     - name: Couch Start
@@ -84,9 +84,9 @@ jobs:
         grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js 16.x
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: 16.x
     - name: Grunt Install
@@ -109,7 +109,7 @@ jobs:
 
     steps:
     - name: Login to Docker Hub
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
         username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -131,10 +131,10 @@ jobs:
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Use Node.js 16.x
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: 16.x
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Download docker images artifacts
       uses: actions/download-artifact@v3
       with:
@@ -210,7 +210,7 @@ jobs:
       with:
         registry-type: public
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Get branch name
       uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Set ENV
@@ -244,7 +244,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
         with:
           registry-type: public
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get branch name
         uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
       - name: Set ENV
