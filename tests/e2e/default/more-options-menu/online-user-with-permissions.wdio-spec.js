@@ -99,6 +99,8 @@ describe('Online User', async () => {
       await sms.sendSms('testing', contact.phone);    
     });
 
+    afterEach(async () => await commonPage.goToBase());
+
     it('- Reports tab - options enabled when XML report selected', async () => {
       await reportPage.goToReportById(xmlReportId);
       await reportPage.reportBodyDetails().waitForDisplayed();      
