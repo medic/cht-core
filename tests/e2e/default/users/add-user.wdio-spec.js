@@ -39,8 +39,14 @@ describe('User Test Cases ->', () => {
     after(async () => await utils.deleteUsers([{ username: username }]));
 
     it('should add user with valid password', async () => {
-      await usersAdminPage.inputAddUserFields(username, 'Jack', onlineUserRole, districtHospital.name,
-        person.name, password);
+      await usersAdminPage.inputAddUserFields(
+        username,
+        'Jack',
+        onlineUserRole,
+        districtHospital.name,
+        person.name,
+        password
+      );
       await usersAdminPage.saveUser();
       expect(await usersAdminPage.getAllUsernames()).to.include.members([username]);
     });
@@ -58,8 +64,15 @@ describe('User Test Cases ->', () => {
       { passwordValue: '', errorMessage: 'required' }
     ].forEach(async (args) => {
       it(`TestCase for ${args.errorMessage}`, async () => {
-        await usersAdminPage.inputAddUserFields(username, 'Jack', onlineUserRole, districtHospital.name,
-          person.name, args.passwordValue, args.otherPassword);
+        await usersAdminPage.inputAddUserFields(
+          username,
+          'Jack',
+          onlineUserRole,
+          districtHospital.name,
+          person.name,
+          args.passwordValue,
+          args.otherPassword
+        );
         await usersAdminPage.saveUser(false);
         const text = await usersAdminPage.getPasswordErrorText();
         expect(text).to.contain(args.errorMessage);
@@ -67,8 +80,7 @@ describe('User Test Cases ->', () => {
     });
 
     it('should require username', async () => {
-      await usersAdminPage.inputAddUserFields('', 'Jack', onlineUserRole, districtHospital.name,
-        person.name, password);
+      await usersAdminPage.inputAddUserFields('', 'Jack', onlineUserRole, districtHospital.name, person.name, password);
       await usersAdminPage.saveUser(false);
       const text = await usersAdminPage.getUsernameErrorText();
       expect(text).to.contain('required');
