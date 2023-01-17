@@ -15,14 +15,20 @@ describe('Export Reports', () => {
   const healthCenter = places.get('health_center');
   const onlineUser = userFactory.build({ place: healthCenter._id, roles: [ 'program_officer' ] });
   const patient = personFactory.build({ parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+
   const today = moment();
+  const reportDate1 = moment([today.year(), today.month(), 1, 23, 30]);
+  reportDate1.subtract(4, 'month');
+  const reportDate2 = moment([today.year(), today.month(), 12, 10, 30]);
+  reportDate2.subtract(1, 'month');
+
   const reports = [
     reportFactory.build(
-      { form: 'P', reported_date: moment([today.year(), today.month() - 4, 1, 23, 30]).valueOf() },
+      { form: 'P', reported_date: reportDate1.valueOf() },
       { patient, submitter: onlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' } },
     ),
     reportFactory.build(
-      { form: 'P', reported_date: moment([today.year(), today.month() - 1, 16, 0, 30]).valueOf() },
+      { form: 'P', reported_date: reportDate2.valueOf() },
       { patient, submitter: onlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' } },
     ),
   ];
