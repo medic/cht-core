@@ -14,6 +14,8 @@ env:
   ECR_PUBLIC_REPO: 'public.ecr.aws/s5s3h4s7'
   COUCHDB_LOG_LEVEL: 'debug'
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
+  BRANCH: ${{ github.head_ref || github.ref_name }}
+  BUILD_NUMBER: $GITHUB_RUN_ID
 
 jobs:
 
@@ -42,12 +44,6 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Get branch name
-      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
-    - name: Set ENV
-      run: |
-        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
     - uses: actions/checkout@v3
     - name: Use Node.js 16.x
       uses: actions/setup-node@v3
@@ -128,8 +124,6 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Get branch name
-      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
     - name: Use Node.js 16.x
       uses: actions/setup-node@v3
       with:
@@ -147,9 +141,7 @@ jobs:
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
     - name: Set ENV
-      run: |
-        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+      run: |        
         echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
@@ -211,12 +203,6 @@ jobs:
         registry-type: public
 
     - uses: actions/checkout@v3
-    - name: Get branch name
-      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
-    - name: Set ENV
-      run: |
-        echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
     - name: Publish
       run: |
         cd scripts/ci
@@ -245,12 +231,8 @@ jobs:
         with:
           registry-type: public
       - uses: actions/checkout@v3
-      - name: Get branch name
-        uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
       - name: Set ENV
-        run: |
-          echo "BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-          echo "BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+        run: |          
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
       - run: npm ci --legacy-peer-deps
       - name: Create logs directory
