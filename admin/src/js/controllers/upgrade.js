@@ -26,6 +26,8 @@ angular.module('controllers').controller('UpgradeCtrl',
     const POLL_URL = '/setup/poll';
     const UPGRADE_POLL_FREQ = 2000;
     const BUILD_LIST_LIMIT = 50;
+    const UPGRADE_CONTAINER_WAIT_PERIOD = 60 * 1000; // 1 minute
+    let containerWaitPeriodTimeout;
 
     const logError = (error, key) => {
       return $translate
@@ -54,6 +56,15 @@ angular.module('controllers').controller('UpgradeCtrl',
         .catch(err => logError(err, 'instance.upgrade.error.deploy_info_fetch'));
     };
 
+    const displayErrorAfterWait = (err) => {
+      if (containerWaitPeriodTimeout) {
+        return;
+      }
+      containerWaitPeriodTimeout = $timeout(() => {
+        logError(err, 'instance.upgrade.error.get_upgrade');
+      }, UPGRADE_CONTAINER_WAIT_PERIOD);
+    };
+
     const getCurrentUpgrade = () => {
       return $http
         .get(UPGRADE_URL)
@@ -68,12 +79,15 @@ angular.module('controllers').controller('UpgradeCtrl',
 
           if (upgradeDoc) {
             $timeout(getCurrentUpgrade, UPGRADE_POLL_FREQ);
+          } else {
+            $timeout.cancel(containerWaitPeriodTimeout);
           }
+
           $scope.error = undefined;
         })
         .catch(err => {
           $timeout(getCurrentUpgrade, UPGRADE_POLL_FREQ);
-          return logError(err, 'instance.upgrade.error.get_upgrade');
+          displayErrorAfterWait(err);
         });
     };
 
@@ -212,7 +226,7 @@ angular.module('controllers').controller('UpgradeCtrl',
           // todo which status do we get with nginx???
           // exclude "50x" like statuses that come from nginx
           if (err && (!err.status || err.status === 503 || err.status === -1) && action === 'complete') {
-            // refresh page after API is back up
+            // refresh page after containers are back up
             return waitUntilApiStarts().then(() => reloadPage());
           }
           return logError(err, 'instance.upgrade.error.deploy');
