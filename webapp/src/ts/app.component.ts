@@ -1,4 +1,5 @@
 import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
+import { MatIconRegistry } from '@angular/material/icon';
 import * as moment from 'moment';
 import { AfterViewInit, Component, HostListener, NgZone, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
@@ -127,10 +128,13 @@ export class AppComponent implements OnInit, AfterViewInit {
     private ngZone:NgZone,
     private chtScriptApiService: CHTScriptApiService,
     private analyticsModulesService: AnalyticsModulesService,
+    private matIconRegistry: MatIconRegistry,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
 
+    matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
+    matIconRegistry.setDefaultFontSetClass('fa');
     moment.locale(['en']);
 
     this.formatDateService.init();
