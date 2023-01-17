@@ -35,7 +35,6 @@ const offlineUser = userFactory.build({
   contact: contact._id,
 });
 
-
 const patient = personFactory.build({
   _id: uuid(),
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
