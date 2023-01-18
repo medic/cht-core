@@ -1,6 +1,5 @@
 export abstract class Transition {
   abstract name:string;
-  public readonly isEnabled: boolean;
   abstract init(Object):void;
   abstract filter(docs: Doc[]):boolean;
   abstract run(docs: Doc[]):Promise<any>;
