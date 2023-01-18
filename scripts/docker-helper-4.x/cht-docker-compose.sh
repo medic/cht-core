@@ -110,7 +110,7 @@ get_lan_ip() {
   else
     subnet=$(netstat -rn| grep default | awk '{print $2}'|grep -Ev '^[a-f]' |cut -f1,2,3 -d'.')
     ifconfig_line=$(ifconfig|grep inet|grep "$subnet" | cut -d' ' -f 2)
-    echo ifconfig_line
+    lanAddress=$ifconfig_line
   fi
 
   # always fall back to localhost if lanAddress wasn't set
@@ -120,7 +120,7 @@ get_lan_ip() {
   echo "$lanAddress"
 }
 
-get_local_ip(){
+get_local_ip_url(){
   lanIp=$1
   cookedLanAddress=$(echo "$lanIp" | tr . -)
   url="https://${cookedLanAddress}.my.local-ip.co:${NGINX_HTTPS_PORT}"
@@ -288,6 +288,8 @@ fi
 # shellcheck disable=SC1090
 source "./$projectFile"
 
+projectURL=$(get_local_ip_url "$(get_lan_ip)")
+
 echo ""
 docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
 
@@ -322,8 +324,6 @@ docker exec -it "$nginxContainerId" bash -c "curl -s -o chain.pem http://local-i
 docker exec -it "$nginxContainerId" bash -c "cat server.pem chain.pem > /etc/nginx/private/cert.pem"
 docker exec -it "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem http://local-ip.co/cert/server.key"
 docker restart "$nginxContainerId" 1>/dev/null
-
-projectURL=$(get_local_ip "$(get_lan_ip)")
 
 echo ""
 echo ""
