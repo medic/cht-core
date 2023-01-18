@@ -35,9 +35,9 @@ export class TrainingCardsService {
       .map(xForm => ({
         id: xForm._id,
         code: xForm.internalId,
-        startDate: xForm.start_date,
-        duration: xForm.duration,
-        userRoles: xForm.user_roles,
+        startDate: xForm.context?.start_date,
+        duration: xForm.context?.duration,
+        userRoles: xForm.context?.user_roles,
       }))
       .filter(form => {
         const hasRole = form.userRoles?.find(role => userCtx.roles.includes(role));

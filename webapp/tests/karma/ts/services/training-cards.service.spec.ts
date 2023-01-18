@@ -66,30 +66,38 @@ describe('TrainingCardsService', () => {
       {
         _id: 'abc-123',
         internalId: 'training:form-a',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 3,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          duration: 3,
+          user_roles: [ 'chw' ],
+        },
       },
       {
         _id: 'abc-456',
         internalId: 'training:form-b',
-        start_date: 1652880565642, // 18/05/2022 20:29:25
-        duration: 2,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1652880565642, // 18/05/2022 20:29:25
+          duration: 2,
+          user_roles: [ 'chw' ],
+        },
       },
       {
         _id: 'abc-789',
         internalId: 'training:form-c',
-        start_date: 1653744565642, // 28/05/2022 20:29:25
-        duration: 6,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653744565642, // 28/05/2022 20:29:25
+          duration: 6,
+          user_roles: [ 'chw' ],
+        },
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-d',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 9,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          duration: 9,
+          user_roles: [ 'chw' ],
+        },
       },
     ];
     service.initTrainingCards();
@@ -125,30 +133,38 @@ describe('TrainingCardsService', () => {
       {
         _id: 'abc-123',
         internalId: 'training:form-a',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 3,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          duration: 3,
+          user_roles: [ 'chw' ],
+        },
       },
       {
         _id: 'abc-456',
         internalId: 'training:form-b',
-        start_date: 1652880565642, // 18/05/2022 20:29:25
-        duration: 2,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1652880565642, // 18/05/2022 20:29:25
+          duration: 2,
+          user_roles: [ 'chw' ],
+        },
       },
       {
         _id: 'abc-789',
         internalId: 'training:form-c',
-        start_date: 1653744565642, // 28/05/2022 20:29:25
-        duration: 6,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653744565642, // 28/05/2022 20:29:25
+          duration: 6,
+          user_roles: [ 'chw' ],
+        },
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-d',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 9,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          duration: 9,
+          user_roles: [ 'chw' ],
+        },
       },
     ];
     service.initTrainingCards();
@@ -184,20 +200,26 @@ describe('TrainingCardsService', () => {
       {
         _id: 'abc-789',
         internalId: 'training:form-a',
-        start_date: 1653744565642, // 28/05/2022 20:29:25
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653744565642, // 28/05/2022 20:29:25
+          user_roles: [ 'chw' ],
+        },
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-b',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          user_roles: [ 'chw' ],
+        },
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-c',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          user_roles: [ 'chw' ],
+        },
       },
     ];
     service.initTrainingCards();
@@ -234,23 +256,29 @@ describe('TrainingCardsService', () => {
       {
         _id: 'abc-123',
         internalId: 'training:form-a',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 3,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          duration: 3,
+          user_roles: [ 'chw' ],
+        },
       },
       {
         _id: 'abc-456',
         internalId: 'training:form-b',
-        start_date: 1652880565642, // 18/05/2022 20:29:25
-        duration: 2,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1652880565642, // 18/05/2022 20:29:25
+          duration: 2,
+          user_roles: [ 'chw' ],
+        },
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-c',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 9,
-        user_roles: [ 'chw' ],
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          duration: 9,
+          user_roles: [ 'chw' ],
+        },
       },
     ];
     service.initTrainingCards();
@@ -300,9 +328,11 @@ describe('TrainingCardsService', () => {
     const xforms = [{
       _id: 'abc-123',
       internalId: 'training:form-a',
-      start_date: 1653139765642, // 21/05/2022 20:29:25
-      duration: 3,
-      user_roles: [ 'chw' ],
+      context: {
+        start_date: 1653139765642, // 21/05/2022 20:29:25
+        duration: 3,
+        user_roles: [ 'chw' ],
+      },
     }];
     service.initTrainingCards();
 
@@ -364,36 +394,46 @@ describe('TrainingCardsService', () => {
       {
         _id: 'abc-123',
         internalId: 'training:form-a',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 3,
-        user_roles: [ 'role_b', 'role_c' ],
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          duration: 3,
+          user_roles: [ 'role_b', 'role_c' ],
+        },
       },
       {
         _id: 'abc-456',
         internalId: 'training:form-b',
-        start_date: 1652880565642, // 18/05/2022 20:29:25
-        duration: 2,
-        user_roles: [ 'role_a', 'role_c' ],
+        context: {
+          start_date: 1652880565642, // 18/05/2022 20:29:25
+          duration: 2,
+          user_roles: [ 'role_a', 'role_c' ],
+        },
       },
       {
         _id: 'abc-789',
         internalId: 'training:form-c',
-        start_date: 1653744565642, // 28/05/2022 20:29:25
-        duration: 6,
-        user_roles: [ 'role_a' ],
+        context: {
+          start_date: 1653744565642, // 28/05/2022 20:29:25
+          duration: 6,
+          user_roles: [ 'role_a' ],
+        },
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-d',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 19,
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          duration: 19,
+        },
       },
       {
         _id: 'abc-098',
         internalId: 'training:form-e',
-        start_date: 1653139765642, // 21/05/2022 20:29:25
-        duration: 9,
-        user_roles: [ 'role_a', 'role_c' ],
+        context: {
+          start_date: 1653139765642, // 21/05/2022 20:29:25
+          duration: 9,
+          user_roles: [ 'role_a', 'role_c' ],
+        },
       },
     ];
     service.initTrainingCards();
