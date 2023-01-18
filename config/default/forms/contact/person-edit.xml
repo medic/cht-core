@@ -933,7 +933,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:edit" prefix="J1!contact:person:edit!" delimiter="#" version="2023-01-06 10-11">
+        <data id="contact:person:edit" prefix="J1!contact:person:edit!" delimiter="#" version="2022-09-26 12-17">
           <inputs>
             <meta>
               <location>
@@ -975,7 +975,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <role_other/>
             <external_id/>
             <notes/>
-            <create_user_for_contact/>
             <meta tag="hidden">
               <created_by/>
               <created_by_person_uuid/>
@@ -1043,7 +1042,6 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/role_other" type="string" relevant="selected(  /data/person/role ,'other')" required="true()"/>
       <bind nodeset="/data/person/external_id" type="string"/>
       <bind nodeset="/data/person/notes" type="string"/>
-      <bind nodeset="/data/person/create_user_for_contact" type="string" calculate="selected(  /data/person/role ,'chw') or selected(  /data/person/role ,'chw_supervisor')"/>
       <bind nodeset="/data/person/meta/created_by" type="string" readonly="true()"/>
       <bind nodeset="/data/person/meta/created_by_person_uuid" type="string" readonly="true()"/>
       <bind nodeset="/data/person/meta/created_by_place_uuid" type="string" readonly="true()"/>
