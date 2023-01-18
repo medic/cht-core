@@ -41,11 +41,18 @@ describe('Edit contacts with the default config. ', () => {
 
   it('should remove the primary contact from the clinic when the contact is deleted', async () => {
     await commonPage.goToPeople();
-    await contactPage.selectLHSRowByText(healthCenter.name);
-    await contactPage.deletePerson(CONTACT_UPDATED_NAME);
     await commonPage.waitForPageLoaded();
+
     await contactPage.selectLHSRowByText(healthCenter.name);
-    const peopleNames = await contactPage.getAllRHSPeopleNames();
-    expect(peopleNames.length).to.equal(0);
+    await contactPage.waitForContactLoaded();
+    expect(await contactPage.getAllRHSPeopleNames()).to.have.members([ CONTACT_UPDATED_NAME ]);
+
+    await contactPage.selectLHSRowByText(CONTACT_UPDATED_NAME);
+    await contactPage.waitForContactLoaded();
+    await contactPage.deletePerson();
+
+    await contactPage.selectLHSRowByText(healthCenter.name);
+    await contactPage.waitForContactLoaded();
+    expect(await contactPage.getAllRHSPeopleNames()).to.not.have.members([ CONTACT_UPDATED_NAME ]);
   });
 });

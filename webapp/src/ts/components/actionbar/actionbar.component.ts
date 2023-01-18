@@ -5,6 +5,10 @@ import { Store } from '@ngrx/store';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { Selectors } from '@mm-selectors/index';
+import { SessionService } from '@mm-services/session.service';
+import { AuthService } from '@mm-services/auth.service';
+
+export const OLD_ACTION_BAR_PERMISSION:string = 'can_view_old_action_bar';
 
 @Component({
   selector: 'mm-actionbar',
@@ -26,15 +30,20 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   loadingSubActionBar;
   selectedContactDoc;
   sidebarFilter;
+  useOldActionBar = false;
 
   constructor(
     private store: Store,
+    private sessionService: SessionService,
+    private authService: AuthService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
   }
 
   ngOnInit(): void {
+    this.checkPermissions();
+
     const subscription = combineLatest(
       this.store.select(Selectors.getActionBar),
       this.store.select(Selectors.getCurrentTab),
@@ -74,6 +83,10 @@ export class ActionbarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  private async checkPermissions() {
+    this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   verifyReport(reportIsVerified) {

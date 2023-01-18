@@ -1,4 +1,5 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
+const moreOptionsMenu = () => $('.more-options-menu-container>.mat-menu-trigger');
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
 const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
@@ -26,6 +27,11 @@ const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
+};
+
+const openMoreOptionsMenu = async () => {
+  await (await moreOptionsMenu()).waitForClickable();
+  await (await moreOptionsMenu()).click();
 };
 
 const isMessagesListPresent = () => {
@@ -265,6 +271,7 @@ const getTextForElements = async (elements) => {
 };
 
 module.exports = {
+  openMoreOptionsMenu,
   logout,
   logoutButton,
   getLogoutMessage,

@@ -99,6 +99,7 @@ const handleTranslationsChange = () => {
 };
 
 const handleFormChange = (change) => {
+  logger.info('Detected form change for', change.id);
   if (change.deleted) {
     return Promise.resolve();
   }
