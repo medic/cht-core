@@ -41,7 +41,7 @@ describe('Performing an upgrade', () => {
     await (await upgradePage.deploymentComplete()).waitForDisplayed();
 
     const currentVersion = await upgradePage.getCurrentVersion();
-    expect(currentVersion).to.include(version.getVersion());
+    expect(version.getVersion(true)).to.include(currentVersion);
 
     await browser.refresh(); // load updated code of admin app
     await upgradePage.goToUpgradePage();
