@@ -46,14 +46,14 @@ CHT_NETWORK=$projectName-cht-net
 EOL
 }
 
-get_latest_release_url() {
+get_latest_release() {
   latest=$(curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases\?limit\=1\&descending\=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*')
   echo "https://staging.dev.medicmobile.org/_couch/builds_4/${latest}"
 }
 
 create_compose_files() {
   echo "Downloading compose files ..." | tr -d '\n'
-  stagingUrlBase=$(get_latest_release_url)
+  stagingUrlBase=$(get_latest_release)
   mkdir -p "$homeDir/couch"
   mkdir -p "$homeDir/compose"
   curl -s -o "$homeDir/upgrade-service.yml" \
@@ -89,6 +89,54 @@ show_help_existing_stop_and_destroy() {
     echo ""
     echo "https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/"
     echo ""
+}
+
+get_lan_ip() {
+  # init empty lan address
+  lanAddress=""
+
+  # "system_profiler" exists only on MacOS, if it's not here, then run linux style command for
+  # getting localhost's IP.  Otherwise use MacOS style command
+  if [ -n "$(required_apps_installed "system_profiler")" ];then
+    # todo - some of these calls fail when there's no network connectivity - output stuff it shouldn't:
+    #       Device "" does not exist.
+    routerIP=$(ip r | grep default | head -n1 | awk '{print $3}')
+    subnet=$(echo "$routerIP" | cut -d'.' -f1,2,3 )
+    if [ -z $subnet ]; then
+      subnet=127.0.0
+    fi
+    lanInterface=$(ip r | grep $subnet | grep default | head -n1 | cut -d' ' -f 5)
+    lanAddress=$(ip a s "$lanInterface" | awk '/inet /{gsub(/\/.*/,"");print $2}' | head -n1)
+  else
+    subnet=$(netstat -rn| grep default | awk '{print $2}'|grep -Ev '^[a-f]' |cut -f1,2,3 -d'.')
+    ifconfig_line=$(ifconfig|grep inet|grep "$subnet" | cut -d' ' -f 2)
+    echo ifconfig_line
+  fi
+
+  # always fall back to localhost if lanAddress wasn't set
+  if [ -z "$lanAddress" ]; then
+    lanAddress=127.0.0.1
+  fi
+  echo "$lanAddress"
+}
+
+get_local_ip(){
+  lanIp=$1
+  cookedLanAddress=$(echo "$lanIp" | tr . -)
+  url="https://${cookedLanAddress}.my.local-ip.co:${NGINX_HTTPS_PORT}"
+  echo "$url"
+}
+
+required_apps_installed(){
+  error=''
+  appString=$1
+  IFS=';' read -ra appsArray <<<"$appString"
+  for app in "${appsArray[@]}"; do
+    if ! command -v "$app" &>/dev/null; then
+      error="${app} ${error}"
+    fi
+  done
+  echo "${error}"
 }
 
 # can pass a project .env file as argument
@@ -268,14 +316,16 @@ docker exec -it "$nginxContainerId" bash -c "cat server.pem chain.pem > /etc/ngi
 docker exec -it "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem http://local-ip.co/cert/server.key"
 docker restart "$nginxContainerId" 1>/dev/null
 
+projectURL=$(get_local_ip "$(get_lan_ip)")
+
 echo ""
 echo ""
 echo " -------------------------------------------------------- "
 echo ""
 echo "  Success! \"${projectName}\" is set up:"
 echo ""
-echo "    https://127-0-0-1.my.local-ip.co:${NGINX_HTTPS_PORT}/ (CHT)"
-echo "    https://127-0-0-1.my.local-ip.co:${NGINX_HTTPS_PORT}/_utils/ (Fauxton)"
+echo "    ${projectURL} (CHT)"
+echo "    ${projectURL}_utils/ (Fauxton)"
 echo ""
 echo "    Login: ${COUCHDB_USER}"
 echo "    Password: ${COUCHDB_PASSWORD}"
