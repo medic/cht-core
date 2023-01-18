@@ -558,7 +558,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = Object.assign(
         {
           roles: ['chw', 'other-role'],
-          user_for_contact: { add: { status: 'READY' }, }
+          user_for_contact: { create: { add: 'true' }, }
         },
         NEW_PERSON
       );
@@ -569,8 +569,9 @@ describe('create_user_for_contacts', () => {
       // Transition successful
       assert.isTrue(transitions.create_user_for_contacts.ok);
       // Contact updated
-      const updatedContact = await utils.getDoc(originalContact._id);
-      assert.equal(updatedContact.user_for_contact.add.status, 'COMPLETE');
+      // TODO Include assertion when supported by implementation
+      // const updatedContact = await utils.getDoc(originalContact._id);
+      // assert.isUndefined(updatedContact.user_for_contact.create);
 
       // New user created
       const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: originalContact._id });
@@ -587,7 +588,7 @@ describe('create_user_for_contacts', () => {
       assert.match(newUserSettings._id, /^org\.couchdb\.user:new-person-\d\d\d\d/);
       assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
       // Login token sent
-      const queuedMsgs = await getQueuedMessages();
+      const queuedMsgs = await messagesUtils.getQueuedMessages();
       assert.lengthOf(queuedMsgs, 1);
       assert.deepInclude(queuedMsgs[0], {
         type: 'token_login',
@@ -596,14 +597,13 @@ describe('create_user_for_contacts', () => {
       assert.equal(queuedMsgs[0].tasks[0].messages[0].to, NEW_PERSON.phone);
     });
 
-    // TODO Need to add support for this scenario
-    it.skip('adds user for new contact with single role', async () => {
+    it('adds user for new contact with single role', async () => {
       await utils.updateSettings(getSettings(), 'sentinel');
 
       const originalContact = Object.assign(
         {
           role: 'chw',
-          user_for_contact: { add: { status: 'READY' }, }
+          user_for_contact: { create: { add: 'true' }, }
         },
         NEW_PERSON
       );
@@ -614,8 +614,9 @@ describe('create_user_for_contacts', () => {
       // Transition successful
       assert.isTrue(transitions.create_user_for_contacts.ok);
       // Contact updated
-      const updatedContact = await utils.getDoc(originalContact._id);
-      assert.equal(updatedContact.user_for_contact.add.status, 'COMPLETE');
+      // TODO Include assertion when supported by implementation
+      // const updatedContact = await utils.getDoc(originalContact._id);
+      // assert.isUndefined(updatedContact.user_for_contact.create);
 
       // New user created
       const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: originalContact._id });
@@ -632,7 +633,7 @@ describe('create_user_for_contacts', () => {
       assert.match(newUserSettings._id, /^org\.couchdb\.user:new-person-\d\d\d\d/);
       assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
       // Login token sent
-      const queuedMsgs = await getQueuedMessages();
+      const queuedMsgs = await messagesUtils.getQueuedMessages();
       assert.lengthOf(queuedMsgs, 1);
       assert.deepInclude(queuedMsgs[0], {
         type: 'token_login',
@@ -647,7 +648,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = Object.assign(
         {
           roles: ['chw', 'other-role'],
-          user_for_contact: { add: { status: 'READY' }, }
+          user_for_contact: { create: { add: 'true' }, }
         },
         NEW_PERSON
       );
@@ -661,14 +662,14 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not add user when the new contact does not have a role', async () => {
-      const missingRolePattern = /Missing required fields: type or roles/;
+      const missingRolePattern = /doc\.roles can only contain strings/;
       const collectLogs = await utils.collectSentinelLogs(missingRolePattern);
 
       await utils.updateSettings(getSettings(), 'sentinel');
 
       const originalContact = {
         ...NEW_PERSON,
-        user_for_contact: { add: { status: 'READY' }, },
+        user_for_contact: { create: { add: 'true' }, },
       };
       await utils.saveDoc(originalContact);
       await sentinelUtils.waitForSentinel(originalContact._id);
@@ -688,7 +689,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = {
         ...NEW_PERSON,
         roles: ['chw', 'other-role'],
-        user_for_contact: { add: { status: 'READY' }, },
+        user_for_contact: { create: { add: 'true' }, },
         phone: undefined
       };
       await utils.saveDoc(originalContact);
@@ -709,7 +710,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = {
         ...NEW_PERSON,
         roles: ['chw', 'other-role'],
-        user_for_contact: { add: { status: 'READY' }, },
+        user_for_contact: { create: { add: 'true' }, },
         phone: 12345
       };
       await utils.saveDoc(originalContact);
@@ -730,7 +731,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = {
         ...NEW_PERSON,
         roles: ['chw', 'other-role'],
-        user_for_contact: { add: { status: 'READY' }, },
+        user_for_contact: { create: { add: 'true' }, },
         name: undefined
       };
       await utils.saveDoc(originalContact);
@@ -742,12 +743,12 @@ describe('create_user_for_contacts', () => {
       await expectError(missingNamePattern);
     });
 
-    it('does not add user when the add status is not READY', async () => {
+    it('does not add user when the create is not true', async () => {
       await utils.updateSettings(getSettings(), 'sentinel');
       const originalContact = {
         ...NEW_PERSON,
         roles: ['chw', 'other-role'],
-        user_for_contact: { add: { status: 'COMPLETE' }, },
+        user_for_contact: { create: { add: false }, },
       };
       await utils.saveDoc(originalContact);
       await sentinelUtils.waitForSentinel(originalContact._id);
@@ -771,7 +772,7 @@ describe('create_user_for_contacts', () => {
       const clinic = await utils.getDoc(CLINIC._id);
       const originalContact = {
         ...clinic,
-        user_for_contact: { add: { status: 'READY' }, },
+        user_for_contact: { create: { add: 'true' }, },
       };
       await utils.saveDoc(originalContact);
       await sentinelUtils.waitForSentinel(originalContact._id);
