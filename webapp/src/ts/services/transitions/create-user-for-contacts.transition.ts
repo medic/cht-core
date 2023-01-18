@@ -5,7 +5,6 @@ import { Transition, Doc } from '@mm-services/transitions/transition';
 import { CreateUserForContactsService } from '@mm-services/create-user-for-contacts.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
 import { UserContactService } from '@mm-services/user-contact.service';
-import { SessionService } from '@mm-services/session.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +15,6 @@ export class CreateUserForContactsTransition extends Transition {
     private createUserForContactsService: CreateUserForContactsService,
     private extractLineageService: ExtractLineageService,
     private userContactService: UserContactService,
-    private sessionService: SessionService,
   ) {
     super();
   }
@@ -24,7 +22,6 @@ export class CreateUserForContactsTransition extends Transition {
   readonly name = 'create_user_for_contacts';
   private readonly REPLACE_PROPERTY = 'replace_forms';
   private replaceForms;
-  public readonly isEnabled = !this.sessionService.isOnlineOnly();
 
   /**
    * @param {Object} settings - the CHT instance settings

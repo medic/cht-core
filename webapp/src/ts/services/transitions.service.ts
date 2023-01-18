@@ -5,7 +5,6 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ValidationService } from '@mm-services/validation.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { CreateUserForContactsTransition } from '@mm-services/transitions/create-user-for-contacts.transition';
-import { TestUserForContactsTransition } from '@mm-services/transitions/test-user-for-contact.transition';
 
 @Injectable({
   providedIn: 'root'
@@ -16,14 +15,12 @@ export class TransitionsService {
     private validationService:ValidationService,
     private mutingTransition:MutingTransition,
     private createUserForContactsTransition:CreateUserForContactsTransition,
-    private testUserForContactsTransition:TestUserForContactsTransition,
   ) {
   }
 
   private readonly AVAILABLE_TRANSITIONS = [
     this.mutingTransition,
     this.createUserForContactsTransition,
-    this.testUserForContactsTransition,
   ];
 
   private loadedTransitions = [];
@@ -48,7 +45,7 @@ export class TransitionsService {
       await this.validationService.init();
 
       this.AVAILABLE_TRANSITIONS.forEach((transition) => {
-        if (!this.isEnabled(transition)) {
+        if (!this.isEnabled(transition.name)) {
           return;
         }
 
@@ -63,19 +60,12 @@ export class TransitionsService {
     }
   }
 
-  private isEnabled(transition) {
+  private isEnabled(transitionName) {
     const transitionsConfig = this.settings.transitions || {};
-    const transitionConfig = transitionsConfig[transition.name];
-    if (
-      transition.isEnabled &&
-      transitionConfig &&
-      !transitionConfig.disable &&
-      transitionConfig.client_side !== false
-    ) {
+    const transitionConfig = transitionsConfig[transitionName];
+    if (transitionConfig && !transitionConfig.disable && transitionConfig.client_side !== false) {
       return true;
     }
-
-    return false;
   }
 
   async applyTransitions(docs) {

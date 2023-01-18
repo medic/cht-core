@@ -300,7 +300,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   private initTransitions() {
-    return this.transitionsService.init();
+    if (!this.sessionService.isOnlineOnly()) {
+      return this.transitionsService.init();
+    }
   }
 
   private setupAndroidVersion() {

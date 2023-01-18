@@ -6,7 +6,6 @@ import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Transition, Doc } from '@mm-services/transitions/transition';
 import { ValidationService } from '@mm-services/validation.service';
-import { SessionService } from '@mm-services/session.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +17,6 @@ export class MutingTransition extends Transition {
     private contactMutedService:ContactMutedService,
     private contactTypesService:ContactTypesService,
     private validationService:ValidationService,
-    private sessionService: SessionService,
   ) {
     super();
   }
@@ -32,7 +30,6 @@ export class MutingTransition extends Transition {
   private readonly UNMUTE_PROPERTY = 'unmute_forms';
   private readonly CLIENT = 'client_side';
   private readonly SERVER = 'server_side';
-  public readonly isEnabled = !this.sessionService.isOnlineOnly();
 
   private getConfig(settings = {}) {
     return settings[this.CONFIG_NAME] || {};
