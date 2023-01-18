@@ -109,15 +109,6 @@ export class CreateUserForContactsService {
     await this.dbSyncService.sync(true);
     await this.sessionService.logout();
   }
-
-  setAddUser(doc) {
-    doc.user_for_contact = {
-      add: {
-        status: UserCreationStatus.READY,
-        roles: [doc.role],
-      },
-    };
-  }
 }
 
 export enum UserCreationStatus {
