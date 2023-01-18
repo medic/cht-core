@@ -915,7 +915,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:clinic:create" prefix="J1!contact:clinic:create!" delimiter="#" version="2023-01-06 10-03">
+        <data id="contact:clinic:create" prefix="J1!contact:clinic:create!" delimiter="#" version="2022-09-26 12-17">
           <inputs>
             <meta>
               <location>
@@ -984,7 +984,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
             <role_other/>
             <external_id/>
             <notes/>
-            <create_user_for_contact/>
             <meta tag="hidden">
               <created_by/>
               <created_by_person_uuid/>
@@ -1024,7 +1023,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="Months must between 0 and 11" constraint=". &gt;= 0 and . &lt;= 11"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="select"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/contact/ephemeral_dob/age_years , 0- /data/contact/ephemeral_dob/age_months )"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), 
+      <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')),
 ../dob_calendar,
 ../dob_approx)"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
@@ -1036,7 +1035,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/role_other" type="string" relevant="selected(  /data/contact/role ,'other')" required="true()"/>
       <bind nodeset="/data/contact/external_id" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/notes" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
-      <bind nodeset="/data/contact/create_user_for_contact" type="string" calculate="selected(  /data/contact/role ,'chw') or selected(  /data/contact/role ,'chw_supervisor')"/>
       <bind nodeset="/data/contact/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/contact/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/contact/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
