@@ -128,16 +128,8 @@ const getUsersToReplace = (originalContact) => {
 };
 
 const addUser = async (contact) => {
-  try {
-    const roles = Array.isArray(contact.roles) && contact.roles.length > 0 ?
-      contact.roles :
-      contact.user_for_contact.add.roles;
-    await createNewUser({ roles }, contact);
-    contact.user_for_contact.add.status = USER_CREATION_STATUS.COMPLETE;
-  } catch (error) {
-    contact.user_for_contact.add.status = USER_CREATION_STATUS.ERROR;
-    throw error;
-  }
+  const roles = Array.isArray(contact.roles) && contact.roles.length > 0 ? contact.roles : [contact.role];
+  await createNewUser({ roles }, contact);
 };
 
 /**
@@ -161,7 +153,7 @@ module.exports = {
       );
     }
   },
-  filter: (doc) => {
+  filter: (doc, info) => {
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
     if (
       !contactType
@@ -186,8 +178,8 @@ module.exports = {
         .some(({ status }) => status === USER_CREATION_STATUS.READY);
     }
 
-    if (doc.user_for_contact.add) {
-      return doc.user_for_contact.add.status === USER_CREATION_STATUS.READY;
+    if (doc.user_for_contact.create.add === 'true') {
+      return !info.transitions.create_user_for_contacts;
     }
 
     return false;
