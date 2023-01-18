@@ -15,7 +15,7 @@ env:
   COUCHDB_LOG_LEVEL: 'debug'
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
-  BUILD_NUMBER: ${{ GITHUB_RUN_ID }}
+  BUILD_NUMBER: ${{ github.run_id }}
 
 jobs:
 
