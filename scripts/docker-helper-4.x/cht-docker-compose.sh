@@ -139,6 +139,22 @@ required_apps_installed(){
   echo "${error}"
 }
 
+get_nginx_container_id() {
+	docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
+}
+
+get_is_container_running() {
+	containerId=$1
+	docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
+}
+
+if [ -n "$(required_apps_installed "docker-compose")" ];then
+  echo ""
+  echo -e "${red}\"docker-compose\" is not installed or could not be found. Please install and try again!${noColor}"
+  show_help_existing_stop_and_destroy
+  exit 0
+fi
+
 # can pass a project .env file as argument
 if [[ -n "${1-}" ]]; then
 	if [[ "$1" == "--help" ]] || [[  "$1" == "-h" ]]; then
@@ -278,15 +294,6 @@ docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml"
 set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
 
-get_nginx_container_id() {
-	docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
-}
-
-get_is_container_running() {
-	containerId=$1
-	docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
-}
-
 nginxContainerId=$(get_nginx_container_id)
 isNginxRunning=$(get_is_container_running "$nginxContainerId")
 i=0
@@ -324,8 +331,8 @@ echo " -------------------------------------------------------- "
 echo ""
 echo "  Success! \"${projectName}\" is set up:"
 echo ""
-echo "    ${projectURL} (CHT)"
-echo "    ${projectURL}_utils/ (Fauxton)"
+echo "    ${projectURL}/ (CHT)"
+echo "    ${projectURL}/_utils/ (Fauxton)"
 echo ""
 echo "    Login: ${COUCHDB_USER}"
 echo "    Password: ${COUCHDB_PASSWORD}"
