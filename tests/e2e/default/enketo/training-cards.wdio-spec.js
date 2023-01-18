@@ -22,9 +22,11 @@ describe('Training Cards', () => {
     internalId: 'training:text_only',
     title: 'Text Only Training',
     type: 'form',
-    start_date: new Date().getTime(),
-    user_roles: [ 'nurse' ],
-    duration: 5,
+    context: {
+      start_date: new Date().getTime(),
+      user_roles: [ 'nurse' ],
+      duration: 5,
+    },
     _attachments: {
       xml: {
         content_type: 'application/octet-stream',
