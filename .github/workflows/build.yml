@@ -153,7 +153,7 @@ jobs:
     - name: Run tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Archive Results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.grunt-cmd }}
         path: |
@@ -240,7 +240,7 @@ jobs:
       - name: Upgrade
         run: npm run upgrade-wdio
       - name: Archive Results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Upgrade
           path: |
