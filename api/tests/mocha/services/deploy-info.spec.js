@@ -24,6 +24,12 @@ describe('deploy info', () => {
           timestamp: 1000,
           user: 'my user',
         },
+        build_info: {
+          base_version: '3.14.0',
+          build: '3.14.0-56437856378453',
+          time: 'human readable',
+          version: 'aaa',
+        },
         version: '3.14.0-dev.547839573',
       };
 
@@ -36,6 +42,9 @@ describe('deploy info', () => {
         timestamp: 1000,
         user: 'my user',
         version: '3.14.0-dev.547839573',
+        base_version: '3.14.0',
+        build: '3.14.0-56437856378453',
+        time: 'human readable',
       });
 
       expect(db.medic.get.args).to.deep.equal([['_design/medic']]);
@@ -71,7 +80,7 @@ describe('deploy info', () => {
       expect(db.medic.get.callCount).to.equal(1);
     });
 
-    it('should work with undefined deploy info', async () => {
+    it('should work with undefined deploy info and build info', async () => {
       const ddoc = {
         _id: '_design/medic',
         version: '20000',
