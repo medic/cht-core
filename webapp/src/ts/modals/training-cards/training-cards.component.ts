@@ -43,7 +43,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   loadingContent;
   contentError;
   hideModalFooter;
-  errorTranslationKey
+  errorTranslationKey;
   enketoError;
   enketoStatus;
   enketoSaving;
@@ -82,7 +82,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
       this.geoHandle && this.geoHandle.cancel();
       this.geoHandle = this.geolocationService.init();
       const form = await this.xmlFormsService.get(this.trainingForm);
-      this.ngZone.run(() => this.renderForm(form));
+      await this.ngZone.run(() => this.renderForm(form));
     } catch(error) {
       this.setError();
       console.error('Error fetching form.', error);
@@ -120,6 +120,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
 
       if (trainingForm && trainingForm !== this.trainingForm) {
         this.trainingForm = trainingForm;
+        this.enketoService.unload(this.form);
         this.loadForm();
       }
     });

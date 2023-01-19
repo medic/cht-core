@@ -90,7 +90,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   canLogOut;
   replicationStatus;
   androidAppVersion;
-  nonContactForms;
+  reportForms;
   unreadCount = {};
 
   constructor (
@@ -512,7 +512,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             if (err) {
               return console.error('Error fetching form definitions', err);
             }
-            this.nonContactForms = xForms
+            this.reportForms = xForms
               .map((xForm) => ({
                 id: xForm._id,
                 code: xForm.internalId,

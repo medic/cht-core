@@ -335,7 +335,7 @@ describe('AppComponent', () => {
     });
     expect(xmlFormsService.subscribe.getCall(1).args[2]).to.be.a('Function');
     xmlFormsService.subscribe.getCall(1).args[2](false, [form2]);
-    expect(component.nonContactForms).to.have.deep.members([{
+    expect(component.reportForms).to.have.deep.members([{
       id: 'form:456',
       code: '456',
       icon: 'icon',

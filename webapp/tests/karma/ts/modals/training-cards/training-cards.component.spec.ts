@@ -105,6 +105,7 @@ describe('TrainingCardsComponent', () => {
     store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
     store.refreshState();
     tick();
+    sinon.resetHistory();
     component.ngOnDestroy();
     tick();
 
@@ -195,10 +196,12 @@ describe('TrainingCardsComponent', () => {
       store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
       store.refreshState();
       tick();
-
       component.saveForm();
       tick();
 
+      // Unload form before loading a new one and then when saving.
+      expect(enketoService.unload.calledTwice).to.be.true;
+      expect(enketoService.unload.args[1]).to.deep.equal([{ the: 'rendered training form' }]);
       expect(enketoService.save.calledOnce).to.be.true;
       expect(enketoService.save.args[0]).to.deep.equal([
         'training:a_form_id',
@@ -210,8 +213,6 @@ describe('TrainingCardsComponent', () => {
         'Saved form and associated docs',
         [{ _id: 'completed_training' }]
       ]);
-      expect(enketoService.unload.calledOnce).to.be.true;
-      expect(enketoService.unload.args[0]).to.deep.equal([{ the: 'rendered training form' }]);
       expect(globalActions.setEnketoSavingStatus.calledTwice).to.be.true;
       expect(globalActions.setEnketoSavingStatus.args).to.deep.equal([[ true ], [ false ]]);
       expect(globalActions.setSnackbarContent.calledOnce).to.be.true;
@@ -236,6 +237,8 @@ describe('TrainingCardsComponent', () => {
       component.saveForm();
       tick();
 
+      // Unloading from before loading a new one.
+      expect(enketoService.unload.calledOnce).to.be.true;
       expect(enketoService.save.calledOnce).to.be.true;
       expect(enketoService.save.args[0]).to.deep.equal([
         'training:a_form_id',
@@ -251,7 +254,6 @@ describe('TrainingCardsComponent', () => {
       expect(globalActions.setEnketoError.args[0]).to.deep.equal([ 'training_cards.error.save' ]);
       expect(globalActions.setEnketoSavingStatus.calledTwice).to.be.true;
       expect(globalActions.setEnketoSavingStatus.args).to.deep.equal([[ true ], [ false ]]);
-      expect(enketoService.unload.notCalled).to.be.true;
       expect(modalSuperCloseStub.notCalled).to.be.true;
       expect(globalActions.setSnackbarContent.notCalled).to.be.true;
     }));
@@ -268,6 +270,7 @@ describe('TrainingCardsComponent', () => {
       store.refreshState();
       tick();
 
+      expect(enketoService.unload.calledOnce).to.be.true;
       expect(geolocationService.init.calledOnce).to.be.true;
       expect(xmlFormsService.get.calledOnce).to.be.true;
       expect(xmlFormsService.get.args[0]).to.deep.equal([ 'training:a_form_id' ]);

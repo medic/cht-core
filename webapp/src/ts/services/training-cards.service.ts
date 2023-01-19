@@ -57,8 +57,7 @@ export class TrainingCardsService {
         const endDate = new Date(form.startDate);
         endDate.setDate(endDate.getDate() + form.duration);
         return endDate > today;
-      })
-      .sort((a, b) => a.startDate - b.startDate);
+      });
   }
 
   private async getCompletedTrainings(userCtx) {
@@ -89,27 +88,38 @@ export class TrainingCardsService {
     }
 
     try {
-      const userCtx = this.sessionService.userCtx();
-      let trainingForms = this.getAvailableTrainingForms(xForms, userCtx);
-      if (!trainingForms?.length) {
+      const firstChronologicalTrainingForm = await this.getFirstChronologicalForm(xForms);
+      if (!firstChronologicalTrainingForm) {
         return;
       }
 
-      const completedTrainings = await this.getCompletedTrainings(userCtx);
-      if (completedTrainings) {
-        trainingForms = trainingForms.filter(form => !completedTrainings.has(form.code));
-      }
-
-      if (!trainingForms.length) {
-        return;
-      }
-
-      this.globalActions.setTrainingCard(trainingForms[0].code);
+      this.globalActions.setTrainingCard(firstChronologicalTrainingForm.code);
       this.modalService.show(TrainingCardsComponent, { backdrop: 'static' });
     } catch (error) {
       console.error('Error showing training cards modal.', error);
       return;
     }
+  }
+
+  private async getFirstChronologicalForm(xForms) {
+    const userCtx = this.sessionService.userCtx();
+    let trainingForms = this.getAvailableTrainingForms(xForms, userCtx);
+
+    if (!trainingForms?.length) {
+      return;
+    }
+
+    const completedTrainings = await this.getCompletedTrainings(userCtx);
+    if (completedTrainings) {
+      trainingForms = trainingForms.filter(form => !completedTrainings.has(form.code));
+    }
+
+    if (!trainingForms.length) {
+      return;
+    }
+
+    trainingForms = trainingForms.sort((a, b) => a.startDate - b.startDate);
+    return trainingForms[0];
   }
 
   public initTrainingCards() {
