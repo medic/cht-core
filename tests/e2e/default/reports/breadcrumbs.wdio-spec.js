@@ -53,14 +53,11 @@ describe('Reports tab breadcrumbs', () => {
   });
 
   const today = moment();
-  const reportDate = moment([today.year(), today.month(), 1, 23, 30]);
-  reportDate.subtract(4, 'month');
-
   const reports = [
     reportFactory.build(
       {
         form: 'P',
-        reported_date: reportDate.valueOf(),
+        reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf(),
         patient_id: 'patient1',
       },
       {
