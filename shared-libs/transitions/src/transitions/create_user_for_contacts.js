@@ -153,7 +153,7 @@ module.exports = {
       );
     }
   },
-  filter: (doc, info) => {
+  filter: (doc, info = {}) => {
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
     if (
       !contactType
@@ -163,23 +163,25 @@ module.exports = {
       return false;
     }
 
-    if (doc.user_for_contact.replace && doc.user_for_contact.add) {
+    const isReplacingUser = !!doc.user_for_contact.replace;
+    const isAddingUser = doc.user_for_contact.create && doc.user_for_contact.create.add === 'true';
+    const hasAlreadyCreatedUser = !!(info && info.transitions && info.transitions.create_user_for_contacts);
+    if (isReplacingUser && isAddingUser) {
       const hasFinishedReplacing = Object
         .values(doc.user_for_contact.replace)
         .every(({ status }) => [USER_CREATION_STATUS.COMPLETE, USER_CREATION_STATUS.ERROR].includes(status));
-      const isAddingUser = doc.user_for_contact.add.status === USER_CREATION_STATUS.READY;
 
-      return hasFinishedReplacing && isAddingUser;
+      return hasFinishedReplacing && isAddingUser && !hasAlreadyCreatedUser;
     }
 
-    if (doc.user_for_contact.replace) {
+    if (isReplacingUser) {
       return Object
         .values(doc.user_for_contact.replace)
         .some(({ status }) => status === USER_CREATION_STATUS.READY);
     }
 
-    if (doc.user_for_contact.create.add === 'true') {
-      return !info.transitions.create_user_for_contacts;
+    if (isAddingUser) {
+      return !hasAlreadyCreatedUser;
     }
 
     return false;
