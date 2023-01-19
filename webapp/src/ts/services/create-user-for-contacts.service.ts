@@ -111,7 +111,7 @@ export class CreateUserForContactsService {
   }
 }
 
-export enum UserCreationStatus {
+enum UserCreationStatus {
   PENDING = 'PENDING', // Waiting on sync to complete
   READY = 'READY', // Ready to be replaced
   // COMPLETE - Set by Sentinel when the new user has been created
