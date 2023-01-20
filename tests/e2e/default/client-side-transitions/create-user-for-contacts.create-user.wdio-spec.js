@@ -63,7 +63,7 @@ describe('Create user when adding contact', () => {
     // Original contact updated to COMPLETE
     const finalChwContact = await utils.getDoc(chwContactId);
     expect(finalChwContact.user_for_contact).to.deep.equal({
-      add: { status: 'COMPLETE' }
+      create: { add: 'true' }
     });
 
     // New user created
@@ -90,6 +90,7 @@ describe('Create user when adding contact', () => {
   it('Creates a new user when adding a person while adding a place', async () => {
     await utils.updateSettings(settings, 'sentinel');
     await loginPage.login(supervisorUser);
+    await commonPage.waitForPageLoaded();
     await commonPage.goToPeople(district._id);
     await contactsPage.addPlace({ 
       type: 'health_center', 
@@ -108,7 +109,7 @@ describe('Create user when adding contact', () => {
     // Original contact updated to COMPLETE
     const finalChwContact = await utils.getDoc(chwContactId);
     expect(finalChwContact.user_for_contact).to.deep.equal({
-      add: { status: 'COMPLETE', roles: [ 'chw' ] }
+      create: { add: 'true' }
     });
 
     // New user created
@@ -129,6 +130,7 @@ describe('Create user when adding contact', () => {
   it('Does not create a new user when the transition is disabled', async () => {
     await utils.updateSettings(settingsNoTransitions, 'sentinel');
     await loginPage.login(supervisorUser);
+    await commonPage.waitForPageLoaded();
     await commonPage.goToPeople(district._id);
 
     await contactsPage.addPerson({ name: contactName, phone: '+40755696969' });

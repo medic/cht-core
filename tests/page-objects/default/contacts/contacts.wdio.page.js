@@ -43,8 +43,8 @@ const rhsReportElementList = () => $$(rhsReportListSelector);
 const contactSummaryContainer = () => $('#contact_summary');
 const emptySelection = () => $('contacts-content .empty-selection');
 const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-contacts"]');
-const editContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]');
-const deleteContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]');
+const editContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-pencil');
+const deleteContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-trash-o');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
 const leftAddPlace = () => $('.dropup a.create-place');
 const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
@@ -194,8 +194,7 @@ const addPerson = async ({
 const editPerson = async (name, updatedName) => {
   await selectLHSRowByText(name);
   await waitForContactLoaded();
-  await commonElements.openMoreOptionsMenu();
-  await (await editContactButton()).waitForClickable();
+  await (await editContactButton()).waitForDisplayed();
   await (await editContactButton()).click();
 
   await (await genericForm.nextPage());
@@ -207,11 +206,11 @@ const editPerson = async (name, updatedName) => {
   return (await contactCard()).getText();
 };
 
-const deletePerson = async () => {
-  await commonElements.openMoreOptionsMenu();
-  await (await deleteContactButton()).waitForClickable();
+const deletePerson = async (name) => {
+  await selectLHSRowByText(name);
+  await waitForContactLoaded();
   await (await deleteContactButton()).click();
-  await (await deleteConfirmationModalButton()).waitForClickable();
+  await (await deleteConfirmationModalButton()).waitForDisplayed();
   await (await deleteConfirmationModalButton()).click();
 };
 
@@ -259,8 +258,7 @@ const editDistrict = async (districtName, editedName) => {
   await selectLHSRowByText(districtName, true);
   await waitForContactLoaded();
 
-  await commonElements.openMoreOptionsMenu();
-  await (await editContactButton()).waitForClickable();
+  await (await editContactButton()).waitForDisplayed();
   await (await editContactButton()).click();
 
   await (await districtHospitalName()).setValue(editedName);
