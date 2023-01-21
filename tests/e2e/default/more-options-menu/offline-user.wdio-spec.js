@@ -182,7 +182,7 @@ describe('More Options Menu - Offline User', async () => {
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
     });
   
-    it('- Report tab - options enabled when sms report selected', async () => {
+    it('- Report tab - menu not displayed when sms report selected', async () => {
       await reportPage.goToReportById(smsReportId);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
     });
