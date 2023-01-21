@@ -187,7 +187,7 @@ describe('More Options Menu - Offline User', async () => {
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
     });
 
-    it('- Report tab - options enabled when xml report selected', async () => {
+    it('- Report tab - menu not displayed when xml report selected', async () => {
       await reportPage.goToReportById(xmlReportId);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
     });    
