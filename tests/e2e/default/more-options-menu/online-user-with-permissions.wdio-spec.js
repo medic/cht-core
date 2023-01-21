@@ -79,7 +79,8 @@ describe('Online User', async () => {
 
   describe(' - Contact tab - user has no contact ', async () => {
     before(async () => await utils.saveDocs([ ...places.values(), contact, patient]));
-    it(' - no contact selected', async () => {
+   
+     it(' - no contact selected', async () => {
       await commonPage.goToPeople();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'contacts')).to.be.true;
