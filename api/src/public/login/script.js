@@ -192,8 +192,8 @@ const checkSession = function() {
 const isUsingSupportedBrowser = () => {
   const parser = window.bowser.getParser(window.navigator.userAgent);
   return parser.satisfies({
-    chrome: '>=53',
-    firefox: '>=98', // latest at the time
+    chrome: '>=80', // Chrome 80 was released on February 4, 2020; for desktop and Android.
+    firefox: '>=98', // Firefox 93 was released on October 5, 2021; for desktop and Android.
   });
 };
 

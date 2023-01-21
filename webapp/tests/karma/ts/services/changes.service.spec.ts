@@ -59,7 +59,10 @@ describe('Changes service', () => {
     store = TestBed.inject(MockStore);
   }));
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    store.resetSelectors();
+    sinon.restore();
+  });
 
   it('should call the callback', (done) => {
 

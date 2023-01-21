@@ -25,17 +25,17 @@
     "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && grunt build-service-images && grunt create-local-docker-compose-files"
   },
   "devDependencies": {
-    "@angular-builders/custom-webpack": "^12.1.0",
-    "@angular-devkit/build-angular": "^12.2.1",
-    "@angular-eslint/builder": "^12.0.0",
-    "@angular-eslint/eslint-plugin": "^12.0.0",
-    "@angular-eslint/eslint-plugin-template": "^12.0.0",
-    "@angular-eslint/schematics": "^12.3.1",
-    "@angular-eslint/template-parser": "^12.0.0",
-    "@angular/cli": "^12.2.1",
-    "@angular/compiler": "^12.2.1",
-    "@angular/compiler-cli": "^12.2.1",
-    "@angular/localize": "^12.2.1",
+    "@angular-builders/custom-webpack": "^15.0.0",
+    "@angular-devkit/build-angular": "^15.0.5",
+    "@angular-eslint/builder": "^15.1.0",
+    "@angular-eslint/eslint-plugin": "^15.1.0",
+    "@angular-eslint/eslint-plugin-template": "^15.1.0",
+    "@angular-eslint/schematics": "^15.1.0",
+    "@angular-eslint/template-parser": "^15.1.0",
+    "@angular/cli": "^15.0.5",
+    "@angular/compiler": "^15.0.4",
+    "@angular/compiler-cli": "^15.0.4",
+    "@angular/localize": "^15.0.4",
     "@faker-js/faker": "^6.1.2",
     "@medic/eslint-config": "^1.1.0",
     "@medic/memdown": "file:shared-libs/memdown",
@@ -47,8 +47,8 @@
     "@types/node": "^14.18.34",
     "@types/pouchdb": "^6.4.0",
     "@types/sinon": "^10.0.11",
-    "@typescript-eslint/eslint-plugin": "^4.32.0",
-    "@typescript-eslint/parser": "^4.32.0",
+    "@typescript-eslint/eslint-plugin": "5.43",
+    "@typescript-eslint/parser": "5.43",
     "@wdio/allure-reporter": "^7.26.0",
     "@wdio/cli": "^7.27.0",
     "@wdio/devtools-service": "^7.27.0",
@@ -138,7 +138,7 @@
     "sinon": "^11.1.2",
     "tail": "^2.2.4",
     "time-grunt": "^2.0.0",
-    "typescript": "4.3.5",
+    "typescript": "4.8",
     "uuid": "^8.3.2",
     "webpack-bundle-analyzer": "^4.7.0",
     "zone.js": "^0.11.8"
@@ -147,10 +147,6 @@
     {
       "path": "./api/build/static/webapp/main.js",
       "maxSize": "950 kB"
-    },
-    {
-      "path": "./api/build/static/webapp/polyfills-es5.js",
-      "maxSize": "55 kB"
     },
     {
       "path": "./api/build/static/webapp/polyfills.js",

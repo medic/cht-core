@@ -16,6 +16,6 @@ export class ConfirmPasswordUpdatedComponent extends MmModalAbstract {
   }
 
   submit() {
-    window.location.reload(true);
+    window.location.reload();
   }
 }

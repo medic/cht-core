@@ -56,6 +56,7 @@ describe('AnalyticsComponent', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

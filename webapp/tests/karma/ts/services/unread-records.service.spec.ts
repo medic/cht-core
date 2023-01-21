@@ -1,7 +1,6 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { of } from 'rxjs';
 
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { DbService } from '@mm-services/db.service';
@@ -23,7 +22,7 @@ describe('UnreadRecordsService', () => {
       query: sinon.stub()
     };
     dbService = { get: () => dbInstance };
-    changesService = { subscribe: sinon.stub().resolves(of({})) };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     sessionService = { isOnlineOnly: sinon.stub() };
     
     TestBed.configureTestingModule({

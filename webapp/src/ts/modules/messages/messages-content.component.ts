@@ -237,7 +237,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
         this.globalActions.setLoadingShowContent(false);
         this.messagesActions.setMessagesError(false);
         const unread = conversation.filter(message => !message.read);
-        this.firstUnread = _minBy(unread, message => message.doc?.reported_date);
+        this.firstUnread = _minBy(unread, (message:any) => message?.doc?.reported_date);
         this.messagesActions.updateSelectedConversation({ contact: contactModel, messages: conversation });
         this.globalActions.setTitle((contactModel && contactModel.doc && contactModel.doc.name) || id);
         this.markConversationReadIfNeeded();

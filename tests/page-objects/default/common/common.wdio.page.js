@@ -1,5 +1,5 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
-const moreOptionsMenu = () => $('.more-options-menu-container>.mat-menu-trigger');
+const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trigger');
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
 const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
