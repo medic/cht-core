@@ -54,7 +54,7 @@ describe('- permissions disabled', async () => {
   describe('- export permissions disabled', async () => {
     before(async () => {
       const exportPermissions = ['can_export_all', 'can_export_contacts', 'can_export_messages'];
-      await utils.updatePermissions(onlineUser.roles, [], exportPermissions );
+      await utils.updatePermissions(onlineUser.roles, [], exportPermissions);
       await commonPage.closeReloadModal();
     });
 
