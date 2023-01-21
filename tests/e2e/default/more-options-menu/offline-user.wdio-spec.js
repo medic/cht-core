@@ -155,19 +155,25 @@ describe('More Options Menu - Offline User', async () => {
 
     after(async () => await utils.revertSettings(true));
 
-    it(' - Contact Tab - contact selected', async () => {
+    it(' - Contact Tab - delete contact selected', async () => {
       await commonPage.goToPeople(contact._id);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
+      expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;      
+      expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;   
     });
   
-    it('- Report tab - menu not displayed when sms report selected', async () => {
+    it('- Report tab - delete menu not displayed when sms report selected', async () => {
       await reportPage.goToReportById(smsReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;     
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;   
     });
     
-    it('- Report tab - menu not displayed when xml report selected', async () => {
+    it('- Report tab - delete menu not displayed when xml report selected', async () => {
       await reportPage.goToReportById(xmlReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;     
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
+      expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
+      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;     
     });
   });
 
