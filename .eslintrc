@@ -16,6 +16,7 @@
     "dot-notation": ["error", { "allowKeywords": true }],
     "func-call-spacing": ["error", "never"],
     "func-style": ["error", "expression"],
+    "function-call-argument-newline": ["error", "consistent"],
     "linebreak-style": ["error", "unix"],
     "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
     "no-alert": "error",
@@ -58,7 +59,8 @@
       "rules": {
         "brace-style": "off",
         "array-bracket-newline": "off",
-        "func-style": "off"
+        "func-style": "off",
+        "function-call-argument-newline": "off"
       }
     },
     {

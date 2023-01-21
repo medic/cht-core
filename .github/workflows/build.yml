@@ -11,7 +11,7 @@ env:
   INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
   DOCKERHUB_USERNAME: 'dockermedic'
   ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
-  ECR_PUBLIC_REPO: 'public.ecr.aws/s5s3h4s7'
+  ECR_PUBLIC_REPO: 'public.ecr.aws/medic'
   COUCHDB_LOG_LEVEL: 'debug'
   TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
 

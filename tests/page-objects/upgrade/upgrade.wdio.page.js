@@ -36,6 +36,12 @@ const getCurrentVersion = async () => {
   return await (await version()).getText();
 };
 
+const getBuild = async () => {
+  const version = () => $('dl.horizontal dd:nth-child(4)');
+  await browser.waitUntil(async () => await (await version()).getText());
+  return await (await version()).getText();
+};
+
 module.exports = {
   cancelUpgradeButton,
   deploymentInProgress,
@@ -45,4 +51,5 @@ module.exports = {
   goToUpgradePage,
   expandPreReleasesAccordion,
   upgradeModalConfirm,
+  getBuild,
 };

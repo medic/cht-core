@@ -14,8 +14,14 @@ describe('Settings API', () => {
   describe('old api', () => {
 
     const update = (updates, replace=false) => {
-      let uri = path.join('/', constants.DB_NAME, '_design',
-        constants.MAIN_DDOC_NAME, '_rewrite/update_settings', constants.MAIN_DDOC_NAME);
+      let uri = path.join(
+        '/',
+        constants.DB_NAME,
+        '_design',
+        constants.MAIN_DDOC_NAME,
+        '_rewrite/update_settings',
+        constants.MAIN_DDOC_NAME
+      );
       if (replace) {
         uri += '?replace=1';
       }
@@ -86,11 +92,15 @@ describe('Settings API', () => {
           chai.expect(response).to.deep.equal({ success: true, updated: true });
         })
         .then(() => {
-          return utils.request({
-            path: path.join('/', constants.DB_NAME, '_design', constants.MAIN_DDOC_NAME,
-              '_rewrite/app_settings', constants.MAIN_DDOC_NAME),
-            method: 'GET'
-          });
+          const url = path.join(
+            '/',
+            constants.DB_NAME,
+            '_design',
+            constants.MAIN_DDOC_NAME,
+            '_rewrite/app_settings',
+            constants.MAIN_DDOC_NAME
+          );
+          return utils.request({ path: url, method: 'GET' });
         })
         .then(response => {
           chai.expect(response.settings._test_sandbox).to.deep.equal({ times: 'three', b: 'c' });
