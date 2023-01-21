@@ -99,7 +99,7 @@ describe('- permissions disabled', async () => {
       expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;
     });
   
-    it('- Report Tab - options enabled when report selected', async () => {
+    it('- Report Tab - option disabled when report selected', async () => {
       await commonPage.goToReports();
       (await reportPage.firstReport()).click();
       await commonPage.openMoreOptionsMenu(); 
