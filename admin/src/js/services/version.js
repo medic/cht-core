@@ -19,7 +19,7 @@ angular.module('services').factory('Version',
       // TODO: replace this regex with named capture groups once we deprecate node 8
       // /^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)(?<featureRelease>-FR(?:-\w+)+)?(?:-beta\.(?<beta>\d+))?$/
       const versionMatch = versionString &&
-          versionString.match(/^(\d+)\.(\d+)\.(\d+)(-FR(?:-\w+)+)?(?:-beta\.(\d+))?(?:-dev\.(\d+))?$/);
+          versionString.match(/^(\d+)\.(\d+)\.(\d+)(-FR(?:-\w+)+)?(?:-beta\.(\d+))?(?:-dev\.(\d+))?(\.(\d+))?$/);
 
       if (versionMatch) {
         const version = {

@@ -20,6 +20,7 @@ describe('version', () => {
 
     it('A branch has no minimum next release', () => {
       chai.expect(service.minimumNextRelease('a-branch-name')).to.deep.equal({});
+      chai.expect(service.minimumNextRelease('4.2.0-79532-fixit.123')).to.deep.equal({});
     });
 
     it('A beta returns the beta incremented by one', () => {
@@ -27,6 +28,7 @@ describe('version', () => {
       chai.expect(service.minimumNextRelease('1.2.3-beta.1')).to.deep.equal(v(1, 2, 3, 2));
       chai.expect(service.minimumNextRelease('1.2.3-beta.9')).to.deep.equal(v(1, 2, 3, 10));
       chai.expect(service.minimumNextRelease('1.2.3-beta.10')).to.deep.equal(v(1, 2, 3, 11));
+      chai.expect(service.minimumNextRelease('1.2.3-beta.10.5473893')).to.deep.equal(v(1, 2, 3, 11));
     });
 
     it('A release returns the patch incremented by one', () => {
@@ -34,15 +36,18 @@ describe('version', () => {
       chai.expect(service.minimumNextRelease('1.2.1')).to.deep.equal(v(1, 2, 2));
       chai.expect(service.minimumNextRelease('1.2.9')).to.deep.equal(v(1, 2, 10));
       chai.expect(service.minimumNextRelease('1.2.10')).to.deep.equal(v(1, 2, 11));
+      chai.expect(service.minimumNextRelease('4.2.0.564783567')).to.deep.equal(v(4, 2, 1));
     });
   });
 
   describe('Parse', () => {
     it('Parses a standard version', () => {
       chai.expect(service.parse('1.2.3')).to.deep.equal(v(1, 2, 3));
+      chai.expect(service.parse('1.2.3.123456')).to.deep.equal(v(1, 2, 3));
     });
     it('Parses versions with beta information', () => {
       chai.expect(service.parse('1.2.3-beta.4')).to.deep.equal(v(1, 2, 3, 4));
+      chai.expect(service.parse('1.2.3-beta.4.123456')).to.deep.equal(v(1, 2, 3, 4));
     });
     it('Returns undefined if it cannot parse the version', () => {
       chai.expect(service.parse('master')).to.equal(undefined);
@@ -72,17 +77,18 @@ describe('version', () => {
   describe('currentVersion', () => {
     it('Returns the current version of the app', () => {
       const deploy_info = {
-        'timestamp': '2022-02-15T08:27:25.997Z',
-        'user': 'horticulturalist cli',
-        'version': '1.0.0'
+        timestamp: '2022-02-15T08:27:25.997Z',
+        user: 'horticulturalist cli',
+        version: '1.0.0.123456',
+        base_version: '1.0.0'
       };
       chai.expect(service.currentVersion(deploy_info)).to.deep.equal(v(1,  0,  0));
     });
     it('returns the base_version if it is defined', () => {
       const deploy_info = {
-        'timestamp': '2022-02-15T08:27:25.997Z',
-        'user': 'horticulturalist cli',
-        'base_version': '1.0.0'
+        timestamp: '2022-02-15T08:27:25.997Z',
+        user: 'horticulturalist cli',
+        base_version: '1.0.0'
       };
       chai.expect(service.currentVersion(deploy_info)).to.deep.equal(v(1, 0, 0));
     });
