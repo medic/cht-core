@@ -51,10 +51,9 @@ const smsReport = reportFactory.build(
   },
 );
 
-let xmlReportId;
-let smsReportId;
-
 describe('More Options Menu - Offline User', async () => {
+  let xmlReportId;
+  let smsReportId;
   before(async () => {
     await utils.saveDocs([ ...places.values(), contact, patient]);
     let result = await utils.saveDoc(xmlReport);
