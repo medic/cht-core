@@ -4,6 +4,13 @@ const expect = require('chai').expect;
 describe('Translation Utils Lib', () => {
   'use strict';
 
+  it('should not crash when getting invalid parameter', () => {
+    expect(lib.loadTranslations()).to.deep.equal({});
+    expect(lib.loadTranslations(null)).to.deep.equal({});
+    expect(lib.loadTranslations('a string')).to.deep.equal({});
+    expect(lib.loadTranslations('true')).to.deep.equal({});
+  });
+
   it('resolves nested ids', () => {
     const translations = {
       'one': 'first',

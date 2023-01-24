@@ -29,6 +29,18 @@ const extractLocaleCode = filename => {
   }
 };
 
+const validTranslationsDoc = doc => {
+  if (!doc || doc.type !== DOC_TYPE || !doc.code) {
+    return false;
+  }
+
+  if (_.isObject(doc.generic) || _.isObject(doc.values)) {
+    return true;
+  }
+
+  return false;
+};
+
 const createDoc = attachment => {
   return {
     _id: `${MESSAGES_DOC_ID_PREFIX}${attachment.code}`,
@@ -77,7 +89,11 @@ const overwrite = (translationFiles, docs) => {
 const getTranslationDocs = () => {
   return db.medic
     .allDocs({ startkey: MESSAGES_DOC_ID_PREFIX, endkey: `${MESSAGES_DOC_ID_PREFIX}\ufff0`, include_docs: true })
-    .then(response => response.rows.map(row => row.doc));
+    .then(response => {
+      return response.rows
+        .map(row => row.doc)
+        .filter(doc => validTranslationsDoc(doc));
+    });
 };
 
 const getEnabledLocales = () => {
