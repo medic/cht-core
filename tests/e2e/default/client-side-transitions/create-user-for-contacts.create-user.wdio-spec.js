@@ -18,7 +18,7 @@ describe('Create user when adding contact', () => {
     token_login: { enabled: true },
     app_url: BASE_URL
   });
-  
+
   const settingsNoTransitions = utils.deepFreeze({
     transitions: { create_user_for_contacts: false},
     token_login: { enabled: true },
@@ -28,7 +28,7 @@ describe('Create user when adding contact', () => {
   const supervisorUser = utils.deepFreeze(userFactory.build({
     username: 'supervisor',
     place: district._id,
-  })); 
+  }));
 
   beforeEach(async () => {
     await utils.saveDocs([district]);
@@ -63,7 +63,7 @@ describe('Create user when adding contact', () => {
     // Original contact updated to COMPLETE
     const finalChwContact = await utils.getDoc(chwContactId);
     expect(finalChwContact.user_for_contact).to.deep.equal({
-      create: { add: 'true' }
+      create: 'true',
     });
 
     // New user created
@@ -92,12 +92,12 @@ describe('Create user when adding contact', () => {
     await loginPage.login(supervisorUser);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople(district._id);
-    await contactsPage.addPlace({ 
-      type: 'health_center', 
-      placeName: 'HC1', 
-      contactName: contactName, 
+    await contactsPage.addPlace({
+      type: 'health_center',
+      placeName: 'HC1',
+      contactName: contactName,
       phone: '+40755696969' });
-    
+
     await commonPage.syncWithoutWaitForSuccess();
     await sentinelUtils.waitForSentinel();
     await contactsPage.selectLHSRowByText(contactName);
@@ -109,16 +109,16 @@ describe('Create user when adding contact', () => {
     // Original contact updated to COMPLETE
     const finalChwContact = await utils.getDoc(chwContactId);
     expect(finalChwContact.user_for_contact).to.deep.equal({
-      create: { add: 'true' }
+      create: 'true',
     });
 
     // New user created
     const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: chwContactId });
     expect(additionalUsers).to.be.empty;
     newUsers.push(newUserSettings.name);
-    
+
     const loginLink = await messagesUtils.getTextedLoginLink(newUserSettings);
-    
+
     // Open the texted link
     await commonPage.logout();
     await browser.url(loginLink);
@@ -142,7 +142,7 @@ describe('Create user when adding contact', () => {
     const { transitions } = await sentinelUtils.getInfoDoc(chwContactId);
 
     expect(transitions.create_user_for_contacts).to.be.undefined;
-    
+
 
     const additionalUsers = await utils.getUserSettings({ contactId: chwContactId });
     expect(additionalUsers).to.be.empty;

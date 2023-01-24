@@ -558,7 +558,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = Object.assign(
         {
           roles: ['chw', 'other-role'],
-          user_for_contact: { create: { add: 'true' }, }
+          user_for_contact: { create: 'true' }
         },
         NEW_PERSON
       );
@@ -603,7 +603,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = Object.assign(
         {
           role: 'chw',
-          user_for_contact: { create: { add: 'true' }, }
+          user_for_contact: { create: 'true' }
         },
         NEW_PERSON
       );
@@ -648,7 +648,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = Object.assign(
         {
           roles: ['chw', 'other-role'],
-          user_for_contact: { create: { add: 'true' }, }
+          user_for_contact: { create: 'true' }
         },
         NEW_PERSON
       );
@@ -669,7 +669,7 @@ describe('create_user_for_contacts', () => {
 
       const originalContact = {
         ...NEW_PERSON,
-        user_for_contact: { create: { add: 'true' }, },
+        user_for_contact: { create: 'true' },
       };
       await utils.saveDoc(originalContact);
       await sentinelUtils.waitForSentinel(originalContact._id);
@@ -689,7 +689,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = {
         ...NEW_PERSON,
         roles: ['chw', 'other-role'],
-        user_for_contact: { create: { add: 'true' }, },
+        user_for_contact: { create: 'true' },
         phone: undefined
       };
       await utils.saveDoc(originalContact);
@@ -710,7 +710,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = {
         ...NEW_PERSON,
         roles: ['chw', 'other-role'],
-        user_for_contact: { create: { add: 'true' }, },
+        user_for_contact: { create: 'true' },
         phone: 12345
       };
       await utils.saveDoc(originalContact);
@@ -731,7 +731,7 @@ describe('create_user_for_contacts', () => {
       const originalContact = {
         ...NEW_PERSON,
         roles: ['chw', 'other-role'],
-        user_for_contact: { create: { add: 'true' }, },
+        user_for_contact: { create: 'true' },
         name: undefined
       };
       await utils.saveDoc(originalContact);
@@ -772,7 +772,7 @@ describe('create_user_for_contacts', () => {
       const clinic = await utils.getDoc(CLINIC._id);
       const originalContact = {
         ...clinic,
-        user_for_contact: { create: { add: 'true' }, },
+        user_for_contact: { create: 'true' },
       };
       await utils.saveDoc(originalContact);
       await sentinelUtils.waitForSentinel(originalContact._id);
