@@ -1,14 +1,14 @@
 const uuid = require('uuid').v4;
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const reportPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const utils = require('../../../utils');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const reportFactory = require('../../../factories/cht/reports/generic-report');
-const personFactory = require('../../../factories/cht/contacts/person');
-const userFactory = require('../../../factories/cht/users/users');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const sms = require('../../../utils/sms');
+const commonPage = require('../../../../page-objects/default/common/common.wdio.page');
+const contactPage = require('../../../../page-objects/default/contacts/contacts.wdio.page');
+const reportPage = require('../../../../page-objects/default/reports/reports.wdio.page');
+const utils = require('../../../../utils');
+const placeFactory = require('../../../../factories/cht/contacts/place');
+const reportFactory = require('../../../../factories/cht/reports/generic-report');
+const personFactory = require('../../../../factories/cht/contacts/person');
+const userFactory = require('../../../../factories/cht/users/users');
+const loginPage = require('../../../../page-objects/default/login/login.wdio.page');
+const sms = require('../../../../utils/sms');
 
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
@@ -115,7 +115,6 @@ describe('More Options Menu - Offline User', async () => {
   });
 
   describe('all permissions disabled', async () => {
-
     before(async () => {
       const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all', 
         'can_export_contacts', 'can_export_messages', 
@@ -143,58 +142,6 @@ describe('More Options Menu - Offline User', async () => {
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
       await reportPage.goToReportById(xmlReportId);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;   
-    });    
-  });
-
-  describe('- DELETE permissions disabled', async () => {
-    before(async () => {
-      await utils.updatePermissions(offlineUser.roles, [], ['can_delete_contacts', 'can_delete_reports']);
-      await commonPage.closeReloadModal();
-    });
-
-    after(async () => await utils.revertSettings(true));
-
-    it(' - Contact Tab - delete contact selected', async () => {
-      await commonPage.goToPeople(contact._id);
-      await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
-      expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;      
-      expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;   
-    });
-  
-    it('- Report tab - delete menu not displayed when sms report selected', async () => {
-      await reportPage.goToReportById(smsReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;   
-    });
-    
-    it('- Report tab - delete menu not displayed when xml report selected', async () => {
-      await reportPage.goToReportById(xmlReportId);
-      await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
-      expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;     
-    });
-  });
-
-  describe('- EDIT permissions disabled', async () => {
-    before(async () => {
-      await utils.updatePermissions(offlineUser.roles, [], ['can_edit']);
-      await commonPage.closeReloadModal();
-    });
-    
-    it(' - Contact Tab - contact selected', async () => {
-      await commonPage.goToPeople(contact._id);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
-    });
-  
-    it('- Report tab - menu not displayed when sms report selected', async () => {
-      await reportPage.goToReportById(smsReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
-    });
-
-    it('- Report tab - menu not displayed when xml report selected', async () => {
-      await reportPage.goToReportById(xmlReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
     });    
   });
 });
