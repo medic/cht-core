@@ -1,8 +1,12 @@
-const v = (ma, mi, pa, be) => {
+const v = (ma, mi, pa, be, fr) => {
   const version = {major: ma, minor: mi, patch: pa};
 
   if (be !== undefined) {
     version.beta = be;
+  }
+
+  if (fr !== undefined) {
+    version.featureRelease = fr;
   }
 
   return version;
@@ -21,6 +25,10 @@ describe('version', () => {
     it('A branch has no minimum next release', () => {
       chai.expect(service.minimumNextRelease('a-branch-name')).to.deep.equal({});
       chai.expect(service.minimumNextRelease('4.2.0-79532-fixit.123')).to.deep.equal({});
+    });
+
+    it('a dev version has no minimum next release', () => {
+      chai.expect(service.minimumNextRelease('4.2.0-dev.123')).to.deep.equal({});
     });
 
     it('A beta returns the beta incremented by one', () => {
@@ -45,10 +53,21 @@ describe('version', () => {
       chai.expect(service.parse('1.2.3')).to.deep.equal(v(1, 2, 3));
       chai.expect(service.parse('1.2.3.123456')).to.deep.equal(v(1, 2, 3));
     });
+
     it('Parses versions with beta information', () => {
       chai.expect(service.parse('1.2.3-beta.4')).to.deep.equal(v(1, 2, 3, 4));
       chai.expect(service.parse('1.2.3-beta.4.123456')).to.deep.equal(v(1, 2, 3, 4));
     });
+
+    it('Parses versions with feature release information', () => {
+      chai.expect(
+        service.parse('4.1.0-FR-supervisor-chw-create-beta.2.123')
+      ).to.deep.equal(v(4, 1, 0, 2, 'FR-supervisor-chw-create-beta'));
+      chai.expect(
+        service.parse('4.2.1-FR-supervisor-chw-create-beta.4.123')
+      ).to.deep.equal(v(4, 2, 1, 4, 'FR-supervisor-chw-create-beta'));
+    });
+
     it('Returns undefined if it cannot parse the version', () => {
       chai.expect(service.parse('master')).to.equal(undefined);
       chai.expect(service.parse('1.2.3.4.5')).to.equal(undefined);
