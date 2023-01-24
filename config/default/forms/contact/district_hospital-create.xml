@@ -917,7 +917,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" delimiter="#" version="2023-01-18  11-46">
+        <data id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" delimiter="#" version="2023-01-24  11-01">
           <inputs>
             <meta>
               <location>
@@ -989,9 +989,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
             <external_id/>
             <notes/>
             <user_for_contact>
-              <create>
-                <add/>
-              </create>
+              <create/>
             </user_for_contact>
             <meta tag="hidden">
               <created_by/>
@@ -1023,12 +1021,12 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/parent" type="string"/>
       <bind nodeset="/data/contact/type" type="string"/>
       <bind nodeset="/data/contact/name" type="string" required="true()"/>
-      <bind nodeset="/data/contact/short_name" type="string" jr:constraintMsg="Short name can not be more than 10 characters long." constraint="string-length(.) &lt;= 10" required="false()"/>
+      <bind nodeset="/data/contact/short_name" type="string" constraint="string-length(.) &lt;= 10" jr:constraintMsg="Short name can not be more than 10 characters long." required="false()"/>
       <bind nodeset="/data/contact/date_of_birth" type="string" calculate="../ephemeral_dob/dob_iso" required="true()"/>
       <bind nodeset="/data/contact/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" relevant="not(selected(../dob_method,'approx'))" jr:constraintMsg="Date must be before today" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" required="true()"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" relevant="not(selected(../dob_method,'approx'))" jr:constraintMsg="Date must be before today" required="true()" constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
-      <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="Age must be between 0 and 130" constraint=". &gt;= 0 and . &lt;= 130" required="true()"/>
+      <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="Age must be between 0 and 130" required="true()" constraint=". &gt;= 0 and . &lt;= 130"/>
       <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" relevant="selected(../dob_method,'approx')" jr:constraintMsg="Months must between 0 and 11" constraint=". &gt;= 0 and . &lt;= 11"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="select"/>
       <bind nodeset="/data/contact/ephemeral_dob/ephemeral_months" type="string" calculate="if(format-date-time(today(),&quot;%m&quot;) - ../age_months &lt; 0, format-date-time(today(),&quot;%m&quot;) - ../age_months + 12, format-date-time(today(),&quot;%m&quot;) - ../age_months)"/>
@@ -1046,7 +1044,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/role_other" type="string" relevant="selected(  /data/contact/role ,'other')" required="true()"/>
       <bind nodeset="/data/contact/external_id" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/notes" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
-      <bind nodeset="/data/contact/user_for_contact/create/add" type="string" calculate="selected(  /data/contact/role ,'chw') or selected(  /data/contact/role ,'chw_supervisor')"/>
+      <bind nodeset="/data/contact/user_for_contact/create" type="string" calculate="selected(  /data/contact/role ,'chw') or selected(  /data/contact/role ,'chw_supervisor')"/>
       <bind nodeset="/data/contact/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/contact/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/contact/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
@@ -1215,9 +1213,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <input appearance="multiline" ref="/data/contact/notes">
         <label ref="jr:itext('/data/contact/notes:label')"/>
       </input>
-      <group ref="/data/contact/user_for_contact">
-        <group ref="/data/contact/user_for_contact/create"/>
-      </group>
+      <group ref="/data/contact/user_for_contact"/>
       <group appearance="hidden" ref="/data/contact/meta"/>
     </group>
     <group appearance="field-list" ref="/data/district_hospital">
