@@ -164,7 +164,7 @@ module.exports = {
     }
 
     const isReplacingUser = !!doc.user_for_contact.replace;
-    const isAddingUser = doc.user_for_contact.create && doc.user_for_contact.create.add === 'true';
+    const isAddingUser = doc.user_for_contact.create === 'true';
     const hasAlreadyCreatedUser = !!(info && info.transitions && info.transitions.create_user_for_contacts);
     if (isReplacingUser && isAddingUser) {
       const hasFinishedReplacing = Object
