@@ -128,6 +128,10 @@ const getUsersToReplace = (originalContact) => {
 };
 
 const addUser = async (contact) => {
+  if (!contact.roles && !contact.role) {
+    throw new Error(`Contact [${contact._id}] must have a "role" or "roles" property.`);
+  }
+
   const roles = Array.isArray(contact.roles) && contact.roles.length > 0 ? contact.roles : [contact.role];
   await createNewUser({ roles }, contact);
   delete contact.user_for_contact.create;
