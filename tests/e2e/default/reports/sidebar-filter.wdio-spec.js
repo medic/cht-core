@@ -16,30 +16,33 @@ describe('Reports Sidebar Filter', () => {
   const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
 
   const today = moment();
-  const reportDate1 = moment([today.year(), today.month(), 1, 23, 30]);
-  reportDate1.subtract(4, 'month');
-  const reportDate2 = moment([today.year(), today.month(), 12, 10, 30]);
-  reportDate2.subtract(1, 'month');
-  const reportDate3 = moment([today.year(), today.month(), 15, 0, 30]);
-  reportDate3.subtract(5, 'month');
-  const reportDate4 = moment([today.year(), today.month(), 16, 9, 10]);
-  reportDate4.subtract(1, 'month');
-
   const reports = [
     reportFactory.build(
-      { form: 'P', reported_date: reportDate1.valueOf() },
+      {
+        form: 'P',
+        reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf()
+      },
       { patient, submitter: user.contact, fields: { lmp_date: 'Feb 3, 2022' }}
     ),
     reportFactory.build(
-      { form: 'P', reported_date: reportDate2.valueOf() },
+      {
+        form: 'P',
+        reported_date: moment([today.year(), today.month(), 12, 10, 30]).subtract(1, 'month').valueOf()
+      },
       { patient, submitter: user.contact, fields: { lmp_date: 'Feb 16, 2022' }}
     ),
     reportFactory.build(
-      { form: 'V', reported_date: reportDate3.valueOf() },
+      {
+        form: 'V',
+        reported_date: moment([today.year(), today.month(), 15, 0, 30]).subtract(5, 'month').valueOf()
+      },
       { patient, submitter: user.contact, fields: { ok: 'Yes!' }}
     ),
     reportFactory.build(
-      { form: 'V', reported_date: reportDate4.valueOf() },
+      {
+        form: 'V',
+        reported_date: moment([today.year(), today.month(), 16, 9, 10]).subtract(1, 'month').valueOf()
+      },
       { patient, submitter: user.contact, fields: { ok: 'Yes!' }}
     ),
   ];
