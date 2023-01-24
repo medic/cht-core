@@ -64,6 +64,8 @@ describe('- DELETE permissions disabled', async () => {
     await commonPage.closeReloadModal();
   });
 
+  after(async () => await utils.revertSettings(true));
+
   it(' - Contact Tab - delete contact selected', async () => {
     await commonPage.goToPeople(contact._id);
     await commonPage.openMoreOptionsMenu();

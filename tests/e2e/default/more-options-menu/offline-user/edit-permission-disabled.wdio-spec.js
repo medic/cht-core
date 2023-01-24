@@ -63,6 +63,8 @@ describe('- EDIT permissions disabled', async () => {
     await utils.updatePermissions(offlineUser.roles, [], ['can_edit']);
     await commonPage.closeReloadModal();
   });
+
+  after(async () => await utils.revertSettings(true));
   
   it(' - Contact Tab - contact selected', async () => {
     await commonPage.goToPeople(patient._id);

@@ -63,6 +63,8 @@ describe('More Options Menu - Offline User', async () => {
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
   });
+  
+  after(async () => await utils.revertSettings(true));
 
   describe('all permissions enabled', async () => {
     it('- Message tab', async () => {

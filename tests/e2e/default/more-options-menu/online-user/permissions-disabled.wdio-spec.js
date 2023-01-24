@@ -51,6 +51,8 @@ describe('- permissions disabled', async () => {
     expect(await commonPage.isMessagesListPresent()).to.be.true;
   });
 
+  after(async () => await utils.revertSettings(true));
+
   describe('- export permissions disabled', async () => {
     before(async () => {
       const exportPermissions = ['can_export_all', 'can_export_contacts', 'can_export_messages'];
