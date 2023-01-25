@@ -569,9 +569,8 @@ describe('create_user_for_contacts', () => {
       // Transition successful
       assert.isTrue(transitions.create_user_for_contacts.ok);
       // Contact updated
-      // TODO Include assertion when supported by implementation
-      // const updatedContact = await utils.getDoc(originalContact._id);
-      // assert.isUndefined(updatedContact.user_for_contact.create);
+      const updatedContact = await utils.getDoc(originalContact._id);
+      assert.isUndefined(updatedContact.user_for_contact.create);
 
       // New user created
       const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: originalContact._id });
@@ -614,9 +613,8 @@ describe('create_user_for_contacts', () => {
       // Transition successful
       assert.isTrue(transitions.create_user_for_contacts.ok);
       // Contact updated
-      // TODO Include assertion when supported by implementation
-      // const updatedContact = await utils.getDoc(originalContact._id);
-      // assert.isUndefined(updatedContact.user_for_contact.create);
+      const updatedContact = await utils.getDoc(originalContact._id);
+      assert.isUndefined(updatedContact.user_for_contact.create);
 
       // New user created
       const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: originalContact._id });
@@ -662,7 +660,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not add user when the new contact does not have a role', async () => {
-      const missingRolePattern = /doc\.roles can only contain strings/;
+      const missingRolePattern = /must have a "role" or "roles" property/;
       const collectLogs = await utils.collectSentinelLogs(missingRolePattern);
 
       await utils.updateSettings(getSettings(), 'sentinel');
