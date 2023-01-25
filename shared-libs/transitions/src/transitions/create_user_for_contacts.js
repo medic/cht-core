@@ -1,5 +1,6 @@
 const config = require('../config');
 const db = require('../db');
+const transitionUtils = require('./utils');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
@@ -168,28 +169,13 @@ module.exports = {
       return false;
     }
 
-    const isReplacingUser = !!doc.user_for_contact.replace;
-    const isAddingUser = doc.user_for_contact.create === 'true';
-    const hasAlreadyCreatedUser = !!(info && info.transitions && info.transitions.create_user_for_contacts);
-    if (isReplacingUser && isAddingUser) {
-      const hasFinishedReplacing = Object
-        .values(doc.user_for_contact.replace)
-        .every(({ status }) => [USER_CREATION_STATUS.COMPLETE, USER_CREATION_STATUS.ERROR].includes(status));
 
-      return hasFinishedReplacing && isAddingUser && !hasAlreadyCreatedUser;
-    }
+    const isCreatingUser = doc.user_for_contact.create === 'true' && !transitionUtils.hasRun(info, NAME);
+    const isReplacingUser = doc.user_for_contact.replace && !!Object
+      .values(doc.user_for_contact.replace)
+      .find(({ status }) => status === USER_CREATION_STATUS.READY);
 
-    if (isReplacingUser) {
-      return Object
-        .values(doc.user_for_contact.replace)
-        .some(({ status }) => status === USER_CREATION_STATUS.READY);
-    }
-
-    if (isAddingUser) {
-      return !hasAlreadyCreatedUser;
-    }
-
-    return false;
+    return Boolean(isCreatingUser || isReplacingUser);
   },
   onMatch: async change => {
     const isReplacingUser = Boolean(change.doc.user_for_contact.replace);

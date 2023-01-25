@@ -2,7 +2,6 @@ const sinon = require('sinon');
 const { expect } = require('chai');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-const transition = require('../../../src/transitions/create_user_for_contacts');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
 const contactTypeUtils = require('@medic/contact-types-utils');
@@ -50,12 +49,15 @@ const getReplacedContact = (
 });
 
 describe('create_user_for_contacts', () => {
+  let transition;
+
   beforeEach(() => {
     config.init({
-      getAll: sinon
-        .stub()
-        .returns({}), get: sinon.stub(),
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
     });
+
+    transition = require('../../../src/transitions/create_user_for_contacts');
   });
 
   afterEach(() => {
