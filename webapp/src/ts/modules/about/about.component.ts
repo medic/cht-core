@@ -152,7 +152,7 @@ export class AboutComponent implements OnInit, OnDestroy {
   }
 
   reload() {
-    window.location.reload(false);
+    window.location.reload();
   }
 
   secretDoor() {

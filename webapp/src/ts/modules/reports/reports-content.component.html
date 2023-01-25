@@ -21,11 +21,11 @@
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="status" *ngIf="!validChecks[$index] || summaries[$index].verified !== undefined">
-            <span *ngIf="validChecks[$index] && summaries[$index].verified" class="verification-badge verified">
+          <div class="status" *ngIf="!validChecks[$index] || summaries[$index]?.verified !== undefined">
+            <span *ngIf="validChecks[$index] && summaries[$index]?.verified" class="verification-badge verified">
               <report-verify-valid-icon></report-verify-valid-icon>
             </span>
-            <span *ngIf="!(validChecks[$index] && summaries[$index].verified)" class="verification-badge error">
+            <span *ngIf="!(validChecks[$index] && summaries[$index]?.verified)" class="verification-badge error">
               <report-verify-invalid-icon></report-verify-invalid-icon>
             </span>
           </div>

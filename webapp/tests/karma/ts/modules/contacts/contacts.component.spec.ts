@@ -5,7 +5,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { of } from 'rxjs';
 
 import { ContactsComponent } from '@mm-modules/contacts/contacts.component';
 import { Selectors } from '@mm-selectors/index';
@@ -66,9 +65,7 @@ describe('Contacts component', () => {
     };
     tourService = { startIfNeeded: sinon.stub() };
     authService = { has: sinon.stub().resolves(false) };
-    changesService = {
-      subscribe: sinon.stub().resolves(of({}))
-    };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: district._id })
     };
@@ -93,7 +90,7 @@ describe('Contacts component', () => {
       }
     };
     exportService = { export: sinon.stub() };
-    xmlFormsService = { subscribe: sinon.stub() };
+    xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
 
     contactListContains = sinon.stub();
     const selectedContact =  {
@@ -153,6 +150,7 @@ describe('Contacts component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

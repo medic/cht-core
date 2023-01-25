@@ -91,7 +91,7 @@ describe('Service worker cache', () => {
     const cacheDetails = await getCachedRequests();
 
     expect(cacheDetails.name.startsWith('sw-precache-v3-cache-')).to.be.true;
-    expect(cacheDetails.urls).to.have.members([
+    expect(cacheDetails.urls.sort()).to.have.members([
       '/',
       '/audio/alert.mp3',
       '/fontawesome-webfont.woff2',
@@ -114,12 +114,11 @@ describe('Service worker cache', () => {
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
       '/medic/login',
-      '/polyfills-es5.js',
       '/polyfills.js',
       '/runtime.js',
       '/scripts.js',
       '/styles.css'
-    ]);
+    ].sort());
   });
 
   it('branding updates trigger login page refresh', async () => {

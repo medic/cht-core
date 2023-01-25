@@ -99,6 +99,9 @@
             "polyfills": "src/ts/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "tests/karma/karma-unit.conf.js",
+            "include": [
+              "../tests/karma/**/*.spec.ts"
+            ],
             "codeCoverage": true,
             "codeCoverageExclude": [
               "src/js/bootstrapper/**",
