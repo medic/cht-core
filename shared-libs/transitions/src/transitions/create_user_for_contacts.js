@@ -138,6 +138,12 @@ const addUser = async (contact) => {
   delete contact.user_for_contact.create;
 };
 
+const isCreatingUser = (contact, info) => contact.user_for_contact.create === 'true'
+  && !transitionUtils.hasRun(info, NAME);
+const isReplacingUser = contact => contact.user_for_contact.replace && !!Object
+  .values(contact.user_for_contact.replace)
+  .find(({ status }) => status === USER_CREATION_STATUS.READY);
+
 /**
  * Replace a user whose contact has been marked as ready to be replaced with a new user.
  */
@@ -169,21 +175,24 @@ module.exports = {
       return false;
     }
 
-
-    const isCreatingUser = doc.user_for_contact.create === 'true' && !transitionUtils.hasRun(info, NAME);
-    const isReplacingUser = doc.user_for_contact.replace && !!Object
-      .values(doc.user_for_contact.replace)
-      .find(({ status }) => status === USER_CREATION_STATUS.READY);
-
-    return Boolean(isCreatingUser || isReplacingUser);
+    return Boolean(isCreatingUser(doc, info) || isReplacingUser(doc));
   },
-  onMatch: async change => {
-    const isReplacingUser = Boolean(change.doc.user_for_contact.replace);
-    if (isReplacingUser) {
-      const usersToReplace = getUsersToReplace(change.doc);
-      const replaceUsers = usersToReplace.map(user => replaceUser(change.doc, user));
-      const replacementResults = await Promise.allSettled(replaceUsers);
-      const errors = replacementResults
+  onMatch: async ({ doc, info }) => {
+    if (isCreatingUser(doc, info)) {
+      try {
+        await addUser(doc);
+      } catch (error) {
+        throw {
+          changed: true,
+          message: error.message || JSON.stringify(error),
+        };
+      }
+    }
+
+    if (isReplacingUser(doc)) {
+      const usersToReplace = getUsersToReplace(doc);
+      const promises = usersToReplace.map(user => replaceUser(doc, user));
+      const errors = (await Promise.allSettled(promises))
         .filter(({ status }) => status === 'rejected')
         .map(({ reason }) => reason);
       if (errors.length) {
@@ -194,16 +203,6 @@ module.exports = {
             .join(', '),
         };
       }
-      return true;
-    }
-
-    try {
-      await addUser(change.doc);
-    } catch (error) {
-      throw {
-        changed: true,
-        message: error.message || JSON.stringify(error),
-      };
     }
 
     return true;
