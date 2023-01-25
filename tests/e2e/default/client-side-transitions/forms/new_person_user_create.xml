@@ -101,7 +101,7 @@
         </translation>
       </itext>
       <instance>
-        <new_person_user_create delimiter="#" id="new_person_user_create" prefix="J1!new_person_user_create!" version="2023-01-25 10-30">
+        <new_person_user_create delimiter="#" id="new_person_user_create" prefix="J1!new_person_user_create!" version="2023-01-25 15-50">
           <inputs>
             <meta>
               <location>
@@ -168,9 +168,7 @@
                 <type tag="hidden"/>
                 <created_by_doc db-doc-ref="/new_person_user_create" tag="hidden"/>
                 <user_for_contact>
-                  <create>
-                    <add/>
-                  </create>
+                  <create/>
                 </user_for_contact>
               </contact_profile>
               <child_doc db-doc-ref=" /new_person_user_create/new_contact/contact_details/contact_profile " tag="hidden"/>
@@ -217,7 +215,7 @@
       <bind calculate=" /new_person_user_create/facility_id " nodeset="/new_person_user_create/new_contact/contact_details/contact_profile/parent/parent/parent/_id" type="string"/>
       <bind calculate="&quot;person&quot;" nodeset="/new_person_user_create/new_contact/contact_details/contact_profile/type" type="string"/>
       <bind calculate="." nodeset="/new_person_user_create/new_contact/contact_details/contact_profile/created_by_doc" type="string"/>
-      <bind calculate="selected(  /new_person_user_create/new_contact/contact_details/contact_profile/role ,'chw') or selected(  /new_person_user_create/new_contact/contact_details/contact_profile/role ,'chw_supervisor')" nodeset="/new_person_user_create/new_contact/contact_details/contact_profile/user_for_contact/create/add" type="string"/>
+      <bind calculate="selected(  /new_person_user_create/new_contact/contact_details/contact_profile/role ,'chw') or selected(  /new_person_user_create/new_contact/contact_details/contact_profile/role ,'chw_supervisor')" nodeset="/new_person_user_create/new_contact/contact_details/contact_profile/user_for_contact/create" type="string"/>
       <bind calculate=" /new_person_user_create/new_contact/contact_details " nodeset="/new_person_user_create/new_contact/contact_details/child_doc" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/new_person_user_create/meta/instanceID" readonly="true()" type="string"/>
     </model>
@@ -291,9 +289,7 @@
               <group appearance="hidden" ref="/new_person_user_create/new_contact/contact_details/contact_profile/parent/parent/parent"/>
             </group>
           </group>
-          <group ref="/new_person_user_create/new_contact/contact_details/contact_profile/user_for_contact">
-            <group ref="/new_person_user_create/new_contact/contact_details/contact_profile/user_for_contact/create"/>
-          </group>
+          <group ref="/new_person_user_create/new_contact/contact_details/contact_profile/user_for_contact"/>
         </group>
       </group>
     </group>

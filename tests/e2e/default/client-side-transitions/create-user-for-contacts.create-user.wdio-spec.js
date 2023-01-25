@@ -61,9 +61,7 @@ describe('Create user when adding contact', () => {
     // Transition successful
     expect(transitions.create_user_for_contacts.ok).to.be.true;
     const finalChwContact = await utils.getDoc(chwContactId);
-    expect(finalChwContact.user_for_contact).to.deep.equal({
-      create: 'true',
-    });
+    expect(finalChwContact.user_for_contact).to.be.empty;
   
     // New user created
     const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: chwContactId });
@@ -192,7 +190,6 @@ describe('Create user when adding contact', () => {
     await contactsPage.selectLHSRowByText(contactName);
     const chwContactId = await contactsPage.getCurrentContactId();
     const { transitions } = await sentinelUtils.getInfoDoc(chwContactId);
-
     expect(transitions.create_user_for_contacts.ok).to.be.false;
   });
 });
