@@ -974,6 +974,14 @@ module.exports = {
     return results;
   },
 
+  saveDocIfNotExists: async doc => {
+    try {
+      await module.exports.getDoc(doc._id);
+    } catch (_) {
+      await module.exports.saveDoc(doc);
+    }
+  },
+
   saveMetaDocs: (user, docs) => {
     const options = {
       userName: user,
