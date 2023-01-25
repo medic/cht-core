@@ -128,10 +128,10 @@ const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
 };
 
-const submitForm = async () => {
+const submitForm = async (waitForLoad=true) => {
   await (await genericForm.submitButton()).waitForDisplayed();
   await (await genericForm.submitButton()).click();
-  await waitForContactLoaded();
+  waitForLoad && await waitForContactLoaded();
 };
 
 const addPlace = async (type, placeName, contactName) => {
