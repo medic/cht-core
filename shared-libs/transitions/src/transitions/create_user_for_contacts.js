@@ -178,31 +178,27 @@ module.exports = {
     return Boolean(isCreatingUser(doc, info) || isReplacingUser(doc));
   },
   onMatch: async ({ doc, info }) => {
+    const promises = [];
+
     if (isCreatingUser(doc, info)) {
-      try {
-        await addUser(doc);
-      } catch (error) {
-        throw {
-          changed: true,
-          message: error.message || JSON.stringify(error),
-        };
-      }
+      promises.push(addUser(doc));
     }
 
     if (isReplacingUser(doc)) {
       const usersToReplace = getUsersToReplace(doc);
-      const promises = usersToReplace.map(user => replaceUser(doc, user));
-      const errors = (await Promise.allSettled(promises))
-        .filter(({ status }) => status === 'rejected')
-        .map(({ reason }) => reason);
-      if (errors.length) {
-        throw {
-          changed: true,
-          message: errors
-            .map(error => error.message || JSON.stringify(error))
-            .join(', '),
-        };
-      }
+      promises.push(...usersToReplace.map(user => replaceUser(doc, user)));
+    }
+
+    const errors = (await Promise.allSettled(promises))
+      .filter(({ status }) => status === 'rejected')
+      .map(({ reason }) => reason);
+    if (errors.length) {
+      throw {
+        changed: true,
+        message: errors
+          .map(error => error.message || JSON.stringify(error))
+          .join(', '),
+      };
     }
 
     return true;
