@@ -620,7 +620,7 @@ describe('create_user_for_contacts', () => {
     });
   });
 
-  describe('user add', () => {
+  describe('user create', () => {
     const expectError = async (errorPattern) => {
       // Error saved on the contact
       const originalPersonUpdated = await utils.getDoc(NEW_PERSON._id);
@@ -633,7 +633,7 @@ describe('create_user_for_contacts', () => {
       assert.isEmpty(newUserSettings);
     };
 
-    it('adds user for new contact with multiple roles', async () => {
+    it('creates user for new contact with multiple roles', async () => {
       await utils.updateSettings(getSettings(), 'sentinel');
 
       const originalContact = {
@@ -675,7 +675,7 @@ describe('create_user_for_contacts', () => {
       assert.equal(queuedMsgs[0].tasks[0].messages[0].to, NEW_PERSON.phone);
     });
 
-    it('adds user for new contact with single role', async () => {
+    it('creates user for new contact with single role', async () => {
       await utils.updateSettings(getSettings(), 'sentinel');
 
       const originalContact = {
@@ -717,7 +717,7 @@ describe('create_user_for_contacts', () => {
       assert.equal(queuedMsgs[0].tasks[0].messages[0].to, NEW_PERSON.phone);
     });
 
-    it('does not add user when transition is disabled', async () => {
+    it('does not create user when transition is disabled', async () => {
       await utils.updateSettings(getSettings({ transitions: { create_user_for_contacts: false } }), 'sentinel');
 
       const originalContact = {
@@ -734,7 +734,7 @@ describe('create_user_for_contacts', () => {
       assert.isEmpty(newUserSettings);
     });
 
-    it('does not add user when the new contact does not have a role', async () => {
+    it('does not create user when the new contact does not have a role', async () => {
       const missingRolePattern = /must have a "role" or "roles" property/;
       const collectLogs = await utils.collectSentinelLogs(missingRolePattern);
 
@@ -753,7 +753,7 @@ describe('create_user_for_contacts', () => {
       await expectError(missingRolePattern);
     });
 
-    it('does not add user when the new contact does not have a phone', async () => {
+    it('does not create user when the new contact does not have a phone', async () => {
       const missingPhonePattern = /Missing required fields: phone/;
       const collectLogs = await utils.collectSentinelLogs(missingPhonePattern);
 
@@ -774,7 +774,7 @@ describe('create_user_for_contacts', () => {
       await expectError(missingPhonePattern);
     });
 
-    it('does not add user when the new contact has an invalid phone', async () => {
+    it('does not create user when the new contact has an invalid phone', async () => {
       const invalidPhonePattern = /A valid phone number is required for SMS login/;
       const collectLogs = await utils.collectSentinelLogs(invalidPhonePattern);
 
@@ -795,7 +795,7 @@ describe('create_user_for_contacts', () => {
       await expectError(invalidPhonePattern);
     });
 
-    it('does not add user when the new contact does not have a name', async () => {
+    it('does not create user when the new contact does not have a name', async () => {
       const missingNamePattern = /Replacement contact \[new_person] must have a name\./;
       const collectLogs = await utils.collectSentinelLogs(missingNamePattern);
 
@@ -816,12 +816,12 @@ describe('create_user_for_contacts', () => {
       await expectError(missingNamePattern);
     });
 
-    it('does not add user when the create is not true', async () => {
+    it(`does not create user when the create is not 'true'`, async () => {
       await utils.updateSettings(getSettings(), 'sentinel');
       const originalContact = {
         ...NEW_PERSON,
         roles: ['chw', 'other-role'],
-        user_for_contact: { create: { add: false }, },
+        user_for_contact: { create: 'false', },
       };
       await utils.saveDoc(originalContact);
       await sentinelUtils.waitForSentinel(originalContact._id);
@@ -837,7 +837,7 @@ describe('create_user_for_contacts', () => {
       assert.isEmpty(newUserSettings);
     });
 
-    it('does not add user when the contact being added is not a person', async () => {
+    it('does not create user when the contact being added is not a person', async () => {
       await utils.updateSettings(getSettings(), 'sentinel');
       await utils.createUsers([ORIGINAL_USER]);
       newUsers.push(ORIGINAL_USER.username);
