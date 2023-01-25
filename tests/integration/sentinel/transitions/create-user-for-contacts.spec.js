@@ -115,6 +115,87 @@ describe('create_user_for_contacts', () => {
     assert.isEmpty(newUserSettings);
   });
 
+  it('creates and replaces users for the same contact in the same transition', async () => {
+    await utils.updateSettings(getSettings(), 'sentinel');
+    await utils.createUsers([ORIGINAL_USER]);
+    newUsers.push(ORIGINAL_USER.username);
+    // Can log in as user
+    assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 302 });
+    await utils.saveDoc(NEW_PERSON);
+    // Write another contact that has a user being created and another user being replaced
+    // (This is an approximation of behavior that could happen if Sentinel was down when the
+    // contact was initially created and so this is the first time it is being processed by Sentinel)
+    const additionalPerson = {
+      _id: 'additional_person',
+      type: 'person',
+      name: 'Additional Person',
+      phone: '+254712345679',
+      parent: { _id: CLINIC._id },
+      role: 'chw',
+      user_for_contact: {
+        create: 'true',
+        replace: {
+          [ORIGINAL_USER.username]: {
+            replacement_contact_id: NEW_PERSON._id,
+            status: 'READY'
+          }
+        }
+      }
+    };
+
+    await utils.saveDoc(additionalPerson);
+    await sentinelUtils.waitForSentinel(additionalPerson._id);
+    const { transitions } = await sentinelUtils.getInfoDoc(additionalPerson._id);
+
+    // Transition successful
+    assert.isTrue(transitions.create_user_for_contacts.ok);
+    // Can no longer log in as user
+    assert.include(await loginAsUser(ORIGINAL_USER), { statusCode: 401 });
+    // User's password was automatically reset. Change it to something we know.
+    await updateUserPassword(ORIGINAL_USER.username, 'n3wPassword!');
+    // Can still login as original user with new password
+    assert.include(await loginAsUser({ ...ORIGINAL_USER, password: 'n3wPassword!' }), { statusCode: 302 });
+
+    // New replacement user created
+    const [newUserSettings, ...additionalUsers] = await utils.getUserSettings({ contactId: NEW_PERSON._id });
+    assert.isEmpty(additionalUsers);
+    newUsers.push(newUserSettings.name);
+    assert.deepInclude(newUserSettings, {
+      roles: ORIGINAL_USER.roles,
+      phone: NEW_PERSON.phone,
+      facility_id: NEW_PERSON.parent._id,
+      contact_id: NEW_PERSON._id,
+      fullname: NEW_PERSON.name,
+    });
+    assert.isTrue(newUserSettings.token_login.active);
+    assert.match(newUserSettings._id, /^org\.couchdb\.user:new-person-\d\d\d\d/);
+    assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
+
+    // New user created for additional contact
+    const [additionalUserSettings, ...moreUsers] = await utils.getUserSettings({ contactId: additionalPerson._id });
+    assert.isEmpty(moreUsers);
+    newUsers.push(additionalUserSettings.name);
+    assert.deepInclude(additionalUserSettings, {
+      roles: [additionalPerson.role],
+      phone: additionalPerson.phone,
+      facility_id: additionalPerson.parent._id,
+      contact_id: additionalPerson._id,
+      fullname: additionalPerson.name,
+    });
+    assert.isTrue(additionalUserSettings.token_login.active);
+    assert.match(additionalUserSettings._id, /^org\.couchdb\.user:additional-person-\d\d\d\d/);
+    assert.match(additionalUserSettings.name, /^additional-person-\d\d\d\d$/);
+
+    // Login tokens sent
+    const queuedMsgs = await messagesUtils.getQueuedMessages();
+    assert.lengthOf(queuedMsgs, 2);
+    queuedMsgs.forEach(msg => assert.equal(msg.type, 'token_login'));
+    const replacedUserMsg = queuedMsgs.find(msg => msg.user === newUserSettings._id);
+    assert.equal(replacedUserMsg.tasks[0].messages[0].to, NEW_PERSON.phone);
+    const additionalUserMsg = queuedMsgs.find(msg => msg.user === additionalUserSettings._id);
+    assert.equal(additionalUserMsg.tasks[0].messages[0].to, additionalPerson.phone);
+  });
+
   describe('user replace', () => {
     const expectError = async (errorPattern) => {
       // Error saved on the contact
@@ -555,13 +636,11 @@ describe('create_user_for_contacts', () => {
     it('adds user for new contact with multiple roles', async () => {
       await utils.updateSettings(getSettings(), 'sentinel');
 
-      const originalContact = Object.assign(
-        {
-          roles: ['chw', 'other-role'],
-          user_for_contact: { create: 'true' }
-        },
-        NEW_PERSON
-      );
+      const originalContact = {
+        roles: ['chw', 'other-role'],
+        user_for_contact: { create: 'true' },
+        ...NEW_PERSON
+      };
       await utils.saveDoc(originalContact);
       await sentinelUtils.waitForSentinel(originalContact._id);
       const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -599,13 +678,11 @@ describe('create_user_for_contacts', () => {
     it('adds user for new contact with single role', async () => {
       await utils.updateSettings(getSettings(), 'sentinel');
 
-      const originalContact = Object.assign(
-        {
-          role: 'chw',
-          user_for_contact: { create: 'true' }
-        },
-        NEW_PERSON
-      );
+      const originalContact = {
+        role: 'chw',
+        user_for_contact: { create: 'true' },
+        ...NEW_PERSON
+      };
       await utils.saveDoc(originalContact);
       await sentinelUtils.waitForSentinel(originalContact._id);
       const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -643,13 +720,11 @@ describe('create_user_for_contacts', () => {
     it('does not add user when transition is disabled', async () => {
       await utils.updateSettings(getSettings({ transitions: { create_user_for_contacts: false } }), 'sentinel');
 
-      const originalContact = Object.assign(
-        {
-          roles: ['chw', 'other-role'],
-          user_for_contact: { create: 'true' }
-        },
-        NEW_PERSON
-      );
+      const originalContact = {
+        roles: ['chw', 'other-role'],
+        user_for_contact: { create: 'true' },
+        ...NEW_PERSON
+      };
       await utils.saveDoc(originalContact);
       await sentinelUtils.waitForSentinel(originalContact._id);
       const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
@@ -771,6 +846,29 @@ describe('create_user_for_contacts', () => {
       const originalContact = {
         ...clinic,
         user_for_contact: { create: 'true' },
+      };
+      await utils.saveDoc(originalContact);
+      await sentinelUtils.waitForSentinel(originalContact._id);
+      const { transitions } = await sentinelUtils.getInfoDoc(originalContact._id);
+
+      assert.isUndefined(transitions.create_user_for_contacts);
+
+      // Original contact not updated
+      const updatedContact = await utils.getDoc(originalContact._id);
+      assert.deepEqualExcluding(originalContact, updatedContact, ['_rev']);
+      // New user not created
+      const newUserSettings = await utils.getUserSettings({ contactId: originalContact._id });
+      assert.isEmpty(newUserSettings);
+    });
+
+    it('does not create user when editing contact', async () => {
+      await utils.updateSettings(getSettings(), 'sentinel');
+
+      await utils.saveDoc(NEW_PERSON);
+      const originalContact ={
+        role: 'chw',
+        user_for_contact: { create: 'true' },
+        ...(await utils.getDoc(NEW_PERSON._id))
       };
       await utils.saveDoc(originalContact);
       await sentinelUtils.waitForSentinel(originalContact._id);
