@@ -8,7 +8,7 @@ const {
   BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
-  ECR_REPO,
+  INTERNAL_CONTRIBUTOR,
 } = process.env;
 
 const DEV = !BUILD_NUMBER;
@@ -318,7 +318,7 @@ module.exports = function(grunt) {
           .join(' && '),
       },
       'save-service-images': {
-        cmd: () => buildVersions.SERVICES
+        cmd: () => [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]
           .map(service =>
             [
               `mkdir -p images`,
@@ -411,7 +411,6 @@ module.exports = function(grunt) {
             'enketo-core',
             'font-awesome',
             'moment',
-            'pouchdb-browser',
           ];
           return modulesToPatch.map(module => {
             const backupPath = `webapp/node_modules_backup/${module}`;
@@ -498,10 +497,6 @@ module.exports = function(grunt) {
 
             // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
             'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
-
-            // patch pouchdb to catch unhandled rejections
-            // https://github.com/medic/cht-core/issues/6626
-            'patch webapp/node_modules/pouchdb-browser/lib/index.js < webapp/patches/pouchdb-unhandled-rejection.patch',
           ];
           return patches.join(' && ');
         },
@@ -741,7 +736,7 @@ module.exports = function(grunt) {
     },
     sass: {
       options: {
-        implementation: require('node-sass'),
+        implementation: require('sass'),
       },
       compile: {
         cwd: 'webapp/src/css/',
@@ -1056,6 +1051,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('create-staging-doc', buildUtils.createStagingDoc);
   grunt.registerTask('populate-staging-doc', buildUtils.populateStagingDoc);
+  grunt.registerTask('create-local-docker-compose-files', buildUtils.localDockerComposeFiles);
   grunt.registerTask('update-service-worker', function () {
     const done = this.async();
     buildUtils.updateServiceWorker().then(done);
@@ -1067,7 +1063,7 @@ module.exports = function(grunt) {
       return [];
     }
 
-    if (ECR_REPO) {
+    if (INTERNAL_CONTRIBUTOR) {
       return ['exec:push-service-images'];
     }
 

@@ -5,8 +5,8 @@ const cancelUpgradeButton = () => $('button*=Cancel');
 const deploymentInProgress = () => $('legend*=Deployment in progress');
 const deploymentComplete = () => $('div*=Deployment complete');
 
-const getInstallButton = async (branch) => {
-  const element = await $(`span*=${branch} (`);
+const getInstallButton = async (branch, tag) => {
+  const element = tag ? await $(`span=${tag}`) : await $(`span*=${branch} (`);
   const parent = await (await element.parentElement()).parentElement();
   return await parent.$('.btn-primary');
 };
@@ -36,6 +36,12 @@ const getCurrentVersion = async () => {
   return await (await version()).getText();
 };
 
+const getBuild = async () => {
+  const version = () => $('dl.horizontal dd:nth-child(4)');
+  await browser.waitUntil(async () => await (await version()).getText());
+  return await (await version()).getText();
+};
+
 module.exports = {
   cancelUpgradeButton,
   deploymentInProgress,
@@ -45,4 +51,5 @@ module.exports = {
   goToUpgradePage,
   expandPreReleasesAccordion,
   upgradeModalConfirm,
+  getBuild,
 };

@@ -7,7 +7,7 @@
 |e2e/protractor/contacts/add-new-health-center.spec.js	|Done	|	|	|Already covered in new-lineage-spec	|
 |e2e/protractorcontacts/add-new-person.spec.js	|Done	|	|	|Already covered in new-lineage-spec	|
 |e2e/protractor/forms/add-family-form.specs.js	| Done | Bede |	[#7671](https://github.com/medic/cht-core/pull/7671) |	|
-|e2e/protractor/forms/forms-against-muted-contacts.spec.js	|	|	|	|	|
+|e2e/protractor/forms/forms-against-muted-contacts.spec.js	|	Done |	Tatiana| [#7971](https://github.com/medic/cht-core/pull/7971)	|	|
 |e2e/protractor/forms/submit-default-delivery-form.specs.js	|Done	|Diana |[#7596](https://github.com/medic/cht-core/pull/7596)|	|
 |e2e/protractor/forms/submit-delivery-form.specs.js	| Done | Lorena | [#7638](https://github.com/medic/cht-core/pull/7638) |	|
 |e2e/protractor/forms/submit-photo-upload-form.spec.js	|Done	|Diana	|[#7596](https://github.com/medic/cht-core/pull/7596)	|	|

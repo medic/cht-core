@@ -10,6 +10,7 @@ node_modules_backup
 /config.js
 /tests/results
 /tests/logs/
+/tests/tempDownload/
 *.sublime-project
 *.sublime-workspace
 /.env
@@ -22,6 +23,7 @@ dist
 .vscode/
 .idea/
 /build/
+/local-build/
 api/**/extracted-resources/**/*
 api/build/**/*
 jsdocs
@@ -48,3 +50,5 @@ tests/cht-couchdb-test.yml
 tests/cht-couchdb-cluster-test.yml
 couchdb/srv*
 tests/scalability/jmeter/
+webapp/analyzer.report.html
+/webapp/.angular/

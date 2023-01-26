@@ -10,7 +10,6 @@ const personFactory = require('../../../factories/cht/contacts/person');
 const reportFactory = require('../../../factories/cht/reports/generic-report');
 
 describe('Reports tab breadcrumbs', () => {
-  const today = moment();
   const places = placeFactory.generateHierarchy();
   const clinic = places.get('clinic');
   const health_center = places.get('health_center');
@@ -52,15 +51,19 @@ describe('Reports tab breadcrumbs', () => {
     _id: 'patient1',
     parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
   });
+
+  const today = moment();
   const reports = [
     reportFactory.build(
       {
         form: 'P',
-        reported_date: moment([ today.year(), today.month() - 4, 1, 23, 30 ]).valueOf(),
+        reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf(),
         patient_id: 'patient1',
       },
       {
-        patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022', patient_id: 'patient1' },
+        patient,
+        submitter: offlineUser.contact,
+        fields: { lmp_date: 'Feb 3, 2022', patient_id: 'patient1' },
       },
     ),
   ];

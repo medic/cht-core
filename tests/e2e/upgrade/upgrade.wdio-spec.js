@@ -1,6 +1,6 @@
 const utils = require('../../utils');
 
-const { BRANCH } = process.env;
+const { BRANCH, TAG } = process.env;
 const loginPage = require('../../page-objects/default/login/login.wdio.page');
 const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
 const constants = require('../../constants');
@@ -28,7 +28,7 @@ describe('Performing an upgrade', () => {
     await upgradePage.goToUpgradePage();
     await upgradePage.expandPreReleasesAccordion();
 
-    const installButton = await upgradePage.getInstallButton(BRANCH);
+    const installButton = await upgradePage.getInstallButton(BRANCH, TAG);
     await installButton.click();
 
     const confirm = await upgradePage.upgradeModalConfirm();
@@ -41,13 +41,17 @@ describe('Performing an upgrade', () => {
     await (await upgradePage.deploymentComplete()).waitForDisplayed();
 
     const currentVersion = await upgradePage.getCurrentVersion();
-    expect(currentVersion).to.include(version.getVersion());
+    expect(version.getVersion(true)).to.include(currentVersion);
+
+    await browser.refresh(); // load updated code of admin app
+    await upgradePage.goToUpgradePage();
+    const currentBuild = await upgradePage.getBuild();
 
     // there should be no staged ddocs
     const ddocs = await getDdocs();
     const staged = ddocs.filter(ddoc => ddoc._id.includes('staged'));
     expect(staged.length).to.equal(0);
 
-    ddocs.forEach(ddoc => expect(ddoc.version).to.equal(currentVersion));
+    ddocs.forEach(ddoc => expect(ddoc.version).to.equal(currentBuild));
   });
 });

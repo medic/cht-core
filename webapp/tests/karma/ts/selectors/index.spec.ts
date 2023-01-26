@@ -125,315 +125,330 @@ describe('Selectors', () => {
 
   describe('global', () => {
     it('should getActionBarr', () => {
-      expect(Selectors.getActionBar(state)).to.deep.equal(clonedState.global.actionBar);
+      expect(Selectors.getActionBar.projector(state.global)).to.deep.equal(clonedState.global.actionBar);
     });
 
     it('should getLoadingSubActionBar', () => {
-      expect(Selectors.getLoadingSubActionBar(state)).to.equal(clonedState.global.loadingSubActionBar);
+      expect(Selectors.getLoadingSubActionBar.projector(state.global)).to.equal(clonedState.global.loadingSubActionBar);
     });
 
     it('should getReplicationStatus', () => {
-      expect(Selectors.getReplicationStatus(state)).to.equal(clonedState.global.replicationStatus);
+      expect(Selectors.getReplicationStatus.projector(state.global)).to.equal(clonedState.global.replicationStatus);
     });
 
     it('should getAndroidAppVersion', () => {
-      expect(Selectors.getAndroidAppVersion(state)).to.equal(clonedState.global.androidAppVersion);
+      expect(Selectors.getAndroidAppVersion.projector(state.global)).to.equal(clonedState.global.androidAppVersion);
     });
 
     it('should getCurrentTab', () => {
-      expect(Selectors.getCurrentTab(state)).to.equal(clonedState.global.currentTab);
+      expect(Selectors.getCurrentTab.projector(state.global)).to.equal(clonedState.global.currentTab);
     });
 
     it('should getSnapshotData', () => {
-      expect(Selectors.getSnapshotData(state)).to.deep.equal(clonedState.global.snapshotData);
+      expect(Selectors.getSnapshotData.projector(state.global)).to.deep.equal(clonedState.global.snapshotData);
     });
 
     it('should getSnackbarContent', () => {
-      expect(Selectors.getSnackbarContent(state)).to.equal(clonedState.global.snackbarContent);
+      expect(Selectors.getSnackbarContent.projector(state.global)).to.equal(clonedState.global.snackbarContent);
     });
 
     it('should getLoadingContent', () => {
-      expect(Selectors.getLoadingContent(state)).to.equal(clonedState.global.loadingContent);
+      expect(Selectors.getLoadingContent.projector(state.global)).to.equal(clonedState.global.loadingContent);
     });
 
     it('should getShowContent', () => {
-      expect(Selectors.getShowContent(state)).to.equal(clonedState.global.showContent);
+      expect(Selectors.getShowContent.projector(state.global)).to.equal(clonedState.global.showContent);
     });
 
     it('should getSelectMode', () => {
-      expect(Selectors.getSelectMode(state)).to.equal(clonedState.global.selectMode);
+      expect(Selectors.getSelectMode.projector(state.global)).to.equal(clonedState.global.selectMode);
     });
 
     it('should getShowActionBar', () => {
-      expect(Selectors.getShowActionBar(state)).to.equal(clonedState.global.showActionBar);
+      expect(Selectors.getShowActionBar.projector(state.global)).to.equal(clonedState.global.showActionBar);
     });
 
     it('should getForms', () => {
-      expect(Selectors.getForms(state)).to.deep.equal(clonedState.global.forms);
+      expect(Selectors.getForms.projector(state.global)).to.deep.equal(clonedState.global.forms);
     });
 
     it('should getFilters', () => {
-      expect(Selectors.getFilters(state)).to.deep.equal(clonedState.global.filters);
+      expect(Selectors.getFilters.projector(state.global)).to.deep.equal(clonedState.global.filters);
     });
 
     it('should getSidebarFilter', () => {
-      expect(Selectors.getSidebarFilter(state)).to.deep.equal(clonedState.global.sidebarFilter);
+      expect(Selectors.getSidebarFilter.projector(state.global)).to.deep.equal(clonedState.global.sidebarFilter);
     });
 
     it('should getCancelCallback', () => {
-      expect(Selectors.getCancelCallback(state)).to.deep.equal(clonedState.global.navigation.cancelCallback);
+      expect(Selectors.getCancelCallback.projector(state.global))
+        .to.deep.equal(clonedState.global.navigation.cancelCallback);
     });
 
     it('should getNavigation', () => {
-      expect(Selectors.getNavigation(state)).to.deep.equal(clonedState.global.navigation);
+      expect(Selectors.getNavigation.projector(state.global)).to.deep.equal(clonedState.global.navigation);
     });
 
     it('should getPreventNavigation', () => {
-      expect(Selectors.getPreventNavigation(state)).to.deep.equal(clonedState.global.navigation.preventNavigation);
+      expect(Selectors.getPreventNavigation.projector(state.global))
+        .to.deep.equal(clonedState.global.navigation.preventNavigation);
     });
 
     it('should getTitle', () => {
-      expect(Selectors.getTitle(state)).to.equal(clonedState.global.title);
+      expect(Selectors.getTitle.projector(state.global)).to.equal(clonedState.global.title);
     });
 
     it('should getPrivacyPolicyAccepted', () => {
-      expect(Selectors.getPrivacyPolicyAccepted(state)).to.equal(clonedState.global.privacyPolicyAccepted);
+      expect(Selectors.getPrivacyPolicyAccepted.projector(state.global))
+        .to.equal(clonedState.global.privacyPolicyAccepted);
     });
 
     it('should getShowPrivacyPolicy', () => {
-      expect(Selectors.getShowPrivacyPolicy(state)).to.equal(clonedState.global.showPrivacyPolicy);
+      expect(Selectors.getShowPrivacyPolicy.projector(state.global)).to.equal(clonedState.global.showPrivacyPolicy);
     });
 
     it('should getUnreadCount', () => {
-      expect(Selectors.getUnreadCount(state)).to.equal(clonedState.global.unreadCount);
+      expect(Selectors.getUnreadCount.projector(state.global)).to.equal(clonedState.global.unreadCount);
     });
 
     it('should getTranslationsLoaded', () => {
-      expect(Selectors.getTranslationsLoaded(state)).to.equal(clonedState.global.translationsLoaded);
+      expect(Selectors.getTranslationsLoaded.projector(state.global)).to.equal(clonedState.global.translationsLoaded);
     });
 
     it('should getUserFacilityId', () => {
-      expect(Selectors.getUserFacilityId(state)).to.equal(clonedState.global.userFacilityId);
+      expect(Selectors.getUserFacilityId.projector(state.global)).to.equal(clonedState.global.userFacilityId);
     });
 
     it('should getEnketoStatus', () => {
-      expect(Selectors.getEnketoStatus(state)).to.deep.equal(clonedState.global.enketoStatus);
+      expect(Selectors.getEnketoStatus.projector(state.global)).to.deep.equal(clonedState.global.enketoStatus);
     });
 
     it('should getEnketoEditedStatus', () => {
-      expect(Selectors.getEnketoEditedStatus(state)).to.equal(clonedState.global.enketoStatus.edited);
+      expect(Selectors.getEnketoEditedStatus.projector(state.global)).to.equal(clonedState.global.enketoStatus.edited);
     });
 
     it('should getEnketoSavingStatus', () => {
-      expect(Selectors.getEnketoSavingStatus(state)).to.equal(clonedState.global.enketoStatus.saving);
+      expect(Selectors.getEnketoSavingStatus.projector(state.global)).to.equal(clonedState.global.enketoStatus.saving);
     });
 
     it('should getEnketoForm', () => {
-      expect(Selectors.getEnketoForm(state)).to.equal(clonedState.global.enketoStatus.form);
+      expect(Selectors.getEnketoForm.projector(state.global)).to.equal(clonedState.global.enketoStatus.form);
     });
 
     it('should getEnketoError', () => {
-      expect(Selectors.getEnketoError(state)).to.equal(clonedState.global.enketoStatus.error);
+      expect(Selectors.getEnketoError.projector(state.global)).to.equal(clonedState.global.enketoStatus.error);
     });
 
     // null checks
     it('should null check global state', () => {
-      expect(Selectors.getUserFacilityId({})).to.equal(undefined);
+      expect(Selectors.getUserFacilityId.projector({})).to.equal(undefined);
     });
 
     it('should null check enketo state', () => {
-      expect(Selectors.getEnketoError({})).to.equal(undefined);
+      expect(Selectors.getEnketoError.projector({})).to.equal(undefined);
     });
   });
 
   describe('services', () => {
     it('should getLastChangedDoc', () => {
-      expect(Selectors.getLastChangedDoc(state)).to.deep.equal(clonedState.services.lastChangedDoc);
+      expect(Selectors.getLastChangedDoc.projector(state.services)).to.deep.equal(clonedState.services.lastChangedDoc);
     });
 
     it('should null check services state', () => {
-      expect(Selectors.getLastChangedDoc({})).to.equal(undefined);
+      expect(Selectors.getLastChangedDoc.projector({})).to.equal(undefined);
     });
   });
 
   describe('reports', () => {
     it('should getReportsList', () => {
-      expect(Selectors.getReportsList(state)).to.deep.equal(clonedState.reports.reports);
+      expect(Selectors.getReportsList.projector(state.reports)).to.deep.equal(clonedState.reports.reports);
     });
 
     it('should getListReport', () => {
-      expect(Selectors.getListReport(state)).to.equal(undefined);
+      expect(Selectors.getListReport.projector(state.reports)).to.equal(undefined);
       // @ts-ignore
-      expect(Selectors.getListReport(state, {})).to.equal(undefined);
+      expect(Selectors.getListReport.projector(state.reports, {})).to.equal(undefined);
       // @ts-ignore
-      expect(Selectors.getListReport(state, { id: 'fake'})).to.equal(undefined);
+      expect(Selectors.getListReport.projector(state.reports, { id: 'fake'})).to.equal(undefined);
       // @ts-ignore
-      expect(Selectors.getListReport(state, { id: 'report2'}))
+      expect(Selectors.getListReport.projector(state.reports, { id: 'report2'}))
         .to.deep.equal(clonedState.reports.reportsById.get('report2'));
     });
 
     it('should listContains', () => {
-      const listContains = Selectors.listContains(state);
+      const listContains = Selectors.listContains.projector(state.reports);
       expect(listContains('thing')).to.equal(false);
       expect(listContains('report1')).to.equal(true);
     });
 
     it('should getSelectedReport', () => {
-      expect(Selectors.getSelectedReport(state)).to.deep.equal(clonedState.reports.selectedReport);
+      expect(Selectors.getSelectedReport.projector(state.reports)).to.deep.equal(clonedState.reports.selectedReport);
     });
 
     it('should getSelectedReports', () => {
-      expect(Selectors.getSelectedReports(state)).to.deep.equal(clonedState.reports.selectedReports);
+      expect(Selectors.getSelectedReports.projector(state.reports)).to.deep.equal(clonedState.reports.selectedReports);
     });
 
     it('should getSelectedReportDoc', () => {
-      expect(Selectors.getSelectedReportDoc(state)).to.deep.equal(clonedState.reports.selectedReport.summary);
+      expect(Selectors.getSelectedReportDoc.projector(state.reports))
+        .to.deep.equal(clonedState.reports.selectedReport.summary);
     });
 
     it('should getVerifyingReport', () => {
-      expect(Selectors.getVerifyingReport(state)).to.equal(clonedState.reports.verifyingReport);
+      expect(Selectors.getVerifyingReport.projector(state.reports)).to.equal(clonedState.reports.verifyingReport);
     });
 
     it('should null check reports state', () => {
-      expect(Selectors.getSelectedReports({})).to.deep.equal(undefined);
+      expect(Selectors.getSelectedReports.projector({})).to.deep.equal(undefined);
     });
   });
 
   describe('messages', () => {
     it('should getMessagesError', () => {
-      expect(Selectors.getMessagesError(state)).to.equal(clonedState.messages.error);
+      expect(Selectors.getMessagesError.projector(state.messages)).to.equal(clonedState.messages.error);
     });
 
     it('should getSelectedConversation', () => {
-      expect(Selectors.getSelectedConversation(state)).to.deep.equal(clonedState.messages.selected);
+      expect(Selectors.getSelectedConversation.projector(state.messages)).to.deep.equal(clonedState.messages.selected);
     });
 
     it('should getConversations', () => {
-      expect(Selectors.getConversations(state)).to.deep.equal(clonedState.messages.conversations);
+      expect(Selectors.getConversations.projector(state.messages)).to.deep.equal(clonedState.messages.conversations);
     });
 
     it('should null check messages state', () => {
-      expect(Selectors.getMessagesError({})).to.deep.equal(undefined);
+      expect(Selectors.getMessagesError.projector({})).to.deep.equal(undefined);
     });
   });
 
   describe('contacts', () => {
     it('should getContactsList', () => {
-      expect(Selectors.getContactsList(state)).to.deep.equal(clonedState.contacts.contacts);
+      expect(Selectors.getContactsList.projector(state.contacts)).to.deep.equal(clonedState.contacts.contacts);
     });
 
     it('should contactListContains', () => {
-      const contactListContains = Selectors.contactListContains(state);
+      const contactListContains = Selectors.contactListContains.projector(state.contacts);
       expect(contactListContains('thing')).to.equal(false);
       expect(contactListContains('contact1')).to.equal(true);
     });
 
     it('should getSelectedContact', () => {
-      expect(Selectors.getSelectedContact(state)).to.deep.equal(clonedState.contacts.selected);
+      expect(Selectors.getSelectedContact.projector(state.contacts)).to.deep.equal(clonedState.contacts.selected);
     });
 
     it('should getSelectedContactDoc', () => {
-      expect(Selectors.getSelectedContactDoc(state)).to.deep.equal(clonedState.contacts.selected.doc);
+      expect(Selectors.getSelectedContactDoc.projector(state.contacts))
+        .to.deep.equal(clonedState.contacts.selected.doc);
     });
 
     it('should getSelectedContactSummary', () => {
-      expect(Selectors.getSelectedContactSummary(state)).to.deep.equal(clonedState.contacts.selected.summary);
+      expect(Selectors.getSelectedContactSummary.projector(state.contacts))
+        .to.deep.equal(clonedState.contacts.selected.summary);
     });
 
     it('should getSelectedContactChildren', () => {
-      expect(Selectors.getSelectedContactChildren(state)).to.deep.equal(clonedState.contacts.selected.children);
+      expect(Selectors.getSelectedContactChildren.projector(state.contacts))
+        .to.deep.equal(clonedState.contacts.selected.children);
     });
 
     it('should getSelectedContactReports', () => {
-      expect(Selectors.getSelectedContactReports(state)).to.deep.equal(clonedState.contacts.selected.reports);
+      expect(Selectors.getSelectedContactReports.projector(state.contacts))
+        .to.deep.equal(clonedState.contacts.selected.reports);
     });
 
     it('should getSelectedContactTasks', () => {
-      expect(Selectors.getSelectedContactTasks(state)).to.deep.equal(clonedState.contacts.selected.tasks);
+      expect(Selectors.getSelectedContactTasks.projector(state.contacts))
+        .to.deep.equal(clonedState.contacts.selected.tasks);
     });
 
     it('should getLoadingSelectedContactReports', () => {
-      expect(Selectors.getLoadingSelectedContactReports(state)).to.equal(clonedState.contacts.loadingSelectedReports);
+      expect(Selectors.getLoadingSelectedContactReports.projector(state.contacts))
+        .to.equal(clonedState.contacts.loadingSelectedReports);
     });
 
     it('should getContactsLoadingSummary', () => {
-      expect(Selectors.getContactsLoadingSummary(state)).to.equal(clonedState.contacts.loadingSummary);
-    });
-
-    it('should null check contacts state', () => {
-      expect(Selectors.getSelectedContact({})).to.deep.equal(undefined);
+      expect(Selectors.getContactsLoadingSummary.projector(state.contacts))
+        .to.equal(clonedState.contacts.loadingSummary);
     });
 
     it('should null check selected contact', () => {
-      expect(Selectors.getSelectedContactChildren({})).to.deep.equal(undefined);
+      expect(Selectors.getSelectedContactChildren.projector({})).to.deep.equal(undefined);
     });
   });
 
   describe('analytics', () => {
     it('should getAnalyticsModules', () => {
-      expect(Selectors.getAnalyticsModules(state)).to.deep.equal(clonedState.analytics.analyticsModules);
+      expect(Selectors.getAnalyticsModules.projector(state.analytics))
+        .to.deep.equal(clonedState.analytics.analyticsModules);
     });
 
     it('should null check analytics state', () => {
-      expect(Selectors.getAnalyticsModules({})).to.deep.equal(undefined);
+      expect(Selectors.getAnalyticsModules.projector({})).to.deep.equal(undefined);
     });
   });
 
   describe('targetAggregates', () => {
     it('should getTargetAggregates', () => {
-      expect(Selectors.getTargetAggregates(state)).to.deep.equal(clonedState.targetAggregates.targetAggregates);
+      expect(Selectors.getTargetAggregates.projector(state.targetAggregates))
+        .to.deep.equal(clonedState.targetAggregates.targetAggregates);
     });
 
     it('should getSelectedTargetAggregate', () => {
-      expect(Selectors.getSelectedTargetAggregate(state)).to.deep.equal(clonedState.targetAggregates.selected);
+      expect(Selectors.getSelectedTargetAggregate.projector(state.targetAggregates))
+        .to.deep.equal(clonedState.targetAggregates.selected);
     });
 
     it('should getTargetAggregatesLoaded', () => {
-      expect(Selectors.getTargetAggregatesLoaded(state)).to.equal(clonedState.targetAggregates.targetAggregatesLoaded);
+      expect(Selectors.getTargetAggregatesLoaded.projector(state.targetAggregates))
+        .to.equal(clonedState.targetAggregates.targetAggregatesLoaded);
     });
 
     it('should getTargetAggregatesError', () => {
-      expect(Selectors.getTargetAggregatesError(state)).to.equal(clonedState.targetAggregates.error);
+      expect(Selectors.getTargetAggregatesError.projector(state.targetAggregates))
+        .to.equal(clonedState.targetAggregates.error);
     });
 
     it('should null check targetAggregates', () => {
-      expect(Selectors.getTargetAggregates({})).to.deep.equal(undefined);
+      expect(Selectors.getTargetAggregates.projector({})).to.deep.equal(undefined);
     });
   });
 
   describe('tasks', () => {
     it('should getTasksList', () => {
-      expect(Selectors.getTasksList(state)).to.deep.equal(clonedState.tasks.tasksList);
+      expect(Selectors.getTasksList.projector(state.tasks)).to.deep.equal(clonedState.tasks.tasksList);
     });
 
     it('should getTasksLoaded', () => {
-      expect(Selectors.getTasksLoaded(state)).to.equal(clonedState.tasks.loaded);
+      expect(Selectors.getTasksLoaded.projector(state.tasks)).to.equal(clonedState.tasks.loaded);
     });
 
     it('should getSelectedTask', () => {
-      expect(Selectors.getSelectedTask(state)).to.deep.equal(clonedState.tasks.selected);
+      expect(Selectors.getSelectedTask.projector(state.tasks)).to.deep.equal(clonedState.tasks.selected);
     });
 
     it('should null check tasks state', () => {
-      expect(Selectors.getSelectedTask({})).to.equal(undefined);
+      expect(Selectors.getSelectedTask.projector({})).to.equal(undefined);
     });
 
     it('should getLastSubmittedTask', () => {
-      expect(Selectors.getLastSubmittedTask(state)).to.deep.equal(clonedState.tasks.taskGroup.lastSubmittedTask);
+      expect(Selectors.getLastSubmittedTask.projector(state.tasks))
+        .to.deep.equal(clonedState.tasks.taskGroup.lastSubmittedTask);
+
       const alternativeState = { tasks: { taskGroup: {} } };
-      expect(Selectors.getLastSubmittedTask(alternativeState)).to.equal(undefined);
+      expect(Selectors.getLastSubmittedTask.projector(alternativeState.tasks)).to.equal(undefined);
     });
 
     it('should getTaskGroupContact', () => {
-      expect(Selectors.getTaskGroupContact(state)).to.deep.equal(clonedState.tasks.taskGroup.contact);
+      expect(Selectors.getTaskGroupContact.projector(state.tasks)).to.deep.equal(clonedState.tasks.taskGroup.contact);
       const alternativeState = { tasks: { taskGroup: {} } };
-      expect(Selectors.getTaskGroupContact(alternativeState)).to.equal(undefined);
+      expect(Selectors.getTaskGroupContact.projector(alternativeState.tasks)).to.equal(undefined);
     });
 
     it('should getTaskGroupLoadingContact', () => {
-      expect(Selectors.getTaskGroupLoadingContact(state)).to.deep.equal(clonedState.tasks.taskGroup.loadingContact);
+      expect(Selectors.getTaskGroupLoadingContact.projector(state.tasks))
+        .to.deep.equal(clonedState.tasks.taskGroup.loadingContact);
       const alternativeState = { tasks: { taskGroup: {} } };
-      expect(Selectors.getTaskGroupLoadingContact(alternativeState)).to.equal(undefined);
+      expect(Selectors.getTaskGroupLoadingContact.projector(alternativeState.tasks)).to.equal(undefined);
     });
   });
 });

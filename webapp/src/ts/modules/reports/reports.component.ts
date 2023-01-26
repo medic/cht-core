@@ -36,27 +36,28 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private reportsActions: ReportsActions;
   private servicesActions: ServicesActions;
   private listContains;
-  private destroyed;
+  private destroyed: boolean;
 
   subscription: Subscription = new Subscription();
   reportsList;
   selectedReport;
   selectedReports;
   forms;
-  error;
-  errorSyntax;
+  error: boolean;
+  errorSyntax: boolean;
   loading = true;
   appending = false;
-  moreItems;
+  moreItems: boolean;
   filters:any = {};
-  hasReports;
+  hasReports: boolean;
   selectMode = false;
   selectModeAvailable = false;
-  verifyingReport;
-  showContent;
-  enketoEdited;
+  verifyingReport: boolean;
+  showContent: boolean;
+  enketoEdited: boolean;
   useSidebarFilter = true;
   isSidebarFilterOpen = false;
+  isExporting = false;
   currentLevel;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
@@ -97,13 +98,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
 
-    this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
+    this.currentLevel = this.authService.online(true) ? Promise.resolve() : this.getCurrentLineageLevel();
   }
 
   async ngAfterViewInit() {
-    this.selectModeAvailable = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
-    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
-    this.useSidebarFilter = !isDisabled;
+    this.checkPermissions();
     this.search();
     this.subscribeSidebarFilter();
   }
@@ -117,6 +116,12 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalActions.setSelectMode(false);
     this.globalActions.unsetSelected();
     this.globalActions.setLeftActionBar({});
+  }
+
+  private async checkPermissions() {
+    this.selectModeAvailable = await this.authService.has(['can_edit', 'can_bulk_delete_reports']);
+    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+    this.useSidebarFilter = !isDisabled;
   }
 
   private subscribeToStore() {
@@ -326,28 +331,30 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.globalActions.setLeftActionBar({
+      exportFn: () => this.exportReports(),
       hasResults: this.hasReports,
-      exportFn: this.exportFn.bind({}, this.ngZone, this.exportService, this.filters),
     });
   }
 
-  private exportFn(ngZone, exportService, filters, e) {
-    const exportFilters = _cloneDeep(filters);
+  exportReports() {
+    if (this.isExporting) {
+      return;
+    }
+
+    const exportFilters = _cloneDeep(this.filters);
     ['forms', 'facilities'].forEach((type) => {
       if (exportFilters[type]) {
         delete exportFilters[type].options;
       }
     });
 
-    const $link = $(e.target).closest('a');
-    $link.addClass('mm-icon-disabled');
-    ngZone.runOutsideAngular(() => {
-      setTimeout(() => {
-        $link.removeClass('mm-icon-disabled');
-      }, 2000);
+    // TODO: Improve debounce or make a way to determine when the export has finished.
+    this.isExporting = true;
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => this.isExporting = false, 2000);
     });
 
-    exportService.export('reports', exportFilters, { humanReadable: true });
+    this.exportService.export('reports', exportFilters, { humanReadable: true });
   }
 
   private setSelectMode() {

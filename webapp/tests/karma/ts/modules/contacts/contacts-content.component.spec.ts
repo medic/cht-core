@@ -48,7 +48,7 @@ describe('Contacts content component', () => {
   let settings;
 
   beforeEach(waitForAsync(() => {
-    changesService = { subscribe: sinon.stub().resolves(of({})) };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     contactChangeFilterService = {
       matchContact: sinon.stub(),
       isRelevantContact: sinon.stub(),
@@ -57,15 +57,12 @@ describe('Contacts content component', () => {
     };
     settings = {};
     settingsService = { get: sinon.stub().resolves(settings) };
-    xmlFormsService = { subscribe: sinon.stub() };
+    xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     translateFromService = { get: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
     sessionService = {
       isDbAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
-    };
-    changesService = {
-      subscribe: sinon.stub().resolves(of({}))
     };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: 'district-123' })
@@ -146,6 +143,7 @@ describe('Contacts content component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

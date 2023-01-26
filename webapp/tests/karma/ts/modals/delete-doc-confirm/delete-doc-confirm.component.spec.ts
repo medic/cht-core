@@ -68,6 +68,7 @@ describe('DeleteDocConfirmComponent', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

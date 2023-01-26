@@ -4,6 +4,7 @@ const reportsPage = require('../reports/reports.wdio.page');
 
 const REVIEW_MENU = '[test-id="report-review-menu"]';
 const submitButton = () => $('.enketo .submit');
+const cancelButton = () => $('.enketo .cancel');
 const nextButton = () => $('button.btn.btn-primary.next-page');
 const nameField = () => $('#report-form form [name="/data/name"]');
 
@@ -64,8 +65,9 @@ const selectContact = async (inputName, contactName) => {
   );
 };
 const editForm = async () => {
-  const editFormBtn = await $('[href^="#/reports/edit"]>.fa-pencil');
-  await editFormBtn.click();
+  await commonPage.openMoreOptionsMenu();
+  await (await reportsPage.editReportButton()).waitForClickable();
+  await (await reportsPage.editReportButton()).click();
 };
 
 const verifyReport = async () => {
@@ -88,6 +90,7 @@ const submitForm = () => submitButton().click();
 
 module.exports = {
   submitButton,
+  cancelButton,
   nextPage,
   invalidateReport,
   validateReport,

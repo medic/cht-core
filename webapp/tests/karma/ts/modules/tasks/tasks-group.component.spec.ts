@@ -89,6 +89,7 @@ describe('TasksGroupComponent', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

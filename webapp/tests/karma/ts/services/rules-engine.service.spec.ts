@@ -97,7 +97,7 @@ describe('RulesEngineService', () => {
 
   beforeEach(() => {
     authService = { has: sinon.stub().resolves(true) };
-    changesService = { subscribe: sinon.stub() };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     sessionService = { isOnlineOnly: sinon.stub().returns(false), userCtx: () => ({ name: 'fred' }) };
     settingsService = { get: sinon.stub().resolves(settingsDoc) };
     translateFromService = { get: sinon.stub().resolves(settingsDoc) };

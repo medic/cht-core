@@ -18,7 +18,7 @@ describe('Auth Service', () => {
   beforeEach(() => {
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
-    changesService = { subscribe: sinon.stub().resolves() };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
 
     TestBed.configureTestingModule({
       providers: [

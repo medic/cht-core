@@ -49,7 +49,10 @@ describe('NavigationComponent', () => {
       });
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    store.resetSelectors();
+    sinon.restore();
+  });
 
   it('should subscribe to store and assign values', () => {
     const callback = () => 'anything';

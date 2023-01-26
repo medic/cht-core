@@ -302,6 +302,9 @@ describe('date pipes rendering', () => {
 
     TestBed
       .configureTestingModule({
+        imports: [
+          AsyncPipe,
+        ],
         providers: [
           { provide: RelativeDateService, useValue: relativeDate },
           { provide: FormatDateService, useValue: formatDate },
@@ -319,7 +322,6 @@ describe('date pipes rendering', () => {
           StatePipe,
           WeeksPregnantPipe,
           TestComponent,
-          AsyncPipe,
         ]
       })
       .compileComponents();

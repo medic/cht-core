@@ -171,7 +171,8 @@ describe('ContactsEdit component', () => {
       await createComponent();
 
       expect(component.routeSnapshot).to.equal(routeSnapshot);
-      expect(setLoadingContent.args).to.deep.equal([[true]]);
+      // Set loading content before and after form initialization.
+      expect(setLoadingContent.args).to.deep.equal([[true], [false]]);
       expect(setShowContent.args).to.deep.equal([[true]]);
       expect(unsetSelected.callCount).to.equal(1);
       expect(settingSelected.callCount).to.equal(1);

@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -18,6 +17,10 @@ import { MessageStateService } from '@mm-services/message-state.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { TitlePipe } from '@mm-pipes/message.pipe';
+import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 
 
 describe('Reports Content Component', () => {
@@ -40,7 +43,7 @@ describe('Reports Content Component', () => {
       { selector: Selectors.getSelectMode, value: false },
     ];
     searchFiltersService = { freetextSearch: sinon.stub() };
-    changesService = { subscribe: sinon.stub().resolves(of({})) };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
     router = { navigate: sinon.stub() };
     messageStateService = { any: sinon.stub(), set: sinon.stub().resolves() };
@@ -56,6 +59,9 @@ describe('Reports Content Component', () => {
         declarations: [
           ReportsContentComponent,
           EditMessageGroupComponent,
+          FormIconPipe,
+          TitlePipe,
+          RelativeDatePipe,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -67,6 +73,7 @@ describe('Reports Content Component', () => {
           { provide: MessageStateService, useValue: messageStateService },
           { provide: ResponsiveService, useValue: responsiveService },
           { provide: ModalService, useValue: modalService },
+          { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
         ]
       })
       .compileComponents()
@@ -79,6 +86,7 @@ describe('Reports Content Component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 
@@ -140,7 +148,7 @@ describe('Reports Content Component', () => {
       expect(filter({ id: 'report2' })).to.equal(true);
     });
 
-    it('filter function should return true for selected reports', () => {
+    it('filter function should return false for selected reports', () => {
       const filter = changesService.subscribe.args[0][0].filter;
       store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report1', doc: {} }, { _id: 'report2', doc: {} }]);
       store.refreshState();

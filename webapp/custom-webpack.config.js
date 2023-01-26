@@ -53,7 +53,7 @@ module.exports = {
     }),
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
-      reportFilename: '../../../analyzer.report.html',
+      reportFilename: __dirname + '/analyzer.report.html',
       openAnalyzer: false,
     }),
   ]

@@ -38,6 +38,7 @@ describe('SnackbarComponent', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

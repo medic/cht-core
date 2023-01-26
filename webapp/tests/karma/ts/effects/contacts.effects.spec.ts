@@ -68,6 +68,7 @@ describe('Contacts effects', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

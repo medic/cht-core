@@ -2,7 +2,6 @@ import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angul
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -16,7 +15,7 @@ import { NavigationComponent } from '@mm-components/navigation/navigation.compon
 import { TourService } from '@mm-services/tour.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { UserContactService } from '@mm-services/user-contact.service';
-import { SessionService } from '@mm-services/session.service';
+import { AuthService } from '@mm-services/auth.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -26,7 +25,7 @@ describe('Messages Component', () => {
   let exportService;
   let modalService;
   let userContactService;
-  let sessionService;
+  let authService;
 
   const userContactGrandparent = { _id: 'grandparent' };
   const userContactDoc = {
@@ -44,13 +43,11 @@ describe('Messages Component', () => {
       getList: sinon.stub().resolves([]),
       isRelevantChange: sinon.stub()
     };
-    changesService = {
-      subscribe: sinon.stub().resolves(of({}))
-    };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };
-    sessionService = { isOnlineOnly: sinon.stub().returns(false) };
+    authService = { online: sinon.stub().returns(false) };
     const tourServiceMock = {
       startIfNeeded: () => {}
     };
@@ -81,7 +78,7 @@ describe('Messages Component', () => {
           { provide: TourService, useValue: tourServiceMock },
           { provide: NavigationService, useValue: {} },
           { provide: UserContactService, useValue: userContactService },
-          { provide: SessionService, useValue: sessionService },
+          { provide: AuthService, useValue: authService },
         ]
       })
       .compileComponents()
@@ -242,7 +239,7 @@ describe('Messages Component', () => {
 
         messageContactService.getList.resolves(conversations);
         userContactService.get.resolves(userContactDoc);
-        sessionService.isOnlineOnly.returns(false);
+        authService.online.returns(false);
 
         component.ngOnInit();
         tick();
@@ -257,7 +254,7 @@ describe('Messages Component', () => {
 
       messageContactService.getList.resolves(conversations);
       userContactService.get.resolves(bettyOfflineUserContactDoc);
-      sessionService.isOnlineOnly.returns(true);
+      authService.online.returns(true);
 
       component.ngOnInit();
       tick();
@@ -294,7 +291,7 @@ describe('Messages Component', () => {
 
         messageContactService.getList.resolves(conversations);
         userContactService.get.resolves(bettyOfflineUserContactDoc);
-        sessionService.isOnlineOnly.returns(false);
+        authService.online.returns(false);
 
         component.ngOnInit();
         tick();
