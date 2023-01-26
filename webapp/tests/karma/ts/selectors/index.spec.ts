@@ -241,7 +241,7 @@ describe('Selectors', () => {
     });
 
     it('should getTrainingCard', () => {
-      expect(Selectors.getTrainingCard(state)).to.equal(clonedState.global.trainingCard);
+      expect(Selectors.getTrainingCard.projector(state.global)).to.equal(clonedState.global.trainingCard);
     });
 
     // null checks

@@ -720,7 +720,6 @@ export class EnketoService {
         if (this.isTrainingForm(formInternalId)) {
           const userName = this.sessionService.userCtx()?.name;
           doc._id = [ TRAINING_PREFIX, userName, uuid() ].join(':');
-          doc.is_training = true;
         }
 
         return doc;

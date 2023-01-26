@@ -59,7 +59,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    this.geoHandle && this.geoHandle.cancel();
+    this.geoHandle?.cancel();
     // old code checked whether the component is reused before unloading the form
     // this is because AngularJS created the new "controller" before destroying the old one
     // in Angular, unless specific RouteReuseStrategies are employed, components are always
@@ -84,7 +84,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
       const form = await this.xmlFormsService.get(this.trainingForm);
       await this.ngZone.run(() => this.renderForm(form));
     } catch(error) {
-      this.setError();
+      this.setError(error);
       console.error('Error fetching form.', error);
     }
   }
@@ -97,7 +97,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
       this.loadingContent = false;
       this.recordTelemetryPostRender();
     } catch(error) {
-      this.setError();
+      this.setError(error);
       console.error('Error rendering form.', error);
     }
   }
@@ -142,8 +142,8 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     }
   }
 
-  setError() {
-    this.errorTranslationKey = 'training_cards.error.loading';
+  setError(error) {
+    this.errorTranslationKey = error?.translationKey || 'training_cards.error.loading';
     this.loadingContent = false;
     this.hideModalFooter = false;
     this.contentError = true;

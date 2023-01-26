@@ -587,7 +587,6 @@ describe('Enketo service', () => {
         expect(UserContact.callCount).to.equal(1);
         expect(actual._id).to.match(/(\w+-)\w+/);
         expect(actual._id.startsWith('training:user-jim:')).to.be.false;
-        expect(actual.is_training).to.be.undefined;
         expect(actual._rev).to.equal('1-abc');
         expect(actual.fields.name).to.equal('Sally');
         expect(actual.fields.lmp).to.equal('10');
@@ -623,7 +622,6 @@ describe('Enketo service', () => {
           expect(dbBulkDocs.calledOnce).to.be.true;
           expect(UserContact.calledOnce).to.be.true;
           expect(actual._id.startsWith('training:user-jim:')).to.be.true;
-          expect(actual.is_training).to.be.true;
           expect(actual._rev).to.equal('1-abc');
           expect(actual.fields.name).to.equal('Sally');
           expect(actual.fields.lmp).to.equal('10');

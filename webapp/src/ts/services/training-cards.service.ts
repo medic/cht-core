@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
+import * as moment from 'moment';
 
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
@@ -29,7 +30,7 @@ export class TrainingCardsService {
   }
 
   private getAvailableTrainingForms(xForms, userCtx) {
-    const today = new Date();
+    const today = moment();
 
     return xForms
       .map(xForm => ({
@@ -45,18 +46,18 @@ export class TrainingCardsService {
           return false;
         }
 
-        const startDate = new Date(form.startDate);
-        if (startDate > today) {
-          return false; // Training has not started yet
+        form.startDate = form.startDate ? moment(form.startDate) : today.clone();
+        if (!form.startDate?.isValid() || form.startDate.isAfter(today)) {
+          return false;
         }
 
         if (!form.duration) {
           return true; // Training never ends
         }
 
-        const endDate = new Date(form.startDate);
-        endDate.setDate(endDate.getDate() + form.duration);
-        return endDate > today;
+        const endDate = form.startDate.clone();
+        endDate.add(form.duration, 'day');
+        return endDate.isAfter(today);
       });
   }
 
@@ -69,11 +70,7 @@ export class TrainingCardsService {
         endkey: [ TRAINING_PREFIX, userCtx.name, '\ufff0' ].join(':'),
       });
 
-    if (!docs?.rows?.length) {
-      return;
-    }
-
-    return new Set(docs.rows.map(row => row?.doc?.form));
+    return docs?.rows?.length ? new Set(docs.rows.map(row => row?.doc?.form)) : new Set();
   }
 
   private async handleTrainingCards(error, xForms) {
@@ -95,6 +92,7 @@ export class TrainingCardsService {
 
       this.globalActions.setTrainingCard(firstChronologicalTrainingForm.code);
       this.modalService.show(TrainingCardsComponent, { backdrop: 'static' });
+
     } catch (error) {
       console.error('Error showing training cards modal.', error);
       return;
@@ -103,30 +101,19 @@ export class TrainingCardsService {
 
   private async getFirstChronologicalForm(xForms) {
     const userCtx = this.sessionService.userCtx();
-    let trainingForms = this.getAvailableTrainingForms(xForms, userCtx);
-
-    if (!trainingForms?.length) {
-      return;
-    }
-
-    const completedTrainings = await this.getCompletedTrainings(userCtx);
-    if (completedTrainings) {
-      trainingForms = trainingForms.filter(form => !completedTrainings.has(form.code));
-    }
-
+    const trainingForms = this.getAvailableTrainingForms(xForms, userCtx) || [];
     if (!trainingForms.length) {
       return;
     }
 
-    trainingForms = trainingForms.sort((a, b) => a.startDate - b.startDate);
-    return trainingForms[0];
+    const completedTrainings = await this.getCompletedTrainings(userCtx);
+    return trainingForms
+      .filter(form => !completedTrainings.has(form.code))
+      .sort((a, b) => a.startDate.diff(b.startDate))
+      .shift();
   }
 
   public initTrainingCards() {
-    if (this.sessionService.isDbAdmin()) {
-      return;
-    }
-
     this.xmlFormsService.subscribe(
       'TrainingCards',
       { trainingForms: true, contactForms: false },
