@@ -662,7 +662,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not add user when the new contact does not have a role', async () => {
-      const missingRolePattern = /doc\.roles can only contain strings/;
+      const missingRolePattern = /Contact \[[\w_-]*] must have a "role" or "roles" property./;
       const collectLogs = await utils.collectSentinelLogs(missingRolePattern);
 
       await utils.updateSettings(getSettings(), 'sentinel');
