@@ -371,6 +371,53 @@ const deleteReport = async () => {
   await (await deleteButton()).click();
 };
 
+// tasks
+const relativeDate = () => $('#reports-content .item-summary .relative-date-content');
+const detail = () => itemSummary().$('.detail');
+const detailStatus = () => itemSummary().$('.detail .status');
+
+const taskByIndex = (index) => $(`${reportBodyDetailsSelector} > ul .task-list > li:nth-child(${index})`);
+
+const taskTextByIndex = async (index) => {
+  return await(await taskByIndex(index).$('ul > li > p')).getText();
+};
+
+const taskRecipientByIndex = async (index) => {
+  return await (await taskByIndex(index).$('.task-state .recipient')).getText();
+};
+
+const taskStateByIndex = (index) => {
+  return taskByIndex(index).$('.task-state .state');
+};
+
+const taskGatewayStatusByIndex = (index) => {
+  return taskByIndex(index).$('.task-state .state.forwarded-to-gateway');
+};
+
+const scheduledTaskGroupByIndex = (groupIndex) => { 
+  return $(`#reports-content .details .scheduled-tasks > ul > li:nth-child(${groupIndex})`);
+};
+
+const scheduledTaskByIndex = (groupIndex, taskIndex=1) => {
+  return scheduledTaskGroupByIndex(groupIndex).$(`.task-list li:nth-child(${taskIndex})`);
+};
+
+const scheduledTaskMessageByIndex = (groupIndex, taskIndex=1) => {
+  return scheduledTaskByIndex(groupIndex, taskIndex).$('ul li');
+};
+
+const scheduledTaskStateByIndex = (groupIndex, taskIndex=1 ) => {
+  return scheduledTaskByIndex(groupIndex, taskIndex).$(`.task-state .state`);
+};
+
+const scheduledTaskRecipientByIndex = (groupIndex, taskIndex=1) => {
+  return scheduledTaskByIndex(groupIndex, taskIndex).$(`.task-state .recipient`);
+};
+
+const subject = (reportElement) => {
+  return reportElement.$('.content .heading h4 span');
+};
+
 module.exports = {
   getCurrentReportId,
   getLastSubmittedReportId,
@@ -431,4 +478,19 @@ module.exports = {
   fieldByIndex,
   reportBodyDetails,
   openSelectedReport,
+  detail,
+  detailStatus,
+  // tasks
+  relativeDate,
+  taskStateByIndex,
+  taskByIndex,
+  taskTextByIndex,
+  taskRecipientByIndex,
+  taskGatewayStatusByIndex,
+  scheduledTaskGroupByIndex,
+  scheduledTaskByIndex,
+  scheduledTaskMessageByIndex,
+  scheduledTaskStateByIndex,
+  scheduledTaskRecipientByIndex,
+  subject,
 };
