@@ -1,17 +1,16 @@
 const utils = require('../../../utils');
 const sUtils = require('../../../utils/sentinel');
-const commonElements = require('../../../page-objects/protractor/common/common.po.js');
-const helper = require('../../../helper');
+const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const moment = require('moment');
-const reportsPo = require('../../../page-objects/protractor/reports/reports.po');
+const reportsPo = require('../../../page-objects/default/reports/reports.wdio.page');
+const loginWdioPage = require('../../../page-objects/default/login/login.wdio.page');
 const dateFormatString = 'ddd, MMM Do, YYYY';
 
 const computeExpectedDate = async () => {
-  const reportedDateOptions = await reportsPo.relativeDate().getAttribute('data-date-options');
+  const reportedDateOptions = await (await reportsPo.relativeDate()).getAttribute('data-date-options');
   const reportedDate = JSON.parse(reportedDateOptions);
   const start = moment(reportedDate.date).startOf('day').subtract(12, 'weeks');
   const expectedDate = start.add(40, 'weeks');
-
   return expectedDate;
 };
 
@@ -222,9 +221,7 @@ describe('registration transition', () => {
   };
 
   describe('submits new sms messages', () => {
-    let originalTimeout;
-
-    beforeEach(async () => {
+    before(async () => {
       const body = {
         messages: [{
           from: PHONE,
@@ -232,71 +229,50 @@ describe('registration transition', () => {
           id: 'a'
         }]
       };
-      await utils.updateSettings(CONFIG);
+      await utils.updateSettings(CONFIG, true);
       await utils.saveDocs(DOCS);
       await submit(body);
       await sUtils.waitForSentinel();
+      await loginWdioPage.cookieLogin();
+      await commonElements.closeReloadModal();
+
+      await commonElements.goToReports();
+      await reportsPo.firstReport().click();
     });
-
-    beforeEach(() => {
-      //increasing DEFAULT_TIMEOUT_INTERVAL for this page is very slow and it takes long for the report details to load
-      originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-    });
-
-    afterEach(() => utils.afterEach());
-    afterAll(() => {
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-    });
-
-    const checkItemSummary = async () => {
-      expect(await reportsPo.submitterName().getText()).toMatch(`Submitted by ${CAROL.name}`);
-      expect(await reportsPo.subjectName().getText()).toBe('Siobhan');
-      expect(await reportsPo.submitterPhone().getText()).toBe(CAROL.phone);
-      expect(await reportsPo.submitterPlace().getText()).toBe(BOB_PLACE.name);
-      expect(await reportsPo.detail().isDisplayed()).toBeTruthy();
-      expect(await reportsPo.detailStatus().isPresent()).toBeFalsy();
-    };
-
-    const checkAutoResponse = async (expectedDate) => {
-      expect(await reportsPo.taskTextByIndex(1)).toBe('Thank you '+ CAROL.name +' for registering Siobhan');
-      expect(await reportsPo.taskGatewayStatusByIndex(1).isDisplayed()).toBeTruthy();
-      expect(await reportsPo.taskRecipientByIndex(1).getText()).toBe(' to +64271234567');
-
-      expect(await reportsPo.taskTextByIndex(2)).toBe(`LMP ${expectedDate.locale('sw').format(dateFormatString)}`);
-      expect(await reportsPo.taskGatewayStatusByIndex(2).isDisplayed()).toBeTruthy();
-      expect(await reportsPo.taskRecipientByIndex(2).getText()).toBe(' to +64271234567');
-    };
 
     const checkScheduledTask = async (childIndex, title, message) => {
-      expect(await reportsPo.scheduledTaskGroupByIndex(childIndex).element(by.css('h3')).getText()).toContain(title);
-      expect(await reportsPo.scheduledTaskMessageByIndex(childIndex).getText()).toBe(message);
-      expect(await reportsPo.scheduledTaskStateByIndex(childIndex).getText()).toBe('scheduled');
-      expect(await reportsPo.scheduledTaskRecipientByIndex(childIndex).getText()).toBe(' to +64271234567');
+      expect(await (await reportsPo.scheduledTaskGroupByIndex(childIndex).$('h3')).getText()).to.have.string(title);
+      expect(await (await reportsPo.scheduledTaskMessageByIndex(childIndex)).getText()).to.equal(message);
+      expect(await (await reportsPo.scheduledTaskStateByIndex(childIndex)).getText()).to.equal('scheduled');
+      const taskRecipient = await (await reportsPo.scheduledTaskRecipientByIndex(childIndex)).getText();
+      expect(taskRecipient).to.have.string('to +64271234567');
     };
 
-    it('shows content', async () => {
-      await commonElements.goToReportsNative();
-      const firstReport = reportsPo.firstReport();
-      await helper.waitElementToBeClickable(firstReport);
-      await browser.wait(() => element(
-        by.cssContainingText(reportsPo.subject(firstReport).locator().value, 'Siobhan')
-      ).isPresent(), 10000);
-      await helper.clickElementNative(reportsPo.formName(firstReport));
+    it('shows summary', async () => {
+      expect(await reportsPo.submitterName().getText()).to.have.string(`Submitted by ${CAROL.name}`);
+      expect(await reportsPo.getReportSubject()).to.equal('Siobhan');
+      expect(await reportsPo.submitterPhone().getText()).to.equal(CAROL.phone);
+      expect(await reportsPo.submitterPlace().getText()).to.equal(BOB_PLACE.name);
+      expect(await reportsPo.detail().isDisplayed()).to.be.true;
+      expect(await reportsPo.detailStatus().isExisting()).to.be.false;
+    });
 
-      // wait for content to load
-      await browser.wait(() => element(
-        by.cssContainingText('#reports-content .item-summary .phone', CAROL.phone)
-      ).isPresent(), 30000);
-
+    it('check AutoResponse', async () => {
       const expectedDate = await computeExpectedDate();
+      expect(await reportsPo.taskTextByIndex(1)).to.equal('Thank you '+ CAROL.name +' for registering Siobhan');
+      expect(await (await reportsPo.taskGatewayStatusByIndex(1)).isDisplayed()).to.be.true;
+      expect(await reportsPo.taskRecipientByIndex(1)).to.have.string('to +64271234567');
 
-      await checkItemSummary();
-      await checkAutoResponse(expectedDate);
+      expect(await reportsPo.taskTextByIndex(2)).to.equal(`LMP ${expectedDate.locale('sw').format(dateFormatString)}`);
+      expect(await (await reportsPo.taskGatewayStatusByIndex(2)).isDisplayed()).to.be.true;
+      expect(await reportsPo.taskRecipientByIndex(2)).to.have.string('to +64271234567');
+    });
+
+    it('check Scheduled Tasks', async () => {
+      const expectedDate = await computeExpectedDate();
       await checkScheduledTask(1, 'ANC Reminders LMP:1', 'Visit 1 reminder for Siobhan');
       await checkScheduledTask(2, 'ANC Reminders LMP:2', 'Visit 2 reminder for Siobhan');
       await checkScheduledTask(3, 'ANC Reminders LMP:3', `LMP ${expectedDate.locale('sw').format(dateFormatString)}`);
     });
-
   });
 });
