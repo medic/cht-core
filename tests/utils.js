@@ -133,6 +133,17 @@ const updateSettings = updates => {
       });
     });
 };
+const updatePermissions = async (roles, addPermissions, removePermissions = []) => {
+  const settings = await module.exports.getSettings();
+  if(!('permissions' in settings)){ 
+    settings.permissions = [];
+  }
+  addPermissions.forEach(permission => settings.permissions[permission].push(...roles));
+  removePermissions.forEach(permission => {
+    settings.permissions[permission] = [];
+  });
+  await module.exports.updateSettings({ permissions: settings.permissions }, true);
+};
 
 const revertTranslations = async () => {
   const updatedTranslations = Object.keys(originalTranslations);
@@ -1350,4 +1361,5 @@ module.exports = {
   listenForApi,
   makeTempDir,
   SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
+  updatePermissions,
 };
