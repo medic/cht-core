@@ -194,7 +194,8 @@ const addPerson = async ({
 const editPerson = async (name, updatedName) => {
   await selectLHSRowByText(name);
   await waitForContactLoaded();
-  await (await editContactButton()).waitForDisplayed();
+  await commonElements.openMoreOptionsMenu();
+  await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
   await (await genericForm.nextPage());
@@ -206,11 +207,11 @@ const editPerson = async (name, updatedName) => {
   return (await contactCard()).getText();
 };
 
-const deletePerson = async (name) => {
-  await selectLHSRowByText(name);
-  await waitForContactLoaded();
+const deletePerson = async () => {
+  await commonElements.openMoreOptionsMenu();
+  await (await deleteContactButton()).waitForClickable();
   await (await deleteContactButton()).click();
-  await (await deleteConfirmationModalButton()).waitForDisplayed();
+  await (await deleteConfirmationModalButton()).waitForClickable();
   await (await deleteConfirmationModalButton()).click();
 };
 
@@ -258,7 +259,8 @@ const editDistrict = async (districtName, editedName) => {
   await selectLHSRowByText(districtName, true);
   await waitForContactLoaded();
 
-  await (await editContactButton()).waitForDisplayed();
+  await commonElements.openMoreOptionsMenu();
+  await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
   await (await districtHospitalName()).setValue(editedName);
