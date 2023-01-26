@@ -270,6 +270,17 @@ const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
 };
 
+//more options menu
+const optionSelector = (action, item) => $(`.mat-menu-content .mat-menu-item[test-id="${action}-${item}"]`);
+
+const isMenuOptionEnabled = async (action, item) => {
+  return await (await optionSelector(action, item)).isEnabled();
+};
+
+const isMenuOptionVisible = async (action, item) => {
+  return await (await optionSelector(action, item)).isDisplayed();
+};
+
 module.exports = {
   openMoreOptionsMenu,
   logout,
@@ -315,4 +326,7 @@ module.exports = {
   getTextForElements,
   toggleActionbar,
   jsonError,
+  isMenuOptionEnabled,
+  isMenuOptionVisible,
+  moreOptionsMenu,
 };
