@@ -301,12 +301,7 @@ export class EnketoService {
           .find('input')
           .on('keydown', this.handleKeypressOnInputField);
 
-        if (!isFormInModal) {
-          // handle page turning using browser history
-          window.history.replaceState({ enketo_page_number: 0 }, '');
-        }
-
-        this.overrideNavigationButtons(this.currentForm, wrapper, isFormInModal);
+        this.setNavigation(this.currentForm, wrapper, !isFormInModal);
         this.addPopStateHandler(this.currentForm, wrapper);
         this.forceRecalculate(this.currentForm);
         // forceRecalculate can cause form to be marked as edited
@@ -341,7 +336,12 @@ export class EnketoService {
     } // else the title is hardcoded in the form definition - leave it alone
   }
 
-  private overrideNavigationButtons(form, $wrapper, isFormInModal) {
+  private setNavigation(form, $wrapper, useWindowHistory=true) {
+    if (useWindowHistory) {
+      // Handle page turning using browser history
+      window.history.replaceState({ enketo_page_number: 0 }, '');
+    }
+
     $wrapper
       .find('.btn.next-page')
       .off('.pagemode')
@@ -351,7 +351,7 @@ export class EnketoService {
           .then(valid => {
             if (valid) {
               const currentIndex = form.pages._getCurrentIndex();
-              if (!isFormInModal) {
+              if (useWindowHistory) {
                 window.history.pushState({ enketo_page_number: currentIndex }, '');
               }
               this.setupNavButtons($wrapper, currentIndex);
@@ -368,12 +368,12 @@ export class EnketoService {
       .on('click.pagemode', () => {
         let pageIndex;
 
-        if (isFormInModal) {
-          form.pages._prev();
-          pageIndex = form.pages._getCurrentIndex();
-        } else {
+        if (useWindowHistory) {
           window.history.back();
           pageIndex = form.pages._getCurrentIndex() - 1;
+        } else {
+          form.pages._prev();
+          pageIndex = form.pages._getCurrentIndex();
         }
 
         this.setupNavButtons($wrapper, pageIndex);

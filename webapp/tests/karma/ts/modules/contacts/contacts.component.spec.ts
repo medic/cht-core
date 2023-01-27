@@ -215,7 +215,7 @@ describe('Contacts component', () => {
 
       expect(xmlFormsService.subscribe.callCount).to.equal(1);
       expect(xmlFormsService.subscribe.args[0][0]).to.equal('ContactForms');
-      expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true, trainingForms: false });
+      expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
 
       xmlFormsService.subscribe.args[0][2](null, forms);
 

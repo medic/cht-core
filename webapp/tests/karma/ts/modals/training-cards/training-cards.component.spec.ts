@@ -116,6 +116,7 @@ describe('TrainingCardsComponent', () => {
   }));
 
   it('should close modal when quiting training', fakeAsync(() => {
+    const consoleErrorMock = sinon.stub(console, 'error');
     const xmlForm = { _id: 'training:a_form_id', some: 'content' };
     const renderedForm = { rendered: 'form', model: {}, instance: {} };
     xmlFormsService.get.resolves(xmlForm);
@@ -127,6 +128,15 @@ describe('TrainingCardsComponent', () => {
     component.quitTraining();
 
     expect(modalSuperCloseStub.calledOnce).to.be.true;
+    expect(geolocationService.init.calledOnce).to.be.true;
+    expect(xmlFormsService.get.calledOnce).to.be.true;
+    expect(xmlFormsService.get.args[0]).to.deep.equal([ 'training:a_form_id' ]);
+    expect(enketoService.render.calledOnce).to.be.true;
+    expect(enketoService.render.args[0][1]).to.deep.equal(xmlForm);
+    expect(enketoService.render.args[0][2]).to.equal(null);
+    expect(component.form).to.equal(renderedForm);
+    expect(consoleErrorMock.notCalled).to.be.true;
+    expect(enketoService.unload.calledOnce).to.be.true;
     expect(telemetryService.record.callCount).to.equal(2);
     expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
     expect(telemetryService.record.args[1][0]).to.equal('enketo:training:a_form_id:add:quit');
@@ -189,10 +199,14 @@ describe('TrainingCardsComponent', () => {
     }));
 
     it('should call enketo save, set content in snackbar and unload form', fakeAsync(() => {
-      xmlFormsService.get.resolves({ the: 'rendered training form' });
-      enketoService.render.resolves({ the: 'rendered training form' });
-      enketoService.save.resolves([{ _id: 'completed_training' }]);
       const consoleDebugMock = sinon.stub(console, 'debug');
+      xmlFormsService.get.resolves({ _id: 'form:training:new_feature' });
+      enketoService.save.resolves([{ _id: 'completed_training' }]);
+      enketoService.render.resolves({
+        _id: 'form:training:new_feature',
+        pages: { activePages: [ { id: 'page-1' } ] },
+      });
+
       store.overrideSelector(Selectors.getTrainingCard, 'training:a_form_id');
       store.refreshState();
       tick();
@@ -201,11 +215,17 @@ describe('TrainingCardsComponent', () => {
 
       // Unload form before loading a new one and then when saving.
       expect(enketoService.unload.calledTwice).to.be.true;
-      expect(enketoService.unload.args[1]).to.deep.equal([{ the: 'rendered training form' }]);
+      expect(enketoService.unload.args[1]).to.deep.equal([{
+        _id: 'form:training:new_feature',
+        pages: { activePages: [ { id: 'page-1' } ] },
+      }]);
       expect(enketoService.save.calledOnce).to.be.true;
       expect(enketoService.save.args[0]).to.deep.equal([
         'training:a_form_id',
-        { the: 'rendered training form' },
+        {
+          _id: 'form:training:new_feature',
+          pages: { activePages: [ { id: 'page-1' } ] },
+        },
         geoHandle
       ]);
       expect(consoleDebugMock.callCount).to.equal(1);
@@ -322,6 +342,10 @@ describe('TrainingCardsComponent', () => {
         'Error fetching form.',
         { error: 'boom' }
       ]);
+      expect(component.errorTranslationKey).to.equal('training_cards.error.loading');
+      expect(component.loadingContent).to.be.false;
+      expect(component.hideModalFooter).to.be.false;
+      expect(component.contentError).to.be.true;
     }));
 
     it('should catch enketo errors', fakeAsync(() => {

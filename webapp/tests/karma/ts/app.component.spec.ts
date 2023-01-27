@@ -302,8 +302,7 @@ describe('AppComponent', () => {
 
     expect(xmlFormsService.subscribe.getCall(0).args[0]).to.equal('FormsFilter');
     expect(xmlFormsService.subscribe.getCall(0).args[1]).to.deep.equal({
-      contactForms: false,
-      trainingForms: false,
+      reportForms: true,
       ignoreContext: true,
     });
     expect(xmlFormsService.subscribe.getCall(0).args[2]).to.be.a('Function');
@@ -327,10 +326,7 @@ describe('AppComponent', () => {
     ]);
 
     expect(xmlFormsService.subscribe.getCall(1).args[0]).to.equal('AddReportMenu');
-    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal({
-      contactForms: false,
-      trainingForms: false,
-    });
+    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal({ reportForms: true });
     expect(xmlFormsService.subscribe.getCall(1).args[2]).to.be.a('Function');
     xmlFormsService.subscribe.getCall(1).args[2](false, [form2]);
     expect(component.reportForms).to.have.deep.members([{

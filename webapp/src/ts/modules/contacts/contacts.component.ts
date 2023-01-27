@@ -445,7 +445,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
   private subscribeToAllContactXmlForms() {
     const subscription = this.xmlFormsService.subscribe(
       'ContactForms',
-      { contactForms: true, trainingForms: false },
+      { contactForms: true },
       (error, forms) => {
         if (error) {
           console.error('Error fetching allowed contact forms', error);

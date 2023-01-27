@@ -485,7 +485,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         });
         this.xmlFormsService.subscribe(
           'FormsFilter',
-          { contactForms: false, trainingForms: false, ignoreContext: true },
+          { reportForms: true, ignoreContext: true },
           (err, xForms) => {
             if (err) {
               return console.error('Error fetching form definitions', err);
@@ -507,7 +507,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         // get the forms for the Add Report menu
         this.xmlFormsService.subscribe(
           'AddReportMenu',
-          { contactForms: false, trainingForms: false },
+          { reportForms: true },
           (err, xForms) => {
             if (err) {
               return console.error('Error fetching form definitions', err);

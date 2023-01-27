@@ -61,6 +61,15 @@ describe('TrainingCardsService', () => {
     clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
     const xforms = [
       {
+        _id: 'abc-789',
+        internalId: 'training:form-c',
+        context: {
+          start_date: '2022-05-28',
+          duration: 6,
+          user_roles: [ 'chw' ],
+        },
+      },
+      {
         _id: 'abc-456',
         internalId: 'training:form-a',
         context: {
@@ -79,15 +88,6 @@ describe('TrainingCardsService', () => {
         },
       },
       {
-        _id: 'abc-789',
-        internalId: 'training:form-c',
-        context: {
-          start_date: '2022-05-28',
-          duration: 6,
-          user_roles: [ 'chw' ],
-        },
-      },
-      {
         _id: 'abc-098',
         internalId: 'training:form-d',
         context: {
@@ -101,7 +101,7 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true, contactForms: false });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
@@ -128,20 +128,20 @@ describe('TrainingCardsService', () => {
     clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
     const xforms = [
       {
-        _id: 'abc-123',
-        internalId: 'training:form-a',
-        context: {
-          start_date: '2022-05-21',
-          duration: 3,
-          user_roles: [ 'chw' ],
-        },
-      },
-      {
         _id: 'abc-456',
         internalId: 'training:form-b',
         context: {
           start_date: '2022-05-18',
           duration: 2,
+          user_roles: [ 'chw' ],
+        },
+      },
+      {
+        _id: 'abc-123',
+        internalId: 'training:form-a',
+        context: {
+          start_date: '2022-05-21',
+          duration: 3,
           user_roles: [ 'chw' ],
         },
       },
@@ -168,7 +168,7 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true, contactForms: false });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
@@ -204,7 +204,7 @@ describe('TrainingCardsService', () => {
       },
       {
         _id: 'abc-098',
-        internalId: 'training:form-b',
+        internalId: 'training:form-c',
         context: {
           start_date: '2022-05-21',
           user_roles: [ 'chw' ],
@@ -212,7 +212,7 @@ describe('TrainingCardsService', () => {
       },
       {
         _id: 'abc-098',
-        internalId: 'training:form-c',
+        internalId: 'training:form-b',
         context: {
           start_date: '2022-05-21',
           user_roles: [ 'chw' ],
@@ -223,7 +223,7 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true, contactForms: false });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
@@ -261,7 +261,7 @@ describe('TrainingCardsService', () => {
         _id: 'abc-099',
         internalId: 'training:form-b',
         context: {
-          duration: 9,
+          duration: 1,
           user_roles: [ 'chw' ],
         },
       },
@@ -286,7 +286,7 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true, contactForms: false });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
@@ -345,7 +345,7 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true, contactForms: false });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
@@ -362,12 +362,132 @@ describe('TrainingCardsService', () => {
     expect(consoleErrorMock.callCount).to.equal(0);
   });
 
+  it('should not show training forms when all trainings have expired', async () => {
+    sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
+    localDb.allDocs.resolves({ rows: [
+      { doc: { form: 'training:form-a' } },
+    ]});
+    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    const xforms = [
+      {
+        _id: 'abc-123',
+        internalId: 'training:form-a',
+        context: {
+          start_date: '2022-04-02',
+          duration: 13,
+          user_roles: [ 'chw' ],
+        },
+      },
+      {
+        _id: 'abc-456',
+        internalId: 'training:form-b',
+        context: {
+          start_date: '2022-03-15',
+          duration: 35,
+          user_roles: [ 'chw' ],
+        },
+      },
+      {
+        _id: 'abc-098',
+        internalId: 'training:form-c',
+        context: {
+          start_date: '2022-05-15',
+          duration: 7,
+          user_roles: [ 'chw' ],
+        },
+      },
+    ];
+    service.initTrainingCards();
+
+    expect(xmlFormsService.subscribe.calledOnce).to.be.true;
+    expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    const callback = xmlFormsService.subscribe.args[0][2];
+
+    await callback(null, xforms);
+
+    expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(localDb.allDocs.notCalled).to.be.true;
+    expect(globalActions.setTrainingCard.callCount).to.equal(0);
+    expect(modalService.show.callCount).to.equal(0);
+    expect(consoleErrorMock.callCount).to.equal(0);
+  });
+
+  it('should not show training forms when all trainings start in the future', async () => {
+    sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
+    localDb.allDocs.resolves({ rows: [] });
+    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    const xforms = [
+      {
+        _id: 'abc-123',
+        internalId: 'training:form-a',
+        context: {
+          start_date: '2022-06-20',
+          duration: 13,
+          user_roles: [ 'chw' ],
+        },
+      },
+      {
+        _id: 'abc-456',
+        internalId: 'training:form-b',
+        context: {
+          start_date: '2022-05-24',
+          duration: 35,
+          user_roles: [ 'chw' ],
+        },
+      },
+      {
+        _id: 'abc-098',
+        internalId: 'training:form-c',
+        context: {
+          start_date: '2022-05-28',
+          duration: 7,
+          user_roles: [ 'chw' ],
+        },
+      },
+    ];
+    service.initTrainingCards();
+
+    expect(xmlFormsService.subscribe.calledOnce).to.be.true;
+    expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    const callback = xmlFormsService.subscribe.args[0][2];
+
+    await callback(null, xforms);
+
+    expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(localDb.allDocs.notCalled).to.be.true;
+    expect(globalActions.setTrainingCard.callCount).to.equal(0);
+    expect(modalService.show.callCount).to.equal(0);
+    expect(consoleErrorMock.callCount).to.equal(0);
+  });
+
+  it('should not show the modal when no training forms', async () => {
+    sessionService.userCtx.returns({ roles: [ 'chw' ], name: 'a_user' });
+    localDb.allDocs.resolves({ rows: [] });
+    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    service.initTrainingCards();
+
+    expect(xmlFormsService.subscribe.calledOnce).to.be.true;
+    expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    const callback = xmlFormsService.subscribe.args[0][2];
+
+    await callback(null, []);
+
+    expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(localDb.allDocs.notCalled).to.be.true;
+    expect(globalActions.setTrainingCard.callCount).to.equal(0);
+    expect(modalService.show.callCount).to.equal(0);
+    expect(consoleErrorMock.callCount).to.equal(0);
+  });
+
   it('should log error from xmlFormsService', async () => {
     service.initTrainingCards();
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true, contactForms: false });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(new Error('some error'), []);
@@ -398,7 +518,7 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true, contactForms: false });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
@@ -419,7 +539,7 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true, contactForms: false });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, []);
@@ -439,12 +559,12 @@ describe('TrainingCardsService', () => {
     clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
     const xforms = [
       {
-        _id: 'abc-123',
-        internalId: 'training:form-a',
+        _id: 'abc-098',
+        internalId: 'training:form-e',
         context: {
           start_date: '2022-05-21',
-          duration: 3,
-          user_roles: [ 'role_b', 'role_c' ],
+          duration: 9,
+          user_roles: [ 'role_a', 'role_c' ],
         },
       },
       {
@@ -454,6 +574,15 @@ describe('TrainingCardsService', () => {
           start_date: '2022-05-18',
           duration: 2,
           user_roles: [ 'role_a', 'role_c' ],
+        },
+      },
+      {
+        _id: 'abc-123',
+        internalId: 'training:form-a',
+        context: {
+          start_date: '2022-05-21',
+          duration: 3,
+          user_roles: [ 'role_b', 'role_c' ],
         },
       },
       {
@@ -473,21 +602,12 @@ describe('TrainingCardsService', () => {
           duration: 19,
         },
       },
-      {
-        _id: 'abc-098',
-        internalId: 'training:form-e',
-        context: {
-          start_date: '2022-05-21',
-          duration: 9,
-          user_roles: [ 'role_a', 'role_c' ],
-        },
-      },
     ];
     service.initTrainingCards();
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true, contactForms: false });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);

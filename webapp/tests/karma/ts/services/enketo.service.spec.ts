@@ -1881,7 +1881,7 @@ describe('Enketo service', () => {
   });
 
   describe('multimedia', () => {
-    let overrideNavigationButtonsStub;
+    let setNavigationStub;
     let pauseStubs;
     let form;
     let $form;
@@ -1893,8 +1893,8 @@ describe('Enketo service', () => {
       $nextBtn = $('<button class="btn next-page"></button>');
       $prevBtn = $('<button class="btn previous-page"></button>');
       originalJQueryFind = $.fn.find;
-      overrideNavigationButtonsStub = sinon
-        .stub(EnketoService.prototype, <any>'overrideNavigationButtons')
+      setNavigationStub = sinon
+        .stub(EnketoService.prototype, <any>'setNavigation')
         .callThrough();
 
       form = {
@@ -1934,7 +1934,7 @@ describe('Enketo service', () => {
 
     xit('should pause the multimedia when going to the previous page', fakeAsync(() => {
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
-      overrideNavigationButtonsStub.call(service, form, $form);
+      setNavigationStub.call(service, form, $form);
 
       $prevBtn.trigger('click.pagemode');
       flush();
@@ -1948,7 +1948,7 @@ describe('Enketo service', () => {
     xit('should pause the multimedia when going to the next page', fakeAsync(() => {
       form.pages._next.resolves(true);
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
-      overrideNavigationButtonsStub.call(service, form, $form);
+      setNavigationStub.call(service, form, $form);
 
       $nextBtn.trigger('click.pagemode');
       flush();
@@ -1962,7 +1962,7 @@ describe('Enketo service', () => {
     xit('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
       form.pages._next.resolves(false);
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
-      overrideNavigationButtonsStub.call(service, form, $form);
+      setNavigationStub.call(service, form, $form);
 
       $nextBtn.trigger('click.pagemode');
       flush();
@@ -1972,7 +1972,7 @@ describe('Enketo service', () => {
     }));
 
     xit('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
-      overrideNavigationButtonsStub.call(service, form, $form);
+      setNavigationStub.call(service, form, $form);
 
       $prevBtn.trigger('click.pagemode');
       $nextBtn.trigger('click.pagemode');

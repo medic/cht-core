@@ -307,7 +307,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
     this.subscriptionAllContactForms = this.xmlFormsService.subscribe(
       'SelectedContactChildrenForms',
-      { contactForms: true, trainingForms: false },
+      { contactForms: true },
       (error, forms) => {
         if (error) {
           console.error('Error fetching allowed contact forms', error);
@@ -337,8 +337,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       {
         doc: this.selectedContact.doc,
         contactSummary: this.selectedContact.summary.context,
-        contactForms: false,
-        trainingForms: false,
+        reportForms: true,
       },
       (error, forms) => {
         if (error) {

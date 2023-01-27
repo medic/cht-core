@@ -116,7 +116,7 @@ export class TrainingCardsService {
   public initTrainingCards() {
     this.xmlFormsService.subscribe(
       'TrainingCards',
-      { trainingForms: true, contactForms: false },
+      { trainingForms: true },
       (error, xForms) => this.handleTrainingCards(error, xForms)
     );
   }
