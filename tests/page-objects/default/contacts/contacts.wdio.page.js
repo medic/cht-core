@@ -161,6 +161,7 @@ const addPlace = async ({
   await (await newPlaceName()).addValue(placeNameValue);
   await (await externalIdField(typeValue)).addValue(externalIDValue);
   await (await notes(typeValue)).addValue(notesValue);
+  await (await genericForm.submitButton()).waitForClickable();
   await (await genericForm.submitButton()).click();
   await waitForContactLoaded(dashedType);
 };

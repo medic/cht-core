@@ -1,8 +1,8 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
 const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trigger');
-const hamburgerMenuItemSelector = '#header-dropdown li';
+const hamburgerMenuItemSelector = '#header-dropdown li:not(.disabled)';
 const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
-const syncButton = () => $(`${hamburgerMenuItemSelector} a:not(.disabled) .fa-refresh`);
+const syncButton = () => $(`${hamburgerMenuItemSelector} .fa-refresh`);
 const messagesTab = () => $('#messages-tab');
 const analyticsTab = () => $('#analytics-tab');
 const taskTab = () => $('#tasks-tab');
@@ -206,6 +206,7 @@ const sync = async (expectReload) => {
 
 const syncWithoutWaitForSuccess = async () => {
   await openHamburgerMenu();
+  await browser.pause(500);
   await (await syncButton()).click();
 };
 
