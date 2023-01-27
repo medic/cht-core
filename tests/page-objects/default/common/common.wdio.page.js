@@ -271,7 +271,7 @@ const getTextForElements = async (elements) => {
 };
 
 //more options menu
-const optionSelector = (action, item) => $(`.mat-menu-content .mat-menu-item[test-id="${action}-${item}"]`);
+const optionSelector = (action, item) => $(`[test-id="${action}-${item}"]`);
 
 const isMenuOptionEnabled = async (action, item) => {
   return await (await optionSelector(action, item)).isEnabled();

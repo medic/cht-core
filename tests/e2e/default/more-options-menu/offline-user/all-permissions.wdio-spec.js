@@ -63,6 +63,8 @@ describe('More Options Menu - Offline User', async () => {
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
   });
+
+  afterEach(async () => await commonPage.goToBase());
   
   after(async () => await utils.revertSettings(true));
 

@@ -53,6 +53,8 @@ describe('Online User', async () => {
   let smsReportId;  
   describe('Options disabled when no items - messages, contacts, people', async () => {
     before(async () => await loginPage.cookieLogin());
+    
+    afterEach(async () => await commonPage.goToBase());
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
@@ -99,8 +101,6 @@ describe('Online User', async () => {
       smsReportId = result.id;
       await sms.sendSms('testing', contact.phone);    
     });
-
-    afterEach(async () => await commonPage.goToBase());
 
     it('- Reports tab - Edit/export invisible when NON XML report selected', async () => {
       await commonPage.goToReports();
