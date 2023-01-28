@@ -344,6 +344,9 @@ const exportContacts = async () => {
   await (await exportButton()).click();
 };
 
+const cardFieldLabelText = async (label) => await (await $(`.cell.${label} label`)).getText();
+const cardFieldText = async (label) => await (await $(`.cell.${label} p`)).getText();
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -400,4 +403,6 @@ module.exports = {
   getDeathCardInfo,
   contactMuted,
   openFormWithWarning,
+  cardFieldText,
+  cardFieldLabelText
 };
