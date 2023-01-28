@@ -1,11 +1,8 @@
 const moment = require('moment');
-const constants = require('../../../constants');
 const utils = require('../../../utils');
-const helper = require('../../../helper');
-const commonElements = require('../../../page-objects/protractor/common/common.po.js');
-const loginPage = require('../../../page-objects/protractor/login/login.po.js');
-const contactsPo = require('../../../page-objects/protractor/contacts/contacts.po');
-
+const commonElements = require('../../../page-objects/default/common/common.wdio.page.js');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page.js');
+const contactsPo = require('../../../page-objects/default/contacts/contacts.wdio.page.js');
 
 describe('Contact summary info', () => {
   const SCRIPT = `
@@ -215,7 +212,7 @@ describe('Contact summary info', () => {
       _id: 'fixture:user-home-visits:offline',
       name: 'user-home-visits'
     },
-    roles: ['national_admin']
+    roles: ['program_officer']
   };
 
   const USER_DISTRICT = {
@@ -226,7 +223,7 @@ describe('Contact summary info', () => {
       _id: 'fixture:user-district:offline',
       name: 'user-district'
     },
-    roles: ['district_admin']
+    roles: ['chw_supervisor']
   };
 
   const SETTINGS = {
@@ -249,132 +246,116 @@ describe('Contact summary info', () => {
     ]
   };
 
-  beforeEach(async () => {
+  before(async () => {
     await utils.saveDocs(DOCS);
+    await loginPage.cookieLogin();
   });
 
   afterEach(async () => {
-    await utils.afterEach();
+    await utils.revertSettings(true);
+    await commonElements.closeReloadModal();
+    await commonElements.logout();
   });
 
-  afterAll(async () => {
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
-    await utils.deleteUsers([ USER_HOME_VISITS, USER_DISTRICT ]);
-    await utils.revertDb();
-    await commonElements.calmNative();
-  });
+  after(async () => await utils.deleteUsers([ USER_HOME_VISITS, USER_DISTRICT ]));
 
   it('should load contact summary', async () => {
-    await utils.updateSettings(SETTINGS);
+    await utils.updateSettings(SETTINGS, true);
+    await commonElements.closeReloadModal();
     await commonElements.goToPeople();
     await contactsPo.selectLHSRowByText(CAROL.name);
 
     // assert the summary card has the right fields
 
-    await helper.waitUntilReadyNative(contactsPo.cardFieldLabel('test_pid'));
-    expect(await contactsPo.cardFieldLabelText('test_pid')).toBe('test_pid');
-    expect(await contactsPo.cardFieldText('test_pid')).toBe(CAROL.patient_id);
+    expect(await contactsPo.cardFieldLabelText('test_pid')).to.equal('test_pid');
+    expect(await contactsPo.cardFieldText('test_pid')).to.equal(CAROL.patient_id);
 
-    expect(await contactsPo.cardFieldLabelText('test_sex')).toBe('test_sex');
-    expect(await contactsPo.cardFieldText('test_sex')).toBe(CAROL.sex);
+    expect(await contactsPo.cardFieldLabelText('test_sex')).to.equal('test_sex');
+    expect(await contactsPo.cardFieldText('test_sex')).to.equal(CAROL.sex);
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).toBe('uhc_stats_count');
-    expect(await contactsPo.cardFieldText('uhc_stats_count')).toBe('');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).to.equal('uhc_stats_count');
+    expect(await contactsPo.cardFieldText('uhc_stats_count')).to.equal('');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal')).toBe('uhc_stats_count_goal');
-    expect(await contactsPo.cardFieldText('uhc_stats_count_goal')).toBe('');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal')).to.equal('uhc_stats_count_goal');
+    expect(await contactsPo.cardFieldText('uhc_stats_count_goal')).to.equal('');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date')).toBe('uhc_stats_last_visited_date');
-    expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).toBe('');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date')).to.equal('uhc_stats_last_visited_date');
+    expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).to.equal('');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_start')).toBe('uhc_stats_interval_start');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_start')).to.equal('uhc_stats_interval_start');
     const startDate = moment().startOf('month').valueOf().toString();
-    expect(await contactsPo.cardFieldText('uhc_stats_interval_start')).toBe(startDate);
+    expect(await contactsPo.cardFieldText('uhc_stats_interval_start')).to.equal(startDate);
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_end')).toBe('uhc_stats_interval_end');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_end')).to.equal('uhc_stats_interval_end');
     const endDate = moment().endOf('month').valueOf().toString();
-    expect(await contactsPo.cardFieldText('uhc_stats_interval_end')).toBe(endDate);
+    expect(await contactsPo.cardFieldText('uhc_stats_interval_end')).to.equal(endDate);
 
-    expect(await contactsPo.cardFieldLabelText('alicetag')).toBe('aliceTag');
-    expect(await contactsPo.cardFieldText('alicetag')).toBe(`${ALICE.name} ${ALICE.phone}`);
+    expect(await contactsPo.cardFieldLabelText('alicetag')).to.equal('aliceTag');
+    expect(await contactsPo.cardFieldText('alicetag')).to.equal(`${ALICE.name} ${ALICE.phone}`);
 
-    expect(await contactsPo.cardFieldLabelText('davidtag')).toBe('davidTag');
-    expect(await contactsPo.cardFieldText('davidtag')).toBe(`${DAVID.name} ${DAVID.phone}`);
+    expect(await contactsPo.cardFieldLabelText('davidtag')).to.equal('davidTag');
+    expect(await contactsPo.cardFieldText('davidtag')).to.equal(`${DAVID.name} ${DAVID.phone}`);
 
-    expect(await contactsPo.cardFieldLabelText('visittag')).toBe('visitTag');
-    expect(await contactsPo.cardFieldText('visittag')).toBe(DAVID_VISIT.form);
+    expect(await contactsPo.cardFieldLabelText('visittag')).to.equal('visitTag');
+    expect(await contactsPo.cardFieldText('visittag')).to.equal(DAVID_VISIT.form);
 
     // assert that the pregnancy card exists and has the right fields.
-    expect(
-      await helper.getTextFromElementNative(
-        element(by.css('.content-pane .meta > div > .card .action-header h3'))
-      )
-    ).toBe('test.pregnancy');
-    expect(
-      await helper.getTextFromElementNative(
-        element(by.css('.content-pane .meta > div > .card .row label'))
-      )
-    ).toBe('test.visits');
-    expect(
-      await helper.getTextFromElementNative(
-        element(by.css('.content-pane .meta > div > .card .row p'))
-      )
-    ).toBe('1');
+    expect(await (await $('.content-pane .meta > div > .card .action-header h3')).getText()).to.equal('test.pregnancy');
+    expect(await ( await $('.content-pane .meta > div > .card .row label')).getText()).to.equal('test.visits');
+    expect(await (await $(('.content-pane .meta > div > .card .row p'))).getText() ).to.equal('1');
   });
 
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
+    await utils.createUsers([ USER_HOME_VISITS ]);
+    await loginPage.login({username: USER_HOME_VISITS.username, password: USER_HOME_VISITS.password});
+    await commonElements.closeTour();
+
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
     permissions.can_view_uhc_stats = USER_HOME_VISITS.roles;
-    await utils.updateSettings({ ...SETTINGS, permissions });
-
-    await utils.createUsers([ USER_HOME_VISITS ]);
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(USER_HOME_VISITS.username, USER_HOME_VISITS.password);
-    await commonElements.calmNative();
-    await utils.closeTour();
+    await utils.updateSettings({ ...SETTINGS, permissions }, true);
+    
+    await commonElements.closeReloadModal();
 
     await commonElements.goToPeople();
     await contactsPo.selectLHSRowByText(BOB_PLACE.name);
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).toBe('uhc_stats_count');
-    expect(await contactsPo.cardFieldText('uhc_stats_count')).toBe('1');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).to.equal('uhc_stats_count');
+    expect(await contactsPo.cardFieldText('uhc_stats_count')).to.equal('1');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal')).toBe('uhc_stats_count_goal');
-    expect(await contactsPo.cardFieldText('uhc_stats_count_goal')).toBe('2');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal')).to.equal('uhc_stats_count_goal');
+    expect(await contactsPo.cardFieldText('uhc_stats_count_goal')).to.equal('2');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date')).toBe('uhc_stats_last_visited_date');
-    expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).toBe(VISIT.reported_date.toString());
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date')).to.equal('uhc_stats_last_visited_date');
+    expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).to.equal(VISIT.reported_date.toString());
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_start')).toBe('uhc_stats_interval_start');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_start')).to.equal('uhc_stats_interval_start');
     const startDate = moment().startOf('month').valueOf().toString();
-    expect(await contactsPo.cardFieldText('uhc_stats_interval_start')).toBe(startDate);
+    expect(await contactsPo.cardFieldText('uhc_stats_interval_start')).to.equal(startDate);
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_end')).toBe('uhc_stats_interval_end');
+    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_end')).to.equal('uhc_stats_interval_end');
     const endDate = moment().endOf('month').valueOf().toString();
-    expect(await contactsPo.cardFieldText('uhc_stats_interval_end')).toBe(endDate);
+    expect(await contactsPo.cardFieldText('uhc_stats_interval_end')).to.equal(endDate);
   });
 
   it('should have access to the "cht" global api variable', async () => {
+    await utils.createUsers([ USER_DISTRICT ]);
+    await loginPage.login({username: USER_DISTRICT.username, password: USER_DISTRICT.password});
+    await commonElements.closeTour();
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
     permissions.can_configure = USER_DISTRICT.roles;
     permissions.can_edit = USER_DISTRICT.roles;
-    await utils.updateSettings({ ...SETTINGS, permissions });
-
-    await utils.createUsers([ USER_DISTRICT ]);
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(USER_DISTRICT.username, USER_DISTRICT.password);
-    await commonElements.calmNative();
-    await utils.closeTour();
+    await utils.updateSettings({ ...SETTINGS, permissions }, true);
+    await commonElements.closeReloadModal();
 
     await commonElements.goToPeople();
     await contactsPo.selectLHSRowByText(BOB_PLACE.name);
 
-    expect(await contactsPo.cardFieldLabelText('can_configure')).toBe('can_configure');
-    expect(await contactsPo.cardFieldText('can_configure')).toBe('true');
-    expect(await contactsPo.cardFieldLabelText('can_edit_or_can_create_people')).toBe('can_edit_or_can_create_people');
-    expect(await contactsPo.cardFieldText('can_edit_or_can_create_people')).toBe('true');
+    expect(await contactsPo.cardFieldLabelText('can_configure')).to.equal('can_configure');
+    expect(await contactsPo.cardFieldText('can_configure')).to.equal('true');
+    expect(await contactsPo.cardFieldLabelText('can_edit_or_can_create_people'))
+      .to.equal('can_edit_or_can_create_people');
+    expect(await contactsPo.cardFieldText('can_edit_or_can_create_people')).to.equal('true');
   });
 });
