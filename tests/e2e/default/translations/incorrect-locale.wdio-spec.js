@@ -13,6 +13,7 @@ describe('Incorrect locale', () => {
     'task.days.left': '{DAYS, plural, =1{1 day left} other{# days left}',
     'tasks.none.n.weeks': '{WEEKS, plural, =1{No tasks in the next week.} other{No tasks in the next # weeks.}}',
     'Reports': 'HilReports',
+    'view.all':'View all'
   });
 
   const createContact = async () => await utils.saveDoc({
@@ -24,7 +25,7 @@ describe('Incorrect locale', () => {
   });
   
   after(async () => await browser.setCookies({ name: 'locale', value: 'en' }));
-  
+
   before(async () => {
     await createContact();
     await createLanguage();
