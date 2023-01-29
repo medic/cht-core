@@ -27,9 +27,9 @@ describe('Incorrect locale', () => {
   after(async () => await browser.setCookies({ name: 'locale', value: 'en' }));
 
   before(async () => {
+    await loginPage.cookieLogin();
     await createContact();
     await createLanguage();
-    await loginPage.cookieLogin();
     await commonElements.closeReloadModal();
   });
 
