@@ -1,12 +1,10 @@
 const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/protractor/common/common.po.js');
-const analytics = require('../../../page-objects/protractor/analytics/analytics.po');
-const loginPage = require('../../../page-objects/protractor/login/login.po.js');
-const helper = require('../../../helper');
+const commonElements = require('../../../page-objects/default/common/common.wdio.page');
+const analytics = require('../../../page-objects/default/analytics/analytics.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const moment = require('moment');
 const uuid = require('uuid').v4;
 const _ = require('lodash');
-const constants = require('../../../constants');
 
 const randomString = (length) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
 const randomNumber = (max) => Math.floor(Math.random() * max);
@@ -19,13 +17,13 @@ const randomNumber = (max) => Math.floor(Math.random() * max);
  * @param {string} targets[].counter
  */
 const expectTargets = async (targets) => {
-  expect(await element.all(by.css(`#target-aggregates-list li`)).count()).toEqual(targets.length);
+  expect(await $$(`#target-aggregates-list li`).length).to.equal(targets.length);
 
   const expectTarget = async (target) => {
-    const lineItem = () => element(by.css(`#target-aggregates-list li[data-record-id=${target.id}]`));
-    expect(await lineItem().isPresent()).toBe(true);
-    expect(await lineItem().element(by.css('h4')).getText()).toEqual(target.title);
-    expect(await lineItem().element(by.css('.aggregate-status span')).getText()).toEqual(target.counter);
+    const lineItem = () => $(`#target-aggregates-list li[data-record-id=${target.id}]`);
+    expect(await lineItem().isExisting()).to.be.true;
+    expect(await lineItem().$('h4').getText()).to.equal(target.title);
+    expect(await lineItem().$('.aggregate-status span').getText()).to.equal(target.counter);
   };
 
   for (const target of targets) {
@@ -39,8 +37,8 @@ const expectTargets = async (targets) => {
 };
 
 const openTargetDetails = async (targetID) => {
-  await element(by.css(`#target-aggregates-list li[data-record-id=${targetID}] a`)).click();
-  await helper.waitElementToPresentNative(element(by.css('.target-detail.card h2')));
+  await $(`#target-aggregates-list li[data-record-id=${targetID}] a`).click();
+  await $('.target-detail.card h2').waitForDisplayed();
 };
 
 /**
@@ -51,8 +49,8 @@ const openTargetDetails = async (targetID) => {
  * @param {string} target.counter
  */
 const expectTargetDetails = async (target) => {
-  expect(await element(by.css('.target-detail h2')).getText()).toEqual(target.title);
-  expect(await element(by.css('.target-detail .cell p')).getText()).toEqual(target.counter);
+  expect(await $('.target-detail h2').getText()).to.equal(target.title);
+  expect(await $('.target-detail .cell p').getText()).to.equal(target.counter);
 };
 
 /**
@@ -68,30 +66,30 @@ const expectTargetDetails = async (target) => {
  */
 const expectContacts = async (contacts, target) => {
   contacts = contacts.sort((a, b) => a.name > b.name ? 1 : -1);
-  expect(await element.all(by.css(`.aggregate-detail li`)).count()).toEqual(contacts.length);
+  expect(await $$(`.aggregate-detail li`).length).to.equal(contacts.length);
   // eslint-disable-next-line guard-for-in
   for (const idx in contacts) {
     const contact = contacts[idx];
-    const lineItem = element.all(by.css(`.aggregate-detail li`)).get(idx);
-    expect(await lineItem.getAttribute('data-record-id')).toEqual(contact._id);
-    expect(await lineItem.element(by.css('h4')).getText()).toEqual(contact.name);
-    expect(await lineItem.element(by.css('.detail')).getText()).toEqual(contact.counter);
+    const lineItem = $$(`.aggregate-detail li`)[idx];
+    expect(await lineItem.getAttribute('data-record-id')).to.equal(contact._id);
+    expect(await lineItem.$('h4').getText()).to.equal(contact.name);
+    expect(await lineItem.$('.detail').getText()).to.equal(contact.counter);
 
     if (!target.progressBar) {
-      expect(await lineItem.all(by.css('.progress-bar')).count()).toEqual(0);
+      expect(await lineItem.$$('.progress-bar').length).to.equal(0);
     } else {
       if (!contact.progress) {
-        expect(await lineItem.element(by.css('.progress-bar span')).isDisplayed()).toEqual(false);
+        expect(await lineItem.$('.progress-bar span').isDisplayed()).to.be.false;
       } else {
-        expect(await lineItem.element(by.css('.progress-bar span')).getText()).toEqual(contact.progress);
+        expect(await lineItem.$('.progress-bar span').getText()).to.equal(contact.progress);
       }
     }
 
     if (!target.goal) {
-      expect(await lineItem.all(by.css('.goal')).count()).toEqual(0);
+      expect(await lineItem.$$('.goal').length).to.equal(0);
     } else {
-      const text = await lineItem.all(by.css('.goal')).first().getText();
-      expect(text.indexOf(target.goal)).not.toEqual(-1);
+      const text = await (await lineItem.$$('.goal')[0]).getText();
+      expect(text.indexOf(target.goal)).not.to.equal(-1);
     }
   }
 };
@@ -103,24 +101,30 @@ const updateSettings = async (targetsConfig, user, contactSummary) => {
   const permissions = settings.permissions;
   permissions.can_aggregate_targets = user.roles;
   await utils.updateSettings({ tasks, permissions, contact_summary: contactSummary }, true);
-  await utils.refreshToGetNewSettings();
+  await commonElements.closeReloadModal();
+  await commonElements.goToBase();
 };
 
 const clickOnTargetAggregateListItem = async (contactId) => {
-  await element(by.css(`.aggregate-detail li[data-record-id="${contactId}"] a`)).click();
-  await helper.waitUntilReadyNative(element(by.id('contacts-list')));
+  await $(`.aggregate-detail li[data-record-id="${contactId}"] a`).click();
   // wait until contact-summary is loaded
-  await helper.waitUntilReadyNative(element(by.css('.content-pane .meta > div > .card .action-header h3')));
+  await (await $('.content-pane .meta > div > .card .action-header h3')).waitForDisplayed();
 };
 
 describe('Target aggregates', () => {
 
   describe('as a db admin', () => {
+    before(async () => await loginPage.cookieLogin());
+    //after(async () => await browser.url('/medic/login')); 
+    after(async () => {
+      await browser.deleteCookies();
+      await browser.refresh();
+    });
 
-    afterEach(() => utils.revertDb());
+    afterEach(() => utils.revertDb([], true));
 
     it('should display an empty list when there are no aggregates', async () => {
-      await commonElements.calmNative();
+      //await commonElements.waitForPageLoaded();
       await commonElements.goToAnalytics();
       await analytics.expectModulesToBeAvailable([
         '#/analytics/targets',
@@ -128,26 +132,26 @@ describe('Target aggregates', () => {
       ]);
 
       await analytics.goToTargetAggregates(true);
-      expect(await element.all(by.css('#target-aggregates-list ul li')).count()).toEqual(0);
-      expect(await element(by.css('#target-aggregates-list .loading-status')).isDisplayed()).toEqual(true);
+      expect(await $$('#target-aggregates-list ul li').length).to.equal(0);
+      expect(await $('#target-aggregates-list .loading-status').isDisplayed()).to.be.true;
       expect(
-        await element(by.css('.content-pane .item-content.empty-selection:not(.selection-error)')).isDisplayed()
-      ).toEqual(true);
+        await $('.content-pane .item-content.empty-selection:not(.selection-error)').isDisplayed()
+      ).to.be.true;
     });
 
     it('should display an error when there are aggregates but no home place', async () => {
       const settings = await utils.getSettings();
       const tasks = settings.tasks;
       tasks.targets.items[0].aggregate = true;
-      await utils.updateSettings({ tasks });
-      await helper.handleUpdateModalNative();
+      await utils.updateSettings({ tasks }, true);
+      await commonElements.closeReloadModal();
 
       await commonElements.goToAnalytics();
       await analytics.goToTargetAggregates(true);
-      expect(await element.all(by.css('#target-aggregates-list ul li')).count()).toEqual(0);
+      expect(await $$('#target-aggregates-list ul li').length).to.equal(0);
       expect(
-        await element(by.css('.content-pane .item-content.empty-selection.selection-error')).isDisplayed()
-      ).toEqual(true);
+        await $('.content-pane .item-content.empty-selection.selection-error').isDisplayed()
+      ).to.be.true;
     });
   });
 
@@ -174,7 +178,7 @@ describe('Target aggregates', () => {
         _id: 'fixture:user:supervisor',
         name: 'Supervisor'
       },
-      roles: ['national_admin'],
+      roles: ['program_officer'],
       known: true,
       language: 'en',
     };
@@ -217,21 +221,28 @@ describe('Target aggregates', () => {
       moment().date(1).add(1, 'month').format('YYYY-MM'),
     ];
 
-    beforeAll(async () => {
+    before(async () => {
       await utils.saveDocs([parentPlace, otherParentPlace]);
       await utils.saveDocs(docs);
       await utils.createUsers([ user ]);
-      await utils.resetBrowser();
-      await commonElements.goToLoginPageNative();
-      await loginPage.loginNative(user.username, user.password);
-      await commonElements.calmNative();
+      await browser.url('/medic/login');
+      await loginPage.login({ username: user.username, password: user.password });
+      // await utils.request({
+      //   path: '/medic/login',
+      //   body: { user: user.username, password: user.password, locale: 'en' },
+      //   method: 'POST',
+      //   simple: false,
+      // });
+      //await commonElements.closeReloadModal();
+      
+      await commonElements.waitForPageLoaded();
     });
 
-    afterAll(async () => {
-      await commonElements.goToLoginPageNative();
-      await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
-      await commonElements.calmNative();
-    });
+    // after(async () => {
+    //   await commonElements.goToLoginPage();
+    //   await loginPage.login(constants.USERNAME, constants.PASSWORD);
+    //   await commonElements.waitForPageLoaded();
+    // });
 
     const DOCS_TO_KEEP = [
       parentPlace._id,
@@ -242,7 +253,7 @@ describe('Target aggregates', () => {
       '^target~'
     ];
 
-    afterEach(() => utils.revertDb(DOCS_TO_KEEP));
+    afterEach( async  () => await utils.revertDb(DOCS_TO_KEEP, true));
 
     it('should display no data when no targets are uploaded', async () => {
       const targetsConfig = [
@@ -346,11 +357,11 @@ describe('Target aggregates', () => {
         }));
 
       await utils.saveDocs(targetDocs);
-      await updateSettings(targetsConfig, user);
+      await updateSettings(targetsConfig, user); 
 
       await commonElements.goToAnalytics();
       await analytics.goToTargetAggregates(true);
-      await helper.takeScreenshot('targets.png');
+      //await helper.takeScreenshot('targets.png');
 
       const expectedTargets = [
         { id: 'count_no_goal', title: 'count no goal', progressBar: false, goal: false, counter: '27' },
@@ -379,7 +390,7 @@ describe('Target aggregates', () => {
       const target = expectedTargets[2];
       await openTargetDetails(target.id);
       await browser.refresh();
-      await helper.waitElementToPresentNative(element(by.css('.target-detail.card h2')));
+      //await helper.waitElementToPresent($('.target-detail.card h2'));
       await expectTargetDetails(target);
     });
 
@@ -458,38 +469,40 @@ describe('Target aggregates', () => {
         { id: 'b_target', title: 'the most target', progressBar: true, counter: '27%' },
       ];
 
-      await helper.takeScreenshot('detail-targets.png');
+      //await helper.takeScreenshot('detail-targets.png');
       await expectTargets(expectedTargets);
       await openTargetDetails(expectedTargets[0].id);
       await clickOnTargetAggregateListItem(clarissa._id);
 
-      expect(await element(by.css('.content-pane .meta h2')).getText()).toEqual('Clarissa');
+      expect(await $('.content-pane .meta h2').getText()).to.equal('Clarissa');
       // assert that the activity card exists and has the right fields.
-      expect(await element(by.css('.content-pane .meta > div > .card .action-header h3')).getText())
-        .toBe('Activity this month');
-      expect(await element.all(by.css('.content-pane .meta > div > .card .row label')).getText())
-        .toEqual(['Last updated', 'what a target!', 'the most target']);
-      expect(await element.all(by.css('.content-pane .meta > div > .card .row p')).getText())
-        .toEqual(['yesterday Clarissa', '40', '50%']);
+      expect(await $('.content-pane .meta > div > .card .action-header h3').getText())
+        .to.equal('Activity this month');
 
-      await browser.navigate().back();
-      await helper.waitElementToPresentNative(element(by.css('.target-detail.card h2')));
+      const labels = () => $$('.content-pane .meta > div > .card .row label');
+      expect(await commonElements.getTextForElements(labels))
+        .to.deep.equal(['Last updated', 'what a target!', 'the most target']);
+      expect(await $$('.content-pane .meta > div > .card .row p').getText())
+        .to.deep.equal(['yesterday Clarissa', '40', '50%']);
+
+      await browser.back();
+      //await helper.waitElementToPresent($('.target-detail.card h2'));
       await expectTargetDetails(expectedTargets[0]);
 
       await openTargetDetails(expectedTargets[1].id);
       await clickOnTargetAggregateListItem(prometheus._id);
 
-      expect(await element(by.css('.content-pane .meta h2')).getText()).toEqual('Prometheus');
+      expect(await $('.content-pane .meta h2').getText()).to.equal('Prometheus');
       // assert that the activity card exists and has the right fields.
-      expect(await element(by.css('.content-pane .meta > div > .card .action-header h3')).getText())
-        .toBe('Activity this month');
-      expect(await element.all(by.css('.content-pane .meta > div > .card .row label')).getText())
-        .toEqual(['Last updated', 'what a target!', 'the most target']);
-      expect(await element.all(by.css('.content-pane .meta > div > .card .row p')).getText())
-        .toEqual(['yesterday Prometheus', '18', '15%']);
+      expect(await $('.content-pane .meta > div > .card .action-header h3').getText())
+        .to.equal('Activity this month');
+      expect(await $$('.content-pane .meta > div > .card .row label').getText())
+        .to.deep.equal(['Last updated', 'what a target!', 'the most target']);
+      expect(await $$('.content-pane .meta > div > .card .row p').getText())
+        .to.deep.equal(['yesterday Prometheus', '18', '15%']);
 
-      await browser.navigate().back();
-      await helper.waitElementToPresentNative(element(by.css('.target-detail.card h2')));
+      await browser.back();
+      //await helper.waitElementToPresent($('.target-detail.card h2'));
       await expectTargetDetails(expectedTargets[1]);
     });
   });
