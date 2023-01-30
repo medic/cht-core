@@ -53,9 +53,28 @@ const getTargets = async () => {
 
   return targetList;
 };
+const expectModulesToBeAvailable = async (modules) => {
+  //await helper.waitUntilReadyNative(element(by.css('.mm-navigation-menu')));
+  for (const module of modules) {
+    const element = await $(`.mm-navigation-menu li a[href="${module}"]`);
+    expect(await element.isExisting()).to.be.true;
+  }
+};
+
+const goToTargetAggregates = async (enabled) => {
+  //await helper.waitUntilReadyNative(element(by.css('.mm-navigation-menu')));
+  await (await $(`.mm-navigation-menu li a[href="#/analytics/target-aggregates"]`)).click();
+  if (enabled) {
+    await (await $('#target-aggregates-list')).waitForDisplayed();
+  } else {
+    await (await $('.page .item-content.disabled')).waitForDisplayed();
+  }
+};
 
 module.exports = {
   noSelectedTarget,
   goToTargets,
   getTargets,
+  expectModulesToBeAvailable,
+  goToTargetAggregates
 };
