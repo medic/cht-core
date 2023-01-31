@@ -20,6 +20,11 @@ const targetNumberPercentCount = (targetElement) => targetElement.$('.body .targ
 
 const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal p');
 
+const labels = () => $$('.content-pane .meta > div > .card .row label');
+const meta = () => $$('.content-pane .meta > div > .card .row p');
+const rows = () => $$('.content-pane .meta > div > .card .row p');
+const pane = () => $$('.content-pane .meta > div > .card .row label');
+
 const getTargetInfo = async (targetElement) => {
   const target = {
     title: await (await targetTitle(targetElement)).getText()
@@ -76,5 +81,9 @@ module.exports = {
   goToTargets,
   getTargets,
   expectModulesToBeAvailable,
-  goToTargetAggregates
+  goToTargetAggregates,
+  labels,
+  meta,
+  pane,
+  rows,
 };

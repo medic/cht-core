@@ -115,7 +115,6 @@ describe('Target aggregates', () => {
 
   describe('as a db admin', () => {
     before(async () => await loginPage.cookieLogin());
-    //after(async () => await browser.url('/medic/login')); 
     after(async () => {
       await browser.deleteCookies();
       await browser.refresh();
@@ -124,7 +123,6 @@ describe('Target aggregates', () => {
     afterEach(() => utils.revertDb([], true));
 
     it('should display an empty list when there are no aggregates', async () => {
-      //await commonElements.waitForPageLoaded();
       await commonElements.goToAnalytics();
       await analytics.expectModulesToBeAvailable([
         '#/analytics/targets',
@@ -226,23 +224,9 @@ describe('Target aggregates', () => {
       await utils.saveDocs(docs);
       await utils.createUsers([ user ]);
       await browser.url('/medic/login');
-      await loginPage.login({ username: user.username, password: user.password });
-      // await utils.request({
-      //   path: '/medic/login',
-      //   body: { user: user.username, password: user.password, locale: 'en' },
-      //   method: 'POST',
-      //   simple: false,
-      // });
-      //await commonElements.closeReloadModal();
-      
+      await loginPage.login({ username: user.username, password: user.password });      
       await commonElements.waitForPageLoaded();
     });
-
-    // after(async () => {
-    //   await commonElements.goToLoginPage();
-    //   await loginPage.login(constants.USERNAME, constants.PASSWORD);
-    //   await commonElements.waitForPageLoaded();
-    // });
 
     const DOCS_TO_KEEP = [
       parentPlace._id,
@@ -361,7 +345,6 @@ describe('Target aggregates', () => {
 
       await commonElements.goToAnalytics();
       await analytics.goToTargetAggregates(true);
-      //await helper.takeScreenshot('targets.png');
 
       const expectedTargets = [
         { id: 'count_no_goal', title: 'count no goal', progressBar: false, goal: false, counter: '27' },
@@ -390,7 +373,6 @@ describe('Target aggregates', () => {
       const target = expectedTargets[2];
       await openTargetDetails(target.id);
       await browser.refresh();
-      //await helper.waitElementToPresent($('.target-detail.card h2'));
       await expectTargetDetails(target);
     });
 
@@ -469,7 +451,6 @@ describe('Target aggregates', () => {
         { id: 'b_target', title: 'the most target', progressBar: true, counter: '27%' },
       ];
 
-      //await helper.takeScreenshot('detail-targets.png');
       await expectTargets(expectedTargets);
       await openTargetDetails(expectedTargets[0].id);
       await clickOnTargetAggregateListItem(clarissa._id);
@@ -479,14 +460,12 @@ describe('Target aggregates', () => {
       expect(await $('.content-pane .meta > div > .card .action-header h3').getText())
         .to.equal('Activity this month');
 
-      const labels = () => $$('.content-pane .meta > div > .card .row label');
-      expect(await commonElements.getTextForElements(labels))
+      expect(await commonElements.getTextForElements(analytics.labels))
         .to.deep.equal(['Last updated', 'what a target!', 'the most target']);
-      expect(await $$('.content-pane .meta > div > .card .row p').getText())
+      expect(await commonElements.getTextForElements(analytics.rows))
         .to.deep.equal(['yesterday Clarissa', '40', '50%']);
 
       await browser.back();
-      //await helper.waitElementToPresent($('.target-detail.card h2'));
       await expectTargetDetails(expectedTargets[0]);
 
       await openTargetDetails(expectedTargets[1].id);
@@ -496,13 +475,12 @@ describe('Target aggregates', () => {
       // assert that the activity card exists and has the right fields.
       expect(await $('.content-pane .meta > div > .card .action-header h3').getText())
         .to.equal('Activity this month');
-      expect(await $$('.content-pane .meta > div > .card .row label').getText())
+      expect(await commonElements.getTextForElements(analytics.pane))
         .to.deep.equal(['Last updated', 'what a target!', 'the most target']);
-      expect(await $$('.content-pane .meta > div > .card .row p').getText())
+      expect(await commonElements.getTextForElements(analytics.meta))
         .to.deep.equal(['yesterday Prometheus', '18', '15%']);
 
       await browser.back();
-      //await helper.waitElementToPresent($('.target-detail.card h2'));
       await expectTargetDetails(expectedTargets[1]);
     });
   });
