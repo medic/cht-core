@@ -61,6 +61,7 @@ const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
 const patientName = () => $('.subject .name');
 const reportType = () => $('div[test-id="form-title"]');
+const summaryFormName = () => $(`${REPORT_BODY} .item-summary .subject + div`);
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
@@ -151,6 +152,8 @@ const reportsListDetails = async () => {
 
   return reportDetails;
 };
+
+const getSummaryFormNameText = async () => await (await summaryFormName()).getText();
 
 const expandSelectedReportSummary = async () => {
   await (await itemSummary()).waitForClickable();
@@ -431,4 +434,7 @@ module.exports = {
   fieldByIndex,
   reportBodyDetails,
   openSelectedReport,
+  summaryFormName,
+  getSummaryFormNameText,
+  patientName,
 };
