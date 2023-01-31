@@ -255,9 +255,7 @@ describe('Reports Summary', () => {
     }
   };
 
-  const saveReport = (report) => {
-    return utils.saveDoc(report);
-  };
+  const saveReport = async (report) => await utils.saveDoc(report);
 
   const waitElementTextEquals = async (elementGetter, expectedText) => await browser.waitUntil(async () =>  
     await elementGetter.getText() === expectedText);
@@ -276,9 +274,7 @@ describe('Reports Summary', () => {
     await loginWdioPage.cookieLogin();
   });
 
-  afterEach(() => {
-    return utils.deleteAllDocs(CONTACTS.map(contact => contact._id)); // deletes all except these docs
-  });
+  afterEach(async () => await  utils.deleteAllDocs(CONTACTS.map(contact => contact._id))); // deletes all except these 
 
   describe('Displays correct LHS and RHS summary', () => {
     it('Concerning reports using patient_id', async () => {
