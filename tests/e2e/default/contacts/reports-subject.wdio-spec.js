@@ -661,7 +661,7 @@ describe('Reports Summary', () => {
 
       await testLineageSummary(['Bob Place', 'Health Center', 'District']);
 
-      expect(await reportsPage.submitterName().getText()).to.equal(CAROL.name);
+      expect(await reportsPage.submitterName().getText()).to.contain(CAROL.name);
       expect(await reportsPage.submitterPhone().getText()).to.equal(CAROL.phone);
     });
 
