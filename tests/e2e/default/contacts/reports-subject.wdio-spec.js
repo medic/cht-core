@@ -259,15 +259,9 @@ describe('Reports Summary', () => {
     return utils.saveDoc(report);
   };
 
-  const waitElementTextEquals = async (elementGetter, expectedText) => {
-    await browser.waitUntil(
-      async () => (await elementGetter.getText()) === expectedText,
-      {
-        timeout: 5000,
-        timeoutMsg: `expected text to be ${expectedText} after 5s`
-      }
-    );
-  };
+  const waitElementTextEquals = async (elementGetter, expectedText) => await browser.waitUntil(async () =>  
+    await elementGetter.getText() === expectedText);
+ 
   /**
    * Since the LHS might be refreshed, random StaleElementReferenceErrors were frequent enough,
    * to do something about them.
