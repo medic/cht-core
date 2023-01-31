@@ -1,8 +1,8 @@
 const moment = require('moment');
 const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page.js');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page.js');
-const contactsPo = require('../../../page-objects/default/contacts/contacts.wdio.page.js');
+const commonElements = require('../../../page-objects/default/common/common.wdio.page');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const contactsPo = require('../../../page-objects/default/contacts/contacts.wdio.page');
 
 describe('Contact summary info', () => {
   const SCRIPT = `
