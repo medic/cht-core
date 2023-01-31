@@ -656,7 +656,7 @@ describe('Reports Summary', () => {
 
       //RHS
       await (await reportsPage.firstReport()).click();
-      expect(await reportsPage.getReportSubject().isExisting()).to.be.false;
+      expect(await (await reportsPage.patientName()).isExisting()).to.be.false;
       expect(await firstReport.form).to.equal('SURVEY');
 
       await testLineageSummary(['Bob Place', 'Health Center', 'District']);
