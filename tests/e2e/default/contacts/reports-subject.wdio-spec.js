@@ -1,9 +1,9 @@
 const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/protractor/common/common.po.js');
-const reportsTab = require('../../../page-objects/protractor/reports/reports.po');
-const helper = require('../../../helper');
+const commonElements = require('../../../page-objects/default/common/common.wdio.page');
+const reportsTab = require('../../../page-objects/default/reports/reports.wdio.page');
 const moment = require('moment');
 const sentinelUtils = require('../../../utils/sentinel');
+const loginWdioPage = require('../../../page-objects/default/login/login.wdio.page');
 
 describe('Reports Summary', () => {
   const PHONE_CAROL = '+64271234567';
@@ -243,15 +243,15 @@ describe('Reports Summary', () => {
 
   const testLineageList = async (lineageList) => {
     for (let i = 0; i < lineageList.length; i++) {
-      const contentText = element(by.css(`#reports-list li .detail .lineage li:nth-child(${i + 1})`));
-      expect(await getElementText(contentText)).toBe(lineageList[i]);
+      const contentText = await $(`#reports-list li .detail .lineage li:nth-child(${i + 1})`);
+      expect( await contentText.getText()).to.equal(lineageList[i]);
     }
   };
 
   const testLineageSummary = async (summaryList) => {
     for (let i = 0; i < summaryList.length; i++) {
-      const contentText = element(by.css(`#reports-content .item-summary .position .lineage li:nth-child(${i + 1})`));
-      expect(await getElementText(contentText)).toBe(summaryList[i]);
+      const contentText = await $(`#reports-content .item-summary .position .lineage li:nth-child(${i + 1})`);
+      expect(await contentText.getText()).to.equal(summaryList[i]);
     }
   };
 
@@ -263,7 +263,7 @@ describe('Reports Summary', () => {
     return browser.wait(async () => {
       try {
         const element = await elementGetter();
-        const text = await helper.getTextFromElementNative(element);
+        const text = await element.getText();
         return text === expectedText;
       } catch (err) {
         // we expect these items to be redrawn, so stale element reference errors are expected
@@ -278,23 +278,21 @@ describe('Reports Summary', () => {
    * @param attempt
    * @returns {Promise<* | undefined>}
    */
-  const getElementText = (element, attempt = 0) => {
-    return helper
-      .getTextFromElementNative(element)
-      .catch(error => {
-        if (attempt < 2) {
-          return getElementText(element, attempt + 1);
-        }
-        throw error;
-      });
-  };
+  // const getElementTexts = (element, attempt = 0) => {
+  //   return elementByText.getText()
+  //     .catch(error => {
+  //       if (attempt < 2) {
+  //         return getElementText(element, attempt + 1);
+  //       }
+  //       throw error;
+  //     });
+  // };
 
-  beforeAll(async () => {
-    await utils.updateSettings(CONFIG);
+  before(async () => {
+    await utils.updateSettings(CONFIG, true);
     await utils.saveDocs(CONTACTS);
+    await loginWdioPage.cookieLogin();
   });
-
-  afterAll(utils.afterEach);
 
   afterEach(() => {
     return utils.deleteAllDocs(CONTACTS.map(contact => contact._id)); // deletes all except these docs
@@ -322,24 +320,25 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel([REPORT._id]);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
-      const report = await reportsTab.loadReport(REPORT._id);
+      const report = await reportsTab.openReport(REPORT._id);
+      
       // LHS
-      expect(await getElementText(reportsTab.subject(report))).toBe(MARIA.name);
-      expect(await getElementText(reportsTab.formName(report))).toBe('REF_REF');
+      expect(await reportsTab.subject(report).getText()).to.equal(MARIA.name);
+      expect(await reportsTab.formName(report).getText()).to.equal('REF_REF');
       //shows subject lineage breadcrumbs
       await testLineageList(['TAG Place', 'Health Center', 'District']);
 
       //RHS
-      await browser.wait(() => getElementText(reportsTab.submitterPhone()), 10000);
-      expect(await getElementText(reportsTab.subjectName())).toBe(MARIA.name);
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('REF_REF');
+      //await browser.wait(() => getElementText(reportsTab.submitterPhone()), 10000);
+      expect(await reportsTab.patientName().getText()).to.equal(MARIA.name);
+      expect(await reportsTab.summaryFormName().getText()).to.equal('REF_REF');
 
       await testLineageSummary(['TAG Place', 'Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await reportsTab.submitterName().getText()).to.have.string(`Submitted by ${CAROL.name}`);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(CAROL.phone);
     });
 
     it('Concerning reports using doc id', async () => {
@@ -363,23 +362,23 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel([REPORT._id]);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
       // LHS
-      const report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe(MARIA.name);
-      expect(await getElementText(reportsTab.formName(report))).toBe('REF_REF');
+      const report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal(MARIA.name);
+      expect(await reportsTab.formName(report).getText()).to.equal('REF_REF');
       //shows subject lineage breadcrumbs
       await testLineageList(['TAG Place', 'Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe(MARIA.name);
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('REF_REF');
+      expect(await reportsTab.patientName().getText()).to.equal(MARIA.name);
+      expect(await reportsTab.summaryFormName().getText()).to.equal('REF_REF');
 
       await testLineageSummary(['TAG Place', 'Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await reportsTab.submitterName().getText()).to.have.string(`Submitted by ${CAROL.name}`);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(CAROL.phone);
     });
 
     it('Concerning reports with unknown patient_id', async () => {
@@ -403,23 +402,23 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel([REPORT._id]);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
       // LHS
-      const report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe('Unknown subject');
-      expect(await getElementText(reportsTab.formName(report))).toBe('REF_REF');
+      const report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal('Unknown subject');
+      expect(await reportsTab.formName(report).getText()).to.equal('REF_REF');
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe('Unknown subject');
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('REF_REF');
+      expect(await reportsTab.patientName().getText()).to.equal('Unknown subject');
+      expect(await reportsTab.summaryFormName().getText()).to.equal('REF_REF');
 
       await testLineageSummary(['Bob Place', 'Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await reportsTab.submitterName().getText()).to.have.string(`Submitted by ${CAROL.name}`);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(CAROL.phone);
     });
 
     it('Concerning reports using patient name', async () => {
@@ -443,23 +442,23 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel(REPORT._id);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
       // LHS
-      const report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe(GEORGE.name);
-      expect(await getElementText(reportsTab.formName(report))).toBe('NAM_NAM');
+      const report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal(GEORGE.name);
+      expect(await reportsTab.formName(report).getText()).to.equal('NAM_NAM');
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe(GEORGE.name);
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('NAM_NAM');
+      expect(await reportsTab.patientName().getText()).to.equal(GEORGE.name);
+      expect(await reportsTab.summaryFormName().getText()).to.equal('NAM_NAM');
 
       await testLineageSummary(['Bob Place', 'Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await reportsTab.submitterName().getText()).to.have.string(`Submitted by ${CAROL.name}`);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(CAROL.phone);
     });
 
     it('Concerning reports using missing required patient name', async () => {
@@ -489,22 +488,22 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel([REPORT._id]);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
       // LHS
-      const report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe('Unknown subject');
-      expect(await getElementText(reportsTab.formName(report))).toBe('NAM_NAM');
+      const report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal('Unknown subject');
+      expect(await reportsTab.formName(report).getText()).to.equal('NAM_NAM');
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe('Unknown subject');
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('NAM_NAM');
+      expect(await reportsTab.patientName().getText()).to.equal('Unknown subject');
+      expect(await reportsTab.summaryFormName().getText()).to.equal('NAM_NAM');
 
       await testLineageSummary(['Bob Place', 'Health Center', 'District']);
-      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await reportsTab.submitterName().getText()).to.have.string(`Submitted by ${CAROL.name}`);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(CAROL.phone);
     });
 
     it('Concerning reports using place_id with a place_uuid', async () => {
@@ -528,23 +527,23 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel([REPORT._id]);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
       // LHS
-      const report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe(TAG_PLACE.name);
-      expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
+      const report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal(TAG_PLACE.name);
+      expect(await reportsTab.formName(report).getText()).to.equal('PID_PID');
       //shows subject lineage breadcrumbs
       await testLineageList(['Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe(TAG_PLACE.name);
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('PID_PID');
+      expect(await reportsTab.patientName().getText()).to.equal(TAG_PLACE.name);
+      expect(await reportsTab.summaryFormName().getText()).to.equal('PID_PID');
 
       await testLineageSummary(['Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await reportsTab.submitterName().getText()).to.have.string(`Submitted by ${CAROL.name}`);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(CAROL.phone);
     });
 
     it('Concerning reports using place_id with a shortcode', async () => {
@@ -568,23 +567,23 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel([REPORT._id]);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
       // LHS
-      const report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe(TAG_PLACE.name);
-      expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
+      const report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal(TAG_PLACE.name);
+      expect(await reportsTab.formName(report).getText()).to.equal('PID_PID');
       //shows subject lineage breadcrumbs
       await testLineageList(['Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe(TAG_PLACE.name);
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('PID_PID');
+      expect(await reportsTab.patientName().getText()).to.equal(TAG_PLACE.name);
+      expect(await reportsTab.summaryFormName().getText()).to.equal('PID_PID');
 
       await testLineageSummary(['Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await reportsTab.submitterName().getText()).to.have.string(`Submitted by ${CAROL.name}`);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(CAROL.phone);
     });
 
     it('Concerning reports using unknown place_id', async () => {
@@ -608,23 +607,23 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel([REPORT._id]);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
       // LHS
-      const report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe('Unknown subject');
-      expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
+      const report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal('Unknown subject');
+      expect(await reportsTab.formName(report).getText()).to.equal('PID_PID');
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe('Unknown subject');
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('PID_PID');
+      expect(await reportsTab.patientName().getText()).to.equal('Unknown subject');
+      expect(await reportsTab.summaryFormName().getText()).to.equal('PID_PID');
 
       await testLineageSummary(['Bob Place', 'Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await reportsTab.submitterName().getText()).to.have.string(`Submitted by ${CAROL.name}`);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(CAROL.phone);
     });
 
     it('Concerning reports which do not have a subject', async () => {
@@ -648,23 +647,23 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel([REPORT._id]);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
       // LHS
-      const report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe(CAROL.name);
-      expect(await getElementText(reportsTab.formName(report))).toBe('SURVEY');
+      const report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal(CAROL.name);
+      expect(await reportsTab.formName(report).getText()).to.equal('SURVEY');
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
       //RHS
-      expect(await reportsTab.subjectName().isPresent()).toBe(false);
-      expect(await getElementText(reportsTab.formNameNoSubject())).toBe('SURVEY');
+      expect(await reportsTab.patientName().isPresent()).to.ebe.false;
+      expect(await reportsTab.formNameNoSubject().getText()).to.equal('SURVEY');
 
       await testLineageSummary(['Bob Place', 'Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toBe(CAROL.name);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await reportsTab.submitterName().getText()).to.equal(CAROL.name);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(CAROL.phone);
     });
 
     it('Concerning reports which have an unknown sender and have a known subject', async () => {
@@ -687,23 +686,23 @@ describe('Reports Summary', () => {
       };
 
       await saveReport(REPORT);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
       // LHS
-      const report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe(BOB_PLACE.name);
-      expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
+      const report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal(BOB_PLACE.name);
+      expect(await reportsTab.formName(report).getText()).to.equal('PID_PID');
       //shows subject lineage breadcrumbs
       await testLineageList(['Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe(BOB_PLACE.name);
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('PID_PID');
+      expect(await reportsTab.patientName().getText()).to.equal(BOB_PLACE.name);
+      expect(await reportsTab.summaryFormName().getText()).to.equal('PID_PID');
 
       await testLineageSummary(['Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch('555');
-      expect(await getElementText(reportsTab.submitterPhone())).toBe('');
+      expect(await reportsTab.submitterName().getText()).to.have.string('555');
+      expect(await reportsTab.submitterPhone().getText()).to.equal('');
     });
 
     it('Concerning reports which have an unknown sender with no phone number', async () => {
@@ -726,23 +725,23 @@ describe('Reports Summary', () => {
       };
 
       await saveReport(REPORT);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
-      const report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe(BOB_PLACE.name);
-      expect(await getElementText(reportsTab.formName(report))).toBe('PID_PID');
+      const report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal(BOB_PLACE.name);
+      expect(await reportsTab.formName(report).getText()).to.equal('PID_PID');
 
       //shows subject lineage breadcrumbs
       await testLineageList(['Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe(BOB_PLACE.name);
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('PID_PID');
+      expect(await reportsTab.patientName().getText()).to.equal(BOB_PLACE.name);
+      expect(await reportsTab.summaryFormName().getText()).to.equal('PID_PID');
 
       await testLineageSummary(['Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch('Unknown sender');
-      expect(await getElementText(reportsTab.submitterPhone())).toBe('');
+      expect(await reportsTab.submitterName().getText()).to.have.string('Unknown sender');
+      expect(await reportsTab.submitterPhone().getText()).to.equal('');
     });
 
     it('Changes to a loaded or list report should be reflected in the UI', async () => {
@@ -763,23 +762,23 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel([REPORT._id]);
-      await commonElements.goToReportsNative();
+      await commonElements.goToReports();
 
       // LHS
-      let report = await reportsTab.loadReport(REPORT._id);
-      expect(await getElementText(reportsTab.subject(report))).toBe(MARIA.name);
-      expect(await getElementText(reportsTab.formName(report))).toBe('REF_REF');
+      let report = await reportsTab.goToReportById(REPORT._id);
+      expect(await reportsTab.subject(report).getText()).to.equal(MARIA.name);
+      expect(await reportsTab.formName(report).getText()).to.equal('REF_REF');
       //shows subject lineage breadcrumbs
       await testLineageList(['TAG Place', 'Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe(MARIA.name);
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('REF_REF');
+      expect(await reportsTab.patientName().getText()).to.equal(MARIA.name);
+      expect(await reportsTab.summaryFormName().getText()).to.equal('REF_REF');
 
       await testLineageSummary(['TAG Place', 'Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${CAROL.name}`);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(CAROL.phone);
+      expect(await reportsTab.submitterName().getText()).to.have.string(`Submitted by ${CAROL.name}`);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(CAROL.phone);
 
       // change both patient and submitter
       const reportDoc = await utils.getDoc(REPORT._id);
@@ -797,18 +796,18 @@ describe('Reports Summary', () => {
 
       report = await reportsTab.reportByUUID(REPORT._id);
       // LHS
-      expect(await getElementText(reportsTab.subject(report))).toBe(ROBERT.name);
+      expect(await reportsTab.subject(report).getText()).to.equal(ROBERT.name);
       //shows subject lineage breadcrumbs
       await testLineageList(['Bob Place', 'Health Center', 'District']);
 
       //RHS
-      expect(await getElementText(reportsTab.subjectName())).toBe(ROBERT.name);
-      expect(await getElementText(reportsTab.summaryFormName())).toBe('REF_REF');
+      expect(await reportsTab.patientName().getText()).to.equal(ROBERT.name);
+      expect(await reportsTab.summaryFormName().getText()).to.equal('REF_REF');
 
       await testLineageSummary(['Bob Place', 'Health Center', 'District']);
 
-      expect(await getElementText(reportsTab.submitterName())).toMatch(`Submitted by ${JOHN.name}`);
-      expect(await getElementText(reportsTab.submitterPhone())).toBe(JOHN.phone);
+      expect(await reportsTab.submitterName().getText()).to.have.string(`Submitted by ${JOHN.name}`);
+      expect(await reportsTab.submitterPhone().getText()).to.equal(JOHN.phone);
     });
   });
 });
