@@ -235,7 +235,6 @@ describe('registration transition', () => {
       await sUtils.waitForSentinel();
       await loginWdioPage.cookieLogin();
       await commonElements.closeReloadModal();
-
       await commonElements.goToReports();
       await reportsPo.firstReport().click();
     });
