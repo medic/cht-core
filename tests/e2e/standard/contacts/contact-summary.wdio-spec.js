@@ -212,7 +212,7 @@ describe('Contact summary info', () => {
       _id: 'fixture:user-home-visits:offline',
       name: 'user-home-visits'
     },
-    roles: ['program_officer']
+    roles: ['national_admin']
   };
 
   const USER_DISTRICT = {
@@ -223,7 +223,7 @@ describe('Contact summary info', () => {
       _id: 'fixture:user-district:offline',
       name: 'user-district'
     },
-    roles: ['chw_supervisor']
+    roles: ['district_admin']
   };
 
   const SETTINGS = {
