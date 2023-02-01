@@ -273,6 +273,7 @@ describe('Reports Summary', () => {
     await utils.saveDocs(CONTACTS);
     await loginWdioPage.cookieLogin();
   });
+  after( async () => await utils.revertSettings(true));
 
   afterEach(async () => await  utils.deleteAllDocs(CONTACTS.map(contact => contact._id))); // deletes all except these 
 
