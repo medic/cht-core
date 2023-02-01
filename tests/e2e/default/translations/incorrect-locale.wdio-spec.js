@@ -4,7 +4,7 @@ const userSettingsElements = require('../../../page-objects/default/users/user-s
 const contactElements = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 
-describe('Incorrect locale', () => {
+describe('Testing Incorrect locale', () => {
   const createLanguage = async () =>  await utils.addTranslations('hil', {
     'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
     'n.week': '{WEEKS, plural, =1{1 saptamana} other{# saptamani}}',
