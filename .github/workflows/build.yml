@@ -168,6 +168,7 @@ jobs:
     - name: Copy new allure report
       if: always()
       run: |
+        mkdir -p build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/
         cp -r allure-report build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/ | true
     - name: Upload allure report history
       if: always()
