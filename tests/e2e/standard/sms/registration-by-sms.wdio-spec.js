@@ -239,6 +239,8 @@ describe('registration transition', () => {
       await reportsPo.firstReport().click();
     });
 
+    after(async () => await utils.revertSettings(true));
+
     const checkScheduledTask = async (childIndex, title, message) => {
       expect(await (await reportsPo.scheduledTaskGroupByIndex(childIndex).$('h3')).getText()).to.have.string(title);
       expect(await (await reportsPo.scheduledTaskMessageByIndex(childIndex)).getText()).to.equal(message);
