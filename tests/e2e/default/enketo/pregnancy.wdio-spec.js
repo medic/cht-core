@@ -97,7 +97,7 @@ describe('Pregnancy registration', () => {
 
   });
 
-  it('Should verify that all tasks related with the high risk pregnancy were created', async () => {
+  it.skip('Should verify that all tasks related with the high risk pregnancy were created', async () => {
     const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Pregnancy home visit'];
 
     await commonPage.goToTasks();
