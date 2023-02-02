@@ -159,14 +159,16 @@ jobs:
         repository: 'medic/build-history-data'
         path: '${{ env.RUNNER_TEMP }}/build-history-data'
         persist-credentials: false
+    - name: Copy allure history
       run: |
         mkdir -p allure-report/history
         cp -r ${{ env.RUNNER_TEMP }}/build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/history allure-report/history/ | true
     - name: Run tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
-    - name: Upload allure report
+    - name: Copy new allure report
       run: |
         cp -r allure-report ${{ env.RUNNER_TEMP }}/build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/ | true
+    - name: Upload allure report
       uses: actions-js/push@master
       with:
         github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
