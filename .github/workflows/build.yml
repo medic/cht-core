@@ -166,9 +166,11 @@ jobs:
     - name: Run tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Copy new allure report
+      if: always()
       run: |
         cp -r allure-report build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/ | true
     - name: Upload allure report history
+      if: always()
       uses: actions-js/push@master
       with:
         github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
