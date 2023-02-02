@@ -19,6 +19,8 @@ const targetNumberPercent = (targetElement) => targetElement.$('.body .target-pr
 const targetNumberPercentCount = (targetElement) => targetElement.$('.body .target-progress .number span:nth-child(2)');
 
 const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal p');
+const loadingStatus = () => $('#target-aggregates-list .loading-status');
+const aggregateList = () => $$('#target-aggregates-list ul li');
 
 const labels = () => $$('.content-pane .meta > div > .card .row label');
 const meta = () => $$('.content-pane .meta > div > .card .row p');
@@ -86,4 +88,6 @@ module.exports = {
   meta,
   pane,
   rows,
+  loadingStatus,
+  aggregateList
 };

@@ -17,7 +17,7 @@ const randomNumber = (max) => Math.floor(Math.random() * max);
  * @param {string} targets[].counter
  */
 const expectTargets = async (targets) => {
-  expect(await $$(`#target-aggregates-list li`).length).to.equal(targets.length);
+  expect(await (await analytics.aggregateList()).length).to.equal(targets.length);
 
   const expectTarget = async (target) => {
     const lineItem = () => $(`#target-aggregates-list li[data-record-id=${target.id}]`);
@@ -120,7 +120,7 @@ describe('Target aggregates', () => {
       await browser.refresh();
     });
 
-    afterEach(() => utils.revertDb([], true));
+    afterEach(async () => await utils.revertDb([], true));
 
     it('should display an empty list when there are no aggregates', async () => {
       await commonElements.goToAnalytics();
@@ -130,8 +130,8 @@ describe('Target aggregates', () => {
       ]);
 
       await analytics.goToTargetAggregates(true);
-      expect(await $$('#target-aggregates-list ul li').length).to.equal(0);
-      expect(await $('#target-aggregates-list .loading-status').isDisplayed()).to.be.true;
+      expect(await (await analytics.aggregateList()).length).to.equal(0);
+      expect(await (await analytics.loadingStatus()).isDisplayed()).to.be.true;
       expect(
         await $('.content-pane .item-content.empty-selection:not(.selection-error)').isDisplayed()
       ).to.be.true;
