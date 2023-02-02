@@ -273,9 +273,11 @@ describe('Reports Summary', () => {
     await utils.saveDocs(CONTACTS);
     await loginWdioPage.cookieLogin();
   });
-  after( async () => await utils.revertSettings(true));
 
-  afterEach(async () => await  utils.deleteAllDocs(CONTACTS.map(contact => contact._id))); // deletes all except these 
+  after(async () => await utils.revertSettings(true));
+
+  afterEach(async () => await utils.deleteAllDocs([/^form:/].concat(CONTACTS.map(contact => contact._id))));
+ 
 
   describe('Displays correct LHS and RHS summary', () => {
     it('Concerning reports using patient_id', async () => {
@@ -299,7 +301,6 @@ describe('Reports Summary', () => {
 
       await saveReport(REPORT);
       await sentinelUtils.waitForSentinel([REPORT._id]);
-      //await commonElements.goToReports();
 
       await commonElements.goToReports();
       
@@ -311,7 +312,6 @@ describe('Reports Summary', () => {
       await testLineageList(['TAG Place', 'Health Center', 'District']);
 
       //RHS
-      //await browser.wait(() => getElementText(reportsPage.submitterPhone()), 10000);
       await (await reportsPage.firstReport()).click();
       expect(await reportsPage.getReportSubject()).to.equal(MARIA.name);
       expect(await reportsPage.getReportType()).to.equal('REF_REF');
