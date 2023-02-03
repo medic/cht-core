@@ -357,7 +357,7 @@ const baseConfig = {
     await utils.tearDownServices();
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');
-    const generation = allure(['generate', 'allure-results', '--clean']);
+    const generation = allure(['generate', 'allure-results']);
 
     return new Promise((resolve, reject) => {
       const generationTimeout = setTimeout(
