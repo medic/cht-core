@@ -162,7 +162,7 @@ jobs:
     - name: Copy allure history
       run: |
         mkdir -p allure-results/history
-        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report/history allure-results/history/ | true
+        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report/history allure-results | true
     - name: Run tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Copy new allure report
