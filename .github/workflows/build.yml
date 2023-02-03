@@ -186,6 +186,7 @@ jobs:
         path: 'build-history'
         persist-credentials: false
     - name: Copy new report
+      if: always()
       run: |
         mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}
         cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }} | true
