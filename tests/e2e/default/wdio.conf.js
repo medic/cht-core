@@ -188,8 +188,10 @@ const baseConfig = {
     if (fs.existsSync(ALLURE_OUTPUT)) {
       const files = fs.readdirSync(ALLURE_OUTPUT) || [];
       files.forEach(fileName => {
-        const filePath = path.join(ALLURE_OUTPUT, fileName);
-        fs.unlinkSync(filePath);
+        if (fileName !== 'history') {
+          const filePath = path.join(ALLURE_OUTPUT, fileName);
+          fs.unlinkSync(filePath);
+        }
       });
     }
 
