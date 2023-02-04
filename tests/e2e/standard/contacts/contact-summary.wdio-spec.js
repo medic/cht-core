@@ -257,7 +257,11 @@ describe('Contact summary info', () => {
     await commonElements.logout();
   });
 
-  after(async () => await utils.deleteUsers([ USER_HOME_VISITS, USER_DISTRICT ]));
+  after(async () => {
+    await utils.deleteUsers([ USER_HOME_VISITS, USER_DISTRICT ]);
+    await utils.revertDb([], true);
+  });
+  
 
   it('should load contact summary', async () => {
     await utils.updateSettings(SETTINGS, true);
