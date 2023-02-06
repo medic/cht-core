@@ -69,6 +69,7 @@ jobs:
         name: cht-images
         path: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+
   config-tests:
     needs: build
     name: ${{ matrix.grunt-cmd }}
