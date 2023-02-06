@@ -55,13 +55,13 @@ const baseConfig = {
     // makes default jasmine reporter not display dots for every spec
     print: () => {}
   },
-  beforeLaunch: function() {
+  beforeLaunch: () => {
     process.on('uncaughtException', function() {
       utils.reporter.jasmineDone();
       utils.reporter.afterLaunch();
     });
 
-    return new Promise(function(resolve) {
+    return new Promise((resolve) => {
       utils.reporter.beforeLaunch(resolve);
     });
   },
@@ -87,7 +87,7 @@ const baseConfig = {
 
     return utils.protractorLogin(browser).then(() => utils.runAndLogApiStartupMessage('User setup', utils.setupUser));
   },
-  onCleanUp = function(results) {
+  onCleanUp: (results) => {
     retry.onCleanUp(results);
   }
 };
