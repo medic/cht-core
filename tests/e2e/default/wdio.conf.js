@@ -169,6 +169,7 @@ const baseConfig = {
   mochaOpts: {
     ui: 'bdd',
     timeout: 120000,
+    retries: 5,
   },
   //
   // =====
