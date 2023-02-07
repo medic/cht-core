@@ -1,3 +1,5 @@
+const KEYS = require('@wdio/utils').UNICODE_CHARACTERS;
+
 const genericForm = require('../enketo/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
@@ -76,7 +78,7 @@ const deathPlace = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.
 
 const search = async (query) => {
   await (await searchBox()).setValue(query);
-  await browser.keys('Enter');
+  await browser.keys(KEYS.Enter);
   await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
 };
 
