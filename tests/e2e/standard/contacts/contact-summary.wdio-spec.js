@@ -259,7 +259,7 @@ describe('Contact summary info', () => {
 
   after(async () => {
     await utils.deleteUsers([ USER_HOME_VISITS, USER_DISTRICT ]);
-    await utils.revertDb([], true);
+    await utils.revertDb([/^form:/], true);
   });
   
 
