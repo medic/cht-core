@@ -76,19 +76,30 @@ const login = async () => {
   await browser.throttle('online');
   await loginPage.login(chw);
   await commonPage.waitForPageLoaded();
-  await commonPage.closeTour();
+};
+
+const isLoggedIn = async () => {
+  const tab = await commonPage.messagesTab();
+  return await tab.isExisting();
+}
+
+const loginIfNeeded = async () => {
+  if (!await isLoggedIn()) {
+    await login();
+  }
 };
 
 describe('Service worker cache', () => {
-  
+
   before(async () => {
     await utils.saveDoc(district);
     await utils.createUsers([chw]);
-
+    await login();
+    await commonPage.closeTour();
   });
 
   beforeEach(async () => {
-    await login();
+    await loginIfNeeded();
   });
 
   it('confirm initial list of cached resources', async () => {
