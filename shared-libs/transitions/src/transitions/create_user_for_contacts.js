@@ -129,7 +129,10 @@ const getUsersToReplace = (originalContact) => {
 };
 
 const addUser = async (contact) => {
-  if (!contact.roles && !contact.role) {
+  if (
+    !contact.role &&
+    (!contact.roles || !contact.roles.length)
+  ) {
     throw new Error(`Contact [${contact._id}] must have a "role" or "roles" property.`);
   }
 
