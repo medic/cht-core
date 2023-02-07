@@ -81,7 +81,7 @@ const login = async () => {
 const isLoggedIn = async () => {
   const tab = await commonPage.messagesTab();
   return await tab.isExisting();
-}
+};
 
 const loginIfNeeded = async () => {
   if (!await isLoggedIn()) {
