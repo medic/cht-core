@@ -163,17 +163,23 @@ jobs:
         cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report/history allure-results | true
     - name: Run tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
+    - name: Fetch allure history
+      uses: actions/checkout@v3
+      with:
+        repository: 'medic/build-history-data'
+        path: 'build-history-data-new'
+        persist-credentials: false
     - name: Copy new allure history
       if: always()
       run: |
-        mkdir -p build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/history
-        cp -r allure-report/history build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report | true
+        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report | true
     - name: Upload allure report history
       if: always()
       uses: actions-js/push@master
       with:
         github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
-        directory: 'build-history-data'
+        directory: 'build-history-data-new'
         repository: 'medic/build-history-data'
         force: true
     - name: Fetch report repo
