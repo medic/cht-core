@@ -139,7 +139,8 @@ const addUser = async (contact) => {
 };
 
 const isCreatingUser = (contact, info) => contact.user_for_contact.create === 'true'
-  && !transitionUtils.hasRun(info, NAME);
+  && !transitionUtils.hasRun(info, NAME)
+  && info.initial_replication_date === info.latest_replication_date;
 const isReplacingUser = contact => contact.user_for_contact.replace && !!Object
   .values(contact.user_for_contact.replace)
   .find(({ status }) => status === USER_CREATION_STATUS.READY);
