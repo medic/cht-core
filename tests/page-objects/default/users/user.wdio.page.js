@@ -5,15 +5,11 @@ const cancelUserModalButton = () => $('[test-id="modal-cancel-btn"]');
 const addUserDialog = () => $('div#edit-user-profile');
 const userName = () => $('#edit-username');
 const userFullName = () => $('#fullname');
-// const userPlace = () => $('//span[@aria-labelledby="select2-facilitySelect-container"]');
-const userAssociatedContact = () => $('//span[@aria-labelledby="select2-contactSelect-container"]');
 const userPassword = () => $('#edit-password');
 const userConfirmPassword = () => $('#edit-password-confirm');
 const saveUserButton = () => $('//a[@test-id="modal-submit-btn"]');
 const logoutButton = () => $('i.fa-power-off');
-// const select2SearchInputBox = () => $('//input[@aria-controls="select2-facilitySelect-results"]');
 const select2Name = () => $('.name');
-// const select2SearchContactInputBox = () => $('//input[@aria-controls="select2-contactSelect-results"]');
 const usernameTextSelector = '[test-id="username-list"]';
 const usernameText = () => $(usernameTextSelector);
 const usernameTextList = () => $$(usernameTextSelector);
@@ -74,54 +70,27 @@ const inputUploadUsersFields = async (filePath) => {
   await (await $('input[type="file"]')).setValue(filePath);
 };
 
-const selectPlace = async (place) => {
-
-
-
-  
-
-  // await (await userPlace()).waitForDisplayed();
-  // await (await userPlace()).scrollIntoView();
-  // await (await userPlace()).click();
-
-  // const userPlace = () => $('//span[@aria-labelledby="select2-facilitySelect-container"]');
-
-  const select2Selection = () => $('#facilitySelectGroup .select2-selection');
-  await (await select2Selection()).waitForDisplayed();
-  await (await select2Selection()).scrollIntoView();
-  await browser.execute(() => {
-    $('#facilitySelect').select2('open');
-  });
+const setSelect2 = async (id, value) => {
+  // During upgrade to WDIO v8 something broke the click event on the select2 dropdown.
+  // Replacing with this fixes the problem but isn't testing actually clicking on the elem
+  // so it's not ideal. This should be fixed one day.
+  await browser.execute((id) => {
+    $(id).select2('open');
+  }, id);
 
   const searchField = await $('.select2-search__field');
   await searchField.waitForExist();
-  await searchField.setValue(place);
-  // await (await select2SearchInputBox()).waitForExist();
-  // await (await select2SearchInputBox()).waitForDisplayed();
-  // await (await select2SearchInputBox()).addValue(place);
-  await (await select2Name()).click();
+  await searchField.setValue(value);
 
+  await (await select2Name()).click();
+};
+
+const selectPlace = async (place) => {
+  await setSelect2('#facilitySelect', place);
 };
 
 const selectContact = async (associatedContact) => {
-
-  const select2Selection = () => $('#contactSelectGroup .select2-selection');
-  await (await select2Selection()).waitForDisplayed();
-  await (await select2Selection()).scrollIntoView();
-  await browser.execute(() => {
-    $('#contactSelect').select2('open');
-  });
-
-  await (await userAssociatedContact()).waitForDisplayed();
-  await (await userAssociatedContact()).scrollIntoView();
-  await (await userAssociatedContact()).click();
-  const searchField = await $('.select2-search__field');
-  await searchField.waitForExist();
-  await searchField.setValue(associatedContact);
-  // await (await select2SearchContactInputBox()).waitForExist();
-  // await (await select2SearchContactInputBox()).waitForDisplayed();
-  // await (await select2SearchContactInputBox()).addValue(associatedContact);
-  await (await select2Name()).click();
+  await setSelect2('#contactSelect', associatedContact);
 };
 
 const saveUser = async (isSuccessExpected = true)  => {
