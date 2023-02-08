@@ -75,6 +75,11 @@ const inputUploadUsersFields = async (filePath) => {
 };
 
 const selectPlace = async (place) => {
+
+
+
+  
+
   // await (await userPlace()).waitForDisplayed();
   // await (await userPlace()).scrollIntoView();
   // await (await userPlace()).click();
@@ -84,7 +89,9 @@ const selectPlace = async (place) => {
   const select2Selection = () => $('#facilitySelectGroup .select2-selection');
   await (await select2Selection()).waitForDisplayed();
   await (await select2Selection()).scrollIntoView();
-  await (await select2Selection()).click();
+  await browser.execute(() => {
+    $('#facilitySelect').select2('open');
+  });
 
   const searchField = await $('.select2-search__field');
   await searchField.waitForExist();
@@ -101,7 +108,9 @@ const selectContact = async (associatedContact) => {
   const select2Selection = () => $('#contactSelectGroup .select2-selection');
   await (await select2Selection()).waitForDisplayed();
   await (await select2Selection()).scrollIntoView();
-  await (await select2Selection()).click();
+  await browser.execute(() => {
+    $('#contactSelect').select2('open');
+  });
 
   await (await userAssociatedContact()).waitForDisplayed();
   await (await userAssociatedContact()).scrollIntoView();
