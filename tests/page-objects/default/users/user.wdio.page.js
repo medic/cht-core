@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const commonElements = require('../common/common.wdio.page');
 const addUserButton = () => $('a#add-user');
-const cancelUserModalButton = () => $('[test-id="modal-cancel-btn"]');
 const addUserDialog = () => $('div#edit-user-profile');
 const userName = () => $('#edit-username');
 const userFullName = () => $('#fullname');
@@ -9,7 +8,6 @@ const userPassword = () => $('#edit-password');
 const userConfirmPassword = () => $('#edit-password-confirm');
 const saveUserButton = () => $('//a[@test-id="modal-submit-btn"]');
 const logoutButton = () => $('i.fa-power-off');
-const select2Name = () => $('.name');
 const usernameTextSelector = '[test-id="username-list"]';
 const usernameText = () => $(usernameTextSelector);
 const usernameTextList = () => $$(usernameTextSelector);
@@ -42,14 +40,7 @@ const openAddUserDialog = async () => {
   await browser.pause(500);
 };
 
-const closeUserDialog = async () => {
-  await (await cancelUserModalButton()).waitForDisplayed();
-  await (await cancelUserModalButton()).click();
-  await (await addUserDialog()).waitForDisplayed({ reverse: true });
-};
-
-const inputAddUserFields = async (username, fullname, role, place, associatedContact, password,
-  confirmPassword = password) => {
+const inputAddUserFields = async (username, fullname, role, place, contact, password, confirmPassword = password) => {
   await (await userName()).addValue(username);
   await (await userFullName()).addValue(fullname);
   await (await $(`#role-select input[value="${role}"]`)).click();
@@ -58,8 +49,8 @@ const inputAddUserFields = async (username, fullname, role, place, associatedCon
     await selectPlace(place);
   }
 
-  if (!_.isEmpty(associatedContact)) {
-    await selectContact(associatedContact);
+  if (!_.isEmpty(contact)) {
+    await selectContact(contact);
   }
 
   await (await userPassword()).addValue(password);
@@ -80,9 +71,14 @@ const setSelect2 = async (id, value) => {
 
   const searchField = await $('.select2-search__field');
   await searchField.waitForExist();
+  await searchField.scrollIntoView();
   await searchField.setValue(value);
 
-  await (await select2Name()).click();
+  const option = await $('.name');
+  await option.waitForExist();
+  await option.scrollIntoView();
+  await option.waitForClickable();
+  await option.click();
 };
 
 const selectPlace = async (place) => {
@@ -165,7 +161,6 @@ module.exports = {
   goToAdminUser,
   goToAdminUpgrade,
   openAddUserDialog,
-  closeUserDialog,
   inputAddUserFields,
   saveUser,
   logout,
