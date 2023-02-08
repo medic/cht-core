@@ -40,10 +40,21 @@ const openAddUserDialog = async () => {
   await browser.pause(500);
 };
 
+const scrollToBottomOfModal = async () => {
+  await browser.execute(() => {
+    const modalWindow = document.querySelector('.modal');
+    modalWindow.scrollTop = modalWindow.scrollHeight;
+  });
+};
+
 const inputAddUserFields = async (username, fullname, role, place, contact, password, confirmPassword = password) => {
   await (await userName()).addValue(username);
   await (await userFullName()).addValue(fullname);
   await (await $(`#role-select input[value="${role}"]`)).click();
+
+  // we need to scroll to the bottom to bring the select2 elements into view
+  // scrollIntoView doesn't work because they're within a scrollable div (the modal)
+  await scrollToBottomOfModal();
 
   if (!_.isEmpty(place)) {
     await selectPlace(place);
@@ -65,28 +76,30 @@ const setSelect2 = async (id, value) => {
   // During upgrade to WDIO v8 something broke the click event on the select2 dropdown.
   // Replacing with this fixes the problem but isn't testing actually clicking on the elem
   // so it's not ideal. This should be fixed one day.
-  await browser.execute((id) => {
-    $(id).select2('open');
-  }, id);
+  // await browser.execute((id) => {
+  //   $('#' + id).select2('open');
+  // }, id);
+
+  const input = await $(`span.select2-selection[aria-labelledby=select2-${id}-container]`);
+  await input.waitForExist();
+  await input.click();
 
   const searchField = await $('.select2-search__field');
   await searchField.waitForExist();
-  await searchField.scrollIntoView();
   await searchField.setValue(value);
 
   const option = await $('.name');
   await option.waitForExist();
-  await option.scrollIntoView();
   await option.waitForClickable();
   await option.click();
 };
 
 const selectPlace = async (place) => {
-  await setSelect2('#facilitySelect', place);
+  await setSelect2('facilitySelect', place);
 };
 
 const selectContact = async (associatedContact) => {
-  await setSelect2('#contactSelect', associatedContact);
+  await setSelect2('contactSelect', associatedContact);
 };
 
 const saveUser = async (isSuccessExpected = true)  => {
