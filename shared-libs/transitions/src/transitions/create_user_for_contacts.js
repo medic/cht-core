@@ -81,7 +81,7 @@ const generateUniqueUsername = async (contactName, collisionCount = 0) => {
 
 const createNewUser = async ({ roles }, { _id, name, phone, parent }) => {
   if (!name) {
-    throw new Error(`Replacement contact [${_id}] must have a name.`);
+    throw new Error(`Contact [${_id}] must have a name.`);
   }
   const username = await generateUniqueUsername(name);
   const user = {
