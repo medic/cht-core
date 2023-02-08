@@ -5,7 +5,7 @@ const cancelUserModalButton = () => $('[test-id="modal-cancel-btn"]');
 const addUserDialog = () => $('div#edit-user-profile');
 const userName = () => $('#edit-username');
 const userFullName = () => $('#fullname');
-const userPlace = () => $('//span[@aria-labelledby="select2-facilitySelect-container"]');
+// const userPlace = () => $('//span[@aria-labelledby="select2-facilitySelect-container"]');
 const userAssociatedContact = () => $('//span[@aria-labelledby="select2-contactSelect-container"]');
 const userPassword = () => $('#edit-password');
 const userConfirmPassword = () => $('#edit-password-confirm');
@@ -75,10 +75,19 @@ const inputUploadUsersFields = async (filePath) => {
 };
 
 const selectPlace = async (place) => {
-  await (await userPlace()).waitForDisplayed();
-  await (await userPlace()).scrollIntoView();
-  await (await userPlace()).click();
+  // await (await userPlace()).waitForDisplayed();
+  // await (await userPlace()).scrollIntoView();
+  // await (await userPlace()).click();
+
+  // const userPlace = () => $('//span[@aria-labelledby="select2-facilitySelect-container"]');
+
+  const select2Selection = () => $('#facilitySelectGroup .select2-selection');
+  await (await select2Selection()).waitForDisplayed();
+  await (await select2Selection()).scrollIntoView();
+  await (await select2Selection()).click();
+
   const searchField = await $('.select2-search__field');
+  await searchField.waitForExist();
   await searchField.setValue(place);
   // await (await select2SearchInputBox()).waitForExist();
   // await (await select2SearchInputBox()).waitForDisplayed();
@@ -88,10 +97,17 @@ const selectPlace = async (place) => {
 };
 
 const selectContact = async (associatedContact) => {
+
+  const select2Selection = () => $('#contactSelectGroup .select2-selection');
+  await (await select2Selection()).waitForDisplayed();
+  await (await select2Selection()).scrollIntoView();
+  await (await select2Selection()).click();
+
   await (await userAssociatedContact()).waitForDisplayed();
   await (await userAssociatedContact()).scrollIntoView();
   await (await userAssociatedContact()).click();
   const searchField = await $('.select2-search__field');
+  await searchField.waitForExist();
   await searchField.setValue(associatedContact);
   // await (await select2SearchContactInputBox()).waitForExist();
   // await (await select2SearchContactInputBox()).waitForDisplayed();
