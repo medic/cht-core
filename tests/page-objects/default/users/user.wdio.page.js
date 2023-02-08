@@ -73,13 +73,6 @@ const inputUploadUsersFields = async (filePath) => {
 };
 
 const setSelect2 = async (id, value) => {
-  // During upgrade to WDIO v8 something broke the click event on the select2 dropdown.
-  // Replacing with this fixes the problem but isn't testing actually clicking on the elem
-  // so it's not ideal. This should be fixed one day.
-  // await browser.execute((id) => {
-  //   $('#' + id).select2('open');
-  // }, id);
-
   const input = await $(`span.select2-selection[aria-labelledby=select2-${id}-container]`);
   await input.waitForExist();
   await input.click();
