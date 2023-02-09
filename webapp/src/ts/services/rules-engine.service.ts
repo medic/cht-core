@@ -220,6 +220,7 @@ export class RulesEngineService implements OnDestroy {
     const filterTargetByContext = (target) => target.context ?
       !!this.parseProvider.parse(target.context)({ user: rulesEngineContext.userContactDoc }) : true;
     const targets = settingsTasks.targets && settingsTasks.targets.items || [];
+    const emitter = rulesEngineContext?.settingsDoc?.tasks?.disableNools === 'true' ? 'metal' : 'nools';
 
     return {
       rules: settingsTasks.rules,
@@ -229,6 +230,7 @@ export class RulesEngineService implements OnDestroy {
       enableTargets: rulesEngineContext.enableTargets,
       contact: rulesEngineContext.userContactDoc,
       user: rulesEngineContext.userSettingsDoc,
+      emitter,
       monthStartDate: this.uhcSettingsService.getMonthStartDate(rulesEngineContext.settingsDoc),
       chtScriptApi: rulesEngineContext.chtScriptApi
     };

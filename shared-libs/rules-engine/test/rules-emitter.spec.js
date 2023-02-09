@@ -155,11 +155,12 @@ for (const emitter of EMITTERS) {
     });
 
     // don't understand this test or how it applies
-    it('session is disposed when marshalDocsIntoNoolsFacts throws', async () => {
-      const settingsDoc = settingsWithRules(' ');
+    it('session is disposed when marshalDocsByContact throws', async () => {
+      const rules = noolsPartnerTemplate('');
+      const settingsDoc = settingsWithRules(rules);
       rulesEmitter.initialize(settingsDoc);
       const err = new Error('fake');
-      rulesEmitter.__with__({ marshalDocsIntoNoolsFacts: sinon.stub().throws(err) })(() => {
+      rulesEmitter.__with__({ marshalDocsByContact: sinon.stub().throws(err) })(() => {
         expect(rulesEmitter.getEmissionsFor.bind({}, [[], []])).to.throw('fake');
         // unsure how to assert that the memory is freed in this scenario
       });

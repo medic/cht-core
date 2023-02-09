@@ -22,6 +22,7 @@ module.exports = db => {
      * @param {Object[]} settings.targets Target definitions from settings doc
      * @param {Boolean} settings.enableTasks Flag to enable tasks
      * @param {Boolean} settings.enableTargets Flag to enable targets
+     * @param {String} settings.emitter Rules-emitter to use (either 'nools' or 'metal')
      * @param {Object} settings.contact User's hydrated contact document
      * @param {Object} settings.user User's settings document
      */
@@ -79,6 +80,7 @@ module.exports = db => {
      * @param {Object[]} settings.targets Target definitions from settings doc
      * @param {Boolean} settings.enableTasks Flag to enable tasks
      * @param {Boolean} settings.enableTargets Flag to enable targets
+     * @param {String} settings.emitter Rules-emitter to use (either 'nools' or 'metal')
      * @param {Object} settings.contact User's hydrated contact document
      * @param {Object} settings.user User's user-settings document
      */

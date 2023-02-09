@@ -1,25 +1,24 @@
 /**
  * @module rules-emitter
- * Encapsulates interactions with a rules-processor
- * Handles marshaling of documents into a rules-processor
+ * Handles marshaling of documents into either emitter.metal or emitter.nools
  */
 const nootils = require('cht-nootils');
 const registrationUtils = require('@medic/registration-utils');
 
-const metalProcessor = require('./rules-processor.metal');
-const noolsProcessor = require('./rules-processor.nools');
+const metalEmitter = require('./emitter.metal');
+const noolsEmitter = require('./emitter.nools');
 
-let processor;
+let emitter;
 
 /**
 * Sets the rules emitter to an uninitialized state.
 */
 const shutdown = () => {
-  if (processor) {
-    processor.shutdown();
+  if (emitter) {
+    emitter.shutdown();
   }
 
-  processor = undefined;
+  emitter = undefined;
 };
 
 module.exports = {
@@ -29,11 +28,12 @@ module.exports = {
    * @param {Object} settings Settings for the behavior of the rules emitter
    * @param {Object} settings.rules Rules code from settings doc
    * @param {Object[]} settings.taskSchedules Task schedules from settings doc
+   * @param {String} settings.emitter Rules-emitter to use (either 'nools' or 'metal')
    * @param {Object} settings.contact The logged in user's contact document
    * @returns {Boolean} Success
    */
   initialize: (settings) => {
-    if (processor) {
+    if (emitter) {
       throw Error('Attempted to initialize the rules emitter multiple times.');
     }
 
@@ -42,7 +42,7 @@ module.exports = {
     }
 
     shutdown();
-    processor = settings.emitter === 'metal' ? metalProcessor : noolsProcessor;
+    emitter = settings.emitter === 'metal' ? metalEmitter : noolsEmitter;
 
     try {
       const settingsDoc = { tasks: { schedules: settings.taskSchedules } };
@@ -52,7 +52,7 @@ module.exports = {
         user: settings.contact,
         cht: settings.chtScriptApi,
       };
-      return processor.initialize(settings, scope);
+      return emitter.initialize(settings, scope);
     } catch (err) {
       shutdown();
       throw err;
@@ -66,11 +66,11 @@ module.exports = {
    * @returns True if the schema changes are in place
    */
   isLatestNoolsSchema: () => {
-    if (!processor) {
+    if (!emitter) {
       throw Error('task emitter is not enabled -- cannot determine schema version');
     }
 
-    return processor.isLatestNoolsSchema();
+    return emitter.isLatestNoolsSchema();
   },
 
   /**
@@ -85,7 +85,7 @@ module.exports = {
    * @returns {Object[]} emissions.targets Array of target emissions
    */
   getEmissionsFor: (contactDocs, reportDocs = [], taskDocs = []) => {
-    if (!processor) {
+    if (!emitter) {
       throw Error('task emitter is not enabled -- cannot get emissions');
     }
 
@@ -101,10 +101,10 @@ module.exports = {
       throw Error('invalid argument: taskDocs is expected to be an array');
     }
 
-    const session = processor.startSession();
+    const session = emitter.startSession();
     try {
-      const Contact = processor.getContact();
-      const facts = marshalDocsIntoNoolsFacts(Contact, contactDocs, reportDocs, taskDocs);
+      const Contact = emitter.getContact();
+      const facts = marshalDocsByContact(Contact, contactDocs, reportDocs, taskDocs);
       facts.forEach(session.processContainer);
     } catch (err) {
       session.dispose();
@@ -117,12 +117,12 @@ module.exports = {
   /**
    * @returns True if the rules emitter is initialized and ready for use
    */
-  isEnabled: () => !!processor,
+  isEnabled: () => !!emitter,
 
   shutdown,
 };
 
-const marshalDocsIntoNoolsFacts = (Contact, contactDocs, reportDocs, taskDocs) => {
+const marshalDocsByContact = (Contact, contactDocs, reportDocs, taskDocs) => {
   const factByContactId = contactDocs.reduce((agg, contact) => {
     agg[contact._id] = new Contact({ contact, reports: [], tasks: [] });
     return agg;
@@ -158,7 +158,6 @@ const marshalDocsIntoNoolsFacts = (Contact, contactDocs, reportDocs, taskDocs) =
       factOfPatient.tasks.push(task);
     }
   }
-
 
   return Object.keys(factByContactId).map(key => {
     factByContactId[key].reports = factByContactId[key].reports.sort((a, b) => a.reported_date - b.reported_date);
