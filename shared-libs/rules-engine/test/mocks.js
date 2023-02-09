@@ -73,6 +73,7 @@ rule GenerateEvents {
       rules: chtSettingsDoc.tasks.rules,
       targets: chtSettingsDoc.tasks.targets.items,
       taskSchedules: chtSettingsDoc.tasks.schedules,
+      emitter: 'nools',
       enableTasks: true,
       enableTargets: true,
       user: userSettingsDoc,

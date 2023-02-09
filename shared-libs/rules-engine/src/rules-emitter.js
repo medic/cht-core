@@ -1,22 +1,25 @@
 /**
  * @module rules-emitter
- * Encapsulates interactions with the nools library
- * Handles marshaling of documents into nools facts
- * Promisifies the execution of partner "rules" code
- * Ensures memory allocated by nools is freed after each run
+ * Encapsulates interactions with a rules-processor
+ * Handles marshaling of documents into a rules-processor
  */
-const nools = require('nools');
 const nootils = require('cht-nootils');
 const registrationUtils = require('@medic/registration-utils');
 
-let flow;
+const metalProcessor = require('./rules-processor.metal');
+const noolsProcessor = require('./rules-processor.nools');
+
+let processor;
 
 /**
 * Sets the rules emitter to an uninitialized state.
 */
 const shutdown = () => {
-  nools.deleteFlows();
-  flow = undefined;
+  if (processor) {
+    processor.shutdown();
+  }
+
+  processor = undefined;
 };
 
 module.exports = {
@@ -30,7 +33,7 @@ module.exports = {
    * @returns {Boolean} Success
    */
   initialize: (settings) => {
-    if (flow) {
+    if (processor) {
       throw Error('Attempted to initialize the rules emitter multiple times.');
     }
 
@@ -39,43 +42,35 @@ module.exports = {
     }
 
     shutdown();
+    processor = settings.emitter === 'metal' ? metalProcessor : noolsProcessor;
 
     try {
       const settingsDoc = { tasks: { schedules: settings.taskSchedules } };
       const nootilsInstance = nootils(settingsDoc);
-      flow = nools.compile(settings.rules, {
-        name: 'medic',
-        scope: {
-          Utils: nootilsInstance,
-          user: settings.contact,
-          cht: settings.chtScriptApi,
-        },
-      });
+      const scope = {
+        Utils: nootilsInstance,
+        user: settings.contact,
+        cht: settings.chtScriptApi,
+      };
+      return processor.initialize(settings, scope);
     } catch (err) {
       shutdown();
       throw err;
     }
-
-    return !!flow;
   },
 
   /**
    * When upgrading to version 3.8, partners are required to make schema changes in their partner code
-   * TODO: Add link to documentation
+   * https://docs.communityhealthtoolkit.org/core/releases/3.8.0/#breaking-changes
    *
    * @returns True if the schema changes are in place
    */
   isLatestNoolsSchema: () => {
-    if (!flow) {
+    if (!processor) {
       throw Error('task emitter is not enabled -- cannot determine schema version');
     }
 
-    const Task = flow.getDefined('task');
-    const Target = flow.getDefined('target');
-    const hasProperty = (obj, attr) => Object.hasOwnProperty.call(obj, attr);
-    return hasProperty(Task.prototype, 'readyStart') &&
-      hasProperty(Task.prototype, 'readyEnd') &&
-      hasProperty(Target.prototype, 'contact');
+    return processor.isLatestNoolsSchema();
   },
 
   /**
@@ -90,7 +85,7 @@ module.exports = {
    * @returns {Object[]} emissions.targets Array of target emissions
    */
   getEmissionsFor: (contactDocs, reportDocs = [], taskDocs = []) => {
-    if (!flow) {
+    if (!processor) {
       throw Error('task emitter is not enabled -- cannot get emissions');
     }
 
@@ -106,58 +101,28 @@ module.exports = {
       throw Error('invalid argument: taskDocs is expected to be an array');
     }
 
-    const session = startSession();
+    const session = processor.startSession();
     try {
-      const facts = marshalDocsIntoNoolsFacts(contactDocs, reportDocs, taskDocs);
-      facts.forEach(session.assert);
+      const Contact = processor.getContact();
+      const facts = marshalDocsIntoNoolsFacts(Contact, contactDocs, reportDocs, taskDocs);
+      facts.forEach(session.processContainer);
     } catch (err) {
       session.dispose();
       throw err;
     }
 
-    return session.match();
+    return session.result();
   },
 
   /**
    * @returns True if the rules emitter is initialized and ready for use
    */
-  isEnabled: () => !!flow,
+  isEnabled: () => !!processor,
 
   shutdown,
 };
 
-const startSession = function() {
-  if (!flow) {
-    throw Error('Failed to start task session. Not initialized');
-  }
-
-  const session = flow.getSession();
-  const tasks = [];
-  const targets = [];
-  session.on('task', task => tasks.push(task));
-  session.on('target', target => targets.push(target));
-
-  return {
-    assert: session.assert.bind(session),
-    dispose: session.dispose.bind(session),
-
-    // session.match can return a thenable but not a promise. so wrap it in a real promise
-    match: () => new Promise((resolve, reject) => {
-      session.match(err => {
-        session.dispose();
-        if (err) {
-          return reject(err);
-        }
-
-        resolve({ tasks, targets });
-      });
-    }),
-  };
-};
-
-const marshalDocsIntoNoolsFacts = (contactDocs, reportDocs, taskDocs) => {
-  const Contact = flow.getDefined('contact');
-
+const marshalDocsIntoNoolsFacts = (Contact, contactDocs, reportDocs, taskDocs) => {
   const factByContactId = contactDocs.reduce((agg, contact) => {
     agg[contact._id] = new Contact({ contact, reports: [], tasks: [] });
     return agg;
