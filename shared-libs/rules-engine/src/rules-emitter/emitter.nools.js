@@ -50,7 +50,7 @@ module.exports = {
   startSession: () => {
     const session = startSession();
     return {
-      processContainer: session.assert,
+      processDocsByContact: session.assert,
       dispose: session.dispose,
       result: session.match,
     };

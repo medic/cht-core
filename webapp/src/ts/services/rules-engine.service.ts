@@ -220,7 +220,7 @@ export class RulesEngineService implements OnDestroy {
     const filterTargetByContext = (target) => target.context ?
       !!this.parseProvider.parse(target.context)({ user: rulesEngineContext.userContactDoc }) : true;
     const targets = settingsTasks.targets && settingsTasks.targets.items || [];
-    const emitter = rulesEngineContext?.settingsDoc?.tasks?.disableNools === 'true' ? 'metal' : 'nools';
+    const emitter = rulesEngineContext.settingsDoc?.tasks?.disableNools === true ? 'metal' : 'nools';
 
     return {
       rules: settingsTasks.rules,

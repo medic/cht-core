@@ -1,6 +1,6 @@
 /**
  * @module rules-processor.metal
- * Processes declarative configuration code in an identical manner to nools (but without nools)
+ * Processes declarative configuration code without nools
  */
 
 class Contact {
@@ -10,12 +10,11 @@ class Contact {
     this.tasks = tasks;
   }
 };
-Contact.prototype.tasks = 'foo';
 
 const Task = class { constructor(x) { Object.assign(this, x); }};
 const Target = class { constructor(x) { Object.assign(this, x); }};
 
-let processContainer;
+let processDocsByContact;
 const results = { tasks: [], targets: [] };
 
 module.exports = {
@@ -24,15 +23,13 @@ module.exports = {
     let rules = settings.rules.replace(/define.*\} then \{ /s, '');
     rules = rules.substring(0, rules.length - 3);
     
-    const rulesFunction = new Function('c', 'Task', 'Target', 'Utils', 'user', 'cht', 'emit', rules);
-    processContainer = container => {
-      return rulesFunction(container, Task, Target, scope.Utils, scope.user, scope.cht, emitCallback);
-    };
+    const rawFunction = new Function('c', 'Task', 'Target', 'Utils', 'user', 'cht', 'emit', rules);
+    processDocsByContact = container => rawFunction(container, Task, Target, scope.Utils, scope.user, scope.cht, emitCallback);
     return true;
   },
 
   startSession: () => {
-    if (!processContainer) {
+    if (!processDocsByContact) {
       throw Error('Failed to start task session. Not initialized');
     }
 
@@ -40,22 +37,16 @@ module.exports = {
     results.targets = [];
     
     return {
-      processContainer,
+      processDocsByContact,
       result: () => Promise.resolve(results),
       dispose: () => {},
     };
   },
 
-  isLatestNoolsSchema: () => {
-    if (!processContainer) {
-      throw Error('task emitter is not enabled -- cannot determine schema version');
-    }
-
-    return true;
-  },
+  isLatestNoolsSchema: () => true,
 
   shutdown: () => {
-    processContainer = undefined;
+    processDocsByContact = undefined;
   },
 };
 

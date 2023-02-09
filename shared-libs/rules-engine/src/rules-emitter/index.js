@@ -1,6 +1,7 @@
 /**
  * @module rules-emitter
- * Handles marshaling of documents into either emitter.metal or emitter.nools
+ * Principal logic for rules emitting with emitter.metal/emitter.nools supporting
+ * Handles marshaling of documents by contact
  */
 const nootils = require('cht-nootils');
 const registrationUtils = require('@medic/registration-utils');
@@ -104,8 +105,8 @@ module.exports = {
     const session = emitter.startSession();
     try {
       const Contact = emitter.getContact();
-      const facts = marshalDocsByContact(Contact, contactDocs, reportDocs, taskDocs);
-      facts.forEach(session.processContainer);
+      const docsByContact = marshalDocsByContact(Contact, contactDocs, reportDocs, taskDocs);
+      docsByContact.forEach(session.processDocsByContact);
     } catch (err) {
       session.dispose();
       throw err;
