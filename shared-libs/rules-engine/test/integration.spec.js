@@ -19,6 +19,7 @@ let rulesEngine;
 
 
 const TEST_START = 1500000000000;
+const EXPECTED_TASK_ID_PREFIX = 'task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder'; // eslint-disable-line
 const patientContact = {
   _id: 'patient',
   name: 'chw',
@@ -104,11 +105,11 @@ describe(`Rules Engine Integration Tests`, () => {
   });
 
   for (const emitter of EMITTERS) {
+    // Some nuanced behavior of medic-nootils with useFakeTimers: due to the closures around { Date } in medic-nootils,
+    // the library uses the fake date at the time the library is created. In this case, that is the time of
+    // rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to strange behaviors with Utils.now()
     describe(`emitter: ${emitter}`, () => {
       beforeEach(async () => {
-        // Some nuanced behavior of medic-nootils with useFakeTimers: due to the closures around { Date } in medic-nootils,
-        // the library uses the fake date at the time the library is created. In this case, that is the time of
-        // rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to change behaviors with Utils.now()
         clock = sinon.useFakeTimers(TEST_START);
     
         db = await memdownMedic('../..');
@@ -117,10 +118,6 @@ describe(`Rules Engine Integration Tests`, () => {
         configHashSalt++;
         const rulesSettings = chtRulesSettings({ emitter, configHashSalt });
         await rulesEngine.rulesConfigChange(rulesSettings);  
-    
-        // make sure our "calculatedDate" isn't in the future! (and inherently outside the current reporting interval)
-        // otherwise it will cause any operation tested below to update targets for the "stale" state.
-        await rulesEngine.updateEmissionsFor(['patient']);
       });
 
       if (emitter === 'nools') {
@@ -207,7 +204,7 @@ describe(`Rules Engine Integration Tests`, () => {
         expect(db.bulkDocs.callCount).to.eq(2);
         expect(db.bulkDocs.args[1][0]).to.have.property('length', 1);
         expect(db.bulkDocs.args[1][0][0]).to.deep.include({
-          _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${TEST_START}`,
+          _id: `${EXPECTED_TASK_ID_PREFIX}~${TEST_START}`,
           state: 'Failed',
           stateHistory: [
             {
@@ -248,7 +245,7 @@ describe(`Rules Engine Integration Tests`, () => {
         expect(db.bulkDocs.callCount).to.eq(3);
         expect(db.bulkDocs.args[2][0]).to.have.property('length', 1);
         expect(db.bulkDocs.args[2][0][0]).to.deep.include({
-          _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${TEST_START}`,
+          _id: `${EXPECTED_TASK_ID_PREFIX}~${TEST_START}`,
           state: 'Completed',
           stateHistory: [
             {
@@ -291,7 +288,7 @@ describe(`Rules Engine Integration Tests`, () => {
 
         const [taskDoc] = db.bulkDocs.args[2][0];
         expect(taskDoc).to.deep.include({
-          _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${TEST_START}`,
+          _id: `${EXPECTED_TASK_ID_PREFIX}~${TEST_START}`,
           state: 'Cancelled',
           stateHistory: [
             {
@@ -381,7 +378,10 @@ describe(`Rules Engine Integration Tests`, () => {
 
       it('mark dirty by subject id (tasks tab scenario)', async () => {
         sinon.spy(rulesEmitter, 'getEmissionsFor');
-        const firstTasks = await triggerFacilityReminderInReadyState(undefined, [patientContact, reportByPatientIdOnly]);
+        const firstTasks = await triggerFacilityReminderInReadyState(
+          undefined,
+          [patientContact, reportByPatientIdOnly],
+        );
         expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
         expect(rulesEmitter.getEmissionsFor.args[0]).excludingEvery('_rev').to.deep.eq([
           [patientContact],
@@ -409,7 +409,10 @@ describe(`Rules Engine Integration Tests`, () => {
 
       it('mark dirty by subject id (contacts tab scenario)', async () => {
         sinon.spy(rulesEmitter, 'getEmissionsFor');
-        const firstTasks = await triggerFacilityReminderInReadyState(['patient'], [patientContact, reportByPatientIdOnly]);
+        const firstTasks = await triggerFacilityReminderInReadyState(
+          ['patient'],
+          [patientContact, reportByPatientIdOnly],
+        );
         expect(rulesEmitter.getEmissionsFor.callCount).to.eq(1);
         expect(rulesEmitter.getEmissionsFor.args[0]).excludingEvery('_rev').to.deep.eq([
           [patientContact],

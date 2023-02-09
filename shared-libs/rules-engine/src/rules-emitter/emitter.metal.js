@@ -9,10 +9,19 @@ class Contact {
     this.reports = reports;
     this.tasks = tasks;
   }
+}
+
+const Task = class {
+  constructor(x) {
+    Object.assign(this, x);
+  }
 };
 
-const Task = class { constructor(x) { Object.assign(this, x); }};
-const Target = class { constructor(x) { Object.assign(this, x); }};
+const Target = class {
+  constructor(x) {
+    Object.assign(this, x);
+  }
+};
 
 let processDocsByContact;
 const results = { tasks: [], targets: [] };
@@ -24,7 +33,15 @@ module.exports = {
     rules = rules.substring(0, rules.length - 3);
     
     const rawFunction = new Function('c', 'Task', 'Target', 'Utils', 'user', 'cht', 'emit', rules);
-    processDocsByContact = container => rawFunction(container, Task, Target, scope.Utils, scope.user, scope.cht, emitCallback);
+    processDocsByContact = container => rawFunction(
+      container,
+      Task,
+      Target,
+      scope.Utils,
+      scope.user,
+      scope.cht,
+      emitCallback,
+    );
     return true;
   },
 
