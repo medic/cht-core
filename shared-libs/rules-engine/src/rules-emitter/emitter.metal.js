@@ -11,17 +11,20 @@ class Contact {
   }
 }
 
-const Task = class {
-  constructor(x) {
-    Object.assign(this, x);
-  }
-};
+// required by marshalDocsByContact
+Contact.prototype.tasks = 'defined';
 
-const Target = class {
+class Task {
   constructor(x) {
     Object.assign(this, x);
   }
-};
+}
+
+class Target {
+  constructor(x) {
+    Object.assign(this, x);
+  }
+}
 
 let processDocsByContact;
 const results = { tasks: [], targets: [] };
