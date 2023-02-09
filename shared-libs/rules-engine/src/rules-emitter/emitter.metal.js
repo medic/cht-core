@@ -32,7 +32,7 @@ const results = { tasks: [], targets: [] };
 module.exports = {
   getContact: () => Contact,
   initialize: (settings, scope) => {
-    let rules = settings.rules.replace(/define.*\} then \{ /s, '');
+    let rules = settings.rules.replace(/^define.*\} then \{ /s, '');
     rules = rules.substring(0, rules.length - 3);
     
     const rawFunction = new Function('c', 'Task', 'Target', 'Utils', 'user', 'cht', 'emit', rules);
