@@ -9,6 +9,10 @@
 #
 # Please remove the zip file when done.
 # It may contain PII/PHI.
+#
+# Note - while this will work with CHT 3.x
+# containers (Medic OS), it's main intent is
+# to work with CHT 4.x.
 ##############################################3
 
 echo "\nWait while the script gathers stats and logs about the CHT containers.
@@ -20,6 +24,7 @@ log_archive="$log_directory/cht-docker-logs-${date}.zip"
 tmp=/tmp/cht-docker-log-tmp
 mkdir -p "$log_directory"
 mkdir -p "$tmp"
+rm /tmp/cht-docker-log-tmp/*
 
 docker stats --no-stream 1> ${tmp}/docker_stats.log
 docker ps> ${tmp}/docker_ps.log
@@ -28,7 +33,7 @@ docker ps  --format '{{ .Names }}' | xargs -I % sh -c "docker logs %  > ${tmp}/%
 cd /tmp/cht-docker-log-tmp
 zip --quiet ${log_archive} *
 
-#rm /tmp/cht-docker-log-tmp/*
+rm /tmp/cht-docker-log-tmp/*
 
 echo "\nDone!\n\nZip file here:\n\n  ${log_archive}\n"
 
