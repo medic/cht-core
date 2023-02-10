@@ -105,6 +105,7 @@ describe('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
     await reportsPage.submitForm();
     await sentinelUtils.waitForSentinel();
+    await browser.refresh();
 
     const updatedReport = await utils.getDoc(reportId);
     const exclude = [
@@ -266,6 +267,7 @@ describe('Submit Default Delivery Report', () => {
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
     expect(initialReport._attachments).to.equal(undefined);
+    await browser.refresh();
 
     await reportsPage.editReport(reportId);
     await deliveryReport.selectPatientName('jill');
