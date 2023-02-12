@@ -77,6 +77,8 @@ const getContactTypes = function($question, $textInput) {
   return types;
 };
 
+const getCurrentForm = () => window.CHTCore.Enketo && window.CHTCore.Enketo.getCurrentForm();
+
 const changeHandler = function() {
   const $this = $(this);
   const selected = $this.select2('data');
@@ -89,12 +91,20 @@ const changeHandler = function() {
     // https://github.com/enketo/enketo-core/issues/910
     // Re-validate the current question now that we have loaded the doc data.
     // This will clear any constraint errors that were resolved by the doc data.
-    window.CHTCore.Enketo.getCurrentForm().validateContent($this.parent());
+    const currentForm = getCurrentForm();
+    if (currentForm) {
+      currentForm.validateContent($this.parent());
+    }
   }
 };
 
 const updateFields = function(data, keyRoot, index, originatingKeyPath) {
-  const Enketo = window.CHTCore.Enketo;
+  const currentForm = getCurrentForm();
+  const currentModel = currentForm && currentForm.model;
+  if (!currentModel) {
+    // form has been unloaded so there's nothing elements left to set
+    return;
+  }
 
   Object.keys(data).forEach(function(key) {
     const path = keyRoot + '/' + key;
@@ -112,12 +122,13 @@ const updateFields = function(data, keyRoot, index, originatingKeyPath) {
       return updateFields(value, path, index, originatingKeyPath);
     }
 
-    const node = Enketo.getCurrentForm().model.node(path, index, { onlyLeaf: true });
-
-    if(node.getElements().length) {
+    const node = currentModel.node(path, index, { onlyLeaf: true });
+    if (node.getElements().length) {
       node.setVal(value);
     }
   });
+
 };
 
 module.exports = Dbobjectwidget;
+module.exports._updateFields = updateFields; // exposed for testing
