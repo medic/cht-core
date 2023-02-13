@@ -4,7 +4,7 @@
 # This script gathers logs for ALL containers
 # running and outputs them into a zip file in
 # your home directory here:
-#
+set -e
 #       ~/.medic/cht-docker/support_logs
 #
 # Please remove the zip file when done.
