@@ -15,7 +15,8 @@ set -e
 # to work with CHT 4.x.
 ##############################################3
 
-echo "\nWait while the script gathers stats and logs about the CHT containers.
+echo
+echo "Wait while the script gathers stats and logs about the CHT containers.
   Be patient, this might take a moment... "
 
 log_directory="$HOME/.medic/support_logs"
@@ -24,7 +25,7 @@ log_archive="$log_directory/cht-docker-logs-${date}.zip"
 tmp=/tmp/cht-docker-log-tmp
 mkdir -p "$log_directory"
 mkdir -p "$tmp"
-rm /tmp/cht-docker-log-tmp/*
+rm -f /tmp/cht-docker-log-tmp/*
 
 docker stats --no-stream 1> ${tmp}/docker_stats.log
 docker ps> ${tmp}/docker_ps.log
@@ -35,7 +36,13 @@ zip --quiet ${log_archive} *
 
 rm /tmp/cht-docker-log-tmp/*
 
-echo "\nDone!\n\nZip file here:\n\n  ${log_archive}\n"
+echo
+echo "Done!"
+echo;echo
+echo "Zip file here:"
+echo;echo
+echo "    ${log_archive}"
+echo
 
 echo "NOTE: Please remove the zip file when done.
   It may contain PII/PHI."
