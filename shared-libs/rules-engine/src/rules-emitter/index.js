@@ -43,7 +43,7 @@ module.exports = {
     }
 
     shutdown();
-    emitter = settings.emitter === 'metal' ? metalEmitter : noolsEmitter;
+    emitter = chooseEmitter(settings.emitter);
 
     try {
       const settingsDoc = { tasks: { schedules: settings.taskSchedules } };
@@ -164,4 +164,16 @@ const marshalDocsByContact = (Contact, contactDocs, reportDocs, taskDocs) => {
     factByContactId[key].reports = factByContactId[key].reports.sort((a, b) => a.reported_date - b.reported_date);
     return factByContactId[key];
   }); // Object.values(factByContactId)
+};
+
+const chooseEmitter = emitterConfig => {
+  if (typeof emitterConfig === 'object') {
+    return emitterConfig;
+  }
+  
+  if (emitterConfig === 'metal') {
+    return metalEmitter;
+  }
+  
+  return noolsEmitter;
 };

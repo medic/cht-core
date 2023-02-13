@@ -659,6 +659,39 @@ describe(`Rules Engine Integration Tests`, () => {
       });
     });
   }
+
+  // interface is not used within cht-core but is used by cht-conf-test-harness
+  it('custom emitter', async () => {
+    const expectedEmission = {
+      _id: 'emitted',
+      contact: patientContact,
+      date: new Date().toISOString(),
+    };
+
+    const customEmitter = {
+      getContact: () => class { reports = []; },
+      initialize: () => {},
+      startSession: () => ({
+        processDocsByContact: () => {},
+        dispose: () => {},
+        result: () => Promise.resolve({ tasks: [expectedEmission], targets: [] }),
+      }),
+      isLatestNoolsSchema: () => true,
+      shutdown: () => {},
+    };
+    
+    configHashSalt++;
+    const rulesSettings = chtRulesSettings({ emitter: customEmitter, configHashSalt });
+
+    await db.bulkDocs([patientContact]);
+    
+    rulesEngine = RulesEngine(db);
+    await rulesEngine.rulesConfigChange(rulesSettings);  
+
+    const taskEmissions = await rulesEngine.fetchTasksFor(['patient']);
+    expect(taskEmissions).to.have.property('length', 1);
+    expect(taskEmissions[0]).to.include({ _id: `task~org.couchdb.user:username~${expectedEmission._id}~${TEST_START}` });
+  });
 });
 
 const triggerFacilityReminderInReadyState = async (selectBy, docs = [patientContact, pregnancyFollowupReport]) => {

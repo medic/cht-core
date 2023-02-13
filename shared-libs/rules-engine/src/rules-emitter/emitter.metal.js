@@ -35,7 +35,7 @@ module.exports = {
     const noolsBoilerplateRegex = /^define.*\} then \{ /s;
     let rules = settings.rules;
     if (noolsBoilerplateRegex.test(settings.rules)) {
-      let rules = rules.replace(noolsBoilerplateRegex, '');
+      rules = rules.replace(noolsBoilerplateRegex, '');
       rules = rules.substring(0, rules.length - '\n};'.length);
     }
     
