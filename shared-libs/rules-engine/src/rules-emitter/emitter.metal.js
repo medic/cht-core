@@ -32,8 +32,12 @@ const results = { tasks: [], targets: [] };
 module.exports = {
   getContact: () => Contact,
   initialize: (settings, scope) => {
-    let rules = settings.rules.replace(/^define.*\} then \{ /s, '');
-    rules = rules.substring(0, rules.length - 3);
+    const noolsBoilerplateRegex = /^define.*\} then \{ /s;
+    let rules = settings.rules;
+    if (noolsBoilerplateRegex.test(settings.rules)) {
+      let rules = rules.replace(noolsBoilerplateRegex, '');
+      rules = rules.substring(0, rules.length - '\n};'.length);
+    }
     
     const rawFunction = new Function('c', 'Task', 'Target', 'Utils', 'user', 'cht', 'emit', rules);
     processDocsByContact = container => rawFunction(
