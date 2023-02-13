@@ -669,7 +669,11 @@ describe(`Rules Engine Integration Tests`, () => {
     };
 
     const customEmitter = {
-      getContact: () => class { reports = []; },
+      getContact: () => class {
+        constructor() {
+          this.reports = [];
+        }
+      },
       initialize: () => {},
       startSession: () => ({
         processDocsByContact: () => {},
@@ -690,7 +694,9 @@ describe(`Rules Engine Integration Tests`, () => {
 
     const taskEmissions = await rulesEngine.fetchTasksFor(['patient']);
     expect(taskEmissions).to.have.property('length', 1);
-    expect(taskEmissions[0]).to.include({ _id: `task~org.couchdb.user:username~${expectedEmission._id}~${TEST_START}` });
+    expect(taskEmissions[0]).to.include({
+      _id: `task~org.couchdb.user:username~${expectedEmission._id}~${TEST_START}`,
+    });
   });
 });
 
