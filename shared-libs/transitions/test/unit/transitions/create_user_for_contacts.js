@@ -30,6 +30,16 @@ const ORIGINAL_USER = deepFreeze({
   _id: 'org.couchdb.user:original-user-id', name: `original-user`, contact: ORIGINAL_CONTACT, roles: ['chw'],
 });
 
+const getCreatedContact = ({ create = 'true', roles, role = 'chw' } = {}) => ({
+  ...NEW_CONTACT,
+  roles,
+  role,
+  phone: '+1234567890',
+  user_for_contact: {
+    create
+  }
+});
+
 const getReplacedContact = (
   status,
   replacement_contact_id = NEW_CONTACT._id,
@@ -50,6 +60,7 @@ const getReplacedContact = (
 
 describe('create_user_for_contacts', () => {
   let transition;
+  let hasRun;
 
   beforeEach(() => {
     config.init({
@@ -58,6 +69,8 @@ describe('create_user_for_contacts', () => {
     });
 
     transition = require('../../../src/transitions/create_user_for_contacts');
+    const transitionUtils = require('../../../src/transitions/utils');
+    hasRun = sinon.stub(transitionUtils, 'hasRun');
   });
 
   afterEach(() => {
@@ -150,6 +163,23 @@ describe('create_user_for_contacts', () => {
       assertGetContactType(doc);
     });
 
+    it(`includes new person contact doc with the create flag set to 'true'`, () => {
+      const doc = getCreatedContact();
+
+      expect(transition.filter(doc, { initial_replication_date: 1, latest_replication_date: 1 })).to.be.true;
+      assertGetContactType(doc);
+    });
+
+    it(`includes new replaced person contact doc with the create flag set to 'true'`, () => {
+      const doc = {
+        ...getCreatedContact(),
+        ...getReplacedContact('READY')
+      };
+
+      expect(transition.filter(doc, { initial_replication_date: 1, latest_replication_date: 1 })).to.be.true;
+      assertGetContactType(doc);
+    });
+
     it('excludes docs which do not have a contact type', () => {
       const doc = getReplacedContact('READY');
       contactTypeUtils.getContactType.returns(undefined);
@@ -177,7 +207,7 @@ describe('create_user_for_contacts', () => {
       { replace: { a_user: 'world' } },
       { replace: { a_user: { hello: 'world' } } },
     ].forEach(user_for_contact => {
-      it('excludes person contacts which have user_for_contact data, but have not been replaced', () => {
+      it('excludes person contacts which have user_for_contact data, but are not creating or replacing a user', () => {
         const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
         expect(transition.filter(originalContact)).to.be.false;
         assertGetContactType(originalContact);
@@ -197,6 +227,22 @@ describe('create_user_for_contacts', () => {
       doc.user_for_contact.replace.another_user = { status: 'ERROR' };
 
       expect(transition.filter(doc)).to.be.false;
+      assertGetContactType(doc);
+    });
+
+    it('excludes existing person contacts with create flag set to true when transition has run already', () => {
+      const doc = getCreatedContact();
+      hasRun.returns(true);
+
+      expect(transition.filter(doc, { initial_replication_date: 1, latest_replication_date: 1 })).to.be.false;
+      assertGetContactType(doc);
+    });
+
+    it('excludes existing person contacts with create flag set when contact has already been replicated', () => {
+      const doc = getCreatedContact();
+      hasRun.returns(false);
+
+      expect(transition.filter(doc, { initial_replication_date: 1, latest_replication_date: 2 })).to.be.false;
       assertGetContactType(doc);
     });
   });
@@ -272,6 +318,92 @@ describe('create_user_for_contacts', () => {
     };
 
     const stripCouchdbUserPrefix = username => username.replace('org.couchdb.user:', '');
+
+    it(`creates user for new contact with create flag of 'true' and multiple roles`, async () => {
+      const doc = getCreatedContact({ roles: ['nurse', 'chw'], role: null });
+
+      const result = await transition.onMatch({ doc, info: {} });
+      expect(result).to.be.true;
+
+      expectUsersCreated([{ contact: doc, user: doc }]);
+      expect(doc.user_for_contact.create).to.not.exist;
+    });
+
+    it(`creates user for new contact with create flag of 'true' and single role`, async () => {
+      const doc = getCreatedContact({ role: 'chw' });
+
+      const result = await transition.onMatch({ doc, info: {} });
+      expect(result).to.be.true;
+
+      expectUsersCreated([{ contact: doc, user: { roles: [doc.role] } }]);
+      expect(doc.user_for_contact.create).to.not.exist;
+    });
+
+    it('records error when creating user when an error is thrown generating a new username', async () => {
+      validateNewUsername.rejects({ status: 500, message: 'Server error' });
+      const doc = getCreatedContact();
+
+      try {
+        await transition.onMatch({ doc, info: {} });
+        expect(true).to.equal('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Server error');
+        expect(err.changed).to.be.true;
+      }
+    });
+
+    it('records error when creating user with new contact that has no name', async () => {
+      const doc = {
+        ...getCreatedContact(),
+        name: undefined
+      };
+
+      try {
+        await transition.onMatch({ doc, info: {} });
+        expect(true).to.equal('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal(`Contact [${doc._id}] must have a name.`);
+        expect(err.changed).to.be.true;
+      }
+    });
+
+    it('records error when creating user with contact that has no role', async () => {
+      const doc = getCreatedContact({ role: null });
+
+      try {
+        await transition.onMatch({ doc, info: {} });
+        expect(true).to.equal('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property.`);
+        expect(err.changed).to.be.true;
+      }
+    });
+
+    it('records error when creating user with error on user creation', async () => {
+      createUser.rejects({ message: 'Server Error' });
+      const doc = getCreatedContact();
+
+      try {
+        await transition.onMatch({ doc, info: {} });
+        expect(true).to.equal('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Server Error');
+        expect(err.changed).to.be.true;
+      }
+    });
+
+    it('records error when creating user with nested error on user creation', async () => {
+      createUser.rejects({ message: { message: 'Invalid phone number' } });
+      const doc = getCreatedContact();
+
+      try {
+        await transition.onMatch({ doc, info: {} });
+        expect(true).to.equal('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Error creating new user: "Invalid phone number"');
+        expect(err.changed).to.be.true;
+      }
+    });
 
     it('replaces user with READY status', async () => {
       const doc = getReplacedContact('READY');
@@ -412,7 +544,7 @@ describe('create_user_for_contacts', () => {
         await transition.onMatch({ doc });
         expect(true).to.equal('Should have thrown');
       } catch (err) {
-        expect(err.message).to.equal(`Replacement contact [${newContact._id}] must have a name.`);
+        expect(err.message).to.equal(`Contact [${newContact._id}] must have a name.`);
         expect(err.changed).to.be.true;
       }
     });
@@ -517,7 +649,7 @@ describe('create_user_for_contacts', () => {
           const expectedMessage = [
             'No id was provided for the new replacement contact.',
             'No id was provided for the new replacement contact.',
-            `Replacement contact [${namelessContact._id}] must have a name.`,
+            `Contact [${namelessContact._id}] must have a name.`,
           ].join(', ');
           expect(err.message).to.equal(expectedMessage);
           expect(err.changed).to.be.true;
@@ -589,6 +721,99 @@ describe('create_user_for_contacts', () => {
           expect(doc.user_for_contact.replace[name].status).to.equal('COMPLETE');
         });
       });
+    });
+
+    it('creates user and replaces user for the same contact at the same time', async () => {
+      const doc = {
+        ...getReplacedContact('READY'),
+        name: 'New Contact',
+        role: 'chw',
+        phone: '+1234567890',
+      };
+      doc.user_for_contact.create = 'true';
+
+      const result = await transition.onMatch({ doc, info: {} });
+      expect(result).to.be.true;
+
+      expectInitialDataRetrieved([{ username: ORIGINAL_USER.name, contact: NEW_CONTACT }]);
+      expectUsersCreated([
+        { contact: doc, user: { roles: [doc.role] } },
+        { contact: NEW_CONTACT, user: ORIGINAL_USER },
+      ]);
+      expectUserPasswordReset([ORIGINAL_USER]);
+      expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
+      expect(doc.user_for_contact.create).to.not.exist;
+    });
+
+    it('replaces user when create fails for the same contact at the same time', async () => {
+      const doc = {
+        ...getReplacedContact('READY'),
+        name: 'New Contact',
+        phone: '+1234567890',
+      };
+      doc.user_for_contact.create = 'true';
+
+      try {
+        await transition.onMatch({ doc, info: {} });
+        expect(true).to.equal('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property.`);
+        expect(err.changed).to.be.true;
+      }
+
+      expectInitialDataRetrieved([{ username: ORIGINAL_USER.name, contact: NEW_CONTACT }]);
+      expectUsersCreated([{ contact: NEW_CONTACT, user: ORIGINAL_USER }]);
+      expectUserPasswordReset([ORIGINAL_USER]);
+      expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
+      expect(doc.user_for_contact.create).to.equal('true');
+    });
+
+    it('creates user when replace fails for the same contact at the same time', async () => {
+      const doc = {
+        ...getReplacedContact('READY', null),
+        name: 'New Contact',
+        role: 'chw',
+        phone: '+1234567890',
+      };
+      doc.user_for_contact.create = 'true';
+
+      try {
+        await transition.onMatch({ doc, info: {} });
+        expect(true).to.equal('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('No id was provided for the new replacement contact.');
+        expect(err.changed).to.be.true;
+      }
+
+      expect(getOrCreatePerson.callCount).to.equal(0);
+
+      expectUsersCreated([{ contact: doc, user: { roles: [doc.role] } }]);
+      expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('ERROR');
+      expect(doc.user_for_contact.create).to.not.exist;
+    });
+
+    it('records errors when creating and replacing users for the same contact at the same time both fail', async () => {
+      const doc = {
+        ...getReplacedContact('READY', null),
+        name: 'New Contact',
+        phone: '+1234567890',
+      };
+      doc.user_for_contact.create = 'true';
+
+      try {
+        await transition.onMatch({ doc, info: {} });
+        expect(true).to.equal('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property., ` +
+          'No id was provided for the new replacement contact.');
+        expect(err.changed).to.be.true;
+      }
+
+      expect(getOrCreatePerson.callCount).to.equal(0);
+      expect(validateNewUsername.callCount).to.equal(0);
+      expect(createUser.callCount).to.equal(0);
+      expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('ERROR');
+      expect(doc.user_for_contact.create).to.equal('true');
     });
   });
 });
