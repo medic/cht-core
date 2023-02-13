@@ -2,12 +2,12 @@
 
 ##############################################3
 # This script gathers logs for ALL containers
-# running and outputs them into a zip file in
+# running and outputs them into a tar file in
 # your home directory here:
-set -e
+#
 #       ~/.medic/cht-docker/support_logs
 #
-# Please remove the zip file when done.
+# Please remove the tar file when done.
 # It may contain PII/PHI.
 #
 # Note - while this will work with CHT 3.x
@@ -15,13 +15,15 @@ set -e
 # to work with CHT 4.x.
 ##############################################3
 
+set -e
+
 echo
 echo "Wait while the script gathers stats and logs about the CHT containers.
-  Be patient, this might take a moment... "
+    Be patient, this might take a moment... ";echo
 
 log_directory="$HOME/.medic/support_logs"
-date=$(date -Iseconds)
-log_archive="$log_directory/cht-docker-logs-${date}.zip"
+date=$(date -Iseconds | tr ":" .)
+log_archive="$log_directory/cht-docker-logs-${date}.tar.gz"
 tmp=/tmp/cht-docker-log-tmp
 mkdir -p "$log_directory"
 mkdir -p "$tmp"
@@ -32,18 +34,10 @@ docker ps> ${tmp}/docker_ps.log
 docker ps  --format '{{ .Names }}' | xargs -I % sh -c "docker logs %  > ${tmp}/%.log 2>&1"
 
 cd /tmp/cht-docker-log-tmp
-zip --quiet ${log_archive} *
+tar -czf ${log_archive} *
 
 rm /tmp/cht-docker-log-tmp/*
 
-echo
-echo "Done!"
-echo;echo
-echo "Zip file here:"
-echo;echo
-echo "    ${log_archive}"
-echo
-
-echo "NOTE: Please remove the zip file when done.
-  It may contain PII/PHI."
-echo
+echo "Done!";echo
+echo "    ${log_archive}";echo
+echo "NOTE: Please remove the file when done as it may contain PII/PHI.";echo
