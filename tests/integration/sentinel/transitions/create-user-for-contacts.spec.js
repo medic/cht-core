@@ -519,7 +519,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not replace user when the new contact does not have a name', async () => {
-      const missingNamePattern = /Replacement contact \[new_person] must have a name\./;
+      const missingNamePattern = /Contact \[new_person] must have a name\./;
       const newPerson = { ...NEW_PERSON, name: undefined };
 
       const collectLogs = await utils.collectSentinelLogs(missingNamePattern);
@@ -796,7 +796,7 @@ describe('create_user_for_contacts', () => {
     });
 
     it('does not create user when the new contact does not have a name', async () => {
-      const missingNamePattern = /Replacement contact \[new_person] must have a name\./;
+      const missingNamePattern = /Contact \[new_person] must have a name\./;
       const collectLogs = await utils.collectSentinelLogs(missingNamePattern);
 
       await utils.updateSettings(getSettings(), 'sentinel');
