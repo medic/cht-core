@@ -1,4 +1,5 @@
 const fs = require('fs');
+const { expect } = require('chai');
 const utils = require('../../../utils');
 const sentinelUtils = require('../../../utils/sentinel');
 const messagesUtils = require('../../../utils/messages');
@@ -7,8 +8,9 @@ const userFactory = require('../../../factories/cht/users/users');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const newPersonUserCreatePage = require('../../../page-objects/default/enketo/new-person-user-create.wdio.page');
+const addChwPage = require('../../../page-objects/default/enketo/add-chw.wdio.page');
 const { BASE_URL } = require('../../../constants');
+const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
 
 describe('Create user when adding contact', () => {
   const district = utils.deepFreeze(placeFactory.place().build({ type: 'district_hospital' }));
@@ -38,16 +40,16 @@ describe('Create user when adding contact', () => {
     roles: ['program_officer', 'mm-online'],
   }));
 
-  const newPersonUserCreateForm = utils.deepFreeze({
-    _id: 'form:new_person_user_create',
-    internalId: 'new_person_user_create',
-    title: 'New Person User Create',
+  const addChwAppForm = utils.deepFreeze({
+    _id: 'form:add_chw',
+    internalId: 'add_chw',
+    title: 'Add CHW',
     type: 'form',
     _attachments: {
       xml: {
         content_type: 'application/octet-stream',
         data: Buffer
-          .from(fs.readFileSync(`${__dirname}/forms/new_person_user_create.xml`, 'utf8'))
+          .from(fs.readFileSync(`${__dirname}/forms/add_chw.xml`, 'utf8'))
           .toString('base64')
       }
     }
@@ -78,7 +80,7 @@ describe('Create user when adding contact', () => {
   };
 
   before(async () => {
-    await utils.saveDocIfNotExists(newPersonUserCreateForm);
+    await utils.saveDocIfNotExists(addChwAppForm);
   });
 
   beforeEach(async () => {
@@ -173,16 +175,36 @@ describe('Create user when adding contact', () => {
     expect(additionalUsers).to.be.empty;
   });
 
-  it.skip('Does not create a new user when the transition fails', async () => {
+  it('creates a new user when contact is added from app form', async () => {
+    await utils.createUsers([onlineUser]);
+    newUsers.push(onlineUser.username);
+
+    await utils.updateSettings(settings, 'sentinel');
+    await loginPage.login(onlineUser);
+    await commonPage.goToPeople(district._id);
+
+    await contactsPage.createNewAction(addChwAppForm.title);
+    await addChwPage.submitForm({ name: contactName });
+    await commonPage.waitForPageLoaded();
+    await commonPage.goToReports();
+    const reportId = await reportsPage.getLastSubmittedReportId();
+    const { fields: { child_doc } } = await utils.getDoc(reportId);
+    expect(child_doc).to.not.be.empty;
+    await commonPage.goToPeople(child_doc);
+
+    await verifyUserCreation();
+  });
+
+  it('Does not create a new user when the transition fails', async () => {
     await utils.createUsers([offlineUser]);
     newUsers.push(offlineUser.username);
 
     await utils.updateSettings(settings, 'sentinel');
     await loginPage.login(offlineUser);
-    await commonPage.goToPeople(offlineUser.contact._id);
+    await commonPage.goToPeople(district._id);
 
-    await contactsPage.createNewAction(newPersonUserCreateForm.title);
-    await newPersonUserCreatePage.submitForm({ name: contactName, phone: '+40755' });
+    await contactsPage.createNewAction(addChwAppForm.title);
+    await addChwPage.submitForm({ name: contactName, phone: '+40755' });
     await commonPage.waitForPageLoaded();
 
     await commonPage.syncWithoutWaitForSuccess();
