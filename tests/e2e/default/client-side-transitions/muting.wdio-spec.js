@@ -1,10 +1,9 @@
 const _ = require('lodash');
-const { expect } = require('chai');
 
-const commonElements = require('../../../page-objects/protractor/common/common.po.js');
+const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/protractor/login/login.po.js');
-const contactsObjects = require('../../../page-objects/protractor/contacts/contacts.po');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const contactsObjects = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 const formsUtils = require('./forms');
 const constants = require('../../../constants.js');
@@ -114,7 +113,7 @@ describe('Muting', () => {
   };
 
   const getLastSubmittedReport = () => {
-    return browser.executeAsyncScript(() => {
+    return browser.executeAsync(() => {
       const callback = arguments[arguments.length - 1];
       const db = window.CHTCore.DB.get();
       return db
@@ -125,7 +124,7 @@ describe('Muting', () => {
   };
 
   const getLocalDoc = (uuid) => {
-    return browser.executeAsyncScript((uuid) => {
+    return browser.executeAsync((uuid) => {
       const callback = arguments[arguments.length - 1];
       const db = window.CHTCore.DB.get();
       return db
@@ -136,7 +135,7 @@ describe('Muting', () => {
   };
 
   const ensureSync = async (localDoc) => {
-    await commonElements.syncNative();
+    await commonElements.sync();
     try {
       const onlineDoc = await utils.getDoc(localDoc._id, localDoc._rev);
       expect(onlineDoc).excludingEvery('_attachments').to.deep.equal(localDoc);
@@ -146,7 +145,7 @@ describe('Muting', () => {
   };
 
   const submitMutingForm = async (contact, form, sync = false) =>  {
-    await contactsObjects.loadContact(contact._id);
+    await commonElements.goToPeople(contact._id);
 
     await formsUtils.openForm(form);
     await formsUtils.submit();
@@ -175,8 +174,8 @@ describe('Muting', () => {
   const restartSentinel = async (sync = false) => {
     await utils.startSentinel();
     await sentinelUtils.waitForSentinel();
-    await utils.resetBrowserNative();
-    sync && await commonElements.syncNative();
+    await utils.resetBrowser();
+    sync && await commonElements.sync();
   };
 
   const expectUnmutedNoHistory = (doc) => {
@@ -207,18 +206,18 @@ describe('Muting', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
 
     await utils.startSentinel();
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
+    await commonElements.goToLoginPage();
+    await loginPage.login(constants.USERNAME, constants.PASSWORD);
     await utils.revertDb();
-    await commonElements.calmNative();
+    await commonElements.calm();
   });
 
   describe('for an online user',  () => {
     beforeAll(async () => {
       await utils.saveDocs(contacts);
       await utils.createUsers([onlineUser]);
-      await commonElements.goToLoginPageNative();
-      await loginPage.loginNative('online', password);
+      await commonElements.goToLoginPage();
+      await loginPage.login('online', password);
       await utils.closeTour();
     });
 
@@ -251,14 +250,14 @@ describe('Muting', () => {
     beforeAll(async () => {
       await utils.saveDocs(contacts);
       await utils.createUsers([offlineUser]);
-      await commonElements.goToLoginPageNative();
-      await loginPage.loginNative(offlineUser.username, password);
+      await commonElements.goToLoginPage();
+      await loginPage.login(offlineUser.username, password);
       try {
-        await commonElements.calmNative();
+        await commonElements.calm();
       } catch (err) {
         console.warn('Error when expecting page load', err);
         await browser.driver.navigate().refresh();
-        await commonElements.calmNative();
+        await commonElements.calm();
       }
     });
 
@@ -267,7 +266,7 @@ describe('Muting', () => {
     });
 
     afterEach(async () => {
-      await commonElements.syncNative();
+      await commonElements.sync();
       await setBrowserOffline();
       await utils.revertSettings(true);
       await unmuteContacts();
@@ -280,19 +279,19 @@ describe('Muting', () => {
       await utils.updateSettings(settings, true);
       await setBrowserOnline();
       try {
-        await commonElements.syncNative();
+        await commonElements.sync();
         await utils.refreshToGetNewSettings();
       } catch (err) {
         // sometimes sync happens by itself, on timeout
         console.error('Error when trying to sync', err);
         await utils.refreshToGetNewSettings();
-        await commonElements.syncNative();
+        await commonElements.sync();
       }
     };
 
     const unmuteContacts = () => {
       const ids = contacts.map(c => c._id);
-      return browser.executeAsyncScript((ids) => {
+      return browser.executeAsync((ids) => {
         const callback = arguments[arguments.length - 1];
         const db = window.CHTCore.DB.get();
         return db
@@ -953,7 +952,7 @@ describe('Muting', () => {
       await utils.stopSentinel();
       await updateSettings(settings);
 
-      await contactsObjects.loadContact(HEALTH_CENTER._id);
+      await commonElements.goToPeople(HEALTH_CENTER._id);
       await formsUtils.openForm('mute_new_clinic');
       await formsUtils.selectHealthCenter(HEALTH_CENTER.name);
       await formsUtils.fillPatientName('new patient');
