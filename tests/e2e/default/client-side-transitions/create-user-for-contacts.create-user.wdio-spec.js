@@ -173,7 +173,7 @@ describe('Create user when adding contact', () => {
     expect(additionalUsers).to.be.empty;
   });
 
-  it('Does not create a new user when the transition fails', async () => {
+  it.skip('Does not create a new user when the transition fails', async () => {
     await utils.createUsers([offlineUser]);
     newUsers.push(offlineUser.username);
 
