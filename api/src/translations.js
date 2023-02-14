@@ -3,6 +3,7 @@ const properties = require('properties');
 const db = require('./db');
 const environment = require('./environment');
 const fs = require('fs');
+const logger = require('./logger');
 const util = require('util');
 const path = require('path');
 const TRANSLATION_FILE_NAME_REGEX = /messages-([a-z]*)\.properties/;
@@ -38,6 +39,7 @@ const validTranslationsDoc = doc => {
     return true;
   }
 
+  logger.warn(`Failed to load translations for "${doc.code}"("${doc.name}"). Translations document malformed.`);
   return false;
 };
 
