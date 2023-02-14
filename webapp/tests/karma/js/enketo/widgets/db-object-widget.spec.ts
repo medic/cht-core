@@ -17,41 +17,40 @@ describe('Enketo: DB Object Widget', () => {
     nodeFn = sinon.stub().returns({ getElements, setVal });
     model = { node: nodeFn };
     getCurrentForm = sinon.stub();
-    window.CHTCore = { Enketo: { getCurrentForm } };
   });
 
   afterEach(() => {
     sinon.restore();
   });
 
-  describe('updateFields', () => {
+  describe('updateDoc', () => {
 
-    let updateFieldsFn;
+    let $this;
+    let doc;
 
     beforeEach(() => {
-      updateFieldsFn = dbObjectWidget._updateFields;
+      $this = {};
+      doc = {};
     });
 
     it('should gracefully handle when the form is unloaded - #7602', () => {
       window.CHTCore = { Enketo: undefined };
-      const data = { name: 'john' };
-      const keyRoot = '/test';
-      const index = 0;
-      const originatingKeyPath = keyRoot;
-      updateFieldsFn(data, keyRoot, index, originatingKeyPath);
+      dbObjectWidget._updateDoc($this, doc);
       expect(getCurrentForm.callCount).to.equal(0);
     });
 
+  });
+
+  describe('updateFields', () => {
+
     it('should set node values', () => {
-      getCurrentForm.returns({ model });
-      window.CHTCore = { Enketo: { getCurrentForm } };
+      const currentForm = { model };
       getElements.returns(['']);
       const data = { name: 'john' };
       const keyRoot = '/test';
       const index = 0;
       const originatingKeyPath = keyRoot;
-      updateFieldsFn(data, keyRoot, index, originatingKeyPath);
-      expect(getCurrentForm.callCount).to.equal(1);
+      dbObjectWidget._updateFields(currentForm, data, keyRoot, index, originatingKeyPath);
       expect(nodeFn.callCount).to.equal(1);
       expect(nodeFn.args[0][0]).to.equal('/test/name');
       expect(nodeFn.args[0][1]).to.equal(0);
@@ -60,8 +59,7 @@ describe('Enketo: DB Object Widget', () => {
     });
 
     it('should iterate over objects', () => {
-      getCurrentForm.returns({ model });
-      window.CHTCore = { Enketo: { getCurrentForm } };
+      const currentForm = { model };
       getElements.returns(['']);
       const data = {
         patient: { name: 'john'},
@@ -70,7 +68,7 @@ describe('Enketo: DB Object Widget', () => {
       const keyRoot = '/test';
       const index = 0;
       const originatingKeyPath = keyRoot;
-      updateFieldsFn(data, keyRoot, index, originatingKeyPath);
+      dbObjectWidget._updateFields(currentForm, data, keyRoot, index, originatingKeyPath);
       expect(nodeFn.callCount).to.equal(2);
       expect(nodeFn.args[0][0]).to.equal('/test/patient/name');
       expect(nodeFn.args[0][1]).to.equal(0);

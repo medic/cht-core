@@ -84,28 +84,25 @@ const changeHandler = function() {
   const selected = $this.select2('data');
   const doc = selected && selected[0] && selected[0].doc;
   if (doc) {
-    const field = $this.attr('name');
-    const index = $('select[name="' + field + '"]').index(this);
-    const keyRoot = field.substring(0, field.lastIndexOf('/'));
-    updateFields(doc, keyRoot, index, field);
-    // https://github.com/enketo/enketo-core/issues/910
-    // Re-validate the current question now that we have loaded the doc data.
-    // This will clear any constraint errors that were resolved by the doc data.
-    const currentForm = getCurrentForm();
-    if (currentForm) {
-      currentForm.validateContent($this.parent());
-    }
+    updateDoc(doc);
   }
 };
 
-const updateFields = function(data, keyRoot, index, originatingKeyPath) {
-  const currentForm = getCurrentForm();
-  const currentModel = currentForm && currentForm.model;
-  if (!currentModel) {
-    // form has been unloaded so there's nothing elements left to set
-    return;
+const updateDoc = function($this, doc) {
+  const currentForm = getCurrentForm(); // check if form has been unloaded
+  if (currentForm && currentForm.model) {
+    const field = $this.attr('name');
+    const index = $('select[name="' + field + '"]').index(this);
+    const keyRoot = field.substring(0, field.lastIndexOf('/'));
+    updateFields(currentForm, doc, keyRoot, index, field);
+    // https://github.com/enketo/enketo-core/issues/910
+    // Re-validate the current question now that we have loaded the doc data.
+    // This will clear any constraint errors that were resolved by the doc data.
+    currentForm.validateContent($this.parent());
   }
+};
 
+const updateFields = function(currentForm, data, keyRoot, index, originatingKeyPath) {
   Object.keys(data).forEach(function(key) {
     const path = keyRoot + '/' + key;
     if (path === originatingKeyPath) {
@@ -119,10 +116,10 @@ const updateFields = function(data, keyRoot, index, originatingKeyPath) {
     }
     if (_.isObject(value)) {
       // recursively set fields for children
-      return updateFields(value, path, index, originatingKeyPath);
+      return updateFields(currentForm, value, path, index, originatingKeyPath);
     }
 
-    const node = currentModel.node(path, index, { onlyLeaf: true });
+    const node = currentForm.model.node(path, index, { onlyLeaf: true });
     if (node.getElements().length) {
       node.setVal(value);
     }
@@ -131,4 +128,7 @@ const updateFields = function(data, keyRoot, index, originatingKeyPath) {
 };
 
 module.exports = Dbobjectwidget;
-module.exports._updateFields = updateFields; // exposed for testing
+
+// exposed for testing
+module.exports._updateDoc = updateDoc;
+module.exports._updateFields = updateFields;
