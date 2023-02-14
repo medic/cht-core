@@ -18,7 +18,7 @@
         'Ogwomwenda',
         'Ogwekkumi',
         'Ogwekkuminogumu',
-        'Ogwekkuminabiri'
+        'Ogwekkumineebiri'
       ],
       monthsShort: ['Og1', 'Ogw2', 'Ogw3', 'Ogw4', 'Ogw5', 'Ogw6', 'Ogw7', 'Ogw8', 'Ogw9', 'Ogw10', 'Ogw11', 'Ogw12'],
       today: 'Leero',

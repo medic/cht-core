@@ -4,7 +4,7 @@
 const moment = require('moment');
 moment.defineLocale('lg', {
   months: `Ogusooka_Ogwokubiri_Ogwokusatu_Ogwokuna_Ogwokutaano_Ogwomukaaga_Ogwomusanvu_Ogwomunaana_
-    Ogwomwenda_Ogwekkumi_Ogwekkuminogumu_Ogwekkuminabiri`.split('_'),
+    Ogwomwenda_Ogwekkumi_Ogwekkuminogumu_Ogwekkumineebiri`.split('_'),
   monthsShort: 'Og1_Ogw2_Ogw3_Ogw4_Ogw5_Ogw6_Ogw7_Ogw8_Ogw9_Ogw10_Ogw11_Ogw12'.split('_'),
   weekdays: 'Sabbiiti_Balaza_Lwakubiri_Lwakusatu_Lwakuna_Lwakutaano_Lwamukaaga'.split('_'),
   weekdaysShort: 'Sab_Bal_Lw2_Lw3_Lw4_Lw5_Lw6'.split('_'),
