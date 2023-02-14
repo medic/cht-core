@@ -131,7 +131,7 @@ const getUsersToReplace = (originalContact) => {
 const addUser = async (contact) => {
   if (
     !contact.role &&
-    (!contact.roles || !contact.roles.length)
+    (!Array.isArray(contact.roles) || !contact.roles.length)
   ) {
     throw new Error(`Contact [${contact._id}] must have a "role" or "roles" property.`);
   }
@@ -169,7 +169,7 @@ module.exports = {
       );
     }
   },
-  filter: (doc, info = {}) => {
+  filter: (doc, info) => {
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
     if (
       !contactType

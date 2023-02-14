@@ -349,6 +349,7 @@ describe('create_user_for_contacts', () => {
       } catch (err) {
         expect(err.message).to.equal('Server error');
         expect(err.changed).to.be.true;
+        expect(doc.user_for_contact.create).to.equal('true');
       }
     });
 
@@ -364,6 +365,7 @@ describe('create_user_for_contacts', () => {
       } catch (err) {
         expect(err.message).to.equal(`Contact [${doc._id}] must have a name.`);
         expect(err.changed).to.be.true;
+        expect(doc.user_for_contact.create).to.equal('true');
       }
     });
 
@@ -376,6 +378,7 @@ describe('create_user_for_contacts', () => {
       } catch (err) {
         expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property.`);
         expect(err.changed).to.be.true;
+        expect(doc.user_for_contact.create).to.equal('true');
       }
     });
 
@@ -389,6 +392,7 @@ describe('create_user_for_contacts', () => {
       } catch (err) {
         expect(err.message).to.equal('Server Error');
         expect(err.changed).to.be.true;
+        expect(doc.user_for_contact.create).to.equal('true');
       }
     });
 
@@ -402,6 +406,7 @@ describe('create_user_for_contacts', () => {
       } catch (err) {
         expect(err.message).to.equal('Error creating new user: "Invalid phone number"');
         expect(err.changed).to.be.true;
+        expect(doc.user_for_contact.create).to.equal('true');
       }
     });
 
