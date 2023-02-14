@@ -5,7 +5,7 @@ const utils = require('../../../utils');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 const formsUtils = require('./forms');
-const constants = require('../../../constants.js');
+const userFactory = require('../../../factories/cht/users/users');
 
 /* global window */
 
@@ -78,29 +78,33 @@ describe('Muting', () => {
     patient3,
   ];
 
-  const offlineUser = {
-    username: 'offline_user',
-    password: password,
-    place: 'HEALTH_CENTER',
-    contact: {
-      _id: 'fixture:user:offline',
-      name: 'Offline'
-    },
-    roles: ['district_admin'],
-    known: true,
-  };
+  // const offlineUser = {
+  //   username: 'offline_user',
+  //   password: password,
+  //   place: 'HEALTH_CENTER',
+  //   contact: {
+  //     _id: 'fixture:user:offline',
+  //     name: 'Offline'
+  //   },
+  //   roles: ['district_admin'],
+  //   known: true,
+  // };
 
-  const onlineUser = {
-    username: 'online',
-    password: password,
-    place: 'HEALTH_CENTER',
-    contact: {
-      _id: 'fixture:user:online',
-      name: 'Offline'
-    },
-    roles: ['national_admin'],
-    known: true,
-  };
+  const onlineUser = userFactory.build({ place: HEALTH_CENTER._id, roles: [ 'program_officer' ] });
+  const offlineUser = userFactory.build({ place: HEALTH_CENTER._id, roles: ['chw'] });
+
+
+  // const onlineUser = {
+  //   username: 'online',
+  //   password: password,
+  //   place: 'HEALTH_CENTER',
+  //   contact: {
+  //     _id: 'fixture:user:online',
+  //     name: 'Offline'
+  //   },
+  //   roles: ['national_admin'],
+  //   known: true,
+  // };
 
   const settings = {
     transitions: { muting: true },
@@ -284,9 +288,11 @@ describe('Muting', () => {
       try {
         await commonElements.sync();
         //await utils.refreshToGetNewSettings();
+        await commonElements.closeReloadModal();
       } catch (err) {
         // sometimes sync happens by itself, on timeout
         console.error('Error when trying to sync', err);
+        await commonElements.closeReloadModal();
         //await utils.refreshToGetNewSettings();
         await commonElements.sync();
       }
