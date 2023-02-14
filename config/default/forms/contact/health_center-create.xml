@@ -915,7 +915,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:health_center:create" prefix="J1!contact:health_center:create!" delimiter="#" version="2023-01-26 16-02">
+        <data id="contact:health_center:create" prefix="J1!contact:health_center:create!" delimiter="#" version="2023-02-14 7-41">
           <inputs>
             <meta>
               <location>
@@ -1038,7 +1038,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/role_other" type="string" relevant="selected(  /data/contact/role ,'other')" required="true()"/>
       <bind nodeset="/data/contact/external_id" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/notes" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
-      <bind nodeset="/data/contact/user_for_contact/create" type="string" calculate="selected(  /data/contact/role ,'chw') or selected(  /data/contact/role ,'chw_supervisor')"/>
+      <bind nodeset="/data/contact/user_for_contact/create" type="string" calculate=" /data/contact/phone  != '' and (selected(  /data/contact/role ,'chw') or selected(  /data/contact/role ,'chw_supervisor'))"/>
       <bind nodeset="/data/contact/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/contact/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/contact/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
