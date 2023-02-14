@@ -77,6 +77,8 @@ describe('create_user_for_contacts', () => {
 
     const collectLogs = await utils.collectSentinelLogs(tokenLoginErrorPattern, transitionsDisabledPattern);
     await utils.updateSettings(getSettings({ token_login: { enabled: false } }), 'sentinel');
+    // Wait a bit before collecting logs. Cannot wait on directly on Sentinel because no docs are being processed
+    await sentinelUtils.getCurrentSeq();
     const logs = await collectLogs();
     assert.exists(logs.find(log => log.match(tokenLoginErrorPattern)));
     assert.exists(logs.find(log => log.match(transitionsDisabledPattern)));
@@ -89,6 +91,8 @@ describe('create_user_for_contacts', () => {
 
     const collectLogs = await utils.collectSentinelLogs(appUrlErrorPattern, transitionsDisabledPattern);
     await utils.updateSettings(getSettings({ app_url: '' }), 'sentinel');
+    // Wait a bit before collecting logs. Cannot wait on directly on Sentinel because no docs are being processed
+    await sentinelUtils.getCurrentSeq();
     const logs = await collectLogs();
     assert.exists(logs.find(log => log.match(appUrlErrorPattern)));
     assert.exists(logs.find(log => log.match(transitionsDisabledPattern)));
