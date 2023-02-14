@@ -3,7 +3,6 @@ const _ = require('lodash');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const utils = require('../../../utils');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const contactsObjects = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 const formsUtils = require('./forms');
 const constants = require('../../../constants.js');
@@ -11,7 +10,6 @@ const constants = require('../../../constants.js');
 /* global window */
 
 describe('Muting', () => {
-  let originalTimeout;
 
   const password = 'Sup3rSecret!';
   const DISTRICT = {
@@ -145,8 +143,7 @@ describe('Muting', () => {
   };
 
   const submitMutingForm = async (contact, form, sync = false) =>  {
-    await commonElements.goToPeople(contact._id);
-
+    await commonElements.goToPeople(contact._id);   
     await formsUtils.openForm(form);
     await formsUtils.submit();
     if (sync) {
@@ -155,8 +152,8 @@ describe('Muting', () => {
     }
   };
 
-  const muteClinic = (contact, sync = false) => {
-    return submitMutingForm(contact, 'mute_clinic', sync);
+  const muteClinic = async (contact, sync = false) => {
+    await submitMutingForm(contact, 'mute_clinic', sync);
   };
 
   const unmuteClinic = (contact, sync = false) => {
@@ -174,7 +171,9 @@ describe('Muting', () => {
   const restartSentinel = async (sync = false) => {
     await utils.startSentinel();
     await sentinelUtils.waitForSentinel();
-    await utils.resetBrowser();
+    const logo = await $('div.logo-full');
+    await logo.click();
+    await commonElements.waitForPageLoaded();
     sync && await commonElements.sync();
   };
 
@@ -187,52 +186,54 @@ describe('Muting', () => {
     expect(doc.muting_history).to.be.undefined;
   };
 
-  const setBrowserOffline = () => {
-    return browser.driver.setNetworkConditions({ offline: true, latency: 0, throughput: 0 });
+  const setBrowserOffline = async () => {
+    await browser.throttle({
+      offline: true,
+      downloadThroughput: 0,
+      uploadThroughput: 0,
+      latency: 0
+    });
   };
-  const setBrowserOnline = () => {
-    return browser.driver.setNetworkConditions({ latency: 0, throughput: 1000 * 1000 }, 'No throttling');
+  const setBrowserOnline = async () => {
+    //return browser.driver.setNetworkConditions({ latency: 0, throughput: 1000 * 1000 }, 'No throttling');
+    await browser.throttle({
+      offline: false,
+      downloadThroughput: 1000 * 1000,
+      uploadThroughput: 1000 * 1000,
+      latency: 0
+    });
   };
 
-  beforeAll(async () => {
-    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-
+  before(async () => {
     await utils.saveDocs([DISTRICT, HEALTH_CENTER]);
     await formsUtils.uploadForms();
   });
 
-  afterAll(async () => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-
-    await utils.startSentinel();
-    await commonElements.goToLoginPage();
-    await loginPage.login(constants.USERNAME, constants.PASSWORD);
-    await utils.revertDb();
-    await commonElements.calm();
-  });
+  after(async () => await utils.startSentinel());
 
   describe('for an online user',  () => {
-    beforeAll(async () => {
+    before(async () => {
       await utils.saveDocs(contacts);
       await utils.createUsers([onlineUser]);
-      await commonElements.goToLoginPage();
-      await loginPage.login('online', password);
-      await utils.closeTour();
+      await loginPage.login({username: onlineUser.username, password: password});
     });
 
-    afterAll(async () => {
+    after(async () => {
+      await browser.reloadSession();
       await utils.deleteUsers([onlineUser]);
     });
 
     afterEach(async () => {
-      await utils.revertDb([DISTRICT._id, HEALTH_CENTER._id, /^form:/]);
+      await utils.revertDb([DISTRICT._id, HEALTH_CENTER._id, /^form:/], true);
+      await commonElements.closeReloadModal();
     });
 
     it('should not process client-side when muting as an online user', async () => {
       // turning off sentinel so it doesn't process muting
       await utils.stopSentinel();
-      await utils.updateSettings(settings);
+      await commonElements.closeReloadModal();
+      await utils.updateSettings(settings, true);
+      await commonElements.closeReloadModal();
 
       await muteClinic(clinic1);
 
@@ -240,6 +241,7 @@ describe('Muting', () => {
       expectUnmutedNoHistory(await utils.getDoc(patient1._id));
 
       await restartSentinel();
+      await browser.reloadSession();
 
       expectMutedNoHistory(await utils.getDoc(clinic1._id));
       expectMutedNoHistory(await utils.getDoc(patient1._id));
@@ -247,21 +249,20 @@ describe('Muting', () => {
   });
 
   describe('for an offline user', () => {
-    beforeAll(async () => {
+    before(async () => {
       await utils.saveDocs(contacts);
       await utils.createUsers([offlineUser]);
-      await commonElements.goToLoginPage();
-      await loginPage.login(offlineUser.username, password);
+      await loginPage.login({username: offlineUser.username, password: password});
       try {
-        await commonElements.calm();
+        await commonElements.goToBase();
       } catch (err) {
         console.warn('Error when expecting page load', err);
-        await browser.driver.navigate().refresh();
-        await commonElements.calm();
+        await browser.refresh();
+        //await commonElements.goToBase();
       }
     });
 
-    afterAll(async () => {
+    after(async () => {
       await utils.deleteUsers([offlineUser]);
     });
 
@@ -269,22 +270,24 @@ describe('Muting', () => {
       await commonElements.sync();
       await setBrowserOffline();
       await utils.revertSettings(true);
+      await commonElements.closeReloadModal();
       await unmuteContacts();
       await setBrowserOnline();
-      await utils.refreshToGetNewSettings();
+      //await utils.refreshToGetNewSettings();
     });
 
     const updateSettings = async (settings) => {
       await setBrowserOffline();
       await utils.updateSettings(settings, true);
+      await commonElements.closeReloadModal();
       await setBrowserOnline();
       try {
         await commonElements.sync();
-        await utils.refreshToGetNewSettings();
+        //await utils.refreshToGetNewSettings();
       } catch (err) {
         // sometimes sync happens by itself, on timeout
         console.error('Error when trying to sync', err);
-        await utils.refreshToGetNewSettings();
+        //await utils.refreshToGetNewSettings();
         await commonElements.sync();
       }
     };
