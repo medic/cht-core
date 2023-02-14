@@ -30,8 +30,8 @@ describe('Pregnancy registration', () => {
   });
 
   it('Should submit a new pregnancy', async () => {
-    const edd = moment().add(30, 'day');
-    const nextANCVisit = moment().add(2, 'day');
+    const edd = moment().add(30, 'days');
+    const nextANCVisit = moment().add(1, 'day');
 
     await commonPage.goToPeople(pregnantWoman._id);
     await contactPage.createNewAction('Pregnancy registration');
