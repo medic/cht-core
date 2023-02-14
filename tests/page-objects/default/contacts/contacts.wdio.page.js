@@ -4,7 +4,7 @@ const genericForm = require('../enketo/generic-form.wdio.page');
 const commonElements = require('../common/common.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
-const searchBox = () => $('.mm-search-bar-container input#freetext');
+const searchBox = () => $('input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
