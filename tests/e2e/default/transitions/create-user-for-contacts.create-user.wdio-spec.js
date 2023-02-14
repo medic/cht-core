@@ -8,48 +8,75 @@ const userFactory = require('../../../factories/cht/users/users');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const addChwPage = require('../../../page-objects/default/enketo/add-chw.wdio.page');
 const { BASE_URL } = require('../../../constants');
 const { cookieLogin } = require('../../../page-objects/default/login/login.wdio.page');
+const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
+
+const CONTACT_NAME = 'Bob_chw';
+const ADD_CHW_FORM = 'form[data-form-id="add_chw"]';
+
+const chwNameField = () => $(`${ADD_CHW_FORM} input[name="/add_chw/chw_profile/name"]`);
+const chwPhoneField = () => $(`${ADD_CHW_FORM} input[name="/add_chw/chw_profile/phone"]`);
+
+const setChwName = async (nameValue = 'Ron') => {
+  const name = await chwNameField();
+  await name.waitForDisplayed();
+  await name.setValue(nameValue);
+};
+
+const setChwPhone = async (phoneValue = '+40755696969') => {
+  const phone = await chwPhoneField();
+  await phone.waitForDisplayed();
+  await phone.setValue(phoneValue);
+};
+
+const submitAddChwForm = async ({
+  name: nameValue,
+  phone: phoneValue,
+} = {}) => {
+  await setChwName(nameValue);
+  await setChwPhone(phoneValue);
+  await genericForm.submitForm();
+};
+
+const district = utils.deepFreeze(
+  placeFactory.place().build({ type: 'district_hospital' })
+);
+
+const settings = utils.deepFreeze({
+  transitions: { create_user_for_contacts: true },
+  token_login: { enabled: true },
+  app_url: BASE_URL
+});
+
+const settingsNoTransitions = utils.deepFreeze({
+  transitions: { create_user_for_contacts: false },
+  token_login: { enabled: true },
+  app_url: BASE_URL
+});
+
+const offlineUser = utils.deepFreeze(userFactory.build({
+  username: 'offline_user_create',
+  place: district._id,
+}));
+
+const addChwAppForm = utils.deepFreeze({
+  _id: 'form:add_chw',
+  internalId: 'add_chw',
+  title: 'Add CHW',
+  type: 'form',
+  _attachments: {
+    xml: {
+      content_type: 'application/octet-stream',
+      data: Buffer
+        .from(fs.readFileSync(`${__dirname}/forms/add_chw.xml`, 'utf8'))
+        .toString('base64')
+    }
+  }
+});
 
 describe('Create user when adding contact', () => {
-  const district = utils.deepFreeze(
-    placeFactory.place().build({ type: 'district_hospital' })
-  );
   const newUsers = [];
-  const contactName = 'Bob_chw';
-
-  const settings = utils.deepFreeze({
-    transitions: { create_user_for_contacts: true },
-    token_login: { enabled: true },
-    app_url: BASE_URL
-  });
-
-  const settingsNoTransitions = utils.deepFreeze({
-    transitions: { create_user_for_contacts: false },
-    token_login: { enabled: true },
-    app_url: BASE_URL
-  });
-
-  const offlineUser = utils.deepFreeze(userFactory.build({
-    username: 'offline_user_create',
-    place: district._id,
-  }));
-
-  const addChwAppForm = utils.deepFreeze({
-    _id: 'form:add_chw',
-    internalId: 'add_chw',
-    title: 'Add CHW',
-    type: 'form',
-    _attachments: {
-      xml: {
-        content_type: 'application/octet-stream',
-        data: Buffer
-          .from(fs.readFileSync(`${__dirname}/forms/add_chw.xml`, 'utf8'))
-          .toString('base64')
-      }
-    }
-  });
 
   const verifyUserCreation = async () => {
     await sentinelUtils.waitForSentinel();
@@ -112,7 +139,7 @@ describe('Create user when adding contact', () => {
     await browser.throttle('offline');
     await commonPage.goToPeople(district._id);
 
-    await contactsPage.addPerson({ name: contactName, phone: '+40755696969' });
+    await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
 
     await browser.throttle('online');
     await commonPage.sync();
@@ -125,7 +152,7 @@ describe('Create user when adding contact', () => {
     await cookieLogin();
     await commonPage.goToPeople(district._id);
 
-    await contactsPage.addPerson({ name: contactName, phone: '+40755696969' });
+    await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
 
     await verifyUserCreation();
   });
@@ -138,10 +165,10 @@ describe('Create user when adding contact', () => {
     await contactsPage.addPlace({
       type: 'health_center',
       placeName: 'HC1',
-      contactName: contactName,
+      contactName: CONTACT_NAME,
       phone: '+40755696969'
     });
-    await contactsPage.selectLHSRowByText(contactName);
+    await contactsPage.selectLHSRowByText(CONTACT_NAME);
 
     await verifyUserCreation();
   });
@@ -151,8 +178,8 @@ describe('Create user when adding contact', () => {
     await cookieLogin();
     await commonPage.goToPeople(district._id);
 
-    await contactsPage.addPerson({ name: contactName, phone: '+40755696969' });
-    await contactsPage.selectLHSRowByText(contactName);
+    await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' });
+    await contactsPage.selectLHSRowByText(CONTACT_NAME);
 
     await verifyUserNotCreated();
   });
@@ -163,8 +190,8 @@ describe('Create user when adding contact', () => {
     await commonPage.goToPeople(district._id);
 
     await contactsPage.createNewAction(addChwAppForm.title);
-    await addChwPage.submitForm({ name: contactName });
-    await contactsPage.selectLHSRowByText(contactName);
+    await submitAddChwForm({ name: CONTACT_NAME });
+    await contactsPage.selectLHSRowByText(CONTACT_NAME);
 
     await verifyUserCreation();
   });
@@ -176,8 +203,8 @@ describe('Create user when adding contact', () => {
 
     await contactsPage.createNewAction(addChwAppForm.title);
     // Add contact with invalid phone number
-    await addChwPage.submitForm({ name: contactName, phone: '+40755' });
-    await contactsPage.selectLHSRowByText(contactName);
+    await submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
+    await contactsPage.selectLHSRowByText(CONTACT_NAME);
 
     await verifyUserNotCreated({ ok: false });
   });
@@ -188,12 +215,12 @@ describe('Create user when adding contact', () => {
     await commonPage.goToPeople(district._id);
     await contactsPage.createNewAction(addChwAppForm.title);
     // Add contact with invalid phone number
-    await addChwPage.submitForm({ name: contactName, phone: '+40755' });
-    await contactsPage.selectLHSRowByText(contactName);
+    await submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
+    await contactsPage.selectLHSRowByText(CONTACT_NAME);
     await verifyUserNotCreated({ ok: false });
 
     // Edit contact to have valid phone number
-    await contactsPage.editPerson(contactName, { phone: '+40755696969', dob: '2000-01-01' });
+    await contactsPage.editPerson(CONTACT_NAME, { phone: '+40755696969', dob: '2000-01-01' });
 
     // User still not created
     const chwContactId = await contactsPage.getCurrentContactId();
