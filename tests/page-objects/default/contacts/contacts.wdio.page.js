@@ -192,8 +192,8 @@ const addPerson = async ({
   return (await contactCard()).getText();
 };
 
-const editPerson = async (name, updatedName) => {
-  await selectLHSRowByText(name);
+const editPerson = async (currentName, { name, phone, dob }) => {
+  await selectLHSRowByText(currentName);
   await waitForContactLoaded();
   await commonElements.openMoreOptionsMenu();
   await (await editContactButton()).waitForClickable();
@@ -201,10 +201,24 @@ const editPerson = async (name, updatedName) => {
 
   await (await genericForm.nextPage());
 
-  await (await personName()).clearValue();
-  await (await personName()).addValue(updatedName);
+  if (name !== undefined) {
+    await (await personName()).clearValue();
+    await (await personName()).addValue(name);
+  }
+  if (phone !== undefined) {
+    await (await phoneField()).clearValue();
+    await (await phoneField()).addValue(phone);
+  }
+  if (dob !== undefined) {
+    await (await dateOfBirthField()).clearValue();
+    await (await dateOfBirthField()).addValue(dob);
+  }
 
   await submitForm();
+};
+
+const editPersonName = async (name, updatedName) => {
+  await editPerson(name, { name: updatedName });
   return (await contactCard()).getText();
 };
 
@@ -392,6 +406,7 @@ module.exports = {
   waitForContactUnloaded,
   contactCard,
   editPerson,
+  editPersonName,
   exportContacts,
   getContactSummaryField,
   getAllRHSReportsNames,

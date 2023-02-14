@@ -61,7 +61,7 @@ describe('Create new lineage structure', () => {
     chai.expect(await contactPage.getContactSummaryField('person.field.phone')).to.equal(phone);
 
     const updatedName = 'Paul Atreides';
-    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+    chai.expect(await contactPage.editPersonName(name, updatedName)).to.equal(updatedName);
     chai.expect(await contactPage.getContactSummaryField('person.field.phone')).to.equal(phone);
   });
 
@@ -70,7 +70,7 @@ describe('Create new lineage structure', () => {
     const name = 'Georgiana';
     chai.expect(await contactPage.addPerson({ name })).to.equal(name);
     const updatedName = 'Karina';
-    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+    chai.expect(await contactPage.editPersonName(name, updatedName)).to.equal(updatedName);
   });
 
   it('should delete the primary contact of health facility', async () => {
@@ -92,7 +92,7 @@ describe('Create new lineage structure', () => {
     const name = 'Paul Luca';
     chai.expect(await contactPage.addPerson({ name })).to.equal(name);
     const updatedName = 'Cora Mi';
-    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+    chai.expect(await contactPage.editPersonName(name, updatedName)).to.equal(updatedName);
   });
 
   it('should edit the name of the Family', async () => {
@@ -100,7 +100,7 @@ describe('Create new lineage structure', () => {
     const name = 'Sumeria';
     chai.expect(await contactPage.addPerson({ name })).to.equal(name);
     const updatedName = 'Kaleb';
-    chai.expect(await contactPage.editPerson(name, updatedName)).to.equal(updatedName);
+    chai.expect(await contactPage.editPersonName(name, updatedName)).to.equal(updatedName);
   });
 
 });
