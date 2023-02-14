@@ -32,13 +32,7 @@ const results = { tasks: [], targets: [] };
 module.exports = {
   getContact: () => Contact,
   initialize: (settings, scope) => {
-    const noolsBoilerplateRegex = /^define.*\} then \{ /s;
-    let rules = settings.rules;
-    if (noolsBoilerplateRegex.test(settings.rules)) {
-      rules = rules.replace(noolsBoilerplateRegex, '');
-      rules = rules.substring(0, rules.length - '\n};'.length);
-    }
-    
+    const rules = removeNoolsLanguage(settings.rules);
     const rawFunction = new Function('c', 'Task', 'Target', 'Utils', 'user', 'cht', 'emit', rules);
     processDocsByContact = container => rawFunction(
       container,
@@ -80,4 +74,19 @@ const emitCallback = (instanceType, instance) => {
   } else if (instanceType === 'target') {
     results.targets.push(instance);
   }
+};
+
+/*
+cht-conf compiles the declarative configuration code and then wraps it in "nools rules language" 
+the nools code is not valid javascript and must be removed
+*/
+const removeNoolsLanguage = rules => {
+  const noolsRuleLangaugeRegex = /^define.*\} then \{ /s;
+  if (noolsRuleLangaugeRegex.test(rules)) {
+    let result = rules.replace(noolsRuleLangaugeRegex, '');
+    result = result.substring(0, result.length - '\n};'.length);
+    return result;
+  }
+
+  return rules;
 };
