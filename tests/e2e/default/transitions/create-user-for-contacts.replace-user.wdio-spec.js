@@ -221,14 +221,6 @@ const assertNewUserSettings = (newUserSettings, newContact, originalUser) => {
   expect(newUserSettings.name).to.match(/^replacement-user-\d\d\d\d$/);
 };
 
-const saveDocIfNotExists = async (doc) => {
-  try {
-    await utils.getDoc(doc._id);
-  } catch (_) {
-    await utils.saveDoc(doc);
-  }
-};
-
 const waitForConflicts = async (getDoc) => {
   const doc = await getDoc();
   if (doc._conflicts) {
@@ -239,8 +231,8 @@ const waitForConflicts = async (getDoc) => {
 
 describe('Create user for contacts', () => {
   before(async () => {
-    await saveDocIfNotExists(BASIC_FORM_DOC);
-    await saveDocIfNotExists(OTHER_REPLACE_FORM_DOC);
+    await utils.saveDocIfNotExists(BASIC_FORM_DOC);
+    await utils.saveDocIfNotExists(OTHER_REPLACE_FORM_DOC);
   });
 
   beforeEach(async () => {
