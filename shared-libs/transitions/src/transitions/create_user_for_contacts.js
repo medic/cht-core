@@ -169,7 +169,7 @@ module.exports = {
       );
     }
   },
-  filter: (doc, info) => {
+  filter: (doc, info = {}) => {
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
     if (
       !contactType
