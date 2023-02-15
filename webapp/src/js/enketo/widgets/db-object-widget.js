@@ -83,14 +83,8 @@ const changeHandler = function() {
   const $this = $(this);
   const selected = $this.select2('data');
   const doc = selected && selected[0] && selected[0].doc;
-  if (doc) {
-    updateDoc($this, doc);
-  }
-};
-
-const updateDoc = function($this, doc) {
-  const currentForm = getCurrentForm(); // check if form has been unloaded
-  if (currentForm && currentForm.model) {
+  const currentForm = getCurrentForm();
+  if (doc && currentForm && currentForm.model) { // check if form has been unloaded
     const field = $this.attr('name');
     const index = $('select[name="' + field + '"]').index(this);
     const keyRoot = field.substring(0, field.lastIndexOf('/'));
@@ -130,5 +124,4 @@ const updateFields = function(currentForm, data, keyRoot, index, originatingKeyP
 module.exports = Dbobjectwidget;
 
 // exposed for testing
-module.exports._updateDoc = updateDoc;
 module.exports._updateFields = updateFields;

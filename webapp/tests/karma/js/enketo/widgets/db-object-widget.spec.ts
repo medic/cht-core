@@ -23,24 +23,6 @@ describe('Enketo: DB Object Widget', () => {
     sinon.restore();
   });
 
-  describe('updateDoc', () => {
-
-    let $this;
-    let doc;
-
-    beforeEach(() => {
-      $this = {};
-      doc = {};
-    });
-
-    it('should gracefully handle when the form is unloaded - #7602', () => {
-      window.CHTCore = { Enketo: undefined };
-      dbObjectWidget._updateDoc($this, doc);
-      expect(getCurrentForm.callCount).to.equal(0);
-    });
-
-  });
-
   describe('updateFields', () => {
 
     it('should set node values', () => {
