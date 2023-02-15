@@ -42,10 +42,10 @@ describe('forms controller', () => {
         params: { form: 'a.xml' },
         userCtx: { name: 'formuser' }
       };
-      sinon.stub(db.medic, 'allDocs').rejects('icky');
+      sinon.stub(db.medic, 'allDocs').rejects({ error: 'icky' });
       sinon.stub(serverUtils, 'error');
       return controller.get(req, res).then(() => {
-        chai.expect(serverUtils.error.args[0][0].name).to.deep.equal('icky');
+        chai.expect(serverUtils.error.args[0][0]).to.deep.equal({ error: 'icky' });
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
       });
     });
@@ -92,10 +92,10 @@ describe('forms controller', () => {
       const req = {
         userCtx: { name: 'formuser' }
       };
-      sinon.stub(db.medic, 'allDocs').rejects('icky');
+      sinon.stub(db.medic, 'allDocs').rejects({ error: 'icky' });
       sinon.stub(serverUtils, 'error');
       return controller.list(req, res).then(() => {
-        chai.expect(serverUtils.error.args[0][0].name).to.equal('icky');
+        chai.expect(serverUtils.error.args[0][0]).to.deep.equal({ error: 'icky' });
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
       });
     });
