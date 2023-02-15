@@ -305,9 +305,9 @@ describe('Contact summary info', () => {
 
     // assert that the pregnancy card exists and has the right fields.
 
-    expect(await (await contactPage.pregnancyLabel).getText()).to.equal('test.pregnancy');
-    expect(await (await contactPage.visitLabel).getText()).to.equal('test.visits');
-    expect(await (await contactPage.numberOfReports).getText() ).to.equal('1');
+    expect(await (await contactPage.pregnancyLabel()).getText()).to.equal('test.pregnancy');
+    expect(await (await contactPage.visitLabel()).getText()).to.equal('test.visits');
+    expect(await (await contactPage.numberOfReports()).getText() ).to.equal('1');
   });
 
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
