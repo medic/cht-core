@@ -279,14 +279,14 @@ describe('RulesEngineService', () => {
       expect(rulesEngineCoreStubs.initialize.args[0][0]).to.deep.eq(expectedRulesConfig);
     });
 
-    it('can disable nools', async () => {
+    it('tasks.isDeclarative flag (set via cht-conf) disables nools', async () => {
       service = TestBed.inject(RulesEngineService);
 
       const settingsDoc = {
         _id: 'settings',
         tasks: {
           rules: 'rules',
-          disableNools: true,
+          isDeclarative: true,
         },
       };
       settingsService.get.resolves(settingsDoc);
