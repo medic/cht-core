@@ -7,8 +7,8 @@ const controller = rewire('../../../src/controllers/forms');
 const serverUtils = require('../../../src/server-utils');
 
 const mockFormsInDb = (...docs) => {
-  sinon.stub(db.medic, 'query').resolves({
-    rows: docs.map(doc => ({ doc: doc })),
+  sinon.stub(db.medic, 'allDocs').resolves({
+    rows: docs.map(doc => ({ doc: { ...doc, type: 'form' } })),
   });
 };
 
@@ -30,25 +30,23 @@ describe('forms controller', () => {
       const req = {
         params: { form: 'a.xml' }
       };
-      const query = sinon.stub(db.medic, 'query');
-      const error = sinon.stub(serverUtils, 'notLoggedIn');
+      sinon.stub(db.medic, 'allDocs');
+      sinon.stub(serverUtils, 'notLoggedIn');
       controller.get(req, res);
-      chai.expect(error.callCount).to.equal(1);
-      chai.expect(query.callCount).to.equal(0);
+      chai.expect(serverUtils.notLoggedIn.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.callCount).to.equal(0);
     });
 
-    it('returns error from view query', () => {
+    it('returns error from all docs request', () => {
       const req = {
         params: { form: 'a.xml' },
         userCtx: { name: 'formuser' }
       };
-      const query = sinon
-        .stub(db.medic, 'query')
-        .returns(Promise.reject('icky'));
-      const error = sinon.stub(serverUtils, 'error');
+      sinon.stub(db.medic, 'allDocs').rejects('icky');
+      sinon.stub(serverUtils, 'error');
       return controller.get(req, res).then(() => {
-        chai.expect(error.args[0][0]).to.equal('icky');
-        chai.expect(query.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0][0].name).to.deep.equal('icky');
+        chai.expect(db.medic.allDocs.callCount).to.equal(1);
       });
     });
 
@@ -57,20 +55,14 @@ describe('forms controller', () => {
         params: { form: 'a.xml' },
         userCtx: { name: 'formuser' }
       };
-      sinon.stub(db.medic, 'query').resolves({
-        rows: [
-          {
-            doc: {
-              internalId: 'a',
-              _attachments: {
-                xml: {
-                  content_type: 'xml',
-                  data: 'foo',
-                },
-              },
-            },
+      mockFormsInDb({
+        internalId: 'a',
+        _attachments: {
+          xml: {
+            content_type: 'xml',
+            data: 'foo',
           },
-        ],
+        },
       });
       const end = sinon.stub(res, 'end');
       const writeHead = sinon.stub(res, 'writeHead');
@@ -89,22 +81,22 @@ describe('forms controller', () => {
 
     it('returns auth error when not logged in', () => {
       const req = { params: { form: 'a.xml' } };
-      const query = sinon.stub(db.medic, 'query');
-      const error = sinon.stub(serverUtils, 'notLoggedIn');
+      sinon.stub(db.medic, 'allDocs');
+      sinon.stub(serverUtils, 'notLoggedIn');
       controller.list(req, res);
-      chai.expect(error.callCount).to.equal(1);
-      chai.expect(query.callCount).to.equal(0);
+      chai.expect(serverUtils.notLoggedIn.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.callCount).to.equal(0);
     });
 
-    it('returns error from view query', () => {
+    it('returns error from _all_docs request', () => {
       const req = {
         userCtx: { name: 'formuser' }
       };
-      const get = sinon.stub(db.medic, 'query').returns(Promise.reject('icky'));
-      const error = sinon.stub(serverUtils, 'error');
+      sinon.stub(db.medic, 'allDocs').rejects('icky');
+      sinon.stub(serverUtils, 'error');
       return controller.list(req, res).then(() => {
-        chai.expect(error.args[0][0]).to.equal('icky');
-        chai.expect(get.callCount).to.equal(1);
+        chai.expect(serverUtils.error.args[0][0].name).to.equal('icky');
+        chai.expect(db.medic.allDocs.callCount).to.equal(1);
       });
     });
 
