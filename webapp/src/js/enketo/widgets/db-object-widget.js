@@ -84,7 +84,7 @@ const changeHandler = function() {
   const selected = $this.select2('data');
   const doc = selected && selected[0] && selected[0].doc;
   if (doc) {
-    updateDoc(doc);
+    updateDoc($this, doc);
   }
 };
 
