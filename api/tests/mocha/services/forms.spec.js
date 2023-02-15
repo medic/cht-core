@@ -71,6 +71,7 @@ describe('forms service', () => {
         { doc: { _id: 'form:a', type: 'form', _attachments: { xml: '<myxml/>' } } },
         { doc: { _id: 'form:b', type: 'form', _attachments: { xsl: '<myxsl/>' } } },
         { doc: { _id: 'form:c', _attachments: { xml: '<myxml/>' } } },
+        { doc: { _id: 'form:d', type: 'not_form', _attachments: { xml: '<myxml/>' } } },
       ];
       sinon.stub(db.medic, 'allDocs').resolves({ rows: given });
       return service.getFormDocs().then(actual => {
