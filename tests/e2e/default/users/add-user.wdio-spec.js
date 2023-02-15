@@ -54,8 +54,6 @@ describe('User Test Cases ->', () => {
 
   describe('Invalid entries -> ', () => {
 
-    afterEach(async () => await usersAdminPage.closeUserDialog());
-
     [
       { passwordValue: incorrectpassword, errorMessage: 'The password must be at least 8 characters long.' },
       { passwordValue: 'weakPassword', errorMessage: 'The password is too easy to guess.' },

@@ -34,9 +34,7 @@ echo ""
 echo "Downloading node and installing..."
 echo ""
 
-# swap out these lines to test on branch
-#curl -o node.12.22.12.zip https://raw.githubusercontent.com/medic/cht-core/master/scripts/cht-3x-node-upgrade/node.12.22.12.zip
-curl -so /srv/node.12.22.12.zip https://raw.githubusercontent.com/medic/cht-core/7957-node-upgrade-script/scripts/cht-3x-node-upgrade/node.12.22.12.zip
+curl -so /srv/node.12.22.12.zip https://raw.githubusercontent.com/medic/cht-core/master/scripts/cht-3x-node-upgrade/node.12.22.12.zip
 
 unzip /srv/node.12.22.12.zip
 chmod +x node
