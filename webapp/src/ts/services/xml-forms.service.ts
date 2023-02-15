@@ -11,6 +11,9 @@ import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-util
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { FeedbackService } from '@mm-services/feedback.service';
 
+export const TRAINING_FORM_ID_PREFIX: string = 'form:training:';
+export const CONTACT_FORM_ID_PREFIX: string = 'form:contact:';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -193,35 +196,31 @@ export class XmlFormsService {
    *   - contactSummary (Object) : When the context filter is on, the contactSummary is passed to the form's context
    *   expression to determine if the form is applicable.
    *
-   *   - includeCollect (boolean) : When set true, it will return collect forms. Support to collect forms will be
-   *   deprecated in the future.
-   *
    *   - reportForms (boolean) : When set true, it will return report forms.
    *   - contactForms (boolean) : When set true, it will return contact forms.
-   *   - trainingForms (boolean) : When set true, it will return training forms.
-   * To match all forms, then reportForms, contactForms and trainingForms should be undefined.
+   *   - trainingCards (boolean) : When set true, it will return training forms.
+   *   - collectForms (boolean) : When set true, it will return collect forms.
+   * To match all forms, then reportForms, contactForms and trainingCards should be undefined.
    *
    * @param user {Object} : User context document from CouchDB.
    */
   private filter(form, options, user) {
-    const isContactForm = form._id.indexOf('form:contact:') === 0;
-    const isTrainingForm = form._id.indexOf('form:training:') === 0;
-    const isReportForm = !isContactForm && !isTrainingForm;
+    const isContactForm = form._id.indexOf(CONTACT_FORM_ID_PREFIX) === 0;
+    const isTrainingCard = form._id.indexOf(TRAINING_FORM_ID_PREFIX) === 0;
+    const isCollectForm = !!form.context?.collect;
+    const isReportForm = !isContactForm && !isTrainingCard && !isCollectForm;
 
     const allFormTypes = options.contactForms === undefined
-      && options.trainingForms === undefined
+      && options.trainingCards === undefined
+      && options.collectForms === undefined
       && options.reportForms === undefined;
 
     const isFormMatchingFilter = (options.reportForms && isReportForm)
+      || (options.collectForms && isCollectForm)
       || (options.contactForms && isContactForm)
-      || (options.trainingForms && isTrainingForm);
+      || (options.trainingCards && isTrainingCard);
 
     if (!allFormTypes && !isFormMatchingFilter) {
-      return false;
-    }
-
-    if (!options.includeCollect && form.context && form.context.collect) {
-      // Collect forms will be deprecated in the future.
       return false;
     }
 
@@ -280,13 +279,11 @@ export class XmlFormsService {
    *   - contactSummary (Object) : When the context filter is on, the contactSummary is passed to the form's context
    *   expression to determine if the form is applicable.
    *
-   *   - includeCollect (boolean) : When set true, it will return collect forms. Support to collect forms will be
-   *   deprecated in the future.
-   *
    *   - reportForms (boolean) : When set true, it will return report forms.
    *   - contactForms (boolean) : When set true, it will return contact forms.
-   *   - trainingForms (boolean) : When set true, it will return training forms.
-   * To match all forms, then reportForms, contactForms and trainingForms should be undefined.
+   *   - trainingCards (boolean) : When set true, it will return training forms.
+   *   - collectForms (boolean) : When set true, it will return collect forms.
+   * To match all forms, then reportForms, contactForms and trainingCards should be undefined.
    *
    * @param {Function} callback Invoked when complete and again when results have changed.
    */

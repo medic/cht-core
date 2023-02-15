@@ -26,10 +26,14 @@ describe('TrainingCardsService', () => {
   beforeEach(() => {
     localDb = { allDocs: sinon.stub() };
     dbService = { get: () => localDb };
-    globalActions = { setTrainingCard: sinon.stub(GlobalActions.prototype, 'setTrainingCard') };
+    globalActions = { setTrainingCardFormId: sinon.stub(GlobalActions.prototype, 'setTrainingCardFormId') };
     xmlFormsService = { subscribe: sinon.stub() };
     modalService = { show: sinon.stub() };
-    sessionService = { userCtx: sinon.stub() };
+    sessionService = {
+      userCtx: sinon.stub(),
+      hasRole: sinon.spy(SessionService.prototype, 'hasRole'),
+    };
+
     consoleErrorMock = sinon.stub(console, 'error');
     routeSnapshotService = { get: sinon.stub() };
 
@@ -101,22 +105,23 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(sessionService.hasRole.callCount).to.equal(4);
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
       startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCard.calledOnce);
-    expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-b' ]);
+    expect(globalActions.setTrainingCardFormId.calledOnce);
+    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-b' ]);
     expect(modalService.show.calledOnce).to.be.true;
-    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(consoleErrorMock.notCalled).to.be.true;
   });
 
   it('should show uncompleted training form when there are some completed', async () => {
@@ -168,22 +173,23 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(sessionService.hasRole.callCount).to.equal(4);
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
       startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCard.calledOnce);
-    expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-d' ]);
+    expect(globalActions.setTrainingCardFormId.calledOnce);
+    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-d' ]);
     expect(modalService.show.calledOnce).to.be.true;
-    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(consoleErrorMock.notCalled).to.be.true;
   });
 
   it('should show uncompleted training form when they dont have duration set', async () => {
@@ -223,22 +229,23 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(sessionService.hasRole.calledThrice).to.be.true;
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
       startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCard.calledOnce);
-    expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-c' ]);
+    expect(globalActions.setTrainingCardFormId.calledOnce);
+    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-c' ]);
     expect(modalService.show.calledOnce).to.be.true;
-    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(consoleErrorMock.notCalled).to.be.true;
   });
 
   it('should show uncompleted training form when they dont have start_date set', async () => {
@@ -286,22 +293,23 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(sessionService.hasRole.callCount).to.equal(4);
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
       startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCard.calledOnce);
-    expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-c' ]);
+    expect(globalActions.setTrainingCardFormId.calledOnce);
+    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-c' ]);
     expect(modalService.show.calledOnce).to.be.true;
-    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(consoleErrorMock.notCalled).to.be.true;
   });
 
   it('should not show training form when all trainings are completed', async () => {
@@ -345,21 +353,22 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(sessionService.hasRole.calledThrice).to.be.true;
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
       startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCard.callCount).to.equal(0);
-    expect(modalService.show.callCount).to.equal(0);
-    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(modalService.show.notCalled).to.be.true;
+    expect(consoleErrorMock.notCalled).to.be.true;
   });
 
   it('should not show training forms when all trainings have expired', async () => {
@@ -401,16 +410,16 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
 
-    expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(sessionService.hasRole.calledThrice).to.be.true;
     expect(localDb.allDocs.notCalled).to.be.true;
-    expect(globalActions.setTrainingCard.callCount).to.equal(0);
-    expect(modalService.show.callCount).to.equal(0);
-    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(modalService.show.notCalled).to.be.true;
+    expect(consoleErrorMock.notCalled).to.be.true;
   });
 
   it('should not show training forms when all trainings start in the future', async () => {
@@ -450,16 +459,16 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
 
-    expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(sessionService.hasRole.calledThrice).to.be.true;
     expect(localDb.allDocs.notCalled).to.be.true;
-    expect(globalActions.setTrainingCard.callCount).to.equal(0);
-    expect(modalService.show.callCount).to.equal(0);
-    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(modalService.show.notCalled).to.be.true;
+    expect(consoleErrorMock.notCalled).to.be.true;
   });
 
   it('should not show the modal when no training forms', async () => {
@@ -470,16 +479,16 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, []);
 
-    expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(sessionService.hasRole.notCalled).to.be.true;
     expect(localDb.allDocs.notCalled).to.be.true;
-    expect(globalActions.setTrainingCard.callCount).to.equal(0);
-    expect(modalService.show.callCount).to.equal(0);
-    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(modalService.show.notCalled).to.be.true;
+    expect(consoleErrorMock.notCalled).to.be.true;
   });
 
   it('should log error from xmlFormsService', async () => {
@@ -487,15 +496,16 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(new Error('some error'), []);
 
-    expect(localDb.allDocs.callCount).to.equal(0);
-    expect(sessionService.userCtx.callCount).to.equal(0);
-    expect(globalActions.setTrainingCard.callCount).to.equal(0);
-    expect(modalService.show.callCount).to.equal(0);
+    expect(localDb.allDocs.notCalled).to.be.true;
+    expect(sessionService.userCtx.notCalled).to.be.true;
+    expect(sessionService.hasRole.notCalled).to.be.true;
+    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.calledOnce).to.be.true;
     expect(consoleErrorMock.args[0][0]).to.equal('Error fetching training cards.');
     expect(consoleErrorMock.args[0][1].message).to.equal('some error');
@@ -518,15 +528,16 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
 
+    expect(sessionService.hasRole.calledOnce).to.be.true;
     expect(sessionService.userCtx.calledOnce).to.be.true;
     expect(localDb.allDocs.calledOnce).to.be.true;
-    expect(globalActions.setTrainingCard.callCount).to.equal(0);
-    expect(modalService.show.callCount).to.equal(0);
+    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.calledOnce).to.be.true;
     expect(consoleErrorMock.args[0][0]).to.equal('Error showing training cards modal.');
     expect(consoleErrorMock.args[0][1].message).to.equal('some error');
@@ -539,16 +550,17 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, []);
 
-    expect(sessionService.userCtx.callCount).to.equal(0);
-    expect(localDb.allDocs.callCount).to.equal(0);
-    expect(globalActions.setTrainingCard.callCount).to.equal(0);
-    expect(modalService.show.callCount).to.equal(0);
-    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(sessionService.userCtx.notCalled).to.be.true;
+    expect(sessionService.hasRole.notCalled).to.be.true;
+    expect(localDb.allDocs.notCalled).to.be.true;
+    expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
+    expect(modalService.show.notCalled).to.be.true;
+    expect(consoleErrorMock.notCalled).to.be.true;
   });
 
   it('should show uncompleted training form based on user role', async () => {
@@ -607,21 +619,70 @@ describe('TrainingCardsService', () => {
 
     expect(xmlFormsService.subscribe.calledOnce).to.be.true;
     expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
-    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingForms: true });
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
     const callback = xmlFormsService.subscribe.args[0][2];
 
     await callback(null, xforms);
 
     expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(sessionService.hasRole.callCount).to.equal(5);
     expect(localDb.allDocs.calledOnce).to.be.true;
     expect(localDb.allDocs.args[0][0]).to.deep.equal({
       include_docs: true,
       startkey: 'training:a_user',
       endkey: 'training:a_user:\ufff0',
     });
-    expect(globalActions.setTrainingCard.calledOnce);
-    expect(globalActions.setTrainingCard.args[0]).to.have.members([ 'training:form-e' ]);
+    expect(globalActions.setTrainingCardFormId.calledOnce);
+    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-e' ]);
     expect(modalService.show.calledOnce).to.be.true;
-    expect(consoleErrorMock.callCount).to.equal(0);
+    expect(consoleErrorMock.notCalled).to.be.true;
+  });
+
+  it('should show uncompleted training when form does not have user_roles defined', async () => {
+    sessionService.userCtx.returns({ roles: [ 'role_a' ], name: 'a_user' });
+    localDb.allDocs.resolves({ rows: [
+      { doc: { form: 'training:form-b' } },
+    ]});
+    clock = sinon.useFakeTimers(new Date('2022-05-23 20:29:25'));
+    const xforms = [
+      {
+        _id: 'abc-098',
+        internalId: 'training:form-d',
+        context: {
+          start_date: '2022-05-21',
+          duration: 19,
+        },
+      },
+      {
+        _id: 'abc-098',
+        internalId: 'training:form-e',
+        context: {
+          start_date: '2022-05-21',
+          duration: 9,
+          user_roles: [ 'role_a', 'role_c' ],
+        },
+      },
+    ];
+    service.initTrainingCards();
+
+    expect(xmlFormsService.subscribe.calledOnce).to.be.true;
+    expect(xmlFormsService.subscribe.args[0][0]).to.equal('TrainingCards');
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ trainingCards: true });
+    const callback = xmlFormsService.subscribe.args[0][2];
+
+    await callback(null, xforms);
+
+    expect(sessionService.userCtx.calledOnce).to.be.true;
+    expect(sessionService.hasRole.calledOnce).to.be.true;
+    expect(localDb.allDocs.calledOnce).to.be.true;
+    expect(localDb.allDocs.args[0][0]).to.deep.equal({
+      include_docs: true,
+      startkey: 'training:a_user',
+      endkey: 'training:a_user:\ufff0',
+    });
+    expect(globalActions.setTrainingCardFormId.calledOnce);
+    expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-d' ]);
+    expect(modalService.show.calledOnce).to.be.true;
+    expect(consoleErrorMock.notCalled).to.be.true;
   });
 });

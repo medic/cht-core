@@ -717,9 +717,9 @@ export class EnketoService {
           from: contact && contact.phone
         };
 
-        if (this.isTrainingForm(formInternalId)) {
+        if (this.isTrainingCard(formInternalId)) {
           const userName = this.sessionService.userCtx()?.name;
-          doc._id = [ TRAINING_PREFIX, userName, uuid() ].join(':');
+          doc._id = `${TRAINING_PREFIX}${userName}:${uuid()}`;
         }
 
         return doc;
@@ -852,7 +852,7 @@ export class EnketoService {
     this.objUrls.length = 0;
   }
 
-  private isTrainingForm(formInternalId) {
+  private isTrainingCard(formInternalId) {
     return formInternalId?.startsWith(TRAINING_PREFIX);
   }
 }

@@ -9,7 +9,6 @@ const userFactory = require('../../../factories/cht/users/users');
 const personFactory = require('../../../factories/cht/contacts/person');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const reportsPo = require('../../../page-objects/default/reports/reports.wdio.page');
 
 describe('Training Cards', () => {
   const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
@@ -55,7 +54,7 @@ describe('Training Cards', () => {
 
     await commonPage.goToReports();
     await commonElements.waitForPageLoaded();
-    await (await reportsPo.noReportSelectedLabel()).waitForDisplayed();
+    expect(await reportsPage.allReports()).to.be.empty;
   });
 
   it('should complete training', async () => {

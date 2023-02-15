@@ -37,7 +37,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   private globalActions;
   formNoTitle = false;
   form;
-  trainingForm;
+  trainingCardFormId;
   formWrapperId = 'training-cards-form';
   modalTitleKey = 'training_cards.modal.title';
   loadingContent;
@@ -81,7 +81,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
       this.hideModalFooter = true;
       this.geoHandle && this.geoHandle.cancel();
       this.geoHandle = this.geolocationService.init();
-      const form = await this.xmlFormsService.get(this.trainingForm);
+      const form = await this.xmlFormsService.get(this.trainingCardFormId);
       await this.ngZone.run(() => this.renderForm(form));
     } catch(error) {
       this.setError(error);
@@ -107,19 +107,19 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
       this.store.select(Selectors.getEnketoStatus),
       this.store.select(Selectors.getEnketoSavingStatus),
       this.store.select(Selectors.getEnketoError),
-      this.store.select(Selectors.getTrainingCard),
+      this.store.select(Selectors.getTrainingCardFormId),
     ).subscribe(([
       enketoStatus,
       enketoSaving,
       enketoError,
-      trainingForm,
+      trainingCardFormId,
     ]) => {
       this.enketoStatus = enketoStatus;
       this.enketoSaving = enketoSaving;
       this.enketoError = enketoError;
 
-      if (trainingForm && trainingForm !== this.trainingForm) {
-        this.trainingForm = trainingForm;
+      if (trainingCardFormId && trainingCardFormId !== this.trainingCardFormId) {
+        this.trainingCardFormId = trainingCardFormId;
         this.enketoService.unload(this.form);
         this.loadForm();
       }
@@ -130,7 +130,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   private reset() {
     this.resetFormError();
     this.contentError = false;
-    this.trainingForm = null;
+    this.trainingCardFormId = null;
     this.form = null;
     this.loadingContent = true;
     this.hideModalFooter = true;
@@ -160,7 +160,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     this.resetFormError();
 
     try {
-      const docs = await this.enketoService.save(this.trainingForm, this.form, this.geoHandle);
+      const docs = await this.enketoService.save(this.trainingCardFormId, this.form, this.geoHandle);
       console.debug('Saved form and associated docs', docs);
       const snackText = await this.translateService.get('training_cards.form.saved');
       this.globalActions.setSnackbarContent(snackText);
@@ -180,7 +180,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   private recordTelemetryPostRender() {
     this.telemetryData.postRender = Date.now();
     this.telemetryData.action = 'add';
-    this.telemetryData.form = this.trainingForm;
+    this.telemetryData.form = this.trainingCardFormId;
 
     this.telemetryService.record(
       `enketo:${this.telemetryData.form}:${this.telemetryData.action}:render`,

@@ -633,9 +633,9 @@ describe('XmlForms service', () => {
     it('should filter by report forms', () => {
       const given = [
         {
-          id: 'visit',
+          id: 'form:visit',
           doc: {
-            _id: 'visit',
+            _id: 'form:visit',
             internalId: 'visit',
             _attachments: { xml: { something: true } },
           },
@@ -728,7 +728,7 @@ describe('XmlForms service', () => {
       dbQuery.resolves({ rows: given });
       UserContact.resolves();
       const service = getService();
-      return service.list({ trainingForms: true }).then(actual => {
+      return service.list({ trainingCards: true }).then(actual => {
         expect(actual.length).to.equal(1);
         expect(actual[0]).to.deep.equal(given[4].doc);
       });
@@ -781,7 +781,7 @@ describe('XmlForms service', () => {
       UserContact.resolves();
       const service = getService();
 
-      const reportsAndTrainings = await service.list({ reportForms: true, trainingForms: true });
+      const reportsAndTrainings = await service.list({ reportForms: true, trainingCards: true });
       expect(reportsAndTrainings.length).to.equal(3);
       expect(reportsAndTrainings).to.have.deep.members([ given[1].doc, given[2].doc, given[4].doc ]);
 
@@ -789,11 +789,11 @@ describe('XmlForms service', () => {
       expect(reportsAndContacts.length).to.equal(4);
       expect(reportsAndContacts).to.have.deep.members([ given[0].doc, given[1].doc, given[3].doc, given[4].doc ]);
 
-      const trainingsAndContacts = await service.list({ trainingForms: true, contactForms: true });
+      const trainingsAndContacts = await service.list({ trainingCards: true, contactForms: true });
       expect(trainingsAndContacts.length).to.equal(3);
       expect(trainingsAndContacts).to.have.deep.members([ given[0].doc, given[2].doc, given[3].doc ]);
 
-      const allForms = await service.list({ reportForms: true, trainingForms: true, contactForms: true });
+      const allForms = await service.list({ reportForms: true, trainingCards: true, contactForms: true });
       expect(allForms.length).to.equal(5);
       expect(allForms).to.have.deep.members([ given[0].doc, given[1].doc, given[2].doc, given[3].doc, given[4].doc ]);
     });
@@ -1140,21 +1140,31 @@ describe('XmlForms service', () => {
         }
       };
 
-      it('are excluded by default', () => {
+      it('should not return forms when collectForms not set', () => {
         dbQuery.resolves({ rows: [ collectForm, enketoForm ] });
         UserContact.resolves();
         const service = getService();
-        return service.list().then(actual => {
+        return service.list({ reportForms: true }).then(actual => {
           expect(actual.length).to.equal(1);
           expect(actual[0]._id).to.equal('enketo');
         });
       });
 
-      it('are returned if includeCollect is true', () => {
+      it('should return forms when collectForms is set true', () => {
         dbQuery.resolves({ rows: [ collectForm, enketoForm ] });
         UserContact.resolves();
         const service = getService();
-        return service.list({ includeCollect: true }).then(actual => {
+        return service.list({ collectForms: true }).then(actual => {
+          expect(actual.length).to.equal(1);
+          expect(actual[0]._id).to.equal('collect');
+        });
+      });
+
+      it('should return forms when collectForms and reportForms are set true', () => {
+        dbQuery.resolves({ rows: [ collectForm, enketoForm ] });
+        UserContact.resolves();
+        const service = getService();
+        return service.list({ collectForms: true, reportForms: true }).then(actual => {
           expect(actual.length).to.equal(2);
           expect(actual[0]._id).to.equal('collect');
           expect(actual[1]._id).to.equal('enketo');

@@ -40,7 +40,7 @@ const initialState = {
   snackbarContent: null,
   translationsLoaded: false,
   userFacilityId: null,
-  trainingCard: null,
+  trainingCardFormId: null,
 };
 
 const setShowContent = (state, showContent) => {
@@ -207,8 +207,8 @@ const _globalReducer = createReducer(
   on(Actions.setUserFacilityId, (state, { payload: { userFacilityId }}) => {
     return { ...state, userFacilityId };
   }),
-  on(Actions.setTrainingCard, (state, { payload: { trainingCard }}) => {
-    return { ...state, trainingCard };
+  on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {
+    return { ...state, trainingCardFormId };
   }),
 );
 
