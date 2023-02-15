@@ -6,7 +6,6 @@ describe('Enketo: DB Object Widget', () => {
   let dbObjectWidget;
   let model;
   let nodeFn;
-  let getCurrentForm;
   let getElements;
   let setVal;
 
@@ -16,7 +15,6 @@ describe('Enketo: DB Object Widget', () => {
     setVal = sinon.stub();
     nodeFn = sinon.stub().returns({ getElements, setVal });
     model = { node: nodeFn };
-    getCurrentForm = sinon.stub();
   });
 
   afterEach(() => {
