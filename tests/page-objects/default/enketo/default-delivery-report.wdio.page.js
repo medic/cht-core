@@ -34,6 +34,7 @@ const selectRadioButtonByNameAndValue = async (name, value) => {
   const radioElement = await $(`[name="${name}"][value="${value}"]`);
   await radioElement.waitForDisplayed();
   await radioElement.click();
+  await browser.waitUntil(async () => await radioElement.isSelected());
 };
 
 const selectPatientName = (name) => {
