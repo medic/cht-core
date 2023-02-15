@@ -102,7 +102,7 @@ describe('Pregnancy registration', () => {
 
     await commonPage.goToTasks();
     const tasks = await tasksPage.getTasks();    
-    expect(tasks.length).to.equal(3); //TODO: investigate why 'Pregnancy home visit' task is not being generated 
+    expect(tasks.length).to.equal(3);
 
     for (const task of tasks) {
       const taskInfo = await tasksPage.getTaskInfo(task);
