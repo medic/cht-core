@@ -135,10 +135,13 @@ const updateSettings = updates => {
 };
 const updatePermissions = async (roles, addPermissions, removePermissions = []) => {
   const settings = await module.exports.getSettings();
-  if(!('permissions' in settings)){ 
-    settings.permissions = [];
-  }
-  addPermissions.forEach(permission => settings.permissions[permission].push(...roles));
+  addPermissions.forEach(permission => {
+    if (!settings.permissions[permission]) {
+      settings.permissions[permission] = [];
+    }
+    settings.permissions[permission].push(...roles);
+  });
+    
   removePermissions.forEach(permission => {
     settings.permissions[permission] = [];
   });
