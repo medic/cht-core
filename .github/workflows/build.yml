@@ -56,18 +56,18 @@ jobs:
     - run: npm ci --legacy-peer-deps
     - name: Grunt Install
       run: npm install -g grunt-cli
-    # - name: Grunt CI-Compile
-    #   run: |
-    #     node --stack_size=10000 `which grunt` ci-compile-github
-    # - name: Publish for testing
-    #   run: |
-    #     node --stack_size=10000 `which grunt` publish-for-testing
+    - name: Grunt CI-Compile
+      run: |
+        node --stack_size=10000 `which grunt` ci-compile-github
+    - name: Publish for testing
+      run: |
+        node --stack_size=10000 `which grunt` publish-for-testing
 
-    # - name: Upload docker images as artifacts
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: cht-images
-    #     path: images/
+    - name: Upload docker images as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: cht-images
+        path: images/
     #   if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
   
