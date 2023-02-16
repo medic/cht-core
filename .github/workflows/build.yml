@@ -49,13 +49,13 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 16.x
-    # - name: Couch Start
-    #   run: ./scripts/ci/couch-start
-    # - name: Create logs directory
-    #   run: mkdir tests/logs
-    # - run: npm ci --legacy-peer-deps
-    # - name: Grunt Install
-    #   run: npm install -g grunt-cli
+    - name: Couch Start
+      run: ./scripts/ci/couch-start
+    - name: Create logs directory
+      run: mkdir tests/logs
+    - run: npm ci --legacy-peer-deps
+    - name: Grunt Install
+      run: npm install -g grunt-cli
     # - name: Grunt CI-Compile
     #   run: |
     #     node --stack_size=10000 `which grunt` ci-compile-github
