@@ -25,7 +25,8 @@ module.exports = {
    * @param {Object[]} settings.targets Target definitions from settings doc
    * @param {Boolean} settings.enableTasks Flag to enable tasks
    * @param {Boolean} settings.enableTargets Flag to enable targets
-   * @param {Boolean} [settings.isDeclarative=true] Flag to indicate the content of settings.rules. When true, rules is processed as native JavaScript. When false, nools is used.
+   * @param {Boolean} [settings.isDeclarative=true] Flag to indicate the content of settings.rules. When true, rules
+   * is processed as native JavaScript. When false, nools is used.
    * @param {RulesEmitter} [settings.customEmitter] Optional custom RulesEmitter object
    * @param {number} settings.monthStartDate reporting interval start date
    * @param {Object} userDoc User's hydrated contact document
