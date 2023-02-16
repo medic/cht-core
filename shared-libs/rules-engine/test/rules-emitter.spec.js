@@ -14,7 +14,7 @@ for (const rulesWithNools of noolsScenarios) {
       rulesEmitter.shutdown();
     });
 
-    const settingsWithRules = (rules, contact = {}, user= {}, rulesOptions) => ({
+    const settingsWithRules = (rules, contact = {}, user= {}, rulesOptions = {}) => ({
       rules: rulesWithNools ? simpleNoolsTemplate(rules, rulesOptions) : rules,
       rulesWithNools,
       contact,
