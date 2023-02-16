@@ -9,6 +9,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 export const TRAINING_PREFIX: string = 'training:';
 
@@ -25,6 +26,7 @@ export class TrainingCardsService {
     private modalService: ModalService,
     private sessionService: SessionService,
     private routeSnapshotService: RouteSnapshotService,
+    private feedbackService: FeedbackService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -74,7 +76,9 @@ export class TrainingCardsService {
 
   private async handleTrainingCards(error, xForms) {
     if (error) {
-      console.error('Error fetching training cards.', error);
+      const message = 'Error fetching training cards.';
+      console.error(message, error);
+      this.feedbackService.submit(message);
       return;
     }
 
@@ -93,7 +97,9 @@ export class TrainingCardsService {
       this.modalService.show(TrainingCardsComponent, { backdrop: 'static' });
 
     } catch (error) {
-      console.error('Error showing training cards modal.', error);
+      const message = 'Error showing training cards modal.';
+      console.error(message, error);
+      this.feedbackService.submit(message);
       return;
     }
   }

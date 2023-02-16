@@ -10,6 +10,7 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 describe('TrainingCardsService', () => {
   let service: TrainingCardsService;
@@ -22,6 +23,7 @@ describe('TrainingCardsService', () => {
   let consoleErrorMock;
   let sessionService;
   let routeSnapshotService;
+  let feedbackService;
 
   beforeEach(() => {
     localDb = { allDocs: sinon.stub() };
@@ -33,7 +35,7 @@ describe('TrainingCardsService', () => {
       userCtx: sinon.stub(),
       hasRole: sinon.spy(SessionService.prototype, 'hasRole'),
     };
-
+    feedbackService = { submit: sinon.stub() };
     consoleErrorMock = sinon.stub(console, 'error');
     routeSnapshotService = { get: sinon.stub() };
 
@@ -45,6 +47,7 @@ describe('TrainingCardsService', () => {
         { provide: ModalService, useValue: modalService },
         { provide: SessionService, useValue: sessionService },
         { provide: RouteSnapshotService, useValue: routeSnapshotService },
+        { provide: FeedbackService, useValue: feedbackService },
       ]
     });
 
@@ -122,6 +125,7 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-b' ]);
     expect(modalService.show.calledOnce).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 
   it('should show uncompleted training form when there are some completed', async () => {
@@ -190,6 +194,7 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-d' ]);
     expect(modalService.show.calledOnce).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 
   it('should show uncompleted training form when they dont have duration set', async () => {
@@ -246,6 +251,7 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-c' ]);
     expect(modalService.show.calledOnce).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 
   it('should show uncompleted training form when they dont have start_date set', async () => {
@@ -310,6 +316,7 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-c' ]);
     expect(modalService.show.calledOnce).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 
   it('should not show training form when all trainings are completed', async () => {
@@ -369,6 +376,7 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 
   it('should not show training forms when all trainings have expired', async () => {
@@ -420,6 +428,7 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 
   it('should not show training forms when all trainings start in the future', async () => {
@@ -469,6 +478,7 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 
   it('should not show the modal when no training forms', async () => {
@@ -489,6 +499,7 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 
   it('should log error from xmlFormsService', async () => {
@@ -509,6 +520,8 @@ describe('TrainingCardsService', () => {
     expect(consoleErrorMock.calledOnce).to.be.true;
     expect(consoleErrorMock.args[0][0]).to.equal('Error fetching training cards.');
     expect(consoleErrorMock.args[0][1].message).to.equal('some error');
+    expect(feedbackService.submit.calledOnce).to.be.true;
+    expect(feedbackService.submit.args[0][0]).to.equal('Error fetching training cards.');
   });
 
   it('should catch exception', async () => {
@@ -541,6 +554,8 @@ describe('TrainingCardsService', () => {
     expect(consoleErrorMock.calledOnce).to.be.true;
     expect(consoleErrorMock.args[0][0]).to.equal('Error showing training cards modal.');
     expect(consoleErrorMock.args[0][1].message).to.equal('some error');
+    expect(feedbackService.submit.calledOnce).to.be.true;
+    expect(feedbackService.submit.args[0][0]).to.equal('Error showing training cards modal.');
   });
 
   it('should do nothing if route has hideTraining flag', async () => {
@@ -561,6 +576,7 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.notCalled).to.be.true;
     expect(modalService.show.notCalled).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 
   it('should show uncompleted training form based on user role', async () => {
@@ -636,6 +652,7 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-e' ]);
     expect(modalService.show.calledOnce).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 
   it('should show uncompleted training when form does not have user_roles defined', async () => {
@@ -684,5 +701,6 @@ describe('TrainingCardsService', () => {
     expect(globalActions.setTrainingCardFormId.args[0]).to.have.members([ 'training:form-d' ]);
     expect(modalService.show.calledOnce).to.be.true;
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
   });
 });

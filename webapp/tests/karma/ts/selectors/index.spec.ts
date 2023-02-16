@@ -22,7 +22,7 @@ const state = {
       isOpen: false,
       filterCount: { total: 5, placeFilter: 3, formFilter: 2 },
     },
-    trainingCardFormId: 'form:training:new_change',
+    trainingCardFormId: 'training:new_change',
     navigation: {
       cancelCallback: function() {},
       preventNavigation: 'prevent',
