@@ -30,8 +30,9 @@ const ORIGINAL_USER = deepFreeze({
   _id: 'org.couchdb.user:original-user-id', name: `original-user`, contact: ORIGINAL_CONTACT, roles: ['chw'],
 });
 
-const getCreatedContact = ({ create = 'true', roles, role = 'chw' } = {}) => ({
+const getCreatedContact = ({ create = 'true', roles, role = 'chw', name = NEW_CONTACT.name } = {}) => ({
   ...NEW_CONTACT,
+  name,
   roles,
   role,
   phone: '+1234567890',
@@ -345,7 +346,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc, info: {} });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Server error');
         expect(err.changed).to.be.true;
@@ -354,14 +355,11 @@ describe('create_user_for_contacts', () => {
     });
 
     it('records error when creating user with new contact that has no name', async () => {
-      const doc = {
-        ...getCreatedContact(),
-        name: undefined
-      };
+      const doc = getCreatedContact({ name: null });
 
       try {
         await transition.onMatch({ doc, info: {} });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Contact [${doc._id}] must have a name.`);
         expect(err.changed).to.be.true;
@@ -374,7 +372,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc, info: {} });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property.`);
         expect(err.changed).to.be.true;
@@ -388,7 +386,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc, info: {} });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Server Error');
         expect(err.changed).to.be.true;
@@ -402,7 +400,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc, info: {} });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Error creating new user: "Invalid phone number"');
         expect(err.changed).to.be.true;
@@ -476,7 +474,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Could not generate a unique username for contact [${NEW_CONTACT.name}].`);
         expect(err.changed).to.be.true;
@@ -519,7 +517,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Server error');
         expect(err.changed).to.be.true;
@@ -531,7 +529,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('No id was provided for the new replacement contact.');
         expect(err.changed).to.be.true;
@@ -547,7 +545,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Contact [${newContact._id}] must have a name.`);
         expect(err.changed).to.be.true;
@@ -560,7 +558,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Server Error');
         expect(err.changed).to.be.true;
@@ -573,7 +571,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Error creating new user: "Invalid phone number"');
         expect(err.changed).to.be.true;
@@ -649,7 +647,7 @@ describe('create_user_for_contacts', () => {
 
         try {
           await transition.onMatch({ doc });
-          expect(true).to.equal('Should have thrown');
+          expect.fail('Should have thrown');
         } catch (err) {
           const expectedMessage = [
             'No id was provided for the new replacement contact.',
@@ -698,7 +696,7 @@ describe('create_user_for_contacts', () => {
 
         try {
           await transition.onMatch({ doc });
-          expect(true).to.equal('Should have thrown');
+          expect.fail('Should have thrown');
         } catch (err) {
           const expectedMessage = [
             'No id was provided for the new replacement contact.',
@@ -760,7 +758,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc, info: {} });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property.`);
         expect(err.changed).to.be.true;
@@ -784,7 +782,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc, info: {} });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('No id was provided for the new replacement contact.');
         expect(err.changed).to.be.true;
@@ -807,7 +805,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc, info: {} });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property., ` +
           'No id was provided for the new replacement contact.');
