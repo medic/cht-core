@@ -10,5 +10,5 @@ ADD backend.cfg.template /usr/local/etc/haproxy
 ADD rsyslog.conf /etc/rsyslog.conf
 COPY scripts /usr/local/etc/haproxy/
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["haproxy", "-f", "/usr/local/etc/haproxy/default_frontend.cfg", "-f", "/usr/local/etc/haproxy/backend.cfg"]
