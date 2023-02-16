@@ -84,26 +84,26 @@ jobs:
       matrix:
         grunt-cmd: ['ci-webdriver-default']
 
-    # steps:
-    # - name: Login to Docker Hub
-    #   uses: docker/login-action@v2
-    #   with:
-    #     username: ${{ env.DOCKERHUB_USERNAME }}
-    #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-    #   if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    steps:
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ env.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    # - name: Configure AWS credentials
-    #   uses: aws-actions/configure-aws-credentials@v1-node16
-    #   with:
-    #     aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-    #     aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-    #     aws-region: eu-west-2
-    #   if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    # - name: Login to Amazon ECR
-    #   id: login-ecr
-    #   uses: aws-actions/amazon-ecr-login@v1
-    #   if: ${{ env.INTERNAL_CONTRIBUTOR }}
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
     - name: Use Node.js 16.x
       uses: actions/setup-node@v3
