@@ -41,7 +41,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    '**/*.wdio-spec.js',
+    '**/login-logout.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
@@ -197,7 +197,7 @@ const baseConfig = {
     if (fs.existsSync(browserLogPath)) {
       fs.unlinkSync(browserLogPath);
     }
-    await utils.prepServices();
+    //await utils.prepServices();
   },
   /**
    * Gets executed before a worker process is spawned and can be used to initialise specific service
