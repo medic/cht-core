@@ -19,56 +19,56 @@ env:
 
 jobs:
 
-  build:
-    name: Compile the app
-    runs-on: ubuntu-22.04
+  # build:
+  #   name: Compile the app
+  #   runs-on: ubuntu-22.04
 
-    steps:
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ env.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+  #   steps:
+  #   - name: Login to Docker Hub
+  #     uses: docker/login-action@v2
+  #     with:
+  #       username: ${{ env.DOCKERHUB_USERNAME }}
+  #       password: ${{ secrets.DOCKERHUB_TOKEN }}
+  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+  #   - name: Configure AWS credentials
+  #     uses: aws-actions/configure-aws-credentials@v1-node16
+  #     with:
+  #       aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+  #       aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+  #       aws-region: eu-west-2
+  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+  #   - name: Login to Amazon ECR
+  #     id: login-ecr
+  #     uses: aws-actions/amazon-ecr-login@v1
+  #     if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - uses: actions/checkout@v3
-    - name: Use Node.js 16.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.x
-    - name: Couch Start
-      run: ./scripts/ci/couch-start
-    - name: Create logs directory
-      run: mkdir tests/logs
-    - run: npm ci --legacy-peer-deps
-    - name: Grunt Install
-      run: npm install -g grunt-cli
-    - name: Grunt CI-Compile
-      run: |
-        node --stack_size=10000 `which grunt` ci-compile-github
-    - name: Publish for testing
-      run: |
-        node --stack_size=10000 `which grunt` publish-for-testing
+  #   - uses: actions/checkout@v3
+  #   - name: Use Node.js 16.x
+  #     uses: actions/setup-node@v3
+  #     with:
+  #       node-version: 16.x
+  #   - name: Couch Start
+  #     run: ./scripts/ci/couch-start
+  #   - name: Create logs directory
+  #     run: mkdir tests/logs
+  #   - run: npm ci --legacy-peer-deps
+  #   - name: Grunt Install
+  #     run: npm install -g grunt-cli
+  #   - name: Grunt CI-Compile
+  #     run: |
+  #       node --stack_size=10000 `which grunt` ci-compile-github
+  #   - name: Publish for testing
+  #     run: |
+  #       node --stack_size=10000 `which grunt` publish-for-testing
 
-    - name: Upload docker images as artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: cht-images
-        path: images/
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+  #   - name: Upload docker images as artifacts
+  #     uses: actions/upload-artifact@v3
+  #     with:
+  #       name: cht-images
+  #       path: images/
+  #     if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
   
 
@@ -144,89 +144,4 @@ jobs:
           tests/results/
       if: ${{ failure() }}
 
-  publish:
-    needs: [tests]
-    name: Publish branch build
-    runs-on: ubuntu-22.04
-    if: ${{ github.event_name != 'pull_request' }}
-
-    steps:
-    - name: Delete image artifacts
-      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
-      uses: geekyeggo/delete-artifact@v1
-      with:
-        name: cht-images
-
-    - name: Configure AWS credentials
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-        aws-region: eu-west-2
-    - name: Login to Amazon ECR
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Configure AWS credentials Public
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/configure-aws-credentials@v1-node16
-      with:
-        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-    - name: Login to Public Amazon ECR
-      if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      id: login-ecr-public
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        registry-type: public
-
-    - uses: actions/checkout@v3
-    - name: Publish
-      run: |
-        cd scripts/ci
-        npm ci --legacy-peer-deps
-        node ./publish.js
-        node ./tag-docker-images.js
-
-  upgrade:
-    needs: [publish]
-    name: Upgrade from latest release
-    runs-on: ubuntu-22.04
-    if: ${{ github.event_name != 'pull_request' }}
-
-    steps:
-      - name: Configure AWS credentials Public
-        if: ${{ env.INTERNAL_CONTRIBUTOR }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Login to Public Amazon ECR
-        if: ${{ env.INTERNAL_CONTRIBUTOR }}
-        id: login-ecr-public
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          registry-type: public
-      - uses: actions/checkout@v3
-      - name: Set ENV
-        run: |          
-          echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
-      - run: npm ci --legacy-peer-deps
-      - name: Create logs directory
-        run: mkdir tests/logs
-      - name: Upgrade
-        run: npm run upgrade-wdio
-      - name: Archive Results
-        uses: actions/upload-artifact@v3
-        with:
-          name: Upgrade
-          path: |
-            allure-results
-            allure-report
-            tests/logs
-            tests/results/
-        if: ${{ failure() }}
+  
