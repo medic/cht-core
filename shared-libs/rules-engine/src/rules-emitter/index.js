@@ -1,7 +1,8 @@
 /**
  * @module rules-emitter
- * Principal logic for rules emitting with emitter.metal/emitter.nools supporting
- * Handles marshaling of documents by contact
+ * Handles the lifecycle of a @RulesEmitter and marshales of documents into the emitter by contact
+ * 
+ * @typedef {Object} RulesEmitter Responsible for executing the logic in _rules_ and returning _emissions_
  */
 const nootils = require('cht-nootils');
 const registrationUtils = require('@medic/registration-utils');
@@ -21,15 +22,6 @@ const shutdown = () => {
 
   emitter = undefined;
 };
-
-/**
- * @typedef {Object} RulesEmitter
- * @param {Function} getContact
- * @param {Function} initialize
- * @param {Function} startSession
- * @param {Function} isLatestNoolsSchema
- * @param {Function} shutdown
- */
 
 module.exports = {
   /**
