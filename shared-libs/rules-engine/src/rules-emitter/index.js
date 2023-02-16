@@ -30,7 +30,8 @@ module.exports = {
    * @param {Object} settings Settings for the behavior of the rules emitter
    * @param {Object} settings.rules Rules code from settings doc
    * @param {Object[]} settings.taskSchedules Task schedules from settings doc
-   * @param {Boolean} [settings.isDeclarative=true] Flag to indicate the content of settings.rules. When true, rules is processed as native JavaScript. When false, nools is used.
+   * @param {Boolean} [settings.rulesAreDeclarative=true] Flag to indicate the content of settings.rules. When true, 
+   * rules is processed as native JavaScript. When false, nools is used.
    * @param {RulesEmitter} [settings.customEmitter] Optional custom RulesEmitter object
    * @param {Object} settings.contact The logged in user's contact document
    * @returns {Boolean} Success
@@ -169,10 +170,10 @@ const marshalDocsByContact = (Contact, contactDocs, reportDocs, taskDocs) => {
 };
 
 const resolveEmitter = (settings = {}) => {
-  const { isDeclarative, customEmitter } = settings;
+  const { rulesAreDeclarative, customEmitter } = settings;
   if (customEmitter !== null && typeof customEmitter === 'object') {
     return customEmitter;
   }
   
-  return isDeclarative ? metalEmitter : noolsEmitter;
+  return rulesAreDeclarative ? metalEmitter : noolsEmitter;
 };

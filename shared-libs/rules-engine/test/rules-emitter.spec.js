@@ -7,16 +7,16 @@ const rewire = require('rewire');
 const { chtDocs, simpleNoolsTemplate, chtRulesSettings } = require('./mocks');
 const rulesEmitter = rewire('../src/rules-emitter');
 
-const noolsScenarios = [true, false];
-for (const isDeclarative of noolsScenarios) {
-  describe(`rules-emitter isDeclarative:${isDeclarative}`, () => {
+const declarativeScenarios = [true, false];
+for (const rulesAreDeclarative of declarativeScenarios) {
+  describe(`rules-emitter rulesAreDeclarative:${rulesAreDeclarative}`, () => {
     afterEach(() => {
       rulesEmitter.shutdown();
     });
 
     const settingsWithRules = (rules, contact = {}, user= {}, rulesOptions = {}) => ({
-      rules: !isDeclarative ? simpleNoolsTemplate(rules, rulesOptions) : rules,
-      isDeclarative,
+      rules: !rulesAreDeclarative ? simpleNoolsTemplate(rules, rulesOptions) : rules,
+      rulesAreDeclarative,
       contact,
       user,
     });
@@ -68,7 +68,7 @@ for (const isDeclarative of noolsScenarios) {
     });
 
     
-    if (!isDeclarative) {
+    if (!rulesAreDeclarative) {
       it('c.tasks safely undefined when not in schema', async () => {
         const rules = `emit('task', new Task({ data: c.tasks }));`;
         const settingsDoc = settingsWithRules(rules);
@@ -199,13 +199,13 @@ for (const isDeclarative of noolsScenarios) {
 
     describe('integration', () => {
       it('isLatestNoolsSchema as true', () => {
-        const initialized = rulesEmitter.initialize(chtRulesSettings({ isDeclarative }));
+        const initialized = rulesEmitter.initialize(chtRulesSettings({ rulesAreDeclarative }));
         expect(initialized).to.be.true;
         expect(rulesEmitter.isLatestNoolsSchema()).to.be.true;
       });
 
       it('no reports yields no tasks', async () => {
-        const initialized = rulesEmitter.initialize(chtRulesSettings({ isDeclarative }));
+        const initialized = rulesEmitter.initialize(chtRulesSettings({ rulesAreDeclarative }));
         expect(initialized).to.be.true;
 
         const { tasks, targets } = await rulesEmitter.getEmissionsFor([], []);
@@ -217,7 +217,7 @@ for (const isDeclarative of noolsScenarios) {
         const time = moment('2000-01-01');
         sinon.useFakeTimers(time.valueOf());
 
-        const initialized = rulesEmitter.initialize(chtRulesSettings({ isDeclarative }));
+        const initialized = rulesEmitter.initialize(chtRulesSettings({ rulesAreDeclarative }));
         expect(initialized).to.be.true;
 
         const { tasks, targets } = await rulesEmitter.getEmissionsFor([chtDocs.contact], [chtDocs.pregnancyReport]);
