@@ -1,7 +1,7 @@
 const chai = require('chai');
 const moment = require('moment');
 const chaiExclude = require('chai-exclude');
-const { MS_IN_DAY, simpleNoolsTemplate, chtRulesSettings, chtSettingsDoc } = require('./mocks');
+const { MS_IN_DAY, simpleNoolsTemplate, engineSettings, chtSettingsDoc } = require('./mocks');
 
 const memdownMedic = require('@medic/memdown');
 const nools = require('nools');
@@ -73,7 +73,7 @@ const expectedQueriesForFreshData = [
 ];
 
 const fetchTargets = async (filterInterval) => {
-  filterInterval = filterInterval || calendarInterval.getInterval(chtRulesSettings().monthStartDate, TEST_START);
+  filterInterval = filterInterval || calendarInterval.getInterval(engineSettings().monthStartDate, TEST_START);
   const targets = await rulesEngine.fetchTargets(filterInterval);
   return targets.reduce((agg, target) => {
     agg[target.id] = target;
@@ -90,7 +90,7 @@ describe(`Rules Engine Integration Tests`, () => {
     clock = sinon.useFakeTimers(TEST_START);
     db = await memdownMedic('../..');
     rulesEngine = RulesEngine(db);
-    await rulesEngine.initialize(chtRulesSettings());
+    await rulesEngine.initialize(engineSettings());
   });
 
   after(() => {
@@ -116,7 +116,7 @@ describe(`Rules Engine Integration Tests`, () => {
         rulesEngine = RulesEngine(db);
     
         configHashSalt++;
-        const rulesSettings = chtRulesSettings({ rulesAreDeclarative, configHashSalt });
+        const rulesSettings = engineSettings({ rulesAreDeclarative, configHashSalt });
         await rulesEngine.rulesConfigChange(rulesSettings);  
       });
 
@@ -315,7 +315,8 @@ describe(`Rules Engine Integration Tests`, () => {
       it('config change causes reload with no cancelations or errors', async () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
-        const updatedSettings = chtRulesSettings({ rulesAreDeclarative, rules: 'const nothing = [];' }, simpleNoolsTemplate);
+        const settings = { rulesAreDeclarative, rules: 'const nothing = [];' };
+        const updatedSettings = engineSettings(settings, simpleNoolsTemplate);
         await rulesEngine.rulesConfigChange(updatedSettings);
         expect(db.bulkDocs.callCount).to.eq(1);
 
@@ -328,7 +329,8 @@ describe(`Rules Engine Integration Tests`, () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
         try {
-          const updatedSettings = chtRulesSettings({ rulesAreDeclarative, rules: 'not javascript', simpleNoolsTemplate });
+          const settings = { rulesAreDeclarative, rules: 'not javascript' };
+          const updatedSettings = engineSettings(settings, simpleNoolsTemplate);
           await rulesEngine.rulesConfigChange(updatedSettings);
           expect('throw').to.throw;
         } catch (err) {
@@ -346,7 +348,7 @@ describe(`Rules Engine Integration Tests`, () => {
       it('reloading same config does not bust cache', async () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
-        await rulesEngine.rulesConfigChange(chtRulesSettings({ rulesAreDeclarative, configHashSalt }));
+        await rulesEngine.rulesConfigChange(engineSettings({ rulesAreDeclarative, configHashSalt }));
         const successfulRecompile = rulesEmitter.isEnabled();
         expect(successfulRecompile).to.be.true;
         expect(rulesEngine.isEnabled()).to.be.true;
@@ -685,7 +687,7 @@ describe(`Rules Engine Integration Tests`, () => {
     };
     
     configHashSalt++;
-    const rulesSettings = chtRulesSettings({ customEmitter, configHashSalt });
+    const rulesSettings = engineSettings({ customEmitter, configHashSalt });
 
     await db.bulkDocs([patientContact]);
     

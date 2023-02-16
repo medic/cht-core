@@ -103,7 +103,7 @@ module.exports = {
   chtSettingsDoc,
   chtDocs,
 
-  chtRulesSettings: (assign, noolsTransformer = productionNoolsTemplate) => {
+  engineSettings: (assign, noolsTransformer = productionNoolsTemplate) => {
     const activeRules = (assign && assign.rules) || chtSettingsDoc.tasks.rules;
     const rules = !assign || !assign.rulesAreDeclarative ? noolsTransformer(activeRules) : activeRules;
 

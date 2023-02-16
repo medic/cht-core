@@ -5,7 +5,7 @@ const {
   RestorableRulesStateStore,
   simpleNoolsTemplate,
   mockEmission,
-  chtRulesSettings
+  engineSettings
 } = require('./mocks');
 
 const memdownMedic = require('@medic/memdown');
@@ -103,7 +103,7 @@ describe('provider-wireup integration tests', () => {
       sinon.spy(provider, 'stateChangeCallback');
 
       const userDoc = {};
-      await wireup.initialize(provider, chtRulesSettings(), userDoc);
+      await wireup.initialize(provider, engineSettings(), userDoc);
       expect(db.put.args[0]).excludingEvery(['rulesConfigHash', 'targetState']).to.deep.eq([{
         _id: pouchdbProvider.RULES_STATE_DOCID,
         rulesStateStore: {
@@ -139,7 +139,7 @@ describe('provider-wireup integration tests', () => {
       rulesStateStore.__set__('state', undefined);
 
       const putCountBeforeInit = db.put.callCount;
-      await wireup.initialize(provider, chtRulesSettings(), userDoc);
+      await wireup.initialize(provider, engineSettings(), userDoc);
       expect(db.put.callCount).to.eq(putCountBeforeInit);
       await wireup.fetchTasksFor(provider, ['abc']);
       expect(db.put.callCount).to.eq(putCountBeforeInit);
@@ -357,14 +357,14 @@ describe('provider-wireup integration tests', () => {
 
     it('cht yields task when targets disabled', async () => {
       clock = sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
-      await wireup.initialize(provider, chtRulesSettings({ enableTasks: true, enableTargets: false }), {});
+      await wireup.initialize(provider, engineSettings({ enableTasks: true, enableTargets: false }), {});
       const actual = await wireup.fetchTasksFor(provider);
       expect(actual.length).to.eq(1);
     });
 
     it('cht yields nothing when tasks disabled', async () => {
       clock = sinon.useFakeTimers(new Date(chtDocs.pregnancyReport.fields.t_pregnancy_follow_up_date).getTime());
-      await wireup.initialize(provider, chtRulesSettings({ enableTasks: false, enableTargets: true }), {});
+      await wireup.initialize(provider, engineSettings({ enableTasks: false, enableTargets: true }), {});
       const actual = await wireup.fetchTasksFor(provider);
       expect(actual).to.be.empty;
     });
@@ -372,7 +372,7 @@ describe('provider-wireup integration tests', () => {
 
   describe('fetchTargets', () => {
     it('cht yields targets when tasks disabled', async () => {
-      await wireup.initialize(provider, chtRulesSettings({ enableTasks: false, enableTargets: true }), {});
+      await wireup.initialize(provider, engineSettings({ enableTasks: false, enableTargets: true }), {});
       const targets = await wireup.fetchTargets(provider);
       expect(targets.length).to.be.gt(1);
       const target = targets.find(target => target.id === 'active-pregnancies-1+-visits');
@@ -380,14 +380,14 @@ describe('provider-wireup integration tests', () => {
     });
 
     it('cht yields nothing when tasks disabled', async () => {
-      await wireup.initialize(provider, chtRulesSettings({ enableTasks: true, enableTargets: false }), {});
+      await wireup.initialize(provider, engineSettings({ enableTasks: true, enableTargets: false }), {});
       const actual = await wireup.fetchTargets(provider);
       expect(actual).to.be.empty;
     });
 
     it('aggregate target doc is written (latest)', async () => {
       sinon.spy(provider, 'commitTargetDoc');
-      await wireup.initialize(provider, chtRulesSettings(), {}, {});
+      await wireup.initialize(provider, engineSettings(), {}, {});
       const actual = await wireup.fetchTargets(provider);
       expect(actual.length).to.be.gt(1);
 
@@ -414,7 +414,7 @@ describe('provider-wireup integration tests', () => {
 
     it('aggregate target doc is written (date)', async () => {
       sinon.spy(provider, 'commitTargetDoc');
-      await wireup.initialize(provider, chtRulesSettings(), {}, {});
+      await wireup.initialize(provider, engineSettings(), {}, {});
       const interval = { start: 1, end: 1000 };
       const actual = await wireup.fetchTargets(provider, interval);
       expect(actual.length).to.be.gt(1);

@@ -4,7 +4,7 @@ const moment = require('moment');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const { chtDocs, simpleNoolsTemplate, chtRulesSettings } = require('./mocks');
+const { chtDocs, simpleNoolsTemplate, engineSettings } = require('./mocks');
 const rulesEmitter = rewire('../src/rules-emitter');
 
 const declarativeScenarios = [true, false];
@@ -199,13 +199,13 @@ for (const rulesAreDeclarative of declarativeScenarios) {
 
     describe('integration', () => {
       it('isLatestNoolsSchema as true', () => {
-        const initialized = rulesEmitter.initialize(chtRulesSettings({ rulesAreDeclarative }));
+        const initialized = rulesEmitter.initialize(engineSettings({ rulesAreDeclarative }));
         expect(initialized).to.be.true;
         expect(rulesEmitter.isLatestNoolsSchema()).to.be.true;
       });
 
       it('no reports yields no tasks', async () => {
-        const initialized = rulesEmitter.initialize(chtRulesSettings({ rulesAreDeclarative }));
+        const initialized = rulesEmitter.initialize(engineSettings({ rulesAreDeclarative }));
         expect(initialized).to.be.true;
 
         const { tasks, targets } = await rulesEmitter.getEmissionsFor([], []);
@@ -217,7 +217,7 @@ for (const rulesAreDeclarative of declarativeScenarios) {
         const time = moment('2000-01-01');
         sinon.useFakeTimers(time.valueOf());
 
-        const initialized = rulesEmitter.initialize(chtRulesSettings({ rulesAreDeclarative }));
+        const initialized = rulesEmitter.initialize(engineSettings({ rulesAreDeclarative }));
         expect(initialized).to.be.true;
 
         const { tasks, targets } = await rulesEmitter.getEmissionsFor([chtDocs.contact], [chtDocs.pregnancyReport]);
