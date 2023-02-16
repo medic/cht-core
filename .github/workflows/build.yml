@@ -68,7 +68,7 @@ jobs:
       with:
         name: cht-images
         path: images/
-    #   if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
   
 
