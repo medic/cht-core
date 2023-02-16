@@ -25,6 +25,7 @@ import * as bootstrapper from '../js/bootstrapper';
 require('../js/moment-locales/tl');
 require('../js/moment-locales/hil');
 require('../js/moment-locales/ceb');
+require('../js/moment-locales/lg');
 require('moment/locale/fr');
 require('moment/locale/es');
 require('moment/locale/bm');
