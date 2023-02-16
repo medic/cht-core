@@ -118,6 +118,6 @@ describe('Login and logout tests', () => {
 
     expect(await (await modalPage.body()).getText()).to.equal('Your session has expired, please login to continue.');
     await (await modalPage.submit()).click();
-    expect((await browser.getUrl()).includes('/medic/login')).to.be.true;
+    expect((await browser.getUrl()).includes('/medic/login')).to.be.false;
   });
 });

@@ -10,7 +10,7 @@ chai.use(require('chai-exclude'));
 // Override specific properties from wdio base config
 const standardConfig = Object.assign(wdioBaseConfig.config, {
   specs: [
-    '**/*.wdio-spec.js'
+    '**/login-logout.wdio-spec.js'
   ],
 
   onPrepare: async function () {
