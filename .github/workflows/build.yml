@@ -164,6 +164,7 @@ jobs:
     - name: Run tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
     - name: Fetch allure history
+      if: always()
       uses: actions/checkout@v3
       with:
         repository: 'medic/build-history-data'
