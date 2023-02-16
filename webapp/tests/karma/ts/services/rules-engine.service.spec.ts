@@ -86,7 +86,7 @@ describe('RulesEngineService', () => {
     targets: [{ id: 'target' }],
     enableTasks: true,
     enableTargets: true,
-    emitter: 'nools',
+    rulesUsesNools: true,
     contact: userContactDoc,
     user: userSettingsDoc,
     monthStartDate: 1,
@@ -295,7 +295,7 @@ describe('RulesEngineService', () => {
 
       expect(result).to.be.true;
       expect(rulesEngineCoreStubs.initialize.callCount).to.eq(1);
-      expect(rulesEngineCoreStubs.initialize.args[0][0]).to.include({ emitter: 'metal' });
+      expect(rulesEngineCoreStubs.initialize.args[0][0]).to.include({ rulesWithNools: false });
     });
   });
 

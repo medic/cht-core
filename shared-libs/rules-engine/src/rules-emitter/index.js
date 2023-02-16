@@ -22,6 +22,15 @@ const shutdown = () => {
   emitter = undefined;
 };
 
+/**
+ * @typedef {Object} RulesEmitter
+ * @param {Function} getContact
+ * @param {Function} initialize
+ * @param {Function} startSession
+ * @param {Function} isLatestNoolsSchema
+ * @param {Function} shutdown
+ */
+
 module.exports = {
   /**
    * Initializes the rules emitter
@@ -29,7 +38,8 @@ module.exports = {
    * @param {Object} settings Settings for the behavior of the rules emitter
    * @param {Object} settings.rules Rules code from settings doc
    * @param {Object[]} settings.taskSchedules Task schedules from settings doc
-   * @param {String} settings.emitter Rules-emitter to use (either 'nools' or 'metal')
+   * @param {Boolean} [settings.rulesWithNools=true] Flag to indicate whether settings.rules requires nools to execute
+   * @param {RulesEmitter} [settings.customEmitter] Optional custom RulesEmitter object
    * @param {Object} settings.contact The logged in user's contact document
    * @returns {Boolean} Success
    */
@@ -43,7 +53,7 @@ module.exports = {
     }
 
     shutdown();
-    emitter = chooseEmitter(settings.emitter);
+    emitter = resolveEmitter(settings);
 
     try {
       const settingsDoc = { tasks: { schedules: settings.taskSchedules } };
@@ -166,14 +176,15 @@ const marshalDocsByContact = (Contact, contactDocs, reportDocs, taskDocs) => {
   }); // Object.values(factByContactId)
 };
 
-const chooseEmitter = emitterConfig => {
-  if (typeof emitterConfig === 'object') {
-    return emitterConfig;
+const resolveEmitter = (settings = {}) => {
+  const {
+    rulesWithNools = true,
+    customEmitter,
+  } = settings;
+
+  if (customEmitter !== null && typeof customEmitter === 'object') {
+    return customEmitter;
   }
   
-  if (emitterConfig === 'metal') {
-    return metalEmitter;
-  }
-  
-  return noolsEmitter;
+  return rulesWithNools ? noolsEmitter : metalEmitter;
 };

@@ -1,7 +1,7 @@
 const chai = require('chai');
 const moment = require('moment');
 const chaiExclude = require('chai-exclude');
-const { MS_IN_DAY, noolsPartnerTemplate, chtRulesSettings, chtSettingsDoc } = require('./mocks');
+const { MS_IN_DAY, simpleNoolsTemplate, chtRulesSettings, chtSettingsDoc } = require('./mocks');
 
 const memdownMedic = require('@medic/memdown');
 const nools = require('nools');
@@ -83,7 +83,7 @@ const fetchTargets = async (filterInterval) => {
 
 let clock;
 
-const EMITTERS = ['nools', 'metal'];
+const noolsScenarios = [true, false];
 
 describe(`Rules Engine Integration Tests`, () => {
   before(async () => {
@@ -104,11 +104,11 @@ describe(`Rules Engine Integration Tests`, () => {
     clock.restore();
   });
 
-  for (const emitter of EMITTERS) {
+  for (const rulesWithNools of noolsScenarios) {
     // Some nuanced behavior of medic-nootils with useFakeTimers: due to the closures around { Date } in medic-nootils,
     // the library uses the fake date at the time the library is created. In this case, that is the time of
     // rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to strange behaviors with Utils.now()
-    describe(`emitter: ${emitter}`, () => {
+    describe(`using nools: ${rulesWithNools}`, () => {
       beforeEach(async () => {
         clock = sinon.useFakeTimers(TEST_START);
     
@@ -116,11 +116,11 @@ describe(`Rules Engine Integration Tests`, () => {
         rulesEngine = RulesEngine(db);
     
         configHashSalt++;
-        const rulesSettings = chtRulesSettings({ emitter, configHashSalt });
+        const rulesSettings = chtRulesSettings({ rulesWithNools, configHashSalt });
         await rulesEngine.rulesConfigChange(rulesSettings);  
       });
 
-      if (emitter === 'nools') {
+      if (rulesWithNools) {
         it('behavior after initialization', async () => {
           expect(rulesEngine.isEnabled()).to.be.true;
           // the nools "flow" should remain in memory so we don't recompile the partner code
@@ -315,7 +315,7 @@ describe(`Rules Engine Integration Tests`, () => {
       it('config change causes reload with no cancelations or errors', async () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
-        const updatedSettings = chtRulesSettings({ emitter, rules: noolsPartnerTemplate('const nothing = [];') });
+        const updatedSettings = chtRulesSettings({ rulesWithNools, rules: 'const nothing = [];' }, simpleNoolsTemplate);
         await rulesEngine.rulesConfigChange(updatedSettings);
         expect(db.bulkDocs.callCount).to.eq(1);
 
@@ -328,7 +328,7 @@ describe(`Rules Engine Integration Tests`, () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
         try {
-          const updatedSettings = chtRulesSettings({ emitter, rules: noolsPartnerTemplate('not javascript') });
+          const updatedSettings = chtRulesSettings({ rulesWithNools, rules: 'not javascript', simpleNoolsTemplate });
           await rulesEngine.rulesConfigChange(updatedSettings);
           expect('throw').to.throw;
         } catch (err) {
@@ -346,7 +346,7 @@ describe(`Rules Engine Integration Tests`, () => {
       it('reloading same config does not bust cache', async () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
-        await rulesEngine.rulesConfigChange(chtRulesSettings({ emitter, configHashSalt }));
+        await rulesEngine.rulesConfigChange(chtRulesSettings({ rulesWithNools, configHashSalt }));
         const successfulRecompile = rulesEmitter.isEnabled();
         expect(successfulRecompile).to.be.true;
         expect(rulesEngine.isEnabled()).to.be.true;
@@ -685,7 +685,7 @@ describe(`Rules Engine Integration Tests`, () => {
     };
     
     configHashSalt++;
-    const rulesSettings = chtRulesSettings({ emitter: customEmitter, configHashSalt });
+    const rulesSettings = chtRulesSettings({ customEmitter, configHashSalt });
 
     await db.bulkDocs([patientContact]);
     

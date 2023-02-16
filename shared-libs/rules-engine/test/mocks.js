@@ -43,15 +43,22 @@ const chtDocs = {
 const userContactDoc = { _id: 'user' };
 const userSettingsDoc = { _id: 'org.couchdb.user:username' };
 
-module.exports = {
-  MS_IN_DAY,
-
-  noolsPartnerTemplate: (code, options = {}) => `define Target { data: null }
+const simpleNoolsTemplate = (code, options = {}) => `define Target { data: null }
 define Contact { contact: null, ${options.includeTasks ? 'tasks: null,' : ''} reports: null }
 define Task { data: null }
 rule GenerateEvents {
   when { c: Contact } then { ${code} }
-}`,
+}`;
+
+const productionNoolsTemplate = (code) => `define Target { _id: null, contact: null, deleted: null, type: null, pass: null, date: null, groupBy: null }
+define Contact { contact: null, reports: null, tasks: null }
+define Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, readyStart: null, readyEnd: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }
+rule GenerateEvents { when { c: Contact } then { ${code} } }`;
+
+module.exports = {
+  MS_IN_DAY,
+
+  simpleNoolsTemplate,
 
   mockEmission: (msOffset, assigned = {}) => {
     return Object.assign({
@@ -68,18 +75,22 @@ rule GenerateEvents {
   chtSettingsDoc,
   chtDocs,
 
-  chtRulesSettings: assign => {
-    return Object.assign({
-      rules: chtSettingsDoc.tasks.rules,
+  chtRulesSettings: (assign, noolsTransformer = productionNoolsTemplate) => {
+    const activeRules = (assign && assign.rules) || chtSettingsDoc.tasks.rules;
+    const rules = assign && assign.rulesWithNools ? noolsTransformer(activeRules) : activeRules;
+
+    const defaults = {
       targets: chtSettingsDoc.tasks.targets.items,
       taskSchedules: chtSettingsDoc.tasks.schedules,
-      emitter: 'nools',
+      rulesWithNools: false,
       enableTasks: true,
       enableTargets: true,
       user: userSettingsDoc,
       contact: userContactDoc,
       monthStartDate: 1,
-    }, assign);
+    };
+
+    return Object.assign(defaults, assign, { rules });
   },
 
   RestorableRulesStateStore: () => restorable('../src/rules-state-store', ['state', 'currentUser', 'onStateChange']),

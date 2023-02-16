@@ -4,17 +4,22 @@ const moment = require('moment');
 const sinon = require('sinon');
 const rewire = require('rewire');
 
-const { chtDocs, noolsPartnerTemplate, chtRulesSettings } = require('./mocks');
+const { chtDocs, simpleNoolsTemplate, chtRulesSettings } = require('./mocks');
 const rulesEmitter = rewire('../src/rules-emitter');
 
-const EMITTERS = ['nools', 'metal'];
-for (const emitter of EMITTERS) {
-  describe(`rules-emitter: ${emitter}`, () => {
+const noolsScenarios = [true, false];
+for (const rulesWithNools of noolsScenarios) {
+  describe(`rules-emitter rulesWithNools:${rulesWithNools}`, () => {
     afterEach(() => {
       rulesEmitter.shutdown();
     });
 
-    const settingsWithRules = (rules, contact = {}, user= {}) => ({ rules, emitter, contact, user });
+    const settingsWithRules = (rules, contact = {}, user= {}, rulesOptions) => ({
+      rules: rulesWithNools ? simpleNoolsTemplate(rules, rulesOptions) : rules,
+      rulesWithNools,
+      contact,
+      user,
+    });
 
     describe('initialize', () => {
       it('throw on initialized twice', () => {
@@ -35,7 +40,7 @@ for (const emitter of EMITTERS) {
       });
 
       it('can initialize twice if shutdown', () => {
-        const rules = noolsPartnerTemplate('');
+        const rules = ' ';
         const settingsDoc = settingsWithRules(rules);
         const actual = rulesEmitter.initialize(settingsDoc);
         expect(actual).to.eq(true);
@@ -48,9 +53,7 @@ for (const emitter of EMITTERS) {
     });
 
     it('single contact emits simple task and target', async () => {
-      const rules = noolsPartnerTemplate(
-        `emit('task', new Task({ data: c.contact })); emit('target', new Target({ data: c.contact }));`
-      );
+      const rules = `emit('task', new Task({ data: c.contact })); emit('target', new Target({ data: c.contact }));`;
       const contact = { _id: 'foo' };
       const settingsDoc = settingsWithRules(rules, contact);
       const initialized = rulesEmitter.initialize(settingsDoc);
@@ -65,9 +68,9 @@ for (const emitter of EMITTERS) {
     });
 
     
-    if (emitter !== 'metal') {
+    if (rulesWithNools) {
       it('c.tasks safely undefined when not in schema', async () => {
-        const rules = noolsPartnerTemplate(`emit('task', new Task({ data: c.tasks }));`);
+        const rules = `emit('task', new Task({ data: c.tasks }));`;
         const settingsDoc = settingsWithRules(rules);
         const contact = { _id: 'foo' };
         const taskDoc = {
@@ -85,8 +88,8 @@ for (const emitter of EMITTERS) {
     }
 
     it('c.tasks defined when in schema', async () => {
-      const rules = noolsPartnerTemplate(`emit('task', new Task({ data: c.tasks }));`, { includeTasks: true });
-      const settingsDoc = settingsWithRules(rules);
+      const rules = `emit('task', new Task({ data: c.tasks }));`;
+      const settingsDoc = settingsWithRules(rules, {}, {}, { includeTasks: true });
       const contact = { _id: 'foo' };
       const taskDoc = {
         _id: 'task',
@@ -102,8 +105,8 @@ for (const emitter of EMITTERS) {
     });
 
     it('reports and tasks collate by id even when contact is absent', async () => {
-      const rules = noolsPartnerTemplate(`emit('task', new Task({ data: c }));`, { includeTasks: true });
-      const settingsDoc = settingsWithRules(rules);
+      const rules = `emit('task', new Task({ data: c }));`;
+      const settingsDoc = settingsWithRules(rules, {}, {}, { includeTasks: true });
       const reportDoc = { patient_id: 'foo' };
       const taskDoc = { requester: 'foo' };
       const initialized = rulesEmitter.initialize(settingsDoc);
@@ -119,8 +122,8 @@ for (const emitter of EMITTERS) {
     });
 
     it('reports collate by patient_id when it is not a uuid', async () => {
-      const rules = noolsPartnerTemplate(`emit('task', new Task({ data: c }));`, { includeTasks: true });
-      const settingsDoc = settingsWithRules(rules);
+      const rules = `emit('task', new Task({ data: c }));`;
+      const settingsDoc = settingsWithRules(rules, {}, {}, { includeTasks: true });
       const contactDoc = { _id: 'contact', patient_id: 'foo' };
       const byPatientId = { _id: 'report', type: 'data_record', patient_id: 'foo' };
       const byPatientUuid = { _id: 'report', type: 'data_record', fields: { patient_uuid: 'contact' } };
@@ -138,9 +141,7 @@ for (const emitter of EMITTERS) {
     });
 
     it('nootils and user objects are available', async () => {
-      const rules = noolsPartnerTemplate(
-        `emit('task', new Task({ data: user })); emit('target', new Target({ data: Utils }));`
-      );
+      const rules = `emit('task', new Task({ data: user })); emit('target', new Target({ data: Utils }));`;
       const contactDoc = { _id: 'contact' };
       const settingsDoc = settingsWithRules(rules, contactDoc);
 
@@ -156,7 +157,7 @@ for (const emitter of EMITTERS) {
 
     // don't understand this test or how it applies
     it('session is disposed when marshalDocsByContact throws', async () => {
-      const rules = noolsPartnerTemplate('');
+      const rules = ' ';
       const settingsDoc = settingsWithRules(rules);
       rulesEmitter.initialize(settingsDoc);
       const err = new Error('fake');
@@ -167,8 +168,8 @@ for (const emitter of EMITTERS) {
     });
 
     it('reports are sorted by reported_date before being pushed into nools', async () => {
-      const rules = noolsPartnerTemplate(`emit('task', new Task({ data: c }));`, { includeTasks: true });
-      const settingsDoc = settingsWithRules(rules);
+      const rules = `emit('task', new Task({ data: c }));`;
+      const settingsDoc = settingsWithRules(rules, {}, {}, { includeTasks: true });
       const contactDoc = { _id: 'contact', patient_id: 'foo' };
       const report1 = { _id: 'report1', type: 'data_record', patient_id: 'foo', reported_date: 5 };
       const report2 = { _id: 'report2', type: 'data_record', patient_id: 'contact', reported_date: 4 };
@@ -198,13 +199,13 @@ for (const emitter of EMITTERS) {
 
     describe('integration', () => {
       it('isLatestNoolsSchema as true', () => {
-        const initialized = rulesEmitter.initialize(chtRulesSettings({ emitter }));
+        const initialized = rulesEmitter.initialize(chtRulesSettings({ rulesWithNools }));
         expect(initialized).to.be.true;
         expect(rulesEmitter.isLatestNoolsSchema()).to.be.true;
       });
 
       it('no reports yields no tasks', async () => {
-        const initialized = rulesEmitter.initialize(chtRulesSettings({ emitter }));
+        const initialized = rulesEmitter.initialize(chtRulesSettings({ rulesWithNools }));
         expect(initialized).to.be.true;
 
         const { tasks, targets } = await rulesEmitter.getEmissionsFor([], []);
@@ -216,7 +217,7 @@ for (const emitter of EMITTERS) {
         const time = moment('2000-01-01');
         sinon.useFakeTimers(time.valueOf());
 
-        const initialized = rulesEmitter.initialize(chtRulesSettings({ emitter }));
+        const initialized = rulesEmitter.initialize(chtRulesSettings({ rulesWithNools }));
         expect(initialized).to.be.true;
 
         const { tasks, targets } = await rulesEmitter.getEmissionsFor([chtDocs.contact], [chtDocs.pregnancyReport]);

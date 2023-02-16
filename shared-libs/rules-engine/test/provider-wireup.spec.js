@@ -3,7 +3,7 @@ const chaiExclude = require('chai-exclude');
 const {
   chtDocs,
   RestorableRulesStateStore,
-  noolsPartnerTemplate,
+  simpleNoolsTemplate,
   mockEmission,
   chtRulesSettings
 } = require('./mocks');
@@ -147,7 +147,7 @@ describe('provider-wireup integration tests', () => {
   });
 
   it('latest schema rules are required when rules are provided', async () => {
-    const rules = noolsPartnerTemplate('');
+    const rules = simpleNoolsTemplate('');
     const settings = { rules };
     try {
       await wireup.initialize(provider, settings, {});
@@ -198,7 +198,7 @@ describe('provider-wireup integration tests', () => {
 
   describe('fetchTasksFor', () => {
     it('refresh headless', async () => {
-      const rules = noolsPartnerTemplate('', { });
+      const rules = simpleNoolsTemplate('');
       const settings = { rules };
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
       sinon.spy(db, 'bulkDocs');
@@ -227,7 +227,7 @@ describe('provider-wireup integration tests', () => {
 
     it('tasks tab includes headless reports and tasks', async () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
-      const rules = noolsPartnerTemplate('', { });
+      const rules = simpleNoolsTemplate('');
       const settings = { rules };
       await wireup.initialize(provider, settings, {});
 
@@ -277,7 +277,7 @@ describe('provider-wireup integration tests', () => {
     it('confirm no heavy lifting when fetch fresh contact (performance)', async () => {
       sinon.spy(rulesEmitter, 'getEmissionsFor');
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
-      const rules = noolsPartnerTemplate('', { });
+      const rules = simpleNoolsTemplate('');
       const settings = { rules };
       await wireup.initialize(provider, settings, {});
       await rulesStateStore.markFresh(Date.now(), 'fresh');
@@ -295,7 +295,7 @@ describe('provider-wireup integration tests', () => {
     it('tasks tab does not provide a list of keys to tasks view (performance)', async () => {
       sinon.spy(rulesEmitter, 'getEmissionsFor');
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
-      const rules = noolsPartnerTemplate('', { });
+      const rules = simpleNoolsTemplate('');
       const settings = { rules };
       await wireup.initialize(provider, settings, {});
       await rulesStateStore.markAllFresh(Date.now(), ['dirty']);
@@ -330,7 +330,7 @@ describe('provider-wireup integration tests', () => {
       sinon.stub(rulesEmitter, 'getEmissionsFor').resolves({ tasks: [emission], targets: [] });
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
 
-      const rules = noolsPartnerTemplate('', { });
+      const rules = simpleNoolsTemplate('');
       const settings = { rules, enableTargets: false };
       await wireup.initialize(provider, settings, {});
       await wireup.fetchTasksFor(provider);
@@ -443,7 +443,7 @@ describe('provider-wireup integration tests', () => {
 
     it('uhc - % families with 2 hh visits/month', async () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
-      const rules = noolsPartnerTemplate('', { });
+      const rules = simpleNoolsTemplate('');
       const settings = {
         rules,
         targets: [{
@@ -507,7 +507,7 @@ describe('provider-wireup integration tests', () => {
 
     it('should use inclusive operator when comparing dates', async () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
-      const rules = noolsPartnerTemplate('', { });
+      const rules = simpleNoolsTemplate('');
       const settings = {
         rules,
         targets: [{ id: 'uhc' }]
@@ -579,7 +579,7 @@ describe('provider-wireup integration tests', () => {
 
     describe('during initialization', () => {
       it('should do nothing when there is no stale state', async () => {
-        const rules = noolsPartnerTemplate('', { });
+        const rules = simpleNoolsTemplate('');
         const settings = {
           enableTargets: true,
           rules,
@@ -592,7 +592,7 @@ describe('provider-wireup integration tests', () => {
       });
 
       it('should do nothing when stale state has no calculation date', async () => {
-        const rules = noolsPartnerTemplate('', { });
+        const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
           enableTargets: true,
@@ -611,7 +611,7 @@ describe('provider-wireup integration tests', () => {
       });
 
       it('should do nothing when stale state is within same interval', async () => {
-        const rules = noolsPartnerTemplate('', { });
+        const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
           enableTargets: true,
@@ -637,7 +637,7 @@ describe('provider-wireup integration tests', () => {
 
       it('should update the targets doc when the state was calculated outside of the interval', async () => {
         clock = sinon.useFakeTimers(moment('2020-04-28').valueOf());
-        const rules = noolsPartnerTemplate('', { });
+        const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
           enableTargets: true,
@@ -678,7 +678,7 @@ describe('provider-wireup integration tests', () => {
 
       it('should work when the settings have been changed', async () => {
         clock = sinon.useFakeTimers(moment('2020-04-14').valueOf());
-        const rules = noolsPartnerTemplate('', { });
+        const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
           enableTargets: true,
@@ -724,7 +724,7 @@ describe('provider-wireup integration tests', () => {
 
       it('should use inclusive operator when comparing dates (left)', async () => {
         clock = sinon.useFakeTimers(moment('2020-05-28').valueOf());
-        const rules = noolsPartnerTemplate('', { });
+        const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
           enableTargets: true,
@@ -765,7 +765,7 @@ describe('provider-wireup integration tests', () => {
 
       it('should use inclusive operator when comparing dates (right)', async () => {
         clock = sinon.useFakeTimers(moment('2020-05-28').valueOf());
-        const rules = noolsPartnerTemplate('', { });
+        const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
           enableTargets: true,
@@ -808,7 +808,7 @@ describe('provider-wireup integration tests', () => {
 
     describe('during regular use', () => {
       it('should do nothing when in same interval', async () => {
-        const rules = noolsPartnerTemplate('', { });
+        const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
           enableTargets: true,
@@ -843,7 +843,7 @@ describe('provider-wireup integration tests', () => {
       });
 
       it('should update targets when in new interval when refreshing tasks', async () => {
-        const rules = noolsPartnerTemplate('', { });
+        const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
           enableTargets: true,
@@ -879,7 +879,7 @@ describe('provider-wireup integration tests', () => {
       });
 
       it('should update targets when in new interval when refreshing targets', async () => {
-        const rules = noolsPartnerTemplate('', { });
+        const rules = simpleNoolsTemplate('');
         const settings = {
           rules,
           enableTargets: true,
@@ -947,7 +947,7 @@ describe('provider-wireup integration tests', () => {
       sinon.stub(provider, 'allTasks').resolves([]);
       sinon.stub(provider, 'commitTargetDoc').resolves();
 
-      const settings = { rules: noolsPartnerTemplate(''), enableTargets: true };
+      const settings = { rules: simpleNoolsTemplate(''), enableTargets: true };
       await wireup.initialize(provider, settings, {});
 
       const promiseQueue = [];
@@ -1069,7 +1069,7 @@ describe('provider-wireup integration tests', () => {
     it('should provide `on` property and emit nothing when actions are disabled', async () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
 
-      const settings = { rules: noolsPartnerTemplate(''), enableTargets: false, enableTasks: false };
+      const settings = { rules: simpleNoolsTemplate(''), enableTargets: false, enableTasks: false };
       await wireup.initialize(provider, settings, {});
       const generateListeners = () => ({ queued: sinon.stub(), running: sinon.stub() });
       const listeners = [];
@@ -1211,7 +1211,7 @@ describe('provider-wireup integration tests', () => {
 
     it('should get tasks breakdown by owner when contact ids are provided', async () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
-      const rules = noolsPartnerTemplate('', { });
+      const rules = simpleNoolsTemplate('');
       const settings = { rules, enableTasks: true };
       await wireup.initialize(provider, settings, {});
       expect(await wireup.fetchTasksBreakdown(provider, ['patient'])).to.deep.equal({
@@ -1225,7 +1225,7 @@ describe('provider-wireup integration tests', () => {
 
     it('should get all tasks breakdown when no contact ids are provided', async () => {
       sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
-      const rules = noolsPartnerTemplate('', { });
+      const rules = simpleNoolsTemplate('');
       const settings = { rules, enableTasks: true };
       await wireup.initialize(provider, settings, {});
       expect(await wireup.fetchTasksBreakdown(provider)).to.deep.equal({

@@ -25,7 +25,8 @@ module.exports = {
    * @param {Object[]} settings.targets Target definitions from settings doc
    * @param {Boolean} settings.enableTasks Flag to enable tasks
    * @param {Boolean} settings.enableTargets Flag to enable targets
-   * @param {String} settings.emitter Rules-emitter to use (either 'nools' or 'metal')
+   * @param {Boolean} [settings.rulesWithNools=true] Flag to indicate whether settings.rules requires nools to execute
+   * @param {RulesEmitter} [settings.customEmitter] Optional custom RulesEmitter object
    * @param {number} settings.monthStartDate reporting interval start date
    * @param {Object} userDoc User's hydrated contact document
    */
