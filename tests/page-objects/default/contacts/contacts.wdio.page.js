@@ -5,7 +5,7 @@ const commonElements = require('../common/common.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 const utils = require('../../../utils');
 const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
-const searchBox = () => $('input#freetext');
+const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
