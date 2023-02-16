@@ -295,7 +295,7 @@ describe('RulesEngineService', () => {
 
       expect(result).to.be.true;
       expect(rulesEngineCoreStubs.initialize.callCount).to.eq(1);
-      expect(rulesEngineCoreStubs.initialize.args[0][0]).to.include({ rulesWithNools: false });
+      expect(rulesEngineCoreStubs.initialize.args[0][0]).to.include({ isDeclarative: true });
     });
   });
 

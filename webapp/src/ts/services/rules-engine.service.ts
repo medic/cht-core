@@ -220,7 +220,6 @@ export class RulesEngineService implements OnDestroy {
     const filterTargetByContext = (target) => target.context ?
       !!this.parseProvider.parse(target.context)({ user: rulesEngineContext.userContactDoc }) : true;
     const targets = settingsTasks.targets && settingsTasks.targets.items || [];
-    const rulesWithNools = !rulesEngineContext.settingsDoc?.tasks?.isDeclarative;
 
     return {
       rules: settingsTasks.rules,
@@ -230,7 +229,7 @@ export class RulesEngineService implements OnDestroy {
       enableTargets: rulesEngineContext.enableTargets,
       contact: rulesEngineContext.userContactDoc,
       user: rulesEngineContext.userSettingsDoc,
-      rulesWithNools,
+      isDeclarative: rulesEngineContext.settingsDoc?.tasks?.isDeclarative,
       monthStartDate: this.uhcSettingsService.getMonthStartDate(rulesEngineContext.settingsDoc),
       chtScriptApi: rulesEngineContext.chtScriptApi
     };

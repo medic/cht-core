@@ -104,11 +104,11 @@ describe(`Rules Engine Integration Tests`, () => {
     clock.restore();
   });
 
-  for (const rulesWithNools of noolsScenarios) {
+  for (const isDeclarative of noolsScenarios) {
     // Some nuanced behavior of medic-nootils with useFakeTimers: due to the closures around { Date } in medic-nootils,
     // the library uses the fake date at the time the library is created. In this case, that is the time of
     // rulesEngine.initialize or rulesEngine.rulesConfigChange. This can lead to strange behaviors with Utils.now()
-    describe(`using nools: ${rulesWithNools}`, () => {
+    describe(`isDeclarative: ${isDeclarative}`, () => {
       beforeEach(async () => {
         clock = sinon.useFakeTimers(TEST_START);
     
@@ -116,11 +116,11 @@ describe(`Rules Engine Integration Tests`, () => {
         rulesEngine = RulesEngine(db);
     
         configHashSalt++;
-        const rulesSettings = chtRulesSettings({ rulesWithNools, configHashSalt });
+        const rulesSettings = chtRulesSettings({ isDeclarative, configHashSalt });
         await rulesEngine.rulesConfigChange(rulesSettings);  
       });
 
-      if (rulesWithNools) {
+      if (!isDeclarative) {
         it('behavior after initialization', async () => {
           expect(rulesEngine.isEnabled()).to.be.true;
           // the nools "flow" should remain in memory so we don't recompile the partner code
@@ -315,7 +315,7 @@ describe(`Rules Engine Integration Tests`, () => {
       it('config change causes reload with no cancelations or errors', async () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
-        const updatedSettings = chtRulesSettings({ rulesWithNools, rules: 'const nothing = [];' }, simpleNoolsTemplate);
+        const updatedSettings = chtRulesSettings({ isDeclarative, rules: 'const nothing = [];' }, simpleNoolsTemplate);
         await rulesEngine.rulesConfigChange(updatedSettings);
         expect(db.bulkDocs.callCount).to.eq(1);
 
@@ -328,7 +328,7 @@ describe(`Rules Engine Integration Tests`, () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
         try {
-          const updatedSettings = chtRulesSettings({ rulesWithNools, rules: 'not javascript', simpleNoolsTemplate });
+          const updatedSettings = chtRulesSettings({ isDeclarative, rules: 'not javascript', simpleNoolsTemplate });
           await rulesEngine.rulesConfigChange(updatedSettings);
           expect('throw').to.throw;
         } catch (err) {
@@ -346,7 +346,7 @@ describe(`Rules Engine Integration Tests`, () => {
       it('reloading same config does not bust cache', async () => {
         await triggerFacilityReminderInReadyState(['patient']);
 
-        await rulesEngine.rulesConfigChange(chtRulesSettings({ rulesWithNools, configHashSalt }));
+        await rulesEngine.rulesConfigChange(chtRulesSettings({ isDeclarative, configHashSalt }));
         const successfulRecompile = rulesEmitter.isEnabled();
         expect(successfulRecompile).to.be.true;
         expect(rulesEngine.isEnabled()).to.be.true;

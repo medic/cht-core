@@ -105,12 +105,12 @@ module.exports = {
 
   chtRulesSettings: (assign, noolsTransformer = productionNoolsTemplate) => {
     const activeRules = (assign && assign.rules) || chtSettingsDoc.tasks.rules;
-    const rules = assign && assign.rulesWithNools ? noolsTransformer(activeRules) : activeRules;
+    const rules = !assign || !assign.isDeclarative ? noolsTransformer(activeRules) : activeRules;
 
     const defaults = {
       targets: chtSettingsDoc.tasks.targets.items,
       taskSchedules: chtSettingsDoc.tasks.schedules,
-      rulesWithNools: false,
+      isDeclarative: false,
       enableTasks: true,
       enableTargets: true,
       user: userSettingsDoc,
