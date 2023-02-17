@@ -169,6 +169,8 @@ const baseConfig = {
           passed: '[PASS]',
           failed: '[FAIL]',
         },
+        realtimeReporting: true,
+        showPreface: false,
         addConsoleLogs: true,
       },
     ]
