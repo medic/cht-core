@@ -157,6 +157,7 @@ const baseConfig = {
   // The only one supported by default is 'dot'
   // see also: https://webdriver.io/docs/dot-reporter
   reporters: [
+  
     ['allure', {
       outputDir: ALLURE_OUTPUT,
       disableWebdriverStepsReporting: true
@@ -170,7 +171,8 @@ const baseConfig = {
         },
         addConsoleLogs: true,
       },
-    ]
+    ],
+    'dot'
   ],
   //
   // Options to be passed to Mocha.
