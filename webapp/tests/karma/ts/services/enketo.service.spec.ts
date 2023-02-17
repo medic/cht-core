@@ -76,6 +76,7 @@ describe('Enketo service', () => {
   let globalActions;
   let sessionService;
   let consoleErrorMock;
+  let consoleWarnMock;
   let feedbackService;
 
   beforeEach(() => {
@@ -94,6 +95,7 @@ describe('Enketo service', () => {
     form = {
       validate: sinon.stub(),
       getDataStr: sinon.stub(),
+      resetView: sinon.stub(),
       view: {
         $: { on: sinon.stub() },
         html: document.createElement('div'),
@@ -130,6 +132,7 @@ describe('Enketo service', () => {
       userCtx: sinon.stub(),
     };
     consoleErrorMock = sinon.stub(console, 'error');
+    consoleWarnMock = sinon.stub(console, 'warn');
     feedbackService = { submit: sinon.stub() };
 
     TestBed.configureTestingModule({
@@ -511,7 +514,6 @@ describe('Enketo service', () => {
     });
 
     it('ContactSummary receives empty lineage if contact doc is missing', () => {
-      const consoleWarnMock = sinon.stub(console, 'warn');
       LineageModelGenerator.contact.rejects({ code: 404 });
 
       UserContact.resolves({
@@ -543,6 +545,50 @@ describe('Enketo service', () => {
         expect(consoleWarnMock.callCount).to.equal(1);
         expect(consoleWarnMock.args[0][0].startsWith('Enketo failed to get lineage of contact')).to.be.true;
       });
+    });
+
+    it('should execute the unload process when the waiting has timeout and render second form', async () => {
+      enketoInit.returns([]);
+      FileReader.utf8.resolves('<some-blob name="xml"/>');
+      EnketoPrepopulationData.resolves('<xml></xml>');
+      UserContact.resolves({ contact_id: '123' });
+      dbGetAttachment
+        .onFirstCall().resolves('<div>first form</div>')
+        .onSecondCall().resolves(VISIT_MODEL);
+
+      await service.render($('<div id="first-form"></div>'), mockEnketoDoc('firstForm'));
+      expect(consoleWarnMock.notCalled).to.be.true;
+      expect(UserContact.calledOnce).to.be.true;
+      expect(EnketoPrepopulationData.calledOnce).to.be.true;
+      expect(FileReader.utf8.calledTwice).to.be.true;
+      expect(FileReader.utf8.args[0][0]).to.equal('<div>first form</div>');
+      expect(FileReader.utf8.args[1][0]).to.equal(VISIT_MODEL);
+      expect(enketoInit.calledOnce).to.be.true;
+      expect(form.editStatus).to.be.false;
+      expect(dbGetAttachment.calledTwice).to.be.true;
+      expect(dbGetAttachment.args[0]).to.have.members([ 'form:firstForm', 'form.html' ]);
+      expect(dbGetAttachment.args[1]).to.have.members([ 'form:firstForm', 'model.xml' ]);
+
+      sinon.resetHistory();
+      dbGetAttachment
+        .onFirstCall().resolves('<div>second form</div>')
+        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+
+      await service.render($('<div id="second-form"></div>'), mockEnketoDoc('secondForm'));
+      expect(form.resetView.calledOnce).to.be.true;
+      expect(consoleWarnMock.calledTwice).to.be.true;
+      expect(consoleWarnMock.args[0][0]).to.equal('Waiting for "firstForm" to unload, before rendering "secondForm".');
+      expect(consoleWarnMock.args[1][0]).to.equal('Unload Timeout: Forcing unload of "firstForm" form.');
+      expect(UserContact.calledOnce).to.be.true;
+      expect(EnketoPrepopulationData.calledOnce).to.be.true;
+      expect(FileReader.utf8.calledTwice).to.be.true;
+      expect(FileReader.utf8.args[0][0]).to.equal('<div>second form</div>');
+      expect(FileReader.utf8.args[1][0]).to.equal(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+      expect(enketoInit.calledOnce).to.be.true;
+      expect(form.editStatus).to.be.false;
+      expect(dbGetAttachment.calledTwice).to.be.true;
+      expect(dbGetAttachment.args[0]).to.have.members([ 'form:secondForm', 'form.html' ]);
+      expect(dbGetAttachment.args[1]).to.have.members([ 'form:secondForm', 'model.xml' ]);
     });
   });
 
