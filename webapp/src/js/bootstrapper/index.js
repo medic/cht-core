@@ -64,8 +64,8 @@
 
         if (statusCode && statusCode === 401) {
           throw remote;
-        } 
-        
+        }
+
         if (statusCode && statusCode !== 401) {
           console.warn('Error fetching users-info - ignoring', remote);
         }
@@ -102,6 +102,41 @@
   const setReplicationId = (POUCHDB_OPTIONS, localDb) => {
     return localDb.id().then(id => {
       POUCHDB_OPTIONS.remote_headers['medic-replication-id'] = id;
+    });
+  };
+
+  const initialReplicationNew = async (localDb, remoteDb) => {
+    setUiStatus('LOAD_APP');
+    const dbSyncStartTime = Date.now();
+    const dbSyncStartData = getDataUsage();
+
+    setUiStatus('FETCH_INFO', { count: localDocCount, total: remoteDocCount });
+    const res = await utils.fetchJSON('/initial-replication');
+    await localDb.bulkDocs({ docs: res.docs });
+
+    const replicator = localDb.replicate.from(remoteDb, {
+      live: false,
+      retry: false,
+      heartbeat: 10000,
+      timeout: 1000 * 60 * 10, // try for ten minutes then give up,
+      query_params: { initial_replication: true },
+      since: res.last_seq,
+    });
+
+    replicator
+      .on('change', function(info) {
+        console.log('initialReplication()', 'change', info);
+        setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
+      });
+
+    return replicator.then(() => {
+      const duration = Date.now() - dbSyncStartTime;
+      console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
+      if (dbSyncStartData) {
+        const dbSyncEndData = getDataUsage();
+        const rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
+        console.info('Initial sync received ' + rx + 'B of data');
+      }
     });
   };
 

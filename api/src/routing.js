@@ -655,6 +655,14 @@ app.all(
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
+const initialReplication = require('./controllers/initial-replication');
+app.get(
+  '/initial-replication',
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  jsonQueryParser,
+  initialReplication.request,
+);
 
 const metaPathPrefix = `/${environment.db}-user-*-meta/`;
 
