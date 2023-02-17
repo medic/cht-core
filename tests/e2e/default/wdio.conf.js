@@ -171,8 +171,7 @@ const baseConfig = {
         },
         addConsoleLogs: true,
       },
-    ],
-    'dot'
+    ]
   ],
   //
   // Options to be passed to Mocha.
