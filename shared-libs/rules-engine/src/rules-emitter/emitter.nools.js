@@ -1,5 +1,5 @@
 /**
- * @module rules-processor.nools
+ * @module emitter.nools
  * Encapsulates interactions with the nools library
  * Promisifies the execution of partner "rules" code
  * Ensures memory allocated by nools is freed after each run

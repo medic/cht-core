@@ -1,6 +1,6 @@
 /**
- * @module rules-processor.metal
- * Processes declarative configuration code without nools
+ * @module emitter.javascript
+ * Processes declarative configuration code by executing javascript rules directly
  */
 
 class Contact {

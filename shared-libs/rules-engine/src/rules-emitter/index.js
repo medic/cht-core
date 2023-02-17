@@ -7,7 +7,7 @@
 const nootils = require('cht-nootils');
 const registrationUtils = require('@medic/registration-utils');
 
-const metalEmitter = require('./emitter.metal');
+const javascriptEmitter = require('./emitter.javascript');
 const noolsEmitter = require('./emitter.nools');
 
 let emitter;
@@ -175,5 +175,5 @@ const resolveEmitter = (settings = {}) => {
     return customEmitter;
   }
   
-  return rulesAreDeclarative ? metalEmitter : noolsEmitter;
+  return rulesAreDeclarative ? javascriptEmitter : noolsEmitter;
 };
