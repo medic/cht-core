@@ -94,7 +94,7 @@ jobs:
   tests:
     # needs: build
     name: ${{ matrix.grunt-cmd }}
-    runs-on: macos-latest
+    runs-on: ubuntu-22.04
     env:
       NODE: 16.x
 

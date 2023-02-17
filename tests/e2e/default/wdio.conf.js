@@ -168,6 +168,7 @@ const baseConfig = {
           passed: '[PASS]',
           failed: '[FAIL]',
         },
+        addConsoleLogs: true,
       },
     ]
   ],
