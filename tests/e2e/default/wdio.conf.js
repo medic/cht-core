@@ -5,7 +5,7 @@ const chai = require('chai');
 chai.use(require('chai-exclude'));
 
 const constants = require('../../constants');
-const utils = require('../../utils');
+//const utils = require('../../utils');
 const fileDownloadUtils = require('../../utils/file-download');
 const browserUtils = require('../../utils/browser');
 
@@ -278,12 +278,12 @@ const baseConfig = {
   /**
    * Function to be executed before a test (in Mocha/Jasmine) starts.
    */
-  beforeTest: async (test) => {
-    testTile = test.title;
-    const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
-    fs.appendFileSync(browserLogPath, title);
-    await utils.apiLogTestStart(testTile);
-  },
+  // beforeTest: async (test) => {
+  //   testTile = test.title;
+  //   const title = `~~~~~~~~~~~~~ ${testTile} ~~~~~~~~~~~~~~~~~~~~~~\n`;
+  //   fs.appendFileSync(browserLogPath, title);
+  //   await utils.apiLogTestStart(testTile);
+  // },
   /**
    * Hook that gets executed _before_ a hook within the suite starts (e.g. runs before calling
    * beforeEach in Mocha)
@@ -311,7 +311,7 @@ const baseConfig = {
     if (passed === false) {
       await browser.takeScreenshot();
     }
-    await utils.apiLogTestEnd(test.title);
+    //await utils.apiLogTestEnd(test.title);
   },
 
   /**
@@ -337,14 +337,14 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {Array.<String>} specs List of spec file paths that ran
    */
-  after: async () => {
-    // Replaces After hook in test file with a common clean up
-    const users = await utils.getCreatedUsers();
-    if (users.length) {
-      await utils.deleteUsers(users);
-    }
-    await utils.revertDb([/^form:/], true);
-  },
+  // after: async () => {
+  //   // Replaces After hook in test file with a common clean up
+  //   const users = await utils.getCreatedUsers();
+  //   if (users.length) {
+  //     //await utils.deleteUsers(users);
+  //   }
+  //   //await utils.revertDb([/^form:/], true);
+  // },
   /**
    * Gets executed right after terminating the webdriver session.
    * @param {Object} config wdio configuration object
@@ -361,9 +361,9 @@ const baseConfig = {
    * @param {Array.<Object>} capabilities list of capabilities details
    * @param {<Object>} results object containing test results
    */
-  onComplete: async () => {
+  onComplete:  () => {
     fileDownloadUtils.deleteDownloadDirectory();
-    await utils.tearDownServices();
+    //await utils.tearDownServices();
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');
     const generation = allure(['generate', 'allure-results', '--clean']);
