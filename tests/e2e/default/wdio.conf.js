@@ -161,7 +161,15 @@ const baseConfig = {
       outputDir: ALLURE_OUTPUT,
       disableWebdriverStepsReporting: true
     }],
-    'spec',
+    [
+      'spec',
+      {
+        symbols: {
+          passed: '[PASS]',
+          failed: '[FAIL]',
+        },
+      },
+    ]
   ],
   //
   // Options to be passed to Mocha.
