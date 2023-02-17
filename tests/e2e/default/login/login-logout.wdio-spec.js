@@ -23,6 +23,6 @@ describe('Login and logout tests', () => {
     // expect(await (await modalPage.body()).getText()).to.equal('Your session has expired, please login to continue.');
     // await (await modalPage.submit()).click();
     const url = await browser.url('https://webdriver.io');
-    expect(await url).to.equal('https://webdriver.io');
+    expect(await url()).to.equal('https://webdriver.io');
   });
 });
