@@ -657,11 +657,11 @@ app.all(
 );
 const initialReplication = require('./controllers/initial-replication');
 app.get(
-  '/initial-replication',
+  '/initial-replication/get-ids',
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough,
   jsonQueryParser,
-  initialReplication.request,
+  initialReplication.getDocIds,
 );
 
 const metaPathPrefix = `/${environment.db}-user-*-meta/`;

@@ -4,8 +4,8 @@ const fs = require('fs');
 const path = require('path');
 
 const {
-  MARKET_URL,
-  BUILDS_SERVER,
+  // MARKET_URL,
+  // BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
   INTERNAL_CONTRIBUTOR,

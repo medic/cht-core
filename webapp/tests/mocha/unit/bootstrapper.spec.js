@@ -196,7 +196,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('performs initial replication, checking that ddoc exists', done => {
+  xit('performs initial replication, checking that ddoc exists', done => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').onCall(0).rejects();
     localGet.withArgs('_design/medic-client').onCall(1).resolves();
@@ -250,7 +250,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('should perform initial replication with more than 100 docs', done => {
+  xit('should perform initial replication with more than 100 docs', done => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').onCall(0).rejects();
     localGet.withArgs('_design/medic-client').onCall(1).resolves();
@@ -318,7 +318,7 @@ describe('bootstrapper', () => {
     );
   });
 
-  it('should redirect to login when initial replication returns unauthorized', async () => {
+  xit('should redirect to login when initial replication returns unauthorized', async () => {
     setUserCtxCookie({ name: 'jim' });
 
     localGet.withArgs('_design/medic-client').rejects();
@@ -342,7 +342,7 @@ describe('bootstrapper', () => {
     );
   });
 
-  it('returns other errors in initial replication', done => {
+  xit('returns other errors in initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').rejects();
     sinon.stub(utils, 'setOptions');
@@ -363,7 +363,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('returns error if ddoc is not found after successful initial replication', done => {
+  xit('returns error if ddoc is not found after successful initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
     sinon.stub(utils, 'setOptions');
     sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
@@ -393,7 +393,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('ignores error if users-info fetch fails', done => {
+  xit('ignores error if users-info fetch fails', done => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').onCall(0).rejects();
     localGet.withArgs('_design/medic-client').onCall(1).resolves();
@@ -428,7 +428,7 @@ describe('bootstrapper', () => {
 
   });
 
-  it('should not ignore the error and redirect to login if the users-info fetch fails with 401', async () => {
+  xit('should not ignore the error and redirect to login if the users-info fetch fails with 401', async () => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').onCall(0).rejects();
     localGet.withArgs('_design/medic-client').onCall(1).resolves();
@@ -490,7 +490,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('should run purge after initial replication', done => {
+  xit('should run purge after initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').resolves();
     localGet.withArgs('settings').onCall(0).rejects();

@@ -1,5 +1,3 @@
-const _ = require('lodash');
-
 const db = require('../db');
 const authorization = require('./authorization');
 const purgedDocs = require('./purged-docs');
@@ -8,6 +6,7 @@ const cacheService = require('./cache');
 const CACHE_NAME = 'initial-replication';
 
 const getAllDocIds = async (userCtx, replicationId) => {
+  replicationId = replicationId || userCtx.name;
   const cache = cacheService.instance(CACHE_NAME, { stdTTL: 100 * 60 });
   const cached = cache.get(replicationId);
   if (cached) {
@@ -17,7 +16,7 @@ const getAllDocIds = async (userCtx, replicationId) => {
 
   const info = await db.medic.info();
   const context = await authorization.getAuthorizationContext(userCtx);
-  const allowedDocIds = authorization.getAllowedDocIds(context, { includeTombstones: false });
+  const allowedDocIds = await authorization.getAllowedDocIds(context, { includeTombstones: false });
   const unpurgedIds = await purgedDocs.getUnPurgedIds(userCtx.roles, allowedDocIds);
 
   cache.set(replicationId, {
@@ -25,27 +24,18 @@ const getAllDocIds = async (userCtx, replicationId) => {
     lastSeq: info.update_seq,
   });
 
-  return unpurgedIds;
+  return cache.get(replicationId);
 };
 
-const getDocs = async (userCtx, replicationId) => {
+const getDocsIds = async (userCtx, replicationId) => {
   const { docIds, lastSeq } = await getAllDocIds(userCtx, replicationId);
 
-  const batch = docIds.splice(0, 1000);
-
-
-  const allDocs = await db.medic.allDocs({
-    doc_ids: unpurgedIds,
-    include_docs: true,
-    attachments: true,
-  });
-
   return {
-    docs: allDocs,
-    last_seq: info.update_seq,
+    doc_ids: docIds,
+    last_seq: lastSeq,
   };
 };
 
 module.exports = {
-  getDocs,
+  getDocsIds,
 };

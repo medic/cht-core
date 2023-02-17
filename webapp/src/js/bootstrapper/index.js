@@ -6,11 +6,12 @@
   const translator = require('./translator');
   const utils = require('./utils');
   const purger = require('./purger');
+  const initialReplicationLib = require('./initial-replication');
 
   const ONLINE_ROLE = 'mm-online';
 
-  let remoteDocCount;
-  let localDocCount;
+  // let remoteDocCount;
+  // let localDocCount;
 
   const getUserCtx = function() {
     let userCtx;
@@ -52,7 +53,7 @@
     return getLocalDbName(dbInfo, username) + '-meta';
   };
 
-  const docCountPoll = (localDb) => {
+  /*const docCountPoll = (localDb) => {
     setUiStatus('POLL_REPLICATION');
     return Promise
       .all([
@@ -97,7 +98,7 @@
           });
         }
       });
-  };
+  };*/
 
   const setReplicationId = (POUCHDB_OPTIONS, localDb) => {
     return localDb.id().then(id => {
@@ -105,42 +106,7 @@
     });
   };
 
-  const initialReplicationNew = async (localDb, remoteDb) => {
-    setUiStatus('LOAD_APP');
-    const dbSyncStartTime = Date.now();
-    const dbSyncStartData = getDataUsage();
-
-    setUiStatus('FETCH_INFO', { count: localDocCount, total: remoteDocCount });
-    const res = await utils.fetchJSON('/initial-replication');
-    await localDb.bulkDocs({ docs: res.docs });
-
-    const replicator = localDb.replicate.from(remoteDb, {
-      live: false,
-      retry: false,
-      heartbeat: 10000,
-      timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-      query_params: { initial_replication: true },
-      since: res.last_seq,
-    });
-
-    replicator
-      .on('change', function(info) {
-        console.log('initialReplication()', 'change', info);
-        setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
-      });
-
-    return replicator.then(() => {
-      const duration = Date.now() - dbSyncStartTime;
-      console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
-      if (dbSyncStartData) {
-        const dbSyncEndData = getDataUsage();
-        const rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
-        console.info('Initial sync received ' + rx + 'B of data');
-      }
-    });
-  };
-
-  const initialReplication = function(localDb, remoteDb) {
+  /*const initialReplication = function(localDb, remoteDb) {
     setUiStatus('LOAD_APP');
     const dbSyncStartTime = Date.now();
     const dbSyncStartData = getDataUsage();
@@ -169,13 +135,13 @@
         console.info('Initial sync received ' + rx + 'B of data');
       }
     });
-  };
+  };*/
 
-  const getDataUsage = function() {
+  /*const getDataUsage = function() {
     if (window.medicmobile_android && typeof window.medicmobile_android.getDataUsage === 'function') {
       return JSON.parse(window.medicmobile_android.getDataUsage());
     }
-  };
+  };*/
 
   const redirectToLogin = (dbInfo) => {
     console.warn('User must reauthenticate');
@@ -271,8 +237,8 @@
         if (isInitialReplicationNeeded) {
           const replicationStarted = performance.now();
           // Polling the document count from the db.
-          return docCountPoll(localDb)
-            .then(() => initialReplication(localDb, remoteDb))
+          return initialReplicationLib
+            .replicate(setUiStatus, remoteDb, localDb)
             .then(testReplicationNeeded)
             .then(isReplicationStillNeeded => {
               if (isReplicationStillNeeded) {
@@ -280,6 +246,16 @@
               }
             })
             .then(() => window.startupTimes.replication = performance.now() - replicationStarted);
+
+          /*return docCountPoll(localDb)
+            .then(() => initialReplication(localDb, remoteDb))
+            .then(testReplicationNeeded)
+            .then(isReplicationStillNeeded => {
+              if (isReplicationStillNeeded) {
+                throw new Error('Initial replication failed');
+              }
+            })
+            .then(() => window.startupTimes.replication = performance.now() - replicationStarted);*/
         }
       })
       .then(() => {
