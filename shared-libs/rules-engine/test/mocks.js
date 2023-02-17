@@ -1,5 +1,5 @@
 const rewire = require('rewire');
-const chtSettingsDoc = require('../../../config/default/app_settings.json');
+const defaultConfigSettingsDoc = require('../../../config/default/app_settings.json');
 
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
 
@@ -100,16 +100,23 @@ module.exports = {
     }, assigned);
   },
 
-  chtSettingsDoc,
+  defaultConfigSettingsDoc,
   chtDocs,
 
-  engineSettings: (assign, noolsTransformer = productionNoolsTemplate) => {
-    const activeRules = (assign && assign.rules) || chtSettingsDoc.tasks.rules;
-    const rules = !assign || !assign.rulesAreDeclarative ? noolsTransformer(activeRules) : activeRules;
+  engineSettings: (assign, addNoolsBoilerplate = productionNoolsTemplate) => {
+    const determineRules = () => {
+      const useDeclarative = assign && assign.rulesAreDeclarative;
+      if (assign && assign.rules) {
+        return useDeclarative ? assign.rules : addNoolsBoilerplate(assign.rules);
+      }
+
+      const defaultRules = defaultConfigSettingsDoc.tasks.rules;
+      return useDeclarative ? removeNoolsBoilerplate(defaultRules) : defaultRules;
+    };
 
     const defaults = {
-      targets: chtSettingsDoc.tasks.targets.items,
-      taskSchedules: chtSettingsDoc.tasks.schedules,
+      targets: defaultConfigSettingsDoc.tasks.targets.items,
+      taskSchedules: defaultConfigSettingsDoc.tasks.schedules,
       rulesAreDeclarative: false,
       enableTasks: true,
       enableTargets: true,
@@ -118,7 +125,7 @@ module.exports = {
       monthStartDate: 1,
     };
 
-    return Object.assign(defaults, assign, { rules });
+    return Object.assign(defaults, assign, { rules: determineRules() });
   },
 
   RestorableRulesStateStore: () => restorable('../src/rules-state-store', ['state', 'currentUser', 'onStateChange']),
@@ -128,4 +135,15 @@ const restorable = (path, attributes = []) => {
   const mod = rewire(path);
   mod.restore = () => attributes.forEach(attr => mod.__set__(attr, undefined));
   return mod;
+};
+
+const removeNoolsBoilerplate = rules => {
+  const noolsRuleLangaugeRegex = /^define.*\} then \{ /s;
+  if (noolsRuleLangaugeRegex.test(rules)) {
+    let result = rules.replace(noolsRuleLangaugeRegex, '');
+    result = result.substring(0, result.length - '\n};'.length);
+    return result;
+  }
+
+  return rules;
 };

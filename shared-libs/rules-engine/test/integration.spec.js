@@ -1,7 +1,7 @@
 const chai = require('chai');
 const moment = require('moment');
 const chaiExclude = require('chai-exclude');
-const { MS_IN_DAY, simpleNoolsTemplate, engineSettings, chtSettingsDoc } = require('./mocks');
+const { MS_IN_DAY, simpleNoolsTemplate, engineSettings, defaultConfigSettingsDoc } = require('./mocks');
 
 const memdownMedic = require('@medic/memdown');
 const nools = require('nools');
@@ -142,7 +142,7 @@ describe(`Rules Engine Integration Tests`, () => {
         expect(db.query.callCount).to.eq(expectedQueriesForFreshData.length + 1);
 
         const targets = await rulesEngine.fetchTargets();
-        expect(targets.length).to.eq(chtSettingsDoc.tasks.targets.items.length);
+        expect(targets.length).to.eq(defaultConfigSettingsDoc.tasks.targets.items.length);
         expect(targets.some(t => t.total > 0)).to.be.false;
       });
 
