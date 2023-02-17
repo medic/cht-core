@@ -4,8 +4,8 @@ const fs = require('fs');
 const path = require('path');
 
 const {
-  // MARKET_URL,
-  // BUILDS_SERVER,
+  MARKET_URL,
+  BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
   INTERNAL_CONTRIBUTOR,
@@ -15,7 +15,7 @@ const DEV = !BUILD_NUMBER;
 
 const buildUtils = require('./scripts/build');
 const buildVersions = require('./scripts/build/versions');
-// const couchConfig = buildUtils.getCouchConfig();
+const couchConfig = buildUtils.getCouchConfig();
 
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 
@@ -58,7 +58,7 @@ module.exports = function(grunt) {
         }
       }
     },
-    /*'couch-push': {
+    'couch-push': {
       localhost: {
         options: {
           user: couchConfig.username,
@@ -94,7 +94,7 @@ module.exports = function(grunt) {
           },
         ],
       }
-    },*/
+    },
     browserify: {
       options: {
         browserifyOptions: {
