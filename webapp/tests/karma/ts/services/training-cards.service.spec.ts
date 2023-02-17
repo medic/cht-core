@@ -30,7 +30,7 @@ describe('TrainingCardsService', () => {
     dbService = { get: () => localDb };
     globalActions = { setTrainingCardFormId: sinon.stub(GlobalActions.prototype, 'setTrainingCardFormId') };
     xmlFormsService = { subscribe: sinon.stub() };
-    modalService = { show: sinon.stub() };
+    modalService = { show: sinon.stub().resolves() };
     sessionService = {
       userCtx: sinon.stub(),
       hasRole: sinon.spy(SessionService.prototype, 'hasRole'),

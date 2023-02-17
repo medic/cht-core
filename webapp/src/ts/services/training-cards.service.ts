@@ -94,7 +94,9 @@ export class TrainingCardsService {
       }
 
       this.globalActions.setTrainingCardFormId(firstChronologicalTrainingCard.code);
-      this.modalService.show(TrainingCardsComponent, { backdrop: 'static' });
+      this.modalService
+        .show(TrainingCardsComponent, { backdrop: 'static', keyboard: false })
+        .catch(() => {});
 
     } catch (error) {
       const message = 'Error showing training cards modal.';
