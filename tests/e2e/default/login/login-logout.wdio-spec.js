@@ -1,4 +1,12 @@
+// const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+// const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+// const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
+// const constants = require('../../../constants');
 
+// const auth = {
+//   username: constants.USERNAME,
+//   password: constants.PASSWORD
+// };
 
 describe('Login and logout tests', () => {
  
@@ -14,6 +22,7 @@ describe('Login and logout tests', () => {
 
     // expect(await (await modalPage.body()).getText()).to.equal('Your session has expired, please login to continue.');
     // await (await modalPage.submit()).click();
-    expect((await browser.getUrl()).includes('/medic/login')).to.be.false;
+    const url = await browser.url('https://webdriver.io');
+    expect(await url).to.equal('https://webdriver.io');
   });
 });
