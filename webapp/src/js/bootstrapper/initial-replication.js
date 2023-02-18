@@ -43,7 +43,7 @@ const getDocs = async (setUiStatus, remoteDb, localDb) => {
 const writeCheckpointer = async (setUiStatus, remoteDb, localDb) => {
   const lastSeq = window.localStorage.getItem(LAST_SEQ_KEY);
 
-  const replicator = localDb.replicate.from(remoteDb, {
+  await localDb.replicate.from(remoteDb, {
     live: false,
     retry: false,
     heartbeat: 10000,
@@ -52,7 +52,10 @@ const writeCheckpointer = async (setUiStatus, remoteDb, localDb) => {
     since: lastSeq,
   });
 
-  return replicator;
+  const localInfo = await localDb.info();
+  await localDb.replicate.to(remoteDb, {
+    since: localInfo.update_seq,
+  });
 };
 
 const replicate = async (setUiStatus, remoteDb, localDb) => {
