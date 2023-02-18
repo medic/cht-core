@@ -10,9 +10,6 @@
 
   const ONLINE_ROLE = 'mm-online';
 
-  // let remoteDocCount;
-  // let localDocCount;
-
   const getUserCtx = function() {
     let userCtx;
     let locale;
@@ -53,95 +50,11 @@
     return getLocalDbName(dbInfo, username) + '-meta';
   };
 
-  /*const docCountPoll = (localDb) => {
-    setUiStatus('POLL_REPLICATION');
-    return Promise
-      .all([
-        localDb.allDocs({ limit: 1 }),
-        utils.fetchJSON('/api/v1/users-info')
-      ])
-      .then(([ local, remote ]) => {
-        const statusCode = remote && remote.code;
-
-        if (statusCode && statusCode === 401) {
-          throw remote;
-        }
-
-        if (statusCode && statusCode !== 401) {
-          console.warn('Error fetching users-info - ignoring', remote);
-        }
-
-        localDocCount = local.total_rows;
-        remoteDocCount = remote.total_docs;
-
-        if (remote.warn) {
-          return new Promise(resolve => {
-            const translateParams = { count: remote.warn_docs, limit: remote.limit };
-            const errorMessage = translator.translate('TOO_MANY_DOCS', translateParams);
-            const continueBtn = translator.translate('CONTINUE');
-            const abort = translator.translate('ABORT');
-            const content = `
-            <div>
-              <p class="alert alert-warning">${errorMessage}</p>
-              <a id="btn-continue" class="btn btn-primary pull-left" href="#">${continueBtn}</a>
-              <a id="btn-abort" class="btn btn-danger pull-right" href="#">${abort}</a>
-            </div>`;
-
-            $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
-            $('.bootstrap-layer .error').show();
-            $('.bootstrap-layer .error').html(content);
-            $('#btn-continue').click(() => resolve());
-            $('#btn-abort').click(() => {
-              document.cookie = 'login=force;path=/';
-              window.location.reload(false);
-            });
-          });
-        }
-      });
-  };*/
-
   const setReplicationId = (POUCHDB_OPTIONS, localDb) => {
     return localDb.id().then(id => {
       POUCHDB_OPTIONS.remote_headers['medic-replication-id'] = id;
     });
   };
-
-  /*const initialReplication = function(localDb, remoteDb) {
-    setUiStatus('LOAD_APP');
-    const dbSyncStartTime = Date.now();
-    const dbSyncStartData = getDataUsage();
-    setUiStatus('FETCH_INFO', { count: localDocCount, total: remoteDocCount });
-
-    const replicator = localDb.replicate.from(remoteDb, {
-      live: false,
-      retry: false,
-      heartbeat: 10000,
-      timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-      query_params: { initial_replication: true }
-    });
-
-    replicator
-      .on('change', function(info) {
-        console.log('initialReplication()', 'change', info);
-        setUiStatus('FETCH_INFO', { count: info.docs_read + localDocCount || '?', total: remoteDocCount });
-      });
-
-    return replicator.then(() => {
-      const duration = Date.now() - dbSyncStartTime;
-      console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
-      if (dbSyncStartData) {
-        const dbSyncEndData = getDataUsage();
-        const rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
-        console.info('Initial sync received ' + rx + 'B of data');
-      }
-    });
-  };*/
-
-  /*const getDataUsage = function() {
-    if (window.medicmobile_android && typeof window.medicmobile_android.getDataUsage === 'function') {
-      return JSON.parse(window.medicmobile_android.getDataUsage());
-    }
-  };*/
 
   const redirectToLogin = (dbInfo) => {
     console.warn('User must reauthenticate');
@@ -193,10 +106,6 @@
     $('.bootstrap-layer .error').show();
   };
 
-  const getDdoc = localDb => localDb.get('_design/medic-client');
-  const getSettingsDoc = localDb => localDb.get('settings');
-
-
   /* pouch db set up function */
   module.exports = function(POUCHDB_OPTIONS, callback) {
 
@@ -222,40 +131,27 @@
 
     const localMetaDb = window.PouchDB(getLocalMetaDbName(dbInfo, userCtx.name), POUCHDB_OPTIONS.local);
 
-    const testReplicationNeeded = () => Promise
-      .all([getDdoc(localDb), getSettingsDoc(localDb)])
-      .then(() => false)
-      .catch(() => true);
-
-    let isInitialReplicationNeeded;
     Promise
-      .all([swRegistration, testReplicationNeeded(), setReplicationId(POUCHDB_OPTIONS, localDb)])
-      .then(resolved => {
+      .all([
+        initialReplicationLib.isReplicationNeeded(localDb, userCtx),
+        swRegistration,
+        setReplicationId(POUCHDB_OPTIONS, localDb)
+      ])
+      .then(([isInitialReplicationNeeded]) => {
         utils.setOptions(POUCHDB_OPTIONS);
-        isInitialReplicationNeeded = !!resolved[1];
 
         if (isInitialReplicationNeeded) {
           const replicationStarted = performance.now();
           // Polling the document count from the db.
           return initialReplicationLib
             .replicate(setUiStatus, remoteDb, localDb)
-            .then(testReplicationNeeded)
+            .then(() => initialReplicationLib.isReplicationNeeded(localDb, userCtx))
             .then(isReplicationStillNeeded => {
               if (isReplicationStillNeeded) {
                 throw new Error('Initial replication failed');
               }
             })
             .then(() => window.startupTimes.replication = performance.now() - replicationStarted);
-
-          /*return docCountPoll(localDb)
-            .then(() => initialReplication(localDb, remoteDb))
-            .then(testReplicationNeeded)
-            .then(isReplicationStillNeeded => {
-              if (isReplicationStillNeeded) {
-                throw new Error('Initial replication failed');
-              }
-            })
-            .then(() => window.startupTimes.replication = performance.now() - replicationStarted);*/
         }
       })
       .then(() => {
