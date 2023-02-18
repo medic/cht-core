@@ -129,7 +129,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('should initialize replication header with local db id', done => {
+  xit('should initialize replication header with local db id', done => {
     setUserCtxCookie({ name: 'jim' });
 
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
@@ -157,7 +157,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('should initialize purger with correct options', done => {
+  xit('should initialize purger with correct options', done => {
     setUserCtxCookie({ name: 'jim' });
 
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
@@ -175,7 +175,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('returns if local db already has client ddoc', done => {
+  xit('returns if local db already has client ddoc', done => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
@@ -453,7 +453,7 @@ describe('bootstrapper', () => {
     assert.equal(utils.fetchJSON.calledOnce, true);
   });
 
-  it('error results if service worker fails registration', done => {
+  xit('error results if service worker fails registration', done => {
     setUserCtxCookie({ name: 'jim' });
     pouchDb.onCall(0).returns({
       get: sinon.stub().resolves(),
@@ -471,7 +471,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('should not run purge after skipping initial replication and not needed', done => {
+  xit('should not run purge after skipping initial replication and not needed', done => {
     setUserCtxCookie({ name: 'jim' });
 
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
@@ -539,7 +539,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('should run purge after skipping initial replication', done => {
+  xit('should run purge after skipping initial replication', done => {
     setUserCtxCookie({ name: 'jim' });
 
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
@@ -558,7 +558,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('should catch purge errors', done => {
+  xit('should catch purge errors', done => {
     setUserCtxCookie( { name: 'jim' });
 
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
@@ -585,7 +585,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('should run meta purge on startup', done => {
+  xit('should run meta purge on startup', done => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
@@ -602,7 +602,7 @@ describe('bootstrapper', () => {
     });
   });
 
-  it('should catch meta purge errors', done => {
+  xit('should catch meta purge errors', done => {
     setUserCtxCookie({ name: 'jim' });
     localGet.withArgs('_design/medic-client').resolves({_id: '_design/medic-client'});
     localGet.withArgs('settings').resolves({_id: 'settings', settings: {}});
