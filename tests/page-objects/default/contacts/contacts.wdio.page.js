@@ -176,7 +176,7 @@ const addPerson = async ({
   role: roleValue = 'chw',
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
-} = {}) => {
+} = {}, waitForSentinel = true) => {
   const type = 'person';
   await (await actionResourceIcon(type)).waitForDisplayed();
   await (await actionResourceIcon(type)).click();
@@ -189,7 +189,9 @@ const addPerson = async ({
   await (await externalIdField(type)).addValue(externalIDValue);
   await (await notes(type)).addValue(notesValue);
   await submitForm();
-  await sentinelUtils.waitForSentinel();
+  if (waitForSentinel) {
+    await sentinelUtils.waitForSentinel();
+  }
   await (await contactCardIcon(type)).waitForDisplayed();
   return (await contactCard()).getText();
 };

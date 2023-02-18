@@ -6,7 +6,7 @@ const NAME = 'generate_shortcode_on_contacts';
 module.exports = {
   name: NAME,
   asynchronousOnly: true,
-  filter: doc => {
+  filter: ({ doc }) => {
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
     if (!contactType) {
       return;

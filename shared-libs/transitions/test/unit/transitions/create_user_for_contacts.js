@@ -151,7 +151,7 @@ describe('create_user_for_contacts', () => {
     it('includes person contact doc with a replaced status of READY', () => {
       const doc = getReplacedContact('READY');
 
-      expect(transition.filter(doc)).to.be.true;
+      expect(transition.filter({ doc })).to.be.true;
       assertGetContactType(doc);
     });
 
@@ -160,14 +160,14 @@ describe('create_user_for_contacts', () => {
       doc.user_for_contact.replace.a_user = { status: 'COMPLETE' };
       doc.user_for_contact.replace.another_user = { status: 'PENDING' };
 
-      expect(transition.filter(doc)).to.be.true;
+      expect(transition.filter({ doc })).to.be.true;
       assertGetContactType(doc);
     });
 
     it(`includes new person contact doc with the create flag set to 'true'`, () => {
       const doc = getCreatedContact();
 
-      expect(transition.filter(doc, { initial_replication_date: 1, latest_replication_date: 1 })).to.be.true;
+      expect(transition.filter({ doc, initialProcessing: true })).to.be.true;
       assertGetContactType(doc);
     });
 
@@ -177,7 +177,7 @@ describe('create_user_for_contacts', () => {
         ...getReplacedContact('READY')
       };
 
-      expect(transition.filter(doc, { initial_replication_date: 1, latest_replication_date: 1 })).to.be.true;
+      expect(transition.filter({ doc, initialProcessing: true })).to.be.true;
       assertGetContactType(doc);
     });
 
@@ -185,7 +185,7 @@ describe('create_user_for_contacts', () => {
       const doc = getReplacedContact('READY');
       contactTypeUtils.getContactType.returns(undefined);
 
-      expect(transition.filter(doc)).to.be.false;
+      expect(transition.filter({ doc, initialProcessing: true })).to.be.false;
       assertGetContactType(doc);
     });
 
@@ -193,12 +193,12 @@ describe('create_user_for_contacts', () => {
       const doc = getReplacedContact('READY');
       contactTypeUtils.getContactType.returns({ person: false });
 
-      expect(transition.filter(doc)).to.be.false;
+      expect(transition.filter({ doc, initialProcessing: true })).to.be.false;
       assertGetContactType(doc);
     });
 
     it('excludes person contacts which do not have user_for_contact data', () => {
-      expect(transition.filter(ORIGINAL_CONTACT)).to.be.false;
+      expect(transition.filter({ doc: ORIGINAL_CONTACT, initialProcessing: true })).to.be.false;
       assertGetContactType(ORIGINAL_CONTACT);
     });
 
@@ -210,7 +210,7 @@ describe('create_user_for_contacts', () => {
     ].forEach(user_for_contact => {
       it('excludes person contacts which have user_for_contact data, but are not creating or replacing a user', () => {
         const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
-        expect(transition.filter(originalContact)).to.be.false;
+        expect(transition.filter({ doc: originalContact, initialProcessing: true })).to.be.false;
         assertGetContactType(originalContact);
       });
     });
@@ -218,7 +218,7 @@ describe('create_user_for_contacts', () => {
     it('excludes replaced contacts which do not have a READY status', () => {
       const doc = getReplacedContact('PENDING');
 
-      expect(transition.filter(doc)).to.be.false;
+      expect(transition.filter({ doc })).to.be.false;
       assertGetContactType(doc);
     });
 
@@ -227,7 +227,7 @@ describe('create_user_for_contacts', () => {
       doc.user_for_contact.replace.a_user = { status: 'COMPLETE' };
       doc.user_for_contact.replace.another_user = { status: 'ERROR' };
 
-      expect(transition.filter(doc)).to.be.false;
+      expect(transition.filter({ doc })).to.be.false;
       assertGetContactType(doc);
     });
 
@@ -235,7 +235,7 @@ describe('create_user_for_contacts', () => {
       const doc = getCreatedContact();
       hasRun.returns(true);
 
-      expect(transition.filter(doc, { initial_replication_date: 1, latest_replication_date: 1 })).to.be.false;
+      expect(transition.filter({ doc, initialProcessing: true })).to.be.false;
       assertGetContactType(doc);
     });
 
@@ -243,7 +243,7 @@ describe('create_user_for_contacts', () => {
       const doc = getCreatedContact();
       hasRun.returns(false);
 
-      expect(transition.filter(doc, { initial_replication_date: 1, latest_replication_date: 2 })).to.be.false;
+      expect(transition.filter({ doc, initialProcessing: false })).to.be.false;
       assertGetContactType(doc);
     });
   });
@@ -323,7 +323,7 @@ describe('create_user_for_contacts', () => {
     it(`creates user for new contact with create flag of 'true' and multiple roles`, async () => {
       const doc = getCreatedContact({ roles: ['nurse', 'chw'], role: null });
 
-      const result = await transition.onMatch({ doc, info: {} });
+      const result = await transition.onMatch({ doc, initialProcessing: true });
       expect(result).to.be.true;
 
       expectUsersCreated([{ contact: doc, user: doc }]);
@@ -333,7 +333,7 @@ describe('create_user_for_contacts', () => {
     it(`creates user for new contact with create flag of 'true' and single role`, async () => {
       const doc = getCreatedContact({ role: 'chw' });
 
-      const result = await transition.onMatch({ doc, info: {} });
+      const result = await transition.onMatch({ doc, initialProcessing: true });
       expect(result).to.be.true;
 
       expectUsersCreated([{ contact: doc, user: { roles: [doc.role] } }]);
@@ -345,7 +345,7 @@ describe('create_user_for_contacts', () => {
       const doc = getCreatedContact();
 
       try {
-        await transition.onMatch({ doc, info: {} });
+        await transition.onMatch({ doc, initialProcessing: true });
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Server error');
@@ -358,7 +358,7 @@ describe('create_user_for_contacts', () => {
       const doc = getCreatedContact({ name: null });
 
       try {
-        await transition.onMatch({ doc, info: {} });
+        await transition.onMatch({ doc, initialProcessing: true });
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Contact [${doc._id}] must have a name.`);
@@ -371,7 +371,7 @@ describe('create_user_for_contacts', () => {
       const doc = getCreatedContact({ role: null });
 
       try {
-        await transition.onMatch({ doc, info: {} });
+        await transition.onMatch({ doc, initialProcessing: true });
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property.`);
@@ -385,7 +385,7 @@ describe('create_user_for_contacts', () => {
       const doc = getCreatedContact();
 
       try {
-        await transition.onMatch({ doc, info: {} });
+        await transition.onMatch({ doc, initialProcessing: true });
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Server Error');
@@ -399,7 +399,7 @@ describe('create_user_for_contacts', () => {
       const doc = getCreatedContact();
 
       try {
-        await transition.onMatch({ doc, info: {} });
+        await transition.onMatch({ doc, initialProcessing: true });
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Error creating new user: "Invalid phone number"');
@@ -735,7 +735,7 @@ describe('create_user_for_contacts', () => {
       };
       doc.user_for_contact.create = 'true';
 
-      const result = await transition.onMatch({ doc, info: {} });
+      const result = await transition.onMatch({ doc, initialProcessing: true });
       expect(result).to.be.true;
 
       expectInitialDataRetrieved([{ username: ORIGINAL_USER.name, contact: NEW_CONTACT }]);
@@ -757,7 +757,7 @@ describe('create_user_for_contacts', () => {
       doc.user_for_contact.create = 'true';
 
       try {
-        await transition.onMatch({ doc, info: {} });
+        await transition.onMatch({ doc, initialProcessing: true });
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property.`);
@@ -781,7 +781,7 @@ describe('create_user_for_contacts', () => {
       doc.user_for_contact.create = 'true';
 
       try {
-        await transition.onMatch({ doc, info: {} });
+        await transition.onMatch({ doc, initialProcessing: true });
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('No id was provided for the new replacement contact.');
@@ -804,7 +804,7 @@ describe('create_user_for_contacts', () => {
       doc.user_for_contact.create = 'true';
 
       try {
-        await transition.onMatch({ doc, info: {} });
+        await transition.onMatch({ doc, initialProcessing: true });
         expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property., ` +

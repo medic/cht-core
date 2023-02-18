@@ -869,6 +869,7 @@ describe('create_user_for_contacts', () => {
       await utils.updateSettings(getSettings(), 'sentinel');
 
       await utils.saveDoc(NEW_PERSON);
+      await sentinelUtils.waitForSentinel(NEW_PERSON._id);
       const originalContact ={
         role: 'chw',
         user_for_contact: { create: 'true' },

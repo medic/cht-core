@@ -79,8 +79,8 @@ describe('Create user when adding contact', () => {
   const newUsers = [];
 
   const verifyUserCreation = async () => {
-    await sentinelUtils.waitForSentinel();
     const chwContactId = await contactsPage.getCurrentContactId();
+    await sentinelUtils.waitForSentinel();
     const { transitions } = await sentinelUtils.getInfoDoc(chwContactId);
 
     // Transition successful
@@ -111,8 +111,8 @@ describe('Create user when adding contact', () => {
     } else {
       expect(transitions.create_user_for_contacts).to.be.undefined;
     }
-    const finalChwContact = await utils.getDoc(chwContactId);
-    expect(finalChwContact.user_for_contact.create).to.equal('true');
+    const chwContact = await utils.getDoc(chwContactId);
+    expect(chwContact.user_for_contact.create).to.equal('true');
     const userSettings = await utils.getUserSettings({ contactId: chwContactId });
     expect(userSettings).to.be.empty;
   };
@@ -227,5 +227,29 @@ describe('Create user when adding contact', () => {
     const finalChwContact = await utils.getDoc(chwContactId);
     expect(finalChwContact.phone).to.equal('+40755696969');
     await verifyUserNotCreated({ ok: false });
+  });
+
+  it('creates a new user when Sentinel recovers from outage', async () => {
+    await utils.updateSettings(settings, 'sentinel');
+    await utils.stopSentinel();
+
+    await cookieLogin();
+    await commonPage.goToPeople(district._id);
+
+    await contactsPage.addPerson({ name: CONTACT_NAME, phone: '+40755696969' }, false);
+    await contactsPage.editPerson(CONTACT_NAME, { name: 'Edit 1' });
+    await contactsPage.editPerson('Edit 1', { name: 'Edit 2' });
+
+    // Verify user not created
+    const chwContactId = await contactsPage.getCurrentContactId();
+    const { transitions } = await sentinelUtils.getInfoDoc(chwContactId);
+    expect(transitions).to.not.exist;
+    const chwContact = await utils.getDoc(chwContactId);
+    expect(chwContact.user_for_contact.create).to.equal('true');
+    const userSettings = await utils.getUserSettings({ contactId: chwContactId });
+    expect(userSettings).to.be.empty;
+
+    await utils.startSentinel();
+    await verifyUserCreation();
   });
 });

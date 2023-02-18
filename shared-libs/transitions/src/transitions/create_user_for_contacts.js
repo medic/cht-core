@@ -141,9 +141,10 @@ const addUser = async (contact) => {
   delete contact.user_for_contact.create;
 };
 
-const isCreatingUser = (contact, info) => contact.user_for_contact.create === 'true'
-  && !transitionUtils.hasRun(info, NAME)
-  && info.initial_replication_date === info.latest_replication_date;
+const isCreatingUser = ({ doc, info, initialProcessing }) =>
+  doc.user_for_contact.create === 'true'
+  && initialProcessing
+  && !transitionUtils.hasRun(info, NAME);
 const isReplacingUser = contact => contact.user_for_contact.replace && !!Object
   .values(contact.user_for_contact.replace)
   .find(({ status }) => status === USER_CREATION_STATUS.READY);
@@ -169,7 +170,8 @@ module.exports = {
       );
     }
   },
-  filter: (doc, info = {}) => {
+  filter: (change) => {
+    const { doc } = change;
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
     if (
       !contactType
@@ -178,13 +180,13 @@ module.exports = {
     ) {
       return false;
     }
-
-    return Boolean(isCreatingUser(doc, info) || isReplacingUser(doc));
+    return Boolean(isCreatingUser(change) || isReplacingUser(doc));
   },
-  onMatch: async ({ doc, info }) => {
+  onMatch: async (change) => {
     const promises = [];
+    const { doc } = change;
 
-    if (isCreatingUser(doc, info)) {
+    if (isCreatingUser(change)) {
       promises.push(addUser(doc));
     }
 

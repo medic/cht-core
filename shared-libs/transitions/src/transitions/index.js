@@ -52,12 +52,13 @@ const processChange = (change, callback) => {
       change.doc = doc;
       return infodoc.get(change).then(infoDoc => {
         change.info = infoDoc;
+        change.initialProcessing = !infoDoc.transitions;
         // Remove transitions from doc since those
         // will be handled by the info doc(sentinel db) after this
         if (change.doc.transitions) {
           delete change.doc.transitions;
         }
-        applyTransitions(change, callback);
+        module.exports.applyTransitions(change, callback);
       });
     })
     .catch(err => {
@@ -218,7 +219,7 @@ const canRun = ({ key, change, transition }) => {
     !change.deleted &&
     doc &&
     !isRevSame(doc, info) &&
-    transition.filter(doc, info)
+    transition.filter(change)
   );
 };
 
@@ -235,7 +236,17 @@ const finalize = ({ change, results }, callback) => {
     logger.debug(
       `nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`
     );
-    return callback();
+    // info.transitions is how we know if a doc has been processed by Sentinel before. Even if no transitions ran,
+    // we still want to save transitions, so we know it's been processed.
+    return Promise
+      .resolve()
+      .then(() => {
+        if (change.initialProcessing) {
+          return infodoc.saveTransitions(change);
+        }
+      })
+      .then(() => callback())
+      .catch(err => callback(err));
   }
   logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
