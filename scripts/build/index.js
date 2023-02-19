@@ -128,7 +128,7 @@ const saveDockerComposeFiles = (dockerComposeFolder) => {
   };
   const viewClustered = {
     ...view,
-    couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
+    couchdb_servers: 'couchdb-1.local,couchdb-2.local,couchdb-3.local',
   };
 
   const compiledServicesDockerCompose = mustache.render(servicesTemplate, view);
