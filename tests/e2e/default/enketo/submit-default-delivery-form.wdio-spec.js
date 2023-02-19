@@ -280,6 +280,7 @@ describe('Submit Default Delivery Report', () => {
     await deliveryReport.hasVaginalBleeding(true);
     await deliveryReport.hasVaginalDischarge(true);
     await deliveryReport.hasConvulsions(true);
+    await browser.sleep(10);
     await genericForm.nextPage();
 
     // Delivery Outcome
@@ -336,6 +337,7 @@ describe('Submit Default Delivery Report', () => {
     await deliveryReport.hasVaginalBleeding(true);
     await deliveryReport.hasVaginalDischarge(true);
     await deliveryReport.hasConvulsions(true);
+    await browser.sleep(10);
     await genericForm.nextPage();
 
     // Delivery Outcome
