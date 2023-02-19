@@ -225,6 +225,7 @@ describe('Submit Default Delivery Report', () => {
     await deliveryReport.hasVaginalBleeding(false);
     await deliveryReport.hasVaginalDischarge(false);
     await deliveryReport.hasConvulsions(false);
+    await browser.pause(10);
     await genericForm.nextPage();
 
     const noOfAliveBabies = 2;
@@ -280,7 +281,7 @@ describe('Submit Default Delivery Report', () => {
     await deliveryReport.hasVaginalBleeding(true);
     await deliveryReport.hasVaginalDischarge(true);
     await deliveryReport.hasConvulsions(true);
-    await browser.sleep(10);
+    await browser.pause(10);
     await genericForm.nextPage();
 
     // Delivery Outcome
@@ -337,7 +338,7 @@ describe('Submit Default Delivery Report', () => {
     await deliveryReport.hasVaginalBleeding(true);
     await deliveryReport.hasVaginalDischarge(true);
     await deliveryReport.hasConvulsions(true);
-    await browser.sleep(10);
+    await browser.pause(10);
     await genericForm.nextPage();
 
     // Delivery Outcome
