@@ -150,15 +150,64 @@ jobs:
     - name: Install cht-conf
       run:  npm install -g cht-conf
     - run: npm ci --legacy-peer-deps
+# TODO only run on "master" and "push"
+    - name: Fetch allure history
+      uses: actions/checkout@v3
+      with:
+        repository: 'medic/build-history-data'
+        path: 'build-history-data'
+        persist-credentials: false
+    - name: Copy allure history
+      run: |
+        mkdir -p allure-results/history
+        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report/history allure-results | true
     - name: Run tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
+    - name: Fetch allure history
+      if: always()
+      uses: actions/checkout@v3
+      with:
+        repository: 'medic/build-history-data'
+        path: 'build-history-data-new'
+        persist-credentials: false
+    - name: Copy new allure history
+      if: always()
+      run: |
+        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report | true
+    - name: Upload allure report history
+      if: always()
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
+        directory: 'build-history-data-new'
+        repository: 'medic/build-history-data'
+        force: true
+    - name: Fetch report repo
+      if: always()
+      uses: actions/checkout@v3
+      with:
+        repository: 'medic/build-history'
+        path: 'build-history'
+        persist-credentials: false
+    - name: Copy new report
+      if: always()
+      run: |
+        mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}
+        cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }} | true
+    - name: Upload allure report
+      if: always()
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
+        directory: 'build-history'
+        repository: 'medic/build-history'
+        force: true
     - name: Archive Results
       uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.grunt-cmd }}
         path: |
-          allure-results
-          allure-report
           tests/logs
           tests/results/
       if: ${{ failure() }}
@@ -232,7 +281,7 @@ jobs:
           registry-type: public
       - uses: actions/checkout@v3
       - name: Set ENV
-        run: |          
+        run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
       - run: npm ci --legacy-peer-deps
       - name: Create logs directory
