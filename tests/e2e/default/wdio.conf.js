@@ -169,6 +169,7 @@ const baseConfig = {
   mochaOpts: {
     ui: 'bdd',
     timeout: 120000,
+    retries: 5,
   },
   //
   // =====
@@ -188,8 +189,10 @@ const baseConfig = {
     if (fs.existsSync(ALLURE_OUTPUT)) {
       const files = fs.readdirSync(ALLURE_OUTPUT) || [];
       files.forEach(fileName => {
-        const filePath = path.join(ALLURE_OUTPUT, fileName);
-        fs.unlinkSync(filePath);
+        if (fileName !== 'history') {
+          const filePath = path.join(ALLURE_OUTPUT, fileName);
+          fs.unlinkSync(filePath);
+        }
       });
     }
 
@@ -357,7 +360,7 @@ const baseConfig = {
     await utils.tearDownServices();
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');
-    const generation = allure(['generate', 'allure-results', '--clean']);
+    const generation = allure(['generate', 'allure-results']);
 
     return new Promise((resolve, reject) => {
       const generationTimeout = setTimeout(
