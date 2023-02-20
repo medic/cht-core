@@ -1,5 +1,18 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
+const _ = require('lodash');
+
+const defaultSubmitter = {
+  _id: '2e0ceb06-ced2-5a63-bca0-0283a5aab0e8',
+  name: 'James',
+  phone: '+9779841299392',
+  parent: {
+    _id: '8935e9d8-0b2a-5eb0-ae54-ad1377a60097',
+    parent: {
+      _id: '2112ab72-448a-50bb-a15d-0b19d2927ab7'
+    }
+  }
+};
 
 const defaultFields = {
   'inputs': {
@@ -14,23 +27,7 @@ const defaultFields = {
     },
     'source': 'contact',
     'source_id': '',
-    'contact': {
-      '_id': '091d10d9-2f5c-4965-9c20-96730c6fc300',
-      'name': 'James',
-      'short_name': '',
-      'patient_id': '96854',
-      'date_of_birth': '1997-11-18',
-      'sex': 'female',
-      'parent': {
-        '_id': '8935e9d8-0b2a-5eb0-ae54-ad1377a60097',
-        'parent': {
-          'contact': {
-            'chw_name': '',
-            'phone': ''
-          }
-        }
-      }
-    }
+    'contact': defaultSubmitter,
   },
   'patient_age_in_years': '23',
   'patient_uuid': '091d10d9-2f5c-4965-9c20-96730c6fc300',
@@ -214,78 +211,89 @@ const defaultFields = {
   }
 };
 
+const hiddenFields = [
+  'patient_age_in_years',
+  'patient_uuid',
+  'patient_id',
+  'patient_name',
+  'patient_short_name',
+  'patient_short_name_start',
+  'lmp_date_8601',
+  'edd_8601',
+  'days_since_lmp',
+  'weeks_since_lmp',
+  'weeks_since_lmp_rounded',
+  'lmp_method_approx',
+  'lmp_updated',
+  't_pregnancy_follow_up_date',
+  't_pregnancy_follow_up',
+  't_danger_signs_referral_follow_up_date',
+  't_danger_signs_referral_follow_up',
+  'hiv_status_known',
+  'tt_received',
+  'deworming_med_received',
+  'context_vars',
+  'pregnancy_summary.current_weeks_pregnant',
+  'pregnancy_summary.current_edd',
+  'anc_visits_hf.risk_factors.previous_risk_factors_note',
+  'anc_visits_hf.risk_factors.no_previous_risks_note',
+  'anc_visits_hf.anc_visits_hf_next.anc_visit_advice_note',
+  'danger_signs.danger_signs_note',
+  'danger_signs.r_danger_sign_present',
+  'danger_signs.congratulate_no_ds_note',
+  'safe_pregnancy_practices.malaria.llin_advice_note',
+  'safe_pregnancy_practices.malaria.malaria_prophylaxis_note',
+  'safe_pregnancy_practices.iron_folate.iron_folate_note',
+  'safe_pregnancy_practices.deworming.deworming_med_note',
+  'safe_pregnancy_practices.safe_practices_tips',
+  'safe_pregnancy_practices.hiv_status.hiv_importance_note',
+  'summary',
+  'data',
+  'meta'
+];
+
+const geoLog = [
+  {
+    'timestamp': 1618841239430,
+    'recording': {
+      'latitude':  0.999151,
+      'longitude': 35.150476,
+      'altitude': null,
+      'accuracy': 1518,
+      'altitudeAccuracy': null,
+      'heading': null,
+      'speed': null
+    }
+  }
+];
+
+const geo = {
+  'latitude':  0.999151,
+  'longitude': 35.150476,
+  'altitude': null,
+  'accuracy': 1518,
+  'altitudeAccuracy': null,
+  'heading': null,
+  'speed': null
+};
+
+
 Factory.define('basePregnancyVisit')
   .sequence('_id', uuid.v4)
   .attr('form', 'pregnancy_home_visit')
   .attr('type', 'data_record')
   .attr('content_type', 'xml')
   .attr('reported_date', () => new Date())
-  .attr('contact', 'TODO')
+  .attr('contact', ['contact'], (contact) => _.merge(defaultSubmitter, contact))
+  .attr('fields', ['fields', 'contact'], (fields, contact) => {
+    fields = _.merge(defaultFields, fields);
+    fields.inputs.contact = _.merge(defaultSubmitter, contact);
+    return fields;
+  })
   .attr('from', '')
-  .attr('fields', defaultFields)
-  .attr('hidden_fields', [
-    'patient_age_in_years',
-    'patient_uuid',
-    'patient_id',
-    'patient_name',
-    'patient_short_name',
-    'patient_short_name_start',
-    'lmp_date_8601',
-    'edd_8601',
-    'days_since_lmp',
-    'weeks_since_lmp',
-    'weeks_since_lmp_rounded',
-    'lmp_method_approx',
-    'lmp_updated',
-    't_pregnancy_follow_up_date',
-    't_pregnancy_follow_up',
-    't_danger_signs_referral_follow_up_date',
-    't_danger_signs_referral_follow_up',
-    'hiv_status_known',
-    'tt_received',
-    'deworming_med_received',
-    'context_vars',
-    'pregnancy_summary.current_weeks_pregnant',
-    'pregnancy_summary.current_edd',
-    'anc_visits_hf.risk_factors.previous_risk_factors_note',
-    'anc_visits_hf.risk_factors.no_previous_risks_note',
-    'anc_visits_hf.anc_visits_hf_next.anc_visit_advice_note',
-    'danger_signs.danger_signs_note',
-    'danger_signs.r_danger_sign_present',
-    'danger_signs.congratulate_no_ds_note',
-    'safe_pregnancy_practices.malaria.llin_advice_note',
-    'safe_pregnancy_practices.malaria.malaria_prophylaxis_note',
-    'safe_pregnancy_practices.iron_folate.iron_folate_note',
-    'safe_pregnancy_practices.deworming.deworming_med_note',
-    'safe_pregnancy_practices.safe_practices_tips',
-    'safe_pregnancy_practices.hiv_status.hiv_importance_note',
-    'summary',
-    'data',
-    'meta'
-  ])
-  .attr('geolocation_log', [
-    {
-      'timestamp': 1618841239430,
-      'recording': {
-        'latitude':  0.999151,
-        'longitude': 35.150476,
-        'altitude': null,
-        'accuracy': 1518,
-        'altitudeAccuracy': null,
-        'heading': null,
-        'speed': null
-      }
-    }
-  ])
-  .attr('geolocation',  {
-    'latitude':  0.999151,
-    'longitude': 35.150476,
-    'altitude': null,
-    'accuracy': 1518,
-    'altitudeAccuracy': null,
-    'heading': null,
-    'speed': null
-  });
+  .attr('hidden_fields', hiddenFields)
+  .attr('geolocation_log', geoLog)
+  .attr('geolocation',  geo);
 
 
-module.exports = new Factory().extend('basePregnancyVisit').attr('fields', defaultFields);
+module.exports = new Factory().extend('basePregnancyVisit');

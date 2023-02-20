@@ -1,5 +1,18 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
+const _ = require('lodash');
+
+const defaultSubmitter = {
+  _id: '2e0ceb06-ced2-5a63-bca0-0283a5aab0e8',
+  name: 'James',
+  phone: '+9779841299392',
+  parent: {
+    _id: '8935e9d8-0b2a-5eb0-ae54-ad1377a60097',
+    parent: {
+      _id: '2112ab72-448a-50bb-a15d-0b19d2927ab7'
+    }
+  }
+};
 
 const defaultFields = {
   'inputs': {
@@ -14,29 +27,7 @@ const defaultFields = {
     },
     'source': 'contact',
     'source_id': '',
-    'user': {
-      'contact_id': '2e0ceb06-ced2-5a63-bca0-0283a5aab0e8',
-      'parent': {
-        '_id': '8935e9d8-0b2a-5eb0-ae54-ad1377a60097'
-      }
-    },
-    'contact': {
-      '_id': '80b6e34e-7abf-5718-a572-84edbcd4593e',
-      'name': 'Adelia Akiyama',
-      'short_name': '',
-      'patient_id': '10072',
-      'date_of_birth': '2000-01-01',
-      'sex': 'female',
-      'parent': {
-        '_id': '3a9cecea-8414-5768-9846-474d21b51e91',
-        'parent': {
-          'contact': {
-            'chw_name': '',
-            'phone': '+9779841299392'
-          }
-        }
-      }
-    }
+    'contact': defaultSubmitter,
   },
   'patient_age_in_years': '21',
   'patient_uuid': '80b6e34e-7abf-5718-a572-84edbcd4593e',
@@ -233,82 +224,93 @@ const defaultFields = {
   }
 };
 
+const hiddenFields = [
+  'patient_age_in_years',
+  'patient_uuid',
+  'patient_id',
+  'patient_name',
+  'patient_short_name',
+  'patient_short_name_start',
+  'lmp_date_8601',
+  'edd_8601',
+  'days_since_lmp',
+  'weeks_since_lmp',
+  'weeks_since_lmp_rounded',
+  'lmp_method_approx',
+  'hiv_status_known',
+  'deworming_med_received',
+  'tt_received',
+  't_pregnancy_follow_up_date',
+  't_pregnancy_follow_up',
+  't_danger_signs_referral_follow_up_date',
+  't_danger_signs_referral_follow_up',
+  'gestational_age.register_method.register_note',
+  'gestational_age.method_approx.lmp_approx',
+  'gestational_age.method_lmp_summary',
+  'gestational_age.g_lmp_date_8601',
+  'gestational_age.g_lmp_date',
+  'gestational_age.g_edd_8601',
+  'gestational_age.g_edd',
+  'anc_visits_hf.anc_visits_hf_past.visited_dates_group.visited_count_confim_note_single',
+  'anc_visits_hf.anc_visits_hf_next.anc_visit_advice_note',
+  'risk_factors.r_risk_factor_present',
+  'danger_signs.danger_signs_note',
+  'danger_signs.r_danger_sign_present',
+  'danger_signs.congratulate_no_ds_note',
+  'safe_pregnancy_practices.malaria.llin_advice_note',
+  'safe_pregnancy_practices.malaria.malaria_prophylaxis_note',
+  'safe_pregnancy_practices.iron_folate.iron_folate_note',
+  'safe_pregnancy_practices.safe_practices_tips',
+  'safe_pregnancy_practices.hiv_status.hiv_importance_note',
+  'safe_pregnancy_practices.tetanus.tt_note_1',
+  'safe_pregnancy_practices.tetanus.tt_note_2',
+  'safe_pregnancy_practices.request_services',
+  'summary',
+  'data',
+  'meta'
+];
+
+const geolog = [
+  {
+    'timestamp': 1618841239430,
+    'recording': {
+      'latitude':  0.999151,
+      'longitude': 35.150476,
+      'altitude': null,
+      'accuracy': 1518,
+      'altitudeAccuracy': null,
+      'heading': null,
+      'speed': null
+    }
+  }
+];
+
+const geo = {
+  'latitude':  0.999151,
+  'longitude': 35.150476,
+  'altitude': null,
+  'accuracy': 1518,
+  'altitudeAccuracy': null,
+  'heading': null,
+  'speed': null
+};
+
 Factory.define('basePregnancy')
   .sequence('_id', uuid.v4)
   .attr('form', 'pregnancy')
   .attr('type', 'data_record')
   .attr('content_type', 'xml')
   .attr('reported_date', () => new Date())
-  .attr('contact', 'TODO')
+  .attr('contact', ['contact'], (contact) => _.merge(defaultSubmitter, contact))
+  .attr('fields', ['fields', 'contact'], (fields, contact) => {
+    fields = _.merge(defaultFields, fields);
+    fields.inputs.contact = _.merge(defaultSubmitter, contact);
+    return fields;
+  })
   .attr('from', '')
-  .attr('hidden_fields', [
-    'patient_age_in_years',
-    'patient_uuid',
-    'patient_id',
-    'patient_name',
-    'patient_short_name',
-    'patient_short_name_start',
-    'lmp_date_8601',
-    'edd_8601',
-    'days_since_lmp',
-    'weeks_since_lmp',
-    'weeks_since_lmp_rounded',
-    'lmp_method_approx',
-    'hiv_status_known',
-    'deworming_med_received',
-    'tt_received',
-    't_pregnancy_follow_up_date',
-    't_pregnancy_follow_up',
-    't_danger_signs_referral_follow_up_date',
-    't_danger_signs_referral_follow_up',
-    'gestational_age.register_method.register_note',
-    'gestational_age.method_approx.lmp_approx',
-    'gestational_age.method_lmp_summary',
-    'gestational_age.g_lmp_date_8601',
-    'gestational_age.g_lmp_date',
-    'gestational_age.g_edd_8601',
-    'gestational_age.g_edd',
-    'anc_visits_hf.anc_visits_hf_past.visited_dates_group.visited_count_confim_note_single',
-    'anc_visits_hf.anc_visits_hf_next.anc_visit_advice_note',
-    'risk_factors.r_risk_factor_present',
-    'danger_signs.danger_signs_note',
-    'danger_signs.r_danger_sign_present',
-    'danger_signs.congratulate_no_ds_note',
-    'safe_pregnancy_practices.malaria.llin_advice_note',
-    'safe_pregnancy_practices.malaria.malaria_prophylaxis_note',
-    'safe_pregnancy_practices.iron_folate.iron_folate_note',
-    'safe_pregnancy_practices.safe_practices_tips',
-    'safe_pregnancy_practices.hiv_status.hiv_importance_note',
-    'safe_pregnancy_practices.tetanus.tt_note_1',
-    'safe_pregnancy_practices.tetanus.tt_note_2',
-    'safe_pregnancy_practices.request_services',
-    'summary',
-    'data',
-    'meta'
-  ])
-  .attr('geolocation_log', [
-    {
-      'timestamp': 1618841239430,
-      'recording': {
-        'latitude':  0.999151,
-        'longitude': 35.150476,
-        'altitude': null,
-        'accuracy': 1518,
-        'altitudeAccuracy': null,
-        'heading': null,
-        'speed': null
-      }
-    }
-  ])
-  .attr('geolocation',  {
-    'latitude':  0.999151,
-    'longitude': 35.150476,
-    'altitude': null,
-    'accuracy': 1518,
-    'altitudeAccuracy': null,
-    'heading': null,
-    'speed': null
-  });
+  .attr('hidden_fields', hiddenFields)
+  .attr('geolocation_log', geolog)
+  .attr('geolocation',  geo);
 
 
-module.exports = new Factory().extend('basePregnancy').attr('fields', defaultFields);
+module.exports = new Factory().extend('basePregnancy');

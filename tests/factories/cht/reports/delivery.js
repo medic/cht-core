@@ -1,6 +1,19 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
 const moment = require('moment');
+const _ = require('lodash');
+
+const defaultSubmitter = {
+  _id: '2e0ceb06-ced2-5a63-bca0-0283a5aab0e8',
+  name: 'James',
+  phone: '+9779841299392',
+  parent: {
+    _id: '8935e9d8-0b2a-5eb0-ae54-ad1377a60097',
+    parent: {
+      _id: '2112ab72-448a-50bb-a15d-0b19d2927ab7'
+    }
+  }
+};
 
 const defaultFields = {
   'inputs': {
@@ -15,35 +28,8 @@ const defaultFields = {
     },
     'source': 'contact',
     'source_id': '',
-    'user': {
-      'contact_id': '2e0ceb06-ced2-5a63-bca0-0283a5aab0e8',
-      'name': 'Andra Anderson',
-      'phone': '+9779841299392'
-    },
-    'contact': {
-      '_id': '091d10d9-2f5c-4965-9c20-96730c6fc300',
-      'name': 'James',
-      'short_name': '',
-      'patient_id': '96854',
-      'date_of_birth': '1997-11-18',
-      'sex': 'female',
-      'parent': {
-        '_id': '8935e9d8-0b2a-5eb0-ae54-ad1377a60097',
-        'parent': {
-          '_id': '2112ab72-448a-50bb-a15d-0b19d2927ab7',
-          'parent': {
-            '_id': ''
-          },
-          'contact': {
-            'chw_name': '',
-            'phone': ''
-          }
-        }
-      }
-    }
+    'contact': defaultSubmitter,
   },
-  'household_id': '8935e9d8-0b2a-5eb0-ae54-ad1377a60097',
-  'area_id': '2112ab72-448a-50bb-a15d-0b19d2927ab7',
   'facility_id': '',
   'patient_age_in_years': '23',
   'patient_uuid': '091d10d9-2f5c-4965-9c20-96730c6fc300',
@@ -193,68 +179,77 @@ const defaultFields = {
   }
 };
 
+const hiddenFields = [
+  'household_id',
+  'area_id',
+  'facility_id',
+  'patient_age_in_years',
+  'patient_uuid',
+  'patient_id',
+  'patient_name',
+  'patient_short_name',
+  'patient_short_name_start',
+  't_danger_signs_referral_follow_up',
+  't_danger_signs_referral_follow_up_date',
+  'pnc_danger_sign_check.r_pnc_danger_sign_present',
+  'babys_condition.baby_repeat.baby_details.baby_n',
+  'babys_condition.baby_repeat.baby_details.baby_danger_sign_note',
+  'babys_condition.baby_repeat.baby_details.r_baby_danger_sign_present',
+  'babys_condition.baby_repeat.baby_details.baby_profile.name',
+  'babys_condition.baby_repeat.baby_details.baby_profile.sex',
+  'babys_condition.baby_repeat.baby_details.baby_profile.date_of_birth',
+  'babys_condition.baby_repeat.baby_details.baby_profile.parent',
+  'babys_condition.baby_repeat.baby_details.baby_profile.type',
+  'babys_condition.baby_repeat.baby_details.baby_profile.created_by_doc',
+  'babys_condition.baby_repeat.baby_details.child_doc',
+  'safe_postnatal_practices',
+  'pnc_visits.who_note',
+  'pnc_visits.days',
+  'summary',
+  'data',
+  'meta'
+];
+
+const geoLog = [
+  {
+    'timestamp': 1618841239430,
+    'recording': {
+      'latitude':  0.999151,
+      'longitude': 35.150476,
+      'altitude': null,
+      'accuracy': 1518,
+      'altitudeAccuracy': null,
+      'heading': null,
+      'speed': null
+    }
+  }
+];
+
+const geo = {
+  'latitude':  0.999151,
+  'longitude': 35.150476,
+  'altitude': null,
+  'accuracy': 1518,
+  'altitudeAccuracy': null,
+  'heading': null,
+  'speed': null
+};
+
 Factory.define('baseDelivery')
   .sequence('_id', uuid.v4)
   .attr('form', 'delivery')
   .attr('type', 'data_record')
   .attr('content_type', 'xml')
-  .attr('reported_date', () => new Date())
-  .attr('contact', 'TODO')
+  .attr('reported_date', () => new Date().valueOf())
+  .attr('contact', ['contact'], (contact) => _.merge(defaultSubmitter, contact))
+  .attr('fields', ['fields', 'contact'], (fields, contact) => {
+    fields = _.merge(defaultFields, fields);
+    fields.inputs.contact = _.merge(defaultSubmitter, contact);
+    return fields;
+  })
   .attr('from', '')
-  .attr('hidden_fields', [
-    'household_id',
-    'area_id',
-    'facility_id',
-    'patient_age_in_years',
-    'patient_uuid',
-    'patient_id',
-    'patient_name',
-    'patient_short_name',
-    'patient_short_name_start',
-    't_danger_signs_referral_follow_up',
-    't_danger_signs_referral_follow_up_date',
-    'pnc_danger_sign_check.r_pnc_danger_sign_present',
-    'babys_condition.baby_repeat.baby_details.baby_n',
-    'babys_condition.baby_repeat.baby_details.baby_danger_sign_note',
-    'babys_condition.baby_repeat.baby_details.r_baby_danger_sign_present',
-    'babys_condition.baby_repeat.baby_details.baby_profile.name',
-    'babys_condition.baby_repeat.baby_details.baby_profile.sex',
-    'babys_condition.baby_repeat.baby_details.baby_profile.date_of_birth',
-    'babys_condition.baby_repeat.baby_details.baby_profile.parent',
-    'babys_condition.baby_repeat.baby_details.baby_profile.type',
-    'babys_condition.baby_repeat.baby_details.baby_profile.created_by_doc',
-    'babys_condition.baby_repeat.baby_details.child_doc',
-    'safe_postnatal_practices',
-    'pnc_visits.who_note',
-    'pnc_visits.days',
-    'summary',
-    'data',
-    'meta'
-  ])
-  .attr('geolocation_log', [
-    {
-      'timestamp': 1618841239430,
-      'recording': {
-        'latitude':  0.999151,
-        'longitude': 35.150476,
-        'altitude': null,
-        'accuracy': 1518,
-        'altitudeAccuracy': null,
-        'heading': null,
-        'speed': null
-      }
-    }
-  ])
-  .attr('geolocation',  {
-    'latitude':  0.999151,
-    'longitude': 35.150476,
-    'altitude': null,
-    'accuracy': 1518,
-    'altitudeAccuracy': null,
-    'heading': null,
-    'speed': null
-  });
+  .attr('hidden_fields', hiddenFields)
+  .attr('geolocation_log', geoLog)
+  .attr('geolocation',  geo);
 
-
-
-module.exports = new Factory().extend('baseDelivery').attr('fields', defaultFields);
+module.exports = new Factory().extend('baseDelivery');

@@ -188,20 +188,20 @@ const waitForPageLoaded = async () => {
   } while ((await loaders()).length > 0);
 };
 
-const syncAndWaitForSuccess = async () => {
+const syncAndWaitForSuccess = async (timeout=20000) => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
-  await (await syncSuccess()).waitForDisplayed({ timeout: 20000 });
+  await (await syncSuccess()).waitForDisplayed({ timeout });
 };
 
-const sync = async (expectReload) => {
-  await syncAndWaitForSuccess();
+const sync = async (expectReload, timeout) => {
+  await syncAndWaitForSuccess(timeout);
   if (expectReload) {
     await closeReloadModal();
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
-  await syncAndWaitForSuccess();
+  await syncAndWaitForSuccess(timeout);
 };
 
 const closeReloadModal = async () => {

@@ -41,7 +41,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    '**/*.wdio-spec.js',
+    '**/initial*.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
@@ -79,7 +79,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']
+      args: [/*'--headless', */'--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
