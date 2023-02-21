@@ -44,6 +44,11 @@ export class TasksComponent implements OnInit, OnDestroy {
   tasksList;
   selectedTask;
   error;
+  errorDetails;
+  url;
+  errorDetailsCollapsed;
+  userCtx;
+  replicationStatus;
   hasTasks;
   loading;
   tasksDisabled;
@@ -57,14 +62,17 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getTasksList),
       this.store.select(Selectors.getTasksLoaded),
       this.store.select(Selectors.getSelectedTask),
+      this.store.select(Selectors.getReplicationStatus)
     ).subscribe(([
       tasksList,
       tasksLoaded,
       selectedTask,
+      replicationStatus
     ]) => {
       this.tasksList = tasksList;
       this.tasksLoaded = tasksLoaded;
       this.selectedTask = selectedTask;
+      this.replicationStatus = replicationStatus;
     });
     this.subscription.add(reduxSubscription);
   }
@@ -101,6 +109,9 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.subscribeToRulesEngine();
 
     this.error = false;
+    this.errorDetailsCollapsed = true;
+    this.url = window.location.hostname;
+    this.userCtx = this.sessionService.userCtx();
     this.hasTasks = false;
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
@@ -172,6 +183,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
+      this.errorDetails = exception;
       this.error = true;
       this.loading = false;
       this.hasTasks = false;

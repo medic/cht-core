@@ -38,10 +38,13 @@
         </li>
       </ul>
 
-      <p *ngIf="error" class="alert alert-danger" role="alert">
+      <div *ngIf="error" class="alert alert-danger" role="alert">
         <span>{{'Error fetching tasks' | translate}}</span>
         <a class="btn btn-link" (click)="refreshTaskList()">{{'Reload' | translate}}</a>
-      </p>
+        <a class="btn btn-link" (click)="errorDetailsCollapsed = !errorDetailsCollapsed">{{'Details' | translate}}</a>
+        <!-- <code style="white-space:pre-wrap"></code> -->
+        <pre *ngIf="!errorDetailsCollapsed"><code>{{ errorDetails }}<br>Username: {{userCtx.name}}<br>URL: {{url}}<br>Last Sync: {{replicationStatus.lastSuccessTo | simpleDateTime}}</code></pre>
+      </div>
       <p class="loading-status" *ngIf="!error && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
       <p class="loading-status" *ngIf="!error && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
       <p class="loading-status" *ngIf="tasksDisabled">{{'tasks.disabled' | translate}}</p>
