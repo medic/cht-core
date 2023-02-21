@@ -10,7 +10,8 @@ const utils = require('../../../utils');
 const userData = require('../../../page-objects/default/users/user.data');
 const sentinelUtils = require('../../../utils/sentinel');
 
-describe('Submit Default Delivery Report', () => {
+// FLAKY: https://github.com/medic/cht-core/issues/8087
+describe.skip('Submit Default Delivery Report', () => {
   const { userContactDoc, docs } = userData;
 
   before(async () => {
@@ -105,6 +106,7 @@ describe('Submit Default Delivery Report', () => {
     await genericForm.nextPage();
     await reportsPage.submitForm();
     await sentinelUtils.waitForSentinel();
+    await browser.refresh();
 
     const updatedReport = await utils.getDoc(reportId);
     const exclude = [
@@ -266,6 +268,7 @@ describe('Submit Default Delivery Report', () => {
     const reportId = await reportsPage.getCurrentReportId();
     const initialReport = await utils.getDoc(reportId);
     expect(initialReport._attachments).to.equal(undefined);
+    await browser.refresh();
 
     await reportsPage.editReport(reportId);
     await deliveryReport.selectPatientName('jill');

@@ -23,9 +23,9 @@ const NETWORK = 'cht-net-e2e';
 const services = {
   haproxy: 'haproxy',
   nginx: 'nginx',
-  couch1: 'couchdb.1',
-  couch2: 'couchdb.2',
-  couch3: 'couchdb.3',
+  couch1: 'couchdb-1.local',
+  couch2: 'couchdb-2.local',
+  couch3: 'couchdb-3.local',
   api: 'api',
   sentinel: 'sentinel',
   haproxy_healthcheck: 'healthcheck',
@@ -132,6 +132,20 @@ const updateSettings = updates => {
         body: updates,
       });
     });
+};
+const updatePermissions = async (roles, addPermissions, removePermissions = []) => {
+  const settings = await module.exports.getSettings();
+  addPermissions.forEach(permission => {
+    if (!settings.permissions[permission]) {
+      settings.permissions[permission] = [];
+    }
+    settings.permissions[permission].push(...roles);
+  });
+    
+  removePermissions.forEach(permission => {
+    settings.permissions[permission] = [];
+  });
+  await module.exports.updateSettings({ permissions: settings.permissions }, true);
 };
 
 const revertTranslations = async () => {
@@ -310,11 +324,6 @@ const setUserContactDoc = (attempt=0) => {
  * @param {boolean} ignoreRefresh
  */
 const revertDb = async (except, ignoreRefresh) => {
-  if (!except || !except.length) {
-    console.warn('Utils :: revertDb() :: The "except" parameter is empty, ' +
-      'all documents from the database will be deleted, ' +
-      'including Enketo forms from the config, this might cause some automated tests to fail.');
-  }
   const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
   const needsRefresh = await revertSettings();
   await deleteAll(except);
@@ -645,7 +654,7 @@ const generateComposeFiles = async () => {
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
     db_name: 'medic-test',
-    couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
+    couchdb_servers: 'couchdb-1.local,couchdb-2.local,couchdb-3.local',
   };
 
   for (const file of COMPOSE_FILES) {
@@ -1209,6 +1218,12 @@ module.exports = {
   stopSentinel: () => stopService('sentinel'),
   startSentinel: () => startService('sentinel'),
 
+  stopApi: () => stopService('api'),
+  startApi: async () => {
+    await startService('api');
+    await listenForApi();
+  },
+
   saveCredentials: (key, password) => {
     const options = {
       path: `/api/v1/credentials/${key}`,
@@ -1350,4 +1365,5 @@ module.exports = {
   listenForApi,
   makeTempDir,
   SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
+  updatePermissions,
 };
