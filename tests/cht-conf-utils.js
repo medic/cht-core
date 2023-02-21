@@ -11,7 +11,9 @@ const runCommand = async (action, dirPath) => {
     const { stdout } = await exec(`${chtConfPath} --url=${url} ${action} --force --debug`, { cwd: dirPath });
     return stdout;
   } catch (err) {
-    throw err.stdout || err.stderr || err.message;
+    console.error('Error running cht-conf command');
+    console.log(err.stdout);
+    throw new Error(err.stderr);
   }
 };
 
