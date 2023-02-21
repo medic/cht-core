@@ -8,8 +8,8 @@
     "url": "git://github.com/medic/cht-core.git"
   },
   "engines": {
-    "node": ">=16.12.0",
-    "npm": ">=8.3.1"
+    "node": ">=18.14.0",
+    "npm": ">=9.3.1"
   },
   "scripts": {
     "toc": "doctoc --github --maxlevel 2 README.md"
@@ -21,6 +21,7 @@
     "@medic/infodoc": "file:../shared-libs/infodoc",
     "@medic/lineage": "file:../shared-libs/lineage",
     "@medic/message-utils": "file:../shared-libs/message-utils",
+    "@medic/outbound": "file:../shared-libs/outbound",
     "@medic/phone-number": "file:../shared-libs/phone-number",
     "@medic/purging-utils": "file:../shared-libs/purging-utils",
     "@medic/registration-utils": "file:../shared-libs/registration-utils",

@@ -8,6 +8,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "@medic/contact-types-utils": "file:../contact-types-utils",
     "@medic/contacts": "file:../contacts",
     "@medic/lineage": "file:../lineage",
     "@medic/phone-number": "file:../phone-number",

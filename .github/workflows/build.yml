@@ -32,7 +32,7 @@ jobs:
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -45,10 +45,10 @@ jobs:
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
     - uses: actions/checkout@v3
-    - name: Use Node.js 16.x
+    - name: Use Node.js 18.x
       uses: actions/setup-node@v3
       with:
-        node-version: 16.x
+        node-version: 18.x
     - name: Couch Start
       run: ./scripts/ci/couch-start
     - name: Create logs directory
@@ -81,10 +81,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js 16.x
+    - name: Use Node.js 18.x
       uses: actions/setup-node@v3
       with:
-        node-version: 16.x
+        node-version: 18.x
     - name: Grunt Install
       run: npm install -g grunt-cli
     - run: npm ci --legacy-peer-deps
@@ -96,7 +96,7 @@ jobs:
     name: ${{ matrix.grunt-cmd }}
     runs-on: ubuntu-22.04
     env:
-      NODE: 16.x
+      NODE: 18.x
 
     strategy:
       fail-fast: false
@@ -112,7 +112,7 @@ jobs:
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -124,10 +124,10 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
 
-    - name: Use Node.js 16.x
+    - name: Use Node.js 18.x
       uses: actions/setup-node@v3
       with:
-        node-version: 16.x
+        node-version: 18.x
     - uses: actions/checkout@v3
     - name: Download docker images artifacts
       uses: actions/download-artifact@v3
@@ -228,7 +228,7 @@ jobs:
 
     - name: Configure AWS credentials
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -240,7 +240,7 @@ jobs:
 
     - name: Configure AWS credentials Public
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
-      uses: aws-actions/configure-aws-credentials@v1-node16
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
@@ -269,7 +269,7 @@ jobs:
     steps:
       - name: Configure AWS credentials Public
         if: ${{ env.INTERNAL_CONTRIBUTOR }}
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}

@@ -4,11 +4,12 @@
   "private": true,
   "version": "0.1.0",
   "engines": {
-    "node": ">=16.12.0",
-    "npm": ">=8.3.1"
+    "node": ">=18.14.0",
+    "npm": ">=9.3.1"
   },
   "dependencies": {
     "@medic/contact-types-utils": "file:../shared-libs/contact-types-utils",
+    "@medic/contacts": "file:../shared-libs/contacts",
     "@medic/infodoc": "file:../shared-libs/infodoc",
     "@medic/lineage": "file:../shared-libs/lineage",
     "@medic/message-utils": "file:../shared-libs/message-utils",
@@ -22,6 +23,7 @@
     "@medic/tombstone-utils": "file:../shared-libs/tombstone-utils",
     "@medic/transitions": "file:../shared-libs/transitions",
     "@medic/translation-utils": "file:../shared-libs/translation-utils",
+    "@medic/user-management": "file:../shared-libs/user-management",
     "@medic/validation": "file:../shared-libs/validation",
     "async": "^3.2.4",
     "bikram-sambat": "^1.7.0",

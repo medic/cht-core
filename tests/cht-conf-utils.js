@@ -17,30 +17,9 @@ const runCommand = async (action, dirPath) => {
 
 const getDirPath = () => path.join(__dirname, 'config-temp');
 
-// todo: When no longer supporting Node.js -v.12, replace with: fs.rmdirSync(outputPath, { recursive: true });
-const removeDirectoryRecursive = (dirPath) => {
-  if (!fs.existsSync(dirPath)) {
-    return;
-  }
-
-  const files = fs.readdirSync(dirPath) || [];
-
-  files.forEach(fileName => {
-    const filePath = path.join(dirPath, fileName);
-
-    if (fs.statSync(filePath).isDirectory()) {
-      removeDirectoryRecursive(filePath);
-    } else {
-      fs.unlinkSync(filePath);
-    }
-  });
-
-  fs.rmdirSync(dirPath);
-};
-
 const createDirectory = (dir) => {
   if (fs.existsSync(dir)) {
-    removeDirectoryRecursive(dir);
+    fs.rmSync(dir, { recursive: true });
   }
   fs.mkdirSync(dir);
 };
