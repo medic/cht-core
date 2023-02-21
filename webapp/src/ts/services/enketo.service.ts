@@ -72,7 +72,6 @@ export class EnketoService {
   private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
   private readonly objUrls = [];
   private inited = false;
-  private unloadDeferred: Deferred;
 
   private currentForm;
   getCurrentForm() {
@@ -430,7 +429,7 @@ export class EnketoService {
     });
   }
 
-  private async renderForm(formContext: EnketoFormContext) {
+  private renderForm(formContext: EnketoFormContext) {
     const {
       editedListener,
       formDoc,
@@ -440,10 +439,6 @@ export class EnketoService {
       valuechangeListener,
       isFormInModal,
     } = formContext;
-
-    if (this.unloadDeferred?.promise && this.unloadDeferred.form?.internalId !== formDoc.internalId) {
-      await this.waitForUnload(formDoc);
-    }
 
     const $selector = $(selector);
     return this
@@ -469,7 +464,6 @@ export class EnketoService {
           () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
 
         window.CHTCore.debugFormModel = () => form.model.getStr();
-        this.setUnloadDeferred(formDoc);
         return form;
       }).catch(err => {
         const errorMessage = `Failed during the form "${formDoc.internalId}" rendering : `;
@@ -844,69 +838,23 @@ export class EnketoService {
   }
 
   unload(form) {
-    try {
-      $(window).off('.enketo-pagemode');
-      if (form) {
-        form.resetView();
-      }
-      // unload blobs
-      this.objUrls.forEach((url) => {
-        (window.URL || window.webkitURL).revokeObjectURL(url);
-      });
-
-      delete window.CHTCore.debugFormModel;
-      delete this.currentForm;
-      this.objUrls.length = 0;
-
-      this.unloadDeferred?.resolve();
-    } catch (error) {
-      this.unloadDeferred?.reject(error);
+    $(window).off('.enketo-pagemode');
+    if (form) {
+      form.resetView();
     }
+    // unload blobs
+    this.objUrls.forEach((url) => {
+      (window.URL || window.webkitURL).revokeObjectURL(url);
+    });
+
+    delete window.CHTCore.debugFormModel;
+    delete this.currentForm;
+    this.objUrls.length = 0;
   }
 
   private isTrainingCard(formInternalId) {
     return formInternalId?.startsWith(TRAINING_PREFIX);
   }
-
-  private setUnloadDeferred(formDoc) {
-    if (!this.unloadDeferred) {
-      this.unloadDeferred = {};
-    }
-
-    this.unloadDeferred.form = formDoc;
-    this.unloadDeferred.promise = new Promise((resolve, reject) => {
-      this.unloadDeferred.resolve = resolve;
-      this.unloadDeferred.reject = reject;
-    });
-
-    this.unloadDeferred.promise
-      .then(() => this.unloadDeferred = undefined)
-      .catch(error => {
-        const message = 'An error occurred when unloading the form.';
-        console.error(message, error);
-        this.feedbackService.submit(message);
-      });
-  }
-
-  private waitForUnload(formDoc, waitTime=1500) {
-    console.warn(
-      `Waiting for "${this.unloadDeferred.form?.internalId}" to unload, before rendering "${formDoc.internalId}".`
-    );
-
-    const timeout = setTimeout(() => {
-      console.warn(`Unload Timeout: Forcing unload of "${this.unloadDeferred.form?.internalId}" form.`);
-      this.unload(this.currentForm);
-    }, waitTime);
-
-    return this.unloadDeferred.promise.then(() => clearTimeout(timeout));
-  }
-}
-
-interface Deferred {
-  form?: Record<string, any>;
-  promise?: Promise<any>;
-  resolve?: Function;
-  reject?: Function;
 }
 
 interface ContactSummary {
