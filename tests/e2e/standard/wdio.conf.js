@@ -22,12 +22,7 @@ const standardConfig = Object.assign(wdioBaseConfig.config, {
 const uploadStandardConfig = async () => {
   const standardConfigPath = 'config/standard';
   await exec('npm ci', { cwd: standardConfigPath });
-
-  try {
-    await chtConfUtils.runCommand('',  standardConfigPath);
-  } catch (err) {
-    console.error(err);
-  }
+  await chtConfUtils.runCommand('',  standardConfigPath);
 };
 
 exports.config = standardConfig;
