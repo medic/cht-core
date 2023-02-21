@@ -295,22 +295,19 @@ const geo = {
   'speed': null
 };
 
-Factory.define('basePregnancy')
+module.exports = new Factory()
   .sequence('_id', uuid.v4)
   .attr('form', 'pregnancy')
   .attr('type', 'data_record')
   .attr('content_type', 'xml')
   .attr('reported_date', () => new Date())
-  .attr('contact', ['contact'], (contact) => _.merge(defaultSubmitter, contact))
+  .attr('contact', ['contact'], (contact) => _.merge({}, defaultSubmitter, contact))
   .attr('fields', ['fields', 'contact'], (fields, contact) => {
-    fields = _.merge(defaultFields, fields);
-    fields.inputs.contact = _.merge(defaultSubmitter, contact);
+    fields = _.merge({}, defaultFields, fields);
+    fields.inputs.contact = _.merge({}, defaultSubmitter, contact);
     return fields;
   })
   .attr('from', '')
   .attr('hidden_fields', hiddenFields)
   .attr('geolocation_log', geolog)
   .attr('geolocation',  geo);
-
-
-module.exports = new Factory().extend('basePregnancy');

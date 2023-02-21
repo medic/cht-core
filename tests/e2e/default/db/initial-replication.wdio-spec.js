@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 const utils = require('../../../utils');
 const sentinelUtils = require('../../../utils/sentinel');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
@@ -8,77 +10,81 @@ const personFactory = require('../../../factories/cht/contacts/person');
 const deliveryFactory = require('../../../factories/cht/reports/delivery');
 const pregnancyFactory = require('../../../factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('../../../factories/cht/reports/pregnancy-visit');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
 
 /* global window */
 
-const places = placeFactory.generateHierarchy();
-const healthCenter = places.get('health_center');
-const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
-
-const clinics = Array
-  .from({ length: 100 })
-  .map((_, idx) => placeFactory.place().build({
-    type: 'clinic',
-    parent: { _id: healthCenter._id, parent: healthCenter.parent },
-    name: `clinic_${idx}`
-  }));
-const persons = [
-  ...clinics.map(clinic => Array
-    .from({ length: 10 })
-    .map((_, idx) => personFactory.build({
-      parent: { _id: clinic._id, parent: clinic.parent },
-      name: `person_${clinic.name}_${idx}`,
-    }))),
-].flat();
-
-const getReportContext = (patient) => ({
-  fields: { patient_id: patient._id, patient_uuid: patient._id },
-  contact: {
-    _id: offlineUser.contact._id,
-    parent: { _id: healthCenter._id, parent: healthCenter.parent },
+const getReportContext = (patient, submitter) => {
+  const context = {
+    fields:
+      {
+        patient_id: patient._id,
+        patient_uuid: patient._id,
+        patient_name: patient.name,
+      },
+  };
+  if (submitter) {
+    context.contact = {
+      _id: submitter.contact._id,
+      parent: submitter.contact.parent,
+    };
   }
-});
-
-const reports = [
-  ...persons.map(person => [
-    deliveryFactory.build(getReportContext(person)),
-    pregnancyFactory.build(getReportContext(person)),
-    pregnancyVisitFactory.build(getReportContext(person)),
-  ]),
-].flat();
-
-const getServerDocs = async (docIds) => {
-  const result = await utils.requestOnMedicDb({ path: '/_all_docs', qs: { keys: JSON.stringify(docIds) } });
-  return result.rows;
+  return context;
 };
+const createHierarchy = (name, user=false) => {
+  const hierarchy = placeFactory.generateHierarchy();
+  const healthCenter = hierarchy.get('health_center');
+  user = user && userFactory.build({ place: healthCenter._id, roles: ['chw'] });
 
-const getLocalDocIds = async () => {
-  const { err, result } = await browser.executeAsync((callback) => {
-    const db = window.CHTCore.DB.get();
-    return db
-      .allDocs()
-      .then(result => callback({ result }))
-      .catch(err => callback({ err }));
+  const clinics = Array
+    .from({ length: 100 })
+    .map((_, idx) => placeFactory.place().build({
+      type: 'clinic',
+      parent: { _id: healthCenter._id, parent: healthCenter.parent },
+      name: `clinic_${idx}`
+    }));
+
+  const persons = [
+    ...clinics.map(clinic => Array
+      .from({ length: 10 })
+      .map((_, idx) => personFactory.build({
+        parent: { _id: clinic._id, parent: clinic.parent },
+        name: `person_${clinic.name}_${idx}`,
+      }))),
+  ].flat();
+
+  const reports = [
+    ...persons.map(person => [
+      deliveryFactory.build(getReportContext(person, user)),
+      pregnancyFactory.build(getReportContext(person, user)),
+      pregnancyVisitFactory.build(getReportContext(person, user)),
+    ]),
+  ].flat();
+
+  const places = [...hierarchy.values()].map(place => {
+    place.name = `${name} ${place.type}`;
+    return place;
   });
 
-  if (err) {
-    throw err;
-  }
+  return {
+    user,
+    places,
+    clinics,
+    persons,
+    reports,
+  };
+};
 
+const getServerDocs = async (docIds) => {
+  const result = await utils.db.allDocs({ keys: docIds });
   return result.rows;
 };
 
 const getLocalDocs = async (docIds) => {
   const { err, result } = await browser.executeAsync((docIds, callback) => {
     const db = window.CHTCore.DB.get();
+    const options = docIds ? { keys: docIds, include_docs: true, attachments: true } : {};
     return db
-      .allDocs({
-        keys: docIds,
-        include_docs: true,
-        attachments: true,
-      })
+      .allDocs(options)
       .then(result => callback({ result }))
       .catch(err => callback({ err }));
   }, docIds);
@@ -90,78 +96,114 @@ const getLocalDocs = async (docIds) => {
   return result.rows;
 };
 
+const userAllowedDocs = createHierarchy('base', true);
+const userDeniedDocs = createHierarchy('other');
+
 const requiredDocs = [
-  '_design/medic_client',
+  '_design/medic-client',
   'settings',
-  `org.couchdb.user:${offlineUser.name}`,
+  `org.couchdb.user:${userAllowedDocs.user.username}`,
   'service-worker-meta',
-  'settings',
   'resources',
   'branding',
-  'partners',
+  userAllowedDocs.user.place,
+  userAllowedDocs.user.contact._id,
 ];
 
 const isTombstone = (id) => id.endsWith('tombstone');
+const ids = docs => docs.map(doc => doc._id);
 
 const getTranslationIds = async () => {
   const translationDocs = await utils.db.allDocs({
     start_key: 'messages-',
     end_key: 'messages-\ufff0',
   });
-  const docIds = translationDocs
-    .rows.map(row => row.id)
+  const docIds = translationDocs.rows
+    .map(row => row.id)
     .filter(id => !isTombstone(id));
   return docIds;
 };
 
-const getFormIds = async () => {
+const getForms = async () => {
   const formDocs = await utils.db.allDocs({
     start_key: 'form:',
     end_key: 'form:\ufff0',
+    include_docs: true,
+    attachments: true,
   });
-  const docIds = formDocs
-    .rows.map(row => row.id)
-    .filter(id => !isTombstone(id));
-  return docIds;
+  return formDocs.rows.filter(row => !isTombstone(row.id));
 };
 
 describe('initial-replication', () => {
   before(async () => {
     // we're creating ~4000 docs
+    await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
+    await utils.createUsers([userAllowedDocs.user]);
+
+    await sentinelUtils.waitForSentinel();
     await utils.stopSentinel();
 
-    await utils.saveDocs([...places.values()]);
-    await utils.createUsers([offlineUser]);
+    await utils.saveDocs(userAllowedDocs.clinics);
+    await utils.saveDocs(userDeniedDocs.clinics);
 
-    await utils.saveDocs(clinics);
-    await utils.saveDocs(persons);
-    await utils.saveDocs(reports);
+    await utils.saveDocs(userAllowedDocs.persons);
+    await utils.saveDocs(userDeniedDocs.persons);
+
+    await utils.saveDocs(userAllowedDocs.reports);
+    await utils.saveDocs(userDeniedDocs.reports);
   });
 
   after(async () => {
+    await sentinelUtils.skipToSeq();
     await utils.startSentinel();
   });
 
   it('should log user in', async () => {
-    await loginPage.login(offlineUser);
+    await loginPage.login(userAllowedDocs.user);
+
+    const localAllDocsPreSync = await getLocalDocs();
+    const docIdsPreSync = localAllDocsPreSync.map(row => row.id);
 
     await commonPage.sync(false, 3000);
 
-    const localAllDocs = await getLocalDocIds();
-    const docIds = localAllDocs.map(row => row.id);
-    const serverAllDocs = await getServerDocs(docIds);
+    const localAllDocs = await getLocalDocs();
+    const localDocIds = localAllDocs.map(row => row.id);
+
+    // no additional docs to download
+    expect(docIdsPreSync).to.have.members(localDocIds);
+
+    const serverAllDocs = await getServerDocs(localDocIds);
 
     // docs revs are the same
     expect(localAllDocs).to.deep.equal(serverAllDocs);
 
-    // docs have downloaded necessary attachments
-    const localDocIds = localAllDocs.map(row => row.id);
-
     const translationIds = await getTranslationIds();
-    const formIds = await getFormIds();
-    expect(localDocIds).to.include.members([...requiredDocs, ...translationIds, ...formIds]);
+    const forms = await getForms();
+    const formIds = forms.map(row => row.id);
+
+    expect(localDocIds).to.include.members(requiredDocs);
+    expect(localDocIds).to.include.members(translationIds);
 
     const localForms = await getLocalDocs(formIds);
-    console.log(JSON.stringify(localForms, null, 2));
+    const expectedAttachments = ['model.xml', 'form.html', 'xml'];
+    localForms.forEach(form => {
+      const attachments = form.doc._attachments;
+      const serverForm = forms.find(serverForm => form.id === serverForm.id);
+
+      expect(Object.keys(attachments)).to.have.members(expectedAttachments, `${form._id} has incorrect attachments`);
+      expectedAttachments.forEach(attName =>
+        expect(attachments[attName].data).to.deep.equal(serverForm.doc._attachments[attName].data)
+      );
+    });
+
+    expect(localDocIds).to.include.members(ids(userAllowedDocs.clinics));
+    expect(localDocIds).to.include.members(ids(userAllowedDocs.persons));
+    expect(localDocIds).to.include.members(ids(userAllowedDocs.reports));
+
+    const replicatedDeniedDocs = _.intersection(
+      localDocIds,
+      ids([...userDeniedDocs.clinics, ...userDeniedDocs.persons, ...userDeniedDocs.reports])
+    );
+    expect(replicatedDeniedDocs).to.deep.equal([]);
   });
 });
