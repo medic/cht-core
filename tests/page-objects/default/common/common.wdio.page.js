@@ -188,6 +188,11 @@ const waitForPageLoaded = async () => {
   } while ((await loaders()).length > 0);
 };
 
+const syncAndNotWaitForSuccess = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
+};
+
 const syncAndWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
@@ -287,6 +292,7 @@ module.exports = {
   hideSnackbar,
   waitForLoaders,
   sync,
+  syncAndNotWaitForSuccess,
   syncButton,
   closeReloadModal,
   goToMessages,

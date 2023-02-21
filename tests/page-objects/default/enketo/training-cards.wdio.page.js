@@ -11,6 +11,10 @@ const waitForTrainingCards = async () => {
   await (await trainingCardsForm()).waitForDisplayed();
 };
 
+const checkTrainingCardIsNotDisplayed = async () => {
+  await (await trainingCardsForm()).waitForDisplayed({ reverse: true });
+};
+
 const getCardContent = async (context, field) => {
   return await (await cardText(context, field)).getText();
 };
@@ -37,6 +41,7 @@ const submitTraining = async () => {
 };
 
 module.exports = {
+  checkTrainingCardIsNotDisplayed,
   waitForTrainingCards,
   getCardContent,
   getNextCardContent,

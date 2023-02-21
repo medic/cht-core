@@ -34,8 +34,10 @@ describe('Training Cards', () => {
     },
   };
 
+  let savedFormDoc;
   before(async () => {
-    await utils.saveDocs([ parent, patient, formDoc ]);
+    await utils.saveDocs([ parent, patient ]);
+    savedFormDoc = await utils.saveDoc(formDoc);
     await utils.createUsers([ user ]);
     await loginPage.login(user);
     await commonElements.waitForPageLoaded();
@@ -57,7 +59,28 @@ describe('Training Cards', () => {
     expect(await reportsPage.allReports()).to.be.empty;
   });
 
-  it('should complete training', async () => {
+  it('should display training after form was updated', async () => {
+    await commonPage.goToMessages();
+    await commonElements.waitForPageLoaded();
+
+    const trainingForm = await utils.getDoc(savedFormDoc.id);
+    expect(trainingForm.context.duration).to.equal(5);
+    trainingForm.context.duration = 10;
+    await utils.saveDocs([ trainingForm ]);
+
+    await commonPage.syncAndNotWaitForSuccess();
+    const updatedTrainingForm = await utils.getDoc(savedFormDoc.id);
+    expect(updatedTrainingForm.context.duration).to.equal(10);
+
+    await trainingCardsPage.waitForTrainingCards();
+    const context = 'training_cards_text_only';
+    const introCard = await trainingCardsPage.getCardContent(context, 'intro/intro_note_1:label"]');
+    expect(introCard).to.equal(
+      'There have been some changes to icons in your app. The next few screens will show you the difference.'
+    );
+  });
+
+  it('should display training after reload and complete training', async () => {
     await commonPage.goToMessages();
     await commonElements.waitForPageLoaded();
     // Unfinished trainings should appear again after reload.
@@ -82,5 +105,13 @@ describe('Training Cards', () => {
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
     expect(firstReport.heading).to.equal('OfflineUser');
     expect(firstReport.form).to.equal('training:text_only');
+  });
+
+  it('should not display completed training', async () => {
+    await commonPage.goToMessages();
+    await commonElements.waitForPageLoaded();
+    // Completed trainings should not appear again after reload.
+    browser.refresh();
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
   });
 });
