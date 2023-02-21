@@ -11,6 +11,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 @Component({
   selector: 'training-cards-modal',
@@ -27,6 +28,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     private geolocationService: GeolocationService,
     private translateService: TranslateService,
     private telemetryService: TelemetryService,
+    private feedbackService: FeedbackService,
   ) {
     super(bsModalRef);
     this.globalActions = new GlobalActions(this.store);
@@ -85,7 +87,9 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
       await this.ngZone.run(() => this.renderForm(form));
     } catch(error) {
       this.setError(error);
-      console.error('Error fetching form.', error);
+      const message = 'Training Cards :: Error fetching form.';
+      console.error(message, error);
+      this.feedbackService.submit(message);
     }
   }
 
@@ -98,7 +102,9 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
       this.recordTelemetryPostRender();
     } catch(error) {
       this.setError(error);
-      console.error('Error rendering form.', error);
+      const message = 'Training Cards :: Error rendering form.';
+      console.error(message, error);
+      this.feedbackService.submit(message);
     }
   }
 
@@ -170,9 +176,11 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
 
     } catch(error) {
       this.globalActions.setEnketoSavingStatus(false);
-      console.error('Error submitting form data: ', error);
-      const message = await this.translateService.get('training_cards.error.save');
-      this.globalActions.setEnketoError(message);
+      const message = 'Training Cards :: Error submitting form data.';
+      console.error(message, error);
+      this.feedbackService.submit(message);
+      const friendlyMessage = await this.translateService.get('training_cards.error.save');
+      this.globalActions.setEnketoError(friendlyMessage);
     }
   }
 

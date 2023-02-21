@@ -28,7 +28,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { GlobalActions } from '@mm-actions/global';
 import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
-import { SessionService } from '@mm-services/session.service';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -74,7 +74,7 @@ describe('Enketo service', () => {
   let zScoreService;
   let zScoreUtil;
   let globalActions;
-  let sessionService;
+  let trainingCardsService;
   let consoleErrorMock;
   let consoleWarnMock;
   let feedbackService;
@@ -128,8 +128,9 @@ describe('Enketo service', () => {
     zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
     globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
-    sessionService = {
-      userCtx: sinon.stub(),
+    trainingCardsService = {
+      isTrainingCardForm: sinon.stub(),
+      getTrainingCardDocId: sinon.stub(),
     };
     consoleErrorMock = sinon.stub(console, 'error');
     consoleWarnMock = sinon.stub(console, 'warn');
@@ -166,7 +167,7 @@ describe('Enketo service', () => {
         { provide: ZScoreService, useValue: zScoreService },
         { provide: TransitionsService, useValue: transitionsService },
         { provide: TranslateService, useValue: translateService },
-        { provide: SessionService, useValue: sessionService },
+        { provide: TrainingCardsService, useValue: trainingCardsService },
         { provide: FeedbackService, useValue: feedbackService },
       ],
     });
@@ -617,7 +618,7 @@ describe('Enketo service', () => {
       form.validate.resolves(true);
       const content = loadXML('sally-lmp');
       form.getDataStr.returns(content);
-      sessionService.userCtx.returns({ name: 'user-jim' });
+      trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
       dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
       UserContact.resolves({ _id: '123', phone: '555' });
       UserSettings.resolves({ name: 'Jim' });
@@ -649,7 +650,8 @@ describe('Enketo service', () => {
     it('creates training', () => {
       const content = loadXML('sally-lmp');
       form.getDataStr.returns(content);
-      sessionService.userCtx.returns({ name: 'user-jim' });
+      trainingCardsService.isTrainingCardForm.returns(true);
+      trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
       form.validate.resolves(true);
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       UserContact.resolves({ _id: '123', phone: '555' });

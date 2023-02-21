@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import * as moment from 'moment';
+import { v4 as uuid } from 'uuid';
 
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
@@ -43,6 +44,13 @@ export class TrainingCardsService {
         userRoles: xForm.context?.user_roles,
       }))
       .filter(form => {
+        if (!this.isTrainingCardForm(form.code)) {
+          const error = `Training Cards :: Incorrect internalId format. Doc ID: ${form.id}`;
+          console.error(error);
+          this.feedbackService.submit(error);
+          return false;
+        }
+
         const hasRole = form.userRoles?.find(role => this.sessionService.hasRole(role, userCtx));
         if (form.userRoles && !hasRole) {
           return false; // Form has 'userRoles', but the user doesn't have any assigned.
@@ -67,7 +75,7 @@ export class TrainingCardsService {
       .get()
       .allDocs({
         include_docs: true,
-        startkey: TRAINING_PREFIX + userCtx.name,
+        startkey: TRAINING_PREFIX + userCtx.name + ':',
         endkey: TRAINING_PREFIX + userCtx.name + ':\ufff0',
       });
 
@@ -76,7 +84,7 @@ export class TrainingCardsService {
 
   private async handleTrainingCards(error, xForms) {
     if (error) {
-      const message = 'Error fetching training cards.';
+      const message = 'Training Cards :: Error fetching forms.';
       console.error(message, error);
       this.feedbackService.submit(message);
       return;
@@ -99,7 +107,7 @@ export class TrainingCardsService {
         .catch(() => {});
 
     } catch (error) {
-      const message = 'Error showing training cards modal.';
+      const message = 'Training Cards :: Error showing modal.';
       console.error(message, error);
       this.feedbackService.submit(message);
       return;
@@ -128,4 +136,15 @@ export class TrainingCardsService {
     );
   }
 
+  public isTrainingCardForm(formInternalId) {
+    return !!formInternalId?.startsWith(TRAINING_PREFIX);
+  }
+
+  public getTrainingCardDocId() {
+    const userName = this.sessionService.userCtx()?.name;
+    if (!userName) {
+      throw new Error('Training Cards :: Cannot create document ID, user context does not have the "name" property.');
+    }
+    return `${TRAINING_PREFIX}${userName}:${uuid()}`;
+  }
 }

@@ -16,6 +16,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 describe('TrainingCardsComponent', () => {
   let fixture: ComponentFixture<TrainingCardsComponent>;
@@ -30,6 +31,8 @@ describe('TrainingCardsComponent', () => {
   let enketoService;
   let globalActions;
   let telemetryService;
+  let feedbackService;
+  let consoleErrorMock;
 
   beforeEach(() => {
     bsModalRef = {
@@ -37,7 +40,7 @@ describe('TrainingCardsComponent', () => {
       onHidden: new Subject(),
       onHide: new Subject(),
     };
-
+    consoleErrorMock = sinon.stub(console, 'error');
     modalSuperCloseStub = sinon.stub(MmModalAbstract.prototype, 'close');
     geoHandle = { cancel: sinon.stub() };
     geolocationService = { init: sinon.stub().returns(geoHandle) };
@@ -52,6 +55,7 @@ describe('TrainingCardsComponent', () => {
       render: sinon.stub().resolves(),
     };
     telemetryService = { record: sinon.stub() };
+    feedbackService = { submit: sinon.stub() };
     const mockedSelectors = [
       { selector: Selectors.getEnketoStatus, value: {} },
       { selector: Selectors.getEnketoSavingStatus, value: false },
@@ -82,6 +86,7 @@ describe('TrainingCardsComponent', () => {
           { provide: TranslateService, useValue: translateService },
           { provide: EnketoService, useValue: enketoService },
           { provide: TelemetryService, useValue: telemetryService },
+          { provide: FeedbackService, useValue: feedbackService },
         ],
       })
       .compileComponents()
@@ -116,7 +121,7 @@ describe('TrainingCardsComponent', () => {
   }));
 
   it('should close modal when quiting training', fakeAsync(() => {
-    const consoleErrorMock = sinon.stub(console, 'error');
+    sinon.resetHistory();
     const xmlForm = { _id: 'training:a_form_id', some: 'content' };
     const renderedForm = { rendered: 'form', model: {}, instance: {} };
     xmlFormsService.get.resolves(xmlForm);
@@ -136,6 +141,7 @@ describe('TrainingCardsComponent', () => {
     expect(enketoService.render.args[0][2]).to.equal(null);
     expect(component.form).to.equal(renderedForm);
     expect(consoleErrorMock.notCalled).to.be.true;
+    expect(feedbackService.submit.notCalled).to.be.true;
     expect(telemetryService.record.callCount).to.equal(2);
     expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
     expect(telemetryService.record.args[1][0]).to.equal('enketo:training:a_form_id:add:quit');
@@ -244,7 +250,7 @@ describe('TrainingCardsComponent', () => {
     }));
 
     it('should catch enketo saving error', fakeAsync(() => {
-      const consoleErrorMock = sinon.stub(console, 'error');
+      sinon.resetHistory();
       xmlFormsService.get.resolves({ the: 'rendered training form' });
       enketoService.render.resolves({ the: 'rendered training form' });
       enketoService.save.rejects({ some: 'error' });
@@ -263,9 +269,11 @@ describe('TrainingCardsComponent', () => {
       ]);
       expect(consoleErrorMock.calledOnce).to.be.true;
       expect(consoleErrorMock.args[0]).to.deep.equal([
-        'Error submitting form data: ',
+        'Training Cards :: Error submitting form data.',
         { some: 'error' }
       ]);
+      expect(feedbackService.submit.calledOnce).to.be.true;
+      expect(feedbackService.submit.args[0]).to.deep.equal([ 'Training Cards :: Error submitting form data.' ]);
       expect(globalActions.setEnketoError.calledOnce).to.be.true;
       expect(globalActions.setEnketoError.args[0]).to.deep.equal([ 'training_cards.error.save' ]);
       expect(globalActions.setEnketoSavingStatus.calledTwice).to.be.true;
@@ -277,9 +285,9 @@ describe('TrainingCardsComponent', () => {
 
   describe('loadForm', () => {
     it('should load form', fakeAsync(() => {
+      sinon.resetHistory();
       const xmlForm = { _id: 'training:a_form_id', some: 'content' };
       const renderedForm = { rendered: 'form', model: {}, instance: {} };
-      const consoleErrorMock = sinon.stub(console, 'error');
       xmlFormsService.get.resolves(xmlForm);
       enketoService.render.resolves(renderedForm);
       store.overrideSelector(Selectors.getTrainingCardFormId, 'training:a_form_id');
@@ -294,6 +302,7 @@ describe('TrainingCardsComponent', () => {
       expect(enketoService.render.args[0][2]).to.equal(null);
       expect(component.form).to.equal(renderedForm);
       expect(consoleErrorMock.notCalled).to.be.true;
+      expect(feedbackService.submit.notCalled).to.be.true;
       expect(telemetryService.record.calledOnce).to.be.true;
       expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
 
@@ -323,9 +332,8 @@ describe('TrainingCardsComponent', () => {
     }));
 
     it('should catch form loading errors', fakeAsync(() => {
-      const consoleErrorMock = sinon.stub(console, 'error');
       xmlFormsService.get.rejects({ error: 'boom' });
-
+      sinon.resetHistory();
       store.overrideSelector(Selectors.getTrainingCardFormId, 'training:a_form_id');
       store.refreshState();
       tick();
@@ -334,9 +342,11 @@ describe('TrainingCardsComponent', () => {
       expect(enketoService.render.notCalled).to.be.true;
       expect(consoleErrorMock.calledOnce).to.be.true;
       expect(consoleErrorMock.args[0]).to.deep.equal([
-        'Error fetching form.',
+        'Training Cards :: Error fetching form.',
         { error: 'boom' }
       ]);
+      expect(feedbackService.submit.calledOnce).to.be.true;
+      expect(feedbackService.submit.args[0]).to.deep.equal([ 'Training Cards :: Error fetching form.' ]);
       expect(component.errorTranslationKey).to.equal('training_cards.error.loading');
       expect(component.loadingContent).to.be.false;
       expect(component.hideModalFooter).to.be.false;
@@ -344,10 +354,9 @@ describe('TrainingCardsComponent', () => {
     }));
 
     it('should catch enketo errors', fakeAsync(() => {
-      const consoleErrorMock = sinon.stub(console, 'error');
       xmlFormsService.get.resolves({ _id: 'training:a_form_id', some: 'content' });
       enketoService.render.rejects({ some: 'error' });
-
+      sinon.resetHistory();
       store.overrideSelector(Selectors.getTrainingCardFormId, 'training:a_form_id');
       store.refreshState();
       tick();
@@ -357,9 +366,11 @@ describe('TrainingCardsComponent', () => {
       expect(component.form).to.equal(null);
       expect(consoleErrorMock.calledOnce).to.be.true;
       expect(consoleErrorMock.args[0]).to.deep.equal([
-        'Error rendering form.',
+        'Training Cards :: Error rendering form.',
         { some: 'error' }
       ]);
+      expect(feedbackService.submit.calledOnce).to.be.true;
+      expect(feedbackService.submit.args[0]).to.deep.equal([ 'Training Cards :: Error rendering form.' ]);
     }));
   });
 });

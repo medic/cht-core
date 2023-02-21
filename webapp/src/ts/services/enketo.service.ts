@@ -30,8 +30,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
-import { SessionService } from '@mm-services/session.service';
-import { TRAINING_PREFIX } from '@mm-services/training-cards.service';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 @Injectable({
   providedIn: 'root'
@@ -55,11 +54,11 @@ export class EnketoService {
     private userContactService: UserContactService,
     private xmlFormsService: XmlFormsService,
     private zScoreService: ZScoreService,
+    private trainingCardsService: TrainingCardsService,
     private transitionsService: TransitionsService,
     private translateService: TranslateService,
     private feedbackService:FeedbackService,
     private ngZone: NgZone,
-    private sessionService: SessionService,
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -718,9 +717,8 @@ export class EnketoService {
           from: contact && contact.phone
         };
 
-        if (this.isTrainingCard(formInternalId)) {
-          const userName = this.sessionService.userCtx()?.name;
-          doc._id = `${TRAINING_PREFIX}${userName}:${uuid()}`;
+        if (this.trainingCardsService.isTrainingCardForm(formInternalId)) {
+          doc._id = this.trainingCardsService.getTrainingCardDocId();
         }
 
         return doc;
@@ -853,10 +851,6 @@ export class EnketoService {
     delete window.CHTCore.debugFormModel;
     delete this.currentForm;
     this.objUrls.length = 0;
-  }
-
-  private isTrainingCard(formInternalId) {
-    return formInternalId?.startsWith(TRAINING_PREFIX);
   }
 }
 
