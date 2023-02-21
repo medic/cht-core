@@ -262,7 +262,6 @@ describe('Contact summary info', () => {
     await utils.revertDb([/^form:/], true);
   });
   
-
   it('should load contact summary', async () => {
     await utils.updateSettings(SETTINGS, true);
     await commonElements.closeReloadModal();
