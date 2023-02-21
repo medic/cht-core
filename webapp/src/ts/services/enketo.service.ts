@@ -440,6 +440,7 @@ export class EnketoService {
       isFormInModal,
     } = formContext;
 
+    this.unload(this.currentForm);
     const $selector = $(selector);
     return this
       .transformXml(formDoc)
@@ -838,10 +839,12 @@ export class EnketoService {
   }
 
   unload(form) {
-    $(window).off('.enketo-pagemode');
-    if (form) {
-      form.resetView();
+    if (form !== this.currentForm) {
+      return;
     }
+
+    $(window).off('.enketo-pagemode');
+    form?.resetView();
     // unload blobs
     this.objUrls.forEach((url) => {
       (window.URL || window.webkitURL).revokeObjectURL(url);

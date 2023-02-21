@@ -136,7 +136,6 @@ describe('TrainingCardsComponent', () => {
     expect(enketoService.render.args[0][2]).to.equal(null);
     expect(component.form).to.equal(renderedForm);
     expect(consoleErrorMock.notCalled).to.be.true;
-    expect(enketoService.unload.calledOnce).to.be.true;
     expect(telemetryService.record.callCount).to.equal(2);
     expect(telemetryService.record.args[0][0]).to.equal('enketo:training:a_form_id:add:render');
     expect(telemetryService.record.args[1][0]).to.equal('enketo:training:a_form_id:add:quit');
@@ -213,9 +212,8 @@ describe('TrainingCardsComponent', () => {
       component.saveForm();
       tick();
 
-      // Unload form before loading a new one and then when saving.
-      expect(enketoService.unload.calledTwice).to.be.true;
-      expect(enketoService.unload.args[1]).to.deep.equal([{
+      expect(enketoService.unload.calledOnce).to.be.true;
+      expect(enketoService.unload.args[0]).to.deep.equal([{
         _id: 'form:training:new_feature',
         pages: { activePages: [ { id: 'page-1' } ] },
       }]);
@@ -257,8 +255,6 @@ describe('TrainingCardsComponent', () => {
       component.saveForm();
       tick();
 
-      // Unloading from before loading a new one.
-      expect(enketoService.unload.calledOnce).to.be.true;
       expect(enketoService.save.calledOnce).to.be.true;
       expect(enketoService.save.args[0]).to.deep.equal([
         'training:a_form_id',
@@ -290,7 +286,6 @@ describe('TrainingCardsComponent', () => {
       store.refreshState();
       tick();
 
-      expect(enketoService.unload.calledOnce).to.be.true;
       expect(geolocationService.init.calledOnce).to.be.true;
       expect(xmlFormsService.get.calledOnce).to.be.true;
       expect(xmlFormsService.get.args[0]).to.deep.equal([ 'training:a_form_id' ]);

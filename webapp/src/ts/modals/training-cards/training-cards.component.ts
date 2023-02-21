@@ -120,7 +120,6 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
 
       if (trainingCardFormId && trainingCardFormId !== this.trainingCardFormId) {
         this.trainingCardFormId = trainingCardFormId;
-        this.enketoService.unload(this.form);
         this.loadForm();
       }
     });
