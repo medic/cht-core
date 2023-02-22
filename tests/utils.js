@@ -1218,6 +1218,12 @@ module.exports = {
   stopSentinel: () => stopService('sentinel'),
   startSentinel: () => startService('sentinel'),
 
+  stopApi: () => stopService('api'),
+  startApi: async () => {
+    await startService('api');
+    await listenForApi();
+  },
+
   saveCredentials: (key, password) => {
     const options = {
       path: `/api/v1/credentials/${key}`,

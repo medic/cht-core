@@ -150,7 +150,6 @@ jobs:
     - name: Install cht-conf
       run:  npm install -g cht-conf
     - run: npm ci --legacy-peer-deps
-# TODO only run on "master" and "push"
     - name: Fetch allure history
       uses: actions/checkout@v3
       with:
@@ -196,7 +195,7 @@ jobs:
         mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}
         cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }} | true
     - name: Upload allure report
-      if: always()
+      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       uses: actions-js/push@master
       with:
         github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
