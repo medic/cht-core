@@ -9,6 +9,7 @@ const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const manifest = require('./manifest');
 const config = require('../config');
+const environment = require('../environment');
 
 const MEDIC_DDOC_ID = '_design/medic';
 
@@ -87,6 +88,7 @@ const handleSettingsChange = () => {
       logger.error('Failed to reload settings: %o', err);
       process.exit(1);
     })
+    .then(() => addUserRolesToDb())
     .then(() => initTransitionLib())
     .then(() => logger.debug('Settings updated'));
 };
@@ -170,9 +172,17 @@ const listen = () => {
     });
 };
 
+const addUserRolesToDb = async () => {
+  const roles = config.get('roles');
+  for (const role of Object.keys(roles)) {
+    await db.addRoleToSecurity(environment.db, role, false);
+  }
+};
+
 module.exports = {
   load,
   listen,
   updateServiceWorker,
   loadTranslations,
+  addUserRolesToDb,
 };

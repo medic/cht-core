@@ -2,6 +2,7 @@ const PouchDB = require('pouchdb-core');
 const logger = require('./logger');
 const environment = require('./environment');
 const rpn = require('request-promise-native');
+const request = require('request-promise-native');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -162,4 +163,29 @@ if (UNIT_TEST_ENV) {
 
     throw new Error(`Error while saving docs: ${errors.join(', ')}`);
   };
+
+  const DEFAULT_SECURITY_STRUCTURE = {
+    names: [],
+    roles: [],
+  };
+
+  module.exports.addRoleToSecurity = async (dbname, role, addAsAdmin) => {
+    const securityUrl = new URL(environment.serverUrl);
+    securityUrl.pathname = `${dbname}/_security`;
+
+    const securityObject = await rpn.get({ url: securityUrl.toString(), json: true });
+    const property = addAsAdmin ? 'admins' : 'members';
+    if (!securityObject[property]) {
+      securityObject[property] = DEFAULT_SECURITY_STRUCTURE;
+    }
+
+    if (securityObject[property].roles.includes(role)) {
+      return;
+    }
+
+    logger.info(`Adding ${role} role to ${dbname} ${property}`);
+    securityObject[property].roles.push(role);
+    return await rpn.put({ url: securityUrl.toString(), json: true, body: securityObject });
+  };
+
 }
