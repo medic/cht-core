@@ -666,10 +666,8 @@ describe('db-doc handler', () => {
             // can read reports about deleted patients
             results.forEach((result, idx) => {
               if (reportScenarios[idx].allowed) {
-                console.log(idx, reportScenarios[idx].doc);
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc, idx);
               } else {
-                console.log(idx);
                 chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'}, idx);
               }
             });
