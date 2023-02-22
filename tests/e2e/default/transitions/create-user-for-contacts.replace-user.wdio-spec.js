@@ -243,6 +243,7 @@ describe('Create user for contacts', () => {
     await utils.deleteUsers(newUsers.map(username => ({ username })));
     newUsers.length = 0;
     await utils.revertDb([/^form:/], true);
+    await sentinelUtils.waitForSentinel();
     await browser.reloadSession();
     await browser.url('/');
   });
@@ -393,7 +394,7 @@ describe('Create user for contacts', () => {
 
         await commonPage.goToPeople(originalContactId);
         await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
-        await contactsPage.submitForm();
+        await contactsPage.submitForm(false);
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();
@@ -652,8 +653,7 @@ describe('Create user for contacts', () => {
         await commonPage.waitForPageLoaded();
         await commonPage.goToPeople(originalContactId);
         await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
-        await (await genericForm.submitButton()).waitForDisplayed();
-        await (await genericForm.submitButton()).click();
+        await contactsPage.submitForm(false);
 
         // Logout triggered immediately
         await (await loginPage.loginButton()).waitForDisplayed();

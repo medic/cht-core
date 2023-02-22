@@ -77,25 +77,26 @@ const getContactTypes = function($question, $textInput) {
   return types;
 };
 
+const getCurrentForm = () => window.CHTCore.Enketo && window.CHTCore.Enketo.getCurrentForm();
+
 const changeHandler = function() {
   const $this = $(this);
   const selected = $this.select2('data');
   const doc = selected && selected[0] && selected[0].doc;
-  if (doc) {
+  const currentForm = getCurrentForm();
+  if (doc && currentForm && currentForm.model) { // check if form has been unloaded
     const field = $this.attr('name');
     const index = $('select[name="' + field + '"]').index(this);
     const keyRoot = field.substring(0, field.lastIndexOf('/'));
-    updateFields(doc, keyRoot, index, field);
+    updateFields(currentForm, doc, keyRoot, index, field);
     // https://github.com/enketo/enketo-core/issues/910
     // Re-validate the current question now that we have loaded the doc data.
     // This will clear any constraint errors that were resolved by the doc data.
-    window.CHTCore.Enketo.getCurrentForm().validateContent($this.parent());
+    currentForm.validateContent($this.parent());
   }
 };
 
-const updateFields = function(data, keyRoot, index, originatingKeyPath) {
-  const Enketo = window.CHTCore.Enketo;
-
+const updateFields = function(currentForm, data, keyRoot, index, originatingKeyPath) {
   Object.keys(data).forEach(function(key) {
     const path = keyRoot + '/' + key;
     if (path === originatingKeyPath) {
@@ -109,15 +110,18 @@ const updateFields = function(data, keyRoot, index, originatingKeyPath) {
     }
     if (_.isObject(value)) {
       // recursively set fields for children
-      return updateFields(value, path, index, originatingKeyPath);
+      return updateFields(currentForm, value, path, index, originatingKeyPath);
     }
 
-    const node = Enketo.getCurrentForm().model.node(path, index, { onlyLeaf: true });
-
-    if(node.getElements().length) {
+    const node = currentForm.model.node(path, index, { onlyLeaf: true });
+    if (node.getElements().length) {
       node.setVal(value);
     }
   });
+
 };
 
 module.exports = Dbobjectwidget;
+
+// exposed for testing
+module.exports._updateFields = updateFields;

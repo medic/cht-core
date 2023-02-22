@@ -125,6 +125,7 @@ describe('Create user when adding contact', () => {
     await utils.deleteUsers(newUsers.map(username => ({ username })));
     newUsers.length = 0;
     await utils.revertDb([/^form:/], true);
+    await sentinelUtils.waitForSentinel();
     await browser.reloadSession();
     await browser.url('/');
   });
