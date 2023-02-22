@@ -92,6 +92,7 @@ const processDocs = docs => {
     .then(infoDocs => {
       changes.forEach(change => {
         change.info = infoDocs.find(infoDoc => infoDoc.doc_id === change.id);
+        change.initialProcessing = !change.info.transitions;
       });
       return infodoc.bulkUpdate(infoDocs);
     })
