@@ -49,8 +49,8 @@ const expectCorrectMetadata = (metadata) => {
 describe('accessing couch clustering endpoint', () => {
   it('should block unauthenticated access through the host network', async () => {
     await expect(
-      utils.request({ uri: `https://localhost/_node/_local/_dbs/${constants.DB_NAME}` })
-    ).to.be.rejectedWith(Error, 'Authentication required');
+      utils.request({ uri: `https://localhost/_node/_local/_dbs/${constants.DB_NAME}`, noAuth: true })
+    ).to.be.rejectedWith(Error, 'unauthorized');
   });
 
   it('should allow authenticated access through host network', async () => {

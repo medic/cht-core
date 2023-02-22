@@ -2,7 +2,6 @@ const PouchDB = require('pouchdb-core');
 const logger = require('./logger');
 const environment = require('./environment');
 const rpn = require('request-promise-native');
-const request = require('request-promise-native');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -41,7 +40,8 @@ if (UNIT_TEST_ENV) {
     'allDbs',
     'activeTasks',
     'saveDocs',
-    'createVault'
+    'createVault',
+    'addRoleToSecurity',
   ];
 
   const notStubbed = (first, second) => {

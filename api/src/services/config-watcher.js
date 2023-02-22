@@ -174,6 +174,10 @@ const listen = () => {
 
 const addUserRolesToDb = async () => {
   const roles = config.get('roles');
+  if (!roles || typeof roles !== 'object') {
+    return;
+  }
+
   for (const role of Object.keys(roles)) {
     await db.addRoleToSecurity(environment.db, role, false);
   }
