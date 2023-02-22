@@ -101,7 +101,7 @@ const handleTranslationsChange = () => {
 };
 
 const handleFormChange = (change) => {
-  logger.info('Detected form change for', change.id);
+  logger.info('Detected form change for: %s', change.id);
   if (change.deleted) {
     return Promise.resolve();
   }
@@ -133,6 +133,7 @@ const load = () => {
   loadViewMaps();
   return loadTranslations()
     .then(() => loadSettings())
+    .then(() => addUserRolesToDb())
     .then(() => initTransitionLib())
     .then(() => db.createVault());
 };
@@ -141,7 +142,6 @@ const listen = () => {
   db.medic
     .changes({ live: true, since: 'now', return_docs: false })
     .on('change', change => {
-
       if (tombstoneUtils.isTombstoneId(change.id)) {
         return Promise.resolve();
       }
