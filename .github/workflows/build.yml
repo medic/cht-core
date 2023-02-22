@@ -207,6 +207,8 @@ jobs:
       with:
         name: ${{ matrix.grunt-cmd }}
         path: |
+          allure-results
+          allure-report
           tests/logs
           tests/results/
       if: ${{ failure() }}
