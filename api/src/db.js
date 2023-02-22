@@ -183,7 +183,7 @@ if (UNIT_TEST_ENV) {
       return;
     }
 
-    logger.info(`Adding ${role} role to ${dbname} ${property}`);
+    logger.info(`Adding "${role}" role to ${dbname} ${property}`);
     securityObject[property].roles.push(role);
     return await rpn.put({ url: securityUrl.toString(), json: true, body: securityObject });
   };
