@@ -40,8 +40,8 @@ describe('Create user meta db : ', () => {
 
     // admins can also read and write from the users meta db
     const adminDoc = { _id: uuid() };
-    await utils.requestOnTestMetaDb({ method: 'POST', body: doc, username: options.userName });
-    const adminChanges = await utils.requestOnTestMetaDb({ path: '/_changes', username: options.userName });
+    await utils.requestOnTestMetaDb({ method: 'POST', body: adminDoc, userName: options.userName });
+    const adminChanges = await utils.requestOnTestMetaDb({ path: '/_changes', userName: options.userName });
     const adminChangeIds = adminChanges.results.map(change => change.id);
     expect(adminChangeIds).to.include.members(['_design/medic-user', doc._id, adminDoc._id]);
   });
