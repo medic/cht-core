@@ -24,6 +24,7 @@ import * as bootstrapper from '../js/bootstrapper';
 require('../js/moment-locales/tl');
 require('../js/moment-locales/hil');
 require('../js/moment-locales/ceb');
+require('../js/moment-locales/lg');
 
 require('select2');
 require('../js/enketo/main');

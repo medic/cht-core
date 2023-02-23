@@ -13,7 +13,8 @@ const LOCAL_NAME_MAP = {
   ne: 'नेपाली (Nepali)',
   sw: 'Kiswahili (Swahili)',
   hi: 'हिन्दी (Hindi)',
-  id: 'Bahasa Indonesia (Indonesian)'
+  id: 'Bahasa Indonesia (Indonesian)',
+  lg: 'Luganda (Ganda)'
 };
 
 const extractLocaleCode = filename => {
