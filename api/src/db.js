@@ -170,6 +170,10 @@ if (UNIT_TEST_ENV) {
   };
 
   module.exports.addRoleToSecurity = async (dbname, role, addAsAdmin) => {
+    if (!dbname || !role) {
+      return;
+    }
+
     const securityUrl = new URL(environment.serverUrl);
     securityUrl.pathname = `${dbname}/_security`;
 
@@ -179,13 +183,17 @@ if (UNIT_TEST_ENV) {
       securityObject[property] = DEFAULT_SECURITY_STRUCTURE;
     }
 
+    if (!securityObject[property].roles) {
+      throw new Error('Invalid database security %o', securityObject);
+    }
+
     if (securityObject[property].roles.includes(role)) {
       return;
     }
 
     logger.info(`Adding "${role}" role to ${dbname} ${property}`);
     securityObject[property].roles.push(role);
-    return await rpn.put({ url: securityUrl.toString(), json: true, body: securityObject });
+    await rpn.put({ url: securityUrl.toString(), json: true, body: securityObject });
   };
 
 }
