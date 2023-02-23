@@ -202,17 +202,28 @@ const createUser = (data, response) => {
   });
 };
 
-const createContact = (data, response) => {
+const clearCreateUserForContact = async (doc) => {
+  const contact = await db.medic.get(doc._id);
+  delete contact.user_for_contact.create;
+  delete doc.user_for_contact.create;
+  const { rev } = await db.medic.put(contact);
+  doc._rev = rev;
+};
+
+const createContact = async (data, response) => {
   if (!data.contact) {
     return;
   }
-  return people.getOrCreatePerson(data.contact).then(doc => {
-    data.contact = doc;
-    response.contact = {
-      id: doc._id,
-      rev: doc._rev
-    };
-  });
+  const doc = await people.getOrCreatePerson(data.contact);
+  if(doc.user_for_contact && doc.user_for_contact.create) {
+    await clearCreateUserForContact(doc);
+  }
+
+  data.contact = doc;
+  response.contact = {
+    id: doc._id,
+    rev: doc._rev
+  };
 };
 
 const createUserSettings = (data, response) => {

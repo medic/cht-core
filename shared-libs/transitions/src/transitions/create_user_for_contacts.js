@@ -79,7 +79,8 @@ const generateUniqueUsername = async (contactName, collisionCount = 0) => {
   }
 };
 
-const createNewUser = async ({ roles }, { _id, name, phone, parent }) => {
+const createNewUser = async ({ roles }, contact) => {
+  const { _id, name, phone, parent } = contact;
   if (!name) {
     throw new Error(`Contact [${_id}] must have a name.`);
   }
@@ -94,7 +95,9 @@ const createNewUser = async ({ roles }, { _id, name, phone, parent }) => {
     fullname: name,
   };
   try {
-    return await users.createUser(user, config.get('app_url'));
+    await users.createUser(user, config.get('app_url'));
+    // Pick up any updates made to the contact
+    Object.assign(contact, await db.medic.get(_id));
   } catch (err) {
     if (!err.message || typeof err.message === 'string') {
       throw err;
@@ -138,7 +141,6 @@ const addUser = async (contact) => {
 
   const roles = Array.isArray(contact.roles) && contact.roles.length > 0 ? contact.roles : [contact.role];
   await createNewUser({ roles }, contact);
-  delete contact.user_for_contact.create;
 };
 
 const isCreatingUser = ({ doc, info, initialProcessing }) =>

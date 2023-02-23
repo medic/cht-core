@@ -254,6 +254,7 @@ describe('create_user_for_contacts', () => {
     let createUser;
     let resetPassword;
     let validateNewUsername;
+    let medicGet;
 
     beforeEach(() => {
       config.get
@@ -265,7 +266,7 @@ describe('create_user_for_contacts', () => {
         .resolves(ORIGINAL_CONTACT);
       getOrCreatePerson
         .withArgs(NEW_CONTACT._id)
-        .resolves(NEW_CONTACT);
+        .resolves({ ...NEW_CONTACT });
       getUserSettings = sinon
         .stub(users, 'getUserSettings')
         .resolves(ORIGINAL_USER);
@@ -278,6 +279,8 @@ describe('create_user_for_contacts', () => {
       validateNewUsername = sinon
         .stub(users, 'validateNewUsername')
         .resolves();
+      medicGet = sinon
+        .stub(db.medic, 'get');
     });
 
     const expectInitialDataRetrieved = (users) => {
@@ -322,22 +325,28 @@ describe('create_user_for_contacts', () => {
 
     it(`creates user for new contact with create flag of 'true' and multiple roles`, async () => {
       const doc = getCreatedContact({ roles: ['nurse', 'chw'], role: null });
+      medicGet.resolves({ ...doc, user_for_contact: {} });
 
       const result = await transition.onMatch({ doc, initialProcessing: true });
       expect(result).to.be.true;
 
       expectUsersCreated([{ contact: doc, user: doc }]);
       expect(doc.user_for_contact.create).to.not.exist;
+      expect(medicGet.callCount).to.equal(1);
+      expect(medicGet.args[0]).to.deep.equal([doc._id]);
     });
 
     it(`creates user for new contact with create flag of 'true' and single role`, async () => {
       const doc = getCreatedContact({ role: 'chw' });
+      medicGet.resolves({ ...doc, user_for_contact: {} });
 
       const result = await transition.onMatch({ doc, initialProcessing: true });
       expect(result).to.be.true;
 
       expectUsersCreated([{ contact: doc, user: { roles: [doc.role] } }]);
       expect(doc.user_for_contact.create).to.not.exist;
+      expect(medicGet.callCount).to.equal(1);
+      expect(medicGet.args[0]).to.deep.equal([doc._id]);
     });
 
     it('records error when creating user when an error is thrown generating a new username', async () => {
@@ -418,6 +427,8 @@ describe('create_user_for_contacts', () => {
       expectUsersCreated([{ contact: NEW_CONTACT, user: ORIGINAL_USER }]);
       expectUserPasswordReset([ORIGINAL_USER]);
       expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
+      expect(medicGet.callCount).to.equal(1);
+      expect(medicGet.args[0]).to.deep.equal([NEW_CONTACT._id]);
     });
 
     [
@@ -733,6 +744,8 @@ describe('create_user_for_contacts', () => {
         role: 'chw',
         phone: '+1234567890',
       };
+      medicGet.withArgs(doc._id).resolves({ ...doc, user_for_contact: { ...doc.user_for_contact } });
+      medicGet.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
       doc.user_for_contact.create = 'true';
 
       const result = await transition.onMatch({ doc, initialProcessing: true });
@@ -746,6 +759,8 @@ describe('create_user_for_contacts', () => {
       expectUserPasswordReset([ORIGINAL_USER]);
       expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
       expect(doc.user_for_contact.create).to.not.exist;
+      expect(medicGet.callCount).to.equal(2);
+      expect(medicGet.args).to.deep.equal([[doc._id], [NEW_CONTACT._id]]);
     });
 
     it('replaces user when create fails for the same contact at the same time', async () => {
@@ -778,6 +793,7 @@ describe('create_user_for_contacts', () => {
         role: 'chw',
         phone: '+1234567890',
       };
+      medicGet.resolves({ ...doc, user_for_contact: { ...doc.user_for_contact } });
       doc.user_for_contact.create = 'true';
 
       try {
@@ -793,6 +809,8 @@ describe('create_user_for_contacts', () => {
       expectUsersCreated([{ contact: doc, user: { roles: [doc.role] } }]);
       expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('ERROR');
       expect(doc.user_for_contact.create).to.not.exist;
+      expect(medicGet.callCount).to.equal(1);
+      expect(medicGet.args[0]).to.deep.equal([doc._id]);
     });
 
     it('records errors when creating and replacing users for the same contact at the same time both fail', async () => {
