@@ -46,6 +46,7 @@ export class TasksComponent implements OnInit, OnDestroy {
   error;
   errorDetails;
   url;
+  currentDate;
   errorDetailsCollapsed;
   userCtx;
   replicationStatus;
@@ -111,6 +112,7 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.error = false;
     this.errorDetailsCollapsed = true;
     this.url = window.location.hostname;
+    this.currentDate = Date.now();
     this.userCtx = this.sessionService.userCtx();
     this.hasTasks = false;
     this.loading = true;
