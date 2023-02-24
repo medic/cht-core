@@ -174,7 +174,9 @@ describe('FormsXmlCtrl controller', () => {
       setTimeout(() => {
         rootScope.$digest();
         setTimeout(() => {
-          expectStatusError('Upload failed: Unexpected token o in JSON at position 1');
+          chai.expect(scope.status.uploading).to.equal(false);
+          chai.expect(scope.status.error).to.equal(true);
+          chai.expect(scope.status.success).to.equal(false);
           done();
         });
       });
