@@ -54,6 +54,8 @@ if [ "$status" = "true" ]; then
     result="downloaded fresh local-ip.plip.com"
     docker exec -it $container bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.plip.com/fullchain.pem"
     docker exec -it $container bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.plip.com/privkey.pem"
+    docker exec -it $container bash -c "sed -i '/ssl_protocols/c\ssl_protocols               SSLv3 TLSv1.2 TLSv1.1 TLSv1;' /etc/nginx/nginx.conf"
+    docker exec -it $container bash -c "sed -i '/ssl_ciphers/c\ssl_ciphers                 HIGH:\!aNULL:\!MD5;' /etc/nginx/nginx.conf"
   elif [ "$action" = "expire" ]; then
     result="installed expired local-ip.co"
     docker cp ./tls_certificates/local-ip-expired.crt "$container":/etc/nginx/private/cert.pem
@@ -75,7 +77,11 @@ if [ "$status" = "true" ]; then
 
 else
   echo ""
-  echo "'$container' docker container is not running. Please start it and try again."
+  echo "Docker container '$container' is not running or wrong container name passed. "
+  echo "Please start '$container' and try again or specify one of these nginx containers:"
+  echo
+  docker ps --filter "name=nginx"  --format "{{.Names}}"
+  echo
   echo "See this URL for more information on running containers:"
   echo ""
   echo "    https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/"
