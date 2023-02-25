@@ -51,11 +51,9 @@ status=$(docker inspect --format="{{.State.Running}}" $container 2> /dev/null)
 if [ "$status" = "true" ]; then
   result=""
   if [ "$action" = "refresh" ]; then
-    result="downloaded fresh local-ip.co"
-    docker exec -it $container bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
-    docker exec -it $container bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
-    docker exec -it $container bash -c "cat server.pem chain.pem > /etc/nginx/private/cert.pem"
-    docker exec -it $container bash -c "curl -s -o /etc/nginx/private/key.pem http://local-ip.co/cert/server.key"
+    result="downloaded fresh local-ip.plip.com"
+    docker exec -it $container bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.plip.com/fullchain.pem"
+    docker exec -it $container bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.plip.com/privkey.pem"
   elif [ "$action" = "expire" ]; then
     result="installed expired local-ip.co"
     docker cp ./tls_certificates/local-ip-expired.crt "$container":/etc/nginx/private/cert.pem
@@ -69,7 +67,7 @@ if [ "$status" = "true" ]; then
   if [ "$result" != "" ]; then
     docker restart $container
     echo ""
-    echo "If just container name is shown above, a fresh local-ip.co certificate was ${result}."
+    echo "If just container name is shown above, a fresh local-ip.plip.com certificate was ${result}."
     echo ""
   else
     echo "Invalid action specified.  Use one of 'refresh', 'expire' or 'self'. Default is 'refresh'"
