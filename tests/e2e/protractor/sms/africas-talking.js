@@ -180,7 +180,8 @@ describe('africas talking api', () => {
       const messageText = messagesElements.messageContentText(firstMessageContent);
       const messageStatus = messagesElements.messageContentState(firstMessageContent);
 
-      expect(await helper.getTextFromElementNative(messageHeader)).toBe('+64271234567');
+      // TODO REVERT fail fast to test retries
+      expect(await helper.getTextFromElementNative(messageHeader)).toBe('+64271234567123456');
       expect(await helper.getTextFromElementNative(messageText)).toBe('hello');
       expect(await helper.getTextFromElementNative(messageStatus)).toBe('received');
 
