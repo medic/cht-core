@@ -295,7 +295,8 @@ describe('create_user_for_contacts', () => {
     ].forEach(([collisionCount, suffixLength]) => {
       it(`replaces user when ${collisionCount} username collisions occur`, async () => {
         let i = 100;
-        const random = transition.__set__('Math.random', () => i++ );
+        transition.__set__('Math.random', () => i++ );
+
         validateNewUsername.rejects({ code: 400 });
         validateNewUsername
           .onCall(collisionCount)
