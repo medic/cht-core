@@ -1,8 +1,9 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
+const rewire = require('rewire');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-const transition = require('../../../src/transitions/create_user_for_contacts');
+const transition = rewire('../../../src/transitions/create_user_for_contacts');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
 const contactTypeUtils = require('@medic/contact-types-utils');
@@ -293,6 +294,9 @@ describe('create_user_for_contacts', () => {
       [100, 14],
     ].forEach(([collisionCount, suffixLength]) => {
       it(`replaces user when ${collisionCount} username collisions occur`, async () => {
+        let i = 100;
+        transition.__set__('Math.random', () => i++ );
+
         validateNewUsername.rejects({ code: 400 });
         validateNewUsername
           .onCall(collisionCount)
