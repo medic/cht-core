@@ -100,7 +100,6 @@ create_system_databases() {
 }
 
 main(){
-    echo "MAIN"
     check_if_couchdb_is_ready http://$COUCHDB_USER:$COUCHDB_PASSWORD@$SVC_NAME:5984
     # only attempt clustering if CLUSTER_PEER_IPS environment variable is present.
     if [ ! -z "$CLUSTER_PEER_IPS" ]; then

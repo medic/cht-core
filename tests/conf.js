@@ -7,7 +7,7 @@ chai.use(require('chai-shallow-deep-equal'));
 chai.config.truncateThreshold = 0;
 chai.use(require('chai-exclude'));
 
-const NUMBER_OF_RETRIES = 5;
+// const NUMBER_OF_RETRIES = 5;
 
 const baseConfig = {
   params:{
@@ -67,7 +67,7 @@ const baseConfig = {
   },
   afterLaunch: async () => {
     await utils.endSession();
-    return retry.afterLaunch(NUMBER_OF_RETRIES);
+    //return retry.afterLaunch(NUMBER_OF_RETRIES);
   },
   onPrepare: async () => {
     retry.onPrepare();

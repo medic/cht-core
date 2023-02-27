@@ -612,7 +612,8 @@ describe('RapidPro SMS Gateway', () => {
       await utils.saveDocs(docs);
 
       const iterations = docsCount / 25; // batch size is 25
-      await browser.wait(() => messagesEndpointRequests.length === docsCount, (iterations + 2) * 1000 );
+      // increased number of wait time after Couch3 upgrade
+      await browser.wait(() => messagesEndpointRequests.length === docsCount, (iterations + 10) * 1000 );
 
       const queriedBroadcasts = messagesEndpointRequests.map(request => request[0].broadcast).sort();
       const expectedBroadcasts = docs.map(doc => doc.tasks[0].gateway_ref).sort();
