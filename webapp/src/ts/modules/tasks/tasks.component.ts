@@ -4,6 +4,7 @@ import { combineLatest, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { debounce as _debounce } from 'lodash-es';
 import * as moment from 'moment';
+import * as _ from 'lodash';
 
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
@@ -185,7 +186,10 @@ export class TasksComponent implements OnInit, OnDestroy {
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
-      this.errorDetails = exception;
+      this.errorDetails = _.truncate(exception.stack, {
+        length: 400,
+        separator: ' '
+      });
       this.error = true;
       this.loading = false;
       this.hasTasks = false;

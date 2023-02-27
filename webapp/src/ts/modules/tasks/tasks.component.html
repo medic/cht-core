@@ -42,7 +42,19 @@
         <span>{{'Error fetching tasks' | translate}}</span>
         <a class="btn btn-link" (click)="refreshTaskList()">{{'Reload' | translate}}</a>
         <a class="btn btn-link" (click)="errorDetailsCollapsed = !errorDetailsCollapsed">{{'Details' | translate}}</a>
-        <pre *ngIf="!errorDetailsCollapsed"><code>{{ errorDetails }}<br>Username: {{userCtx.name}}<br>URL: {{url}}<br>Time: {{currentDate | simpleDateTime}}<br>Last Sync: {{replicationStatus.lastSuccessTo | simpleDateTime}}</code></pre>
+        <dl *ngIf="!errorDetailsCollapsed">
+          <dd><pre><code>{{errorDetails}}</code></pre></dd>
+          <dt>{{'User Name' | translate}}</dt>
+          <dd>{{userCtx.name}}</dd>
+          <dt>{{'url' | translate}}</dt>
+          <dd>{{url}}</dd>
+          <dt>{{'date.time.title' | translate}}</dt>
+          <dd>{{currentDate | simpleDateTime}}</dd>
+          <dt>{{'replication.last.success.to' | translate}}</dt>
+          <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">
+            {{replicationStatus.lastSuccessTo | simpleDateTime}}
+          </dd>
+        </dl>
       </div>
       <p class="loading-status" *ngIf="!error && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
       <p class="loading-status" *ngIf="!error && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
