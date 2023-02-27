@@ -70,7 +70,6 @@ const baseConfig = {
   },
   afterLaunch: async (exitCode) => {
     await utils.endSession();
-    await new Promise((resolve) => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
     return ProtractorJasmineRetry.afterLaunch(exitCode);
   },
   onPrepare: async () => {
