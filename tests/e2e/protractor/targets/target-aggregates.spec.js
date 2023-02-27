@@ -348,6 +348,7 @@ describe('Target aggregates', () => {
       await utils.saveDocs(targetDocs);
       await updateSettings(targetsConfig, user);
 
+      await commonElements.goToReports(true);
       await commonElements.goToAnalytics();
       await analytics.goToTargetAggregates(true);
       await helper.takeScreenshot('targets.png');
@@ -450,6 +451,7 @@ describe('Target aggregates', () => {
       await utils.saveDocs(targetDocs);
       await updateSettings(targetsConfig, user, contactSummaryScript);
 
+      await commonElements.goToReports(true);
       await commonElements.goToAnalytics();
       await analytics.goToTargetAggregates(true);
 
