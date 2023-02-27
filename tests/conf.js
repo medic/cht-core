@@ -61,7 +61,7 @@ const baseConfig = {
   beforeLaunch: () => {
     process.on('uncaughtException', function() {
       utils.reporter.jasmineDone();
-      utils.reporter.afterLaunch();
+      utils.reporter.afterLaunch(() => {});
     });
 
     return new Promise((resolve) => {
@@ -70,6 +70,7 @@ const baseConfig = {
   },
   afterLaunch: async (exitCode) => {
     await utils.endSession();
+    await new Promise((resolve) => utils.reporter.afterLaunch(resolve.bind(this, exitCode)));
     return ProtractorJasmineRetry.afterLaunch(exitCode);
   },
   onPrepare: async () => {
