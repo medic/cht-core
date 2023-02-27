@@ -13,6 +13,7 @@ import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
+import { MigrationsService } from '@mm-services/migrations.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -76,6 +77,7 @@ export class DBSyncService {
     private store:Store,
     private translateService:TranslateService,
     private purgeService:PurgeService,
+    private migrationsService:MigrationsService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -85,7 +87,6 @@ export class DBSyncService {
       name: 'to',
       options: {
         filter: readOnlyFilter,
-        checkpoint: 'source',
       },
       allowed: () => this.authService.has('can_edit'),
       onDenied: (err?) => this.dbSyncRetryService.retryForbiddenFailure(err),
@@ -105,6 +106,7 @@ export class DBSyncService {
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
+  private migrationsExecuted = false;
   private readonly intervalPromises = {
     sync: undefined,
     meta: undefined,
@@ -317,16 +319,30 @@ export class DBSyncService {
     }
   }
 
+  private async migrateDb() {
+    if (!this.migrationsExecuted) {
+      try {
+        await this.migrationsService.runMigrations();
+        this.migrationsExecuted = true;
+      } catch (err) {
+        console.error('Error while running DB migrations', err);
+        throw err;
+      }
+    }
+  }
+
   /**
   * Synchronize the local database with the remote database.
   *
   * @returns Promise which resolves when both directions of the replication complete.
   */
-  sync(force?) {
+  async sync(force?) {
     if (!this.isEnabled()) {
       this.sendUpdate({ state: SyncStatus.Disabled });
       return Promise.resolve();
     }
+
+    await this.migrateDb();
 
     if (force) {
       this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.in_progress'));
