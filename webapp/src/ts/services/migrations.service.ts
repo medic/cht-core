@@ -21,11 +21,11 @@ export class MigrationsService {
 
   async runMigrations () {
     for (const migration of this.getMigrations()) {
-      if (await migration.hasRun()) {
+      if (await migration.hasRun(this.dbService)) {
         continue;
       }
-
       await migration.run();
+      await migration.setHasRun(this.dbService);
     }
   }
 }

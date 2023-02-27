@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as generateReplicationId from 'pouchdb-generate-replication-id';
 
 import { Migration } from './migration';
+import { DbService } from '@mm-services/db.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +10,7 @@ import { Migration } from './migration';
 export class TargetCheckpointerMigration extends Migration {
   public name = 'checkpointer';
   constructor(
+    private dbService:DbService,
   ) {
     super();
   }
@@ -16,17 +18,16 @@ export class TargetCheckpointerMigration extends Migration {
   private async getCheckpointerId () {
     const source = this.dbService.get();
     const target = this.dbService.get({ remote: true });
-    const replicationId = await generateReplicationId(source, target);
+    const replicationId = await generateReplicationId.default(source, target, {});
     return replicationId;
   }
 
   private async getLocalCheckpointerDoc() {
     const replicationId = await this.getCheckpointerId();
-    const checkpointerId = `_local/${replicationId}`;
     try {
-      return await this.dbService.get().get(checkpointerId);
+      return await this.dbService.get().get(replicationId);
     } catch (err) {
-      if (err.code === 404) {
+      if (err?.status === 404) {
         return;
       }
       throw err;
