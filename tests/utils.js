@@ -1340,7 +1340,7 @@ module.exports = {
   tearDownServices: stopServices,
   endSession: async (exitCode) => {
     await module.exports.tearDownServices();
-    return module.exports.reporter.afterLaunch(exitCode);
+    await new Promise((resolve) => module.exports.reporter.afterLaunch(resolve.bind(this, exitCode)));
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
