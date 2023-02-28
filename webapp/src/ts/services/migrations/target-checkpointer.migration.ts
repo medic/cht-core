@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as generateReplicationId from 'pouchdb-generate-replication-id';
+import { default as generateReplicationId } from 'pouchdb-generate-replication-id';
 
 import { Migration } from './migration';
 import { DbService } from '@mm-services/db.service';
@@ -18,7 +18,7 @@ export class TargetCheckpointerMigration extends Migration {
   private async getCheckpointerId () {
     const source = this.dbService.get();
     const target = this.dbService.get({ remote: true });
-    const replicationId = await generateReplicationId.default(source, target, {});
+    const replicationId = await generateReplicationId(source, target, {});
     return replicationId;
   }
 
