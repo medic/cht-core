@@ -208,6 +208,19 @@ describe('DBSync service', () => {
       expect(migrationService.runMigrations.callCount).to.equal(1);
     });
 
+    it('should not run concurrent migrations', async () => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+
+      await Promise.all([
+        service.sync(),
+        service.sync(),
+        service.sync(),
+        service.sync(),
+      ]);
+      expect(migrationService.runMigrations.callCount).to.equal(1);
+    });
+
     it('should record telemetry for bi-directional replication', async () => {
       isOnlineOnly.returns(false);
       hasAuth.resolves(true);
