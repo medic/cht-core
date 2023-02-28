@@ -4,7 +4,6 @@ const _ = require('lodash');
 const constants = require('./constants');
 const rpn = require('request-promise-native');
 const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
-const ProtractorJasmineRetry = require('protractor-jasmine-retry'); 
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const os = require('os');
@@ -884,11 +883,10 @@ module.exports = {
     dest: `tests/results/`,
     filename: 'report.html',
     pathBuilder: function (currentSpec) {
-      const retry = ProtractorJasmineRetry.retriedTimes;
       return currentSpec.fullName
         .toLowerCase()
         .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, '_') + '_' + retry;
+        .replace(/\s+/g, '_');
     },
   }),
 

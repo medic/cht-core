@@ -1,13 +1,10 @@
 const utils = require('./utils');
 const chai = require('chai');
-const ProtractorJasmineRetry = require('protractor-jasmine-retry'); 
 chai.use(require('chai-exclude'));
 chai.use(require('chai-shallow-deep-equal'));
 // so the .to.have.members will display the array members when assertions fail instead of [ Array(6) ]
 chai.config.truncateThreshold = 0;
 chai.use(require('chai-exclude'));
-
-const NUMBER_OF_RETRIES = 5;
 
 const baseConfig = {
   params:{
@@ -55,9 +52,6 @@ const baseConfig = {
     // makes default jasmine reporter not display dots for every spec
     print: () => {}
   },
-  plugins: [
-    ProtractorJasmineRetry({ maxAttempts: NUMBER_OF_RETRIES }),
-  ],
   beforeLaunch: () => {
     process.on('uncaughtException', function() {
       utils.reporter.jasmineDone();
@@ -68,9 +62,8 @@ const baseConfig = {
       utils.reporter.beforeLaunch(resolve);
     });
   },
-  afterLaunch: async (exitCode) => {
+  afterLaunch: async () => {
     await utils.endSession();
-    return ProtractorJasmineRetry.afterLaunch(exitCode);
   },
   onPrepare: async () => {
     jasmine.getEnv().addReporter(utils.specReporter);
