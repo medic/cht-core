@@ -321,11 +321,15 @@ export class DBSyncService {
 
   private async migrateDb() {
     if (!this.migrationsExecuted) {
+      const telemetryEntry = new DbSyncTelemetry(this.telemetryService);
       try {
         await this.migrationsService.runMigrations();
         this.migrationsExecuted = true;
+        telemetryEntry.recordMigrations(true);
       } catch (err) {
         console.error('Error while running DB migrations', err);
+        telemetryEntry.recordMigrations(false);
+        this.sendUpdate({ state: SyncStatus.Unknown });
         throw err;
       }
     }
@@ -367,13 +371,13 @@ class DbSyncTelemetry {
   private readonly direction;
   private readonly start;
   private readonly lastReplicated;
-  private readonly key;
+  private key;
   private end;
 
   constructor(
     public telemetryService:TelemetryService,
-    database,
-    direction,
+    database?:string,
+    direction?:string,
     lastReplicated?,
   ) {
     this.database = database;
@@ -457,5 +461,10 @@ class DbSyncTelemetry {
 
   async recordDenied() {
     await this.telemetryService.record(this.getDeniedKey());
+  }
+
+  async recordMigrations(success) {
+    this.key = `migrations`;
+    await this.record(success ? this.getSuccessKey() : this.getFailureKey());
   }
 }

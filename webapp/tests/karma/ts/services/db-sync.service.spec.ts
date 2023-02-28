@@ -166,6 +166,7 @@ describe('DBSync service', () => {
       return service.sync().then(() => {
         expect(hasAuth.callCount).to.equal(1);
         expect(hasAuth.args[0][0]).to.equal('can_edit');
+        expect(migrationService.runMigrations.callCount).to.equal(1);
         expectSyncCall(1);
         expect(from.args[0][1]).to.have.keys('heartbeat', 'timeout', 'batch_size');
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
@@ -176,6 +177,35 @@ describe('DBSync service', () => {
         expectSyncMetaCall(1);
         expect(purgeService.updateDocsToPurge.callCount).to.equal(1);
       });
+    });
+
+    it('should not start bi-direction replication when migrations fail', async () => {
+      migrationService.runMigrations.rejects(new Error('migration failed'));
+
+      await expect(service.sync()).to.be.rejectedWith(Error, 'migration failed');
+      expectSyncCall(0);
+      expect(migrationService.runMigrations.callCount).to.equal(1);
+      expect(telemetryService.record.args).to.deep.equal([
+        ['migrations:failure', 0],
+      ]);
+    });
+
+    it('should not run migrations on subsequent syncs', async () => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+
+      await service.sync();
+      expectSyncCall(1);
+      expect(migrationService.runMigrations.callCount).to.equal(1);
+      await service.sync();
+      expectSyncCall(2);
+      expect(migrationService.runMigrations.callCount).to.equal(1);
+
+      await service.sync();
+      await service.sync();
+      await service.sync();
+      expectSyncCall(5);
+      expect(migrationService.runMigrations.callCount).to.equal(1);
     });
 
     it('should record telemetry for bi-directional replication', async () => {
@@ -204,8 +234,10 @@ describe('DBSync service', () => {
 
       return syncResult.then(() => {
         expectSyncCall(1);
-        expect(telemetryService.record.callCount).to.equal(8);
+        expect(telemetryService.record.callCount).to.equal(9);
         expect(telemetryService.record.args).to.have.deep.members([
+          ['migrations:success', 0],
+
           ['replication:medic:from:success', 1000],
           ['replication:medic:from:ms-since-last-replicated-date', 400],
           ['replication:medic:from:docs', 45],
@@ -226,9 +258,11 @@ describe('DBSync service', () => {
 
       await service.sync();
       expectSyncCall(1);
+      expect(migrationService.runMigrations.callCount).to.equal(1);
       clock.tick(5 * 60 * 1000 + 1);
       await nextTick();
       expectSyncCall(2);
+      expect(migrationService.runMigrations.callCount).to.equal(1);
     });
 
     it('does not attempt sync while offline', () => {
@@ -398,8 +432,10 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(9);
+          expect(telemetryService.record.callCount).to.equal(10);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['migrations:success', 0],
+
             ['replication:medic:from:failure', 2000],
             ['replication:medic:from:ms-since-last-replicated-date', 800],
             ['replication:medic:from:docs', 22],
@@ -443,8 +479,10 @@ describe('DBSync service', () => {
         return syncResult.then(() => {
           expectSyncCall(1);
 
-          expect(telemetryService.record.callCount).to.equal(9);
+          expect(telemetryService.record.callCount).to.equal(10);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['migrations:success', 0],
+
             ['replication:medic:from:failure', 2000],
             ['replication:medic:from:ms-since-last-replicated-date', 800],
             ['replication:medic:from:docs', 22],
@@ -488,8 +526,10 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(10);
+          expect(telemetryService.record.callCount).to.equal(11);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['migrations:success', 0],
+
             ['replication:user-initiated'],
 
             ['replication:medic:from:failure', 500],
@@ -532,8 +572,10 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(9);
+          expect(telemetryService.record.callCount).to.equal(10);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['migrations:success', 0],
+
             ['replication:medic:from:failure', 500],
             ['replication:medic:from:ms-since-last-replicated-date', 700],
             ['replication:medic:from:docs', 12],
@@ -574,8 +616,10 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(9);
+          expect(telemetryService.record.callCount).to.equal(10);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['migrations:success', 0],
+
             ['replication:medic:from:success', 3000],
             ['replication:medic:from:ms-since-last-replicated-date', 800],
             ['replication:medic:from:docs', 32],
@@ -617,8 +661,10 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(10);
+          expect(telemetryService.record.callCount).to.equal(11);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['migrations:success', 0],
+
             ['replication:user-initiated'],
 
             ['replication:medic:from:success', 8000],
@@ -658,8 +704,10 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(10);
+          expect(telemetryService.record.callCount).to.equal(11);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['migrations:success', 0],
+
             ['replication:user-initiated'],
 
             ['replication:medic:from:success', 700],
@@ -704,8 +752,10 @@ describe('DBSync service', () => {
 
         return syncResult.then(() => {
           expectSyncCall(1);
-          expect(telemetryService.record.callCount).to.equal(11);
+          expect(telemetryService.record.callCount).to.equal(12);
           expect(telemetryService.record.args).to.have.deep.members([
+            ['migrations:success', 0],
+
             ['replication:user-initiated'],
 
             ['replication:medic:to:failure', 100],
@@ -1004,6 +1054,8 @@ describe('DBSync service', () => {
         await syncCall;
 
         expect(telemetryService.record.args).to.have.deep.members([
+          ['migrations:success', 0],
+
           ['replication:meta:sync:success', 1000],
           ['replication:meta:sync:docs', 132],
 
@@ -1030,6 +1082,8 @@ describe('DBSync service', () => {
         await syncCall;
 
         expect(telemetryService.record.args).to.have.deep.members([
+          ['migrations:success', 0],
+
           ['replication:meta:sync:failure', 1000],
           ['replication:meta:sync:docs', 0],
           ['replication:meta:sync:failure:reason:offline:server'],
@@ -1058,6 +1112,8 @@ describe('DBSync service', () => {
         await syncCall;
 
         expect(telemetryService.record.args).to.have.deep.members([
+          ['migrations:success', 0],
+
           ['replication:user-initiated'],
           ['replication:medic:to:success', 0],
           ['replication:medic:from:success', 0],
