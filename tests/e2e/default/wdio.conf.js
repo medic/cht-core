@@ -296,7 +296,7 @@ const baseConfig = {
   afterTest: async (test, context, { passed }) => {
     const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
     existingFeedBackDocIds.push(feedBackDocs);
-    if(feedBackDocs){
+    if (feedBackDocs) {
       if(passed){
         context.test.callback(new Error('Feedback docs were generated during the test.'));
       }

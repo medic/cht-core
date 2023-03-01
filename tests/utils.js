@@ -141,7 +141,7 @@ const updatePermissions = async (roles, addPermissions, removePermissions = []) 
     }
     settings.permissions[permission].push(...roles);
   });
-    
+
   removePermissions.forEach(permission => {
     settings.permissions[permission] = [];
   });
@@ -181,13 +181,10 @@ const revertSettings = () => {
   });
 };
 
-const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
-
-const deleteAll = (except) => {
+const getIgnoreFns = (except) => {
   except = Array.isArray(except) ? except : [];
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
-    doc => PERMANENT_TYPES.includes(doc.type),
     'service-worker-meta',
     constants.USER_CONTACT_ID,
     'migration-log',
@@ -196,6 +193,8 @@ const deleteAll = (except) => {
     'partners',
     'settings',
     /^form:contact:/,
+    /^messages-/,
+    /^org.couchdb.user/,
     /^_design/
   );
   const ignoreFns = [];
@@ -211,60 +210,42 @@ const deleteAll = (except) => {
     }
   });
 
-  ignoreFns.push(doc => ignoreStrings.includes(doc._id));
-  ignoreFns.push(doc => ignoreRegex.find(r => doc._id.match(r)));
+  ignoreFns.push(id => ignoreStrings.includes(id));
+  ignoreFns.push(id => ignoreRegex.find(r => id.match(r)));
 
-  // Get, filter and delete documents
-  return module.exports
-    .requestOnTestDb({
-      path: '/_all_docs?include_docs=true',
-      method: 'GET',
-    })
-    .then(({ rows }) =>
-      rows
-        .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
-        .map(({ doc }) => {
-          doc._deleted = true;
-          doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
-          return doc;
-        })
+  return ignoreFns;
+};
+
+const deleteAll = async (except) => {
+  const ignoreFns = getIgnoreFns(except);
+
+  const allDocs = await db.allDocs();
+  const toDelete = allDocs.rows
+    .filter(row =>
+      !ignoreFns.find(fn => fn(row.id)) &&
+      row.value &&
+      row.value.rev
     )
-    .then(toDelete => {
-      const ids = toDelete.map(doc => doc._id);
-      if (e2eDebug) {
-        console.log(`Deleting docs and infodocs: ${ids}`);
-      }
-      const infoIds = ids.map(id => `${id}-info`);
-      return Promise.all([
-        module.exports
-          .requestOnTestDb({
-            path: '/_bulk_docs',
-            method: 'POST',
-            body: { docs: toDelete },
-          })
-          .then(response => {
-            if (e2eDebug) {
-              console.log(`Deleted docs: ${JSON.stringify(response)}`);
-            }
-          }),
-        module.exports.sentinelDb.allDocs({ keys: infoIds })
-          .then(results => {
-            const deletes = results.rows
-              .filter(row => row.value) // Not already deleted
-              .map(({ id, value }) => ({
-                _id: id,
-                _rev: value.rev,
-                _deleted: true
-              }));
+    .map((row => ({
+      _id: row.id,
+      _rev: row.value.rev,
+      _deleted: true,
+    })));
+  const ids = toDelete.map(doc => doc._id);
+  if (e2eDebug) {
+    console.log(`Deleting docs and infodocs: ${ids}`);
+  }
+  const infoIds = ids.map(id => `${id}-info`);
+  await db.bulkDocs({ docs: toDelete });
 
-            return module.exports.sentinelDb.bulkDocs(deletes);
-          }).then(response => {
-            if (e2eDebug) {
-              console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
-            }
-          })
-      ]);
-    });
+  const infoDocs = await sentinel.allDocs({ keys: infoIds });
+  const infosToDelete = infoDocs.rows
+    .filter(row => row.value && row.value.rev)
+    .map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
+  await sentinel.bulkDocs(infosToDelete);
+
+  const sentinelUtils = require('./utils/sentinel');
+  await sentinelUtils.skipToSeq();
 };
 
 const refreshToGetNewSettings = () => {
@@ -317,6 +298,17 @@ const setUserContactDoc = (attempt=0) => {
     });
 };
 
+const deleteLocalDocs = async () => {
+  const localDocs = await module.exports.requestOnTestDb({ path: '/_local_docs?include_docs=true' });
+
+  for (const row of localDocs.rows) {
+    if (row && row.doc && row.doc.replicator === 'pouchdb') {
+      row.doc._deleted = true;
+      await module.exports.saveDoc(row.doc);
+    }
+  }
+};
+
 /**
  * Deletes documents from the database, including Enketo forms. Use with caution.
  * @param {array} except - exeptions in the delete method. If this parameter is empty
@@ -328,6 +320,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
+  await deleteLocalDocs();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {

@@ -112,6 +112,16 @@ const getBacklogCount = () => {
     .then(result => result.pending);
 };
 
+const skipToSeq = async (seq) => {
+  if (!seq) {
+    const info = await utils.db.info();
+    seq = info.update_seq;
+  }
+  const backlogDoc = await requestOnSentinelTestDb(TRANSITION_SEQ);
+  backlogDoc.value = seq;
+  await utils.sentinelDb.put(backlogDoc);
+};
+
 module.exports = {
   waitForSentinel: docIds => waitForSeq(TRANSITION_SEQ, docIds),
   waitForBackgroundCleanup: docIds => waitForSeq(BACKGROUND_SEQ, docIds),
@@ -123,4 +133,5 @@ module.exports = {
   getCurrentSeq: getCurrentSeq,
   getPurgeDbs: getPurgeDbs,
   getBacklogCount: getBacklogCount,
+  skipToSeq: skipToSeq,
 };
