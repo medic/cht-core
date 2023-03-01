@@ -43,7 +43,7 @@ describe('Training Cards', () => {
     await commonElements.waitForPageLoaded();
   });
 
-  it('should cancel training', async () => {
+  it('should cancel training and not save it as completed', async () => {
     await commonPage.goToMessages();
     await trainingCardsPage.waitForTrainingCards();
 
@@ -53,15 +53,26 @@ describe('Training Cards', () => {
       'This training is not finished. You will lose your progress if you leave now. Are you sure you want to leave?'
     );
     await trainingCardsPage.confirmQuitTraining();
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
 
     await commonPage.goToReports();
     await commonElements.waitForPageLoaded();
     expect(await reportsPage.allReports()).to.be.empty;
   });
 
-  it('should display training after form was updated', async () => {
+  it('should display training after it was canceled and the training doc was updated', async () => {
     await commonPage.goToMessages();
     await commonElements.waitForPageLoaded();
+    // Unfinished trainings should appear again after reload.
+    browser.refresh();
+    await trainingCardsPage.waitForTrainingCards();
+
+    const confirmMessage = await trainingCardsPage.quitTraining();
+    expect(confirmMessage.body).to.contain(
+      'This training is not finished. You will lose your progress if you leave now. Are you sure you want to leave?'
+    );
+    await trainingCardsPage.confirmQuitTraining();
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
 
     const trainingForm = await utils.getDoc(savedFormDoc.id);
     expect(trainingForm.context.duration).to.equal(5);
@@ -100,6 +111,7 @@ describe('Training Cards', () => {
     expect(instructionPage).to.equal('If you do not understand these changes, please contact your supervisor.');
 
     await trainingCardsPage.submitTraining();
+    await trainingCardsPage.checkTrainingCardIsNotDisplayed();
 
     await commonPage.goToReports();
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
