@@ -87,6 +87,11 @@ const getLogoutMessage = async () => {
   return body.getText();
 };
 
+const refresh = async () => {
+  await browser.refresh();
+  await waitForPageLoaded();
+};
+
 const goToBase = async () => {
   await browser.url('/');
   await waitForPageLoaded();
@@ -329,4 +334,5 @@ module.exports = {
   isMenuOptionEnabled,
   isMenuOptionVisible,
   moreOptionsMenu,
+  refresh,
 };

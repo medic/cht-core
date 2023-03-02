@@ -91,6 +91,26 @@ const getDoc = async (docId) => {
   return result;
 };
 
+const deleteDoc = async (docId) => {
+  const { err, result } = await browser.executeAsync((docId, callback) => {
+    const db = window.CHTCore.DB.get();
+    return db
+      .get(docId)
+      .then(doc => {
+        doc._deleted = true;
+        return db.put(doc);
+      })
+      .then(result => callback({ result }))
+      .catch(err => callback({ err }));
+  }, docId);
+
+  if (err) {
+    throw err;
+  }
+
+  return result;
+};
+
 const getDocs = async (docIds) => {
   const { err, result } = await browser.executeAsync((docIds, callback) => {
     const db = window.CHTCore.DB.get();
@@ -114,4 +134,5 @@ module.exports = {
   updateDoc,
   getDoc,
   getDocs,
+  deleteDoc,
 };
