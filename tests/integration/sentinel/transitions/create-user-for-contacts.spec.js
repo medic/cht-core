@@ -119,7 +119,7 @@ describe('create_user_for_contacts', () => {
     assert.isEmpty(newUserSettings);
   });
 
-  it('creates and replaces users for the same contact in the same transition', async () => {
+  it('replaces user but does not create a new user for the same contact in the same transition', async () => {
     await utils.updateSettings(getSettings(), 'sentinel');
     await utils.createUsers([ORIGINAL_USER]);
     newUsers.push(ORIGINAL_USER.username);
@@ -176,28 +176,27 @@ describe('create_user_for_contacts', () => {
     assert.match(newUserSettings.name, /^new-person-\d\d\d\d$/);
 
     // New user created for additional contact
-    const [additionalUserSettings, ...moreUsers] = await utils.getUserSettings({ contactId: additionalPerson._id });
+    const moreUsers = await utils.getUserSettings({ contactId: additionalPerson._id });
     assert.isEmpty(moreUsers);
-    newUsers.push(additionalUserSettings.name);
-    assert.deepInclude(additionalUserSettings, {
-      roles: [additionalPerson.role],
-      phone: additionalPerson.phone,
-      facility_id: additionalPerson.parent._id,
-      contact_id: additionalPerson._id,
-      fullname: additionalPerson.name,
-    });
-    assert.isTrue(additionalUserSettings.token_login.active);
-    assert.match(additionalUserSettings._id, /^org\.couchdb\.user:additional-person-\d\d\d\d/);
-    assert.match(additionalUserSettings.name, /^additional-person-\d\d\d\d$/);
 
-    // Login tokens sent
+    const originalContact = await utils.getDoc(additionalPerson._id);
+    assert.deepEqual(originalContact.user_for_contact, {
+      replace: {
+        [ORIGINAL_USER.username]: {
+          replacement_contact_id: NEW_PERSON._id,
+          status: 'COMPLETE'
+        }
+      }
+    });
+
+    // Login token sent
     const queuedMsgs = await messagesUtils.getQueuedMessages();
-    assert.lengthOf(queuedMsgs, 2);
-    queuedMsgs.forEach(msg => assert.equal(msg.type, 'token_login'));
-    const replacedUserMsg = queuedMsgs.find(msg => msg.user === newUserSettings._id);
-    assert.equal(replacedUserMsg.tasks[0].messages[0].to, NEW_PERSON.phone);
-    const additionalUserMsg = queuedMsgs.find(msg => msg.user === additionalUserSettings._id);
-    assert.equal(additionalUserMsg.tasks[0].messages[0].to, additionalPerson.phone);
+    assert.lengthOf(queuedMsgs, 1);
+    assert.deepInclude(queuedMsgs[0], {
+      type: 'token_login',
+      user: newUserSettings._id
+    });
+    assert.equal(queuedMsgs[0].tasks[0].messages[0].to, NEW_PERSON.phone);
   });
 
   describe('user replace', () => {

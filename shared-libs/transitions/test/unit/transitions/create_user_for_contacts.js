@@ -737,7 +737,7 @@ describe('create_user_for_contacts', () => {
       });
     });
 
-    it('creates user and replaces user for the same contact at the same time', async () => {
+    it('replaces user but does not create user for the same contact at the same time', async () => {
       const doc = {
         ...getReplacedContact('READY'),
         name: 'New Contact',
@@ -752,89 +752,12 @@ describe('create_user_for_contacts', () => {
       expect(result).to.be.true;
 
       expectInitialDataRetrieved([{ username: ORIGINAL_USER.name, contact: NEW_CONTACT }]);
-      expectUsersCreated([
-        { contact: doc, user: { roles: [doc.role] } },
-        { contact: NEW_CONTACT, user: ORIGINAL_USER },
-      ]);
-      expectUserPasswordReset([ORIGINAL_USER]);
-      expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
-      expect(doc.user_for_contact.create).to.not.exist;
-      expect(medicGet.callCount).to.equal(2);
-      expect(medicGet.args).to.deep.equal([[doc._id], [NEW_CONTACT._id]]);
-    });
-
-    it('replaces user when create fails for the same contact at the same time', async () => {
-      const doc = {
-        ...getReplacedContact('READY'),
-        name: 'New Contact',
-        phone: '+1234567890',
-      };
-      doc.user_for_contact.create = 'true';
-
-      try {
-        await transition.onMatch({ doc, initialProcessing: true });
-        expect.fail('Should have thrown');
-      } catch (err) {
-        expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property.`);
-        expect(err.changed).to.be.true;
-      }
-
-      expectInitialDataRetrieved([{ username: ORIGINAL_USER.name, contact: NEW_CONTACT }]);
       expectUsersCreated([{ contact: NEW_CONTACT, user: ORIGINAL_USER }]);
       expectUserPasswordReset([ORIGINAL_USER]);
       expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
-      expect(doc.user_for_contact.create).to.equal('true');
-    });
-
-    it('creates user when replace fails for the same contact at the same time', async () => {
-      const doc = {
-        ...getReplacedContact('READY', null),
-        name: 'New Contact',
-        role: 'chw',
-        phone: '+1234567890',
-      };
-      medicGet.resolves({ ...doc, user_for_contact: { ...doc.user_for_contact } });
-      doc.user_for_contact.create = 'true';
-
-      try {
-        await transition.onMatch({ doc, initialProcessing: true });
-        expect.fail('Should have thrown');
-      } catch (err) {
-        expect(err.message).to.equal('No id was provided for the new replacement contact.');
-        expect(err.changed).to.be.true;
-      }
-
-      expect(getOrCreatePerson.callCount).to.equal(0);
-
-      expectUsersCreated([{ contact: doc, user: { roles: [doc.role] } }]);
-      expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('ERROR');
       expect(doc.user_for_contact.create).to.not.exist;
       expect(medicGet.callCount).to.equal(1);
-      expect(medicGet.args[0]).to.deep.equal([doc._id]);
-    });
-
-    it('records errors when creating and replacing users for the same contact at the same time both fail', async () => {
-      const doc = {
-        ...getReplacedContact('READY', null),
-        name: 'New Contact',
-        phone: '+1234567890',
-      };
-      doc.user_for_contact.create = 'true';
-
-      try {
-        await transition.onMatch({ doc, initialProcessing: true });
-        expect.fail('Should have thrown');
-      } catch (err) {
-        expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property., ` +
-          'No id was provided for the new replacement contact.');
-        expect(err.changed).to.be.true;
-      }
-
-      expect(getOrCreatePerson.callCount).to.equal(0);
-      expect(validateNewUsername.callCount).to.equal(0);
-      expect(createUser.callCount).to.equal(0);
-      expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('ERROR');
-      expect(doc.user_for_contact.create).to.equal('true');
+      expect(medicGet.args).to.deep.equal([[NEW_CONTACT._id]]);
     });
   });
 });

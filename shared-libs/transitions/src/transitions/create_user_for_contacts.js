@@ -118,6 +118,8 @@ const replaceUser = async (originalContact, { username, replacementContactId }) 
     await createNewUser(originalUserSettings, newContact);
     await users.resetPassword(originalUserSettings.name);
     originalContact.user_for_contact.replace[username].status = USER_CREATION_STATUS.COMPLETE;
+    // Clear the create flag if it is set (create was skipped due to replace)
+    delete originalContact.user_for_contact.create;
   } catch (e) {
     originalContact.user_for_contact.replace[username].status = USER_CREATION_STATUS.ERROR;
     throw e;
@@ -185,17 +187,10 @@ module.exports = {
     return Boolean(isCreatingUser(change) || isReplacingUser(doc));
   },
   onMatch: async (change) => {
-    const promises = [];
     const { doc } = change;
-
-    if (isCreatingUser(change)) {
-      promises.push(addUser(doc));
-    }
-
-    if (isReplacingUser(doc)) {
-      const usersToReplace = getUsersToReplace(doc);
-      promises.push(...usersToReplace.map(user => replaceUser(doc, user)));
-    }
+    const promises = isReplacingUser(doc)
+      ? getUsersToReplace(doc).map(user => replaceUser(doc, user))
+      : [addUser(doc)];
 
     const errors = (await Promise.allSettled(promises))
       .filter(({ status }) => status === 'rejected')
