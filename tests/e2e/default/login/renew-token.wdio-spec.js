@@ -32,7 +32,7 @@ describe('should renew token', async () => {
 
 const getCtxCookieExpiry = async () => {
   const userCtxCookie = await browserPage.getCookies('userCtx');
-  const momentObj = moment(userCtxCookie[0].expires * 1000);
+  const momentObj = moment.unix(userCtxCookie[0].expires);
   if (!momentObj.isValid()) {
     throw new Error(`Unable to construct moment object from cookie expiration: ${userCtxCookie}`);
   }
