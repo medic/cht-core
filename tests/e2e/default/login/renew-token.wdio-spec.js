@@ -21,7 +21,6 @@ describe('should renew token', async () => {
       await commonPage.waitForPageLoaded();
       const afterPageLoadTime = moment().add(ONE_YEAR_IN_S, 'seconds');
       const ctxExpiry = await getCtxCookieExpiry();
-      console.log(ctxExpiry);
 
       expect(
         ctxExpiry.isBetween(beforePageLoadTime, afterPageLoadTime),
