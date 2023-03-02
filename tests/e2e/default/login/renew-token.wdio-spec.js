@@ -3,8 +3,7 @@ const loginPage = require('../../../page-objects/default/login/login.wdio.page')
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const moment = require('moment');
 const browserPage = require('../../../utils/browser');
-
-const ONE_YEAR_IN_S = 31536000;
+const utils = require('../../../utils')
 
 describe('should renew token', async () => {
 
@@ -16,10 +15,10 @@ describe('should renew token', async () => {
     await commonPage.waitForPageLoaded();
 
     for (let counter = 0; counter < 3; counter++) {
-      const beforePageLoadTime = moment().add(ONE_YEAR_IN_S, 'seconds');
+      const beforePageLoadTime = moment().add(utils.ONE_YEAR_IN_S, 'seconds');
       await browser.refresh();
       await commonPage.waitForPageLoaded();
-      const afterPageLoadTime = moment().add(ONE_YEAR_IN_S, 'seconds');
+      const afterPageLoadTime = moment().add(utils.ONE_YEAR_IN_S, 'seconds');
       const ctxExpiry = await getCtxCookieExpiry();
 
       expect(
