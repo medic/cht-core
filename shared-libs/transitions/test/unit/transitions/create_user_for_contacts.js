@@ -231,14 +231,6 @@ describe('create_user_for_contacts', () => {
       assertGetContactType(doc);
     });
 
-    it('excludes existing person contacts with create flag set to true when transition has run already', () => {
-      const doc = getCreatedContact();
-      hasRun.returns(true);
-
-      expect(transition.filter({ doc, initialProcessing: true })).to.be.false;
-      assertGetContactType(doc);
-    });
-
     it('excludes existing person contacts with create flag set when contact has already been replicated', () => {
       const doc = getCreatedContact();
       hasRun.returns(false);

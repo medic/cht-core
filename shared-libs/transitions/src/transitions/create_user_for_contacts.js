@@ -145,10 +145,10 @@ const addUser = async (contact) => {
   await createNewUser({ roles }, contact);
 };
 
-const isCreatingUser = ({ doc, info, initialProcessing }) =>
-  doc.user_for_contact.create === 'true'
-  && initialProcessing
-  && !transitionUtils.hasRun(info, NAME);
+const isCreatingUser = ({ doc, initialProcessing }) =>
+  doc.user_for_contact
+  && doc.user_for_contact.create === 'true'
+  && initialProcessing;
 const isReplacingUser = contact => contact.user_for_contact.replace && !!Object
   .values(contact.user_for_contact.replace)
   .find(({ status }) => status === USER_CREATION_STATUS.READY);
