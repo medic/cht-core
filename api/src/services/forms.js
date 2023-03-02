@@ -2,6 +2,8 @@
  * @module forms
  */
 const db = require('../db');
+const FORM_DOC_ID_PREFIX = 'form:';
+const DOC_TYPE = 'form';
 
 module.exports = {
 
@@ -21,15 +23,18 @@ module.exports = {
    *   with a valid xform attachment.
    */
   getFormDocs: () => {
-    const options = {
-      key: ['form'],
-      include_docs: true,
-      attachments: true,
-      binary: true,
-    };
-    return db.medic.query('medic-client/doc_by_type', options)
-      .then(response => response.rows.filter(row => module.exports.getXFormAttachment(row.doc)))
-      .then(rows => rows.map(row => row.doc));
-  }
-
+    return db.medic
+      .allDocs({
+        startkey: FORM_DOC_ID_PREFIX,
+        endkey: `${FORM_DOC_ID_PREFIX}\ufff0`,
+        include_docs: true,
+        attachments: true,
+        binary: true,
+      })
+      .then(response => {
+        return response.rows
+          .map(row => row.doc)
+          .filter(doc => doc && doc.type === DOC_TYPE && module.exports.getXFormAttachment(doc));
+      });
+  },
 };
