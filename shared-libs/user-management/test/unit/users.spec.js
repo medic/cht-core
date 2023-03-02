@@ -854,6 +854,11 @@ describe('Users service', () => {
         id: 'abc',
         rev: '2-xyz'
       });
+      const expectedContact = {
+        ...contact,
+        _rev: '2-xyz',
+        user_for_contact: {}
+      };
       const response = {};
       return service
         .__get__('createContact')(userData, response)
@@ -861,11 +866,6 @@ describe('Users service', () => {
           chai.expect(db.medic.get.callCount).to.equal(1);
           chai.expect(db.medic.get.args[0]).to.deep.equal(['abc']);
           chai.expect(db.medic.put.callCount).to.equal(1);
-          const expectedContact = {
-            ...contact,
-            _rev: '2-xyz',
-            user_for_contact: {}
-          };
           chai.expect(db.medic.put.args[0]).to.deep.equal([expectedContact]);
 
           chai.expect(userData.contact).to.deep.equal(expectedContact);
@@ -873,6 +873,36 @@ describe('Users service', () => {
             contact: {
               id: 'abc',
               rev: '2-xyz'
+            }
+          });
+        });
+    });
+
+    it('does not remove user_for_contact.create property if the contact has already changed in the DB', () => {
+      const contact = { _id: 'abc', _rev: '1-abc', user_for_contact: { create: 'true'} };
+      sinon.stub(people, 'getOrCreatePerson').resolves(contact);
+      db.medic.get.resolves({ ...contact, user_for_contact: undefined });
+      db.medic.put.resolves({
+        id: 'abc',
+        rev: '2-xyz'
+      });
+      const expectedContact = {
+        ...contact,
+        user_for_contact: {}
+      };
+      const response = {};
+      return service
+        .__get__('createContact')(userData, response)
+        .then(() => {
+          chai.expect(db.medic.get.callCount).to.equal(1);
+          chai.expect(db.medic.get.args[0]).to.deep.equal(['abc']);
+          chai.expect(db.medic.put.notCalled).to.be.true;
+
+          chai.expect(userData.contact).to.deep.equal(expectedContact);
+          chai.expect(response).to.deep.equal({
+            contact: {
+              id: 'abc',
+              rev: '1-abc'
             }
           });
         });
