@@ -1,0 +1,19 @@
+<section class="fast-action-trigger">
+  <button mat-fab color="primary" (click)="open()">
+    <mat-icon fontIcon="fa-plus"></mat-icon>
+  </button>
+</section>
+
+<ng-template #contentWrapper>
+  <section class="fast-action-content-wrapper">
+    <div class="fast-action-header">
+      <p class="fast-action-title">{{ title }}</p>
+      <button class="fast-action-close" (click)="closeAll()">
+        <mat-icon fontIcon="fa-times"></mat-icon>
+      </button>
+    </div>
+    <div class="fast-action-body">
+      <ng-template [cdkPortalOutlet]="componentPortal"></ng-template>
+    </div>
+  </section>
+</ng-template>
