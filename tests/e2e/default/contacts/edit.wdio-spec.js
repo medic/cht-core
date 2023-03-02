@@ -40,6 +40,7 @@ describe('Edit contacts with the default config. ', () => {
   });
 
   it('should remove the primary contact from the clinic when the contact is deleted', async () => {
+    await commonPage.refresh();
     await commonPage.goToPeople();
     await commonPage.waitForPageLoaded();
 

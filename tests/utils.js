@@ -192,7 +192,7 @@ const getIgnoreFns = (except) => {
     'branding',
     'partners',
     'settings',
-    /^form:contact:/,
+    /^form:/,
     /^messages-/,
     /^org.couchdb.user/,
     /^_design/
