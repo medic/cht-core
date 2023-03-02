@@ -236,7 +236,7 @@ const deleteAll = async (except) => {
     console.log(`Deleting docs and infodocs: ${ids}`);
   }
   const infoIds = ids.map(id => `${id}-info`);
-  await db.bulkDocs({ docs: toDelete });
+  await db.bulkDocs(toDelete);
 
   const infoDocs = await sentinel.allDocs({ keys: infoIds });
   const infosToDelete = infoDocs.rows
