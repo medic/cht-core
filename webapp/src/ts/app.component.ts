@@ -46,6 +46,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
+import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -91,6 +92,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   androidAppVersion;
   nonContactForms;
   unreadCount = {};
+  useOldActionBar = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -296,6 +298,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.enableOldActionBar();
     this.subscribeToSideFilterStore();
   }
 
@@ -458,6 +461,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.store
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
+  }
+
+  private async enableOldActionBar() {
+    this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   private initForms() {

@@ -30,7 +30,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   loadingSubActionBar;
   selectedContactDoc;
   sidebarFilter;
-  useOldActionBar = false;
 
   constructor(
     private store: Store,
@@ -42,8 +41,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.checkPermissions();
-
     const subscription = combineLatest(
       this.store.select(Selectors.getActionBar),
       this.store.select(Selectors.getCurrentTab),
@@ -83,10 +80,6 @@ export class ActionbarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-  }
-
-  private async checkPermissions() {
-    this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
   verifyReport(reportIsVerified) {
