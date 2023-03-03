@@ -141,5 +141,17 @@ describe('Storing checkpointer on target migration', () => {
     const revDiffCalls = await captureLogs();
     expect(revDiffCalls.length).to.equal(0);
   });
+
+  it('should not flag migration as ran if the browser was offline', async () => {
+    await loginPage.login(user);
+
+    await expect(browserUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith();
+
+    await browser.throttle('offline');
+    await commonPage.syncWithoutWaitForSuccess();
+
+    await expect(browserUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith();
+
+  });
 });
 

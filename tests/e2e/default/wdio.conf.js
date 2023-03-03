@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
+chai.use(require('chai-as-promised'));
 
 const constants = require('../../constants');
 const utils = require('../../utils');

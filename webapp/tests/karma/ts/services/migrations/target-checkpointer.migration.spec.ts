@@ -70,6 +70,20 @@ describe('Target Checkpoint Migration', () => {
       await expect(migration.run()).to.be.rejectedWith(Error, 'failed to get');
     });
 
+    it('should do nothing when remote returns conflict', async () => {
+      const checkpointerDoc = Object.freeze({ _id: '_local/check' });
+      localDb.get = sinon.stub().resolves(checkpointerDoc);
+      localDb.id = sinon.stub().resolves('localid');
+      remoteDb.id = sinon.stub().resolves('remoteid');
+      remoteDb.put = sinon.stub().rejects({ status: 409 });
+
+      await migration.run();
+
+      expect(localDb.id.callCount).to.equal(1);
+      expect(remoteDb.id.callCount).to.equal(1);
+      expect(localDb.get.args).to.deep.equal([['_local/5nnObAuU3BYgp3a4zuBTsA==']]);
+    });
+
     it('should throw remote put errors', async () => {
       const checkpointerDoc = Object.freeze({ _id: '_local/checkpointer' });
       localDb.get = sinon.stub().resolves(checkpointerDoc);

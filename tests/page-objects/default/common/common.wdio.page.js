@@ -12,6 +12,7 @@ const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
 const jsonError = async () => (await $('pre')).getText();
 
@@ -209,6 +210,13 @@ const sync = async (expectReload) => {
   await syncAndWaitForSuccess();
 };
 
+const syncWithoutWaitForSuccess = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
+  await openHamburgerMenu();
+  await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
+};
+
 const closeReloadModal = async () => {
   try {
     await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
@@ -335,4 +343,5 @@ module.exports = {
   isMenuOptionVisible,
   moreOptionsMenu,
   refresh,
+  syncWithoutWaitForSuccess,
 };

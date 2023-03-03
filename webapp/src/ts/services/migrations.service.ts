@@ -25,6 +25,7 @@ export class MigrationsService {
         continue;
       }
       await migration.run();
+      console.warn('migation successful');
       await migration.setHasRun(this.dbService);
     }
   }
