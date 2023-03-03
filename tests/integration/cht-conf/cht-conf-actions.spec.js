@@ -6,6 +6,7 @@ const utils = require('../../utils');
 //Not all actions tested here due to missing forms and config
 //[convert-collect-forms , upload-collect-form, upload-branding, upload-partners, upload-privacy-policies]
 const actions = [
+  'delete-all-forms',
   'compile-app-settings',
   'backup-app-settings',
   'convert-app-forms',
@@ -56,7 +57,7 @@ describe('cht-conf actions tests', () => {
     expect(branding.title).to.equal('Medic');
   });
 
-  it('should uploadload  forms', async () => {
+  it('should upload  forms', async () => {
     const forms = await utils.request({
       path: '/api/v1/forms',
       method: 'GET'
