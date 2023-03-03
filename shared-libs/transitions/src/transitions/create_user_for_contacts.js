@@ -1,6 +1,5 @@
 const config = require('../config');
 const db = require('../db');
-const transitionUtils = require('./utils');
 const contactTypeUtils = require('@medic/contact-types-utils');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
@@ -189,7 +188,8 @@ module.exports = {
   onMatch: async (change) => {
     const { doc } = change;
     const promises = isReplacingUser(doc)
-      ? getUsersToReplace(doc).map(user => replaceUser(doc, user))
+      ? getUsersToReplace(doc)
+        .map(user => replaceUser(doc, user))
       : [addUser(doc)];
 
     const errors = (await Promise.allSettled(promises))

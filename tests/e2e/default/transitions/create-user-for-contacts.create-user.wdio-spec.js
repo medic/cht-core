@@ -40,7 +40,9 @@ const submitAddChwForm = async ({
 };
 
 const district = utils.deepFreeze(
-  placeFactory.place().build({ type: 'district_hospital' })
+  placeFactory
+    .place()
+    .build({ type: 'district_hospital' })
 );
 
 const settings = utils.deepFreeze({
