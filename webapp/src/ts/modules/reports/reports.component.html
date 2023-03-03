@@ -1,7 +1,6 @@
 <mm-fast-action-button
-  [contentComponent]="fastActionComponent"
-  [title]="'test test test'"
-  [contentData]="{ showForms: true, showOtherActions: true }">
+  [config]="{ title: 'hoooolaa please translate' | translate }"
+  [fastActions]="rightFastActionsList">
 </mm-fast-action-button>
 
 <div class="filters tab-bar">
@@ -92,10 +91,11 @@
       </div>
 
       <mm-fast-action-button
-        [buttonStyle]="{ style: 'flat', label: 'fast-action.button.new.report' }"
-        [contentComponent]="fastActionComponent"
-        [title]="'second test test'"
-        [contentData]="{ showForms: true }">
+        [config]="{
+          title: '2 hoooolaa please translate' | translate,
+          button: { type: flatFastActionButton, label: 'aaaa labellll' | translate }
+        }"
+        [fastActions]="leftFastActionsList">
       </mm-fast-action-button>
     </div>
 

@@ -1,28 +1,25 @@
-import { Component, OnInit, ViewChild, Input, Injector, InjectionToken } from '@angular/core';
-import { ComponentPortal, ComponentType, Portal } from '@angular/cdk/portal';
+import { Component, Input, ViewChild } from '@angular/core';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { ResponsiveService } from '@mm-services/responsive.service';
-
-export const DATA_INJECTION_TOKEN = new InjectionToken<string>('DATA_INJECTION_TOKEN');
+import { FastAction, IconType } from '@mm-services/fast-action-button.service';
 
 @Component({
   selector: 'mm-fast-action-button',
   templateUrl: './fast-action-button.component.html',
 })
-export class FastActionButtonComponent implements OnInit {
+export class FastActionButtonComponent {
 
-  @Input() contentComponent: ComponentType<any>;
-  @Input() contentData: any;
-  @Input() title: string;
-  @Input() buttonStyle: Record<string, any>;
+  @Input() config: FastActionConfig;
+  @Input() fastActions: FastAction[];
   @ViewChild('contentWrapper') contentWrapper;
 
   private bottomSheetRef: MatBottomSheetRef;
   private dialogRef: MatDialogRef<any>;
 
-  componentPortal: Portal<any>;
+  iconTypeResource = IconType.RESOURCE;
+  buttonTypeFlat = ButtonType.FLAT;
 
   constructor(
     private responsiveService: ResponsiveService,
@@ -30,26 +27,55 @@ export class FastActionButtonComponent implements OnInit {
     private matDialog: MatDialog,
   ) { }
 
-  ngOnInit() {
-    this.componentPortal = new ComponentPortal(
-      this.contentComponent,
-      null,
-      Injector.create({
-        providers: [{ provide: DATA_INJECTION_TOKEN, useValue: this.contentData }],
-      }),);
-  }
-
-  open() {
+  async open() {
     this.closeAll();
-    if (this.responsiveService.isMobile()) {
-      this.bottomSheetRef = this.matBottomSheet.open(this.contentWrapper);
+
+    if (this.fastActions.length === 1) {
+      this.executeAction(this.fastActions[0]);
       return;
     }
-    this.dialogRef = this.matDialog.open(this.contentWrapper);
+
+    if (this.responsiveService.isMobile()) {
+      this.bottomSheetRef = this.matBottomSheet.open(this.contentWrapper, { disableClose: true });
+      return;
+    }
+
+    this.dialogRef = this.matDialog.open(this.contentWrapper, {
+      disableClose: true,
+      minWidth: 300,
+      minHeight: 150,
+    });
   }
 
   closeAll() {
     this.bottomSheetRef?.dismiss();
     this.dialogRef?.close();
   }
+
+  trackById(idx, action: FastAction) {
+    return action.id;
+  }
+
+  executeAction(action: FastAction) {
+    if (action.isDisable()) {
+      return;
+    }
+
+    action.execute();
+  }
+}
+
+export enum ButtonType {
+  FLAT,
+  FAB,
+}
+
+interface FastActionButton {
+  type: ButtonType;
+  label?: string;
+}
+
+export interface FastActionConfig {
+  button?: FastActionButton;
+  title: string;
 }

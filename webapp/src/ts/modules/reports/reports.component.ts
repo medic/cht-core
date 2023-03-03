@@ -23,7 +23,8 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
-import { ReportsFastActionsComponent } from '@mm-modules/reports/reports-fast-actions.component';
+import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 
 const PAGE_SIZE = 50;
 
@@ -60,7 +61,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   isSidebarFilterOpen = false;
   isExporting = false;
   currentLevel;
-  fastActionComponent;
+  flatFastActionButton = ButtonType.FLAT;
+  rightFastActionsList;
+  leftFastActionsList;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -81,11 +84,11 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
     private modalService:ModalService,
+    private fastActionButtonService: FastActionButtonService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
     this.servicesActions = new ServicesActions(store);
-    this.fastActionComponent = ReportsFastActionsComponent;
   }
 
   ngOnInit() {
@@ -107,6 +110,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.checkPermissions();
     this.search();
     this.subscribeSidebarFilter();
+    this.rightFastActionsList = await this.getFastActions();
+    this.leftFastActionsList = await this.getFastActions(true);
   }
 
   ngOnDestroy() {
@@ -478,5 +483,37 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private getCurrentLineageLevel() {
     return this.userContactService.get().then(user => user?.parent?.name);
+  }
+
+  getFastActions(onlyFormActions=false): Promise<FastAction[]> {
+    const forms = [
+      {
+        title: 'form - 1',
+        icon: 'fa-plus',
+        code: 'form - 1',
+      },
+      {
+        title: 'form - 2',
+        icon: 'fa-plus',
+        code: 'form - 2',
+      },
+      {
+        title: 'form - 3',
+        icon: 'fa-plus',
+        code: 'form - 3',
+      },
+      {
+        title: 'form - 4',
+        icon: 'fa-plus',
+        code: 'form - 4',
+      },
+      {
+        title: 'form - 5',
+        icon: 'fa-plus',
+        code: 'form - 5',
+      },
+    ];
+
+    return this.fastActionButtonService.getAllReportFastActions(forms, onlyFormActions);
   }
 }

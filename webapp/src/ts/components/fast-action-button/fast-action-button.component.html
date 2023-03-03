@@ -1,22 +1,29 @@
-<section class="fast-action-trigger">
-  <button *ngIf="buttonStyle?.style !== 'flat'" mat-fab color="primary" (click)="open()">
+<section class="fast-action-trigger" *ngIf="fastActions?.length">
+  <button *ngIf="config?.button?.type !== buttonTypeFlat" mat-fab color="primary" (click)="open()">
     <mat-icon fontIcon="fa-plus"></mat-icon>
   </button>
-  <button *ngIf="buttonStyle?.style === 'flat'" mat-flat-button color="primary" (click)="open()">
-    {{ buttonStyle?.label | translate }}
+  <button *ngIf="config?.button?.type === buttonTypeFlat" mat-flat-button color="primary" (click)="open()">
+    {{ config?.button?.label | translate }}
   </button>
 </section>
 
 <ng-template #contentWrapper>
   <section class="fast-action-content-wrapper">
     <div class="fast-action-header">
-      <p class="fast-action-title">{{ title | translate }}</p>
+      <p class="fast-action-title">{{ config.title | translate }}</p>
       <button class="fast-action-close" (click)="closeAll()">
         <mat-icon fontIcon="fa-times"></mat-icon>
       </button>
     </div>
-    <div class="fast-action-body">
-      <ng-template [cdkPortalOutlet]="componentPortal"></ng-template>
-    </div>
+
+    <mat-list class="fast-action-body">
+      <mat-list-item *ngFor="let action of fastActions; trackBy: trackById">
+        <a class="fast-action-item" (click)="executeAction(action)" [class.disabled]="action.isDisable()" [attr.test-id]="action.testId">
+          <mat-icon *ngIf="action.icon?.type !== iconTypeResource" [fontIcon]="action.icon?.name"></mat-icon>
+          <span *ngIf="action.icon?.type === iconTypeResource" [innerHTML]="action.icon?.name | resourceIcon"></span>
+          <span>{{ action.label }}</span>
+        </a>
+      </mat-list-item>
+    </mat-list>
   </section>
 </ng-template>

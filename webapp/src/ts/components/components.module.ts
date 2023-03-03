@@ -45,6 +45,7 @@ import {
   AnalyticsTargetsDetailsComponent
 } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
+import { MatListModule } from '@angular/material/list';
 
 @NgModule({
   declarations: [
@@ -85,6 +86,7 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     MatButtonModule,
     MatBottomSheetModule,
     MatDialogModule,
+    MatListModule,
     PortalModule,
     BsDropdownModule,
   ],
