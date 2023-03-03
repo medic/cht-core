@@ -18,6 +18,8 @@ process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 
+const ONE_YEAR_IN_S = 31536000;
+
 const PROJECT_NAME = 'cht-e2e';
 const NETWORK = 'cht-net-e2e';
 const services = {
@@ -131,6 +133,20 @@ const updateSettings = updates => {
         body: updates,
       });
     });
+};
+const updatePermissions = async (roles, addPermissions, removePermissions = []) => {
+  const settings = await module.exports.getSettings();
+  addPermissions.forEach(permission => {
+    if (!settings.permissions[permission]) {
+      settings.permissions[permission] = [];
+    }
+    settings.permissions[permission].push(...roles);
+  });
+
+  removePermissions.forEach(permission => {
+    settings.permissions[permission] = [];
+  });
+  await module.exports.updateSettings({ permissions: settings.permissions }, true);
 };
 
 const revertTranslations = async () => {
@@ -1347,4 +1363,7 @@ module.exports = {
   listenForApi,
   makeTempDir,
   SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
+  updatePermissions,
+
+  ONE_YEAR_IN_S,
 };
