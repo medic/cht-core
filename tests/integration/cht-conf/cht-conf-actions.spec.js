@@ -24,7 +24,6 @@ let originalVersion;
 describe('cht-conf actions tests', () => {
   before(async () => {
     const settings = await utils.getDoc('settings');
-    console.log('originalVersion', settings._rev);
     originalVersion = Number(settings._rev.charAt(0));
     expect(settings.settings.roles).to.not.include.any.keys('program_officer', 'chw_supervisor', 'chw');
   });

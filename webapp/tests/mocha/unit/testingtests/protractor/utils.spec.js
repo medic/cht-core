@@ -2,7 +2,6 @@ const assert = require('chai').assert;
 const sinon = require('sinon');
 
 const utils = require('../../../../../../tests/utils');
-const sentinelUtils = require('../../../../../../tests/utils/sentinel');
 
 describe('Protractor utils', () => {
 
@@ -12,21 +11,24 @@ describe('Protractor utils', () => {
 
   describe('deleteAllDocs', () => {
     it('Deletes all docs and infodocs except some core ones', () => {
-      sinon.stub(sentinelUtils, 'skipToSeq');
-      sinon.stub(utils.db, 'allDocs').resolves({ rows: [
-        { id: '_design/cats', value: { rev: 1 } },
-        { id: 'service-worker-meta', value: { rev: 1 } },
-        { id: 'migration-log', value: { rev: 1 } },
-        { id: 'resources', value: { rev: 1 } },
-        { id: 'branding', value: { rev: 1 } },
-        { id: 'partners', value: { rev: 1 } },
-        { id: 'messages-001', value: { rev: 1 } },
-        { id: 'org.couchdb.user:003', value: { rev: 1 } },
-        { id: 'ME', value: { rev: 1 } }
+      const request = sinon.stub(utils, 'requestOnTestDb');
+      request.onFirstCall().resolves({rows: [
+        {id: '_design/cats', doc: {_id: '_design/cats'}},
+        {id: 'service-worker-meta', doc: {_id: 'service-worker-meta'}},
+        {id: 'migration-log', doc: {_id: 'migration-log'}},
+        {id: 'resources', doc: {_id: 'resources'}},
+        {id: 'branding', doc: {_id: 'branding'}},
+        {id: 'partners', doc: {_id: 'partners'}},
+        {id: '001', doc: {type: 'translations'}},
+        {id: '002', doc: {type: 'translations-backup'}},
+        {id: '003', doc: {type: 'user-settings'}},
+        {id: '004', doc: {type: 'info'}},
+        {id: 'ME', doc: {_id: 'ME'}}
       ]});
-      sinon.stub(utils.db, 'bulkDocs').resolves();
+      request.onSecondCall().resolves();
 
-      sinon.stub(utils.sentinelDb, 'allDocs').resolves({
+      const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
+      sentinelAllDocs.resolves({
         rows: [{
           id: 'me-info',
           value: {
@@ -34,25 +36,27 @@ describe('Protractor utils', () => {
           }
         }]
       });
-      sinon.stub(utils.sentinelDb, 'bulkDocs').resolves();
+      const sentinelBulkDocs = sinon.stub(utils.sentinelDb, 'bulkDocs');
+      sentinelBulkDocs.resolves();
 
-      return utils
-        .deleteAllDocs()
+      return utils.deleteAllDocs()
         .then(() => {
-          assert.deepEqual(utils.db.bulkDocs.args[0][0], [{ _id: 'ME', _deleted: true, _rev: 1 }]);
-          assert.deepEqual(utils.sentinelDb.bulkDocs.args[0][0], [{_id: 'me-info', _rev: '1-abc', _deleted: true}]);
+          const deleteOptions = request.args[1][0];
+          assert.equal(deleteOptions.path, '/_bulk_docs');
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
+          assert.deepEqual(sentinelBulkDocs.args[0][0], [{_id: 'me-info', _rev: '1-abc', _deleted: true}]);
         });
     });
     it('Supports extra strings as exceptions', () => {
-      sinon.stub(sentinelUtils, 'skipToSeq');
-
-      sinon.stub(utils.db, 'allDocs').resolves({ rows: [
-        { id: 'ME', value: { rev: 'MEred'} },
-        { id: 'YOU', value: { rev: 'YOU' } },
+      const request = sinon.stub(utils, 'requestOnTestDb');
+      request.onFirstCall().resolves({rows: [
+        {id: 'ME', doc: {_id: 'ME'}},
+        {id: 'YOU', doc: {_id: 'YOU'}}
       ]});
-      sinon.stub(utils.db, 'bulkDocs').resolves();
+      request.onSecondCall().resolves();
 
-      sinon.stub(utils.sentinelDb, 'allDocs').resolves({
+      const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
+      sentinelAllDocs.resolves({
         rows: [{
           id: 'ME-info',
           value: {
@@ -60,24 +64,27 @@ describe('Protractor utils', () => {
           }
         }]
       });
-      sinon.stub(utils.sentinelDb, 'bulkDocs').resolves();
+      const sentinelBulkDocs = sinon.stub(utils.sentinelDb, 'bulkDocs');
+      sentinelBulkDocs.resolves();
 
       return utils.deleteAllDocs(['YOU'])
         .then(() => {
-          assert.deepEqual(utils.sentinelDb.bulkDocs.args[0][0], [{ _id: 'ME-info', _rev: '1-abc', _deleted: true}]);
-          assert.deepEqual(utils.db.bulkDocs.args[0][0], [{ _id: 'ME', _deleted: true, _rev: 'MEred'}]);
+          const deleteOptions = request.args[1][0];
+          assert.deepEqual(sentinelBulkDocs.args[0][0], [{_id: 'ME-info', _rev: '1-abc', _deleted: true}]);
+          assert.equal(deleteOptions.path, '/_bulk_docs');
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
         });
     });
     it('Supports extra regex as exceptions', () => {
-      sinon.stub(sentinelUtils, 'skipToSeq');
-
-      sinon.stub(utils.db, 'allDocs').resolves({ rows: [
-        { id: 'ME', value: { rev: 'MEred'} },
-        { id: 'YOU', value: { rev: 'YOU' } },
+      const request = sinon.stub(utils, 'requestOnTestDb');
+      request.onFirstCall().resolves({rows: [
+        {id: 'ME', doc: {_id: 'ME'}},
+        {id: 'YOU', doc: {_id: 'YOU'}}
       ]});
-      sinon.stub(utils.db, 'bulkDocs').resolves();
+      request.onSecondCall().resolves();
 
-      sinon.stub(utils.sentinelDb, 'allDocs').resolves({
+      const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
+      sentinelAllDocs.resolves({
         rows: [{
           id: 'ME-info',
           value: {
@@ -85,25 +92,26 @@ describe('Protractor utils', () => {
           }
         }]
       });
-      sinon.stub(utils.sentinelDb, 'bulkDocs').resolves();
+      const sentinelBulkDocs = sinon.stub(utils.sentinelDb, 'bulkDocs');
+      sentinelBulkDocs.resolves();
 
-      return utils
-        .deleteAllDocs([/^YOU$/])
+      return utils.deleteAllDocs([/^YOU$/])
         .then(() => {
-          assert.deepEqual(utils.db.bulkDocs.args[0][0], [{ _id: 'ME', _deleted: true, _rev: 'MEred'}]);
+          const deleteOptions = request.args[1][0];
+          assert.equal(deleteOptions.path, '/_bulk_docs');
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
         });
     });
-
     it('Supports extra functions as exceptions', () => {
-      sinon.stub(sentinelUtils, 'skipToSeq');
-
-      sinon.stub(utils.db, 'allDocs').resolves({ rows: [
-        { id: 'ME', value: { rev: 'MEred'} },
-        { id: 'YOU', value: { rev: 'YOU' } },
+      const request = sinon.stub(utils, 'requestOnTestDb');
+      request.onFirstCall().resolves({rows: [
+        {id: 'ME', doc: {_id: 'ME'}},
+        {id: 'YOU', doc: {_id: 'YOU'}}
       ]});
-      sinon.stub(utils.db, 'bulkDocs').resolves();
+      request.onSecondCall().resolves();
 
-      sinon.stub(utils.sentinelDb, 'allDocs').resolves({
+      const sentinelAllDocs = sinon.stub(utils.sentinelDb, 'allDocs');
+      sentinelAllDocs.resolves({
         rows: [{
           id: 'ME-info',
           value: {
@@ -111,12 +119,15 @@ describe('Protractor utils', () => {
           }
         }]
       });
-      sinon.stub(utils.sentinelDb, 'bulkDocs').resolves();
+      const sentinelBulkDocs = sinon.stub(utils.sentinelDb, 'bulkDocs');
+      sentinelBulkDocs.resolves();
 
-      return utils
-        .deleteAllDocs([id => id === 'YOU'])
+
+      return utils.deleteAllDocs([doc => doc._id === 'YOU'])
         .then(() => {
-          assert.deepEqual(utils.db.bulkDocs.args[0][0], [{ _id: 'ME', _deleted: true, _rev: 'MEred'}]);
+          const deleteOptions = request.args[1][0];
+          assert.equal(deleteOptions.path, '/_bulk_docs');
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
         });
     });
   });
