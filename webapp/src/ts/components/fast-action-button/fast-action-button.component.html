@@ -1,13 +1,16 @@
 <section class="fast-action-trigger">
-  <button mat-fab color="primary" (click)="open()">
+  <button *ngIf="buttonStyle?.style !== 'flat'" mat-fab color="primary" (click)="open()">
     <mat-icon fontIcon="fa-plus"></mat-icon>
+  </button>
+  <button *ngIf="buttonStyle?.style === 'flat'" mat-flat-button color="primary" (click)="open()">
+    {{ buttonStyle?.label | translate }}
   </button>
 </section>
 
 <ng-template #contentWrapper>
   <section class="fast-action-content-wrapper">
     <div class="fast-action-header">
-      <p class="fast-action-title">{{ title }}</p>
+      <p class="fast-action-title">{{ title | translate }}</p>
       <button class="fast-action-close" (click)="closeAll()">
         <mat-icon fontIcon="fa-times"></mat-icon>
       </button>

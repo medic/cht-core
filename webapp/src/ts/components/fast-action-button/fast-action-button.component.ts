@@ -1,9 +1,11 @@
-import { Component, OnInit, TemplateRef, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, Injector, InjectionToken } from '@angular/core';
 import { ComponentPortal, ComponentType, Portal } from '@angular/cdk/portal';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { ResponsiveService } from '@mm-services/responsive.service';
+
+export const DATA_INJECTION_TOKEN = new InjectionToken<string>('DATA_INJECTION_TOKEN');
 
 @Component({
   selector: 'mm-fast-action-button',
@@ -12,12 +14,15 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 export class FastActionButtonComponent implements OnInit {
 
   @Input() contentComponent: ComponentType<any>;
+  @Input() contentData: any;
   @Input() title: string;
+  @Input() buttonStyle: Record<string, any>;
   @ViewChild('contentWrapper') contentWrapper;
-  componentPortal: Portal<any>;
 
   private bottomSheetRef: MatBottomSheetRef;
   private dialogRef: MatDialogRef<any>;
+
+  componentPortal: Portal<any>;
 
   constructor(
     private responsiveService: ResponsiveService,
@@ -26,7 +31,12 @@ export class FastActionButtonComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.componentPortal = new ComponentPortal(this.contentComponent);
+    this.componentPortal = new ComponentPortal(
+      this.contentComponent,
+      null,
+      Injector.create({
+        providers: [{ provide: DATA_INJECTION_TOKEN, useValue: this.contentData }],
+      }),);
   }
 
   open() {

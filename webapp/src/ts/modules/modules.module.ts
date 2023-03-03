@@ -21,6 +21,7 @@ import { ReportsAddComponent } from '@mm-modules/reports/reports-add.component';
 import { ReportsFiltersComponent } from '@mm-modules/reports/reports-filters.component';
 import { ReportsSidebarFilterComponent } from '@mm-modules/reports/reports-sidebar-filter.component';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
+import { ReportsFastActionsComponent } from '@mm-modules/reports/reports-fast-actions.component';
 import { ComponentsModule } from '@mm-components/components.module';
 import { MessagesComponent } from '@mm-modules/messages/messages.component';
 import { MessagesMoreMenuComponent } from '@mm-modules/messages/messages-more-menu.component';
@@ -77,6 +78,7 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     TasksContentComponent,
     TasksGroupComponent,
     TestingComponent,
+    ReportsFastActionsComponent,
   ],
   imports: [
     CommonModule,

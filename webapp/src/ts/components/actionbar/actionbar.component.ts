@@ -5,8 +5,6 @@ import { Store } from '@ngrx/store';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { Selectors } from '@mm-selectors/index';
-import { SessionService } from '@mm-services/session.service';
-import { AuthService } from '@mm-services/auth.service';
 
 export const OLD_ACTION_BAR_PERMISSION:string = 'can_view_old_action_bar';
 
@@ -31,11 +29,7 @@ export class ActionbarComponent implements OnInit, OnDestroy {
   selectedContactDoc;
   sidebarFilter;
 
-  constructor(
-    private store: Store,
-    private sessionService: SessionService,
-    private authService: AuthService,
-  ) {
+  constructor(private store: Store) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
   }

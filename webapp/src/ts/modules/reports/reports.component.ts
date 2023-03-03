@@ -23,6 +23,7 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ReportsFastActionsComponent } from '@mm-modules/reports/reports-fast-actions.component';
 
 const PAGE_SIZE = 50;
 
@@ -59,6 +60,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   isSidebarFilterOpen = false;
   isExporting = false;
   currentLevel;
+  fastActionComponent;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -83,12 +85,12 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
     this.servicesActions = new ServicesActions(store);
+    this.fastActionComponent = ReportsFastActionsComponent;
   }
 
   ngOnInit() {
     this.subscribeToStore();
     this.watchReportList();
-
     this.reportsActions.setSelectedReports([]);
     this.appending = false;
     this.error = false;

@@ -4,6 +4,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatDialogModule } from '@angular/material/dialog';
+import { PortalModule } from '@angular/cdk/portal';
 
 import { HeaderComponent } from '@mm-components/header/header.component';
 import { PipesModule } from '@mm-pipes/pipes.module';
@@ -20,6 +25,7 @@ import {
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
@@ -53,6 +59,7 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     FormTypeFilterComponent,
     StatusFilterComponent,
     FreetextFilterComponent,
+    FastActionButtonComponent,
     SearchBarComponent,
     MultiselectBarComponent,
     ResetFiltersComponent,
@@ -74,6 +81,11 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     FormsModule,
     PipesModule,
     DirectivesModule,
+    MatIconModule,
+    MatButtonModule,
+    MatBottomSheetModule,
+    MatDialogModule,
+    PortalModule,
     BsDropdownModule,
   ],
   exports: [
@@ -85,6 +97,7 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     DateFilterComponent,
     FacilityFilterComponent,
     FormTypeFilterComponent,
+    FastActionButtonComponent,
     StatusFilterComponent,
     SearchBarComponent,
     MultiselectBarComponent,

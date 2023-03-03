@@ -1,3 +1,9 @@
+<mm-fast-action-button
+  [contentComponent]="fastActionComponent"
+  [title]="'test test test'"
+  [contentData]="{ showForms: true, showOtherActions: true }">
+</mm-fast-action-button>
+
 <div class="filters tab-bar">
   <div class="inner">
     <reports-filters
@@ -84,6 +90,13 @@
         <div class="loader" *ngIf="loading"></div>
         <div class="padding"></div>
       </div>
+
+      <mm-fast-action-button
+        [buttonStyle]="{ style: 'flat', label: 'fast-action.button.new.report' }"
+        [contentComponent]="fastActionComponent"
+        [title]="'second test test'"
+        [contentData]="{ showForms: true }">
+      </mm-fast-action-button>
     </div>
 
     <div class="content-pane right-pane">
