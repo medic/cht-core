@@ -10,6 +10,8 @@ const fs = require('fs');
 const path = require('path');
 const Tail = require('tail').Tail;
 
+const ONE_YEAR_IN_S = 31536000;
+
 const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -1082,4 +1084,6 @@ module.exports = {
 
   apiLogFile: 'api.e2e.log',
   sentinelLogFile: 'sentinel.e2e.log',
+
+  ONE_YEAR_IN_S,
 };
