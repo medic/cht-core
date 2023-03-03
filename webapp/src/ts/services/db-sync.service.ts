@@ -330,8 +330,8 @@ export class DBSyncService {
     const telemetryEntry = new DbSyncTelemetry(this.telemetryService);
     try {
       await this.migrationsService.runMigrations();
-      this.migrationsExecuted = true;
       telemetryEntry.recordMigrations(true);
+      return true;
     } catch (err) {
       console.error('Error while running DB migrations', err);
       telemetryEntry.recordMigrations(false);
