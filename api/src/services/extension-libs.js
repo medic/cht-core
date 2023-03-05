@@ -1,24 +1,27 @@
 const db = require('../db');
 
+const DOC_ID = 'extension-libs';
+
 const getLibsDoc = async () => {
   try {
-    return await db.medic.get('libs', { attachments: true });
+    return await db.medic.get(DOC_ID, { attachments: true });
   } catch (err) {
-    return {};
+    if (err.status === 404) {
+      // no doc means no configured libs
+      return;
+    }
+    throw err;
   }
 };
 
 module.exports = {
-  // offline users will only receive `doc`+`rev` pairs they are allowed to see
+  isLibChange: (change) => (change && change.id) === DOC_ID,
   getAll: async () => {
     const doc = await getLibsDoc();
-    const result = {};
-    if (doc && doc._attachments) {
-      for (const [key, value] of Object.entries(doc._attachments)) {
-        result[key] = value.data;
-      }
+    if (!doc || !doc._attachments) {
+      return [];
     }
-    return result;
+    return Object.entries(doc._attachments).map(([ name, attachment ]) => ({ name, attachment }));
   },
   get: async (libName) => {
     const doc = await getLibsDoc();
@@ -29,6 +32,5 @@ module.exports = {
         contentType: attachment.content_type
       };
     }
-    return {};
   }
 };

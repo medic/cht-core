@@ -9,6 +9,7 @@ const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const manifest = require('./manifest');
 const config = require('../config');
+const extensionLibs = require('./extension-libs');
 
 const MEDIC_DDOC_ID = '_design/medic';
 
@@ -168,7 +169,7 @@ const listen = () => {
         return handleBrandingChanges();
       }
 
-      if (change.id === 'libs') {
+      if (extensionLibs.isLibChange(change)) {
         return handleLibsChanges();
       }
     })

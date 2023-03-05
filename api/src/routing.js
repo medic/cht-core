@@ -60,6 +60,8 @@ const uuid = require('uuid');
 const compression = require('compression');
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
+const dbDocHandler = require('./controllers/db-doc');
+const extensionLibs = require('./controllers/extension-libs');
 const app = express.Router({ strict: true });
 const MAX_REQUEST_SIZE = '32mb';
 
@@ -250,21 +252,7 @@ app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUse
 
 app.use(express.static(environment.staticPath));
 app.use(express.static(environment.webappPath));
-app.get('/libs/:name', async (req, res) => {
-  try {
-    const lib = await getLibs.get(req.params.name);
-    if (lib && lib.data) {
-      res.set('Content-Type', lib.contentType);
-      res.send(Buffer.from(lib.data, 'base64'));
-    } else {
-      serverUtils.error({ message: 'Not found', status: 404 }, req, res);
-    }
-  } catch (err) {
-    // probably a 404, no problem.
-    // TODO check for other errors and report
-    serverUtils.error(err, req, res);
-  }
-});
+app.get('/extension-libs/:name', extensionLibs.get);
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
@@ -613,8 +601,6 @@ app.post(
 
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
-const dbDocHandler = require('./controllers/db-doc');
-const getLibs = require('./services/get-libs');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';

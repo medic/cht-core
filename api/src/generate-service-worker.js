@@ -7,7 +7,7 @@ const environment = require('./environment');
 const db = require('./db');
 const logger = require('./logger');
 const loginController = require('./controllers/login');
-const getLibs = require('./services/get-libs');
+const extensionLibs = require('./services/extension-libs');
 
 const SWMETA_DOC_ID = 'service-worker-meta';
 const apiSrcDirectoryPath = __dirname;
@@ -81,7 +81,6 @@ const writeServiceWorkerFile = async () => {
       path.join(webappDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
       path.join(webappDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
       path.join(staticDirectoryPath, 'login', '*.{css,js}'),
-      path.join(staticDirectoryPath, 'libs', 'bar.js'),
     ],
     dynamicUrlToDependencies: {
       '/': [path.join(webappDirectoryPath, 'index.html')], // Webapp's entry point
@@ -96,19 +95,12 @@ const writeServiceWorkerFile = async () => {
     maximumFileSizeToCacheInBytes: 1048576 * 30,
     verbose: true,
   };
-
-  try {
-    const libs = await getLibs.getAll();
-    const bar = libs && libs['bar.js'];
-    if (bar) {
-      // TODO iterate over all attachments so they are cached separately
-      config.dynamicUrlToDependencies['/libs/bar.js'] = bar;
-    }
-  } catch (err) {
-    // probably a 404, no problem.
-    // TODO check for other errors and report
-  }
-
+  const libs = await extensionLibs.getAll();
+  libs.forEach(lib => {
+    const libPath = path.join('/extension-libs', lib.name);
+    config.staticFileGlobs.push(libPath);
+    config.dynamicUrlToDependencies[libPath] = lib.attachment.data;
+  });
   return swPrecache.write(scriptOutputPath, config);
 };
 

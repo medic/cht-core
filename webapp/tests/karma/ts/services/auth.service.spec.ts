@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 
+import { HttpClient } from '@angular/common/http';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -14,17 +15,20 @@ describe('Auth Service', () => {
   let settingsService;
   let chtScriptApiService;
   let changesService;
+  let http;
 
   beforeEach(() => {
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
+    http = { get: sinon.stub() };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
-        { provide: ChangesService, useValue: changesService }
+        { provide: ChangesService, useValue: changesService },
+        { provide: HttpClient, useValue: http },
       ]
     });
 

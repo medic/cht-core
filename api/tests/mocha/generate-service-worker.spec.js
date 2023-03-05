@@ -8,7 +8,7 @@ const db = require('../../src/db');
 const env = require('../../src/environment');
 const logger = require('../../src/logger');
 const loginController = require('../../src/controllers/login');
-const getLibsService = require('../../src/services/get-libs');
+const extensionLibsService = require('../../src/services/extension-libs');
 
 describe('generate service worker', () => {
   let clock;
@@ -22,7 +22,7 @@ describe('generate service worker', () => {
     sinon.stub(swPrecache, 'write');
     sinon.stub(db.medic, 'get');
     sinon.stub(db.medic, 'put');
-    sinon.stub(getLibsService, 'getAll');
+    sinon.stub(extensionLibsService, 'getAll');
     clock = sinon.useFakeTimers();
 
     generateServiceWorker = rewire('../../src/generate-service-worker');
@@ -44,7 +44,7 @@ describe('generate service worker', () => {
 
   it('should generate the service worker file and update the service worker meta doc', () => {
     loginController.renderLogin.resolves('loginpage html');
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([{ name: 'bar.js', attachment: { data: 'barcode' } }]);
     swPrecache.write.resolves();
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
@@ -73,11 +73,11 @@ describe('generate service worker', () => {
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Bold.ttf',
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Regular.ttf',
             '/absolute/path/to/build/static/login/*.{css,js}',
-            '/absolute/path/to/build/static/libs/bar.js'
+            '/extension-libs/bar.js'
           ],
           dynamicUrlToDependencies: {
             '/': ['/absolute/path/to/build/static/webapp/index.html'], // Webapp's entry point
-            '/libs/bar.js': 'barcode',
+            '/extension-libs/bar.js': 'barcode',
             '/medic/login': 'loginpage html',
             '/medic/_design/medic/_rewrite/': ['/absolute/path/to/build/static/webapp/appcache-upgrade.html'],
           },
@@ -106,7 +106,7 @@ describe('generate service worker', () => {
   it('should not update the service worker meta doc if the service-worker file is not changed', () => {
     getServiceWorkerHash.onCall(0).resolves('same');
     getServiceWorkerHash.onCall(1).resolves('same');
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([]);
 
     return generateServiceWorker.run(true).then(() => {
       chai.expect(loginController.renderLogin.callCount).to.equal(1);
@@ -119,7 +119,7 @@ describe('generate service worker', () => {
   it('should update the meta doc if the request to hash the old service worker file contents fails', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves('same');
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([]);
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
@@ -139,7 +139,7 @@ describe('generate service worker', () => {
   it('should not update the meta doc if the request to hash the new service worker file fails', () => {
     getServiceWorkerHash.onCall(0).resolves('thing');
     getServiceWorkerHash.onCall(1).resolves(undefined);
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([]);
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
@@ -154,7 +154,7 @@ describe('generate service worker', () => {
   it('should not update the meta doc if hashing both old and new service worker files fail', () => {
     getServiceWorkerHash.onCall(0).resolves(undefined);
     getServiceWorkerHash.onCall(1).resolves(undefined);
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([]);
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
@@ -168,7 +168,7 @@ describe('generate service worker', () => {
 
   it('should default to caching the template file if rendering login fails', () => {
     loginController.renderLogin.rejects({ some: 'error' });
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([]);
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
 
@@ -194,12 +194,10 @@ describe('generate service worker', () => {
             '/absolute/path/to/build/static/webapp/fonts/enketo-icons-v2.woff',
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Bold.ttf',
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Regular.ttf',
-            '/absolute/path/to/build/static/login/*.{css,js}',
-            '/absolute/path/to/build/static/libs/bar.js'
+            '/absolute/path/to/build/static/login/*.{css,js}'
           ],
           dynamicUrlToDependencies: {
             '/': ['/absolute/path/to/build/static/webapp/index.html'], // Webapp's entry point
-            '/libs/bar.js': 'barcode',
             '/medic/login': ['/absolute/path/to/api/src/templates/login/index.html'],
             '/medic/_design/medic/_rewrite/': ['/absolute/path/to/build/static/webapp/appcache-upgrade.html'],
           },
@@ -227,7 +225,7 @@ describe('generate service worker', () => {
 
   it('should throw error when generating the service worker fails', () => {
     loginController.renderLogin.resolves('aaa');
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([]);
     swPrecache.write.rejects({ an: 'error' });
 
     return generateServiceWorker
@@ -244,7 +242,7 @@ describe('generate service worker', () => {
   it('should handle sw doc get 404s', () => {
     db.medic.get.rejects({ status: 404 });
     db.medic.put.resolves();
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([]);
     sinon.stub(logger, 'error');
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.resolves();
@@ -264,7 +262,7 @@ describe('generate service worker', () => {
   it('should handle sw doc put 409s', () => {
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.rejects({ status: 409 });
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([]);
     loginController.renderLogin.resolves('aaa');
     swPrecache.write.resolves();
 
@@ -277,7 +275,7 @@ describe('generate service worker', () => {
   it('should log other db get errors', () => {
     db.medic.get.rejects({ status: 500 });
     loginController.renderLogin.resolves('aaa');
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([]);
     swPrecache.write.resolves();
     sinon.stub(logger, 'error');
 
@@ -291,7 +289,7 @@ describe('generate service worker', () => {
     db.medic.get.resolves({});
     db.medic.put.rejects({ status: 502 });
     loginController.renderLogin.resolves('aaa');
-    getLibsService.getAll.resolves({ 'bar.js': 'barcode' });
+    extensionLibsService.getAll.resolves([]);
     swPrecache.write.resolves();
     sinon.stub(logger, 'error');
 
