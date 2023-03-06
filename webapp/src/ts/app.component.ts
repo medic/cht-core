@@ -508,7 +508,7 @@ export class AppComponent implements OnInit, AfterViewInit {
             this.globalActions.setForms(forms);
           }
         );
-        // get the forms for the Add Report menu
+        // ToDo: remove when deprecating Action Bar Component. This subscribe gets the forms for the Add Report action.
         this.xmlFormsService.subscribe('AddReportMenu', { contactForms: false }, (err, xForms) => {
           if (err) {
             return console.error('Error fetching form definitions', err);

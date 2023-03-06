@@ -25,10 +25,10 @@ export class FastActionButtonService {
     return filteredActions;
   }
 
-  private getFormActions(forms): FastAction[] {
-    return (forms || []).map(form => ({
-      id: forms.code,
-      testId: forms.code,
+  private getFormActions(xmlForms): FastAction[] {
+    return (xmlForms || []).map(form => ({
+      id: xmlForms.code,
+      testId: xmlForms.code,
       label: form.title,
       icon: {
         name: form.icon,
@@ -46,16 +46,14 @@ export class FastActionButtonService {
     }));
   }
 
-  getAllReportFastActions(forms, onlyFormActions = false): Promise<FastAction[]> {
-    let actions = [ ...this.getFormActions(forms) ];
-
-    if (!onlyFormActions) {
-      actions = [
-        ...actions,
-      ];
-    }
+  getLeftSideReportActions(): Promise<FastAction[]> {
+    const actions = [];
 
     return this.filterActions(actions);
+  }
+
+  getRightSideReportActions(xmlForms): Promise<FastAction[]> {
+    return this.filterActions(this.getFormActions(xmlForms));
   }
 }
 

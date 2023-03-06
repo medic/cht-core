@@ -25,6 +25,8 @@ import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
 
 const PAGE_SIZE = 50;
 
@@ -61,9 +63,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   isSidebarFilterOpen = false;
   isExporting = false;
   currentLevel;
-  flatFastActionButton = ButtonType.FLAT;
-  rightFastActionsList;
-  leftFastActionsList;
+  fastActions: ReportFastActions;
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -84,15 +84,19 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
     private modalService:ModalService,
-    private fastActionButtonService: FastActionButtonService,
+    private fastActionButtonService:FastActionButtonService,
+    private xmlFormsService:XmlFormsService,
+    private translateFromService:TranslateFromService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
     this.servicesActions = new ServicesActions(store);
+    this.fastActions = { flatButtonType: ButtonType.FLAT };
   }
 
   ngOnInit() {
     this.subscribeToStore();
+    this.subscribeToXmlFormsService();
     this.watchReportList();
     this.reportsActions.setSelectedReports([]);
     this.appending = false;
@@ -110,8 +114,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.checkPermissions();
     this.search();
     this.subscribeSidebarFilter();
-    this.rightFastActionsList = await this.getFastActions();
-    this.leftFastActionsList = await this.getFastActions(true);
   }
 
   ngOnDestroy() {
@@ -186,6 +188,37 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
     this.subscription.add(subscription);
+  }
+
+  private subscribeToXmlFormsService() {
+
+    // ToDo move translate thing to service
+    /**
+     * Translates using the key if truthy using the old style label
+     * array as a fallback.
+     */
+    const translateTitle = (key, label) => {
+      return key ? this.translateService.instant(key) : this.translateFromService.get(label);
+    };
+
+    // ToDo update filter when training cards is merged.
+
+    this.xmlFormsService.subscribe('AddReportMenu', { contactForms: false }, async (error, xForms) => {
+      if (error) {
+        return console.error('Error fetching form definitions', error);
+      }
+      const xmlForms = xForms
+        .map((xForm) => ({
+          id: xForm._id,
+          code: xForm.internalId,
+          icon: xForm.icon,
+          title: translateTitle(xForm.translation_key, xForm.title),
+        }))
+        .sort((a, b) => a.title - b.title);
+
+      this.fastActions.rightSideActions = await this.fastActionButtonService.getRightSideReportActions(xmlForms);
+      this.fastActions.leftSideActions = await this.fastActionButtonService.getLeftSideReportActions();
+    });
   }
 
   private watchReportList() {
@@ -484,36 +517,10 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private getCurrentLineageLevel() {
     return this.userContactService.get().then(user => user?.parent?.name);
   }
+}
 
-  getFastActions(onlyFormActions=false): Promise<FastAction[]> {
-    const forms = [
-      {
-        title: 'form - 1',
-        icon: 'fa-plus',
-        code: 'form - 1',
-      },
-      {
-        title: 'form - 2',
-        icon: 'fa-plus',
-        code: 'form - 2',
-      },
-      {
-        title: 'form - 3',
-        icon: 'fa-plus',
-        code: 'form - 3',
-      },
-      {
-        title: 'form - 4',
-        icon: 'fa-plus',
-        code: 'form - 4',
-      },
-      {
-        title: 'form - 5',
-        icon: 'fa-plus',
-        code: 'form - 5',
-      },
-    ];
-
-    return this.fastActionButtonService.getAllReportFastActions(forms, onlyFormActions);
-  }
+interface ReportFastActions {
+  flatButtonType: ButtonType;
+  rightSideActions?: FastAction[];
+  leftSideActions?: FastAction[];
 }
