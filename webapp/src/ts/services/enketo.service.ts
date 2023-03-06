@@ -78,6 +78,9 @@ export class EnketoService {
   }
 
   private init() {
+    if (this.inited) {
+      return this.inited;
+    }
     return this.zScoreService
       .getScoreUtil()
       .then((zscoreUtil) => {

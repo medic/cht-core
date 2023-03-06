@@ -3,8 +3,8 @@ import sinon from 'sinon';
 import { expect } from 'chai';
 import { provideMockStore } from '@ngrx/store/testing';
 import * as _ from 'lodash-es';
-// import { toBik_text } from 'bikram-sambat';
-// import * as moment from 'moment';
+import { toBik_text } from 'bikram-sambat';
+import * as moment from 'moment';
 
 import { DbService } from '@mm-services/db.service';
 import { Form2smsService } from '@mm-services/form2sms.service';
@@ -27,7 +27,7 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { GlobalActions } from '@mm-actions/global';
 import { FeedbackService } from '@mm-services/feedback.service';
-// import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
+import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 
 describe('Enketo service', () => {
@@ -168,8 +168,6 @@ describe('Enketo service', () => {
       ],
     });
 
-    service = TestBed.inject(EnketoService);
-
     Language.resolves('en');
     TranslateFrom.returns('translated');
     window.CHTCore = {};
@@ -180,33 +178,36 @@ describe('Enketo service', () => {
     delete window.CHTCore;
   });
 
-  // TODO these tests are breaking because the init is not deterministic -- fix later
-  // describe('init', () => {
-  //   it('should init zscore and xpath extensions', async () => {
-  //     sinon.stub(medicXpathExtensions, 'init');
+  describe('init', () => {
+    it('should init zscore and xpath extensions', async () => {
+      sinon.stub(medicXpathExtensions, 'init');
 
-  //     sinon.resetHistory();
-  //     await service.init();
+      service = TestBed.inject(EnketoService);
+      await service.init();
 
-  //     expect(zScoreService.getScoreUtil.callCount).to.equal(1);
-  //     expect(chtScriptApiService.getApi.callCount).to.equal(1);
-  //     expect(medicXpathExtensions.init.callCount).to.equal(1);
-  //     expect(medicXpathExtensions.init.args[0]).to.deep.equal([zScoreUtil, toBik_text, moment, chtScriptApi]);
-  //   });
+      expect(zScoreService.getScoreUtil.callCount).to.equal(1);
+      expect(chtScriptApiService.getApi.callCount).to.equal(1);
+      expect(medicXpathExtensions.init.callCount).to.equal(1);
+      expect(medicXpathExtensions.init.args[0]).to.deep.equal([zScoreUtil, toBik_text, moment, chtScriptApi]);
+    });
 
-  //   it('should catch errors', async () => {
-  //     sinon.stub(medicXpathExtensions, 'init');
-  //     zScoreService.getScoreUtil.rejects({ omg: 'error' });
+    it('should catch errors', async () => {
+      sinon.stub(medicXpathExtensions, 'init');
+      zScoreService.getScoreUtil.rejects({ omg: 'error' });
 
-  //     sinon.resetHistory();
-  //     await service.init();
+      service = TestBed.inject(EnketoService);
+      await service.init();
 
-  //     expect(zScoreService.getScoreUtil.callCount).to.equal(1);
-  //     expect(medicXpathExtensions.init.callCount).to.equal(0);
-  //   });
-  // });
+      expect(zScoreService.getScoreUtil.callCount).to.equal(1);
+      expect(medicXpathExtensions.init.callCount).to.equal(0);
+    });
+  });
 
   describe('render', () => {
+
+    beforeEach(() => {
+      service = TestBed.inject(EnketoService);
+    });
 
     it('renders error when user does not have associated contact', () => {
       UserContact.resolves();
@@ -549,6 +550,10 @@ describe('Enketo service', () => {
   });
 
   describe('save', () => {
+
+    beforeEach(() => {
+      service = TestBed.inject(EnketoService);
+    });
 
     it('rejects on invalid form', () => {
       const inputRelevant = { dataset: { relevant: 'true' } };
@@ -1874,6 +1879,8 @@ describe('Enketo service', () => {
     });
 
     beforeEach(() => {
+      service = TestBed.inject(EnketoService);
+
       $form = $(`<div></div>`);
       $form
         .append($nextBtn)
