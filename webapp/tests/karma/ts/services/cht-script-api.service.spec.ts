@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { of } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
@@ -68,8 +69,8 @@ describe('CHTScriptApiService service', () => {
       settingsService.get.resolves({
         extension_libs: ['bar.js', 'foo.js']
       });
-      http.get.onCall(0).returns({ toPromise: () => Promise.resolve('return (a) => a + a')} );
-      http.get.onCall(1).returns({ toPromise: () => Promise.resolve('return function() { return "foo"; }')} );
+      http.get.onCall(0).returns(of('return (a) => a + a'));
+      http.get.onCall(1).returns(of('return function() { return "foo"; }'));
       await service.isInitialized();
 
       expect(http.get.callCount).to.equal(2);
