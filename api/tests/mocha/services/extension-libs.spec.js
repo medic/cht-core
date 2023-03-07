@@ -35,14 +35,14 @@ describe('Extension Libs service', () => {
   describe('getAll', () => {
 
     it('handles 404', async () => {
-      dbGet.throws({ status: 404 });
+      dbGet.rejects({ status: 404 });
       const actual = await service.getAll();
       chai.expect(actual.length).to.eq(0);
       chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('throws anything else', async () => {
-      dbGet.throws({ status: 403 });
+      dbGet.rejects({ status: 403 });
       try {
         await service.getAll();
       } catch(e) {
@@ -54,21 +54,21 @@ describe('Extension Libs service', () => {
     });
 
     it('handles empty doc', async () => {
-      dbGet.returns({ _id: 'extension-libs' });
+      dbGet.resolves({ _id: 'extension-libs' });
       const actual = await service.getAll();
       chai.expect(actual.length).to.eq(0);
       chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('handles no attachments', async () => {
-      dbGet.returns({ _id: 'extension-libs', _attachments: {} });
+      dbGet.resolves({ _id: 'extension-libs', _attachments: {} });
       const actual = await service.getAll();
       chai.expect(actual.length).to.eq(0);
       chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('maps attachments', async () => {
-      dbGet.returns({ _id: 'extension-libs', _attachments: {
+      dbGet.resolves({ _id: 'extension-libs', _attachments: {
         'first': { data: 'abc', content_type: 'json' },
         'second': { data: 'def', content_type: 'javascript' }
       } });
@@ -86,7 +86,7 @@ describe('Extension Libs service', () => {
   describe('get', () => {
 
     it('handles undefined param', async () => {
-      dbGet.returns({ _id: 'extension-libs', _attachments: {
+      dbGet.resolves({ _id: 'extension-libs', _attachments: {
         first: { data: 'abc', content_type: 'json' },
         second: { data: 'def', content_type: 'javascript' }
       } });
@@ -95,14 +95,14 @@ describe('Extension Libs service', () => {
     });
 
     it('handles 404', async () => {
-      dbGet.throws({ status: 404 });
+      dbGet.rejects({ status: 404 });
       const actual = await service.get('second');
       chai.expect(actual).to.be.undefined;
       chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('throws anything else', async () => {
-      dbGet.throws({ status: 403 });
+      dbGet.rejects({ status: 403 });
       try {
         await service.get('second');
       } catch(e) {
@@ -114,21 +114,21 @@ describe('Extension Libs service', () => {
     });
 
     it('handles empty doc', async () => {
-      dbGet.returns({ _id: 'extension-libs' });
+      dbGet.resolves({ _id: 'extension-libs' });
       const actual = await service.get('second');
       chai.expect(actual).to.be.undefined;
       chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('handles unknown attachment name', async () => {
-      dbGet.returns({ _id: 'extension-libs', _attachments: { first: { data: 'first' } } });
+      dbGet.resolves({ _id: 'extension-libs', _attachments: { first: { data: 'first' } } });
       const actual = await service.get('second');
       chai.expect(actual).to.be.undefined;
       chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('returns attachment', async () => {
-      dbGet.returns({ _id: 'extension-libs', _attachments: {
+      dbGet.resolves({ _id: 'extension-libs', _attachments: {
         first: { data: 'abc', content_type: 'json' },
         second: { data: 'def', content_type: 'javascript' }
       } });

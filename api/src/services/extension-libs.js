@@ -3,15 +3,14 @@ const db = require('../db');
 const DOC_ID = 'extension-libs';
 
 const getLibsDoc = () => {
-  try {
-    return db.medic.get(DOC_ID, { attachments: true });
-  } catch (err) {
-    if (err.status === 404) {
-      // no doc means no configured libs
-      return;
-    }
-    throw err;
-  }
+  return db.medic.get(DOC_ID, { attachments: true })
+    .catch(err => {
+      if (err.status === 404) {
+        // no doc means no configured libs
+        return;
+      }
+      throw err;
+    });
 };
 
 const formatResult = (name, attachment) => {
