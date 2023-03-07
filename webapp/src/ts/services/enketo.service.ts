@@ -70,7 +70,7 @@ export class EnketoService {
   private readonly HTML_ATTACHMENT_NAME = 'form.html';
   private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
   private readonly objUrls = [];
-  private inited = false;
+  private inited;
 
   private currentForm;
   getCurrentForm() {
