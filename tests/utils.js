@@ -18,6 +18,8 @@ process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 
+const ONE_YEAR_IN_S = 31536000;
+
 const PROJECT_NAME = 'cht-e2e';
 const NETWORK = 'cht-net-e2e';
 const services = {
@@ -141,7 +143,7 @@ const updatePermissions = async (roles, addPermissions, removePermissions = []) 
     }
     settings.permissions[permission].push(...roles);
   });
-    
+
   removePermissions.forEach(permission => {
     settings.permissions[permission] = [];
   });
@@ -1374,4 +1376,6 @@ module.exports = {
   makeTempDir,
   SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
   updatePermissions,
+
+  ONE_YEAR_IN_S,
 };
