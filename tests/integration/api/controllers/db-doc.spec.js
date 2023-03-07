@@ -1615,11 +1615,11 @@ describe('db-doc handler', () => {
 
           return sentinelUtils.waitForSentinel(ids).then(() => sentinelUtils.getInfoDocs(ids));
         }).then(([a1, a2, d1, d2, n1, n2]) => {
-          chai.expect(a1._rev.substring(0, 2)).to.equal('3-');
-          chai.expect(a2._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(d1._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(d2._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(n1._rev.substring(0, 2)).to.equal('2-');
+          chai.expect(a1._rev.substring(0, 2)).to.equal('4-');
+          chai.expect(a2._rev.substring(0, 2)).to.equal('3-');
+          chai.expect(d1._rev.substring(0, 2)).to.equal('3-');
+          chai.expect(d2._rev.substring(0, 2)).to.equal('3-');
+          chai.expect(n1._rev.substring(0, 2)).to.equal('3-');
           chai.expect(n2).to.be.undefined;
         });
     });

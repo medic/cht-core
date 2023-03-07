@@ -94,13 +94,13 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
               sentinelInfoDoc.initial_replication_date = medicInfoDoc.initial_replication_date;
 
               // Source transitions from the document if they don't exist
-              sentinelInfoDoc.transitions = sentinelInfoDoc.transitions || (change.doc && change.doc.transitions) || {};
+              sentinelInfoDoc.transitions = sentinelInfoDoc.transitions || (change.doc && change.doc.transitions);
 
               migratedInfoDocs.push(sentinelInfoDoc);
             } else {
               const infoDoc = Object.assign({}, medicInfoDoc);
               delete infoDoc._rev;
-              infoDoc.transitions = (change.doc && change.doc.transitions) || {};
+              infoDoc.transitions = change.doc && change.doc.transitions;
               infoDocs.push(infoDoc);
               migratedInfoDocs.push(infoDoc);
             }
@@ -122,20 +122,13 @@ const resolveInfoDocs = (changes, writeDirtyInfoDocs) => {
             const change = changes.find(change => change.id === docId);
             const infoDoc = collectedInfoDoc || blankInfoDoc(docId, !change.doc._rev && Date.now());
 
-            infoDoc.transitions = (change.doc && change.doc.transitions) || {};
+            infoDoc.transitions = change.doc && change.doc.transitions;
 
             if (!collectedInfoDoc) {
               infoDocs.push(infoDoc);
             }
 
             migratedInfoDocs.push(infoDoc);
-          });
-
-          // After all checks if there are still infodocs without transition information add a stub
-          infoDocs.forEach(infoDoc => {
-            if (!infoDoc.transitions) {
-              infoDoc.transitions = {};
-            }
           });
 
           // Store any infoDocs that have been migrated.
