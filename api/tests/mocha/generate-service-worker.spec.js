@@ -44,7 +44,7 @@ describe('generate service worker', () => {
 
   it('should generate the service worker file and update the service worker meta doc', () => {
     loginController.renderLogin.resolves('loginpage html');
-    extensionLibsService.getAll.resolves([{ name: 'bar.js', attachment: { data: 'barcode' } }]);
+    extensionLibsService.getAll.resolves([{ name: 'bar.js', data: 'barcode' }]);
     swPrecache.write.resolves();
     db.medic.get.resolves({ _id: 'service-worker-meta' });
     db.medic.put.resolves();
