@@ -81,15 +81,15 @@ export class EnketoService {
     if (this.inited) {
       return this.inited;
     }
-    return this.zScoreService
-      .getScoreUtil()
-      .then((zscoreUtil) => {
-        return this.chtScriptApiService.getApi().then(api => {
-          medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
-        });
+    return Promise.all([
+      this.zScoreService.getScoreUtil(),
+      this.chtScriptApiService.getApi()
+    ])
+      .then(([zscoreUtil, api]) => {
+        medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
       })
       .catch((err) => {
-        console.error('Error initialising zscore util', err);
+        console.error('Error initialising enketo service', err);
       });
   }
 

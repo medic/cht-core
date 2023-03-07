@@ -178,7 +178,7 @@ module.exports = {
       const months = d2Moment.diff(d1Moment, 'months');
       return XPR.number(months);
     },
-    'extension-lib': function() {
+    'cht:extension-lib': function() {
       const args = Array.from(arguments);
       const libId = args.shift();
       const lib = chtScriptApi.v1.getExtensionLib(libId.v);

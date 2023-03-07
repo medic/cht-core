@@ -6,6 +6,8 @@ import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { SessionService } from '@mm-services/session.service';
 
+import { lastValueFrom } from 'rxjs';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -46,8 +48,9 @@ export class CHTScriptApiService {
 
   private async loadScript(name) {
     try {
-      const src = await this.http.get('/extension-libs/' + name, { responseType: 'text' }).toPromise();
-      this.extensionLibs[name] = new Function(src)();
+      const request = this.http.get('/extension-libs/' + name, { responseType: 'text' });
+      const result = await lastValueFrom(request);
+      this.extensionLibs[name] = new Function(result)();
     } catch(e) {
       console.error(`Error loading extension lib: "${name}"`, e);
     }

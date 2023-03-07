@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions.js';
 
@@ -55,4 +56,33 @@ describe('Medic XPath Extensions', () => {
       expect(resultDate.v.toUTCString()).to.equal('Sun, 23 May 2021 10:20:40 GMT');
     });
   });
+
+  describe('cht:extension-lib', () => {
+
+    let extensionLib;
+    const zScoreUtil = sinon.stub();
+    const toBikramSambat = sinon.stub();
+    const moment = sinon.stub();
+    const chtScriptApi = { v1: { getExtensionLib: sinon.stub() } };
+    const lib = sinon.stub();
+
+    beforeEach(() => {
+      medicXpathExtensions.init(zScoreUtil, toBikramSambat, moment, chtScriptApi);
+      chtScriptApi.v1.getExtensionLib.returns(lib);
+      extensionLib = medicXpathExtensions.func['cht:extension-lib'];
+    });
+
+    it('calls the requested function', () => {
+      lib.returns('expected');
+      const actual = extensionLib({ v: 'myfunc' }, { t: 'string', v: 'hello' });
+      expect(actual).to.equal('expected');
+      expect(chtScriptApi.v1.getExtensionLib.callCount).to.equal(1);
+      expect(chtScriptApi.v1.getExtensionLib.args[0][0]).to.equal('myfunc');
+      expect(lib.callCount).to.equal(1);
+      expect(lib.args[0][0].t).to.equal('string');
+      expect(lib.args[0][0].v).to.equal('hello');
+    });
+
+  });
+
 });

@@ -4,7 +4,7 @@ const chai = require('chai');
 const service = require('../../../src/services/extension-libs');
 const db = require('../../../src/db');
 
-describe.only('Extension Libs service', () => {
+describe('Extension Libs service', () => {
 
   let dbGet;
 
@@ -38,6 +38,7 @@ describe.only('Extension Libs service', () => {
       dbGet.throws({ status: 404 });
       const actual = await service.getAll();
       chai.expect(actual.length).to.eq(0);
+      chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('throws anything else', async () => {
@@ -46,6 +47,7 @@ describe.only('Extension Libs service', () => {
         await service.getAll();
       } catch(e) {
         chai.expect(e.status).to.equal(403);
+        chai.expect(dbGet.callCount).to.equal(1);
         return;
       }
       throw new Error('Expected error to be thrown');
@@ -55,12 +57,14 @@ describe.only('Extension Libs service', () => {
       dbGet.returns({ _id: 'extension-libs' });
       const actual = await service.getAll();
       chai.expect(actual.length).to.eq(0);
+      chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('handles no attachments', async () => {
       dbGet.returns({ _id: 'extension-libs', _attachments: {} });
       const actual = await service.getAll();
       chai.expect(actual.length).to.eq(0);
+      chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('maps attachments', async () => {
@@ -70,8 +74,8 @@ describe.only('Extension Libs service', () => {
       } });
       const actual = await service.getAll();
       chai.expect(actual.length).to.eq(2);
-      chai.expect(actual[0]).to.deep.equal({ name: 'first', attachment: { data: 'abc', content_type: 'json' } });
-      chai.expect(actual[1]).to.deep.equal({ name: 'second', attachment: { data: 'def', content_type: 'javascript' } });
+      chai.expect(actual[0]).to.deep.equal({ name: 'first', data: 'abc', contentType: 'json' });
+      chai.expect(actual[1]).to.deep.equal({ name: 'second', data: 'def', contentType: 'javascript' });
       chai.expect(dbGet.callCount).to.equal(1);
       chai.expect(dbGet.args[0][0]).to.equal('extension-libs');
       chai.expect(dbGet.args[0][1]).to.deep.equal({ attachments: true });
@@ -81,10 +85,20 @@ describe.only('Extension Libs service', () => {
 
   describe('get', () => {
 
+    it('handles undefined param', async () => {
+      dbGet.returns({ _id: 'extension-libs', _attachments: {
+        first: { data: 'abc', content_type: 'json' },
+        second: { data: 'def', content_type: 'javascript' }
+      } });
+      const actual = await service.get();
+      chai.expect(actual).to.be.undefined;
+    });
+
     it('handles 404', async () => {
       dbGet.throws({ status: 404 });
       const actual = await service.get('second');
       chai.expect(actual).to.be.undefined;
+      chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('throws anything else', async () => {
@@ -93,6 +107,7 @@ describe.only('Extension Libs service', () => {
         await service.get('second');
       } catch(e) {
         chai.expect(e.status).to.equal(403);
+        chai.expect(dbGet.callCount).to.equal(1);
         return;
       }
       throw new Error('Expected error to be thrown');
@@ -102,12 +117,14 @@ describe.only('Extension Libs service', () => {
       dbGet.returns({ _id: 'extension-libs' });
       const actual = await service.get('second');
       chai.expect(actual).to.be.undefined;
+      chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('handles unknown attachment name', async () => {
       dbGet.returns({ _id: 'extension-libs', _attachments: { first: { data: 'first' } } });
       const actual = await service.get('second');
       chai.expect(actual).to.be.undefined;
+      chai.expect(dbGet.callCount).to.equal(1);
     });
 
     it('returns attachment', async () => {

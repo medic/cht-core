@@ -16,7 +16,7 @@ const XML = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w
     </instance>
 
     <bind nodeset="/data/avg" type="string" readonly="true()"
-      calculate="extension-lib('average.js', /data/first , /data/second )"/>
+      calculate="cht:extension-lib('average.js', /data/first , /data/second )"/>
   </model>
 </h:head>
 <h:body>

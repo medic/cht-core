@@ -99,7 +99,7 @@ const writeServiceWorkerFile = async () => {
   libs.forEach(lib => {
     const libPath = path.join('/extension-libs', lib.name);
     config.staticFileGlobs.push(libPath);
-    config.dynamicUrlToDependencies[libPath] = lib.attachment.data;
+    config.dynamicUrlToDependencies[libPath] = lib.data;
   });
   return swPrecache.write(scriptOutputPath, config);
 };
