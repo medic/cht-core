@@ -13,6 +13,7 @@ import { MessageStateService } from '@mm-services/message-state.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 
 @Component({
   templateUrl: './reports-content.component.html'
@@ -27,6 +28,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   selectMode;
   validChecks;
   summaries;
+  fastActionList: FastAction[];
 
   constructor(
     private changesService:ChangesService,
@@ -34,6 +36,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     private route:ActivatedRoute,
     private router:Router,
     private searchFiltersService:SearchFiltersService,
+    private fastActionButtonService:FastActionButtonService,
     private messageStateService:MessageStateService,
     private responsiveService:ResponsiveService,
     private modalService:ModalService,
@@ -42,10 +45,37 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     this.reportsActions = new ReportsActions(store);
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.subscribeToStore();
     this.watchReportsContentChanges();
-
+    const forms = [
+      {
+        title: 'form - 1',
+        icon: 'fa-plus',
+        code: 'form - 1',
+      },
+      {
+        title: 'form - 2',
+        icon: 'fa-plus',
+        code: 'form - 2',
+      },
+      {
+        title: 'form - 3',
+        icon: 'fa-plus',
+        code: 'form - 3',
+      },
+      {
+        title: 'form - 4',
+        icon: 'fa-plus',
+        code: 'form - 4',
+      },
+      {
+        title: 'form - 5',
+        icon: 'fa-plus',
+        code: 'form - 5',
+      },
+    ];
+    this.fastActionList = await this.fastActionButtonService.getLeftSideReportActions(forms);
     const routeSubscription = this.route.params.subscribe(params => {
       if (params.id) {
         this.reportsActions.selectReportToOpen(this.route.snapshot.params.id);

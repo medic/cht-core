@@ -27,9 +27,9 @@ export class FastActionButtonService {
 
   private getFormActions(xmlForms): FastAction[] {
     return (xmlForms || []).map(form => ({
-      id: xmlForms.code,
-      testId: xmlForms.code,
-      label: form.title,
+      id: form.code,
+      testId: form.code,
+      label: form.title || form.code,
       icon: {
         name: form.icon,
         type: IconType.RESOURCE,
@@ -46,13 +46,13 @@ export class FastActionButtonService {
     }));
   }
 
-  getLeftSideReportActions(): Promise<FastAction[]> {
+  getRightSideReportActions(): Promise<FastAction[]> {
     const actions = [];
 
     return this.filterActions(actions);
   }
 
-  getRightSideReportActions(xmlForms): Promise<FastAction[]> {
+  getLeftSideReportActions(xmlForms): Promise<FastAction[]> {
     return this.filterActions(this.getFormActions(xmlForms));
   }
 }

@@ -1,8 +1,3 @@
-<mm-fast-action-button
-  [config]="{ title: 'hoooolaa please translate' | translate }"
-  [fastActions]="fastActions.leftSideActions">
-</mm-fast-action-button>
-
 <div class="filters tab-bar">
   <div class="inner">
     <reports-filters
@@ -92,10 +87,10 @@
 
       <mm-fast-action-button
         [config]="{
-          title: '2 hoooolaa please translate' | translate,
-          button: { type: fastActions.flatButtonType, label: 'aaaa labellll' | translate }
+          title: 'New translate' | translate,
+          button: { type: fastActionButtonType, label: 'New Report translate' | translate }
         }"
-        [fastActions]="fastActions.rightSideActions">
+        [fastActions]="fastActionList">
       </mm-fast-action-button>
     </div>
 

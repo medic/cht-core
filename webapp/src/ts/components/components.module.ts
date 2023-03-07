@@ -46,6 +46,7 @@ import {
 } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
 import { MatListModule } from '@angular/material/list';
+import { PanelHeaderComponent } from './panel-header/panel-header.component';
 
 @NgModule({
   declarations: [
@@ -74,6 +75,7 @@ import { MatListModule } from '@angular/material/list';
     AnalyticsFilterComponent,
     AnalyticsTargetsDetailsComponent,
     MobileDetectionComponent,
+    PanelHeaderComponent,
   ],
   imports: [
     CommonModule,

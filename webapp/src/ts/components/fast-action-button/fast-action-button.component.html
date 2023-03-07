@@ -1,29 +1,31 @@
-<section class="fast-action-trigger" *ngIf="fastActions?.length">
-  <button *ngIf="config?.button?.type !== buttonTypeFlat" mat-fab color="primary" (click)="open()">
-    <mat-icon fontIcon="fa-plus"></mat-icon>
+<section class="fast-action-trigger" *ngIf="fastActions?.length" [class.embed-fast-action]="config?.button?.type === buttonTypeFlat">
+
+  <button *ngIf="config?.button?.type !== buttonTypeFlat" mat-fab color="primary" class="fast-action-fab-button" (click)="open()">
+    <mat-icon fontIcon="fa-plus" color="white"></mat-icon>
   </button>
-  <button *ngIf="config?.button?.type === buttonTypeFlat" mat-flat-button color="primary" (click)="open()">
+
+  <button *ngIf="config?.button?.type === buttonTypeFlat" mat-flat-button color="primary" class="fast-action-flat-button" (click)="open()">
     {{ config?.button?.label | translate }}
   </button>
+
 </section>
 
 <ng-template #contentWrapper>
   <section class="fast-action-content-wrapper">
-    <div class="fast-action-header">
-      <p class="fast-action-title">{{ config.title | translate }}</p>
-      <button class="fast-action-close" (click)="closeAll()">
-        <mat-icon fontIcon="fa-times"></mat-icon>
-      </button>
-    </div>
+
+    <mm-panel-header [title]="config?.title" (close)="closeAll()"></mm-panel-header>
 
     <mat-list class="fast-action-body">
       <mat-list-item *ngFor="let action of fastActions; trackBy: trackById">
         <a class="fast-action-item" (click)="executeAction(action)" [class.disabled]="action.isDisable()" [attr.test-id]="action.testId">
-          <mat-icon *ngIf="action.icon?.type !== iconTypeResource" [fontIcon]="action.icon?.name"></mat-icon>
-          <span *ngIf="action.icon?.type === iconTypeResource" [innerHTML]="action.icon?.name | resourceIcon"></span>
-          <span>{{ action.label }}</span>
+          <div class="fast-action-item-icon" *ngIf="action.icon?.name">
+            <mat-icon *ngIf="action.icon.type !== iconTypeResource" [fontIcon]="action.icon.name"></mat-icon>
+            <span *ngIf="action.icon.type === iconTypeResource" [innerHTML]="action.icon.name | resourceIcon"></span>
+          </div>
+          <p class="fast-action-item-label">{{ action.label }}</p>
         </a>
       </mat-list-item>
     </mat-list>
+
   </section>
 </ng-template>
