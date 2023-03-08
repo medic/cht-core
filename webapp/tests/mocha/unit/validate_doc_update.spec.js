@@ -70,8 +70,8 @@ describe('validate doc update', () => {
         );
         done();
       });
-    })
-  })
+    });
+  });
 
   it('only db and national admins are allowed change their own place', done => {
     const doc = { _id: 'abc', type: 'clinic' };
