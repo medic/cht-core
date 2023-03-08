@@ -45,37 +45,10 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     this.reportsActions = new ReportsActions(store);
   }
 
-  async ngOnInit() {
+  ngOnInit() {
     this.subscribeToStore();
     this.watchReportsContentChanges();
-    const forms = [
-      {
-        title: 'form - 1',
-        icon: 'fa-plus',
-        code: 'form - 1',
-      },
-      {
-        title: 'form - 2',
-        icon: 'fa-plus',
-        code: 'form - 2',
-      },
-      {
-        title: 'form - 3',
-        icon: 'fa-plus',
-        code: 'form - 3',
-      },
-      {
-        title: 'form - 4',
-        icon: 'fa-plus',
-        code: 'form - 4',
-      },
-      {
-        title: 'form - 5',
-        icon: 'fa-plus',
-        code: 'form - 5',
-      },
-    ];
-    this.fastActionList = await this.fastActionButtonService.getLeftSideReportActions(forms);
+
     const routeSubscription = this.route.params.subscribe(params => {
       if (params.id) {
         this.reportsActions.selectReportToOpen(this.route.snapshot.params.id);
@@ -126,6 +99,11 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       this.selectMode = selectMode;
     });
     this.subscription.add(contextSubscription);
+
+    const setActionsSubscription = this.store
+      .select(Selectors.getActionBar)
+      .subscribe(async () => this.fastActionList = await this.fastActionButtonService.getReportRightSideActions());
+    this.subscription.add(setActionsSubscription);
   }
 
   private watchReportsContentChanges() {

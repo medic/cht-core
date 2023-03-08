@@ -87,8 +87,8 @@
 
       <mm-fast-action-button
         [config]="{
-          title: 'New translate' | translate,
-          button: { type: fastActionButtonType, label: 'New Report translate' | translate }
+          title: 'fast_action_button.title',
+          button: { type: getFastActionButtonType(), label: 'report.new_report.button' }
         }"
         [fastActions]="fastActionList">
       </mm-fast-action-button>

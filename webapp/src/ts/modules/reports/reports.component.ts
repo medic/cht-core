@@ -63,7 +63,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   isSidebarFilterOpen = false;
   isExporting = false;
   currentLevel;
-  fastActionButtonType = ButtonType.FLAT;
   fastActionList: FastAction[];
 
   LIMIT_SELECT_ALL_REPORTS = 500;
@@ -216,7 +215,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         }))
         .sort((a, b) => a.title - b.title);
 
-      this.fastActionList = await this.fastActionButtonService.getLeftSideReportActions(xmlForms);
+      this.fastActionList = await this.fastActionButtonService.getReportLeftSideActions(xmlForms);
     });
   }
 
@@ -515,5 +514,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private getCurrentLineageLevel() {
     return this.userContactService.get().then(user => user?.parent?.name);
+  }
+
+  getFastActionButtonType() {
+    return this.responsiveService.isMobile() ? ButtonType.FAB : ButtonType.FLAT;
   }
 }
