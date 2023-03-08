@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { of } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
 import { SessionService } from '@mm-services/session.service';
@@ -21,7 +22,7 @@ describe('Auth Service', () => {
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
-    http = { get: sinon.stub() };
+    http = { get: sinon.stub().returns(of([])) };
 
     TestBed.configureTestingModule({
       providers: [
