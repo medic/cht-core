@@ -85,7 +85,6 @@ const docs = [
 ];
 
 const configure = async (userContactDoc) => {
-  await utils.updateSettings({ extension_libs: [ 'average.js' ] }, true);
   await utils.seedTestData(userContactDoc, docs);
 };
 

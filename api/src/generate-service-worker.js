@@ -60,6 +60,18 @@ const getLoginPageContents = async () => {
   }
 };
 
+const appendExtensionLibs = async (config) => {
+  const libs = await extensionLibs.getAll();
+  // cache this even if there are no libs so offline client knows there are no libs
+  config.staticFileGlobs.push('/extension-libs');
+  config.dynamicUrlToDependencies['/extension-libs'] = JSON.stringify(libs.map(lib => lib.name));
+  libs.forEach(lib => {
+    const libPath = path.join('/extension-libs', lib.name);
+    config.staticFileGlobs.push(libPath);
+    config.dynamicUrlToDependencies[libPath] = lib.data;
+  });
+};
+
 // Use the swPrecache library to generate a service-worker script
 const writeServiceWorkerFile = async () => {
   const config = {
@@ -95,12 +107,7 @@ const writeServiceWorkerFile = async () => {
     maximumFileSizeToCacheInBytes: 1048576 * 30,
     verbose: true,
   };
-  const libs = await extensionLibs.getAll();
-  libs.forEach(lib => {
-    const libPath = path.join('/extension-libs', lib.name);
-    config.staticFileGlobs.push(libPath);
-    config.dynamicUrlToDependencies[libPath] = lib.data;
-  });
+  await appendExtensionLibs(config);
   return swPrecache.write(scriptOutputPath, config);
 };
 

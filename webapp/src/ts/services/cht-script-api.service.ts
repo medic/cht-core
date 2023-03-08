@@ -35,12 +35,12 @@ export class CHTScriptApiService {
   private async init() {
     this.watchChanges();
     this.userCtx = this.sessionService.userCtx();
-    await this.getSettings();
-    await this.loadScripts();
+    await Promise.all([ this.getSettings(), this.loadScripts() ]);
   }
 
   private async loadScripts() {
-    const extensionLibs = this.settings?.extension_libs;
+    const request = this.http.get<String[]>('/extension-libs', { responseType: 'json' });
+    const extensionLibs = await lastValueFrom(request);
     if (extensionLibs && extensionLibs.length) {
       return Promise.all(extensionLibs.map(name => this.loadScript(name)));
     }

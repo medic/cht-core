@@ -20,7 +20,7 @@ describe('CHTScriptApiService service', () => {
     sessionService = { userCtx: sinon.stub() };
     settingsService = { get: sinon.stub() };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
-    http = { get: sinon.stub() };
+    http = { get: sinon.stub().returns(of([])) };
 
     TestBed.configureTestingModule({
       providers: [
@@ -56,6 +56,7 @@ describe('CHTScriptApiService service', () => {
     it('should return versioned api', async () => {
       settingsService.get.resolves();
       await service.isInitialized();
+
       const result = await service.getApi();
 
       expect(result).to.have.all.keys([ 'v1' ]);
@@ -66,16 +67,16 @@ describe('CHTScriptApiService service', () => {
     });
 
     it('should initialize extension libs', async () => {
-      settingsService.get.resolves({
-        extension_libs: ['bar.js', 'foo.js']
-      });
-      http.get.onCall(0).returns(of('return (a) => a + a'));
-      http.get.onCall(1).returns(of('return function() { return "foo"; }'));
+      settingsService.get.resolves();
+      http.get.onCall(0).returns(of([ 'bar.js', 'foo.js' ]));
+      http.get.onCall(1).returns(of('return (a) => a + a'));
+      http.get.onCall(2).returns(of('return function() { return "foo"; }'));
       await service.isInitialized();
 
-      expect(http.get.callCount).to.equal(2);
-      expect(http.get.args[0][0]).to.equal('/extension-libs/bar.js');
-      expect(http.get.args[1][0]).to.equal('/extension-libs/foo.js');
+      expect(http.get.callCount).to.equal(3);
+      expect(http.get.args[0][0]).to.equal('/extension-libs');
+      expect(http.get.args[1][0]).to.equal('/extension-libs/bar.js');
+      expect(http.get.args[2][0]).to.equal('/extension-libs/foo.js');
 
       const result = await service.getApi();
 
@@ -94,6 +95,7 @@ describe('CHTScriptApiService service', () => {
   });
 
   describe('v1.hasPermissions()', () => {
+
     it('should return true when user has the permission', async () => {
       settingsService.get.resolves({
         permissions: {

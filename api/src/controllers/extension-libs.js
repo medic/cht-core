@@ -2,6 +2,14 @@ const serverUtils = require('../server-utils');
 const extensionLibs = require('../services/extension-libs');
 
 module.exports = {
+  list: async (req, res) => {
+    try {
+      const libs = await extensionLibs.getAll();
+      res.json(libs.map(lib => lib.name));
+    } catch(e) {
+      serverUtils.serverError(e, req, res);
+    }
+  },
   get: async (req, res) => {
     const name = req.params.name;
     if (!name) {

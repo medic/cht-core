@@ -73,10 +73,12 @@ describe('generate service worker', () => {
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Bold.ttf',
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Regular.ttf',
             '/absolute/path/to/build/static/login/*.{css,js}',
-            '/extension-libs/bar.js'
+            '/extension-libs',
+            '/extension-libs/bar.js',
           ],
           dynamicUrlToDependencies: {
             '/': ['/absolute/path/to/build/static/webapp/index.html'], // Webapp's entry point
+            '/extension-libs': '["bar.js"]',
             '/extension-libs/bar.js': 'barcode',
             '/medic/login': 'loginpage html',
             '/medic/_design/medic/_rewrite/': ['/absolute/path/to/build/static/webapp/appcache-upgrade.html'],
@@ -194,12 +196,14 @@ describe('generate service worker', () => {
             '/absolute/path/to/build/static/webapp/fonts/enketo-icons-v2.woff',
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Bold.ttf',
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Regular.ttf',
-            '/absolute/path/to/build/static/login/*.{css,js}'
+            '/absolute/path/to/build/static/login/*.{css,js}',
+            '/extension-libs',
           ],
           dynamicUrlToDependencies: {
             '/': ['/absolute/path/to/build/static/webapp/index.html'], // Webapp's entry point
             '/medic/login': ['/absolute/path/to/api/src/templates/login/index.html'],
             '/medic/_design/medic/_rewrite/': ['/absolute/path/to/build/static/webapp/appcache-upgrade.html'],
+            '/extension-libs': '[]',
           },
           ignoreUrlParametersMatching: [/redirect/, /username/],
           stripPrefixMulti: {

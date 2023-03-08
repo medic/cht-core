@@ -252,6 +252,7 @@ app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUse
 
 app.use(express.static(environment.staticPath));
 app.use(express.static(environment.webappPath));
+app.get('/extension-libs', extensionLibs.list);
 app.get('/extension-libs/:name', extensionLibs.get);
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
