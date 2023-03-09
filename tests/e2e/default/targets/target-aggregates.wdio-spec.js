@@ -18,12 +18,9 @@ const randomNumber = (max) => Math.floor(Math.random() * max);
  */
 const expectTargets = async (targets) => {
   expect(await (await analytics.aggregateList()).length).to.equal(targets.length);
-
-  const expectTarget = async (target) => {
-    const lineItem = () => $(`#target-aggregates-list li[data-record-id=${target.id}]`);
-    expect(await lineItem().isExisting()).to.be.true;
-    expect(await lineItem().$('h4').getText()).to.equal(target.title);
-    expect(await lineItem().$('.aggregate-status span').getText()).to.equal(target.counter);
+  const expectTarget = async (target) => {    
+    expect(await (await analytics.getTargetItem(target)).title).to.equal(target.title);
+    expect(await (await analytics.getTargetItem(target)).status).to.equal(target.counter);
   };
 
   for (const target of targets) {
@@ -36,11 +33,6 @@ const expectTargets = async (targets) => {
   }
 };
 
-const openTargetDetails = async (targetID) => {
-  await $(`#target-aggregates-list li[data-record-id=${targetID}] a`).click();
-  await $('.target-detail.card h2').waitForDisplayed();
-};
-
 /**
  * Expect certain RHS target details
  * @param {Object} target
@@ -48,10 +40,6 @@ const openTargetDetails = async (targetID) => {
  * @param {string} target.title
  * @param {string} target.counter
  */
-const expectTargetDetails = async (target) => {
-  expect(await $('.target-detail h2').getText()).to.equal(target.title);
-  expect(await $('.target-detail .cell p').getText()).to.equal(target.counter);
-};
 
 /**
  * Expect certain RHS target aggregate list
@@ -146,9 +134,9 @@ describe('Target aggregates', () => {
 
       await commonElements.goToAnalytics();
       await analytics.goToTargetAggregates(true);
-      expect(await $$('#target-aggregates-list ul li').length).to.equal(0);
+      expect((await analytics.aggregateList()).length).to.equal(0);
       expect(
-        await $('.content-pane .item-content.empty-selection.selection-error').isDisplayed()
+        await (await analytics.emptySelectionError()).isDisplayed()
       ).to.be.true;
     });
   });
@@ -268,8 +256,8 @@ describe('Target aggregates', () => {
       await expectTargets(expectedTargets);
 
       for (const target of expectedTargets) {
-        await openTargetDetails(target.id);
-        await expectTargetDetails(target);
+        await analytics.openTargetDetails(target.id);
+        await analytics.expectTargetDetails(target);
         await expectContacts(expectedContacts, target);
       }
     });
@@ -358,8 +346,8 @@ describe('Target aggregates', () => {
 
       await expectTargets(expectedTargets);
       for (const target of expectedTargets) {
-        await openTargetDetails(target.id);
-        await expectTargetDetails(target);
+        await analytics.openTargetDetails(target.id);
+        await analytics.expectTargetDetails(target);
         const expectedContacts = contacts.map(contact => ({
           _id: contact._id,
           name: contact.name,
@@ -371,9 +359,9 @@ describe('Target aggregates', () => {
 
       // refreshing with an open target works correctly
       const target = expectedTargets[2];
-      await openTargetDetails(target.id);
+      await analytics.openTargetDetails(target.id);
       await browser.refresh();
-      await expectTargetDetails(target);
+      await analytics.expectTargetDetails(target);
     });
 
     it('should route to contact-detail on list item click and display contact summary target card', async () => {
@@ -452,7 +440,7 @@ describe('Target aggregates', () => {
       ];
 
       await expectTargets(expectedTargets);
-      await openTargetDetails(expectedTargets[0].id);
+      await analytics.openTargetDetails(expectedTargets[0].id);
       await clickOnTargetAggregateListItem(clarissa._id);
 
       expect(await $('.content-pane .meta h2').getText()).to.equal('Clarissa');
@@ -466,9 +454,9 @@ describe('Target aggregates', () => {
         .to.deep.equal(['yesterday Clarissa', '40', '50%']);
 
       await browser.back();
-      await expectTargetDetails(expectedTargets[0]);
+      await analytics.expectTargetDetails(expectedTargets[0]);
 
-      await openTargetDetails(expectedTargets[1].id);
+      await analytics.openTargetDetails(expectedTargets[1].id);
       await clickOnTargetAggregateListItem(prometheus._id);
 
       expect(await $('.content-pane .meta h2').getText()).to.equal('Prometheus');
@@ -481,7 +469,7 @@ describe('Target aggregates', () => {
         .to.deep.equal(['yesterday Prometheus', '18', '15%']);
 
       await browser.back();
-      await expectTargetDetails(expectedTargets[1]);
+      await analytics.expectTargetDetails(expectedTargets[1]);
     });
   });
 });
