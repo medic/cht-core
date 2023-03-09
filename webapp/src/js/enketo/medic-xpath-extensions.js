@@ -180,8 +180,12 @@ module.exports = {
     },
     'cht:extension-lib': function() {
       const args = Array.from(arguments);
-      const libId = args.shift();
-      const lib = chtScriptApi.v1.getExtensionLib(libId.v);
+      const firstArg = args.shift();
+      const libId = firstArg && firstArg.v;
+      const lib = libId && chtScriptApi.v1.getExtensionLib(libId);
+      if (!lib) {
+        throw new Error(`Form configuration error: no extension-lib with ID "${libId}" found`);
+      }
       return lib.apply(null, args);
     }
   },

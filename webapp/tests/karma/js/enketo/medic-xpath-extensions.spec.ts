@@ -60,20 +60,33 @@ describe('Medic XPath Extensions', () => {
   describe('cht:extension-lib', () => {
 
     let extensionLib;
+    let chtScriptApi;
+
     const zScoreUtil = sinon.stub();
     const toBikramSambat = sinon.stub();
     const moment = sinon.stub();
-    const chtScriptApi = { v1: { getExtensionLib: sinon.stub() } };
     const lib = sinon.stub();
 
     beforeEach(() => {
+      chtScriptApi = { v1: { getExtensionLib: sinon.stub() } };
       medicXpathExtensions.init(zScoreUtil, toBikramSambat, moment, chtScriptApi);
-      chtScriptApi.v1.getExtensionLib.returns(lib);
       extensionLib = medicXpathExtensions.func['cht:extension-lib'];
+    });
+
+    it('handles extension-lib not found', () => {
+      chtScriptApi.v1.getExtensionLib.returns(undefined);
+      try {
+        extensionLib({ v: 'myfunc' }, { t: 'string', v: 'hello' });
+      } catch(e) {
+        expect(e.message).to.equal('Form configuration error: no extension-lib with ID "myfunc" found');
+        return;
+      }
+      throw new Error('Expected exception to be thrown.');
     });
 
     it('calls the requested function', () => {
       lib.returns('expected');
+      chtScriptApi.v1.getExtensionLib.returns(lib);
       const actual = extensionLib({ v: 'myfunc' }, { t: 'string', v: 'hello' });
       expect(actual).to.equal('expected');
       expect(chtScriptApi.v1.getExtensionLib.callCount).to.equal(1);

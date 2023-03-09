@@ -39,10 +39,14 @@ export class CHTScriptApiService {
   }
 
   private async loadScripts() {
-    const request = this.http.get<String[]>('/extension-libs', { responseType: 'json' });
-    const extensionLibs = await lastValueFrom(request);
-    if (extensionLibs && extensionLibs.length) {
-      return Promise.all(extensionLibs.map(name => this.loadScript(name)));
+    try {
+      const request = this.http.get<String[]>('/extension-libs', { responseType: 'json' });
+      const extensionLibs = await lastValueFrom(request);
+      if (extensionLibs && extensionLibs.length) {
+        return Promise.all(extensionLibs.map(name => this.loadScript(name)));
+      }
+    } catch(e) {
+      console.error(`Error loading extension libs`, e);
     }
   }
 
