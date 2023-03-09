@@ -15,7 +15,7 @@
     class="fast-action-flat-button"
     *ngIf="config?.button?.type === buttonTypeFlat"
     (click)="open()">
-    {{ config?.button?.label | translate }}
+    {{ fastActions?.length === 1 ? fastActions[0].label || (fastActions[0].labelKey | translate) : (config?.button?.label | translate) }}
   </button>
 
 </section>
@@ -30,12 +30,11 @@
         <a
           class="fast-action-item"
           [attr.test-id]="action.id"
-          (click)="executeAction(action)"
-          [class.disabled]="action.isDisable()">
+          (click)="executeAction(action)">
 
           <div class="fast-action-item-icon" *ngIf="action.icon?.name">
             <mat-icon *ngIf="action.icon.type !== iconTypeResource" [fontIcon]="action.icon.name"></mat-icon>
-            <span *ngIf="action.icon.type === iconTypeResource" [innerHTML]="action.icon.name | resourceIcon"></span>
+            <span *ngIf="action.icon.type === iconTypeResource" [innerHTML]="action.icon.name | resourceIcon" class="fast-action-resource-icon"></span>
           </div>
           <p class="fast-action-item-label">{{ action.label || (action.labelKey | translate) }}</p>
 

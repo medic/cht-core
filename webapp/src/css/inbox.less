@@ -1445,19 +1445,31 @@ mm-search-bar {
 
     .fast-action-item-icon {
       margin-right: 20px;
-      span {
-        line-height: 60px;
-      }
 
-      img {
+      mat-icon,
+      .fast-action-resource-icon img {
         height: 30px;
         width: 30px;
         vertical-align: middle;
+      }
+
+      mat-icon {
+        margin-top: 3px;
+      }
+
+      mat-icon:before {
+        color: @mm-mat-primary;
+        font-size: @font-extra-extra-large;
+      }
+
+      .fast-action-resource-icon {
+        line-height: 60px;
       }
     }
 
     .fast-action-item-label {
       margin: 0;
+      font-size: @font-medium;
       align-self: center;
       text-overflow: ellipsis;
       overflow: hidden;

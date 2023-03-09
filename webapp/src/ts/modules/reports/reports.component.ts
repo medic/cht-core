@@ -24,7 +24,6 @@ import { SessionService } from '@mm-services/session.service';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
-import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 
@@ -517,6 +516,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getFastActionButtonType() {
-    return this.responsiveService.isMobile() ? ButtonType.FAB : ButtonType.FLAT;
+    return this.fastActionButtonService.getButtonTypeForContentList();
   }
 }

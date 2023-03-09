@@ -85,7 +85,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   }
 
   executeAction(action: FastAction) {
-    if (action.isDisable() || !action.execute) {
+    if (!action.execute) {
       return;
     }
     action.execute();

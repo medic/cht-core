@@ -14,6 +14,8 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { DbService } from '@mm-services/db.service';
 
 @Component({
   templateUrl: './reports-content.component.html'
@@ -33,6 +35,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   constructor(
     private changesService:ChangesService,
     private store:Store,
+    private dbService: DbService,
     private route:ActivatedRoute,
     private router:Router,
     private searchFiltersService:SearchFiltersService,
@@ -85,6 +88,11 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     });
     this.subscription.add(reportsSubscription);
 
+    const selectedReportSubscription = this.store
+      .select(Selectors.getSelectedReportDoc)
+      .subscribe(selectedReportDoc => this.updateFastActions(selectedReportDoc));
+    this.subscription.add(selectedReportSubscription);
+
     const contextSubscription = combineLatest(
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
@@ -99,11 +107,6 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       this.selectMode = selectMode;
     });
     this.subscription.add(contextSubscription);
-
-    const setActionsSubscription = this.store
-      .select(Selectors.getActionBar)
-      .subscribe(async () => this.fastActionList = await this.fastActionButtonService.getReportRightSideActions());
-    this.subscription.add(setActionsSubscription);
   }
 
   private watchReportsContentChanges() {
@@ -191,6 +194,34 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
         localContext.loading = false;
         console.error('Error setting message state', err);
       });
+  }
+
+  private getReportContact(contactId: string) {
+    return this.dbService
+      .get()
+      .get(contactId)
+      .catch(error => {
+        // Log the error but continue anyway.
+        console.error('Error fetching contact for fast action button', error);
+      });
+  }
+
+  private async updateFastActions(selectedReportDoc) {
+    if (this.selectMode || !selectedReportDoc) {
+      return;
+    }
+
+    const callbackOpenSendMessage = (sendTo) => this.modalService
+      .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
+      .catch(() => {});
+
+    this.fastActionList = await this.fastActionButtonService.getReportRightSideActions({
+      messageContext: {
+        sendTo: await this.getReportContact(selectedReportDoc.contact._id),
+        callbackOpenSendMessage,
+      },
+      reportContentType: selectedReportDoc.content_type,
+    });
   }
 
   mute(report, group, localContext) {

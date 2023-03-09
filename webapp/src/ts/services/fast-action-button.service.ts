@@ -6,8 +6,8 @@ import { Store } from '@ngrx/store';
 import { AuthService } from '@mm-services/auth.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { GlobalActions } from '@mm-actions/global';
-import { Selectors } from '@mm-selectors/index';
 import { ReportsActions } from '@mm-actions/reports';
+import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 
 @Injectable({
   providedIn: 'root'
@@ -16,9 +16,6 @@ export class FastActionButtonService {
 
   private globalActions: GlobalActions;
   private reportsActions: ReportsActions;
-  private sendTo;
-  private reportContentType;
-  private callbackOpenSendMessage;
 
   constructor(
     private router: Router,
@@ -29,20 +26,9 @@ export class FastActionButtonService {
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
-    this.subscribeToStore();
   }
 
-  private subscribeToStore() {
-    this.store
-      .select(Selectors.getActionBar)
-      .subscribe(actionBar => {
-        this.sendTo = actionBar?.right?.sendTo;
-        this.reportContentType = actionBar?.right?.type;
-        this.callbackOpenSendMessage = actionBar?.right?.openSendMessageModal;
-      });
-  }
-
-  private executeMailtoLink(link) {
+  private executeMailto(link) {
     const element = this.document.createElement('a');
     element.href = link;
     element.click();
@@ -66,57 +52,71 @@ export class FastActionButtonService {
       id: form.code,
       label: form.title || form.code,
       icon: { name: form.icon, type: IconType.RESOURCE },
-      isDisable: () => false,
       canDisplay: () => this.authService.has('can_edit'),
       execute: () => this.router.navigate(['/reports', 'add', form.code]),
     }));
   }
 
-  private getSendMessageAction() {
+  private getSendMessageAction(context: FastActionMessageContext, config: FastActionMessageConfig = {}) {
+    const { sendTo, callbackOpenSendMessage } = context;
+    const { isPhoneRequired, useMailtoInMobile } = config;
+
+    const validatePhone = () => isPhoneRequired ? !!sendTo?.phone : true;
+    const canUseMailto = () => useMailtoInMobile && this.responsiveService.isMobile();
+
     return {
       id: 'send-message',
       labelKey: 'fast_action_button.send_message',
       icon: { name: 'fa-envelope', type: IconType.FONT_AWESOME },
-      isDisable: () => !this.sendTo?.phone || !this.sendTo?._id,
-      canDisplay: () => {
+      canDisplay: async () => {
         const permission = [ 'can_view_message_action' ];
-        if (!this.responsiveService.isMobile()) {
-          permission.push('can_edit');
-        }
-        return this.authService.has(permission);
+        !canUseMailto() && permission.push('can_edit');
+        return validatePhone() && await this.authService.has(permission);
       },
       execute: () => {
-        if (this.responsiveService.isMobile()) {
-          this.executeMailtoLink(`sms:${this.sendTo?.phone}`);
+        if (canUseMailto()) {
+          this.executeMailto(`sms:${sendTo?.phone}`);
           return;
         }
-        this.callbackOpenSendMessage && this.callbackOpenSendMessage(this.sendTo?._id);
+        callbackOpenSendMessage && callbackOpenSendMessage(sendTo?._id);
       },
     };
   }
 
-  private getUpdateFacilityAction() {
+  private getUpdateFacilityAction(reportContentType) {
     return {
       id: 'update-facility',
       labelKey: 'fast_action_button.update_facility',
       icon: { name: 'fa-pencil', type: IconType.FONT_AWESOME },
-      isDisable: () => false,
-      canDisplay: async () => this.reportContentType !== 'xml' && await this.authService.has('can_edit'),
+      canDisplay: async () => reportContentType !== 'xml' && await this.authService.has('can_edit'),
       execute: () => this.reportsActions.launchEditFacilityDialog(),
     };
   }
 
-  getReportRightSideActions(): Promise<FastAction[]> {
+  getReportRightSideActions(context: FastActionReportContext): Promise<FastAction[]> {
     const actions = [
-      this.getSendMessageAction(),
-      this.getUpdateFacilityAction(),
+      this.getSendMessageAction(context.messageContext, { isPhoneRequired: true, useMailtoInMobile: true }),
+      this.getUpdateFacilityAction(context.reportContentType),
     ];
 
     return this.filterActions(actions);
   }
 
   getReportLeftSideActions(xmlForms): Promise<FastAction[]> {
-    return this.filterActions(this.getFormActions(xmlForms));
+    const actions = this.getFormActions(xmlForms);
+    return this.filterActions(actions);
+  }
+
+  getMessageActions(context: FastActionMessageContext): Promise<FastAction[]> {
+    const actions = [
+      this.getSendMessageAction(context),
+    ];
+
+    return this.filterActions(actions);
+  }
+
+  getButtonTypeForContentList() {
+    return this.responsiveService.isMobile() ? ButtonType.FAB : ButtonType.FLAT;
   }
 }
 
@@ -135,7 +135,21 @@ export interface FastAction {
   label?: string;
   labelKey?: string;
   icon: FastActionIcon;
-  isDisable(): boolean;
   canDisplay(): Promise<boolean>;
   execute(): void;
+}
+
+interface FastActionMessageContext {
+  sendTo?: Record<string, any>;
+  callbackOpenSendMessage(sendTo?: Record<string, any>): void;
+}
+
+interface FastActionReportContext {
+  messageContext: FastActionMessageContext;
+  reportContentType: string;
+}
+
+interface FastActionMessageConfig {
+  isPhoneRequired?: boolean;
+  useMailtoInMobile?: boolean;
 }

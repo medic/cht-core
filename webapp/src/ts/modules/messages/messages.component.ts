@@ -16,6 +16,7 @@ import { TourService } from '@mm-services/tour.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { AuthService } from '@mm-services/auth.service';
+import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -26,6 +27,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   private destroyed = false;
 
   subscriptions: Subscription = new Subscription();
+  fastActionList: FastAction[];
   loading = true;
   loadingContent = false;
   conversations = [];
@@ -38,6 +40,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private router: Router,
     private store: Store,
     private changesService: ChangesService,
+    private fastActionButtonService:FastActionButtonService,
     private messageContactService: MessageContactService,
     private exportService: ExportService,
     private modalService: ModalService,
@@ -129,6 +132,21 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.globalActions.setLeftActionBar(leftActionBar);
   }
 
+  private async updateFastActions() {
+    if (this.destroyed) {
+      // Don't update the fast actions, if the component has already been destroyed
+      // This callback can be queued up and persist even after component destruction
+      return;
+    }
+
+    const callbackOpenSendMessage = () => this.modalService.show(SendMessageComponent).catch(() => {});
+    this.fastActionList = await this.fastActionButtonService.getMessageActions({ callbackOpenSendMessage });
+  }
+
+  getFastActionButtonType() {
+    return this.fastActionButtonService.getButtonTypeForContentList();
+  }
+
   private openSendMessageModal(modalService:ModalService, event) {
     const target = $(event.target).closest('.send-message');
 
@@ -149,6 +167,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     this.messagesActions.setConversations(conversations);
+    this.updateFastActions();
     this.updateActionBar();
   }
 
