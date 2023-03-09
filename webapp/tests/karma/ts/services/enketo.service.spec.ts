@@ -29,6 +29,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -76,7 +77,9 @@ describe('Enketo service', () => {
   let chtScriptApiService;
   let chtScriptApi;
   let globalActions;
+  let trainingCardsService;
   let consoleErrorMock;
+  let consoleWarnMock;
   let feedbackService;
 
   beforeEach(() => {
@@ -95,6 +98,7 @@ describe('Enketo service', () => {
     form = {
       validate: sinon.stub(),
       getDataStr: sinon.stub(),
+      resetView: sinon.stub(),
       view: {
         $: { on: sinon.stub() },
         html: document.createElement('div'),
@@ -129,7 +133,12 @@ describe('Enketo service', () => {
     chtScriptApiService = { getApi: sinon.stub().resolves(chtScriptApi) };
     globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
+    trainingCardsService = {
+      isTrainingCardForm: sinon.stub(),
+      getTrainingCardDocId: sinon.stub(),
+    };
     consoleErrorMock = sinon.stub(console, 'error');
+    consoleWarnMock = sinon.stub(console, 'warn');
     feedbackService = { submit: sinon.stub() };
 
     TestBed.configureTestingModule({
@@ -164,6 +173,7 @@ describe('Enketo service', () => {
         { provide: CHTScriptApiService, useValue: chtScriptApiService },
         { provide: TransitionsService, useValue: transitionsService },
         { provide: TranslateService, useValue: translateService },
+        { provide: TrainingCardsService, useValue: trainingCardsService },
         { provide: FeedbackService, useValue: feedbackService },
       ],
     });
@@ -514,7 +524,6 @@ describe('Enketo service', () => {
     });
 
     it('ContactSummary receives empty lineage if contact doc is missing', () => {
-      const consoleWarnMock = sinon.stub(console, 'warn');
       LineageModelGenerator.contact.rejects({ code: 404 });
 
       UserContact.resolves({
@@ -546,6 +555,47 @@ describe('Enketo service', () => {
         expect(consoleWarnMock.callCount).to.equal(1);
         expect(consoleWarnMock.args[0][0].startsWith('Enketo failed to get lineage of contact')).to.be.true;
       });
+    });
+
+    it('should execute the unload process before rendering the second form', async () => {
+      enketoInit.returns([]);
+      FileReader.utf8.resolves('<some-blob name="xml"/>');
+      EnketoPrepopulationData.resolves('<xml></xml>');
+      UserContact.resolves({ contact_id: '123' });
+      dbGetAttachment
+        .onFirstCall().resolves('<div>first form</div>')
+        .onSecondCall().resolves(VISIT_MODEL);
+
+      await service.render($('<div id="first-form"></div>'), mockEnketoDoc('firstForm'));
+      expect(form.resetView.notCalled).to.be.true;
+      expect(UserContact.calledOnce).to.be.true;
+      expect(EnketoPrepopulationData.calledOnce).to.be.true;
+      expect(FileReader.utf8.calledTwice).to.be.true;
+      expect(FileReader.utf8.args[0][0]).to.equal('<div>first form</div>');
+      expect(FileReader.utf8.args[1][0]).to.equal(VISIT_MODEL);
+      expect(enketoInit.calledOnce).to.be.true;
+      expect(form.editStatus).to.be.false;
+      expect(dbGetAttachment.calledTwice).to.be.true;
+      expect(dbGetAttachment.args[0]).to.have.members([ 'form:firstForm', 'form.html' ]);
+      expect(dbGetAttachment.args[1]).to.have.members([ 'form:firstForm', 'model.xml' ]);
+
+      sinon.resetHistory();
+      dbGetAttachment
+        .onFirstCall().resolves('<div>second form</div>')
+        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+
+      await service.render($('<div id="second-form"></div>'), mockEnketoDoc('secondForm'));
+      expect(form.resetView.calledOnce).to.be.true;
+      expect(UserContact.calledOnce).to.be.true;
+      expect(EnketoPrepopulationData.calledOnce).to.be.true;
+      expect(FileReader.utf8.calledTwice).to.be.true;
+      expect(FileReader.utf8.args[0][0]).to.equal('<div>second form</div>');
+      expect(FileReader.utf8.args[1][0]).to.equal(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+      expect(enketoInit.calledOnce).to.be.true;
+      expect(form.editStatus).to.be.false;
+      expect(dbGetAttachment.calledTwice).to.be.true;
+      expect(dbGetAttachment.args[0]).to.have.members([ 'form:secondForm', 'form.html' ]);
+      expect(dbGetAttachment.args[1]).to.have.members([ 'form:secondForm', 'model.xml' ]);
     });
   });
 
@@ -581,6 +631,7 @@ describe('Enketo service', () => {
       form.validate.resolves(true);
       const content = loadXML('sally-lmp');
       form.getDataStr.returns(content);
+      trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
       dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
       UserContact.resolves({ _id: '123', phone: '555' });
       UserSettings.resolves({ name: 'Jim' });
@@ -592,6 +643,7 @@ describe('Enketo service', () => {
         expect(dbBulkDocs.callCount).to.equal(1);
         expect(UserContact.callCount).to.equal(1);
         expect(actual._id).to.match(/(\w+-)\w+/);
+        expect(actual._id.startsWith('training:user-jim:')).to.be.false;
         expect(actual._rev).to.equal('1-abc');
         expect(actual.fields.name).to.equal('Sally');
         expect(actual.fields.lmp).to.equal('10');
@@ -606,6 +658,42 @@ describe('Enketo service', () => {
         expect(removeAttachment.callCount).to.equal(1);
         expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
       });
+    });
+
+    it('creates training', () => {
+      const content = loadXML('sally-lmp');
+      form.getDataStr.returns(content);
+      trainingCardsService.isTrainingCardForm.returns(true);
+      trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
+      form.validate.resolves(true);
+      dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
+      UserContact.resolves({ _id: '123', phone: '555' });
+      UserSettings.resolves({ name: 'Jim' });
+
+      return service
+        .save('training:a_new_training', form)
+        .then(actual => {
+          actual = actual[0];
+
+          expect(form.validate.calledOnce).to.be.true;
+          expect(form.getDataStr.calledOnce).to.be.true;
+          expect(dbBulkDocs.calledOnce).to.be.true;
+          expect(UserContact.calledOnce).to.be.true;
+          expect(actual._id.startsWith('training:user-jim:')).to.be.true;
+          expect(actual._rev).to.equal('1-abc');
+          expect(actual.fields.name).to.equal('Sally');
+          expect(actual.fields.lmp).to.equal('10');
+          expect(actual.form).to.equal('training:a_new_training');
+          expect(actual.type).to.equal('data_record');
+          expect(actual.content_type).to.equal('xml');
+          expect(actual.contact._id).to.equal('123');
+          expect(actual.from).to.equal('555');
+          expect(xmlFormGetWithAttachment.callCount).to.equal(1);
+          expect(xmlFormGetWithAttachment.args[0][0]).to.equal('training:a_new_training');
+          expect(AddAttachment.callCount).to.equal(0);
+          expect(removeAttachment.callCount).to.equal(1);
+          expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
+        });
     });
 
     it('saves form version if found', () => {
@@ -1851,7 +1939,7 @@ describe('Enketo service', () => {
   });
 
   describe('multimedia', () => {
-    let overrideNavigationButtonsStub;
+    let setNavigationStub;
     let pauseStubs;
     let form;
     let $form;
@@ -1863,8 +1951,8 @@ describe('Enketo service', () => {
       $nextBtn = $('<button class="btn next-page"></button>');
       $prevBtn = $('<button class="btn previous-page"></button>');
       originalJQueryFind = $.fn.find;
-      overrideNavigationButtonsStub = sinon
-        .stub(EnketoService.prototype, <any>'overrideNavigationButtons')
+      setNavigationStub = sinon
+        .stub(EnketoService.prototype, <any>'setNavigation')
         .callThrough();
 
       form = {
@@ -1906,7 +1994,7 @@ describe('Enketo service', () => {
 
     xit('should pause the multimedia when going to the previous page', fakeAsync(() => {
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
-      overrideNavigationButtonsStub.call(service, form, $form);
+      setNavigationStub.call(service, form, $form);
 
       $prevBtn.trigger('click.pagemode');
       flush();
@@ -1920,7 +2008,7 @@ describe('Enketo service', () => {
     xit('should pause the multimedia when going to the next page', fakeAsync(() => {
       form.pages._next.resolves(true);
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
-      overrideNavigationButtonsStub.call(service, form, $form);
+      setNavigationStub.call(service, form, $form);
 
       $nextBtn.trigger('click.pagemode');
       flush();
@@ -1934,7 +2022,7 @@ describe('Enketo service', () => {
     xit('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
       form.pages._next.resolves(false);
       $form.prepend('<video id="video"></video><audio id="audio"></audio>');
-      overrideNavigationButtonsStub.call(service, form, $form);
+      setNavigationStub.call(service, form, $form);
 
       $nextBtn.trigger('click.pagemode');
       flush();
@@ -1944,7 +2032,7 @@ describe('Enketo service', () => {
     }));
 
     xit('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
-      overrideNavigationButtonsStub.call(service, form, $form);
+      setNavigationStub.call(service, form, $form);
 
       $prevBtn.trigger('click.pagemode');
       $nextBtn.trigger('click.pagemode');
