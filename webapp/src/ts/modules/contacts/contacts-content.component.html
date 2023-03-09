@@ -15,6 +15,7 @@
   </div>
 
   <div class="col-sm-8 item-content" *ngIf="!selectedContact?.error && !loadingContent">
+    <mm-fast-action-button [fastActions]="fastActionList"></mm-fast-action-button>
     <div class="material">
       <div class="body meta">
         <div class="card">

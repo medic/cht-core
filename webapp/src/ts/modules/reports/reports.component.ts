@@ -205,7 +205,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       if (error) {
         return console.error('Error fetching form definitions', error);
       }
-      const xmlForms = xForms
+      const xmlReportForms = xForms
         .map((xForm) => ({
           id: xForm._id,
           code: xForm.internalId,
@@ -214,7 +214,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         }))
         .sort((a, b) => a.title - b.title);
 
-      this.fastActionList = await this.fastActionButtonService.getReportLeftSideActions(xmlForms);
+      this.fastActionList = await this.fastActionButtonService.getReportLeftSideActions({ xmlReportForms });
     });
   }
 

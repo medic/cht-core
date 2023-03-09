@@ -24,6 +24,7 @@ import { SessionService } from '@mm-services/session.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
+import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 
 @Component({
   selector: 'contacts-content',
@@ -49,7 +50,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   private childTypesBySelectedContact = [];
   private filters;
   canDeleteContact = false; // this disables the "Delete" button until children load
-
+  fastActionList: FastAction[];
+  relevantReportForms;
+  childContactTypes;
   filteredTasks = [];
   filteredReports = [];
 
@@ -67,9 +70,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     private settingsService: SettingsService,
     private userSettingsService: UserSettingsService,
     private responsiveService: ResponsiveService,
-    private sessionService:SessionService,
-    private mutingTransition:MutingTransition,
-    private contactMutedService:ContactMutedService,
+    private fastActionButtonService: FastActionButtonService,
+    private sessionService: SessionService,
+    private mutingTransition: MutingTransition,
+    private contactMutedService: ContactMutedService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.contactsActions = new ContactsActions(store);
@@ -156,11 +160,16 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
     const contactDocSubscription = this.store
       .select(Selectors.getSelectedContactDoc)
-      .subscribe((contactDoc) => {
+      .subscribe(async (contactDoc) => {
         if (!contactDoc) {
           return;
         }
+        await this.setChildTypesBySelectedContact();
+        await this.setSettings();
         this.setRightActionBar();
+        this.updateFastActions();
+        this.subscribeToAllContactXmlForms();
+        this.subscribeToSelectedContactXmlForms();
       });
     this.subscription.add(contactDocSubscription);
 
@@ -243,22 +252,35 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   }
 
   private async setRightActionBar() {
-    await this.setChildTypesBySelectedContact();
     await this.setUserSettings();
-    await this.setSettings();
 
     this.globalActions.setRightActionBar({
       relevantForms: [], // This disables the "New Action" button until forms load
       sendTo: this.selectedContact?.type?.person ? this.selectedContact?.doc : '',
       canDelete: this.canDeleteContact,
       canEdit: this.isOnlineOnly || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
-      openContactMutedModal:
-        this.openContactMutedModal.bind({}, this.router, this.modalService, this.selectedContact?._id),
-      openSendMessageModal: this.openSendMessageModal.bind({}, this.modalService),
+      openContactMutedModal: (form) => this.openContactMutedModal(form),
+      openSendMessageModal: (sendTo) => this.openSendMessageModal(sendTo),
     });
+  }
 
-    this.subscribeToAllContactXmlForms();
-    this.subscribeToSelectedContactXmlForms();
+  private async updateFastActions() {
+    this.fastActionList = await this.fastActionButtonService.getContactRightSideActions({
+      communicationContext: {
+        sendTo: this.selectedContact?.type?.person && this.selectedContact?.doc,
+        callbackOpenSendMessage: (sendTo) => this.openSendMessageModal(sendTo),
+      },
+      xmlReportForms: this.relevantReportForms,
+      childContactTypes: this.childContactTypes,
+      callbackContactReportModal: (form) => this.openContactMutedModal(form),
+    });
+  }
+
+  private addPermissionToContactType(allowedChildTypes) {
+    return (allowedChildTypes || []).map(childType => ({
+      ...childType,
+      permission: childType.type?.person ? 'can_create_people' : 'can_create_places',
+    }));
   }
 
   private setUserSettings() {
@@ -315,6 +337,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         }
 
         const allowedChildTypes = this.filterAllowedChildType(forms, this.childTypesBySelectedContact);
+        this.childContactTypes = this.addPermissionToContactType(allowedChildTypes);
+        this.updateFastActions();
         this.globalActions.updateRightActionBar({
           childTypes: this.getModelsFromChildTypes(allowedChildTypes)
         });
@@ -349,7 +373,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
           return;
         }
 
-        const formSummaries = forms
+        this.relevantReportForms = forms
           .map(xForm => {
             const title = xForm.translation_key ?
               this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
@@ -367,7 +391,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
             };
           })
           .sort((a, b) => a.title?.localeCompare(b.title));
-        this.globalActions.updateRightActionBar({ relevantForms: formSummaries });
+
+        this.updateFastActions();
+        this.globalActions.updateRightActionBar({ relevantForms: this.relevantReportForms });
       }
     );
     this.subscription.add(this.subscriptionSelectedContactForms);
@@ -408,19 +434,19 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     return models;
   }
 
-  private openContactMutedModal(router:Router, modalService:ModalService, selectedContactId, form) {
+  private openContactMutedModal(form) {
     if (!form.showUnmuteModal) {
-      return router.navigate(['/contacts', selectedContactId, 'report', form.code]);
+      return this.router.navigate(['/contacts', this.selectedContact?._id, 'report', form.code]);
     }
 
-    modalService
+    this.modalService
       .show(ContactsMutedComponent)
-      .then(() => router.navigate(['/contacts', selectedContactId, 'report', form.code]))
+      .then(() => this.router.navigate(['/contacts', this.selectedContact?._id, 'report', form.code]))
       .catch(() => {});
   }
 
-  private openSendMessageModal(modalService:ModalService, sendTo) {
-    modalService
+  private openSendMessageModal(sendTo) {
+    this.modalService
       .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
       .catch(() => {});
   }

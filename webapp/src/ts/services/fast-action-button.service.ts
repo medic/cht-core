@@ -47,33 +47,39 @@ export class FastActionButtonService {
     return filteredActions;
   }
 
-  private getReportFormActions(xmlForms): FastAction[] {
+  private getReportFormActions(xmlForms, callbackContactReportModal?): FastAction[] {
     return (xmlForms || []).map(form => ({
       id: form.code,
       label: form.title || form.code,
       icon: { name: form.icon, type: IconType.RESOURCE },
       canDisplay: () => this.authService.has('can_edit'),
-      execute: () => this.router.navigate(['/reports', 'add', form.code]),
+      execute: () => {
+        if (callbackContactReportModal) {
+          callbackContactReportModal(form);
+          return;
+        }
+        this.router.navigate(['/reports', 'add', form.code]);
+      },
     }));
   }
 
-  private getContactFormActions(context: FastActionContactContext): FastAction[] {
-    return (context.xmlContactForms || []).map(form => ({
-      id: form.id,
-      labelKey: form.create_key || form.id,
-      icon: { name: form.icon, type: IconType.RESOURCE },
+  private getContactFormActions(childContactTypes, userFacilityId): FastAction[] {
+    return (childContactTypes || []).map(contactType => ({
+      id: contactType.id,
+      labelKey: contactType.create_key || contactType.id,
+      icon: { name: contactType.icon, type: IconType.RESOURCE },
       canDisplay: () => this.authService.has(['can_edit', 'can_create_places']),
       execute: () => {
-        const route = ['/contacts', 'add', form.id];
-        if (context.userFacilityId) {
-          route.splice(1, 0, context.userFacilityId);
+        const route = ['/contacts', 'add', contactType.id];
+        if (userFacilityId) {
+          route.splice(1, 0, userFacilityId);
         }
         this.router.navigate(route, { queryParams: { from: 'list' } });
       },
     }));
   }
 
-  private getSendMessageAction(context: FastActionMessageContext, config: FastActionMessageConfig = {}) {
+  private getSendMessageAction(context: CommunicationActionsContext, config: CommunicationActionsConfig = {}) {
     const { sendTo, callbackOpenSendMessage } = context;
     const { isPhoneRequired, useMailtoInMobile } = config;
 
@@ -99,6 +105,16 @@ export class FastActionButtonService {
     };
   }
 
+  private getPhoneAction(context: CommunicationActionsContext) {
+    return {
+      id: 'phone-call',
+      labelKey: 'fast_action_button.phone_call',
+      icon: { name: 'fa-phone', type: IconType.FONT_AWESOME },
+      canDisplay: async () => context.sendTo?.phone && await this.authService.has('can_view_call_action'),
+      execute: () => this.executeMailto(`tel:${context.sendTo?.phone}`),
+    };
+  }
+
   private getUpdateFacilityAction(reportContentType) {
     return {
       id: 'update-facility',
@@ -109,26 +125,36 @@ export class FastActionButtonService {
     };
   }
 
-  getReportRightSideActions(context: FastActionReportContext): Promise<FastAction[]> {
+  getReportRightSideActions(context: ReportActionsContext): Promise<FastAction[]> {
     const actions = [
-      this.getSendMessageAction(context.messageContext, { isPhoneRequired: true, useMailtoInMobile: true }),
+      this.getSendMessageAction(context.communicationContext, { isPhoneRequired: true, useMailtoInMobile: true }),
       this.getUpdateFacilityAction(context.reportContentType),
     ];
 
     return this.filterActions(actions);
   }
 
-  getReportLeftSideActions(context: FastActionReportContext): Promise<FastAction[]> {
+  getReportLeftSideActions(context: ReportActionsContext): Promise<FastAction[]> {
     const actions = this.getReportFormActions(context.xmlReportForms);
     return this.filterActions(actions);
   }
 
-  getContactLeftSideActions(context: FastActionContactContext): Promise<FastAction[]> {
-    const actions = this.getContactFormActions(context);
+  getContactLeftSideActions(context: ContactActionsContext): Promise<FastAction[]> {
+    const actions = this.getContactFormActions(context.childContactTypes, context.userFacilityId);
     return this.filterActions(actions);
   }
 
-  getMessageActions(context: FastActionMessageContext): Promise<FastAction[]> {
+  getContactRightSideActions(context: ContactActionsContext): Promise<FastAction[]> {
+    const actions = [
+      this.getPhoneAction(context.communicationContext),
+      this.getSendMessageAction(context.communicationContext, { isPhoneRequired: true, useMailtoInMobile: true }),
+      ...this.getContactFormActions(context.childContactTypes, context.userFacilityId),
+      ...this.getReportFormActions(context.xmlReportForms, context.callbackContactReportModal),
+    ];
+    return this.filterActions(actions);
+  }
+
+  getMessageActions(context: CommunicationActionsContext): Promise<FastAction[]> {
     const actions = [
       this.getSendMessageAction(context),
     ];
@@ -160,23 +186,26 @@ export interface FastAction {
   execute(): void;
 }
 
-interface FastActionReportContext {
-  xmlReportForms?: Record<string, any>;
-  messageContext?: FastActionMessageContext;
+interface ReportActionsContext {
   reportContentType?: string;
+  xmlReportForms?: Record<string, any>[];
+  communicationContext?: CommunicationActionsContext;
 }
 
-interface FastActionContactContext {
-  xmlContactForms?: Record<string, any>;
+interface ContactActionsContext {
   userFacilityId?: string;
+  childContactTypes?: Record<string, any>[];
+  xmlReportForms?: Record<string, any>[];
+  communicationContext?: CommunicationActionsContext;
+  callbackContactReportModal?(form: Record<string, any>): void;
 }
 
-interface FastActionMessageContext {
+interface CommunicationActionsContext {
   sendTo?: Record<string, any>;
   callbackOpenSendMessage(sendTo?: Record<string, any>): void;
 }
 
-interface FastActionMessageConfig {
+interface CommunicationActionsConfig {
   isPhoneRequired?: boolean;
   useMailtoInMobile?: boolean;
 }

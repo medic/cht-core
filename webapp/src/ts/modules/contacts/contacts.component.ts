@@ -451,7 +451,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.fastActionList = await this.fastActionButtonService.getContactLeftSideActions({
       userFacilityId: this.usersHomePlace?._id,
-      xmlContactForms: this.allowedChildPlaces,
+      childContactTypes: this.allowedChildPlaces,
     });
   }
 

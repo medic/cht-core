@@ -211,16 +211,16 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const callbackOpenSendMessage = (sendTo) => this.modalService
-      .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
-      .catch(() => {});
-
     this.fastActionList = await this.fastActionButtonService.getReportRightSideActions({
-      messageContext: {
-        sendTo: await this.getReportContact(selectedReportDoc.contact._id),
-        callbackOpenSendMessage,
-      },
       reportContentType: selectedReportDoc.content_type,
+      communicationContext: {
+        sendTo: await this.getReportContact(selectedReportDoc.contact._id),
+        callbackOpenSendMessage: (sendTo) => {
+          this.modalService
+            .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
+            .catch(() => {});
+        },
+      },
     });
   }
 

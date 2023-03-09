@@ -139,8 +139,9 @@ export class MessagesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const callbackOpenSendMessage = () => this.modalService.show(SendMessageComponent).catch(() => {});
-    this.fastActionList = await this.fastActionButtonService.getMessageActions({ callbackOpenSendMessage });
+    this.fastActionList = await this.fastActionButtonService.getMessageActions({
+      callbackOpenSendMessage: () => this.modalService.show(SendMessageComponent).catch(() => {})
+    });
   }
 
   getFastActionButtonType() {

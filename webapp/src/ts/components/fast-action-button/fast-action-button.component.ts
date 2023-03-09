@@ -97,7 +97,13 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   }
 
   getTriggerButtonIcon() {
-    return this.fastActions.length === 1 ? this.fastActions[0].icon.name : 'fa-plus';
+    const plusIcon = 'fa-plus';
+
+    if (this.fastActions.length === 1 && this.fastActions[0].icon.type === IconType.FONT_AWESOME) {
+      return this.fastActions[0].icon.name || plusIcon;
+    }
+
+    return plusIcon;
   }
 }
 
