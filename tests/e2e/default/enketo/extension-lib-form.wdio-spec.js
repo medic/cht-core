@@ -1,3 +1,4 @@
+const commonElements = require('../../../page-objects/default/common/common.wdio.page.js');
 const extensionLibsPage = require('../../../page-objects/default/enketo/extension-lib.wdio.page');
 const common = require('../../../page-objects/default/common/common.wdio.page');
 const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
@@ -15,6 +16,7 @@ describe('Extension lib xpath function', () => {
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await extensionLibsPage.configure(userContactDoc);
     await waitForServiceWorker.promise;
+    await commonElements.sync();
 
     await browser.refresh();
     await loginPage.cookieLogin();
