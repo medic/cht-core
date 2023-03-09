@@ -38,10 +38,7 @@
       <div class="padding"></div>
 
       <mm-fast-action-button
-        [config]="{
-          title: 'fast_action_button.title',
-          button: { type: getFastActionButtonType() }
-        }"
+        [config]="{ button: { type: getFastActionButtonType() } }"
         [fastActions]="fastActionList">
       </mm-fast-action-button>
     </div>

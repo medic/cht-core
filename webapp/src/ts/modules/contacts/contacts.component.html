@@ -66,6 +66,13 @@
       <p class="loading-status" *ngIf="!error && !loading && hasContacts && !moreItems">{{'No more contacts' | translate}}</p>
       <div class="loader" *ngIf="loading"></div>
       <div class="padding"></div>
+
+      <mm-fast-action-button
+        [config]="{
+          button: { type: getFastActionButtonType(), label: 'contact.new_place.button' }
+        }"
+        [fastActions]="fastActionList">
+      </mm-fast-action-button>
     </div>
     <router-outlet></router-outlet>
   </div>

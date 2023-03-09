@@ -113,5 +113,5 @@ interface FastActionButton {
 
 export interface FastActionConfig {
   button?: FastActionButton;
-  title: string;
+  title?: string;
 }

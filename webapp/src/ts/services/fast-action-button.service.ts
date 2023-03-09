@@ -47,13 +47,29 @@ export class FastActionButtonService {
     return filteredActions;
   }
 
-  private getFormActions(xmlForms): FastAction[] {
+  private getReportFormActions(xmlForms): FastAction[] {
     return (xmlForms || []).map(form => ({
       id: form.code,
       label: form.title || form.code,
       icon: { name: form.icon, type: IconType.RESOURCE },
       canDisplay: () => this.authService.has('can_edit'),
       execute: () => this.router.navigate(['/reports', 'add', form.code]),
+    }));
+  }
+
+  private getContactFormActions(context: FastActionContactContext): FastAction[] {
+    return (context.xmlContactForms || []).map(form => ({
+      id: form.id,
+      labelKey: form.create_key || form.id,
+      icon: { name: form.icon, type: IconType.RESOURCE },
+      canDisplay: () => this.authService.has(['can_edit', 'can_create_places']),
+      execute: () => {
+        const route = ['/contacts', 'add', form.id];
+        if (context.userFacilityId) {
+          route.splice(1, 0, context.userFacilityId);
+        }
+        this.router.navigate(route, { queryParams: { from: 'list' } });
+      },
     }));
   }
 
@@ -102,8 +118,13 @@ export class FastActionButtonService {
     return this.filterActions(actions);
   }
 
-  getReportLeftSideActions(xmlForms): Promise<FastAction[]> {
-    const actions = this.getFormActions(xmlForms);
+  getReportLeftSideActions(context: FastActionReportContext): Promise<FastAction[]> {
+    const actions = this.getReportFormActions(context.xmlReportForms);
+    return this.filterActions(actions);
+  }
+
+  getContactLeftSideActions(context: FastActionContactContext): Promise<FastAction[]> {
+    const actions = this.getContactFormActions(context);
     return this.filterActions(actions);
   }
 
@@ -139,14 +160,20 @@ export interface FastAction {
   execute(): void;
 }
 
+interface FastActionReportContext {
+  xmlReportForms?: Record<string, any>;
+  messageContext?: FastActionMessageContext;
+  reportContentType?: string;
+}
+
+interface FastActionContactContext {
+  xmlContactForms?: Record<string, any>;
+  userFacilityId?: string;
+}
+
 interface FastActionMessageContext {
   sendTo?: Record<string, any>;
   callbackOpenSendMessage(sendTo?: Record<string, any>): void;
-}
-
-interface FastActionReportContext {
-  messageContext: FastActionMessageContext;
-  reportContentType: string;
 }
 
 interface FastActionMessageConfig {

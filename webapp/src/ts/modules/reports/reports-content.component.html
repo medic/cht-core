@@ -13,10 +13,7 @@
     class="report-wrap"
     *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
 
-    <mm-fast-action-button
-      [config]="{ title: 'fast_action_button.title' }"
-      [fastActions]="fastActionList">
-    </mm-fast-action-button>
+    <mm-fast-action-button [fastActions]="fastActionList"></mm-fast-action-button>
 
     <div *ngFor="let selection of selectedReports; trackBy: trackByFn; let $index = index;" class="body report-body">
 
