@@ -209,6 +209,11 @@ const sync = async (expectReload) => {
   await syncAndWaitForSuccess();
 };
 
+const syncWithoutWaitForSuccess = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
+};
+
 const closeReloadModal = async () => {
   try {
     await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
@@ -335,4 +340,5 @@ module.exports = {
   isMenuOptionEnabled,
   isMenuOptionVisible,
   moreOptionsMenu,
+  syncWithoutWaitForSuccess,
 };

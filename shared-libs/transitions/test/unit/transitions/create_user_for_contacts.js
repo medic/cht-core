@@ -3,7 +3,6 @@ const { expect } = require('chai');
 const rewire = require('rewire');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-const transition = rewire('../../../src/transitions/create_user_for_contacts');
 const { people } = require('@medic/contacts')(config, db);
 const { users } = require('@medic/user-management')(config, db);
 const contactTypeUtils = require('@medic/contact-types-utils');
@@ -32,6 +31,17 @@ const ORIGINAL_USER = deepFreeze({
   _id: 'org.couchdb.user:original-user-id', name: `original-user`, contact: ORIGINAL_CONTACT, roles: ['chw'],
 });
 
+const getCreatedContact = ({ create = 'true', roles, role = 'chw', name = NEW_CONTACT.name } = {}) => ({
+  ...NEW_CONTACT,
+  name,
+  roles,
+  role,
+  phone: '+1234567890',
+  user_for_contact: {
+    create
+  }
+});
+
 const getReplacedContact = (
   status,
   replacement_contact_id = NEW_CONTACT._id,
@@ -51,12 +61,15 @@ const getReplacedContact = (
 });
 
 describe('create_user_for_contacts', () => {
+  let transition;
+
   beforeEach(() => {
     config.init({
-      getAll: sinon
-        .stub()
-        .returns({}), get: sinon.stub(),
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
     });
+
+    transition = rewire('../../../src/transitions/create_user_for_contacts');
   });
 
   afterEach(() => {
@@ -136,7 +149,7 @@ describe('create_user_for_contacts', () => {
     it('includes person contact doc with a replaced status of READY', () => {
       const doc = getReplacedContact('READY');
 
-      expect(transition.filter(doc)).to.be.true;
+      expect(transition.filter({ doc })).to.be.true;
       assertGetContactType(doc);
     });
 
@@ -145,7 +158,24 @@ describe('create_user_for_contacts', () => {
       doc.user_for_contact.replace.a_user = { status: 'COMPLETE' };
       doc.user_for_contact.replace.another_user = { status: 'PENDING' };
 
-      expect(transition.filter(doc)).to.be.true;
+      expect(transition.filter({ doc })).to.be.true;
+      assertGetContactType(doc);
+    });
+
+    it(`includes new person contact doc with the create flag set to 'true'`, () => {
+      const doc = getCreatedContact();
+
+      expect(transition.filter({ doc, initialProcessing: true })).to.be.true;
+      assertGetContactType(doc);
+    });
+
+    it(`includes new replaced person contact doc with the create flag set to 'true'`, () => {
+      const doc = {
+        ...getCreatedContact(),
+        ...getReplacedContact('READY')
+      };
+
+      expect(transition.filter({ doc, initialProcessing: true })).to.be.true;
       assertGetContactType(doc);
     });
 
@@ -153,7 +183,7 @@ describe('create_user_for_contacts', () => {
       const doc = getReplacedContact('READY');
       contactTypeUtils.getContactType.returns(undefined);
 
-      expect(transition.filter(doc)).to.be.false;
+      expect(transition.filter({ doc, initialProcessing: true })).to.be.false;
       assertGetContactType(doc);
     });
 
@@ -161,12 +191,12 @@ describe('create_user_for_contacts', () => {
       const doc = getReplacedContact('READY');
       contactTypeUtils.getContactType.returns({ person: false });
 
-      expect(transition.filter(doc)).to.be.false;
+      expect(transition.filter({ doc, initialProcessing: true })).to.be.false;
       assertGetContactType(doc);
     });
 
     it('excludes person contacts which do not have user_for_contact data', () => {
-      expect(transition.filter(ORIGINAL_CONTACT)).to.be.false;
+      expect(transition.filter({ doc: ORIGINAL_CONTACT, initialProcessing: true })).to.be.false;
       assertGetContactType(ORIGINAL_CONTACT);
     });
 
@@ -176,9 +206,9 @@ describe('create_user_for_contacts', () => {
       { replace: { a_user: 'world' } },
       { replace: { a_user: { hello: 'world' } } },
     ].forEach(user_for_contact => {
-      it('excludes person contacts which have user_for_contact data, but have not been replaced', () => {
+      it('excludes person contacts which have user_for_contact data, but are not creating or replacing a user', () => {
         const originalContact = Object.assign({}, ORIGINAL_CONTACT, { user_for_contact });
-        expect(transition.filter(originalContact)).to.be.false;
+        expect(transition.filter({ doc: originalContact, initialProcessing: true })).to.be.false;
         assertGetContactType(originalContact);
       });
     });
@@ -186,7 +216,7 @@ describe('create_user_for_contacts', () => {
     it('excludes replaced contacts which do not have a READY status', () => {
       const doc = getReplacedContact('PENDING');
 
-      expect(transition.filter(doc)).to.be.false;
+      expect(transition.filter({ doc })).to.be.false;
       assertGetContactType(doc);
     });
 
@@ -195,7 +225,14 @@ describe('create_user_for_contacts', () => {
       doc.user_for_contact.replace.a_user = { status: 'COMPLETE' };
       doc.user_for_contact.replace.another_user = { status: 'ERROR' };
 
-      expect(transition.filter(doc)).to.be.false;
+      expect(transition.filter({ doc })).to.be.false;
+      assertGetContactType(doc);
+    });
+
+    it('excludes existing person contacts with create flag set when contact has already been replicated', () => {
+      const doc = getCreatedContact();
+
+      expect(transition.filter({ doc, initialProcessing: false })).to.be.false;
       assertGetContactType(doc);
     });
   });
@@ -206,6 +243,7 @@ describe('create_user_for_contacts', () => {
     let createUser;
     let resetPassword;
     let validateNewUsername;
+    let medicGet;
 
     beforeEach(() => {
       config.get
@@ -217,7 +255,7 @@ describe('create_user_for_contacts', () => {
         .resolves(ORIGINAL_CONTACT);
       getOrCreatePerson
         .withArgs(NEW_CONTACT._id)
-        .resolves(NEW_CONTACT);
+        .resolves({ ...NEW_CONTACT });
       getUserSettings = sinon
         .stub(users, 'getUserSettings')
         .resolves(ORIGINAL_USER);
@@ -230,6 +268,8 @@ describe('create_user_for_contacts', () => {
       validateNewUsername = sinon
         .stub(users, 'validateNewUsername')
         .resolves();
+      medicGet = sinon
+        .stub(db.medic, 'get');
     });
 
     const expectInitialDataRetrieved = (users) => {
@@ -272,6 +312,100 @@ describe('create_user_for_contacts', () => {
 
     const stripCouchdbUserPrefix = username => username.replace('org.couchdb.user:', '');
 
+    it(`creates user for new contact with create flag of 'true' and multiple roles`, async () => {
+      const doc = getCreatedContact({ roles: ['nurse', 'chw'], role: null });
+      medicGet.resolves({ ...doc, user_for_contact: {} });
+
+      const result = await transition.onMatch({ doc, initialProcessing: true });
+      expect(result).to.be.true;
+
+      expectUsersCreated([{ contact: doc, user: doc }]);
+      expect(doc.user_for_contact.create).to.not.exist;
+      expect(medicGet.callCount).to.equal(1);
+      expect(medicGet.args[0]).to.deep.equal([doc._id]);
+    });
+
+    it(`creates user for new contact with create flag of 'true' and single role`, async () => {
+      const doc = getCreatedContact({ role: 'chw' });
+      medicGet.resolves({ ...doc, user_for_contact: {} });
+
+      const result = await transition.onMatch({ doc, initialProcessing: true });
+      expect(result).to.be.true;
+
+      expectUsersCreated([{ contact: doc, user: { roles: [doc.role] } }]);
+      expect(doc.user_for_contact.create).to.not.exist;
+      expect(medicGet.callCount).to.equal(1);
+      expect(medicGet.args[0]).to.deep.equal([doc._id]);
+    });
+
+    it('records error when creating user when an error is thrown generating a new username', async () => {
+      validateNewUsername.rejects({ status: 500, message: 'Server error' });
+      const doc = getCreatedContact();
+
+      try {
+        await transition.onMatch({ doc, initialProcessing: true });
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Server error');
+        expect(err.changed).to.be.true;
+        expect(doc.user_for_contact.create).to.equal('true');
+      }
+    });
+
+    it('records error when creating user with new contact that has no name', async () => {
+      const doc = getCreatedContact({ name: null });
+
+      try {
+        await transition.onMatch({ doc, initialProcessing: true });
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal(`Contact [${doc._id}] must have a name.`);
+        expect(err.changed).to.be.true;
+        expect(doc.user_for_contact.create).to.equal('true');
+      }
+    });
+
+    it('records error when creating user with contact that has no role', async () => {
+      const doc = getCreatedContact({ role: null });
+
+      try {
+        await transition.onMatch({ doc, initialProcessing: true });
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal(`Contact [${doc._id}] must have a "role" or "roles" property.`);
+        expect(err.changed).to.be.true;
+        expect(doc.user_for_contact.create).to.equal('true');
+      }
+    });
+
+    it('records error when creating user with error on user creation', async () => {
+      createUser.rejects({ message: 'Server Error' });
+      const doc = getCreatedContact();
+
+      try {
+        await transition.onMatch({ doc, initialProcessing: true });
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Server Error');
+        expect(err.changed).to.be.true;
+        expect(doc.user_for_contact.create).to.equal('true');
+      }
+    });
+
+    it('records error when creating user with nested error on user creation', async () => {
+      createUser.rejects({ message: { message: 'Invalid phone number' } });
+      const doc = getCreatedContact();
+
+      try {
+        await transition.onMatch({ doc, initialProcessing: true });
+        expect.fail('Should have thrown');
+      } catch (err) {
+        expect(err.message).to.equal('Error creating new user: "Invalid phone number"');
+        expect(err.changed).to.be.true;
+        expect(doc.user_for_contact.create).to.equal('true');
+      }
+    });
+
     it('replaces user with READY status', async () => {
       const doc = getReplacedContact('READY');
 
@@ -282,6 +416,8 @@ describe('create_user_for_contacts', () => {
       expectUsersCreated([{ contact: NEW_CONTACT, user: ORIGINAL_USER }]);
       expectUserPasswordReset([ORIGINAL_USER]);
       expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
+      expect(medicGet.callCount).to.equal(1);
+      expect(medicGet.args[0]).to.deep.equal([NEW_CONTACT._id]);
     });
 
     [
@@ -295,7 +431,7 @@ describe('create_user_for_contacts', () => {
     ].forEach(([collisionCount, suffixLength]) => {
       it(`replaces user when ${collisionCount} username collisions occur`, async () => {
         let i = 100;
-        transition.__set__('Math.random', () => i++ );
+        transition.__set__('Math.random', () => i++);
 
         validateNewUsername.rejects({ code: 400 });
         validateNewUsername
@@ -341,7 +477,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal(`Could not generate a unique username for contact [${NEW_CONTACT.name}].`);
         expect(err.changed).to.be.true;
@@ -384,7 +520,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Server error');
         expect(err.changed).to.be.true;
@@ -396,7 +532,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('No id was provided for the new replacement contact.');
         expect(err.changed).to.be.true;
@@ -412,9 +548,9 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
-        expect(err.message).to.equal(`Replacement contact [${newContact._id}] must have a name.`);
+        expect(err.message).to.equal(`Contact [${newContact._id}] must have a name.`);
         expect(err.changed).to.be.true;
       }
     });
@@ -425,7 +561,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Server Error');
         expect(err.changed).to.be.true;
@@ -438,7 +574,7 @@ describe('create_user_for_contacts', () => {
 
       try {
         await transition.onMatch({ doc });
-        expect(true).to.equal('Should have thrown');
+        expect.fail('Should have thrown');
       } catch (err) {
         expect(err.message).to.equal('Error creating new user: "Invalid phone number"');
         expect(err.changed).to.be.true;
@@ -514,12 +650,12 @@ describe('create_user_for_contacts', () => {
 
         try {
           await transition.onMatch({ doc });
-          expect(true).to.equal('Should have thrown');
+          expect.fail('Should have thrown');
         } catch (err) {
           const expectedMessage = [
             'No id was provided for the new replacement contact.',
             'No id was provided for the new replacement contact.',
-            `Replacement contact [${namelessContact._id}] must have a name.`,
+            `Contact [${namelessContact._id}] must have a name.`,
           ].join(', ');
           expect(err.message).to.equal(expectedMessage);
           expect(err.changed).to.be.true;
@@ -563,7 +699,7 @@ describe('create_user_for_contacts', () => {
 
         try {
           await transition.onMatch({ doc });
-          expect(true).to.equal('Should have thrown');
+          expect.fail('Should have thrown');
         } catch (err) {
           const expectedMessage = [
             'No id was provided for the new replacement contact.',
@@ -591,6 +727,29 @@ describe('create_user_for_contacts', () => {
           expect(doc.user_for_contact.replace[name].status).to.equal('COMPLETE');
         });
       });
+    });
+
+    it('replaces user but does not create user for the same contact at the same time', async () => {
+      const doc = {
+        ...getReplacedContact('READY'),
+        name: 'New Contact',
+        role: 'chw',
+        phone: '+1234567890',
+      };
+      medicGet.withArgs(doc._id).resolves({ ...doc, user_for_contact: { ...doc.user_for_contact } });
+      medicGet.withArgs(NEW_CONTACT._id).resolves(NEW_CONTACT);
+      doc.user_for_contact.create = 'true';
+
+      const result = await transition.onMatch({ doc, initialProcessing: true });
+      expect(result).to.be.true;
+
+      expectInitialDataRetrieved([{ username: ORIGINAL_USER.name, contact: NEW_CONTACT }]);
+      expectUsersCreated([{ contact: NEW_CONTACT, user: ORIGINAL_USER }]);
+      expectUserPasswordReset([ORIGINAL_USER]);
+      expect(doc.user_for_contact.replace[ORIGINAL_USER.name].status).to.equal('COMPLETE');
+      expect(doc.user_for_contact.create).to.not.exist;
+      expect(medicGet.callCount).to.equal(1);
+      expect(medicGet.args).to.deep.equal([[NEW_CONTACT._id]]);
     });
   });
 });

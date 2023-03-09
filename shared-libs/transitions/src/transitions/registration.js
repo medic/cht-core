@@ -665,7 +665,7 @@ module.exports = {
       }
     });
   },
-  filter: (doc, info = {}) => {
+  filter: ({ doc, info }) => {
     return Boolean(
       doc.type === 'data_record' &&
       getRegistrationConfig(getConfig(), doc.form) &&

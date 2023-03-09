@@ -63,27 +63,39 @@ describe('multi report alerts', () => {
   it('filter validation', () => {
     sinon.stub(utils, 'isValidSubmission').returns(false);
 
-    assert.equal(transition.filter({}), false);
+    assert.equal(transition.filter({ doc: {} }), false);
     assert.equal(transition.filter({
-      form: 'x',
-      type: 'badtype'
+      doc: {
+        form: 'x',
+        type: 'badtype'
+      }
     }), false);
     assert.equal(transition.filter({
-      type: 'data_record'
+      doc: {
+        type: 'data_record'
+      }
     }), false);
     assert.equal(transition.filter({
-      form: 'x',
+      doc: {
+        form: 'x',
+      }
     }), false);
 
     assert.equal(transition.filter({
-      form: 'x',
-      type: 'data_record'
+      doc: {
+        form: 'x',
+        type: 'data_record'
+      },
+      info: {}
     }), false);
 
     utils.isValidSubmission.returns(true);
     assert.equal(transition.filter({
-      form: 'x',
-      type: 'data_record'
+      doc: {
+        form: 'x',
+        type: 'data_record'
+      },
+      info: {}
     }), true);
 
     assert.equal(utils.isValidSubmission.callCount, 2);
@@ -93,9 +105,16 @@ describe('multi report alerts', () => {
   it('filter validation hasRun', () => {
     sinon.stub(utils, 'isValidSubmission').returns(true);
     assert.equal(transition.filter({
-      form: 'x',
-      type: 'data_record'
-    }, {transitions : { multi_report_alerts: 'hi' }}), false);
+      doc: {
+        form: 'x',
+        type: 'data_record'
+      },
+      info: {
+        transitions: {
+          multi_report_alerts: 'hi'
+        }
+      }
+    }), false);
   });
 
   const assertConfigIsInvalid = (done, alerts) => {
