@@ -136,6 +136,9 @@ cat > /etc/nginx/private/deploy.sh << EOF
 cp "\$RENEWED_LINEAGE/fullchain.pem" /etc/nginx/private/cert.pem
 cp "\$RENEWED_LINEAGE/privkey.pem" /etc/nginx/private/key.pem
 EOF
+  chmod +x /etc/nginx/private/deploy.sh
+  mkdir -p /etc/nginx/private/certbot/.well-known/acme-challenge
+  echo "hello world" > /etc/nginx/private/certbot/.well-known/acme-challenge/index.html
 }
 
 main (){
