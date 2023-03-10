@@ -130,8 +130,17 @@ select_ssl_certificate_mode(){
 
 }
 
+create_certbot_deploy(){
+cat > /etc/nginx/private/deploy.sh << EOF
+#!/bin/sh
+cp "\$RENEWED_LINEAGE/fullchain.pem" /etc/nginx/private/cert.pem
+cp "\$RENEWED_LINEAGE/privkey.pem" /etc/nginx/private/key.pem
+EOF
+}
+
 main (){
   welcome_message
+  create_certbot_deploy
   select_ssl_certificate_mode
   echo "Launching Nginx" >&2
 }
