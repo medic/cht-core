@@ -116,6 +116,7 @@ import { PanelHeaderComponent } from './panel-header/panel-header.component';
     AnalyticsTargetsProgressComponent,
     AnalyticsFilterComponent,
     AnalyticsTargetsDetailsComponent,
+    PanelHeaderComponent,
   ]
 })
 export class ComponentsModule { }

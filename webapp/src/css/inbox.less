@@ -1390,6 +1390,43 @@ mm-search-bar {
   }
 }
 
+.verify-report-options-wrapper {
+  .verify-report-options-body {
+    display: flex;
+    padding: 10px 0;
+    justify-content: space-around;
+    button {
+      height: 70px;
+      min-width: 130px;
+    }
+  }
+
+  .verify-icon {
+    display: block;
+    svg {
+      width: 24px;
+      height: 24px;
+      path {
+        fill: @inactive-color;
+      }
+    }
+  }
+
+  .invalid-option.active-option {
+    color: @report-review-error-color;
+    svg path {
+      fill: @report-review-error-color;
+    }
+  }
+
+  .valid-option.active-option {
+    color: @report-review-verified-color;
+    svg path {
+      fill: @report-review-verified-color;
+    }
+  }
+}
+
 .filters.tab-bar .inner {
   display: flex;
   justify-content: flex-end;
@@ -1411,7 +1448,6 @@ mm-search-bar {
     bottom: 0;
     left: 0;
     right: 0;
-
     .fast-action-flat-button {
       width: 100%;
     }
@@ -1421,7 +1457,6 @@ mm-search-bar {
     position: absolute;
     top: 60px;
     right: 5px;
-
     .fast-action-fab-button .mat-icon.fa:before {
       color: @mat-invert-icon-color;
     }
@@ -1431,7 +1466,6 @@ mm-search-bar {
 .fast-action-body {
   mat-list-item {
     height: 60px !important;
-
     &:not(:last-child) {
       border-bottom: 1px solid @separator-color;
     }
@@ -1442,7 +1476,6 @@ mm-search-bar {
     justify-content: flex-start;
     text-decoration: none;
     color: @mat-font-color;
-
     .fast-action-item-icon {
       margin-right: 20px;
 

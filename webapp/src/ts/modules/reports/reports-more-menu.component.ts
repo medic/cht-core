@@ -1,7 +1,9 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { Data } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
 import { Store } from '@ngrx/store';
+import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { Selectors } from '@mm-selectors/index';
 import { AuthService } from '@mm-services/auth.service';
@@ -9,6 +11,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { SessionService } from '@mm-services/session.service';
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
+import { ReportsActions } from '@mm-actions/reports';
 
 @Component({
   selector: 'mm-reports-more-menu',
@@ -16,7 +19,9 @@ import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.co
 })
 export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   @Output() exportReports: EventEmitter<any> = new EventEmitter();
+  @ViewChild('verifyReportWrapper') verifyReportWrapper;
 
+  private reportsActions: ReportsActions;
   private globalActions: GlobalActions;
   private hasExportPermission = false;
   private hasEditPermission = false;
@@ -26,6 +31,8 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   private loadingContent: boolean;
   private snapshotData: Data | undefined;
   private isOnlineOnly: boolean;
+  private bottomSheetRef: MatBottomSheetRef;
+  private dialogRef: MatDialogRef<any>;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -37,8 +44,11 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private responsiveService: ResponsiveService,
     private sessionService: SessionService,
+    private matBottomSheet: MatBottomSheet,
+    private matDialog: MatDialog,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.reportsActions = new ReportsActions(store);
   }
 
   ngOnInit(): void {
@@ -107,5 +117,35 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
 
   displayExportOption() {
     return !this.selectMode && this.isOnlineOnly && this.hasExportPermission && !this.responsiveService.isMobile();
+  }
+
+  displayVerifyReportOption() {
+    return true;
+  }
+
+  isReportCorrect(isCorrect: boolean) {
+    this.reportsActions.verifyReport(isCorrect);
+    this.closeVerifyReportComponents();
+  }
+
+  openVerifyReportOptions() {
+    this.closeVerifyReportComponents();
+
+    if (this.responsiveService.isMobile()) {
+      this.bottomSheetRef = this.matBottomSheet.open(this.verifyReportWrapper, { disableClose: true });
+      return;
+    }
+
+    this.dialogRef = this.matDialog.open(this.verifyReportWrapper, {
+      disableClose: true,
+      autoFocus: false,
+      minWidth: 300,
+      minHeight: 150,
+    });
+  }
+
+  closeVerifyReportComponents() {
+    this.bottomSheetRef?.dismiss();
+    this.dialogRef?.close();
   }
 }
