@@ -8,14 +8,22 @@
       <mat-icon fontIcon="fa-arrow-down"></mat-icon>
       <span>{{ 'Export' | translate }}</span>
     </button>
-    <button mat-menu-item test-id="verify-reports" *ngIf="displayVerifyReportOption()" (click)="openVerifyReportOptions()">
+
+    <button
+      mat-menu-item
+      test-id="verify-reports"
+      *ngIf="displayVerifyReportOption()"
+      (click)="openVerifyReportOptions()"
+      [disabled]="processingReportVerification || verifyingReport">
       <mat-icon fontIcon="fa-check"></mat-icon>
       <span>{{ 'reports.verify' | translate }}</span>
     </button>
+
     <a mat-menu-item test-id="edit-reports" *ngIf="displayEditOption()" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
       <mat-icon fontIcon="fa-pencil"></mat-icon>
       <span>{{ 'Edit' | translate }}</span>
     </a>
+
     <button mat-menu-item test-id="delete-reports" *ngIf="displayDeleteOption()" (click)="deleteReport()">
       <mat-icon fontIcon="fa-trash"></mat-icon>
       <span>{{ 'Delete' | translate }}</span>

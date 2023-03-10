@@ -55,7 +55,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   hasReports: boolean;
   selectMode = false;
   selectModeAvailable = false;
-  verifyingReport: boolean;
   showContent: boolean;
   enketoEdited: boolean;
   useSidebarFilter = true;
@@ -99,7 +98,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reportsActions.setSelectedReports([]);
     this.appending = false;
     this.error = false;
-    this.verifyingReport = false;
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
     this.tourService.startIfNeeded(this.route.snapshot);

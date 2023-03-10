@@ -26,6 +26,8 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   private hasExportPermission = false;
   private hasEditPermission = false;
   private hasDeletePermission = false;
+  private hasVerifyPermission = false;
+  private hasEditVerifyPermission = false;
   private hasUpdatePermission = false;
   private selectMode = false;
   private loadingContent: boolean;
@@ -38,6 +40,8 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   reportsList;
   selectedReportDoc;
   useOldActionBar = false;
+  verifyingReport = false;
+  processingReportVerification = false;
 
   constructor(
     private store: Store,
@@ -68,18 +72,24 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getSelectedReportDoc),
       this.store.select(Selectors.getSelectMode),
+      this.store.select(Selectors.getVerifyingReport),
+      this.store.select(Selectors.getLoadingSubActionBar),
     ).subscribe(([
       reportsList,
       snapshotData,
       loadingContent,
       selectedReportDoc,
       selectMode,
+      verifyingReport,
+      loadingSubActionBar,
     ]) => {
       this.reportsList = reportsList;
       this.snapshotData = snapshotData;
       this.loadingContent = loadingContent;
       this.selectedReportDoc = selectedReportDoc;
       this.selectMode = selectMode;
+      this.verifyingReport = verifyingReport;
+      this.processingReportVerification = loadingSubActionBar;
     });
     this.subscription.add(storeSubscription);
   }
@@ -89,6 +99,8 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
     this.hasUpdatePermission = await this.authService.has('can_update_reports');
     this.hasDeletePermission = await this.authService.has('can_delete_reports');
     this.hasExportPermission = await this.authService.any([[ 'can_export_all' ], [ 'can_export_messages' ]]);
+    this.hasVerifyPermission = await this.authService.has('can_verify_reports');
+    this.hasEditVerifyPermission = await this.authService.has('can_edit_verification');
     this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
@@ -120,7 +132,15 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   }
 
   displayVerifyReportOption() {
-    return true;
+    const hasFullPermissions = this.hasEditVerifyPermission && this.hasVerifyPermission;
+    const hasPartialPermissions = this.selectedReportDoc?.verified === undefined && this.hasVerifyPermission;
+
+    return this.selectedReportDoc
+      && !this.selectMode
+      && !this.loadingContent
+      && this.snapshotData?.name === 'reports.detail'
+      && this.hasEditPermission
+      && (hasFullPermissions || hasPartialPermissions);
   }
 
   isReportCorrect(isCorrect: boolean) {
