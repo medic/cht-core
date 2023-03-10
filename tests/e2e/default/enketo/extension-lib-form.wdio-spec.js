@@ -16,10 +16,11 @@ describe('Extension lib xpath function', () => {
     const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await extensionLibsPage.configure(userContactDoc);
     await waitForServiceWorker.promise;
-    await commonElements.sync();
 
     await browser.refresh();
     await loginPage.cookieLogin();
+    await commonElements.sync(true);
+    await browser.refresh();
     await common.hideSnackbar();
   });
 
