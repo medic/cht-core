@@ -18,15 +18,15 @@ export class TargetCheckpointerMigration extends Migration {
   private async getCheckpointerId () {
     const source = this.dbService.get();
     const target = this.dbService.get({ remote: true });
-    const targetId = await target.id();
-    console.warn(targetId);
-    const replicationId = await generateReplicationId(source, target, {});
-    return replicationId;
+    return await generateReplicationId(source, target, {});
   }
 
   private async getLocalCheckpointerDoc() {
     const replicationId = await this.getCheckpointerId();
-    console.warn(replicationId, 'replicationId');
+    if (!replicationId) {
+      return;
+    }
+
     try {
       return await this.dbService.get().get(replicationId);
     } catch (err) {
@@ -39,16 +39,17 @@ export class TargetCheckpointerMigration extends Migration {
 
   async run() {
     const localDoc = await this.getLocalCheckpointerDoc();
-    console.warn(localDoc, 'localDoc');
     if (!localDoc) {
-      return;
+      return false;
     }
+
     try {
       await this.dbService.get({ remote: true }).put(localDoc);
+      return true;
     } catch (err) {
       if (err?.status === 409) {
         // dont fail on conflicts
-        return;
+        return true;
       }
       throw err;
     }

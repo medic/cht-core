@@ -106,7 +106,6 @@ export class DBSyncService {
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
-  private migrationsExecuted;
   private readonly intervalPromises = {
     sync: undefined,
     meta: undefined,
@@ -320,21 +319,10 @@ export class DBSyncService {
   }
 
   private async migrateDb() {
-    if (!this.migrationsExecuted) {
-      this.migrationsExecuted = this.executeMigrations();
-    }
-    return await this.migrationsExecuted;
-  }
-
-  private async executeMigrations() {
-    const telemetryEntry = new DbSyncTelemetry(this.telemetryService);
     try {
       await this.migrationsService.runMigrations();
-      telemetryEntry.recordMigrations(true);
-      return true;
     } catch (err) {
       console.error('Error while running DB migrations', err);
-      telemetryEntry.recordMigrations(false);
       this.sendUpdate({ state: SyncStatus.Unknown });
       throw err;
     }
@@ -376,13 +364,13 @@ class DbSyncTelemetry {
   private readonly direction;
   private readonly start;
   private readonly lastReplicated;
-  private key;
+  private readonly key;
   private end;
 
   constructor(
     public telemetryService:TelemetryService,
-    database?:string,
-    direction?:string,
+    database,
+    direction,
     lastReplicated?,
   ) {
     this.database = database;
@@ -466,10 +454,5 @@ class DbSyncTelemetry {
 
   async recordDenied() {
     await this.telemetryService.record(this.getDeniedKey());
-  }
-
-  async recordMigrations(success) {
-    this.key = `migrations`;
-    await this.record(success ? this.getSuccessKey() : this.getFailureKey());
   }
 }

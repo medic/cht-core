@@ -100,7 +100,7 @@ describe('Storing checkpointer on target migration', () => {
 
     for (const checkpointerDoc of checkpointerDocs) {
       const browserCheckpointer = await browserUtils.getDoc(checkpointerDoc._id);
-      expect(browserCheckpointer).to.deep.equal(checkpointerDoc);
+      expect(browserCheckpointer).excludingEvery('_rev').to.deep.equal(checkpointerDoc);
     }
 
     // expect migration to have run
@@ -145,12 +145,22 @@ describe('Storing checkpointer on target migration', () => {
   it('should not flag migration as ran if the browser was offline', async () => {
     await loginPage.login(user);
 
-    await expect(browserUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith();
+    await expect(browserUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith({ status: 404 });
 
     await browser.throttle('offline');
     await commonPage.syncWithoutWaitForSuccess();
+    await commonPage.refresh();
+    await commonPage.syncWithoutWaitForSuccess();
+    await commonPage.refresh();
+    await commonPage.syncWithoutWaitForSuccess();
 
-    await expect(browserUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith();
+    await expect(browserUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith({ status: 404 });
+
+    await browser.throttle('online');
+    await commonPage.refresh();
+    await commonPage.sync();
+
+    await browserUtils.getDoc(MIGRATION_FLAG_ID);
 
   });
 });

@@ -13,20 +13,29 @@ export class MigrationsService {
   ) {
   }
 
-  private getMigrations() {
-    return [
-      this.targetCheckpointerMigration,
-    ];
+  private runningMigrationsPromise;
+  private runningMigrations = false;
+  private migrations = [
+    this.targetCheckpointerMigration
+  ];
+
+  private async run() {
+    for (const migration of this.migrations) {
+      if (!await migration.hasRun(this.dbService) && await migration.run()) {
+        await migration.setHasRun(this.dbService);
+      }
+    }
+    this.runningMigrations = false;
   }
 
   async runMigrations () {
-    for (const migration of this.getMigrations()) {
-      if (await migration.hasRun(this.dbService)) {
-        continue;
-      }
-      await migration.run();
-      console.warn('migation successful');
-      await migration.setHasRun(this.dbService);
+    if (this.runningMigrations) {
+      return await this.runningMigrationsPromise;
     }
+
+    this.runningMigrations = true;
+    this.runningMigrationsPromise = this.run();
+
+    return await this.runningMigrationsPromise;
   }
 }

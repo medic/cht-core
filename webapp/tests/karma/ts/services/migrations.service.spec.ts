@@ -34,7 +34,7 @@ describe('Migrations service', () => {
 
   it('should run all migrations', async () => {
     targetCheckpointerMigration.hasRun.resolves(false);
-    targetCheckpointerMigration.run.resolves();
+    targetCheckpointerMigration.run.resolves(true);
     targetCheckpointerMigration.setHasRun.resolves();
 
     await service.runMigrations();
@@ -44,7 +44,43 @@ describe('Migrations service', () => {
     expect(targetCheckpointerMigration.setHasRun.args).to.deep.equal([[dbService]]);
   });
 
-  it('should not run mirations that ran previously', async () => {
+  it('should not run migrations in parallel', async () => {
+    targetCheckpointerMigration.hasRun.resolves(false);
+    targetCheckpointerMigration.run.resolves(true);
+    targetCheckpointerMigration.setHasRun.resolves();
+
+    service.runMigrations();
+    service.runMigrations();
+    await service.runMigrations();
+
+    expect(targetCheckpointerMigration.hasRun.callCount).to.equal(1);
+    expect(targetCheckpointerMigration.run.callCount).to.equal(1);
+    expect(targetCheckpointerMigration.setHasRun.callCount).to.equal(1);
+
+    await service.runMigrations();
+
+    expect(targetCheckpointerMigration.hasRun.callCount).to.equal(2);
+    expect(targetCheckpointerMigration.run.callCount).to.equal(2);
+    expect(targetCheckpointerMigration.setHasRun.callCount).to.equal(2);
+  });
+
+  it('should not set as run when migrations did not run', async () => {
+    targetCheckpointerMigration.hasRun.resolves(false);
+    targetCheckpointerMigration.run.resolves(false);
+
+    await service.runMigrations();
+
+    expect(targetCheckpointerMigration.setHasRun.callCount).to.equal(0);
+
+    targetCheckpointerMigration.run.resolves(true);
+    await service.runMigrations();
+
+    expect(targetCheckpointerMigration.hasRun.callCount).to.equal(2);
+    expect(targetCheckpointerMigration.run.callCount).to.equal(2);
+    expect(targetCheckpointerMigration.setHasRun.callCount).to.equal(1);
+  });
+
+  it('should not run migrations that ran previously', async () => {
     targetCheckpointerMigration.hasRun.resolves(true);
 
     await service.runMigrations();
@@ -72,7 +108,7 @@ describe('Migrations service', () => {
 
   it('should throw sethasrun errors', async () => {
     targetCheckpointerMigration.hasRun.resolves(false);
-    targetCheckpointerMigration.run.resolves();
+    targetCheckpointerMigration.run.resolves(true);
     targetCheckpointerMigration.setHasRun.rejects(new Error('failed'));
 
     await expect(service.runMigrations()).to.be.rejectedWith(Error, 'failed');
