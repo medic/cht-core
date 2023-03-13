@@ -1440,6 +1440,7 @@ mm-search-bar {
 }
 
 .fast-action-trigger {
+  z-index: 3;
   &.embed-fast-action {
     background: @button-background-inverse-color;
     box-shadow: 0px -3px 3px @shadow-color;
@@ -1523,6 +1524,7 @@ mm-search-bar {
 
 @media (max-width: @media-mobile) {
   .fast-action-trigger:not(.embed-fast-action) {
+    position: fixed;
     bottom: 17px;
     right: 18px;
     top: auto;
@@ -1744,6 +1746,9 @@ mm-search-bar {
     }
     .left-pane {
       left: -100%;
+      .fast-action-trigger:not(.embed-fast-action) {
+        display: none;
+      }
     }
     .right-pane {
       left: 0;

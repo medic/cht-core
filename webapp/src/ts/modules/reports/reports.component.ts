@@ -25,7 +25,6 @@ import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { TranslateFromService } from '@mm-services/translate-from.service';
 
 const PAGE_SIZE = 50;
 
@@ -84,7 +83,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private modalService:ModalService,
     private fastActionButtonService:FastActionButtonService,
     private xmlFormsService:XmlFormsService,
-    private translateFromService:TranslateFromService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -187,30 +185,18 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private subscribeToXmlFormsService() {
-
-    // ToDo move translate thing to service
-    /**
-     * Translates using the key if truthy using the old style label
-     * array as a fallback.
-     */
-    const translateTitle = (key, label) => {
-      return key ? this.translateService.instant(key) : this.translateFromService.get(label);
-    };
-
-    // ToDo update filter when training cards is merged.
-
     this.xmlFormsService.subscribe('AddReportMenu', { contactForms: false }, async (error, xForms) => {
       if (error) {
         return console.error('Error fetching form definitions', error);
       }
-      const xmlReportForms = xForms
-        .map((xForm) => ({
-          id: xForm._id,
-          code: xForm.internalId,
-          icon: xForm.icon,
-          title: translateTitle(xForm.translation_key, xForm.title),
-        }))
-        .sort((a, b) => a.title - b.title);
+
+      const xmlReportForms = xForms.map((xForm) => ({
+        id: xForm._id,
+        code: xForm.internalId,
+        icon: xForm.icon,
+        title: xForm.title,
+        titleKey: xForm.translation_key
+      }));
 
       this.fastActionList = await this.fastActionButtonService.getReportLeftSideActions({ xmlReportForms });
     });

@@ -8,6 +8,8 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
+import { TranslateService } from '@mm-services/translate.service';
+import { TranslateFromService } from '@mm-services/translate-from.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +24,8 @@ export class FastActionButtonService {
     private store: Store,
     private authService: AuthService,
     private responsiveService: ResponsiveService,
+    private translateService: TranslateService,
+    private translateFromService: TranslateFromService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -47,36 +51,51 @@ export class FastActionButtonService {
     return filteredActions;
   }
 
+  private getFormTitle(labelKey?: string, label?: string): string|undefined {
+    if (labelKey) {
+      return this.translateService.instant(labelKey);
+    }
+
+    if (label) {
+      return this.translateFromService.get(label);
+    }
+  }
+
   private getReportFormActions(xmlForms, callbackContactReportModal?): FastAction[] {
-    return (xmlForms || []).map(form => ({
-      id: form.code,
-      label: form.title || form.code,
-      icon: { name: form.icon, type: IconType.RESOURCE },
-      canDisplay: () => this.authService.has('can_edit'),
-      execute: () => {
-        if (callbackContactReportModal) {
-          callbackContactReportModal(form);
-          return;
-        }
-        this.router.navigate(['/reports', 'add', form.code]);
-      },
-    }));
+    return (xmlForms || [])
+      .map(form => ({
+        id: form.code,
+        label: this.getFormTitle(form.titleKey, form.title) || form.code,
+        icon: { name: form.icon, type: IconType.RESOURCE },
+        alwaysOpenInPanel: true,
+        canDisplay: () => this.authService.has('can_edit'),
+        execute: () => {
+          if (callbackContactReportModal) {
+            callbackContactReportModal(form);
+            return;
+          }
+          this.router.navigate(['/reports', 'add', form.code]);
+        },
+      }))
+      .sort((a, b) => a.label?.localeCompare(b.label));
   }
 
   private getContactFormActions(childContactTypes, userFacilityId): FastAction[] {
-    return (childContactTypes || []).map(contactType => ({
-      id: contactType.id,
-      labelKey: contactType.create_key || contactType.id,
-      icon: { name: contactType.icon, type: IconType.RESOURCE },
-      canDisplay: () => this.authService.has(['can_edit', 'can_create_places']),
-      execute: () => {
-        const route = ['/contacts', 'add', contactType.id];
-        if (userFacilityId) {
-          route.splice(1, 0, userFacilityId);
-        }
-        this.router.navigate(route, { queryParams: { from: 'list' } });
-      },
-    }));
+    return (childContactTypes || [])
+      .map(contactType => ({
+        id: contactType.id,
+        label: this.getFormTitle(contactType.create_key) || contactType.id,
+        icon: { name: contactType.icon, type: IconType.RESOURCE },
+        canDisplay: () => this.authService.has(['can_edit', 'can_create_places']),
+        execute: () => {
+          const route = ['/contacts', 'add', contactType.id];
+          if (userFacilityId) {
+            route.splice(1, 0, userFacilityId);
+          }
+          this.router.navigate(route, { queryParams: { from: 'list' } });
+        },
+      }))
+      .sort((a, b) => a.label?.localeCompare(b.label));
   }
 
   private getSendMessageAction(context: CommunicationActionsContext, config: CommunicationActionsConfig = {}) {
@@ -110,7 +129,11 @@ export class FastActionButtonService {
       id: 'phone-call',
       labelKey: 'fast_action_button.phone_call',
       icon: { name: 'fa-phone', type: IconType.FONT_AWESOME },
-      canDisplay: async () => context.sendTo?.phone && await this.authService.has('can_view_call_action'),
+      canDisplay: async () => {
+        return context.sendTo?.phone
+          && await this.authService.has('can_view_call_action')
+          && this.responsiveService.isMobile();
+      },
       execute: () => this.executeMailto(`tel:${context.sendTo?.phone}`),
     };
   }
@@ -182,6 +205,7 @@ export interface FastAction {
   label?: string;
   labelKey?: string;
   icon: FastActionIcon;
+  alwaysOpenInPanel?: boolean;
   canDisplay(): Promise<boolean>;
   execute(): void;
 }

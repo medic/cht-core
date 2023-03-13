@@ -375,25 +375,29 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
         this.relevantReportForms = forms
           .map(xForm => {
-            const title = xForm.translation_key ?
-              this.translateService.instant(xForm.translation_key) : this.translateFromService.get(xForm.title);
-
             const isUnmuteForm = this.mutingTransition.isUnmuteForm(xForm.internalId, this.settings);
             const isMuted = this.contactMutedService.getMuted(this.selectedContact.doc);
-            const showUnmuteModal = isMuted && !isUnmuteForm;
-
             return {
               id: xForm._id,
               code: xForm.internalId,
-              title: title,
+              title: xForm.title,
+              titleKey: xForm.translation_key,
               icon: xForm.icon,
-              showUnmuteModal: showUnmuteModal,
+              showUnmuteModal: isMuted && !isUnmuteForm,
             };
+          });
+
+        this.updateFastActions();
+
+        const oldActionsBarForms = this.relevantReportForms
+          .map(form => {
+            const title = form.titleKey ?
+              this.translateService.instant(form.titleKey) : this.translateFromService.get(form.title);
+            return { ...form, title };
           })
           .sort((a, b) => a.title?.localeCompare(b.title));
 
-        this.updateFastActions();
-        this.globalActions.updateRightActionBar({ relevantForms: this.relevantReportForms });
+        this.globalActions.updateRightActionBar({ relevantForms: oldActionsBarForms });
       }
     );
     this.subscription.add(this.subscriptionSelectedContactForms);

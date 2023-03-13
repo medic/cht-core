@@ -59,11 +59,22 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
     this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
   }
 
+  /**
+   * Returns a Fast Action that can be executed right away without opening the dialog or bottom sheet.
+   */
+  private getFastExecutableAction(): FastAction {
+    if (this.fastActions.length === 1 && !this.fastActions[0]?.alwaysOpenInPanel) {
+      return this.fastActions[0];
+    }
+    return;
+  }
+
   async open() {
     this.closeAll();
 
-    if (this.fastActions.length === 1) {
-      this.executeAction(this.fastActions[0]);
+    const fastExecutableAction = this.getFastExecutableAction();
+    if (fastExecutableAction) {
+      this.executeAction(fastExecutableAction);
       return;
     }
 
@@ -99,12 +110,28 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   getTriggerButtonIcon() {
     const plusIcon = 'fa-plus';
 
-    if (this.fastActions.length === 1 && this.fastActions[0].icon.type === IconType.FONT_AWESOME) {
-      return this.fastActions[0].icon.name || plusIcon;
+    const fastExecutableAction = this.getFastExecutableAction();
+    if (fastExecutableAction?.icon?.type === IconType.FONT_AWESOME) {
+      return fastExecutableAction.icon.name || plusIcon;
     }
 
     return plusIcon;
   }
+
+  getActionLabel() {
+    const fastExecutableAction = this.getFastExecutableAction();
+    return fastExecutableAction?.label || fastExecutableAction?.labelKey;
+  }
+}
+
+/**
+ * FastActionConfig:
+ *   title - The title to display in the modal or bottom sheet header.
+ *   button - Define the trigger button type (FLAT or FAB) and the label.
+ */
+export interface FastActionConfig {
+  title?: string;
+  button?: FastActionButton;
 }
 
 export enum ButtonType {
@@ -115,9 +142,4 @@ export enum ButtonType {
 interface FastActionButton {
   type: ButtonType;
   label?: string;
-}
-
-export interface FastActionConfig {
-  button?: FastActionButton;
-  title?: string;
 }
