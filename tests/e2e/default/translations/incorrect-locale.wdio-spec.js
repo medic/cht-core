@@ -3,6 +3,7 @@ const commonElements = require('../../../page-objects/default/common/common.wdio
 const userSettingsElements = require('../../../page-objects/default/users/user-settings.wdio.page');
 const contactElements = require('../../../page-objects/default/contacts/contacts.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const placeFactory = require('../../../factories/cht/contacts/place');
 
 describe('Testing Incorrect locale', () => {
   const createLanguage = async () =>  await utils.addTranslations('hil', {
@@ -15,8 +16,8 @@ describe('Testing Incorrect locale', () => {
     'Reports': 'HilReports',
     'view.all':'View all'
   });
-
-  const createContact = async () => await utils.saveDoc({
+  
+  const contact = placeFactory.place().build({ 
     _id: 'district_hil_locale',
     name: 'hil district',
     type: 'district_hospital',
@@ -28,7 +29,7 @@ describe('Testing Incorrect locale', () => {
 
   before(async () => {
     await loginPage.cookieLogin();
-    await createContact();
+    await utils.saveDoc(contact);
     await createLanguage();
     await commonElements.closeReloadModal();
   });
