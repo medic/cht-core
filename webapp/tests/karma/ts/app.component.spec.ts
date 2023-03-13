@@ -43,6 +43,7 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { Selectors } from '@mm-selectors/index';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -80,6 +81,7 @@ describe('AppComponent', () => {
   let transitionsService;
   let chtScriptApiService;
   let analyticsModulesService;
+  let trainingCardsService;
   // End Services
 
   let globalActions;
@@ -161,6 +163,7 @@ describe('AppComponent', () => {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
+    trainingCardsService = { initTrainingCards: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
@@ -212,6 +215,7 @@ describe('AppComponent', () => {
           { provide: TransitionsService, useValue: transitionsService },
           { provide: CHTScriptApiService, useValue: chtScriptApiService },
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
+          { provide: TrainingCardsService, useValue: trainingCardsService },
         ]
       })
       .compileComponents();
@@ -269,7 +273,7 @@ describe('AppComponent', () => {
     expect(component.isSidebarFilterOpen).to.be.true;
   }));
 
-  it('should subscribe to xmlFormService when initing forms', async () => {
+  it('should subscribe to xmlFormService to retrieve forms and initialize training cards', async () => {
     const form1 = {
       code: '123',
       name: 'something',
@@ -297,7 +301,10 @@ describe('AppComponent', () => {
     expect(xmlFormsService.subscribe.callCount).to.equal(2);
 
     expect(xmlFormsService.subscribe.getCall(0).args[0]).to.equal('FormsFilter');
-    expect(xmlFormsService.subscribe.getCall(0).args[1]).to.deep.equal( { contactForms: false, ignoreContext: true });
+    expect(xmlFormsService.subscribe.getCall(0).args[1]).to.deep.equal({
+      reportForms: true,
+      ignoreContext: true,
+    });
     expect(xmlFormsService.subscribe.getCall(0).args[2]).to.be.a('Function');
     xmlFormsService.subscribe.getCall(0).args[2](false, [form2]);
     expect(globalActions.setForms.callCount).to.equal(1);
@@ -319,15 +326,16 @@ describe('AppComponent', () => {
     ]);
 
     expect(xmlFormsService.subscribe.getCall(1).args[0]).to.equal('AddReportMenu');
-    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal( { contactForms: false });
+    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal({ reportForms: true });
     expect(xmlFormsService.subscribe.getCall(1).args[2]).to.be.a('Function');
     xmlFormsService.subscribe.getCall(1).args[2](false, [form2]);
-    expect(component.nonContactForms).to.have.deep.members([{
+    expect(component.reportForms).to.have.deep.members([{
       id: 'form:456',
       code: '456',
       icon: 'icon',
       title: 'form2'
     }]);
+    expect(trainingCardsService.initTrainingCards.calledOnce).to.be.true;
   });
 
   it('should set privacy policy and start modals if privacy accepted', async () => {

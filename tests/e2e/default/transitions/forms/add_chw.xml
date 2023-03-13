@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+  <h:head>
+    <h:title>Add CHW</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/add_chw/chw_profile/name:label">
+            <value>Name</value>
+          </text>
+          <text id="/add_chw/chw_profile/parent/_id:label">
+            <value>Area</value>
+          </text>
+          <text id="/add_chw/chw_profile/parent/parent/_id:label">
+            <value>Health Facility ID</value>
+          </text>
+          <text id="/add_chw/chw_profile/phone:label">
+            <value>Phone Number</value>
+          </text>
+          <text id="/add_chw/chw_profile/type:label">
+            <value>Type</value>
+          </text>
+          <text id="/add_chw/inputs/contact/_id:label">
+            <value>What is the patient's name?</value>
+          </text>
+          <text id="/add_chw/inputs/contact/parent/_id:label">
+            <value>Household ID</value>
+          </text>
+          <text id="/add_chw/inputs/contact/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/add_chw/inputs/source:label">
+            <value>Source</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <add_chw id="add_chw" prefix="J1!add_chw!" delimiter="#" version="2023-02-13 16-56">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <contact>
+              <_id/>
+              <patient_id/>
+              <parent>
+                <_id/>
+              </parent>
+            </contact>
+          </inputs>
+          <area_id/>
+          <facility_id/>
+          <patient_uuid/>
+          <patient_id/>
+          <chw_profile db-doc="true">
+            <name/>
+            <phone/>
+            <role/>
+            <user_for_contact>
+              <create/>
+            </user_for_contact>
+            <parent>
+              <_id/>
+              <parent>
+                <_id/>
+              </parent>
+            </parent>
+            <type/>
+            <created_by_doc db-doc-ref="/new_person_user_create"/>
+          </chw_profile>
+          <child_doc db-doc-ref=" /add_chw/chw_profile "/>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </add_chw>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/add_chw/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/add_chw/inputs/source" type="string"/>
+      <bind nodeset="/add_chw/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/add_chw/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/add_chw/inputs/contact/parent/_id" type="string"/>
+      <bind nodeset="/add_chw/area_id" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/add_chw/facility_id" type="string" calculate="../inputs/contact/parent/_id"/>
+      <bind nodeset="/add_chw/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/add_chw/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/add_chw/chw_profile/name" type="string"/>
+      <bind nodeset="/add_chw/chw_profile/phone" type="string"/>
+      <bind nodeset="/add_chw/chw_profile/role" type="string" calculate="&quot;chw&quot;"/>
+      <bind nodeset="/add_chw/chw_profile/user_for_contact/create" type="string" calculate="true()"/>
+      <bind nodeset="/add_chw/chw_profile/parent/_id" type="string" calculate=" /add_chw/area_id "/>
+      <bind nodeset="/add_chw/chw_profile/parent/parent/_id" type="string" calculate=" /add_chw/facility_id "/>
+      <bind nodeset="/add_chw/chw_profile/type" type="string" calculate="&quot;person&quot;"/>
+      <bind nodeset="/add_chw/chw_profile/created_by_doc" type="string" calculate="."/>
+      <bind nodeset="/add_chw/child_doc" type="string" calculate=" /add_chw/chw_profile "/>
+      <bind nodeset="/add_chw/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/add_chw/inputs">
+      <group ref="/add_chw/inputs/contact">
+        <input appearance="db-object" ref="/add_chw/inputs/contact/_id">
+          <label ref="jr:itext('/add_chw/inputs/contact/_id:label')"/>
+        </input>
+        <group ref="/add_chw/inputs/contact/parent">
+          <input appearance="hidden" ref="/add_chw/inputs/contact/parent/_id">
+            <label ref="jr:itext('/add_chw/inputs/contact/parent/_id:label')"/>
+          </input>
+        </group>
+      </group>
+    </group>
+    <group appearance="field-list" ref="/add_chw/chw_profile">
+      <input ref="/add_chw/chw_profile/name">
+        <label ref="jr:itext('/add_chw/chw_profile/name:label')"/>
+      </input>
+      <input ref="/add_chw/chw_profile/phone">
+        <label ref="jr:itext('/add_chw/chw_profile/phone:label')"/>
+      </input>
+      <group ref="/add_chw/chw_profile/user_for_contact"/>
+      <group ref="/add_chw/chw_profile/parent">
+        <group ref="/add_chw/chw_profile/parent/parent"/>
+      </group>
+    </group>
+  </h:body>
+</h:html>

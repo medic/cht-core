@@ -184,15 +184,15 @@ describe('infodoc', () => {
         assert.deepEqual(result, [
           {
             _id: 'a-info', type: 'info', doc_id: 'a', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', transitions: {}
+            latest_replication_date: 'unknown', transitions: undefined
           },
           {
             _id: 'b-info', type: 'info', doc_id: 'b', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', transitions: {}
+            latest_replication_date: 'unknown', transitions: undefined
           },
           {
             _id: 'c-info', type: 'info', doc_id: 'c', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', transitions: {}
+            latest_replication_date: 'unknown', transitions: undefined
           }
         ]);
 
@@ -222,13 +222,13 @@ describe('infodoc', () => {
 
       return lib.bulkGet(changes).then(result => {
         assert.equal(result.length, 3);
-        assert.deepInclude(result[0], { _id: 'a-info', type: 'info', doc_id: 'a', transitions: {} });
+        assert.deepInclude(result[0], { _id: 'a-info', type: 'info', doc_id: 'a', transitions: undefined });
         assert(result[0].initial_replication_date >= now);
         assert(result[0].latest_replication_date >= now);
-        assert.deepInclude(result[1], { _id: 'b-info', type: 'info', doc_id: 'b', transitions: {} });
+        assert.deepInclude(result[1], { _id: 'b-info', type: 'info', doc_id: 'b', transitions: undefined });
         assert(result[1].initial_replication_date >= now);
         assert(result[1].latest_replication_date >= now);
-        assert.deepInclude(result[2], { _id: 'c-info', type: 'info', doc_id: 'c', transitions: {} });
+        assert.deepInclude(result[2], { _id: 'c-info', type: 'info', doc_id: 'c', transitions: undefined });
         assert(result[2].initial_replication_date >= now);
         assert(result[2].latest_replication_date >= now);
       });
@@ -264,17 +264,17 @@ describe('infodoc', () => {
 
       return lib.bulkGet(changes).then(result => {
         assert.deepEqual(result, [
-          { _id: 'a-info', _rev: 'a-r', doc_id: 'a', transitions: {}},
-          { _id: 'd-info', _rev: 'd-r', doc_id: 'd', transitions: {}},
-          { _id: 'b-info', doc_id: 'b', transitions: {}},
-          { _id: 'f-info', doc_id: 'f', transitions: {} },
+          { _id: 'a-info', _rev: 'a-r', doc_id: 'a', transitions: {} },
+          { _id: 'd-info', _rev: 'd-r', doc_id: 'd', transitions: {} },
+          { _id: 'b-info', doc_id: 'b', transitions: undefined },
+          { _id: 'f-info', doc_id: 'f', transitions: undefined },
           {
             _id: 'c-info', doc_id: 'c', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', type: 'info', transitions: {}
+            latest_replication_date: 'unknown', type: 'info', transitions: undefined
           },
           {
             _id: 'e-info', doc_id: 'e', initial_replication_date: 'unknown',
-            latest_replication_date: 'unknown', type: 'info', transitions: {}
+            latest_replication_date: 'unknown', type: 'info', transitions: undefined
           },
         ]);
 

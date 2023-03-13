@@ -27,9 +27,9 @@ describe('Delivery', () => {
     await commonPage.goToPeople(healthCenter._id);
 
     //Create Woman1
-    await contactPage.contactPageDefault.addPerson(
-      pregnantWoman1,
-      { dob: moment().subtract(25, 'years').format('YYYY-MM-DD') }
+    await contactPage.contactPageDefault.addPerson({
+      name: pregnantWoman1,
+      dob: moment().subtract(25, 'years').format('YYYY-MM-DD') }
     );
 
     // Submit new pregnancy for Woman1
@@ -44,9 +44,9 @@ describe('Delivery', () => {
 
     // Create Woman2
     await commonPage.goToPeople(healthCenter._id);
-    await contactPage.contactPageDefault.addPerson(
-      pregnantWoman2,
-      { dob: moment().subtract(25, 'years').format('YYYY-MM-DD') }
+    await contactPage.contactPageDefault.addPerson({
+      name: pregnantWoman2,
+      dob: moment().subtract(25, 'years').format('YYYY-MM-DD') }
     );
 
 

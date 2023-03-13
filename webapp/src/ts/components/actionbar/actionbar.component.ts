@@ -13,7 +13,7 @@ export const OLD_ACTION_BAR_PERMISSION:string = 'can_view_old_action_bar';
   templateUrl: './actionbar.component.html'
 })
 export class ActionbarComponent implements OnInit, OnDestroy {
-  @Input() nonContactForms = [];
+  @Input() reportForms = [];
   private subscription: Subscription = new Subscription();
   private globalActions;
   private reportsActions;

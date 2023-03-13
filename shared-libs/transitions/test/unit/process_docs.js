@@ -138,7 +138,7 @@ describe('processDocs', () => {
       chai.expect(db.medic.put.calledWith({ _id: '2', from: 2 })).to.equal(true);
       chai.expect(db.medic.put.calledWith({ _id: '3', from: 3 })).to.equal(true);
 
-      chai.expect(infodoc.saveTransitions.callCount).to.equal(1);
+      chai.expect(infodoc.saveTransitions.callCount).to.equal(3);
       chai.expect(infodoc.saveTransitions.calledWithMatch({ id: '1' })).to.equal(true);
     });
   });
@@ -213,7 +213,7 @@ describe('processDocs', () => {
       chai.expect(db.medic.put.calledWith({ _id: '3', from: 3 })).to.equal(true);
       chai.expect(db.medic.put.calledWith({ _id: '4', from: 4 })).to.equal(true);
 
-      chai.expect(infodoc.saveTransitions.callCount).to.equal(1);
+      chai.expect(infodoc.saveTransitions.callCount).to.equal(3);
       chai.expect(infodoc.saveTransitions.calledWithMatch({ id: '1' })).to.equal(true);
     });
   });

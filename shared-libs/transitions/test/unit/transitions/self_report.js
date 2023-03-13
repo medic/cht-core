@@ -29,11 +29,11 @@ describe('self_report transition', () => {
 
   describe('filter', () => {
     it('should not crash when no doc, no info and generally bad input', () => {
-      chai.expect(transition.filter()).to.equal(false);
-      chai.expect(transition.filter(false)).to.equal(false);
-      chai.expect(transition.filter([])).to.equal(false);
-      chai.expect(transition.filter({}, false)).to.equal(false);
-      chai.expect(transition.filter({ form: '' }, {})).to.equal(false);
+      chai.expect(transition.filter({})).to.equal(false);
+      chai.expect(transition.filter({ doc: false })).to.equal(false);
+      chai.expect(transition.filter({ doc: [] })).to.equal(false);
+      chai.expect(transition.filter({ doc: {}, info: false })).to.equal(false);
+      chai.expect(transition.filter({ doc: { form: '' }, info: {} })).to.equal(false);
     });
 
     it('should return false when doc is not valid', () => {
@@ -43,13 +43,13 @@ describe('self_report transition', () => {
       ]);
 
       const noFrom = { type: 'data_record', form: 'configured_form' };
-      chai.expect(transition.filter(noFrom)).to.equal(false);
+      chai.expect(transition.filter({ doc: noFrom })).to.equal(false);
 
       const notDataRecord = { type: 'contact', from: 'someone', form: 'configured_form' };
-      chai.expect(transition.filter(notDataRecord)).to.equal(false);
+      chai.expect(transition.filter({ doc: notDataRecord })).to.equal(false);
 
       const notConfiguredForm = { type: 'data_record', from: 'someone', form: 'other_form' };
-      chai.expect(transition.filter(notConfiguredForm)).to.equal(false);
+      chai.expect(transition.filter({ doc: notConfiguredForm })).to.equal(false);
 
       const alreadyHasPatientId = {
         type: 'data_record',
@@ -57,7 +57,7 @@ describe('self_report transition', () => {
         form: 'configured_form',
         fields: { patient_id: '12345'},
       };
-      chai.expect(transition.filter(alreadyHasPatientId)).to.equal(false);
+      chai.expect(transition.filter({ doc: alreadyHasPatientId })).to.equal(false);
 
       const alreadyHasPatientUuid = {
         type: 'data_record',
@@ -65,11 +65,11 @@ describe('self_report transition', () => {
         form: 'configured_form',
         fields: { patient_uuid: '12345' },
       };
-      chai.expect(transition.filter(alreadyHasPatientUuid)).to.equal(false);
+      chai.expect(transition.filter({ doc: alreadyHasPatientUuid })).to.equal(false);
 
       const transitionAlreadyRan = { type: 'data_record', from: 'a', form: 'configured_form2' };
       const info = { transitions: { self_report: { success: true } } };
-      chai.expect(transition.filter(transitionAlreadyRan, info)).to.equal(false);
+      chai.expect(transition.filter({ doc: transitionAlreadyRan, info })).to.equal(false);
     });
 
     it('should return true when it is a valid doc', () => {
@@ -80,11 +80,11 @@ describe('self_report transition', () => {
 
       const form1 = { type: 'data_record', from: 'alpha', form: 'form1' };
       const info = { transitions: {}};
-      chai.expect(transition.filter(form1, info)).to.equal(true);
+      chai.expect(transition.filter({ doc: form1, info })).to.equal(true);
 
       const form2 = { type: 'data_record', from: 'alpha', form: 'form2' };
       info.transitions.some_transition = {};
-      chai.expect(transition.filter(form2, info)).to.equal(true);
+      chai.expect(transition.filter({ doc: form2, info })).to.equal(true);
 
       chai.expect(config.get.callCount).to.equal(2);
       chai.expect(config.get.args[0]).to.deep.equal(['self_report']);

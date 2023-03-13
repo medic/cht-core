@@ -361,7 +361,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       {
         doc: this.selectedContact.doc,
         contactSummary: this.selectedContact.summary.context,
-        contactForms: false,
+        reportForms: true,
       },
       (error, forms) => {
         if (error) {

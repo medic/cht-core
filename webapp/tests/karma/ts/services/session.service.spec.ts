@@ -125,6 +125,28 @@ describe('Session service', () => {
     expect(cookieDelete.callCount).to.equal(0);
   });
 
+  describe('hasRole', () => {
+    it('should return false if user is not logged in', () => {
+      cookieGet.returns(JSON.stringify({}));
+      expect(service.hasRole('chw')).to.be.false;
+    });
+
+    it('should return false if user does not have the role', () => {
+      cookieGet.returns(JSON.stringify({ roles: [ 'nurse', 'chw-supervisor' ] }));
+      expect(service.hasRole('chw')).to.be.false;
+    });
+
+    it('should return false if user does not have any role', () => {
+      cookieGet.returns(JSON.stringify({ roles: [] }));
+      expect(service.hasRole('chw')).to.be.false;
+    });
+
+    it('should return true if user has the role', () => {
+      cookieGet.returns(JSON.stringify({ roles: [ 'nurse', 'chw-supervisor', 'chw' ] }));
+      expect(service.hasRole('chw')).to.be.true;
+    });
+  });
+
   describe('isAdmin function', () => {
 
     it('returns false if not logged in', () => {

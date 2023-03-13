@@ -39,6 +39,7 @@ export const Actions = {
   updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
   setUserFacilityId:createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
+  setTrainingCardFormId:createSingleValueAction('SET_TRAINING_CARD_FORM_ID', 'trainingCardFormId'),
 };
 
 export class GlobalActions {
@@ -242,5 +243,9 @@ export class GlobalActions {
 
   setUserFacilityId(userFacilityId) {
     return this.store.dispatch(Actions.setUserFacilityId(userFacilityId));
+  }
+
+  setTrainingCardFormId(trainingCard) {
+    return this.store.dispatch(Actions.setTrainingCardFormId(trainingCard));
   }
 }

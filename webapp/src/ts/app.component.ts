@@ -45,6 +45,7 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 
@@ -90,7 +91,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   canLogOut;
   replicationStatus;
   androidAppVersion;
-  nonContactForms;
+  reportForms;
   unreadCount = {};
   useOldActionBar = false;
 
@@ -130,6 +131,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private ngZone:NgZone,
     private chtScriptApiService: CHTScriptApiService,
     private analyticsModulesService: AnalyticsModulesService,
+    private trainingCardsService: TrainingCardsService,
     private matIconRegistry: MatIconRegistry,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -490,7 +492,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         });
         this.xmlFormsService.subscribe(
           'FormsFilter',
-          { contactForms: false, ignoreContext: true },
+          { reportForms: true, ignoreContext: true },
           (err, xForms) => {
             if (err) {
               return console.error('Error fetching form definitions', err);
@@ -508,20 +510,27 @@ export class AppComponent implements OnInit, AfterViewInit {
             this.globalActions.setForms(forms);
           }
         );
+
         // ToDo: remove when deprecating Action Bar Component. This subscribe gets the forms for the Add Report action.
-        this.xmlFormsService.subscribe('AddReportMenu', { contactForms: false }, (err, xForms) => {
-          if (err) {
-            return console.error('Error fetching form definitions', err);
-          }
-          this.nonContactForms = xForms
-            .map((xForm) => ({
-              id: xForm._id,
-              code: xForm.internalId,
-              icon: xForm.icon,
-              title: translateTitle(xForm.translation_key, xForm.title),
-            }))
-            .sort((a, b) => a.title - b.title);
-        });
+        this.xmlFormsService.subscribe(
+          'AddReportMenu',
+          { reportForms: true },
+          (err, xForms) => {
+            if (err) {
+              return console.error('Error fetching form definitions', err);
+            }
+            this.reportForms = xForms
+              .map((xForm) => ({
+                id: xForm._id,
+                code: xForm.internalId,
+                icon: xForm.icon,
+                title: translateTitle(xForm.translation_key, xForm.title),
+              }))
+              .sort((a, b) => a.title - b.title);
+          });
+
+        // Get forms for training cards and display the cards if necessary
+        this.trainingCardsService.initTrainingCards();
       })
       .catch(err => console.error('Failed to retrieve forms', err));
   }
