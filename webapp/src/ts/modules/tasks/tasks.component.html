@@ -39,22 +39,23 @@
       </ul>
 
       <div *ngIf="error" class="alert alert-danger" role="alert">
-        <span>{{'Error fetching tasks' | translate}}</span>
-        <a class="btn btn-link" (click)="refreshTaskList()">{{'Reload' | translate}}</a>
-        <a class="btn btn-link" (click)="errorDetailsCollapsed = !errorDetailsCollapsed">{{'Details' | translate}}</a>
-        <dl *ngIf="!errorDetailsCollapsed">
-          <dd><pre><code>{{errorDetails}}</code></pre></dd>
-          <dt>{{'User Name' | translate}}</dt>
-          <dd>{{userCtx.name}}</dd>
-          <dt>{{'url' | translate}}</dt>
-          <dd>{{url}}</dd>
-          <dt>{{'date.time.title' | translate}}</dt>
-          <dd>{{currentDate | simpleDateTime}}</dd>
-          <dt>{{'replication.last.success.to' | translate}}</dt>
-          <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">
-            {{replicationStatus.lastSuccessTo | simpleDateTime}}
-          </dd>
-        </dl>
+        <div class="error-details">
+          <span>{{'Error fetching tasks' | translate}}</span>
+          <a (click)="refreshTaskList()">{{'Reload' | translate}}</a>
+          <dl>
+            <dt>{{'User Name' | translate}}</dt>
+            <dd>{{userCtx.name}}</dd>
+            <dt>{{'url' | translate}}</dt>
+            <dd>{{url}}</dd>
+            <dt>{{'date.time.title' | translate}}</dt>
+            <dd>{{currentDate | simpleDateTime}}</dd>
+            <dt>{{'sync.last_success' | translate}}</dt>
+            <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">
+              {{replicationStatus.lastSuccessTo | simpleDateTime}}
+            </dd>
+          </dl>
+        </div>
+        <pre><code>{{errorDetails}}</code></pre>
       </div>
       <p class="loading-status" *ngIf="!error && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
       <p class="loading-status" *ngIf="!error && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
