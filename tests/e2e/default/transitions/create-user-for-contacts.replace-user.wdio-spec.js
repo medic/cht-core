@@ -1,6 +1,6 @@
-/* global window */
 const fs = require('fs');
 const utils = require('../../../utils');
+const browserUtils = require('../../../utils/browser');
 const sentinelUtils = require('../../../utils/sentinel');
 const messagesUtils = require('../../../utils/messages');
 const personFactory = require('../../../factories/cht/contacts/person');
@@ -100,54 +100,6 @@ const populateReplaceUserForm = async (formTitle) => {
   await replaceUserForm.selectContactDobUnknown();
   await replaceUserForm.selectContactAgeYears(22);
   await genericForm.nextPage();
-};
-
-const saveLocalDocFromBrowser = async (doc) => {
-  const { err, result } = await browser.executeAsync((doc, callback) => {
-    const db = window.CHTCore.DB.get();
-    return db
-      .put(doc)
-      .then(result => callback({ result }))
-      .catch(err => callback({ err }));
-  }, doc);
-
-  if (err) {
-    throw err;
-  }
-
-  return result;
-};
-
-const getLocalDocFromBrowser = async (docId) => {
-  const { err, result } = await browser.executeAsync((docId, callback) => {
-    const db = window.CHTCore.DB.get();
-    return db
-      .get(docId, { conflicts: true })
-      .then(result => callback({ result }))
-      .catch(err => callback({ err }));
-  }, docId);
-
-  if (err) {
-    throw err;
-  }
-
-  return result;
-};
-
-const getManyLocalDocsFromBrowser = async (docIds) => {
-  const { err, result } = await browser.executeAsync((docIds, callback) => {
-    const db = window.CHTCore.DB.get();
-    return db
-      .allDocs({ keys: docIds, include_docs: true })
-      .then(response => callback({ result: response.rows.map(row => row.doc) }))
-      .catch(err => callback({ err }));
-  }, docIds);
-
-  if (err) {
-    throw err;
-  }
-
-  return result;
 };
 
 const submitBasicForm = async () => {
@@ -273,22 +225,22 @@ describe('Create user for contacts', () => {
         const basicReportId1 = await submitBasicForm();
 
         // Replace user report created
-        const replaceUserReport = await getLocalDocFromBrowser(reportId);
+        const replaceUserReport = await browserUtils.getDoc(reportId);
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId } = replaceUserReport.fields;
         // Basic form reports re-parented
-        const basicReports = await getManyLocalDocsFromBrowser([basicReportId0, basicReportId1]);
+        const basicReports = await browserUtils.getDocs([basicReportId0, basicReportId1]);
         basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
         // Existing report not re-parented
-        const existingBasicReport = await getLocalDocFromBrowser(existingBasicReportId);
+        const existingBasicReport = await browserUtils.getDoc(existingBasicReportId);
         expect(existingBasicReport.contact._id).to.equal(originalContactId);
         // Original contact updated to PENDING
-        const originalContact = await getLocalDocFromBrowser(originalContactId);
+        const originalContact = await browserUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId, 'PENDING');
-        const newContact = await getLocalDocFromBrowser(replacementContactId);
+        const newContact = await browserUtils.getDoc(replacementContactId);
         assertNewContact(newContact, ORIGINAL_USER, originalContact);
         // Set as primary contact
-        const district = await getLocalDocFromBrowser(DISTRICT._id);
+        const district = await browserUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId);
 
         await browser.throttle('online');
@@ -454,19 +406,19 @@ describe('Create user for contacts', () => {
         const basicReportId1 = await submitBasicForm();
 
         // Replace user report created
-        const replaceUserReport = await getLocalDocFromBrowser(reportId);
+        const replaceUserReport = await browserUtils.getDoc(reportId);
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId0 } = replaceUserReport.fields;
         // Basic form reports re-parented
-        const basicReports = await getManyLocalDocsFromBrowser([basicReportId0, basicReportId1]);
+        const basicReports = await browserUtils.getDocs([basicReportId0, basicReportId1]);
         basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId0));
         // Original contact updated to PENDING
-        let originalContact = await getLocalDocFromBrowser(originalContactId);
+        let originalContact = await browserUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId0, 'PENDING');
-        const newContact = await getLocalDocFromBrowser(replacementContactId0);
+        const newContact = await browserUtils.getDoc(replacementContactId0);
         assertNewContact(newContact, ORIGINAL_USER, originalContact);
         // Set as primary contact
-        let district = await getLocalDocFromBrowser(DISTRICT._id);
+        let district = await browserUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId0);
 
         // Submit another replace user form
@@ -481,19 +433,19 @@ describe('Create user for contacts', () => {
         const basicReportId2 = await submitBasicForm();
         const basicReportId3 = await submitBasicForm();
 
-        const replaceUserReport1 = await getLocalDocFromBrowser(reportId1);
+        const replaceUserReport1 = await browserUtils.getDoc(reportId1);
         const { replacement_contact_id: replacementContactId1 } = replaceUserReport1.fields;
         assertReplaceUserReport(replaceUserReport, originalContactId);
         // Basic form reports re-parented
-        const basicReports1 = await getManyLocalDocsFromBrowser([basicReportId2, basicReportId3]);
+        const basicReports1 = await browserUtils.getDocs([basicReportId2, basicReportId3]);
         basicReports1.forEach((report) => expect(report.contact._id).to.equal(replacementContactId1));
         // Original contact updated to have new replacement contact id
-        originalContact = await getLocalDocFromBrowser(originalContactId);
+        originalContact = await browserUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId1, 'PENDING');
-        const newContact1 = await getLocalDocFromBrowser(replacementContactId1);
+        const newContact1 = await browserUtils.getDoc(replacementContactId1);
         assertNewContact(newContact1, ORIGINAL_USER, originalContact);
         // Set as primary contact
-        district = await getLocalDocFromBrowser(DISTRICT._id);
+        district = await browserUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId1);
 
         await browser.throttle('online');
@@ -625,23 +577,23 @@ describe('Create user for contacts', () => {
         const reportId = await reportsPage.getLastSubmittedReportId();
 
         // Replace user report created
-        const replaceUserReport = await getLocalDocFromBrowser(reportId);
+        const replaceUserReport = await browserUtils.getDoc(reportId);
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const replacementContactId = replaceUserReport.fields.replacement_contact_id;
         // Original contact updated to PENDING
-        let originalContact = await getLocalDocFromBrowser(originalContactId);
+        let originalContact = await browserUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId, 'PENDING');
-        const newContact = await getLocalDocFromBrowser(replacementContactId);
+        const newContact = await browserUtils.getDoc(replacementContactId);
         assertNewContact(newContact, ORIGINAL_USER, originalContact);
         // Set as primary contact
-        const district = await getLocalDocFromBrowser(DISTRICT._id);
+        const district = await browserUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId);
 
         // Submit several forms to be re-parented
         const basicReportId0 = await submitBasicForm();
         const basicReportId1 = await submitBasicForm();
         // Basic form reports re-parented
-        const basicReports = await getManyLocalDocsFromBrowser([basicReportId0, basicReportId1]);
+        const basicReports = await browserUtils.getDocs([basicReportId0, basicReportId1]);
         basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
 
         // Logout before syncing
@@ -703,7 +655,7 @@ describe('Create user for contacts', () => {
         await commonPage.goToPeople(originalContactId);
 
         // Local version of contact should be updated and have conflict
-        const localOriginalContact = await waitForConflicts(() => getLocalDocFromBrowser(originalContactId));
+        const localOriginalContact = await waitForConflicts(() => browserUtils.getDoc(originalContactId));
         originalContact = await waitForConflicts(() => utils.getDoc(originalContactId, null, '?conflicts=true'));
         expect(localOriginalContact).to.deep.equal(originalContact);
         // Other user replace data exists on the contact
@@ -775,26 +727,23 @@ describe('Create user for contacts', () => {
         const basicReportId1 = await submitBasicForm();
 
         // Replace user report created
-        const replaceUserReport = await getLocalDocFromBrowser(reportId);
+        const replaceUserReport = await browserUtils.getDoc(reportId);
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId } = replaceUserReport.fields;
         // Basic form reports re-parented
-        const basicReports = await getManyLocalDocsFromBrowser([basicReportId0, basicReportId1]);
+        const basicReports = await browserUtils.getDocs([basicReportId0, basicReportId1]);
         basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
         // Original contact updated to PENDING
-        const originalContact = await getLocalDocFromBrowser(originalContactId);
+        const originalContact = await browserUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId, 'PENDING');
-        const newContact = await getLocalDocFromBrowser(replacementContactId);
+        const newContact = await browserUtils.getDoc(replacementContactId);
         assertNewContact(newContact, ORIGINAL_USER, originalContact);
         // Set as primary contact
-        const district = await getLocalDocFromBrowser(DISTRICT._id);
+        const district = await browserUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId);
 
         // Remove phone number from contact to force the transition to fail
-        await saveLocalDocFromBrowser({
-          ...newContact,
-          phone: undefined,
-        });
+        await browserUtils.updateDoc(newContact._id, { ...newContact, phone: undefined }, true);
 
         await browser.throttle('online');
         await commonPage.syncWithoutWaitForSuccess();
@@ -828,12 +777,12 @@ describe('Create user for contacts', () => {
         await loginPage.login(ORIGINAL_USER);
         await commonPage.waitForPageLoaded();
         await browser.throttle('offline');
-        const finalOriginalContactLocal = await getLocalDocFromBrowser(originalContactId);
+        const finalOriginalContactLocal = await browserUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(finalOriginalContactLocal, ORIGINAL_USER.username, replacementContactId, 'ERROR');
         await commonPage.goToReports();
         const basicReportId2 = await submitBasicForm();
         const basicReportId3 = await submitBasicForm();
-        const subsequentBasicReports = await getManyLocalDocsFromBrowser([basicReportId2, basicReportId3]);
+        const subsequentBasicReports = await browserUtils.getDocs([basicReportId2, basicReportId3]);
         subsequentBasicReports.forEach((report) => expect(report.contact._id).to.equal(originalContactId));
       });
     });

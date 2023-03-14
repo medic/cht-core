@@ -218,6 +218,11 @@ const sync = async (expectReload) => {
 const syncWithoutWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
+};
+
+const syncAndWaitForFailure = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
   await openHamburgerMenu();
   await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
 };
@@ -350,4 +355,5 @@ module.exports = {
   moreOptionsMenu,
   refresh,
   syncWithoutWaitForSuccess,
+  syncAndWaitForFailure,
 };

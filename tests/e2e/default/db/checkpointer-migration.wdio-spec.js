@@ -149,11 +149,11 @@ describe('Storing checkpointer on target migration', () => {
     await expect(browserUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith({ status: 404 });
 
     await browser.throttle('offline');
-    await commonPage.syncWithoutWaitForSuccess();
+    await commonPage.syncAndWaitForFailure();
     await commonPage.refresh();
-    await commonPage.syncWithoutWaitForSuccess();
+    await commonPage.syncAndWaitForFailure();
     await commonPage.refresh();
-    await commonPage.syncWithoutWaitForSuccess();
+    await commonPage.syncAndWaitForFailure();
 
     await expect(browserUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith({ status: 404 });
 
