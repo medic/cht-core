@@ -38,6 +38,7 @@ export class TargetCheckpointerMigration extends Migration {
   }
 
   async run() {
+    console.info('Running target checkpointer migration');
     const localDoc = await this.getLocalCheckpointerDoc();
     if (!localDoc) {
       return false;
