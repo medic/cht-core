@@ -24,6 +24,7 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { ContactMutedService } from '@mm-services/contact-muted.service';
 import { MutingTransition } from '@mm-services/transitions/muting.transition';
+import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 
 describe('Contacts content component', () => {
   let component: ContactsContentComponent;
@@ -44,6 +45,7 @@ describe('Contacts content component', () => {
   let contactTypesService;
   let responsiveService;
   let contactMutedService;
+  let fastActionButtonService;
   let mutingTransition;
   let settings;
 
@@ -83,6 +85,7 @@ describe('Contacts content component', () => {
     };
     mutingTransition = { isUnmuteForm: sinon.stub() };
     contactMutedService = { getMuted: sinon.stub() };
+    fastActionButtonService = { getContactRightSideActions: sinon.stub() };
 
     selectedContact = {
       doc: {},
@@ -131,6 +134,7 @@ describe('Contacts content component', () => {
           { provide: ResponsiveService, useValue: responsiveService },
           { provide: ContactMutedService, useValue: contactMutedService },
           { provide: MutingTransition, useValue: mutingTransition },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
         ]
       })
       .compileComponents()
@@ -540,6 +544,7 @@ describe('Contacts content component', () => {
             icon: 'b',
             showUnmuteModal: false,
             title: 'Type 2',
+            titleKey: undefined,
           },
           {
             id: 'form:test_report_type3',
@@ -547,6 +552,7 @@ describe('Contacts content component', () => {
             icon: 'a',
             showUnmuteModal: true,
             title: 'Type 3',
+            titleKey: undefined,
           }
         ]
       });
@@ -600,6 +606,7 @@ describe('Contacts content component', () => {
             icon: 'b',
             showUnmuteModal: false,
             title: 'Type 2',
+            titleKey: undefined,
           },
           {
             id: 'form:test_report_type3',
@@ -607,6 +614,7 @@ describe('Contacts content component', () => {
             icon: 'a',
             showUnmuteModal: false,
             title: 'Type 3',
+            titleKey: undefined,
           }
         ]
       });
@@ -639,6 +647,7 @@ describe('Contacts content component', () => {
             icon: 'b',
             showUnmuteModal: undefined,
             title: 'Type 2',
+            titleKey: undefined,
           },
           {
             id: 'form:test_report_type3',
@@ -646,6 +655,7 @@ describe('Contacts content component', () => {
             icon: 'a',
             showUnmuteModal: undefined,
             title: 'Type 3',
+            titleKey: undefined,
           }
         ]
       });

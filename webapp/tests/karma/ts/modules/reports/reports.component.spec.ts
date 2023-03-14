@@ -33,6 +33,8 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -47,6 +49,8 @@ describe('Reports Component', () => {
   let responsiveService;
   let modalService;
   let userContactService;
+  let fastActionButtonService;
+  let xmlFormsService;
   let store;
   let route;
   let router;
@@ -96,6 +100,11 @@ describe('Reports Component', () => {
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };
+    fastActionButtonService = {
+      getReportLeftSideActions: sinon.stub(),
+      getButtonTypeForContentList: sinon.stub(),
+    };
+    xmlFormsService = { subscribe: sinon.stub() };
     router = { navigate: sinon.stub() };
     route = { snapshot: { queryParams: { query:'' } } };
 
@@ -137,6 +146,8 @@ describe('Reports Component', () => {
           { provide: DatePipe, useValue: datePipe },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
         ]
       })
       .compileComponents()

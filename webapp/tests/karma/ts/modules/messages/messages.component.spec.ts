@@ -16,6 +16,7 @@ import { TourService } from '@mm-services/tour.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { AuthService } from '@mm-services/auth.service';
+import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -25,6 +26,7 @@ describe('Messages Component', () => {
   let exportService;
   let modalService;
   let userContactService;
+  let fastActionButtonService;
   let authService;
 
   const userContactGrandparent = { _id: 'grandparent' };
@@ -46,6 +48,10 @@ describe('Messages Component', () => {
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
+    };
+    fastActionButtonService = {
+      getMessageActions: sinon.stub(),
+      getButtonTypeForContentList: sinon.stub(),
     };
     authService = { online: sinon.stub().returns(false) };
     const tourServiceMock = {
@@ -79,6 +85,7 @@ describe('Messages Component', () => {
           { provide: NavigationService, useValue: {} },
           { provide: UserContactService, useValue: userContactService },
           { provide: AuthService, useValue: authService },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
         ]
       })
       .compileComponents()

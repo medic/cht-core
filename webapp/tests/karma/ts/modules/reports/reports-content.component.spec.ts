@@ -21,7 +21,8 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TitlePipe } from '@mm-pipes/message.pipe';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
-
+import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { DbService } from '@mm-services/db.service';
 
 describe('Reports Content Component', () => {
   let component: ReportsContentComponent;
@@ -33,6 +34,9 @@ describe('Reports Content Component', () => {
   let messageStateService;
   let router;
   let responsiveService;
+  let fastActionButtonService;
+  let medicDb;
+  let dbService;
   let modalService;
 
   beforeEach(waitForAsync(() => {
@@ -48,6 +52,9 @@ describe('Reports Content Component', () => {
     router = { navigate: sinon.stub() };
     messageStateService = { any: sinon.stub(), set: sinon.stub().resolves() };
     responsiveService = { isMobile: sinon.stub() };
+    fastActionButtonService = { getReportRightSideActions: sinon.stub() };
+    medicDb = { get: sinon.stub() };
+    dbService = { get: sinon.stub().returns(medicDb) };
     modalService = { show: sinon.stub().resolves() };
 
     return TestBed
@@ -74,6 +81,8 @@ describe('Reports Content Component', () => {
           { provide: ResponsiveService, useValue: responsiveService },
           { provide: ModalService, useValue: modalService },
           { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: DbService, useValue: dbService },
         ]
       })
       .compileComponents()
@@ -104,7 +113,7 @@ describe('Reports Content Component', () => {
 
     expect(changesService.subscribe.callCount).to.equal(1);
     expect(activatedRoute.params.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(4);
+    expect(spySubscriptionsAdd.callCount).to.equal(5);
   });
 
   describe('Route subscription', () => {
