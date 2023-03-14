@@ -127,6 +127,22 @@ const getDocs = async (docIds) => {
   return result;
 };
 
+const info = async () => {
+  const { err, result } = await browser.executeAsync((callback) => {
+    const db = window.CHTCore.DB.get();
+    return db
+      .info()
+      .then(response => callback({ result: response }))
+      .catch(err => callback({ err }));
+  });
+
+  if (err) {
+    throw err;
+  }
+
+  return result;
+};
+
 module.exports = {
   feedBackDocs,
   getCookies,
@@ -135,4 +151,5 @@ module.exports = {
   getDoc,
   getDocs,
   deleteDoc,
+  info,
 };

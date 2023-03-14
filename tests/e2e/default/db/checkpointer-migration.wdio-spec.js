@@ -125,7 +125,7 @@ describe('Storing checkpointer on target migration', () => {
     await utils.deleteDoc(replicateToDoc._id);
     await browserUtils.deleteDoc(MIGRATION_FLAG_ID);
 
-    const captureLogs = await utils.collectApiLogs(/_revs_diff/);
+    const captureLogs = await utils.collectApiLogs(/medic\/_revs_diff/);
 
     await browser.throttle('online');
     await commonPage.refresh();
@@ -139,6 +139,7 @@ describe('Storing checkpointer on target migration', () => {
     expect(replicateToDocBrowser).excludingEvery('_rev').to.deep.equal(replicateToDocServer);
 
     const revDiffCalls = await captureLogs();
+    console.log(JSON.stringify(revDiffCalls, null, 2));
     expect(revDiffCalls.length).to.equal(0);
   });
 
@@ -161,7 +162,50 @@ describe('Storing checkpointer on target migration', () => {
     await commonPage.sync();
 
     await browserUtils.getDoc(MIGRATION_FLAG_ID);
+  });
 
+  it('should re-upload docs when the server rolls back', async () => {
+    const checkpointerDocs = await loginAndGetCheckpointerDocs(user);
+    const replicateToDoc = checkpointerDocs.find(doc => typeof doc.last_seq === 'number');
+
+    await browserUtils.getDoc(MIGRATION_FLAG_ID);
+    const localInfo = await browserUtils.info();
+
+    const newContact = personFactory.build({
+      name: Faker.name.firstName(),
+      parent: { _id: user.place },
+    });
+    await browserUtils.createDoc(newContact);
+    await commonPage.sync();
+
+    const serverContact = await utils.db.get(newContact._id);
+
+    await browser.throttle('offline');
+
+    // delete last history from the checkpointer doc
+    const serverCheckpointer = await utils.db.get(replicateToDoc._id);
+    const historyIdx = serverCheckpointer.history.findIndex(el => el.last_seq <= localInfo.update_seq);
+    serverCheckpointer.history.splice(0, historyIdx);
+    serverCheckpointer.last_seq = serverCheckpointer.history[0].last_seq;
+    serverCheckpointer.session_id = serverCheckpointer.history[0].session_id;
+    await utils.db.put(serverCheckpointer);
+    // purge document
+    await utils.requestOnTestDb({
+      path: '/_purge',
+      method: 'POST',
+      body: {
+        [serverContact._id]: [serverContact._rev],
+      }
+    });
+
+    const captureLogs = await utils.collectApiLogs(/medic\/_bulk_docs/, /medic\/_revs_diff/);
+
+    await browser.throttle('online');
+    await commonPage.sync();
+    const replicatonCalls = await captureLogs();
+    expect(replicatonCalls.length).to.equal(6);
+
+    await utils.db.get(serverContact._id);
   });
 });
 
