@@ -198,7 +198,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
           code: xForm.internalId,
           icon: xForm.icon,
           title: xForm.title,
-          titleKey: xForm.translation_key
+          titleKey: xForm.translation_key,
         }));
 
         this.fastActionList = await this.fastActionButtonService.getReportLeftSideActions({ xmlReportForms });

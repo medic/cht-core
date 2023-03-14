@@ -28,7 +28,9 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   selectMode = false;
   useOldActionBar = false;
   iconTypeResource = IconType.RESOURCE;
+  iconTypeFontAwesome = IconType.FONT_AWESOME;
   buttonTypeFlat = ButtonType.FLAT;
+  buttonTypeFab = ButtonType.FAB;
 
   constructor(
     private store: Store,
@@ -111,8 +113,8 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
     const plusIcon = 'fa-plus';
 
     const fastExecutableAction = this.getFastExecutableAction();
-    if (fastExecutableAction?.icon?.type === IconType.FONT_AWESOME) {
-      return fastExecutableAction.icon.name || plusIcon;
+    if (fastExecutableAction?.icon?.type === IconType.FONT_AWESOME && fastExecutableAction?.icon?.name) {
+      return fastExecutableAction.icon.name;
     }
 
     return plusIcon;

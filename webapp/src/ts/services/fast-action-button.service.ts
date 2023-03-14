@@ -5,7 +5,6 @@ import { Store } from '@ngrx/store';
 
 import { AuthService } from '@mm-services/auth.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
-import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 import { TranslateService } from '@mm-services/translate.service';
@@ -16,7 +15,6 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 })
 export class FastActionButtonService {
 
-  private globalActions: GlobalActions;
   private reportsActions: ReportsActions;
 
   constructor(
@@ -28,7 +26,6 @@ export class FastActionButtonService {
     private translateFromService: TranslateFromService,
     @Inject(DOCUMENT) private document: Document,
   ) {
-    this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
   }
 
@@ -90,6 +87,7 @@ export class FastActionButtonService {
         execute: () => {
           const route = ['/contacts', 'add', contactType.id];
           if (userFacilityId) {
+            // Inserting facility's ID between "/contacts" and "add" router segments.
             route.splice(1, 0, userFacilityId);
           }
           this.router.navigate(route, { queryParams: { from: 'list' } });
@@ -159,11 +157,13 @@ export class FastActionButtonService {
 
   getReportLeftSideActions(context: ReportActionsContext): Promise<FastAction[]> {
     const actions = this.getReportFormActions(context.xmlReportForms);
+
     return this.filterActions(actions);
   }
 
   getContactLeftSideActions(context: ContactActionsContext): Promise<FastAction[]> {
     const actions = this.getContactFormActions(context.childContactTypes, context.userFacilityId);
+
     return this.filterActions(actions);
   }
 
@@ -174,6 +174,7 @@ export class FastActionButtonService {
       ...this.getContactFormActions(context.childContactTypes, context.userFacilityId),
       ...this.getReportFormActions(context.xmlReportForms, context.callbackContactReportModal),
     ];
+
     return this.filterActions(actions);
   }
 

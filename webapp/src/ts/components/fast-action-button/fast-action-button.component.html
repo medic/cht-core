@@ -4,7 +4,7 @@
     mat-fab
     color="primary"
     class="fast-action-fab-button"
-    *ngIf="config?.button?.type !== buttonTypeFlat"
+    *ngIf="config?.button?.type === buttonTypeFab"
     (click)="open()">
     <mat-icon [fontIcon]="getTriggerButtonIcon()" color="white"></mat-icon>
   </button>
@@ -31,13 +31,11 @@
           class="fast-action-item"
           [attr.test-id]="action.id"
           (click)="executeAction(action)">
-
           <div class="fast-action-item-icon" *ngIf="action.icon?.name">
-            <mat-icon *ngIf="action.icon.type !== iconTypeResource" [fontIcon]="action.icon.name"></mat-icon>
+            <mat-icon *ngIf="action.icon.type === iconTypeFontAwesome" [fontIcon]="action.icon.name"></mat-icon>
             <span *ngIf="action.icon.type === iconTypeResource" [innerHTML]="action.icon.name | resourceIcon" class="fast-action-resource-icon"></span>
           </div>
           <p class="fast-action-item-label">{{ action.label || (action.labelKey | translate) }}</p>
-
         </a>
       </mat-list-item>
     </mat-list>

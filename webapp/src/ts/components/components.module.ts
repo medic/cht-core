@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 import { MatDialogModule } from '@angular/material/dialog';
-import { PortalModule } from '@angular/cdk/portal';
+import { MatListModule } from '@angular/material/list';
 
 import { HeaderComponent } from '@mm-components/header/header.component';
 import { PipesModule } from '@mm-pipes/pipes.module';
@@ -45,8 +45,7 @@ import {
   AnalyticsTargetsDetailsComponent
 } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
-import { MatListModule } from '@angular/material/list';
-import { PanelHeaderComponent } from './panel-header/panel-header.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 @NgModule({
   declarations: [
@@ -89,7 +88,6 @@ import { PanelHeaderComponent } from './panel-header/panel-header.component';
     MatBottomSheetModule,
     MatDialogModule,
     MatListModule,
-    PortalModule,
     BsDropdownModule,
   ],
   exports: [
