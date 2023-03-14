@@ -80,15 +80,11 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
     }
 
     if (this.responsiveService.isMobile()) {
-      this.bottomSheetRef = this.matBottomSheet.open(this.contentWrapper, { disableClose: true });
+      this.bottomSheetRef = this.matBottomSheet.open(this.contentWrapper);
       return;
     }
 
-    this.dialogRef = this.matDialog.open(this.contentWrapper, {
-      disableClose: true,
-      minWidth: 300,
-      minHeight: 150,
-    });
+    this.dialogRef = this.matDialog.open(this.contentWrapper, { minWidth: 300, minHeight: 150 });
   }
 
   closeAll() {

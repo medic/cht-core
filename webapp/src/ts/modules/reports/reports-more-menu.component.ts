@@ -152,12 +152,11 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
     this.closeVerifyReportComponents();
 
     if (this.responsiveService.isMobile()) {
-      this.bottomSheetRef = this.matBottomSheet.open(this.verifyReportWrapper, { disableClose: true });
+      this.bottomSheetRef = this.matBottomSheet.open(this.verifyReportWrapper);
       return;
     }
 
     this.dialogRef = this.matDialog.open(this.verifyReportWrapper, {
-      disableClose: true,
       autoFocus: false,
       minWidth: 300,
       minHeight: 150,
