@@ -30,7 +30,6 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   iconTypeResource = IconType.RESOURCE;
   iconTypeFontAwesome = IconType.FONT_AWESOME;
   buttonTypeFlat = ButtonType.FLAT;
-  buttonTypeFab = ButtonType.FAB;
 
   constructor(
     private store: Store,
