@@ -4,7 +4,7 @@
     mat-fab
     color="primary"
     class="fast-action-fab-button"
-    *ngIf="config?.button?.type === buttonTypeFab"
+    *ngIf="!config?.button?.type || config?.button?.type === buttonTypeFab"
     (click)="open()">
     <mat-icon [fontIcon]="getTriggerButtonIcon()" color="white"></mat-icon>
   </button>
