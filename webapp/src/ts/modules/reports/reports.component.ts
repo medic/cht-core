@@ -185,21 +185,24 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private subscribeToXmlFormsService() {
-    this.xmlFormsService.subscribe('AddReportMenu', { contactForms: false }, async (error, xForms) => {
-      if (error) {
-        return console.error('Error fetching form definitions', error);
-      }
+    this.xmlFormsService.subscribe(
+      'AddReportMenu',
+      { reportForms: true },
+      async (error, xForms) => {
+        if (error) {
+          return console.error('Error fetching form definitions', error);
+        }
 
-      const xmlReportForms = xForms.map((xForm) => ({
-        id: xForm._id,
-        code: xForm.internalId,
-        icon: xForm.icon,
-        title: xForm.title,
-        titleKey: xForm.translation_key
-      }));
+        const xmlReportForms = xForms.map((xForm) => ({
+          id: xForm._id,
+          code: xForm.internalId,
+          icon: xForm.icon,
+          title: xForm.title,
+          titleKey: xForm.translation_key
+        }));
 
-      this.fastActionList = await this.fastActionButtonService.getReportLeftSideActions({ xmlReportForms });
-    });
+        this.fastActionList = await this.fastActionButtonService.getReportLeftSideActions({ xmlReportForms });
+      });
   }
 
   private watchReportList() {
