@@ -97,13 +97,12 @@ describe('Pregnancy registration', () => {
 
   });
 
-  it.skip('Should verify that all tasks related with the high risk pregnancy were created', async () => {
+  it('Should verify that all tasks related with the high risk pregnancy were created', async () => {
     const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Pregnancy home visit'];
 
     await commonPage.goToTasks();
     const tasks = await tasksPage.getTasks();    
-    expect(tasks.length).to.equal(3); //TODO: investigate why 'Pregnancy home visit' task is not being generated 
-
+    expect(tasks.length).to.equal(3); 
     for (const task of tasks) {
       const taskInfo = await tasksPage.getTaskInfo(task);
       expect(taskInfo.contactName).to.equal(pregnantWoman.name);
