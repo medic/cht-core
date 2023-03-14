@@ -29,7 +29,7 @@ describe('update clinic', () => {
       type: 'data_record',
       from: phone,
     };
-    assert(transition.filter(doc));
+    assert(transition.filter({ doc, info: {} }));
   });
 
   it('filter out docs which already have a clinic', () => {
@@ -40,7 +40,7 @@ describe('update clinic', () => {
         parent: { name: 'some clinic' },
       },
     };
-    assert(!transition.filter(doc));
+    assert(!transition.filter({ doc }));
   });
 
   it('should not update clinic by phone', () => {

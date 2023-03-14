@@ -44,7 +44,7 @@ module.exports = {
       throw new Error(`Configuration error. Config must have a '${CONFIG_NAME}.${MARK_PROPERTY_NAME}' array defined.`);
     }
   },
-  filter: (doc, info = {}) => {
+  filter: ({ doc, info }) => {
     return Boolean(
       doc &&
       doc.form &&

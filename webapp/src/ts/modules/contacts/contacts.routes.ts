@@ -33,28 +33,28 @@ export const routes: Routes = [
       {
         path: 'add/:type',
         component: ContactsEditComponent,
-        data: { permissions: ['can_edit'] },
+        data: { permissions: ['can_edit'], hideTraining: true },
         canActivate: [AppRouteGuardProvider],
         canDeactivate: [ContactRouteGuardProvider],
       },
       {
         path: ':parent_id/add/:type',
         component: ContactsEditComponent,
-        data: { permissions: ['can_edit'] },
+        data: { permissions: ['can_edit'], hideTraining: true },
         canActivate: [AppRouteGuardProvider],
         canDeactivate: [ContactRouteGuardProvider],
       },
       {
         path: ':id/edit',
         component: ContactsEditComponent,
-        data: { permissions: ['can_edit'] },
+        data: { permissions: ['can_edit'], hideTraining: true },
         canActivate: [AppRouteGuardProvider],
         canDeactivate: [ContactRouteGuardProvider],
       },
       {
         path: ':id/report/:formId',
         component: ContactsReportComponent,
-        data: { permissions: ['can_edit'] },
+        data: { permissions: ['can_edit'], hideTraining: true },
         canActivate: [AppRouteGuardProvider],
         canDeactivate: [ContactRouteGuardProvider],
       }

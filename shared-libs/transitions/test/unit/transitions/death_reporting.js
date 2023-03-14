@@ -224,18 +224,18 @@ describe('death_reporting', () => {
 
   describe('filter', () => {
     it('empty doc returns false', () => {
-      transition.filter({}).should.equal(false);
+      transition.filter({ doc: {} }).should.equal(false);
     });
 
     it('no type returns false', () => {
       config.get.returns({ mark_deceased_forms: ['x', 'y'] });
-      transition.filter({ form: 'x' }).should.equal(false);
-      transition.filter({ from: 'x' }).should.equal(false);
+      transition.filter({ doc: { form: 'x' } }).should.equal(false);
+      transition.filter({ doc: { from: 'x' }}).should.equal(false);
     });
 
     it('no patient returns false', () => {
       config.get.returns({ mark_deceased_forms: ['x', 'y'] });
-      transition.filter({ form: 'x', type: 'data_record' }).should.equal(false);
+      transition.filter({ doc: { form: 'x', type: 'data_record' }}).should.equal(false);
     });
 
     it('invalid submission returns false', () => {
@@ -245,7 +245,17 @@ describe('death_reporting', () => {
       });
 
       sinon.stub(utils, 'isValidSubmission').returns(false);
-      transition.filter({ type: 'data_record', form: 'z', fields: { }, patient: {} }).should.equal(false);
+      transition
+        .filter({
+          doc: {
+            type: 'data_record',
+            form: 'z',
+            fields: {},
+            patient: {}
+          },
+          info: {}
+        })
+        .should.equal(false);
       utils.isValidSubmission.callCount.should.equal(1);
       utils.isValidSubmission.args[0]
         .should.deep.equal([{ type: 'data_record', form: 'z', fields: { }, patient: { } }]);
@@ -258,9 +268,27 @@ describe('death_reporting', () => {
       });
 
       sinon.stub(utils, 'isValidSubmission').returns(true);
-      transition.filter({ type: 'data_record', form: 'z', fields: { patient_id: '12' }, patient: { patient_id: '12' } })
+      transition
+        .filter({
+          doc: {
+            type: 'data_record',
+            form: 'z',
+            fields: { patient_id: '12' },
+            patient: { patient_id: '12' }
+          },
+          info: {}
+        })
         .should.equal(true);
-      transition.filter({ type: 'data_record', form: 't', fields: { patient_id: '12' }, patient: { patient_id: '12' } })
+      transition
+        .filter({
+          doc: {
+            type: 'data_record',
+            form: 't',
+            fields: { patient_id: '12' },
+            patient: { patient_id: '12' }
+          },
+          info: {}
+        })
         .should.equal(true);
       utils.isValidSubmission.callCount.should.equal(2);
       utils.isValidSubmission.args[0].should.deep.equal([

@@ -83,7 +83,7 @@ const getContact = doc => {
  */
 module.exports = {
   name: NAME,
-  filter: (doc, info = {}) => {
+  filter: ({ doc, info }) => {
     return Boolean(
       doc &&
       doc.type === 'data_record' &&
