@@ -1,8 +1,10 @@
 import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { NavigationStart, Router } from '@angular/router';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, IconType } from '@mm-services/fast-action-button.service';
@@ -21,9 +23,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   @Input() fastActions: FastAction[];
   @ViewChild('contentWrapper') contentWrapper;
 
-  private subscription: Subscription = new Subscription();
-  private bottomSheetRef: MatBottomSheetRef;
-  private dialogRef: MatDialogRef<any>;
+  private subscriptions: Subscription = new Subscription();
 
   selectMode = false;
   useOldActionBar = false;
@@ -33,6 +33,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
 
   constructor(
     private store: Store,
+    private router: Router,
     private authService: AuthService,
     private sessionService: SessionService,
     private responsiveService: ResponsiveService,
@@ -43,17 +44,25 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.checkPermissions();
     this.subscribeToStore();
+    this.subscribeToRouter();
   }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.subscriptions.unsubscribe();
+  }
+
+  private subscribeToRouter() {
+    const routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationStart))
+      .subscribe(() => this.closeAll());
+    this.subscriptions.add(routerSubscription);
   }
 
   private subscribeToStore() {
     const selectModeSubscription = this.store
       .select(Selectors.getSelectMode)
       .subscribe(selectMode => this.selectMode = selectMode);
-    this.subscription.add(selectModeSubscription);
+    this.subscriptions.add(selectModeSubscription);
   }
 
   private async checkPermissions() {
@@ -80,16 +89,20 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
     }
 
     if (this.responsiveService.isMobile()) {
-      this.bottomSheetRef = this.matBottomSheet.open(this.contentWrapper);
+      this.matBottomSheet.open(this.contentWrapper);
       return;
     }
 
-    this.dialogRef = this.matDialog.open(this.contentWrapper, { minWidth: 300, minHeight: 150 });
+    this.matDialog.open(this.contentWrapper, {
+      autoFocus: false,
+      minWidth: 300,
+      minHeight: 150,
+    });
   }
 
   closeAll() {
-    this.bottomSheetRef?.dismiss();
-    this.dialogRef?.close();
+    this.matBottomSheet.dismiss();
+    this.matDialog.closeAll();
   }
 
   executeAction(action: FastAction) {

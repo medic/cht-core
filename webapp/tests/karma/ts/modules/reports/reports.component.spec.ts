@@ -105,8 +105,13 @@ describe('Reports Component', () => {
       getButtonTypeForContentList: sinon.stub(),
     };
     xmlFormsService = { subscribe: sinon.stub() };
-    router = { navigate: sinon.stub() };
     route = { snapshot: { queryParams: { query:'' } } };
+    router = {
+      navigate: sinon.stub(),
+      events: {
+        pipe: sinon.stub().returns({ subscribe: sinon.stub() }),
+      },
+    };
 
     return TestBed
       .configureTestingModule({

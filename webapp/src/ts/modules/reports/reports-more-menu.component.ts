@@ -1,9 +1,10 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { Data } from '@angular/router';
+import { Data, NavigationStart, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
-import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 
 import { Selectors } from '@mm-selectors/index';
 import { AuthService } from '@mm-services/auth.service';
@@ -12,6 +13,7 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { SessionService } from '@mm-services/session.service';
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 import { ReportsActions } from '@mm-actions/reports';
+
 
 @Component({
   selector: 'mm-reports-more-menu',
@@ -33,8 +35,6 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   private loadingContent: boolean;
   private snapshotData: Data | undefined;
   private isOnlineOnly: boolean;
-  private bottomSheetRef: MatBottomSheetRef;
-  private dialogRef: MatDialogRef<any>;
 
   subscription: Subscription = new Subscription();
   reportsList;
@@ -45,6 +45,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
 
   constructor(
     private store: Store,
+    private router: Router,
     private authService: AuthService,
     private responsiveService: ResponsiveService,
     private sessionService: SessionService,
@@ -58,6 +59,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscribeToStore();
     this.checkPermissions();
+    this.subscribeToRouter();
     this.isOnlineOnly = this.authService.online(true);
   }
 
@@ -92,6 +94,13 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
       this.processingReportVerification = loadingSubActionBar;
     });
     this.subscription.add(storeSubscription);
+  }
+
+  private subscribeToRouter() {
+    const routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationStart))
+      .subscribe(() => this.closeVerifyReportComponents());
+    this.subscription.add(routerSubscription);
   }
 
   private async checkPermissions() {
@@ -152,11 +161,11 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
     this.closeVerifyReportComponents();
 
     if (this.responsiveService.isMobile()) {
-      this.bottomSheetRef = this.matBottomSheet.open(this.verifyReportWrapper);
+      this.matBottomSheet.open(this.verifyReportWrapper);
       return;
     }
 
-    this.dialogRef = this.matDialog.open(this.verifyReportWrapper, {
+    this.matDialog.open(this.verifyReportWrapper, {
       autoFocus: false,
       minWidth: 300,
       minHeight: 150,
@@ -164,7 +173,7 @@ export class ReportsMoreMenuComponent implements OnInit, OnDestroy {
   }
 
   closeVerifyReportComponents() {
-    this.bottomSheetRef?.dismiss();
-    this.dialogRef?.close();
+    this.matBottomSheet.dismiss();
+    this.matDialog.closeAll();
   }
 }
