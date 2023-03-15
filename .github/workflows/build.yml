@@ -101,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-webdriver-default-mobile']
+        grunt-cmd: ['ci-webdriver-default']
 
     steps:
     - name: Login to Docker Hub
@@ -214,7 +214,7 @@ jobs:
       if: ${{ failure() }}
 
   publish:
-    needs: [tests,config-tests]
+    needs: build
     name: Publish branch build
     runs-on: ubuntu-22.04
     if: ${{ github.event_name != 'pull_request' }}

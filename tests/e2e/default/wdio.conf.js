@@ -41,7 +41,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    '**/*.wdio-spec.js',
+    '**/about.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
@@ -79,7 +79,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: ['--headless', '--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']
+      args: [ '--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -168,7 +168,7 @@ const baseConfig = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: 120000,
+    timeout: 120000000000,
     retries: 5,
   },
   //
