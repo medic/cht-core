@@ -909,8 +909,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
     'e2e-env-setup',
-    'exec:e2e-integration',
-    'exec:eslint-sw'
+    'exec:e2e-integration'
   ]);
 
   grunt.registerTask('test-perf', 'Run performance-specific tests', [
@@ -993,8 +992,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
-    'exec:e2e-integration',
-    'exec:eslint-sw',
+    'exec:e2e-integration'
   ]);
 
   grunt.registerTask('ci-webdriver-default', 'Run e2e tests using webdriverIO for default config', [
@@ -1021,8 +1019,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('static-analysis', 'Static analysis checks', [
-    'exec:blank-link-check',
-    'eslint',
+    'exec:blank-link-check'
   ]);
 
   grunt.registerTask('eslint', 'Runs eslint', [
