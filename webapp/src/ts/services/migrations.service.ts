@@ -13,8 +13,7 @@ export class MigrationsService {
   ) {
   }
 
-  private runningMigrationsPromise;
-  private runningMigrations = false;
+  private runningMigrations;
   private migrations = [
     this.targetCheckpointerMigration
   ];
@@ -30,12 +29,11 @@ export class MigrationsService {
 
   async runMigrations () {
     if (this.runningMigrations) {
-      return await this.runningMigrationsPromise;
+      return await this.runningMigrations;
     }
 
-    this.runningMigrations = true;
-    this.runningMigrationsPromise = this.run();
+    this.runningMigrations = this.run();
 
-    return await this.runningMigrationsPromise;
+    return await this.runningMigrations;
   }
 }

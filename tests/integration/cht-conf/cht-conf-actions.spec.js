@@ -31,7 +31,7 @@ describe('cht-conf actions tests', () => {
 
   after(async () => await utils.revertSettings(true));
 
-  it('should execute  upload-app-settings', async () => {
+  it('should execute upload-app-settings', async () => {
     const result = await runCommand('upload-app-settings', configPath);
     expect(result).to.contain(`INFO Settings updated successfully`);
     const settings = await utils.getDoc('settings');
@@ -48,7 +48,7 @@ describe('cht-conf actions tests', () => {
     });
   }
 
-  it('should upload  branding', async () => {
+  it('should upload branding', async () => {
     const branding = await utils.getDoc('branding').catch(error => {
       if(error){
         console.log(error);
@@ -57,7 +57,7 @@ describe('cht-conf actions tests', () => {
     expect(branding.title).to.equal('Medic');
   });
 
-  it('should upload  forms', async () => {
+  it('should upload forms', async () => {
     const forms = await utils.request({
       path: '/api/v1/forms',
       method: 'GET'
@@ -89,7 +89,7 @@ describe('cht-conf actions tests', () => {
     ]);
   });
 
-  it('should upload  resources', async () => {
+  it('should upload resources', async () => {
     const resources = await utils.getDoc('resources').catch(error => {
       if(error){
         console.log(error);

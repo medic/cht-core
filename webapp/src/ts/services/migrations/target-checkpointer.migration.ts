@@ -15,7 +15,7 @@ export class TargetCheckpointerMigration extends Migration {
     super();
   }
 
-  private async getCheckpointerId () {
+  private async getCheckpointerId() {
     const source = this.dbService.get();
     const target = this.dbService.get({ remote: true });
     return await generateReplicationId(source, target, {});

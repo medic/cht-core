@@ -322,7 +322,9 @@ export class DBSyncService {
     try {
       await this.migrationsService.runMigrations();
     } catch (err) {
-      console.error('Error while running DB migrations', err);
+      if (this.knownOnlineState) {
+        console.error('Error while running DB migrations', err);
+      }
       this.sendUpdate({ state: SyncStatus.Unknown });
       throw err;
     }
