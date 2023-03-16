@@ -6,5 +6,5 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 })
 export class PanelHeaderComponent {
   @Input() title;
-  @Output() close: EventEmitter<any> = new EventEmitter();
+  @Output() onClose: EventEmitter<any> = new EventEmitter();
 }

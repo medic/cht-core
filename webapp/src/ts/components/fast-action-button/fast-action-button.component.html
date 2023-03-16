@@ -23,7 +23,7 @@
 <ng-template #contentWrapper>
   <section class="fast-action-content-wrapper">
 
-    <mm-panel-header [title]="config?.title || 'fast_action_button.title'" (close)="closeAll()"></mm-panel-header>
+    <mm-panel-header [title]="config?.title || 'fast_action_button.title'" (onClose)="closeAll()"></mm-panel-header>
 
     <mat-list class="fast-action-body">
       <mat-list-item *ngFor="let action of fastActions; trackBy: trackById">

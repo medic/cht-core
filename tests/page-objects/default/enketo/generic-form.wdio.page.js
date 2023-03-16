@@ -2,7 +2,6 @@ const utils = require('../../../utils');
 const commonPage = require('../common/common.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
 
-const REVIEW_MENU = '[test-id="report-review-menu"]';
 const submitButton = () => $('.enketo .submit');
 const cancelButton = () => $('.enketo .cancel');
 const nextButton = () => $('button.btn.btn-primary.next-page');
