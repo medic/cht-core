@@ -2,9 +2,8 @@
 
 set -e
 
-SSL_CERT_FILE_PATH=${SSL_CERT_FILE_PATH:-"/etc/nginx/private/cert.pem"}
-SSL_KEY_FILE_PATH=${SSL_KEY_FILE_PATH:-"/etc/nginx/private/key.pem"}
-
+SSL_CERT_FILE_PATH=/etc/nginx/private/${SSL_CERT_FILE_PATH:-"cert.pem"}
+SSL_KEY_FILE_PATH=/etc/nginx/private/${SSL_KEY_FILE_PATH:-"key.pem"}
 
 welcome_message(){
   echo "Running SSL certificate checks">&2
@@ -94,10 +93,10 @@ generate_certificate_auto(){
   fi
 }
 
-ensure_own_cert_exits(){
+ensure_own_cert_exists(){
 
   if [ ! -f $SSL_CERT_FILE_PATH -a ! -f $SSL_KEY_FILE_PATH ]; then
-  echo "Please provide add your certificate ($SSL_CERT_FILE_PATH) and key ($SSL_KEY_FILE_PATH) in the /etc/nginx/private/ directory"
+  echo "Certificate files not found - please save your cert to '$SSL_CERT_FILE_PATH' and key to '$SSL_KEY_FILE_PATH'"
   exit 1
   fi
 
@@ -111,7 +110,7 @@ select_ssl_certificate_mode(){
   case $CERTIFICATE_MODE in
 
     OWN_CERT)
-      ensure_own_cert_exits
+      ensure_own_cert_exists
       ;;
 
     AUTO_GENERATE)
