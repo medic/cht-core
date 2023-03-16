@@ -60,7 +60,7 @@ const sendMessage = async (message, recipient, entrySelector, entryText) => {
 
 const searchSelect = async (recipient, entrySelector, entryText) => {
   await recipientField().setValue(recipient);
-  //Selector needs review, not sure how it works :S
+  //Selector needs review, not sure how it works :S test
   const recipientOption = $(`${selectOptions} ${entrySelector}`).$(`//*[text()='${entryText}']`);
   await recipientOption.waitForDisplayed();
   await (await recipientOption).click();
