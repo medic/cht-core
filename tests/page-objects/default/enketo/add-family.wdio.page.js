@@ -76,24 +76,24 @@ const reportCheck =  async (
 
   // Primary Caregiver
   expect((await savedParameters[2].getText()).replace(/[\n]/g, '')).to.equal(
-    'report.any.clinic.name' + caregiverName
+    'report.add-family.clinic.name' + caregiverName
   );
   // Source of water
   expect((await savedParameters[6].getText()).replace(/[\n]/g, '')).to.equal(
-    'report.any.clinic.household_survey.source_of_drinking_water' +
+    'report.add-family.clinic.household_survey.source_of_drinking_water' +
       sourceOfWater
   );
   // Mosquito net
   expect((await savedParameters[7].getText()).replace(/[\n]/g, '')).to.equal(
-    'report.any.clinic.household_survey.mosquito_nets' + mosquitoNet
+    'report.add-family.clinic.household_survey.mosquito_nets' + mosquitoNet
   );
   // Hygeinic toilet
   expect((await savedParameters[8].getText()).replace(/[\n]/g, '')).to.equal(
-    'report.any.clinic.household_survey.hygeinic_toilet' + hygeinicToilet
+    'report.add-family.clinic.household_survey.hygeinic_toilet' + hygeinicToilet
   );
   // Planning method
   expect((await savedParameters[9].getText()).replace(/[\n]/g, '')).to.equal(
-    'report.any.clinic.household_survey.family_planning_method' +
+    'report.add-family.clinic.household_survey.family_planning_method' +
       planningMethod
   );
 };

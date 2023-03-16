@@ -28,7 +28,7 @@ describe('Create new lineage structure', () => {
   });
 
   it('Create new health center', async () => {
-    await contactPage.addPlace({ placeName: centerName, contactName: centerContact });
+    await contactPage.addPlace({ placeName: centerName, contactName: centerContact }, false);
     await sentinelUtils.waitForSentinel(); // prevent stale element references
     chai.expect(await contactPage.getPrimaryContactName()).to.equal(centerContact);
   });

@@ -17,39 +17,16 @@ const nextPage = async (numberOfPages = 1) => {
 
 const fieldByName = (formId, name) => $(`#report-form [name="/${formId}/${name}"]`);
 
-const isReportReviewMenuOpen = async () => {
-  return await (await $(REVIEW_MENU)).isExisting();
-};
-
-const openReportReviewMenu = async () => {
-  if (await isReportReviewMenuOpen()) {
-    return;
-  }
-  const reviewButton = $('[test-id="report-review-button"]');
-  await (await reviewButton).waitForDisplayed();
-  await (await reviewButton).click();
-};
-
 const invalidateReport = async () => {
-  await openReportReviewMenu();
-  await (await $(`${REVIEW_MENU} .verify-error`)).click();
+  await reportsPage.openReviewAndSelectOption('invalid-option');
   await commonPage.waitForPageLoaded();
-  // Opening again the menu because it was automatically closed after selecting a menu option.
-  await openReportReviewMenu();
-  const reportInvalidMessage = $(`${REVIEW_MENU} .verify-error.active`);
-  await (await reportInvalidMessage).waitForDisplayed();
-  expect((await reportInvalidMessage.getText()).trim()).to.equal('Has errors');
+  expect(await reportsPage.getSelectedReviewOption()).to.equal('Has errors');
 };
 
 const validateReport = async () => {
-  await openReportReviewMenu();
-  await (await $(`${REVIEW_MENU} .verify-valid`)).click();
+  await reportsPage.openReviewAndSelectOption('valid-option');
   await commonPage.waitForPageLoaded();
-  // Opening again the menu because it was automatically closed after selecting a menu option.
-  await openReportReviewMenu();
-  const reportValidMessage = $(`${REVIEW_MENU} .verify-valid.active`);
-  await (await reportValidMessage).waitForDisplayed();
-  expect((await reportValidMessage.getText()).trim()).to.equal('Correct');
+  expect(await reportsPage.getSelectedReviewOption()).to.equal('Correct');
 };
 
 const selectContact = async (inputName, contactName) => {

@@ -1,4 +1,4 @@
-const commonElements = require('../common/common.wdio.page');
+const commonPage = require('../common/common.wdio.page');
 
 // LHS Elements
 const messageByIndex = index => $(`#message-list li:nth-child(${index})`);
@@ -30,25 +30,18 @@ const messageContentText = (messageContentElement) => messageContentElement.$('.
 const messageDetailStatus = async () => (await messageContentIndex()).$('.data .state.received');
 
 const messageText = text => $('#send-message textarea').setValue(text);
-const sendMessage = () => $('.general-actions .send-message');
-const sendMessageModal = () => $('#send-message');
 const sendMessageModalSubmit = () => $('a.btn.submit:not(.ng-hide)');
 const messageRecipientSelect = () => $('#send-message input.select2-search__field');
 const contactNameSelector = () => $('.sender .name');
 const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-messages"]');
 
-const openSendMessageModal = async () => {
-  await (await sendMessage()).waitForClickable();
-  await (await sendMessage()).click();
-  await (await sendMessageModal()).waitForDisplayed();
-};
 const submitMessage = async () => {
   await (await sendMessageModalSubmit()).waitForClickable();
   await (await sendMessageModalSubmit()).click();
 };
 
 const sendMessageToPhone = async (message, phone) => {
-  await openSendMessageModal();
+  await commonPage.clickFastActionFlat({ waitForList: false });
   await messageText(message);
   await searchSelect(phone);
   await submitMessage();
@@ -61,7 +54,7 @@ const searchSelect = async (searchText) => {
 };
 
 const exportMessages = async () => {
-  await commonElements.openMoreOptionsMenu();
+  await commonPage.openMoreOptionsMenu();
   await (await exportButton()).waitForClickable();
   await (await exportButton()).click();
 };
@@ -79,7 +72,6 @@ module.exports = {
   messageContentIndex,
   messageDetailStatus,
   messagesList,
-  openSendMessageModal,
   messageText,
   submitMessage,
   searchSelect,

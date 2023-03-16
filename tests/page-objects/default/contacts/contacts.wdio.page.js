@@ -5,6 +5,7 @@ const commonElements = require('../common/common.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 const utils = require('../../../utils');
 const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
@@ -20,7 +21,6 @@ const contactList = () => $('#contacts-list');
 const newPlaceName = () => $('[name="/data/init/custom_place_name"]');
 const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
-const actionResourceIcon = (name) => $(`.actions.dropup .mm-icon .resource-icon[title="medic-${name}"]`);
 const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const sexField = (type, value) => $(`[data-name="/data/${type}/sex"][value="${value}"]`);
 const roleField = (type, role) => $(`span[data-itext-id="/data/${type}/role/${role}:label"].active`);
@@ -48,17 +48,9 @@ const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="
 const editContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]');
 const deleteContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
-const leftAddPlace = () => $('.dropup a.create-place');
-const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
-const rightAddPlaces = () => $('span[test-id="rhs_add_contact"] p[test-key="Add place"]');
-const rightAddPersons = () => $('span[test-id="rhs_add_contact"] p[test-key="Add person"]');
-const rightAddPerson = (create_key) => $(`span[test-id="rhs_add_contact"] p[test-key="${create_key}"]`);
 const contactCards = () => $$('.card.children');
 const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
 const childrenCards = () => $$('.right-pane .card.children');
-const newActionContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-stack');
-const forms = () => $$('.action-container .detail-actions .actions.dropup .open .dropdown-menu li');
-const formTitle = () => $('#form-title');
 const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
 const contactInfoName = () => $('h2[test-id="contact-name"]');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
@@ -147,10 +139,14 @@ const addPlace = async ({
   role: roleValue = 'chw',
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
-} = {}) => {
-  const dashedType = typeValue.replace('_', '-');
-  await (await actionResourceIcon(dashedType)).waitForDisplayed();
-  await (await actionResourceIcon(dashedType)).click();
+} = {},
+rightSideAction = true,
+) => {
+  if (rightSideAction) {
+    await commonPage.clickFastActionFAB({ actionId: typeValue });
+  } else {
+    await commonPage.clickFastActionFlat({ waitForList: false });
+  }
   await (await newPrimaryContactButton()).waitForDisplayed();
   await (await newPrimaryContactButton()).click();
   await (await newPrimaryContactName()).addValue(contactNameValue);
@@ -165,6 +161,7 @@ const addPlace = async ({
   await (await notes(typeValue)).addValue(notesValue);
   await (await genericForm.submitButton()).waitForClickable();
   await (await genericForm.submitButton()).click();
+  const dashedType = typeValue.replace('_', '-');
   await waitForContactLoaded(dashedType);
 };
 
@@ -178,8 +175,7 @@ const addPerson = async ({
   notes: notesValue = 'Some test notes',
 } = {}, waitForSentinel = true) => {
   const type = 'person';
-  await (await actionResourceIcon(type)).waitForDisplayed();
-  await (await actionResourceIcon(type)).click();
+  await commonPage.clickFastActionFAB({ actionId: type });
   await (await personName()).addValue(nameValue);
   await (await dateOfBirthField()).addValue(dobValue);
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
@@ -288,41 +284,10 @@ const editDistrict = async (districtName, editedName) => {
   await submitForm();
 };
 
-const createNewAction = async (formName) => {
-  await (await newActionContactButton()).waitForDisplayed();
-  await (await newActionContactButton()).waitForClickable();
-  await (await newActionContactButton()).click();
-  await openForm(formName);
-};
-
-const openForm = async (name) => {
-  const parent = await newActionContactButton().parentElement();
-  await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
-
-  for (const form of await forms()) {
-    if (await form.getText() === name) {
-      await form.click();
-      await (await formTitle()).waitForDisplayed();
-      return;
-    }
-  }
-  throw new Error(`Form with name: "${name}" not found`);
-};
-
-const openFormWithWarning = async (formName) => {
-  await (await newActionContactButton()).waitForClickable();
-  await (await newActionContactButton()).click();
-  const parent = await newActionContactButton().parentElement();
-  await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
-
-  for (const form of await forms()) {
-    if (await form.getText() === formName) {
-      await form.click();
-      await (await modalPage.body()).waitForExist();
-      return modalPage.getModalDetails();
-    }
-  }
-  throw new Error(`Form with name: "${formName}" not found`);
+const openFormWithWarning = async (formId) => {
+  await commonPage.clickFastActionFAB({ actionId: formId });
+  await (await modalPage.body()).waitForExist();
+  return modalPage.getModalDetails();
 };
 
 const openReport = async () => {
@@ -418,22 +383,15 @@ module.exports = {
   getAllRHSTaskNames,
   rhsTaskListElement,
   deletePerson,
-  leftAddPlace,
-  rightAddPlace,
-  rightAddPlaces,
-  rightAddPersons,
-  rightAddPerson,
   allContactsList,
   editDistrict,
   childrenCards,
-  createNewAction,
   submitForm,
   openReport,
   getContactCardTitle,
   getContactInfoName,
   getContactMedicID,
   getContactDeceasedStatus,
-  actionResourceIcon,
   newPrimaryContactButton,
   newPrimaryContactName,
   writeNamePlace,

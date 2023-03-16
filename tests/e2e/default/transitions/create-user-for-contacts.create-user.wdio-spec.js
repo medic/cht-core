@@ -192,7 +192,7 @@ describe('Create user when adding contact', () => {
     await cookieLogin();
     await commonPage.goToPeople(district._id);
 
-    await contactsPage.createNewAction(addChwAppForm.title);
+    await commonPage.openFastActionReport(addChwAppForm.internalId);
     await submitAddChwForm({ name: CONTACT_NAME });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
 
@@ -204,7 +204,7 @@ describe('Create user when adding contact', () => {
     await cookieLogin();
     await commonPage.goToPeople(district._id);
 
-    await contactsPage.createNewAction(addChwAppForm.title);
+    await commonPage.openFastActionReport(addChwAppForm.internalId);
     // Add contact with invalid phone number
     await submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);
@@ -216,7 +216,7 @@ describe('Create user when adding contact', () => {
     await utils.updateSettings(settings, 'sentinel');
     await cookieLogin();
     await commonPage.goToPeople(district._id);
-    await contactsPage.createNewAction(addChwAppForm.title);
+    await commonPage.openFastActionReport(addChwAppForm.internalId);
     // Add contact with invalid phone number
     await submitAddChwForm({ name: CONTACT_NAME, phone: '+40755' });
     await contactsPage.selectLHSRowByText(CONTACT_NAME);

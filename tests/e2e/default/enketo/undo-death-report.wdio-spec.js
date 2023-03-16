@@ -23,13 +23,13 @@ describe('Submit an undo death report', () => {
     await loginPage.login(offlineUser);
 
     await commonPage.goToPeople(person._id);
-    await contactPage.createNewAction('Death report');
+    await commonPage.openFastActionReport('death_report');
     await deathReportForm.submitDeathReport();
     await commonPage.sync(true);
   });
 
   it('Should submit an undo death report', async () => {
-    await contactPage.createNewAction('Undo death report');
+    await commonPage.openFastActionReport('undo_death_report');
     await undoDeathReportForm.setConfirmUndoDeathOption();
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

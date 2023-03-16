@@ -97,7 +97,7 @@ describe('Contact Delivery Form', () => {
   });
 
   it('Complete a delivery: Process a delivery with a live child and facility birth.', async () => {
-    await contactPage.createNewAction('Delivery');
+    await commonPage.openFastActionReport('delivery');
     await deliveryForm.selectDeliveryConditionWomanOutcome('alive_well');
     await genericForm.nextPage();
     await deliveryForm.selectDeliveryPosnatalDangerSignsFever(NO);
