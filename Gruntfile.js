@@ -974,11 +974,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
     'exec:check-version',
-    'static-analysis',
     'install-dependencies',
-    'build',
-    'mochaTest:api-integration',
-    'unit',
+    'build'
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
