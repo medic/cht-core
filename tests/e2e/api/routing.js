@@ -747,7 +747,6 @@ describe('routing', () => {
     it('logs the user in', () => {
 
       const username = 'offline';
-      const now = moment.utc();
       const userCtxCookie = {
         name: username,
         roles: [ 'chw' ]
