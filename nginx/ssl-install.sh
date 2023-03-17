@@ -129,9 +129,15 @@ select_ssl_certificate_mode(){
 
 }
 
+update_nginx_conf(){
+  # Place environment variables into config
+  envsubst < "/etc/nginx/nginx.conf"
+}
+
 main (){
   welcome_message
   select_ssl_certificate_mode
+  update_nginx_conf
   echo "Launching Nginx" >&2
 }
 
