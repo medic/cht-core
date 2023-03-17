@@ -123,7 +123,6 @@ describe('provider-wireup integration tests', () => {
           rulesStateStore: {
             contactState: {
               'abc': {
-                expireAt: NOW + DEFAULT_EXPIRE,
                 calculatedAt: NOW,
               },
             },

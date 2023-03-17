@@ -5,10 +5,8 @@
  * 2. Target emissions @see target-state
  */
 const md5 = require('md5');
-const calendarInterval = require('@medic/calendar-interval');
 const targetState = require('./target-state');
 
-const EXPIRE_CALCULATION_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
 let state;
 let currentUserContact;
 let currentUserSettings;
@@ -94,11 +92,9 @@ const self = {
     }
 
     const now = Date.now();
-    const { calculatedAt, expireAt, isDirty } = state.contactState[contactId];
-    return !expireAt ||
-      isDirty ||
-      calculatedAt > now || /* system clock changed */
-      expireAt < now; /* isExpired */
+    const { calculatedAt, isDirty } = state.contactState[contactId];
+    return isDirty ||
+      calculatedAt > now; /* system clock changed */
   },
 
   /**
@@ -142,13 +138,9 @@ const self = {
       return;
     }
 
-    const reportingInterval = calendarInterval.getCurrent(state.monthStartDate);
-    const defaultExpiry = calculatedAt + EXPIRE_CALCULATION_AFTER_MS;
-
     for (const contactId of contactIds) {
       state.contactState[contactId] = {
         calculatedAt,
-        expireAt: Math.min(reportingInterval.end, defaultExpiry),
       };
     }
 

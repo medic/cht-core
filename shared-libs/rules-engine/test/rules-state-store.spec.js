@@ -35,7 +35,7 @@ describe('rules-state-store', () => {
   });
 
   it('load a dirty contact', async () => {
-    const state = mockState({ 'a': { calculatedAt: 1 } });
+    const state = mockState({ 'a': { calculatedAt: 1, isDirty: true } });
     const contactDoc = { _id: 'foo' };
     const userDoc = { _id: 'org.couchdb.user.foo' };
 
@@ -156,16 +156,6 @@ describe('rules-state-store', () => {
     expect(rulesStateStore.isDirty('a')).to.be.true;
   });
 
-  it('contact marked fresh a month ago is not fresh', async () => {
-    const now = moment().valueOf();
-    const oneMonthFromNow = moment().add(1, 'month').valueOf();
-    await rulesStateStore.build({});
-    await rulesStateStore.markFresh(now, 'a');
-    expect(rulesStateStore.isDirty('a')).to.be.false;
-    clock = sinon.useFakeTimers(oneMonthFromNow);
-    expect(rulesStateStore.isDirty('a')).to.be.true;
-  });
-
   it('empty targets', async () => {
     const onStateChange = sinon.stub().resolves();
     await rulesStateStore.build({}, onStateChange);
@@ -193,63 +183,6 @@ describe('rules-state-store', () => {
         total: 1,
       },
     }]);
-  });
-
-  describe('marking contacts as dirty when switching reporting intervals', () => {
-    it('next interval exceeds expiration time', async () => {
-      const today = moment('2020-03-20').valueOf();
-      const nextInterval = moment('2020-04-07').valueOf();
-      clock = sinon.useFakeTimers(today);
-      await rulesStateStore.build({}); // default monthStartDate is 1
-      await rulesStateStore.markFresh(today, 'a');
-      expect(rulesStateStore.isDirty('a')).to.be.false;
-      clock.tick(nextInterval - today);
-      expect(rulesStateStore.isDirty('a')).to.be.true;
-    });
-
-    it('next interval does not exceed expiration time', async () => {
-      const today = moment('2020-03-30').valueOf();
-      const nextInterval = moment('2020-04-02').valueOf();
-      clock = sinon.useFakeTimers(today);
-      await rulesStateStore.build({}); // default monthStartDate is 1
-      await rulesStateStore.markFresh(today, 'a');
-      expect(rulesStateStore.isDirty('a')).to.be.false;
-      clock.tick(nextInterval - today);
-      expect(rulesStateStore.isDirty('a')).to.be.true;
-      await rulesStateStore.markFresh(nextInterval, 'a');
-      expect(rulesStateStore.isDirty('a')).to.be.false;
-
-    });
-
-    it('when monthStartDate is close in the past', async () => {
-      const today = moment('2020-03-30').valueOf();
-      const nextDate = moment('2020-04-02').valueOf();
-      const pastExpiration = moment('2020-04-08').valueOf();
-      clock = sinon.useFakeTimers(today);
-      await rulesStateStore.build({ monthStartDate: 25 });
-      await rulesStateStore.markFresh(today, 'a');
-      expect(rulesStateStore.isDirty('a')).to.be.false;
-      clock.tick(nextDate - today);
-      expect(rulesStateStore.isDirty('a')).to.be.false;
-      clock.tick(pastExpiration - today);
-      expect(rulesStateStore.isDirty('a')).to.be.true;
-    });
-
-    it('when monthStartDate is close in the future', async () => {
-      const today = moment('2020-03-24').valueOf();
-      const nextDate = moment('2020-03-28').valueOf();
-      clock = sinon.useFakeTimers(today);
-      await rulesStateStore.build({ monthStartDate: 25 });
-      await rulesStateStore.markFresh(today, 'a');
-      expect(rulesStateStore.isDirty('a')).to.be.false;
-      clock.tick(nextDate - today);
-      expect(rulesStateStore.isDirty('a')).to.be.true;
-      await rulesStateStore.markFresh(nextDate, 'a');
-      expect(rulesStateStore.isDirty('a')).to.be.false;
-      clock.tick(sevenDays);
-      expect(rulesStateStore.isDirty('a')).to.be.true;
-    });
-
   });
 
   describe('onChangeState', () => {
@@ -295,14 +228,19 @@ describe('rules-state-store', () => {
     });
 
     it('some contacts', async () => {
-      const now = moment();
-      clock = sinon.useFakeTimers(now.valueOf());
-      await rulesStateStore.build({});
-      await rulesStateStore.markFresh(0, ['a', 'b', 'c', 'd']);
-      const tenDays = 10 * 24 * 60 * 60 * 1000;
-      clock.tick(tenDays); // 10 days
+      const state = mockState({
+        'a': { isDirty: true },
+        'b': { isDirty: true },
+        'c': { isDirty: true },
+        'd': { isDirty: true }
+      });
+      const contactDoc = { _id: 'foo' };
+      const userDoc = { _id: 'org.couchdb.user.foo' };
+
+      await rulesStateStore.load(state, { user: userDoc, contact: contactDoc });
+
       expect(rulesStateStore.getDirtyContacts()).to.deep.equal(['a', 'b', 'c', 'd']);
-      await rulesStateStore.markFresh(now.add(10, 'days').valueOf(), ['a', 'b', 'c']);
+      state.contactState = { 'd': { isDirty: true } };
       expect(rulesStateStore.getDirtyContacts()).to.deep.equal(['d']);
     });
   });
