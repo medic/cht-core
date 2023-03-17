@@ -266,12 +266,13 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   private async updateFastActions() {
     this.fastActionList = await this.fastActionButtonService.getContactRightSideActions({
+      xmlReportForms: this.relevantReportForms,
+      childContactTypes: this.childContactTypes,
+      parentFacilityId: this.selectedContact.doc?._id,
       communicationContext: {
         sendTo: this.selectedContact?.type?.person && this.selectedContact?.doc,
         callbackOpenSendMessage: (sendTo) => this.openSendMessageModal(sendTo),
       },
-      xmlReportForms: this.relevantReportForms,
-      childContactTypes: this.childContactTypes,
       callbackContactReportModal: (form) => this.openContactMutedModal(form),
     });
   }

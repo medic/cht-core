@@ -77,7 +77,7 @@ export class FastActionButtonService {
       .sort((a, b) => a.label?.localeCompare(b.label));
   }
 
-  private getContactFormActions(childContactTypes, userFacilityId): FastAction[] {
+  private getContactFormActions(childContactTypes, parentFacilityId): FastAction[] {
     return (childContactTypes || [])
       .map(contactType => ({
         id: contactType.id,
@@ -86,9 +86,9 @@ export class FastActionButtonService {
         canDisplay: () => this.authService.has(['can_edit', 'can_create_places']),
         execute: () => {
           const route = ['/contacts', 'add', contactType.id];
-          if (userFacilityId) {
+          if (parentFacilityId) {
             // Inserting facility's ID between "/contacts" and "add" router segments.
-            route.splice(1, 0, userFacilityId);
+            route.splice(1, 0, parentFacilityId);
           }
           this.router.navigate(route, { queryParams: { from: 'list' } });
         },
@@ -162,7 +162,7 @@ export class FastActionButtonService {
   }
 
   getContactLeftSideActions(context: ContactActionsContext): Promise<FastAction[]> {
-    const actions = this.getContactFormActions(context.childContactTypes, context.userFacilityId);
+    const actions = this.getContactFormActions(context.childContactTypes, context.parentFacilityId);
 
     return this.filterActions(actions);
   }
@@ -171,7 +171,7 @@ export class FastActionButtonService {
     const actions = [
       this.getPhoneAction(context.communicationContext),
       this.getSendMessageAction(context.communicationContext, { isPhoneRequired: true, useMailtoInMobile: true }),
-      ...this.getContactFormActions(context.childContactTypes, context.userFacilityId),
+      ...this.getContactFormActions(context.childContactTypes, context.parentFacilityId),
       ...this.getReportFormActions(context.xmlReportForms, context.callbackContactReportModal),
     ];
 
@@ -218,7 +218,7 @@ interface ReportActionsContext {
 }
 
 interface ContactActionsContext {
-  userFacilityId?: string;
+  parentFacilityId?: string;
   childContactTypes?: Record<string, any>[];
   xmlReportForms?: Record<string, any>[];
   communicationContext?: CommunicationActionsContext;
