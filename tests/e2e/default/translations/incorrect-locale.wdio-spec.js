@@ -34,14 +34,12 @@ describe('Testing Incorrect locale', () => {
     await commonElements.closeReloadModal();
   });
 
-  // open user settings modal
   it('should work with incorrect locale', async () => {
     await commonElements.openHamburgerMenu();
     await commonElements.openUserSettingsAndFetchProperties();
     await userSettingsElements.openEditSettings();
     await userSettingsElements.selectLanguage('hil');
 
-    // we have correct language!
     const text = await commonElements.getReportsButtonLabel().getText();
     expect(text).to.equal('HilReports');
 
