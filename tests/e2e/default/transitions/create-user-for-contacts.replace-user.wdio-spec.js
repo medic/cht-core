@@ -261,7 +261,7 @@ describe('Create user for contacts', () => {
         await commonPage.goToReports();
         const existingBasicReportId = await submitBasicForm();
 
-        await commonPage.goToPeople(originalContactId);
+        await commonPage.goToPeople(originalContactId, true);
         await populateReplaceUserForm(REPLACE_USER_FORM_ID);
         await contactsPage.submitForm();
         const reportNames = await contactsPage.getAllRHSReportsNames();
