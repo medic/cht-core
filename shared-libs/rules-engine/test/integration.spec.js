@@ -814,7 +814,8 @@ const triggerFacilityReminderInReadyState = async (selectBy, docs = [patientCont
     .to
     .deep
     .include({
-      _id: `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${Date.now()}`,
+      _id:
+        `task~org.couchdb.user:username~report~pregnancy-facility-visit-reminder~anc.facility_reminder~${Date.now()}`,
       state: 'Ready',
       requester: 'patient',
       owner: 'patient',
