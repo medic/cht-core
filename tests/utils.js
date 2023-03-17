@@ -183,7 +183,7 @@ const revertSettings = () => {
   });
 };
 
-const deleteAll = async (except) => {
+const getIgnoreFns = (except) => {
   except = Array.isArray(except) ? except : [];
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
@@ -194,7 +194,7 @@ const deleteAll = async (except) => {
     'branding',
     'partners',
     'settings',
-    /^form:contact:/,
+    /^form:/,
     /^messages-/,
     /^org.couchdb.user/,
     /^_design/
@@ -215,9 +215,19 @@ const deleteAll = async (except) => {
   ignoreFns.push(id => ignoreStrings.includes(id));
   ignoreFns.push(id => ignoreRegex.find(r => id.match(r)));
 
+  return ignoreFns;
+};
+
+const deleteAll = async (except) => {
+  const ignoreFns = getIgnoreFns(except);
+
   const allDocs = await db.allDocs();
   const toDelete = allDocs.rows
-    .filter(row => !ignoreFns.find(fn => fn(row.id)) && row.value && row.value.rev)
+    .filter(row =>
+      !ignoreFns.find(fn => fn(row.id)) &&
+      row.value &&
+      row.value.rev
+    )
     .map((row => ({
       _id: row.id,
       _rev: row.value.rev,
@@ -228,7 +238,7 @@ const deleteAll = async (except) => {
     console.log(`Deleting docs and infodocs: ${ids}`);
   }
   const infoIds = ids.map(id => `${id}-info`);
-  await db.bulkDocs({ docs: toDelete });
+  await db.bulkDocs(toDelete);
 
   const infoDocs = await sentinel.allDocs({ keys: infoIds });
   const infosToDelete = infoDocs.rows
@@ -290,6 +300,17 @@ const setUserContactDoc = (attempt=0) => {
     });
 };
 
+const deleteLocalDocs = async () => {
+  const localDocs = await module.exports.requestOnTestDb({ path: '/_local_docs?include_docs=true' });
+
+  for (const row of localDocs.rows) {
+    if (row && row.doc && row.doc.replicator === 'pouchdb') {
+      row.doc._deleted = true;
+      await module.exports.saveDoc(row.doc);
+    }
+  }
+};
+
 /**
  * Deletes documents from the database, including Enketo forms. Use with caution.
  * @param {array} except - exeptions in the delete method. If this parameter is empty
@@ -301,6 +322,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
+  await deleteLocalDocs();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {
