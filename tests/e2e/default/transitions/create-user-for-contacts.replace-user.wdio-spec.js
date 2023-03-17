@@ -292,7 +292,7 @@ describe('Create user for contacts', () => {
         expect(district.contact._id).to.equal(replacementContactId);
 
         await browser.throttle('online');
-        await commonPage.syncWithoutWaitForSuccess();
+        await commonPage.syncAndNotWaitForSuccess();
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -497,7 +497,7 @@ describe('Create user for contacts', () => {
         expect(district.contact._id).to.equal(replacementContactId1);
 
         await browser.throttle('online');
-        await commonPage.syncWithoutWaitForSuccess();
+        await commonPage.syncAndNotWaitForSuccess();
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
@@ -797,7 +797,7 @@ describe('Create user for contacts', () => {
         });
 
         await browser.throttle('online');
-        await commonPage.syncWithoutWaitForSuccess();
+        await commonPage.syncAndNotWaitForSuccess();
         await (await loginPage.loginButton()).waitForDisplayed();
 
         await sentinelUtils.waitForSentinel();
