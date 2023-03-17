@@ -48,7 +48,7 @@ Keep an eye on the forum for the release announcement in the next couple of week
   - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
   - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions) and update the EOL date and status of previous releases. Also add a link in the `Release Notes` section to the new release page.
   - [ ] Assign the PR to:
-    - The Director of Technology
+    - The Director of Technology or a developer
     - An SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient
 - [ ] Until release testing passes, make sure regressions are fixed in `master`, cherry-pick them into the release branch, and release another beta.
 - [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/cht-core/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Ensure the release notes PR above is merged. Link to the release notes in the description of the release.
