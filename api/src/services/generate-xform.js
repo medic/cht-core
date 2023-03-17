@@ -241,7 +241,8 @@ module.exports = {
    * Updates the model and form attachments for all forms if necessary.
    */
   updateAll: () => {
-    return formsService.getFormDocs()
+    return formsService
+      .getFormDocs()
       .then(docs => {
         if (!docs.length) {
           return [];

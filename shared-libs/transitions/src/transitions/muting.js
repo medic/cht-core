@@ -184,7 +184,7 @@ module.exports = {
     }
   },
 
-  filter: (doc, info = {}) => isRelevantReport(doc, info) || isRelevantContact(doc, info),
+  filter: ({ doc, info }) => isRelevantReport(doc, info) || isRelevantContact(doc, info),
 
   validate: (doc) => {
     const config = getConfig();

@@ -52,17 +52,19 @@ const baseConfig = {
     // makes default jasmine reporter not display dots for every spec
     print: () => {}
   },
-  beforeLaunch: function() {
+  beforeLaunch: () => {
     process.on('uncaughtException', function() {
       utils.reporter.jasmineDone();
-      utils.reporter.afterLaunch();
+      utils.reporter.afterLaunch(() => {});
     });
 
-    return new Promise(function(resolve) {
+    return new Promise((resolve) => {
       utils.reporter.beforeLaunch(resolve);
     });
   },
-  afterLaunch: async () => await utils.endSession(),
+  afterLaunch: async () => {
+    await utils.endSession();
+  },
   onPrepare: async () => {
     jasmine.getEnv().addReporter(utils.specReporter);
     jasmine.getEnv().addReporter(utils.reporter);

@@ -8,7 +8,7 @@ const NAME = 'default_responses';
 
 module.exports = {
   name: NAME,
-  filter: function(doc, info = {}) {
+  filter: function({ doc, info }) {
     const self = module.exports;
     return Boolean(
       doc &&

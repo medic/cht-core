@@ -10,7 +10,8 @@ const utils = require('../../../utils');
 const userData = require('../../../page-objects/default/users/user.data');
 const sentinelUtils = require('../../../utils/sentinel');
 
-describe('Submit Default Delivery Report', () => {
+// FLAKY: https://github.com/medic/cht-core/issues/8087
+describe.skip('Submit Default Delivery Report', () => {
   const { userContactDoc, docs } = userData;
 
   before(async () => {

@@ -64,7 +64,7 @@ module.exports = {
       module.exports._addErr(event_type, config, doc);
     }
   },
-  filter: function(doc, info = {}) {
+  filter: function({ doc, info }) {
     return Boolean(
       doc &&
       doc.form &&

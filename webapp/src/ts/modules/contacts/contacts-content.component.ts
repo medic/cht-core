@@ -253,7 +253,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       canDelete: this.canDeleteContact,
       canEdit: this.isOnlineOnly || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
       openContactMutedModal:
-        this.openContactMutedModal.bind({}, this.router, this.modalService, this.selectedContact._id),
+        this.openContactMutedModal.bind({}, this.router, this.modalService, this.selectedContact?._id),
       openSendMessageModal: this.openSendMessageModal.bind({}, this.modalService),
     });
 
@@ -337,7 +337,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       {
         doc: this.selectedContact.doc,
         contactSummary: this.selectedContact.summary.context,
-        contactForms: false,
+        reportForms: true,
       },
       (error, forms) => {
         if (error) {

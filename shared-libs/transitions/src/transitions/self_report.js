@@ -12,7 +12,7 @@ const hasPatientId = doc => doc.fields && (doc.fields.patient_id || doc.fields.p
 
 module.exports = {
   name: NAME,
-  filter: (doc, info={}) => {
+  filter: ({ doc, info }) => {
     return Boolean(
       doc &&
       doc.from &&
