@@ -52,11 +52,15 @@ const createDoc = async (doc) => {
 };
 
 const executeAsync = async (fn, ...args) => {
-  const { err, result } = await browser.executeAsync((args, callback) => {
+  // https://w3c.github.io/webdriver/#dfn-execute-async-script doesn't accept functions as params
+  const fnString = fn.toString();
+  const { err, result } = await browser.executeAsync((fnString, ...args) => {
+    const fn = new Function(`const r = ${fnString}; return r`)();
+    const callback = args.pop();
     return fn(...args)
       .then(result => callback({ result }))
       .catch(err => callback({ err }));
-  }, ...args);
+  }, fnString, ...args);
 
   if (err) {
     throw err;

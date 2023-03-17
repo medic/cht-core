@@ -215,11 +215,6 @@ const sync = async (expectReload) => {
   await syncAndWaitForSuccess();
 };
 
-const syncWithoutWaitForSuccess = async () => {
-  await openHamburgerMenu();
-  await (await syncButton()).click();
-};
-
 const syncAndWaitForFailure = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
@@ -354,6 +349,5 @@ module.exports = {
   isMenuOptionVisible,
   moreOptionsMenu,
   refresh,
-  syncWithoutWaitForSuccess,
   syncAndWaitForFailure,
 };
