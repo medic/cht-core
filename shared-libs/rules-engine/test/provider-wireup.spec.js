@@ -23,7 +23,6 @@ chai.use(chaiExclude);
 
 const rulesStateStore = RestorableRulesStateStore();
 const NOW = 50000;
-const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;
 
 const reportConnectedByPlace = {
   _id: 'reportByPlace',

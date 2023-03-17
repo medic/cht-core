@@ -6,8 +6,6 @@ const moment = require('moment');
 const rulesStateStore = RestorableRulesStateStore();
 const hashRulesConfig = rulesStateStore.__get__('hashRulesConfig');
 
-const sevenDays = 7 * 24 * 60 * 60 * 1000 + 1000;
-
 let clock;
 
 const mockState = contactState => ({
