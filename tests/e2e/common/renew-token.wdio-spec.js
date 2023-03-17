@@ -15,15 +15,15 @@ describe('should renew token', async () => {
     await commonPage.waitForPageLoaded();
 
     for (let counter = 0; counter < 3; counter++) {
-      const beforPageLoadTime = moment();
+      const beforPageLoadTime = moment().add(31536000, 'seconds');
       await browser.refresh();
       await commonPage.waitForPageLoaded();
-      const afterPageLoadTime = moment();
+      const afterPageLoadTime = moment().add(31536000, 'seconds');
       const ctxExpiry = await getCtxCookieExpiry();
 
       chai.expect(
-        ctxExpiry.isBetween(beforPageLoadTime.add(1, 'year'), afterPageLoadTime.add(1, 'year')),
-        `Failed for counter = ${counter}, ${ctxExpiry.toISOString()} ${beforPageLoadTime.toISOString()}`
+        ctxExpiry.isBetween(beforPageLoadTime, afterPageLoadTime),
+        `Failed for counter = ${counter}, ${ctxExpiry} ${beforPageLoadTime}`
       ).to.be.true;
     }
   });
