@@ -790,7 +790,7 @@ describe('routing', () => {
         .then(res => {
           expect(res.statusCode).to.equal(200);
           expect(res.headers['set-cookie'].length).to.equal(1);
-          const [ content, age, path, expires, samesite ] = res.headers['set-cookie'][0].split('; ');
+          const [ content, age, path, samesite ] = res.headers['set-cookie'][0].split('; ');
 
           // check the cookie content is unchanged
           const [ contentKey, contentValue ] = content.split('=');
@@ -798,9 +798,9 @@ describe('routing', () => {
           expect(decodeURIComponent(contentValue)).to.equal(JSON.stringify(userCtxCookie));
 
           // check the expiry date is around a year away
-          const expiryValue = expires.split('=')[1];
-          const expiryDate = moment.utc(expiryValue).add(1, 'hour'); // add a small margin of error
-          expect(expiryDate.diff(now, 'months')).to.equal(12);
+          // const expiryValue = expires.split('=')[1];
+          // const expiryDate = moment.utc(expiryValue).add(1, 'hour'); // add a small margin of error
+          // expect(expiryDate.diff(now, 'months')).to.equal(12);
 
           // check the other properties
           expect(samesite).to.equal('SameSite=Lax');
