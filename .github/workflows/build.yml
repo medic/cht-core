@@ -101,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-e2e-integration']
+        grunt-cmd: ['ci-e2e-integration', 'ci-e2e']
 
     steps:
     - name: Login to Docker Hub
