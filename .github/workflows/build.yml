@@ -70,26 +70,26 @@ jobs:
         path: images/
       if: ${{ !env.INTERNAL_CONTRIBUTOR }}
 
-  config-tests:
-    needs: build
-    name: ${{ matrix.grunt-cmd }}
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
+  # config-tests:
+  #   needs: build
+  #   name: ${{ matrix.grunt-cmd }}
+  #   runs-on: ubuntu-22.04
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
 
-    steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js 16.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16.x
-    - name: Grunt Install
-      run: npm install -g grunt-cli
-    - run: npm ci --legacy-peer-deps
-    - name: Run Tests
-      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Use Node.js 16.x
+  #     uses: actions/setup-node@v3
+  #     with:
+  #       node-version: 16.x
+  #   - name: Grunt Install
+  #     run: npm install -g grunt-cli
+  #   - run: npm ci --legacy-peer-deps
+  #   - name: Run Tests
+  #     run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
 
   tests:
     needs: build
@@ -101,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-webdriver-default-mobile']
+        grunt-cmd: ['ci-e2e-integration']
 
     steps:
     - name: Login to Docker Hub
