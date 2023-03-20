@@ -81,6 +81,7 @@ describe('Online User', async () => {
 
   describe(' - Contact tab - user has no contact ', async () => {
     before(async () => await utils.saveDocs([ ...places.values(), contact, patient]));
+    after(async () => await commonPage.goToBase());
 
     it(' - no contact selected', async () => {
       await commonPage.goToPeople();
@@ -102,7 +103,9 @@ describe('Online User', async () => {
       await sms.sendSms('testing', contact.phone);
     });
 
-    xit('- Reports tab - Edit/export invisible when NON XML report selected', async () => {
+    afterEach(async () => await commonPage.goToBase());
+
+    it('- Reports tab - Edit/export invisible when NON XML report selected', async () => {
       await commonPage.goToReports();
       await reportPage.goToReportById(smsReportId);
       await reportPage.reportBodyDetails().waitForDisplayed();
