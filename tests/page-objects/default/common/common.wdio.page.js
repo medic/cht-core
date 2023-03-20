@@ -50,6 +50,7 @@ const waitForSnackbarToClose = async () => {
 
 const clickFastActionById = async (id) => {
   await (await fastActionListContainer()).waitForDisplayed();
+  await (await fastActionById(id)).scrollIntoView();
   await (await fastActionById(id)).waitForClickable();
   await (await fastActionById(id)).click();
 };
