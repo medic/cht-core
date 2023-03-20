@@ -70,6 +70,7 @@ const deathDate = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.d
 const deathPlace = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.death.place"] p.card-field-value`);
 
 const search = async (query) => {
+  await (await searchBox()).waitForDisplayed();
   await (await searchBox()).setValue(query);
   await browser.keys(ENTER);
   await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
