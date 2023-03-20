@@ -131,12 +131,14 @@ const isElementByIdPresent = async (elementId) => {
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
+    await (await hamburgerMenu()).waitForClickable();
     await (await hamburgerMenu()).click();
   }
 };
 
 const closeHamburgerMenu = async () => {
   if (await isHamburgerMenuOpen()) {
+    await (await hamburgerMenu()).waitForClickable();
     await (await hamburgerMenu()).click();
   }
 };

@@ -153,6 +153,7 @@ const getManyLocalDocsFromBrowser = async (docIds) => {
 const submitBasicForm = async () => {
   await commonPage.openFastActionReport('basic_form', false);
   await reportsPage.submitForm();
+  await commonPage.waitForPageLoaded();
   return reportsPage.getCurrentReportId();
 };
 
