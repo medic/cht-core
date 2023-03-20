@@ -283,6 +283,8 @@ module.exports = function(grunt) {
             'build/**',
             '**/pupil/**',
             'api/src/enketo-transformer/**',
+            'tests/scalability/report*/**',
+            'tests/scalability/jmeter/**'
           ];
 
           return [ESLINT_COMMAND]
@@ -347,13 +349,13 @@ module.exports = function(grunt) {
                       grep -Ev '^\\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
-      /*'setup-admin': {
+      'setup-admin': {
         cmd:
           ` curl -X PUT ${couchConfig.withPathNoAuth(`_node/_local/_config/admins/${couchConfig.username}`)} -d '"${couchConfig.password}"'` +
           ` && curl -X PUT --data '"true"' ${couchConfig.withPathNoAuth('_node/_local/_config/chttpd/require_valid_user')}` +
           ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/_local/_config/httpd/max_http_request_size')}` +
           ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
-      },*/
+      },
       'setup-test-database': {
         cmd: [
           `docker run -d -p 4984:5984 -p 4986:5986 -e COUCHDB_PASSWORD=pass -e COUCHDB_USER=admin --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data medicmobile/cht-couchdb:clustered-test4`,

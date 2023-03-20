@@ -134,6 +134,53 @@ const getForms = async () => {
   return formDocs.rows.filter(row => !isTombstone(row.id));
 };
 
+const validateReplication = async () => {
+  const localAllDocsPreSync = await getLocalDocs();
+  const docIdsPreSync = localAllDocsPreSync.map(row => row.id);
+
+  await commonPage.sync(false, 3000);
+
+  const localAllDocs = await getLocalDocs();
+  const localDocIds = localAllDocs.map(row => row.id);
+
+  // no additional docs to download
+  expect(docIdsPreSync).to.have.members(localDocIds);
+
+  const serverAllDocs = await getServerDocs(localDocIds);
+
+  // docs revs are the same
+  expect(localAllDocs).to.deep.equal(serverAllDocs);
+
+  const translationIds = await getTranslationIds();
+  const forms = await getForms();
+  const formIds = forms.map(row => row.id);
+
+  expect(localDocIds).to.include.members(requiredDocs);
+  expect(localDocIds).to.include.members(translationIds);
+
+  const localForms = await getLocalDocs(formIds);
+  const expectedAttachments = ['model.xml', 'form.html', 'xml'];
+  localForms.forEach(form => {
+    const attachments = form.doc._attachments;
+    const serverForm = forms.find(serverForm => form.id === serverForm.id);
+
+    expect(Object.keys(attachments)).to.have.members(expectedAttachments, `${form._id} has incorrect attachments`);
+    expectedAttachments.forEach(attName =>
+      expect(attachments[attName].data).to.deep.equal(serverForm.doc._attachments[attName].data)
+    );
+  });
+
+  expect(localDocIds).to.include.members(ids(userAllowedDocs.clinics));
+  expect(localDocIds).to.include.members(ids(userAllowedDocs.persons));
+  expect(localDocIds).to.include.members(ids(userAllowedDocs.reports));
+
+  const replicatedDeniedDocs = _.intersection(
+    localDocIds,
+    ids([...userDeniedDocs.clinics, ...userDeniedDocs.persons, ...userDeniedDocs.reports])
+  );
+  expect(replicatedDeniedDocs).to.deep.equal([]);
+};
+
 describe('initial-replication', () => {
   before(async () => {
     // we're creating ~4000 docs
@@ -158,52 +205,24 @@ describe('initial-replication', () => {
     await utils.startSentinel();
   });
 
+  afterEach(async () => {
+    await browser.reloadSession();
+    await browser.url('/');
+  });
+
   it('should log user in', async () => {
     await loginPage.login(userAllowedDocs.user);
 
-    const localAllDocsPreSync = await getLocalDocs();
-    const docIdsPreSync = localAllDocsPreSync.map(row => row.id);
+    await validateReplication();
+  });
 
-    await commonPage.sync(false, 3000);
+  it('should support "disconnects"', async () => {
+    loginPage.login({ ...userAllowedDocs.user, loadPage: false });
+    setTimeout(() => browser.refresh(), 1000);
+    setTimeout(() => browser.refresh(), 3000);
+    setTimeout(() => browser.refresh(), 5000);
 
-    const localAllDocs = await getLocalDocs();
-    const localDocIds = localAllDocs.map(row => row.id);
-
-    // no additional docs to download
-    expect(docIdsPreSync).to.have.members(localDocIds);
-
-    const serverAllDocs = await getServerDocs(localDocIds);
-
-    // docs revs are the same
-    expect(localAllDocs).to.deep.equal(serverAllDocs);
-
-    const translationIds = await getTranslationIds();
-    const forms = await getForms();
-    const formIds = forms.map(row => row.id);
-
-    expect(localDocIds).to.include.members(requiredDocs);
-    expect(localDocIds).to.include.members(translationIds);
-
-    const localForms = await getLocalDocs(formIds);
-    const expectedAttachments = ['model.xml', 'form.html', 'xml'];
-    localForms.forEach(form => {
-      const attachments = form.doc._attachments;
-      const serverForm = forms.find(serverForm => form.id === serverForm.id);
-
-      expect(Object.keys(attachments)).to.have.members(expectedAttachments, `${form._id} has incorrect attachments`);
-      expectedAttachments.forEach(attName =>
-        expect(attachments[attName].data).to.deep.equal(serverForm.doc._attachments[attName].data)
-      );
-    });
-
-    expect(localDocIds).to.include.members(ids(userAllowedDocs.clinics));
-    expect(localDocIds).to.include.members(ids(userAllowedDocs.persons));
-    expect(localDocIds).to.include.members(ids(userAllowedDocs.reports));
-
-    const replicatedDeniedDocs = _.intersection(
-      localDocIds,
-      ids([...userDeniedDocs.clinics, ...userDeniedDocs.persons, ...userDeniedDocs.reports])
-    );
-    expect(replicatedDeniedDocs).to.deep.equal([]);
+    await commonPage.waitForPageLoaded();
+    await validateReplication();
   });
 });

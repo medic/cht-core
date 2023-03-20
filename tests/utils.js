@@ -183,10 +183,13 @@ const revertSettings = () => {
   });
 };
 
-const getIgnoreFns = (except) => {
+const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
+
+const deleteAll = (except) => {
   except = Array.isArray(except) ? except : [];
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
+    doc => PERMANENT_TYPES.includes(doc.type),
     'service-worker-meta',
     constants.USER_CONTACT_ID,
     'migration-log',
@@ -195,8 +198,6 @@ const getIgnoreFns = (except) => {
     'partners',
     'settings',
     /^form:/,
-    /^messages-/,
-    /^org.couchdb.user/,
     /^_design/
   );
   const ignoreFns = [];
@@ -212,42 +213,63 @@ const getIgnoreFns = (except) => {
     }
   });
 
-  ignoreFns.push(id => ignoreStrings.includes(id));
-  ignoreFns.push(id => ignoreRegex.find(r => id.match(r)));
+  ignoreFns.push(doc => ignoreStrings.includes(doc._id));
+  ignoreFns.push(doc => ignoreRegex.find(r => doc._id.match(r)));
 
-  return ignoreFns;
-};
-
-const deleteAll = async (except) => {
-  const ignoreFns = getIgnoreFns(except);
-
-  const allDocs = await db.allDocs();
-  const toDelete = allDocs.rows
-    .filter(row =>
-      !ignoreFns.find(fn => fn(row.id)) &&
-      row.value &&
-      row.value.rev
+  // Get, filter and delete documents
+  return module.exports
+    .requestOnTestDb({
+      path: '/_all_docs?include_docs=true',
+      method: 'GET',
+    })
+    .then(({ rows }) =>
+      rows
+        .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
+        .map(({ doc }) => {
+          return {
+            _id: doc._id,
+            _rev: doc._rev,
+            _deleted: true,
+            type: 'tombstone' // circumvent tombstones being created when DB is cleaned up
+          };
+        })
     )
-    .map((row => ({
-      _id: row.id,
-      _rev: row.value.rev,
-      _deleted: true,
-    })));
-  const ids = toDelete.map(doc => doc._id);
-  if (e2eDebug) {
-    console.log(`Deleting docs and infodocs: ${ids}`);
-  }
-  const infoIds = ids.map(id => `${id}-info`);
-  await db.bulkDocs(toDelete);
+    .then(toDelete => {
+      const ids = toDelete.map(doc => doc._id);
+      if (e2eDebug) {
+        console.log(`Deleting docs and infodocs: ${ids}`);
+      }
+      const infoIds = ids.map(id => `${id}-info`);
+      return Promise.all([
+        module.exports
+          .requestOnTestDb({
+            path: '/_bulk_docs',
+            method: 'POST',
+            body: { docs: toDelete },
+          })
+          .then(response => {
+            if (e2eDebug) {
+              console.log(`Deleted docs: ${JSON.stringify(response)}`);
+            }
+          }),
+        module.exports.sentinelDb.allDocs({ keys: infoIds })
+          .then(results => {
+            const deletes = results.rows
+              .filter(row => row.value) // Not already deleted
+              .map(({ id, value }) => ({
+                _id: id,
+                _rev: value.rev,
+                _deleted: true
+              }));
 
-  const infoDocs = await sentinel.allDocs({ keys: infoIds });
-  const infosToDelete = infoDocs.rows
-    .filter(row => row.value && row.value.rev)
-    .map(row => ({ _id: row.id, _rev: row.value.rev, _deleted: true }));
-  await sentinel.bulkDocs(infosToDelete);
-
-  const sentinelUtils = require('./utils/sentinel');
-  await sentinelUtils.skipToSeq();
+            return module.exports.sentinelDb.bulkDocs(deletes);
+          }).then(response => {
+            if (e2eDebug) {
+              console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
+            }
+          })
+      ]);
+    });
 };
 
 const refreshToGetNewSettings = () => {

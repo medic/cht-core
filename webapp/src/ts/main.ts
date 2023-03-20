@@ -46,35 +46,33 @@ Object.defineProperties($, {
 });
 
 window.PouchDB.plugin(pouchdbDebug);
-bootstrapper(POUCHDB_OPTIONS, (err) => {
-  if (err) {
+bootstrapper(POUCHDB_OPTIONS)
+  .then(() => {
+    window.startupTimes.bootstrapped = performance.now();
+    if (environment.production) {
+      enableProdMode();
+    }
+
+    return platformBrowserDynamic()
+      .bootstrapModule(AppModule, { preserveWhitespaces: true })
+      .then((moduleRef) => {
+        window.CHTCore = moduleRef.instance.integration;
+        // backwards compatibility with the old way of reaching these services, the syntax looked like:
+        // angular.element(document.body).injector().get(<serviceName>);
+        window.angular = {
+          element: () => ({
+            injector: () => ({
+              get: service => moduleRef.instance.integration.get(service),
+            })
+          })
+        };
+      })
+      .catch(err => console.error(err));
+  })
+  .catch(err => {
     console.error('Error bootstrapping', err);
     setTimeout(() => {
       // retry initial replication automatically after one minute
       window.location.reload();
     }, 60 * 1000);
-
-    return;
-  }
-
-  window.startupTimes.bootstrapped = performance.now();
-  if (environment.production) {
-    enableProdMode();
-  }
-
-  platformBrowserDynamic()
-    .bootstrapModule(AppModule, { preserveWhitespaces: true })
-    .then((moduleRef) => {
-      window.CHTCore = moduleRef.instance.integration;
-      // backwards compatibility with the old way of reaching these services, the syntax looked like:
-      // angular.element(document.body).injector().get(<serviceName>);
-      window.angular = {
-        element: () => ({
-          injector: () => ({
-            get: service => moduleRef.instance.integration.get(service),
-          })
-        })
-      };
-    })
-    .catch(err => console.error(err));
-});
+  });

@@ -1,12 +1,8 @@
 const db = require('../db');
 const authorization = require('./authorization');
 const purgedDocs = require('./purged-docs');
-const cacheService = require('./cache');
 const _ = require('lodash');
 const { DOC_IDS_WARN_LIMIT } = require('../services/replication-limit-log');
-
-const CACHE_NAME = 'initial-replication';
-const TTL = 60 * 60; // keep cache for 1 hour
 
 const getDocIds = async (userCtx) => {
   const context = await authorization.getAuthorizationContext(userCtx);
@@ -28,22 +24,23 @@ const getDocIds = async (userCtx) => {
   };
 };
 
-const getInitialReplicationContext = async (userCtx, replicationId) => {
-  const cache = cacheService.instance(CACHE_NAME, { stdTTL: TTL });
-  const cached = cache.get(replicationId);
-  if (cached) {
-    cache.ttl(replicationId);
-    return cached;
-  }
-
+const getContext = async (userCtx) => {
   const info = await db.medic.info();
-  const { docIds, warn } = await getDocIds(userCtx);
+  const context = await getDocIds(userCtx);
 
-  cache.set(replicationId, { docIds, lastSeq: info.update_seq, warn });
-  return cache.get(replicationId);
+  return {
+    ...context,
+    lastSeq: info.update_seq,
+  };
+};
+
+const getRevs = async (docIds) => {
+  const result = await db.medic.allDocs({ keys: docIds });
+  return result.rows.map(row => ({ id: row.id, rev: row.value && row.value.rev }));
 };
 
 module.exports = {
   getDocIds,
-  getInitialReplicationContext,
+  getRevs,
+  getContext,
 };

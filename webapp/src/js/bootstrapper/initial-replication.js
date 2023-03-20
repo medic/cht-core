@@ -1,17 +1,15 @@
 const utils = require('./utils');
 const translator = require('./translator');
+const { setUiStatus } = require('./ui-status');
 
-const DOC_IDS_KEY = 'initial-replication-doc-ids';
-const LAST_SEQ_KEY = 'initial-replication-last-seq';
-const DOC_COUNT_KEY = 'initial-replication-doc-count';
+let docIds;
+let lastSeq;
+let remoteDocCount;
+
 const INITIAL_REPLICATION_LOG = '_local/initial-replication';
 const BATCH_SIZE = 100;
 
 const completeInitialReplication = async (localDb, dbSyncStartTime, dbSyncStartData) => {
-  window.localStorage.removeItem(DOC_IDS_KEY);
-  window.localStorage.removeItem(LAST_SEQ_KEY);
-  window.localStorage.removeItem(DOC_COUNT_KEY);
-
   const duration = Date.now() - dbSyncStartTime;
   console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
   const dbSyncEndData = getDataUsage();
@@ -45,12 +43,11 @@ const getDataUsage = () => {
   }
 };
 
-const getDocIds = async (setUiStatus) => {
+const getDocIds = async () => {
   const res = await utils.fetchJSON('/initial-replication/get-ids');
-
-  window.localStorage.setItem(DOC_IDS_KEY, res.doc_ids);
-  window.localStorage.setItem(LAST_SEQ_KEY, res.last_seq);
-  window.localStorage.setItem(DOC_COUNT_KEY, res.doc_ids.length);
+  docIds = res.doc_ids;
+  lastSeq = res.last_seq;
+  remoteDocCount = res.doc_ids.length;
 
   if (res.warn) {
     await new Promise(resolve => {
@@ -79,11 +76,21 @@ const getDocIds = async (setUiStatus) => {
   setUiStatus('FETCH_INFO', { count: 0, total: res.doc_ids.length });
 };
 
-const getDocsBatch = async (setUiStatus, remoteDb, localDb) => {
-  const docIds = window.localStorage.getItem(DOC_IDS_KEY).split(',');
+const getDocsBatch = async (remoteDb, localDb) => {
   const batch = docIds.splice(0, BATCH_SIZE);
 
-  const requestDocs = { docs: batch.map(docId => ({ id: docId })), attachments: true };
+  const byId = {};
+  batch.forEach(({ id, rev }) => byId[id] = [rev]);
+  const localRevs = await localDb.revsDiff(byId);
+
+  const requestDocs = {
+    docs: batch.filter(({ id }) => localRevs[id] && localRevs[id].missing && localRevs[id].missing.length),
+    attachments: true
+  };
+
+  if (!requestDocs.docs.length) {
+    return docIds.length;
+  }
 
   const res = await remoteDb.bulkGet(requestDocs);
   const docs = res.results
@@ -91,22 +98,18 @@ const getDocsBatch = async (setUiStatus, remoteDb, localDb) => {
     .filter(doc => doc);
   await localDb.bulkDocs(docs, { new_edits: false });
 
-  window.localStorage.setItem(DOC_IDS_KEY, docIds);
   return docIds.length;
 };
 
-const getDocs = async (setUiStatus, remoteDb, localDb) => {
+const getDocs = async (remoteDb, localDb) => {
   let remaining;
-  const remoteDocCount = window.localStorage.getItem(DOC_COUNT_KEY);
   do {
-    remaining = await getDocsBatch(setUiStatus, remoteDb, localDb);
+    remaining = await getDocsBatch(remoteDb, localDb);
     setUiStatus('FETCH_INFO', { count: remoteDocCount - remaining, total: remoteDocCount });
   } while (remaining > 0);
 };
 
-const writeCheckpointer = async (setUiStatus, remoteDb, localDb) => {
-  const lastSeq = window.localStorage.getItem(LAST_SEQ_KEY);
-
+const writeCheckpointer = async (remoteDb, localDb) => {
   await localDb.replicate.from(remoteDb, {
     live: false,
     retry: false,
@@ -122,15 +125,15 @@ const writeCheckpointer = async (setUiStatus, remoteDb, localDb) => {
   });
 };
 
-const replicate = async (setUiStatus, remoteDb, localDb) => {
+const replicate = async (remoteDb, localDb) => {
   setUiStatus('LOAD_APP');
 
   const dbSyncStartTime = Date.now();
   const dbSyncStartData = getDataUsage();
 
-  await getDocIds(setUiStatus);
-  await getDocs(setUiStatus, remoteDb, localDb);
-  await writeCheckpointer(setUiStatus, remoteDb, localDb);
+  await getDocIds();
+  await getDocs(remoteDb, localDb);
+  await writeCheckpointer(remoteDb, localDb);
 
   await completeInitialReplication(localDb, dbSyncStartTime, dbSyncStartData);
 };
