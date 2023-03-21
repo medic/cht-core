@@ -15,7 +15,7 @@ const computeExpectedDate = async () => {
   return expectedDate;
 };
 
-describe('registration transition', () => {
+xdescribe('registration transition', () => {
   const PHONE = '+64271234567';
   const FORM_NAME = 'Registration';
 

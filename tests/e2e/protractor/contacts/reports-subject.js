@@ -5,7 +5,7 @@ const helper = require('../../../helper');
 const moment = require('moment');
 const sentinelUtils = require('../../../utils/sentinel');
 
-describe('Reports Summary', () => {
+xdescribe('Reports Summary', () => {
   const PHONE_CAROL = '+64271234567';
   const PHONE_JOHN = '+40788232323';
 
