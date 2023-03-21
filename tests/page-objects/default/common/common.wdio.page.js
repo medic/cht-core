@@ -50,6 +50,8 @@ const waitForSnackbarToClose = async () => {
 };
 
 const clickFastActionById = async (id) => {
+  await browser.saveScreenshot('./tests/e2e/default/contacts/clickFastActionById.png');
+  await (await fastActionListContainer()).waitForExist();
   await (await fastActionListContainer()).waitForDisplayed();
   // Wait for the Angular Material's animation to complete.
   await browser.pause(500);
