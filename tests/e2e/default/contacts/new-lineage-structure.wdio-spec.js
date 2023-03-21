@@ -17,6 +17,7 @@ describe('Create new lineage structure', () => {
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
     await commonPage.goToPeople();
+    await commonPage.waitForPageLoaded();
   });
 
   afterEach(async () => {
@@ -25,6 +26,7 @@ describe('Create new lineage structure', () => {
     // todo remove this when/after fixing https://github.com/medic/cht-core/issues/7250
     await sentinelUtils.waitForSentinel();
     await commonPage.goToPeople();
+    await commonPage.waitForPageLoaded();
   });
 
   it('Create new health center', async () => {
