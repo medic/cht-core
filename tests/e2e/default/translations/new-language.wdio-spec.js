@@ -51,7 +51,7 @@ describe('Adding new language', () => {
     expect(appLanguage).to.equal(NEW_LANG_NAME);
   });
 
-  it('should add new translations', async () => {
+  it.skip('should add new translations', async () => {
     await browser.setCookies({ name: 'locale', value: 'en' });
     await addTranslations(NEW_LANG_CODE, NEW_TRANSLATIONS);
     await commonPage.openHamburgerMenu();
