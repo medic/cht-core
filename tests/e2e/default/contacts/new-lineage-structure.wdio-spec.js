@@ -49,7 +49,7 @@ describe('Create new lineage structure', () => {
     chai.expect(await contactPage.getPrimaryContactName()).to.equal(householdContact);
   });
 
-  it.skip('Create new person', async () => {
+  it('Create new person', async () => {
     await contactPage.selectLHSRowByText(household);
     chai.expect(await contactPage.addPerson({ name: 'James' })).to.equal('James');
   });
@@ -97,7 +97,7 @@ describe('Create new lineage structure', () => {
     chai.expect(await contactPage.editPersonName(name, updatedName)).to.equal(updatedName);
   });
 
-  it.skip('should edit the name of the Family', async () => {
+  it('should edit the name of the Family', async () => {
     await contactPage.selectLHSRowByText(household);
     const name = 'Sumeria';
     chai.expect(await contactPage.addPerson({ name })).to.equal(name);

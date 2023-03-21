@@ -6,6 +6,7 @@ const sentinelUtils = require('../../../utils/sentinel');
 const utils = require('../../../utils');
 const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
@@ -94,7 +95,9 @@ const selectLHSRowByText = async (text, executeSearch = true) => {
   if (!row) {
     throw new Error(`Contact "${text}" was not found`);
   }
-  return await row.click();
+  await row.waitForClickable();
+  await row.click();
+  await waitForContactLoaded();
 };
 
 const selectRHSRowById = async (id) => {
