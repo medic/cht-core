@@ -1,4 +1,5 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
+const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
 const fastActionFAB = () => $(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
 const fastActionFlat = () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`);
@@ -78,11 +79,13 @@ const clickFastActionFlat = async ({ actionId, waitForList=true }) => {
 };
 
 const openFastActionReport = async (formId, rightSideAction=true) => {
+  await waitForPageLoaded();
   if (rightSideAction) {
     await clickFastActionFAB({ actionId: formId });
   } else {
     await clickFastActionFlat({ actionId: formId });
   }
+  await waitForPageLoaded();
   await (await $('#form-title')).waitForDisplayed();
 };
 
@@ -336,6 +339,11 @@ const openUserSettingsAndFetchProperties = async () => {
   await (await $('=Edit user profile')).waitForDisplayed();
 };
 
+const openUserSettings = async () => {
+  await (await userSettingsMenuOption()).waitForClickable();
+  await (await userSettingsMenuOption()).click();
+};
+
 const openAppManagement = async () => {
   await (await $('i.fa-cog')).click();
   await (await $('.navbar-brand')).waitForDisplayed();
@@ -408,6 +416,7 @@ module.exports = {
   openHamburgerMenu,
   openAboutMenu,
   openUserSettingsAndFetchProperties,
+  openUserSettings,
   openReportBugAndFetchProperties,
   openAppManagement,
   waitForLoaderToDisappear,

@@ -1,5 +1,5 @@
 const languagesPage = require('../../../page-objects/default/translations/languages.wdio.page');
-const commonPo = require('../../../page-objects/default/common/common.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const utils = require('../../../utils');
 const sentinelUtils = require('../../../utils/sentinel');
 const userSettingsElements = require('../../../page-objects/default/users/user-settings.wdio.page');
@@ -24,6 +24,7 @@ describe('Adding new language', () => {
 
     await waitForServiceWorker.promise;
     await browser.refresh();
+    await commonPage.waitForPageLoaded();
   };
 
   before(async () => await loginPage.cookieLogin());
@@ -44,31 +45,32 @@ describe('Adding new language', () => {
 
   it('should reflect in config wizard', async () => {
     await languagesPage.goToApplication();
-    const [heading, messageLanguage, appLanguage] = await commonPo.getDefaultLanguages();
+    const [heading, messageLanguage, appLanguage] = await commonPage.getDefaultLanguages();
     expect(heading).to.equal(`${NEW_LANG_NAME}, ${NEW_LANG_NAME}`);
     expect(messageLanguage).to.equal(NEW_LANG_NAME);
     expect(appLanguage).to.equal(NEW_LANG_NAME);
   });
 
   it('should add new translations', async () => {
+    await browser.setCookies({ name: 'locale', value: 'en' });
     await addTranslations(NEW_LANG_CODE, NEW_TRANSLATIONS);
-    await commonPo.openHamburgerMenu();
-    await commonPo.openUserSettingsAndFetchProperties();
+    await commonPage.openHamburgerMenu();
+    await commonPage.openUserSettings();
     await userSettingsElements.openEditSettings();
 
     // change user language
     await userSettingsElements.selectLanguage(NEW_LANG_CODE);
-    await browser.waitUntil(async () => await (await commonPo.analyticsTab()).getText() === 'Analytiks');
+    await browser.waitUntil(async () => await (await commonPage.analyticsTab()).getText() === 'Analytiks');
 
     //check for translations in the UI
-    await commonPo.goToMessages();
-    await commonPo.waitForPageLoaded();
+    await commonPage.goToMessages();
+    await commonPage.waitForPageLoaded();
     await browser.waitUntil(async () =>
       await (await messagesPage.messagesList()).getText() === 'Geen boodskappe gevind nie'
     );
-    await commonPo.goToReports();
+    await commonPage.goToReports();
     await browser.waitUntil(async () => await (await reportsPage.reportList()).getText() === 'Geen verslae gevind nie');
-    await commonPo.goToPeople();
+    await commonPage.goToPeople();
     await browser.waitUntil(async () => await (await contactsPage.contactList()).getText() === 'Geen mense gevind nie');
   });
 
@@ -81,6 +83,6 @@ describe('Adding new language', () => {
 
     await utils.stopApi();
     await utils.startApi();
-    await commonPo.goToReports();
+    await commonPage.goToReports();
   });
 });
