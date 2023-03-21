@@ -4,6 +4,7 @@ const commonPage = require('../common/common.wdio.page');
 const messageByIndex = index => $(`#message-list li:nth-child(${index})`);
 const messageInList = identifier => $(`#message-list li[test-id="${identifier}"]`);
 const messagesList = () => $('#message-list');
+const messagesLoadingStatus = () => $('#message-list .loading-status');
 const waitForMessagesInLHS = async () => await browser.waitUntil(
   async () => await (await messageByIndex(1)).waitForDisplayed(),
   5000,
@@ -59,6 +60,11 @@ const exportMessages = async () => {
   await (await exportButton()).click();
 };
 
+const getMessageLoadingStatus = async () => {
+  await (await messagesLoadingStatus()).waitForDisplayed();
+  return await (await messagesLoadingStatus()).getText();
+};
+
 module.exports = {
   exportMessages,
   messageByIndex,
@@ -75,5 +81,6 @@ module.exports = {
   messageText,
   submitMessage,
   searchSelect,
+  getMessageLoadingStatus,
   sendMessageToPhone,
 };

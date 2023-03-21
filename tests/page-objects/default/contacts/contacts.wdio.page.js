@@ -18,6 +18,7 @@ const taskFilterSelector = '.card.tasks .table-filter a';
 const taskFilter = () => $(taskFilterSelector);
 const taskFilters = () => $$(taskFilterSelector);
 const contactList = () => $('#contacts-list');
+const contactListLoadingStatus = () => $('#contacts-list .loading-status');
 const newPlaceName = () => $('[name="/data/init/custom_place_name"]');
 const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
@@ -357,6 +358,11 @@ const getCurrentContactId = async () => {
   return currentUrl.slice(contactBaseUrl.length);
 };
 
+const getContactListLoadingStatus = async () => {
+  await (await contactListLoadingStatus()).waitForDisplayed();
+  return await (await contactListLoadingStatus()).getText();
+};
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -407,5 +413,6 @@ module.exports = {
   getDeathCardInfo,
   contactMuted,
   openFormWithWarning,
+  getContactListLoadingStatus,
   getCurrentContactId,
 };

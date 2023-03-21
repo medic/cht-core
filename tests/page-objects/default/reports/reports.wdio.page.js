@@ -17,6 +17,7 @@ const submitterPhone = () => $('.sender .phone');
 const submitterName = () => $('.sender .name');
 const firstReport = () => $(`${REPORTS_LIST_ID} li:first-child`);
 const reportList = () => $(`${REPORTS_LIST_ID}`);
+const reportListLoadingStatus = () => $(`${REPORTS_LIST_ID} .loading-status`);
 const allReports = () => $$(`${REPORTS_LIST_ID} li.content-row`);
 const reportsByUUID = (uuid) => $$(`${REPORTS_LIST_ID} li.content-row[data-record-id="${uuid}"]`);
 const reportRowSelector = `${REPORTS_LIST_ID} .content-row`;
@@ -382,6 +383,11 @@ const getSelectedReviewOption = async () => {
   return label;
 };
 
+const getReportListLoadingStatus = async () => {
+  await (await reportListLoadingStatus()).waitForDisplayed();
+  return await (await reportListLoadingStatus()).getText();
+};
+
 module.exports = {
   getCurrentReportId,
   getLastSubmittedReportId,
@@ -440,5 +446,6 @@ module.exports = {
   getSelectedReviewOption,
   fieldByIndex,
   reportBodyDetails,
+  getReportListLoadingStatus,
   openSelectedReport,
 };
