@@ -96,7 +96,7 @@ const getInfoUserCtx = req => {
 };
 
 const getAllowedDocsCounts = async (userCtx) => {
-  const { docIds, warnDocIds, warn, limit } = await initialReplication.getDocIds(userCtx);
+  const { docIds, warnDocIds, warn, limit } = await initialReplication.getContext(userCtx);
 
   return {
     total_docs: docIds.length,

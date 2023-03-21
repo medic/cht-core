@@ -214,53 +214,6 @@ describe('bootstrapper', () => {
     expect(initialReplication.replicate.args).to.deep.equal([[ remoteMedicDb, localMedicDb ]]);
   });
 
-  xit('should perform initial replication with more than 100 docs', done => {
-    setUserCtxCookie({ name: 'jim' });
-
-    const localReplicateResult = Promise.resolve();
-    localReplicateResult.on = () => {};
-    localReplicate.returns(localReplicateResult);
-
-    localAllDocs.resolves({ total_rows: 0 });
-    sinon.stub(utils, 'fetchJSON').resolves({ total_docs: 99, warn: false });
-    localId.resolves('some random string');
-    sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
-    sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
-    sinon.stub(console, 'warn');
-
-    bootstrapper(pouchDbOptions, err => {
-      assert.equal(null, err);
-      assert.equal(pouchDb.callCount, 3);
-      assert.equal(pouchDb.args[0][0], 'medic-user-jim');
-      assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
-      assert.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
-      assert.deepEqual(pouchDb.args[1][1], { skip_setup: true });
-      assert.equal(localGet.callCount, 4);
-      assert.equal(localGet.args[0][0], '_design/medic-client');
-      assert.equal(localGet.args[1][0], 'settings');
-      assert.equal(localGet.args[2][0], '_design/medic-client');
-      assert.equal(localGet.args[3][0], 'settings');
-      assert.equal(localReplicate.callCount, 1);
-      assert.equal(localReplicate.args[0][0].remote, true);
-      assert.deepEqual(localReplicate.args[0][1], {
-        live: false,
-        retry: false,
-        heartbeat: 10000,
-        timeout: 600000,
-        query_params: { initial_replication: true }
-      });
-      assert.equal(localClose.callCount, 1);
-      assert.equal(remoteClose.callCount, 1);
-      assert.equal(localAllDocs.callCount, 1);
-      assert.deepEqual(localAllDocs.args[0], [{ limit: 1 }]);
-      assert.equal(utils.fetchJSON.callCount, 1);
-      assert.deepEqual(utils.fetchJSON.args[0][0], '/api/v1/users-info');
-      assert.deepEqual(console.warn.callCount, 0);
-      done();
-    });
-  });
-
   it('should redirect to login when no userCtx cookie found', async () => {
     sinon.stub(utils, 'setOptions');
 
@@ -368,7 +321,7 @@ describe('bootstrapper', () => {
     assert.equal(remoteClose.callCount, 1);
   });
 
-  xit('should run purge after skipping initial replication', async () => {
+  it('should run purge after skipping initial replication', async () => {
     setUserCtxCookie({ name: 'jim' });
 
     sinon.stub(initialReplication, 'isReplicationNeeded').resolves(false);
@@ -384,7 +337,7 @@ describe('bootstrapper', () => {
     assert.equal(purger.purgeMain.callCount, 1);
   });
 
-  xit('should catch purge errors', async () => {
+  it('should catch purge errors', async () => {
     setUserCtxCookie( { name: 'jim' });
 
     sinon.stub(initialReplication, 'isReplicationNeeded').resolves(false);

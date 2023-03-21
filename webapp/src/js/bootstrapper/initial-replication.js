@@ -2,7 +2,7 @@ const utils = require('./utils');
 const translator = require('./translator');
 const { setUiStatus } = require('./ui-status');
 
-let docIds;
+let docIdsRevs;
 let lastSeq;
 let remoteDocCount;
 
@@ -43,41 +43,43 @@ const getDataUsage = () => {
   }
 };
 
-const getDocIds = async () => {
-  const res = await utils.fetchJSON('/initial-replication/get-ids');
-  docIds = res.doc_ids;
-  lastSeq = res.last_seq;
-  remoteDocCount = res.doc_ids.length;
-
-  if (res.warn) {
-    await new Promise(resolve => {
-      const translateParams = { count: res.warn_docs, limit: res.limit };
-      const errorMessage = translator.translate('TOO_MANY_DOCS', translateParams);
-      const continueBtn = translator.translate('CONTINUE');
-      const abort = translator.translate('ABORT');
-      const content = `
+const displayTooManyDocsWarning = ({ warn_docs, limit }) => {
+  return new Promise(resolve => {
+    const translateParams = { count: warn_docs, limit: limit };
+    const errorMessage = translator.translate('TOO_MANY_DOCS', translateParams);
+    const continueBtn = translator.translate('CONTINUE');
+    const abort = translator.translate('ABORT');
+    const content = `
             <div>
               <p class="alert alert-warning">${errorMessage}</p>
               <a id="btn-continue" class="btn btn-primary pull-left" href="#">${continueBtn}</a>
               <a id="btn-abort" class="btn btn-danger pull-right" href="#">${abort}</a>
             </div>`;
 
-      $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
-      $('.bootstrap-layer .error').show();
-      $('.bootstrap-layer .error').html(content);
-      $('#btn-continue').click(() => resolve());
-      $('#btn-abort').click(() => {
-        document.cookie = 'login=force;path=/';
-        window.location.reload(false);
-      });
+    $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
+    $('.bootstrap-layer .error').show();
+    $('.bootstrap-layer .error').html(content);
+    $('#btn-continue').click(() => resolve());
+    $('#btn-abort').click(() => {
+      document.cookie = 'login=force;path=/';
+      window.location.reload(false);
     });
-  }
+  });
+};
 
-  setUiStatus('FETCH_INFO', { count: 0, total: res.doc_ids.length });
+const getDownloadList = async () => {
+  const response = await utils.fetchJSON('/initial-replication/get-ids');
+  docIdsRevs = response.doc_ids_revs;
+  lastSeq = response.last_seq;
+  remoteDocCount = response.doc_ids_revs.length;
+
+  if (response.warn) {
+    await displayTooManyDocsWarning(response);
+  }
 };
 
 const getDocsBatch = async (remoteDb, localDb) => {
-  const batch = docIds.splice(0, BATCH_SIZE);
+  const batch = docIdsRevs.splice(0, BATCH_SIZE);
 
   const byId = {};
   batch.forEach(({ id, rev }) => byId[id] = [rev]);
@@ -89,7 +91,7 @@ const getDocsBatch = async (remoteDb, localDb) => {
   };
 
   if (!requestDocs.docs.length) {
-    return docIds.length;
+    return docIdsRevs.length;
   }
 
   const res = await remoteDb.bulkGet(requestDocs);
@@ -97,19 +99,17 @@ const getDocsBatch = async (remoteDb, localDb) => {
     .map(result => result.docs && result.docs[0] && result.docs[0].ok)
     .filter(doc => doc);
   await localDb.bulkDocs(docs, { new_edits: false });
-
-  return docIds.length;
 };
 
-const getDocs = async (remoteDb, localDb) => {
-  let remaining;
+const downloadDocs = async (remoteDb, localDb) => {
   do {
-    remaining = await getDocsBatch(remoteDb, localDb);
-    setUiStatus('FETCH_INFO', { count: remoteDocCount - remaining, total: remoteDocCount });
-  } while (remaining > 0);
+    setUiStatus('FETCH_INFO', { count: remoteDocCount - docIdsRevs.length, total: remoteDocCount });
+    await getDocsBatch(remoteDb, localDb);
+  } while (docIdsRevs.length > 0);
 };
 
-const writeCheckpointer = async (remoteDb, localDb) => {
+const writeCheckpointers = async (remoteDb, localDb) => {
+  // todo add another UI status here
   await localDb.replicate.from(remoteDb, {
     live: false,
     retry: false,
@@ -131,9 +131,10 @@ const replicate = async (remoteDb, localDb) => {
   const dbSyncStartTime = Date.now();
   const dbSyncStartData = getDataUsage();
 
-  await getDocIds();
-  await getDocs(remoteDb, localDb);
-  await writeCheckpointer(remoteDb, localDb);
+  setUiStatus('POLL_REPLICATION');
+  await getDownloadList();
+  await downloadDocs(remoteDb, localDb);
+  await writeCheckpointers(remoteDb, localDb);
 
   await completeInitialReplication(localDb, dbSyncStartTime, dbSyncStartData);
 };
@@ -155,7 +156,7 @@ const isReplicationNeeded = async (localDb, userCtx) => {
   const results = await localDb.allDocs({ keys: requiredDocs });
   const errors = results.rows.filter(row => row.error);
   const replicationLog = await getReplicationLog(localDb);
-  return errors.length || !replicationLog;
+  return !!errors.length || !replicationLog;
 };
 
 module.exports = {
