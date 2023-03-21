@@ -131,7 +131,7 @@ select_ssl_certificate_mode(){
 
 update_nginx_conf(){
   # Place environment variables into config
-  envsubst < "/etc/nginx/nginx.conf" > "/etc/nginx/nginx.conf"
+  envsubst < "/etc/nginx/nginx.conf.template" > "/etc/nginx/nginx.conf"
 }
 
 main (){
