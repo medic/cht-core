@@ -147,7 +147,6 @@ const addPlace = async ({
 rightSideAction = true,
 ) => {
   if (rightSideAction) {
-    console.log('****** clickFastActionFAB');
     await commonPage.clickFastActionFAB({ actionId: typeValue });
   } else {
     await commonPage.clickFastActionFlat({ waitForList: false });
