@@ -147,6 +147,7 @@ const addPlace = async ({
 rightSideAction = true,
 ) => {
   if (rightSideAction) {
+    console.log('****** clickFastActionFAB');
     await commonPage.clickFastActionFAB({ actionId: typeValue });
   } else {
     await commonPage.clickFastActionFlat({ waitForList: false });
@@ -179,7 +180,6 @@ const addPerson = async ({
   notes: notesValue = 'Some test notes',
 } = {}, waitForSentinel = true) => {
   const type = 'person';
-  await browser.saveScreenshot('./tests/e2e/default/contacts/addPerson.png');
   await commonPage.clickFastActionFAB({ actionId: type });
   await (await personName()).addValue(nameValue);
   await (await dateOfBirthField()).addValue(dobValue);
