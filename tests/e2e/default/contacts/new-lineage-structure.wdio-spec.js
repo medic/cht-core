@@ -50,6 +50,7 @@ describe('Create new lineage structure', () => {
   });
 
   it('Create new person', async () => {
+    console.log('***** CREATE NEW PERSON');
     await contactPage.selectLHSRowByText(household);
     chai.expect(await contactPage.addPerson({ name: 'James' })).to.equal('James');
   });

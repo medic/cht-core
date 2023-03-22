@@ -30,5 +30,5 @@ This is an iterative process and it's assumed there will be multiple numbered re
 
 # Close-out
 
-- [ ] Validate with the actual end user that this Feature Release delivers a quantifiable improvement.  If yes, plan on adding the feature to the next minor release by creating a new ticket to merge the code to `master`.  If no, we leave the code dead in this branch, never to be merged to `master`, but still loved all the same.
+- [ ] Validate with the actual end user that this Feature Release delivers a quantifiable improvement. If yes, plan on adding the feature to the next minor release by creating a new ticket to merge the code to `master`. If no, we leave the code dead in this branch, never to be merged to `master`, but still loved all the same.
 - [ ] Mark this issue "done" and close the Milestone.
