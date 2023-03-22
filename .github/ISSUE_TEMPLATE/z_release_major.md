@@ -69,3 +69,4 @@ Check out our [roadmap](https://github.com/orgs/medic/projects/112) to see what 
 ```
 - [ ] Add one last update to the #product-team Slack channel and use the thread to lead an internal release retrospective covering what went well and areas to improve for next time.
 - [ ] Mark this issue "done" and close the Milestone.
+- [ ] Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label.  
