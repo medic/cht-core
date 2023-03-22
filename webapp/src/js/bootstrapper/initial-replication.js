@@ -11,9 +11,10 @@ const BATCH_SIZE = 100;
 
 const completeInitialReplication = async (localDb, dbSyncStartTime, dbSyncStartData) => {
   const duration = Date.now() - dbSyncStartTime;
-  console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
   const dbSyncEndData = getDataUsage();
   const dataUsage = dbSyncStartData && dbSyncEndData.app.rx - dbSyncStartData.app.rx;
+
+  console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
   if (dataUsage) {
     console.info('Initial sync received ' + dataUsage + 'B of data');
   }
@@ -23,14 +24,13 @@ const completeInitialReplication = async (localDb, dbSyncStartTime, dbSyncStartD
     data_usage: dataUsage,
     duration,
     start_time: dbSyncStartTime,
+    complete: true,
   };
 
   let replicationLog = await getReplicationLog(localDb);
   if (!replicationLog) {
     replicationLog = log;
   } else {
-    replicationLog.history = replicationLog.history || [];
-    replicationLog.history.push(replicationLog);
     replicationLog = { ...replicationLog, ...log };
   }
 
@@ -91,7 +91,7 @@ const getDocsBatch = async (remoteDb, localDb) => {
   };
 
   if (!requestDocs.docs.length) {
-    return docIdsRevs.length;
+    return;
   }
 
   const res = await remoteDb.bulkGet(requestDocs);
@@ -156,7 +156,7 @@ const isReplicationNeeded = async (localDb, userCtx) => {
   const results = await localDb.allDocs({ keys: requiredDocs });
   const errors = results.rows.filter(row => row.error);
   const replicationLog = await getReplicationLog(localDb);
-  return !!errors.length || !replicationLog;
+  return !!errors.length || !replicationLog || !replicationLog.complete;
 };
 
 module.exports = {
