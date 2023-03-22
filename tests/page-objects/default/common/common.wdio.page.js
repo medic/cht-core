@@ -50,6 +50,7 @@ const waitForSnackbarToClose = async () => {
 };
 
 const clickFastActionById = async (id) => {
+  console.log('** -- CLICK FAST ACTION BY ID -- ** ');
   console.log(`**** TEST DARK BACKGROUND: ${await (await $('.cdk-overlay-dark-backdrop')).isExisting()}`);
   console.log(`**** TEST HAMBURGER MENU: ${await isHamburgerMenuOpen()}`);
   console.log(`**** TEST EDIT MENU: ${await (await $('#mat-menu-panel-0')).isExisting()}`);
@@ -66,6 +67,7 @@ const clickFastActionFAB = async ({ actionId, waitForList=true }) => {
   await (await fastActionFAB()).waitForDisplayed();
   await (await fastActionFAB()).waitForClickable();
   await (await fastActionFAB()).click();
+  console.log('***** CLICK FAB *****');
   if (waitForList) {
     await clickFastActionById(actionId);
   }

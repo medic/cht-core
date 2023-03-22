@@ -30,12 +30,14 @@ describe('Create new lineage structure', () => {
   });
 
   it('Create new health center', async () => {
+    console.log('***** ----- CREATE NEW HC ----- ***** ');
     await contactPage.addPlace({ placeName: centerName, contactName: centerContact }, false);
     await sentinelUtils.waitForSentinel(); // prevent stale element references
     chai.expect(await contactPage.getPrimaryContactName()).to.equal(centerContact);
   });
 
   it('Create new area', async () => {
+    console.log('***** ----- CREATE NEW AREA ----- ***** ');
     await contactPage.selectLHSRowByText(centerName);
     await contactPage.addPlace({ type: 'health_center', placeName: area, contactName: areaContact });
     await sentinelUtils.waitForSentinel(); // prevent stale element references
@@ -43,6 +45,7 @@ describe('Create new lineage structure', () => {
   });
 
   it('Create new household', async () => {
+    console.log('***** ----- CREATE NEW HH ----- ***** ');
     await contactPage.selectLHSRowByText(area);
     await contactPage.addPlace({ type: 'clinic', placeName: household, contactName: householdContact });
     await sentinelUtils.waitForSentinel(); // prevent stale element references
@@ -50,9 +53,11 @@ describe('Create new lineage structure', () => {
   });
 
   it('Create new person', async () => {
-    console.log('***** CREATE NEW PERSON');
+    console.log('***** ----- CREATE NEW PERSON ----- ***** ');
     await contactPage.selectLHSRowByText(household);
-    chai.expect(await contactPage.addPerson({ name: 'James' })).to.equal('James');
+    const tempName = await contactPage.addPerson({ name: 'James' });
+    //chai.expect(await contactPage.addPerson({ name: 'James' })).to.equal('James');
+    chai.expect(tempName).to.equal('James');
   });
 
   it('should edit a person with a phone number', async () => {

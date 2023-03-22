@@ -178,6 +178,7 @@ const addPerson = async ({
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
 } = {}, waitForSentinel = true) => {
+  console.log('** -- METHOD ADDPERSON -- **');
   const type = 'person';
   await commonPage.clickFastActionFAB({ actionId: type });
   await (await personName()).addValue(nameValue);
