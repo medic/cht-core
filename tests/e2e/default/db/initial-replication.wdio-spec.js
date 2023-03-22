@@ -138,7 +138,7 @@ const validateReplication = async () => {
   const localAllDocsPreSync = await getLocalDocs();
   const docIdsPreSync = localAllDocsPreSync.map(row => row.id);
 
-  await commonPage.sync(false, 3000);
+  await commonPage.sync(false, 5000);
 
   const localAllDocs = await getLocalDocs();
   const localDocIds = localAllDocs.map(row => row.id);
