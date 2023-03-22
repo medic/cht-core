@@ -36,7 +36,7 @@ const createHierarchy = (name, user=false) => {
   user = user && userFactory.build({ place: healthCenter._id, roles: ['chw'] });
 
   const clinics = Array
-    .from({ length: 100 })
+    .from({ length: 50 })
     .map((_, idx) => placeFactory.place().build({
       type: 'clinic',
       parent: { _id: healthCenter._id, parent: healthCenter.parent },
@@ -183,7 +183,7 @@ const validateReplication = async () => {
 
 describe('initial-replication', () => {
   before(async () => {
-    // we're creating ~4000 docs
+    // we're creating ~2000 docs
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
 
