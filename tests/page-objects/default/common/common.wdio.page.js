@@ -50,16 +50,17 @@ const waitForSnackbarToClose = async () => {
 };
 
 const clickFastActionById = async (id) => {
-  console.log('** -- CLICK FAST ACTION BY ID -- ** ');
   console.log(`**** TEST DARK BACKGROUND: ${await (await $('.cdk-overlay-dark-backdrop')).isExisting()}`);
   console.log(`**** TEST HAMBURGER MENU: ${await isHamburgerMenuOpen()}`);
   console.log(`**** TEST EDIT MENU: ${await (await $('#mat-menu-panel-0')).isExisting()}`);
+  await browser.saveScreenshot('./tests/e2e/default/contacts/error.png');
   await (await fastActionListContainer()).waitForDisplayed();
   // Wait for the Angular Material's animation to complete.
   //await browser.pause(500);
   await (await fastActionById(id)).scrollIntoView();
   await (await fastActionById(id)).waitForClickable();
   await (await fastActionById(id)).click();
+  console.log('** -- CLICK FAST ACTION BY ID -- ** ');
 };
 
 const clickFastActionFAB = async ({ actionId, waitForList=true }) => {
