@@ -548,7 +548,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.modalService
       .show(ReloadingComponent)
       .catch(() => {
-        console.debug('Delaying update');
+        console.debug('Delaying update dummy change');
         setTimeout(() => {
           this.showUpdateReady();
         }, TWO_HOURS);
