@@ -50,7 +50,8 @@ const waitForSnackbarToClose = async () => {
 };
 
 const clickFastActionById = async (id) => {
-  await (await $('.cdk-overlay-dark-backdrop')).waitForDisplayed();
+  //await (await $('.cdk-overlay-dark-backdrop')).waitForDisplayed();
+  await browser.pause(2000);
   await (await fastActionListContainer()).waitForDisplayed();
   // Wait for the Angular Material's animation to complete.
   //await browser.pause(500);
