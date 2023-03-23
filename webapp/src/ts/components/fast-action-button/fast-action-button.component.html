@@ -1,4 +1,8 @@
-<section class="fast-action-trigger" *ngIf="!useOldActionBar && !selectMode && fastActions?.length" [class.embed-fast-action]="config?.button?.type === buttonTypeFlat">
+<section
+  class="fast-action-trigger"
+  *ngIf="!useOldActionBar && !selectMode && fastActions?.length"
+  [class.embed-fast-action]="config?.button?.type === buttonTypeFlat"
+  [attr.test-id]="getFastExecutableAction() ? 'one-action-no-menu' : 'multiple-actions-menu'">
 
   <button
     mat-fab

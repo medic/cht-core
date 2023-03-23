@@ -13,7 +13,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { ButtonType } from '@mm-components/fast-action-button/fast-action-button.component';
 import { ReportsActions } from '@mm-actions/reports';
 
-describe.only('Session service', () => {
+describe('Session service', () => {
   let service: FastActionButtonService;
   let router;
   let authService;

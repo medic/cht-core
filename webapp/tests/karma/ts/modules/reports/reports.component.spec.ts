@@ -1,5 +1,6 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { DatePipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -32,7 +33,6 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
-import { ActivatedRoute, Router } from '@angular/router';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 

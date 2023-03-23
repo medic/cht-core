@@ -3,6 +3,7 @@ const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
 const fastActionFAB = () => $(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
 const fastActionFlat = () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`);
+const multipleActions = () => $(`${FAST_ACTION_TRIGGER}[test-id="multiple-actions-menu"]`);
 const FAST_ACTION_LIST_CONTAINER = '.fast-action-content-wrapper';
 const fastActionListContainer = () => $(FAST_ACTION_LIST_CONTAINER);
 const fastActionListCloseButton = () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-header .panel-header-close`);
@@ -50,29 +51,30 @@ const waitForSnackbarToClose = async () => {
 };
 
 const clickFastActionById = async (id) => {
-  await browser.pause(2000);
-  await (await fastActionListContainer()).waitForDisplayed();
   // Wait for the Angular Material's animation to complete.
-  //await browser.pause(500);
+  await browser.pause(500);
+  await (await fastActionListContainer()).waitForDisplayed();
   await (await fastActionById(id)).scrollIntoView();
   await (await fastActionById(id)).waitForClickable();
   await (await fastActionById(id)).click();
 };
 
-const clickFastActionFAB = async ({ actionId, waitForList=true }) => {
+const clickFastActionFAB = async ({ actionId, waitForList }) => {
   await closeHamburgerMenu();
   await (await fastActionFAB()).waitForDisplayed();
   await (await fastActionFAB()).waitForClickable();
+  waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
   await (await fastActionFAB()).click();
   if (waitForList) {
     await clickFastActionById(actionId);
   }
 };
 
-const clickFastActionFlat = async ({ actionId, waitForList=true }) => {
+const clickFastActionFlat = async ({ actionId, waitForList }) => {
   await waitForSnackbarToClose();
   await (await fastActionFlat()).waitForDisplayed();
   await (await fastActionFlat()).waitForClickable();
+  waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
   await (await fastActionFlat()).click();
   if (waitForList) {
     await clickFastActionById(actionId);
