@@ -339,33 +339,34 @@ describe('generate-xform service', () => {
       doc: {
         _id: 'b',
         _attachments: { xml: {} },
-        context: { collect: true }
+        context: { collect: true },
+        type: 'form',
       }
     };
 
     it('should handle no forms', () => {
-      sinon.stub(db.medic, 'query').resolves({ rows: [] });
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [] });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
-        expect(db.medic.query.callCount).to.equal(1);
+        expect(db.medic.allDocs.callCount).to.equal(1);
         expect(db.medic.bulkDocs.callCount).to.equal(0);
       });
     });
 
     it('should ignore json forms', () => {
-      sinon.stub(db.medic, 'query').resolves({ rows: [ JSON_FORM_ROW ] });
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [ JSON_FORM_ROW ] });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
-        expect(db.medic.query.callCount).to.equal(1);
+        expect(db.medic.allDocs.callCount).to.equal(1);
         expect(db.medic.bulkDocs.callCount).to.equal(0);
       });
     });
 
     it('should ignore collect forms', () => {
-      sinon.stub(db.medic, 'query').resolves({ rows: [ COLLECT_FORM_ROW ] });
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [ COLLECT_FORM_ROW ] });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
-        expect(db.medic.query.callCount).to.equal(1);
+        expect(db.medic.allDocs.callCount).to.equal(1);
         expect(db.medic.bulkDocs.callCount).to.equal(0);
       });
     });
@@ -374,17 +375,20 @@ describe('generate-xform service', () => {
       const formXml = '<my-xml/>';
       const currentForm = '<html/>';
       const currentModel = '<xml/>';
-      sinon.stub(db.medic, 'query').resolves({ rows: [ {
-        doc: { _attachments: {
-          'xform.xml': { data: Buffer.from(formXml) },
-          'form.html': { data: Buffer.from(currentForm) },
-          'model.xml': { data: Buffer.from(currentModel) }
-        } }
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [ {
+        doc: {
+          type: 'form',
+          _attachments: {
+            'xform.xml': { data: Buffer.from(formXml) },
+            'form.html': { data: Buffer.from(currentForm) },
+            'model.xml': { data: Buffer.from(currentModel) }
+          }
+        }
       } ] });
       sinon.stub(service, 'generate').resolves({ form: currentForm, model: currentModel });
       sinon.stub(db.medic, 'bulkDocs');
       return service.updateAll().then(() => {
-        expect(db.medic.query.callCount).to.equal(1);
+        expect(db.medic.allDocs.callCount).to.equal(1);
         expect(db.medic.bulkDocs.callCount).to.equal(0);
       });
     });
@@ -395,10 +399,11 @@ describe('generate-xform service', () => {
       const newForm = '<html><title>Hello</title></html>';
       const currentModel = '<xml/>';
       const newModel = '<instance><multimedia/></instance>';
-      sinon.stub(db.medic, 'query').resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
         {
           doc: {
             _id: 'd',
+            type: 'form',
             _attachments: {
               'xform.xml': { data: Buffer.from(formXml) },
               'form.html': { data: Buffer.from(currentForm) },
@@ -423,12 +428,13 @@ describe('generate-xform service', () => {
       const newForm = '<html><title>Hello</title></html>';
       const currentModel = '<xml/>';
       const newModel = '<instance><multimedia/></instance>';
-      sinon.stub(db.medic, 'query').resolves({ rows: [
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: [
         JSON_FORM_ROW,
         COLLECT_FORM_ROW,
         {
           doc: {
             _id: 'c',
+            type: 'form',
             _attachments: {
               'xform.xml': { data: Buffer.from(formXml) },
               'form.html': { data: Buffer.from(currentForm) },
@@ -439,6 +445,7 @@ describe('generate-xform service', () => {
         {
           doc: {
             _id: 'd',
+            type: 'form',
             _attachments: {
               'xform.xml': { data: Buffer.from(formXml) },
               'form.html': { data: Buffer.from(currentForm) },
@@ -452,7 +459,7 @@ describe('generate-xform service', () => {
         .onCall(1).resolves({ form: newForm, model: newModel });
       sinon.stub(db.medic, 'bulkDocs').resolves([ { ok: true } ]);
       return service.updateAll().then(() => {
-        expect(db.medic.query.callCount).to.equal(1);
+        expect(db.medic.allDocs.callCount).to.equal(1);
         expect(db.medic.bulkDocs.callCount).to.equal(1);
         expect(db.medic.bulkDocs.args[0][0].length).to.equal(1);
         expect(db.medic.bulkDocs.args[0][0][0]._id).to.equal('d');

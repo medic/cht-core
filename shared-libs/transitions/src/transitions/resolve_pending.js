@@ -50,7 +50,7 @@ const setStateOnTasks = function(tasks, state) {
 
 module.exports = {
   name: NAME,
-  filter: doc => Boolean(getAllPendingTasks(doc).length),
+  filter: ({ doc }) => Boolean(getAllPendingTasks(doc).length),
   onMatch: change => {
     return Promise.resolve(setStateOnTasks(getAllPendingTasks(change.doc)));
   },

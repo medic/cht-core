@@ -2,67 +2,67 @@ const moment = require('moment');
 const utils = require('../../../utils');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const contactsPo = require('../../../page-objects/default/contacts/contacts.wdio.page');
+const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
 
 describe('Contact summary info', () => {
   const SCRIPT = `
     let cards = [];
     let context = {};
     let fields = [
-      { 
-        label: "uhc_stats_count", 
-        value: uhcStats.homeVisits ? uhcStats.homeVisits.count : '', 
-        width: 3 
+      {
+        label: "uhc_stats_count",
+        value: uhcStats.homeVisits ? uhcStats.homeVisits.count : '',
+        width: 3
       },
-      { 
-        label: "uhc_stats_count_goal", 
-        value: uhcStats.homeVisits ? uhcStats.homeVisits.countGoal : '', 
-        width: 3 
+      {
+        label: "uhc_stats_count_goal",
+        value: uhcStats.homeVisits ? uhcStats.homeVisits.countGoal : '',
+        width: 3
       },
-      { 
-        label: "uhc_stats_last_visited_date", 
-        value: uhcStats.homeVisits ? uhcStats.homeVisits.lastVisitedDate : '', 
-        width: 3 
+      {
+        label: "uhc_stats_last_visited_date",
+        value: uhcStats.homeVisits ? uhcStats.homeVisits.lastVisitedDate : '',
+        width: 3
       },
-      { 
-        label: "uhc_stats_interval_start", 
-        value: uhcStats.uhcInterval ? uhcStats.uhcInterval.start : '', 
-        width: 3 
+      {
+        label: "uhc_stats_interval_start",
+        value: uhcStats.uhcInterval ? uhcStats.uhcInterval.start : '',
+        width: 3
       },
-      { 
-        label: "uhc_stats_interval_end", 
-        value: uhcStats.uhcInterval ? uhcStats.uhcInterval.end : '', 
-        width: 3 
+      {
+        label: "uhc_stats_interval_end",
+        value: uhcStats.uhcInterval ? uhcStats.uhcInterval.end : '',
+        width: 3
       },
-      { 
-        label: "can_configure", 
-        value: cht.v1.hasPermissions('can_configure'), 
-        width: 3 
+      {
+        label: "can_configure",
+        value: cht.v1.hasPermissions('can_configure'),
+        width: 3
       },
-      { 
-        label: "can_edit_or_can_create_people", 
-        value: cht.v1.hasAnyPermission([['can_edit'], ['can_create_people']]), 
-        width: 3 
+      {
+        label: "can_edit_or_can_create_people",
+        value: cht.v1.hasAnyPermission([['can_edit'], ['can_create_people']]),
+        width: 3
       }
     ];
-    
+
     if (contact.type === "person") {
       fields.push({ label: "test_pid", value: contact.patient_id, width: 3 });
       fields.push({ label: "test_sex", value: contact.sex, width: 3 });
-     
+
       Object.keys(contact.linked_docs).forEach(key => {
         const linkedDoc = contact.linked_docs[key];
         if (!linkedDoc) {
           return;
         }
-        
+
         if (linkedDoc.type === 'data_record') {
           fields.push({
             label: key,
             value: linkedDoc.form,
             width: 3,
           });
-        } else {              
+        } else {
           fields.push({
             label: key,
             value: linkedDoc.name + ' ' + linkedDoc.phone,
@@ -258,93 +258,93 @@ describe('Contact summary info', () => {
   });
 
   after(async () => {
-    await utils.deleteUsers([ USER_HOME_VISITS, USER_DISTRICT ]);
+    await utils.deleteUsers([USER_HOME_VISITS, USER_DISTRICT]);
     await utils.revertDb([/^form:/], true);
   });
-  
 
   it('should load contact summary', async () => {
     await utils.updateSettings(SETTINGS, true);
     await commonElements.closeReloadModal();
     await commonElements.goToPeople();
-    await contactsPo.selectLHSRowByText(CAROL.name);
+    await contactPage.selectLHSRowByText(CAROL.name);
 
     // assert the summary card has the right fields
 
-    expect(await contactsPo.cardFieldLabelText('test_pid')).to.equal('test_pid');
-    expect(await contactsPo.cardFieldText('test_pid')).to.equal(CAROL.patient_id);
+    expect(await contactPage.cardFieldLabelText('test_pid')).to.equal('test_pid');
+    expect(await contactPage.cardFieldText('test_pid')).to.equal(CAROL.patient_id);
 
-    expect(await contactsPo.cardFieldLabelText('test_sex')).to.equal('test_sex');
-    expect(await contactsPo.cardFieldText('test_sex')).to.equal(CAROL.sex);
+    expect(await contactPage.cardFieldLabelText('test_sex')).to.equal('test_sex');
+    expect(await contactPage.cardFieldText('test_sex')).to.equal(CAROL.sex);
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).to.equal('uhc_stats_count');
-    expect(await contactsPo.cardFieldText('uhc_stats_count')).to.equal('');
+    expect(await contactPage.cardFieldLabelText('uhc_stats_count')).to.equal('uhc_stats_count');
+    expect(await contactPage.cardFieldText('uhc_stats_count')).to.equal('');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal')).to.equal('uhc_stats_count_goal');
-    expect(await contactsPo.cardFieldText('uhc_stats_count_goal')).to.equal('');
+    expect(await contactPage.cardFieldLabelText('uhc_stats_count_goal')).to.equal('uhc_stats_count_goal');
+    expect(await contactPage.cardFieldText('uhc_stats_count_goal')).to.equal('');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date')).to.equal('uhc_stats_last_visited_date');
-    expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).to.equal('');
+    expect(await contactPage.cardFieldLabelText('uhc_stats_last_visited_date')).to.equal('uhc_stats_last_visited_date');
+    expect(await contactPage.cardFieldText('uhc_stats_last_visited_date')).to.equal('');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_start')).to.equal('uhc_stats_interval_start');
+    expect(await contactPage.cardFieldLabelText('uhc_stats_interval_start')).to.equal('uhc_stats_interval_start');
     const startDate = moment().startOf('month').valueOf().toString();
-    expect(await contactsPo.cardFieldText('uhc_stats_interval_start')).to.equal(startDate);
+    expect(await contactPage.cardFieldText('uhc_stats_interval_start')).to.equal(startDate);
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_end')).to.equal('uhc_stats_interval_end');
+    expect(await contactPage.cardFieldLabelText('uhc_stats_interval_end')).to.equal('uhc_stats_interval_end');
     const endDate = moment().endOf('month').valueOf().toString();
-    expect(await contactsPo.cardFieldText('uhc_stats_interval_end')).to.equal(endDate);
+    expect(await contactPage.cardFieldText('uhc_stats_interval_end')).to.equal(endDate);
 
-    expect(await contactsPo.cardFieldLabelText('alicetag')).to.equal('aliceTag');
-    expect(await contactsPo.cardFieldText('alicetag')).to.equal(`${ALICE.name} ${ALICE.phone}`);
+    expect(await contactPage.cardFieldLabelText('alicetag')).to.equal('aliceTag');
+    expect(await contactPage.cardFieldText('alicetag')).to.equal(`${ALICE.name} ${ALICE.phone}`);
 
-    expect(await contactsPo.cardFieldLabelText('davidtag')).to.equal('davidTag');
-    expect(await contactsPo.cardFieldText('davidtag')).to.equal(`${DAVID.name} ${DAVID.phone}`);
+    expect(await contactPage.cardFieldLabelText('davidtag')).to.equal('davidTag');
+    expect(await contactPage.cardFieldText('davidtag')).to.equal(`${DAVID.name} ${DAVID.phone}`);
 
-    expect(await contactsPo.cardFieldLabelText('visittag')).to.equal('visitTag');
-    expect(await contactsPo.cardFieldText('visittag')).to.equal(DAVID_VISIT.form);
+    expect(await contactPage.cardFieldLabelText('visittag')).to.equal('visitTag');
+    expect(await contactPage.cardFieldText('visittag')).to.equal(DAVID_VISIT.form);
 
     // assert that the pregnancy card exists and has the right fields.
-    expect(await (await $('.content-pane .meta > div > .card .action-header h3')).getText()).to.equal('test.pregnancy');
-    expect(await ( await $('.content-pane .meta > div > .card .row label')).getText()).to.equal('test.visits');
-    expect(await (await $(('.content-pane .meta > div > .card .row p'))).getText() ).to.equal('1');
+
+    expect(await (await contactPage.pregnancyLabel()).getText()).to.equal('test.pregnancy');
+    expect(await (await contactPage.visitLabel()).getText()).to.equal('test.visits');
+    expect(await (await contactPage.numberOfReports()).getText()).to.equal('1');
   });
 
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
-    await utils.createUsers([ USER_HOME_VISITS ]);
-    await loginPage.login({username: USER_HOME_VISITS.username, password: USER_HOME_VISITS.password});
+    await utils.createUsers([USER_HOME_VISITS]);
+    await loginPage.login({ username: USER_HOME_VISITS.username, password: USER_HOME_VISITS.password });
     await commonElements.closeTour();
 
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
     permissions.can_view_uhc_stats = USER_HOME_VISITS.roles;
     await utils.updateSettings({ ...SETTINGS, permissions }, true);
-    
+
     await commonElements.closeReloadModal();
 
     await commonElements.goToPeople();
-    await contactsPo.selectLHSRowByText(BOB_PLACE.name);
+    await contactPage.selectLHSRowByText(BOB_PLACE.name);
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_count')).to.equal('uhc_stats_count');
-    expect(await contactsPo.cardFieldText('uhc_stats_count')).to.equal('1');
+    expect(await contactPage.cardFieldLabelText('uhc_stats_count')).to.equal('uhc_stats_count');
+    expect(await contactPage.cardFieldText('uhc_stats_count')).to.equal('1');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_count_goal')).to.equal('uhc_stats_count_goal');
-    expect(await contactsPo.cardFieldText('uhc_stats_count_goal')).to.equal('2');
+    expect(await contactPage.cardFieldLabelText('uhc_stats_count_goal')).to.equal('uhc_stats_count_goal');
+    expect(await contactPage.cardFieldText('uhc_stats_count_goal')).to.equal('2');
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_last_visited_date')).to.equal('uhc_stats_last_visited_date');
-    expect(await contactsPo.cardFieldText('uhc_stats_last_visited_date')).to.equal(VISIT.reported_date.toString());
+    expect(await contactPage.cardFieldLabelText('uhc_stats_last_visited_date')).to.equal('uhc_stats_last_visited_date');
+    expect(await contactPage.cardFieldText('uhc_stats_last_visited_date')).to.equal(VISIT.reported_date.toString());
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_start')).to.equal('uhc_stats_interval_start');
+    expect(await contactPage.cardFieldLabelText('uhc_stats_interval_start')).to.equal('uhc_stats_interval_start');
     const startDate = moment().startOf('month').valueOf().toString();
-    expect(await contactsPo.cardFieldText('uhc_stats_interval_start')).to.equal(startDate);
+    expect(await contactPage.cardFieldText('uhc_stats_interval_start')).to.equal(startDate);
 
-    expect(await contactsPo.cardFieldLabelText('uhc_stats_interval_end')).to.equal('uhc_stats_interval_end');
+    expect(await contactPage.cardFieldLabelText('uhc_stats_interval_end')).to.equal('uhc_stats_interval_end');
     const endDate = moment().endOf('month').valueOf().toString();
-    expect(await contactsPo.cardFieldText('uhc_stats_interval_end')).to.equal(endDate);
+    expect(await contactPage.cardFieldText('uhc_stats_interval_end')).to.equal(endDate);
   });
 
   it('should have access to the "cht" global api variable', async () => {
-    await utils.createUsers([ USER_DISTRICT ]);
-    await loginPage.login({username: USER_DISTRICT.username, password: USER_DISTRICT.password});
+    await utils.createUsers([USER_DISTRICT]);
+    await loginPage.login({ username: USER_DISTRICT.username, password: USER_DISTRICT.password });
     await commonElements.closeTour();
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
@@ -354,12 +354,12 @@ describe('Contact summary info', () => {
     await commonElements.closeReloadModal();
 
     await commonElements.goToPeople();
-    await contactsPo.selectLHSRowByText(BOB_PLACE.name);
+    await contactPage.selectLHSRowByText(BOB_PLACE.name);
 
-    expect(await contactsPo.cardFieldLabelText('can_configure')).to.equal('can_configure');
-    expect(await contactsPo.cardFieldText('can_configure')).to.equal('true');
-    expect(await contactsPo.cardFieldLabelText('can_edit_or_can_create_people'))
+    expect(await contactPage.cardFieldLabelText('can_configure')).to.equal('can_configure');
+    expect(await contactPage.cardFieldText('can_configure')).to.equal('true');
+    expect(await contactPage.cardFieldLabelText('can_edit_or_can_create_people'))
       .to.equal('can_edit_or_can_create_people');
-    expect(await contactsPo.cardFieldText('can_edit_or_can_create_people')).to.equal('true');
+    expect(await contactPage.cardFieldText('can_edit_or_can_create_people')).to.equal('true');
   });
 });

@@ -22,6 +22,7 @@ const state = {
       isOpen: false,
       filterCount: { total: 5, placeFilter: 3, formFilter: 2 },
     },
+    trainingCardFormId: 'training:new_change',
     navigation: {
       cancelCallback: function() {},
       preventNavigation: 'prevent',
@@ -237,6 +238,10 @@ describe('Selectors', () => {
 
     it('should getEnketoError', () => {
       expect(Selectors.getEnketoError.projector(state.global)).to.equal(clonedState.global.enketoStatus.error);
+    });
+
+    it('should getTrainingCardFormId', () => {
+      expect(Selectors.getTrainingCardFormId.projector(state.global)).to.equal(clonedState.global.trainingCardFormId);
     });
 
     // null checks

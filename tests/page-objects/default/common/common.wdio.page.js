@@ -188,6 +188,11 @@ const waitForPageLoaded = async () => {
   } while ((await loaders()).length > 0);
 };
 
+const syncAndNotWaitForSuccess = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
+};
+
 const syncAndWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
@@ -202,6 +207,11 @@ const sync = async (expectReload) => {
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
   await syncAndWaitForSuccess();
+};
+
+const syncWithoutWaitForSuccess = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
 };
 
 const closeReloadModal = async () => {
@@ -270,6 +280,17 @@ const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
 };
 
+//more options menu
+const optionSelector = (action, item) => $(`[test-id="${action}-${item}"]`);
+
+const isMenuOptionEnabled = async (action, item) => {
+  return await (await optionSelector(action, item)).isEnabled();
+};
+
+const isMenuOptionVisible = async (action, item) => {
+  return await (await optionSelector(action, item)).isDisplayed();
+};
+
 module.exports = {
   openMoreOptionsMenu,
   logout,
@@ -287,6 +308,7 @@ module.exports = {
   hideSnackbar,
   waitForLoaders,
   sync,
+  syncAndNotWaitForSuccess,
   syncButton,
   closeReloadModal,
   goToMessages,
@@ -315,4 +337,8 @@ module.exports = {
   getTextForElements,
   toggleActionbar,
   jsonError,
+  isMenuOptionEnabled,
+  isMenuOptionVisible,
+  moreOptionsMenu,
+  syncWithoutWaitForSuccess,
 };

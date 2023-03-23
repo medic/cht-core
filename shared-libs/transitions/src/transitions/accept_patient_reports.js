@@ -254,7 +254,7 @@ const handleReport = (doc, config) => {
 
 module.exports = {
   name: NAME,
-  filter: function(doc, info = {}) {
+  filter: function({ doc, info }) {
     return Boolean(
       doc &&
       doc.type === 'data_record' &&

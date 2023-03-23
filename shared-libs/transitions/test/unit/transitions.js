@@ -370,7 +370,7 @@ describe('transitions', () => {
       });
 
       expect(result).to.equal(true);
-      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.filter.args).to.deep.equal([[change]]);
       expect(transition.onMatch.args).to.deep.equal([[change]]);
       expect(infodoc.updateTransition.args).to.deep.equal([[change, transition.key, true]]);
     });
@@ -392,7 +392,7 @@ describe('transitions', () => {
       });
 
       expect(result).to.equal(false);
-      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.filter.args).to.deep.equal([[change]]);
       expect(transition.onMatch.args).to.deep.equal([[change]]);
       expect(infodoc.updateTransition.called).to.equal(false);
     });
@@ -414,7 +414,7 @@ describe('transitions', () => {
       });
 
       expect(result).to.equal(undefined);
-      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.filter.args).to.deep.equal([[change]]);
       expect(transition.onMatch.called).to.equal(false);
       expect(infodoc.updateTransition.called).to.equal(false);
     });
@@ -482,7 +482,7 @@ describe('transitions', () => {
         );
       });
       expect(result).to.equal(false);
-      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.filter.args).to.deep.equal([[change]]);
       expect(transition.onMatch.called).to.equal(false);
       expect(infodoc.updateTransition.called).to.equal(false);
     });
@@ -504,7 +504,7 @@ describe('transitions', () => {
       });
 
       expect(result).to.equal(false);
-      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.filter.args).to.deep.equal([[change]]);
       expect(transition.onMatch.called).to.equal(true);
       expect(infodoc.updateTransition.called).to.equal(false);
     });
@@ -526,7 +526,7 @@ describe('transitions', () => {
       });
 
       expect(result).to.equal(true);
-      expect(transition.filter.args).to.deep.equal([[change.doc, change.info]]);
+      expect(transition.filter.args).to.deep.equal([[change]]);
       expect(transition.onMatch.called).to.equal(true);
       expect(infodoc.updateTransition.args).to.deep.equal([[change, transition.key, false]]);
     });

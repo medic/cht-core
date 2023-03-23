@@ -21,44 +21,57 @@ describe('default responses', () => {
   });
 
   it('when document type is unknown do not pass filter', () => {
-    assert.equal(transition.filter({}), false);
+    assert.equal(transition.filter({ doc: {} }), false);
   });
 
   it('when doc has no errors do nothing', () => {
     assert.equal(transition.filter({
-      type: 'data_record',
-      errors: []
+      doc: {
+        type: 'data_record',
+        errors: []
+      }
     }), false);
   });
 
   it('when doc has no from property do nothing', () => {
     assert.equal(transition.filter({
-      type: 'data_record',
-      errors: ['foo']
+      doc: {
+        type: 'data_record',
+        errors: ['foo']
+      }
     }), false);
   });
 
   it('when doc has errors still pass filter', () => {
     assert.equal(transition.filter({
-      from: '+222',
-      type: 'data_record',
-      errors: ['foo']
+      doc: {
+        from: '+222',
+        type: 'data_record',
+        errors: ['foo']
+      },
+      info: {}
     }), true);
   });
 
   it('filter passes when message is from gateway', () => {
     sinon.stub(messages, 'isMessageFromGateway').returns(true);
     assert.equal(transition.filter({
-      from: 'x',
-      type: 'data_record'
+      doc: {
+        from: 'x',
+        type: 'data_record'
+      },
+      info: {}
     }), true);
   });
 
   it('filter passes when message is not from gateway', () => {
     sinon.stub(messages, 'isMessageFromGateway').returns(false);
     assert.equal(transition.filter({
-      from: 'x',
-      type: 'data_record'
+      doc: {
+        from: 'x',
+        type: 'data_record'
+      },
+      info: {}
     }), true);
   });
 
@@ -66,16 +79,22 @@ describe('default responses', () => {
     // Filter passes because message is added with a 'denied' state.
     sinon.stub(messages, 'isOutgoingAllowed').returns(true);
     assert.equal(transition.filter({
-      from: 'x',
-      type: 'data_record'
+      doc: {
+        from: 'x',
+        type: 'data_record'
+      },
+      info: {}
     }), true);
   });
 
   it('pass filter when message is not from gateway', () => {
     sinon.stub(transition, '_getConfig').returns('+774455558889');
     assert.equal(transition.filter({
-      from: 'x',
-      type: 'data_record'
+      doc: {
+        from: 'x',
+        type: 'data_record'
+      },
+      info: {}
     }), true);
   });
 
@@ -83,15 +102,19 @@ describe('default responses', () => {
     transition._isReportedAfterStartDate.restore();
     sinon.stub(transition, '_isReportedAfterStartDate').returns(false);
     assert.equal(transition.filter({
-      from: '+222',
-      type: 'data_record',
+      doc: {
+        from: '+222',
+        type: 'data_record',
+      }
     }), false);
   });
 
   it('do nothing if outgoing message', () => {
     assert.equal(transition.filter({
-      kujua_message: true,
-      type: 'data_record',
+      doc: {
+        kujua_message: true,
+        type: 'data_record',
+      }
     }), false);
   });
 
