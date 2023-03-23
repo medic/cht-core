@@ -77,7 +77,7 @@ export class FastActionButtonService {
       .sort((a, b) => a.label?.localeCompare(b.label));
   }
 
-  private getContactFormActions(childContactTypes, parentFacilityId): FastAction[] {
+  private getContactFormActions(childContactTypes, parentFacilityId, queryParams?): FastAction[] {
     return (childContactTypes || [])
       .map(contactType => ({
         id: contactType.id,
@@ -90,7 +90,7 @@ export class FastActionButtonService {
             // Inserting facility's ID between "/contacts" and "add" router segments.
             route.splice(1, 0, parentFacilityId);
           }
-          this.router.navigate(route, { queryParams: { from: 'list' } });
+          this.router.navigate(route, { queryParams });
         },
       }))
       .sort((a, b) => a.label?.localeCompare(b.label));
@@ -162,7 +162,7 @@ export class FastActionButtonService {
   }
 
   getContactLeftSideActions(context: ContactActionsContext): Promise<FastAction[]> {
-    const actions = this.getContactFormActions(context.childContactTypes, context.parentFacilityId);
+    const actions = this.getContactFormActions(context.childContactTypes, context.parentFacilityId, { from: 'list' });
 
     return this.filterActions(actions);
   }

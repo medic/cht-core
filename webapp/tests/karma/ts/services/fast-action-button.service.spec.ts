@@ -111,7 +111,7 @@ describe('Session service', () => {
 
     expect(router.navigate.calledOnce).to.be.true;
     expect(router.navigate.args[0][0]).to.have.members(expectedAction.route);
-    expect(router.navigate.args[0][1]).to.deep.equal({ queryParams: { from: 'list' } });
+    expect(router.navigate.args[0][1]).to.deep.equal({ queryParams: expectedAction.queryParams });
   };
 
   const assertReportFormAction = (action, expectedAction, context?) => {
@@ -465,12 +465,14 @@ describe('Session service', () => {
         label: 'child-place-1-title',
         icon: 'child-place-1-icon',
         route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-1' ],
+        queryParams: { from: 'list' },
       });
       assertContactFormAction(actions[1], {
         id: 'child-place-2',
         label: 'child-place-2',
         icon: 'child-place-2-icon',
         route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-2' ],
+        queryParams: { from: 'list' },
       });
     });
 
@@ -498,12 +500,14 @@ describe('Session service', () => {
         label: 'child-place-1-title',
         icon: 'child-place-1-icon',
         route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-1' ],
+        queryParams: { from: 'list' },
       });
       assertContactFormAction(actions[1], {
         id: 'child-place-2',
         label: 'child-place-2',
         icon: 'child-place-2-icon',
         route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-2' ],
+        queryParams: { from: 'list' },
       });
     });
 
@@ -548,12 +552,14 @@ describe('Session service', () => {
         label: 'place-1-title',
         icon: 'place-1-icon',
         route: [ '/contacts', 'add', 'place-1' ],
+        queryParams: { from: 'list' },
       });
       assertContactFormAction(actions[1], {
         id: 'place-2',
         label: 'place-2',
         icon: 'place-2-icon',
         route: [ '/contacts', 'add', 'place-2' ],
+        queryParams: { from: 'list' },
       });
     });
   });
