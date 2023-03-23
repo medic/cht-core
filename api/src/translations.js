@@ -89,7 +89,7 @@ const overwrite = (translationFiles, docs) => {
   return updatedDocs;
 };
 
-const getTranslationDocs = () => {
+const getTranslationDocs = async () => {
   return db.medic
     .allDocs({ startkey: MESSAGES_DOC_ID_PREFIX, endkey: `${MESSAGES_DOC_ID_PREFIX}\ufff0`, include_docs: true })
     .then(response => {
@@ -129,9 +129,8 @@ module.exports = {
         return;
       }
 
-      return Promise
-        .all([ getTranslationDocs() ])
-        .then(([ docs ]) => overwrite(files, docs))
+      return getTranslationDocs()
+        .then((docs) => overwrite(files, docs))
         .then(updated => {
           if (updated.length) {
             return db.medic.bulkDocs(updated);
