@@ -223,6 +223,37 @@ describe('Reports Component', () => {
     expect(unsetComponentsStub.calledOnce).to.be.true;
   });
 
+  it('should update fast actions', () => {
+    const forms = [
+      { _id: 'form:test_report_type_1', title: 'Type 1', internalId: 'test_report_type_1', icon: 'a' },
+      { _id: 'form:test_report_type_2', title: 'Type 2', internalId: 'test_report_type_2', icon: 'b' },
+    ];
+
+    expect(xmlFormsService.subscribe.calledOnce).to.be.true;
+    expect(xmlFormsService.subscribe.args[0][0]).to.equal('AddReportMenu');
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ reportForms: true });
+
+    xmlFormsService.subscribe.args[0][2](null, forms);
+
+    expect(fastActionButtonService.getReportLeftSideActions.calledOnce).to.be.true;
+    expect(fastActionButtonService.getReportLeftSideActions.args[0][0].xmlReportForms).to.have.deep.members([
+      {
+        id: 'form:test_report_type_2',
+        code: 'test_report_type_2',
+        icon: 'b',
+        titleKey: undefined,
+        title: 'Type 2',
+      },
+      {
+        id: 'form:test_report_type_1',
+        code: 'test_report_type_1',
+        icon: 'a',
+        titleKey: undefined,
+        title: 'Type 1',
+      }
+    ]);
+  });
+
   describe('selectAllReports', () => {
     it('should select all when not all reports have been selected yet', async () => {
       const setLoadingContentStub = sinon.stub(GlobalActions.prototype, 'setLoadingContent');

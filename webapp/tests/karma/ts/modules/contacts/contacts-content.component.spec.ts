@@ -340,6 +340,16 @@ describe('Contacts content component', () => {
         phone: '123',
         muted: true
       });
+
+      expect(fastActionButtonService.getContactRightSideActions.calledOnce).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.args[0][0].xmlReportForms).to.be.undefined;
+      expect(fastActionButtonService.getContactRightSideActions.args[0][0].childContactTypes).to.be.undefined;
+      expect(fastActionButtonService.getContactRightSideActions.args[0][0].parentFacilityId).to.equal('district-123');
+      expect(fastActionButtonService.getContactRightSideActions.args[0][0].communicationContext.sendTo).to.deep.equal({
+        _id: 'district-123',
+        phone: '123',
+        muted: true
+      });
     }));
 
     it('should not initialise action bar when there is not selected contact', fakeAsync(() => {
@@ -350,11 +360,12 @@ describe('Contacts content component', () => {
 
       flush();
 
-      expect(globalActions.setRightActionBar.callCount).to.equal(0);
-      expect(xmlFormsService.subscribe.callCount).to.equal(0);
-      expect(userSettingsService.get.callCount).to.equal(0);
-      expect(settingsService.get.callCount).to.equal(0);
-      expect(contactTypesService.getChildren.callCount).to.equal(0);
+      expect(globalActions.setRightActionBar.notCalled).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
+      expect(xmlFormsService.subscribe.notCalled).to.be.true;
+      expect(userSettingsService.get.notCalled).to.be.true;
+      expect(settingsService.get.notCalled).to.be.true;
+      expect(contactTypesService.getChildren.notCalled).to.be.true;
     }));
 
     it('should enable edit and delete in the right action bar when user is online only', fakeAsync(() => {
@@ -451,6 +462,15 @@ describe('Contacts content component', () => {
 
     it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
       sinon.resetHistory();
+      store.overrideSelector(Selectors.getSelectedContact, {
+        doc: { _id: 'district-123', phone: '123', muted: true },
+        type: { person: true },
+        summary: { context: 'test' },
+        children: [],
+        tasks: [],
+        reports: []
+      });
+      store.refreshState();
       contactTypesService.getChildren.resolves([
         {
           id: 'type1',
@@ -499,6 +519,19 @@ describe('Contacts content component', () => {
           }
         ]
       });
+
+      expect(fastActionButtonService.getContactRightSideActions.calledTwice).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].xmlReportForms).to.be.undefined;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].parentFacilityId).to.equal('district-123');
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].communicationContext.sendTo).to.deep.equal({
+        _id: 'district-123',
+        phone: '123',
+        muted: true
+      });
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].childContactTypes).to.have.deep.members([
+        { create_form: 'form:contact:create:type2', id: 'type2', permission: 'can_create_places' },
+        { create_form: 'form:contact:create:type3', id: 'type3', permission: 'can_create_places' },
+      ]);
     }));
 
     it('should set relevant report forms based on the selected contact when muted', fakeAsync(() => {
@@ -561,6 +594,33 @@ describe('Contacts content component', () => {
         [2, settings],
         [3, settings],
       ]);
+
+      expect(fastActionButtonService.getContactRightSideActions.calledTwice).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].parentFacilityId).to.equal('district-123');
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].childContactTypes).to.be.undefined;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].xmlReportForms).to.have.deep.members([
+        {
+          id: 'form:test_report_type2',
+          code: 2,
+          icon: 'b',
+          showUnmuteModal: false,
+          title: 'Type 2',
+          titleKey: undefined,
+        },
+        {
+          id: 'form:test_report_type3',
+          code: 3,
+          icon: 'a',
+          showUnmuteModal: true,
+          title: 'Type 3',
+          titleKey: undefined,
+        }
+      ]);
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].communicationContext.sendTo).to.deep.equal({
+        _id: 'district-123',
+        phone: '123',
+        muted: true
+      });
     }));
 
     it('should set relevant report forms based on the selected contact when not muted', fakeAsync(() => {
@@ -618,6 +678,32 @@ describe('Contacts content component', () => {
           }
         ]
       });
+
+      expect(fastActionButtonService.getContactRightSideActions.calledTwice).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].parentFacilityId).to.equal('district-123');
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].childContactTypes).to.be.undefined;
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].xmlReportForms).to.have.deep.members([
+        {
+          id: 'form:test_report_type2',
+          code: 2,
+          icon: 'b',
+          showUnmuteModal: false,
+          title: 'Type 2',
+          titleKey: undefined,
+        },
+        {
+          id: 'form:test_report_type3',
+          code: 3,
+          icon: 'a',
+          showUnmuteModal: false,
+          title: 'Type 3',
+          titleKey: undefined,
+        }
+      ]);
+      expect(fastActionButtonService.getContactRightSideActions.args[1][0].communicationContext.sendTo).to.deep.equal({
+        _id: 'district-123',
+        phone: '123',
+      });
     }));
 
     it('should update action bar forms list when contact summary changes', fakeAsync(() => {
@@ -628,6 +714,7 @@ describe('Contacts content component', () => {
       store.refreshState();
 
       expect(globalActions.setRightActionBar.callCount).to.equal(0);
+      expect(fastActionButtonService.getContactRightSideActions.notCalled).to.be.true;
       expect(xmlFormsService.subscribe.callCount).to.equal(1);
       expect(xmlFormsService.subscribe.args[0][0]).to.equal('SelectedContactReportForms');
 
@@ -659,6 +746,26 @@ describe('Contacts content component', () => {
           }
         ]
       });
+
+      expect(fastActionButtonService.getContactRightSideActions.calledOnce).to.be.true;
+      expect(fastActionButtonService.getContactRightSideActions.args[0][0].xmlReportForms).to.have.deep.members([
+        {
+          id: 'form:test_report_type2',
+          code: 2,
+          icon: 'b',
+          showUnmuteModal: undefined,
+          title: 'Type 2',
+          titleKey: undefined,
+        },
+        {
+          id: 'form:test_report_type3',
+          code: 3,
+          icon: 'a',
+          showUnmuteModal: undefined,
+          title: 'Type 3',
+          titleKey: undefined,
+        }
+      ]);
     }));
 
     it('should not set relevant report forms when summary is not loaded yet', fakeAsync(() => {
