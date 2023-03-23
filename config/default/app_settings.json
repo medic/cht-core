@@ -1,26 +1,4 @@
 {
-  "locales": [
-    {
-      "code": "en",
-      "name": "English"
-    },
-    {
-      "code": "es",
-      "name": "Español (Spanish)"
-    },
-    {
-      "code": "fr",
-      "name": "Français (French)"
-    },
-    {
-      "code": "ne",
-      "name": "नेपाली (Nepali)"
-    },
-    {
-      "code": "sw",
-      "name": "Kiswahili (Swahili)"
-    }
-  ],
   "locale": "en",
   "locale_outgoing": "en",
   "date_format": "D MMM, YYYY",
