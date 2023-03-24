@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
-  "newProjectRoot": "projects",
+  "newProjectRoot": "web-components",
   "projects": {
     "webapp": {
       "projectType": "application",
@@ -124,6 +124,112 @@
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/select2/dist/js/select2.min.js"
             ]
+          }
+        }
+      }
+    },
+    "cht-form": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "less"
+        }
+      },
+      "root": "web-components/cht-form",
+      "sourceRoot": "web-components/cht-form/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-builders/custom-webpack:browser",
+          "options": {
+            "outputPath": "dist/cht-form",
+            "index": "web-components/cht-form/src/index.html",
+            "main": "web-components/cht-form/src/main.ts",
+            "polyfills": "web-components/cht-form/src/polyfills.ts",
+            "tsConfig": "web-components/cht-form/tsconfig.app.json",
+            "aot": true,
+            "inlineStyleLanguage": "less",
+            "assets": [
+              {
+                "glob": "*",
+                "input": "src/fonts",
+                "output": "fonts/"
+              }
+            ],
+            "styles": [
+              "src/css/inbox.less"
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/css"
+              ]
+            },
+            "scripts": [],
+
+            "customWebpackConfig": {
+              "path": "./custom-webpack.config.js"
+            }
+          },
+          "configurations": {
+            "development": {
+              "deleteOutputPath": false,
+              "outputHashing": "none",
+              "sourceMap": true,
+              "namedChunks": true,
+              "extractLicenses": false,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "optimization": false
+            },
+            "production": {
+              "deleteOutputPath": true,
+              "optimization": {
+                "fonts": true,
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                }
+              },
+              "outputHashing": "none",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
+            "tsConfig": "web-components/cht-form/tsconfig.spec.json",
+            "inlineStyleLanguage": "less",
+            "assets": [
+              "web-components/cht-form/src/favicon.ico",
+              "web-components/cht-form/src/assets"
+            ],
+            "styles": [
+              "web-components/cht-form/src/styles.less"
+            ],
+            "scripts": []
           }
         }
       }

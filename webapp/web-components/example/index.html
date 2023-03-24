@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Example Website with Embedded Angular Web Component</title>
+  <script src="../../dist/cht-form/runtime.js"></script>
+  <script src="../../dist/cht-form/polyfills.js"></script>
+  <script src="../../dist/cht-form/main.js"></script>
+  <link rel="stylesheet" href="../../dist/cht-form/styles.css">
+  <!--  <script src="../../dist/cht-form/vendor.js"></script>-->
+<!--    <script src="cht-form.js"></script>-->
+<!--    <link rel="stylesheet" href="cht-form.css">-->
+</head>
+<body>
+<div>
+  <h1 class="display-4">Helloo, world!</h1>
+  <hr class="my-4">
+  <cht-form id="myform" form-id="report-form"></cht-form>
+<!--  <p><cht-form thankyou-message="You da real MVP"></cht-form></p>-->
+</div>
+</body>
+
+<script>
+  document.getElementById('myform').setAttribute('thankyou-message', 'somevalue');
+</script>
+</html>
