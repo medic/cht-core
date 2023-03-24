@@ -78,20 +78,35 @@ const login = async () => {
   await commonPage.waitForPageLoaded();
 };
 
+const isLoggedIn = async () => {
+  const tab = await commonPage.messagesTab();
+  return await tab.isExisting();
+};
+
+const loginIfNeeded = async () => {
+  if (!await isLoggedIn()) {
+    await login();
+  }
+};
+
 describe('Service worker cache', () => {
+
   before(async () => {
     await utils.saveDoc(district);
     await utils.createUsers([chw]);
-
     await login();
     await commonPage.closeTour();
+  });
+
+  beforeEach(async () => {
+    await loginIfNeeded();
   });
 
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
 
     expect(cacheDetails.name.startsWith('sw-precache-v3-cache-')).to.be.true;
-    expect(cacheDetails.urls).to.have.members([
+    expect(cacheDetails.urls.sort()).to.have.members([
       '/',
       '/audio/alert.mp3',
       '/fontawesome-webfont.woff2',
@@ -114,12 +129,11 @@ describe('Service worker cache', () => {
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',
       '/medic/login',
-      '/polyfills-es5.js',
       '/polyfills.js',
       '/runtime.js',
       '/scripts.js',
       '/styles.css'
-    ]);
+    ].sort());
   });
 
   it('branding updates trigger login page refresh', async () => {
@@ -133,8 +147,6 @@ describe('Service worker cache', () => {
     await browser.throttle('offline'); // make sure we load the login page from cache
     await commonPage.logout();
     expect(await browser.getTitle()).to.equal('Not Medic');
-
-    await login();
   });
 
   it('login page translation updates trigger login page refresh', async () => {
@@ -151,8 +163,6 @@ describe('Service worker cache', () => {
 
     expect(await (await loginPage.labelForUser()).getText()).to.equal('NotUsername');
     expect(await (await loginPage.loginButton()).getText()).to.equal('NotLogin');
-
-    await login();
   });
 
   it('adding new languages triggers login page refresh', async () => {
@@ -172,8 +182,6 @@ describe('Service worker cache', () => {
     expect(await (await loginPage.labelForUser()).getText()).to.equal('Utilizator');
     expect(await (await loginPage.loginButton()).getText()).to.equal('Autentificare');
     expect(await (await loginPage.labelForPassword()).getText()).to.equal('Parola');
-
-    await login();
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {

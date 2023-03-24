@@ -363,7 +363,7 @@ const onMatch = change => {
 module.exports = {
   name: TRANSITION_NAME,
   asynchronousOnly: true,
-  filter: (doc, info = {}) => {
+  filter: ({ doc, info }) => {
     return !!(
       doc &&
       doc.form &&

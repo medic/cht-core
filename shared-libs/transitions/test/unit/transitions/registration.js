@@ -1884,7 +1884,7 @@ describe('registration', () => {
     it('returns false for reports with no registration configured', () => {
       const doc = { form: 'R', type: 'data_record' };
       const configGet = config.get.returns([{ form: 'XYZ' }]);
-      const actual = transition.filter(doc);
+      const actual = transition.filter({ doc });
       configGet.callCount.should.equal(1);
       configGet.args[0][0].should.equal('registrations');
       actual.should.equal(false);
@@ -1894,7 +1894,7 @@ describe('registration', () => {
       const doc = { form: 'R', type: 'data_record' };
       sinon.stub(utils, 'isValidSubmission').returns(false);
       config.get.returns([{ form: 'R' }]);
-      const actual = transition.filter(doc);
+      const actual = transition.filter({ doc, info: {} });
       config.get.callCount.should.equal(1);
       config.get.args[0][0].should.equal('registrations');
       utils.isValidSubmission.callCount.should.equal(1);
@@ -1906,7 +1906,7 @@ describe('registration', () => {
       const doc = { form: 'R', type: 'data_record' };
       sinon.stub(utils, 'isValidSubmission').returns(true);
       config.get.returns([{ form: 'R' }]);
-      const actual = transition.filter(doc);
+      const actual = transition.filter({ doc, info: {} });
       config.get.callCount.should.equal(1);
       config.get.args[0][0].should.equal('registrations');
       utils.isValidSubmission.callCount.should.equal(1);

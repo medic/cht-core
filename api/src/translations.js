@@ -3,6 +3,7 @@ const properties = require('properties');
 const db = require('./db');
 const environment = require('./environment');
 const fs = require('fs');
+const logger = require('./logger');
 const util = require('util');
 const path = require('path');
 const TRANSLATION_FILE_NAME_REGEX = /messages-([a-z]*)\.properties/;
@@ -19,7 +20,8 @@ const LOCAL_NAME_MAP = {
   ne: 'नेपाली (Nepali)',
   sw: 'Kiswahili (Swahili)',
   hi: 'हिन्दी (Hindi)',
-  id: 'Bahasa Indonesia (Indonesian)'
+  id: 'Bahasa Indonesia (Indonesian)',
+  lg: 'Luganda (Ganda)'
 };
 
 const extractLocaleCode = filename => {
@@ -27,6 +29,19 @@ const extractLocaleCode = filename => {
   if (parts && parts[1]) {
     return parts[1].toLowerCase();
   }
+};
+
+const validTranslationsDoc = doc => {
+  if (!doc || doc.type !== DOC_TYPE || !doc.code) {
+    return false;
+  }
+
+  if (_.isObject(doc.generic) || _.isObject(doc.values)) {
+    return true;
+  }
+
+  logger.warn(`Failed to load translations for "${doc.code}"("${doc.name}"). Translations document malformed.`);
+  return false;
 };
 
 const createDoc = attachment => {
@@ -77,7 +92,11 @@ const overwrite = (translationFiles, docs) => {
 const getTranslationDocs = () => {
   return db.medic
     .allDocs({ startkey: MESSAGES_DOC_ID_PREFIX, endkey: `${MESSAGES_DOC_ID_PREFIX}\ufff0`, include_docs: true })
-    .then(response => response.rows.map(row => row.doc));
+    .then(response => {
+      return response.rows
+        .map(row => row.doc)
+        .filter(doc => validTranslationsDoc(doc));
+    });
 };
 
 const getEnabledLocales = () => {

@@ -235,7 +235,7 @@ describe('routing', () => {
         utils.request(Object.assign({ path: '/api/deploy-info' }, offlineRequestOptions)),
         utils.requestOnTestDb('/_design/medic-client')
       ]).then(([ deployInfoOnline, deployInfoOffline, ddoc ]) => {
-        const deployInfo = Object.assign(ddoc.deploy_info, { version: ddoc.version });
+        const deployInfo = Object.assign(ddoc.deploy_info, ddoc.build_info, { version: ddoc.version });
         expect(deployInfoOnline).to.deep.equal(deployInfo);
         expect(deployInfoOffline).to.deep.equal(deployInfo);
       });
@@ -804,8 +804,9 @@ describe('routing', () => {
 
           // check the expiry date is around a year away
           const expiryValue = expires.split('=')[1];
-          const expiryDate = moment.utc(expiryValue).add(1, 'hour'); // add a small margin of error
-          expect(expiryDate.diff(now, 'months')).to.equal(12);
+          const expiryDate = moment.utc(expiryValue);
+          const nextYear = now.add(utils.ONE_YEAR_IN_S, 'second');
+          expect(expiryDate.diff(nextYear, 'hour')).to.equal(0); // add a small margin of error
 
           // check the other properties
           expect(samesite).to.equal('SameSite=Lax');

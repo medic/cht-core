@@ -89,7 +89,7 @@ export class UpdatePasswordComponent extends MmModalAbstract {
   }
 
   private windowReload() {
-    window.location.reload(true);
+    window.location.reload();
   }
 
   private async validatePasswordFields() {

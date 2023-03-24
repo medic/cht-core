@@ -3,7 +3,7 @@ const { COUCH_AUTH } = process.env;
 
 (() => {
   const options = {
-    hostname: 'couchdb.1',
+    hostname: 'couchdb-1.local',
     port: 5986,
     path: '/_dbs/medic-test',
     method: 'GET',

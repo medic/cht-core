@@ -95,7 +95,8 @@ module.exports = {
       };
       return serverUtils.error(error, req, res);
     }
-    return formsService.getFormDocs()
+    return formsService
+      .getFormDocs()
       .then(docs => docs.find(doc => doc.internalId === form))
       .then(doc => formsService.getXFormAttachment(doc))
       .then(attachment => {

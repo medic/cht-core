@@ -19,6 +19,6 @@ module.exports = {
 
     return transitionUtils.getDeprecationMessage(self.name, self.deprecatedIn, deprecatedExtraInfo);
   },
-  filter: (doc) => generateShortcodeOnContacts.filter(doc),
+  filter: (change) => generateShortcodeOnContacts.filter(change),
   onMatch: (change) => generateShortcodeOnContacts.onMatch(change)
 };

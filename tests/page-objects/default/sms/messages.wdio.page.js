@@ -35,7 +35,7 @@ const sendMessageModal = () => $('#send-message');
 const sendMessageModalSubmit = () => $('a.btn.submit:not(.ng-hide)');
 const messageRecipientSelect = () => $('#send-message input.select2-search__field');
 const contactNameSelector = () => $('.sender .name');
-const exportButton = () => $('.mat-menu-content .mat-menu-item[test-id="export-messages"]');
+const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-messages"]');
 
 const openSendMessageModal = async () => {
   await (await sendMessage()).waitForClickable();

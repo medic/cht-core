@@ -99,6 +99,7 @@ describe('contacts report component', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

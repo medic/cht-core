@@ -114,36 +114,36 @@ describe('pregnancy registration with weeks since LMP', () => {
   });
 
   it('filter fails with empty doc', () => {
-    assert(!transition.filter({}));
+    assert(!transition.filter({ doc: {} }));
   });
 
   it('filter fails with no clinic phone and private form', () => {
     const doc = { form: 'p', type: 'data_record' };
     sinon.stub(utils, 'getForm').returns({ public_form: false });
-    assert(!transition.filter(doc));
+    assert(!transition.filter({ doc, info: {} }));
   });
 
   it('filter does not fail if doc has errors', () => {
     const doc = { form: 'p', type: 'data_record', errors: [ 'some error ' ], contact: { phone: '+123' } };
     sinon.stub(utils, 'getForm').returns({ public_form: true });
-    assert(transition.filter(doc));
+    assert(transition.filter({ doc, info: {} }));
   });
 
   it('filter fails if form is unknown', () => {
     const doc = { form: 'x', type: 'data_record', contact: { phone: '+123' }};
-    assert(!transition.filter(doc));
+    assert(!transition.filter({ doc }));
   });
 
   it('filter succeeds with no clinic phone if public form', () => {
     const doc = { form: 'p', type: 'data_record'};
     sinon.stub(utils, 'getForm').returns({ public_form: true });
-    assert(transition.filter(doc));
+    assert(transition.filter({ doc, info: {} }));
   });
 
   it('filter succeeds with populated doc', () => {
     const doc = { form: 'p', type: 'data_record', contact: { phone: '+123' }};
     sinon.stub(utils, 'getForm').returns({});
-    assert(transition.filter(doc));
+    assert(transition.filter({ doc, info: {} }));
   });
 
   it('setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0', () => {
