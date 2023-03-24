@@ -64,36 +64,6 @@ generate_self_signed_cert(){
     fi
 }
 
-generate_certificate_auto(){
-
-  if [ -z "$COMMON_NAME" ]; then
-    echo "Mandatory COMMON_NAME variable not set. Please provide the domain for which to generate the ssl certificate from let's encrypt" >&2
-    exit 1
-  fi
-
-  if [ -z "$EMAIL" ]; then
-    echo "Mandatory EMAIL variable not set. Please provide the domain for which to generate the ssl certificate from let's encrypt" >&2
-    exit 1
-  fi
-
-  if [ -f $SSL_CERT_FILE_PATH -a -f $SSL_KEY_FILE_PATH ]; then
-        echo "SSL cert already exists." >&2
-  elif [ ! -f $SSL_CERT_FILE_PATH -a ! -f $SSL_KEY_FILE_PATH ]; then
-        mkdir -p /etc/nginx/private
-        curl https://get.acme.sh | sh -s email=$EMAIL
-
-        # add acme.sh to path
-        export PATH="/root/.acme.sh/:$PATH"
-        if [ ! -f /root/.acme.sh/${COMMON_NAME}/fullchain.cer ]; then
-            acme.sh --issue -d ${COMMON_NAME} --standalone --server letsencrypt
-        fi
-        acme.sh --install-cert -d ${COMMON_NAME} \
-            --key-file $SSL_KEY_FILE_PATH \
-            --fullchain-file $SSL_CERT_FILE_PATH
-        echo "SSL Cert installed." >&2
-  fi
-}
-
 ensure_own_cert_exits(){
 
   if [ ! -f $SSL_CERT_FILE_PATH -a ! -f $SSL_KEY_FILE_PATH ]; then
@@ -112,14 +82,16 @@ select_ssl_certificate_mode(){
 
     OWN_CERT)
       ensure_own_cert_exits
+      disable_certbot_compatability
       ;;
 
     AUTO_GENERATE)
-      generate_certificate_auto
+      enable_certbot_compatability
       ;;
 
     SELF_SIGNED)
       generate_self_signed_cert
+      disable_certbot_compatability
       ;;
 
     *)
@@ -130,20 +102,32 @@ select_ssl_certificate_mode(){
 
 }
 
-create_certbot_deploy(){
+disable_certbot_compatability(){
+    rm -f /etc/periodic/weekly/reload-nginx.sh || true
+    rm -f /etc/nginx/private/certbot/.well-known/acme-challenge/index.html || true
+}
+
+enable_certbot_compatability(){
 cat > /etc/nginx/private/deploy.sh << EOF
 #!/bin/sh
 cp "\$RENEWED_LINEAGE/fullchain.pem" /etc/nginx/private/cert.pem
 cp "\$RENEWED_LINEAGE/privkey.pem" /etc/nginx/private/key.pem
 EOF
+
+cat > /etc/periodic/weekly/reload-nginx.sh << EOF
+#!/bin/sh
+/usr/sbin/nginx -s reload
+EOF
+  crond
   chmod +x /etc/nginx/private/deploy.sh
+  chmod +x /etc/periodic/weekly/reload-nginx.sh
   mkdir -p /etc/nginx/private/certbot/.well-known/acme-challenge
-  echo "hello world" > /etc/nginx/private/certbot/.well-known/acme-challenge/index.html
+  echo "CERTIFICATE_MODE AUTO_GENERATE" > /etc/nginx/private/certbot/.well-known/acme-challenge/index.html
+  echo "nginx configured to work with certbot"
 }
 
 main (){
   welcome_message
-  create_certbot_deploy
   select_ssl_certificate_mode
   echo "Launching Nginx" >&2
 }
