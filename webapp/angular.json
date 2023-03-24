@@ -128,33 +128,33 @@
         }
       }
     },
-    "cht-form-component": {
+    "cht-form": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
           "style": "less"
         }
       },
-      "root": "web-components/cht-form-component",
-      "sourceRoot": "web-components/cht-form-component/src",
+      "root": "web-components/cht-form",
+      "sourceRoot": "web-components/cht-form/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/cht-form-component",
-            "index": "web-components/cht-form-component/src/index.html",
-            "main": "web-components/cht-form-component/src/main.ts",
+            "outputPath": "dist/cht-form",
+            "index": "web-components/cht-form/src/index.html",
+            "main": "web-components/cht-form/src/main.ts",
             "polyfills": [
               "zone.js"
             ],
-            "tsConfig": "web-components/cht-form-component/tsconfig.app.json",
+            "tsConfig": "web-components/cht-form/tsconfig.app.json",
             "inlineStyleLanguage": "less",
             "assets": [
-              "web-components/cht-form-component/src/assets"
+              "web-components/cht-form/src/assets"
             ],
             "styles": [
-              "web-components/cht-form-component/src/styles.less"
+              "web-components/cht-form/src/styles.less"
             ],
             "scripts": []
           },
@@ -189,10 +189,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "cht-form-component:build:production"
+              "browserTarget": "cht-form:build:production"
             },
             "development": {
-              "browserTarget": "cht-form-component:build:development"
+              "browserTarget": "cht-form:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -200,7 +200,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "cht-form-component:build"
+            "browserTarget": "cht-form:build"
           }
         },
         "test": {
@@ -210,14 +210,14 @@
               "zone.js",
               "zone.js/testing"
             ],
-            "tsConfig": "web-components/cht-form-component/tsconfig.spec.json",
+            "tsConfig": "web-components/cht-form/tsconfig.spec.json",
             "inlineStyleLanguage": "less",
             "assets": [
-              "web-components/cht-form-component/src/favicon.ico",
-              "web-components/cht-form-component/src/assets"
+              "web-components/cht-form/src/favicon.ico",
+              "web-components/cht-form/src/assets"
             ],
             "styles": [
-              "web-components/cht-form-component/src/styles.less"
+              "web-components/cht-form/src/styles.less"
             ],
             "scripts": []
           }

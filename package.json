@@ -40,7 +40,6 @@
     "@angular/cli": "^15.0.5",
     "@angular/compiler": "^15.0.4",
     "@angular/compiler-cli": "^15.0.4",
-    "@angular/elements": "^15.0.4",
     "@angular/localize": "^15.0.4",
     "@faker-js/faker": "^6.1.2",
     "@medic/eslint-config": "^1.1.0",

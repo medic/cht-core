@@ -1,0 +1,57 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "jquery"],
+    "paths": {
+      "@mm-actions/*": ["src/ts/actions/*"],
+      "@mm-components/*": ["src/ts/components/*"],
+      "@mm-directives/*": ["src/ts/directives/*"],
+      "@mm-effects/*": ["src/ts/effects/*"],
+      "@mm-environments/*": ["src/ts/environments/*"],
+      "@mm-modals/*": ["src/ts/modals/*"],
+      "@mm-modules/*": ["src/ts/modules/*"],
+      "@mm-pipes/*": ["src/ts/pipes/*"],
+      "@mm-providers/*": ["src/ts/providers/*"],
+      "@mm-reducers/*": ["src/ts/reducers/*"],
+      "@mm-selectors/*": ["src/ts/selectors/*"],
+      "@mm-services/*": ["src/ts/services/*"],
+      "@mm-services/training-cards.service": ["web-components/cht-form/src/stubs/training-cards.service.ts"],
+      "@mm-modals/mm-modal/mm-modal": ["web-components/cht-form/src/stubs/modal.service.ts"]
+    }
+//    "paths": {
+//      "@mm-actions/*": ["../../src/ts/actions/*"],
+//      "@mm-components/*": ["../../src/ts/components/*"],
+//      "@mm-directives/*": ["../../src/ts/directives/*"],
+//      "@mm-effects/*": ["../../src/ts/effects/*"],
+//      "@mm-environments/*": ["../../src/ts/environments/*"],
+//      "@mm-modals/*": ["../../src/ts/modals/*"],
+//      "@mm-modules/*": ["../../src/ts/modules/*"],
+//      "@mm-pipes/*": ["../../src/ts/pipes/*"],
+//      "@mm-providers/*": ["../../src/ts/providers/*"],
+//      "@mm-reducers/*": ["../../src/ts/reducers/*"],
+//      "@mm-selectors/*": ["../../src/ts/selectors/*"],
+//      "@mm-services/*": ["../../src/ts/services/*"],
+////      "@mm-services/training-cards.service": ["src/stubs/training-cards.service.ts"],
+//    }
+  },
+
+//    "outDir": "../../out-tsc/app",
+//    "types": [],
+//    "paths": {
+//      "@app": [
+//        "src"
+//      ],
+//      "@app/*": [
+//        "src/*"
+//      ]
+//    }
+//  },
+
+  "files": [
+    "src/main.ts",
+    "src/polyfills.ts",
+  ],
+  "include": [
+    "src/**/*.d.ts"
+  ]
+}
