@@ -89,7 +89,7 @@
           </li>
           <li *ngIf="selection?.formatted?.sms_message?.message">
             <label>{{'selection.doc.content.raw' | translate}}</label>
-            <p>{{selection.formatted.sms_message.message}}</p>
+            <p [attr.test-id]="'raw-report-content'">{{selection.formatted.sms_message.message}}</p>
           </li>
           <li *ngIf="selection?.formatted?.tasks?.length">
             <label *ngIf="selection.formatted.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
@@ -98,7 +98,7 @@
               <li *ngFor="let task of selection.formatted.tasks">
                 <ul>
                   <li *ngFor="let message of task.messages">
-                    <p>{{selection.formatted.kujua_message ? message.to : message.message}}</p>
+                    <p [attr.test-id]="'automated-reply'">{{selection.formatted.kujua_message ? message.to : message.message}}</p>
                   </li>
                 </ul>
                 <span class="task-state" [innerHTML]="task | state | async"></span>

@@ -101,7 +101,7 @@ describe('Delivery', () => {
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect(await (await reportsPage.getTaskState(1, 1))).to.contain('scheduled');
   });
 
   it('Delivery - Woman2 - SMS D form', async () => {
@@ -134,7 +134,7 @@ describe('Delivery', () => {
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect(await (await reportsPage.getTaskState(1, 1))).to.contain('scheduled');
   });
 
   it('Verify the targets page', async () => {

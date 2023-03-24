@@ -35,6 +35,8 @@ const filterResetBtn = () => $('.sidebar-reset');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
+const rawReportContent = () => $(`${reportBodyDetailsSelector} p[test-id='raw-report-content']`);
+const automaticReply = () => $(`${reportBodyDetailsSelector} p[test-id='automated-reply']`);
 
 const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
 const deleteAllButton = () => $('.desktop.multiselect-bar-container .bulk-delete');
@@ -72,7 +74,7 @@ const goToReportById = (reportId) => browser.url(`#/reports/${reportId}`);
 
 const getTaskState = async (first, second) => {
   return (await reportBodyDetails())
-    .$(`.scheduled-tasks > ul > li:nth-child(${first}) > ul > li:nth-child(${second}) .task-state .state`);
+    .$(`.scheduled-tasks > ul > li:nth-child(${first}) > ul > li:nth-child(${second}) .task-state .state`).getText();
 };
 
 const openForm = async (name) => {
@@ -316,6 +318,14 @@ const getReportDetailFieldValueByLabel = async (label) => {
   }
 };
 
+const getRawReportContent = async () => {
+  return await (await rawReportContent()).getText();
+};
+
+const getAutomaticReply = async () => {
+  return await (await automaticReply()).getText();
+};
+
 const getReportSubject = async () => {
   await patientName().waitForDisplayed();
   return (await patientName()).getText();
@@ -418,6 +428,8 @@ module.exports = {
   reportsByUUID,
   getAllReportsText,
   getReportDetailFieldValueByLabel,
+  getRawReportContent,
+  getAutomaticReply,
   getReportSubject,
   getReportType,
   getListReportInfo,

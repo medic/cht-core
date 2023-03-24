@@ -84,9 +84,9 @@ describe('sms-gateway api', () => {
       // tasks
 
       const sentTask = await (await reportsPo.sentTask()).getText();
-      const deliveredTask = await (await reportsPo.getTaskState(1, 1)).getText();
-      const scheduledTask = await (await reportsPo.getTaskState(1, 2)).getText();
-      const failedTask = await (await reportsPo.getTaskState(2, 1)).getText();
+      const deliveredTask = await (await reportsPo.getTaskState(1, 1));
+      const scheduledTask = await (await reportsPo.getTaskState(1, 2));
+      const failedTask = await (await reportsPo.getTaskState(2, 1));
       expect(sentTask).to.contain('sent');
       expect(deliveredTask).to.contain('delivered');
       expect(scheduledTask).to.contain('scheduled');
@@ -132,7 +132,7 @@ describe('sms-gateway api', () => {
       expect(forwardedMessage).to.equal('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      const messageState = await (await reportsPo.getTaskState(1, 1)).getText();
+      const messageState = await (await reportsPo.getTaskState(1, 1));
       expect(messageState).to.equal('forwarded to gateway');
     });
   });
