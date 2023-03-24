@@ -9,29 +9,36 @@ let remoteDocCount;
 const INITIAL_REPLICATION_LOG = '_local/initial-replication';
 const BATCH_SIZE = 100;
 
-const completeInitialReplication = async (localDb, dbSyncStartTime, dbSyncStartData) => {
-  const duration = Date.now() - dbSyncStartTime;
-  const dbSyncEndData = getDataUsage();
-  const dataUsage = dbSyncStartData && dbSyncEndData.app.rx - dbSyncStartData.app.rx;
-
-  console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
-  if (dataUsage) {
-    console.info('Initial sync received ' + dataUsage + 'B of data');
+const startInitialReplication = async (localDb) => {
+  if (await getReplicationLog(localDb)) {
+    return;
   }
 
   const log = {
     _id: INITIAL_REPLICATION_LOG,
-    data_usage: dataUsage,
-    duration,
-    start_time: dbSyncStartTime,
-    complete: true,
+    start_time: Date.now(),
+    start_data_usage: getDataUsage(),
   };
 
-  let replicationLog = await getReplicationLog(localDb);
+  await localDb.put(log);
+};
+
+const completeInitialReplication = async (localDb) => {
+  const dbSyncEndData = getDataUsage();
+
+  const replicationLog = await getReplicationLog(localDb);
   if (!replicationLog) {
-    replicationLog = log;
-  } else {
-    replicationLog = { ...replicationLog, ...log };
+    throw new Error('Invalid replication state: missing replication log');
+  }
+
+  replicationLog.complete = true;
+  replicationLog.duration =  Date.now() - replicationLog.start_time;
+  replicationLog.data_usage = replicationLog.start_data_usage &&
+                              dbSyncEndData.app.rx - replicationLog.start_data_usage.app.rx;
+
+  console.info('Initial sync completed successfully in ' + (replicationLog.duration / 1000) + ' seconds');
+  if (replicationLog.data_usage) {
+    console.info('Initial sync received ' + replicationLog.data_usage + 'B of data');
   }
 
   await localDb.put(replicationLog);
@@ -67,9 +74,15 @@ const displayTooManyDocsWarning = ({ warn_docs, limit }) => {
   });
 };
 
-const getDownloadList = async () => {
+const getMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
+  const localDocs = await getLocalDocList(localDb);
+  return remoteDocIdsRevs.filter(({ id, rev }) => !localDocs[id] || localDocs[id] !== rev);
+};
+
+const getDownloadList = async (localDb) => {
   const response = await utils.fetchJSON('/initial-replication/get-ids');
-  docIdsRevs = response.doc_ids_revs;
+
+  docIdsRevs = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
   lastSeq = response.last_seq;
   remoteDocCount = response.doc_ids_revs.length;
 
@@ -78,23 +91,22 @@ const getDownloadList = async () => {
   }
 };
 
+const getLocalDocList = async (localDb) => {
+  const response = await localDb.allDocs();
+
+  const localDocMap = {};
+  response.rows.forEach(row => localDocMap[row.id] = row.value && row.value.rev);
+  return localDocMap;
+};
+
 const getDocsBatch = async (remoteDb, localDb) => {
   const batch = docIdsRevs.splice(0, BATCH_SIZE);
 
-  const byId = {};
-  batch.forEach(({ id, rev }) => byId[id] = [rev]);
-  const localRevs = await localDb.revsDiff(byId);
-
-  const requestDocs = {
-    docs: batch.filter(({ id }) => localRevs[id] && localRevs[id].missing && localRevs[id].missing.length),
-    attachments: true
-  };
-
-  if (!requestDocs.docs.length) {
+  if (!batch.length) {
     return;
   }
 
-  const res = await remoteDb.bulkGet(requestDocs);
+  const res = await remoteDb.bulkGet({ docs: batch, attachments: true });
   const docs = res.results
     .map(result => result.docs && result.docs[0] && result.docs[0].ok)
     .filter(doc => doc);
@@ -109,8 +121,7 @@ const downloadDocs = async (remoteDb, localDb) => {
 };
 
 const writeCheckpointers = async (remoteDb, localDb) => {
-  // todo add another UI status here
-  await localDb.replicate.from(remoteDb, {
+  const replicateFromPromise = localDb.replicate.from(remoteDb, {
     live: false,
     retry: false,
     heartbeat: 10000,
@@ -118,6 +129,9 @@ const writeCheckpointers = async (remoteDb, localDb) => {
     query_params: { initial_replication: true },
     since: lastSeq,
   });
+
+  replicateFromPromise.on('change', () => replicateFromPromise.cancel());
+  await replicateFromPromise;
 
   const localInfo = await localDb.info();
   await localDb.replicate.to(remoteDb, {
@@ -128,15 +142,14 @@ const writeCheckpointers = async (remoteDb, localDb) => {
 const replicate = async (remoteDb, localDb) => {
   setUiStatus('LOAD_APP');
 
-  const dbSyncStartTime = Date.now();
-  const dbSyncStartData = getDataUsage();
+  await startInitialReplication(localDb);
 
   setUiStatus('POLL_REPLICATION');
-  await getDownloadList();
+  await getDownloadList(localDb);
   await downloadDocs(remoteDb, localDb);
   await writeCheckpointers(remoteDb, localDb);
 
-  await completeInitialReplication(localDb, dbSyncStartTime, dbSyncStartData);
+  await completeInitialReplication(localDb);
 };
 
 const getReplicationLog = async (localDb) => {
@@ -146,7 +159,6 @@ const getReplicationLog = async (localDb) => {
     return null;
   }
 };
-
 const isReplicationNeeded = async (localDb, userCtx) => {
   const requiredDocs = [
     '_design/medic-client',
@@ -155,8 +167,20 @@ const isReplicationNeeded = async (localDb, userCtx) => {
   ];
   const results = await localDb.allDocs({ keys: requiredDocs });
   const errors = results.rows.filter(row => row.error);
+  const hasRequiredDocs = !errors.length;
+
   const replicationLog = await getReplicationLog(localDb);
-  return !!errors.length || !replicationLog || !replicationLog.complete;
+
+  if (!hasRequiredDocs) {
+    return true;
+  }
+
+  // new user who has started replicating, but did not complete
+  if (replicationLog && !replicationLog.complete) {
+    return true;
+  }
+
+  return false;
 };
 
 module.exports = {

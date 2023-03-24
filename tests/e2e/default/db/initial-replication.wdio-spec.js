@@ -1,6 +1,7 @@
 const _ = require('lodash');
 
 const utils = require('../../../utils');
+const browserUtils = require('../../../utils/browser');
 const sentinelUtils = require('../../../utils/sentinel');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
@@ -11,7 +12,7 @@ const deliveryFactory = require('../../../factories/cht/reports/delivery');
 const pregnancyFactory = require('../../../factories/cht/reports/pregnancy');
 const pregnancyVisitFactory = require('../../../factories/cht/reports/pregnancy-visit');
 
-/* global window */
+const LOCAL_LOG = '_local/initial-replication';
 
 const getReportContext = (patient, submitter) => {
   const context = {
@@ -79,23 +80,6 @@ const getServerDocs = async (docIds) => {
   return result.rows;
 };
 
-const getLocalDocs = async (docIds) => {
-  const { err, result } = await browser.executeAsync((docIds, callback) => {
-    const db = window.CHTCore.DB.get();
-    const options = docIds ? { keys: docIds, include_docs: true, attachments: true } : {};
-    return db
-      .allDocs(options)
-      .then(result => callback({ result }))
-      .catch(err => callback({ err }));
-  }, docIds);
-
-  if (err) {
-    throw err;
-  }
-
-  return result.rows;
-};
-
 const userAllowedDocs = createHierarchy('base', true);
 const userDeniedDocs = createHierarchy('other');
 
@@ -135,12 +119,12 @@ const getForms = async () => {
 };
 
 const validateReplication = async () => {
-  const localAllDocsPreSync = await getLocalDocs();
+  const localAllDocsPreSync = await browserUtils.getDocs();
   const docIdsPreSync = localAllDocsPreSync.map(row => row.id);
 
   await commonPage.sync(false, 5000);
 
-  const localAllDocs = await getLocalDocs();
+  const localAllDocs = await browserUtils.getDocs();
   const localDocIds = localAllDocs.map(row => row.id);
 
   // no additional docs to download
@@ -158,11 +142,11 @@ const validateReplication = async () => {
   expect(localDocIds).to.include.members(requiredDocs);
   expect(localDocIds).to.include.members(translationIds);
 
-  const localForms = await getLocalDocs(formIds);
+  const localForms = await browserUtils.getDocs(formIds);
   const expectedAttachments = ['model.xml', 'form.html', 'xml'];
   localForms.forEach(form => {
-    const attachments = form.doc._attachments;
-    const serverForm = forms.find(serverForm => form.id === serverForm.id);
+    const attachments = form._attachments;
+    const serverForm = forms.find(serverForm => form._id === serverForm.id);
 
     expect(Object.keys(attachments)).to.have.members(expectedAttachments, `${form._id} has incorrect attachments`);
     expectedAttachments.forEach(attName =>
@@ -179,6 +163,14 @@ const validateReplication = async () => {
     ids([...userDeniedDocs.clinics, ...userDeniedDocs.persons, ...userDeniedDocs.reports])
   );
   expect(replicatedDeniedDocs).to.deep.equal([]);
+
+  const initalReplicationLog = await browserUtils.getDoc(LOCAL_LOG);
+  expect(initalReplicationLog.complete).to.equal(true);
+};
+
+const refreshAndWaitForAngular = async () => {
+  await browser.refresh();
+  await commonPage.waitForAngularLoaded(3000);
 };
 
 describe('initial-replication', () => {
@@ -214,6 +206,23 @@ describe('initial-replication', () => {
     await loginPage.login(userAllowedDocs.user);
 
     await validateReplication();
+
+    // does not restart initial replication on refresh
+    await browser.refresh();
+    await commonPage.waitForAngularLoaded(3000);
+
+    // supports reloading the page while offline
+    await browser.throttle('offline');
+    await refreshAndWaitForAngular();
+    await browser.throttle('online');
+
+    // it should not restart initial replication if the local doc is missing on refresh
+    await browserUtils.deleteDoc(LOCAL_LOG);
+    await refreshAndWaitForAngular();
+
+    // it should support reloading the page while offline
+    await browser.throttle('offline');
+    await refreshAndWaitForAngular();
   });
 
   it('should support "disconnects"', async () => {
