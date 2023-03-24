@@ -86,6 +86,9 @@ select_ssl_certificate_mode(){
       ;;
 
     AUTO_GENERATE)
+      # generate self signed certs to ensure nginx can start the
+      # first time before certbot can create certs
+      generate_self_signed_cert
       enable_certbot_compatability
       ;;
 
