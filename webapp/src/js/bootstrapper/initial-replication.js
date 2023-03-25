@@ -114,9 +114,10 @@ const getDocsBatch = async (remoteDb, localDb) => {
 };
 
 const downloadDocs = async (remoteDb, localDb) => {
+  setUiStatus('FETCH_INFO', { count: remoteDocCount - docIdsRevs.length, total: remoteDocCount });
   do {
-    setUiStatus('FETCH_INFO', { count: remoteDocCount - docIdsRevs.length, total: remoteDocCount });
     await getDocsBatch(remoteDb, localDb);
+    setUiStatus('FETCH_INFO', { count: remoteDocCount - docIdsRevs.length, total: remoteDocCount });
   } while (docIdsRevs.length > 0);
 };
 

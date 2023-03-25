@@ -57,7 +57,7 @@ const getPurgedIds = (roles, docIds) => {
     return Promise.resolve(purgeIds);
   }
 
-  const cache = cacheService.instance(CACHE_NAME, { stdTTL: 100 * 60 });
+  const cache = cacheService.instance(CACHE_NAME);
   const cacheKey = getCacheKey(roles, docIds);
   const cached = cache.get(cacheKey);
   if (cached) {
