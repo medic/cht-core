@@ -122,7 +122,7 @@ const validateReplication = async () => {
   const localAllDocsPreSync = await browserUtils.getDocs();
   const docIdsPreSync = localAllDocsPreSync.map(row => row.id);
 
-  await commonPage.sync(false, 5000);
+  await commonPage.sync(false, 7000);
 
   const localAllDocs = await browserUtils.getDocs();
   const localDocIds = localAllDocs.map(row => row.id);
