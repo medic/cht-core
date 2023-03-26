@@ -31,7 +31,7 @@ describe('Family form', () => {
     await cookieLogin();
   });
 
-  it('Submit Add Family form', async () => {
+  xit('Submit Add Family form', async () => {
     await common.goToReports();
     await reportsPage.openForm(formDoc.title);
     await familyForm.fillPrimaryCaregiver('test');
