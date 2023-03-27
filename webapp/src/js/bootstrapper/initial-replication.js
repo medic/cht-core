@@ -80,7 +80,7 @@ const getMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
 };
 
 const getDownloadList = async (localDb) => {
-  const response = await utils.fetchJSON('/initial-replication/get-ids');
+  const response = await utils.fetchJSON('/api/v1/initial-replication/get-ids');
 
   docIdsRevs = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
   lastSeq = response.last_seq;
@@ -167,15 +167,13 @@ const isReplicationNeeded = async (localDb, userCtx) => {
     `org.couchdb.user:${userCtx.name}`,
   ];
   const results = await localDb.allDocs({ keys: requiredDocs });
-  const errors = results.rows.filter(row => row.error);
-  const hasRequiredDocs = !errors.length;
+  const missingDocs = results.rows.some(row => row.error);
 
-  const replicationLog = await getReplicationLog(localDb);
-
-  if (!hasRequiredDocs) {
+  if (missingDocs) {
     return true;
   }
 
+  const replicationLog = await getReplicationLog(localDb);
   // new user who has started replicating, but did not complete
   if (replicationLog && !replicationLog.complete) {
     return true;

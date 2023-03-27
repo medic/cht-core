@@ -325,12 +325,14 @@ const setUserContactDoc = (attempt=0) => {
 const deleteLocalDocs = async () => {
   const localDocs = await module.exports.requestOnTestDb({ path: '/_local_docs?include_docs=true' });
 
-  for (const row of localDocs.rows) {
-    if (row && row.doc && row.doc.replicator === 'pouchdb') {
+  const docsToDelete = localDocs.rows
+    .filter(row => row && row.doc && row.doc.replicator === 'pouchdb')
+    .map(row => {
       row.doc._deleted = true;
-      await module.exports.saveDoc(row.doc);
-    }
-  }
+      return row.doc;
+    });
+
+  await module.exports.saveDocs(docsToDelete);
 };
 
 /**

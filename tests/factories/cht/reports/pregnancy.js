@@ -1,6 +1,7 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
 const _ = require('lodash');
+const geolocation = require('./geolocation');
 
 const defaultSubmitter = {
   _id: '2e0ceb06-ced2-5a63-bca0-0283a5aab0e8',
@@ -270,31 +271,6 @@ const hiddenFields = [
   'meta'
 ];
 
-const geolog = [
-  {
-    'timestamp': 1618841239430,
-    'recording': {
-      'latitude':  0.999151,
-      'longitude': 35.150476,
-      'altitude': null,
-      'accuracy': 1518,
-      'altitudeAccuracy': null,
-      'heading': null,
-      'speed': null
-    }
-  }
-];
-
-const geo = {
-  'latitude':  0.999151,
-  'longitude': 35.150476,
-  'altitude': null,
-  'accuracy': 1518,
-  'altitudeAccuracy': null,
-  'heading': null,
-  'speed': null
-};
-
 module.exports = new Factory()
   .sequence('_id', uuid.v4)
   .attr('form', 'pregnancy')
@@ -309,5 +285,5 @@ module.exports = new Factory()
   })
   .attr('from', '')
   .attr('hidden_fields', hiddenFields)
-  .attr('geolocation_log', geolog)
-  .attr('geolocation',  geo);
+  .attr('geolocation_log', geolocation.geoLog.build())
+  .attr('geolocation',  geolocation.geo.build());

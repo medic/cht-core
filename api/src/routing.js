@@ -60,6 +60,7 @@ const uuid = require('uuid');
 const compression = require('compression');
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
+const initialReplication = require('./controllers/initial-replication');
 const app = express.Router({ strict: true });
 const MAX_REQUEST_SIZE = '32mb';
 
@@ -655,12 +656,10 @@ app.all(
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
 );
-const initialReplication = require('./controllers/initial-replication');
 app.get(
-  '/initial-replication/get-ids',
+  '/api/v1/initial-replication/get-ids',
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough,
-  jsonQueryParser,
   initialReplication.getDocIds,
 );
 

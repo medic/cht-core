@@ -13,8 +13,6 @@ let onPromise;
 
 const FLAG_ID = '_local/initial-replication';
 
-/** global window **/
-
 describe('Initial replication', () => {
   afterEach(() => {
     sinon.restore();
@@ -35,7 +33,6 @@ describe('Initial replication', () => {
             { id: 'org.couchdb.user:Nivea' },
           ]
         }),
-        get: sinon.stub().resolves({ complete: true }),
       };
       userCtx = { name: 'Nivea' };
 
@@ -44,7 +41,6 @@ describe('Initial replication', () => {
       expect(localDb.allDocs.args).to.deep.equal([[
         { keys: ['_design/medic-client', 'settings', 'org.couchdb.user:Nivea'] },
       ]]);
-      expect(localDb.get.args).to.deep.equal([['_local/initial-replication']]);
     });
 
     it('should return false if missing settings', async () => {
@@ -214,7 +210,7 @@ describe('Initial replication', () => {
 
       await initialReplication.replicate(remoteDb, localDb);
 
-      expect(utils.fetchJSON.args).to.deep.equal([['/initial-replication/get-ids']]);
+      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/initial-replication/get-ids']]);
       expect(localDb.allDocs.args).to.deep.equal([[]]);
 
       expect(remoteDb.bulkGet.args).to.deep.equal([[{
@@ -313,7 +309,7 @@ describe('Initial replication', () => {
 
       await initialReplication.replicate(remoteDb, localDb);
 
-      expect(utils.fetchJSON.args).to.deep.equal([['/initial-replication/get-ids']]);
+      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/initial-replication/get-ids']]);
       expect(localDb.allDocs.args).to.deep.equal([[]]);
 
       expect(remoteDb.bulkGet.args).to.deep.equal([[{
@@ -398,7 +394,7 @@ describe('Initial replication', () => {
 
       await initialReplication.replicate(remoteDb, localDb);
 
-      expect(utils.fetchJSON.args).to.deep.equal([['/initial-replication/get-ids']]);
+      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/initial-replication/get-ids']]);
       expect(localDb.allDocs.args).to.deep.equal([[]]);
 
       expect(remoteDb.bulkGet.callCount).to.equal(7);
@@ -723,7 +719,7 @@ describe('Initial replication', () => {
 
       await initialReplication.replicate(remoteDb, localDb);
 
-      expect(utils.fetchJSON.args).to.deep.equal([['/initial-replication/get-ids']]);
+      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/initial-replication/get-ids']]);
       expect(displayTooManyDocsWarning.args).to.deep.equal([[pollResponse]]);
       expect(localDb.put.args).to.deep.equal([
         [{
