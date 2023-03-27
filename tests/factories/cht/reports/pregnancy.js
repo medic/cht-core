@@ -285,5 +285,5 @@ module.exports = new Factory()
   })
   .attr('from', '')
   .attr('hidden_fields', hiddenFields)
-  .attr('geolocation_log', geolocation.geoLog.build())
-  .attr('geolocation',  geolocation.geo.build());
+  .attr('geolocation_log', () => geolocation.geoLog.build())
+  .attr('geolocation',  () => geolocation.geo.build());
