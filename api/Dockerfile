@@ -10,10 +10,13 @@ RUN apk add --update --no-cache \
   bash \
   jq
 
-WORKDIR /api
+WORKDIR /service
 
-COPY api/ /api
-COPY shared-libs /shared-libs
-ENV NODE_PATH=/api/node_modules
+COPY package.json package-lock.json ./
+COPY shared-libs ./shared-libs
+COPY node_modules/@medic ./node_modules/@medic
+COPY api ./api
 
-ENTRYPOINT ["/bin/bash", "/api/docker-entrypoint.sh", "main"]
+ENV NODE_PATH=/service/api/node_modules
+
+ENTRYPOINT ["/bin/bash", "/service/api/docker-entrypoint.sh", "main"]
