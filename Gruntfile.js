@@ -280,7 +280,6 @@ module.exports = function(grunt) {
               `npm dedupe`,
               `rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch`,
               `cd ../`,
-              `echo docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
             ].join(' && ')
           )
@@ -333,17 +332,18 @@ module.exports = function(grunt) {
       'npm-ci-api': {
         cmd: `cd api && npm ci`,
       },
-      // 'npm-ci-shared-libs': {
-      //   cmd: (production) => {
-      //     return getSharedLibDirs()
-      //       .map(
-      //         lib =>
-      //           `echo Installing shared library: ${lib} &&
-      //             (cd shared-libs/${lib} && npm ci ${production ? '--production' : ''})`
-      //       )
-      //       .join(' && ');
-      //   }
-      // },
+      'npm-ci-shared-libs': {
+        cmd: (production) => {
+          // TODO replace this with --workspaces call?
+          return getSharedLibDirs()
+            .map(
+              lib =>
+                `echo Installing shared library: ${lib} &&
+                  (cd shared-libs/${lib} && npm ci ${production ? '--production' : ''})`
+            )
+            .join(' && ');
+        }
+      },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
           // removing pouchdb-fetch/node-fetch forces PouchDb to use a newer version node-fetch
@@ -748,7 +748,7 @@ module.exports = function(grunt) {
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
     'exec:undo-patches',
-    // 'exec:npm-ci-shared-libs',
+    'exec:npm-ci-shared-libs',
     'exec:npm-ci-modules',
     'copy:libraries-to-patch',
     'exec:apply-patches',
@@ -888,7 +888,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('unit', 'Unit tests', [
     'env:unit-test',
-    // 'exec:npm-ci-shared-libs',
+    'exec:npm-ci-shared-libs',
     'unit-webapp-no-dependencies',
     'unit-admin',
     'exec:shared-lib-unit',
