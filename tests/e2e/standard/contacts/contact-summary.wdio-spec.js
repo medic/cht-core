@@ -4,6 +4,11 @@ const commonElements = require('../../../page-objects/default/common/common.wdio
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
 
+const userFactory = require('../../../factories/cht/users/users');
+const placeFactory = require('../../../factories/cht/contacts/place');
+const personFactory = require('../../../factories/cht/contacts/person');
+const reportFactory = require('../../../factories/cht/reports/generic-report');
+
 describe('Contact summary info', () => {
   const SCRIPT = `
     let cards = [];
@@ -106,125 +111,56 @@ describe('Contact summary info', () => {
     };
   `;
 
-  // contacts
-  const ALICE = {
-    _id: 'alice-contact',
-    reported_date: 1,
-    type: 'person',
-    name: 'Alice Alison',
-    phone: '+447765902001',
-  };
-  const BOB_PLACE = {
-    _id: 'bob-contact',
-    reported_date: 1,
-    type: 'clinic',
-    name: 'Bob Place',
-  };
-  const DAVID = {
-    _id: 'david-contact',
-    reported_date: 1,
-    type: 'person',
-    name: 'David Davidson',
-    phone: '+447765902002',
-    parent: BOB_PLACE,
-  };
-
-  const DAVID_VISIT = {
-    _id: 'david_visit_form',
-    form: 'VISIT',
-    type: 'data_record',
-    content_type: 'xml',
-    reported_date: 1462538250374,
-    patient_id: DAVID.patient_id,
-    contact: {
-      name: 'Sharon',
-      phone: '+555',
-      type: 'person',
-      _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
-      _rev: '1-fb7fbda241dbf6c2239485c655818a69',
-    },
-    from: '+555',
-    hidden_fields: [],
-  };
-
-  const CAROL = {
-    _id: 'carol-contact',
-    reported_date: 1,
-    type: 'person',
-    name: 'Carol Carolina',
-    parent: { _id: BOB_PLACE._id },
-    patient_id: '05946',
-    sex: 'f',
-    date_of_birth: 1462333250374,
+  const placeBobClinic = placeFactory.place().build({ name: 'Bob Place', type: 'clinic' });
+  const nationalAdminUser = userFactory.build(
+    {
+      username: 'national-user', place: placeBobClinic._id, roles: ['national_admin'],
+      contact: {
+        _id: 'fixture:national-user:offline',
+        name: 'national-user'
+      }
+    });
+  const districtAdminUser = userFactory.build(
+    {
+      username: 'user-district', place: placeBobClinic._id,
+      contact: {
+        _id: 'fixture:user-district:offline',
+        name: 'user-district'
+      },
+      roles: ['district_admin'],
+      known: false
+    });
+  const patientAlice = personFactory.build({ name: 'Alice Alison', phone: '+447765902001' });
+  const patientDavid = personFactory.build({ name: 'David Davidson', phone: '+447765902002', parent: placeBobClinic });
+  const davidVisit = reportFactory.build(
+    { form: 'visit' }, { patient: patientDavid, submitter: nationalAdminUser.contact });
+  const patientCarol = personFactory.build({
+    name: 'Carol Carolina', sex: 'f', parent: placeBobClinic, patient_id: '05946',
     linked_docs: {
-      aliceTag: ALICE._id,
-      davidTag: { _id: DAVID._id },
-      visitTag: { _id: DAVID_VISIT._id },
-    },
-  };
-
-  // reports
-  const PREGNANCY = {
-    form: 'P',
-    type: 'data_record',
-    content_type: 'xml',
-    reported_date: 1462333250374,
-    expected_date: 1464333250374,
-    patient_id: CAROL.patient_id,
-    contact: {
-      name: 'Sharon',
-      phone: '+555',
-      type: 'person',
-      _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
-      _rev: '1-fb7fbda241dbf6c2239485c655818a69',
-    },
-    from: '+555',
-    hidden_fields: [],
-  };
-  const VISIT = {
-    form: 'V',
-    type: 'data_record',
-    content_type: 'xml',
-    reported_date: moment().set('date', 5).valueOf(),
-    patient_id: CAROL.patient_id,
-    contact: {
-      name: 'Sharon',
-      phone: '+555',
-      type: 'person',
-      _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
-      _rev: '1-fb7fbda241dbf6c2239485c655818a69',
-    },
-    from: '+555',
-    hidden_fields: [],
-    fields: {
-      visited_contact_uuid: BOB_PLACE._id,
-      patient_id: CAROL.patient_id
+      aliceTag: patientAlice._id,
+      davidTag: { _id: patientDavid._id },
+      visitTag: { _id: davidVisit._id },
     }
-  };
+  });
+  const carolPregnancy = reportFactory.build(
+    { form: 'P' },
+    {
+      patient: patientCarol,
+      submitter: nationalAdminUser.contact
+    });
+  const carolVisit = reportFactory.build(
+    { form: 'V' },
+    {
+      patient: patientCarol,
+      submitter: nationalAdminUser.contact,
+      reported_date: moment().set('date', 5).valueOf(),
+      fields: {
+        visited_contact_uuid: placeBobClinic._id,
+        patient_id: patientCarol.patient_id
+      }
+    });
 
-  const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT, DAVID_VISIT];
-
-  const USER_HOME_VISITS = {
-    username: 'user-home-visits',
-    password: 'Sup3rSecret!',
-    place: BOB_PLACE._id,
-    contact: {
-      _id: 'fixture:user-home-visits:offline',
-      name: 'user-home-visits'
-    },
-    roles: ['national_admin']
-  };
-
-  const USER_DISTRICT = {
-    username: 'user-district',
-    password: 'Sup3rSecret!',
-    place: BOB_PLACE._id,
-    contact: {
-      _id: 'fixture:user-district:offline',
-      name: 'user-district'
-    },
-    roles: ['district_admin']
-  };
+  const DOCS = [patientAlice, placeBobClinic, patientCarol, patientDavid, carolPregnancy, carolVisit, davidVisit];
 
   const SETTINGS = {
     uhc: {
@@ -248,7 +184,7 @@ describe('Contact summary info', () => {
 
   before(async () => {
     await utils.saveDocs(DOCS);
-    await loginPage.cookieLogin();
+    //await utils.createUsers([districtAdminUser, nationalAdminUser]);
   });
 
   afterEach(async () => {
@@ -258,23 +194,25 @@ describe('Contact summary info', () => {
   });
 
   after(async () => {
-    await utils.deleteUsers([USER_HOME_VISITS, USER_DISTRICT]);
+    await utils.deleteUsers([nationalAdminUser, districtAdminUser]);
     await utils.revertDb([/^form:/], true);
   });
 
   it('should load contact summary', async () => {
+    await loginPage.cookieLogin();
+    await commonElements.waitForPageLoaded();
     await utils.updateSettings(SETTINGS, true);
     await commonElements.closeReloadModal();
     await commonElements.goToPeople();
-    await contactPage.selectLHSRowByText(CAROL.name);
-
+    await contactPage.selectLHSRowByText(patientCarol.name);
+    await contactPage.waitForContactLoaded();
     // assert the summary card has the right fields
 
     expect(await contactPage.cardFieldLabelText('test_pid')).to.equal('test_pid');
-    expect(await contactPage.cardFieldText('test_pid')).to.equal(CAROL.patient_id);
+    expect(await contactPage.cardFieldText('test_pid')).to.equal(patientCarol.patient_id);
 
     expect(await contactPage.cardFieldLabelText('test_sex')).to.equal('test_sex');
-    expect(await contactPage.cardFieldText('test_sex')).to.equal(CAROL.sex);
+    expect(await contactPage.cardFieldText('test_sex')).to.equal(patientCarol.sex);
 
     expect(await contactPage.cardFieldLabelText('uhc_stats_count')).to.equal('uhc_stats_count');
     expect(await contactPage.cardFieldText('uhc_stats_count')).to.equal('');
@@ -294,13 +232,13 @@ describe('Contact summary info', () => {
     expect(await contactPage.cardFieldText('uhc_stats_interval_end')).to.equal(endDate);
 
     expect(await contactPage.cardFieldLabelText('alicetag')).to.equal('aliceTag');
-    expect(await contactPage.cardFieldText('alicetag')).to.equal(`${ALICE.name} ${ALICE.phone}`);
+    expect(await contactPage.cardFieldText('alicetag')).to.equal(`${patientAlice.name} ${patientAlice.phone}`);
 
     expect(await contactPage.cardFieldLabelText('davidtag')).to.equal('davidTag');
-    expect(await contactPage.cardFieldText('davidtag')).to.equal(`${DAVID.name} ${DAVID.phone}`);
+    expect(await contactPage.cardFieldText('davidtag')).to.equal(`${patientDavid.name} ${patientDavid.phone}`);
 
     expect(await contactPage.cardFieldLabelText('visittag')).to.equal('visitTag');
-    expect(await contactPage.cardFieldText('visittag')).to.equal(DAVID_VISIT.form);
+    expect(await contactPage.cardFieldText('visittag')).to.equal(davidVisit.form);
 
     // assert that the pregnancy card exists and has the right fields.
 
@@ -310,19 +248,19 @@ describe('Contact summary info', () => {
   });
 
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
-    await utils.createUsers([USER_HOME_VISITS]);
-    await loginPage.login({ username: USER_HOME_VISITS.username, password: USER_HOME_VISITS.password });
+    await utils.createUsers([nationalAdminUser]);
+    await loginPage.login({ username: nationalAdminUser.username, password: nationalAdminUser.password });
+    await commonElements.waitForPageLoaded();
     await commonElements.closeTour();
-
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
-    permissions.can_view_uhc_stats = USER_HOME_VISITS.roles;
+    permissions.can_view_uhc_stats = nationalAdminUser.roles;
     await utils.updateSettings({ ...SETTINGS, permissions }, true);
 
     await commonElements.closeReloadModal();
 
     await commonElements.goToPeople();
-    await contactPage.selectLHSRowByText(BOB_PLACE.name);
+    await contactPage.selectLHSRowByText(placeBobClinic.name);
 
     expect(await contactPage.cardFieldLabelText('uhc_stats_count')).to.equal('uhc_stats_count');
     expect(await contactPage.cardFieldText('uhc_stats_count')).to.equal('1');
@@ -331,7 +269,7 @@ describe('Contact summary info', () => {
     expect(await contactPage.cardFieldText('uhc_stats_count_goal')).to.equal('2');
 
     expect(await contactPage.cardFieldLabelText('uhc_stats_last_visited_date')).to.equal('uhc_stats_last_visited_date');
-    expect(await contactPage.cardFieldText('uhc_stats_last_visited_date')).to.equal(VISIT.reported_date.toString());
+    expect(await contactPage.cardFieldText('uhc_stats_last_visited_date')).to.equal(carolVisit.reported_date.toString());
 
     expect(await contactPage.cardFieldLabelText('uhc_stats_interval_start')).to.equal('uhc_stats_interval_start');
     const startDate = moment().startOf('month').valueOf().toString();
@@ -343,19 +281,21 @@ describe('Contact summary info', () => {
   });
 
   it('should have access to the "cht" global api variable', async () => {
-    await utils.createUsers([USER_DISTRICT]);
-    await loginPage.login({ username: USER_DISTRICT.username, password: USER_DISTRICT.password });
+    await utils.createUsers([districtAdminUser]);
+    await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
+    await commonElements.waitForPageLoaded();
     await commonElements.closeTour();
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
-    permissions.can_configure = USER_DISTRICT.roles;
-    permissions.can_edit = USER_DISTRICT.roles;
+    permissions.can_configure = districtAdminUser.roles;
+    permissions.can_edit = districtAdminUser.roles;
     await utils.updateSettings({ ...SETTINGS, permissions }, true);
+
     await commonElements.closeReloadModal();
 
     await commonElements.goToPeople();
-    await contactPage.selectLHSRowByText(BOB_PLACE.name);
-
+    await contactPage.selectLHSRowByText(placeBobClinic.name);
+    await contactPage.waitForContactLoaded();
     expect(await contactPage.cardFieldLabelText('can_configure')).to.equal('can_configure');
     expect(await contactPage.cardFieldText('can_configure')).to.equal('true');
     expect(await contactPage.cardFieldLabelText('can_edit_or_can_create_people'))
