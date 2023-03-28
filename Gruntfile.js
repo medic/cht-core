@@ -795,7 +795,7 @@ module.exports = function(grunt) {
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
     'exec:undo-patches',
-    'exec:npm-ci-shared-libs',
+    // 'exec:npm-ci-shared-libs',
     'exec:npm-ci-modules',
     'copy:libraries-to-patch',
     'exec:apply-patches',
@@ -950,7 +950,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('unit', 'Unit tests', [
     'env:unit-test',
-    'exec:npm-ci-shared-libs',
+    // 'exec:npm-ci-shared-libs',
     'unit-webapp-no-dependencies',
     'unit-admin',
     'exec:shared-lib-unit',
