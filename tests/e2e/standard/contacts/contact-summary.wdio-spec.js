@@ -267,7 +267,8 @@ describe('Contact summary info', () => {
     expect(await contactPage.cardFieldText('uhc_stats_count_goal')).to.equal('2');
 
     expect(await contactPage.cardFieldLabelText('uhc_stats_last_visited_date')).to.equal('uhc_stats_last_visited_date');
-    expect(await contactPage.cardFieldText('uhc_stats_last_visited_date')).to.equal(carolVisit.reported_date.toString());
+    expect(await contactPage.cardFieldText('uhc_stats_last_visited_date'))
+      .to.equal(carolVisit.reported_date.toString());
 
     expect(await contactPage.cardFieldLabelText('uhc_stats_interval_start')).to.equal('uhc_stats_interval_start');
     const startDate = moment().startOf('month').valueOf().toString();
