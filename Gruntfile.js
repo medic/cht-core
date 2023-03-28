@@ -339,7 +339,7 @@ module.exports = function(grunt) {
             .map(
               lib =>
                 `echo Installing shared library: ${lib} &&
-                  (cd shared-libs/${lib} && npm ci ${production ? '--production' : ''})`
+                  (cd shared-libs/${lib} && npm ci ${production ? '--production' : ''} --legacy-peer-deps)`
             )
             .join(' && ');
         }
