@@ -367,6 +367,21 @@ const getPregnancyCardInfo = async () => {
   };
 };
 
+const getPregnancyLabel = async () => {
+  await pregnancyLabel().waitForDisplayed();
+  return (await pregnancyLabel()).getText();
+};
+
+const getVisitLabel = async () => {
+  await visitLabel().waitForDisplayed();
+  return (await visitLabel()).getText();
+};
+
+const getNumberOfReports = async () => {
+  await numberOfReports().waitForDisplayed();
+  return (await numberOfReports()).getText();
+};
+
 const getDeathCardInfo = async () => {
   await deathCard().waitForDisplayed();
   return {
@@ -461,4 +476,7 @@ module.exports = {
   pregnancyLabel,
   visitLabel,
   numberOfReports,
+  getPregnancyLabel,
+  getVisitLabel,
+  getNumberOfReports,
 };

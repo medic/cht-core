@@ -3,7 +3,6 @@ const utils = require('../../../utils');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-
 const userFactory = require('../../../factories/cht/users/users');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const personFactory = require('../../../factories/cht/contacts/person');
@@ -11,105 +10,105 @@ const reportFactory = require('../../../factories/cht/reports/generic-report');
 
 describe('Contact summary info', () => {
   const SCRIPT = `
-    let cards = [];
-    let context = {};
-    let fields = [
-      {
-        label: "uhc_stats_count",
-        value: uhcStats.homeVisits ? uhcStats.homeVisits.count : '',
-        width: 3
-      },
-      {
-        label: "uhc_stats_count_goal",
-        value: uhcStats.homeVisits ? uhcStats.homeVisits.countGoal : '',
-        width: 3
-      },
-      {
-        label: "uhc_stats_last_visited_date",
-        value: uhcStats.homeVisits ? uhcStats.homeVisits.lastVisitedDate : '',
-        width: 3
-      },
-      {
-        label: "uhc_stats_interval_start",
-        value: uhcStats.uhcInterval ? uhcStats.uhcInterval.start : '',
-        width: 3
-      },
-      {
-        label: "uhc_stats_interval_end",
-        value: uhcStats.uhcInterval ? uhcStats.uhcInterval.end : '',
-        width: 3
-      },
-      {
-        label: "can_configure",
-        value: cht.v1.hasPermissions('can_configure'),
-        width: 3
-      },
-      {
-        label: "can_edit_or_can_create_people",
-        value: cht.v1.hasAnyPermission([['can_edit'], ['can_create_people']]),
-        width: 3
+  let cards = [];
+  let context = {};
+  let fields = [
+    {
+      label: "uhc_stats_count",
+      value: uhcStats.homeVisits ? uhcStats.homeVisits.count : '',
+      width: 3
+    },
+    {
+      label: "uhc_stats_count_goal",
+      value: uhcStats.homeVisits ? uhcStats.homeVisits.countGoal : '',
+      width: 3
+    },
+    {
+      label: "uhc_stats_last_visited_date",
+      value: uhcStats.homeVisits ? uhcStats.homeVisits.lastVisitedDate : '',
+      width: 3
+    },
+    {
+      label: "uhc_stats_interval_start",
+      value: uhcStats.uhcInterval ? uhcStats.uhcInterval.start : '',
+      width: 3
+    },
+    {
+      label: "uhc_stats_interval_end",
+      value: uhcStats.uhcInterval ? uhcStats.uhcInterval.end : '',
+      width: 3
+    },
+    {
+      label: "can_configure",
+      value: cht.v1.hasPermissions('can_configure'),
+      width: 3
+    },
+    {
+      label: "can_edit_or_can_create_people",
+      value: cht.v1.hasAnyPermission([['can_edit'], ['can_create_people']]),
+      width: 3
+    }
+  ];
+
+  if (contact.type === "person") {
+    fields.push({ label: "test_pid", value: contact.patient_id, width: 3 });
+    fields.push({ label: "test_sex", value: contact.sex, width: 3 });
+
+    Object.keys(contact.linked_docs).forEach(key => {
+      const linkedDoc = contact.linked_docs[key];
+      if (!linkedDoc) {
+        return;
       }
-    ];
 
-    if (contact.type === "person") {
-      fields.push({ label: "test_pid", value: contact.patient_id, width: 3 });
-      fields.push({ label: "test_sex", value: contact.sex, width: 3 });
-
-      Object.keys(contact.linked_docs).forEach(key => {
-        const linkedDoc = contact.linked_docs[key];
-        if (!linkedDoc) {
+      if (linkedDoc.type === 'data_record') {
+        fields.push({
+          label: key,
+          value: linkedDoc.form,
+          width: 3,
+        });
+      } else {
+        fields.push({
+          label: key,
+          value: linkedDoc.name + ' ' + linkedDoc.phone,
+          width: 3,
+        });
+      }
+    });
+    let pregnancy;
+    let pregnancyDate;
+    reports.forEach(report=> {
+      if (report.form === "P") {
+        const subsequentDeliveries = reports.filter(report2=> {
+          return report2.form === "D" && report2.reported_date > report.reported_date;
+        });
+        if (subsequentDeliveries.length > 0) {
           return;
         }
-
-        if (linkedDoc.type === 'data_record') {
-          fields.push({
-            label: key,
-            value: linkedDoc.form,
-            width: 3,
-          });
-        } else {
-          fields.push({
-            label: key,
-            value: linkedDoc.name + ' ' + linkedDoc.phone,
-            width: 3,
-          });
+        const subsequentVisits = reports.filter(report2=> {
+          return report2.form === "V" && report2.reported_date > report.reported_date;
+        });
+        context.pregnant = true;
+        if (!pregnancy || pregnancyDate < report.reported_date) {
+          pregnancyDate = report.reported_date;
+          pregnancy = {
+            label: "test.pregnancy",
+            fields: [
+              { label: "test.visits", value: subsequentVisits.length }
+            ]
+          };
         }
-      });
-      let pregnancy;
-      let pregnancyDate;
-      reports.forEach(report=> {
-        if (report.form === "P") {
-          const subsequentDeliveries = reports.filter(report2=> {
-            return report2.form === "D" && report2.reported_date > report.reported_date;
-          });
-          if (subsequentDeliveries.length > 0) {
-            return;
-          }
-          const subsequentVisits = reports.filter(report2=> {
-            return report2.form === "V" && report2.reported_date > report.reported_date;
-          });
-          context.pregnant = true;
-          if (!pregnancy || pregnancyDate < report.reported_date) {
-            pregnancyDate = report.reported_date;
-            pregnancy = {
-              label: "test.pregnancy",
-              fields: [
-                { label: "test.visits", value: subsequentVisits.length }
-              ]
-            };
-          }
-        }
-      });
-      if (pregnancy) {
-        cards.push(pregnancy);
       }
+    });
+    if (pregnancy) {
+      cards.push(pregnancy);
     }
-    return {
-      fields: fields,
-      cards: cards,
-      context: context
-    };
-  `;
+  }
+  return {
+    fields: fields,
+    cards: cards,
+    context: context
+  };
+`;
 
   const placeBobClinic = placeFactory.place().build({ name: 'Bob Place', type: 'clinic' });
   const nationalAdminUser = userFactory.build(
@@ -160,9 +159,9 @@ describe('Contact summary info', () => {
       }
     });
 
-  const DOCS = [patientAlice, placeBobClinic, patientCarol, patientDavid, carolPregnancy, carolVisit, davidVisit];
+  const docs = [patientAlice, placeBobClinic, patientCarol, patientDavid, carolPregnancy, davidVisit, carolVisit];
 
-  const SETTINGS = {
+  const settings = {
     uhc: {
       visit_count: {
         month_start_date: 1,
@@ -183,8 +182,8 @@ describe('Contact summary info', () => {
   };
 
   before(async () => {
-    await utils.saveDocs(DOCS);
-    //await utils.createUsers([districtAdminUser, nationalAdminUser]);
+    await utils.saveDocs(docs);
+    await utils.createUsers([districtAdminUser, nationalAdminUser]);
   });
 
   afterEach(async () => {
@@ -201,7 +200,7 @@ describe('Contact summary info', () => {
   it('should load contact summary', async () => {
     await loginPage.cookieLogin();
     await commonElements.waitForPageLoaded();
-    await utils.updateSettings(SETTINGS, true);
+    await utils.updateSettings(settings, true);
     await commonElements.closeReloadModal();
     await commonElements.goToPeople();
     await contactPage.selectLHSRowByText(patientCarol.name);
@@ -242,20 +241,19 @@ describe('Contact summary info', () => {
 
     // assert that the pregnancy card exists and has the right fields.
 
-    expect(await (await contactPage.pregnancyLabel()).getText()).to.equal('test.pregnancy');
-    expect(await (await contactPage.visitLabel()).getText()).to.equal('test.visits');
-    expect(await (await contactPage.numberOfReports()).getText()).to.equal('1');
+    expect(await contactPage.getPregnancyLabel()).to.equal('test.pregnancy');
+    expect(await contactPage.getVisitLabel()).to.equal('test.visits');
+    expect(await contactPage.getNumberOfReports()).to.equal('1');
   });
 
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
-    await utils.createUsers([nationalAdminUser]);
     await loginPage.login({ username: nationalAdminUser.username, password: nationalAdminUser.password });
     await commonElements.waitForPageLoaded();
     await commonElements.closeTour();
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
     permissions.can_view_uhc_stats = nationalAdminUser.roles;
-    await utils.updateSettings({ ...SETTINGS, permissions }, true);
+    await utils.updateSettings({ ...settings, permissions }, true);
 
     await commonElements.closeReloadModal();
 
@@ -281,7 +279,6 @@ describe('Contact summary info', () => {
   });
 
   it('should have access to the "cht" global api variable', async () => {
-    await utils.createUsers([districtAdminUser]);
     await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
     await commonElements.closeTour();
@@ -289,7 +286,7 @@ describe('Contact summary info', () => {
     const permissions = originalSettings.permissions;
     permissions.can_configure = districtAdminUser.roles;
     permissions.can_edit = districtAdminUser.roles;
-    await utils.updateSettings({ ...SETTINGS, permissions }, true);
+    await utils.updateSettings({ ...settings, permissions }, true);
 
     await commonElements.closeReloadModal();
 
