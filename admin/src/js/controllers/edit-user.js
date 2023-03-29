@@ -37,8 +37,6 @@ angular
 
     $scope.cancel = () => $uibModalInstance.dismiss();
 
-    Languages().then(languages => $scope.enabledLocales = languages);
-
     const getRoles = roles => {
       if (!roles || !roles.length) {
         return [];
