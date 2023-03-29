@@ -7,7 +7,6 @@ describe('EditUserCtrl controller', () => {
   let mockEditAUser;
   let mockEditCurrentUser;
   let scope;
-  let translationsDbQuery;
   let dbGet;
   let UpdateUser;
   let CreateUser;
@@ -22,8 +21,6 @@ describe('EditUserCtrl controller', () => {
     module('adminApp');
 
     dbGet = sinon.stub();
-    translationsDbQuery = sinon.stub();
-    translationsDbQuery.resolves({ rows: [{ value: { code: 'en' } }, { value: { code: 'fr' } }]});
     UpdateUser = sinon.stub().resolves();
     CreateUser = {
       createSingleUser: sinon.stub().resolves()
@@ -66,7 +63,6 @@ describe('EditUserCtrl controller', () => {
       $provide.factory(
         'DB',
         KarmaUtils.mockDB({
-          query: translationsDbQuery,
           get: dbGet,
         })
       );
@@ -136,7 +132,6 @@ describe('EditUserCtrl controller', () => {
       UpdateUser,
       UserSettings,
       Settings,
-      translationsDbQuery,
       dbGet,
       jQuery
     );
@@ -159,14 +154,6 @@ describe('EditUserCtrl controller', () => {
   describe('initialisation', () => {
     it('edits the given user', () => {
       return mockEditAUser(userToEdit).setupPromise.then(() => {
-        chai.expect(translationsDbQuery.callCount).to.equal(1);
-        chai
-          .expect(translationsDbQuery.args[0][0])
-          .to.equal('medic-client/doc_by_type');
-        chai
-          .expect(translationsDbQuery.args[0][1].key[0])
-          .to.equal('translations');
-        chai.expect(translationsDbQuery.args[0][1].key[1]).to.equal(true);
         chai.expect(scope.editUserModel).to.deep.equal({
           id: userToEdit._id,
           username: userToEdit.name,
