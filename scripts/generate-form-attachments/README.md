@@ -7,7 +7,7 @@ To install, run  `npm ci`.
 To run, the script requires the COUCH_URL environment variable, that defines which database to use. 
 ex:
 ```
-EXPORT COUCH_URL=<your_instance_url_with_authentication>
+EXPORT `COUCH_URL`=<your_instance_url_with_authentication>
 ```
 
 Run command:

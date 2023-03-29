@@ -1,7 +1,14 @@
 {
-  "url": "http://localhost:5988/medic",
+  "urls": "https://medic:4e575584-7aed-49b8-9243-fd361f59712b@march1-archv3-scalability.dev.medicmobile.org/medic",
+  "url": "https://localhost",
   "users": [
-    { "name": "ac1", "pass": "Secret_1" },
-    { "name": "ac2", "pass": "Secret_1" }
+    {
+      "name": "ac1",
+      "pass": "Secret_1"
+    },
+    {
+      "name": "ac2",
+      "pass": "Secret_1"
+    }
   ]
 }

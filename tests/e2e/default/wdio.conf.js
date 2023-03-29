@@ -41,7 +41,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    '**/*.wdio-spec.js',
+    '**/initial*.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [

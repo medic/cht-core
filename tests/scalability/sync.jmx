@@ -46,7 +46,7 @@
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="Argument">
                 <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">${working_dir}/initial-replication.js</stringProp>
+                <stringProp name="Argument.value">${working_dir}/initial-replication-new.js</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="" elementType="Argument">
