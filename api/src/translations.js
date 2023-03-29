@@ -6,6 +6,8 @@ const fs = require('fs');
 const logger = require('./logger');
 const util = require('util');
 const path = require('path');
+const settingsService = require('./services/settings');
+
 const TRANSLATION_FILE_NAME_REGEX = /messages-([a-z]*)\.properties/;
 const DOC_TYPE = 'translations';
 const MESSAGES_DOC_ID_PREFIX = 'messages-';
@@ -100,7 +102,18 @@ const getTranslationDocs = async () => {
 };
 
 const getEnabledLocales = () => {
-  return getTranslationDocs().then(docs => docs.filter(doc => doc.enabled));
+  return Promise.all([settingsService.get(), getTranslationDocs()])
+    .then(([settings, docs]) => {
+      if (
+        settings.enabledLocales &&
+        Array.isArray(settings.enabledLocales) &&
+        settings.enabledLocales.length > 0
+      ) {
+        return docs.filter(doc => settings.enabledLocales.includes(doc.code));
+      }
+
+      return docs.filter(doc => doc.enabled);
+    });
 };
 
 const readTranslationFile = (fileName, folderPath) => {
