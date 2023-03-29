@@ -47,7 +47,7 @@ module.exports = {
   _getConfig: function() {
     return Object.assign({}, config.get('alerts'));
   },
-  filter: function(doc, info={}) {
+  filter: function({ doc, info }) {
     return Boolean(
       doc &&
       doc.form &&

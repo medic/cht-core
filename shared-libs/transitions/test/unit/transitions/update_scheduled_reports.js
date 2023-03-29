@@ -27,12 +27,12 @@ describe('update_scheduled_reports', () => {
 
   describe('filter', () => {
     it('fails when scheduled form not present', () => {
-      assert.equal(transition.filter({ patient_id: 'x' }), false);
+      assert.equal(transition.filter({ doc: { patient_id: 'x' } }), false);
     });
 
     it('fails when errors are on doc', () => {
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           fields: {
             month: 'x',
@@ -42,14 +42,13 @@ describe('update_scheduled_reports', () => {
             phone: 'x',
           },
           errors: ['x'],
-        }),
-        false
-      );
+        }
+      }), false);
     });
 
     it('fails when no year value on form submission', () => {
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           fields: {
             month: 'x',
@@ -57,14 +56,13 @@ describe('update_scheduled_reports', () => {
           contact: {
             phone: 'x',
           },
-        }),
-        false
-      );
+        }
+      }), false);
     });
 
     it('passes when month, year property', () => {
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           type: 'data_record',
           fields: {
@@ -74,14 +72,14 @@ describe('update_scheduled_reports', () => {
           contact: {
             phone: 'x',
           },
-        }),
-        true
-      );
+        },
+        info: {}
+      }), true);
     });
 
     it('passes when month, year property and empty errors', () => {
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           type: 'data_record',
           fields: {
@@ -92,14 +90,14 @@ describe('update_scheduled_reports', () => {
             phone: 'x',
           },
           errors: [],
-        }),
-        true
-      );
+        },
+        info: {}
+      }), true);
     });
 
     it('passes when month_num, year property', () => {
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           type: 'data_record',
           fields: {
@@ -109,14 +107,14 @@ describe('update_scheduled_reports', () => {
           contact: {
             phone: 'x',
           },
-        }),
-        true
-      );
+        },
+        info: {}
+      }), true);
     });
 
     it('passes when week, year property', () => {
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           type: 'data_record',
           fields: {
@@ -126,14 +124,14 @@ describe('update_scheduled_reports', () => {
           contact: {
             phone: 'x',
           },
-        }),
-        true
-      );
+        },
+        info: {}
+      }), true);
     });
 
     it('passes when week_number, year property', () => {
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           type: 'data_record',
           fields: {
@@ -143,23 +141,21 @@ describe('update_scheduled_reports', () => {
           contact: {
             phone: 'x',
           },
-        }),
-        true
-      );
+        },
+        info: {}
+      }), true);
     });
 
     it('should fail when transition already run', () => {
       sinon.stub(transitionUtils, 'hasRun').returns(true);
-      assert.equal(
-        transition.filter(
-          {
-            form: 'x',
-            fields: { week: 1, year: 2 },
-            type: 'data_record'
-          },
-          'info'
-        ),
-        false);
+      assert.equal(transition.filter({
+        doc: {
+          form: 'x',
+          fields: { week: 1, year: 2 },
+          type: 'data_record'
+        },
+        info: 'info'
+      }), false);
 
       assert.equal(transitionUtils.hasRun.callCount, 1);
       assert.deepEqual(transitionUtils.hasRun.args[0], ['info', 'update_scheduled_reports']);

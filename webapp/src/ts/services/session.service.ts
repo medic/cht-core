@@ -109,26 +109,24 @@ export class SessionService {
       });
   }
 
-  private hasRole (userCtx, role) {
-    return !!(userCtx && userCtx.roles && userCtx.roles.includes(role));
+  hasRole(role, userCtx?) {
+    userCtx = userCtx || this.userCtx();
+    return !!(userCtx && userCtx.roles?.includes(role));
   }
 
   isAdmin(userCtx?) {
-    userCtx = userCtx || this.userCtx();
     return this.isDbAdmin(userCtx) ||
-      this.hasRole(userCtx, 'national_admin'); // deprecated: kept for backwards compatibility: #4525
+      this.hasRole('national_admin', userCtx); // deprecated: kept for backwards compatibility: #4525
   }
 
   isDbAdmin(userCtx?) {
-    userCtx = userCtx || this.userCtx();
-    return this.hasRole(userCtx, '_admin');
+    return this.hasRole('_admin', userCtx);
   }
 
   /**
    * Returns true if the logged in user is online only
    */
   isOnlineOnly(userCtx?) {
-    userCtx = userCtx || this.userCtx();
-    return this.isAdmin(userCtx) || this.hasRole(userCtx, ONLINE_ROLE);
+    return this.isAdmin(userCtx) || this.hasRole(ONLINE_ROLE, userCtx);
   }
 }

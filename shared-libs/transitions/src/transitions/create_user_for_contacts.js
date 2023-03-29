@@ -78,9 +78,10 @@ const generateUniqueUsername = async (contactName, collisionCount = 0) => {
   }
 };
 
-const createNewUser = async ({ roles }, { _id, name, phone, parent }) => {
+const createNewUser = async ({ roles }, contact) => {
+  const { _id, name, phone, parent } = contact;
   if (!name) {
-    throw new Error(`Replacement contact [${_id}] must have a name.`);
+    throw new Error(`Contact [${_id}] must have a name.`);
   }
   const username = await generateUniqueUsername(name);
   const user = {
@@ -93,7 +94,9 @@ const createNewUser = async ({ roles }, { _id, name, phone, parent }) => {
     fullname: name,
   };
   try {
-    return await users.createUser(user, config.get('app_url'));
+    await users.createUser(user, config.get('app_url'));
+    // Pick up any updates made to the contact
+    Object.assign(contact, await db.medic.get(_id));
   } catch (err) {
     if (!err.message || typeof err.message === 'string') {
       throw err;
@@ -114,6 +117,8 @@ const replaceUser = async (originalContact, { username, replacementContactId }) 
     await createNewUser(originalUserSettings, newContact);
     await users.resetPassword(originalUserSettings.name);
     originalContact.user_for_contact.replace[username].status = USER_CREATION_STATUS.COMPLETE;
+    // Clear the create flag if it is set (create was skipped due to replace)
+    delete originalContact.user_for_contact.create;
   } catch (e) {
     originalContact.user_for_contact.replace[username].status = USER_CREATION_STATUS.ERROR;
     throw e;
@@ -126,6 +131,26 @@ const getUsersToReplace = (originalContact) => {
     .filter(([, { status }]) => status === USER_CREATION_STATUS.READY)
     .map(([username, { replacement_contact_id }]) => ({ username, replacementContactId: replacement_contact_id }));
 };
+
+const addUser = async (contact) => {
+  if (
+    !contact.role &&
+    (!Array.isArray(contact.roles) || !contact.roles.length)
+  ) {
+    throw new Error(`Contact [${contact._id}] must have a "role" or "roles" property.`);
+  }
+
+  const roles = Array.isArray(contact.roles) && contact.roles.length > 0 ? contact.roles : [contact.role];
+  await createNewUser({ roles }, contact);
+};
+
+const isCreatingUser = ({ doc, initialProcessing }) =>
+  doc.user_for_contact
+  && doc.user_for_contact.create === 'true'
+  && initialProcessing;
+const isReplacingUser = contact => contact.user_for_contact.replace && !!Object
+  .values(contact.user_for_contact.replace)
+  .find(({ status }) => status === USER_CREATION_STATUS.READY);
 
 /**
  * Replace a user whose contact has been marked as ready to be replaced with a new user.
@@ -148,26 +173,26 @@ module.exports = {
       );
     }
   },
-  filter: (doc) => {
+  filter: (change) => {
+    const { doc } = change;
     const contactType = contactTypeUtils.getContactType(config.getAll(), doc);
     if (
       !contactType
       || !contactTypeUtils.isPersonType(contactType)
       || !doc.user_for_contact
-      || !doc.user_for_contact.replace
     ) {
       return false;
     }
-
-    return !!Object
-      .values(doc.user_for_contact.replace)
-      .find(({ status }) => status === USER_CREATION_STATUS.READY);
+    return Boolean(isCreatingUser(change) || isReplacingUser(doc));
   },
-  onMatch: async change => {
-    const usersToReplace = getUsersToReplace(change.doc);
-    const replaceUsers = usersToReplace.map(user => replaceUser(change.doc, user));
-    const replacementResults = await Promise.allSettled(replaceUsers);
-    const errors = replacementResults
+  onMatch: async (change) => {
+    const { doc } = change;
+    const promises = isReplacingUser(doc)
+      ? getUsersToReplace(doc)
+        .map(user => replaceUser(doc, user))
+      : [addUser(doc)];
+
+    const errors = (await Promise.allSettled(promises))
       .filter(({ status }) => status === 'rejected')
       .map(({ reason }) => reason);
     if (errors.length) {
@@ -178,6 +203,7 @@ module.exports = {
           .join(', '),
       };
     }
+
     return true;
   }
 };
