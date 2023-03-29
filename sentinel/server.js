@@ -35,7 +35,7 @@ const waitForApi = () =>
     waitLoop();
   });
 
-logger.info('Running server checks…');
+logger.info('Running server checks...');
 serverChecks
   .check(db.couchUrl)
   .then(waitForApi)
