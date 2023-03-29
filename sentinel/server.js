@@ -17,11 +17,9 @@ process
 
 const waitForApi = () =>
   new Promise(resolve => {
-    //
-    // This waits forever, with no escape hatch, becayse there is no way currently
+    // This waits forever, with no escape hatch, because there is no way currently
     // to know what API is doing, and migrations could legitimately take days
-    //
-    //
+    logger.info(`~~~~~~~~~~~~~~~~~~~~~~~~~~~ http://${process.env.API_HOST || 'localhost'}:${process.env.API_PORT || 5989}/setup/poll`);
     const waitLoop = () => {
       request(
         `http://${process.env.API_HOST || 'localhost'}:${process.env.API_PORT || 5988}/setup/poll`,
@@ -31,7 +29,7 @@ const waitForApi = () =>
             return setTimeout(() => waitLoop(), 10 * 1000);
           }
 
-          logger.info(`Api is ready: ${body}`);
+          logger.info(`API is ready: ${body}`);
           resolve();
         }
       );
@@ -54,7 +52,7 @@ serverChecks
     });
   })
   .catch(err => {
-    logger.error('Fatal error intialising medic-sentinel');
+    logger.error('Fatal error intialising sentinel');
     logger.error('%o', err);
     process.exit(1);
   });
