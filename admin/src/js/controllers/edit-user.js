@@ -26,7 +26,6 @@ angular
     CreateUser,
     DB,
     FormatDate,
-    Languages,
     Select2Search,
     Settings,
     Translate,
