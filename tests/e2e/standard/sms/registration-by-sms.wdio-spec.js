@@ -31,6 +31,10 @@ describe('Registration by SMS', async () => {
     expect(allRHSPeople.length).to.equal(2);
     expect(allRHSPeople).to.include.members([name, user.contact.name]);
 
+    await contactPage.selectLHSRowByText(name);
+    await commonPage.waitForPageLoaded();
+    const medicID = await contactPage.getContactMedicID();
+
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
@@ -41,8 +45,19 @@ describe('Registration by SMS', async () => {
     expect(firstReportInfo.form).to.equal('New Person (SMS)');
     expect(firstReportInfo.lineage).to.equal(district_hospital.name);
     expect(await reportsPage.getRawReportContent()).to.equal(message);
-    expect(await reportsPage.getAutomaticReply()).to.include(`Thank you ${user.contact.name} for registering ${name}.`);
+
+    const automaticReply = await reportsPage.getAutomaticReply();
+    expect(automaticReply.message).to.include(`Thank you ${user.contact.name} for registering ${name}.`);
+    expect(automaticReply.recipient).to.include(user.phone);
+
+    const taskDetails = await reportsPage.getTaskDetails(1, 1);
+    const expectedMessage = `${user.contact.name}, did ${name} ${medicID} require care? To register pregnancy, send ` +
+                                    `'P ${medicID} <Weeks since LMP>'. For PNC, send delivery report using ` +
+                                    `'D ${medicID} <Delivery Code> <Days Since Delivery>'. Thank you!`;
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1))).to.contain('scheduled');
+    expect(taskDetails.title).to.equal('Registration Followup');
+    expect(taskDetails.message).to.equal(expectedMessage);
+    expect(taskDetails.recipient).to.include(user.phone);
+    expect(taskDetails.state).to.equal('scheduled');
   });
 });
