@@ -331,7 +331,7 @@ describe('Create user for contacts', () => {
         const basicReportId3 = await submitBasicForm();
         const basicReport3 = await utils.getDoc(basicReportId3);
         // New reports written by the old user are not re-parented
-        expect(basicReport3.contact._id).to.equal('WRONG');
+        expect(basicReport3.contact._id).to.equal(originalContactId);
       });
 
       it('creates a new user when the replace_user form is submitted while online', async () => {
