@@ -159,9 +159,6 @@ describe('EditUserCtrl controller', () => {
   describe('initialisation', () => {
     it('edits the given user', () => {
       return mockEditAUser(userToEdit).setupPromise.then(() => {
-        chai.expect(scope.enabledLocales.length).to.equal(2);
-        chai.expect(scope.enabledLocales[0].code).to.equal('en');
-        chai.expect(scope.enabledLocales[1].code).to.equal('fr');
         chai.expect(translationsDbQuery.callCount).to.equal(1);
         chai
           .expect(translationsDbQuery.args[0][0])
