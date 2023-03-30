@@ -59,6 +59,7 @@ describe('TasksComponent', () => {
     };
     sessionService = {
       isOnlineOnly: sinon.stub().returns(false),
+      userCtx: sinon.stub()
     };
     userContactService = {
       get: sinon.stub().resolves(),
