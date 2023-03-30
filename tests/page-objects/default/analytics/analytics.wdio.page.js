@@ -22,13 +22,16 @@ const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal p
 const AGGREGATE_LIST = '#target-aggregates-list';
 const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
 const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li`);
+const targetAggregateListItem = (contactId) => $(`.aggregate-detail li[data-record-id="${contactId}"] a`);
 
 const labels = () => $$('.content-pane .meta > div > .card .row label');
 const meta = () => $$('.content-pane .meta > div > .card .row p');
 const rows = () => $$('.content-pane .meta > div > .card .row p');
 const pane = () => $$('.content-pane .meta > div > .card .row label');
 const emptySelectionError = () => $('.content-pane .item-content.empty-selection.selection-error');
-const NAVIGATION_LINK =  '.mm-navigation-menu li a';
+const emptySelectionNoError = () => $('.content-pane .item-content.empty-selection:not(.selection-error)');
+
+const NAVIGATION_LINK = '.mm-navigation-menu li a';
 const CONTENT_DISABLED = '.page .item-content.disabled';
 
 const getTargetInfo = async (targetElement) => {
@@ -93,6 +96,13 @@ const openTargetDetails = async (targetID) => {
   await $('.target-detail.card h2').waitForDisplayed();
 };
 
+/**
+ * Expect certain RHS target details
+ * @param {Object} target
+ * @param {string} target.id
+ * @param {string} target.title
+ * @param {string} target.counter
+ */
 const expectTargetDetails = async (target) => {
   expect(await $('.target-detail h2').getText()).to.equal(target.title);
   expect(await $('.target-detail .cell p').getText()).to.equal(target.counter);
@@ -113,5 +123,7 @@ module.exports = {
   getTargetItem,
   openTargetDetails,
   expectTargetDetails,
-  emptySelectionError
+  emptySelectionError,
+  emptySelectionNoError,
+  targetAggregateListItem,
 };

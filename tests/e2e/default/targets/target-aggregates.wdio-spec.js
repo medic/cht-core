@@ -4,7 +4,6 @@ const analytics = require('../../../page-objects/default/analytics/analytics.wdi
 const contactsPageObject = require('../../../page-objects/default/contacts/contacts.wdio.page.js');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const moment = require('moment');
-const uuid = require('uuid').v4;
 const _ = require('lodash');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const userFactory = require('../../../factories/cht/users/users');
@@ -36,14 +35,6 @@ const expectTargets = async (targets) => {
     }
   }
 };
-
-/**
- * Expect certain RHS target details
- * @param {Object} target
- * @param {string} target.id
- * @param {string} target.title
- * @param {string} target.counter
- */
 
 /**
  * Expect certain RHS target aggregate list
@@ -98,9 +89,9 @@ const updateSettings = async (targetsConfig, user, contactSummary) => {
 };
 
 const clickOnTargetAggregateListItem = async (contactId) => {
-  await $(`.aggregate-detail li[data-record-id="${contactId}"] a`).click();
+  await analytics.targetAggregateListItem(contactId).click();
   // wait until contact-summary is loaded
-  await (await $('.content-pane .meta > div > .card .action-header h3')).waitForDisplayed();
+  await contactsPageObject.contactCard().waitForDisplayed();
 };
 
 describe('Target aggregates', () => {
@@ -125,7 +116,7 @@ describe('Target aggregates', () => {
       expect(await (await analytics.aggregateList()).length).to.equal(0);
       expect(await (await analytics.loadingStatus()).isDisplayed()).to.be.true;
       expect(
-        await $('.content-pane .item-content.empty-selection:not(.selection-error)').isDisplayed()
+        await (await analytics.emptySelectionNoError()).isDisplayed()
       ).to.be.true;
     });
 
