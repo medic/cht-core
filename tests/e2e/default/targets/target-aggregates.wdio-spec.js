@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const analytics = require('../../../page-objects/default/analytics/analytics.wdio.page');
+const contactsPageObject = require('../../../page-objects/default/contacts/contacts.wdio.page.js');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const moment = require('moment');
 const uuid = require('uuid').v4;
@@ -18,7 +19,7 @@ const randomNumber = (max) => Math.floor(Math.random() * max);
  */
 const expectTargets = async (targets) => {
   expect(await (await analytics.aggregateList()).length).to.equal(targets.length);
-  const expectTarget = async (target) => {    
+  const expectTarget = async (target) => {
     expect(await (await analytics.getTargetItem(target)).title).to.equal(target.title);
     expect(await (await analytics.getTargetItem(target)).status).to.equal(target.counter);
   };
@@ -169,7 +170,7 @@ describe('Target aggregates', () => {
       language: 'en',
     };
 
-    const names = [ 'Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle' ];
+    const names = ['Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle'];
 
     const genPlace = (parent, idx = false) => {
       const place = {
@@ -183,7 +184,7 @@ describe('Target aggregates', () => {
       const contact = {
         _id: uuid(),
         type: 'person',
-        name:  idx === false ? randomString(8) : names[idx],
+        name: idx === false ? randomString(8) : names[idx],
         parent: { _id: place._id, parent: place.parent },
         reported_date: moment().valueOf(),
       };
@@ -210,9 +211,9 @@ describe('Target aggregates', () => {
     before(async () => {
       await utils.saveDocs([parentPlace, otherParentPlace]);
       await utils.saveDocs(docs);
-      await utils.createUsers([ user ]);
+      await utils.createUsers([user]);
       await browser.url('/medic/login');
-      await loginPage.login({ username: user.username, password: user.password });      
+      await loginPage.login({ username: user.username, password: user.password });
       await commonElements.waitForPageLoaded();
     });
 
@@ -225,7 +226,7 @@ describe('Target aggregates', () => {
       '^target~'
     ];
 
-    afterEach( async  () => await utils.revertDb(DOCS_TO_KEEP, true));
+    afterEach(async () => await utils.revertDb(DOCS_TO_KEEP, true));
 
     it('should display no data when no targets are uploaded', async () => {
       const targetsConfig = [
@@ -314,8 +315,8 @@ describe('Target aggregates', () => {
         .map(contact => {
           const genTarget = (target) => {
             const value = targetValuesByContact[contact.name] &&
-                          targetValuesByContact[contact.name][target.id].value ||
-                          { pass: randomNumber(100), total: randomNumber(100) };
+              targetValuesByContact[contact.name][target.id].value ||
+              { pass: randomNumber(100), total: randomNumber(100) };
             return { id: target.id, value };
           };
 
@@ -329,7 +330,7 @@ describe('Target aggregates', () => {
         }));
 
       await utils.saveDocs(targetDocs);
-      await updateSettings(targetsConfig, user); 
+      await updateSettings(targetsConfig, user);
 
       await commonElements.goToAnalytics();
       await analytics.goToTargetAggregates(true);
@@ -380,14 +381,14 @@ describe('Target aggregates', () => {
               label: "Activity this month",
               fields: [],
             };
-            card.fields.push({ label: "Last updated", value: targetDoc.date_updated });           
+            card.fields.push({ label: "Last updated", value: targetDoc.date_updated });
             targetDoc.targets.forEach(target => {
-              let value; 
+              let value;
               if (target.type === 'percent') {
-                value = (target.value.total ? target.value.pass * 100 / target.value.total : 0) + "%";  
+                value = (target.value.total ? target.value.pass * 100 / target.value.total : 0) + "%";
               } else {
                 value = target.value.pass;
-              }  
+              }
               card.fields.push({ label: target.title.en, value: value });
             });
             cards.push(card);
@@ -404,12 +405,12 @@ describe('Target aggregates', () => {
       const prometheus = docs.find(doc => doc.name === names[1]);
       const targets = {
         'Clarissa': [
-          { id: 'a_target', value: { total: 50, pass: 40 }},
-          { id: 'b_target', value: { total: 20, pass: 10 }}
+          { id: 'a_target', value: { total: 50, pass: 40 } },
+          { id: 'b_target', value: { total: 20, pass: 10 } }
         ],
         'Prometheus': [
-          { id: 'a_target', value: { total: 20, pass: 18 }},
-          { id: 'b_target', value: { total: 40, pass: 6 }}
+          { id: 'a_target', value: { total: 20, pass: 18 } },
+          { id: 'b_target', value: { total: 40, pass: 6 } }
         ],
       };
 
@@ -442,12 +443,9 @@ describe('Target aggregates', () => {
       await expectTargets(expectedTargets);
       await analytics.openTargetDetails(expectedTargets[0].id);
       await clickOnTargetAggregateListItem(clarissa._id);
-
-      expect(await $('.content-pane .meta h2').getText()).to.equal('Clarissa');
+      expect(await contactsPageObject.getContactInfoName()).to.equal('Clarissa');
       // assert that the activity card exists and has the right fields.
-      expect(await $('.content-pane .meta > div > .card .action-header h3').getText())
-        .to.equal('Activity this month');
-
+      expect(await contactsPageObject.getContactCardTitle()).to.equal('Activity this month');
       expect(await commonElements.getTextForElements(analytics.labels))
         .to.deep.equal(['Last updated', 'what a target!', 'the most target']);
       expect(await commonElements.getTextForElements(analytics.rows))
@@ -459,10 +457,9 @@ describe('Target aggregates', () => {
       await analytics.openTargetDetails(expectedTargets[1].id);
       await clickOnTargetAggregateListItem(prometheus._id);
 
-      expect(await $('.content-pane .meta h2').getText()).to.equal('Prometheus');
+      expect(await contactsPageObject.getContactInfoName()).to.equal('Prometheus');
       // assert that the activity card exists and has the right fields.
-      expect(await $('.content-pane .meta > div > .card .action-header h3').getText())
-        .to.equal('Activity this month');
+      expect(await contactsPageObject.getContactCardTitle()).to.equal('Activity this month');
       expect(await commonElements.getTextForElements(analytics.pane))
         .to.deep.equal(['Last updated', 'what a target!', 'the most target']);
       expect(await commonElements.getTextForElements(analytics.meta))
