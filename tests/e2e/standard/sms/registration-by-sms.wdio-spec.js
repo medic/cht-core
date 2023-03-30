@@ -17,7 +17,7 @@ describe('Registration by SMS', async () => {
     await loginPage.cookieLogin();
   });
 
-  it('Should create a new person via SMS', async () => {
+  it('Should create a new person via SMS and trigger the configured message schedule', async () => {
     const name = 'Filippo';
     const message = `N ${name}`;
     await gatewayApiUtils.api.postMessage({
