@@ -71,7 +71,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
         doc.enabled = enabled;
         return DB().put(doc).catch(err => {
-          $log.error('Error updating settings', err);
+          $log.error('Error updating translation doc', err);
         });
       });
     };
