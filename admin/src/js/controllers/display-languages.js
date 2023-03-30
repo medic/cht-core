@@ -21,16 +21,16 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     'use strict';
     'ngInject';
 
+    const hasEnabledLocales = enabledLocales => {
+      return enabledLocales && Array.isArray(enabledLocales) && enabledLocales.length > 0;
+    };
+
     const createLocaleModel = function(doc, totalTranslations, enabledLocales) {
       const result = {
         doc: doc
       };
 
-      if (
-        enabledLocales &&
-        Array.isArray(enabledLocales) &&
-        enabledLocales.length > 0
-      ) {
+      if (hasEnabledLocales(enabledLocales)) {
         result.enabled = enabledLocales.includes(doc.code);
       } else {
         result.enabled = doc.enabled;
@@ -51,11 +51,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
     const setLanguageStatus = function(doc, enabled) {
       Settings().then(settings => {
-        if (
-          settings.enabledLocales &&
-          Array.isArray(settings.enabledLocales) &&
-          settings.enabledLocales.length > 0
-        ) {
+        if (hasEnabledLocales(settings.enabledLocales)) {
           let enabledLocales = settings.enabledLocales;
           if (enabled) {
             enabledLocales.push(doc.code);
