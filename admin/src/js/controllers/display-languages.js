@@ -96,8 +96,8 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
         }),
         Settings()
       ])
-        .then(([results, settings]) => {
-          const totalTranslations = countTotalTranslations(results.rows);
+        .then(([translations, settings]) => {
+          const totalTranslations = countTotalTranslations(translations.rows);
           $scope.loading = false;
           $scope.languagesModel = {
             totalTranslations: totalTranslations,
@@ -105,7 +105,9 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
               locale: settings.locale,
               outgoing: settings.locale_outgoing
             },
-            locales: results.rows.map(row => createLocaleModel(row.doc, totalTranslations, settings.enabledLocales))
+            locales: translations.rows.map(
+              row => createLocaleModel(row.doc, totalTranslations, settings.enabledLocales)
+            )
           };
         })
         .catch(function(err) {
