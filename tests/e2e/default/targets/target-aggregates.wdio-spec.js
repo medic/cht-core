@@ -6,6 +6,9 @@ const loginPage = require('../../../page-objects/default/login/login.wdio.page')
 const moment = require('moment');
 const uuid = require('uuid').v4;
 const _ = require('lodash');
+const placeFactory = require('../../../factories/cht/contacts/place');
+const userFactory = require('../../../factories/cht/users/users');
+const personFactory = require('../../../factories/cht/contacts/person');
 
 const randomString = (length) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
 const randomNumber = (max) => Math.floor(Math.random() * max);
@@ -143,64 +146,24 @@ describe('Target aggregates', () => {
   });
 
   describe('as a user with a home place', () => {
-    const password = 'passwordSUP3RS3CR37!';
-
-    const parentPlace = {
-      _id: 'PARENT_PLACE',
-      type: 'district_hospital',
-      name: 'Big Parent Hospital'
-    };
-
-    const otherParentPlace = {
-      _id: 'OTHER_PLACE',
-      type: 'district_hospital',
-      name: 'Smaller Hospital'
-    };
-
-    const user = {
-      username: 'supervisor',
-      password: password,
-      place: parentPlace._id,
-      contact: {
-        _id: 'fixture:user:supervisor',
-        name: 'Supervisor'
-      },
-      roles: ['program_officer'],
-      known: true,
-      language: 'en',
-    };
-
+    const parentPlace = placeFactory.place().build({ type: 'district_hospital' });
+    const otherParentPlace = placeFactory.place().build({ type: 'district_hospital' });
+    const user = userFactory.build({ place: parentPlace._id, roles: ['program_officer'] });
     const names = ['Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle'];
-
     const genPlace = (parent, idx = false) => {
-      const place = {
-        _id: uuid(),
-        type: 'health_center',
-        name: randomString(8),
-        parent: { _id: parent._id },
-        reported_date: moment().valueOf(),
-      };
-
-      const contact = {
-        _id: uuid(),
-        type: 'person',
+      const place = placeFactory.place().build({ type: 'health_center', parent: { _id: parent._id } });
+      const contact = personFactory.build({
         name: idx === false ? randomString(8) : names[idx],
-        parent: { _id: place._id, parent: place.parent },
-        reported_date: moment().valueOf(),
-      };
-
+        parent: { _id: place._id, parent: place.parent }
+      });
       place.contact = { _id: contact._id, parent: contact.parent };
-
       return [place, contact];
     };
-
     const docs = _.flattenDeep([
       Array.from({ length: 5 }).map((e, i) => genPlace(parentPlace, i)),
       Array.from({ length: 5 }).map(() => genPlace(otherParentPlace)),
     ]);
-
     const genTitle = (title) => ({ en: title });
-
     const docTags = [
       // current targets
       moment().format('YYYY-MM'),
@@ -371,35 +334,35 @@ describe('Target aggregates', () => {
         { id: 'b_target', type: 'percent', title: genTitle('the most target'), aggregate: true },
       ];
       const contactSummaryScript = `
-        let cards = [];
-        let context = {};
-        let fields = [];
-        if (contact.type === "person") {
-          fields = [{ label: "test.pid", value: contact.patient_id, width: 3 }];
-          if (targetDoc) {
-            const card = {
-              label: "Activity this month",
-              fields: [],
-            };
-            card.fields.push({ label: "Last updated", value: targetDoc.date_updated });
-            targetDoc.targets.forEach(target => {
-              let value;
-              if (target.type === 'percent') {
-                value = (target.value.total ? target.value.pass * 100 / target.value.total : 0) + "%";
-              } else {
-                value = target.value.pass;
-              }
-              card.fields.push({ label: target.title.en, value: value });
-            });
-            cards.push(card);
-          }
-        }
-        return {
-          fields: fields,
-          cards: cards,
-          context: context
+    let cards = [];
+    let context = {};
+    let fields = [];
+    if (contact.type === "person") {
+      fields = [{ label: "test.pid", value: contact.patient_id, width: 3 }];
+      if (targetDoc) {
+        const card = {
+          label: "Activity this month",
+          fields: [],
         };
-      `;
+        card.fields.push({ label: "Last updated", value: targetDoc.date_updated });
+        targetDoc.targets.forEach(target => {
+          let value;
+          if (target.type === 'percent') {
+            value = (target.value.total ? target.value.pass * 100 / target.value.total : 0) + "%";
+          } else {
+            value = target.value.pass;
+          }
+          card.fields.push({ label: target.title.en, value: value });
+        });
+        cards.push(card);
+      }
+    }
+    return {
+      fields: fields,
+      cards: cards,
+      context: context
+    };
+  `;
 
       const clarissa = docs.find(doc => doc.name === names[0]);
       const prometheus = docs.find(doc => doc.name === names[1]);
