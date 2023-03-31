@@ -34,12 +34,11 @@ interface DebounceActive {
 })
 export class RulesEngineCoreFactoryService {
   constructor(
-    private dbService: DbService,
-    private feedbackService: FeedbackService
+    private dbService: DbService
   ) {}
 
   get() {
-    return RulesEngineCore(this.dbService.get(), this.feedbackService);
+    return RulesEngineCore(this.dbService.get());
   }
 }
 
@@ -72,10 +71,12 @@ export class RulesEngineService implements OnDestroy {
     private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
+    private feedbackService:FeedbackService,
     private chtScriptApiService:CHTScriptApiService
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
+    this.feedbackService = feedbackService;
   }
 
   ngOnDestroy(): void {
@@ -154,6 +155,11 @@ export class RulesEngineService implements OnDestroy {
                 initializeTelemetryData.record();
               });
           });
+      })
+      .catch(error => {
+        const errorMessage = `Failed to initialize RulesEngineService`;
+        this.feedbackService.submit(errorMessage);
+        throw error;
       });
   }
 
