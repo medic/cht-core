@@ -12,9 +12,6 @@ const reportBody = () => $(REPORT_BODY);
 const noReportSelectedLabel = () => $('.empty-selection');
 const selectedCaseId = () => $(`${reportBodyDetailsSelector} > ul > li > p > span > a`);
 const selectedCaseIdLabel = () => $(`${reportBodyDetailsSelector} ul > li > label > span`);
-const submitterPlace = () => $('.position a');
-const submitterPhone = () => $('.sender .phone');
-const submitterName = () => $('.sender .name');
 const firstReport = () => $(`${REPORTS_LIST_ID} li:first-child`);
 const reportList = () => $(`${REPORTS_LIST_ID}`);
 const allReports = () => $$(`${REPORTS_LIST_ID} li.content-row`);
@@ -64,8 +61,12 @@ const selectedReportsCheckboxes = () => $$(`${REPORTS_LIST_ID} li input[type="ch
 const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
 const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
-const patientName = () => $('.subject .name');
-const reportType = () => $('div[test-id="form-title"]');
+const patientName = () => itemSummary().$('.subject .name');
+const reportName = () => itemSummary().$('div[test-id="form-title"]');
+const senderName = () => itemSummary().$('.sender .name');
+const senderPhone = () => itemSummary().$('.sender .phone');
+const lineage = () => itemSummary().$('.position');
+const relativeDate = () => itemSummary().$('.relative-date');
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
@@ -339,7 +340,7 @@ const getAutomaticReply = async () => {
   };
 };
 
-const getReportSubject = async () => {
+/*const getReportSubject = async () => {
   await patientName().waitForDisplayed();
   return (await patientName()).getText();
 };
@@ -347,6 +348,17 @@ const getReportSubject = async () => {
 const getReportType = async () => {
   await reportType().waitForDisplayed();
   return (await reportType()).getText();
+};*/
+
+const getOpenReportInfo = async () => {
+  return {
+    patientName: await getElementText(patientName()),
+    reportName: await getElementText(reportName()),
+    senderName: await getElementText(senderName()),
+    senderPhone: await getElementText(senderPhone()),
+    lineage: await getElementText(lineage()),
+    relativeDate: await getElementText(relativeDate()),
+  };
 };
 
 const openSelectedReport = async (listElement) => {
@@ -400,9 +412,8 @@ module.exports = {
   noReportSelectedLabel,
   reportList,
   firstReport,
-  submitterName,
-  submitterPhone,
-  submitterPlace,
+  patientName,
+  senderPhone,
   selectedCaseId,
   selectedCaseIdLabel,
   submitReportButton,
@@ -443,8 +454,7 @@ module.exports = {
   getReportDetailFieldValueByLabel,
   getRawReportContent,
   getAutomaticReply,
-  getReportSubject,
-  getReportType,
+  getOpenReportInfo,
   getListReportInfo,
   resetFilter,
   openReport,
