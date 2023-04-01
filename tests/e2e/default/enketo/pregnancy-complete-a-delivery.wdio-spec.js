@@ -136,8 +136,9 @@ describe('Contact Delivery Form', () => {
     await deliveryForm.submitForm();
     await contactPage.openReport();
     await (await reportPage.reportBodyDetails()).waitForDisplayed();
-    expect((await reportPage.getReportSubject())).to.equal(MOTHERS_NAME);
-    expect((await reportPage.getReportType())).to.equal(formDocument.title);
+    const openReportInfo = await reportPage.getOpenReportInfo();
+    expect(openReportInfo.patientName).to.equal(MOTHERS_NAME);
+    expect(openReportInfo.reportName).to.equal(formDocument.title);
   });
 
   it('The past pregnancy card should show', async () => {
