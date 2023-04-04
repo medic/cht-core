@@ -9,6 +9,7 @@ const generateXform = require('./generate-xform');
 const generateServiceWorker = require('../generate-service-worker');
 const manifest = require('./manifest');
 const config = require('../config');
+const extensionLibs = require('./extension-libs');
 
 const MEDIC_DDOC_ID = '_design/medic';
 
@@ -114,6 +115,10 @@ const handleBrandingChanges = () => {
     .then(() => updateServiceWorker());
 };
 
+const handleLibsChanges = () => {
+  return updateServiceWorker();
+};
+
 const updateManifest = () => {
   return manifest.generate().catch(err => {
     logger.error('Failed to generate manifest: %o', err);
@@ -162,6 +167,10 @@ const listen = () => {
 
       if (change.id === 'branding') {
         return handleBrandingChanges();
+      }
+
+      if (extensionLibs.isLibChange(change)) {
+        return handleLibsChanges();
       }
     })
     .on('error', err => {
