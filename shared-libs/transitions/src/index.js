@@ -16,13 +16,14 @@ module.exports = (sourceDb, sourceConfig, sourceLogger) => {
 
   const transitions = require('./transitions');
   return {
+    date: require('./date'),
+    dueTasks: require('./schedule/due_tasks'),
+    getDeprecatedTransitions: transitions.getDeprecatedTransitions,
+    getLoadingError: transitions.getLoadingError,
+    infodoc: infodoc,
     loadTransitions: transitions.loadTransitions,
+    messages: require('./lib/messages'),
     processChange: transitions.processChange,
     processDocs: transitions.processDocs,
-    getDeprecatedTransitions: transitions.getDeprecatedTransitions,
-    messages: require('./lib/messages'),
-    date: require('./date'),
-    infodoc: infodoc,
-    dueTasks: require('./schedule/due_tasks')
   };
 };
