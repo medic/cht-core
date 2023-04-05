@@ -27,7 +27,7 @@ const ALL_SCHEDULED_TASKS = [
   'replications',
   'outbound',
   'purging',
-  'transitionsErrorReminder',
+  'transitionsDisabledReminder',
   'backgroundCleanup',
 ];
 
