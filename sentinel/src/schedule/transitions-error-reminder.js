@@ -7,7 +7,8 @@ module.exports = {
     if (transitionLoadError) {
       logger.error('Transitions are disabled until these configuration errors are fixed.');
       logger.error(transitionLoadError);
-      return Promise.resolve();
     }
+    
+    return Promise.resolve();
   },
 };

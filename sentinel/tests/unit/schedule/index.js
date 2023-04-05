@@ -21,6 +21,16 @@ let realSetTimeout;
 const nextTick = (millis) => new Promise(resolve => realSetTimeout(resolve, millis));
 const oneInterval = 5 * 60 * 1000;
 
+const ALL_SCHEDULED_TASKS = [
+  'dueTasks',
+  'reminders',
+  'replications',
+  'outbound',
+  'purging',
+  'transitionsErrorReminder',
+  'backgroundCleanup',
+];
+
 describe('scheduler', () => {
   describe('init', () => {
     beforeEach(() => {
@@ -60,7 +70,7 @@ describe('scheduler', () => {
       assert.equal(outbound.execute.callCount, 1);
       assert.equal(purging.execute.callCount, 1);
       assert.equal(backgroundCleanup.execute.callCount, 1);
-      assertOngoingTasks(['dueTasks', 'reminders', 'replications', 'outbound', 'purging', 'backgroundCleanup']);
+      assertOngoingTasks(ALL_SCHEDULED_TASKS);
 
       // calling init again does't restart every task when promises weren't resolved
       clock.tick(oneInterval);
@@ -71,7 +81,7 @@ describe('scheduler', () => {
       assert.equal(purging.execute.callCount, 1);
       assert.equal(backgroundCleanup.execute.callCount, 1);
       assert.equal(unit.__get__('sendable').callCount, 1);
-      assertOngoingTasks(['dueTasks', 'reminders', 'replications', 'outbound', 'purging', 'backgroundCleanup']);
+      assertOngoingTasks(ALL_SCHEDULED_TASKS);
 
       return nextTick().then(() => {
         // task promises were resolved and everything is cleared
@@ -101,7 +111,7 @@ describe('scheduler', () => {
       assert.equal(outbound.execute.callCount, 1);
       assert.equal(purging.execute.callCount, 1);
       assert.equal(backgroundCleanup.execute.callCount, 1);
-      assertOngoingTasks(['dueTasks', 'reminders', 'replications', 'outbound', 'purging', 'backgroundCleanup']);
+      assertOngoingTasks(ALL_SCHEDULED_TASKS);
 
       return nextTick()
         .then(() => {
@@ -117,7 +127,7 @@ describe('scheduler', () => {
           assert.equal(outbound.execute.callCount, 2);
           assert.equal(purging.execute.callCount, 2);
           assert.equal(backgroundCleanup.execute.callCount, 2);
-          assertOngoingTasks(['dueTasks', 'reminders', 'replications', 'outbound', 'purging', 'backgroundCleanup']);
+          assertOngoingTasks(ALL_SCHEDULED_TASKS);
 
           return nextTick();
         })
@@ -133,7 +143,7 @@ describe('scheduler', () => {
           assert.equal(outbound.execute.callCount, 3);
           assert.equal(purging.execute.callCount, 3);
           assert.equal(backgroundCleanup.execute.callCount, 3);
-          assertOngoingTasks(['dueTasks', 'reminders', 'replications', 'outbound', 'purging', 'backgroundCleanup']);
+          assertOngoingTasks(ALL_SCHEDULED_TASKS);
         });
     });
 
@@ -155,7 +165,7 @@ describe('scheduler', () => {
       backgroundCleanup.execute.callsFake(() => new Promise(resolve => backgroundCleanupTaskResolve = resolve));
 
       unit.init();
-      assertOngoingTasks(['dueTasks', 'reminders', 'replications', 'outbound', 'purging', 'backgroundCleanup']);
+      assertOngoingTasks(ALL_SCHEDULED_TASKS);
       assert.equal(unit.__get__('sendable').callCount, 1);
       assert.equal(transitionsLib.dueTasks.execute.callCount, 1);
       assert.equal(reminders.execute.callCount, 1);
@@ -169,7 +179,7 @@ describe('scheduler', () => {
           assertOngoingTasks(['dueTasks', 'reminders', 'backgroundCleanup']);
 
           clock.tick(oneInterval);
-          assertOngoingTasks(['dueTasks', 'reminders', 'replications', 'outbound', 'purging', 'backgroundCleanup']);
+          assertOngoingTasks(ALL_SCHEDULED_TASKS);
           assert.equal(unit.__get__('sendable').callCount, 1);
           assert.equal(transitionsLib.dueTasks.execute.callCount, 1);
           assert.equal(reminders.execute.callCount, 1);
@@ -192,7 +202,7 @@ describe('scheduler', () => {
           assertOngoingTasks(['reminders', 'backgroundCleanup']);
 
           clock.tick(oneInterval);
-          assertOngoingTasks(['dueTasks', 'reminders', 'replications', 'outbound', 'purging', 'backgroundCleanup']);
+          assertOngoingTasks(ALL_SCHEDULED_TASKS);
           assert.equal(unit.__get__('sendable').callCount, 2);
           assert.equal(transitionsLib.dueTasks.execute.callCount, 2);
           assert.equal(reminders.execute.callCount, 1);
@@ -231,13 +241,13 @@ describe('scheduler', () => {
       assert.equal(outbound.execute.callCount, 1);
       assert.equal(purging.execute.callCount, 1);
       assert.equal(backgroundCleanup.execute.callCount, 1);
-      assertOngoingTasks(['dueTasks', 'reminders', 'replications', 'outbound', 'purging', 'backgroundCleanup']);
+      assertOngoingTasks(ALL_SCHEDULED_TASKS);
 
       return nextTick()
         .then(() => {
           assertOngoingTasks();
           clock.tick(oneInterval);
-          assertOngoingTasks(['dueTasks', 'reminders', 'replications', 'outbound', 'purging', 'backgroundCleanup']);
+          assertOngoingTasks(ALL_SCHEDULED_TASKS);
         });
     });
   });
