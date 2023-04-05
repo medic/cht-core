@@ -150,7 +150,7 @@ const loadTransitions = (synchronous = false) => {
       self._loadTransition(transition, synchronous);
     } catch (e) {
       const errorMessage = `Failed loading transition "${transition}"`;
-      loadError = [errorMessage, e];
+      loadError = [errorMessage, e && e.message || 'unknown'];
       logger.error(errorMessage);
       logger.error('%o', e);
     }

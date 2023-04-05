@@ -341,11 +341,11 @@ describe('transitions', () => {
     });
 
     sinon.stub(transitions, '_loadTransition');
-    transitions._loadTransition.withArgs('default_responses').throws({ some: 'err' });
+    transitions._loadTransition.withArgs('default_responses').throws(new Error('err'));
     assert.throws(transitions.loadTransitions);
     assert.deepEqual(transitions._transitions(), []);
 
-    const expectedError = ['Failed loading transition "default_responses"', { some: 'err' }];
+    const expectedError = ['Failed loading transition "default_responses"', 'err'];
     assert.deepEqual(transitions.getLoadingError(), expectedError);
   });
 
