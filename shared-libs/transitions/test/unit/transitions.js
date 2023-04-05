@@ -349,7 +349,7 @@ describe('transitions', () => {
     assert.deepEqual(transitions.getLoadingError(), expectedError);
   });
 
-  it('getLoadingError - load failure yields truthy , load success yields falsy', () => {
+  it('getLoadingError - load failure truthy, load success falsy', () => {
     config.get.returns({ default_responses: true });
 
     sinon.stub(transitions, '_loadTransition');
