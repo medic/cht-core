@@ -16,8 +16,6 @@ COPY shared-libs ./shared-libs
 COPY node_modules/@medic ./node_modules/@medic
 COPY sentinel ./sentinel
 
-COPY sentinel/ /sentinel
-COPY shared-libs /shared-libs
 ENV NODE_PATH=/service/sentinel/node_modules
 
 ENTRYPOINT ["/bin/bash", "/service/sentinel/docker-entrypoint.sh", "main"]
