@@ -18,7 +18,7 @@ const fetchJSON = async (url) => {
 };
 
 const PouchDB = require('pouchdb');
-PouchDB.plugin(require('pouchdb-adapter-memory'));
+PouchDB.plugin(require('./pouchdb-adapter-void'));
 
 const remoteDb = new PouchDB(`${config.url}/medic`, {
   skip_setup: true,
@@ -26,7 +26,7 @@ const remoteDb = new PouchDB(`${config.url}/medic`, {
   auth: { username: user.name, password: user.pass }
 });
 const localDb = new PouchDB(`scalability-test-${threadId}`, {
-  adapter: 'memory',
+  adapter: 'void',
   auto_compaction: true
 });
 
