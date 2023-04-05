@@ -6,9 +6,9 @@ module.exports = {
     const transitionLoadError = transitionsLib.getLoadingError();
     if (transitionLoadError) {
       logger.error('Transitions are disabled until these configuration errors are fixed.');
-      logger.error(transitionLoadError);
+      logger.error(JSON.stringify(transitionLoadError));
     }
-    
+
     return Promise.resolve();
   },
 };

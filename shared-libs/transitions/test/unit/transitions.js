@@ -329,6 +329,7 @@ describe('transitions', () => {
     assert.equal(transitions._loadTransition.calledWith('muting', false), true);
     assert.deepEqual(transitions._transitions().map(tr => tr.key), ['update_clinics', 'default_responses', 'muting']);
     assert.equal(muting.init.callCount, 1);
+    assert.equal(transitions.getLoadingError(), false);
   });
 
   it('should empty transitions list when one fails', () => {
@@ -343,6 +344,22 @@ describe('transitions', () => {
     transitions._loadTransition.withArgs('default_responses').throws({ some: 'err' });
     assert.throws(transitions.loadTransitions);
     assert.deepEqual(transitions._transitions(), []);
+
+    const expectedError = ['Failed loading transition "default_responses"', { some: 'err' }];
+    assert.deepEqual(transitions.getLoadingError(), expectedError);
+  });
+
+  it('getLoadingError - load failure yields truthy , load success yields falsy', () => {
+    config.get.returns({ default_responses: true });
+
+    sinon.stub(transitions, '_loadTransition');
+    transitions._loadTransition.withArgs('default_responses').throws({ some: 'err' });
+    assert.throws(transitions.loadTransitions);
+    expect(!!transitions.getLoadingError()).to.be.true;
+
+    transitions._loadTransition.withArgs('default_responses').resolves({});
+    transitions.loadTransitions();
+    expect(!!transitions.getLoadingError()).to.be.false;
   });
 
   it('getDeprecatedTransitions() should return list of current deprecated transitions', () => {
