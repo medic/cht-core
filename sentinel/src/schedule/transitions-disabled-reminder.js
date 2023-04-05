@@ -5,8 +5,7 @@ module.exports = {
   execute: () => {
     const transitionLoadError = transitionsLib.getLoadingError();
     if (transitionLoadError) {
-      logger.error('Transitions are disabled until these configuration errors are fixed.');
-      logger.error(JSON.stringify(transitionLoadError));
+      logger.error(`Transitions are disabled: ${JSON.stringify(transitionLoadError)}`);
     }
 
     return Promise.resolve();
