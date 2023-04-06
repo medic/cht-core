@@ -105,11 +105,13 @@ const getEnabledLocales = () => {
   return Promise.all([settingsService.get(), getTranslationDocs()])
     .then(([settings, translationDocs]) => {
       if (
-        settings.enabledLocales &&
-        Array.isArray(settings.enabledLocales) &&
-        settings.enabledLocales.length > 0
+        settings.translations &&
+        Array.isArray(settings.translations) &&
+        settings.translations.length > 0
       ) {
-        return translationDocs.filter(doc => settings.enabledLocales.includes(doc.code));
+        return translationDocs.filter(doc => settings.translations.some(
+          translation => translation.enabled !== false && translation.locale === doc.code,
+        ));
       }
 
       return translationDocs.filter(doc => doc.enabled);

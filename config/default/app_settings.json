@@ -1,4 +1,10 @@
 {
+  "translations": [
+    {
+      "locale": "en",
+      "enabled": true
+    }
+  ],
   "locale": "en",
   "locale_outgoing": "en",
   "date_format": "D MMM, YYYY",

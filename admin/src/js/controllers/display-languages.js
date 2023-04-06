@@ -21,17 +21,19 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     'use strict';
     'ngInject';
 
-    const hasEnabledLocales = enabledLocales => {
-      return enabledLocales && Array.isArray(enabledLocales) && enabledLocales.length > 0;
+    const hasEnabledTranslations = translations => {
+      return translations && Array.isArray(translations) && translations.length > 0;
     };
 
-    const createLocaleModel = function(doc, totalTranslations, enabledLocales) {
+    const createLocaleModel = function(doc, totalTranslations, translations) {
       const result = {
         doc: doc
       };
 
-      if (hasEnabledLocales(enabledLocales)) {
-        result.enabled = enabledLocales.includes(doc.code);
+      if (hasEnabledTranslations(translations)) {
+        result.enabled = translations.some(
+          translation => translation.enabled !== false && translation.locale === doc.code
+        );
       } else {
         result.enabled = doc.enabled;
       }
@@ -51,15 +53,15 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
     const setLanguageStatus = function(doc, enabled) {
       Settings().then(settings => {
-        if (hasEnabledLocales(settings.enabledLocales)) {
-          let enabledLocales = settings.enabledLocales;
-          if (enabled) {
-            enabledLocales.push(doc.code);
-          } else {
-            enabledLocales = enabledLocales.filter(locale => locale !== doc.code);
+        if (hasEnabledTranslations(settings.translations)) {
+          let translation = settings.translations.find(translation => translation.locale === doc.code);
+          if (!translation) {
+            translation = { locale: doc.code };
+            settings.translations.push(translation);
           }
+          translation.enabled = enabled;
 
-          return UpdateSettings({ enabledLocales })
+          return UpdateSettings({ translations: settings.translations })
             .catch(err => {
               $log.error('Error updating settings', err);
             });
@@ -102,7 +104,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
               outgoing: settings.locale_outgoing
             },
             locales: translations.rows.map(
-              row => createLocaleModel(row.doc, totalTranslations, settings.enabledLocales)
+              row => createLocaleModel(row.doc, totalTranslations, settings.translations)
             )
           };
         })

@@ -15,16 +15,18 @@ export class LanguagesService {
   async get(): Promise<Object> {
     const settings = await this.settingsService.get();
     if (
-      settings.enabledLocales &&
-      Array.isArray(settings.enabledLocales) &&
-      settings.enabledLocales.length > 0
+      settings.translations &&
+      Array.isArray(settings.translations) &&
+      settings.translations.length > 0
     ) {
       const result = await this.dbService.get().query('medic-client/doc_by_type', {
         startkey: ['translations', false],
         endkey: ['translations', true],
       });
       return result.rows
-        .filter(row => settings.enabledLocales.includes(row.value.code))
+        .filter(row => settings.translations.some(
+          translation => translation.enabled !== false && translation.locale === row.value.code,
+        ))
         .map(row => row.value);
     }
 
