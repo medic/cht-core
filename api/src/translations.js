@@ -101,21 +101,19 @@ const getTranslationDocs = async () => {
     });
 };
 
-const getEnabledLocales = () => {
-  return Promise.all([settingsService.get(), getTranslationDocs()])
-    .then(([settings, translationDocs]) => {
-      if (
-        settings.translations &&
-        Array.isArray(settings.translations) &&
-        settings.translations.length > 0
-      ) {
-        return translationDocs.filter(doc => settings.translations.some(
-          translation => translation.enabled !== false && translation.locale === doc.code,
-        ));
-      }
+const getEnabledLocales = async () => {
+  const [settings, translationDocs] = await Promise.all([settingsService.get(), getTranslationDocs()]);
+  if (
+    settings.translations &&
+    Array.isArray(settings.translations) &&
+    settings.translations.length > 0
+  ) {
+    return translationDocs.filter(doc => settings.translations.some(
+      translation => translation.enabled !== false && translation.locale === doc.code,
+    ));
+  }
 
-      return translationDocs.filter(doc => doc.enabled);
-    });
+  return translationDocs.filter(doc => doc.enabled);
 };
 
 const readTranslationFile = (fileName, folderPath) => {
