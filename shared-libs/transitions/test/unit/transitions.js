@@ -329,7 +329,7 @@ describe('transitions', () => {
     assert.equal(transitions._loadTransition.calledWith('muting', false), true);
     assert.deepEqual(transitions._transitions().map(tr => tr.key), ['update_clinics', 'default_responses', 'muting']);
     assert.equal(muting.init.callCount, 1);
-    assert.equal(transitions.getLoadingError(), false);
+    assert.equal(transitions.getLoadingErrors(), false);
   });
 
   it('should empty transitions list when one fails', () => {
@@ -346,20 +346,21 @@ describe('transitions', () => {
     assert.deepEqual(transitions._transitions(), []);
 
     const expectedError = ['Failed loading transition "default_responses"', 'err'];
-    assert.deepEqual(transitions.getLoadingError(), expectedError);
+    assert.deepEqual(transitions.getLoadingErrors(), expectedError);
   });
 
-  it('getLoadingError - load failure truthy, load success falsy', () => {
+  it('getLoadingErrors - load failure truthy, load success falsy', () => {
     config.get.returns({ default_responses: true });
 
     sinon.stub(transitions, '_loadTransition');
     transitions._loadTransition.withArgs('default_responses').throws({ some: 'err' });
     assert.throws(transitions.loadTransitions);
-    expect(!!transitions.getLoadingError()).to.be.true;
+    expect(!!transitions.getLoadingErrors()).to.be.true;
+    expect(Array.isArray(transitions.getLoadingErrors())).to.be.true;
 
     transitions._loadTransition.withArgs('default_responses').resolves({});
     transitions.loadTransitions();
-    expect(!!transitions.getLoadingError()).to.be.false;
+    expect(!!transitions.getLoadingErrors()).to.be.false;
   });
 
   it('getDeprecatedTransitions() should return list of current deprecated transitions', () => {

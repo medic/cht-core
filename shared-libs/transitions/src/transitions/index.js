@@ -43,7 +43,7 @@ const AVAILABLE_TRANSITIONS = [
 ];
 
 const transitions = [];
-let loadError = false;
+let loadErrors = false;
 
 // applies all loaded transitions over a change
 const processChange = (change, callback) => {
@@ -132,7 +132,7 @@ const processDocs = docs => {
 const loadTransitions = (synchronous = false) => {
   const self = module.exports;
   const transitionsConfig = config.get('transitions') || [];
-  loadError = false;
+  loadErrors = false;
 
   transitions.splice(0, transitions.length);
 
@@ -150,7 +150,7 @@ const loadTransitions = (synchronous = false) => {
       self._loadTransition(transition, synchronous);
     } catch (e) {
       const errorMessage = `Failed loading transition "${transition}"`;
-      loadError = [errorMessage, e && e.message || 'unknown'];
+      loadErrors = [errorMessage, e && e.message || 'unknown'];
       logger.error(errorMessage);
       logger.error('%o', e);
     }
@@ -160,12 +160,12 @@ const loadTransitions = (synchronous = false) => {
   Object.keys(transitionsConfig).forEach(key => {
     if (!AVAILABLE_TRANSITIONS.includes(key)) {
       const errorMessage = `Unknown transition "${key}"`;
-      loadError = errorMessage;
+      loadErrors = [errorMessage];
       logger.error(errorMessage);
     }
   });
 
-  if (loadError) {
+  if (loadErrors) {
     // empty transitions list
     // Sentinel detaches from the changes feed when transitions are misconfigured,
     // but API continues and should not run partial transitions
@@ -387,7 +387,7 @@ module.exports = {
   canRun: canRun,
   finalize: finalize,
   getDeprecatedTransitions: getDeprecatedTransitions,
-  getLoadingError: () => loadError,
+  getLoadingErrors: () => loadErrors,
   loadTransitions: loadTransitions,
   processChange: processChange,
   processDocs: processDocs,

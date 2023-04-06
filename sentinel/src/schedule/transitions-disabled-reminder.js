@@ -3,9 +3,10 @@ const transitionsLib = require('../config').getTransitionsLib();
 
 module.exports = {
   execute: () => {
-    const transitionLoadError = transitionsLib.getLoadingError();
-    if (transitionLoadError) {
-      logger.error(`Transitions are disabled: ${JSON.stringify(transitionLoadError)}`);
+    const transitionLoadErrors = transitionsLib.getLoadingErrors();
+    if (transitionLoadErrors && Array.isArray(transitionLoadErrors)) {
+      const logMessage = ['Transitions are disabled', ...transitionLoadErrors].join('. ');
+      logger.error(logMessage);
     }
 
     return Promise.resolve();

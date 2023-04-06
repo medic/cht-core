@@ -19,7 +19,7 @@ module.exports = (sourceDb, sourceConfig, sourceLogger) => {
     date: require('./date'),
     dueTasks: require('./schedule/due_tasks'),
     getDeprecatedTransitions: transitions.getDeprecatedTransitions,
-    getLoadingError: transitions.getLoadingError,
+    getLoadingErrors: transitions.getLoadingErrors,
     infodoc: infodoc,
     loadTransitions: transitions.loadTransitions,
     messages: require('./lib/messages'),
