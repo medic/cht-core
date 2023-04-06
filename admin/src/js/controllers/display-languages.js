@@ -25,18 +25,15 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       return translations && Array.isArray(translations) && translations.length > 0;
     };
 
+    const isLocaleEnabled = (doc, translations) => hasEnabledTranslations(translations) ?
+      translations.some(translation => translation.enabled !== false && translation.locale === doc.code) :
+      doc.enabled;
+
     const createLocaleModel = function(doc, totalTranslations, translations) {
       const result = {
-        doc: doc
+        doc: doc,
+        enabled: isLocaleEnabled(doc, translations),
       };
-
-      if (hasEnabledTranslations(translations)) {
-        result.enabled = translations.some(
-          translation => translation.enabled !== false && translation.locale === doc.code
-        );
-      } else {
-        result.enabled = doc.enabled;
-      }
 
       const content = ExportProperties(doc);
       if (content) {
