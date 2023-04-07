@@ -6,9 +6,9 @@ Please use semantic PR titles that respect this format:
 Quick example:
 
 feat(#1234): add hat wobble
-^--^(#^--^) ^------------^
-|     |     |
-|     |     + - > subject
+^--^(#^--^): ^------------^
+|     |      |
+|     |      + - > subject
 |     |
 |     + ------- > issue number
 |
