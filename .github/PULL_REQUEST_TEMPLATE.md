@@ -1,25 +1,18 @@
 <!--
-Please use semantic PR Titles
-Format: <type>(#<issue number>): <subject>
+Please use semantic PR titles that respect this format:
+
+<type>(#<issue number>): <subject>
 
 Quick example:
 
 feat(#1234): add hat wobble
-^--^ (#^--^) ^------------^
-|      |     |
-|      |     + - > subject
-|      |
-|      + ------- > issue number
+^--^(#^--^) ^------------^
+|     |     |
+|     |     + - > subject
+|     |
+|     + ------- > issue number
 |
-+ -------------- > type: chore, feat, fix, perf, refactor, style, or test.
-
-feat: new feature for the user, not a new feature for build script
-fix: bug fix for the user, not a fix to a build script
-perf: optimizing for performance
-chore: updating grunt tasks etc; no production code change
-test: adding missing tests, refactoring tests; no production code change
-style: formatting, missing semi colons, etc; no production code change
-refactor: refactoring production code, eg. renaming a variable
++ ------------- > type: chore, feat, fix, perf, style, test, etc.
 
 https://docs.communityhealthtoolkit.org/contribute/code/workflow/#commit-message-format
 -->
