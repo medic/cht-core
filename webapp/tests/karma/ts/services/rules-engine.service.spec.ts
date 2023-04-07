@@ -5,7 +5,6 @@ import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-tran
 
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { UHCSettingsService } from '@mm-services/uhc-settings.service';
@@ -22,7 +21,6 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 describe('RulesEngineService', () => {
   let service: RulesEngineService;
   let authService;
-  let feedbackService;
   let sessionService;
   let settingsService;
   let telemetryService;
@@ -100,7 +98,6 @@ describe('RulesEngineService', () => {
   beforeEach(() => {
     authService = { has: sinon.stub().resolves(true) };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
-    feedbackService = { submit: sinon.stub() };
     sessionService = { isOnlineOnly: sinon.stub().returns(false), userCtx: () => ({ name: 'fred' }) };
     settingsService = { get: sinon.stub().resolves(settingsDoc) };
     translateFromService = { get: sinon.stub().resolves(settingsDoc) };
@@ -160,7 +157,6 @@ describe('RulesEngineService', () => {
         ParseProvider,
         ContactTypesService,
         { provide: AuthService, useValue: authService },
-        { provide: FeedbackService, useValue: feedbackService },
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
         { provide: TelemetryService, useValue: telemetryService },
@@ -188,7 +184,6 @@ describe('RulesEngineService', () => {
         assert.fail('Should throw');
       } catch (err) {
         expect(err.name).to.include(include);
-        expect(feedbackService.submit.calledOnce).to.be.true;
       }
     };
 

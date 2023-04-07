@@ -55,6 +55,10 @@ export class FeedbackService {
     const getCircularReplacer = () => {
       const seen = new WeakSet();
       return (key, value) => {
+        if (value instanceof Error) {
+          return value.stack;
+        }
+
         if (typeof value === 'object' && value !== null) {
           if (seen.has(value)) {
             return;
@@ -69,8 +73,13 @@ export class FeedbackService {
     this.LEVELS.forEach(level => {
       const original = this.options.console[level];
       this.options.console[level] = (...args) => {
+        const logEvent = {
+          level,
+          arguments: JSON.stringify(args, getCircularReplacer()).substring(0, 1000),
+        };
+
         // push the error onto the stack
-        this.logs[this.logIdx++] = { level, arguments: JSON.stringify(args, getCircularReplacer()) };
+        this.logs[this.logIdx++] = logEvent;
         if (this.logIdx === this.LOG_LENGTH) {
           this.logIdx = 0;
         }

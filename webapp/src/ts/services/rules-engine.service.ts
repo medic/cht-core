@@ -17,7 +17,6 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { DbService } from '@mm-services/db.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 
@@ -71,12 +70,10 @@ export class RulesEngineService implements OnDestroy {
     private rulesEngineCoreFactoryService:RulesEngineCoreFactoryService,
     private calendarIntervalService:CalendarIntervalService,
     private ngZone:NgZone,
-    private feedbackService:FeedbackService,
     private chtScriptApiService:CHTScriptApiService
   ) {
     this.initialized = this.initialize();
     this.rulesEngineCore = this.rulesEngineCoreFactoryService.get();
-    this.feedbackService = feedbackService;
   }
 
   ngOnDestroy(): void {
@@ -155,11 +152,6 @@ export class RulesEngineService implements OnDestroy {
                 initializeTelemetryData.record();
               });
           });
-      })
-      .catch(error => {
-        const errorMessage = `Failed to initialize RulesEngineService`;
-        this.feedbackService.submit(errorMessage);
-        throw error;
       });
   }
 
