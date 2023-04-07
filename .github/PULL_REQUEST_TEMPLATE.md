@@ -2,6 +2,8 @@
 Please use semantic PR Titles
 Format: <type>(#<issue number>): <subject>
 
+Quick example:
+
 feat(#1234): add hat wobble
 ^--^ (#^--^) ^------------^
 |      |     |
@@ -18,6 +20,8 @@ chore: updating grunt tasks etc; no production code change
 test: adding missing tests, refactoring tests; no production code change
 style: formatting, missing semi colons, etc; no production code change
 refactor: refactoring production code, eg. renaming a variable
+
+https://docs.communityhealthtoolkit.org/contribute/code/workflow/#commit-message-format
 -->
 
 # Description
