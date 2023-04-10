@@ -31,7 +31,7 @@
 |e2e/protractor/create-meta-db.js	|Done	|Bede	|[#7408](https://github.com/medic/cht-core/pull/7408)	|	|
 |e2e/protractorinfodocs.js	|Done	| Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|
 |e2e/protractor/rapidpro.spec.js	|	|	|	|	|
-|e2e/protractor/registration-by-sms.js	|	|	|	|	|
+|e2e/protractor/registration-by-sms.js	| Done | Bede/Tatiana | [#8146](https://github.com/medic/cht-core/pull/8146) |	|
 |e2e/protractor/report-date-filter.js	|Done	|Bede	|[#7429](https://github.com/medic/cht-core/pull/7429)	|	|
 |e2e/protractor/reports-subject.js	|	|	|	|	|
 |e2e/protractor/send-message.js	|	|	|	|	|

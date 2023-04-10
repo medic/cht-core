@@ -68,4 +68,5 @@ Following our support policy, versions {{versions}} are no longer supported. Pro
 Check out our [roadmap](https://github.com/orgs/medic/projects/112) to see what we're working on next.
 ```
 - [ ] Add one last update to the #product-team Slack channel and use the thread to lead an internal release retrospective covering what went well and areas to improve for next time.
+- [ ] Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label.  
 - [ ] Mark this issue "done" and close the Milestone.

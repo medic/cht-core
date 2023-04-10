@@ -31,4 +31,5 @@ This is an iterative process and it's assumed there will be multiple numbered re
 # Close-out
 
 - [ ] Validate with the actual end user that this Feature Release delivers a quantifiable improvement. If yes, plan on adding the feature to the next minor release by creating a new ticket to merge the code to `master`. If no, we leave the code dead in this branch, never to be merged to `master`, but still loved all the same.
-- [ ] Mark this issue "done" and close the Milestone.
+- [ ] Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label. 
+- [ ] Mark this issue "done" and close the Milestone. 

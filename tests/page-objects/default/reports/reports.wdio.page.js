@@ -42,6 +42,11 @@ const filterResetBtn = () => $('.sidebar-reset');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
+const rawReportContent = () => $(`${reportBodyDetailsSelector} p[test-id='raw-report-content']`);
+const automaticReplySection = `${reportBodyDetailsSelector} ul[test-id='automated-reply']`;
+const automaticReplyMessage = () => $(`${automaticReplySection} p[test-id='message-content']`);
+const automaticReplyState = () => $(`${automaticReplySection} .state`);
+const automaticReplyRecipient = () => $(`${automaticReplySection} .recipient`);
 
 const deleteAllButton = () => $('.desktop.multiselect-bar-container .bulk-delete');
 const selectedReportsCount = () => $('.desktop.multiselect-bar-container .count-label');
@@ -72,9 +77,15 @@ const getUnreadCount = async () => {
 
 const goToReportById = (reportId) => browser.url(`#/reports/${reportId}`);
 
-const getTaskState = async (first, second) => {
-  return (await reportBodyDetails())
-    .$(`.scheduled-tasks > ul > li:nth-child(${first}) > ul > li:nth-child(${second}) .task-state .state`);
+const getTaskDetails = async (taskNumber, messageNumber) => {
+  const task = await reportTasks().$(`li[test-id='tasks']:nth-child(${taskNumber})`);
+  const message = await task.$(`li[test-id='task-message']:nth-child(${messageNumber})`);
+  return {
+    title: await task.$('h3[test-id="task-title"]').getText(),
+    message: await message.$('p[test-id="message-content"]').getText(),
+    state: await message.$('.state').getText(),
+    recipient: await message.$('.recipient').getText(),
+  };
 };
 
 const setDateInput = async (name, date) => {
@@ -301,6 +312,18 @@ const getReportDetailFieldValueByLabel = async (label) => {
   }
 };
 
+const getRawReportContent = async () => {
+  return await (await rawReportContent()).getText();
+};
+
+const getAutomaticReply = async () => {
+  return {
+    message: await automaticReplyMessage().getText(),
+    state: await automaticReplyState().getText(),
+    recipient: await automaticReplyRecipient().getText(),
+  };
+};
+
 const getReportSubject = async () => {
   await patientName().waitForDisplayed();
   return (await patientName()).getText();
@@ -402,7 +425,7 @@ module.exports = {
   getUnreadCount,
   goToReportById,
   sentTask,
-  getTaskState,
+  getTaskDetails,
   formTitle,
   openSidebarFilter,
   openSidebarFilterDateAccordion,
@@ -432,6 +455,8 @@ module.exports = {
   reportsByUUID,
   getAllReportsText,
   getReportDetailFieldValueByLabel,
+  getRawReportContent,
+  getAutomaticReply,
   getReportSubject,
   getReportType,
   getListReportInfo,
