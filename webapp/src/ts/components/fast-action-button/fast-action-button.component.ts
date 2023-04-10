@@ -72,7 +72,7 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   /**
    * Returns a Fast Action that can be executed right away without opening the dialog or bottom sheet.
    */
-  getFastExecutableAction(): FastAction {
+  getFastExecutableAction(): FastAction | undefined {
     if (this.fastActions.length === 1 && !this.fastActions[0]?.alwaysOpenInPanel) {
       return this.fastActions[0];
     }
@@ -106,9 +106,6 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   }
 
   executeAction(action: FastAction) {
-    if (!action.execute) {
-      return;
-    }
     action.execute();
     this.closeAll();
   }

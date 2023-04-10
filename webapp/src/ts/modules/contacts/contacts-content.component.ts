@@ -166,8 +166,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         }
         await this.setChildTypesBySelectedContact();
         await this.setSettings();
-        this.setRightActionBar();
-        this.updateFastActions();
+        await Promise.all([ this.setRightActionBar(), this.updateFastActions() ]);
         this.subscribeToAllContactXmlForms();
         this.subscribeToSelectedContactXmlForms();
       });
@@ -277,8 +276,8 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     });
   }
 
-  private addPermissionToContactType(allowedChildTypes) {
-    return (allowedChildTypes || []).map(childType => ({
+  private addPermissionToContactType(allowedChildTypes = []) {
+    return allowedChildTypes.map(childType => ({
       ...childType,
       permission: childType.type?.person ? 'can_create_people' : 'can_create_places',
     }));

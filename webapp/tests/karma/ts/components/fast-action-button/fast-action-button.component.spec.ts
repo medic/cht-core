@@ -105,15 +105,9 @@ describe('FastActionButtonComponent', () => {
       label: 'action number one',
       icon: { name: 'an-icon', type: IconType.FONT_AWESOME },
       canDisplay: sinon.stub(),
-      execute: null,
+      execute: sinon.stub(),
     };
 
-    component.executeAction(actionOne);
-
-    expect(matDialog.closeAll.notCalled).to.be.true;
-    expect(matBottomSheet.dismiss.notCalled).to.be.true;
-
-    actionOne.execute = sinon.stub();
     component.executeAction(actionOne);
 
     expect(matDialog.closeAll.calledOnce).to.be.true;

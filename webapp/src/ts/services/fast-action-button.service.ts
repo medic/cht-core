@@ -58,8 +58,8 @@ export class FastActionButtonService {
     }
   }
 
-  private getReportFormActions(xmlForms, callbackContactReportModal?): FastAction[] {
-    return (xmlForms || [])
+  private getReportFormActions(xmlForms = [], callbackContactReportModal = null): FastAction[] {
+    return xmlForms
       .map(form => ({
         id: form.code,
         label: this.getFormTitle(form.titleKey, form.title) || form.code,
@@ -77,8 +77,8 @@ export class FastActionButtonService {
       .sort((a, b) => a.label?.localeCompare(b.label));
   }
 
-  private getContactFormActions(childContactTypes, parentFacilityId, queryParams?): FastAction[] {
-    return (childContactTypes || [])
+  private getContactFormActions(parentFacilityId, childContactTypes = [], queryParams = null): FastAction[] {
+    return childContactTypes
       .map(contactType => ({
         id: contactType.id,
         label: this.getFormTitle(contactType.create_key) || contactType.id,
@@ -162,7 +162,7 @@ export class FastActionButtonService {
   }
 
   getContactLeftSideActions(context: ContactActionsContext): Promise<FastAction[]> {
-    const actions = this.getContactFormActions(context.childContactTypes, context.parentFacilityId, { from: 'list' });
+    const actions = this.getContactFormActions(context.parentFacilityId, context.childContactTypes, { from: 'list' });
 
     return this.filterActions(actions);
   }
@@ -171,7 +171,7 @@ export class FastActionButtonService {
     const actions = [
       this.getPhoneAction(context.communicationContext),
       this.getSendMessageAction(context.communicationContext, { isPhoneRequired: true, useMailtoInMobile: true }),
-      ...this.getContactFormActions(context.childContactTypes, context.parentFacilityId),
+      ...this.getContactFormActions(context.parentFacilityId, context.childContactTypes),
       ...this.getReportFormActions(context.xmlReportForms, context.callbackContactReportModal),
     ];
 
