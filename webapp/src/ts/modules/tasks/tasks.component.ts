@@ -171,11 +171,11 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.telemetryService.record(telemetryEntryName, telemetryData.end - telemetryData.start);
 
     } catch (exception) {
-      console.error('Error getting tasks for all contacts', exception);
       this.error = true;
       this.loading = false;
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);
+      throw `Error getting tasks for all contacts: ${exception}`;
     }
   }
 
