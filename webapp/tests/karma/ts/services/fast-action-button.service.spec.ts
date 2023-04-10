@@ -231,12 +231,14 @@ describe('Session service', () => {
         label: 'child-place-1-title',
         icon: 'child-place-1-icon',
         route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-1' ],
+        queryParams: null,
       });
       assertContactFormAction(actions[2], {
         id: 'child-place-2',
         label: 'child-place-2',
         icon: 'child-place-2-icon',
         route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-2' ],
+        queryParams: null,
       });
       assertReportFormAction(actions[3], {
         id: 'report-form-1',
@@ -298,12 +300,14 @@ describe('Session service', () => {
         label: 'child-place-1-title',
         icon: 'child-place-1-icon',
         route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-1' ],
+        queryParams: null,
       });
       assertContactFormAction(actions[3], {
         id: 'child-place-2',
         label: 'child-place-2',
         icon: 'child-place-2-icon',
         route: [ '/contacts', 'parent-facility-1', 'add', 'child-place-2' ],
+        queryParams: null,
       });
       assertReportFormAction(actions[4], {
         id: 'report-form-1',
@@ -400,12 +404,14 @@ describe('Session service', () => {
         label: 'place-1-title',
         icon: 'place-1-icon',
         route: [ '/contacts', 'add', 'place-1' ],
+        queryParams: null,
       });
       assertContactFormAction(actions[1], {
         id: 'place-2',
         label: 'place-2',
         icon: 'place-2-icon',
         route: [ '/contacts', 'add', 'place-2' ],
+        queryParams: null,
       });
     });
 
