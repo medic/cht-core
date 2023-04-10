@@ -17,8 +17,8 @@ describe('Pregnancy registration', () => {
   const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const pregnantWoman = personFactory.build({
-    date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'), 
-    parent: {_id: healthCenter._id, parent: healthCenter.parent} 
+    date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'),
+    parent: { _id: healthCenter._id, parent: healthCenter.parent }
   });
   let countRiskFactors = 0;
   let countDangerSigns = 0;
@@ -26,7 +26,7 @@ describe('Pregnancy registration', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), pregnantWoman]);
     await utils.createUsers([offlineUser]);
-    await loginPage.login(offlineUser);    
+    await loginPage.login(offlineUser);
   });
 
   it('Should submit a new pregnancy', async () => {
@@ -97,12 +97,12 @@ describe('Pregnancy registration', () => {
 
   });
 
-  it.skip('Should verify that all tasks related with the high risk pregnancy were created', async () => {
+  it('Should verify that all tasks related with the high risk pregnancy were created', async () => {
     const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Pregnancy home visit'];
 
     await commonPage.goToTasks();
-    const tasks = await tasksPage.getTasks();    
-    expect(tasks.length).to.equal(3); //TODO: investigate why 'Pregnancy home visit' task is not being generated 
+    const tasks = await tasksPage.getTasks();
+    expect(tasks.length).to.equal(3);
 
     for (const task of tasks) {
       const taskInfo = await tasksPage.getTaskInfo(task);
@@ -125,13 +125,13 @@ describe('Pregnancy registration', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '0' }, 
-      { title: 'New pregnancies', goal: '20', count: '1' }, 
-      { title: 'Live births', count: '0' }, 
-      { title: 'Active pregnancies', count: '1' }, 
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' }, 
-      { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' }, 
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' }, 
+      { title: 'Deaths', goal: '0', count: '0' },
+      { title: 'New pregnancies', goal: '20', count: '1' },
+      { title: 'Live births', count: '0' },
+      { title: 'Active pregnancies', count: '1' },
+      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
+      { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
+      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' },
       { title: 'Active pregnancies with 8+ routine contacts', count: '0' }
     ]);
   });

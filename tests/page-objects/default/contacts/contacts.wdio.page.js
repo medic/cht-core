@@ -6,6 +6,7 @@ const sentinelUtils = require('../../../utils/sentinel');
 const utils = require('../../../utils');
 const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
 const searchBox = () => $('input#freetext');
+//const searchBox = () => $('input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
 const contentRows = () => $$(contentRowSelector);
@@ -82,6 +83,7 @@ const deathDate = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.d
 const deathPlace = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.death.place"] p.card-field-value`);
 
 const search = async (query) => {
+  await browser.saveScreenshot('./tests/e2e/standard/contacts/searchbox.png');
   await (await searchBox()).setValue(query);
   await browser.keys(ENTER);
   await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
@@ -401,8 +403,13 @@ const exportContacts = async () => {
   await (await exportButton()).click();
 };
 
-const cardFieldLabelText = async (label) => await (await $(`.cell.${label} label`)).getText();
-const cardFieldText = async (label) => await (await $(`.cell.${label} p`)).getText();
+const getCardFieldInfo = async (label) => {
+  return {
+    label: await (await $(`.cell.${label} label`)).getText(),
+    value: await (await $(`.cell.${label} p`)).getText(),
+  }
+}
+
 const getCurrentContactId = async () => {
   const currentUrl = await browser.getUrl();
   const contactBaseUrl = utils.getBaseUrl() + 'contacts/';
@@ -470,8 +477,7 @@ module.exports = {
   getDeathCardInfo,
   contactMuted,
   openFormWithWarning,
-  cardFieldText,
-  cardFieldLabelText,
+  getCardFieldInfo,
   getCurrentContactId,
   pregnancyLabel,
   visitLabel,

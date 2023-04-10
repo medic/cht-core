@@ -8,6 +8,12 @@ const placeFactory = require('../../../factories/cht/contacts/place');
 const personFactory = require('../../../factories/cht/contacts/person');
 const reportFactory = require('../../../factories/cht/reports/generic-report');
 
+
+const validateCardField = async (label, value) => {
+  expect((await contactPage.getCardFieldInfo(label)).label).to.equal(label);
+  expect((await contactPage.getCardFieldInfo(label)).value).to.equal(value);
+};
+
 describe('Contact summary info', () => {
   const SCRIPT = `
   let cards = [];
@@ -205,42 +211,22 @@ describe('Contact summary info', () => {
     await commonElements.goToPeople();
     await contactPage.selectLHSRowByText(patientCarol.name);
     await contactPage.waitForContactLoaded();
+
     // assert the summary card has the right fields
-
-    expect(await contactPage.cardFieldLabelText('test_pid')).to.equal('test_pid');
-    expect(await contactPage.cardFieldText('test_pid')).to.equal(patientCarol.patient_id);
-
-    expect(await contactPage.cardFieldLabelText('test_sex')).to.equal('test_sex');
-    expect(await contactPage.cardFieldText('test_sex')).to.equal(patientCarol.sex);
-
-    expect(await contactPage.cardFieldLabelText('uhc_stats_count')).to.equal('uhc_stats_count');
-    expect(await contactPage.cardFieldText('uhc_stats_count')).to.equal('');
-
-    expect(await contactPage.cardFieldLabelText('uhc_stats_count_goal')).to.equal('uhc_stats_count_goal');
-    expect(await contactPage.cardFieldText('uhc_stats_count_goal')).to.equal('');
-
-    expect(await contactPage.cardFieldLabelText('uhc_stats_last_visited_date')).to.equal('uhc_stats_last_visited_date');
-    expect(await contactPage.cardFieldText('uhc_stats_last_visited_date')).to.equal('');
-
-    expect(await contactPage.cardFieldLabelText('uhc_stats_interval_start')).to.equal('uhc_stats_interval_start');
+    validateCardField('test_pid', patientCarol.patient_id);
+    validateCardField('test_sex', patientCarol.sex);
+    validateCardField('uhc_stats_count', '');
+    validateCardField('uhc_stats_count_goal', '');
+    validateCardField('uhc_stats_last_visited_date', '');
     const startDate = moment().startOf('month').valueOf().toString();
-    expect(await contactPage.cardFieldText('uhc_stats_interval_start')).to.equal(startDate);
-
-    expect(await contactPage.cardFieldLabelText('uhc_stats_interval_end')).to.equal('uhc_stats_interval_end');
+    validateCardField('uhc_stats_interval_start', startDate);
     const endDate = moment().endOf('month').valueOf().toString();
-    expect(await contactPage.cardFieldText('uhc_stats_interval_end')).to.equal(endDate);
-
-    expect(await contactPage.cardFieldLabelText('alicetag')).to.equal('aliceTag');
-    expect(await contactPage.cardFieldText('alicetag')).to.equal(`${patientAlice.name} ${patientAlice.phone}`);
-
-    expect(await contactPage.cardFieldLabelText('davidtag')).to.equal('davidTag');
-    expect(await contactPage.cardFieldText('davidtag')).to.equal(`${patientDavid.name} ${patientDavid.phone}`);
-
-    expect(await contactPage.cardFieldLabelText('visittag')).to.equal('visitTag');
-    expect(await contactPage.cardFieldText('visittag')).to.equal(davidVisit.form);
+    validateCardField('uhc_stats_interval_end', endDate);
+    validateCardField('alicetag', `${patientAlice.name} ${patientAlice.phone}`);
+    validateCardField('davidtag', `${patientDavid.name} ${patientDavid.phone}`);
+    validateCardField('visittag', davidVisit.form);
 
     // assert that the pregnancy card exists and has the right fields.
-
     expect(await contactPage.getPregnancyLabel()).to.equal('test.pregnancy');
     expect(await contactPage.getVisitLabel()).to.equal('test.visits');
     expect(await contactPage.getNumberOfReports()).to.equal('1');
@@ -260,23 +246,13 @@ describe('Contact summary info', () => {
     await commonElements.goToPeople();
     await contactPage.selectLHSRowByText(placeBobClinic.name);
 
-    expect(await contactPage.cardFieldLabelText('uhc_stats_count')).to.equal('uhc_stats_count');
-    expect(await contactPage.cardFieldText('uhc_stats_count')).to.equal('1');
-
-    expect(await contactPage.cardFieldLabelText('uhc_stats_count_goal')).to.equal('uhc_stats_count_goal');
-    expect(await contactPage.cardFieldText('uhc_stats_count_goal')).to.equal('2');
-
-    expect(await contactPage.cardFieldLabelText('uhc_stats_last_visited_date')).to.equal('uhc_stats_last_visited_date');
-    expect(await contactPage.cardFieldText('uhc_stats_last_visited_date'))
-      .to.equal(carolVisit.reported_date.toString());
-
-    expect(await contactPage.cardFieldLabelText('uhc_stats_interval_start')).to.equal('uhc_stats_interval_start');
+    validateCardField('uhc_stats_count', '1');
+    validateCardField('uhc_stats_count_goal', '2');
+    validateCardField('uhc_stats_last_visited_date', carolVisit.reported_date.toString());
     const startDate = moment().startOf('month').valueOf().toString();
-    expect(await contactPage.cardFieldText('uhc_stats_interval_start')).to.equal(startDate);
-
-    expect(await contactPage.cardFieldLabelText('uhc_stats_interval_end')).to.equal('uhc_stats_interval_end');
+    validateCardField('uhc_stats_interval_start', startDate);
     const endDate = moment().endOf('month').valueOf().toString();
-    expect(await contactPage.cardFieldText('uhc_stats_interval_end')).to.equal(endDate);
+    validateCardField('uhc_stats_interval_end', endDate);
   });
 
   it('should have access to the "cht" global api variable', async () => {
@@ -294,10 +270,7 @@ describe('Contact summary info', () => {
     await commonElements.goToPeople();
     await contactPage.selectLHSRowByText(placeBobClinic.name);
     await contactPage.waitForContactLoaded();
-    expect(await contactPage.cardFieldLabelText('can_configure')).to.equal('can_configure');
-    expect(await contactPage.cardFieldText('can_configure')).to.equal('true');
-    expect(await contactPage.cardFieldLabelText('can_edit_or_can_create_people'))
-      .to.equal('can_edit_or_can_create_people');
-    expect(await contactPage.cardFieldText('can_edit_or_can_create_people')).to.equal('true');
+    validateCardField('can_configure', 'true');
+    validateCardField('can_edit_or_can_create_people', 'true');
   });
 });
