@@ -101,13 +101,13 @@ const getTranslationDocs = async () => {
     });
 };
 
-const getEnabledLocaleCodes = (translations, translationDocs) => {
+const getEnabledLocaleCodes = (languages, translationDocs) => {
   if (
-    translations &&
-    Array.isArray(translations) &&
-    translations.length > 0
+    languages &&
+    Array.isArray(languages) &&
+    languages.length > 0
   ) {
-    return translations.filter(translation => translation.enabled !== false).map(translation => translation.locale);
+    return languages.filter(language => language.enabled !== false).map(language => language.locale);
   }
 
   return translationDocs.filter(doc => doc.enabled).map(doc => doc.code);
@@ -115,7 +115,7 @@ const getEnabledLocaleCodes = (translations, translationDocs) => {
 
 const getEnabledLocales = async () => {
   const [settings, translationDocs] = await Promise.all([settingsService.get(), getTranslationDocs()]);
-  const enabledLocaleCodes = getEnabledLocaleCodes(settings.translations, translationDocs);
+  const enabledLocaleCodes = getEnabledLocaleCodes(settings.languages, translationDocs);
   return translationDocs.filter(doc => enabledLocaleCodes.includes(doc.code));
 };
 

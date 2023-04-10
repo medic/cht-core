@@ -21,18 +21,18 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     'use strict';
     'ngInject';
 
-    const hasEnabledTranslations = translations => {
-      return translations && Array.isArray(translations) && translations.length > 0;
+    const hasEnabledLanguages = languages => {
+      return languages && Array.isArray(languages) && languages.length > 0;
     };
 
-    const isLocaleEnabled = (doc, translations) => hasEnabledTranslations(translations) ?
-      translations.some(translation => translation.enabled !== false && translation.locale === doc.code) :
+    const isLocaleEnabled = (doc, languages) => hasEnabledLanguages(languages) ?
+      languages.some(translation => translation.enabled !== false && translation.locale === doc.code) :
       doc.enabled;
 
-    const createLocaleModel = function(doc, totalTranslations, translations) {
+    const createLocaleModel = function(doc, totalTranslations, languages) {
       const result = {
         doc: doc,
-        enabled: isLocaleEnabled(doc, translations),
+        enabled: isLocaleEnabled(doc, languages),
       };
 
       const content = ExportProperties(doc);
@@ -50,15 +50,15 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
     const setLanguageStatus = function(doc, enabled) {
       Settings().then(settings => {
-        if (hasEnabledTranslations(settings.translations)) {
-          let translation = settings.translations.find(translation => translation.locale === doc.code);
-          if (!translation) {
-            translation = { locale: doc.code };
-            settings.translations.push(translation);
+        if (hasEnabledLanguages(settings.languages)) {
+          let language = settings.languages.find(language => language.locale === doc.code);
+          if (!language) {
+            language = { locale: doc.code };
+            settings.languages.push(language);
           }
-          translation.enabled = enabled;
+          language.enabled = enabled;
 
-          return UpdateSettings({ translations: settings.translations })
+          return UpdateSettings({ languages: settings.languages })
             .catch(err => {
               $log.error('Error updating settings', err);
             });
@@ -101,7 +101,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
               outgoing: settings.locale_outgoing
             },
             locales: translations.rows.map(
-              row => createLocaleModel(row.doc, totalTranslations, settings.translations)
+              row => createLocaleModel(row.doc, totalTranslations, settings.languages)
             )
           };
         })
