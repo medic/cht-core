@@ -1,7 +1,11 @@
 const moduleAlias = require('module-alias');
 const path = require('path');
+const jsonConfig = require('./jsconfig.json');
 
-moduleAlias.addAlias('@utils', path.join(__dirname, 'utils'));
-moduleAlias.addAlias('@page-objects', path.join(__dirname, 'page-objects'));
-moduleAlias.addAlias('@factories', path.join(__dirname, 'factories'));
+const pathCleanupRe = /^.\/|\/\*$/g;
+Object.entries(jsonConfig.compilerOptions.paths).forEach(([alias, [relative]]) => {
+  alias = alias.replace(pathCleanupRe, '');
+  relative = relative.replace(pathCleanupRe, '');
+  moduleAlias.addAlias(alias, path.join(__dirname, relative));
+});
 moduleAlias();
