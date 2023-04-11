@@ -2,7 +2,7 @@ const wdioBaseConfig = require('../default/wdio.conf');
 const utils = require('../../utils');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
-const chtConfUtils = require('../../cht-conf-utils');
+const chtConfUtils = require('@utils/cht-conf');
 
 const chai = require('chai');
 chai.use(require('chai-exclude'));
