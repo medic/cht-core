@@ -1,4 +1,4 @@
-const testUtils = require('./utils');
+const testUtils = require('@utils');
 const uuid = require('uuid').v4;
 
 const CHW_CONTACT_NUMBER = '+32049832049';
