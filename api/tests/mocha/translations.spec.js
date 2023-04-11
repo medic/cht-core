@@ -1,106 +1,117 @@
 const chai = require('chai');
 const sinon = require('sinon');
 const properties = require('properties');
+const fs = require('fs');
+const rewire = require('rewire');
+
 const db = require('../../src/db');
-const translations = require('../../src/translations');
+const environment = require('../../src/environment');
+
+let translations;
 
 describe('translations', () => {
+  beforeEach(() => {
+    sinon.stub(fs.promises, 'readdir');
+    sinon.stub(fs.promises, 'readFile');
+    sinon.stub(properties, 'parse');
+    sinon.stub(environment, 'resourcesPath').value('/path/to/resources/');
+    translations = rewire('../../src/translations');
+  });
 
   afterEach(() => {
     sinon.restore();
   });
 
-  it('run returns errors from get ddoc', () => {
-    const dbGet = sinon.stub(db.medic, 'get').returns(Promise.reject('boom'));
+  it('run returns errors from reading files', () => {
+    fs.promises.readdir.rejects({ some: 'error' });
     return translations.run().catch(err => {
-      chai.expect(err).to.equal('boom');
-      chai.expect(dbGet.args[0][0]).to.equal('_design/medic');
+      chai.expect(err).to.deep.equal({ some: 'error' });
     });
   });
 
-  it('run does nothing if no attachments', () => {
-    const dbGet = sinon.stub(db.medic, 'get').resolves({});
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment');
+  it('run does nothing if no files', () => {
+    fs.promises.readdir.resolves([]);
+
     return translations.run().then(() => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(0);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(0);
     });
   });
 
-  it('run does nothing if no translation attachments', () => {
-    const ddoc = { _attachments: [ { 'logo.png': {} } ] };
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment');
+  it('run does nothing if no translation files', () => {
+    fs.promises.readdir.resolves(['logo.png']);
     return translations.run().then(() => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(0);
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(0);
     });
   });
 
-  it('run returns errors from getting attachment', () => {
-    const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').returns(Promise.reject('boom'));
+  it('run returns errors from reading file', () => {
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.rejects({ error: 'omg' });
     return translations.run().catch(err => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(1);
-      chai.expect(dbAttachment.args[0][0]).to.equal('_design/medic');
-      chai.expect(dbAttachment.args[0][1]).to.equal('translations/messages-en.properties');
-      chai.expect(err).to.equal('boom');
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readdir.args[0][0]).to.equal('/path/to/resources/translations');
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.args[0][0]).to.equal('/path/to/resources/translations/messages-en.properties');
+      chai.expect(fs.promises.readFile.args[0][1]).to.equal('utf8');
+      chai.expect(err).to.deep.equal({ error: 'omg' });
     });
   });
 
   it('run returns errors from properties parse', () => {
-    const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse').callsArgWith(1, 'boom');
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
+    properties.parse.callsArgWith(1, 'boom');
     return translations.run().catch(err => {
       chai.expect(err).to.equal('boom');
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(1);
-      chai.expect(parse.callCount).to.equal(1);
-      chai.expect(parse.args[0][0]).to.equal('some buffer');
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(properties.parse.callCount).to.equal(1);
+      chai.expect(properties.parse.args[0][0]).to.equal('some buffer');
     });
   });
 
-  it('run returns errors from getting translations files', () => {
-    const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { first: '1st' });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).returns(Promise.reject('boom'));
+  it('run returns errors from getting translation docs', () => {
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
+    properties.parse.callsArgWith(1, null, { first: '1st' });
+    sinon.stub(db.medic, 'allDocs').rejects('boom');
     return translations.run().catch(err => {
-      chai.expect(err).to.equal('boom');
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(1);
-      chai.expect(parse.callCount).to.equal(1);
-      chai.expect(dbView.callCount).to.equal(1);
+      chai.expect(err.name).to.equal('boom');
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(properties.parse.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
+        startkey: 'messages-',
+        endkey: 'messages-\ufff0',
+        include_docs: true,
+      }]);
     });
   });
 
   it('overwrites translations that have changed', () => {
-    const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
       generic: { hello: 'Gidday' }
     } } ];
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello' });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: docs });
-    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+
+    properties.parse.callsArgWith(1, null, { hello: 'Hello' });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(1);
-      chai.expect(parse.callCount).to.equal(1);
-      chai.expect(dbView.callCount).to.equal(1);
-      chai.expect(dbBulk.callCount).to.equal(1);
-      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(properties.parse.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
         { // merged translations doc
           _id: 'messages-en',
           code: 'en',
@@ -112,52 +123,49 @@ describe('translations', () => {
   });
 
   it('returns errors from db bulk', () => {
-    const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
       generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse')
-      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: docs });
-    const dbBulk = sinon.stub(db.medic, 'bulkDocs').returns(Promise.reject('boom'));
+    properties.parse.callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').rejects('boom');
     return translations.run().catch(err => {
-      chai.expect(err).to.equal('boom');
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(1);
-      chai.expect(parse.callCount).to.equal(1);
-      chai.expect(dbView.callCount).to.equal(1);
-      chai.expect(dbBulk.callCount).to.equal(1);
+      chai.expect(err.name).to.equal('boom');
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(properties.parse.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
     });
   });
 
   it('overwrites updated translations where not modified by configuration', () => {
-    const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
       generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse')
-      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: docs });
-    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+
+    properties.parse.callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(1);
-      chai.expect(parse.callCount).to.equal(1);
-      chai.expect(dbView.callCount).to.equal(1);
-      chai.expect(dbBulk.callCount).to.equal(1);
-      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(properties.parse.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
         { // merged translations doc
           _id: 'messages-en',
           code: 'en',
@@ -174,46 +182,44 @@ describe('translations', () => {
 
   it('do not update if existing and attached translation is empty', () => {
     // this is a special case broken by checking falsey
-    const ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
       generic: { empty: '' }
     } } ];
-    sinon.stub(db.medic, 'get').resolves(ddoc);
-    sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    sinon.stub(properties, 'parse').callsArgWith(1, null, { empty: '' });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: docs });
-    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+    properties.parse.callsArgWith(1, null, { empty: '' });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(dbBulk.callCount).to.equal(0);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(0);
     });
   });
 
   it('creates new language', () => {
-    const ddoc = { _attachments: { 'translations/messages-fr.properties': {} } };
+    fs.promises.readdir.resolves(['messages-fr.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
     const docs = [ { doc: {
       _id: 'messages-en',
       code: 'en',
       type: 'translations',
       generic: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
     } } ];
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse')
-      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: docs });
-    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+
+    properties.parse.callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(1);
-      chai.expect(parse.callCount).to.equal(1);
-      chai.expect(dbView.callCount).to.equal(1);
-      chai.expect(dbBulk.callCount).to.equal(1);
-      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(properties.parse.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
         { // new
           _id: 'messages-fr',
           type: 'translations',
@@ -231,29 +237,26 @@ describe('translations', () => {
   });
 
   it('does not recreate deleted language', () => {
-    const ddoc = { _attachments: {
-      'translations/messages-fr.properties': {}
-    } };
+    fs.promises.readdir.resolves(['messages-fr.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
     const docs = [ { doc: {
       _id: 'messages-en',
       type: 'translations',
       code: 'en',
       generic: { hello: 'Hello', bye: 'Goodbye' }
     } } ];
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse')
-      .callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: docs });
-    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+
+    properties.parse.callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(1);
-      chai.expect(parse.callCount).to.equal(1);
-      chai.expect(dbView.callCount).to.equal(1);
-      chai.expect(dbBulk.callCount).to.equal(1);
-      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(properties.parse.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
         {
           _id: 'messages-fr',
           code: 'fr',
@@ -271,10 +274,9 @@ describe('translations', () => {
   });
 
   it('overwrites multiple translation files', () => {
-    const ddoc = { _attachments: {
-      'translations/messages-en.properties': {},
-      'translations/messages-fr.properties': {}
-    } };
+    fs.promises.readdir.resolves(['messages-en.properties', 'messages-fr.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
     const docs = [
       { doc: {
         _id: 'messages-en',
@@ -289,21 +291,24 @@ describe('translations', () => {
         generic: { hello: 'Hello FR', bye: 'Goodbye FR CUSTOMISED' }
       } }
     ];
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse');
-    parse.onCall(0).callsArgWith(1, null, { hello: 'Hello EN UPDATED', bye: 'Goodbye EN UPDATED', added: 'EN ADDED' });
-    parse.onCall(1).callsArgWith(1, null, { hello: 'Hello FR UPDATED', bye: 'Goodbye FR UPDATED', added: 'FR ADDED' });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: docs });
-    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves(1);
+
+    properties.parse
+      .onCall(0)
+      .callsArgWith(1, null, { hello: 'Hello EN UPDATED', bye: 'Goodbye EN UPDATED', added: 'EN ADDED' });
+    properties.parse
+      .onCall(1)
+      .callsArgWith(1, null, { hello: 'Hello FR UPDATED', bye: 'Goodbye FR UPDATED', added: 'FR ADDED' });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves(1);
     return translations.run().then(() => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(2);
-      chai.expect(parse.callCount).to.equal(2);
-      chai.expect(dbView.callCount).to.equal(1);
-      chai.expect(dbBulk.callCount).to.equal(1);
-      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(2);
+      chai.expect(fs.promises.readFile.args[0][0]).to.equal('/path/to/resources/translations/messages-en.properties');
+      chai.expect(fs.promises.readFile.args[1][0]).to.equal('/path/to/resources/translations/messages-fr.properties');
+      chai.expect(properties.parse.callCount).to.equal(2);
+      chai.expect(db.medic.allDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
         {
           _id: 'messages-en',
           code: 'en',
@@ -329,9 +334,9 @@ describe('translations', () => {
   });
 
   it('defaults null translation values to the key - #3753', () => {
-    const ddoc = { _attachments: {
-      'translations/messages-en.properties': {}
-    } };
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
     const docs = [
       { doc: {
         _id: 'messages-en',
@@ -340,20 +345,17 @@ describe('translations', () => {
         generic: { hello: null, bye: 'Goodbye' }
       } }
     ];
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse');
-    parse.onCall(0).callsArgWith(1, null, { hello: null, bye: 'Goodbye' });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: docs });
-    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+
+    properties.parse.callsArgWith(1, null, { hello: null, bye: 'Goodbye' });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(1);
-      chai.expect(parse.callCount).to.equal(1);
-      chai.expect(dbView.callCount).to.equal(1);
-      chai.expect(dbBulk.callCount).to.equal(1);
-      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(properties.parse.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
         {
           _id: 'messages-en',
           code: 'en',
@@ -368,10 +370,9 @@ describe('translations', () => {
   });
 
   it('defaults undefined translation values to the key - #3753', () => {
-    const ddoc = { _attachments: {
-      'translations/messages-en.properties': {},
-      'translations/messages-ne.properties': {}
-    } };
+    fs.promises.readdir.resolves(['messages-en.properties', 'messages-ne.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
     const docs = [
       { doc: {
         _id: 'messages-en',
@@ -386,21 +387,18 @@ describe('translations', () => {
         generic: { bye: 'Goodbye' }
       } }
     ];
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse');
-    parse.onCall(0).callsArgWith(1, null, { hello: 'Hello', bye: 'Goodbye' });
-    parse.onCall(1).callsArgWith(1, null, { bye: 'Goodbye' });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: docs });
-    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+
+    properties.parse.onCall(0).callsArgWith(1, null, { hello: 'Hello', bye: 'Goodbye' });
+    properties.parse.onCall(1).callsArgWith(1, null, { bye: 'Goodbye' });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(2);
-      chai.expect(parse.callCount).to.equal(2);
-      chai.expect(dbView.callCount).to.equal(1);
-      chai.expect(dbBulk.callCount).to.equal(1);
-      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(2);
+      chai.expect(properties.parse.callCount).to.equal(2);
+      chai.expect(db.medic.allDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
         {
           _id: 'messages-ne',
           code: 'ne',
@@ -415,9 +413,9 @@ describe('translations', () => {
   });
 
   it('converts all non-string values to string', () => {
-    const ddoc = { _attachments: {
-      'translations/messages-en.properties': {}
-    } };
+    fs.promises.readdir.resolves(['messages-en.properties']);
+    fs.promises.readFile.resolves('some buffer');
+
     const docs = [
       { doc: {
         _id: 'messages-en',
@@ -426,20 +424,17 @@ describe('translations', () => {
         generic: { hello: null, bye: 0, ciao: false, adios: 23, salut: true }
       } }
     ];
-    const dbGet = sinon.stub(db.medic, 'get').resolves(ddoc);
-    const dbAttachment = sinon.stub(db.medic, 'getAttachment').resolves('some buffer');
-    const parse = sinon.stub(properties, 'parse');
-    parse.onCall(0).callsArgWith(1, null, { hello: null, bye: 0, ciao: false, adios: 23, salut: true });
-    const dbView = sinon.stub(db.medic, 'query');
-    dbView.onCall(0).resolves({ rows: docs });
-    const dbBulk = sinon.stub(db.medic, 'bulkDocs').resolves();
+
+    properties.parse.callsArgWith(1, null, { hello: null, bye: 0, ciao: false, adios: 23, salut: true });
+    sinon.stub(db.medic, 'allDocs').resolves({ rows: docs });
+    sinon.stub(db.medic, 'bulkDocs').resolves();
     return translations.run().then(() => {
-      chai.expect(dbGet.callCount).to.equal(1);
-      chai.expect(dbAttachment.callCount).to.equal(1);
-      chai.expect(parse.callCount).to.equal(1);
-      chai.expect(dbView.callCount).to.equal(1);
-      chai.expect(dbBulk.callCount).to.equal(1);
-      chai.expect(dbBulk.args[0][0]).to.deep.equal([
+      chai.expect(fs.promises.readdir.callCount).to.equal(1);
+      chai.expect(fs.promises.readFile.callCount).to.equal(1);
+      chai.expect(properties.parse.callCount).to.equal(1);
+      chai.expect(db.medic.allDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.callCount).to.equal(1);
+      chai.expect(db.medic.bulkDocs.args[0][0]).to.deep.equal([
         {
           _id: 'messages-en',
           code: 'en',
@@ -453,6 +448,73 @@ describe('translations', () => {
           }
         }
       ]);
+    });
+  });
+
+  describe('getTranslationDocs', () => {
+    it('should return all translation docs', () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: 'messages-en', type: 'translations', code: 'en', generic: {} } },
+          { doc: { _id: 'messages-fr', type: 'translations', code: 'en', values: {} } },
+        ],
+      });
+      return translations.getTranslationDocs().then(results => {
+        chai.expect(results).to.deep.equal([
+          { _id: 'messages-en', type: 'translations', code: 'en', generic: {} },
+          { _id: 'messages-fr', type: 'translations', code: 'en', values: {} },
+        ]);
+        chai.expect(db.medic.allDocs.callCount).to.equal(1);
+        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
+          { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
+        ]);
+      });
+    });
+
+    it('should exclude invalid docs', () => {
+      sinon.stub(db.medic, 'allDocs').resolves({
+        rows: [
+          { doc: { _id: 'messages-en', type: 'not-translations', code: 'en', generic: {} } },
+          { doc: { _id: 'messages-fr', type: 'translations', values: {} } },
+          { doc: { _id: 'messages-fr____rev____tombstone', type: 'tombstone', values: {} } },
+          { doc: { _id: 'messages-de', type: 'translations', code: 'en' }, },
+          { doc: { _id: 'messages-es', type: 'translations', code: 'es', generic: {} } },
+        ],
+      });
+      return translations.getTranslationDocs().then(results => {
+        chai.expect(results).to.deep.equal([
+          { _id: 'messages-es', type: 'translations', code: 'es', generic: {} },
+        ]);
+        chai.expect(db.medic.allDocs.callCount).to.equal(1);
+        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
+          { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
+        ]);
+      });
+    });
+  });
+
+  describe('getEnabledLocales', () => {
+    it('should only return enabled translation docs', () => {
+      it('should return all translation docs', () => {
+        sinon.stub(db.medic, 'allDocs').resolves({
+          rows: [
+            { doc: { _id: 'messages-en', enabled: true } },
+            { doc: { _id: 'messages-fr', enabled: false } },
+            { doc: { _id: 'messages-es', enabled: true } },
+          ],
+        });
+        return translations.getTranslationDocs().then(results => {
+          chai.expect(results).to.deep.equal([
+            { _id: 'messages-en', enabled: true },
+            { _id: 'messages-es', enabled: true }
+          ]);
+
+          chai.expect(db.medic.allDocs.callCount).to.equal(1);
+          chai.expect(db.medic.allDocs.args[0]).to.deep.equal([
+            { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
+          ]);
+        });
+      });
     });
   });
 });

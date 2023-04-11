@@ -95,7 +95,7 @@ describe('pagination directive', () => {
     chai.expect(element.find('ul').children().length).to.equal(15);
   });
 
-  it('should disable prev/first when on first page', () =>{
+  it('should disable prev/first when on first page', () => {
     scope.pagination = {
       pages: 22,
       perPage: 25,
@@ -113,7 +113,7 @@ describe('pagination directive', () => {
     chai.expect(element.find('ul').children().last().prev().hasClass('disabled')).to.equal(false);
   });
 
-  it('should disable next/last when on last page', () =>{
+  it('should disable next/last when on last page', () => {
     scope.pagination = {
       pages: 22,
       perPage: 25,

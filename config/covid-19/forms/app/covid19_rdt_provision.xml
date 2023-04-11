@@ -1,0 +1,699 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+  <h:head>
+    <h:title>RDT Covid-19</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/covid19_rdt_provision/inputs/contact/_id:label">
+            <value>What is the patient's name?</value>
+          </text>
+          <text id="/covid19_rdt_provision/inputs/user/contact_id:label">
+            <value>Contact ID of the logged in user</value>
+          </text>
+          <text id="/covid19_rdt_provision/inputs/user/facility_id:label">
+            <value>Place ID of the logged in user</value>
+          </text>
+          <text id="/covid19_rdt_provision/inputs/user/name:label">
+            <value>Name of the logged in user</value>
+          </text>
+          <text id="/covid19_rdt_provision/provision/note_continue_1:label">
+            <value>✓ RDT provisioned!</value>
+          </text>
+          <text id="/covid19_rdt_provision/provision/note_continue_2:label">
+            <value>Click "Next" to continue.</value>
+          </text>
+          <text id="/covid19_rdt_provision/provision/rdtoolkit-provision/note_instructions_provision:label">
+            <value>Click on "Launch app" to provision a Covid-19 rapid diagnostic test to this patient.</value>
+          </text>
+          <text id="/covid19_rdt_provision/provision/rdtoolkit-provision/preview_session_state:hint">
+            <value>The status is auto populated once the RDT is provisioned</value>
+          </text>
+          <text id="/covid19_rdt_provision/provision/rdtoolkit-provision/preview_session_state:label">
+            <value>RDT status *</value>
+          </text>
+          <text id="/covid19_rdt_provision/rdt_session_other/rdt_session_other_type:label">
+            <value>You have selected "Other" for the test in RD-Toolkit. Please specify the test being used:</value>
+          </text>
+          <text id="/covid19_rdt_provision/spec-lot/additional_notes:label">
+            <value>Notes</value>
+          </text>
+          <text id="/covid19_rdt_provision/spec-lot/rdt_lot:label">
+            <value>What is the lot or batch number to which the Rapid Diagnostic Test device belong to?</value>
+          </text>
+          <text id="/covid19_rdt_provision/spec-lot/rdt_lot_expiry_date:label">
+            <value>When does the lot or batch expire?</value>
+          </text>
+          <text id="/covid19_rdt_provision/spec-lot/rdt_lot_expiry_date_warning:label">
+            <value>Warning: please use caution when using expired RDTs. Test results may not be accurate.</value>
+          </text>
+          <text id="/covid19_rdt_provision/spec-lot/specimen_type/nasal:label">
+            <value>Nasal</value>
+          </text>
+          <text id="/covid19_rdt_provision/spec-lot/specimen_type/nasopharyngeal:label">
+            <value>Nasopharyngeal</value>
+          </text>
+          <text id="/covid19_rdt_provision/spec-lot/specimen_type/other:label">
+            <value>Other</value>
+          </text>
+          <text id="/covid19_rdt_provision/spec-lot/specimen_type:label">
+            <value>How the test will be collected?</value>
+          </text>
+          <text id="/covid19_rdt_provision/spec-lot/specimen_type_other:label">
+            <value>Specify other</value>
+          </text>
+          <text id="/covid19_rdt_provision/spec-lot:label">
+            <value>Specimen &amp; Lot</value>
+          </text>
+          <text id="/covid19_rdt_provision/summary/summary_details:label">
+            <value>Patient Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/covid19_rdt_provision/summary/summary_header:label">
+            <value>Be sure you submit to complete this action</value>
+          </text>
+          <text id="/covid19_rdt_provision/summary/summary_info:label">
+            <value>RDT Details&lt;i class="fa fa-medkit"&gt;&lt;/i&gt;</value>
+          </text>
+          <text id="/covid19_rdt_provision/summary/summary_name:label">
+            <value>**<output value=" /covid19_rdt_provision/patient_name "/>**
+<output value=" /covid19_rdt_provision/inputs/contact/sex "/>
+<output value=" /covid19_rdt_provision/age "/></value></text>
+          <text id="/covid19_rdt_provision/summary/summary_test_expire:label">
+            <value>Results expire at <output value=" /covid19_rdt_provision/preview_time_expired "/> - be sure to complete the task before this time.</value>
+          </text>
+          <text id="/covid19_rdt_provision/summary/summary_test_name:label">
+            <value><output value=" /covid19_rdt_provision/summary/rdt_loinc_long_common_name "/></value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/days_since_symptoms_began:jr:constraintMsg">
+            <value>Number of days should be between 1 and 200</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/days_since_symptoms_began:label">
+            <value>How many days since the first symptoms began?</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/facility_confirm_ask/no:label">
+            <value>No</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/facility_confirm_ask/yes:label">
+            <value>Yes</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/facility_confirm_ask:label">
+            <value>Are you at &quot;<output value=" /covid19_rdt_provision/test-reference/facility_name "/>&quot; now?</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/other_facility_address:label">
+            <value>Facility address</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/other_facility_name:label">
+            <value>Facility name</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/other_facility_test_setting/community_home:label">
+            <value>Community: Home</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/other_facility_test_setting/community_other:label">
+            <value>Community: Other</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/other_facility_test_setting/community_workplace:label">
+            <value>Community: Workplace</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/other_facility_test_setting/healthcare_clinic:label">
+            <value>Healthcare: Clinic</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/other_facility_test_setting/healthcare_hospital:label">
+            <value>Healthcare: Hospital</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/other_facility_test_setting/healthcare_other:label">
+            <value>Healthcare: Other</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/other_facility_test_setting:label">
+            <value>Facility type</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/other_test_setting:label">
+            <value>Specify other</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/anxiety:label">
+            <value>Anxiety</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/chest_pain:label">
+            <value>Chest pain</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/chills_or_dizziness:label">
+            <value>Chills or dizziness</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/confusion:label">
+            <value>Confusion</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/conjunctivitis:label">
+            <value>Conjunctivitis</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/cough:label">
+            <value>Cough</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/depression:label">
+            <value>Depression</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/diarrhea:label">
+            <value>Diarrhea</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/general_weakness_or_fatigue:label">
+            <value>General weakness or fatigue</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/headache:label">
+            <value>Headache</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/high_temperature_above_38_c:label">
+            <value>High temperature (above 38 °C)</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/irritability:label">
+            <value>Irritability</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/loss_of_appetite:label">
+            <value>Loss of appetite</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/loss_of_taste_or_smell:label">
+            <value>Loss of taste or smell</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/muscle_or_joint_pain:label">
+            <value>Muscle or joint pain</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/nasal_congestion:label">
+            <value>Nasal congestion</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/nausea_or_vomiting:label">
+            <value>Nausea or vomiting</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/neurologic_complications:label">
+            <value>Neurologic complications</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/shortness_of_breath:label">
+            <value>Shortness of breath</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/skin_rash:label">
+            <value>Skin rash</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/sleep_disorders:label">
+            <value>Sleep disorders</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms/sore_throat:label">
+            <value>Sore throat</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/symptoms:label">
+            <value>What symptoms does the patient have?</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/test_reason/asymptomatic:label">
+            <value>Asymptomatic</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/test_reason/close_contact_history:label">
+            <value>History of close contact</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/test_reason/covid_19_confirmed:label">
+            <value>Confirmed COVID-19 case</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/test_reason/symptomatic:label">
+            <value>Symptomatic</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/test_reason:jr:constraintMsg">
+            <value>Select only one of the "asymptomatic" or "symptomatic", a patient cannot be both "asymptomatic" and "symptomatic"</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference/test_reason:label">
+            <value>Why is the patient taking the test?</value>
+          </text>
+          <text id="/covid19_rdt_provision/test-reference:label">
+            <value>Location &amp; Symptoms</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <covid19_rdt_provision id="covid19_rdt_provision" prefix="J1!covid19_rdt_provision!" delimiter="#" version="2021-10-22_06-58">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <user>
+              <contact_id/>
+              <facility_id/>
+              <name/>
+            </user>
+            <source>user</source>
+            <contact>
+              <_id/>
+              <patient_id/>
+              <first_name/>
+              <last_name/>
+              <name/>
+              <date_of_birth/>
+              <sex/>
+              <phone/>
+              <phone_alternate/>
+              <address/>
+              <parent>
+                <_id/>
+                <name/>
+                <address/>
+                <parent>
+                  <_id/>
+                  <name/>
+                  <address/>
+                </parent>
+              </parent>
+            </contact>
+          </inputs>
+          <patient_uuid/>
+          <patient_name/>
+          <patient_age_in_years tag="hidden"/>
+          <patient_age_in_months tag="hidden"/>
+          <patient_age_in_days tag="hidden"/>
+          <age/>
+          <preview_time_expired>0</preview_time_expired>
+          <test-reference>
+            <session_id/>
+            <test_id/>
+            <facility_id/>
+            <facility_name/>
+            <facility_address/>
+            <facility_confirm_ask>yes</facility_confirm_ask>
+            <other_facility_name/>
+            <other_facility_address/>
+            <other_facility_test_setting/>
+            <other_test_setting/>
+            <test_reason/>
+            <symptoms/>
+            <days_since_symptoms_began/>
+          </test-reference>
+          <spec-lot>
+            <specimen_type/>
+            <specimen_type_other/>
+            <rdt_lot/>
+            <rdt_lot_expiry_date/>
+            <rdt_lot_expiry_date_warning/>
+            <additional_notes/>
+          </spec-lot>
+          <provision tag="hidden">
+            <rdtoolkit-provision>
+              <action>org.rdtoolkit.action.Provision</action>
+              <note_instructions_provision/>
+              <android-app-inputs>
+                <rdt_session_id/>
+                <rdt_config_bundle>
+                  <rdt_config_classifier_mode>PRE_POPULATE</rdt_config_classifier_mode>
+                  <rdt_config_session_type>TWO_PHASE</rdt_config_session_type>
+                  <rdt_config_provision_mode>CRITERIA_SET_AND</rdt_config_provision_mode>
+                  <rdt_config_provision_mode_data>sars_cov2</rdt_config_provision_mode_data>
+                  <rdt_config_flavor_one/>
+                  <rdt_config_flavor_two/>
+                  <rdt_config_cloudworks_dns/>
+                </rdt_config_bundle>
+              </android-app-inputs>
+              <android-app-outputs>
+                <rdt_session_bundle>
+                  <rdt_session_state/>
+                  <rdt_session_time_started/>
+                  <rdt_session_time_resolved/>
+                  <rdt_session_time_expired/>
+                  <rdt_session_test_profile/>
+                </rdt_session_bundle>
+              </android-app-outputs>
+              <preview_session_state/>
+            </rdtoolkit-provision>
+            <note_continue_1/>
+            <note_continue_2/>
+          </provision>
+          <rdt_session_other>
+            <rdt_session_other_type/>
+          </rdt_session_other>
+          <summary tag="hidden">
+            <syndrome_test_type>COVID-19</syndrome_test_type>
+            <rdt_loinc_code>94558-4</rdt_loinc_code>
+            <rdt_loinc_long_common_name>SARS-CoV-2 (COVID-19) Ag [Presence] in Respiratory specimen by Rapid immunoassay</rdt_loinc_long_common_name>
+            <summary_header/>
+            <summary_details/>
+            <summary_name/>
+            <summary_info/>
+            <summary_test_name/>
+            <summary_test_expire/>
+          </summary>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </covid19_rdt_provision>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/covid19_rdt_provision/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/user/contact_id" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/user/facility_id" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/user/name" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/source" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/first_name" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/last_name" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/name" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/sex" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/phone" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/phone_alternate" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/address" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/parent/_id" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/parent/name" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/parent/address" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/parent/parent/_id" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/parent/parent/name" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/inputs/contact/parent/parent/address" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/covid19_rdt_provision/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/covid19_rdt_provision/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /covid19_rdt_provision/inputs/contact/date_of_birth , today() ) div 12 )"/>
+      <bind nodeset="/covid19_rdt_provision/patient_age_in_months" type="string" calculate="difference-in-months(  /covid19_rdt_provision/inputs/contact/date_of_birth , today() )"/>
+      <bind nodeset="/covid19_rdt_provision/patient_age_in_days" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time( /covid19_rdt_provision/inputs/contact/date_of_birth ) )"/>
+      <bind nodeset="/covid19_rdt_provision/age" type="string" calculate="if( /covid19_rdt_provision/patient_age_in_days  &lt; 31, 
+concat( /covid19_rdt_provision/patient_age_in_days , ' days old'),
+if( /covid19_rdt_provision/patient_age_in_months  &lt; 12, 
+concat( /covid19_rdt_provision/patient_age_in_months , ' months old'), 
+concat( /covid19_rdt_provision/patient_age_in_years , ' years old')))"/>
+      <bind nodeset="/covid19_rdt_provision/preview_time_expired" type="string" calculate="format-date-time(parse-timestamp-to-date( /covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_expired ), &quot;%H:%M:%S on %e %b, %Y&quot;)"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/session_id" type="string" calculate="coalesce(., uuid())"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/test_id" type="string" calculate="coalesce(., uuid())"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/facility_id" type="string" calculate="if(../../inputs/contact/parent/parent/_id != '', ../../inputs/contact/parent/parent/_id, ../../inputs/contact/parent/_id)"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/facility_name" type="string" calculate="if(../../inputs/contact/parent/parent/_id != '', ../../inputs/contact/parent/parent/name, ../../inputs/contact/parent/name)"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/facility_address" type="string" calculate="if(../../inputs/contact/parent/parent/_id != '', ../../inputs/contact/parent/parent/address, ../../inputs/contact/parent/address)"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/facility_confirm_ask" type="select1"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/other_facility_name" type="string" relevant="selected(../facility_confirm_ask, 'no')"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/other_facility_address" type="string" relevant="selected(../facility_confirm_ask, 'no')"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/other_facility_test_setting" type="select1" relevant="selected(../facility_confirm_ask, 'no')"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/other_test_setting" type="string" relevant="(selected(../other_facility_test_setting , 'community_other') or selected(../other_facility_test_setting , 'healthcare_other'))"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/test_reason" type="select" jr:constraintMsg="jr:itext('/covid19_rdt_provision/test-reference/test_reason:jr:constraintMsg')" constraint="not(selected(., 'symptomatic') and selected(., 'asymptomatic'))"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/symptoms" type="select" relevant="selected( /covid19_rdt_provision/test-reference/test_reason , 'symptomatic')"/>
+      <bind nodeset="/covid19_rdt_provision/test-reference/days_since_symptoms_began" type="int" jr:constraintMsg="jr:itext('/covid19_rdt_provision/test-reference/days_since_symptoms_began:jr:constraintMsg')" relevant="selected( /covid19_rdt_provision/test-reference/test_reason , 'symptomatic')" constraint=". &amp;gt;= 1 and . &amp;lt;= 200"/>
+      <bind nodeset="/covid19_rdt_provision/spec-lot/specimen_type" type="select1"/>
+      <bind nodeset="/covid19_rdt_provision/spec-lot/specimen_type_other" type="string" relevant="selected(../specimen_type, 'other')"/>
+      <bind nodeset="/covid19_rdt_provision/spec-lot/rdt_lot" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/spec-lot/rdt_lot_expiry_date" type="date"/>
+      <bind nodeset="/covid19_rdt_provision/spec-lot/rdt_lot_expiry_date_warning" readonly="true()" type="string" relevant="decimal-date-time( /covid19_rdt_provision/spec-lot/rdt_lot_expiry_date ) &lt;= decimal-date-time(today())"/>
+      <bind nodeset="/covid19_rdt_provision/spec-lot/additional_notes" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/action" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/note_instructions_provision" readonly="true()" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_session_id" type="string" calculate=" /covid19_rdt_provision/test-reference/test_id "/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_classifier_mode" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_session_type" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_provision_mode" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_provision_mode_data" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_flavor_one" type="string" calculate="../../../../../inputs/contact/_id"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_flavor_two" type="string" calculate="../../../../../inputs/contact/name"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_cloudworks_dns" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_state" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_started" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_expired" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_test_profile" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/provision/rdtoolkit-provision/preview_session_state" type="string" required="true()" readonly="true()" calculate=" /covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_state "/>
+      <bind nodeset="/covid19_rdt_provision/provision/note_continue_1" readonly="true()" type="string" relevant=" /covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_started  != ''"/>
+      <bind nodeset="/covid19_rdt_provision/provision/note_continue_2" readonly="true()" type="string" relevant=" /covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_started  != ''"/>
+      <bind nodeset="/covid19_rdt_provision/rdt_session_other/rdt_session_other_type" type="string" required="true()" relevant="starts-with( /covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_test_profile , &quot;generic_c19_&quot;)"/>
+      <bind nodeset="/covid19_rdt_provision/summary/syndrome_test_type" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/summary/rdt_loinc_code" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/summary/rdt_loinc_long_common_name" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/summary/summary_header" readonly="true()" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/summary/summary_details" readonly="true()" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/summary/summary_name" readonly="true()" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/summary/summary_info" readonly="true()" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/summary/summary_test_name" readonly="true()" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/summary/summary_test_expire" readonly="true()" type="string"/>
+      <bind nodeset="/covid19_rdt_provision/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/covid19_rdt_provision/inputs">
+      <group ref="/covid19_rdt_provision/inputs/user"/>
+      <group appearance="field-list" ref="/covid19_rdt_provision/inputs/contact">
+        <input appearance="db-object" ref="/covid19_rdt_provision/inputs/contact/_id">
+          <label ref="jr:itext('/covid19_rdt_provision/inputs/contact/_id:label')"/>
+        </input>
+        <group ref="/covid19_rdt_provision/inputs/contact/parent">
+          <group ref="/covid19_rdt_provision/inputs/contact/parent/parent"/>
+        </group>
+      </group>
+    </group>
+    <group appearance="field-list" ref="/covid19_rdt_provision/test-reference">
+      <label ref="jr:itext('/covid19_rdt_provision/test-reference:label')"/>
+      <select1 ref="/covid19_rdt_provision/test-reference/facility_confirm_ask">
+        <label ref="jr:itext('/covid19_rdt_provision/test-reference/facility_confirm_ask:label')"/>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/facility_confirm_ask/yes:label')"/>
+          <value>yes</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/facility_confirm_ask/no:label')"/>
+          <value>no</value>
+        </item>
+      </select1>
+      <input ref="/covid19_rdt_provision/test-reference/other_facility_name">
+        <label ref="jr:itext('/covid19_rdt_provision/test-reference/other_facility_name:label')"/>
+      </input>
+      <input ref="/covid19_rdt_provision/test-reference/other_facility_address">
+        <label ref="jr:itext('/covid19_rdt_provision/test-reference/other_facility_address:label')"/>
+      </input>
+      <select1 ref="/covid19_rdt_provision/test-reference/other_facility_test_setting">
+        <label ref="jr:itext('/covid19_rdt_provision/test-reference/other_facility_test_setting:label')"/>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/other_facility_test_setting/community_home:label')"/>
+          <value>community_home</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/other_facility_test_setting/community_workplace:label')"/>
+          <value>community_workplace</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/other_facility_test_setting/community_other:label')"/>
+          <value>community_other</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/other_facility_test_setting/healthcare_clinic:label')"/>
+          <value>healthcare_clinic</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/other_facility_test_setting/healthcare_hospital:label')"/>
+          <value>healthcare_hospital</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/other_facility_test_setting/healthcare_other:label')"/>
+          <value>healthcare_other</value>
+        </item>
+      </select1>
+      <input ref="/covid19_rdt_provision/test-reference/other_test_setting">
+        <label ref="jr:itext('/covid19_rdt_provision/test-reference/other_test_setting:label')"/>
+      </input>
+      <select ref="/covid19_rdt_provision/test-reference/test_reason">
+        <label ref="jr:itext('/covid19_rdt_provision/test-reference/test_reason:label')"/>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/test_reason/symptomatic:label')"/>
+          <value>symptomatic</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/test_reason/asymptomatic:label')"/>
+          <value>asymptomatic</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/test_reason/close_contact_history:label')"/>
+          <value>close_contact_history</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/test_reason/covid_19_confirmed:label')"/>
+          <value>covid_19_confirmed</value>
+        </item>
+      </select>
+      <select ref="/covid19_rdt_provision/test-reference/symptoms">
+        <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms:label')"/>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/sore_throat:label')"/>
+          <value>sore_throat</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/cough:label')"/>
+          <value>cough</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/nasal_congestion:label')"/>
+          <value>nasal_congestion</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/conjunctivitis:label')"/>
+          <value>conjunctivitis</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/loss_of_taste_or_smell:label')"/>
+          <value>loss_of_taste_or_smell</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/shortness_of_breath:label')"/>
+          <value>shortness_of_breath</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/chest_pain:label')"/>
+          <value>chest_pain</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/high_temperature_above_38_c:label')"/>
+          <value>high_temperature_above_38_c</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/chills_or_dizziness:label')"/>
+          <value>chills_or_dizziness</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/headache:label')"/>
+          <value>headache</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/muscle_or_joint_pain:label')"/>
+          <value>muscle_or_joint_pain</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/general_weakness_or_fatigue:label')"/>
+          <value>general_weakness_or_fatigue</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/loss_of_appetite:label')"/>
+          <value>loss_of_appetite</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/nausea_or_vomiting:label')"/>
+          <value>nausea_or_vomiting</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/diarrhea:label')"/>
+          <value>diarrhea</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/skin_rash:label')"/>
+          <value>skin_rash</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/irritability:label')"/>
+          <value>irritability</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/confusion:label')"/>
+          <value>confusion</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/anxiety:label')"/>
+          <value>anxiety</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/depression:label')"/>
+          <value>depression</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/sleep_disorders:label')"/>
+          <value>sleep_disorders</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/test-reference/symptoms/neurologic_complications:label')"/>
+          <value>neurologic_complications</value>
+        </item>
+      </select>
+      <input ref="/covid19_rdt_provision/test-reference/days_since_symptoms_began">
+        <label ref="jr:itext('/covid19_rdt_provision/test-reference/days_since_symptoms_began:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/covid19_rdt_provision/spec-lot">
+      <label ref="jr:itext('/covid19_rdt_provision/spec-lot:label')"/>
+      <select1 ref="/covid19_rdt_provision/spec-lot/specimen_type">
+        <label ref="jr:itext('/covid19_rdt_provision/spec-lot/specimen_type:label')"/>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/spec-lot/specimen_type/nasal:label')"/>
+          <value>nasal</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/spec-lot/specimen_type/nasopharyngeal:label')"/>
+          <value>nasopharyngeal</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/covid19_rdt_provision/spec-lot/specimen_type/other:label')"/>
+          <value>other</value>
+        </item>
+      </select1>
+      <input ref="/covid19_rdt_provision/spec-lot/specimen_type_other">
+        <label ref="jr:itext('/covid19_rdt_provision/spec-lot/specimen_type_other:label')"/>
+      </input>
+      <input ref="/covid19_rdt_provision/spec-lot/rdt_lot">
+        <label ref="jr:itext('/covid19_rdt_provision/spec-lot/rdt_lot:label')"/>
+      </input>
+      <input ref="/covid19_rdt_provision/spec-lot/rdt_lot_expiry_date">
+        <label ref="jr:itext('/covid19_rdt_provision/spec-lot/rdt_lot_expiry_date:label')"/>
+      </input>
+      <input ref="/covid19_rdt_provision/spec-lot/rdt_lot_expiry_date_warning">
+        <label ref="jr:itext('/covid19_rdt_provision/spec-lot/rdt_lot_expiry_date_warning:label')"/>
+      </input>
+      <input appearance="multiline" ref="/covid19_rdt_provision/spec-lot/additional_notes">
+        <label ref="jr:itext('/covid19_rdt_provision/spec-lot/additional_notes:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/covid19_rdt_provision/provision">
+      <group appearance="android-app-launcher field-list" ref="/covid19_rdt_provision/provision/rdtoolkit-provision">
+        <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/action"/>
+        <input ref="/covid19_rdt_provision/provision/rdtoolkit-provision/note_instructions_provision">
+          <label ref="jr:itext('/covid19_rdt_provision/provision/rdtoolkit-provision/note_instructions_provision:label')"/>
+        </input>
+        <group appearance="android-app-inputs" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs">
+          <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_session_id"/>
+          <group appearance="android-app-object" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle">
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_classifier_mode"/>
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_session_type"/>
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_provision_mode"/>
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_provision_mode_data"/>
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_flavor_one"/>
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_flavor_two"/>
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-inputs/rdt_config_bundle/rdt_config_cloudworks_dns"/>
+          </group>
+        </group>
+        <group appearance="android-app-outputs" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs">
+          <group appearance="android-app-object" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle">
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_state"/>
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_started"/>
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_resolved"/>
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_time_expired"/>
+            <input appearance="hidden" ref="/covid19_rdt_provision/provision/rdtoolkit-provision/android-app-outputs/rdt_session_bundle/rdt_session_test_profile"/>
+          </group>
+        </group>
+        <input ref="/covid19_rdt_provision/provision/rdtoolkit-provision/preview_session_state">
+          <label ref="jr:itext('/covid19_rdt_provision/provision/rdtoolkit-provision/preview_session_state:label')"/>
+          <hint ref="jr:itext('/covid19_rdt_provision/provision/rdtoolkit-provision/preview_session_state:hint')"/>
+        </input>
+      </group>
+      <input ref="/covid19_rdt_provision/provision/note_continue_1">
+        <label ref="jr:itext('/covid19_rdt_provision/provision/note_continue_1:label')"/>
+      </input>
+      <input ref="/covid19_rdt_provision/provision/note_continue_2">
+        <label ref="jr:itext('/covid19_rdt_provision/provision/note_continue_2:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/covid19_rdt_provision/rdt_session_other">
+      <input ref="/covid19_rdt_provision/rdt_session_other/rdt_session_other_type">
+        <label ref="jr:itext('/covid19_rdt_provision/rdt_session_other/rdt_session_other_type:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list summary" ref="/covid19_rdt_provision/summary">
+      <input appearance="h2" ref="/covid19_rdt_provision/summary/summary_header">
+        <label ref="jr:itext('/covid19_rdt_provision/summary/summary_header:label')"/>
+      </input>
+      <input appearance="h1 yellow" ref="/covid19_rdt_provision/summary/summary_details">
+        <label ref="jr:itext('/covid19_rdt_provision/summary/summary_details:label')"/>
+      </input>
+      <input appearance="center" ref="/covid19_rdt_provision/summary/summary_name">
+        <label ref="jr:itext('/covid19_rdt_provision/summary/summary_name:label')"/>
+      </input>
+      <input appearance="h1 blue" ref="/covid19_rdt_provision/summary/summary_info">
+        <label ref="jr:itext('/covid19_rdt_provision/summary/summary_info:label')"/>
+      </input>
+      <input appearance="center" ref="/covid19_rdt_provision/summary/summary_test_name">
+        <label ref="jr:itext('/covid19_rdt_provision/summary/summary_test_name:label')"/>
+      </input>
+      <input appearance="center" ref="/covid19_rdt_provision/summary/summary_test_expire">
+        <label ref="jr:itext('/covid19_rdt_provision/summary/summary_test_expire:label')"/>
+      </input>
+    </group>
+  </h:body>
+</h:html>

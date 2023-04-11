@@ -52,6 +52,29 @@
               <span>{{'admin.app.name' | translate}}</span>
             </a>
           </li>
+
+          <li role="presentation disabled" *ngIf="!replicationStatus.disabled" [ngClass]="{ 'disabled': replicationStatus.current?.disableSyncButton }">
+            <a role="menuitem" tabindex="-1" (click)="!replicationStatus.current?.disableSyncButton && replicate()">
+              <i class="fa fa-fw fa-refresh"></i>
+              <span>{{'sync.now' | translate}}</span>
+            </a>
+          </li>
+
+          <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
+
+          <li role="presentation disabled" *ngIf="!replicationStatus.disabled" class="sync-status">
+            <a class="no-click" [ngClass]="replicationStatus.current?.className" *ngIf="replicationStatus.current">
+              <i class="fa fa-fw" [ngClass]="replicationStatus.current?.icon"></i>
+              <span>{{replicationStatus.current.key | translate}}</span>
+            </a>
+            <a class="no-click" *ngIf="replicationStatus.lastSuccessTo">
+              <span>{{'sync.last_success' | translate}}</span>
+              <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate"></span>
+            </a>
+          </li>
+
+          <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
+
           <li role="presentation" mmAuth="can_configure">
             <a role="menuitem" tabindex="-1" (click)="openGuidedSetup()">
               <i class="fa fa-fw fa-list-ol"></i>
@@ -94,28 +117,6 @@
               <span>{{'Log Out' | translate}}</span>
             </a>
           </li>
-
-          <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
-
-          <li role="presentation disabled" *ngIf="!replicationStatus.disabled" [ngClass]="{ 'disabled': replicationStatus.current?.disableSyncButton }">
-            <a role="menuitem" tabindex="-1" (click)="!replicationStatus.current?.disableSyncButton && replicate()">
-              <i class="fa fa-fw fa-refresh"></i>
-              <span>{{'sync.now' | translate}}</span>
-            </a>
-          </li>
-
-          <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
-
-          <li role="presentation disabled" *ngIf="!replicationStatus.disabled" class="sync-status">
-            <a class="no-click" [ngClass]="replicationStatus.current?.className" *ngIf="replicationStatus.current">
-              <i class="fa fa-fw" [ngClass]="replicationStatus.current?.icon"></i>
-              <span>{{replicationStatus.current.key | translate}}</span>
-            </a>
-            <a class="no-click" *ngIf="replicationStatus.lastSuccessTo">
-              <span>{{'sync.last_success' | translate}}</span>
-              <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate"></span>
-            </a>
-          </li>
         </ul>
       </span>
     </div>
@@ -126,8 +127,8 @@
           <span *ngIf="!tab.resourceIcon" class="fa {{tab.icon}}"><span class="fa {{tab.defaultIcon}}"></span></span>
           <span *ngIf="tab.resourceIcon" [innerHTML]="tab.resourceIcon | resourceIcon:tab.defaultIcon"></span>
           <span class="mm-badge-overlay mm-badge-overlay-top" *ngIf="unreadCount[tab.typeName] > 0">
-            <span class="mm-badge mm-badge-red mm-badge-border" *ngIf="unreadCount[tab.typeName] < 100">{{unreadCount[tab.typeName]}}</span>
-            <span class="mm-badge mm-badge-red mm-badge-border" *ngIf="unreadCount[tab.typeName] >= 100">100+</span>
+            <span class="mm-badge mm-badge-red mm-badge-border" *ngIf="unreadCount[tab.typeName] < 100">{{unreadCount[tab.typeName] | localizeNumber}}</span>
+            <span class="mm-badge mm-badge-red mm-badge-border" *ngIf="unreadCount[tab.typeName] >= 100">{{'100 +' | localizeNumber}}</span>
           </span>
         </div>
         <div class="button-label">{{tab.translation | translate}}</div>

@@ -173,7 +173,7 @@ export class ContactSaveService {
     return promiseChain.then(() => preparedSiblings);
   }
 
-  save(form, docId, type) {
+  save(form, docId, type, xmlVersion) {
     return this.ngZone.runOutsideAngular(() => {
       return (docId ? this.dbService.get().get(docId) : Promise.resolve())
         .then(original => {
@@ -182,6 +182,12 @@ export class ContactSaveService {
         })
         .then((preparedDocs) => this.applyTransitions(preparedDocs))
         .then((preparedDocs) => {
+          if (xmlVersion) {
+            for (const doc of preparedDocs.preparedDocs) {
+              doc.form_version = xmlVersion;
+            }
+          }
+
           const primaryDoc = preparedDocs.preparedDocs.find(doc => doc.type === type);
           this.servicesActions.setLastChangedDoc(primaryDoc || preparedDocs.preparedDocs[0]);
 

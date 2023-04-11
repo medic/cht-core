@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>New Pregnancy</h:title>
     <model>
@@ -2085,7 +2085,7 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
         </translation>
       </itext>
       <instance>
-        <pregnancy delimiter="#" id="pregnancy" prefix="J1!pregnancy!" version="2018-11-14_10-23">
+        <pregnancy id="pregnancy" prefix="J1!pregnancy!" delimiter="#" version="2022-09-26 12-39">
           <inputs>
             <meta>
               <location>
@@ -2195,83 +2195,83 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
       <bind nodeset="/pregnancy/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pregnancy/inputs/source" type="string"/>
       <bind nodeset="/pregnancy/inputs/source_id" type="string"/>
-      <bind nodeset="/pregnancy/inputs/contact/_id" required="true()" type="db:person"/>
+      <bind nodeset="/pregnancy/inputs/contact/_id" type="db:person" required="true()"/>
       <bind nodeset="/pregnancy/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/pregnancy/inputs/contact/name" type="string"/>
       <bind nodeset="/pregnancy/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/pregnancy/inputs/contact/sex" type="string"/>
       <bind nodeset="/pregnancy/inputs/contact/parent/contact/phone" type="string"/>
       <bind nodeset="/pregnancy/inputs/contact/parent/contact/name" type="string"/>
-      <bind calculate="if (  /pregnancy/inputs/contact/date_of_birth ='', '', floor( difference-in-months(  /pregnancy/inputs/contact/date_of_birth , today() ) div 12 ) )" nodeset="/pregnancy/patient_age_in_years" type="string"/>
-      <bind calculate="../inputs/contact/_id" nodeset="/pregnancy/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy/patient_id" type="string"/>
-      <bind calculate="../inputs/contact/name" nodeset="/pregnancy/patient_name" type="string"/>
-      <bind calculate="../inputs/contact/parent/contact/name" nodeset="/pregnancy/chw_name" type="string"/>
-      <bind calculate="../inputs/contact/parent/contact/phone" nodeset="/pregnancy/chw_phone" type="string"/>
-      <bind calculate="if( /pregnancy/group_note/g_chw_sms  != '', concat( /pregnancy/group_note/default_chw_sms_text ,concat('
-', /pregnancy/group_note/g_chw_sms )),  /pregnancy/group_note/default_chw_sms_text )" nodeset="/pregnancy/chw_sms" type="string"/>
-      <bind calculate=" /pregnancy/group_lmp/g_lmp_method " nodeset="/pregnancy/lmp_method" type="string"/>
-      <bind calculate=" /pregnancy/group_lmp/g_lmp_date_8601 " nodeset="/pregnancy/lmp_date_8601" type="string"/>
-      <bind calculate=" /pregnancy/group_lmp/g_lmp_date " nodeset="/pregnancy/lmp_date" type="string"/>
-      <bind calculate=" /pregnancy/group_lmp/g_edd_8601 " nodeset="/pregnancy/edd_8601" type="string"/>
-      <bind calculate=" /pregnancy/group_lmp/g_edd " nodeset="/pregnancy/edd" type="string"/>
-      <bind calculate=" /pregnancy/group_risk_factors/g_risk_factors " nodeset="/pregnancy/risk_factors" type="string"/>
-      <bind calculate=" /pregnancy/group_danger_signs/g_danger_signs " nodeset="/pregnancy/danger_signs" type="string"/>
-      <bind calculate="floor( difference-in-months(  /pregnancy/inputs/contact/date_of_birth ,  /pregnancy/lmp_date_8601  ) div 12 )" nodeset="/pregnancy/patient_age_at_lmp" type="string"/>
-      <bind calculate="round(decimal-date-time(today()) - decimal-date-time( /pregnancy/group_lmp/g_lmp_date_8601 ), 2)" nodeset="/pregnancy/days_since_lmp" type="string"/>
-      <bind calculate="round( /pregnancy/days_since_lmp  div 7, 2)" nodeset="/pregnancy/weeks_since_lmp" type="string"/>
-      <bind nodeset="/pregnancy/group_lmp/g_lmp_method" required="true()" type="select1"/>
-      <bind constraint=".&lt;today() and ((decimal-date-time(.)+294) &gt;= decimal-date-time(today()))" jr:constraintMsg="jr:itext('/pregnancy/group_lmp/g_lmp_calendar:jr:constraintMsg')" nodeset="/pregnancy/group_lmp/g_lmp_calendar" relevant="selected( /pregnancy/group_lmp/g_lmp_method ,'calendar')" required="true()" type="date"/>
-      <bind nodeset="/pregnancy/group_lmp/g_lmp_approx" relevant="selected( /pregnancy/group_lmp/g_lmp_method ,'approx')" required="true()" type="select1"/>
-      <bind calculate="if(selected(  /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx )))" nodeset="/pregnancy/group_lmp/g_lmp_date_raw" type="string"/>
-      <bind calculate="format-date-time(if(selected(  /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx ))),&quot;%Y-%m-%d&quot;)" nodeset="/pregnancy/group_lmp/g_lmp_date_8601" type="string"/>
-      <bind calculate="format-date-time(if(selected( /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx ))),&quot;%b %e, %Y&quot;)" nodeset="/pregnancy/group_lmp/g_lmp_date" type="string"/>
-      <bind calculate="format-date-time(date-time(decimal-date-time( /pregnancy/group_lmp/g_lmp_date_8601 )+280),&quot;%Y-%m-%dT00:00:00.000Z&quot;)" nodeset="/pregnancy/group_lmp/g_edd_8601" type="string"/>
-      <bind calculate="format-date-time(date-time(decimal-date-time( /pregnancy/group_lmp/g_lmp_date_8601 )+280),&quot;%b %e, %Y&quot;)" nodeset="/pregnancy/group_lmp/g_edd" type="string"/>
-      <bind nodeset="/pregnancy/group_lmp/g_display_edd" readonly="true()" relevant=" /pregnancy/group_lmp/g_edd  != &quot;Invalid Date&quot; and  /pregnancy/group_lmp/g_edd  != &quot;&quot;" type="string"/>
-      <bind constraint="not(selected(.,'r1')) or (selected(.,'r1') and not(selected(.,'r2') or selected(.,'r3') or selected(.,'r4')))" jr:constraintMsg="jr:itext('/pregnancy/group_risk_factors/g_risk_factors:jr:constraintMsg')" nodeset="/pregnancy/group_risk_factors/g_risk_factors" type="select"/>
-      <bind constraint="not(selected( .,'d7') and (decimal-date-time( /pregnancy/lmp_date_8601 ) &gt;= decimal-date-time(today())-150))" jr:constraintMsg="jr:itext('/pregnancy/group_danger_signs/g_danger_signs:jr:constraintMsg')" nodeset="/pregnancy/group_danger_signs/g_danger_signs" type="select"/>
+      <bind nodeset="/pregnancy/patient_age_in_years" type="string" calculate="if (  /pregnancy/inputs/contact/date_of_birth ='', '', floor( difference-in-months(  /pregnancy/inputs/contact/date_of_birth , today() ) div 12 ) )"/>
+      <bind nodeset="/pregnancy/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/pregnancy/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/pregnancy/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/pregnancy/chw_name" type="string" calculate="../inputs/contact/parent/contact/name"/>
+      <bind nodeset="/pregnancy/chw_phone" type="string" calculate="../inputs/contact/parent/contact/phone"/>
+      <bind nodeset="/pregnancy/chw_sms" type="string" calculate="if( /pregnancy/group_note/g_chw_sms  != '', concat( /pregnancy/group_note/default_chw_sms_text ,concat('
+', /pregnancy/group_note/g_chw_sms )),  /pregnancy/group_note/default_chw_sms_text )"/>
+      <bind nodeset="/pregnancy/lmp_method" type="string" calculate=" /pregnancy/group_lmp/g_lmp_method "/>
+      <bind nodeset="/pregnancy/lmp_date_8601" type="string" calculate=" /pregnancy/group_lmp/g_lmp_date_8601 "/>
+      <bind nodeset="/pregnancy/lmp_date" type="string" calculate=" /pregnancy/group_lmp/g_lmp_date "/>
+      <bind nodeset="/pregnancy/edd_8601" type="string" calculate=" /pregnancy/group_lmp/g_edd_8601 "/>
+      <bind nodeset="/pregnancy/edd" type="string" calculate=" /pregnancy/group_lmp/g_edd "/>
+      <bind nodeset="/pregnancy/risk_factors" type="string" calculate=" /pregnancy/group_risk_factors/g_risk_factors "/>
+      <bind nodeset="/pregnancy/danger_signs" type="string" calculate=" /pregnancy/group_danger_signs/g_danger_signs "/>
+      <bind nodeset="/pregnancy/patient_age_at_lmp" type="string" calculate="floor( difference-in-months(  /pregnancy/inputs/contact/date_of_birth ,  /pregnancy/lmp_date_8601  ) div 12 )"/>
+      <bind nodeset="/pregnancy/days_since_lmp" type="string" calculate="round(decimal-date-time(today()) - decimal-date-time( /pregnancy/group_lmp/g_lmp_date_8601 ), 2)"/>
+      <bind nodeset="/pregnancy/weeks_since_lmp" type="string" calculate="round( /pregnancy/days_since_lmp  div 7, 2)"/>
+      <bind nodeset="/pregnancy/group_lmp/g_lmp_method" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy/group_lmp/g_lmp_calendar" type="date" constraint=". &lt; now() and ((decimal-date-time(.)+294) &gt;= decimal-date-time(today()))" relevant="selected( /pregnancy/group_lmp/g_lmp_method ,'calendar')" jr:constraintMsg="jr:itext('/pregnancy/group_lmp/g_lmp_calendar:jr:constraintMsg')" required="true()"/>
+      <bind nodeset="/pregnancy/group_lmp/g_lmp_approx" type="select1" relevant="selected( /pregnancy/group_lmp/g_lmp_method ,'approx')" required="true()"/>
+      <bind nodeset="/pregnancy/group_lmp/g_lmp_date_raw" type="string" calculate="if(selected(  /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx )))"/>
+      <bind nodeset="/pregnancy/group_lmp/g_lmp_date_8601" type="string" calculate="format-date-time(if(selected(  /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx ))),&quot;%Y-%m-%d&quot;)"/>
+      <bind nodeset="/pregnancy/group_lmp/g_lmp_date" type="string" calculate="format-date-time(if(selected( /pregnancy/group_lmp/g_lmp_method ,'calendar'),  /pregnancy/group_lmp/g_lmp_calendar ,date-time(decimal-date-time(today()- /pregnancy/group_lmp/g_lmp_approx ))),&quot;%b %e, %Y&quot;)"/>
+      <bind nodeset="/pregnancy/group_lmp/g_edd_8601" type="string" calculate="format-date-time(date-time(decimal-date-time( /pregnancy/group_lmp/g_lmp_date_8601 )+280),&quot;%Y-%m-%dT00:00:00.000Z&quot;)"/>
+      <bind nodeset="/pregnancy/group_lmp/g_edd" type="string" calculate="format-date-time(date-time(decimal-date-time( /pregnancy/group_lmp/g_lmp_date_8601 )+280),&quot;%b %e, %Y&quot;)"/>
+      <bind nodeset="/pregnancy/group_lmp/g_display_edd" readonly="true()" type="string" relevant=" /pregnancy/group_lmp/g_edd  != &quot;Invalid Date&quot; and  /pregnancy/group_lmp/g_edd  != &quot;&quot;"/>
+      <bind nodeset="/pregnancy/group_risk_factors/g_risk_factors" type="select" constraint="not(selected(.,'r1')) or (selected(.,'r1') and not(selected(.,'r2') or selected(.,'r3') or selected(.,'r4')))" jr:constraintMsg="jr:itext('/pregnancy/group_risk_factors/g_risk_factors:jr:constraintMsg')"/>
+      <bind nodeset="/pregnancy/group_danger_signs/g_danger_signs" type="select" constraint="not(selected( .,'d7') and (decimal-date-time( /pregnancy/lmp_date_8601 ) &gt;= decimal-date-time(today())-150))" jr:constraintMsg="jr:itext('/pregnancy/group_danger_signs/g_danger_signs:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy/group_danger_signs/g_danger_signs_note" readonly="true()" type="string"/>
-      <bind calculate="if( /pregnancy/group_danger_signs/g_danger_signs  != '' or  /pregnancy/group_risk_factors/g_risk_factors  != '',
+      <bind nodeset="/pregnancy/group_note/default_chw_sms" type="select1" calculate="if( /pregnancy/group_danger_signs/g_danger_signs  != '' or  /pregnancy/group_risk_factors/g_risk_factors  != '',
  'highrisk',
  'default'
-)" nodeset="/pregnancy/group_note/default_chw_sms" type="select1"/>
-      <bind calculate="jr:choice-name( /pregnancy/group_note/default_chw_sms ,' /pregnancy/group_note/default_chw_sms ')" nodeset="/pregnancy/group_note/default_chw_sms_text" type="string"/>
+)"/>
+      <bind nodeset="/pregnancy/group_note/default_chw_sms_text" type="string" calculate="jr:choice-name( /pregnancy/group_note/default_chw_sms ,' /pregnancy/group_note/default_chw_sms ')"/>
       <bind nodeset="/pregnancy/group_note/default_chw_sms_note" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy/group_note/is_sms_edited" required="true()" type="select1"/>
-      <bind constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/pregnancy/group_note/g_chw_sms:jr:constraintMsg')" nodeset="/pregnancy/group_note/g_chw_sms" type="string"/>
+      <bind nodeset="/pregnancy/group_note/is_sms_edited" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy/group_note/g_chw_sms" type="string" constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/pregnancy/group_note/g_chw_sms:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy/group_review/submit" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy/group_review/r_summary" readonly="true()" type="string"/>
-      <bind calculate="../../inputs/contact/patient_id" nodeset="/pregnancy/group_review/r_patient_id" type="string"/>
+      <bind nodeset="/pregnancy/group_review/r_patient_id" type="string" calculate="../../inputs/contact/patient_id"/>
       <bind nodeset="/pregnancy/group_review/r_pregnancy_details" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_risk_factors" readonly="true()" relevant=" /pregnancy/group_risk_factors/g_risk_factors  !='' or ( /pregnancy/inputs/contact/date_of_birth !='' and ( /pregnancy/patient_age_at_lmp  &lt; 18 or  /pregnancy/patient_age_at_lmp  &gt;= 35))" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_risk_factor1" readonly="true()" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r1')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_risk_factor2" readonly="true()" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r2')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_risk_factor3" readonly="true()" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r3')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_risk_factor4" readonly="true()" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r4')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_risk_factor5" readonly="true()" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r5')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_risk_factor6" readonly="true()" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r6')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_risk_factor7" readonly="true()" relevant=" /pregnancy/inputs/contact/date_of_birth !='' and  /pregnancy/patient_age_at_lmp  &lt; 18" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_risk_factor8" readonly="true()" relevant=" /pregnancy/inputs/contact/date_of_birth !='' and  /pregnancy/patient_age_at_lmp  &gt;= 35" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_referral" readonly="true()" relevant=" /pregnancy/group_danger_signs/g_danger_signs  != ''" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_referral_note" readonly="true()" relevant=" /pregnancy/group_danger_signs/g_danger_signs  != ''" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_danger_sign1" readonly="true()" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd1')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_danger_sign2" readonly="true()" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd2')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_danger_sign3" readonly="true()" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd3')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_danger_sign4" readonly="true()" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd4')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_danger_sign5" readonly="true()" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd5')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_danger_sign6" readonly="true()" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd6')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_danger_sign7" readonly="true()" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd7')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_danger_sign8" readonly="true()" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd8')" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_danger_sign9" readonly="true()" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd9')" type="string"/>
+      <bind nodeset="/pregnancy/group_review/r_risk_factors" readonly="true()" type="string" relevant=" /pregnancy/group_risk_factors/g_risk_factors  !='' or ( /pregnancy/inputs/contact/date_of_birth !='' and ( /pregnancy/patient_age_at_lmp  &lt; 18 or  /pregnancy/patient_age_at_lmp  &gt;= 35))"/>
+      <bind nodeset="/pregnancy/group_review/r_risk_factor1" readonly="true()" type="string" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r1')"/>
+      <bind nodeset="/pregnancy/group_review/r_risk_factor2" readonly="true()" type="string" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r2')"/>
+      <bind nodeset="/pregnancy/group_review/r_risk_factor3" readonly="true()" type="string" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r3')"/>
+      <bind nodeset="/pregnancy/group_review/r_risk_factor4" readonly="true()" type="string" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r4')"/>
+      <bind nodeset="/pregnancy/group_review/r_risk_factor5" readonly="true()" type="string" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r5')"/>
+      <bind nodeset="/pregnancy/group_review/r_risk_factor6" readonly="true()" type="string" relevant="selected( /pregnancy/group_risk_factors/g_risk_factors , 'r6')"/>
+      <bind nodeset="/pregnancy/group_review/r_risk_factor7" readonly="true()" type="string" relevant=" /pregnancy/inputs/contact/date_of_birth !='' and  /pregnancy/patient_age_at_lmp  &lt; 18"/>
+      <bind nodeset="/pregnancy/group_review/r_risk_factor8" readonly="true()" type="string" relevant=" /pregnancy/inputs/contact/date_of_birth !='' and  /pregnancy/patient_age_at_lmp  &gt;= 35"/>
+      <bind nodeset="/pregnancy/group_review/r_referral" readonly="true()" type="string" relevant=" /pregnancy/group_danger_signs/g_danger_signs  != ''"/>
+      <bind nodeset="/pregnancy/group_review/r_referral_note" readonly="true()" type="string" relevant=" /pregnancy/group_danger_signs/g_danger_signs  != ''"/>
+      <bind nodeset="/pregnancy/group_review/r_danger_sign1" readonly="true()" type="string" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd1')"/>
+      <bind nodeset="/pregnancy/group_review/r_danger_sign2" readonly="true()" type="string" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd2')"/>
+      <bind nodeset="/pregnancy/group_review/r_danger_sign3" readonly="true()" type="string" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd3')"/>
+      <bind nodeset="/pregnancy/group_review/r_danger_sign4" readonly="true()" type="string" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd4')"/>
+      <bind nodeset="/pregnancy/group_review/r_danger_sign5" readonly="true()" type="string" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd5')"/>
+      <bind nodeset="/pregnancy/group_review/r_danger_sign6" readonly="true()" type="string" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd6')"/>
+      <bind nodeset="/pregnancy/group_review/r_danger_sign7" readonly="true()" type="string" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd7')"/>
+      <bind nodeset="/pregnancy/group_review/r_danger_sign8" readonly="true()" type="string" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd8')"/>
+      <bind nodeset="/pregnancy/group_review/r_danger_sign9" readonly="true()" type="string" relevant="selected( /pregnancy/group_danger_signs/g_danger_signs , 'd9')"/>
       <bind nodeset="/pregnancy/group_review/r_reminders" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_reminder_trim1" readonly="true()" relevant="( /pregnancy/weeks_since_lmp  &lt;= 12) and ( /pregnancy/weeks_since_lmp  &gt; 0)" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_reminder_trim2" readonly="true()" relevant="( /pregnancy/weeks_since_lmp  &lt;= 27) and ( /pregnancy/weeks_since_lmp  &gt; 12)" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_reminder_trim3" readonly="true()" relevant=" /pregnancy/weeks_since_lmp  &gt; 27" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_followup" readonly="true()" relevant=" /pregnancy/chw_sms  != ''" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_followup_note1" readonly="true()" relevant=" /pregnancy/chw_sms  != ''" type="string"/>
-      <bind nodeset="/pregnancy/group_review/r_followup_note2" readonly="true()" relevant=" /pregnancy/chw_sms  != ''" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/pregnancy/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/pregnancy/group_review/r_reminder_trim1" readonly="true()" type="string" relevant="( /pregnancy/weeks_since_lmp  &lt;= 12) and ( /pregnancy/weeks_since_lmp  &gt; 0)"/>
+      <bind nodeset="/pregnancy/group_review/r_reminder_trim2" readonly="true()" type="string" relevant="( /pregnancy/weeks_since_lmp  &lt;= 27) and ( /pregnancy/weeks_since_lmp  &gt; 12)"/>
+      <bind nodeset="/pregnancy/group_review/r_reminder_trim3" readonly="true()" type="string" relevant=" /pregnancy/weeks_since_lmp  &gt; 27"/>
+      <bind nodeset="/pregnancy/group_review/r_followup" readonly="true()" type="string" relevant=" /pregnancy/chw_sms  != ''"/>
+      <bind nodeset="/pregnancy/group_review/r_followup_note1" readonly="true()" type="string" relevant=" /pregnancy/chw_sms  != ''"/>
+      <bind nodeset="/pregnancy/group_review/r_followup_note2" readonly="true()" type="string" relevant=" /pregnancy/chw_sms  != ''"/>
+      <bind nodeset="/pregnancy/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

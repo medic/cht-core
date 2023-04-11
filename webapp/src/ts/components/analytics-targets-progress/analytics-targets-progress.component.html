@@ -2,21 +2,21 @@
   <div class="progress" [class.placeholder]="value?.placeholder">
     <div class="progress-bar" *ngIf="!aggregate" [class.hidden]="value?.percent <= 0" [ngStyle]="{ 'width': (value?.percent || 0) + '%' }"></div>
     <div class="progress-bar" *ngIf="aggregate" [class.hidden]="value?.placeholder" [ngStyle]="{ 'width': (value?.percent || 0) + '%' }" [ngClass]="{ 'no-border': value?.percent === 0 }">
-      <span *ngIf="target?.type === 'percent'">{{ value?.percent }}%</span>
-      <span *ngIf="target?.type !== 'percent'">{{ value?.pass }}</span>
+      <span *ngIf="target?.type === 'percent'">{{ value?.percent | localizeNumber }}%</span>
+      <span *ngIf="target?.type !== 'percent'">{{ value?.pass | localizeNumber }}</span>
     </div>
   </div>
 
   <div class="goal" *ngIf="target?.goal > 0" [ngStyle]="{ 'padding-left': (target?.goal || 0) + '%' }">
     <label [ngClass]="{ 'pin-left': !aggregate && target?.goal < 15, 'pin-right': aggregate || target?.goal > 85 }">
       <span>{{'analytics.target.monthly_goal' | translate}}</span>
-      {{ target.goal }}<span *ngIf="target?.type === 'percent'">%</span>
+      {{ target.goal | localizeNumber }}<span *ngIf="target?.type === 'percent'">%</span>
     </label>
     <div class="bar" *ngIf="target?.type === 'percent'"></div>
   </div>
 
   <div class="number" *ngIf="!aggregate">
-    <span class="value">{{ value.percent }}%</span>
-    <span translate [translateParams]="value">{{ target?.percentage_count_translation_key || 'targets.count.default' }}</span>
+    <span class="value">{{ value.percent | localizeNumber }}%</span>
+    <span translate [translateParams]="value | localizeNumber">{{ target?.percentage_count_translation_key || 'targets.count.default' }}</span>
   </div>
 </div>

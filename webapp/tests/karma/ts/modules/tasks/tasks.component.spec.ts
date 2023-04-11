@@ -15,6 +15,10 @@ import { TourService } from '@mm-services/tour.service';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { Selectors } from '@mm-selectors/index';
+import { NavigationService } from '@mm-services/navigation.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { SessionService } from '@mm-services/session.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 describe('TasksComponent', () => {
   let getComponent;
@@ -25,12 +29,23 @@ describe('TasksComponent', () => {
   let contactTypesService;
   let clock;
   let store;
+  let sessionService;
+  let userContactService;
+  let lineageModelGeneratorService;
 
   let component: TasksComponent;
   let fixture: ComponentFixture<TasksComponent>;
 
+  const userContactDoc = {
+    _id: 'user',
+    parent: {
+      _id: 'parent',
+      name: 'parent',
+    },
+  };
+
   beforeEach(async () => {
-    changesService = { subscribe: sinon.stub() };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     rulesEngineService = {
       isEnabled: sinon.stub().resolves(true),
       fetchTaskDocsForAllContacts: sinon.stub().resolves([]),
@@ -42,6 +57,13 @@ describe('TasksComponent', () => {
     contactTypesService = {
       includes: sinon.stub(),
     };
+    sessionService = {
+      isOnlineOnly: sinon.stub().returns(false),
+    };
+    userContactService = {
+      get: sinon.stub().resolves(),
+    };
+    lineageModelGeneratorService = { reportSubjects: sinon.stub().resolves([]) };
 
     TestBed.configureTestingModule({
       imports: [
@@ -54,7 +76,11 @@ describe('TasksComponent', () => {
         { provide: RulesEngineService, useValue: rulesEngineService },
         { provide: TelemetryService, useValue: telemetryService },
         { provide: TourService, useValue: tourService },
-        { provide: ContactTypesService, useValue: contactTypesService }
+        { provide: ContactTypesService, useValue: contactTypesService },
+        { provide: NavigationService, useValue: {} },
+        { provide: SessionService, useValue: sessionService },
+        { provide: UserContactService, useValue: userContactService },
+        { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
       ],
       declarations: [
         TasksComponent,
@@ -73,6 +99,7 @@ describe('TasksComponent', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
     clock?.restore();
   });
@@ -82,6 +109,7 @@ describe('TasksComponent', () => {
 
     const setTasksList = sinon.stub(TasksActions.prototype, 'setTasksList');
     const setTasksLoaded = sinon.stub(TasksActions.prototype, 'setTasksLoaded');
+    const clearTaskGroup = sinon.stub(TasksActions.prototype, 'clearTaskGroup');
     const spySubscriptionsUnsubscribe = sinon.spy(component.subscription, 'unsubscribe');
 
     component.ngOnDestroy();
@@ -91,6 +119,7 @@ describe('TasksComponent', () => {
     expect(setTasksList.args[0]).to.deep.equal([[]]);
     expect(setTasksLoaded.callCount).to.equal(1);
     expect(setTasksLoaded.args[0]).to.deep.equal([false]);
+    expect(clearTaskGroup.callCount).to.equal(1);
   });
 
   it('initial state before resolving tasks', async () => {
@@ -142,11 +171,27 @@ describe('TasksComponent', () => {
     const pastDate = now.clone().subtract(3, 'days');
     clock = sinon.useFakeTimers(now.valueOf());
     const taskDocs = [
-      { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }},
-      { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }},
+      { _id: '1', emission: { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD') }, owner: 'a' },
+      { _id: '2', emission: { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD') }, owner: 'b' },
     ];
-    rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+    const expectedTasks = [
+      {
+        _id: 'e1',
+        dueDate: futureDate.format('YYYY-MM-DD'),
+        overdue: false,
+        date: new Date(futureDate.valueOf()),
+        owner: 'a',
+      },
+      {
+        _id: 'e2',
+        dueDate: pastDate.format('YYYY-MM-DD'),
+        overdue: true,
+        date: new Date(pastDate.valueOf()),
+        owner: 'b',
+      },
+    ];
 
+    rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
     await new Promise(resolve => {
       sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
       getComponent();
@@ -156,10 +201,6 @@ describe('TasksComponent', () => {
     expect(component.tasksDisabled).to.be.false;
     expect(component.hasTasks).to.be.true;
     expect(!!component.error).to.be.false;
-    const expectedTasks = [
-      { _id: 'e1', dueDate: futureDate.format('YYYY-MM-DD'), overdue: false, date: new Date(futureDate.valueOf()) },
-      { _id: 'e2', dueDate: pastDate.format('YYYY-MM-DD'), overdue: true, date: new Date(pastDate.valueOf()) },
-    ];
     expect((<any>TasksActions.prototype.setTasksList).args).to.deep.eq([[expectedTasks]]);
   });
 
@@ -253,4 +294,148 @@ describe('TasksComponent', () => {
     expect(telemetryService.record.args[1][0]).to.equal('tasks:refresh');
     expect((<any>TasksActions.prototype.setTasksLoaded).callCount).to.equal(1);
   }));
+
+  describe('listTrackBy', () => {
+    it('should return task id', () => {
+      expect(component.listTrackBy(10, { _id: 'aaa' })).to.equal('aaa');
+    });
+    it('should nullcheck', () => {
+      expect(component.listTrackBy(0, false)).to.equal(undefined);
+    });
+  });
+
+  describe('lineage and breadcrumbs', () => {
+    const bettysContactDoc = {
+      _id: 'user',
+      parent: {
+        _id: 'parent',
+        name: 'CHW Bettys Area',
+      },
+    };
+    const taskDocs = [
+      { _id: '1', emission: { _id: 'e1', dueDate: '2020-10-20' }, forId: 'a', owner: 'a' },
+      { _id: '2', emission: { _id: 'e2', dueDate: '2020-10-20' }, forId: 'b', owner: 'b' },
+    ];
+    const taskLineages = [
+      {
+        _id: 'a',
+        lineage: [
+          { name: 'Amy Johnsons Household' },
+          { name: 'St Elmos Concession' },
+          { name: 'Chattanooga Village' },
+          { name: 'CHW Bettys Area' },
+          null,
+        ],
+      },
+      {
+        _id: 'b',
+        lineage: [
+          { name: 'Amy Johnsons Household' },
+          { name: 'St Elmos Concession' },
+          { name: 'Chattanooga Village' },
+          null,
+          null,
+        ],
+      },
+    ];
+
+    it('should not alter tasks lineage if user is online only', async () => {
+      const expectedTasks = [
+        {
+          _id: 'e1',
+          date: moment('2020-10-20').toDate(),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+          overdue: true,
+          owner: 'a',
+        },
+        {
+          _id: 'e2',
+          date: moment('2020-10-20').toDate(),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          overdue: true,
+          owner: 'b',
+        },
+      ];
+      userContactService.get.resolves(bettysContactDoc);
+      sessionService.isOnlineOnly.returns(true);
+      rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+      lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
+
+      await new Promise(resolve => {
+        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+        getComponent();
+      });
+
+      expect(await component.currentLevel).to.be.undefined;
+      expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
+    });
+
+    it('should not change the tasks lineage if user is offline with unrelated lineage', async () => {
+      const expectedTasks = [
+        {
+          _id: 'e1',
+          date: moment('2020-10-20').toDate(),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+          overdue: true,
+          owner: 'a',
+        },
+        {
+          _id: 'e2',
+          date: moment('2020-10-20').toDate(),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          overdue: true,
+          owner: 'b',
+        },
+      ];
+      userContactService.get.resolves(userContactDoc);
+      sessionService.isOnlineOnly.returns(false);
+      rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+      lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
+
+      await new Promise(resolve => {
+        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+        getComponent();
+      });
+
+      expect(await component.currentLevel).to.equal('parent');
+      expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
+    });
+
+    it('should update the tasks lineage if user is offline with related place to lineage', async () => {
+      const expectedTasks = [
+        {
+          _id: 'e1',
+          date: moment('2020-10-20').toDate(),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          overdue: true,
+          owner: 'a',
+        },
+        {
+          _id: 'e2',
+          date: moment('2020-10-20').toDate(),
+          dueDate: '2020-10-20',
+          lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village' ],
+          overdue: true,
+          owner: 'b',
+        },
+      ];
+      userContactService.get.resolves(bettysContactDoc);
+      sessionService.isOnlineOnly.returns(false);
+      rulesEngineService.fetchTaskDocsForAllContacts.resolves(taskDocs);
+      lineageModelGeneratorService.reportSubjects.resolves(taskLineages);
+
+      await new Promise(resolve => {
+        sinon.stub(TasksActions.prototype, 'setTasksList').callsFake(resolve);
+        getComponent();
+      });
+
+      expect(await component.currentLevel).to.equal('CHW Bettys Area');
+      expect((<any>TasksActions.prototype.setTasksList).args).to.deep.equal([[expectedTasks]]);
+    });
+  });
 });

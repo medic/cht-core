@@ -94,13 +94,13 @@ const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } =
 
   return getPurgeDb(roles)
     .then(tempDb => purgeDb = tempDb)
-    .then(() => getCheckPointer(purgeDb, checkPointerId))
-    .then(checkPointer => {
+    .then(() => getLastSeq(purgeDb, checkPointerId))
+    .then(lastSeq => {
       const opts = {
         doc_ids: ids,
         batch_size: ids.length + 1,
         limit: limit,
-        since: checkPointer.last_seq,
+        since: lastSeq,
         seq_interval: ids.length
       };
 
@@ -115,12 +115,22 @@ const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } =
     .then(() => purgeIds);
 };
 
-const getCheckPointer = (db, checkPointerId) => db
-  .get(`_local/${checkPointerId}`)
-  .catch(() => ({
-    _id: `_local/${checkPointerId}`,
-    last_seq: 0
-  }));
+const getCheckPointer = (db, checkPointerId) => {
+  return db
+    .get(`_local/${checkPointerId}`)
+    .catch(() => ({
+      _id: `_local/${checkPointerId}`,
+      last_seq: 0
+    }));
+};
+
+const getLastSeq = (db, checkPointerId) => {
+  if (!checkPointerId) {
+    return Promise.resolve(0);
+  }
+  return getCheckPointer(db, checkPointerId)
+    .then(doc => doc.last_seq);
+};
 
 const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
   let purgeDb;
@@ -147,7 +157,6 @@ const info = (roles) => {
     .then(tempDb => purgeDb = tempDb)
     .then(() => purgeDb.info())
     .catch(err => catchDbNotFoundError(err, purgeDb))
-    // finally would be nice but it doesn't work in node 8 :(
     .then(info => {
       db.close(purgeDb);
       return info || false; // fetch needs valid JSON.

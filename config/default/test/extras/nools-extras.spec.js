@@ -27,9 +27,9 @@ describe('Date related tests', () => {
   });
 
   it('method getDateMS', () => {
-    expect(moment('2000-01-01').valueOf()).to.equal(extras.getDateMS('2000-01-01'));//String format      
+    expect(moment('2000-01-01').valueOf()).to.equal(extras.getDateMS('2000-01-01'));//String format
     expect(moment('2000-01-01').valueOf()).to.equal(extras.getDateMS(new Date('2000-01-01')));//Date format
-    expect(moment('2000-01-01').valueOf()).to.equal(extras.getDateMS((new Date('2000-01-01').getTime())));//MS since epoch    
+    expect(moment('2000-01-01').valueOf()).to.equal(extras.getDateMS((new Date('2000-01-01').getTime())));//MS since epoch
   });
 
   it('method getMostRecentReport', () => {
@@ -37,7 +37,8 @@ describe('Date related tests', () => {
       { _id: 'r1', reported_date: 2, form: 'a' },
       { _id: 'r2', reported_date: 3, form: 'b' },
       { _id: 'r3', reported_date: 1, form: 'a' },
-      { _id: 'r4', reported_date: 2, form: 'b' }];
+      { _id: 'r4', reported_date: 2, form: 'b' },
+    ];
     expect(extras.getMostRecentReport(reports, 'a')._id).to.equal('r1');
     expect(extras.getMostRecentReport(reports, 'b')._id).to.equal('r2');
   });

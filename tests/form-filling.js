@@ -1,5 +1,5 @@
 const helper = require('./helper');
-const genericFormPo = require('./page-objects/forms/generic-form.po');
+const genericFormPo = require('./page-objects/protractor/enketo/generic-form.po');
 const answeredQuestions = [];
 const flatten = require('flat');
 
@@ -17,7 +17,7 @@ const radio = async (answer, answerVal) => {
 const date = async (answer, answerVal) => {
   const elm = element(by.css(`${answer.css} + div input`));
   await helper.waitUntilReadyNative(elm);
-  await elm.sendKeys(answerVal,protractor.Key.TAB);
+  await elm.sendKeys(answerVal, protractor.Key.TAB);
 };
 
 const defaultAction = async (answer, answerVal) => {

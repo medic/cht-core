@@ -1,0 +1,14 @@
+{
+  "context": {
+    "expression": "!contact || contact.type === 'clinic'",
+    "person": false,
+    "place": true
+  },
+  "icon": "household",
+  "title": [
+    {
+      "locale": "en",
+      "content": "Place Home Visit"
+    }
+  ]
+}

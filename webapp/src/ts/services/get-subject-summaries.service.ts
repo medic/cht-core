@@ -64,18 +64,18 @@ export class GetSubjectSummariesService {
   }
 
   private processContactIds(summaries) {
-    const ids = _.uniq(_.compact(summaries.map((summary) => {
-      if (summary.subject && summary.subject.type === 'id') {
-        return summary.subject.value;
-      }
-    })));
+    const ids = summaries
+      .filter(summary => summary.subject && summary.subject.type === 'id' && summary.subject.value)
+      .map(summary => summary.subject.value);
 
     if (!ids.length) {
       return Promise.resolve(summaries);
     }
 
+    const uniqueIds = [...new Set(ids)];
+
     return this
-      .getSummariesService.get(ids)
+      .getSummariesService.get(uniqueIds)
       .then((response) => {
         return this.replaceIdsWithNames(summaries, response);
       });
@@ -100,22 +100,22 @@ export class GetSubjectSummariesService {
   }
 
   private processReferences(summaries) {
-    const references = _.uniq(_.compact(summaries.map((summary) => {
-      if (summary.subject && summary.subject.type === 'reference') {
-        return summary.subject.value;
-      }
-    })));
+    const references = summaries
+      .filter(summary => summary.subject && summary.subject.type === 'reference' && summary.subject.value)
+      .map(summary => summary.subject.value);
 
     if (!references.length) {
       return Promise.resolve(summaries);
     }
 
-    references.forEach((reference, key) => {
-      references[key] = ['shortcode', reference];
+    const uniqueReferences = [...new Set(references)];
+
+    uniqueReferences.forEach((reference, key) => {
+      uniqueReferences[key] = ['shortcode', reference];
     });
 
     return this.dbService.get()
-      .query('medic-client/contacts_by_reference', { keys: references })
+      .query('medic-client/contacts_by_reference', { keys: uniqueReferences })
       .then((response) => {
         return this.replaceReferencesWithIds(summaries, response);
       });

@@ -10,7 +10,7 @@ const {
 
 const memdownMedic = require('@medic/memdown');
 const moment = require('moment');
-const PouchDB = require('pouchdb');
+const PouchDB = require('pouchdb-core');
 PouchDB.plugin(require('pouchdb-adapter-memory'));
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -22,7 +22,7 @@ const { assert, expect } = chai;
 chai.use(chaiExclude);
 
 const rulesStateStore = RestorableRulesStateStore();
-const NOW = 50000;
+const NOW = moment([1970, 0, 1, 0, 0, 50]).valueOf();
 const DEFAULT_EXPIRE = 7 * 24 * 60 * 60 * 1000;
 
 const reportConnectedByPlace = {
@@ -267,7 +267,7 @@ describe('provider-wireup integration tests', () => {
           emission: {},
           stateHistory: [{
             state: 'Cancelled',
-            timestamp: 50000,
+            timestamp: NOW,
           }]
         }],
         userSettingsId: 'org.couchdb.user:username',
@@ -484,7 +484,7 @@ describe('provider-wireup integration tests', () => {
           hhEmission(7, 'family7', 'patient-7-1', false),
           hhEmission(7, 'family7', 'patient-7-1', true),
 
-          ...[1,2,3,4,5].map(day => hhEmission(day, 'family5', 'patient-5-1', true)),
+          ...[1, 2, 3, 4, 5].map(day => hhEmission(day, 'family5', 'patient-5-1', true)),
         ],
       });
       const withMockRefresher = wireup.__with__({ refreshRulesEmissions });
@@ -1110,6 +1110,131 @@ describe('provider-wireup integration tests', () => {
 
       chai.expect(listeners[3].queued.callCount).to.equal(0);
       chai.expect(listeners[3].running.callCount).to.equal(0);
+    });
+  });
+
+  describe('fetchTasksBreakdown', () => {
+    beforeEach(async () => {
+      await db.bulkDocs([
+        {
+          _id: 'cancelledTask1',
+          type: 'task',
+          owner: 'patient',
+          state: 'Cancelled',
+        },
+        {
+          _id: 'cancelledTask2',
+          type: 'task',
+          owner: 'patient',
+          state: 'Cancelled',
+        },
+        {
+          _id: 'completedTask',
+          type: 'task',
+          requester: 'patient',
+          owner: 'patient',
+          state: 'Completed',
+        },
+        {
+          _id: 'readyTask1',
+          type: 'task',
+          requester: 'patient',
+          owner: 'patient',
+          state: 'Ready',
+        },
+        {
+          _id: 'readyTask2',
+          type: 'task',
+          requester: 'patient',
+          owner: 'patient',
+          state: 'Ready',
+        },
+        {
+          _id: 'draftTask1',
+          type: 'task',
+          requester: 'patient',
+          owner: 'patient',
+          state: 'Draft',
+        },
+        {
+          _id: 'draftTask2',
+          type: 'task',
+          requester: 'patient',
+          owner: 'patient',
+          state: 'Draft',
+        },
+        {
+          _id: 'draftTaskHeadless',
+          type: 'task',
+          owner: 'headless',
+          state: 'Draft',
+        },
+        {
+          _id: 'readyTaskHeadless',
+          type: 'task',
+          owner: 'headless',
+          state: 'Ready',
+        },
+        {
+          _id: 'failedTaskHeadless',
+          type: 'task',
+          owner: 'headless',
+          state: 'Failed',
+        },
+      ]);
+    });
+
+    it('should return a zero sum object if tasks are not enabled', async () => {
+      sinon.stub(rulesEmitter, 'isEnabled').returns(false);
+
+      expect(await wireup.fetchTasksBreakdown()).to.deep.equal({
+        Cancelled: 0,
+        Ready: 0,
+        Draft: 0,
+        Completed: 0,
+        Failed: 0,
+      });
+
+      rulesEmitter.isEnabled.returns(true);
+      await wireup.initialize(provider, { enableTasks: false });
+
+      expect(await wireup.fetchTasksBreakdown()).to.deep.equal({
+        Cancelled: 0,
+        Ready: 0,
+        Draft: 0,
+        Completed: 0,
+        Failed: 0,
+      });
+
+      expect(db.query.callCount).to.equal(0);
+    });
+
+    it('should get tasks breakdown by owner when contact ids are provided', async () => {
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
+      const rules = noolsPartnerTemplate('', { });
+      const settings = { rules, enableTasks: true };
+      await wireup.initialize(provider, settings, {});
+      expect(await wireup.fetchTasksBreakdown(provider, ['patient'])).to.deep.equal({
+        Cancelled: 2,
+        Ready: 2,
+        Draft: 2,
+        Completed: 1,
+        Failed: 0,
+      });
+    });
+
+    it('should get all tasks breakdown when no contact ids are provided', async () => {
+      sinon.stub(rulesEmitter, 'isLatestNoolsSchema').returns(true);
+      const rules = noolsPartnerTemplate('', { });
+      const settings = { rules, enableTasks: true };
+      await wireup.initialize(provider, settings, {});
+      expect(await wireup.fetchTasksBreakdown(provider)).to.deep.equal({
+        Cancelled: 2,
+        Ready: 3,
+        Draft: 3,
+        Completed: 1,
+        Failed: 1,
+      });
     });
   });
 });

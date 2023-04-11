@@ -1,4 +1,6 @@
 const _ = require('lodash');
+const moment = require('moment');
+
 const config = require('../config');
 const transitionUtils = require('./utils');
 const utils = require('../lib/utils');
@@ -67,7 +69,7 @@ const isRelevantContact = (doc, infoDoc = {}) => {
 
 const getMutedDate = (change) => {
   if (isNewContactWithMutedParent(change.doc, change.info) || change.doc.muted) {
-    return new Date();
+    return moment().toISOString();
   }
   return false;
 };
@@ -79,10 +81,7 @@ const processContact = (change) => {
   return mutingUtils
     .updateRegistrations(utils.getSubjectIds(change.doc), muted)
     .then(() => mutingUtils.updateMutingHistory(change.doc, initialReplicationTs, muted))
-    .then(() => {
-      mutingUtils.updateContact(change.doc, muted);
-      return true;
-    });
+    .then(() => mutingUtils.updateContact(change.doc, muted));
 };
 
 /**
@@ -107,36 +106,36 @@ const replayClientMutingEvents = (reportIds = []) => {
     return Promise.resolve();
   }
 
-  return mutingUtils.lineage
-    .fetchHydratedDocs(reportIds)
-    .then(hydratedReports => {
-      hydratedReports = hydratedReports.filter(doc => isRelevantReport(doc, {}));
+  let promiseChain = Promise.resolve();
+  reportIds.forEach(reportId => {
+    promiseChain = promiseChain
+      .then(() => mutingUtils.lineage.fetchHydratedDocs([reportId]))
+      .then(([hydratedDoc]) => {
+        if (!isRelevantReport(hydratedDoc, {})) {
+          return;
+        }
 
-      const changes = hydratedReports.map(report => ({ id: report._id }));
-      return mutingUtils.infodoc.bulkGet(changes).then(infoDocs => {
-        let promiseChain = Promise.resolve();
-        reportIds.forEach(reportId => {
-          const hydratedReport = hydratedReports.find(report => report._id === reportId);
-          if (hydratedReport) {
-            promiseChain = promiseChain.then(() => runTransition(hydratedReport, infoDocs));
-          }
-        });
-        return promiseChain;
+        return mutingUtils.infodoc
+          .get({ id: hydratedDoc._id, doc: hydratedDoc })
+          .then(infoDoc => runTransition(hydratedDoc, infoDoc));
       });
-    });
+  });
+
+  return promiseChain;
 };
 
 /**
  * Runs muting transition over provided report
  * @param {Object} hydratedReport
- * @param {Array<Object>} infoDocs
+ * @param {Object} infoDoc
  * @return {Promise}
  */
-const runTransition = (hydratedReport, infoDocs = []) => {
+const runTransition = (hydratedReport, infoDoc) => {
   const change = {
     id: hydratedReport._id,
     doc: hydratedReport,
-    info: infoDocs.find(infoDoc => infoDoc.doc_id === hydratedReport._id),
+    info: infoDoc,
+    skipReplay: true,
   };
 
   const transitionContext = {
@@ -160,13 +159,13 @@ const wasProcessedClientSide = (change) => {
 };
 
 const processMutingEvent = (contact, change, muteState, hasRun) => {
-  const processedClientSide = wasProcessedClientSide(change);
+  const replayClientSideMuting = wasProcessedClientSide(change) && !change.skipReplay;
   return mutingUtils
-    .updateMuteState(contact, muteState, change.id, processedClientSide)
+    .updateMuteState(contact, muteState, change.id, replayClientSideMuting)
     .then(reportIds => {
       module.exports._addMsg(getEventType(muteState), change.doc, hasRun);
 
-      if (processedClientSide) {
+      if (replayClientSideMuting) {
         return replayClientMutingEvents(reportIds);
       }
     });
@@ -185,7 +184,7 @@ module.exports = {
     }
   },
 
-  filter: (doc, info = {}) => isRelevantReport(doc, info) || isRelevantContact(doc, info),
+  filter: ({ doc, info }) => isRelevantReport(doc, info) || isRelevantContact(doc, info),
 
   validate: (doc) => {
     const config = getConfig();

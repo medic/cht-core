@@ -23,14 +23,13 @@ const OUTBOUND_REQ_TIMEOUT = 10 * 1000;
 // set by init()
 let logger;
 
-
 class OutboundError extends Error {}
 
 const fetchPassword = key => {
   return secureSettings.getCredentials(key).then(password => {
     if (!password) {
       throw new OutboundError(
-        `CouchDB config key 'medic-credentials/${key}' has not been populated. See the Outbound documentation.`
+        `Credentials for '${key}' have not been configured. See the Outbound documentation.`
       );
     }
     return password;
@@ -114,7 +113,7 @@ const sendPayload = (payload, config) => {
     }
 
     if (authConf.type.toLowerCase() === 'basic') {
-      return fetchPassword(authConf['password_key'])
+      return fetchPassword(authConf.password_key)
         .then(password => {
           sendOptions.auth = {
             username: authConf.username,
@@ -126,7 +125,7 @@ const sendPayload = (payload, config) => {
 
     if (authConf.type.toLowerCase() === 'header') {
       if (authConf.name && authConf.name.toLowerCase() === 'authorization') {
-        return fetchPassword(authConf['value_key'])
+        return fetchPassword(authConf.value_key)
           .then(value => {
             sendOptions.headers = {
               Authorization: value
@@ -139,7 +138,7 @@ const sendPayload = (payload, config) => {
     }
 
     if (authConf.type.toLowerCase() === 'muso-sih') {
-      return fetchPassword(authConf['password_key'])
+      return fetchPassword(authConf.password_key)
         .then(password => {
           const authOptions = {
             form: {
@@ -173,7 +172,12 @@ const sendPayload = (payload, config) => {
   return auth().then(() => {
     if (logger.isDebugEnabled()) {
       logger.debug('About to send outbound request');
-      logger.debug(JSON.stringify(sendOptions, null, 2));
+      const clone = JSON.parse(JSON.stringify(sendOptions));
+      if (clone.auth && clone.auth.password) {
+        // mask password before logging
+        clone.auth.password = '*****';
+      }
+      logger.debug(JSON.stringify(clone, null, 2));
     }
 
     return request.post(sendOptions)

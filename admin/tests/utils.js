@@ -36,10 +36,8 @@ window.KarmaUtils = {
   setupMockStore: function(initialState, mocks = {}) {
     angular.module('adminApp').config(function($ngReduxProvider, RootReducer) {
       'ngInject';
-      $ngReduxProvider.createStoreWith(
-        RootReducer,
-        [], [], initialState // eslint-disable-line no-undef
-      );
+      // eslint-disable-line no-undef
+      $ngReduxProvider.createStoreWith(RootReducer, [], [], initialState);
     });
 
     const DB = () => ({
@@ -64,7 +62,8 @@ window.KarmaUtils = {
       $provide.value('ReportViewModelGenerator', () => {});
       $provide.value('LiveList', mockLiveList);
       $provide.value('Session', {
-        userCtx: () => { return {}; }
+        userCtx: sinon.stub().returns({}),
+        checkCurrentSession: sinon.stub(),
       });
     });
   }

@@ -3,45 +3,53 @@ const sinon = require('sinon');
 const chai = require('chai');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-const transition = rewire('../../../src/transitions/self_report');
 
+let transition;
 let lineage;
 let revertLineage;
 
 describe('self_report transition', () => {
   beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+      getTranslations: sinon.stub()
+    });
+    transition = rewire('../../../src/transitions/self_report');
     lineage = { fetchHydratedDoc: sinon.stub() };
     revertLineage = transition.__set__('lineage', lineage);
     sinon.stub(db.medic, 'query');
   });
+
   afterEach(() => {
     revertLineage();
+    sinon.reset();
     sinon.restore();
   });
 
   describe('filter', () => {
     it('should not crash when no doc, no info and generally bad input', () => {
-      chai.expect(transition.filter()).to.equal(false);
-      chai.expect(transition.filter(false)).to.equal(false);
-      chai.expect(transition.filter([])).to.equal(false);
-      chai.expect(transition.filter({}, false)).to.equal(false);
-      chai.expect(transition.filter({ form: '' }, {})).to.equal(false);
+      chai.expect(transition.filter({})).to.equal(false);
+      chai.expect(transition.filter({ doc: false })).to.equal(false);
+      chai.expect(transition.filter({ doc: [] })).to.equal(false);
+      chai.expect(transition.filter({ doc: {}, info: false })).to.equal(false);
+      chai.expect(transition.filter({ doc: { form: '' }, info: {} })).to.equal(false);
     });
 
     it('should return false when doc is not valid', () => {
-      sinon.stub(config, 'get').returns([
+      config.get.returns([
         { form: 'configured_form' },
         { form: 'configured_form2' },
       ]);
 
       const noFrom = { type: 'data_record', form: 'configured_form' };
-      chai.expect(transition.filter(noFrom)).to.equal(false);
+      chai.expect(transition.filter({ doc: noFrom })).to.equal(false);
 
       const notDataRecord = { type: 'contact', from: 'someone', form: 'configured_form' };
-      chai.expect(transition.filter(notDataRecord)).to.equal(false);
+      chai.expect(transition.filter({ doc: notDataRecord })).to.equal(false);
 
       const notConfiguredForm = { type: 'data_record', from: 'someone', form: 'other_form' };
-      chai.expect(transition.filter(notConfiguredForm)).to.equal(false);
+      chai.expect(transition.filter({ doc: notConfiguredForm })).to.equal(false);
 
       const alreadyHasPatientId = {
         type: 'data_record',
@@ -49,7 +57,7 @@ describe('self_report transition', () => {
         form: 'configured_form',
         fields: { patient_id: '12345'},
       };
-      chai.expect(transition.filter(alreadyHasPatientId)).to.equal(false);
+      chai.expect(transition.filter({ doc: alreadyHasPatientId })).to.equal(false);
 
       const alreadyHasPatientUuid = {
         type: 'data_record',
@@ -57,26 +65,26 @@ describe('self_report transition', () => {
         form: 'configured_form',
         fields: { patient_uuid: '12345' },
       };
-      chai.expect(transition.filter(alreadyHasPatientUuid)).to.equal(false);
+      chai.expect(transition.filter({ doc: alreadyHasPatientUuid })).to.equal(false);
 
       const transitionAlreadyRan = { type: 'data_record', from: 'a', form: 'configured_form2' };
       const info = { transitions: { self_report: { success: true } } };
-      chai.expect(transition.filter(transitionAlreadyRan, info)).to.equal(false);
+      chai.expect(transition.filter({ doc: transitionAlreadyRan, info })).to.equal(false);
     });
 
     it('should return true when it is a valid doc', () => {
-      sinon.stub(config, 'get').returns([
+      config.get.returns([
         { form: 'form1' },
         { form: 'form2' },
       ]);
 
       const form1 = { type: 'data_record', from: 'alpha', form: 'form1' };
       const info = { transitions: {}};
-      chai.expect(transition.filter(form1, info)).to.equal(true);
+      chai.expect(transition.filter({ doc: form1, info })).to.equal(true);
 
       const form2 = { type: 'data_record', from: 'alpha', form: 'form2' };
       info.transitions.some_transition = {};
-      chai.expect(transition.filter(form2, info)).to.equal(true);
+      chai.expect(transition.filter({ doc: form2, info })).to.equal(true);
 
       chai.expect(config.get.callCount).to.equal(2);
       chai.expect(config.get.args[0]).to.deep.equal(['self_report']);
@@ -86,8 +94,8 @@ describe('self_report transition', () => {
 
   describe('onMatch', () => {
     it('should search for the sender and add error when sender not found', () => {
-      sinon.stub(config, 'get').returns([{ form: 'the_form' }]);
-      sinon.stub(config, 'getTranslations').returns({ en: { 'messages.generic.sender_not_found': 'Sender not found' }});
+      config.get.returns([{ form: 'the_form' }]);
+      config.getTranslations.returns({ en: { 'messages.generic.sender_not_found': 'Sender not found' }});
       db.medic.query.resolves({ rows: [] });
       const doc = { from: '12345', form: 'the_form' };
       return transition.onMatch({ doc }).then(result => {
@@ -111,7 +119,7 @@ describe('self_report transition', () => {
     });
 
     it('should add task if a message is configured and sender not found', () => {
-      sinon.stub(config, 'get').returns([ {
+      config.get.returns([ {
         form: 'the_form',
         messages: [
           {
@@ -129,9 +137,8 @@ describe('self_report transition', () => {
             translation_key: 'other_message',
           }
         ],
-      }
-      ]);
-      sinon.stub(config, 'getTranslations').returns({ en: { the_message: 'translated message' }});
+      } ]);
+      config.getTranslations.returns({ en: { the_message: 'translated message' }});
 
       db.medic.query.resolves({rows: []});
       const doc = { from: '12345', form: 'the_form'};
@@ -149,7 +156,7 @@ describe('self_report transition', () => {
     });
 
     it('should hydrate patient and attach it to the doc', () => {
-      sinon.stub(config, 'get').returns([ { form: 'the_form' } ]);
+      config.get.returns([ { form: 'the_form' } ]);
       const doc = { from: '654987', form: 'the_form' };
       const patient = {
         _id: 'the_contact',
@@ -178,7 +185,7 @@ describe('self_report transition', () => {
     });
 
     it('should add success message if configured', () => {
-      sinon.stub(config, 'get').returns([ {
+      config.get.returns([ {
         form: 'the_form',
         messages: [
           {
@@ -197,7 +204,7 @@ describe('self_report transition', () => {
           }
         ],
       } ]);
-      sinon.stub(config, 'getTranslations').returns({ en: { success_message: 'Victory!' }});
+      config.getTranslations.returns({ en: { success_message: 'Victory!' }});
 
       const doc = { from: '999999', form: 'the_form' };
       const patient = {
@@ -258,7 +265,7 @@ describe('self_report transition', () => {
     });
 
     it('should preserve other fields', () => {
-      sinon.stub(config, 'get').returns([ { form: 'my_form' } ]);
+      config.get.returns([ { form: 'my_form' } ]);
       const doc = {
         type: 'data_record',
         from: '111222333',
@@ -302,7 +309,7 @@ describe('self_report transition', () => {
     });
 
     it('should pick the first result when multiple found', () => {
-      sinon.stub(config, 'get').returns([ { form: 'a_form' } ]);
+      config.get.returns([ { form: 'a_form' } ]);
       const doc = { type: 'data_record', from: '98765', form: 'a_form' };
       const patient = {
         _id: 'contact_uuid',
@@ -335,7 +342,7 @@ describe('self_report transition', () => {
     });
 
     it('should add success messages depending on sms locale', () => {
-      sinon.stub(config, 'get').returns([ {
+      config.get.returns([ {
         form: 'the_form',
         messages: [
           {
@@ -354,7 +361,7 @@ describe('self_report transition', () => {
           }
         ],
       } ]);
-      sinon.stub(config, 'getTranslations').returns({
+      config.getTranslations.returns({
         en: { success_message: 'Victory!' },
         sw: { success_message: 'Bunnies!' },
       });
@@ -389,7 +396,7 @@ describe('self_report transition', () => {
     });
 
     it('should add task if a message is configured and sender not found', () => {
-      sinon.stub(config, 'get').returns([ {
+      config.get.returns([ {
         form: 'the_form',
         messages: [
           {
@@ -407,10 +414,8 @@ describe('self_report transition', () => {
             translation_key: 'other_message',
           }
         ],
-      }
-      ]);
-      sinon.stub(config, 'getTranslations').returns({
-        en: { the_message: 'translated message', other_message: 'msg' },
+      } ]);
+      config.getTranslations.returns({
         sw: { the_message: 'not english', other_message: 'msg' },
       });
 

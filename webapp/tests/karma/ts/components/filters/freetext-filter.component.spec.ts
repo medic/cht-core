@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +16,7 @@ describe('Freetext Filter Component', () => {
   let component:FreetextFilterComponent;
   let fixture:ComponentFixture<FreetextFilterComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const mockedSelectors = [
       { selector: Selectors.getCurrentTab, value: 'reports' },
       { selector: Selectors.getFilters, value: { search: '' } },
@@ -78,5 +78,15 @@ describe('Freetext Filter Component', () => {
     expect(setFilter.args[0]).to.deep.equal([{ search: 'new value' }]);
     expect(emitSpy.callCount).to.equal(1);
     expect(emitSpy.args[0]).to.deep.equal([true]);
+  });
+
+  it('should do nothing if component is disabled', () => {
+    const setFilter = sinon.stub(GlobalActions.prototype, 'setFilter');
+    component.disabled = true;
+
+    component.applyFieldChange('value', true);
+    component.clear();
+
+    expect(setFilter.notCalled).to.be.true;
   });
 });

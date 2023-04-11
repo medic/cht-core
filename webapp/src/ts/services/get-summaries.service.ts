@@ -14,7 +14,8 @@ export class GetSummariesService {
     private sessionService:SessionService,
   ) {
   }
-  private readonly SUBJECT_FIELDS = [ 'patient_id', 'patient_name', 'place_id' ];
+
+  private readonly SUBJECT_FIELDS = [ 'patient_id', 'patient_uuid', 'patient_name', 'place_id' ];
 
   private getLineage(contact) {
     const parts = [];
@@ -38,6 +39,7 @@ export class GetSummariesService {
     const reference =
       doc.patient_id ||
       (doc.fields && doc.fields.patient_id) ||
+      (doc.fields && doc.fields.patient_uuid) ||
       doc.place_id ||
       (doc.fields && doc.fields.place_id);
     const patientName = doc.fields && doc.fields.patient_name;
@@ -97,7 +99,6 @@ export class GetSummariesService {
         contact_type: doc.contact_type,
         contact: doc.contact && doc.contact._id,
         lineage: this.getLineage(doc.parent),
-        simprints_id: doc.simprints_id,
         date_of_death: doc.date_of_death,
         muted: doc.muted
       };

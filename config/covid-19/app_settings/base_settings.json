@@ -1,0 +1,225 @@
+{
+  "setup_complete": true,
+  "locales": [
+    {
+      "code": "en",
+      "name": "English"
+    }
+  ],
+  "locale": "en",
+  "locale_outgoing": "en",
+  "date_format": "YYYY-MM-DD",
+  "reported_date_format": "YYYY-MM-DD HH:mm:ss",
+  "forms_only_mode": false,
+  "default_responses": {
+    "start_date": ""
+  },
+  "district_admins_access_unallocated_messages": false,
+  "public_access": false,
+  "default_country_code": 1,
+  "gateway_number": "+13125551212",
+  "schedule_morning_hours": 0,
+  "schedule_morning_minutes": 0,
+  "schedule_evening_hours": 23,
+  "schedule_evening_minutes": 0,
+  "synthetic_date": "",
+  "contact_display_short": "clinic.name",
+  "roles": {
+    "chw_supervisor": {
+      "name": "usertype.chw-supervisor",
+      "offline": true
+    },
+    "chw": {
+      "name": "usertype.chw",
+      "offline": true
+    }
+  },
+  "permissions": {
+    "can_bulk_delete_reports": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_create_people": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_create_places": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_create_records": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_delete_contacts": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_delete_messages": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_delete_reports": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_edit": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_edit_profile": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_edit_verification": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_all": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_contacts": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_feedback": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_messages": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_update_places": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_update_reports": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_dhis": [
+      "chw_supervisor"
+    ],
+    "can_verify_reports": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_analytics": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_analytics_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_call_action": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_contacts": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_contacts_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_message_action": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_messages": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_messages_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_reports": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_reports_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_tasks": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_tasks_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_unallocated_data_records": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_aggregate_targets": [
+      "chw_supervisor"
+    ]
+  },
+  "place_hierarchy_types": [
+    "district_hospital",
+    "health_center"
+  ],
+  "contact_types": [
+    {
+      "id": "district_hospital",
+      "name_key": "contact.type.district_hospital",
+      "group_key": "contact.type.district_hospital.plural",
+      "create_key": "contact.type.district_hospital.new",
+      "edit_key": "contact.type.place.edit",
+      "icon": "medic-district-hospital",
+      "create_form": "form:contact:district_hospital:create",
+      "edit_form": "form:contact:district_hospital:edit"
+    },
+    {
+      "id": "health_center",
+      "name_key": "contact.type.health_center",
+      "group_key": "contact.type.health_center.plural",
+      "create_key": "contact.type.health_center.new",
+      "edit_key": "contact.type.place.edit",
+      "parents": [
+        "district_hospital"
+      ],
+      "icon": "medic-health-center",
+      "create_form": "form:contact:health_center:create",
+      "edit_form": "form:contact:health_center:edit"
+    },
+    {
+      "id": "clinic",
+      "name_key": "contact.type.clinic",
+      "group_key": "contact.type.clinic.plural",
+      "create_key": "contact.type.clinic.new",
+      "edit_key": "contact.type.place.edit",
+      "parents": [
+        "health_center"
+      ],
+      "icon": "medic-clinic",
+      "create_form": "form:contact:clinic:create",
+      "edit_form": "form:contact:clinic:edit",
+      "count_visits": true
+    },
+    {
+      "id": "person",
+      "name_key": "contact.type.person",
+      "group_key": "contact.type.person.plural",
+      "create_key": "contact.type.person.new",
+      "edit_key": "contact.type.person.edit",
+      "primary_contact_key": "clinic.field.contact",
+      "parents": [
+        "district_hospital",
+        "health_center",
+        "clinic"
+      ],
+      "icon": "medic-person",
+      "create_form": "form:contact:person:create",
+      "edit_form": "form:contact:person:edit",
+      "person": true
+    }
+  ]
+}

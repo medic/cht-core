@@ -1,8 +1,7 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,6 +16,11 @@ import { GlobalActions } from '@mm-actions/global';
 import { MessageStateService } from '@mm-services/message-state.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
+import { ResponsiveService } from '@mm-services/responsive.service';
+import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
+import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
+import { TitlePipe } from '@mm-pipes/message.pipe';
+import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 
 
 describe('Reports Content Component', () => {
@@ -28,21 +32,22 @@ describe('Reports Content Component', () => {
   let activatedRoute;
   let messageStateService;
   let router;
+  let responsiveService;
   let modalService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const mockedSelectors = [
       { selector: Selectors.getSelectedReports, value: [] },
-      { selector: Selectors.getSelectedReportsSummaries, value: {} },
       { selector: Selectors.getForms, value: [] },
       { selector: Selectors.getLoadingContent, value: false },
       { selector: Selectors.getSelectMode, value: false },
     ];
     searchFiltersService = { freetextSearch: sinon.stub() };
-    changesService = { subscribe: sinon.stub().resolves(of({})) };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     activatedRoute = { params: { subscribe: sinon.stub() }, snapshot: { params: {} } };
     router = { navigate: sinon.stub() };
     messageStateService = { any: sinon.stub(), set: sinon.stub().resolves() };
+    responsiveService = { isMobile: sinon.stub() };
     modalService = { show: sinon.stub().resolves() };
 
     return TestBed
@@ -54,6 +59,9 @@ describe('Reports Content Component', () => {
         declarations: [
           ReportsContentComponent,
           EditMessageGroupComponent,
+          FormIconPipe,
+          TitlePipe,
+          RelativeDatePipe,
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
@@ -63,7 +71,9 @@ describe('Reports Content Component', () => {
           { provide: ActivatedRoute, useValue: activatedRoute },
           { provide: Router, useValue: router },
           { provide: MessageStateService, useValue: messageStateService },
+          { provide: ResponsiveService, useValue: responsiveService },
           { provide: ModalService, useValue: modalService },
+          { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
         ]
       })
       .compileComponents()
@@ -76,6 +86,7 @@ describe('Reports Content Component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 
@@ -93,35 +104,37 @@ describe('Reports Content Component', () => {
 
     expect(changesService.subscribe.callCount).to.equal(1);
     expect(activatedRoute.params.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(3);
+    expect(spySubscriptionsAdd.callCount).to.equal(4);
   });
 
   describe('Route subscription', () => {
     it('should react correctly when route has id param', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
-      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
-      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      const selectReportToOpenStub = sinon.stub(ReportsActions.prototype, 'selectReportToOpen');
+      const clearNavigationStub = sinon.stub(GlobalActions.prototype, 'clearNavigation');
+      const unsetComponentsStub = sinon.stub(GlobalActions.prototype, 'unsetComponents');
       activatedRoute.snapshot.params = { id: 'someID' };
 
       callback({ id: 'id' });
-      expect(selectReport.callCount).to.equal(1);
-      expect(selectReport.args[0]).to.deep.equal(['someID']);
-      expect(clearCancelCallback.callCount).to.equal(1);
-      expect(unsetSelected.callCount).to.equal(0);
+
+      expect(selectReportToOpenStub.calledOnce).to.be.true;
+      expect(selectReportToOpenStub.args[0]).to.deep.equal([ 'someID' ]);
+      expect(clearNavigationStub.calledOnce).to.be.true;
+      expect(unsetComponentsStub.notCalled).to.be.true;
     });
 
     it('should react correctly when route does not have id param', () => {
       const callback = activatedRoute.params.subscribe.args[0][0];
-      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
-      const clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
-      const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
+      const selectReportToOpenStub = sinon.stub(ReportsActions.prototype, 'selectReportToOpen');
+      const clearNavigationStub = sinon.stub(GlobalActions.prototype, 'clearNavigation');
+      const unsetComponentsStub = sinon.stub(GlobalActions.prototype, 'unsetComponents');
       activatedRoute.snapshot.params = { id: 'someID' };
 
       callback({ });
-      expect(selectReport.callCount).to.equal(0);
-      expect(clearCancelCallback.callCount).to.equal(0);
-      expect(unsetSelected.callCount).to.equal(1);
+
+      expect(selectReportToOpenStub.notCalled).to.be.true;
+      expect(clearNavigationStub.notCalled).to.be.true;
+      expect(unsetComponentsStub.calledOnce).to.be.true;
     });
   });
 
@@ -135,7 +148,7 @@ describe('Reports Content Component', () => {
       expect(filter({ id: 'report2' })).to.equal(true);
     });
 
-    it('filter function should return true for selected reports', () => {
+    it('filter function should return false for selected reports', () => {
       const filter = changesService.subscribe.args[0][0].filter;
       store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report1', doc: {} }, { _id: 'report2', doc: {} }]);
       store.refreshState();
@@ -164,12 +177,35 @@ describe('Reports Content Component', () => {
       expect(removeSelectedReport.args[0]).to.deep.equal(['reportID']);
     });
 
-    it('callback should handle report updates', () => {
+    it('callback should handle report updates when not routing to any report', () => {
       const callback = changesService.subscribe.args[0][0].callback;
-      const selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
+      const selectReportToOpenStub = sinon.stub(ReportsActions.prototype, 'selectReportToOpen');
+
       callback({ id: 'reportID' });
-      expect(selectReport.callCount).to.equal(1);
-      expect(selectReport.args[0]).to.deep.equal([ 'reportID', { silent: true } ]);
+
+      expect(selectReportToOpenStub.calledOnce).to.be.true;
+      expect(selectReportToOpenStub.args[0]).to.deep.equal([ 'reportID', { silent: true } ]);
+    });
+
+    it('callback should handle report updates when routing to updated report', () => {
+      activatedRoute.snapshot.params = { id: 'reportID' };
+      const callback = changesService.subscribe.args[0][0].callback;
+      const selectReportToOpenStub = sinon.stub(ReportsActions.prototype, 'selectReportToOpen');
+
+      callback({ id: 'reportID' });
+
+      expect(selectReportToOpenStub.calledOnce).to.be.true;
+      expect(selectReportToOpenStub.args[0]).to.deep.equal([ 'reportID', { silent: true } ]);
+    });
+
+    it('callback should ignore report updates when routing to different report', () => {
+      activatedRoute.snapshot.params = { id: 'differentReportID' };
+      const callback = changesService.subscribe.args[0][0].callback;
+      const selectReportToOpenStub = sinon.stub(ReportsActions.prototype, 'selectReportToOpen');
+
+      callback({ id: 'reportID' });
+
+      expect(selectReportToOpenStub.notCalled).to.be.true;
     });
   });
 
@@ -179,25 +215,25 @@ describe('Reports Content Component', () => {
   });
 
   describe('toggleExpand', () => {
-    let updateSelectedReportItem;
+    let updateSelectedReportsItem;
     let selectReport;
 
     beforeEach(() => {
-      updateSelectedReportItem = sinon.stub(ReportsActions.prototype, 'updateSelectedReportItem');
+      updateSelectedReportsItem = sinon.stub(ReportsActions.prototype, 'updateSelectedReportsItem');
       selectReport = sinon.stub(ReportsActions.prototype, 'selectReport');
     });
 
     it('should do nothing when not in select mode', () => {
       component.selectMode = false;
       component.toggleExpand({ _id: 'thing' });
-      expect(updateSelectedReportItem.callCount).to.equal(0);
+      expect(updateSelectedReportsItem.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
     });
 
     it('should do nothing when in select mode but no report', () => {
       component.selectMode = true;
       component.toggleExpand(undefined);
-      expect(updateSelectedReportItem.callCount).to.equal(0);
+      expect(updateSelectedReportsItem.callCount).to.equal(0);
       expect(selectReport.callCount).to.equal(0);
     });
 
@@ -205,18 +241,18 @@ describe('Reports Content Component', () => {
       component.selectMode = true;
       const report = { _id: 'report_id' };
       component.toggleExpand(report);
-      expect(updateSelectedReportItem.callCount).to.equal(1);
-      expect(updateSelectedReportItem.args[0]).to.deep.equal(['report_id', { loading: true, expanded: true }]);
+      expect(updateSelectedReportsItem.callCount).to.equal(1);
+      expect(updateSelectedReportsItem.args[0]).to.deep.equal(['report_id', { loading: true, expanded: true }]);
       expect(selectReport.callCount).to.equal(1);
-      expect(selectReport.args[0]).to.deep.equal(['report_id', { silent: true }]);
+      expect(selectReport.args[0]).to.deep.equal([ 'report_id' ]);
     });
 
     it('should only toggle expanded when report already loaded', () => {
       component.selectMode = true;
       const report = { _id: 'report_id', doc: { _id: 'report_id', value: '1' } };
       component.toggleExpand(report);
-      expect(updateSelectedReportItem.callCount).to.equal(1);
-      expect(updateSelectedReportItem.args[0]).to.deep.equal(['report_id', { expanded: true }]);
+      expect(updateSelectedReportsItem.callCount).to.equal(1);
+      expect(updateSelectedReportsItem.args[0]).to.deep.equal(['report_id', { expanded: true }]);
       expect(selectReport.callCount).to.equal(0);
     });
 
@@ -224,33 +260,38 @@ describe('Reports Content Component', () => {
       component.selectMode = true;
       const report = { _id: 'report_id', expanded: true };
       component.toggleExpand(report);
-      expect(updateSelectedReportItem.callCount).to.equal(1);
-      expect(updateSelectedReportItem.args[0]).to.deep.equal(['report_id', { expanded: false }]);
+      expect(updateSelectedReportsItem.callCount).to.equal(1);
+      expect(updateSelectedReportsItem.args[0]).to.deep.equal(['report_id', { expanded: false }]);
       expect(selectReport.callCount).to.equal(0);
     });
   });
 
   describe('deselect', () => {
-    let removeSelectedReport;
+    let removeSelectedReportStub;
     let event;
+
     beforeEach(() => {
-      removeSelectedReport = sinon.stub(ReportsActions.prototype, 'removeSelectedReport');
+      removeSelectedReportStub = sinon.stub(ReportsActions.prototype, 'removeSelectedReport');
       event = { stopPropagation: sinon.stub() };
     });
 
     it('should do nothing when not in select mode', () => {
       component.selectMode = false;
       const report = { _id: 'report' };
+
       component.deselect(report, event);
-      expect(removeSelectedReport.callCount).to.equal(0);
+
+      expect(removeSelectedReportStub.notCalled).to.be.true;
     });
 
     it('should call removeSelectedReport when in select mode', () => {
       component.selectMode = true;
       const report = { _id: 'report' };
+
       component.deselect(report, event);
-      expect(removeSelectedReport.callCount).to.equal(1);
-      expect(removeSelectedReport.args[0]).to.deep.equal([report]);
+
+      expect(removeSelectedReportStub.calledOnce).to.be.true;
+      expect(removeSelectedReportStub.args[0]).to.deep.equal([ report ]);
     });
   });
 

@@ -17,7 +17,10 @@ const moment = require('moment');
  * Looking at time-between-reports for active projects, a time window of 60 days will ensure that 99.9% of tasks are
  * recorded as docs.
  */
-const TIMELY_WHEN_NEWER_THAN_DAYS = 60;
+const TIMELY_WINDOW = {
+  start: 60, // days
+  end: 180 // days
+};
 
 // This must be a comparable string format to avoid a bunch of parsing. For example, "2000-01-01" < "2010-11-31"
 const formatString = 'YYYY-MM-DD';
@@ -122,9 +125,13 @@ module.exports = {
 
   getDisplayWindow,
 
+  states: States,
+
   isTimely: (taskEmission, timestamp) => {
-    const { endDate } = getDisplayWindow(taskEmission);
-    return endDate > moment(timestamp).add(-TIMELY_WHEN_NEWER_THAN_DAYS, 'days').format(formatString);
+    const { startDate, endDate } = getDisplayWindow(taskEmission);
+    const earliest = moment(timestamp).subtract(TIMELY_WINDOW.start, 'days');
+    const latest = moment(timestamp).add(TIMELY_WINDOW.end, 'days');
+    return earliest.isBefore(endDate) && latest.isAfter(startDate);
   },
 
   setStateOnTaskDoc: (taskDoc, updatedState, timestamp = Date.now(), reason = '') => {

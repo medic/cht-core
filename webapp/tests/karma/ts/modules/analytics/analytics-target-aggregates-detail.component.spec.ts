@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -24,7 +24,7 @@ describe('AnalyticsTargetAggregatesDetailComponent', () => {
   let globalActions;
   let route;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     targetAggregatesService = {
       getAggregateDetails: sinon.stub()
     };

@@ -50,6 +50,7 @@ export class PrivacyPolicyComponent implements OnInit {
     this.accepting = true;
     return this.privacyPoliciesService
       .accept(this.privacyPolicy)
+      .catch(err => console.warn('Error accepting privacy policy - continuing.', err))
       .then(() => this.globalActions.setPrivacyPolicyAccepted(true))
       .then(() => this.startupModalsService.showStartupModals());
   }

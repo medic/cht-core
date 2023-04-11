@@ -2,17 +2,17 @@ const fs = require('fs');
 const utils = require('./utils');
 const EC = protractor.ExpectedConditions;
 
-function writeScreenShot(data, filename) {
+const writeScreenShot = (data, filename) => {
   const stream = fs.createWriteStream('./tests/results/' + filename);
   stream.write(Buffer.from(data, 'base64'));
   stream.end();
-}
-function handleUpdateModal() {
+};
+const handleUpdateModal = () => {
   utils.deprecated('handleUpdateModal', 'handleUpdateModalNative');
   if (element(by.css('#update-available')).isPresent()) {
     $('body').sendKeys(protractor.Key.ENTER);
   }
-}
+};
 
 const handleUpdateModalNative = async () => {
   if (await element(by.css('#update-available')).isPresent()) {
@@ -48,13 +48,13 @@ module.exports = {
     await handleUpdateModalNative();
     try {
       const msg = `First attempt to click failed. Element is ${element.locator()}`;
-      await browser.wait(EC.elementToBeClickable(element),12000, msg);
+      await browser.wait(EC.elementToBeClickable(element), 12000, msg);
       await element.click();
     } catch (err) {
       await browser.sleep(1000);
       await handleUpdateModalNative();
       const secondChangeMsg = `Second attempt to click failed. Element is ${element.locator()}`;
-      await browser.wait(EC.elementToBeClickable(element), 12000, secondChangeMsg);
+      await browser.wait(EC.elementToBeClickable(element), 1000, secondChangeMsg);
       await element.click();
     }
   },
@@ -291,7 +291,7 @@ module.exports = {
   waitElementToDisappearNative: async (elm, timeout) => {
     const locator = elm.locator();
     timeout = timeout || 15000;
-    await browser.wait(EC.invisibilityOf(elm),timeout, `waitElementToDisappear timed out looking for ${locator}`);
+    await browser.wait(EC.invisibilityOf(elm), timeout, `waitElementToDisappear timed out looking for ${locator}`);
   },
 
   waitElementToPresent: (elm, timeout) => {
@@ -331,7 +331,7 @@ module.exports = {
   },
 
   waitUntilReadyNative: elm => {
-    return browser.wait(EC.visibilityOf(elm), 10000, 'visibilityOf failed in 10 seconds ' + elm.locator());
+    return browser.wait(EC.visibilityOf(elm), 20000, 'visibilityOf failed in 20 seconds ' + elm.locator());
   },
 
   waitUntilTranslated: elm => {

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Pregnancy home visit</h:title>
     <model>
@@ -755,7 +755,7 @@
         </translation>
       </itext>
       <instance>
-        <pregnancy_home_visit delimiter="#" id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" version="2019-11-04 14:18:58">
+        <pregnancy_home_visit id="pregnancy_home_visit" prefix="J1!pregnancy_home_visit!" delimiter="#" version="2022-09-26 11:35:11">
           <inputs>
             <meta>
               <location>
@@ -1233,123 +1233,123 @@
       <bind nodeset="/pregnancy_home_visit/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/pregnancy_home_visit/inputs/contact/parent/parent/contact/chw_name" type="string"/>
       <bind nodeset="/pregnancy_home_visit/inputs/contact/parent/parent/contact/phone" type="string"/>
-      <bind calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )" nodeset="/pregnancy_home_visit/patient_age_in_years" type="string"/>
-      <bind calculate="../inputs/contact/_id" nodeset="/pregnancy_home_visit/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy_home_visit/patient_id" type="string"/>
-      <bind calculate="../inputs/contact/name" nodeset="/pregnancy_home_visit/patient_name" type="string"/>
-      <bind calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_label)" nodeset="/pregnancy_home_visit/patient_short_name" type="string"/>
-      <bind calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_start_label)" nodeset="/pregnancy_home_visit/patient_short_name_start" type="string"/>
-      <bind calculate="if(selected(../pregnancy_summary/g_age_correct, 'no'), ../update_g_age/lmp_date_8601_new, ../context_vars/lmp_date_8601_ctx)" nodeset="/pregnancy_home_visit/lmp_date_8601" type="string"/>
-      <bind calculate="if(selected(../pregnancy_summary/g_age_correct, 'no'), ../update_g_age/edd_8601_new, format-date-time(date-time(decimal-date-time(../context_vars/lmp_date_8601_ctx, 280)), &quot;%Y-%m-%d&quot;))" nodeset="/pregnancy_home_visit/edd_8601" type="string"/>
-      <bind calculate="floor(decimal-date-time(today())) - decimal-date-time(../lmp_date_8601)" nodeset="/pregnancy_home_visit/days_since_lmp" relevant="../lmp_date_8601 != ''" type="string"/>
-      <bind calculate="round(../days_since_lmp div 7, 2)" nodeset="/pregnancy_home_visit/weeks_since_lmp" relevant="../lmp_date_8601 != ''" type="string"/>
-      <bind calculate="floor(../days_since_lmp div 7)" nodeset="/pregnancy_home_visit/weeks_since_lmp_rounded" relevant="../lmp_date_8601 != ''" type="string"/>
-      <bind calculate="if(selected(../update_g_age/update_method/g_age_update_method, 'method_weeks'), 'yes', 'no')" nodeset="/pregnancy_home_visit/lmp_method_approx" type="string"/>
-      <bind calculate="if(selected(../pregnancy_summary/g_age_correct, 'no') and (decimal-date-time(../lmp_date_8601) - decimal-date-time(../context_vars/lmp_date_8601_ctx) != 0), 'yes', 'no')" nodeset="/pregnancy_home_visit/lmp_updated" type="string"/>
-      <bind calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date" nodeset="/pregnancy_home_visit/t_pregnancy_follow_up_date" type="string"/>
-      <bind calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known" nodeset="/pregnancy_home_visit/t_pregnancy_follow_up" type="string"/>
-      <bind calculate="date-time(floor(decimal-date-time(today())) + 3)" nodeset="/pregnancy_home_visit/t_danger_signs_referral_follow_up_date" type="string"/>
-      <bind calculate="../danger_signs/r_danger_sign_present" nodeset="/pregnancy_home_visit/t_danger_signs_referral_follow_up" type="string"/>
-      <bind calculate="if(../context_vars/hiv_tested_ctx = 'yes', 'yes', ../safe_pregnancy_practices/hiv_status/hiv_tested)" nodeset="/pregnancy_home_visit/hiv_status_known" type="string"/>
-      <bind calculate="if(../context_vars/tt_imm_received_ctx = 'yes', 'yes', ../safe_pregnancy_practices/tetanus/tt_imm_received)" nodeset="/pregnancy_home_visit/tt_received" type="string"/>
-      <bind calculate="if(../context_vars/deworming_med_received_ctx = 'yes', 'yes', ../safe_pregnancy_practices/deworming/deworming_med)" nodeset="/pregnancy_home_visit/deworming_med_received" type="string"/>
-      <bind calculate="if(instance('contact-summary')/context/lmp_date_8601 != '', instance('contact-summary')/context/lmp_date_8601, .)" nodeset="/pregnancy_home_visit/context_vars/lmp_date_8601_ctx" type="string"/>
-      <bind calculate="if(instance('contact-summary')/context/lmp_method_approx != '', instance('contact-summary')/context/lmp_method_approx, .)" nodeset="/pregnancy_home_visit/context_vars/lmp_method_approx_ctx" type="string"/>
-      <bind calculate="if(instance('contact-summary')/context/pregnancy_follow_up_date_recent != 0, instance('contact-summary')/context/pregnancy_follow_up_date_recent, .)" nodeset="/pregnancy_home_visit/context_vars/pregnancy_follow_up_date_recent_ctx" type="string"/>
-      <bind calculate="if(instance('contact-summary')/context/risk_factor_codes != '', instance('contact-summary')/context/risk_factor_codes, .)" nodeset="/pregnancy_home_visit/context_vars/risk_factors_ctx" type="string"/>
-      <bind calculate="if(instance('contact-summary')/context/risk_factor_extra != '', instance('contact-summary')/context/risk_factor_extra, .)" nodeset="/pregnancy_home_visit/context_vars/risk_factor_extra_ctx" type="string"/>
-      <bind calculate="if(instance('contact-summary')/context/hiv_tested_past != '', instance('contact-summary')/context/hiv_tested_past, .)" nodeset="/pregnancy_home_visit/context_vars/hiv_tested_ctx" type="string"/>
-      <bind calculate="if(instance('contact-summary')/context/tt_received_past != '', instance('contact-summary')/context/tt_received_past , .)" nodeset="/pregnancy_home_visit/context_vars/tt_received_ctx" type="string"/>
-      <bind calculate="if(instance('contact-summary')/context/deworming_med_received_past != '', instance('contact-summary')/context/deworming_med_received_past , .)" nodeset="/pregnancy_home_visit/context_vars/deworming_med_received_ctx" type="string"/>
-      <bind calculate="if(../lmp_date_8601_ctx = '', 'unknown', format-date-time(date-time(decimal-date-time(../lmp_date_8601_ctx) + 280), &quot;%e %b, %Y&quot;))" nodeset="/pregnancy_home_visit/context_vars/edd_ctx" type="string"/>
-      <bind calculate="if(../lmp_date_8601_ctx = '', 'unknown',
-floor((floor(decimal-date-time(today())) - decimal-date-time(../lmp_date_8601_ctx)) div 7))" nodeset="/pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx" type="string"/>
-      <bind calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)" nodeset="/pregnancy_home_visit/context_vars/pregnancy_uuid_ctx" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_weeks_pregnant" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  != 'unknown'" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_weeks_pregnant_unknown" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  = 'unknown'" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_edd" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/edd_ctx  != 'unknown'" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_edd_unknown" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/edd_ctx  = 'unknown'" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/visit_option" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/g_age_correct" relevant="selected(../visit_option, 'yes')" required="true()" type="select1"/>
+      <bind nodeset="/pregnancy_home_visit/patient_age_in_years" type="string" calculate="floor( difference-in-months( ../inputs/contact/date_of_birth, today() ) div 12 )"/>
+      <bind nodeset="/pregnancy_home_visit/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/pregnancy_home_visit/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/pregnancy_home_visit/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/pregnancy_home_visit/patient_short_name" type="string" calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_label)"/>
+      <bind nodeset="/pregnancy_home_visit/patient_short_name_start" type="string" calculate="coalesce(../inputs/contact/short_name, ../summary/custom_translations/custom_woman_start_label)"/>
+      <bind nodeset="/pregnancy_home_visit/lmp_date_8601" type="string" calculate="if(selected(../pregnancy_summary/g_age_correct, 'no'), ../update_g_age/lmp_date_8601_new, ../context_vars/lmp_date_8601_ctx)"/>
+      <bind nodeset="/pregnancy_home_visit/edd_8601" type="string" calculate="if(selected(../pregnancy_summary/g_age_correct, 'no'), ../update_g_age/edd_8601_new, format-date-time(date-time(decimal-date-time(../context_vars/lmp_date_8601_ctx + 280)), &quot;%Y-%m-%d&quot;))"/>
+      <bind nodeset="/pregnancy_home_visit/days_since_lmp" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time(../lmp_date_8601))" relevant="../lmp_date_8601 != ''"/>
+      <bind nodeset="/pregnancy_home_visit/weeks_since_lmp" type="string" calculate="round(../days_since_lmp div 7, 2)" relevant="../lmp_date_8601 != ''"/>
+      <bind nodeset="/pregnancy_home_visit/weeks_since_lmp_rounded" type="string" calculate="floor(../days_since_lmp div 7)" relevant="../lmp_date_8601 != ''"/>
+      <bind nodeset="/pregnancy_home_visit/lmp_method_approx" type="string" calculate="if(selected(../update_g_age/update_method/g_age_update_method, 'method_weeks'), 'yes', 'no')"/>
+      <bind nodeset="/pregnancy_home_visit/lmp_updated" type="string" calculate="if(selected(../pregnancy_summary/g_age_correct, 'no') and (decimal-date-time(../lmp_date_8601) - decimal-date-time(../context_vars/lmp_date_8601_ctx) != 0), 'yes', 'no')"/>
+      <bind nodeset="/pregnancy_home_visit/t_pregnancy_follow_up_date" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date"/>
+      <bind nodeset="/pregnancy_home_visit/t_pregnancy_follow_up" type="string" calculate="../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known"/>
+      <bind nodeset="/pregnancy_home_visit/t_danger_signs_referral_follow_up_date" type="string" calculate="date-time(decimal-date-time(today()) + 3)"/>
+      <bind nodeset="/pregnancy_home_visit/t_danger_signs_referral_follow_up" type="string" calculate="../danger_signs/r_danger_sign_present"/>
+      <bind nodeset="/pregnancy_home_visit/hiv_status_known" type="string" calculate="if(../context_vars/hiv_tested_ctx = 'yes', 'yes', ../safe_pregnancy_practices/hiv_status/hiv_tested)"/>
+      <bind nodeset="/pregnancy_home_visit/tt_received" type="string" calculate="if(../context_vars/tt_received_ctx = 'yes', 'yes', ../safe_pregnancy_practices/tetanus/tt_imm_received)"/>
+      <bind nodeset="/pregnancy_home_visit/deworming_med_received" type="string" calculate="if(../context_vars/deworming_med_received_ctx = 'yes', 'yes', ../safe_pregnancy_practices/deworming/deworming_med)"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/lmp_date_8601_ctx" type="string" calculate="if(instance('contact-summary')/context/lmp_date_8601 != '', instance('contact-summary')/context/lmp_date_8601, .)"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/lmp_method_approx_ctx" type="string" calculate="if(instance('contact-summary')/context/lmp_method_approx != '', instance('contact-summary')/context/lmp_method_approx, .)"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/pregnancy_follow_up_date_recent_ctx" type="string" calculate="if(instance('contact-summary')/context/pregnancy_follow_up_date_recent != 0, instance('contact-summary')/context/pregnancy_follow_up_date_recent, .)"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/risk_factors_ctx" type="string" calculate="if(instance('contact-summary')/context/risk_factor_codes != '', instance('contact-summary')/context/risk_factor_codes, .)"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/risk_factor_extra_ctx" type="string" calculate="if(instance('contact-summary')/context/risk_factor_extra != '', instance('contact-summary')/context/risk_factor_extra, .)"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/hiv_tested_ctx" type="string" calculate="if(instance('contact-summary')/context/hiv_tested_past != '', instance('contact-summary')/context/hiv_tested_past, .)"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/tt_received_ctx" type="string" calculate="if(instance('contact-summary')/context/tt_received_past != '', instance('contact-summary')/context/tt_received_past , .)"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/deworming_med_received_ctx" type="string" calculate="if(instance('contact-summary')/context/deworming_med_received_past != '', instance('contact-summary')/context/deworming_med_received_past , .)"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/edd_ctx" type="string" calculate="if(../lmp_date_8601_ctx = '', 'unknown', format-date-time(date-time(decimal-date-time(../lmp_date_8601_ctx) + 280), &quot;%e %b, %Y&quot;))"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx" type="string" calculate="if(../lmp_date_8601_ctx = '', 'unknown',
+floor((decimal-date-time(today()) - decimal-date-time(../lmp_date_8601_ctx)) div 7))"/>
+      <bind nodeset="/pregnancy_home_visit/context_vars/pregnancy_uuid_ctx" type="string" calculate="if(instance('contact-summary')/context/pregnancy_uuid != '', instance('contact-summary')/context/pregnancy_uuid, .)"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_weeks_pregnant" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  != 'unknown'"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_weeks_pregnant_unknown" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  = 'unknown'"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_edd" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/edd_ctx  != 'unknown'"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/current_edd_unknown" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/edd_ctx  = 'unknown'"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/visit_option" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_summary/g_age_correct" type="select1" required="true()" relevant="selected(../visit_option, 'yes')"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_ended" relevant="not(selected(../pregnancy_summary/visit_option, 'yes'))"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/miscarriage_note" readonly="true()" relevant="selected(../../pregnancy_summary/visit_option, 'miscarriage')" type="string"/>
-      <bind constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today())) and ( /pregnancy_home_visit/lmp_date_8601  = '' or decimal-date-time(.) &gt;= (decimal-date-time( /pregnancy_home_visit/lmp_date_8601 )))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/pregnancy_ended/miscarriage_date:jr:constraintMsg')" nodeset="/pregnancy_home_visit/pregnancy_ended/miscarriage_date" relevant="selected(../../pregnancy_summary/visit_option, 'miscarriage')" required="true()" type="date"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/abortion_note" readonly="true()" relevant="selected(../../pregnancy_summary/visit_option, 'abortion')" type="string"/>
-      <bind constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today())) and ( /pregnancy_home_visit/lmp_date_8601  = '' or decimal-date-time(.) &gt;= (decimal-date-time( /pregnancy_home_visit/lmp_date_8601 )))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/pregnancy_ended/abortion_date:jr:constraintMsg')" nodeset="/pregnancy_home_visit/pregnancy_ended/abortion_date" relevant="selected(../../pregnancy_summary/visit_option, 'abortion')" required="true()" type="date"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/refusing_note" readonly="true()" relevant="selected(../../pregnancy_summary/visit_option, 'refused')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/migrated_note" readonly="true()" relevant="selected(../../pregnancy_summary/visit_option, 'migrated')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/end_pregnancy_note" readonly="true()" relevant="selected(../../pregnancy_summary/visit_option, 'miscarriage') or
-selected(../../pregnancy_summary/visit_option, 'abortion')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/clear_option" relevant="selected(../../pregnancy_summary/visit_option, 'refused') or
-selected(../../pregnancy_summary/visit_option, 'migrated')" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/cear_note" readonly="true()" relevant="selected(../../pregnancy_summary/visit_option, 'refused') or
-selected(../../pregnancy_summary/visit_option, 'migrated')" type="string"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/miscarriage_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'miscarriage')"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/miscarriage_date" type="date" relevant="selected(../../pregnancy_summary/visit_option, 'miscarriage')" constraint=". &lt;= today() and ( /pregnancy_home_visit/lmp_date_8601  = '' or . &gt;=  /pregnancy_home_visit/lmp_date_8601 )" required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/pregnancy_ended/miscarriage_date:jr:constraintMsg')"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/abortion_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'abortion')"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/abortion_date" type="date" relevant="selected(../../pregnancy_summary/visit_option, 'abortion')" constraint=". &lt;= today() and ( /pregnancy_home_visit/lmp_date_8601  = '' or . &gt;=  /pregnancy_home_visit/lmp_date_8601 )" required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/pregnancy_ended/abortion_date:jr:constraintMsg')"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/refusing_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'refused')"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/migrated_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'migrated')"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/end_pregnancy_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'miscarriage') or
+selected(../../pregnancy_summary/visit_option, 'abortion')"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/clear_option" type="select1" required="true()" relevant="selected(../../pregnancy_summary/visit_option, 'refused') or
+selected(../../pregnancy_summary/visit_option, 'migrated')"/>
+      <bind nodeset="/pregnancy_home_visit/pregnancy_ended/cear_note" readonly="true()" type="string" relevant="selected(../../pregnancy_summary/visit_option, 'refused') or
+selected(../../pregnancy_summary/visit_option, 'migrated')"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_ended/submit_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/pregnancy_ended/back_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age" relevant="selected(../pregnancy_summary/visit_option, 'yes') and
 selected(../pregnancy_summary/g_age_correct, 'no')"/>
-      <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/g_age_update_method" required="true()" type="select1"/>
-      <bind constraint=". &gt;= 4 and . &lt;= 40" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new:jr:constraintMsg')" nodeset="/pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new" relevant="selected(../g_age_update_method, 'method_weeks')" required="true()" type="int"/>
-      <bind constraint=". &gt;= date-time(floor(decimal-date-time(today()))) and
-. &lt;= date-time(floor(decimal-date-time(today())) + (9 * 30))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/u_edd_new:jr:constraintMsg')" nodeset="/pregnancy_home_visit/update_g_age/update_method/u_edd_new" relevant="selected(../g_age_update_method, 'method_edd')" required="true()" type="date"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/g_age_update_method" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new" type="int" required="true()" constraint=". &gt;= 4 and . &lt;= 40" relevant="selected(../g_age_update_method, 'method_weeks')" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new:jr:constraintMsg')"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/update_method/u_edd_new" type="date" relevant="selected(../g_age_update_method, 'method_edd')" constraint=". &gt;= today() and
+. &lt;= date-time(decimal-date-time(today()) + (9 * 30))" required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/update_g_age/update_method/u_edd_new:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/update_check_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_info" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_g_age" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  != 'unknown'" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_g_age_unknown" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  = 'unknown'" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_edd" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/edd_ctx  != 'unknown'" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_edd_unknown" readonly="true()" relevant=" /pregnancy_home_visit/context_vars/edd_ctx  = 'unknown'" type="string"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_g_age" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  != 'unknown'"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_g_age_unknown" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/weeks_since_lmp_rounded_ctx  = 'unknown'"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_edd" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/edd_ctx  != 'unknown'"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/previous_edd_unknown" readonly="true()" type="string" relevant=" /pregnancy_home_visit/context_vars/edd_ctx  = 'unknown'"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/new_info" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/new_g_age" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/new_edd" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/update_g_age/update_summary/edd_check_note" readonly="true()" type="string"/>
-      <bind calculate="format-date-time(
-if(selected(../update_method/g_age_update_method, 'method_weeks'), date-time(floor(decimal-date-time(today())) - (../update_method/lmp_weeks_new * 7)), 
+      <bind nodeset="/pregnancy_home_visit/update_g_age/lmp_date_8601_new" type="string" calculate="format-date-time(
+if(selected(../update_method/g_age_update_method, 'method_weeks'), date-time(decimal-date-time(today()) - (../update_method/lmp_weeks_new * 7)), 
 if(selected(../update_method/g_age_update_method, 'method_edd'), date-time(decimal-date-time(../update_method/u_edd_new) - 280), 0)
-), &quot;%Y-%m-%d&quot;)" nodeset="/pregnancy_home_visit/update_g_age/lmp_date_8601_new" type="string"/>
-      <bind calculate="format-date-time(../lmp_date_8601_new, &quot;%e %b, %Y&quot;)" nodeset="/pregnancy_home_visit/update_g_age/lmp_date_new" type="string"/>
-      <bind calculate="format-date-time(date-time(decimal-date-time(../lmp_date_8601_new)+280),&quot;%Y-%m-%d&quot;)" nodeset="/pregnancy_home_visit/update_g_age/edd_8601_new" type="string"/>
-      <bind calculate="format-date-time(../edd_8601_new, &quot;%e %b, %Y&quot;)" nodeset="/pregnancy_home_visit/update_g_age/edd_new" type="string"/>
+), &quot;%Y-%m-%d&quot;)"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/lmp_date_new" type="string" calculate="format-date-time(../lmp_date_8601_new, &quot;%e %b, %Y&quot;)"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/edd_8601_new" type="string" calculate="format-date-time(date-time(decimal-date-time(../lmp_date_8601_new)+280),&quot;%Y-%m-%d&quot;)"/>
+      <bind nodeset="/pregnancy_home_visit/update_g_age/edd_new" type="string" calculate="format-date-time(../edd_8601_new, &quot;%e %b, %Y&quot;)"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf" relevant="selected(../pregnancy_summary/visit_option, 'yes') and
 ../lmp_date_8601 != ''"/>
-      <bind calculate="format-date-time(../../../context_vars/pregnancy_follow_up_date_recent_ctx, &quot;%e %b, %Y&quot;)" nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/pregnancy_follow_up_date_recent" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/last_visit_attended" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/pregnancy_follow_up_date_recent  != ''" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/report_other_visits" required="true()" type="select1"/>
-      <bind constraint=".&gt;= 0 and . &lt;= 9" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count:jr:constraintMsg')" nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count" relevant="selected(../report_other_visits, 'yes')" required="true()" type="int"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_ask_single" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  = 1" required="true()" type="select1"/>
-      <bind constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today())) and decimal-date-time(.) &gt;= (decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single:jr:constraintMsg')" nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single" relevant="selected(../visited_date_ask_single, 'yes')" required="true()" type="date"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_multiple_note" readonly="true()" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_multiple_note_section" readonly="true()" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count " nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_count" readonly="true()" type="string"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/pregnancy_follow_up_date_recent" type="string" calculate="format-date-time(../../../context_vars/pregnancy_follow_up_date_recent_ctx, &quot;%e %b, %Y&quot;)"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/last_visit_attended" type="select1" required="true()" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/pregnancy_follow_up_date_recent  != ''"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/report_other_visits" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count" type="int" required="true()" constraint=".&gt;= 0 and . &lt;= 9" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count:jr:constraintMsg')" relevant="selected(../report_other_visits, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_ask_single" type="select1" required="true()" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  = 1"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single" type="date" relevant="selected(../visited_date_ask_single, 'yes')" constraint=". &lt;= today() and . &gt;=  /pregnancy_home_visit/lmp_date_8601 " required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single:jr:constraintMsg')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_multiple_note" readonly="true()" type="string" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_multiple_note_section" readonly="true()" type="string" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_count" type="string" readonly="true()" calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count "/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date_ask_multiple" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1" required="true()" type="select1"/>
-      <bind constraint="decimal-date-time(.) &lt;= floor(decimal-date-time(today())) and decimal-date-time(.) &gt;= (decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date:jr:constraintMsg')" nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date" relevant="selected(../visited_date_ask_multiple, 'yes')" required="true()" type="date"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date_ask_multiple" type="select1" required="true()" relevant=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count  &gt; 1"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date" type="date" relevant="selected(../visited_date_ask_multiple, 'yes')" constraint=". &lt;= today() and . &gt;=  /pregnancy_home_visit/lmp_date_8601 " required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/previous_risk_factors_note" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/no_previous_risks_note" readonly="true()" relevant="../../../context_vars/risk_factors_ctx = ''" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/first_pregnancy_note" readonly="true()" relevant="contains(../../../context_vars/risk_factors_ctx, 'first_pregnancy')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/previous_miscarriage_note" readonly="true()" relevant="contains(../../../context_vars/risk_factors_ctx, 'previous_miscarriage')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/previous_difficulties_note" readonly="true()" relevant="contains(../../../context_vars/risk_factors_ctx, 'previous_difficulties')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/more_than_4_children_note" readonly="true()" relevant="contains(../../../context_vars/risk_factors_ctx, 'more_than_4_children')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/last_baby_born_less_than_1_year_ago_note" readonly="true()" relevant="contains(../../../context_vars/risk_factors_ctx, 'last_baby_born_less_than_1_year_ago')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/heart_condition_note" readonly="true()" relevant="contains(../../../context_vars/risk_factors_ctx, 'heart_condition')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/asthma_note" readonly="true()" relevant="contains(../../../context_vars/risk_factors_ctx, 'asthma')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/high_blood_pressure_note" readonly="true()" relevant="contains(../../../context_vars/risk_factors_ctx, 'high_blood_pressure')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/diabetes_note" readonly="true()" relevant="contains(../../../context_vars/risk_factors_ctx, 'diabetes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/extra_risk_note" readonly="true()" relevant="../../../context_vars/risk_factor_extra_ctx != ''" type="string"/>
-      <bind constraint="not(selected(.,'none')) or count-selected(.) &lt; 2" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks:jr:constraintMsg')" nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks" relevant="not(contains(../../../context_vars/risk_factors_ctx, 'heart_condition') and
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/no_previous_risks_note" readonly="true()" type="string" relevant="../../../context_vars/risk_factors_ctx = ''"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/first_pregnancy_note" readonly="true()" type="string" relevant="contains(../../../context_vars/risk_factors_ctx, 'first_pregnancy')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/previous_miscarriage_note" readonly="true()" type="string" relevant="contains(../../../context_vars/risk_factors_ctx, 'previous_miscarriage')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/previous_difficulties_note" readonly="true()" type="string" relevant="contains(../../../context_vars/risk_factors_ctx, 'previous_difficulties')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/more_than_4_children_note" readonly="true()" type="string" relevant="contains(../../../context_vars/risk_factors_ctx, 'more_than_4_children')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/last_baby_born_less_than_1_year_ago_note" readonly="true()" type="string" relevant="contains(../../../context_vars/risk_factors_ctx, 'last_baby_born_less_than_1_year_ago')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/heart_condition_note" readonly="true()" type="string" relevant="contains(../../../context_vars/risk_factors_ctx, 'heart_condition')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/asthma_note" readonly="true()" type="string" relevant="contains(../../../context_vars/risk_factors_ctx, 'asthma')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/high_blood_pressure_note" readonly="true()" type="string" relevant="contains(../../../context_vars/risk_factors_ctx, 'high_blood_pressure')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/diabetes_note" readonly="true()" type="string" relevant="contains(../../../context_vars/risk_factors_ctx, 'diabetes')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/extra_risk_note" readonly="true()" type="string" relevant="../../../context_vars/risk_factor_extra_ctx != ''"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks" type="select" required="true()" constraint="not(selected(.,'none')) or count-selected(.) &lt; 2" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks:jr:constraintMsg')" relevant="not(contains(../../../context_vars/risk_factors_ctx, 'heart_condition') and
 contains(../../../context_vars/risk_factors_ctx, 'asthma') and
 contains(../../../context_vars/risk_factors_ctx, 'high_blood_pressure') and
-contains(../../../context_vars/risk_factors_ctx, 'diabetes'))" required="true()" type="select"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk_check" required="true()" type="select1"/>
-      <bind constraint="string-length(.) &lt;= 100" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk:jr:constraintMsg')" nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk" relevant="selected(../additional_risk_check, 'yes')" required="true()" type="string"/>
-      <bind calculate="if(selected(../new_risks, 'heart_condition') or
+contains(../../../context_vars/risk_factors_ctx, 'diabetes'))"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk_check" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk" type="string" required="true()" constraint="string-length(.) &lt;= 100" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk:jr:constraintMsg')" relevant="selected(../additional_risk_check, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/r_risk_factor_present" type="string" calculate="if(selected(../new_risks, 'heart_condition') or
 selected(../new_risks, 'asthma') or
 selected(../new_risks, 'high_blood_pressure') or
 selected(../new_risks, 'diabetes') or
 selected(../additional_risk_check, 'yes')
-, 'yes', 'no')" nodeset="/pregnancy_home_visit/anc_visits_hf/risk_factors/r_risk_factor_present" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known" required="true()" type="select1"/>
-      <bind constraint="(decimal-date-time(.) &gt;= floor(decimal-date-time(today()))) and
-(decimal-date-time(.) &lt;= floor(decimal-date-time(today() + 30)))" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:jr:constraintMsg')" nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date" relevant="selected(../appointment_date_known, 'yes')" required="true()" type="date"/>
+, 'yes', 'no')"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date" type="date" relevant="selected(../appointment_date_known, 'yes')" constraint="(. &gt;= today()) and
+(decimal-date-time(.) &lt;= decimal-date-time(today() + 30))" required="true()" jr:constraintMsg="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note" relevant="selected(../anc_next_visit_date/appointment_date_known, 'no')"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/who_recommends_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_visit_advice_note/prenancy_age_note" readonly="true()" type="string"/>
@@ -1357,18 +1357,18 @@ selected(../additional_risk_check, 'yes')
       <bind nodeset="/pregnancy_home_visit/danger_signs" relevant="selected(../pregnancy_summary/visit_option, 'yes')"/>
       <bind nodeset="/pregnancy_home_visit/danger_signs/danger_signs_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/danger_signs/danger_signs_question_note" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/vaginal_bleeding" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/fits" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/severe_abdominal_pain" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/severe_headache" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/very_pale" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/fever" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/reduced_or_no_fetal_movements" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/breaking_water" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/easily_tired" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/face_hand_swelling" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/breathlessness" required="true()" type="select1"/>
-      <bind calculate="if(selected(../vaginal_bleeding, 'yes')
+      <bind nodeset="/pregnancy_home_visit/danger_signs/vaginal_bleeding" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/fits" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/severe_abdominal_pain" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/severe_headache" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/very_pale" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/fever" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/reduced_or_no_fetal_movements" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/breaking_water" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/easily_tired" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/face_hand_swelling" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/breathlessness" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/r_danger_sign_present" type="string" calculate="if(selected(../vaginal_bleeding, 'yes')
 or selected(../fits, 'yes')
 or selected(../severe_abdominal_pain, 'yes')
 or selected(../severe_headache, 'yes')
@@ -1390,144 +1390,147 @@ and selected(../reduced_or_no_fetal_movements, 'no')
 and selected(../breaking_water, 'no')
 and selected(../easily_tired, 'no')
 and selected(../face_hand_swelling, 'no')
-and selected(../breathlessness, 'no'), 'no', ''))" nodeset="/pregnancy_home_visit/danger_signs/r_danger_sign_present" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/congratulate_no_ds_note" readonly="true()" relevant="../r_danger_sign_present = 'no'" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/refer_patient_note_1" readonly="true()" relevant="../r_danger_sign_present = 'yes'" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/danger_signs/refer_patient_note_2" readonly="true()" relevant="../r_danger_sign_present = 'yes'" type="string"/>
+and selected(../breathlessness, 'no'), 'no', ''))"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/congratulate_no_ds_note" readonly="true()" type="string" relevant="../r_danger_sign_present = 'no'"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/refer_patient_note_1" readonly="true()" type="string" relevant="../r_danger_sign_present = 'yes'"/>
+      <bind nodeset="/pregnancy_home_visit/danger_signs/refer_patient_note_2" readonly="true()" type="string" relevant="../r_danger_sign_present = 'yes'"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices" relevant="selected(../pregnancy_summary/visit_option, 'yes')"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_use" required="true()" type="select1"/>
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_use" type="select1" required="true()"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_advice_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/malaria/malaria_prophylaxis_note" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_daily" required="true()" type="select1"/>
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_daily" type="select1" required="true()"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/deworming" relevant=" /pregnancy_home_visit/weeks_since_lmp  &gt; 12 and ../../context_vars/deworming_med_received_ctx != 'yes'"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/deworming/deworming_med" required="true()" type="select1"/>
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/deworming/deworming_med" type="select1" required="true()"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/deworming/deworming_med_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_practices_tips" relevant="../../lmp_date_8601 != ''"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_practices_tips/eat_more_note" readonly="true()" relevant=" /pregnancy_home_visit/weeks_since_lmp  &lt;= 24" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_practices_tips/talk_softly_note" readonly="true()" relevant=" /pregnancy_home_visit/weeks_since_lmp  &gt;= 25 and  /pregnancy_home_visit/weeks_since_lmp  &lt;= 30" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_practices_tips/respond_move_note" readonly="true()" relevant=" /pregnancy_home_visit/weeks_since_lmp  &gt;= 25 and  /pregnancy_home_visit/weeks_since_lmp  &lt;= 30" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_practices_tips/deliver_hf_note" readonly="true()" relevant=" /pregnancy_home_visit/weeks_since_lmp  &gt;= 31" type="string"/>
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_practices_tips/eat_more_note" readonly="true()" type="string" relevant=" /pregnancy_home_visit/weeks_since_lmp  &lt;= 24"/>
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_practices_tips/talk_softly_note" readonly="true()" type="string" relevant=" /pregnancy_home_visit/weeks_since_lmp  &gt;= 25 and  /pregnancy_home_visit/weeks_since_lmp  &lt;= 30"/>
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_practices_tips/respond_move_note" readonly="true()" type="string" relevant=" /pregnancy_home_visit/weeks_since_lmp  &gt;= 25 and  /pregnancy_home_visit/weeks_since_lmp  &lt;= 30"/>
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_practices_tips/deliver_hf_note" readonly="true()" type="string" relevant=" /pregnancy_home_visit/weeks_since_lmp  &gt;= 31"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status" relevant="../../context_vars/hiv_tested_ctx != 'yes'"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested" required="true()" type="select1"/>
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested" type="select1" required="true()"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_importance_note" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/tetanus" relevant="../context_vars/tt_received_ctx != 'yes' and
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/tetanus" relevant="../../context_vars/tt_received_ctx != 'yes' and
 (selected(../../anc_visits_hf/anc_visits_hf_past/last_visit_attended, 'yes') or
 selected(../../anc_visits_hf/anc_visits_hf_past/report_other_visits, 'yes'))"/>
-      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/tetanus/tt_imm_received" required="true()" type="select1"/>
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/tetanus/tt_imm_received" type="select1" required="true()"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/tetanus/tt_note_1" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/tetanus/tt_note_2" readonly="true()" type="string"/>
-      <bind calculate="if((selected(../tetanus/tt_imm_received, 'no') or
+      <bind nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_pregnancy_practices" type="string" calculate="if((selected(../tetanus/tt_imm_received, 'no') or
 selected(../hiv_status/hiv_tested, 'no') or
 selected(../deworming/deworming_med, 'no') or
-selected(../iron_folate/iron_folate_daily, 'no')), 'yes', 'no')" nodeset="/pregnancy_home_visit/safe_pregnancy_practices/safe_pregnancy_practices" type="string"/>
+selected(../iron_folate/iron_folate_daily, 'no')), 'yes', 'no')"/>
       <bind nodeset="/pregnancy_home_visit/summary" relevant="selected(../pregnancy_summary/visit_option, 'yes')"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_submit_note" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_summary_details" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_patient_details" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_summary" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_pregnancy_details" readonly="true()" relevant="../../lmp_date_8601 != ''" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_pregnancy_details_unknown" readonly="true()" relevant="../../lmp_date_8601 = ''" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_risk_factors" readonly="true()" relevant="../../anc_visits_hf/risk_factors/r_risk_factor_present = 'yes'" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_risk_heart_condition" readonly="true()" relevant="selected(../../anc_visits_hf/risk_factors/new_risks, 'heart_condition')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_risk_asthma" readonly="true()" relevant="selected(../../anc_visits_hf/risk_factors/new_risks, 'asthma')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_risk_high_blood_pressure" readonly="true()" relevant="selected(../../anc_visits_hf/risk_factors/new_risks, 'high_blood_pressure')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_risk_diabetes" readonly="true()" relevant="selected(../../anc_visits_hf/risk_factors/new_risks, 'diabetes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_risk_additional" readonly="true()" relevant="selected(../../anc_visits_hf/risk_factors/additional_risk_check, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_signs" readonly="true()" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_vaginal_bleeding" readonly="true()" relevant="selected(../../danger_signs/vaginal_bleeding, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_fits" readonly="true()" relevant="selected(../../danger_signs/fits, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_severe_abdominal_pain" readonly="true()" relevant="selected(../../danger_signs/severe_abdominal_pain, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_severe_headache" readonly="true()" relevant="selected(../../danger_signs/severe_headache, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_very_pale" readonly="true()" relevant="selected(../../danger_signs/very_pale, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_fever" readonly="true()" relevant="selected(../../danger_signs/fever, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_reduced_or_no_fetal_movements" readonly="true()" relevant="selected(../../danger_signs/reduced_or_no_fetal_movements, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_breaking_water" readonly="true()" relevant="selected(../../danger_signs/breaking_water, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_easily_tired" readonly="true()" relevant="selected(../../danger_signs/easily_tired, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_face_hand_swelling" readonly="true()" relevant="selected(../../danger_signs/face_hand_swelling, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_breathlessness" readonly="true()" relevant="selected(../../danger_signs/breathlessness, 'yes')" type="string"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_pregnancy_details" readonly="true()" type="string" relevant="../../lmp_date_8601 != ''"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_pregnancy_details_unknown" readonly="true()" type="string" relevant="../../lmp_date_8601 = ''"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_risk_factors" readonly="true()" type="string" relevant="../../anc_visits_hf/risk_factors/r_risk_factor_present = 'yes'"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_risk_heart_condition" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/risk_factors/new_risks, 'heart_condition')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_risk_asthma" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/risk_factors/new_risks, 'asthma')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_risk_high_blood_pressure" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/risk_factors/new_risks, 'high_blood_pressure')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_risk_diabetes" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/risk_factors/new_risks, 'diabetes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_risk_additional" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/risk_factors/additional_risk_check, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_signs" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_vaginal_bleeding" readonly="true()" type="string" relevant="selected(../../danger_signs/vaginal_bleeding, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_fits" readonly="true()" type="string" relevant="selected(../../danger_signs/fits, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_severe_abdominal_pain" readonly="true()" type="string" relevant="selected(../../danger_signs/severe_abdominal_pain, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_severe_headache" readonly="true()" type="string" relevant="selected(../../danger_signs/severe_headache, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_very_pale" readonly="true()" type="string" relevant="selected(../../danger_signs/very_pale, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_fever" readonly="true()" type="string" relevant="selected(../../danger_signs/fever, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_reduced_or_no_fetal_movements" readonly="true()" type="string" relevant="selected(../../danger_signs/reduced_or_no_fetal_movements, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_breaking_water" readonly="true()" type="string" relevant="selected(../../danger_signs/breaking_water, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_easily_tired" readonly="true()" type="string" relevant="selected(../../danger_signs/easily_tired, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_face_hand_swelling" readonly="true()" type="string" relevant="selected(../../danger_signs/face_hand_swelling, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_danger_sign_breathlessness" readonly="true()" type="string" relevant="selected(../../danger_signs/breathlessness, 'yes')"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_space_1" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_referrals" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_refer_clinic_immediately" readonly="true()" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_refer_danger_sign" readonly="true()" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_routine_anc" readonly="true()" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_request_services" readonly="true()" relevant="selected(../../safe_pregnancy_practices/request_services, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_request_service_tt" readonly="true()" relevant="selected(../../safe_pregnancy_practices/tetanus/tt_imm_received, 'no')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_request_service_hiv_test" readonly="true()" relevant="selected(../../safe_pregnancy_practices/hiv_status/hiv_tested, 'no')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_request_service_deworming" readonly="true()" relevant="selected(../../safe_pregnancy_practices/deworming/deworming_med, 'no')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_request_service_iron" readonly="true()" relevant="selected(../../safe_pregnancy_practices/iron_folate/iron_folate_daily, 'no')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_who_recommends" readonly="true()" relevant="../../lmp_date_8601 = '' or selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'no')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_refer_hf_appropriate_time" readonly="true()" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'no')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_refer_hf_immediately" readonly="true()" relevant="../../lmp_date_8601 = ''" type="string"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_refer_clinic_immediately" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_refer_danger_sign" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_routine_anc" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_request_services" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/tetanus/tt_imm_received, 'no') or
+selected(../../safe_pregnancy_practices/hiv_status/hiv_tested, 'no') or
+selected(../../safe_pregnancy_practices/deworming/deworming_med, 'no') or
+selected(../../safe_pregnancy_practices/iron_folate/iron_folate_daily, 'no')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_request_service_tt" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/tetanus/tt_imm_received, 'no')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_request_service_hiv_test" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/hiv_status/hiv_tested, 'no')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_request_service_deworming" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/deworming/deworming_med, 'no')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_request_service_iron" readonly="true()" type="string" relevant="selected(../../safe_pregnancy_practices/iron_folate/iron_folate_daily, 'no')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_who_recommends" readonly="true()" type="string" relevant="../../lmp_date_8601 = '' or selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'no')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_refer_hf_appropriate_time" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'no')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_refer_hf_immediately" readonly="true()" type="string" relevant="../../lmp_date_8601 = ''"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_follow_up_tasks" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_home_visit/summary/r_following_tasks" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_fup_danger_sign" readonly="true()" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_fup_hf_visit" readonly="true()" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_fup_pregnancy_visit" readonly="true()" relevant="../../lmp_date_8601 != ''" type="string"/>
-      <bind nodeset="/pregnancy_home_visit/summary/r_fup_pregnancy_visit_2_weeks" readonly="true()" relevant="../../lmp_date_8601 = ''" type="string"/>
-      <bind calculate="round((if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 12*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 12*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 20*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 20*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 26*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 26*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 30*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 30*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 34*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 34*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 36*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 36*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 38*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 38*7,
-if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; floor(decimal-date-time(today())), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7, 0
-)))))))) - decimal-date-time(today())) div 7, 0)" nodeset="/pregnancy_home_visit/summary/next_visit_weeks" type="string"/>
-      <bind calculate="format-date-time( /pregnancy_home_visit/edd_8601 , &quot;%e %b, %Y&quot;)" nodeset="/pregnancy_home_visit/summary/edd_summary" type="string"/>
-      <bind calculate="format-date-time( /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date , &quot;%e %b, %Y&quot;)" nodeset="/pregnancy_home_visit/summary/next_appointment_date" type="string"/>
-      <bind calculate="&quot;woman&quot;" nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_label_translator" type="select1"/>
-      <bind calculate="jr:choice-name( /pregnancy_home_visit/summary/custom_translations/custom_woman_label_translator ,' /pregnancy_home_visit/summary/custom_translations/custom_woman_label_translator ')" nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_label" type="string"/>
-      <bind calculate="&quot;woman-start&quot;" nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_start_label_translator" type="select1"/>
-      <bind calculate="jr:choice-name( /pregnancy_home_visit/summary/custom_translations/custom_woman_start_label_translator ,' /pregnancy_home_visit/summary/custom_translations/custom_woman_start_label_translator ')" nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_start_label" type="string"/>
-      <bind calculate="if ( /pregnancy_home_visit/pregnancy_summary/visit_option  = 'yes', 'home_visit',  /pregnancy_home_visit/pregnancy_summary/visit_option )" nodeset="/pregnancy_home_visit/data/__activity_to_report" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/pregnancy_summary/g_age_correct " nodeset="/pregnancy_home_visit/data/__gestational_age_correct" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/pregnancy_ended/miscarriage_date " nodeset="/pregnancy_home_visit/data/__miscarriage_date" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/pregnancy_ended/abortion_date " nodeset="/pregnancy_home_visit/data/__abortion_date" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/pregnancy_ended/clear_option " nodeset="/pregnancy_home_visit/data/__visit_task_clear_option" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/update_g_age/update_method/g_age_update_method " nodeset="/pregnancy_home_visit/data/__gestational_age_update_method" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new " nodeset="/pregnancy_home_visit/data/__gestational_age_update_weeks" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/update_g_age/update_method/u_edd_new " nodeset="/pregnancy_home_visit/data/__gestational_age_update_edd" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/lmp_updated " nodeset="/pregnancy_home_visit/data/__lmp_updated" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/update_g_age/lmp_date_8601_new " nodeset="/pregnancy_home_visit/data/__lmp_date_new" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/update_g_age/edd_8601_new " nodeset="/pregnancy_home_visit/data/__edd_new" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/last_visit_attended " nodeset="/pregnancy_home_visit/data/__last_visit_attended" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/report_other_visits " nodeset="/pregnancy_home_visit/data/__report_additional_anc_hf_visits" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count " nodeset="/pregnancy_home_visit/data/__num_additional_anc_hf_visits" type="string"/>
-      <bind calculate="coalesce( /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single , join(',',  /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date ), NULL)" nodeset="/pregnancy_home_visit/data/__additional_anc_hf_visit_dates" type="string"/>
-      <bind calculate="if (selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'none'), 'no', if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '', 'yes'))" nodeset="/pregnancy_home_visit/data/__has_risk_factors_not_previously_reported" type="string"/>
-      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'heart_condition'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))" nodeset="/pregnancy_home_visit/data/__heart_condition" type="string"/>
-      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'asthma'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))" nodeset="/pregnancy_home_visit/data/__asthma" type="string"/>
-      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'high_blood_pressure'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))" nodeset="/pregnancy_home_visit/data/__high_blood_pressure" type="string"/>
-      <bind calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'diabetes'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))" nodeset="/pregnancy_home_visit/data/__diabetes" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk_check " nodeset="/pregnancy_home_visit/data/__additional_high_risk_condition_to_report" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk " nodeset="/pregnancy_home_visit/data/__additional_high_risk_condition" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known " nodeset="/pregnancy_home_visit/data/__next_anc_hf_visit_date_known" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date " nodeset="/pregnancy_home_visit/data/__next_anc_hf_visit_date" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/vaginal_bleeding " nodeset="/pregnancy_home_visit/data/__vaginal_bleeding" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/fits " nodeset="/pregnancy_home_visit/data/__fits" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/severe_abdominal_pain " nodeset="/pregnancy_home_visit/data/__severe_abdominal_pain" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/severe_headache " nodeset="/pregnancy_home_visit/data/__severe_headache" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/very_pale " nodeset="/pregnancy_home_visit/data/__very_pale" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/fever " nodeset="/pregnancy_home_visit/data/__fever" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/reduced_or_no_fetal_movements " nodeset="/pregnancy_home_visit/data/__reduced_or_no_fetal_movements" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/breaking_water " nodeset="/pregnancy_home_visit/data/__breaking_water" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/easily_tired " nodeset="/pregnancy_home_visit/data/__easily_tired" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/face_hand_swelling " nodeset="/pregnancy_home_visit/data/__face_hand_swelling" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/breathlessness " nodeset="/pregnancy_home_visit/data/__breathlessness" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/danger_signs/r_danger_sign_present " nodeset="/pregnancy_home_visit/data/__has_danger_sign" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_use " nodeset="/pregnancy_home_visit/data/__uses_llin" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_daily " nodeset="/pregnancy_home_visit/data/__takes_iron_folate_daily" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/deworming/deworming_med " nodeset="/pregnancy_home_visit/data/__received_deworming_meds" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested " nodeset="/pregnancy_home_visit/data/__tested_for_hiv_in_past_3_months" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/safe_pregnancy_practices/tetanus/tt_imm_received " nodeset="/pregnancy_home_visit/data/__received_tetanus_toxoid_this_pregnancy" type="string"/>
-      <bind calculate="../../../inputs/contact/_id" nodeset="/pregnancy_home_visit/data/meta/__patient_uuid" type="string"/>
-      <bind calculate="../../../inputs/contact/patient_id" nodeset="/pregnancy_home_visit/data/meta/__patient_id" type="string"/>
-      <bind calculate="../../../inputs/contact/parent/_id" nodeset="/pregnancy_home_visit/data/meta/__household_uuid" type="string"/>
-      <bind calculate="../../../inputs/source" nodeset="/pregnancy_home_visit/data/meta/__source" type="string"/>
-      <bind calculate="../../../inputs/source_id" nodeset="/pregnancy_home_visit/data/meta/__source_id" type="string"/>
-      <bind calculate=" /pregnancy_home_visit/context_vars/pregnancy_uuid_ctx " nodeset="/pregnancy_home_visit/data/meta/__pregnancy_uuid" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/pregnancy_home_visit/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_fup_danger_sign" readonly="true()" type="string" relevant="selected(../../danger_signs/r_danger_sign_present, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_fup_hf_visit" readonly="true()" type="string" relevant="selected(../../anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known, 'yes')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_fup_pregnancy_visit" readonly="true()" type="string" relevant="../../lmp_date_8601 != ''"/>
+      <bind nodeset="/pregnancy_home_visit/summary/r_fup_pregnancy_visit_2_weeks" readonly="true()" type="string" relevant="../../lmp_date_8601 = ''"/>
+      <bind nodeset="/pregnancy_home_visit/summary/next_visit_weeks" type="string" calculate="round((if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 12*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 12*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 20*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 20*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 26*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 26*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 30*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 30*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 34*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 34*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 36*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 36*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 38*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 38*7,
+if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; decimal-date-time(today()), decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7, 0
+)))))))) - decimal-date-time(today())) div 7, 0)"/>
+      <bind nodeset="/pregnancy_home_visit/summary/edd_summary" type="string" calculate="format-date-time( /pregnancy_home_visit/edd_8601 , &quot;%e %b, %Y&quot;)"/>
+      <bind nodeset="/pregnancy_home_visit/summary/next_appointment_date" type="string" calculate="format-date-time( /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date , &quot;%e %b, %Y&quot;)"/>
+      <bind nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_label_translator" type="select1" calculate="&quot;woman&quot;"/>
+      <bind nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_label" type="string" calculate="jr:choice-name( /pregnancy_home_visit/summary/custom_translations/custom_woman_label_translator ,' /pregnancy_home_visit/summary/custom_translations/custom_woman_label_translator ')"/>
+      <bind nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_start_label_translator" type="select1" calculate="&quot;woman-start&quot;"/>
+      <bind nodeset="/pregnancy_home_visit/summary/custom_translations/custom_woman_start_label" type="string" calculate="jr:choice-name( /pregnancy_home_visit/summary/custom_translations/custom_woman_start_label_translator ,' /pregnancy_home_visit/summary/custom_translations/custom_woman_start_label_translator ')"/>
+      <bind nodeset="/pregnancy_home_visit/data/__activity_to_report" type="string" calculate="if ( /pregnancy_home_visit/pregnancy_summary/visit_option  = 'yes', 'home_visit',  /pregnancy_home_visit/pregnancy_summary/visit_option )"/>
+      <bind nodeset="/pregnancy_home_visit/data/__gestational_age_correct" type="string" calculate=" /pregnancy_home_visit/pregnancy_summary/g_age_correct "/>
+      <bind nodeset="/pregnancy_home_visit/data/__miscarriage_date" type="string" calculate=" /pregnancy_home_visit/pregnancy_ended/miscarriage_date "/>
+      <bind nodeset="/pregnancy_home_visit/data/__abortion_date" type="string" calculate=" /pregnancy_home_visit/pregnancy_ended/abortion_date "/>
+      <bind nodeset="/pregnancy_home_visit/data/__visit_task_clear_option" type="string" calculate=" /pregnancy_home_visit/pregnancy_ended/clear_option "/>
+      <bind nodeset="/pregnancy_home_visit/data/__gestational_age_update_method" type="string" calculate=" /pregnancy_home_visit/update_g_age/update_method/g_age_update_method "/>
+      <bind nodeset="/pregnancy_home_visit/data/__gestational_age_update_weeks" type="string" calculate=" /pregnancy_home_visit/update_g_age/update_method/lmp_weeks_new "/>
+      <bind nodeset="/pregnancy_home_visit/data/__gestational_age_update_edd" type="string" calculate=" /pregnancy_home_visit/update_g_age/update_method/u_edd_new "/>
+      <bind nodeset="/pregnancy_home_visit/data/__lmp_updated" type="string" calculate=" /pregnancy_home_visit/lmp_updated "/>
+      <bind nodeset="/pregnancy_home_visit/data/__lmp_date_new" type="string" calculate=" /pregnancy_home_visit/update_g_age/lmp_date_8601_new "/>
+      <bind nodeset="/pregnancy_home_visit/data/__edd_new" type="string" calculate=" /pregnancy_home_visit/update_g_age/edd_8601_new "/>
+      <bind nodeset="/pregnancy_home_visit/data/__last_visit_attended" type="string" calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/last_visit_attended "/>
+      <bind nodeset="/pregnancy_home_visit/data/__report_additional_anc_hf_visits" type="string" calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/report_other_visits "/>
+      <bind nodeset="/pregnancy_home_visit/data/__num_additional_anc_hf_visits" type="string" calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_hf_count "/>
+      <bind nodeset="/pregnancy_home_visit/data/__additional_anc_hf_visit_dates" type="string" calculate="coalesce( /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_date_single , join(',',  /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date ), NULL)"/>
+      <bind nodeset="/pregnancy_home_visit/data/__has_risk_factors_not_previously_reported" type="string" calculate="if (selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'none'), 'no', if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '', 'yes'))"/>
+      <bind nodeset="/pregnancy_home_visit/data/__heart_condition" type="string" calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'heart_condition'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))"/>
+      <bind nodeset="/pregnancy_home_visit/data/__asthma" type="string" calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'asthma'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))"/>
+      <bind nodeset="/pregnancy_home_visit/data/__high_blood_pressure" type="string" calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'high_blood_pressure'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))"/>
+      <bind nodeset="/pregnancy_home_visit/data/__diabetes" type="string" calculate="if(selected( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks , 'diabetes'),'yes',if( /pregnancy_home_visit/anc_visits_hf/risk_factors/new_risks  = '', '','no'))"/>
+      <bind nodeset="/pregnancy_home_visit/data/__additional_high_risk_condition_to_report" type="string" calculate=" /pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk_check "/>
+      <bind nodeset="/pregnancy_home_visit/data/__additional_high_risk_condition" type="string" calculate=" /pregnancy_home_visit/anc_visits_hf/risk_factors/additional_risk "/>
+      <bind nodeset="/pregnancy_home_visit/data/__next_anc_hf_visit_date_known" type="string" calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date_known "/>
+      <bind nodeset="/pregnancy_home_visit/data/__next_anc_hf_visit_date" type="string" calculate=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_next/anc_next_visit_date/appointment_date "/>
+      <bind nodeset="/pregnancy_home_visit/data/__vaginal_bleeding" type="string" calculate=" /pregnancy_home_visit/danger_signs/vaginal_bleeding "/>
+      <bind nodeset="/pregnancy_home_visit/data/__fits" type="string" calculate=" /pregnancy_home_visit/danger_signs/fits "/>
+      <bind nodeset="/pregnancy_home_visit/data/__severe_abdominal_pain" type="string" calculate=" /pregnancy_home_visit/danger_signs/severe_abdominal_pain "/>
+      <bind nodeset="/pregnancy_home_visit/data/__severe_headache" type="string" calculate=" /pregnancy_home_visit/danger_signs/severe_headache "/>
+      <bind nodeset="/pregnancy_home_visit/data/__very_pale" type="string" calculate=" /pregnancy_home_visit/danger_signs/very_pale "/>
+      <bind nodeset="/pregnancy_home_visit/data/__fever" type="string" calculate=" /pregnancy_home_visit/danger_signs/fever "/>
+      <bind nodeset="/pregnancy_home_visit/data/__reduced_or_no_fetal_movements" type="string" calculate=" /pregnancy_home_visit/danger_signs/reduced_or_no_fetal_movements "/>
+      <bind nodeset="/pregnancy_home_visit/data/__breaking_water" type="string" calculate=" /pregnancy_home_visit/danger_signs/breaking_water "/>
+      <bind nodeset="/pregnancy_home_visit/data/__easily_tired" type="string" calculate=" /pregnancy_home_visit/danger_signs/easily_tired "/>
+      <bind nodeset="/pregnancy_home_visit/data/__face_hand_swelling" type="string" calculate=" /pregnancy_home_visit/danger_signs/face_hand_swelling "/>
+      <bind nodeset="/pregnancy_home_visit/data/__breathlessness" type="string" calculate=" /pregnancy_home_visit/danger_signs/breathlessness "/>
+      <bind nodeset="/pregnancy_home_visit/data/__has_danger_sign" type="string" calculate=" /pregnancy_home_visit/danger_signs/r_danger_sign_present "/>
+      <bind nodeset="/pregnancy_home_visit/data/__uses_llin" type="string" calculate=" /pregnancy_home_visit/safe_pregnancy_practices/malaria/llin_use "/>
+      <bind nodeset="/pregnancy_home_visit/data/__takes_iron_folate_daily" type="string" calculate=" /pregnancy_home_visit/safe_pregnancy_practices/iron_folate/iron_folate_daily "/>
+      <bind nodeset="/pregnancy_home_visit/data/__received_deworming_meds" type="string" calculate=" /pregnancy_home_visit/safe_pregnancy_practices/deworming/deworming_med "/>
+      <bind nodeset="/pregnancy_home_visit/data/__tested_for_hiv_in_past_3_months" type="string" calculate=" /pregnancy_home_visit/safe_pregnancy_practices/hiv_status/hiv_tested "/>
+      <bind nodeset="/pregnancy_home_visit/data/__received_tetanus_toxoid_this_pregnancy" type="string" calculate=" /pregnancy_home_visit/safe_pregnancy_practices/tetanus/tt_imm_received "/>
+      <bind nodeset="/pregnancy_home_visit/data/meta/__patient_uuid" type="string" calculate="../../../inputs/contact/_id"/>
+      <bind nodeset="/pregnancy_home_visit/data/meta/__patient_id" type="string" calculate="../../../inputs/contact/patient_id"/>
+      <bind nodeset="/pregnancy_home_visit/data/meta/__household_uuid" type="string" calculate="../../../inputs/contact/parent/_id"/>
+      <bind nodeset="/pregnancy_home_visit/data/meta/__source" type="string" calculate="../../../inputs/source"/>
+      <bind nodeset="/pregnancy_home_visit/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"/>
+      <bind nodeset="/pregnancy_home_visit/data/meta/__pregnancy_uuid" type="string" calculate=" /pregnancy_home_visit/context_vars/pregnancy_uuid_ctx "/>
+      <bind nodeset="/pregnancy_home_visit/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">
@@ -1744,7 +1747,7 @@ if((decimal-date-time( /pregnancy_home_visit/lmp_date_8601 ) + 40*7) &gt; floor(
         </input>
         <group ref="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates">
           <label ref="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates:label')"/>
-          <repeat jr:count=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_count " nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates">
+          <repeat nodeset="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates" jr:count=" /pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates_count ">
             <select1 ref="/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date_ask_multiple">
               <label ref="jr:itext('/pregnancy_home_visit/anc_visits_hf/anc_visits_hf_past/visited_dates/visited_date_ask_multiple:label')"/>
               <item>

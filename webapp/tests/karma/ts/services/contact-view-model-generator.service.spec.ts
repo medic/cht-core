@@ -125,7 +125,7 @@ describe('ContactViewModelGenerator service', () => {
     sinon.restore();
   });
 
-  function waitForModelToLoad(model) {
+  const waitForModelToLoad = (model) => {
     return service
       .loadChildren(model)
       .then(children => {
@@ -136,7 +136,7 @@ describe('ContactViewModelGenerator service', () => {
         model.reports = reports;
         return model;
       });
-  }
+  };
 
   describe('Place', () => {
     const runPlaceTest = (childrenArray) => {
@@ -416,7 +416,7 @@ describe('ContactViewModelGenerator service', () => {
       it('model returns the correct keys', () => {
         return runPersonTest(doc).then(model => {
           expect(Object.keys(model)).to.have.members(
-            ['_id', 'doc', 'lineage', 'type', 'isPrimaryContact',]
+            ['_id', 'doc', 'lineage', 'type', 'isPrimaryContact', ]
           );
           expect(Object.keys(model.doc)).to.have.members(
             ['_id', 'name', 'type', 'parent', 'muted']
@@ -474,7 +474,7 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('includes reports from children', () => {
-      stubSearch([ { _id: 'ab' },{ _id: 'cd' } ]);
+      stubSearch([ { _id: 'ab' }, { _id: 'cd' } ]);
       stubGetDataRecords([]);
       return runReportsTest([childPerson, childPerson2, deceasedChildPerson])
         .then(waitForModelToLoad)

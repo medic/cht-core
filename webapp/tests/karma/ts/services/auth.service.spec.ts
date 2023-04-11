@@ -1,7 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
+import { of } from 'rxjs';
 
+import { HttpClient } from '@angular/common/http';
 import { SessionService } from '@mm-services/session.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -14,17 +16,20 @@ describe('Auth Service', () => {
   let settingsService;
   let chtScriptApiService;
   let changesService;
+  let http;
 
   beforeEach(() => {
     sessionService = { userCtx: sinon.stub(), isOnlineOnly: sinon.stub() };
     settingsService = { get: sinon.stub() };
-    changesService = { subscribe: sinon.stub().resolves() };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
+    http = { get: sinon.stub().returns(of([])) };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
-        { provide: ChangesService, useValue: changesService }
+        { provide: ChangesService, useValue: changesService },
+        { provide: HttpClient, useValue: http },
       ]
     });
 
@@ -114,6 +119,17 @@ describe('Auth Service', () => {
       const result = await service.has(['']);
 
       expect(result).to.be.false;
+    });
+
+    it('should throw error when server is offline', async () => {
+      settingsService.get.rejects({ status: 503 });
+      chtScriptApiService.init();
+      try {
+        await service.has(['']);
+        expect.fail();
+      } catch (err) {
+        expect(err).to.deep.equal({ status: 503 });
+      }
     });
 
     describe('unconfigured permissions', () => {

@@ -17,6 +17,11 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: false,
+        taskGroup: {
+          lastSubmittedTask: null,
+          contact: null,
+          loadingContact: null,
+        },
       });
     });
 
@@ -62,6 +67,11 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: true,
+        taskGroup: {
+          lastSubmittedTask: null,
+          contact: null,
+          loadingContact: null,
+        },
       });
     });
 
@@ -107,6 +117,11 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: selected,
         loaded: false,
+        taskGroup: {
+          lastSubmittedTask: null,
+          contact: null,
+          loadingContact: null,
+        },
       });
     });
 
@@ -160,6 +175,11 @@ describe('Tasks reducer', () => {
         tasksList: [],
         selected: null,
         loaded: false,
+        taskGroup: {
+          lastSubmittedTask: null,
+          contact: null,
+          loadingContact: null,
+        },
       });
     });
 
@@ -215,6 +235,11 @@ describe('Tasks reducer', () => {
       expect(state).to.deep.equal({
         selected: null,
         loaded: false,
+        taskGroup: {
+          lastSubmittedTask: null,
+          contact: null,
+          loadingContact: null,
+        },
         tasksList: [
           { _id: 'task9', dueDate: -100, state: 'Ready', field: 9 },
           { _id: 'task7', dueDate: 125, state: 'Ready', field: 7 },
@@ -226,6 +251,256 @@ describe('Tasks reducer', () => {
           { _id: 'task2', dueDate: undefined, state: 'Ready', field: 2 },
           { _id: 'task3', dueDate: 0, state: 'Ready', field: 3 },
         ]
+      });
+    });
+  });
+
+  describe('setLastSubmittedTask', () => {
+    it('should work on empty state', () => {
+      const task = { _id: 'task_id', due: '22', field: 1 };
+      state = tasksReducer(state, Actions.setLastSubmittedTask(task));
+      expect(state).to.deep.equal({
+        tasksList: [],
+        selected: null,
+        loaded: false,
+        taskGroup: {
+          contact: null,
+          loadingContact: null,
+          lastSubmittedTask: task,
+        },
+      });
+    });
+
+    it('should work with existent state', () => {
+      state = {
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        taskGroup: {
+          contact: { _id: 'contact' },
+          loadingContact: false,
+          lastSubmittedTask: { _id: 'othertask' },
+        },
+      };
+      const task = { _id: 'task_id2', due: '33', field: 2 };
+      state = tasksReducer(state, Actions.setLastSubmittedTask(task));
+      expect(state).to.deep.equal({
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        loaded: true,
+        taskGroup: {
+          contact: { _id: 'contact' },
+          loadingContact: false,
+          lastSubmittedTask: task,
+        },
+      });
+    });
+
+    it('should work with null task', () => {
+      state = {
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        taskGroup: {
+          contact: null,
+          loadingContact: true,
+          lastSubmittedTask: { _id: 'othertask' },
+        },
+      };
+
+      state = tasksReducer(state, Actions.setLastSubmittedTask(null));
+      expect(state).to.deep.equal({
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        taskGroup: {
+          contact: null,
+          loadingContact: true,
+          lastSubmittedTask: null,
+        },
+      });
+    });
+  });
+
+  describe('setTaskGroupContact', () => {
+    it('should work on empty state', () => {
+      const contact = { _id: 'contact', type: 'person' };
+      state = tasksReducer(state, Actions.setTaskGroupContact(contact));
+      expect(state).to.deep.equal({
+        tasksList: [],
+        selected: null,
+        loaded: false,
+        taskGroup: {
+          contact: contact,
+          loadingContact: false,
+          lastSubmittedTask: null,
+        },
+      });
+    });
+
+    it('should work with existent state', () => {
+      state = {
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        taskGroup: {
+          contact: null,
+          loadingContact: true,
+          lastSubmittedTask: { _id: 'othertask' },
+        },
+      };
+      const contact = { _id: 'contact2', type: 'clinic' };
+      state = tasksReducer(state, Actions.setTaskGroupContact(contact));
+      expect(state).to.deep.equal({
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        loaded: true,
+        taskGroup: {
+          contact: { _id: 'contact2', type: 'clinic' },
+          loadingContact: false,
+          lastSubmittedTask: { _id: 'othertask' },
+        },
+      });
+    });
+
+    it('should work with null contact', () => {
+      state = {
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        taskGroup: {
+          contact: { _id: 'somecontact' },
+          loadingContact: true,
+          lastSubmittedTask: { _id: 'othertask' },
+        },
+      };
+
+      state = tasksReducer(state, Actions.setTaskGroupContact(null));
+      expect(state).to.deep.equal({
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        taskGroup: {
+          contact: null,
+          loadingContact: false,
+          lastSubmittedTask: { _id: 'othertask' },
+        },
+      });
+    });
+  });
+
+  describe('setTaskGroupContactLoading', () => {
+    it('should work on empty state', () => {
+      state = tasksReducer(state, Actions.setTaskGroupContactLoading(true));
+      expect(state).to.deep.equal({
+        tasksList: [],
+        selected: null,
+        loaded: false,
+        taskGroup: {
+          contact: null,
+          loadingContact: true,
+          lastSubmittedTask: null,
+        },
+      });
+    });
+
+    it('should work with existent state', () => {
+      state = {
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        taskGroup: {
+          contact: { _id: 'contact2', type: 'clinic' },
+          loadingContact: true,
+          lastSubmittedTask: { _id: 'othertask' },
+        },
+      };
+      state = tasksReducer(state, Actions.setTaskGroupContactLoading(false));
+      expect(state).to.deep.equal({
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        loaded: true,
+        taskGroup: {
+          contact: { _id: 'contact2', type: 'clinic' },
+          loadingContact: false,
+          lastSubmittedTask: { _id: 'othertask' },
+        },
+      });
+    });
+  });
+
+  describe('clearTaskGroup', () => {
+    it('should work on empty state', () => {
+      state = tasksReducer(state, Actions.clearTaskGroup());
+      expect(state).to.deep.equal({
+        tasksList: [],
+        selected: null,
+        loaded: false,
+        taskGroup: {
+          contact: null,
+          loadingContact: null,
+          lastSubmittedTask: null,
+        },
+      });
+    });
+
+    it('should work with existent state', () => {
+      state = {
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        loaded: true,
+        taskGroup: {
+          contact: { _id: 'contact2', type: 'clinic' },
+          loadingContact: true,
+          lastSubmittedTask: { _id: 'othertask' },
+        },
+      };
+      state = tasksReducer(state, Actions.clearTaskGroup());
+      expect(state).to.deep.equal({
+        tasksList: [
+          { _id: 'task1', dueDate: 22, state: 'Ready' },
+          { _id: 'task2', dueDate: 33, state: 'Ready' },
+        ],
+        selected: { _id: 'task_id', due: '22', field: 1 },
+        loaded: true,
+        taskGroup: {
+          contact: null,
+          loadingContact: null,
+          lastSubmittedTask: null,
+        },
       });
     });
   });

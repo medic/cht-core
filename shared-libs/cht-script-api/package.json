@@ -7,10 +7,5 @@
     "test": "mocha ./test"
   },
   "author": "",
-  "license": "Apache-2.0",
-  "dependencies": {
-    "chai": "^4.3.4",
-    "mocha": "^7.2.0",
-    "sinon": "^8.1.1"
-  }
+  "license": "Apache-2.0"
 }

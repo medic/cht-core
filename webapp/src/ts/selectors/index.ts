@@ -5,9 +5,6 @@ const getServicesState = (state) => state.services || {};
 const getReportsState = (state) => state.reports || {};
 const getMessagesState = (state) => state.messages || {};
 const getContactsState = (state) => state.contacts || {};
-const getSelectedContact = (state) => getContactsState(state).selected;
-
-const getEnketoStatus = state => getGlobalState(state).enketoStatus;
 const getAnalyticsState = (state) => state.analytics || {};
 const getTargetAggregatesState = (state) => state.targetAggregates || {};
 const getTasksState = state => state.tasks || {};
@@ -22,26 +19,31 @@ export const Selectors = {
   getSnapshotData: createSelector(getGlobalState, (globalState) => globalState.snapshotData),
   getSnackbarContent: createSelector(getGlobalState, (globalState) => globalState.snackbarContent),
   getLoadingContent: createSelector(getGlobalState, (globalState) => globalState.loadingContent),
-  getMinimalTabs: createSelector(getGlobalState, (globalState) => globalState.minimalTabs),
   getShowContent: createSelector(getGlobalState, (globalState) => globalState.showContent),
   getSelectMode: createSelector(getGlobalState, (globalState) => globalState.selectMode),
   getShowActionBar: createSelector(getGlobalState, (globalState) => globalState.showActionBar),
   getForms: createSelector(getGlobalState, (globalState) => globalState.forms),
   getFilters: createSelector(getGlobalState, (globalState) => globalState.filters),
-  getIsAdmin: createSelector(getGlobalState, (globalState) => globalState.isAdmin),
-  getCancelCallback: createSelector(getGlobalState, (globalState) => globalState.cancelCallback),
+  getSidebarFilter: createSelector(getGlobalState, (globalState) => globalState.sidebarFilter),
   getTitle: createSelector(getGlobalState, (globalState) => globalState.title),
   getPrivacyPolicyAccepted: createSelector(getGlobalState, (globalState) => globalState.privacyPolicyAccepted),
   getShowPrivacyPolicy: createSelector(getGlobalState, (globalState) => globalState.showPrivacyPolicy),
   getUnreadCount: createSelector(getGlobalState, (globalState) => globalState.unreadCount),
   getTranslationsLoaded: createSelector(getGlobalState, (globalState) => globalState.translationsLoaded),
   getUserFacilityId: createSelector(getGlobalState, (globalState) => globalState.userFacilityId),
+  getTrainingCardFormId: createSelector(getGlobalState, (globalState) => globalState.trainingCardFormId),
 
   // enketo
-  getEnketoStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus),
-  getEnketoEditedStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.edited),
-  getEnketoSavingStatus: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.saving),
-  getEnketoError: createSelector(getEnketoStatus, (enketoStatus) => enketoStatus?.error),
+  getEnketoStatus: createSelector(getGlobalState, (globalState) => globalState.enketoStatus),
+  getEnketoEditedStatus: createSelector(getGlobalState, (globalState) => globalState.enketoStatus?.edited),
+  getEnketoSavingStatus: createSelector(getGlobalState, (globalState) => globalState.enketoStatus?.saving),
+  getEnketoError: createSelector(getGlobalState, (globalState) => globalState.enketoStatus?.error),
+  getEnketoForm: createSelector(getGlobalState, (globalState) => globalState.enketoStatus?.form),
+
+  //navigation
+  getNavigation: createSelector(getGlobalState, (globalState) => globalState.navigation),
+  getCancelCallback: createSelector(getGlobalState, (globalState) => globalState.navigation?.cancelCallback),
+  getPreventNavigation: createSelector(getGlobalState, (globalState) => globalState.navigation?.preventNavigation),
 
   // services
   getLastChangedDoc: createSelector(getServicesState, (servicesState) => servicesState.lastChangedDoc),
@@ -61,19 +63,12 @@ export const Selectors = {
   listContains: createSelector(getReportsState, (reportsState) => {
     return (id) => reportsState.reportsById.has(id);
   }),
-  getSelectedReports: createSelector(getReportsState, (reportsState) => reportsState.selected),
-  getSelectedReportsSummaries: createSelector(getReportsState, (reportsState) => {
-    return reportsState.selected?.map(item => item.formatted || item.summary);
-  }),
-  getSelectedReportsDocs: createSelector(getReportsState, (reportsState) => {
-    return reportsState.selected?.map(item => item.doc || item.summary);
+  getSelectedReport: createSelector(getReportsState, (reportsState) => reportsState.selectedReport),
+  getSelectedReports: createSelector(getReportsState, (reportsState) => reportsState.selectedReports),
+  getSelectedReportDoc: createSelector(getReportsState, (reportsState) => {
+    return reportsState.selectedReport?.doc || reportsState.selectedReport?.summary;
   }),
   getVerifyingReport: createSelector(getReportsState, (reportsState) => reportsState.verifyingReport),
-  getSelectedReportsValidChecks: createSelector(getReportsState, (reportsState) => {
-    return reportsState.selected?.map(item => {
-      return item.summary?.valid || !item.formatted?.errors?.length;
-    });
-  }),
 
   // messages
   getMessagesError: createSelector(getMessagesState, (messagesState) => messagesState.error),
@@ -85,12 +80,12 @@ export const Selectors = {
   contactListContains: createSelector(getContactsState, (contactsState) => {
     return (id) => contactsState.contactsById.has(id);
   }),
-  getSelectedContact: createSelector(getSelectedContact, (selectedContact) => selectedContact),
-  getSelectedContactDoc: createSelector(getSelectedContact, (selectedContact) => selectedContact?.doc),
-  getSelectedContactSummary: createSelector(getSelectedContact, (selectedContact) => selectedContact?.summary),
-  getSelectedContactChildren: createSelector(getSelectedContact, (selectedContact) => selectedContact?.children),
-  getSelectedContactReports: createSelector(getSelectedContact, (selectedContact) => selectedContact?.reports),
-  getSelectedContactTasks: createSelector(getSelectedContact, (selectedContact) => selectedContact?.tasks),
+  getSelectedContact: createSelector(getContactsState, (contactState) => contactState.selected),
+  getSelectedContactDoc: createSelector(getContactsState, (contactState) => contactState.selected?.doc),
+  getSelectedContactSummary: createSelector(getContactsState, (contactState) => contactState.selected?.summary),
+  getSelectedContactChildren: createSelector(getContactsState, (contactState) => contactState.selected?.children),
+  getSelectedContactReports: createSelector(getContactsState, (contactState) => contactState.selected?.reports),
+  getSelectedContactTasks: createSelector(getContactsState, (contactState) => contactState.selected?.tasks),
   getLoadingSelectedContactReports: createSelector(
     getContactsState,
     (contactsState) => contactsState.loadingSelectedReports
@@ -122,4 +117,7 @@ export const Selectors = {
   getTasksList: createSelector(getTasksState, (tasksState) => tasksState.tasksList),
   getTasksLoaded: createSelector(getTasksState, (tasksState) => tasksState.loaded),
   getSelectedTask: createSelector(getTasksState, (tasksState) => tasksState.selected),
+  getLastSubmittedTask: createSelector(getTasksState, (tasksState) => tasksState.taskGroup?.lastSubmittedTask),
+  getTaskGroupContact: createSelector(getTasksState, (tasksState) => tasksState.taskGroup?.contact),
+  getTaskGroupLoadingContact: createSelector(getTasksState, (tasksState) => tasksState.taskGroup?.loadingContact),
 };

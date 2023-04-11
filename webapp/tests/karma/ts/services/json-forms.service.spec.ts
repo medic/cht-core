@@ -46,7 +46,7 @@ describe('JsonForms service', () => {
         { code: 'A', name: 'First',   translation_key: undefined, icon: 'a', subject_key: undefined },
         { code: 'B', name: 'Second',  translation_key: undefined, icon: 'b', subject_key: undefined },
         { code: 'C', name: 'Third',   translation_key: undefined, icon: 'c', subject_key: undefined },
-        { code: 'D', name: undefined, translation_key: 'Fourth' , icon: 'd', subject_key: undefined },
+        { code: 'D', name: undefined, translation_key: 'Fourth', icon: 'd', subject_key: undefined },
         { code: 'E', name: undefined, translation_key: undefined, icon: 'd', subject_key: 'Fifth'   },
       ]);
     });
@@ -63,7 +63,7 @@ describe('JsonForms service', () => {
     return service.get().then((actual) => {
       expect(actual).to.deep.equal([
         { code: 'A', name: undefined, translation_key: undefined, icon: undefined, subject_key: undefined },
-        { code: 'B', name: undefined, translation_key: undefined, icon: 'b'      , subject_key: undefined },
+        { code: 'B', name: undefined, translation_key: undefined, icon: 'b', subject_key: undefined },
         { code: 'C', name: 'Third',   translation_key: undefined, icon: undefined, subject_key: undefined },
         { code: 'D', name: undefined, translation_key: undefined, icon: undefined, subject_key: undefined }
       ]);

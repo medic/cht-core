@@ -58,4 +58,18 @@ export class UserSettingsService {
     });
   }
 
+  put(doc): Promise<Object> {
+    return this.dbService
+      .get()
+      .put(doc);
+  }
+
+  setAsKnown(): Promise<Object> {
+    return this.get()
+      .then((userSettings:any) => {
+        userSettings.known = true;
+        return this.put(userSettings);
+      });
+  }
+
 }

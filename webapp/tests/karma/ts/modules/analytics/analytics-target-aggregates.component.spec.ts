@@ -1,4 +1,4 @@
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
@@ -14,7 +14,7 @@ describe('Analytics Target Aggregates Component', () => {
   let targetAggregatesService;
   let targetAggregatesActions;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     targetAggregatesService = {
       isEnabled: sinon.stub().resolves(false),
       getAggregates: sinon.stub()

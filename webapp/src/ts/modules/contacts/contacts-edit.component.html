@@ -9,7 +9,7 @@
   </div>
   <div class="col-sm-8 item-content material" [hidden]="loadingContent || contentError">
     <div class="card">
-      <mm-enketo id="contact-form" [editing]="enketoContact?.docId" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
+      <mm-enketo formId="contact-form" [editing]="enketoContact?.docId" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
     </div>
   </div>
 </div>

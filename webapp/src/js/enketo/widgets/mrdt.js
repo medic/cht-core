@@ -1,32 +1,20 @@
-{
-  'use strict';
-  const Widget = require('enketo-core/src/js/Widget');
-  const $ = require( 'jquery' );
-  require('enketo-core/src/js/plugins');
+'use strict';
+const Widget = require( 'enketo-core/src/js/widget' ).default;
+const $ = require( 'jquery' );
+require('enketo-core/src/js/plugins');
 
-  const pluginName = 'mrdtwidget';
+const mainSelector = '.or-appearance-mrdt-verify';
 
-  /**
-     * @constructor
-     * @param {Element} element [description]
-     * @param {(boolean|{touch: boolean, repeat: boolean})} options options
-     * @param {*=} e     event
-     */
-  function Mrdtwidget( element, options ) {
-    this.namespace = pluginName;
-    Widget.call( this, element, options );
-    this._init();
+/**
+   * @extends Widget
+   */
+class Mrdtwidget extends Widget {
+  static get selector() {
+    return `${mainSelector} input`;
   }
 
-  //copy the prototype functions from the Widget super class
-  Mrdtwidget.prototype = Object.create( Widget.prototype );
-
-  //ensure the constructor is the new one
-  Mrdtwidget.prototype.constructor = Mrdtwidget;
-
-  Mrdtwidget.prototype._init = function() {
-    const self = this;
-    const $el = $( this.element );
+  _init() {
+    const $el = $( this.element ).parent( mainSelector );
     const $input = $el.find( 'input' );
 
     // we need to make it a textarea because text inputs strip out the
@@ -49,15 +37,15 @@
       MRDT.verify().then((data = {}) => {
         const image = data.image;
         const timeTaken = data.timeTaken;
-        $( self.element )
+        $el
           .find( 'textarea' )
           .val( image )
           .trigger( 'change' );
-        $( self.element )
+        $el
           .find( '.mrdt-preview' )
           .attr('src', 'data:image/png;base64, ' + image);
         if (timeTaken) {
-          $( self.element )
+          $el
             .siblings( '.or-appearance-mrdt-time-taken' )
             .find( 'input' )
             .val( timeTaken )
@@ -69,30 +57,10 @@
     $translate.get( 'mrdt.verify' ).then((label) => {
       $el.append(
         '<div><a class="btn btn-default mrdt-verify">' + label + '</a></div>' +
-                '<div><img class="mrdt-preview"/></div>'
+        '<div><img class="mrdt-preview"/></div>'
       );
     } );
-  };
-
-  Mrdtwidget.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
-
-  $.fn[ pluginName ] = function( options, event ) {
-    return this.each( function() {
-      const $this = $( this );
-      let data = $this.data( pluginName );
-
-      options = options || {};
-
-      if ( !data && typeof options === 'object' ) {
-        $this.data( pluginName, ( data = new Mrdtwidget( this, options, event ) ) );
-      } else if ( data && typeof options === 'string' ) {
-        data[ options ]( this );
-      }
-    } );
-  };
-
-  module.exports = {
-    'name': pluginName,
-    'selector': '.or-appearance-mrdt-verify',
-  };
+  }
 }
+
+module.exports = Mrdtwidget;

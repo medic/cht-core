@@ -177,7 +177,7 @@ describe('Contacts Service', () => {
       expect(forClinic.invalidate(doc)).to.equal(false);
 
       expect(contactTypesService.getTypeId.callCount).to.equal(3);
-      expect(contactTypesService.getTypeId.args).to.deep.equal([[doc], [doc], [doc],]);
+      expect(contactTypesService.getTypeId.args).to.deep.equal([[doc], [doc], [doc], ]);
 
       sinon.resetHistory();
 
@@ -189,7 +189,7 @@ describe('Contacts Service', () => {
       expect(forClinic.invalidate(otherDoc)).to.equal(false);
 
       expect(contactTypesService.getTypeId.callCount).to.equal(3);
-      expect(contactTypesService.getTypeId.args).to.deep.equal([[otherDoc], [otherDoc], [otherDoc],]);
+      expect(contactTypesService.getTypeId.args).to.deep.equal([[otherDoc], [otherDoc], [otherDoc], ]);
 
       sinon.resetHistory();
 
@@ -201,7 +201,7 @@ describe('Contacts Service', () => {
       expect(forClinic.invalidate(thirdDoc)).to.equal(true);
 
       expect(contactTypesService.getTypeId.callCount).to.equal(3);
-      expect(contactTypesService.getTypeId.args).to.deep.equal([[thirdDoc], [thirdDoc], [thirdDoc],]);
+      expect(contactTypesService.getTypeId.args).to.deep.equal([[thirdDoc], [thirdDoc], [thirdDoc], ]);
     });
   });
 });

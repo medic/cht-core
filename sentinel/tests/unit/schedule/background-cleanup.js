@@ -224,7 +224,8 @@ describe('Background cleanup tasks', () => {
         'medic-user-carol-meta',
         'medic',
         'medic-sentinel',
-        'medic-users-meta']);
+        'medic-users-meta',
+      ]);
 
       sinon.stub(db, 'medicDbName').value('medic');
       sinon.stub(db, 'close');
@@ -235,7 +236,8 @@ describe('Background cleanup tasks', () => {
 
       aliceDb.allDocs.resolves({rows: [
         {id: 'read:report:doc1', value: {rev: '1-abc'}},
-        {error: 'not_found'}, {error: 'not_found'}, {error: 'not_found'}]});
+        {error: 'not_found'}, {error: 'not_found'}, {error: 'not_found'},
+      ]});
       aliceDb.bulkDocs.resolves();
 
       bobDb.allDocs.resolves({rows: [

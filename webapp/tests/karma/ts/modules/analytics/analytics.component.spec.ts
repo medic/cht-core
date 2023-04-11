@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -11,6 +11,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { TourService } from '@mm-services/tour.service';
 import { Selectors } from '@mm-selectors/index';
+import { NavigationService } from '@mm-services/navigation.service';
 
 describe('AnalyticsComponent', () => {
   let component: AnalyticsComponent;
@@ -19,7 +20,7 @@ describe('AnalyticsComponent', () => {
   let tourService;
   let store;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     const mockSelectors = [
       { selector: Selectors.getAnalyticsModules, value: [] },
     ];
@@ -42,6 +43,7 @@ describe('AnalyticsComponent', () => {
         providers: [
           provideMockStore({ selectors: mockSelectors }),
           { provide: TourService, useValue: tourService },
+          { provide: NavigationService, useValue: {} },
         ]
       })
       .compileComponents()
@@ -54,6 +56,7 @@ describe('AnalyticsComponent', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

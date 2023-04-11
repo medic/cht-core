@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Edit Health Center</h:title>
     <model>
@@ -774,7 +774,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2019-03-03_08-22">
+        <data id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" delimiter="#" version="2019-03-03_08-22">
           <inputs>
             <meta>
               <location>
@@ -830,30 +830,30 @@
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
-      <bind nodeset="/data/health_center/parent" readonly="true()" type="string"/>
-      <bind nodeset="/data/health_center/type" readonly="true()" type="string"/>
+      <bind nodeset="/data/health_center/parent" type="string" readonly="true()"/>
+      <bind nodeset="/data/health_center/type" type="string" readonly="true()"/>
       <bind nodeset="/data/health_center/contact/name" type="string"/>
-      <bind calculate="../name" nodeset="/data/health_center/contact/contact_name" type="string"/>
+      <bind nodeset="/data/health_center/contact/contact_name" type="string" calculate="../name"/>
       <bind nodeset="/data/health_center/contact/_id" type="db:person"/>
-      <bind calculate="if(  /data/health_center/generated_name  = ../name, 'true', 'false')" nodeset="/data/health_center/is_name_generated" readonly="boolean( /data/health_center/contact/_id )" relevant="not( /data/health_center/contact/_id ) or selected( . , 'true') or boolean( /data/health_center/contact/_id )" required="true()" type="select1"/>
-      <bind calculate=" /data/init/generated_name_translation " nodeset="/data/health_center/generated_name" type="string"/>
-      <bind calculate="if( ( selected( /data/health_center/is_name_generated , 'true') or selected( /data/health_center/is_name_generated , 'yes') ),  /data/health_center/generated_name , .)" nodeset="/data/health_center/name" relevant="boolean( /data/health_center/contact/_id ) or not( /data/health_center/contact/_id ) or not(selected( /data/health_center/is_name_generated , 'true')) or not(selected( /data/health_center/is_name_generated , 'yes'))" required="true()" type="string"/>
+      <bind nodeset="/data/health_center/is_name_generated" type="select1" readonly="boolean( /data/health_center/contact/_id )" calculate="if(  /data/health_center/generated_name  = ../name, 'true', 'false')" required="true()" relevant="not( /data/health_center/contact/_id ) or selected( . , 'true') or boolean( /data/health_center/contact/_id )"/>
+      <bind nodeset="/data/health_center/generated_name" type="string" calculate=" /data/init/generated_name_translation "/>
+      <bind nodeset="/data/health_center/name" type="string" calculate="if( ( selected( /data/health_center/is_name_generated , 'true') or selected( /data/health_center/is_name_generated , 'yes') ),  /data/health_center/generated_name , .)" required="true()" relevant="boolean( /data/health_center/contact/_id ) or not( /data/health_center/contact/_id ) or not(selected( /data/health_center/is_name_generated , 'true')) or not(selected( /data/health_center/is_name_generated , 'yes'))"/>
       <bind nodeset="/data/health_center/external_id" type="string"/>
-      <bind nodeset="/data/health_center/use_cases" relevant="../type = 'health_center'" type="select"/>
-      <bind nodeset="/data/health_center/vaccines" relevant="../type = 'health_center' and selected( /data/health_center/use_cases ,'imm')" type="select"/>
+      <bind nodeset="/data/health_center/use_cases" type="select" relevant="../type = 'health_center'"/>
+      <bind nodeset="/data/health_center/vaccines" type="select" relevant="../type = 'health_center' and selected( /data/health_center/use_cases ,'imm')"/>
       <bind nodeset="/data/health_center/notes" type="string"/>
-      <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/data/health_center/geolocation" type="string"/>
-      <bind nodeset="/data/health_center/meta/created_by" readonly="true()" type="string"/>
-      <bind nodeset="/data/health_center/meta/created_by_person_uuid" readonly="true()" type="string"/>
+      <bind nodeset="/data/health_center/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
+      <bind nodeset="/data/health_center/meta/created_by" type="string" readonly="true()"/>
+      <bind nodeset="/data/health_center/meta/created_by_person_uuid" type="string" readonly="true()"/>
       <bind nodeset="/data/health_center/meta/created_by_place_uuid" type="string"/>
-      <bind calculate="../../../inputs/user/name" nodeset="/data/health_center/meta/last_edited_by" type="string"/>
-      <bind calculate="../../../inputs/user/contact_id" nodeset="/data/health_center/meta/last_edited_by_person_uuid" type="string"/>
-      <bind calculate="../../../inputs/user/facility_id" nodeset="/data/health_center/meta/last_edited_by_place_uuid" type="string"/>
-      <bind calculate="&quot;health_center&quot;" nodeset="/data/init/place_type" type="select1"/>
-      <bind calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')" nodeset="/data/init/place_type_translation" type="string"/>
-      <bind calculate="&quot;health_center&quot;" nodeset="/data/init/select_generated_name" type="select1"/>
-      <bind calculate="if (boolean( /data/health_center/contact/_id ), jr:choice-name( /data/init/select_generated_name ,' /data/init/select_generated_name '), '')" nodeset="/data/init/generated_name_translation" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/health_center/meta/last_edited_by" type="string" calculate="../../../inputs/user/name"/>
+      <bind nodeset="/data/health_center/meta/last_edited_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
+      <bind nodeset="/data/health_center/meta/last_edited_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
+      <bind nodeset="/data/init/place_type" type="select1" calculate="&quot;health_center&quot;"/>
+      <bind nodeset="/data/init/place_type_translation" type="string" calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')"/>
+      <bind nodeset="/data/init/select_generated_name" type="select1" calculate="&quot;health_center&quot;"/>
+      <bind nodeset="/data/init/generated_name_translation" type="string" calculate="if (boolean( /data/health_center/contact/_id ), jr:choice-name( /data/init/select_generated_name ,' /data/init/select_generated_name '), '')"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body>

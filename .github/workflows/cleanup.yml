@@ -5,19 +5,17 @@ on:
     - cron:  '0 3 * * *' # Run every day at 3am
 
 env:
-  BUILDS_SERVER: _couch/builds_testing
-  STAGING_SERVER: _couch/builds
-  MARKET_URL: ${{ secrets.MARKET_URL }}
+  MARKET_URL: ${{ secrets.AUTH_MARKET_URL }}
 
 jobs:
   cleanup:
     name: Deleting old published artefacts
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v2
     - name: Cleanup
       run: |
-        cd scripts/travis
+        cd scripts/ci
         npm ci
         node ./cleanup.js

@@ -1,6 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
-import { UniqueSortedList } from './utils';
 
+import { UniqueSortedList } from '@mm-reducers/utils';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Actions } from '@mm-actions/contacts';
 
@@ -46,11 +46,10 @@ const orderBy = (c1, c2) => {
   if (c1.sortByLastVisitedDate) {
     return c1.lastVisitedDate - c2.lastVisitedDate;
   }
-  if (c1.simprints && c2.simprints) {
-    return c2.simprints.confidence - c1.simprints.confidence;
-  }
+
   const c1Type = getContactTypeOrder(c1) || '';
   const c2Type = getContactTypeOrder(c2) || '';
+
   if (c1Type !== c2Type) {
     return c1Type < c2Type ? -1 : 1;
   }
@@ -162,6 +161,6 @@ const _contactsReducer = createReducer(
   }),
 );
 
-export function contactsReducer(state, action) {
+export const contactsReducer = (state, action) => {
   return _contactsReducer(state, action);
-}
+};

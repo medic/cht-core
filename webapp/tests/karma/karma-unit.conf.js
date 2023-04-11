@@ -11,12 +11,12 @@ module.exports = function (config) {
       require('karma-chrome-launcher'),
       require('karma-mocha-reporter'),
       require('@angular-devkit/build-angular/plugins/karma'),
-      require('karma-coverage-istanbul-reporter'),
+      require('karma-coverage'),
     ],
     client: {
       captureConsole: true,
     },
-    reporters: ['mocha', 'coverage-istanbul'],
+    reporters: ['mocha', 'coverage'],
     mochaReporter: {
       output: 'full',
       showDiff: true,
@@ -39,9 +39,14 @@ module.exports = function (config) {
       format: '%b %T: %m',
       terminal: true,
     },
-    coverageIstanbulReporter: {
-      reports: [ 'html', 'lcovonly', 'text-summary' ],
+    coverageReporter: {
+      reporters: [
+        { type: 'html' },
+        { type: 'lcovonly', file: 'lcov.info' },
+        { type: 'text-summary' },
+      ],
       dir: path.join(__dirname, 'coverage'),
+      subdir: '.',
       fixWebpackSourcePaths: true,
       skipFilesWithNoCoverage: true,
     },
@@ -52,4 +57,9 @@ module.exports = function (config) {
     test: /enketo-xml\/.*\.xml$/i,
     use: 'raw-loader',
   });
+
+  config.buildWebpack.webpackConfig.resolve.fallback = {
+    path: false,
+    fs: false,
+  };
 };

@@ -77,15 +77,13 @@ const initConfig = () => {
 };
 
 const initTransitionLib = () => {
-  transitionsLib = require('@medic/transitions')(db, config, translations, logger);
+  transitionsLib = require('@medic/transitions')(db, module.exports, logger);
 };
 
 module.exports = {
   _initConfig: initConfig,
   _initFeed: initFeed,
-  get: key => {
-    return config[key];
-  },
+  get: key => (key ? config[key] : config),
   getAll: () => config,
   getTranslations: () => {
     return translations;

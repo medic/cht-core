@@ -5,7 +5,7 @@ const _ = require('lodash');
 const config = require('../../config');
 
 /**
- * Custom Medic Mobile Javarosa message parser.
+ * Custom Medic Javarosa message parser.
  *
  * @param {Object} def forms form definition
  * @param {Object} doc sms_message document

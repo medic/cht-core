@@ -1,15 +1,23 @@
-<div class="filters">
+<div class="filters tab-bar">
   <div class="inner">
     <contacts-filters
+      *ngIf="!useSearchNewDesign"
       (search)="search()"
-      (simIdentify)="simprintsIdentify()"
       (sort)="sort($event)"
-      [simprintsEnabled]="simprintsEnabled"
       [disabled]="false"
       [sortDirection]="sortDirection"
       [lastVisitedDateExtras]="lastVisitedDateExtras">
     </contacts-filters>
     <mm-navigation></mm-navigation>
+    <mm-search-bar
+      *ngIf="useSearchNewDesign"
+      [showSort]="true"
+      [sortDirection]="sortDirection"
+      [lastVisitedDateExtras]="lastVisitedDateExtras"
+      (sort)="sort($event)"
+      (search)="search()">
+    </mm-search-bar>
+    <mm-contacts-more-menu (exportContacts)="exportContacts()"></mm-contacts-more-menu>
   </div>
 </div>
 
@@ -38,7 +46,7 @@
                   <span *ngIf="contact.dod" [innerHTML]="contact.dod | dateOfDeath"></span>
                 </div>
                 <div *ngIf="contact.visits" class="visits" [class.danger]="contact.visits.status === 'pending'" [class.warning]="contact.visits.status === 'started'" [class.success]="contact.visits.status === 'done'">
-                  <span>{{contact.visits.count}}</span>
+                  <span>{{contact.visits.count | localizeNumber}}</span>
                 </div>
               </div>
 
@@ -49,8 +57,6 @@
                   <span>{{contact.visits.summary}}</span>
                 </div>
               </div>
-
-              <div *ngIf="contact.simprintsTier" class="simprints-stars tier-{{contact.simprintsTier}}"></div>
             </div>
           </a>
         </li>

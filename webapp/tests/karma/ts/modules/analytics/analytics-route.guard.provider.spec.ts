@@ -1,5 +1,5 @@
 import { ActivatedRouteSnapshot } from '@angular/router';
-import { async, fakeAsync, flush } from '@angular/core/testing';
+import { fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { Subject } from 'rxjs';
 import sinon from 'sinon';
 import { expect, assert } from 'chai';
@@ -20,7 +20,7 @@ describe('AnalyticsRouteGuard provider', () => {
 
   afterEach(() => sinon.restore());
 
-  it('should return module path if single module is present', async(() => {
+  it('should return module path if single module is present', waitForAsync(() => {
     const route = new ActivatedRouteSnapshot();
     route.data = { tab: 'analytics' };
     const subject = new Subject();
@@ -41,7 +41,7 @@ describe('AnalyticsRouteGuard provider', () => {
     expect(store.select.args[0]).to.deep.equal([Selectors.getAnalyticsModules]);
   }));
 
-  it('should return true and not module path if multiple modules are present', async(() => {
+  it('should return true and not module path if multiple modules are present', waitForAsync(() => {
     const route = new ActivatedRouteSnapshot();
     route.data = { tab: 'analytics' };
     const subject = new Subject();
@@ -64,7 +64,7 @@ describe('AnalyticsRouteGuard provider', () => {
     expect(store.select.args[0]).to.deep.equal([Selectors.getAnalyticsModules]);
   }));
 
-  it('should return true and not module path if it is not analytics tab', async(() => {
+  it('should return true and not module path if it is not analytics tab', waitForAsync(() => {
     const route = new ActivatedRouteSnapshot();
     route.data = { tab: 'messages' };
     const subject = new Subject();

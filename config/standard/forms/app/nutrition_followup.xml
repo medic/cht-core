@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>child nutrition followup</h:title>
     <model>
@@ -94,6 +94,9 @@
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
             <value>To be exited from <output value=" /nutrition_followup/treatment_program "/> treatment program: <output value=" /nutrition_followup/measurements/exit "/></value></text>
+          <text id="/nutrition_followup/visit_confirmed:label">
+            <value>Did <output value=" /nutrition_followup/patient_name "/> attend the visit?</value>
+          </text>
         </translation>
         <translation lang="es">
           <text id="/nutrition_followup/attend_visit/no:label">
@@ -185,6 +188,9 @@
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
             <value>Para salir del programa de tratamiento <output value=" /nutrition_followup/treatment_program "/>: <output value=" /nutrition_followup/measurements/exit "/></value></text>
+          <text id="/nutrition_followup/visit_confirmed:label">
+            <value>¿Asistió <output value=" /nutrition_followup/patient_name "/> a la visita?</value>
+          </text>
         </translation>
         <translation lang="fr">
           <text id="/nutrition_followup/attend_visit/no:label">
@@ -276,6 +282,9 @@
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
             <value>À quitter du programme de traitement <output value=" /nutrition_followup/treatment_program "/>: <output value=" /nutrition_followup/measurements/exit "/></value></text>
+          <text id="/nutrition_followup/visit_confirmed:label">
+            <value>Est-ce que <output value=" /nutrition_followup/patient_name "/> a assisté à la visite?</value>
+          </text>
         </translation>
         <translation lang="hi">
           <text id="/nutrition_followup/attend_visit/no:label">
@@ -367,6 +376,9 @@
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
             <value><output value=" /nutrition_followup/treatment_program "/> उपचार कार्यक्रम से बाहर निकलने के लिए: <output value=" /nutrition_followup/measurements/exit "/></value></text>
+          <text id="/nutrition_followup/visit_confirmed:label">
+            <value>क्या <output value=" /nutrition_followup/patient_name "/> यात्रा में शामिल हुए?</value>
+          </text>
         </translation>
         <translation lang="id">
           <text id="/nutrition_followup/attend_visit/no:label">
@@ -458,6 +470,9 @@
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
             <value>Untuk keluar dari program perawatan <output value=" /nutrition_followup/treatment_program "/>: <output value=" /nutrition_followup/measurements/exit "/></value></text>
+          <text id="/nutrition_followup/visit_confirmed:label">
+            <value>Apakah <output value=" /nutrition_followup/patient_name "/> menghadiri kunjungan?</value>
+          </text>
         </translation>
         <translation lang="ne">
           <text id="/nutrition_followup/attend_visit/no:label">
@@ -549,10 +564,13 @@
           </text>
           <text id="/nutrition_followup/summary/n_6:label">
             <value><output value=" /nutrition_followup/treatment_program "/> उपचार कार्यक्रमबाट बाहिर निस्कन: <output value=" /nutrition_followup/measurements/exit "/></value></text>
+          <text id="/nutrition_followup/visit_confirmed:label">
+            <value>के <output value=" /nutrition_followup/patient_name "/> भ्रमण गर्यो?</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <nutrition_followup delimiter="#" id="nutrition_followup" prefix="J1!nutrition_followup!" version="2019-05-10 09-48">
+        <nutrition_followup id="nutrition_followup" prefix="J1!nutrition_followup!" delimiter="#" version="2022-03-03 15-48">
           <inputs>
             <meta>
               <location>
@@ -580,7 +598,8 @@
           <patient_uuid/>
           <patient_name/>
           <patient_id/>
-          <attend_visit>yes</attend_visit>
+          <attend_visit/>
+          <visit_confirmed/>
           <treatment_program/>
           <wfh/>
           <measurements>
@@ -619,32 +638,33 @@
       <bind nodeset="/nutrition_followup/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/nutrition_followup/inputs/contact/parent/contact/phone" type="string"/>
       <bind nodeset="/nutrition_followup/inputs/contact/parent/contact/name" type="string"/>
-      <bind calculate="../inputs/contact/_id" nodeset="/nutrition_followup/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/name" nodeset="/nutrition_followup/patient_name" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/nutrition_followup/patient_id" type="string"/>
-      <bind nodeset="/nutrition_followup/attend_visit" relevant=" /nutrition_followup/inputs/source  = 'task'" type="select1"/>
-      <bind calculate="instance('contact-summary')/context/treatment_program" nodeset="/nutrition_followup/treatment_program" type="string"/>
-      <bind calculate="round(z-score('weight-for-height',  /nutrition_followup/measurements/gender ,  /nutrition_followup/measurements/height ,  /nutrition_followup/measurements/weight ), 1)" nodeset="/nutrition_followup/wfh" type="string"/>
-      <bind nodeset="/nutrition_followup/measurements" relevant=" /nutrition_followup/attend_visit  = 'yes'"/>
-      <bind nodeset="/nutrition_followup/measurements/gender" required="true()" type="select1"/>
-      <bind constraint=". &gt;= 0.8 and . &lt;= 68.5" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/weight:jr:constraintMsg')" nodeset="/nutrition_followup/measurements/weight" required="true()" type="decimal"/>
-      <bind constraint=". &gt;= 45 and . &lt;= 120" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/height:jr:constraintMsg')" nodeset="/nutrition_followup/measurements/height" required="true()" type="decimal"/>
-      <bind constraint=". &gt;= 5 and . &lt;= 30" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/muac:jr:constraintMsg')" nodeset="/nutrition_followup/measurements/muac" required="false()" type="decimal"/>
-      <bind nodeset="/nutrition_followup/measurements/nn3" readonly="true()" relevant=" /nutrition_followup/measurements/weight  != '' and  /nutrition_followup/measurements/height  != ''" type="string"/>
-      <bind nodeset="/nutrition_followup/measurements/n_14" readonly="true()" relevant=" /nutrition_followup/wfh  &lt; -3" type="string"/>
-      <bind nodeset="/nutrition_followup/measurements/n_15" readonly="true()" relevant=" /nutrition_followup/wfh  &lt; -2 and  /nutrition_followup/wfh  &gt;= -3" type="string"/>
-      <bind nodeset="/nutrition_followup/measurements/n_16" readonly="true()" relevant=" /nutrition_followup/wfh  &lt;= 2 and  /nutrition_followup/wfh  &gt;= -2" type="string"/>
-      <bind nodeset="/nutrition_followup/measurements/n_17" readonly="true()" relevant=" /nutrition_followup/wfh  &gt; 2" type="string"/>
-      <bind nodeset="/nutrition_followup/measurements/exit" required="true()" type="select1"/>
-      <bind nodeset="/nutrition_followup/measurements/n" readonly="true()" relevant=" /nutrition_followup/measurements/exit  = 'yes'" type="string"/>
-      <bind nodeset="/nutrition_followup/summary" relevant=" /nutrition_followup/attend_visit  = 'yes'"/>
+      <bind nodeset="/nutrition_followup/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/nutrition_followup/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/nutrition_followup/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/nutrition_followup/attend_visit" type="select1" relevant=" /nutrition_followup/inputs/source  = 'task'"/>
+      <bind nodeset="/nutrition_followup/visit_confirmed" type="string" calculate="coalesce( /nutrition_followup/attend_visit , 'yes')"/>
+      <bind nodeset="/nutrition_followup/treatment_program" type="string" calculate="instance('contact-summary')/context/treatment_program"/>
+      <bind nodeset="/nutrition_followup/wfh" type="string" calculate="round(z-score('weight-for-height',  /nutrition_followup/measurements/gender ,  /nutrition_followup/measurements/height ,  /nutrition_followup/measurements/weight ), 1)"/>
+      <bind nodeset="/nutrition_followup/measurements" relevant=" /nutrition_followup/visit_confirmed  = 'yes'"/>
+      <bind nodeset="/nutrition_followup/measurements/gender" type="select1" required="true()"/>
+      <bind nodeset="/nutrition_followup/measurements/weight" type="decimal" constraint=". &gt;= 0.8 and . &lt;= 68.5" required="true()" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/weight:jr:constraintMsg')"/>
+      <bind nodeset="/nutrition_followup/measurements/height" type="decimal" constraint=". &gt;= 45 and . &lt;= 120" required="true()" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/height:jr:constraintMsg')"/>
+      <bind nodeset="/nutrition_followup/measurements/muac" type="decimal" constraint=". &gt;= 5 and . &lt;= 30" required="false()" jr:constraintMsg="jr:itext('/nutrition_followup/measurements/muac:jr:constraintMsg')"/>
+      <bind nodeset="/nutrition_followup/measurements/nn3" readonly="true()" type="string" relevant=" /nutrition_followup/measurements/weight  != '' and  /nutrition_followup/measurements/height  != ''"/>
+      <bind nodeset="/nutrition_followup/measurements/n_14" readonly="true()" type="string" relevant=" /nutrition_followup/wfh  &lt; -3"/>
+      <bind nodeset="/nutrition_followup/measurements/n_15" readonly="true()" type="string" relevant=" /nutrition_followup/wfh  &lt; -2 and  /nutrition_followup/wfh  &gt;= -3"/>
+      <bind nodeset="/nutrition_followup/measurements/n_16" readonly="true()" type="string" relevant=" /nutrition_followup/wfh  &lt;= 2 and  /nutrition_followup/wfh  &gt;= -2"/>
+      <bind nodeset="/nutrition_followup/measurements/n_17" readonly="true()" type="string" relevant=" /nutrition_followup/wfh  &gt; 2"/>
+      <bind nodeset="/nutrition_followup/measurements/exit" type="select1" required="true()"/>
+      <bind nodeset="/nutrition_followup/measurements/n" readonly="true()" type="string" relevant=" /nutrition_followup/measurements/exit  = 'yes'"/>
+      <bind nodeset="/nutrition_followup/summary" relevant=" /nutrition_followup/visit_confirmed  = 'yes'"/>
       <bind nodeset="/nutrition_followup/summary/n_1" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_2" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_3" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_4" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_5" readonly="true()" type="string"/>
       <bind nodeset="/nutrition_followup/summary/n_6" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/nutrition_followup/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/nutrition_followup/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

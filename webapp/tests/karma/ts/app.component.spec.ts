@@ -1,10 +1,10 @@
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { of, Subject } from 'rxjs';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 
 import { AppComponent } from '../../../src/ts/app.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
@@ -42,11 +42,13 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
+import { Selectors } from '@mm-selectors/index';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 describe('AppComponent', () => {
-  let getComponent;
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
+  let store;
   let clock;
 
   // Services
@@ -79,15 +81,22 @@ describe('AppComponent', () => {
   let transitionsService;
   let chtScriptApiService;
   let analyticsModulesService;
+  let trainingCardsService;
   // End Services
 
   let globalActions;
   let analyticsActions;
   let originalPouchDB;
-  const changesListener = {};
+  const changesListener:any = {};
   let consoleErrorStub;
 
-  beforeEach(async(() => {
+  const getComponent = () => {
+    fixture = TestBed.createComponent(AppComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  };
+
+  beforeEach(async () => {
     // set this in index.html
     window.startupTimes = {};
 
@@ -96,7 +105,7 @@ describe('AppComponent', () => {
     checkDateService = { check: sinon.stub() };
     countMessageService = { init: sinon.stub() };
     feedbackService = { init: sinon.stub() };
-    xmlFormsService = { subscribe: sinon.stub() };
+    xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     jsonFormsService = { get: sinon.stub().resolves([]) };
     languageService = { get: sinon.stub().resolves({}) };
     rulesEngineService = { isEnabled: sinon.stub().resolves(true) };
@@ -126,6 +135,7 @@ describe('AppComponent', () => {
     sessionService = {
       init: sinon.stub().resolves(),
       isAdmin: sinon.stub().returns(true),
+      isDbAdmin: sinon.stub().returns(false),
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub()
     };
@@ -144,7 +154,6 @@ describe('AppComponent', () => {
       setPrivacyPolicyAccepted: sinon.stub(GlobalActions.prototype, 'setPrivacyPolicyAccepted'),
       setShowPrivacyPolicy: sinon.stub(GlobalActions.prototype, 'setShowPrivacyPolicy'),
       setForms: sinon.stub(GlobalActions.prototype, 'setForms'),
-      setIsAdmin: sinon.stub(GlobalActions.prototype, 'setIsAdmin')
     };
     analyticsActions = {
       setAnalyticsModules: sinon.stub(AnalyticsActions.prototype, 'setAnalyticsModules')
@@ -154,67 +163,67 @@ describe('AppComponent', () => {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
+    trainingCardsService = { initTrainingCards: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
 
-    TestBed.configureTestingModule({
-      declarations: [
-        AppComponent,
-        ActionbarComponent,
-        SnackbarComponent,
-      ],
-      imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-      ],
-      providers: [
-        provideMockStore(),
-        { provide: DBSyncService, useValue: dbSyncService },
-        { provide: TranslateService, useValue: translateService },
-        { provide: LanguageService, useValue: languageService },
-        { provide: SetLanguageService, useValue: setLanguageService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: AuthService, useValue: authService },
-        { provide: ResourceIconsService, useValue: resourceIconsService },
-        { provide: ChangesService, useValue: changesService },
-        { provide: UpdateServiceWorkerService, useValue: {} },
-        { provide: LocationService, useValue: locationService },
-        { provide: ModalService, useValue: modalService },
-        { provide: FeedbackService, useValue: feedbackService },
-        { provide: FormatDateService, useValue: formatDateService },
-        { provide: XmlFormsService, useValue: xmlFormsService },
-        { provide: JsonFormsService, useValue: jsonFormsService },
-        { provide: TranslateFromService, useValue: {} },
-        { provide: CountMessageService, useValue: countMessageService },
-        { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
-        { provide: RouteSnapshotService, useValue: {} },
-        { provide: StartupModalsService, useValue: startupModalsService },
-        { provide: TourService, useValue: tourService },
-        { provide: CheckDateService, useValue: checkDateService },
-        { provide: UnreadRecordsService, useValue: unreadRecordsService },
-        { provide: RulesEngineService, useValue: rulesEngineService },
-        { provide: RecurringProcessManagerService, useValue: recurringProcessManagerService },
-        { provide: WealthQuintilesWatcherService, useValue: wealthQuintilesWatcherService },
-        { provide: DatabaseConnectionMonitorService, useValue: databaseConnectionMonitorService },
-        { provide: TranslateLocaleService, useValue: translateLocaleService },
-        { provide: TelemetryService, useValue: telemetryService },
-        { provide: TransitionsService, useValue: transitionsService },
-        { provide: CHTScriptApiService, useValue: chtScriptApiService },
-        { provide: AnalyticsModulesService, useValue: analyticsModulesService },
-      ]
-    });
+    const mockedSelectors = [
+      { selector: Selectors.getSidebarFilter, value: {} },
+    ];
 
-    getComponent = () => {
-      return TestBed
-        .compileComponents()
-        .then(() => {
-          fixture = TestBed.createComponent(AppComponent);
-          component = fixture.componentInstance;
-          fixture.detectChanges();
-        });
-    };
-  }));
+    await TestBed
+      .configureTestingModule({
+        declarations: [
+          AppComponent,
+          ActionbarComponent,
+          SnackbarComponent,
+        ],
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: DBSyncService, useValue: dbSyncService },
+          { provide: TranslateService, useValue: translateService },
+          { provide: LanguageService, useValue: languageService },
+          { provide: SetLanguageService, useValue: setLanguageService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: AuthService, useValue: authService },
+          { provide: ResourceIconsService, useValue: resourceIconsService },
+          { provide: ChangesService, useValue: changesService },
+          { provide: UpdateServiceWorkerService, useValue: {} },
+          { provide: LocationService, useValue: locationService },
+          { provide: ModalService, useValue: modalService },
+          { provide: FeedbackService, useValue: feedbackService },
+          { provide: FormatDateService, useValue: formatDateService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: JsonFormsService, useValue: jsonFormsService },
+          { provide: TranslateFromService, useValue: {} },
+          { provide: CountMessageService, useValue: countMessageService },
+          { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
+          { provide: RouteSnapshotService, useValue: {} },
+          { provide: StartupModalsService, useValue: startupModalsService },
+          { provide: TourService, useValue: tourService },
+          { provide: CheckDateService, useValue: checkDateService },
+          { provide: UnreadRecordsService, useValue: unreadRecordsService },
+          { provide: RulesEngineService, useValue: rulesEngineService },
+          { provide: RecurringProcessManagerService, useValue: recurringProcessManagerService },
+          { provide: WealthQuintilesWatcherService, useValue: wealthQuintilesWatcherService },
+          { provide: DatabaseConnectionMonitorService, useValue: databaseConnectionMonitorService },
+          { provide: TranslateLocaleService, useValue: translateLocaleService },
+          { provide: TelemetryService, useValue: telemetryService },
+          { provide: TransitionsService, useValue: transitionsService },
+          { provide: CHTScriptApiService, useValue: chtScriptApiService },
+          { provide: AnalyticsModulesService, useValue: analyticsModulesService },
+          { provide: TrainingCardsService, useValue: trainingCardsService },
+        ]
+      })
+      .compileComponents();
+    store = TestBed.inject(MockStore);
+  });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
     clock && clock.restore();
     window.PouchDB = originalPouchDB;
@@ -249,12 +258,22 @@ describe('AppComponent', () => {
     // start recurring processes
     expect(recurringProcessManagerService.startUpdateRelativeDate.callCount).to.equal(1);
     expect(recurringProcessManagerService.startUpdateReadDocsCount.callCount).to.equal(0);
-
-    expect(globalActions.setIsAdmin.callCount).to.equal(1);
-    expect(globalActions.setIsAdmin.args[0][0]).to.equal(true);
+    expect(component.isSidebarFilterOpen).to.be.false;
   });
 
-  it('should subscribe to xmlFormService when initing forms', async () => {
+  it('should set isSidebarFilterOpen true when filter state is open', fakeAsync(async () => {
+    authService.has.resolves(false);
+    await getComponent();
+    component.ngAfterViewInit();
+
+    store.overrideSelector(Selectors.getSidebarFilter, { isOpen: true });
+    store.refreshState();
+    tick();
+
+    expect(component.isSidebarFilterOpen).to.be.true;
+  }));
+
+  it('should subscribe to xmlFormService to retrieve forms and initialize training cards', async () => {
     const form1 = {
       code: '123',
       name: 'something',
@@ -282,7 +301,10 @@ describe('AppComponent', () => {
     expect(xmlFormsService.subscribe.callCount).to.equal(2);
 
     expect(xmlFormsService.subscribe.getCall(0).args[0]).to.equal('FormsFilter');
-    expect(xmlFormsService.subscribe.getCall(0).args[1]).to.deep.equal( { contactForms: false, ignoreContext: true });
+    expect(xmlFormsService.subscribe.getCall(0).args[1]).to.deep.equal({
+      reportForms: true,
+      ignoreContext: true,
+    });
     expect(xmlFormsService.subscribe.getCall(0).args[2]).to.be.a('Function');
     xmlFormsService.subscribe.getCall(0).args[2](false, [form2]);
     expect(globalActions.setForms.callCount).to.equal(1);
@@ -304,15 +326,16 @@ describe('AppComponent', () => {
     ]);
 
     expect(xmlFormsService.subscribe.getCall(1).args[0]).to.equal('AddReportMenu');
-    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal( { contactForms: false });
+    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal({ reportForms: true });
     expect(xmlFormsService.subscribe.getCall(1).args[2]).to.be.a('Function');
     xmlFormsService.subscribe.getCall(1).args[2](false, [form2]);
-    expect(component.nonContactForms).to.have.deep.members([{
+    expect(component.reportForms).to.have.deep.members([{
       id: 'form:456',
       code: '456',
       icon: 'icon',
       title: 'form2'
     }]);
+    expect(trainingCardsService.initTrainingCards.calledOnce).to.be.true;
   });
 
   it('should set privacy policy and start modals if privacy accepted', async () => {
@@ -479,8 +502,8 @@ describe('AppComponent', () => {
 
       expect(changesListener['branding-icon']).to.be.an('object');
       expect(changesListener['sync-status']).to.be.an('object');
-      expect(changesListener['translations']).to.be.an('object');
-      expect(changesListener['ddoc']).to.be.an('object');
+      expect(changesListener.translations).to.be.an('object');
+      expect(changesListener.ddoc).to.be.an('object');
       expect(changesListener['user-context']).to.be.an('object');
     });
 
@@ -534,7 +557,7 @@ describe('AppComponent', () => {
   describe('language reloading', () => {
     it('filter should only match translations docs', async () => {
       await getComponent();
-      const filter = changesListener['translations'].filter;
+      const filter = changesListener.translations.filter;
       expect(filter).to.be.a('function');
 
       expect(filter({ id: 'messages-en' })).to.equal(true);
@@ -548,7 +571,7 @@ describe('AppComponent', () => {
       languageService.get.resolves('enabled_locale');
       await getComponent();
       sinon.resetHistory();
-      const callback = changesListener['translations'].callback;
+      const callback = changesListener.translations.callback;
       expect(callback).to.be.a('function');
 
       await callback({ id: 'messages-locale' });
@@ -562,7 +585,7 @@ describe('AppComponent', () => {
       languageService.get.resolves('enabled_locale');
       await getComponent();
       sinon.resetHistory();
-      const callback = changesListener['translations'].callback;
+      const callback = changesListener.translations.callback;
       expect(callback).to.be.a('function');
 
       await callback({ id: 'messages-enabled_locale' });

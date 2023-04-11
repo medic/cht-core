@@ -1,5 +1,4 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import { from, Observable } from 'rxjs';
 import { debounce as _debounce } from 'lodash-es';
 
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
@@ -56,7 +55,7 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
       const selectedItem = this.selected.entries().next().value[0];
       if (this.itemLabel) {
         const label = this.itemLabel(selectedItem);
-        return label instanceof Observable ? label : from([label]);
+        return label instanceof Promise ? label : Promise.resolve(label);
       }
     }
 
@@ -82,11 +81,17 @@ export class MultiDropdownFilterComponent implements AbstractFilter, OnInit {
   }
 
   selectAll() {
+    if (this.disabled) {
+      return;
+    }
     this.items.forEach(item => this.selected.add(item));
     this.apply();
   }
 
   clear(apply=true) {
+    if (this.disabled) {
+      return;
+    }
     this.selected.clear();
     if (apply) {
       return this.apply();

@@ -1,8 +1,6 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
 const config = require('../../../src/config');
-const transitionUtils = require('../../../src/transitions/utils');
-const transition = require('../../../src/transitions/generate_shortcode_on_contacts');
 
 const types = [
   { id: 'person', person: true },
@@ -10,8 +8,19 @@ const types = [
 ];
 
 describe('generate_shortcode_on_contacts transition', () => {
-  beforeEach(() => sinon.stub(config, 'getAll').returns({ contact_types: types }));
-  afterEach(() => sinon.restore());
+  let transitionUtils;
+  let transition;
+
+  beforeEach(() => {
+    config.init({ getAll: sinon.stub().returns({ contact_types: types }), });
+    transitionUtils = require('../../../src/transitions/utils');
+    transition = require('../../../src/transitions/generate_shortcode_on_contacts');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('adds patient_id to people', () => {
     sinon.stub(transitionUtils, 'getUniqueId').resolves('something');
@@ -23,27 +32,27 @@ describe('generate_shortcode_on_contacts transition', () => {
 
     it('accepts person contact types', () => {
       const doc = { type: 'person' };
-      assert.equal(!!transition.filter(doc), true);
+      assert.equal(!!transition.filter({ doc }), true);
     });
 
     it('should accept place contact types', () => {
       const doc = { type: 'contact', contact_type: 'place' };
-      assert.equal(!!transition.filter(doc), true);
+      assert.equal(!!transition.filter({ doc }), true);
     });
 
     it('ignores persons that already have a patient_id', () => {
       const doc = { type: 'person', patient_id: '12345' };
-      assert.equal(!!transition.filter(doc), false);
+      assert.equal(!!transition.filter({ doc }), false);
     });
 
     it('ignores places that already have a patient_id', () => {
       const doc = { type: 'place', place_id: '12345' };
-      assert.equal(!!transition.filter(doc), false);
+      assert.equal(!!transition.filter({ doc }), false);
     });
 
     it('ignores docs with unknown type', () => {
       const doc = { };
-      assert.equal(!!transition.filter(doc), false);
+      assert.equal(!!transition.filter({ doc }), false);
     });
   });
 

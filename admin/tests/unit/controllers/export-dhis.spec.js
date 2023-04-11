@@ -45,7 +45,9 @@ describe('dhis2 export controller', () => {
       };
     });
   });
-  afterEach(() => { sinon.restore(); });
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it('loads scope for valid config', async () => {
     await getService();

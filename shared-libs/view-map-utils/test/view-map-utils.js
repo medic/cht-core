@@ -2,7 +2,7 @@ const sinon = require('sinon');
 require('chai').should();
 const lib = require('../src/view-map-utils');
 
-describe('Replication Helper Views Lib', () =>{
+describe('Replication Helper Views Lib', () => {
   afterEach(() => {
     sinon.restore();
     lib._reset();
@@ -146,7 +146,7 @@ describe('Replication Helper Views Lib', () =>{
       };
       lib.loadViewMaps(ddoc, 'view1', 'view2');
       const viewMapStrings = lib._getViewMapStrings();
-      viewMapStrings['ddoc']['view1'].should.equal('function(a) { return a; }');
+      viewMapStrings.ddoc.view1.should.equal('function(a) { return a; }');
     });
   });
 
@@ -226,7 +226,7 @@ describe('Replication Helper Views Lib', () =>{
       lib.getViewMapFn('ddoc2', 'view')(1).should.deep.equal([{ key: 3, value: null }]);
       lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([{ key: 35, value: null }]);
 
-      fnStringView2 = 'function(a) { return emit(\'Medic Mobile\'); }';
+      fnStringView2 = 'function(a) { return emit(\'Medic\'); }';
       ddoc2 = {
         _id: '_design/ddoc2',
         views: {
@@ -237,8 +237,8 @@ describe('Replication Helper Views Lib', () =>{
 
       lib.getViewMapFn('ddoc1', 'view')(1).should.deep.equal([{ key: 1024, value: null }]);
       lib.getViewMapFn('ddoc1', 'view')('I am a happy hippo').should.deep.equal([{ key: 1024, value: null }]);
-      lib.getViewMapFn('ddoc2', 'view')(1).should.deep.equal([{ key: 'Medic Mobile', value: null }]);
-      lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([{ key: 'Medic Mobile', value: null }]);
+      lib.getViewMapFn('ddoc2', 'view')(1).should.deep.equal([{ key: 'Medic', value: null }]);
+      lib.getViewMapFn('ddoc2', 'view')(33).should.deep.equal([{ key: 'Medic', value: null }]);
     });
   });
 });

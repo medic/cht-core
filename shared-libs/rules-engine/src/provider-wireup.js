@@ -66,7 +66,7 @@ module.exports = {
    * Commits those changes (async)
    *
    * @param {Object} provider A data provider
-   * @param {string[]} contactIds An array of contact ids. If undefined, all task documents
+   * @param {string[]} contactIds An array of contact ids. If undefined, returns tasks for all contacts
    * @returns {Promise<Object[]>} All the fresh task docs owned by contacts
    */
   fetchTasksFor: (provider, contactIds) => {
@@ -83,6 +83,42 @@ module.exports = {
           provider.commitTaskDocs(docsToCommit);
           return tasksToDisplay.filter(taskDoc => taskDoc.state === TaskStates.Ready);
         });
+    });
+  },
+
+  /**
+   * Returns a breakdown of task counts by state and title for the provided contacts, or all contacts
+   * Does NOT refresh rules emissions
+   * @param {Object} provider A data provider
+   * @param {string[]} contactIds An array of contact ids. If undefined, returns breakdown for all contacts
+   * @return {Promise<{
+   *  Ready: number,
+   *  Draft: number,
+   *  Failed: number,
+   *  Completed: number,
+   *  Cancelled: number,
+   *}>}
+   */
+  fetchTasksBreakdown: (provider, contactIds) => {
+    const tasksByState = Object.assign({}, TaskStates.states);
+    Object
+      .keys(tasksByState)
+      .forEach(state => tasksByState[state] = 0);
+
+    if (!rulesEmitter.isEnabled() || !wireupOptions.enableTasks) {
+      return Promise.resolve(tasksByState);
+    }
+
+    const getTasks = contactIds ? provider.allTaskRowsByOwner(contactIds) : provider.allTaskRows();
+
+    return getTasks.then(taskRows => {
+      taskRows.forEach(({ value: { state } }) => {
+        if (Object.hasOwnProperty.call(tasksByState, state)) {
+          tasksByState[state]++;
+        }
+      });
+
+      return tasksByState;
     });
   },
 

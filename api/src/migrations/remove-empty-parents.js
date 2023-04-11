@@ -30,7 +30,8 @@ module.exports = {
                 $exists: false
               }
             }
-          }]
+          }
+        ]
       }
     })
       .then(result => removeEmptyParents(result.docs));

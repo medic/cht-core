@@ -2,19 +2,35 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 const messages = require('../../../src/lib/messages');
 const utils = require('../../../src/lib/utils');
-const transition = require('../../../src/transitions/conditional_alerts');
+const config = require('../../../src/config');
 
 describe('conditional alerts', () => {
-  afterEach(() => sinon.restore());
+  let transition;
+
+  beforeEach(() => {
+    config.init({ getAll: sinon.stub(), });
+    transition = require('../../../src/transitions/conditional_alerts');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('when document type is unknown do not pass filter', () => {
-    assert.equal(transition.filter({}), false);
+    assert.equal(transition.filter({ doc: {} }), false);
   });
 
   it('when invalid submission do not pass filter', () => {
     sinon.stub(transition, '_getConfig').returns([{form: 'STCK'}]);
     sinon.stub(utils, 'isValidSubmission').returns(false);
-    assert.equal(transition.filter({ form: 'STCK',  type: 'data_record' }), false);
+    assert.equal(transition.filter({
+      doc: {
+        form: 'STCK',
+        type: 'data_record'
+      },
+      info: {}
+    }), false);
     assert.equal(utils.isValidSubmission.callCount, 1);
     assert.deepEqual(utils.isValidSubmission.args[0], [{ form: 'STCK',  type: 'data_record' }]);
   });
@@ -23,8 +39,11 @@ describe('conditional alerts', () => {
     sinon.stub(transition, '_getConfig').returns([{form: 'STCK'}]);
     sinon.stub(utils, 'isValidSubmission').returns(true);
     assert.equal(transition.filter({
-      form: 'STCK',
-      type: 'data_record'
+      doc: {
+        form: 'STCK',
+        type: 'data_record'
+      },
+      info: {}
     }), true);
     assert.equal(utils.isValidSubmission.callCount, 1);
     assert.deepEqual(utils.isValidSubmission.args[0], [{ form: 'STCK',  type: 'data_record' }]);

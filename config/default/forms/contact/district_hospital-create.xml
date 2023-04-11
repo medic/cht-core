@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>New Health Facility</h:title>
     <model>
@@ -42,9 +42,7 @@
             <value>Age</value>
           </text>
           <text id="/data/contact/ephemeral_dob/dob_debug:label">
-            <value>Months: <output value=" /data/contact/ephemeral_dob/ephemeral_months "/>
-Year: <output value=" /data/contact/ephemeral_dob/ephemeral_years "/>
-DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "/>
+            <value>DOB Approx: <output value=" /data/contact/ephemeral_dob/dob_approx "/>
 DOB Calendar: <output value=" /data/contact/ephemeral_dob/dob_calendar "/>
 DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <text id="/data/contact/ephemeral_dob/dob_iso:label">
@@ -917,7 +915,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" version="2019-10-23  12-01">
+        <data id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" delimiter="#" version="2023-02-14 7-41">
           <inputs>
             <meta>
               <location>
@@ -974,8 +972,6 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
               <age_years/>
               <age_months/>
               <dob_method/>
-              <ephemeral_months/>
-              <ephemeral_years/>
               <dob_approx/>
               <dob_raw/>
               <dob_iso/>
@@ -988,6 +984,9 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
             <role_other/>
             <external_id/>
             <notes/>
+            <user_for_contact>
+              <create/>
+            </user_for_contact>
             <meta tag="hidden">
               <created_by/>
               <created_by_person_uuid/>
@@ -1003,59 +1002,58 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
-      <bind nodeset="/data/init/create_new_person" required="true()" type="select1"/>
-      <bind nodeset="/data/init/select_person" relevant="selected( /data/init/create_new_person ,'old_person')" required="true()" type="db:person"/>
+      <bind nodeset="/data/init/create_new_person" type="select1" required="true()"/>
+      <bind nodeset="/data/init/select_person" type="db:person" relevant="selected( /data/init/create_new_person ,'old_person')" required="true()"/>
       <bind nodeset="/data/init/name" type="string"/>
-      <bind calculate="coalesce(../../contact/name, ../name)" nodeset="/data/init/contact_name" type="string"/>
-      <bind calculate="&quot;name&quot;" nodeset="/data/init/custom_place_name_label_translator" relevant="selected( /data/init/create_new_person ,'none')" type="select1"/>
-      <bind calculate="jr:choice-name( /data/init/custom_place_name_label_translator ,' /data/init/custom_place_name_label_translator ')" nodeset="/data/init/custom_place_name_label" type="string"/>
-      <bind nodeset="/data/init/custom_place_name" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/district_hospital/is_name_generated , 'false') or selected( /data/district_hospital/is_name_generated , 'no')" required="true()" type="string"/>
+      <bind nodeset="/data/init/contact_name" type="string" calculate="coalesce(../../contact/name, ../name)"/>
+      <bind nodeset="/data/init/custom_place_name_label_translator" type="select1" calculate="&quot;name&quot;" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/district_hospital/is_name_generated , 'false')"/>
+      <bind nodeset="/data/init/custom_place_name_label" type="string" calculate="jr:choice-name( /data/init/custom_place_name_label_translator ,' /data/init/custom_place_name_label_translator ')"/>
+      <bind nodeset="/data/init/custom_place_name" type="string" relevant="selected( /data/init/create_new_person ,'none') or selected( /data/district_hospital/is_name_generated , 'false')" required="true()"/>
       <bind nodeset="/data/init/place_type" type="select1"/>
-      <bind calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')" nodeset="/data/init/place_type_translation" type="string"/>
+      <bind nodeset="/data/init/place_type_translation" type="string" calculate="jr:choice-name( /data/init/place_type ,' /data/init/place_type ')"/>
       <bind nodeset="/data/init/generated_name" type="select1"/>
-      <bind calculate="jr:choice-name( /data/init/generated_name ,' /data/init/generated_name ')" nodeset="/data/init/generated_name_translation" type="string"/>
+      <bind nodeset="/data/init/generated_name_translation" type="string" calculate="jr:choice-name( /data/init/generated_name ,' /data/init/generated_name ')"/>
       <bind nodeset="/data/contact" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/parent" type="string"/>
       <bind nodeset="/data/contact/type" type="string"/>
-      <bind nodeset="/data/contact/name" required="true()" type="string"/>
-      <bind constraint="string-length(.) &lt;= 10" jr:constraintMsg="Short name can not be more than 10 characters long." nodeset="/data/contact/short_name" required="false()" type="string"/>
-      <bind calculate="../ephemeral_dob/dob_iso" nodeset="/data/contact/date_of_birth" required="true()" type="string"/>
-      <bind calculate="../ephemeral_dob/dob_method" nodeset="/data/contact/date_of_birth_method" type="string"/>
-      <bind constraint="floor(decimal-date-time(.)) &lt;= floor(decimal-date-time(today()))" jr:constraintMsg="Date must be before today" nodeset="/data/contact/ephemeral_dob/dob_calendar" relevant="not(selected(../dob_method,'approx'))" required="true()" type="date"/>
-      <bind nodeset="/data/contact/ephemeral_dob/age_label" readonly="true()" relevant="selected(../dob_method,'approx')" type="string"/>
-      <bind constraint=". &gt;= 0 and . &lt;= 130" jr:constraintMsg="Age must be between 0 and 130" nodeset="/data/contact/ephemeral_dob/age_years" relevant="selected(../dob_method,'approx')" required="true()" type="int"/>
-      <bind constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="Months must between 0 and 11" nodeset="/data/contact/ephemeral_dob/age_months" relevant="selected(../dob_method,'approx')" type="int"/>
+      <bind nodeset="/data/contact/name" type="string" required="true()"/>
+      <bind nodeset="/data/contact/short_name" type="string" constraint="string-length(.) &lt;= 10" jr:constraintMsg="Short name can not be more than 10 characters long." required="false()"/>
+      <bind nodeset="/data/contact/date_of_birth" type="string" calculate="../ephemeral_dob/dob_iso" required="true()"/>
+      <bind nodeset="/data/contact/date_of_birth_method" type="string" calculate="../ephemeral_dob/dob_method"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_calendar" type="date" constraint=". &lt;= now()" required="true()" jr:constraintMsg="Date must be before today" relevant="not(selected(../dob_method,'approx'))"/>
+      <bind nodeset="/data/contact/ephemeral_dob/age_label" readonly="true()" type="string" relevant="selected(../dob_method,'approx')"/>
+      <bind nodeset="/data/contact/ephemeral_dob/age_years" type="int" constraint=". &gt;= 0 and . &lt;= 130" jr:constraintMsg="Age must be between 0 and 130" relevant="selected(../dob_method,'approx')" required="true()"/>
+      <bind nodeset="/data/contact/ephemeral_dob/age_months" type="int" constraint=". &gt;= 0 and . &lt;= 11" jr:constraintMsg="Months must between 0 and 11" relevant="selected(../dob_method,'approx')"/>
       <bind nodeset="/data/contact/ephemeral_dob/dob_method" type="select"/>
-      <bind calculate="if(format-date-time(today(),&quot;%m&quot;) - ../age_months &lt; 0, format-date-time(today(),&quot;%m&quot;) - ../age_months + 12, format-date-time(today(),&quot;%m&quot;) - ../age_months)" nodeset="/data/contact/ephemeral_dob/ephemeral_months" type="string"/>
-      <bind calculate="if(format-date-time(today(),&quot;%m&quot;) - ../age_months &lt; 0, format-date-time(today(),&quot;%Y&quot;) - ../age_years - 1, format-date-time(today(),&quot;%Y&quot;) -../age_years)" nodeset="/data/contact/ephemeral_dob/ephemeral_years" type="string"/>
-      <bind calculate="concat(string( /data/contact/ephemeral_dob/ephemeral_years ),'-',if( /data/contact/ephemeral_dob/ephemeral_months &lt;10, concat('0',string( /data/contact/ephemeral_dob/ephemeral_months )),  /data/contact/ephemeral_dob/ephemeral_months ),'-',string(format-date-time(today(), &quot;%d&quot;)))" nodeset="/data/contact/ephemeral_dob/dob_approx" type="string"/>
-      <bind calculate="if(not(selected( ../dob_method,'approx')), 
+      <bind nodeset="/data/contact/ephemeral_dob/dob_approx" type="string" calculate="add-date(today(), 0- /data/contact/ephemeral_dob/age_years , 0- /data/contact/ephemeral_dob/age_months )"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_raw" type="string" calculate="if(not(selected( ../dob_method,'approx')), 
 ../dob_calendar,
-../dob_approx)" nodeset="/data/contact/ephemeral_dob/dob_raw" type="string"/>
-      <bind calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)" nodeset="/data/contact/ephemeral_dob/dob_iso" type="string"/>
-      <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" relevant="0" type="string"/>
-      <bind constraint="1" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone" relevant="selected( /data/init/create_new_person ,'new_person')" type="tel"/>
-      <bind constraint="1" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone_alternate" relevant="selected( /data/init/create_new_person ,'new_person')" type="tel"/>
-      <bind nodeset="/data/contact/sex" relevant="selected( /data/init/create_new_person ,'new_person')" required="true()" type="select1"/>
-      <bind nodeset="/data/contact/role" relevant="selected( /data/init/create_new_person ,'new_person')" type="select1"/>
-      <bind nodeset="/data/contact/role_other" relevant="selected(  /data/contact/role ,'other')" required="true()" type="string"/>
-      <bind nodeset="/data/contact/external_id" relevant="selected( /data/init/create_new_person ,'new_person')" type="string"/>
-      <bind nodeset="/data/contact/notes" relevant="selected( /data/init/create_new_person ,'new_person')" type="string"/>
-      <bind calculate="../../../inputs/user/name" nodeset="/data/contact/meta/created_by" type="string"/>
-      <bind calculate="../../../inputs/user/contact_id" nodeset="/data/contact/meta/created_by_person_uuid" type="string"/>
-      <bind calculate="../../../inputs/user/facility_id" nodeset="/data/contact/meta/created_by_place_uuid" type="string"/>
+../dob_approx)"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_iso" type="string" calculate="format-date-time(../dob_raw,&quot;%Y-%m-%d&quot;)"/>
+      <bind nodeset="/data/contact/ephemeral_dob/dob_debug" readonly="true()" type="string" relevant="0"/>
+      <bind nodeset="/data/contact/phone" type="tel" constraint="1" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind nodeset="/data/contact/phone_alternate" type="tel" constraint="1" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind nodeset="/data/contact/sex" type="select1" relevant="selected( /data/init/create_new_person ,'new_person')" required="true()"/>
+      <bind nodeset="/data/contact/role" type="select1" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind nodeset="/data/contact/role_other" type="string" relevant="selected(  /data/contact/role ,'other')" required="true()"/>
+      <bind nodeset="/data/contact/external_id" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind nodeset="/data/contact/notes" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind nodeset="/data/contact/user_for_contact/create" type="string" calculate=" /data/contact/phone  != '' and (selected(  /data/contact/role ,'chw') or selected(  /data/contact/role ,'chw_supervisor'))"/>
+      <bind nodeset="/data/contact/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
+      <bind nodeset="/data/contact/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
+      <bind nodeset="/data/contact/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
       <bind nodeset="/data/district_hospital/parent" type="string"/>
       <bind nodeset="/data/district_hospital/type" type="string"/>
-      <bind nodeset="/data/district_hospital/is_name_generated" relevant="not(selected( /data/init/create_new_person ,'none'))" required="true()" type="select1"/>
-      <bind calculate="if( ( selected( /data/district_hospital/is_name_generated , 'true') or selected( /data/district_hospital/is_name_generated , 'yes') ),  /data/init/generated_name_translation ,  /data/init/custom_place_name )" nodeset="/data/district_hospital/name" required="true()" type="string"/>
+      <bind nodeset="/data/district_hospital/is_name_generated" type="select1" relevant="not(selected( /data/init/create_new_person ,'none'))" required="true()"/>
+      <bind nodeset="/data/district_hospital/name" type="string" calculate="if( ( selected( /data/district_hospital/is_name_generated , 'true') or selected( /data/district_hospital/is_name_generated , 'yes') ),  /data/init/generated_name_translation ,  /data/init/custom_place_name )" required="true()"/>
       <bind nodeset="/data/district_hospital/external_id" type="string"/>
       <bind nodeset="/data/district_hospital/notes" type="string"/>
-      <bind calculate="if(selected( /data/init/create_new_person ,'none'), &quot;&quot;, coalesce( /data/init/select_person ,&quot;NEW&quot;))" nodeset="/data/district_hospital/contact" type="string"/>
-      <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/data/district_hospital/geolocation" type="string"/>
-      <bind calculate="../../../inputs/user/name" nodeset="/data/district_hospital/meta/created_by" type="string"/>
-      <bind calculate="../../../inputs/user/contact_id" nodeset="/data/district_hospital/meta/created_by_person_uuid" type="string"/>
-      <bind calculate="../../../inputs/user/facility_id" nodeset="/data/district_hospital/meta/created_by_place_uuid" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/district_hospital/contact" type="string" calculate="if(selected( /data/init/create_new_person ,'none'), &quot;&quot;, coalesce( /data/init/select_person ,&quot;NEW&quot;))"/>
+      <bind nodeset="/data/district_hospital/geolocation" type="string" calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))"/>
+      <bind nodeset="/data/district_hospital/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
+      <bind nodeset="/data/district_hospital/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
+      <bind nodeset="/data/district_hospital/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">
@@ -1067,7 +1065,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       </group>
     </group>
     <group appearance="field-list" ref="/data/init">
-      <select1 appearance="horizontal-compact" ref="/data/init/create_new_person">
+      <select1 appearance="columns-pack" ref="/data/init/create_new_person">
         <label ref="jr:itext('/data/init/create_new_person:label')"/>
         <item>
           <label ref="jr:itext('/data/init/create_new_person/new_person:label')"/>
@@ -1144,7 +1142,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
           <input ref="/data/contact/ephemeral_dob/age_months">
             <label ref="jr:itext('/data/contact/ephemeral_dob/age_months:label')"/>
           </input>
-          <select appearance="horizontal" ref="/data/contact/ephemeral_dob/dob_method">
+          <select appearance="columns" ref="/data/contact/ephemeral_dob/dob_method">
             <label ref="jr:itext('/data/contact/ephemeral_dob/dob_method:label')"/>
             <item>
               <label ref="jr:itext('/data/contact/ephemeral_dob/dob_method/approx:label')"/>
@@ -1162,7 +1160,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <input ref="/data/contact/phone_alternate">
         <label ref="jr:itext('/data/contact/phone_alternate:label')"/>
       </input>
-      <select1 appearance="horizontal" ref="/data/contact/sex">
+      <select1 appearance="columns" ref="/data/contact/sex">
         <label ref="jr:itext('/data/contact/sex:label')"/>
         <item>
           <label ref="jr:itext('/data/contact/sex/female:label')"/>
@@ -1209,10 +1207,11 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <input appearance="multiline" ref="/data/contact/notes">
         <label ref="jr:itext('/data/contact/notes:label')"/>
       </input>
+      <group ref="/data/contact/user_for_contact"/>
       <group appearance="hidden" ref="/data/contact/meta"/>
     </group>
     <group appearance="field-list" ref="/data/district_hospital">
-      <select1 appearance="horizontal-compact" ref="/data/district_hospital/is_name_generated">
+      <select1 appearance="columns-pack" ref="/data/district_hospital/is_name_generated">
         <label ref="jr:itext('/data/district_hospital/is_name_generated:label')"/>
         <item>
           <label ref="jr:itext('/data/district_hospital/is_name_generated/true:label')"/>

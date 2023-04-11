@@ -1,11 +1,13 @@
 const sinon = require('sinon');
 const path = require('path');
-require('chai').should();
+const { should, expect } = require('chai');
+should();
 
 const service = require('../../../src/services/settings');
 const db = require('../../../src/db');
 const environment = require('../../../src/environment');
-const defaults = require('../../../../build/ddocs/medic/_attachments/default-docs/settings.doc.json');
+const defaults = require('../../../build/default-docs/settings.doc.json');
+const config = require('../../../src/config');
 
 let settings;
 let replace;
@@ -16,8 +18,8 @@ describe('settings service', () => {
     settings = { a: 'a', permissions: { b: 'b'} };
     sinon.stub(db.medic, 'get').resolves({ settings });
 
-    const resourceDirectory = path.resolve(__dirname, '../../../../build/ddocs/medic/_attachments');
-    sinon.stub(environment, 'getExtractedResourcesPath').returns(resourceDirectory);
+    const defaultDocsPath = path.resolve(__dirname, '../../../build/default-docs');
+    sinon.stub(environment, 'defaultDocsPath').value(defaultDocsPath);
   });
 
   afterEach(function() {
@@ -28,7 +30,7 @@ describe('settings service', () => {
     it('does replace if replace is set and overwrite is not set', () => {
       const update = sinon.stub(db.medic, 'put').resolves();
       const newSettings = Object.assign({}, settings);
-      delete newSettings['a'];
+      delete newSettings.a;
       replace = 1;
 
       return service
@@ -43,7 +45,7 @@ describe('settings service', () => {
     it('does overwrite if replace is set and overwrite is set', () => {
       const update = sinon.stub(db.medic, 'put').resolves();
       const newSettings = Object.assign({}, settings);
-      delete newSettings['a'];
+      delete newSettings.a;
       replace = 1;
       overwrite = 1;
 
@@ -161,6 +163,31 @@ describe('settings service', () => {
           update.callCount.should.equal(1);
           update.args[0][0].settings.should.deep.equal(newSettings);
         });
+    });
+  });
+
+  describe('getDeprecatedTransitions', () => {
+    it('should return deprecated transitions', () => {
+      const getDeprecatedTransitions = sinon.stub().returns([
+        { name: 't1', deprecated: true, deprecatedIn: 1 },
+        { name: 't2', deprecated: true, deprecatedIn: 2, getDeprecationMessage: sinon.stub().returns('a') },
+        { name: 't3', deprecated: false, deprecatedIn: 3 },
+        { name: 't4', deprecated: true, deprecatedIn: 4, getDeprecationMessage: sinon.stub().returns('b') },
+      ]);
+      sinon.stub(config, 'getTransitionsLib').returns({ getDeprecatedTransitions });
+
+      expect(service.getDeprecatedTransitions()).to.deep.equal([
+        { name: 't1', deprecated: true, deprecatedIn: 1, deprecationMessage: '' },
+        { name: 't2', deprecated: true, deprecatedIn: 2, deprecationMessage: 'a' },
+        { name: 't3', deprecated: false, deprecatedIn: 3, deprecationMessage: '' },
+        { name: 't4', deprecated: true, deprecatedIn: 4, deprecationMessage: 'b' },
+      ]);
+      expect(config.getTransitionsLib.args).to.deep.equal([[]]);
+    });
+
+    it('should return empty array if transitions lib is not initialized', () => {
+      sinon.stub(config, 'getTransitionsLib').returns();
+      expect(service.getDeprecatedTransitions()).to.deep.equal([]);
     });
   });
 });

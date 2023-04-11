@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Death report</h:title>
     <model>
@@ -55,6 +55,9 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
           <text id="/death_report/inputs/contact/name:label">
             <value>Name</value>
           </text>
+          <text id="/death_report/inputs/contact/parent/_id:label">
+            <value>Household ID</value>
+          </text>
           <text id="/death_report/inputs/contact/parent/parent/contact/name:label">
             <value>CHW name</value>
           </text>
@@ -85,7 +88,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
         </translation>
       </itext>
       <instance>
-        <death_report delimiter="#" id="death_report" prefix="J1!death_report!" version="2019-11-04 13:12:55">
+        <death_report id="death_report" prefix="J1!death_report!" delimiter="#" version="2022-09-26 12:09:48">
           <inputs>
             <meta>
               <location>
@@ -105,6 +108,7 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
               <date_of_birth>0</date_of_birth>
               <sex/>
               <parent>
+                <_id/>
                 <parent>
                   <contact>
                     <name/>
@@ -167,44 +171,44 @@ Date of Death: <output value=" /death_report/death_details/date_of_death "/>&lt;
       <bind nodeset="/death_report/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/death_report/inputs/contact/date_of_birth" type="string"/>
       <bind nodeset="/death_report/inputs/contact/sex" type="string"/>
+      <bind nodeset="/death_report/inputs/contact/parent/_id" type="string"/>
       <bind nodeset="/death_report/inputs/contact/parent/parent/contact/name" type="string"/>
       <bind nodeset="/death_report/inputs/contact/parent/parent/contact/phone" type="string"/>
-      <bind calculate="floor( difference-in-months(  /death_report/inputs/contact/date_of_birth , today() ) div 12 )" nodeset="/death_report/patient_age_in_years" type="string"/>
-      <bind calculate="difference-in-months(  /death_report/inputs/contact/date_of_birth , today() )" nodeset="/death_report/patient_age_in_months" type="string"/>
-      <bind calculate="floor(decimal-date-time(today()) - decimal-date-time( /death_report/inputs/contact/date_of_birth ) )" nodeset="/death_report/patient_age_in_days" type="string"/>
-      <bind calculate="../inputs/contact/_id" nodeset="/death_report/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/death_report/patient_id" type="string"/>
-      <bind calculate="../inputs/contact/name" nodeset="/death_report/patient_name" type="string"/>
-      <bind calculate="../inputs/contact/short_name" nodeset="/death_report/patient_short_name" type="string"/>
-      <bind calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))" nodeset="/death_report/patient_display_name" type="string"/>
-      <bind constraint="(decimal-date-time(.) &lt;= decimal-date-time(today()))
-and floor(decimal-date-time(today()) - decimal-date-time(.)) &lt;= 365" jr:constraintMsg="jr:itext('/death_report/death_details/date_of_death:jr:constraintMsg')" nodeset="/death_report/death_details/date_of_death" required="true()" type="date"/>
-      <bind nodeset="/death_report/death_details/place_of_death" required="true()" type="select1"/>
-      <bind nodeset="/death_report/death_details/place_of_death_other" relevant="selected(../place_of_death, 'other')" required="true()" type="string"/>
+      <bind nodeset="/death_report/patient_age_in_years" type="string" calculate="floor( difference-in-months(  /death_report/inputs/contact/date_of_birth , today() ) div 12 )"/>
+      <bind nodeset="/death_report/patient_age_in_months" type="string" calculate="difference-in-months(  /death_report/inputs/contact/date_of_birth , today() )"/>
+      <bind nodeset="/death_report/patient_age_in_days" type="string" calculate="floor(decimal-date-time(today()) - decimal-date-time( /death_report/inputs/contact/date_of_birth ) )"/>
+      <bind nodeset="/death_report/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/death_report/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/death_report/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/death_report/patient_short_name" type="string" calculate="../inputs/contact/short_name"/>
+      <bind nodeset="/death_report/patient_display_name" type="string" calculate="if(../patient_short_name = '', ../patient_name, concat(../patient_name, ' (', ../patient_short_name, ')'))"/>
+      <bind nodeset="/death_report/death_details/date_of_death" type="date" required="true()" constraint="(. &lt;= now()) and floor(decimal-date-time(today()) - decimal-date-time(.)) &lt;= 365" jr:constraintMsg="jr:itext('/death_report/death_details/date_of_death:jr:constraintMsg')"/>
+      <bind nodeset="/death_report/death_details/place_of_death" type="select1" required="true()"/>
+      <bind nodeset="/death_report/death_details/place_of_death_other" type="string" required="true()" relevant="selected(../place_of_death, 'other')"/>
       <bind nodeset="/death_report/death_details/death_information" type="string"/>
       <bind nodeset="/death_report/group_review/submit" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_summary_details" readonly="true()" type="string"/>
-      <bind calculate="if(../../patient_age_in_days &lt; 31, 
+      <bind nodeset="/death_report/group_review/c_patient_age" type="string" calculate="if(../../patient_age_in_days &lt; 31, 
 concat(../../patient_age_in_days, ' days old'),
 if(../../patient_age_in_months &lt; 12, 
 concat(../../patient_age_in_months, ' months old'), 
-concat(../../patient_age_in_years, ' years old')))" nodeset="/death_report/group_review/c_patient_age" type="string"/>
+concat(../../patient_age_in_years, ' years old')))"/>
       <bind nodeset="/death_report/group_review/r_patient_details" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_death_info" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_key_instruction" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/blank_note" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_referral" readonly="true()" type="string"/>
       <bind nodeset="/death_report/group_review/r_undo" readonly="true()" type="string"/>
-      <bind calculate=" /death_report/death_details/date_of_death " nodeset="/death_report/data/__date_of_death" type="string"/>
-      <bind calculate=" /death_report/death_details/place_of_death " nodeset="/death_report/data/__place_of_death" type="string"/>
-      <bind calculate=" /death_report/death_details/place_of_death_other " nodeset="/death_report/data/__place_of_death_other" type="string"/>
-      <bind calculate=" /death_report/death_details/death_information " nodeset="/death_report/data/__death_information" type="string"/>
-      <bind calculate="../../../inputs/contact/_id" nodeset="/death_report/data/meta/__patient_uuid" type="string"/>
-      <bind calculate="../../../inputs/contact/patient_id" nodeset="/death_report/data/meta/__patient_id" type="string"/>
-      <bind calculate="../../../inputs/contact/parent/_id" nodeset="/death_report/data/meta/__household_uuid" type="string"/>
-      <bind calculate="../../../inputs/source" nodeset="/death_report/data/meta/__source" type="string"/>
-      <bind calculate="../../../inputs/source_id" nodeset="/death_report/data/meta/__source_id" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/death_report/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/death_report/data/__date_of_death" type="string" calculate=" /death_report/death_details/date_of_death "/>
+      <bind nodeset="/death_report/data/__place_of_death" type="string" calculate=" /death_report/death_details/place_of_death "/>
+      <bind nodeset="/death_report/data/__place_of_death_other" type="string" calculate=" /death_report/death_details/place_of_death_other "/>
+      <bind nodeset="/death_report/data/__death_information" type="string" calculate=" /death_report/death_details/death_information "/>
+      <bind nodeset="/death_report/data/meta/__patient_uuid" type="string" calculate="../../../inputs/contact/_id"/>
+      <bind nodeset="/death_report/data/meta/__patient_id" type="string" calculate="../../../inputs/contact/patient_id"/>
+      <bind nodeset="/death_report/data/meta/__household_uuid" type="string" calculate="../../../inputs/contact/parent/_id"/>
+      <bind nodeset="/death_report/data/meta/__source" type="string" calculate="../../../inputs/source"/>
+      <bind nodeset="/death_report/data/meta/__source_id" type="string" calculate="../../../inputs/source_id"/>
+      <bind nodeset="/death_report/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

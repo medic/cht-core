@@ -59,17 +59,15 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     };
 
     const processContactIds = function(summaries) {
-      const ids = _.uniq(_.compact(summaries.map(function(summary) {
-        if (summary.subject && summary.subject.type === 'id') {
-          return summary.subject.value;
-        }
-      })));
+      const ids = summaries
+        .filter(summary => summary.subject && summary.subject.type === 'id' && summary.subject.value)
+        .map(summary => summary.subject.value);
 
       if (!ids.length) {
         return $q.resolve(summaries);
       }
 
-      return GetSummaries(ids)
+      return GetSummaries([...new Set(ids)])
         .then(function(response) {
           return replaceIdsWithNames(summaries, response);
         });
@@ -94,22 +92,22 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
     };
 
     const processReferences = function(summaries) {
-      const references = _.uniq(_.compact(summaries.map(function(summary) {
-        if (summary.subject && summary.subject.type === 'reference') {
-          return summary.subject.value;
-        }
-      })));
+      const references = summaries
+        .filter(summary => summary.subject && summary.subject.type === 'reference' && summary.subject.value)
+        .map(summary => summary.subject.value);
 
       if (!references.length) {
         return $q.resolve(summaries);
       }
 
-      references.forEach(function(reference, key) {
-        references[key] = ['shortcode', reference];
+      const uniqReferences = [...new Set(references)];
+
+      uniqReferences.forEach(function(reference, key) {
+        uniqReferences[key] = ['shortcode', reference];
       });
 
       return DB()
-        .query('medic-client/contacts_by_reference', { keys: references })
+        .query('medic-client/contacts_by_reference', { keys: uniqReferences })
         .then(function(response) {
           return replaceReferencesWithIds(summaries, response);
         });

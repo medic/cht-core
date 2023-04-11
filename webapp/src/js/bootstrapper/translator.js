@@ -17,6 +17,9 @@ const TRANSLATIONS = {
     TOO_MANY_DOCS: ({ count, limit }) => `Warning! You are about to download ${count} docs, which exceeds recommended limit of ${limit}. Do you wish to continue?`, // eslint-disable-line max-len
     CONTINUE: 'Continue',
     ABORT: 'Cancel',
+    SESSION_EXPIRED_TITLE: 'Session has expired',
+    SESSION_EXPIRED_DESCRIPTION: 'Your session has expired, please login to continue.',
+    LOGIN: 'Login',
   },
   es: {
     FETCH_INFO: ({ count, total }) => `Obteniendo información (${count} de ${total} docs)…`,
@@ -32,6 +35,9 @@ const TRANSLATIONS = {
     TOO_MANY_DOCS: ({ count, limit }) => `¡Advertencia! Va a descargar ${count} documentos, que excede el límite recomendado de ${limit}. ¿Desea continuar?`, // eslint-disable-line max-len
     CONTINUE: 'Continuar',
     ABORT: 'Cancelar',
+    SESSION_EXPIRED_TITLE: 'La sesión ha expirado',
+    SESSION_EXPIRED_DESCRIPTION: 'Su sesión ha expirado, por favor inicie sesión para continuar.',
+    LOGIN: 'Iniciar sesión',
   },
   sw: {
     FETCH_INFO: ({ count, total }) => `Inachukua habari (${count} of ${total})…`,
@@ -47,6 +53,9 @@ const TRANSLATIONS = {
     TOO_MANY_DOCS: ({ count, limit }) => `Onyo! Uko karibu kupakua hati ${count}, ambazo zinazidi kikomo kilichopendekezwa cha ${limit}. Je! Unataka kuendelea?`, // eslint-disable-line max-len
     CONTINUE: 'Endelea',
     ABORT: 'Sitisha',
+    SESSION_EXPIRED_TITLE: 'Kipindi kimeisha',
+    SESSION_EXPIRED_DESCRIPTION: 'Kipindi chako kimeisha, tafathali ingia tena ili keundelea',
+    LOGIN: 'Ingia',
   },
   ne: {
     FETCH_INFO: ({ count, total }) => eurodigit.to_non_euro.devanagari(`डकुमेन्ट लोड हुँदै  (${count} मध्ये ${total} डकुमेन्ट)…`), // eslint-disable-line max-len
@@ -62,6 +71,9 @@ const TRANSLATIONS = {
     TOO_MANY_DOCS: ({ count, limit }) => eurodigit.to_non_euro.devanagari(`सावधान! तपाई ${count} डकुमेन्ट डाउनलोड गर्न जाँदै हुनुहुन्छ, जुन कि सुझावित ${limit} भन्दा बढी छ. के तपाई डाउनलोड गर्न चाहनु हुन्छ?`), // eslint-disable-line max-len
     CONTINUE: 'जारी राख्नुस',
     ABORT: 'बन्द गर्नुस',
+    SESSION_EXPIRED_TITLE: 'अघिल्लो सत्रको म्याद सकियो',
+    SESSION_EXPIRED_DESCRIPTION: 'तपाईँको अघिल्लो सत्रको म्याद सकिएको छ, जारी राख्नका लागि कृपया लगिन गर्नुहोला।',
+    LOGIN: 'लगिन',
   },
   fr: {
     FETCH_INFO: ({ count, total }) => `Récupération des données  (${count} sur ${total} documents)…`,
@@ -77,6 +89,9 @@ const TRANSLATIONS = {
     TOO_MANY_DOCS: ({ count, limit }) => `Attention ! Vous êtes sur le point de télécharger ${count} documents, ce qui dépasse la limite recommandée de ${limit}. Souhaitez-vous continuer ?`, // eslint-disable-line max-len
     CONTINUE: 'Continuer',
     ABORT: 'Annuler',
+    SESSION_EXPIRED_TITLE: 'Session expirée',
+    SESSION_EXPIRED_DESCRIPTION: 'Votre session a expiré, veuillez vous connecter pour continuer.',
+    LOGIN: 'Connexion',
   },
   hi: {
     FETCH_INFO: ({ count, total }) => `डॉक्युमेंट लोड हो रहें हैं (${total} मेंस से ${count})…`,
@@ -92,6 +107,9 @@ const TRANSLATIONS = {
     TOO_MANY_DOCS: ({ count, limit }) => `चेतावनी! आप ${count} डॉक्स डाउनलोड करने वाले हैं, जो ${limit} की अनुशंसित सीमा से अधिक है। क्या आप  डाउनलोड जारी रखना चाहते हैं?`, // eslint-disable-line max-len
     CONTINUE: 'जारी रखें',
     ABORT: 'रद्द करें',
+    SESSION_EXPIRED_TITLE: 'सेशुन समाप्त हो चुका है',
+    SESSION_EXPIRED_DESCRIPTION: 'आपका सेशुन समाप्त हो चुका है, जारी रखने के लिए कृपया लॉग इन करें',
+    LOGIN: 'लॉग',
   },
 };
 

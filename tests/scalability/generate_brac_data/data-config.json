@@ -1,0 +1,7 @@
+{
+  "precondition_data_directory": "precondition-data/",
+  "main_script_data_directory": "main-script-data/",
+  "json_directory": "json_docs/",
+  "json_data_extension": ".doc.json",
+  "user_data_name_extension": "users.csv"
+}

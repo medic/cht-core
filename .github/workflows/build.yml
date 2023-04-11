@@ -1,56 +1,61 @@
-name: Build cht-core and test against node versions
+name: Build and test
 
 on: [push, pull_request]
 
 env:
   COUCH_URL: http://admin:pass@localhost:5984/medic-test
-  COUCH_NODE_NAME: nonode@nohost
-  BUILDS_SERVER: _couch/builds_testing
-  STAGING_SERVER: _couch/builds
-  MARKET_URL: ${{ secrets.MARKET_URL }}
+  BUILDS_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_testing' || '_couch/builds_external' }}
+  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_4' || '_couch/builds_external' }}
+  MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
+  MARKET_URL: ${{ secrets.AUTH_MARKET_URL || 'https://staging.dev.medicmobile.org' }}
+  INTERNAL_CONTRIBUTOR: ${{ secrets.AUTH_MARKET_URL && 'true' }}
+  DOCKERHUB_USERNAME: 'dockermedic'
+  ECR_REPO: '720541322708.dkr.ecr.eu-west-2.amazonaws.com/medic'
+  ECR_PUBLIC_REPO: 'public.ecr.aws/medic'
+  COUCHDB_LOG_LEVEL: 'debug'
+  TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
+  BRANCH: ${{ github.head_ref || github.ref_name }}
+  BUILD_NUMBER: ${{ github.run_id }}
 
 jobs:
+
   build:
     name: Compile the app
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
-    - name: Get Docker Hub username
-      id: get-docker-hub-username
-      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
     - name: Login to Docker Hub
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: steps.get-docker-hub-username.outputs.dockerhub_username
-    - name: Set MARKET_URL var for external users
-      run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-      if:  ${{ !env.MARKET_URL }}
-    - name: Get branch name
-      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
-    - name: Set Travis Vars
-      run: |
-        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "TRAVIS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
       with:
-        node-version: 12.x
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - uses: actions/checkout@v3
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
     - name: Couch Start
-      run: ./scripts/travis/couch-start
+      run: ./scripts/ci/couch-start
     - name: Create logs directory
       run: mkdir tests/logs
-    - name: npm CI
-      run: npm ci
+    - run: npm ci --legacy-peer-deps
     - name: Grunt Install
       run: npm install -g grunt-cli
-    - name: Configure Couch
-      run: ./scripts/travis/couch-config
     - name: Grunt CI-Compile
       run: |
         node --stack_size=10000 `which grunt` ci-compile-github
@@ -58,367 +63,239 @@ jobs:
       run: |
         node --stack_size=10000 `which grunt` publish-for-testing
 
-  default-config-tests:
+    - name: Upload docker images as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: cht-images
+        path: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+
+  config-tests:
     needs: build
-    name: Default Config Tests
-    runs-on: ubuntu-18.04
+    name: ${{ matrix.grunt-cmd }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
+    - uses: actions/checkout@v3
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v3
       with:
-        node-version: 12.x
+        node-version: 16.x
     - name: Grunt Install
       run: npm install -g grunt-cli
-    - name: NPM
-      run: npm ci
+    - run: npm ci --legacy-peer-deps
     - name: Run Tests
-      run: node --stack_size=10000 `which grunt` exec:test-config-default
+      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
 
-  standard-config-tests:
+  tests:
     needs: build
-    name: Standard Config Tests
-    runs-on: ubuntu-18.04
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js 12.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 12.x
-    - name: Grunt Install
-      run: npm install -g grunt-cli
-    - name: NPM
-      run: npm ci
-    - name: Run Tests
-      run: node --stack_size=10000 `which grunt` exec:test-config-standard
-
-  e2e-integration:
-    needs: build
-    name: e2e Integration Tests for Node version ${{ matrix.node-version }}
-    runs-on: ubuntu-18.04
+    name: ${{ matrix.grunt-cmd }}
+    runs-on: ubuntu-22.04
+    env:
+      NODE: 16.x
 
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-webdriver-default-mobile']
 
     steps:
-    - name: Get Docker Hub username
-      id: get-docker-hub-username
-      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
     - name: Login to Docker Hub
-      uses: docker/login-action@v1
+      uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        username: ${{ env.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: steps.get-docker-hub-username.outputs.dockerhub_username
-    - name: Set Travis Vars
-      run: |
-        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "TEST_SUITE=integration" >> $GITHUB_ENV
-    - name: Set UPLOARD_URL var
-      run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-      if:  ${{ !env.MARKET_URL }}
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
       with:
-        node-version: ${{ matrix.node-version }}
-    - name: Couch Start
-      run: ./scripts/travis/couch-start
-    - name: xsltprox install
-      run: sudo apt-get install xsltproc
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Use Node.js 16.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
+    - uses: actions/checkout@v3
+    - name: Download docker images artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: cht-images
+        path: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+    - name: Load docker images
+      run: ls -1 *.tar | xargs --no-run-if-empty -L 1 docker load -i
+      working-directory: images/
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+
+    - name: Set ENV
+      run: |        
+        echo "HORTI_BUILDS_SERVER=$MARKET_URL_READ/$BUILDS_SERVER" >> $GITHUB_ENV
     - name: Create logs directory
       run: mkdir tests/logs
-    - name: npm CI
-      run: npm ci
-    - name: Grunt Install
-      run: npm install -g grunt-cli
-    - name: Horti Install
-      run: npm install -g horticulturalist
-    - name: Install medic-conf
-      run:  npm install -g medic-conf
     - name: Install pyxform
       run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-    - name: Configure Couch
-      run: ./scripts/travis/couch-config
-    - name: Echo Vars
+    - name: Install cht-conf
+      run:  npm install -g cht-conf
+    - run: npm ci --legacy-peer-deps
+    - name: Fetch allure history
+      uses: actions/checkout@v3
+      with:
+        repository: 'medic/build-history-data'
+        path: 'build-history-data'
+        persist-credentials: false
+    - name: Copy allure history
       run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
-        echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
-        echo "COUCH_URL=${COUCH_URL}"
-    - name: Curl Couch_url
-      run: curl ${COUCH_URL}
-    - name: horti setup
+        mkdir -p allure-results/history
+        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report/history allure-results | true
+    - name: Run tests
+      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
+    - name: Fetch allure history
+      if: always()
+      uses: actions/checkout@v3
+      with:
+        repository: 'medic/build-history-data'
+        path: 'build-history-data-new'
+        persist-credentials: false
+    - name: Copy new allure history
+      if: always()
       run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
-    - name: Run e2e-integration tests
-      run: node --stack_size=10000 `which grunt` ci-e2e-integration
-    - name: Dump Couch logs
-      run: docker logs couch > tests/logs/couch.log 2>&1
-      if: ${{ always() }}
+        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report | true
+    - name: Upload allure report history
+      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
+        directory: 'build-history-data-new'
+        repository: 'medic/build-history-data'
+        force: true
+    - name: Fetch report repo
+      if: always()
+      uses: actions/checkout@v3
+      with:
+        repository: 'medic/build-history'
+        path: 'build-history'
+        persist-credentials: false
+    - name: Copy new report
+      if: always()
+      run: |
+        mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}
+        cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }} | true
+    - name: Upload allure report
+      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
+      uses: actions-js/push@master
+      with:
+        github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}
+        directory: 'build-history'
+        repository: 'medic/build-history'
+        force: true
     - name: Archive Results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
-        name: Results Artifact ${{ matrix.node-version }}
-        path: |
-          tests/results
-          tests/logs
-      if: ${{ failure() }}
-
-  test-e2e:
-    needs: build
-    name: e2e Tests for Node version ${{ matrix.node-version }}
-    runs-on: ubuntu-18.04
-
-    strategy:
-      matrix:
-        node-version: [8.x, 10.x, 12.x]
-
-    steps:
-    - name: Get Docker Hub username
-      id: get-docker-hub-username
-      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: steps.get-docker-hub-username.outputs.dockerhub_username
-    - name: Set Travis Vars
-      run: |
-        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "TEST_SUITE=integration" >> $GITHUB_ENV
-    - name: Set UPLOARD_URL var
-      run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-      if:  ${{ !env.MARKET_URL }}
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Couch Start
-      run: ./scripts/travis/couch-start
-    - name: xsltprox install
-      run: sudo apt-get install xsltproc
-    - name: Create logs directory
-      run: mkdir tests/logs
-    - name: npm CI
-      run: npm ci
-    - name: Grunt Install
-      run: npm install -g grunt-cli
-    - name: Horti Install
-      run: npm install -g horticulturalist
-    - name: Install medic-conf
-      run:  npm install -g medic-conf
-    - name: Install pyxform
-      run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
-    - name: Configure Couch
-      run: ./scripts/travis/couch-config
-    - name: Echo Vars
-      run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
-        echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
-        echo "COUCH_URL=${COUCH_URL}"
-    - name: Curl Couch_url
-      run: curl ${COUCH_URL}
-    - name: horti setup
-      run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
-    - name: Test it!
-      run: node --stack_size=10000 `which grunt` ci-e2e
-    - name: Dump Couch logs
-      run: docker logs couch > tests/logs/couch.log 2>&1
-      if: ${{ always() }}
-    - name: Archive Results
-      uses: actions/upload-artifact@v2
-      with:
-        name: Results Artifact ${{ matrix.node-version }}
-        path: |
-          tests/results
-          tests/logs
-      if: ${{ failure() }}
-
-
-  publish:
-    needs: [test-e2e, standard-config-tests, default-config-tests]
-    name: Publish branch build
-    runs-on: ubuntu-18.04
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set MARKET_URL var for external users
-      run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-      if:  ${{ !env.MARKET_URL }}
-    - name: Get branch name
-      uses: nelonoel/branch-name@1ea5c86cb559a8c4e623da7f188496208232e49f
-    - name: Set Travis Vars
-      run: |
-        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "TRAVIS_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
-    - name: Publish
-      if: ${{ github.event_name != 'pull_request' }}
-      run: |
-        cd scripts/travis
-        npm ci
-        node ./publish.js
-
-
-  test-cht-default:
-    needs: build
-    name: CHT config release e2e Tests
-    runs-on: ubuntu-18.04
-
-    strategy:
-      matrix:
-        node-version: [12.x]
-
-    steps:
-    - name: Get Docker Hub username
-      id: get-docker-hub-username
-      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: steps.get-docker-hub-username.outputs.dockerhub_username
-    - name: Set Travis Vars
-      run: |
-        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "TEST_SUITE=integration" >> $GITHUB_ENV
-    - name: Set MARKET_URL var for external users
-      run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-      if:  ${{ !env.MARKET_URL }}
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Couch Start
-      run: ./scripts/travis/couch-start
-    - name: xsltprox install
-      run: sudo apt-get install xsltproc
-    - name: Create logs directory
-      run: mkdir tests/logs
-    - name: npm CI
-      run: npm ci
-    - name: Grunt Install
-      run: npm install -g grunt-cli
-    - name: Horti Install
-      run: npm install -g horticulturalist
-    - name: Configure Couch
-      run: ./scripts/travis/couch-config
-    - name: Echo Vars
-      run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
-        echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
-        echo "COUCH_URL=${COUCH_URL}"
-    - name: Curl Couch_url
-      run: curl ${COUCH_URL}
-    - name: horti setup
-      run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
-    - name: Test it!
-      run: node --stack_size=10000 `which grunt` ci-e2e-cht
-    - name: Dump Couch logs
-      run: docker logs couch > tests/logs/couch.log 2>&1
-      if: ${{ always() }}
-    - name: Archive Results
-      uses: actions/upload-artifact@v2
-      with:
-        name: Results Artifact ${{ matrix.node-version }}
-        path: |
-          tests/results
-          tests/logs
-      if: ${{ failure() }}
-
-  wdio-tests:
-    needs: build
-    name: wdio tests
-    runs-on: ubuntu-18.04
-
-    strategy:
-      matrix:
-        node-version: [12.x]
-
-    steps:
-    - name: Get Docker Hub username
-      id: get-docker-hub-username
-      run: echo '::set-output name=dockerhub_username::${{ secrets.DOCKERHUB_USERNAME }}'
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-      if: steps.get-docker-hub-username.outputs.dockerhub_username
-    - name: Set Travis Vars
-      run: |
-        echo "TRAVIS_BUILD_NUMBER=$GITHUB_RUN_ID" >> $GITHUB_ENV
-        echo "TEST_SUITE=integration" >> $GITHUB_ENV
-    - name: Set MARKET_URL var for external users
-      run: |
-          echo "MARKET_URL=https://staging.dev.medicmobile.org" >> $GITHUB_ENV
-          echo "BUILDS_SERVER=_couch/builds_external" >> $GITHUB_ENV
-          echo "STAGING_SERVER=_couch/builds_external" >> $GITHUB_ENV
-      if:  ${{ !env.MARKET_URL }}
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: Couch Start
-      run: ./scripts/travis/couch-start
-    - name: xsltprox install
-      run: sudo apt-get install xsltproc
-    - name: Create logs directory
-      run: mkdir tests/logs
-    - name: npm CI
-      run: npm ci
-    - name: Grunt Install
-      run: npm install -g grunt-cli
-    - name: Horti Install
-      run: npm install -g horticulturalist
-    - name: Configure Couch
-      run: ./scripts/travis/couch-config
-    - name: Echo Vars
-      run: |
-        echo "HORTI_BUILDS_SERVER=${MARKET_URL}/${BUILDS_SERVER}"
-        echo "--install=medic:medic:test-${TRAVIS_BUILD_NUMBER}"
-        echo "COUCH_URL=${COUCH_URL}"
-    - name: Curl Couch_url
-      run: curl ${COUCH_URL}
-    - name: horti setup
-      run: |
-        echo "COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER"
-        COUCH_URL=$COUCH_URL HORTI_BUILDS_SERVER=$MARKET_URL/$BUILDS_SERVER horti --local --install=medic:medic:test-$TRAVIS_BUILD_NUMBER > tests/logs/horti.log &
-    - name: Test it!
-      run: node --stack_size=10000 `which grunt` ci-webdriver
-    - name: Dump Couch logs
-      run: docker logs couch > tests/logs/couch.log 2>&1
-      if: ${{ always() }}
-    - name: Archive Results
-      uses: actions/upload-artifact@v2
-      with:
-        name: WDIO Results Artifact ${{ matrix.node-version }}
+        name: ${{ matrix.grunt-cmd }}
         path: |
           allure-results
           allure-report
           tests/logs
+          tests/results/
       if: ${{ failure() }}
+
+  publish:
+    needs: [tests,config-tests]
+    name: Publish branch build
+    runs-on: ubuntu-22.04
+    if: ${{ github.event_name != 'pull_request' }}
+
+    steps:
+    - name: Delete image artifacts
+      if: ${{ !env.INTERNAL_CONTRIBUTOR }}
+      uses: geekyeggo/delete-artifact@v1
+      with:
+        name: cht-images
+
+    - name: Configure AWS credentials
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+    - name: Login to Amazon ECR
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Configure AWS credentials Public
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Login to Public Amazon ECR
+      if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      id: login-ecr-public
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        registry-type: public
+
+    - uses: actions/checkout@v3
+    - name: Publish
+      run: |
+        cd scripts/ci
+        npm ci --legacy-peer-deps
+        node ./publish.js
+        node ./tag-docker-images.js
+
+  upgrade:
+    needs: [publish]
+    name: Upgrade from latest release
+    runs-on: ubuntu-22.04
+    if: ${{ github.event_name != 'pull_request' }}
+
+    steps:
+      - name: Configure AWS credentials Public
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ secrets.ECR_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Login to Public Amazon ECR
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+      - uses: actions/checkout@v3
+      - name: Set ENV
+        run: |
+          echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
+      - run: npm ci --legacy-peer-deps
+      - name: Create logs directory
+        run: mkdir tests/logs
+      - name: Upgrade
+        run: npm run upgrade-wdio
+      - name: Archive Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: Upgrade
+          path: |
+            allure-results
+            allure-report
+            tests/logs
+            tests/results/
+        if: ${{ failure() }}

@@ -131,7 +131,7 @@ export class RulesEngineService implements OnDestroy {
                     this.fetchTaskDocsForAllContacts();
                   }, this.ENSURE_FRESHNESS_SECS * 1000);
 
-                  this.debounceActive['tasks'] = {
+                  this.debounceActive.tasks = {
                     active: true,
                     telemetryDataEntry: this.telemetryEntry('rules-engine:ensureTaskFreshness:cancel', true),
                     debounceRef: tasksDebounceRef
@@ -143,7 +143,7 @@ export class RulesEngineService implements OnDestroy {
                     this.fetchTargets();
                   }, this.ENSURE_FRESHNESS_SECS * 1000);
 
-                  this.debounceActive['targets'] = {
+                  this.debounceActive.targets = {
                     active: true,
                     telemetryDataEntry: this.telemetryEntry('rules-engine:ensureTargetFreshness:cancel', true),
                     debounceRef: targetsDebounceRef
@@ -258,8 +258,8 @@ export class RulesEngineService implements OnDestroy {
     for (
       let current = rulesEngineContext.userContactDoc;
       !!current && userLineage.length < this.MAX_LINEAGE_DEPTH;
-      current = current.parent)
-    {
+      current = current.parent
+    ) {
       userLineage.push(current._id);
     }
 
@@ -375,6 +375,19 @@ export class RulesEngineService implements OnDestroy {
       })
       .then(telemetryData.passThrough)
       .then(taskDocs => this.translateTaskDocs(taskDocs));
+  }
+
+  fetchTasksBreakdown(contactIds?) {
+    return this.ngZone.runOutsideAngular(() => this._fetchTasksBreakdown(contactIds));
+  }
+
+  private _fetchTasksBreakdown(contactIds?) {
+    const telemetryEntryName = contactIds ?
+      'rules-engine:tasks-breakdown:some-contacts' : 'rules-engine:tasks-breakdown:all-contacts';
+    const telemetryData = this.telemetryEntry(telemetryEntryName, true);
+    return this.initialized
+      .then(() => this.rulesEngineCore.fetchTasksBreakdown(contactIds))
+      .then(telemetryData.passThrough);
   }
 
   fetchTargets() {

@@ -1,0 +1,70 @@
+version: "3.3"
+networks:
+  cht-net-test:
+    driver: bridge
+
+services:
+  couchdb.1:
+    build:
+      context: .
+      target: cht-couchdb
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=couchdb.1"
+      - "CLUSTER_PEER_IPS=couchdb.2,couchdb.3"
+    restart: always
+    networks:
+      cht-net-test:
+
+  couchdb.2:
+    build:
+      context: .
+      target: cht-couchdb
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=couchdb.2"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    restart: always
+    networks:
+      cht-net-test:
+
+  couchdb.3:
+    build:
+      context: .
+      target: cht-couchdb
+    environment:
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "COUCHDB_SECRET=${COUCHDB_SECRET:-6c1953b6-e64d-4b0c-9268-2528396f2f58}"
+      - "COUCHDB_UUID=${COUCHDB_UUID:-5c265815-b9e3-47f1-ba8d-c1d50495eeb2}"
+      - "SVC_NAME=couchdb.3"
+      - "COUCHDB_SYNC_ADMINS_NODE=${COUCHDB_SYNC_ADMINS_NODE:-couchdb.1}"
+    restart: always
+    networks:
+      cht-net-test:
+
+  sut:
+    depends_on:
+    - couchdb.1
+    - couchdb.2
+    - couchdb.3
+    build:
+      context: .
+      target: test_couchdb_build
+    volumes:
+      - ./tests/tests.sh:/app/tests.sh
+      - ./tests/tests.bats:/workdir/tests.bats
+      - ./set-up-cluster.sh:/app/set-up-cluster.sh
+    environment:
+      - "TEST_MODE=CLUSTERED"
+      - "COUCHDB_USER=${COUCHDB_USER:-admin}"
+      - "COUCHDB_PASSWORD=${COUCHDB_PASSWORD}"
+      - "SVC_NAME=couchdb.1"
+    networks:
+      cht-net-test:

@@ -1,14 +1,13 @@
 import { createAction, Store } from '@ngrx/store';
 
-import { createSingleValueAction } from './actionUtils';
+import { createSingleValueAction, createMultiValueAction } from '@mm-actions/actionUtils';
 
 export const Actions = {
   updateReplicationStatus: createSingleValueAction('UPDATE_REPLICATION_STATUS', 'replicationStatus'),
-  setMinimalTabs: createSingleValueAction('SET_MINIMAL_TABS', 'minimalTabs'),
   setAndroidAppVersion: createSingleValueAction('SET_ANDROID_APP_VERSION', 'androidAppVersion'),
   setCurrentTab: createSingleValueAction('SET_CURRENT_TAB', 'currentTab'),
   setSnapshotData: createSingleValueAction('SET_SNAPSHOT_DATA', 'snapshotData'),
-  setSnackbarContent: createSingleValueAction('SET_SNACKBAR_CONTENT', 'content'),
+  setSnackbarContent: createMultiValueAction('SET_SNACKBAR_CONTENT'),
   setLoadingContent: createSingleValueAction('SET_LOADING_CONTENT', 'loadingContent'),
   setShowContent: createSingleValueAction('SET_SHOW_CONTENT', 'showContent'),
   setShowActionBar: createSingleValueAction('SET_SHOW_ACTION_BAR', 'showActionBar'),
@@ -18,24 +17,29 @@ export const Actions = {
   setRightActionBar: createSingleValueAction('SET_RIGHT_ACTION_BAR', 'right'),
   setRightActionBarVerified: createSingleValueAction('SET_ACTION_BAR_RIGHT_VERIFIED', 'verified'),
   updateRightActionBar: createSingleValueAction('UPDATE_RIGHT_ACTION_BAR', 'right'),
-  clearFilters: createAction('CLEAR_FILTERS'),
+  clearFilters: createSingleValueAction('CLEAR_FILTERS', 'skip'),
   setFilter: createSingleValueAction('SET_FILTER', 'filter'),
   setFilters: createSingleValueAction('SET_FILTERS', 'filters'),
+  setSidebarFilter: createSingleValueAction('SET_SIDEBAR_FILTER', 'sidebarFilter'),
+  clearSidebarFilter: createAction('CLEAR_SIDEBAR_FILTER'),
   setSelectMode: createSingleValueAction('SET_SELECT_MODE', 'selectMode'),
-  setIsAdmin: createSingleValueAction('SET_IS_ADMIN', 'isAdmin'),
   setTitle: createSingleValueAction('SET_TITLE', 'title'),
   setPrivacyPolicyAccepted: createSingleValueAction('SET_PRIVACY_POLICY_ACCEPTED', 'accepted'),
   setShowPrivacyPolicy: createSingleValueAction('SET_SHOW_PRIVACY_POLICY', 'show'),
   setEnketoStatus: createSingleValueAction('SET_ENKETO_STATUS', 'enketoStatus'),
+  clearEnketoStatus: createAction('CLEAR_ENKETO_STATUS'),
   navigationCancel: createSingleValueAction('NAVIGATION_CANCEL', 'nextUrl'),
   clearSelected: createAction('CLEAR_SELECTED'),
   setCancelCallback: createSingleValueAction('SET_CANCEL_CALLBACK', 'cancelCallback'),
+  setNavigation: createMultiValueAction('SET_NAVIGATION'),
+  setPreventNavigation: createSingleValueAction('SET_PREVENT_NAVIGATION', 'preventNavigation'),
   deleteDocConfirm: createSingleValueAction('DELETE_DOC_CONFIRM', 'doc'), // Has Effect
   setLoadingSubActionBar: createSingleValueAction('SET_LOADING_SUB_ACTION_BAR', 'loading'),
   setUnreadCount: createSingleValueAction('SET_UNREAD_COUNT', 'unreadCount'),
   updateUnreadCount: createSingleValueAction('UPDATE_UNREAD_COUNT', 'unreadCount'),
   setTranslationsLoaded: createAction('SET_TRANSLATIONS_LOADED'),
   setUserFacilityId:createSingleValueAction('SET_USER_FACILITY_ID', 'userFacilityId'),
+  setTrainingCardFormId:createSingleValueAction('SET_TRAINING_CARD_FORM_ID', 'trainingCardFormId'),
 };
 
 export class GlobalActions {
@@ -43,10 +47,6 @@ export class GlobalActions {
 
   updateReplicationStatus(replicationStatus) {
     return this.store.dispatch(Actions.updateReplicationStatus(replicationStatus));
-  }
-
-  setMinimalTabs(minimal) {
-    return this.store.dispatch(Actions.setMinimalTabs(minimal));
   }
 
   setAndroidAppVersion(androidAppVersion) {
@@ -61,8 +61,8 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setSnapshotData(snapshotData));
   }
 
-  setSnackbarContent(content) {
-    return this.store.dispatch(Actions.setSnackbarContent(content));
+  setSnackbarContent(message, action?) {
+    return this.store.dispatch(Actions.setSnackbarContent({ message, action }));
   }
 
   setLoadingContent(loading) {
@@ -91,8 +91,8 @@ export class GlobalActions {
     this.setShowActionBar(true);
   }
 
-  clearFilters() {
-    return this.store.dispatch(Actions.clearFilters());
+  clearFilters(skip?) {
+    return this.store.dispatch(Actions.clearFilters(skip));
   }
 
   setFilter(filter) {
@@ -103,12 +103,16 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setFilters(filters));
   }
 
-  setSelectMode(selectMode) {
-    return this.store.dispatch(Actions.setSelectMode(selectMode));
+  setSidebarFilter(sidebarFilter) {
+    return this.store.dispatch(Actions.setSidebarFilter(sidebarFilter));
   }
 
-  setIsAdmin(isAdmin) {
-    return this.store.dispatch(Actions.setIsAdmin(isAdmin));
+  clearSidebarFilter() {
+    return this.store.dispatch(Actions.clearSidebarFilter());
+  }
+
+  setSelectMode(selectMode) {
+    return this.store.dispatch(Actions.setSelectMode(selectMode));
   }
 
   setLoadingShowContent(id) {
@@ -120,11 +124,15 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setTitle(title));
   }
 
-  unsetSelected() {
+  unsetComponents() {
     this.setShowContent(false);
     this.setLoadingContent(false);
     this.setShowActionBar(false);
     this.setTitle();
+  }
+
+  unsetSelected() {
+    this.unsetComponents();
     this.clearSelected();
   }
 
@@ -132,8 +140,21 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setCancelCallback(value));
   }
 
-  clearCancelCallback() {
-    return this.store.dispatch(Actions.setCancelCallback(null));
+  setNavigation({ cancelCallback, preventNavigation, cancelTranslationKey, recordTelemetry }) {
+    return this.store.dispatch(Actions.setNavigation({
+      cancelCallback,
+      preventNavigation,
+      cancelTranslationKey,
+      recordTelemetry,
+    }));
+  }
+
+  setPreventNavigation(preventNavigation) {
+    return this.store.dispatch(Actions.setPreventNavigation(preventNavigation));
+  }
+
+  clearNavigation() {
+    return this.store.dispatch(Actions.setNavigation({ }));
   }
 
   /**
@@ -196,6 +217,10 @@ export class GlobalActions {
     return this.store.dispatch(Actions.setEnketoStatus({ saving }));
   }
 
+  clearEnketoStatus() {
+    return this.store.dispatch(Actions.clearEnketoStatus());
+  }
+
   navigationCancel(nextUrl?) {
     return this.store.dispatch(Actions.navigationCancel(nextUrl));
   }
@@ -218,5 +243,9 @@ export class GlobalActions {
 
   setUserFacilityId(userFacilityId) {
     return this.store.dispatch(Actions.setUserFacilityId(userFacilityId));
+  }
+
+  setTrainingCardFormId(trainingCard) {
+    return this.store.dispatch(Actions.setTrainingCardFormId(trainingCard));
   }
 }

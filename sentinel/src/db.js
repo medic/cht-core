@@ -1,12 +1,8 @@
-const PouchDB = require('pouchdb-core');
 const logger = require('../src/lib/logger');
-PouchDB.plugin(require('pouchdb-adapter-http'));
-PouchDB.plugin(require('pouchdb-mapreduce'));
-PouchDB.plugin(require('pouchdb-replication'));
+const request = require('request-promise-native');
 
 const { COUCH_URL, UNIT_TEST_ENV } = process.env;
 
-const request = require('request');
 const url = require('url');
 
 if (UNIT_TEST_ENV) {
@@ -56,7 +52,13 @@ if (UNIT_TEST_ENV) {
   module.exports.get = stubMe('get');
   module.exports.close = stubMe('close');
   module.exports.medicDbName = stubMe('medicDbName');
+  module.exports.queryMedic = stubMe('queryMedic');
 } else if (COUCH_URL) {
+  const PouchDB = require('pouchdb-core');
+  PouchDB.plugin(require('pouchdb-adapter-http'));
+  PouchDB.plugin(require('pouchdb-mapreduce'));
+  PouchDB.plugin(require('pouchdb-replication'));
+
   // strip trailing slash from to prevent bugs in path matching
   const couchUrl = COUCH_URL && COUCH_URL.replace(/\/$/, '');
   const parsedUrl = url.parse(couchUrl);
@@ -76,11 +78,7 @@ if (UNIT_TEST_ENV) {
     fetch: fetchFn,
   });
 
-  module.exports.allDbs = () => new Promise((resolve, reject) => {
-    request({ url: `${module.exports.serverUrl}/_all_dbs`, json: true }, (err, response, body) => {
-      return err ? reject(err) : resolve(body);
-    });
-  });
+  module.exports.allDbs = () => request.get({ url: `${module.exports.serverUrl}/_all_dbs`, json: true });
   module.exports.get = db => new PouchDB(`${module.exports.serverUrl}/${db}`);
   module.exports.close = db => {
     if (!db || db._destroyed || db._closed) {
@@ -94,7 +92,19 @@ if (UNIT_TEST_ENV) {
     }
   };
   module.exports.couchUrl = couchUrl;
+  module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`, { fetch: fetchFn });
   module.exports.users = new PouchDB(`${module.exports.serverUrl}/_users`);
+  module.exports.queryMedic = (viewPath, queryParams, body) => {
+    const [ddoc, view] = viewPath.split('/');
+    const url = ddoc === 'allDocs' ? `${couchUrl}/_all_docs` : `${couchUrl}/_design/${ddoc}/_view/${view}`;
+    const requestFn = body ? request.post : request.get;
+    return requestFn({
+      url,
+      qs: queryParams,
+      json: true,
+      body,
+    });
+  };
 } else {
   logger.warn(
     'Please define a COUCH_URL in your environment e.g. \n' +

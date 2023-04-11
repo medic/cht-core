@@ -1,11 +1,11 @@
 const { expect } = require('chai');
-const TestRunner = require('medic-conf-test-harness');
+const TestRunner = require('cht-conf-test-harness');
 const moment = require('moment');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
 const harness = new TestRunner();
 
 describe('Tests for active pregnancy condition card', () => {
-  before(async () => { return await harness.start(); });
+  before(() => harness.start());
   after(async () => { return await harness.stop(); });
   beforeEach(async () => {
     await harness.clear();
@@ -17,7 +17,7 @@ describe('Tests for active pregnancy condition card', () => {
 
   it('pregnancy registration with risk factors, danger signs, past and future visits', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
+    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
 
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
@@ -33,7 +33,7 @@ describe('Tests for active pregnancy condition card', () => {
       {
         'label': 'Weeks Pregnant',
         'value': {
-          'number': 21,//21 weeks and 6 days
+          'number': 21, //21 weeks and 6 days
           'approximate': false
         },
         'translate': false,
@@ -42,7 +42,7 @@ describe('Tests for active pregnancy condition card', () => {
       });
     expect(fields[1]).to.deep.equal({
       'label': 'contact.profile.edd',
-      'value': moment('2000-05-07').valueOf(),//LMP date + 280 days
+      'value': moment('2000-05-07').valueOf(), //LMP date + 280 days
       'translate': false,
       'filter': 'simpleDate',
       'width': 6
@@ -132,7 +132,7 @@ describe('Tests for active pregnancy condition card', () => {
 
   it('pregnancy registration updated by pregnancy home visit', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
+    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
 
@@ -151,7 +151,7 @@ describe('Tests for active pregnancy condition card', () => {
     expect(fields[0]).to.deep.equal({
       'label': 'Weeks Pregnant',
       'value': {
-        'number': 24,//24 weeks and 6 days
+        'number': 24, //24 weeks and 6 days
         'approximate': false
       },
       'translate': false,
@@ -160,7 +160,7 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[1]).to.deep.equal({
       'label': 'contact.profile.edd',
-      'value': moment('2000-05-10').valueOf(),//(updated EDD)
+      'value': moment('2000-05-10').valueOf(), //(updated EDD)
       'translate': false,
       'filter': 'simpleDate',
       'width': 6
@@ -198,7 +198,7 @@ describe('Tests for active pregnancy condition card', () => {
 
   it('pregnancy registration cleared by pregnancy home visit', async () => {
     // Load the pregnancy form and fill in
-    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger);
+    const result = await harness.fillForm('pregnancy', ...pregnancyRegistrationScenarios.riskDanger());
     // Verify that the form successfully got submitted
     expect(result.errors).to.be.empty;
 
@@ -231,7 +231,7 @@ describe('Tests for active pregnancy condition card', () => {
     expect(fields[2]).to.deep.equal({
       'label': 'Weeks Pregnant',
       'value': {
-        'number': 24,//24 weeks and 3 days
+        'number': 24, //24 weeks and 3 days
         'approximate': false
       },
       'translate': false,
@@ -240,7 +240,7 @@ describe('Tests for active pregnancy condition card', () => {
     });
     expect(fields[3]).to.deep.equal({
       'label': 'contact.profile.edd',
-      'value': moment('2000-05-07').valueOf(),//LMP date + 280 days
+      'value': moment('2000-05-07').valueOf(), //LMP date + 280 days
       'translate': false,
       'filter': 'simpleDate',
       'width': 6

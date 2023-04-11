@@ -24,16 +24,8 @@ const moment = require('moment');
       SetLanguageCookie
     ) {
       'ngInject';
-      
-      const setDatepickerLanguage = function(language) {
-        const availableCalendarLanguages = Object.keys($.fn.datepicker.dates);
-        const calendarLanguage = availableCalendarLanguages.indexOf(language) >= 0 ? language : 'en';
-        $.fn.datepicker.defaults.language = calendarLanguage;
-      };
-
       return function(code, setLanguageCookie) {
         moment.locale([code, 'en']);
-        setDatepickerLanguage(code);
         $translate.use(code);
 
         if (setLanguageCookie !== false) {

@@ -266,7 +266,7 @@ module.exports = function(Promise, DB) {
       });
   };
 
-  const fetchHydratedDoc = function(id, options = {}, callback) {
+  const fetchHydratedDoc = function(id, options = {}, callback = undefined) {
     let lineage;
     let patientLineage;
     let placeLineage;

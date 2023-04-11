@@ -15,7 +15,7 @@
             [class.overdue]="task.overdue"
             class="content-row"
         >
-          <a [routerLink]="['/', 'tasks', task._id]">
+          <a [routerLink]="['/', 'tasks', task._id]" [state]="{ tab: 'tasks', id: task._id }">
             <div *ngIf="task.icon" class="icon" [innerHTML]="task.icon | resourceIcon"></div>
             <div class="content">
               <div class="heading">
@@ -32,6 +32,7 @@
               </div>
 
               <div *ngIf="task.priorityLabel" class="warning">{{task.priorityLabel}}</div>
+              <div *ngIf="task.lineage?.length" class="detail" [innerHTML]="task.lineage | lineage"></div>
             </div>
           </a>
         </li>

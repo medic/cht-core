@@ -1,7 +1,9 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { of } from 'rxjs';
 
+import { HttpClient } from '@angular/common/http';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { ChangesService } from '@mm-services/changes.service';
@@ -12,17 +14,20 @@ describe('CHTScriptApiService service', () => {
   let sessionService;
   let settingsService;
   let changesService;
+  let http;
 
   beforeEach(() => {
     sessionService = { userCtx: sinon.stub() };
     settingsService = { get: sinon.stub() };
-    changesService = { subscribe: sinon.stub() };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
+    http = { get: sinon.stub().returns(of([])) };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: SettingsService, useValue: settingsService },
-        { provide: ChangesService, useValue: changesService}
+        { provide: ChangesService, useValue: changesService },
+        { provide: HttpClient, useValue: http },
       ]
     });
 
@@ -33,31 +38,64 @@ describe('CHTScriptApiService service', () => {
     sinon.restore();
   });
 
-  it('should initialise service', async () => {
-    settingsService.get.resolves();
-    sessionService.userCtx.returns();
+  describe('init', () => {
 
-    await service.isInitialized();
+    it('should initialise service', async () => {
+      settingsService.get.resolves();
+      sessionService.userCtx.returns();
 
-    expect(changesService.subscribe.callCount).to.equal(1);
-    expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
-    expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
-    expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
-    expect(settingsService.get.callCount).to.equal(1);
-  });
+      await service.isInitialized();
 
-  it('should return versioned api', async () => {
-    settingsService.get.resolves();
-    await service.isInitialized();
-    const result = await service.getApi();
+      expect(changesService.subscribe.callCount).to.equal(1);
+      expect(changesService.subscribe.args[0][0].key).to.equal('cht-script-api-settings-changes');
+      expect(changesService.subscribe.args[0][0].filter).to.be.a('function');
+      expect(changesService.subscribe.args[0][0].callback).to.be.a('function');
+      expect(settingsService.get.callCount).to.equal(1);
+    });
 
-    expect(result).to.have.all.keys([ 'v1' ]);
-    expect(result.v1).to.have.all.keys([ 'hasPermissions', 'hasAnyPermission' ]);
-    expect(result.v1.hasPermissions).to.be.a('function');
-    expect(result.v1.hasAnyPermission).to.be.a('function');
+    it('should return versioned api', async () => {
+      settingsService.get.resolves();
+      await service.isInitialized();
+
+      const result = await service.getApi();
+
+      expect(result).to.have.all.keys([ 'v1' ]);
+      expect(result.v1).to.have.all.keys([ 'hasPermissions', 'hasAnyPermission', 'getExtensionLib' ]);
+      expect(result.v1.hasPermissions).to.be.a('function');
+      expect(result.v1.hasAnyPermission).to.be.a('function');
+      expect(result.v1.getExtensionLib).to.be.a('function');
+    });
+
+    it('should initialize extension libs', async () => {
+      settingsService.get.resolves();
+      http.get.onCall(0).returns(of([ 'bar.js', 'foo.js' ]));
+      http.get.onCall(1).returns(of('return (a) => a + a'));
+      http.get.onCall(2).returns(of('return function() { return "foo"; }'));
+      await service.isInitialized();
+
+      expect(http.get.callCount).to.equal(3);
+      expect(http.get.args[0][0]).to.equal('/extension-libs');
+      expect(http.get.args[1][0]).to.equal('/extension-libs/bar.js');
+      expect(http.get.args[2][0]).to.equal('/extension-libs/foo.js');
+
+      const result = await service.getApi();
+
+      const foo = result.v1.getExtensionLib('foo.js');
+      expect(foo).to.be.a('function');
+      expect(foo()).to.equal('foo');
+
+      const bar = result.v1.getExtensionLib('bar.js');
+      expect(bar).to.be.a('function');
+      expect(bar('hi')).to.equal('hihi');
+
+      const baz = result.v1.getExtensionLib('baz.js');
+      expect(baz).to.be.undefined;
+    });
+
   });
 
   describe('v1.hasPermissions()', () => {
+
     it('should return true when user has the permission', async () => {
       settingsService.get.resolves({
         permissions: {
@@ -267,4 +305,5 @@ describe('CHTScriptApiService service', () => {
       expect(result).to.be.false;
     });
   });
+
 });

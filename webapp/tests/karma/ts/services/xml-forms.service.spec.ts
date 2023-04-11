@@ -12,10 +12,13 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { PipesService } from '@mm-services/pipes.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 
 describe('XmlForms service', () => {
   let dbGet;
   let dbQuery;
+  let dbGetAttachment;
   let Changes;
   let hasAuth;
   let UserContact;
@@ -24,11 +27,15 @@ describe('XmlForms service', () => {
   let contextUtils;
   let pipesService;
   let error;
+  let warn;
+  let fileReaderService;
+  let feedbackService;
 
   const mockEnketoDoc = (formInternalId?, docId?) => {
     return {
       id: docId || 'form-0',
       doc: {
+        _id: docId || 'form-0',
         internalId: formInternalId,
         _attachments: { xml: { something: true } },
       },
@@ -36,7 +43,7 @@ describe('XmlForms service', () => {
   };
 
   const mockJsonDoc = () => {
-    return { doc: { _attachments: {} } };
+    return { doc: { _id: 'json-doc', _attachments: {} } };
   };
 
   const getService = () => {
@@ -46,13 +53,17 @@ describe('XmlForms service', () => {
   beforeEach(() => {
     dbQuery = sinon.stub();
     dbGet = sinon.stub();
+    dbGetAttachment = sinon.stub();
     Changes = sinon.stub();
     hasAuth = sinon.stub();
     UserContact = sinon.stub();
     getContactType = sinon.stub();
+    fileReaderService = sinon.stub();
+    feedbackService = { submit: sinon.stub() };
     getTypeId = sinon.stub().callsFake(contact => contact.type === 'contact' ? contact.contact_type : contact.type);
     contextUtils = {};
     error = sinon.stub(console, 'error');
+    warn = sinon.stub(console, 'warn');
 
     pipesService = {
       transform: sinon.stub().returnsArg(1),
@@ -63,7 +74,9 @@ describe('XmlForms service', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: DbService, useValue: { get: () => ({ query: dbQuery, get: dbGet }) } },
+        { provide: DbService, useValue: { get: () => ({
+          query: dbQuery, get: dbGet, getAttachment: dbGetAttachment
+        } ) } },
         { provide: ChangesService, useValue: { subscribe: Changes } },
         { provide: AuthService, useValue: { has: hasAuth } },
         { provide: XmlFormsContextUtilsService, useValue: contextUtils },
@@ -71,6 +84,8 @@ describe('XmlForms service', () => {
         { provide: UserContactService, useValue: { get: UserContact } },
         ParseProvider,
         { provide: PipesService, useValue: pipesService },
+        { provide: FileReaderService, useValue: { utf8: fileReaderService } },
+        { provide: FeedbackService, useValue: feedbackService },
       ],
     });
   });
@@ -105,9 +120,10 @@ describe('XmlForms service', () => {
         {
           id: 'form-1',
           doc: {
+            _id: 'form-1',
             internalId: 'one',
             _attachments: {
-              'image': { something: true },
+              image: { something: true },
               'form.xml': { something: true }
             },
           },
@@ -115,20 +131,22 @@ describe('XmlForms service', () => {
         {
           id: 'form-2',
           doc: {
+            _id: 'form-2',
             internalId: 'two',
             _attachments: {
-              'image': { something: true },
-              'xml': { something: true }
+              image: { something: true },
+              xml: { something: true }
             },
           },
         },
         {
           id: 'form-3',
           doc: {
+            _id: 'form-3',
             internalId: 'three',
             _attachments: {
-              'image': { something: true },
-              'notxml': { something: true }
+              image: { something: true },
+              notxml: { something: true }
             },
           },
         }
@@ -161,6 +179,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-0',
           doc: {
+            _id: 'form-0',
             internalId: 'zero',
             _attachments: { xml: { something: true } },
           },
@@ -168,6 +187,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-1',
           doc: {
+            _id: 'form-1',
             internalId: 'one',
             context: {},
             _attachments: { xml: { something: true } },
@@ -176,6 +196,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-2',
           doc: {
+            _id: 'form-2',
             internalId: 'two',
             context: { person: true },
             _attachments: { xml: { something: true } },
@@ -184,6 +205,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-3',
           doc: {
+            _id: 'form-3',
             internalId: 'three',
             context: { place: true },
             _attachments: { xml: { something: true } },
@@ -192,6 +214,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-4',
           doc: {
+            _id: 'form-4',
             internalId: 'four',
             context: { person: true, place: false },
             _attachments: { xml: { something: true } },
@@ -200,6 +223,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-5',
           doc: {
+            _id: 'form-5',
             internalId: 'five',
             context: { person: false, place: true },
             _attachments: { xml: { something: true } },
@@ -208,6 +232,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-6',
           doc: {
+            _id: 'form-6',
             internalId: 'six',
             context: { person: true, place: true },
             _attachments: { xml: { something: true } },
@@ -235,6 +260,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-0',
           doc: {
+            _id: 'form-0',
             internalId: 'zero',
             _attachments: { xml: { something: true } },
           },
@@ -242,6 +268,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-1',
           doc: {
+            _id: 'form-1',
             internalId: 'one',
             context: {},
             _attachments: { xml: { something: true } },
@@ -250,6 +277,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-2',
           doc: {
+            _id: 'form-2',
             internalId: 'two',
             context: { person: true },
             _attachments: { xml: { something: true } },
@@ -258,6 +286,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-3',
           doc: {
+            _id: 'form-3',
             internalId: 'three',
             context: { place: true },
             _attachments: { xml: { something: true } },
@@ -266,6 +295,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-4',
           doc: {
+            _id: 'form-4',
             internalId: 'four',
             context: { person: true, place: false },
             _attachments: { xml: { something: true } },
@@ -274,6 +304,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-5',
           doc: {
+            _id: 'form-5',
             internalId: 'five',
             context: { person: false, place: true },
             _attachments: { xml: { something: true } },
@@ -282,6 +313,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-6',
           doc: {
+            _id: 'form-6',
             internalId: 'six',
             context: { person: true, place: true },
             _attachments: { xml: { something: true } },
@@ -308,6 +340,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-0',
           doc: {
+            _id: 'form-0',
             internalId: 'zero',
             _attachments: { xml: { something: true } },
           },
@@ -315,6 +348,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-1',
           doc: {
+            _id: 'form-1',
             internalId: 'one',
             context: {},
             _attachments: { xml: { something: true } },
@@ -323,6 +357,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-2',
           doc: {
+            _id: 'form-2',
             internalId: 'two',
             context: { person: true },
             _attachments: { xml: { something: true } },
@@ -331,6 +366,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-3',
           doc: {
+            _id: 'form-3',
             internalId: 'three',
             context: { place: true },
             _attachments: { xml: { something: true } },
@@ -339,6 +375,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-4',
           doc: {
+            _id: 'form-4',
             internalId: 'four',
             context: { person: true, place: false },
             _attachments: { xml: { something: true } },
@@ -347,6 +384,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-5',
           doc: {
+            _id: 'form-5',
             internalId: 'five',
             context: { person: false, place: true },
             _attachments: { xml: { something: true } },
@@ -355,6 +393,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-6',
           doc: {
+            _id: 'form-6',
             internalId: 'six',
             context: { person: true, place: true },
             _attachments: { xml: { something: true } },
@@ -392,6 +431,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-0',
           doc: {
+            _id: 'form-0',
             internalId: 'visit',
             context: {
               expression: '!isBlue(contact) && user.name === "Frank"'
@@ -402,6 +442,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-1',
           doc: {
+            _id: 'form-1',
             internalId: 'stock-report',
             context: {
               expression: 'isBlue(contact) && user.name === "Frank"'
@@ -429,6 +470,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-0',
           doc: {
+            _id: 'form-0',
             internalId: 'visit',
             context: {
               expression: '!isBlue(contact) && user.name === "Frank"'
@@ -439,6 +481,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-1',
           doc: {
+            _id: 'form-1',
             internalId: 'stock-report',
             context: {
               expression: 'isBlue(contact) && user.name === "Frank"'
@@ -466,6 +509,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-0',
           doc: {
+            _id: 'form-0',
             internalId: 'visit',
             context: {
               person: true,
@@ -477,6 +521,7 @@ describe('XmlForms service', () => {
         {
           id: 'form-1',
           doc: {
+            _id: 'form-1',
             internalId: 'stock-report',
             context: {
               place: true,
@@ -495,7 +540,6 @@ describe('XmlForms service', () => {
         expect(actual[0]).to.deep.equal(given[0].doc);
       });
     });
-
 
     it('broken custom functions log clean errors and count as filtered', () => {
       const given = [
@@ -553,10 +597,26 @@ describe('XmlForms service', () => {
           },
         },
         {
+          id: 'form:delivery',
+          doc: {
+            _id: 'form:delivery',
+            internalId: 'form:delivery',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
           id: 'form:contact:clinic',
           doc: {
             _id: 'form:contact:clinic',
             internalId: 'registration',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:training:new-feature',
+          doc: {
+            _id: 'form:training:new-feature',
+            internalId: 'new-feature',
             _attachments: { xml: { something: true } },
           },
         }
@@ -566,12 +626,63 @@ describe('XmlForms service', () => {
       const service = getService();
       return service.list({ contactForms: true }).then(actual => {
         expect(actual.length).to.equal(2);
-        expect(actual[0]).to.deep.equal(given[1].doc);
-        expect(actual[1]).to.deep.equal(given[2].doc);
+        expect(actual).to.have.deep.members([ given[1].doc, given[3].doc ]);
       });
     });
 
-    it('filter for non-contact forms', () => {
+    it('should filter by report forms', () => {
+      const given = [
+        {
+          id: 'form:visit',
+          doc: {
+            _id: 'form:visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:contact:person',
+          doc: {
+            _id: 'form:contact:person',
+            internalId: 'stock-report',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:contact:clinic',
+          doc: {
+            _id: 'form:contact:clinic',
+            internalId: 'registration',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:delivery',
+          doc: {
+            _id: 'form:delivery',
+            internalId: 'form:delivery',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:training:new-feature',
+          doc: {
+            _id: 'form:training:new-feature',
+            internalId: 'new-feature',
+            _attachments: { xml: { something: true } },
+          },
+        }
+      ];
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
+      return service.list({ reportForms: true }).then(actual => {
+        expect(actual.length).to.equal(2);
+        expect(actual).to.have.deep.members([ given[0].doc, given[3].doc ]);
+      });
+    });
+
+    it('should filter by training forms', () => {
       const given = [
         {
           id: 'visit',
@@ -596,15 +707,95 @@ describe('XmlForms service', () => {
             internalId: 'registration',
             _attachments: { xml: { something: true } },
           },
+        },
+        {
+          id: 'form:delivery',
+          doc: {
+            _id: 'form:delivery',
+            internalId: 'form:delivery',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:training:new-feature',
+          doc: {
+            _id: 'form:training:new-feature',
+            internalId: 'new-feature',
+            _attachments: { xml: { something: true } },
+          },
         }
       ];
       dbQuery.resolves({ rows: given });
       UserContact.resolves();
       const service = getService();
-      return service.list({ contactForms: false }).then(actual => {
+      return service.list({ trainingCards: true }).then(actual => {
         expect(actual.length).to.equal(1);
-        expect(actual[0]).to.deep.equal(given[0].doc);
+        expect(actual[0]).to.deep.equal(given[4].doc);
       });
+    });
+
+    it('should filter by more than 1 type of form', async () => {
+      const given = [
+        {
+          id: 'form:contact:clinic',
+          doc: {
+            _id: 'form:contact:clinic',
+            internalId: 'registration',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:delivery',
+          doc: {
+            _id: 'form:delivery',
+            internalId: 'form:delivery',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:training:new-feature',
+          doc: {
+            _id: 'form:training:new-feature',
+            internalId: 'new-feature',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'form:contact:person',
+          doc: {
+            _id: 'form:contact:person',
+            internalId: 'stock-report',
+            _attachments: { xml: { something: true } },
+          },
+        },
+        {
+          id: 'visit',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+          },
+        },
+      ];
+      dbQuery.resolves({ rows: given });
+      UserContact.resolves();
+      const service = getService();
+
+      const reportsAndTrainings = await service.list({ reportForms: true, trainingCards: true });
+      expect(reportsAndTrainings.length).to.equal(3);
+      expect(reportsAndTrainings).to.have.deep.members([ given[1].doc, given[2].doc, given[4].doc ]);
+
+      const reportsAndContacts = await service.list({ reportForms: true, contactForms: true });
+      expect(reportsAndContacts.length).to.equal(4);
+      expect(reportsAndContacts).to.have.deep.members([ given[0].doc, given[1].doc, given[3].doc, given[4].doc ]);
+
+      const trainingsAndContacts = await service.list({ trainingCards: true, contactForms: true });
+      expect(trainingsAndContacts.length).to.equal(3);
+      expect(trainingsAndContacts).to.have.deep.members([ given[0].doc, given[2].doc, given[3].doc ]);
+
+      const allForms = await service.list({ reportForms: true, trainingCards: true, contactForms: true });
+      expect(allForms.length).to.equal(5);
+      expect(allForms).to.have.deep.members([ given[0].doc, given[1].doc, given[2].doc, given[3].doc, given[4].doc ]);
     });
 
     it('filter for user', () => {
@@ -698,7 +889,7 @@ describe('XmlForms service', () => {
       });
     });
 
-    it('filter for non-contact forms but ignore context', () => {
+    it('filter for report forms and ignore context', () => {
       const given = [
         {
           id: 'visit',
@@ -731,12 +922,20 @@ describe('XmlForms service', () => {
             _attachments: { xml: { something: true } },
             context: { person: true },
           },
+        },
+        {
+          id: 'form:training:new-feature',
+          doc: {
+            _id: 'form:training:new-feature',
+            internalId: 'new-feature',
+            _attachments: { xml: { something: true } },
+          },
         }
       ];
       dbQuery.resolves({ rows: given });
       UserContact.resolves();
       const service = getService();
-      return service.list({ ignoreContext: true, contactForms: false }).then(actual => {
+      return service.list({ ignoreContext: true, reportForms: true }).then(actual => {
         expect(actual[0]).to.deep.equal(given[0].doc);
         expect(hasAuth.callCount).to.equal(0);
       });
@@ -775,6 +974,79 @@ describe('XmlForms service', () => {
         expect(actual[0]).to.deep.equal(given[1].doc);
       });
 
+    });
+
+    it('does not return a form with a truthy expression if the user does not have relevant permissions', () => {
+      const given = [
+        {
+          id: 'visit',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'true',
+              permission: [ 'national_admin' ]
+            },
+          },
+        },
+        {
+          id: 'registration',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'true',
+              permission: [ 'district_admin' ]
+            },
+          },
+        }
+      ];
+      dbQuery.resolves({ rows: given });
+      hasAuth.withArgs([ 'national_admin' ]).resolves(true);
+      UserContact.resolves();
+      const service = getService();
+      return service.list().then(actual => {
+        expect(actual.length).to.equal(1);
+        expect(actual[0]).to.deep.equal(given[0].doc);
+      });
+    });
+
+    it('does not return a form with a false expression if the user has the relevant permissions', () => {
+      const given = [
+        {
+          id: 'visit',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'false',
+              permission: [ 'national_admin' ]
+            },
+          },
+        },
+        {
+          id: 'registration',
+          doc: {
+            _id: 'visit',
+            internalId: 'visit',
+            _attachments: { xml: { something: true } },
+            context: {
+              expression: 'false',
+              permission: [ 'district_admin' ]
+            },
+          },
+        }
+      ];
+      dbQuery.resolves({ rows: given });
+      hasAuth.withArgs([ 'national_admin' ]).resolves(true);
+      UserContact.resolves();
+      const service = getService();
+      return service.list().then(actual => {
+        expect(actual.length).to.equal(0);
+      });
     });
 
   });
@@ -868,21 +1140,31 @@ describe('XmlForms service', () => {
         }
       };
 
-      it('are excluded by default', () => {
+      it('should not return forms when collectForms not set', () => {
         dbQuery.resolves({ rows: [ collectForm, enketoForm ] });
         UserContact.resolves();
         const service = getService();
-        return service.list().then(actual => {
+        return service.list({ reportForms: true }).then(actual => {
           expect(actual.length).to.equal(1);
           expect(actual[0]._id).to.equal('enketo');
         });
       });
 
-      it('are returned if includeCollect is true', () => {
+      it('should return forms when collectForms is set true', () => {
         dbQuery.resolves({ rows: [ collectForm, enketoForm ] });
         UserContact.resolves();
         const service = getService();
-        return service.list({ includeCollect: true }).then(actual => {
+        return service.list({ collectForms: true }).then(actual => {
+          expect(actual.length).to.equal(1);
+          expect(actual[0]._id).to.equal('collect');
+        });
+      });
+
+      it('should return forms when collectForms and reportForms are set true', () => {
+        dbQuery.resolves({ rows: [ collectForm, enketoForm ] });
+        UserContact.resolves();
+        const service = getService();
+        return service.list({ collectForms: true, reportForms: true }).then(actual => {
           expect(actual.length).to.equal(2);
           expect(actual[0]._id).to.equal('collect');
           expect(actual[1]._id).to.equal('enketo');
@@ -924,8 +1206,47 @@ describe('XmlForms service', () => {
       });
     });
 
+    it('returns error, logs when getById fails', () => {
+      const internalId = 'birth';
+      dbGet.rejects('getById fails');
+      dbQuery.rejects('getByView fails');
+      const service = getService();
+      return service.get(internalId)
+        .then(() => {
+          assert.fail('getById fails');
+        })
+        .catch(err => {
+          expect(err.name).to.equal('getById fails');
+          expect(warn.callCount).to.equal(1);
+          expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
+        });
+    });
+
+    it('returns error, logs and register feedback doc when getByView fails', () => {
+      const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : getByView : ';
+      dbGet.rejects({status: 404 });
+      dbQuery.rejects('getByView fails');
+      const service = getService();
+      return service.get(internalId)
+        .then(() => {
+          assert.fail('getByView fails');
+        })
+        .catch(err => {
+          expect(err.message).to.match(new RegExp(expectedErrorTitle));
+          expect(warn.callCount).to.equal(1);
+          expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0]).to.match(new RegExp(expectedErrorTitle));
+        });
+    });
+
     it('returns error when cannot find xform attachment', () => {
       const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : findXFormAttachmentName : ';
+      const expectedErrorDetail = `The form "${internalId}" doesn't have an xform attachment`;
       const expected = {
         type: 'form',
         _attachments: { 'something.txt': { stub: true } }
@@ -939,7 +1260,12 @@ describe('XmlForms service', () => {
           assert.fail('expected error to be thrown');
         })
         .catch(err => {
-          expect(err.message).to.equal(`The form "${internalId}" doesn't have an xform attachment`);
+          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(error.args[0][1]).to.equal(expectedErrorDetail);
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
@@ -958,6 +1284,8 @@ describe('XmlForms service', () => {
       });
       const service = getService();
       return service.get(internalId).then(actual => {
+        expect(warn.callCount).to.equal(1);
+        expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
         expect(actual).to.deep.equal(expected);
         expect(dbQuery.callCount).to.equal(1);
         expect(dbQuery.args[0][0]).to.equal(`medic-client/doc_by_type`);
@@ -969,6 +1297,8 @@ describe('XmlForms service', () => {
 
     it('query fails if multiple forms found', () => {
       const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : getByView : ';
+      const expectedErrorDetail = `Multiple forms found for internalId : "${internalId}"`;
       const expected = {
         internalId,
         _attachments: { 'something.xml': { stub: true } }
@@ -987,12 +1317,21 @@ describe('XmlForms service', () => {
           assert.fail('expected error to be thrown');
         })
         .catch(err => {
-          expect(err.message).to.equal(`Multiple forms found for internalId: "${internalId}"`);
+          expect(err.message).to.equal(expectedErrorTitle  + expectedErrorDetail);
+          expect(warn.callCount).to.equal(1);
+          expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(error.args[0][1]).to.equal(expectedErrorDetail);
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
 
     it('query fails if no forms found', () => {
       const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : getByView : ';
+      const expectedErrorDetail = `No form found for internalId : "${internalId}"`;
       dbGet.rejects({ status: 404 });
       dbQuery.resolves({
         rows: [
@@ -1006,7 +1345,96 @@ describe('XmlForms service', () => {
           assert.fail('expected error to be thrown');
         })
         .catch(err => {
-          expect(err.message).to.equal(`No form found for internalId "${internalId}"`);
+          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
+          expect(warn.callCount).to.equal(1);
+          expect(warn.args[0][0]).to.equal('Error in XMLFormService : getById : ');
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(error.args[0][1]).to.equal(expectedErrorDetail);
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
+        });
+    });
+  });
+
+  describe('getDocAndFormAttachment', () => {
+
+    it('fails if no forms found', () => {
+      const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : getDocAndFormAttachment : ';
+      const expectedErrorDetail = `The form "${internalId}" doesn't have an xform attachment`;
+      dbQuery.resolves([]);
+      dbGet.resolves({
+        _id: 'form:death',
+        _attachments: { 'something.xml': { stub: true } },
+        internalId: 'birth'
+      });
+      dbGetAttachment.rejects({ status: 404 });
+      const service = getService();
+      return service
+        .getDocAndFormAttachment(internalId)
+        .then(() => {
+          assert.fail('expected error to be thrown');
+        })
+        .catch(err => {
+          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(error.args[0][1]).to.equal(expectedErrorDetail);
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
+        });
+    });
+
+    it('fails if failed to get forms, but not 404', () => {
+      const internalId = 'birth';
+      const expectedErrorTitle = 'Error in XMLFormService : getDocAndFormAttachment : ';
+      const expectedErrorDetail = `Failed to get the form "${internalId}" xform attachment`;
+      dbQuery.resolves([]);
+      dbGet.resolves({
+        _id: 'form:death',
+        _attachments: { 'something.xml': { stub: true } },
+        internalId: 'birth'
+      });
+      dbGetAttachment.rejects();
+      const service = getService();
+      return service
+        .getDocAndFormAttachment(internalId)
+        .then(() => {
+          assert.fail('expected error to be thrown');
+        })
+        .catch(err => {
+          expect(err.message).to.equal(expectedErrorTitle + expectedErrorDetail);
+          expect(error.callCount).to.equal(1);
+          expect(error.args[0][0]).to.equal(expectedErrorTitle);
+          expect(error.args[0][1]).to.equal(expectedErrorDetail);
+          expect(feedbackService.submit.callCount).to.equal(1);
+          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
+        });
+    });
+
+    it('returns doc and xml', () => {
+      const internalId = 'birth';
+      const formDoc = {
+        _id: 'form:death',
+        _attachments: { xml: { stub: true } },
+        internalId: 'birth'
+      };
+      dbQuery.resolves([]);
+      dbGet.resolves(formDoc);
+      dbGetAttachment.resolves('someblob');
+      fileReaderService.resolves('<form/>');
+      const service = getService();
+      return service
+        .getDocAndFormAttachment(internalId)
+        .then((result) => {
+          expect(result.doc).to.deep.equal(formDoc);
+          expect(result.xml).to.deep.equal('<form/>');
+          expect(dbGetAttachment.callCount).to.equal(1);
+          expect(dbGetAttachment.args[0][0]).to.equal('form:death');
+          expect(dbGetAttachment.args[0][1]).to.equal('xml');
+          expect(fileReaderService.callCount).to.equal(1);
+          expect(fileReaderService.args[0][0]).to.equal('someblob');
         });
     });
 

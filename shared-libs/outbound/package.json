@@ -8,20 +8,11 @@
   },
   "author": "",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "chai": "^4.3.4",
-    "chai-as-promised": "^7.1.1",
-    "chai-exclude": "^2.0.3",
-    "chai-shallow-deep-equal": "^1.4.6",
-    "mocha": "^7.2.0",
-    "sinon": "^8.1.1",
-    "uuid": "^3.4.0"
-  },
   "dependencies": {
     "@medic/settings": "file:../settings",
-    "object-path": "^0.11.5",
+    "object-path": "^0.11.8",
     "request": "^2.88.2",
-    "request-promise-native": "^1.0.8",
+    "request-promise-native": "^1.0.9",
     "url-join": "^4.0.1"
   }
 }

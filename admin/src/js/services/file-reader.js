@@ -3,12 +3,7 @@ angular.module('inboxServices').service('FileReader',
     'use strict';
     'ngInject';
 
-    return {
-      base64: readerThat('readAsDataURL'),
-      utf8: readerThat('readAsText'),
-    };
-
-    function readerThat(readMethod) {
+    const readerThat = (readMethod) => {
       return function(blob) {
         const deferred = $q.defer();
         const reader = new FileReader();
@@ -24,6 +19,11 @@ angular.module('inboxServices').service('FileReader',
         reader[readMethod](blob);
         return deferred.promise;
       };
-    }
+    };
+
+    return {
+      base64: readerThat('readAsDataURL'),
+      utf8: readerThat('readAsText'),
+    };
   }
 );

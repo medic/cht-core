@@ -145,7 +145,7 @@ const defaultFields = {
       'tt_imm_received': 'no',
       'tt_note_1': '',
       'tt_note_2': ''
-    },  
+    },
     'deworming': {
       'deworming_med': 'no',
       'deworming_med_note': ''
@@ -234,7 +234,7 @@ const defaultFields = {
 };
 
 Factory.define('basePregnancy')
-  .sequence('_id',uuid.v4)
+  .sequence('_id', uuid.v4)
   .attr('form', 'pregnancy')
   .attr('type', 'data_record')
   .attr('content_type', 'xml')

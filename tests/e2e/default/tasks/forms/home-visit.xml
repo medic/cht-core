@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Home Visit</h:title>
+    <model>
+      <instance>
+        <home_visit delimiter="#" id="home_visit" prefix="J1!home_visit!" version="2017-11-24">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <patient_id/>
+              <reported_date/>
+              <type/>
+              <parent>
+                <_id/>
+              </parent>
+            </contact>
+          </inputs>
+          <visited_contact_uuid/>
+          <patient_uuid/>
+          <patient_id/>
+          <patient_name/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </home_visit>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/home_visit/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/home_visit/inputs/source" type="string"/>
+      <bind nodeset="/home_visit/inputs/source_id" type="string"/>
+      <bind nodeset="/home_visit/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/home_visit/inputs/contact/name" type="string"/>
+      <bind nodeset="/home_visit/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/home_visit/inputs/contact/reported_date" type="string"/>
+      <bind nodeset="/home_visit/inputs/contact/type" type="string"/>
+      <bind nodeset="/home_visit/inputs/contact/parent/_id" type="string"/>
+      <bind calculate="../inputs/contact/parent/_id" nodeset="/home_visit/visited_contact_uuid" type="string"/>
+      <bind calculate="../inputs/contact/_id" jr:requiredMsg="This field is required" nodeset="/home_visit/patient_uuid" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" jr:requiredMsg="This field is required" nodeset="/home_visit/patient_id" required="true()" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/home_visit/patient_name" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/home_visit/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/home_visit/inputs">
+      <label>Patient</label>
+      <input appearance="hidden" ref="/home_visit/inputs/source">
+        <label>Source</label>
+      </input>
+      <input appearance="hidden" ref="/home_visit/inputs/source_id">
+        <label>Source ID</label>
+      </input>
+      <group ref="/home_visit/inputs/contact">
+        <input appearance="db-object" ref="/home_visit/inputs/contact/_id">
+          <label>What is the patient name?</label>
+          <hint>select a person from the list</hint>
+        </input>
+        <input appearance="hidden" ref="/home_visit/inputs/contact/name">
+          <label>Name</label>
+        </input>
+        <group ref="/home_visit/inputs/contact/parent" appearance="hidden">
+          <label>Parent</label>
+          <input ref="/home_visit/inputs/contact/parent/_id" appearance="hidden" >
+            <label>Parent ID</label>
+          </input>
+        </group>
+      </group>
+    </group>
+  </h:body>
+</h:html>

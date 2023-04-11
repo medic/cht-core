@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { of } from 'rxjs';
 import { expect } from 'chai';
@@ -47,8 +47,8 @@ describe('Contacts content component', () => {
   let mutingTransition;
   let settings;
 
-  beforeEach(async(() => {
-    changesService = { subscribe: sinon.stub().resolves(of({})) };
+  beforeEach(waitForAsync(() => {
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     contactChangeFilterService = {
       matchContact: sinon.stub(),
       isRelevantContact: sinon.stub(),
@@ -57,15 +57,12 @@ describe('Contacts content component', () => {
     };
     settings = {};
     settingsService = { get: sinon.stub().resolves(settings) };
-    xmlFormsService = { subscribe: sinon.stub() };
+    xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     translateFromService = { get: sinon.stub().returnsArg(0) };
     modalService = { show: sinon.stub().resolves() };
     sessionService = {
       isDbAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
-    };
-    changesService = {
-      subscribe: sinon.stub().resolves(of({}))
     };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: 'district-123' })
@@ -103,6 +100,7 @@ describe('Contacts content component', () => {
       { selector: Selectors.getContactsLoadingSummary, value: false },
       { selector: Selectors.getSelectedContactDoc, value: selectedContact.doc },
       { selector: Selectors.getSelectedContactChildren, value: null },
+      { selector: Selectors.getFilters, value: {} },
     ];
     activatedRoute = { params: of({ id: 'load contact' }), snapshot: { params: { id: 'load contact'} } };
     router = { navigate: sinon.stub() };
@@ -145,6 +143,7 @@ describe('Contacts content component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 
@@ -176,9 +175,21 @@ describe('Contacts content component', () => {
     expect(selectContact.args[0][0]).to.equal('load contact');
   }));
 
-  it(`should load the user's home place when a param id not set`, fakeAsync(() => {
+  it(`should not load the user's home place when a search term exists`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
     store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+    store.overrideSelector(Selectors.getFilters, { search: 'text' });
+    component.ngOnInit();
+    flush();
+
+    expect(selectContact.callCount).to.equal(1);
+    expect(selectContact.args[0][0]).to.equal('load contact');
+  }));
+
+  it(`should load the user's home place when a param id not set and no search term exists`, fakeAsync(() => {
+    const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
+    store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+    store.overrideSelector(Selectors.getFilters, undefined);
     activatedRoute.params = of({});
     activatedRoute.snapshot.params = {};
     component.ngOnInit();
@@ -395,6 +406,7 @@ describe('Contacts content component', () => {
     it('should enable edit when user is not online only and facility is not home place ', fakeAsync(() => {
       sinon.resetHistory();
       sessionService.isOnlineOnly.returns(false);
+
       component.userSettings = { facility_id: 'district-9' };
       store.overrideSelector(Selectors.getSelectedContact, {
         doc: { _id: 'district-123', phone: '123', muted: true },
@@ -512,7 +524,7 @@ describe('Contacts content component', () => {
       expect(xmlFormsService.subscribe.callCount).to.equal(2);
       expect(xmlFormsService.subscribe.args[1][0]).to.equal('SelectedContactReportForms');
       expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
-        contactForms: false,
+        reportForms: true,
         contactSummary: 'test',
         doc: { _id: 'district-123', phone: '123', muted: true }
       });
@@ -572,7 +584,7 @@ describe('Contacts content component', () => {
       expect(xmlFormsService.subscribe.callCount).to.equal(2);
       expect(xmlFormsService.subscribe.args[1][0]).to.equal('SelectedContactReportForms');
       expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
-        contactForms: false,
+        reportForms: true,
         contactSummary: 'test',
         doc: { _id: 'district-123', phone: '123' }
       });

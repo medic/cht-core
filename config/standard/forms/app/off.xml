@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Turn Notifications OFF</h:title>
     <model>
@@ -501,7 +501,7 @@
         </translation>
       </itext>
       <instance>
-        <off delimiter="#" id="off" prefix="J1!off!" version="2018-11-14_10-16">
+        <off id="off" prefix="J1!off!" delimiter="#" version="2018-11-14_10-16">
           <inputs>
             <meta>
               <location>
@@ -554,16 +554,16 @@
       <bind nodeset="/off/inputs/contact/sex" type="string"/>
       <bind nodeset="/off/inputs/contact/parent/contact/phone" type="string"/>
       <bind nodeset="/off/inputs/contact/parent/contact/name" type="string"/>
-      <bind calculate="../inputs/contact/_id" nodeset="/off/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/off/patient_id" type="string"/>
-      <bind calculate="../inputs/contact/name" nodeset="/off/patient_name" type="string"/>
-      <bind calculate="../inputs/contact/parent/contact/name" nodeset="/off/chw_name" type="string"/>
-      <bind calculate="../inputs/contact/parent/contact/phone" nodeset="/off/chw_phone" type="string"/>
-      <bind calculate=" /off/group_note/chw_note " nodeset="/off/chw_sms" type="string"/>
+      <bind nodeset="/off/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/off/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/off/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/off/chw_name" type="string" calculate="../inputs/contact/parent/contact/name"/>
+      <bind nodeset="/off/chw_phone" type="string" calculate="../inputs/contact/parent/contact/phone"/>
+      <bind nodeset="/off/chw_sms" type="string" calculate=" /off/group_note/chw_note "/>
       <bind nodeset="/off/group_note/pregnancy_note" readonly="true()" type="string"/>
-      <bind nodeset="/off/group_note/send_note" required="true()" type="select1"/>
-      <bind nodeset="/off/group_note/chw_note" relevant=" /off/group_note/send_note  = 'yes'" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/off/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/off/group_note/send_note" type="select1" required="true()"/>
+      <bind nodeset="/off/group_note/chw_note" type="string" relevant=" /off/group_note/send_note  = 'yes'"/>
+      <bind nodeset="/off/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

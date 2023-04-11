@@ -14,7 +14,7 @@ const upload = async (opts) => {
     opts.language = opts.file.split('-').pop().split('.')[0];
     const form = {file: readStream(`${process.cwd()}/${opts.file}`)};
     delete opts.file;
-    Object.keys(opts).forEach((key) => { form[key] = opts[key]; });
+    Object.keys(opts).forEach((key) => form[key] = opts[key]);
     try {
       let res = await post({
         headers: { 'Content-Type': 'multipart/form-data; charset=UTF-8' },

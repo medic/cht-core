@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>New Child</h:title>
     <model>
@@ -24,7 +24,7 @@
             <value>Weeks since birth</value>
           </text>
         </translation>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/child/birth_date:jr:constraintMsg">
             <value>Birth date cannot be in the future</value>
           </text>
@@ -106,7 +106,7 @@
         </translation>
       </itext>
       <instance>
-        <child delimiter="#" id="child" prefix="J1!child!" version="2018-09-27_07-24">
+        <child id="child" prefix="J1!child!" delimiter="#" version="2022-09-26 12-41">
           <n/>
           <w/>
           <d/>
@@ -117,12 +117,12 @@
           </meta>
         </child>
       </instance>
-      <bind nodeset="/child/n" required="true()" type="string"/>
-      <bind calculate="round(  /child/d  div 7, 0 )" nodeset="/child/w" required="true()" type="string"/>
-      <bind calculate="today() -  /child/birth_date " nodeset="/child/d" type="string"/>
-      <bind constraint=". &lt;= today()" jr:constraintMsg="jr:itext('/child/birth_date:jr:constraintMsg')" nodeset="/child/birth_date" required="true()" type="date"/>
+      <bind nodeset="/child/n" type="string" required="true()"/>
+      <bind nodeset="/child/w" type="string" calculate="round(  /child/d  div 7, 0 )" required="true()"/>
+      <bind nodeset="/child/d" type="string" calculate="today() -  /child/birth_date "/>
+      <bind nodeset="/child/birth_date" type="date" required="true()" jr:constraintMsg="jr:itext('/child/birth_date:jr:constraintMsg')" constraint=". &lt;= now()"/>
       <bind nodeset="/child/review" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/child/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/child/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

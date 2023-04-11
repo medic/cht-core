@@ -26,7 +26,6 @@ describe('DBSyncRetry service', () => {
 
   afterEach(() => sinon.restore());
 
-
   describe('retryForbiddenFailure', () => {
     it('should do nothing when no error', () => {
       const result = service.retryForbiddenFailure();

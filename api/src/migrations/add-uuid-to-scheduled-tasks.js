@@ -1,6 +1,6 @@
 const db = require('../db');
 const moment = require('moment');
-const uuidV4 = require('uuid/v4');
+const uuidV4 = require('uuid').v4;
 const logger = require('../logger');
 const settingsService = require('../services/settings');
 const BATCH_SIZE = 100;

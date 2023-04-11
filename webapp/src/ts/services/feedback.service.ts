@@ -6,6 +6,8 @@ import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
 import { environment } from '@mm-environments/environment';
 import { DebugService } from '@mm-services/debug.service';
+import { LanguageService } from '@mm-services/language.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +17,9 @@ export class FeedbackService {
     private dbService:DbService,
     private sessionService:SessionService,
     private versionService:VersionService,
-    private debugService: DebugService
+    private debugService: DebugService,
+    private languageService: LanguageService,
+    private telemetryService : TelemetryService,
   ) {
   }
 
@@ -24,6 +28,7 @@ export class FeedbackService {
     console: console,
     document: document
   };
+
   private logIdx = 0;
   private readonly LEVELS = ['error', 'warn', 'log', 'info'];
   private readonly LOG_LENGTH = 20;
@@ -84,24 +89,28 @@ export class FeedbackService {
     };
   }
 
-  private create(info, isManual?) {
-    return this.versionService.getLocal().then(({ version }) => {
-      const date = new Date().toISOString();
-      const uuid = uuidv4();
-      return {
-        _id: `feedback-${date}-${uuid}`,
-        meta: {
-          time: date,
-          user: this.sessionService.userCtx(),
-          url: this.getUrl(),
-          version: version,
-          source: isManual ? 'manual' : 'automatic'
-        },
-        info: info,
-        log: this.getLog(),
-        type: 'feedback'
-      };
-    });
+  private async create(info, isManual?) {
+    const { version } = await this.versionService.getLocal();
+    const language = await this.languageService.get();
+
+    const time = new Date().toISOString();
+    const uuid = uuidv4();
+
+    return {
+      _id: `feedback-${time}-${uuid}`,
+      meta: {
+        time,
+        user: this.sessionService.userCtx(),
+        language,
+        url: this.getUrl(),
+        version,
+        source: isManual ? 'manual' : 'automatic',
+        deviceId : this.telemetryService.getUniqueDeviceId(),
+      },
+      info,
+      log: this.getLog(),
+      type: 'feedback'
+    };
   }
 
   private createAndSave(info, isManual?) {

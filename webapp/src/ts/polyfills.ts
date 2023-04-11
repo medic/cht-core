@@ -60,11 +60,20 @@ import '@angular/localize/init';
 /***************************************************************************************************
  * Zone JS is required by default for Angular itself.
  */
-import 'zone.js/dist/zone';
+import 'zone.js';
 
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
+
+// Polyfills for JS/Web API functions used in enketo-core but not found in Chrome 53
+import 'core-js/es/object/entries';
+import 'core-js/es/string/pad-start';
+import '@webcomponents/webcomponentsjs/src/platform/child-node/after';
+import '@webcomponents/webcomponentsjs/src/platform/child-node/before';
+import '@webcomponents/webcomponentsjs/src/platform/child-node/replace-with';
+import '@webcomponents/webcomponentsjs/src/platform/parent-node/append';
+import '@webcomponents/webcomponentsjs/src/platform/parent-node/prepend';
 
 (window as any).global = window;
 declare global {

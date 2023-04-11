@@ -1,54 +1,52 @@
-<div class="content-pane right-pane">
-
-  <div class="col-sm-8 item-content empty-selection" *ngIf="loadingContent && !selectMode">
+<ng-container>
+  <div class="empty-selection" *ngIf="loadingContent && !selectMode">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && !selectedReports?.length">
+  <div class="empty-selection" *ngIf="!loadingContent && !selectedReports?.length">
     <div>{{'No report selected' | translate }}</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content" *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
-
-    <div class="selection-count" *ngIf="selectMode && selectedReports.length">
-      <span *ngIf="selectedReports.length === 1">{{'select.mode.count.singular' | translate}}</span>
-      <span *ngIf="selectedReports.length !== 1" translate [translateParams]="{ number: selectedReports?.length }">select.mode.count.plural</span>
-    </div>
+  <div id="reports-content"
+    class="report-wrap"
+    *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
 
     <div *ngFor="let selection of selectedReports; trackBy: trackByFn; let $index = index;" class="body report-body">
 
       <div class="item-summary" (click)="toggleExpand(selection)">
         <span class="icon" [innerHTML]="summaries[$index] | formIcon:forms"></span>
-        <a class="deselect" *ngIf="selectMode" (click)="deselect(selection, $event)">
+        <a class="deselect" *ngIf="selectMode && !isMobile()" (click)="deselect(selection, $event)">
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="status" *ngIf="!validChecks[$index] || summaries[$index].verified !== undefined">
-            <span *ngIf="validChecks[$index] && summaries[$index].verified" class="verification-badge verified">
+          <div class="status" *ngIf="!validChecks[$index] || summaries[$index]?.verified !== undefined">
+            <span *ngIf="validChecks[$index] && summaries[$index]?.verified" class="verification-badge verified">
               <report-verify-valid-icon></report-verify-valid-icon>
             </span>
-            <span *ngIf="!(validChecks[$index] && summaries[$index].verified)" class="verification-badge error">
+            <span *ngIf="!(validChecks[$index] && summaries[$index]?.verified)" class="verification-badge error">
               <report-verify-invalid-icon></report-verify-invalid-icon>
             </span>
           </div>
 
           <div *ngIf="summaries[$index]?.subject?.type" class="subject">
-            <a class="name" *ngIf="summaries[$index]?.subject._id || summaries[$index].fields?.patient_uuid" [routerLink]="['/contacts', summaries[$index].subject._id || summaries[$index].fields.patient_uuid]"
-               [innerHTML]="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
+            <a class="name" *ngIf="summaries[$index]?.subject._id"
+              [routerLink]="['/contacts', summaries[$index].subject._id]"
+              [innerHTML]="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
             </a>
-            <span class="name" *ngIf="!summaries[$index]?.subject._id && !summaries[$index].fields?.patient_uuid"
-                  [innerHTML]="(summaries[$index]?.subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
-              </span>
+            <span class="name" *ngIf="!summaries[$index]?.subject._id"
+              [innerHTML]="(summaries[$index]?.subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
+            </span>
           </div>
           <mm-sender *ngIf="!summaries[$index]?.subject?.type" [message]="selection" [hideLineage]="true"></mm-sender>
-          <div>{{summaries[$index] | title:forms}}</div>
+          <div test-id="form-title">{{summaries[$index] | title:forms}}</div>
           <div class="position small-font"
-               *ngIf="summaries[$index]?.subject?.lineage || selection.lineage || selection.contact?.parent || selection.place || (!selection.form && selection.name)"
-               [innerHTML]="summaries[$index]?.subject?.lineage || selection.lineage || selection.contact?.parent || selection.place | lineage">
+            *ngIf="summaries[$index]?.subject?.lineage || selection.lineage || selection.contact?.parent || selection.place || (!selection.form && selection.name)"
+            [innerHTML]="summaries[$index]?.subject?.lineage || selection.lineage || selection.contact?.parent || selection.place | lineage">
           </div>
-          <mm-sender *ngIf="summaries[$index]?.subject?.type" [message]="selection" [hideLineage]="true" [sentBy]="true"></mm-sender>
+          <mm-sender *ngIf="summaries[$index]?.subject?.type" [message]="selection" [hideLineage]="true"
+            [sentBy]="true"></mm-sender>
           <div class="time small-font" [innerHTML]="summaries[$index]?.reported_date | relativeDate"></div>
         </div>
       </div>
@@ -60,18 +58,24 @@
       <div class="details" *ngIf="selection.expanded">
         <ul>
           <ng-container *ngIf="selection.formatted?.form">
-            <li *ngFor="let field of (selection.formatted.content_type === 'xml' ? selection.formatted.fields : selection.formatted.fields.data)" class="indent-{{field.depth || 0}}">
+            <li
+              *ngFor="let field of (selection.formatted.content_type === 'xml' ? selection.formatted.fields : selection.formatted.fields.data)"
+              class="indent-{{field.depth || 0}}">
               <label>
                 <span *ngIf="selection.formatted.content_type === 'xml'">{{field.label | translate}}</span>
                 <span *ngIf="selection.formatted.content_type !== 'xml'">{{field.label}}</span>
-                <span class="fa fa-cogs" *ngIf="field.generated" title="{{'Generated report field' | translate }}"></span>
+                <span class="fa fa-cogs" *ngIf="field.generated"
+                  title="{{'Generated report field' | translate }}"></span>
               </label>
               <p *ngIf="!field.imagePath">
-                <span *ngIf="field.target && field.target.filter"><a (click)="search(field.target.filter)">{{field.value}}</a></span>
-                <span *ngIf="field.target && field.target.url"><a [routerLink]="field.target.url">{{field.value}}</a></span>
+                <span *ngIf="field.target && field.target.filter"><a
+                    (click)="search(field.target.filter)">{{field.value}}</a></span>
+                <span *ngIf="field.target && field.target.url"><a
+                    [routerLink]="field.target.url">{{field.value}}</a></span>
                 <span *ngIf="!field.target">{{field.value}}</span>
               </p>
-              <report-image *ngIf="field.imagePath" [report]="selection.formatted?._id" [path]="field.imagePath"></report-image>
+              <report-image *ngIf="field.imagePath" [report]="selection.formatted?._id" [path]="field.imagePath">
+              </report-image>
             </li>
           </ng-container>
 
@@ -84,17 +88,17 @@
             </ul>
           </li>
           <li *ngIf="selection?.formatted?.sms_message?.message">
-            <p>{{selection.formatted.sms_message.message}}</p>
             <label>{{'selection.doc.content.raw' | translate}}</label>
+            <p [attr.test-id]="'raw-report-content'">{{selection.formatted.sms_message.message}}</p>
           </li>
           <li *ngIf="selection?.formatted?.tasks?.length">
             <label *ngIf="selection.formatted.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
             <label *ngIf="!selection.formatted.kujua_message">{{'Automated Reply' | translate}}</label>
-            <ul class="task-list">
+            <ul class="task-list" [attr.test-id]="'automated-reply'">
               <li *ngFor="let task of selection.formatted.tasks">
                 <ul>
                   <li *ngFor="let message of task.messages">
-                    <p>{{selection.formatted.kujua_message ? message.to : message.message}}</p>
+                    <p [attr.test-id]="'message-content'">{{selection.formatted.kujua_message ? message.to : message.message}}</p>
                   </li>
                 </ul>
                 <span class="task-state" [innerHTML]="task | state | async"></span>
@@ -106,29 +110,32 @@
         <div class="scheduled-tasks" *ngIf="selection?.formatted?.scheduled_tasks_by_group?.length">
           <h2>{{'tasks' | translate}}</h2>
           <ul>
-            <li *ngFor="let group of selection.formatted.scheduled_tasks_by_group">
+            <li [attr.test-id]="'tasks'" *ngFor="let group of selection.formatted.scheduled_tasks_by_group">
               <ng-container *ngIf="{ loading: false } as localContext">
-                <h3>{{group.name}}</h3>
+                <h3 [attr.test-id]="'task-title'">{{group.name}}</h3>
                 <p>
-                <span *ngIf="!localContext.loading">
-                  <a class="btn btn-link" (click)="edit(selection, group)">{{'Edit' | translate}}</a>
-                  <a class="btn btn-link" (click)="mute(selection, group, localContext)" *ngIf="canMute(group)">{{'Mute' | translate}}</a>
-                  <a class="btn btn-link" (click)="schedule(selection, group, localContext)" *ngIf="canSchedule(group)">{{'Schedule' | translate}}</a>
-                </span>
+                  <span *ngIf="!localContext.loading">
+                    <a class="btn btn-link" (click)="edit(selection, group)">{{'Edit' | translate}}</a>
+                    <a class="btn btn-link" (click)="mute(selection, group, localContext)"
+                      *ngIf="canMute(group)">{{'Mute' | translate}}</a>
+                    <a class="btn btn-link" (click)="schedule(selection, group, localContext)"
+                      *ngIf="canSchedule(group)">{{'Schedule' | translate}}</a>
+                  </span>
                   <span class="inline loader" *ngIf="localContext.loading"></span>
                 </p>
                 <ul class="task-list">
-                  <li *ngFor="let task of group.rows_sorted">
+                  <li [attr.test-id]="'task-message'" *ngFor="let task of group.rows_sorted">
                     <ul>
                       <li *ngFor="let message of task?.messages">
-                        <p>{{message.message}}</p>
+                        <p [attr.test-id]="'message-content'">{{message.message}}</p>
                         <div class="message-error" *ngIf="message.error">
                           <span>{{'messages.errors.invalid' | translate}}</span>
                           <span>{{message.error | translate}}</span>
                         </div>
                       </li>
                     </ul>
-                    <span class="task-state {{ task.error ? 'has-error' : ''}}" [innerHTML]="task | state | async"></span>
+                    <span class="task-state {{ task.error ? 'has-error' : ''}}"
+                      [innerHTML]="task | state | async"></span>
                   </li>
                   <li class="clear"></li>
                 </ul>
@@ -145,4 +152,4 @@
 
     <div class="padding"></div>
   </div>
-</div>
+</ng-container>

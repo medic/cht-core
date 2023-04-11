@@ -231,4 +231,75 @@ describe('ContactTypes service', () => {
       expect(service.isPersonType({ id: 'other', person: false })).to.equal(false);
     });
   });
+
+  describe('getTypeById', () => {
+    it('should work with bad data', () => {
+      expect(service.getTypeById([], undefined)).to.equal(undefined);
+      expect(service.getTypeById(undefined, undefined)).to.equal(undefined);
+      expect(service.getTypeById([undefined], undefined)).to.equal(undefined);
+    });
+
+    it('should return undefined if not found', () => {
+      const types = [
+        undefined,
+        { notid: 'test' },
+        { id: 'type1' },
+        { id: 'type2' },
+      ];
+
+      expect(service.getTypeById(types, 't1')).to.equal(undefined);
+      expect(service.getTypeById(types, 't2')).to.equal(undefined);
+    });
+
+    it('should return type when found', () => {
+      const types = [
+        undefined,
+        { notid: 'test' },
+        { id: 'type1' },
+        { id: 'type2' },
+      ];
+
+      expect(service.getTypeById(types, 'type1')).to.deep.equal({ id: 'type1' });
+      expect(service.getTypeById(types, 'type2')).to.deep.equal({ id: 'type2' });
+    });
+  });
+
+  describe('getLeafPlaceTypes', () => {
+    it('should return leaf type places', async () => {
+      const types = [
+        { id: 'nothing', parents: ['something'] },
+        { id: 'something' },
+      ];
+      Settings.resolves({ contact_types: types });
+      expect(await service.getLeafPlaceTypes()).to.deep.equal([{ id: 'nothing', parents: ['something'] }]);
+    });
+
+    it('should return nothing with bad data', async () => {
+      Settings.resolves({ });
+      expect(await service.getLeafPlaceTypes()).to.deep.equal([]);
+
+      Settings.resolves({ contact_types: {} });
+      expect(await service.getLeafPlaceTypes()).to.deep.equal([]);
+    });
+  });
+
+  describe('isLeafPlaceType', () => {
+    it('should return false for bad data', () => {
+      expect(service.isLeafPlaceType([], undefined)).to.equal(false);
+      expect(service.isLeafPlaceType(false, undefined)).to.equal(false);
+      expect(service.isLeafPlaceType([undefined], undefined)).to.equal(false);
+    });
+
+    it('should return false when type is not a leaf place type', () => {
+      const types = [ { id: 'clinic1' }, { id: 'clinic2' }, { id: 'clinic3' } ];
+      expect(service.isLeafPlaceType(types, 'person')).to.equal(false);
+      expect(service.isLeafPlaceType(types, 'health_center')).to.equal(false);
+    });
+
+    it('should return true when type is a leaf place type', () => {
+      const types = [ undefined, {}, { id: 'clinic1' }, { id: 'clinic2' }, { id: 'clinic3' } ];
+      expect(service.isLeafPlaceType(types, 'clinic1')).to.equal(true);
+      expect(service.isLeafPlaceType(types, 'clinic2')).to.equal(true);
+    });
+  });
 });

@@ -1,9 +1,6 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
 const config = require('../../src/config');
-const transitionUtils = require('../../src/transitions/utils');
-const transition = require('../../src/transitions/generate_patient_id_on_people');
-const generateShortcodeOnContacts = require('../../src/transitions/generate_shortcode_on_contacts');
 const logger = require('../../src/lib/logger');
 
 const types = [
@@ -12,8 +9,21 @@ const types = [
 ];
 
 describe('generate_patient_id_on_people transition', () => {
-  beforeEach(() => sinon.stub(config, 'getAll').returns({ contact_types: types }));
-  afterEach(() => sinon.restore());
+  let transitionUtils;
+  let generateShortcodeOnContacts;
+  let transition;
+
+  beforeEach(() => {
+    config.init({ getAll: sinon.stub().returns({ contact_types: types }), });
+    transitionUtils = require('../../src/transitions/utils');
+    generateShortcodeOnContacts = require('../../src/transitions/generate_shortcode_on_contacts');
+    transition = require('../../src/transitions/generate_patient_id_on_people');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('should have basic properties defined', () => {
     assert.equal(transition.name, 'generate_patient_id_on_people');
@@ -44,34 +54,34 @@ describe('generate_patient_id_on_people transition', () => {
 
     it('accepts person contact types', () => {
       const doc = { type: 'person' };
-      assert.equal(!!transition.filter(doc), true);
+      assert.equal(!!transition.filter({ doc }), true);
     });
 
     it('should accept place contact types', () => {
       const doc = { type: 'contact', contact_type: 'place' };
-      assert.equal(!!transition.filter(doc), true);
+      assert.equal(!!transition.filter({ doc }), true);
     });
 
     it('ignores persons that already have a patient_id', () => {
       const doc = { type: 'person', patient_id: '12345' };
-      assert.equal(!!transition.filter(doc), false);
+      assert.equal(!!transition.filter({ doc }), false);
     });
 
     it('ignores places that already have a patient_id', () => {
       const doc = { type: 'place', place_id: '12345' };
-      assert.equal(!!transition.filter(doc), false);
+      assert.equal(!!transition.filter({ doc }), false);
     });
 
     it('ignores docs with unknown type', () => {
       const doc = { };
-      assert.equal(!!transition.filter(doc), false);
+      assert.equal(!!transition.filter({ doc }), false);
     });
 
     it('should call generate_shortcode_on_contacts.filter', () => {
       sinon.stub(generateShortcodeOnContacts, 'filter').returns('something');
-      const result = transition.filter({ the: 'doc' });
+      const result = transition.filter({ doc: { the: 'doc' } });
       assert.equal(generateShortcodeOnContacts.filter.callCount, 1);
-      assert.deepEqual(generateShortcodeOnContacts.filter.args[0], [{ the: 'doc' }]);
+      assert.deepEqual(generateShortcodeOnContacts.filter.args[0], [{ doc: { the: 'doc' } }]);
       assert.equal(result, 'something');
     });
   });

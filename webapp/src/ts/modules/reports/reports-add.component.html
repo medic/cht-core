@@ -1,17 +1,17 @@
-<div class="content-pane right-pane">
-  <div class="col-sm-8 item-content empty-selection" *ngIf="loadingContent">
+<ng-container>
+  <div class="empty-selection" *ngIf="loadingContent">
     <div>
       <div class="loader"></div>
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" *ngIf="!loadingContent && contentError">
+  <div class="empty-selection" *ngIf="!loadingContent && contentError">
     <div>{{ errorTranslationKey | translate}}</div>
   </div>
 
-  <div class="col-sm-8 item-content" [hidden]="loadingContent || contentError">
+  <div class="report-wrap" [hidden]="loadingContent || contentError">
     <div class="body">
-      <mm-enketo id="report-form" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
+      <mm-enketo formId="report-form" [status]="enketoStatus" (onSubmit)="save()" (onCancel)="navigationCancel()"></mm-enketo>
     </div>
   </div>
-</div>
+</ng-container>

@@ -1,10 +1,20 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
 const db = require('../../../src/db');
-const transition = require('../../../src/transitions/update_sent_by');
+const config = require('../../../src/config');
 
 describe('update sent by', () => {
-  afterEach(() => sinon.restore());
+  let transition;
+
+  beforeEach(() => {
+    config.init({ getAll: sinon.stub().returns({}), });
+    transition = require('../../../src/transitions/update_sent_by');
+  });
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('updates sent_by to clinic name if contact name', () => {
     const doc = { from: '+34567890123' };

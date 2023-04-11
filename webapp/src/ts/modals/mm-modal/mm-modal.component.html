@@ -1,13 +1,13 @@
 <div role="document">
   <div class="modal-header">
-    <button type="button" class="cancel close" [disabled]="status?.processing" (click)="onCancel.emit()">&times;</button>
+    <button type="button" class="cancel close" [disabled]="status?.processing" (click)="onCancel.emit()" *ngIf="!hideCloseButton">&times;</button>
     <h2>{{titleKey | translate}}</h2>
   </div>
   <div class="modal-body"><ng-content></ng-content></div>
-  <div class="modal-footer">
+  <div class="modal-footer" *ngIf="!hideFooter">
     <p class="note" *ngIf="status?.error">{{status?.error | translate}}</p>
     <a class="btn cancel" [ngClass]="{ 'disabled': status?.processing }" (click)="onCancel.emit()" *ngIf="cancelKey !== false">{{cancelKey || 'Cancel' | translate}}</a>
-    <a class="btn submit" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger, 'disabled': disableSubmit }" (click)="onSubmit.emit()" *ngIf="submitKey && !status?.processing">{{submitKey | translate}}</a>
+    <a class="btn submit" [attr.test-id]="submitKey" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger, 'disabled': disableSubmit }" (click)="onSubmit.emit()" *ngIf="submitKey && !status?.processing">{{submitKey | translate}}</a>
     <a class="btn submit disabled" [ngClass]="{ 'btn-primary': !danger, 'btn-danger': danger }" *ngIf="status?.processing">{{submittingKey || submitKey | translate}}</a>
   </div>
 </div>

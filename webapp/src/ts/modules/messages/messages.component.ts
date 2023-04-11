@@ -14,6 +14,8 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { TourService } from '@mm-services/tour.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { UserContactService } from '@mm-services/user-contact.service';
+import { AuthService } from '@mm-services/auth.service';
 
 @Component({
   templateUrl: './messages.component.html'
@@ -21,14 +23,15 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 export class MessagesComponent implements OnInit, OnDestroy {
   private globalActions: GlobalActions;
   private messagesActions: MessagesActions;
-  subscriptions: Subscription = new Subscription();
+  private destroyed = false;
 
+  subscriptions: Subscription = new Subscription();
   loading = true;
   loadingContent = false;
   conversations = [];
   selectedConversationId = null;
   error = false;
-  private destroyed = false;
+  currentLevel;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,14 +43,19 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private modalService: ModalService,
     private tourService: TourService,
     private responsiveService: ResponsiveService,
+    private userContactService: UserContactService,
+    private authService: AuthService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.messagesActions = new MessagesActions(store);
   }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.subscribeToStore();
     this.tourService.startIfNeeded(this.route.snapshot);
+
+    this.currentLevel = this.authService.online(true) ? Promise.resolve() : this.getCurrentLineageLevel();
+
     this.updateConversations().then(() => this.displayFirstConversation(this.conversations));
     this.watchForChanges();
   }
@@ -114,15 +122,11 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
 
     const leftActionBar = {
+      exportFn: () => this.exportMessages(),
       hasResults: this.conversations && this.conversations.length > 0,
-      exportFn: this.exportFn.bind({}, this.exportService),
       openSendMessageModal: this.openSendMessageModal.bind({}, this.modalService),
     };
     this.globalActions.setLeftActionBar(leftActionBar);
-  }
-
-  private exportFn(exportService:ExportService) {
-    exportService.export('messages', {}, { humanReadable: true });
   }
 
   private openSendMessageModal(modalService:ModalService, event) {
@@ -148,10 +152,22 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.updateActionBar();
   }
 
-  updateConversations({merge = false} = {}) {
-    return this.messageContactService
-      .getList()
-      .then((conversations = []) => {
+  updateConversations({ merge = false } = {}) {
+    return Promise
+      .all([ this.messageContactService.getList(), this.currentLevel ])
+      .then(([ conversations, currentLevel ]) => {
+        // Remove the lineage level that belongs to the offline logged-in user.
+        if (currentLevel) {
+          conversations?.forEach(conversation => {
+            if (!conversation.lineage?.length) {
+              return;
+            }
+            conversation.lineage = conversation.lineage.filter(level => level);
+            if (conversation.lineage[conversation.lineage.length -1] === currentLevel){
+              conversation.lineage.pop();
+            }
+          });
+        }
         this.setConversations(conversations, { merge });
         this.loading = false;
       });
@@ -183,5 +199,13 @@ export class MessagesComponent implements OnInit, OnDestroy {
   listTrackBy(index, message) {
     const identifier = message.doc ? message.doc.id + message.doc._rev : message.id;
     return message.key + identifier;
+  }
+
+  private getCurrentLineageLevel() {
+    return this.userContactService.get().then(user => user?.parent?.name);
+  }
+
+  exportMessages() {
+    this.exportService.export('messages', {}, { humanReadable: true });
   }
 }

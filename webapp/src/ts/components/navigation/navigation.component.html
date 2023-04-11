@@ -1,9 +1,9 @@
 <div class="right-pane navigation">
-  <a *ngIf="cancelCallback" (click)="navigationCancel()" class="filter-bar-back">
+  <a *ngIf="isCancelCallbackSet" (click)="navigationCancel()" class="filter-bar-back">
     <span class="fa fa-times" [ngClass]="{ 'mm-icon-disabled': enketoSaving }" translate [title]="'close' | translate"></span>
   </a>
-  <a *ngIf="!cancelCallback" (click)="navigateBack()" class="filter-bar-back">
+  <a *ngIf="!isCancelCallbackSet" (click)="navigateBack()" class="filter-bar-back">
     <span class="fa fa-chevron-left" translate [title]="'Back' | translate"></span>
   </a>
-  <h2>{{title}}</h2>
+  <h2 class="ellipsis-title">{{title}}</h2>
 </div>

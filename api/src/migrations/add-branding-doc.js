@@ -3,7 +3,7 @@ const fs = require('fs');
 const logger = require('../logger');
 const path = require('path');
 const BRANDING_ID = 'branding';
-const appTitle = 'Medic Mobile';
+const appTitle = 'Medic';
 
 const logo = {
   name: 'logo',

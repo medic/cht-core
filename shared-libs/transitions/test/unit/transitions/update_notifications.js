@@ -1,12 +1,23 @@
 const sinon = require('sinon');
 const assert = require('chai').assert;
-const transition = require('../../../src/transitions/update_notifications');
 const utils = require('../../../src/lib/utils');
 const mutingUtils = require('../../../src/lib/muting_utils');
 const logger = require('../../../src/lib/logger.js');
+const config = require('../../../src/config');
 
 describe('update_notifications', () => {
+  let transition;
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+    });
+    transition = require('../../../src/transitions/update_notifications');
+  });
+
   afterEach(done => {
+    sinon.reset();
     sinon.restore();
     done();
   });
@@ -32,86 +43,83 @@ describe('update_notifications', () => {
 
   describe('filter', () => {
     it('empty doc does not match', () => {
-      assert.equal(transition.filter({}), false);
+      assert.equal(transition.filter({ doc: {} }), false);
     });
 
     it('missing form does not match', () => {
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           fields: { patient_id: 'x' },
-        }),
-        false
-      );
+        }
+      }), false);
     });
 
     it('missing clinic phone does not match', () => {
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           fields: { patient_id: 'x' },
-        }),
-        false
-      );
+        }
+      }), false);
     });
 
     it('already run does not match', () => {
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           fields: { patient_id: 'x' },
           transitions: {
             update_notifications: { last_rev: 9, seq: 1854, ok: true },
           },
-        }),
-        false
-      );
+        }
+      }), false);
     });
 
     it('should not match when not a valid submission', () => {
       sinon.stub(utils, 'isValidSubmission').returns(false);
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           fields: { patient_id: 'x' },
           type: 'data_record',
-        }),
-        false
-      );
+        },
+        info: {}
+      }), false);
     });
 
     it('match', () => {
       sinon.stub(utils, 'isValidSubmission').returns(true);
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           fields: { patient_id: 'x' },
           type: 'data_record',
-        }),
-        true
-      );
+        },
+        info: {}
+      }), true);
     });
 
     it('should match when patient_id field is missing #4649', () => {
       sinon.stub(utils, 'isValidSubmission').returns(true);
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           type: 'data_record',
-        }),
-        true
-      );
+        },
+        info: {}
+      }), true);
     });
 
     it('should match when patient_id field is empty #4649', () => {
       sinon.stub(utils, 'isValidSubmission').returns(true);
-      assert.equal(
-        transition.filter({
+      assert.equal(transition.filter({
+        doc: {
           form: 'x',
           type: 'data_record',
           fields: { patient_id: '' },
-        }),
-        true
-      );
+        },
+        info: {}
+      }), true);
     });
   });
 

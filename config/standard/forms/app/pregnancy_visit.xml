@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Pregnancy Visit</h:title>
     <model>
@@ -1384,7 +1384,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
         </translation>
       </itext>
       <instance>
-        <pregnancy_visit delimiter="#" id="pregnancy_visit" prefix="J1!pregnancy_visit!" version="2018-11-14_10-29">
+        <pregnancy_visit id="pregnancy_visit" prefix="J1!pregnancy_visit!" delimiter="#" version="2022-03-03 15-59">
           <inputs>
             <meta>
               <location>
@@ -1425,7 +1425,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <group_chw_info tag="hidden">
             <chw_information/>
             <call_button/>
-            <attended_anc>yes</attended_anc>
+            <attended_anc/>
           </group_chw_info>
           <group_danger_signs tag="hidden">
             <g_danger_signs/>
@@ -1470,7 +1470,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
       <bind nodeset="/pregnancy_visit/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pregnancy_visit/inputs/source" type="string"/>
       <bind nodeset="/pregnancy_visit/inputs/source_id" type="string"/>
-      <bind nodeset="/pregnancy_visit/inputs/contact/_id" required="true()" type="db:person"/>
+      <bind nodeset="/pregnancy_visit/inputs/contact/_id" type="db:person" required="true()"/>
       <bind nodeset="/pregnancy_visit/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/pregnancy_visit/inputs/contact/name" type="string"/>
       <bind nodeset="/pregnancy_visit/inputs/contact/date_of_birth" type="string"/>
@@ -1478,58 +1478,58 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
       <bind nodeset="/pregnancy_visit/inputs/contact/phone" type="string"/>
       <bind nodeset="/pregnancy_visit/inputs/contact/parent/contact/phone" type="string"/>
       <bind nodeset="/pregnancy_visit/inputs/contact/parent/contact/name" type="string"/>
-      <bind calculate="if (  /pregnancy_visit/inputs/contact/date_of_birth ='', '', floor( difference-in-months(  /pregnancy_visit/inputs/contact/date_of_birth , today() ) div 12 ) )" nodeset="/pregnancy_visit/patient_age_in_years" type="string"/>
-      <bind calculate="../inputs/contact/phone" nodeset="/pregnancy_visit/patient_phone" type="string"/>
-      <bind calculate="../inputs/contact/_id" nodeset="/pregnancy_visit/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/pregnancy_visit/patient_id" type="string"/>
-      <bind calculate="../inputs/contact/name" nodeset="/pregnancy_visit/patient_name" type="string"/>
-      <bind calculate="../inputs/contact/parent/contact/name" nodeset="/pregnancy_visit/chw_name" type="string"/>
-      <bind calculate="../inputs/contact/parent/contact/phone" nodeset="/pregnancy_visit/chw_phone" type="string"/>
-      <bind calculate=" /pregnancy_visit/group_danger_signs/g_danger_signs " nodeset="/pregnancy_visit/danger_signs" type="string"/>
-      <bind calculate="if (count-selected( /pregnancy_visit/danger_signs ) &gt; 0, 'true', 'false')" nodeset="/pregnancy_visit/referral_follow_up_needed" type="string"/>
-      <bind calculate="if( /pregnancy_visit/group_note/g_chw_sms  != '', concat( /pregnancy_visit/group_note/default_chw_sms_text ,concat('
-', /pregnancy_visit/group_note/g_chw_sms )),  /pregnancy_visit/group_note/default_chw_sms_text )" nodeset="/pregnancy_visit/chw_sms" type="string"/>
-      <bind calculate=" /pregnancy_visit/group_chw_info/attended_anc " nodeset="/pregnancy_visit/visit_confirmed" type="string"/>
+      <bind nodeset="/pregnancy_visit/patient_age_in_years" type="string" calculate="if (  /pregnancy_visit/inputs/contact/date_of_birth ='', '', floor( difference-in-months(  /pregnancy_visit/inputs/contact/date_of_birth , today() ) div 12 ) )"/>
+      <bind nodeset="/pregnancy_visit/patient_phone" type="string" calculate="../inputs/contact/phone"/>
+      <bind nodeset="/pregnancy_visit/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/pregnancy_visit/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/pregnancy_visit/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/pregnancy_visit/chw_name" type="string" calculate="../inputs/contact/parent/contact/name"/>
+      <bind nodeset="/pregnancy_visit/chw_phone" type="string" calculate="../inputs/contact/parent/contact/phone"/>
+      <bind nodeset="/pregnancy_visit/danger_signs" type="string" calculate=" /pregnancy_visit/group_danger_signs/g_danger_signs "/>
+      <bind nodeset="/pregnancy_visit/referral_follow_up_needed" type="string" calculate="if (count-selected( /pregnancy_visit/danger_signs ) &gt; 0, 'true', 'false')"/>
+      <bind nodeset="/pregnancy_visit/chw_sms" type="string" calculate="if( /pregnancy_visit/group_note/g_chw_sms  != '', concat( /pregnancy_visit/group_note/default_chw_sms_text ,concat('
+', /pregnancy_visit/group_note/g_chw_sms )),  /pregnancy_visit/group_note/default_chw_sms_text )"/>
+      <bind nodeset="/pregnancy_visit/visit_confirmed" type="string" calculate="coalesce( /pregnancy_visit/group_chw_info/attended_anc , 'yes')"/>
       <bind nodeset="/pregnancy_visit/group_chw_info" relevant=" /pregnancy_visit/inputs/source  = 'task'"/>
       <bind nodeset="/pregnancy_visit/group_chw_info/chw_information" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_visit/group_chw_info/call_button" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_chw_info/attended_anc" required="true()" type="select1"/>
-      <bind nodeset="/pregnancy_visit/group_danger_signs" relevant=" /pregnancy_visit/group_chw_info/attended_anc  = 'yes'"/>
+      <bind nodeset="/pregnancy_visit/group_chw_info/attended_anc" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_visit/group_danger_signs" relevant=" /pregnancy_visit/visit_confirmed  = 'yes'"/>
       <bind nodeset="/pregnancy_visit/group_danger_signs/g_danger_signs" type="select"/>
-      <bind calculate="if( /pregnancy_visit/group_chw_info/attended_anc  = 'yes',
+      <bind nodeset="/pregnancy_visit/group_note/default_chw_sms" type="select1" calculate="if( /pregnancy_visit/visit_confirmed  = 'yes',
  if( /pregnancy_visit/group_danger_signs/g_danger_signs  != '',
  'highrisk',
  'default'
  ),
  'did_not_attend'
-)" nodeset="/pregnancy_visit/group_note/default_chw_sms" type="select1"/>
-      <bind calculate="jr:choice-name( /pregnancy_visit/group_note/default_chw_sms ,' /pregnancy_visit/group_note/default_chw_sms ')" nodeset="/pregnancy_visit/group_note/default_chw_sms_text" type="string"/>
+)"/>
+      <bind nodeset="/pregnancy_visit/group_note/default_chw_sms_text" type="string" calculate="jr:choice-name( /pregnancy_visit/group_note/default_chw_sms ,' /pregnancy_visit/group_note/default_chw_sms ')"/>
       <bind nodeset="/pregnancy_visit/group_note/default_chw_sms_note" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_note/is_sms_edited" required="true()" type="select1"/>
-      <bind constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/pregnancy_visit/group_note/g_chw_sms:jr:constraintMsg')" nodeset="/pregnancy_visit/group_note/g_chw_sms" type="string"/>
+      <bind nodeset="/pregnancy_visit/group_note/is_sms_edited" type="select1" required="true()"/>
+      <bind nodeset="/pregnancy_visit/group_note/g_chw_sms" type="string" constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/pregnancy_visit/group_note/g_chw_sms:jr:constraintMsg')"/>
       <bind nodeset="/pregnancy_visit/group_review/submit" readonly="true()" type="string"/>
       <bind nodeset="/pregnancy_visit/group_review/r_summary" readonly="true()" type="string"/>
-      <bind calculate="../../inputs/contact/patient_id" nodeset="/pregnancy_visit/group_review/r_patient_id" type="string"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_patient_id" type="string" calculate="../../inputs/contact/patient_id"/>
       <bind nodeset="/pregnancy_visit/group_review/r_pregnancy_details" readonly="true()" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_visit" readonly="true()" relevant=" /pregnancy_visit/group_chw_info/attended_anc  != ''" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_visit_yes" readonly="true()" relevant="selected( /pregnancy_visit/group_chw_info/attended_anc , 'yes')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_visit_no" readonly="true()" relevant="selected( /pregnancy_visit/group_chw_info/attended_anc ,'no')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_visit_unknown" readonly="true()" relevant="selected( /pregnancy_visit/group_chw_info/attended_anc , 'unknown')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_referral" readonly="true()" relevant=" /pregnancy_visit/group_danger_signs/g_danger_signs  != ''" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_referral_note" readonly="true()" relevant=" /pregnancy_visit/group_danger_signs/g_danger_signs  != ''" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign1" readonly="true()" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd1')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign2" readonly="true()" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd2')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign3" readonly="true()" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd3')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign4" readonly="true()" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd4')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign5" readonly="true()" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd5')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign6" readonly="true()" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd6')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign7" readonly="true()" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd7')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign8" readonly="true()" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd8')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign9" readonly="true()" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd9')" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_followup" readonly="true()" relevant=" /pregnancy_visit/chw_sms  != ''" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_followup_note1" readonly="true()" relevant=" /pregnancy_visit/chw_sms  != ''" type="string"/>
-      <bind nodeset="/pregnancy_visit/group_review/r_followup_note2" readonly="true()" relevant=" /pregnancy_visit/chw_sms  != ''" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/pregnancy_visit/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_visit" readonly="true()" type="string" relevant=" /pregnancy_visit/visit_confirmed  != ''"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_visit_yes" readonly="true()" type="string" relevant="selected( /pregnancy_visit/visit_confirmed , 'yes')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_visit_no" readonly="true()" type="string" relevant="selected( /pregnancy_visit/visit_confirmed ,'no')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_visit_unknown" readonly="true()" type="string" relevant="selected( /pregnancy_visit/visit_confirmed , 'unknown')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_referral" readonly="true()" type="string" relevant=" /pregnancy_visit/group_danger_signs/g_danger_signs  != ''"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_referral_note" readonly="true()" type="string" relevant=" /pregnancy_visit/group_danger_signs/g_danger_signs  != ''"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign1" readonly="true()" type="string" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd1')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign2" readonly="true()" type="string" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd2')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign3" readonly="true()" type="string" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd3')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign4" readonly="true()" type="string" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd4')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign5" readonly="true()" type="string" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd5')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign6" readonly="true()" type="string" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd6')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign7" readonly="true()" type="string" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd7')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign8" readonly="true()" type="string" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd8')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_danger_sign9" readonly="true()" type="string" relevant="selected( /pregnancy_visit/group_danger_signs/g_danger_signs , 'd9')"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_followup" readonly="true()" type="string" relevant=" /pregnancy_visit/chw_sms  != ''"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_followup_note1" readonly="true()" type="string" relevant=" /pregnancy_visit/chw_sms  != ''"/>
+      <bind nodeset="/pregnancy_visit/group_review/r_followup_note2" readonly="true()" type="string" relevant=" /pregnancy_visit/chw_sms  != ''"/>
+      <bind nodeset="/pregnancy_visit/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

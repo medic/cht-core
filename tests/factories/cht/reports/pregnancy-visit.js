@@ -215,7 +215,7 @@ const defaultFields = {
 };
 
 Factory.define('basePregnancyVisit')
-  .sequence('_id',uuid.v4)
+  .sequence('_id', uuid.v4)
   .attr('form', 'pregnancy_home_visit')
   .attr('type', 'data_record')
   .attr('content_type', 'xml')
@@ -223,7 +223,7 @@ Factory.define('basePregnancyVisit')
   .attr('contact', 'TODO')
   .attr('from', '')
   .attr('fields', defaultFields)
-  .attr('hidden_fields',[
+  .attr('hidden_fields', [
     'patient_age_in_years',
     'patient_uuid',
     'patient_id',
@@ -288,4 +288,4 @@ Factory.define('basePregnancyVisit')
   });
 
 
-module.exports = new Factory().extend('basePregnancyVisit').attr('fields',defaultFields);
+module.exports = new Factory().extend('basePregnancyVisit').attr('fields', defaultFields);

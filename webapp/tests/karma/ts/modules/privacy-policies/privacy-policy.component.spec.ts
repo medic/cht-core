@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -14,7 +14,7 @@ describe('PrivacyPoliciesComponent', () => {
   let privacyPoliciesService;
   let startupModalsService;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     privacyPoliciesService = {
       accept: sinon.stub().resolves({}),
       hasAccepted: sinon.stub(),
@@ -110,4 +110,25 @@ describe('PrivacyPoliciesComponent', () => {
     expect(setPrivacyPolicyAcceptedSpy.args[0][0]).to.equal(true);
     expect(startupModalsService.showStartupModals.callCount).to.equal(1);
   });
+
+  it('should fail gracefully when accepting privacy policy fails', async () => {
+    const policy = {
+      html: 'html',
+      digest: 'my_digest',
+      language: 'fr',
+    };
+    component.privacyPolicy = { ...policy };
+    privacyPoliciesService.accept.rejects(new Error('error'));
+    const setPrivacyPolicyAcceptedSpy = sinon.spy(GlobalActions.prototype, 'setPrivacyPolicyAccepted');
+
+    await component.accept();
+
+    expect(component.accepting).to.equal(true);
+    expect(privacyPoliciesService.accept.callCount).to.equal(1);
+    expect(privacyPoliciesService.accept.args[0][0]).to.deep.equal(policy);
+    expect(setPrivacyPolicyAcceptedSpy.callCount).to.equal(1);
+    expect(setPrivacyPolicyAcceptedSpy.args[0][0]).to.equal(true);
+    expect(startupModalsService.showStartupModals.callCount).to.equal(1);
+  });
+
 });

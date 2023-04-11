@@ -67,7 +67,7 @@ describe('upload default docs', () => {
     mocks.db.medic.bulkDocs
       .resolves([{ ok: true }, { error: 'conflict', id: 'messages-fr.properties', message: 'Document conflict.' }]);
     return uploadDefaultDocs.run()
-      .then(() => { throw 'should not succeed'; })
+      .then(() => expect.fail('should have thrown'))
       .catch(() => {
         expect(mocks.fs.readFileSync.callCount).to.eq(2);
         expect(mocks.settingService.update.callCount).to.eq(0);

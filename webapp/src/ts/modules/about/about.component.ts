@@ -9,6 +9,7 @@ import { Selectors } from '@mm-selectors/index';
 import { SessionService } from '@mm-services/session.service';
 import { VersionService } from '@mm-services/version.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { BrowserDetectorService } from '@mm-services/browser-detector.service';
 
 @Component({
   templateUrl: './about.component.html'
@@ -16,6 +17,7 @@ import { TranslateService } from '@mm-services/translate.service';
 export class AboutComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
   private dataUsageUpdate;
+  browserSupport;
 
   userCtx;
   replicationStatus;
@@ -37,6 +39,7 @@ export class AboutComponent implements OnInit, OnDestroy {
     private sessionService: SessionService,
     private versionService: VersionService,
     private translateService: TranslateService,
+    private browserDetectorService: BrowserDetectorService,
     private router: Router
   ) { }
 
@@ -52,6 +55,7 @@ export class AboutComponent implements OnInit, OnDestroy {
     this.getAndroidDataUsage();
     this.getAndroidDeviceInfo();
     this.getDbInfo();
+    this.getBrowserSupport();
   }
 
   ngOnDestroy() {
@@ -125,8 +129,30 @@ export class AboutComponent implements OnInit, OnDestroy {
       });
   }
 
+  private getBrowserSupport() {
+    const isUsingSupportedBrowser = this.browserDetectorService.isUsingSupportedBrowser();
+    const isUsingChtAndroid = this.browserDetectorService.isUsingChtAndroid();
+    const isUsingChtAndroidV1 = this.browserDetectorService.isUsingChtAndroidV1();
+
+    let outdatedComponent;
+    if (isUsingChtAndroid) {
+      if (!isUsingChtAndroidV1) {
+        outdatedComponent = 'chtAndroid';
+      } else if (!isUsingSupportedBrowser) {
+        outdatedComponent = 'webviewApk';
+      }
+    } else if (!isUsingSupportedBrowser) {
+      outdatedComponent = 'browser';
+    }
+
+    this.browserSupport = {
+      isUsingSupportedEnvironment: typeof outdatedComponent === 'undefined',
+      outdatedComponent,
+    };
+  }
+
   reload() {
-    window.location.reload(false);
+    window.location.reload();
   }
 
   secretDoor() {

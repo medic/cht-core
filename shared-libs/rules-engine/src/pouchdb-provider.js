@@ -18,6 +18,7 @@ const docsOf = (query) => {
   });
 };
 
+const rowsOf = (query) => query.then(result => uniqBy(result.rows, 'id'));
 
 const medicPouchProvider = db => {
   const self = {
@@ -94,6 +95,20 @@ const medicPouchProvider = db => {
       return docsOf(db.query('medic-client/tasks_by_contact', { keys, include_docs: true }));
     },
 
+    allTaskRowsByOwner: (contactIds) => {
+      const keys = contactIds.map(contactId => (['owner', 'all', contactId]));
+      return rowsOf(db.query('medic-client/tasks_by_contact', { keys }));
+    },
+
+    allTaskRows: () => {
+      const options = {
+        startkey: ['owner', 'all'],
+        endkey: ['owner', 'all', '\ufff0'],
+      };
+
+      return rowsOf(db.query('medic-client/tasks_by_contact', options));
+    },
+
     taskDataFor: (contactIds, userSettingsDoc) => {
       if (!contactIds || contactIds.length === 0) {
         return Promise.resolve({});
@@ -143,7 +158,7 @@ const docUpdateClosure = db => {
 
     previousResult = previousResult
       .then(() => db.put(baseDoc))
-      .then(updatedDoc => { baseDoc._rev = updatedDoc.rev; })
+      .then(updatedDoc => (baseDoc._rev = updatedDoc.rev))
       .catch(err => console.error(`Error updating ${baseDoc._id}: ${err}`))
       .then(() => {
         // unsure of how browsers handle long promise chains, so break the chain when possible

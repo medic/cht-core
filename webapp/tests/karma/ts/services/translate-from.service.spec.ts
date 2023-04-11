@@ -65,7 +65,7 @@ describe('TranslateFrom Service', () => {
       personA: 'mary',
       personB: 'jacob'
     };
-    const labels = { 'en': '{{personA}} goes to meet {{personB}}' };
+    const labels = { en: '{{personA}} goes to meet {{personB}}' };
     expect(service.get(labels, scope)).to.equal('mary goes to meet jacob');
   });
 

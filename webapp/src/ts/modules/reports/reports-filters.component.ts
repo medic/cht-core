@@ -8,6 +8,8 @@ import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
 
+export const OLD_REPORTS_FILTER_PERMISSION:string = 'can_view_old_filter_and_search';
+
 @Component({
   selector: 'reports-filters',
   templateUrl: './reports-filters.component.html'
@@ -29,12 +31,16 @@ export class ReportsFiltersComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild(FormTypeFilterComponent)
   formTypeFilter:FormTypeFilterComponent;
+
   @ViewChild(FacilityFilterComponent)
   facilityFilter:FacilityFilterComponent;
+
   @ViewChild(DateFilterComponent)
   dateFilter:DateFilterComponent;
+
   @ViewChild(FreetextFilterComponent)
   freetextFilter:FreetextFilterComponent;
+
   @ViewChild(StatusFilterComponent)
   statusFilter:StatusFilterComponent;
 
@@ -43,15 +49,22 @@ export class ReportsFiltersComponent implements AfterViewInit, OnDestroy {
   }
 
   applyFilters(force?) {
+    if (this.disabled) {
+      return;
+    }
     this.search.emit(force);
   }
 
   resetFilters() {
+    if (this.disabled) {
+      return;
+    }
+
     this.globalActions.clearFilters();
 
     this.formTypeFilter?.clear();
     this.facilityFilter?.clear();
-    this.dateFilter?.clear();
+    this.dateFilter?.clear(true);
     this.statusFilter?.clear();
     this.freetextFilter?.clear();
 

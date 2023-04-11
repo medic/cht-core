@@ -24,9 +24,10 @@
             <input class="uploader" type="file" accept="image/*">
           </div>
         </div>
+        <span class="help-block" translate>branding.logo.field.help</span>
       </div>
       <div class="form-group required">
-        <label translate>branding.favicon.field</label> 
+        <label translate>branding.favicon.field</label>
         <div class="favicon">
           <img src="data:{{favicon.content_type}};base64,{{favicon.data}}" />
         </div>
@@ -40,6 +41,24 @@
             <input class="uploader" type="file" accept="image/*">
           </div>
         </div>
+        <span class="help-block" translate>branding.favicon.field.help</span>
+      </div>
+      <div class="form-group required">
+        <label translate>branding.icon.field</label>
+        <div class="favicon">
+          <img src="data:{{icon.content_type}};base64,{{icon.data}}" />
+        </div>
+        <div id="icon-upload">
+          <button type="button" class="btn btn-default choose">
+            <i class="fa fa-arrow-up"></i>
+            <span translate>Choose file</span>
+          </button>
+          <div class="loader" ng-show="uploading"></div>
+          <div class="hide">
+            <input class="uploader" type="file" accept="image/*">
+          </div>
+        </div>
+        <span class="help-block" translate>branding.icon.field.help</span>
       </div>
       <div class="form-actions">
         <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>

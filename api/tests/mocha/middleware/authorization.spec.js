@@ -167,7 +167,7 @@ describe('Authorization middleware', () => {
         });
     });
 
-    it('does not proxy requests for offline users' , () => {
+    it('does not proxy requests for offline users', () => {
       testReq.userCtx = { name: 'user' };
       auth.isOnlineOnly.withArgs({ name: 'user' }).returns(false);
       auth.getUserSettings.resolves({ name: 'user', contact_id: 'a' });

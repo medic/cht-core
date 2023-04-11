@@ -97,6 +97,9 @@
 
   &.multidropdown .dropdown-menu {
     padding-bottom: 50px;
+    .filter-options ul {
+      margin-left: 10px;
+    }
     > ul {
       max-height: 300px;
       overflow-x: hidden;
@@ -109,19 +112,6 @@
       > a[role="menuitem"] {
         padding: 5px 20px 3px 35px;
         text-indent: -20px;
-
-        &.indent-1 {
-          padding-left: 50px;
-        }
-        &.indent-2 {
-          padding-left: 60px;
-        }
-        &.indent-3 {
-          padding-left: 70px;
-        }
-        &.indent-4 {
-          padding-left: 80px;
-        }
       }
       a,
       &.dropdown-header {
@@ -204,6 +194,9 @@
     .mm-button-text {
       color: @label-color;
     }
+    .actions a.btn-link {
+      color: @inactive-color;
+    }
   }
 }
 
@@ -256,7 +249,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: @media-mobile) {
   .open .mm-dropdown-menu {
     top: 111px;
     left: 10px;
@@ -280,7 +273,7 @@
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: @media-small-mobile) {
   .open .mm-dropdown-menu {
     top: 101px;
   }

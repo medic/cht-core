@@ -89,7 +89,7 @@ const defaultFields = {
           'birth_length_know': 'yes',
           'birth_length': '40',
           'vaccines_received': 'bcg_only',
-          'breatfeeding': 'yes',
+          'breastfeeding': 'yes',
           'breastfed_within_1_hour': 'no',
           'baby_danger_sign_note': '',
           'infected_umbilical_cord': 'no',
@@ -194,14 +194,14 @@ const defaultFields = {
 };
 
 Factory.define('baseDelivery')
-  .sequence('_id',uuid.v4)
+  .sequence('_id', uuid.v4)
   .attr('form', 'delivery')
   .attr('type', 'data_record')
   .attr('content_type', 'xml')
   .attr('reported_date', () => new Date())
   .attr('contact', 'TODO')
   .attr('from', '')
-  .attr('hidden_fields',[
+  .attr('hidden_fields', [
     'household_id',
     'area_id',
     'facility_id',

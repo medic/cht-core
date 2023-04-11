@@ -25,7 +25,7 @@ describe('PlaceHierarchy Service', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: ContactsService, useValue: contactService } ,
+        { provide: ContactsService, useValue: contactService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: SettingsService, useValue: settingsService },
       ]

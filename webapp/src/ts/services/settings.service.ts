@@ -29,7 +29,7 @@ export class SettingsService {
     });
   }
 
-  get() {
+  get():Promise<Record<string, any>> {
     return new Promise((resolve, reject) => {
       this.cache((err, settings) => {
         if (err) {

@@ -21,8 +21,8 @@
           <div class="row heading" [ngClass]="{'deceased': selectedContact?.doc?.date_of_death, 'muted':selectedContact?.doc?.muted }">
             <span [innerHTML]="selectedContact?.type?.icon | resourceIcon"></span>
             <div class="heading-content">
-              <h2>{{selectedContact?.doc?.name}}</h2>
-              <div *ngIf="selectedContact?.doc?.date_of_death">{{'contact.deceased.title' | translate}}</div>
+              <h2 [attr.test-id]="'contact-name'">{{selectedContact?.doc?.name}}</h2>
+              <div [attr.test-id]="'deceased-title'" *ngIf="selectedContact?.doc?.date_of_death">{{'contact.deceased.title' | translate}}</div>
               <div class="primary-contact" *ngIf="selectedContact?.isPrimaryContact">
                 <i class="fa fa-star primary"></i>
                 <span>{{selectedContact?.type?.primary_contact_key || 'Primary contact' | translate}}</span>
@@ -32,7 +32,7 @@
           </div>
 
           <div class="loader" *ngIf="contactsLoadingSummary"></div>
-          <div class="row flex grid" *ngIf="!contactsLoadingSummary">
+          <div class="row flex grid" id="contact_summary" *ngIf="!contactsLoadingSummary">
             <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of selectedContact?.summary?.fields">
               <div class="cell {{field.label | lowercase}}">
                 <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
@@ -49,7 +49,7 @@
 
         <ng-container *ngIf="selectedContact?.summary">
           <div *ngFor="let card of selectedContact?.summary?.cards">
-            <div class="card">
+            <div class="card" [attr.test-id]="card.label">
               <div class="action-header cell">
                 <h3>{{card.label | translate}}</h3>
               </div>
@@ -57,11 +57,11 @@
                 <div class="col col-xs-12 col-sm-{{field.width || 12}}" *ngFor="let field of card.fields">
                   <div class="cell">
                     <span *ngIf="field.icon" class="field-icon" [innerHTML]="field.icon | resourceIcon"></span>
-                    <div>
+                    <div [attr.test-id]="field.label">
                       <label *ngIf="field.label">{{field.label | translate}}</label>
-                      <p *ngIf="field.translate" translate [translateParams]="field.context">{{field.value}}</p>
-                      <p *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
-                      <p *ngIf="!field.translate && !field.filter">{{field.value}}</p>
+                      <p class="card-field-value" *ngIf="field.translate" translate [translateParams]="field.context">{{field.value}}</p>
+                      <p class="card-field-value" *ngIf="!field.translate && field.filter" [innerHTML]="field.value"></p>
+                      <p class="card-field-value" *ngIf="!field.translate && !field.filter">{{field.value}}</p>
                     </div>
                   </div>
                 </div>
@@ -71,12 +71,12 @@
         </ng-container>
       </div>
 
-      <div class="card children" *ngFor="let group of selectedContact?.children">
+      <div class="card children" [ngClass]="group?.type?.person ? 'persons' : 'places'" *ngFor="let group of selectedContact?.children">
         <div class="action-header cell">
           <div class="col-xs-10">
             <h3>{{group?.type?.group_key | translate}}</h3>
           </div>
-          <div *ngIf="group?.type?.person" mm-auth="can_view_tasks" class="col-xs-2 tasks-title">{{'Tasks' | translate}}</div>
+          <div *ngIf="group?.type?.person" mmAuth="can_view_tasks" class="col-xs-2 tasks-title">{{'Tasks' | translate}}</div>
         </div>
 
         <ul>
@@ -98,14 +98,14 @@
         <ul class="action deceased">
           <li *ngIf="group?.deceasedCount > 0" class="content-row deceased">
             <a [routerLink]="['/contacts', selectedContact?.doc?._id, 'deceased']">
-              <span translate [translateParams]="{ count: group.deceasedCount }">contact.deceased.view</span>
+              <span translate [translateParams]="{ count: group.deceasedCount | localizeNumber }">contact.deceased.view</span>
               <i class="fa fa-chevron-right"></i>
             </a>
           </li>
         </ul>
       </div>
 
-      <div *ngIf="selectedContact?.tasks" mm-auth="can_view_tasks">
+      <div *ngIf="selectedContact?.tasks" mmAuth="can_view_tasks">
         <div class="card tasks">
           <div class="action-header cell">
             <h3>{{'Tasks' | translate}}</h3>
@@ -137,7 +137,7 @@
         </div>
       </div>
 
-      <div mm-auth="can_view_reports">
+      <div mmAuth="can_view_reports">
         <div class="card reports">
           <div class="action-header cell">
             <h3>{{'Reports' | translate}}</h3>

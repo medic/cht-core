@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Postnatal Visit</h:title>
     <model>
@@ -2349,7 +2349,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
         </translation>
       </itext>
       <instance>
-        <postnatal_visit delimiter="#" id="postnatal_visit" prefix="J1!postnatal_visit!" version="2018-11-14_10-19">
+        <postnatal_visit id="postnatal_visit" prefix="J1!postnatal_visit!" delimiter="#" version="2022-03-03 15-46">
           <inputs>
             <meta>
               <location>
@@ -2390,7 +2390,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
           <group_chw_info tag="hidden">
             <chw_information/>
             <call_button/>
-            <attended_pnc>yes</attended_pnc>
+            <attended_pnc/>
           </group_chw_info>
           <group_who_assessed tag="hidden">
             <g_who_assessed/>
@@ -2459,7 +2459,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
       <bind nodeset="/postnatal_visit/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/postnatal_visit/inputs/source" type="string"/>
       <bind nodeset="/postnatal_visit/inputs/source_id" type="string"/>
-      <bind nodeset="/postnatal_visit/inputs/contact/_id" required="true()" type="db:person"/>
+      <bind nodeset="/postnatal_visit/inputs/contact/_id" type="db:person" required="true()"/>
       <bind nodeset="/postnatal_visit/inputs/contact/patient_id" type="string"/>
       <bind nodeset="/postnatal_visit/inputs/contact/name" type="string"/>
       <bind nodeset="/postnatal_visit/inputs/contact/date_of_birth" type="string"/>
@@ -2467,31 +2467,31 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
       <bind nodeset="/postnatal_visit/inputs/contact/phone" type="string"/>
       <bind nodeset="/postnatal_visit/inputs/contact/parent/contact/phone" type="string"/>
       <bind nodeset="/postnatal_visit/inputs/contact/parent/contact/name" type="string"/>
-      <bind calculate="if (  /postnatal_visit/inputs/contact/date_of_birth ='', '', floor( difference-in-months(  /postnatal_visit/inputs/contact/date_of_birth , today() ) div 12 ) )" nodeset="/postnatal_visit/patient_age_in_years" type="string"/>
-      <bind calculate="../inputs/contact/phone" nodeset="/postnatal_visit/patient_phone" type="string"/>
-      <bind calculate="../inputs/contact/_id" nodeset="/postnatal_visit/patient_uuid" type="string"/>
-      <bind calculate="../inputs/contact/patient_id" nodeset="/postnatal_visit/patient_id" type="string"/>
-      <bind calculate="../inputs/contact/name" nodeset="/postnatal_visit/patient_name" type="string"/>
-      <bind calculate="../inputs/contact/parent/contact/name" nodeset="/postnatal_visit/chw_name" type="string"/>
-      <bind calculate="../inputs/contact/parent/contact/phone" nodeset="/postnatal_visit/chw_phone" type="string"/>
-      <bind calculate=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom " nodeset="/postnatal_visit/danger_signs_mom" type="string"/>
-      <bind calculate=" /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby " nodeset="/postnatal_visit/danger_signs_baby" type="string"/>
-      <bind calculate="if( /postnatal_visit/group_note/g_chw_sms  != '', concat( /postnatal_visit/group_note/default_chw_sms_text ,concat('
-', /postnatal_visit/group_note/g_chw_sms )),  /postnatal_visit/group_note/default_chw_sms_text )" nodeset="/postnatal_visit/chw_sms" type="string"/>
-      <bind calculate=" /postnatal_visit/group_chw_info/attended_pnc " nodeset="/postnatal_visit/visit_confirmed" type="string"/>
+      <bind nodeset="/postnatal_visit/patient_age_in_years" type="string" calculate="if (  /postnatal_visit/inputs/contact/date_of_birth ='', '', floor( difference-in-months(  /postnatal_visit/inputs/contact/date_of_birth , today() ) div 12 ) )"/>
+      <bind nodeset="/postnatal_visit/patient_phone" type="string" calculate="../inputs/contact/phone"/>
+      <bind nodeset="/postnatal_visit/patient_uuid" type="string" calculate="../inputs/contact/_id"/>
+      <bind nodeset="/postnatal_visit/patient_id" type="string" calculate="../inputs/contact/patient_id"/>
+      <bind nodeset="/postnatal_visit/patient_name" type="string" calculate="../inputs/contact/name"/>
+      <bind nodeset="/postnatal_visit/chw_name" type="string" calculate="../inputs/contact/parent/contact/name"/>
+      <bind nodeset="/postnatal_visit/chw_phone" type="string" calculate="../inputs/contact/parent/contact/phone"/>
+      <bind nodeset="/postnatal_visit/danger_signs_mom" type="string" calculate=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom "/>
+      <bind nodeset="/postnatal_visit/danger_signs_baby" type="string" calculate=" /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby "/>
+      <bind nodeset="/postnatal_visit/chw_sms" type="string" calculate="if( /postnatal_visit/group_note/g_chw_sms  != '', concat( /postnatal_visit/group_note/default_chw_sms_text ,concat('
+', /postnatal_visit/group_note/g_chw_sms )),  /postnatal_visit/group_note/default_chw_sms_text )"/>
+      <bind nodeset="/postnatal_visit/visit_confirmed" type="string" calculate="coalesce( /postnatal_visit/group_chw_info/attended_pnc , 'yes')"/>
       <bind nodeset="/postnatal_visit/group_chw_info" relevant=" /postnatal_visit/inputs/source  = 'task'"/>
       <bind nodeset="/postnatal_visit/group_chw_info/chw_information" readonly="true()" type="string"/>
       <bind nodeset="/postnatal_visit/group_chw_info/call_button" readonly="true()" type="string"/>
-      <bind nodeset="/postnatal_visit/group_chw_info/attended_pnc" required="true()" type="select1"/>
-      <bind nodeset="/postnatal_visit/group_who_assessed" relevant=" /postnatal_visit/group_chw_info/attended_pnc  = 'yes'"/>
-      <bind nodeset="/postnatal_visit/group_who_assessed/g_who_assessed" required="true()" type="select1"/>
+      <bind nodeset="/postnatal_visit/group_chw_info/attended_pnc" type="select1" required="true()"/>
+      <bind nodeset="/postnatal_visit/group_who_assessed" relevant=" /postnatal_visit/visit_confirmed  = 'yes'"/>
+      <bind nodeset="/postnatal_visit/group_who_assessed/g_who_assessed" type="select1" required="true()"/>
       <bind nodeset="/postnatal_visit/group_danger_signs_mom" relevant=" /postnatal_visit/group_who_assessed/g_who_assessed  = 'mom' or  /postnatal_visit/group_who_assessed/g_who_assessed  = 'both'"/>
       <bind nodeset="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom" type="select"/>
-      <bind nodeset="/postnatal_visit/group_danger_signs_mom/danger_signs_mom_other" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd14')" required="true()" type="string"/>
+      <bind nodeset="/postnatal_visit/group_danger_signs_mom/danger_signs_mom_other" type="string" required="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd14')"/>
       <bind nodeset="/postnatal_visit/group_danger_signs_baby" relevant=" /postnatal_visit/group_who_assessed/g_who_assessed  = 'baby' or  /postnatal_visit/group_who_assessed/g_who_assessed  = 'both'"/>
       <bind nodeset="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby" type="select"/>
-      <bind nodeset="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd11')" required="true()" type="string"/>
-      <bind calculate="if( /postnatal_visit/group_chw_info/attended_pnc  = 'yes',
+      <bind nodeset="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other" type="string" required="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd11')"/>
+      <bind nodeset="/postnatal_visit/group_note/default_chw_sms" type="select1" calculate="if( /postnatal_visit/visit_confirmed  = 'yes',
  if( /postnatal_visit/group_who_assessed/g_who_assessed  = 'both',
  if( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != '',
  if( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby  != '',
@@ -2515,50 +2515,50 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
  )
  ),
  'did_not_attend'
-)" nodeset="/postnatal_visit/group_note/default_chw_sms" type="select1"/>
-      <bind calculate="jr:choice-name( /postnatal_visit/group_note/default_chw_sms ,' /postnatal_visit/group_note/default_chw_sms ')" nodeset="/postnatal_visit/group_note/default_chw_sms_text" type="string"/>
+)"/>
+      <bind nodeset="/postnatal_visit/group_note/default_chw_sms_text" type="string" calculate="jr:choice-name( /postnatal_visit/group_note/default_chw_sms ,' /postnatal_visit/group_note/default_chw_sms ')"/>
       <bind nodeset="/postnatal_visit/group_note/default_chw_sms_note" readonly="true()" type="string"/>
-      <bind nodeset="/postnatal_visit/group_note/is_sms_edited" required="true()" type="select1"/>
-      <bind constraint="string-length(.) &lt;= 715" jr:constraintMsg="jr:itext('/postnatal_visit/group_note/g_chw_sms:jr:constraintMsg')" nodeset="/postnatal_visit/group_note/g_chw_sms" type="string"/>
+      <bind nodeset="/postnatal_visit/group_note/is_sms_edited" type="select1" required="true()"/>
+      <bind nodeset="/postnatal_visit/group_note/g_chw_sms" type="string" jr:constraintMsg="jr:itext('/postnatal_visit/group_note/g_chw_sms:jr:constraintMsg')" constraint="string-length(.) &lt;= 715"/>
       <bind nodeset="/postnatal_visit/group_review/submit" readonly="true()" type="string"/>
       <bind nodeset="/postnatal_visit/group_review/r_summary" readonly="true()" type="string"/>
-      <bind calculate="../../inputs/contact/patient_id" nodeset="/postnatal_visit/group_review/r_patient_id" type="string"/>
+      <bind nodeset="/postnatal_visit/group_review/r_patient_id" type="string" calculate="../../inputs/contact/patient_id"/>
       <bind nodeset="/postnatal_visit/group_review/r_postnatal_details" readonly="true()" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_visit" readonly="true()" relevant=" /postnatal_visit/group_chw_info/attended_pnc  != ''" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_visit_yes" readonly="true()" relevant="selected( /postnatal_visit/group_chw_info/attended_pnc , 'yes')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_visit_no" readonly="true()" relevant="selected( /postnatal_visit/group_chw_info/attended_pnc ,'no')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_danger_signs" readonly="true()" relevant=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != '' or  /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby  != ''" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_signs" readonly="true()" relevant=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != ''" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign1" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd1')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign2" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd2')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign3" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd3')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign4" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd4')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign5" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd5')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign6" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd6')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign7" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd7')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign8" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd8')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign9" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd9')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign10" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd10')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign11" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd11')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign12" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd12')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign13" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd13')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign14" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd14')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_signs" readonly="true()" relevant=" /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby  != ''" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign1" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd1')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign2" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd2')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign3" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd3')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign4" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd4')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign5" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd5')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign6" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd6')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign7" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd7')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign8" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd8')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign9" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd9')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign10" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd10')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign11" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd11')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_followup" readonly="true()" relevant=" /postnatal_visit/chw_sms  != ''" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_followup_note1" readonly="true()" relevant=" /postnatal_visit/chw_sms  != ''" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_followup_note2" readonly="true()" relevant=" /postnatal_visit/chw_sms  != ''" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/postnatal_visit/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/postnatal_visit/group_review/r_visit" readonly="true()" type="string" relevant=" /postnatal_visit/visit_confirmed  != ''"/>
+      <bind nodeset="/postnatal_visit/group_review/r_visit_yes" readonly="true()" type="string" relevant="selected( /postnatal_visit/visit_confirmed , 'yes')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_visit_no" readonly="true()" type="string" relevant="selected( /postnatal_visit/visit_confirmed ,'no')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_danger_signs" readonly="true()" type="string" relevant=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != '' or  /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby  != ''"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_signs" readonly="true()" type="string" relevant=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != ''"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign1" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd1')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign2" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd2')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign3" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd3')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign4" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd4')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign5" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd5')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign6" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd6')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign7" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd7')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign8" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd8')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign9" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd9')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign10" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd10')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign11" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd11')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign12" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd12')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign13" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd13')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign14" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd14')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_signs" readonly="true()" type="string" relevant=" /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby  != ''"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign1" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd1')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign2" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd2')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign3" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd3')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign4" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd4')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign5" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd5')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign6" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd6')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign7" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd7')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign8" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd8')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign9" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd9')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign10" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd10')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_baby_danger_sign11" readonly="true()" type="string" relevant="selected( /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby , 'bd11')"/>
+      <bind nodeset="/postnatal_visit/group_review/r_followup" readonly="true()" type="string" relevant=" /postnatal_visit/chw_sms  != ''"/>
+      <bind nodeset="/postnatal_visit/group_review/r_followup_note1" readonly="true()" type="string" relevant=" /postnatal_visit/chw_sms  != ''"/>
+      <bind nodeset="/postnatal_visit/group_review/r_followup_note2" readonly="true()" type="string" relevant=" /postnatal_visit/chw_sms  != ''"/>
+      <bind nodeset="/postnatal_visit/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

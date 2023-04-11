@@ -10,7 +10,7 @@ import { TitlePipe } from '@mm-pipes/message.pipe';
 import { PhonePipe } from '@mm-pipes/phone.pipe';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
-
+import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 
 describe('Parse provider', () => {
   let provider:ParseProvider;
@@ -36,6 +36,9 @@ describe('Parse provider', () => {
       expect(parse('1+1')).to.equal(2);
       expect(parse('5*8')).to.equal(40);
       expect(parse('200-100')).to.equal(100);
+      expect(parse('"Hello" + " " + "world"')).to.equal('Hello world');
+      expect(isNaN(parse('-"Hello"'))).to.be.true;
+      expect(isNaN(parse('+"Hello"'))).to.be.true;
     });
 
     it('should crash when parser throws', () => {
@@ -87,34 +90,34 @@ describe('Parse provider', () => {
 
     it('should process methods correctly', () => {
       const userContactDoc:any = {
-        'name': 'Hanry',
-        'phone': '+61466661112',
-        'contact_type': 'chp',
-        'type': 'person',
-        'reported_date': 1602853017680,
-        'parent': {
-          'name': 'Sushi Roll Clinic',
-          'type': 'district_hospital',
-          'reported_date': 1602852999338,
-          'place_id': '40046',
-          'contact': {
-            'name': 'Hanry',
-            'phone': '+61466661112',
-            'contact_type': 'chp',
-            'type': 'person',
-            'reported_date': 1602853017680,
-            'parent': {
-              '_id': 'dcf86fe98aa9fe2ddb207e4483006f69'
+        name: 'Hanry',
+        phone: '+61466661112',
+        contact_type: 'chp',
+        type: 'person',
+        reported_date: 1602853017680,
+        parent: {
+          name: 'Sushi Roll Clinic',
+          type: 'district_hospital',
+          reported_date: 1602852999338,
+          place_id: '40046',
+          contact: {
+            name: 'Hanry',
+            phone: '+61466661112',
+            contact_type: 'chp',
+            type: 'person',
+            reported_date: 1602853017680,
+            parent: {
+              _id: 'dcf86fe98aa9fe2ddb207e4483006f69'
             },
-            'patient_id': '57848',
-            '_id': 'dcf86fe98aa9fe2ddb207e44830078b0',
+            patient_id: '57848',
+            _id: 'dcf86fe98aa9fe2ddb207e44830078b0',
           },
-          'parent': {
-            '_id': 'dcf86fe98aa9fe2ddb207e4483006f69',
+          parent: {
+            _id: 'dcf86fe98aa9fe2ddb207e4483006f69',
           },
-          '_id': 'dcf86fe98aa9fe2ddb207e4483006f69',
+          _id: 'dcf86fe98aa9fe2ddb207e4483006f69',
         },
-        'patient_id': '57848',
+        patient_id: '57848',
       };
       const expression = '(user.parent.use_cases && user.parent.use_cases.split(" ").indexOf("pnc") !== -1) ' +
         '|| (user.parent.parent.use_cases && user.parent.parent.use_cases.split(" ").indexOf("pnc") !== -1)';
@@ -143,25 +146,44 @@ describe('Parse provider', () => {
         (!contact.sex || contact.sex === 'female') && 
         (!contact.date_of_birth || (ageInYears(contact) >= 12 && ageInYears(contact) <= 49))
       `;
-      const userContactDoc = {
-        date_of_birth: '1998-05-13',
+      const context = new XmlFormsContextUtilsService();
+      const user = {
+        parent: { type: 'health_center' },
+      };
+      const contact = {
+        date_of_birth: '2007-05-13',
         date_of_birth_method: 'approx',
-        name: 'peanuts',
+        name: 'Laura',
         patient_id: '03451',
-        reported_date: 1589367057387,
-        role: 'nurse',
+        reported_date: 1672900567448,
+        role: 'patient',
         sex: 'female',
         type: 'person',
       };
+      const summaryAlive = {
+        alive: true,
+        muted: false,
+        show_delivery_form: true,
+      };
+      const summaryDeceased = {
+        alive: false,
+        muted: false,
+        show_delivery_form: true,
+      };
 
-      const result = parse(expression, {}, { user: userContactDoc, contact: undefined, summary: undefined });
-      expect(result).to.equal(false);
+      const trueResult = parse(expression, context, { user, contact, summary: summaryAlive });
+      const falseResult = parse(expression, context, { user, contact, summary: summaryDeceased });
+
+      expect(trueResult).to.equal(true);
+      expect(falseResult).to.equal(false);
     });
   });
 
   describe('with pipes', () => {
     let translateService;
     let settingsService;
+    let languageService;
+    let formatNumberService;
 
     let formatDateService;
     let relativeDateService;
@@ -180,11 +202,18 @@ describe('Parse provider', () => {
           default_country_code: 'RO',
         }),
       };
+      languageService = { useDevanagariScript: sinon.stub().returns(false) };
+      formatNumberService = { localize: sinon.stub().returnsArg(0) };
       sanitizer = {
         bypassSecurityTrustHtml: sinon.stub().returnsArg(0),
       };
 
-      formatDateService = new FormatDateService(translateService, settingsService);
+      formatDateService = new FormatDateService(
+        translateService,
+        settingsService,
+        languageService,
+        formatNumberService
+      );
       relativeDateService = new RelativeDateService(formatDateService);
 
       pipesService = {

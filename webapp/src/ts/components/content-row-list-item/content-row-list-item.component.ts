@@ -10,6 +10,8 @@ export class ContentRowListItemComponent {
   @Input() id;
   // string: (optional) the name of the route to link to
   @Input() route;
+  // string: (optional) the name of the tab to use as router link state
+  @Input() tab;
   // boolean: (optional) whether to mark this row read
   @Input() read;
   // string: (optional) the id of the resource icon to render
@@ -38,8 +40,6 @@ export class ContentRowListItemComponent {
   @Input() verified;
   // array: (optional) the hierarchy for the row
   @Input() lineage;
-  // integer: (optional) the simprints tier of the contact match
-  @Input() simprintsTier;
   // boolean: (optional) whether to mark this row as a primary contact
   @Input() primaryContact;
   // integer: (optional) how much tasks to show as pending for this contact

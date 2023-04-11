@@ -12,6 +12,7 @@ let next;
 describe('Bulk Docs controller', () => {
   beforeEach(() => {
     sinon.stub(auth, 'getUserCtx');
+    sinon.stub(auth, 'hasAllPermissions');
     sinon.stub(auth, 'isOnlineOnly');
     sinon.stub(service, 'bulkDelete');
     sinon.stub(service, 'filterOfflineRequest').resolves();
@@ -39,11 +40,14 @@ describe('Bulk Docs controller', () => {
   it('checks that user is an admin', () => {
     const userCtx = {};
     auth.getUserCtx.resolves(userCtx);
+    auth.hasAllPermissions.returns(true);
     auth.isOnlineOnly.withArgs(userCtx).returns(false);
     const next = sinon.stub();
     return controller.bulkDelete(testReq, testRes, next)
       .then(() => {
         auth.getUserCtx.callCount.should.equal(1);
+        auth.hasAllPermissions.callCount.should.equal(1);
+        auth.hasAllPermissions.args[0][1].should.to.deep.equal(['can_edit']);
         auth.isOnlineOnly.callCount.should.equal(1);
         next.callCount.should.equal(1);
         next.getCall(0).args[0].code.should.equal(401);
@@ -145,7 +149,7 @@ describe('Bulk Docs controller', () => {
       });
     });
 
-    it ('filters for offline requests', () => {
+    it('filters for offline requests', () => {
       testReq.body = { docs: ['some', 'longer', 'doc', 'list'] };
       service.filterOfflineRequest.resolves(['some', 'doc', 'list']);
       return controller

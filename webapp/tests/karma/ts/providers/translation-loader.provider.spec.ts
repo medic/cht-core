@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
-import { async, fakeAsync, tick } from '@angular/core/testing';
+import { fakeAsync, tick, waitForAsync } from '@angular/core/testing';
 
 import { DbService } from '@mm-services/db.service';
 import { TranslationLoaderProvider } from '@mm-providers/translation-loader.provider';
@@ -18,7 +18,7 @@ describe('Translations Loader provider', () => {
     sinon.restore();
   });
 
-  it('returns error when db throws error', async(() => {
+  it('should return error when db throws error', waitForAsync(() => {
     const expected = { status: 503 };
     DBGet.rejects(expected);
     provider.getTranslation('err').subscribe(
@@ -28,7 +28,7 @@ describe('Translations Loader provider', () => {
       });
   }));
 
-  it('returns empty when no translation document', async(() => {
+  it('should return empty when no translation document', waitForAsync(() => {
     DBGet.rejects({ status: 404 });
     provider.getTranslation('notfound').subscribe((actual) => {
       expect(actual).to.deep.equal({});
@@ -37,7 +37,19 @@ describe('Translations Loader provider', () => {
     });
   }));
 
-  it('returns values for the given key', async(() => {
+  it('should return empty when not authorised', waitForAsync(() => {
+    DBGet.rejects({ status: 401 });
+
+    provider
+      .getTranslation('es')
+      .subscribe(actual => {
+        expect(actual).to.deep.equal({});
+        expect(DBGet.callCount).to.equal(1);
+        expect(DBGet.args[0][0]).to.equal('messages-es');
+      });
+  }));
+
+  it('should return values for the given key', waitForAsync(() => {
     const expected = {
       prawn: 'shrimp',
       bbq: 'barbie'
@@ -50,7 +62,7 @@ describe('Translations Loader provider', () => {
     });
   }));
 
-  it('returns "en" wrapped in hyphens for test locale', async(() => {
+  it('returns "en" wrapped in hyphens for test locale', waitForAsync(() => {
     const doc = {
       prawn: 'prawn',
       bbq: 'barbeque'

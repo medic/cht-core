@@ -1,0 +1,19 @@
+{
+  "start_url": "./",
+  "name": "{{ branding.name }}",
+  "display": "standalone",
+  "background_color": "#323232",
+  "theme_color": "#323232",
+  "icons": [
+    {
+      "src": "/img/{{ branding.icon }}",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image"
+    }
+  ]
+}
