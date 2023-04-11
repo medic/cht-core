@@ -634,7 +634,7 @@ const setupSettings = () => {
 const saveBrowserLogs = () => {
   // wdio also writes in this file
   if (!browserLogStream) {
-    browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
+    browserLogStream = fs.createWriteStream(path.join(__dirname, '..', 'logs/browser.console.log'));
   }
 
   return browser
