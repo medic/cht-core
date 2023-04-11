@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, TrackByFunction, ViewChild } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
@@ -110,10 +110,6 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
     this.closeAll();
   }
 
-  trackById(idx, action: FastAction) {
-    return action.id;
-  }
-
   getTriggerButtonIcon() {
     const plusIcon = 'fa-plus';
 
@@ -128,6 +124,10 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   getActionLabel() {
     const fastExecutableAction = this.getFastExecutableAction();
     return fastExecutableAction?.label || fastExecutableAction?.labelKey;
+  }
+
+  trackById: TrackByFunction<FastAction> = (idx, action: FastAction) => {
+    return action.id;
   }
 }
 
