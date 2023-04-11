@@ -1,6 +1,6 @@
 const moment = require('moment');
 const utils = require('@utils');
-const gatewayApiUtils = require('../../../gateway-api.utils');
+const gatewayApiUtils = require('@utils/gateway-api');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');

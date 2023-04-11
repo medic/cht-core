@@ -4,7 +4,7 @@ const userFactory = require('@factories/cht/users/users');
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
-const chtConfUtils = require('../../../cht-conf-utils');
+const chtConfUtils = require('@utils/cht-conf');
 const path = require('path');
 const sentinelUtils = require('@utils/sentinel');
 

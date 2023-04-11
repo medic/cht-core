@@ -8,8 +8,8 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const chtConfUtils = require('../../../cht-conf-utils');
-const gatewayApiUtils = require('../../../gateway-api.utils');
+const chtConfUtils = require('@utils/cht-conf');
+const gatewayApiUtils = require('@utils/gateway-api');
 
 const NEPALI_LOCALE_CODE = 'ne';
 

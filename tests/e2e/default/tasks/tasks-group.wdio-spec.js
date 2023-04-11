@@ -6,7 +6,7 @@ const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const chtConfUtils = require('../../../cht-conf-utils');
+const chtConfUtils = require('@utils/cht-conf');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
 
 const places = [

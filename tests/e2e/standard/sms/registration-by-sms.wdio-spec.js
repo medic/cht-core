@@ -4,7 +4,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
-const gatewayApiUtils = require('../../../gateway-api.utils');
+const gatewayApiUtils = require('@utils/gateway-api');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 
 describe('Registration by SMS', async () => {

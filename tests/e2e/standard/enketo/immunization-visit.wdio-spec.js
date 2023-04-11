@@ -7,7 +7,7 @@ const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.pa
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const placeFactory = require('@factories/cht/contacts/place');
 const userFactory = require('@factories/cht/users/users');
-const gatewayApiUtils = require('../../../gateway-api.utils');
+const gatewayApiUtils = require('@utils/gateway-api');
 const immVisitForm = require('@page-objects/standard/enketo/immunization-visit.wdio.page');
 
 describe('Immunization Visit', () => {
