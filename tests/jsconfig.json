@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@utils": ["./utils"],
+      "@utils/*": ["./utils/*"],
+      "@page-objects/*": ["./page-objects/*"],
+      "@factories/*": ["./factories/*"]
+    }
+  }
+}
