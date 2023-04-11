@@ -28,26 +28,69 @@ const updateContacts = (contacts, muted) => {
     return Promise.resolve();
   }
 
-  contacts.forEach(contact => updateContact(contact, muted));
-  return db.medic.bulkDocs(contacts);
-};
-
-const updateContact = (contact, muted) => {
-  if (muted) {
-    contact.muted = muted;
-  } else {
-    delete contact.muted;
+  const updatedContacts = contacts.filter(contact => updateContact(contact, muted));
+  if (!updatedContacts.length) {
+    return Promise.resolve();
   }
 
-  if (contact.muting_history) {
+  return db.medic.bulkDocs(updatedContacts);
+};
+
+/**
+ * Updates the muted state on a given contact, updates local muting history, if it exists.
+ * If a contact does not need updating, the object is not mutated and the function returns boolean false.
+ * The contact does not need updating when either:
+ * a) an already muted contact is muted and there is no muting history
+ * b) an already unmuted contact is unmuted and there is no muting history
+ * c) an already muted contact is muted, and the muting history is up to date
+ * d) an already unmuted contact is unmuted, and the muting history is up to date
+ * Muting history is up to date when:
+ * - the last update was made on the server
+ * - the server muted state corresponds with the updated muted state.
+ * In any other case, the contact will be updated with the new muted state.
+ * @param {Object} contact
+ * @param {string|boolean} muted
+ * @return {boolean}
+ */
+const updateContact = (contact, muted) => {
+  const isMutingHistoryUpToDate = !contact.muting_history ||
+                                  (
+                                    contact.muting_history &&
+                                    contact.muting_history.last_update === SERVER &&
+                                    contact.muting_history[SERVER].muted === !!muted
+                                  );
+
+  let updated = false;
+  let mutedTimestamp;
+  if (muted) {
+    if (isMutingHistoryUpToDate) {
+      // if muting an already muted contact and muting history requires no changes, use the contact's muted timestamp
+      mutedTimestamp = contact.muted || muted;
+    } else {
+      // if muting an already muted contact and muting history requires changes, use the new muted timestamp
+      mutedTimestamp = muted;
+    }
+  }
+
+  if (!isMutingHistoryUpToDate && contact.muting_history) {
+    updated = true;
     contact.muting_history[SERVER] = {
       muted: !!muted,
-      date: muted || new Date().getTime(),
+      date: mutedTimestamp || moment().toISOString(),
     };
     contact.muting_history.last_update = SERVER;
   }
 
-  return contact;
+  if (!isMutingHistoryUpToDate || contact.muted !== mutedTimestamp) {
+    updated = true;
+    if (muted) {
+      contact.muted = mutedTimestamp;
+    } else {
+      delete contact.muted;
+    }
+  }
+
+  return updated;
 };
 
 const updateRegistrations = (subjectIds, muted) => {
@@ -66,7 +109,7 @@ const updateRegistrations = (subjectIds, muted) => {
     });
 };
 
-const getContactsAndSubjectIds = (contactIds, muted) => {
+const getContactsAndSubjectIds = (contactIds) => {
   return db.medic
     .allDocs({ keys: contactIds, include_docs: true })
     .then(result => {
@@ -74,7 +117,7 @@ const getContactsAndSubjectIds = (contactIds, muted) => {
       const subjectIds = [];
 
       result.rows.forEach(row => {
-        if (!row.doc || Boolean(row.doc.muted) === Boolean(muted)) {
+        if (!row.doc) {
           return;
         }
         contacts.push(row.doc);
@@ -92,8 +135,14 @@ const updateMutingHistories = (contacts, muted, reportId) => {
 
   return infodoc
     .bulkGet(contacts.map(contact => ({ id: contact._id, doc: contact})))
-    .then(infoDocs => infoDocs.map((info) => addMutingHistory(info, muted, reportId)))
-    .then(infoDocs => infodoc.bulkUpdate(infoDocs));
+    .then(infoDocs => {
+      const updatedInfoDocs = infoDocs.filter((info) => addMutingHistory(info, muted, reportId));
+      if (!updatedInfoDocs.length) {
+        return Promise.resolve();
+      }
+
+      return infodoc.bulkUpdate(updatedInfoDocs);
+    });
 };
 
 const getLastMutingEventReportId = mutingHistory => {
@@ -121,9 +170,16 @@ const updateMutingHistory = (contact, initialReplicationDatetime, muted) => {
 
 const addMutingHistory = (info, muted, reportId) => {
   info.muting_history = info.muting_history || [];
+
+  // we could be replaying offline muting history. don't duplicate last entry of muting history.
+  const lastEntry = info.muting_history.length && info.muting_history[info.muting_history.length - 1];
+  if (lastEntry && (lastEntry.muted === !!muted && lastEntry.report_id === reportId)) {
+    return;
+  }
+
   info.muting_history.push({
     muted: !!muted,
-    date: muted || moment(),
+    date: muted || moment().toISOString(),
     report_id: reportId
   });
 
@@ -140,7 +196,7 @@ const addMutingHistory = (info, muted, reportId) => {
  * @return {Promise<Array>} - a sorted list of report ids, representing muting events that need to be replayed
  */
 const updateMuteState = (contact, muted, reportId, replayClientMuting = false) => {
-  muted = muted && moment();
+  muted = muted && moment().toISOString();
 
   let rootContactId = contact._id;
   if (!muted) {
@@ -163,7 +219,7 @@ const updateMuteState = (contact, muted, reportId, replayClientMuting = false) =
     return batches
       .reduce((promise, batch) => {
         return promise
-          .then(() => getContactsAndSubjectIds(batch, muted))
+          .then(() => getContactsAndSubjectIds(batch))
           .then(result => {
             if (replayClientMuting) {
               clientMutingEventQueue.push(...getClientMutingEventsToReplay(result.contacts, reportId));

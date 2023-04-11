@@ -19,7 +19,8 @@ export class AppRouteGuardProvider implements CanActivate {
     return from(
       this.authService.has(route.data.permissions).then((canActivate) => {
         if (!canActivate) {
-          this.router.navigate(['error/403']);
+          const redirectPath = route.data.redirect || ['error', '403'];
+          this.router.navigate(redirectPath);
         }
         return canActivate;
       })

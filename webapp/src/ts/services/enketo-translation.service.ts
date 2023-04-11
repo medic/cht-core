@@ -16,12 +16,13 @@ export class EnketoTranslationService {
       .find((node:any) => node.nodeName === childNodeName);
   }
 
-  private getHiddenFieldListRecursive(nodes, prefix, current) {
+  private getHiddenFieldListRecursive(nodes, prefix, current:Set<any>) {
     nodes.forEach(node => {
       const path = prefix + node.nodeName;
+
       const attr = node.attributes.getNamedItem('tag');
-      if (attr && attr.value === 'hidden') {
-        current.push(path);
+      if (attr && attr.value && attr.value.toLowerCase() === 'hidden') {
+        current.add(path);
       } else {
         const children = this.withElements(node.childNodes);
         this.getHiddenFieldListRecursive(children, path + '.', current);
@@ -34,11 +35,6 @@ export class EnketoTranslationService {
     path = path || '';
     const result = {};
     this.withElements(data).forEach((n:any) => {
-      const dbDocAttribute = n.attributes.getNamedItem('db-doc');
-      if (dbDocAttribute && dbDocAttribute.value === 'true') {
-        return;
-      }
-
       const typeAttribute = n.attributes.getNamedItem('type');
       const updatedPath = path + '/' + n.nodeName;
       let value;
@@ -90,42 +86,57 @@ export class EnketoTranslationService {
       const found = elem.find(matcher);
       if (found.length > 1) {
         console.warn(`Enketo bindJsonToXml: Using the matcher "${matcher}" we found ${found.length} elements. ` +
-          'We should only ever bind one.', elem);
+          'We should only ever bind one.', elem, name);
       }
       return found;
-    } else {
-      return elem.children(name);
     }
+
+    return elem.children(name);
   }
 
   bindJsonToXml(elem, data, childMatcher?) {
+    // Enketo will remove all elements that have the "template" attribute
+    // https://github.com/enketo/enketo-core/blob/51c5c2f494f1515a67355543b435f6aaa4b151b4/src/js/form-model.js#L436-L451
+    elem.removeAttr('jr:template');
+    elem.removeAttr('template');
+
+    if (data === null || typeof data !== 'object') {
+      elem.text(data);
+      return;
+    }
+
+    if (Array.isArray(data)) {
+      const parent = elem.parent();
+      elem.remove();
+
+      data.forEach((dataEntry) => {
+        const clone = elem.clone();
+        this.bindJsonToXml(clone, dataEntry);
+        parent.append(clone);
+      });
+      return;
+    }
+
+    if (!elem.children().length) {
+      this.bindJsonToXml(elem, data._id);
+    }
+
     Object.keys(data).forEach((key) => {
       const value = data[key];
       const current = this.findCurrentElement(elem, key, childMatcher);
-      if (value !== null && typeof value === 'object') {
-        if (current.children().length) {
-          // childMatcher intentionally does not recurse. It exists to
-          // allow the initial layer of binding to be flexible.
-          this.bindJsonToXml(current, value);
-        } else {
-          current.text(value._id);
-        }
-      } else {
-        current.text(value);
-      }
+      this.bindJsonToXml(current, value);
     });
   }
 
-
-  getHiddenFieldList (model) {
+  getHiddenFieldList (model, dbDocFields:Array<any>) {
     model = $.parseXML(model).firstChild;
     if (!model) {
       return;
     }
     const children = this.withElements(model.childNodes);
-    const fields = [];
+    const fields = new Set(dbDocFields);
     this.getHiddenFieldListRecursive(children, '', fields);
-    return fields;
+    return [...fields];
   }
 
   getRepeatPaths(formXml) {
@@ -159,11 +170,11 @@ export class EnketoTranslationService {
    */
   contactRecordToJs(record) {
     const root = $.parseXML(record).firstChild;
-
     const result:any = {
       doc: null,
       siblings: {},
     };
+
     const repeats = this.repeatsToJs(root);
     if (repeats) {
       result.repeats = repeats;
@@ -171,16 +182,18 @@ export class EnketoTranslationService {
 
     const NODE_NAMES_TO_IGNORE = ['meta', 'inputs', 'repeat'];
 
-    this.withElements(root.childNodes)
-      .filter((node:any) => !NODE_NAMES_TO_IGNORE.includes(node.nodeName))
+    this
+      .withElements(root.childNodes)
+      .filter((node:any) => !NODE_NAMES_TO_IGNORE.includes(node.nodeName) && node.childElementCount > 0)
       .forEach((child:any) => {
-        // First child is the main result, rest are siblings
-        if(!result.doc) {
+        if (!result.doc) {
+          // First child is the main result, rest are siblings
           result.doc = this.nodesToJs(child.childNodes);
-        } else {
-          result.siblings[child.nodeName] = this.nodesToJs(child.childNodes);
+          return;
         }
+        result.siblings[child.nodeName] = this.nodesToJs(child.childNodes);
       });
+
     return result;
   }
 }

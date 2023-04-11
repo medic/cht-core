@@ -1,23 +1,15 @@
-const IS_TRAVIS = !!process.env.TEST_SUITE;
-
-const COUCH_HOST = 'localhost';
-const COUCH_PORT = IS_TRAVIS ? 5984 : 4984;
-const API_PORT = IS_TRAVIS ? 5988 : 4988;
+const USERNAME = 'admin';
+const PASSWORD = 'pass';
+const API_HOST = 'localhost';
+const PROTOCOL = 'https://';
 
 module.exports = {
-  IS_TRAVIS: IS_TRAVIS,
+  IS_CI: !!process.env.CI,
 
   // connection information for the test api instance which is
   // intentionally different from the dev api instance to avoid
   // port collisions
-  API_PORT,
-  API_HOST: 'localhost',
-
-  // connection information for the couchdb instance
-  // locally we spin up a different CouchDB for e2e tests
-  COUCH_PORT,
-  COUCH_HOST,
-  COUCH_NODE_NAME: IS_TRAVIS ? process.env.COUCH_NODE_NAME : 'nonode@nohost',
+  API_HOST,
 
   // test database to avoid writing to the dev db
   // TODO: we don't need to do this anymore since it's in its own docker container
@@ -33,5 +25,13 @@ module.exports = {
     type: 'person',
     reported_date: 1541679811408,
   },
-  BASE_URL: `http://${COUCH_HOST}:${API_PORT}/`
+  BASE_URL: `${PROTOCOL}${API_HOST}`,
+  BASE_URL_AUTH: `${PROTOCOL}${USERNAME}:${PASSWORD}@${API_HOST}`,
+
+  // nginx certificate setting
+  CERTIFICATE_MODE: 'SELF_SIGNED',
+  DOWNLOAD_DIRECTORY: 'tempDownload',
+
+  USERNAME,
+  PASSWORD
 };

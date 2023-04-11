@@ -1,3 +1,59 @@
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/**
+ * Material color's override
+ */
+.mat-primary {
+  background-color: @mm-mat-primary !important;
+}
+
+.mat-accent {
+  background-color: @button-background-inverse-color !important;
+  color: @mm-mat-primary !important;
+}
+
+.mat-warn {
+  background-color: @error-color !important;
+}
+
+.mat-button-toggle-disabled,
+.mat-mdc-button[disabled][disabled] {
+  background-color: @inactive-color !important;
+  color: @button-text-inverse-color !important;
+}
+
+.mat-icon.fa {
+  height: 20px;
+  width: 20px;
+  &:before {
+    font-size: @font-extra-large;
+    color: @mat-icon-color;
+  }
+}
+
+.mat-mdc-menu-panel {
+  .mat-mdc-menu-item {
+    font-size: @font-medium;
+    color: @mat-font-color;
+    text-decoration: none;
+    outline: none;
+    * {
+      vertical-align: middle;
+    }
+    &:disabled,
+    &:disabled :after,
+    &:disabled :before {
+      color: @inactive-color;
+    }
+    .mat-icon {
+      margin-right: 5px;
+    }
+  }
+}
+
+/**
+ * Medic's custom component style
+ */
 .material {
   .card {
     border: 1px solid @separator-color;
@@ -127,7 +183,6 @@
   will-change: transform;
   transform: translate3d(0, 50px, 0) rotateZ(0deg);
   transition: 0.25s linear;
-  max-height: 50px;
   left: 0px;
   right: 0px;
   text-align: center;
@@ -135,7 +190,8 @@
   .snackbar-content {
     pointer-events: initial;
     text-align: left;
-    display: inline-block;
+    display: flex;
+    justify-content: space-between;
     padding: 14px 24px;
     vertical-align: middle;
     min-width: 288px;
@@ -147,13 +203,31 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    .snackbar-message {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      max-width: 80%;
+      word-break: break-word;
+      white-space: normal;
+    }
+    .snackbar-action {
+      align-self: center;
+      cursor: pointer;
+      color: @text-link-color;
+      text-transform: uppercase;
+      &:hover {
+        color: @text-link-active-color;
+      }
+    }
   }
   &.active {
     transform: translate3d(0, 0, 0);
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: @media-mobile) {
   .material {
     .card {
       border-radius: 0;

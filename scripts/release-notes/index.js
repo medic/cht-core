@@ -6,8 +6,8 @@
  *  2) Each issue should have one and only one Type label - the script will tell you which ones don't
  *  3) Make sure you have generated a GH token and created a token.json file, eg: { "githubApiToken": "..." }
  *     This token needs at least `read:org` permissions
- *  4) Execute the command: node index.js <project_name> > <output_file>
- *      eg: node index.js 3.0.0 > tmp.md
+ *  4) Execute the command: node index.js <repo_name> <milestone_name> > <output_file>
+ *      eg: node index.js cht-core 3.0.0 > tmp.md
  *  5) Insert the contents of the output file into the appropriate location in Changes.md
  */
 
@@ -40,7 +40,7 @@ const TYPES = [
   { labels: ['Type: Security'], title: 'Security fixes' },
   { labels: ['Type: Performance'], title: 'Performance improvements' },
   { labels: ['bug', 'Type: Bug'], title: 'Bug fixes' },
-  { labels: ['Type: Technical issue'], title: 'Technical improvements' },
+  { labels: ['Type: Technical issue', 'Type: Internal process'], title: 'Technical improvements' },
 ];
 
 const PREFIXES_TO_IGNORE = [
@@ -126,18 +126,18 @@ const outputGroups = (groups) => {
 
 const output = ({ warnings, types }) => {
   console.log(`
-# ${MILESTONE_NAME} Release Notes
-
-- [Known issues](#known-issues)
-- [Upgrade notes](#upgrade-notes)
-- [Breaking changes](#breaking-changes)
-- [UI/UX changes](#uiux-changes)
-- [Highlights](#highlights)
-- [And more...](#and-more)
+---
+title: "${MILESTONE_NAME} release notes"
+linkTitle: "${MILESTONE_NAME}"
+weight:
+description: >
+relevantLinks: >
+toc_hide: true
+---
 
 ## Known issues
 
-<<< TODO >>>
+Check the repository for the [latest known issues](https://github.com/medic/cht-core/issues?q=is%3Aissue+label%3A%22Affects%3A+${MILESTONE_NAME}%22).
 
 ## Upgrade notes
 

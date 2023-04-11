@@ -53,17 +53,17 @@ rule GenerateEvents {
   when { c: Contact } then { ${code} }
 }`,
 
-  mockEmission: (msOffset, assigned = {}) => Object.assign({
-    _id: 'abc',
-    doc: {
-      contact: { _id: 'gen' },
-    },
-    resolved: false,
-    delete: false,
-    date: new Date(Date.now() + msOffset),
-    readyStart: 0,
-    readyEnd: 0,
-  }, assigned),
+  mockEmission: (msOffset, assigned = {}) => {
+    return Object.assign({
+      _id: 'abc',
+      doc: { contact: { _id: 'gen' }, },
+      resolved: false,
+      delete: false,
+      date: new Date(Date.now() + msOffset),
+      readyStart: 0,
+      readyEnd: 0,
+    }, assigned);
+  },
 
   chtSettingsDoc,
   chtDocs,

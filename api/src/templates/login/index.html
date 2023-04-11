@@ -2,14 +2,20 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#323232">
     <title>{{ branding.name }}</title>
     <link href="/login/style.css" media="all" rel="stylesheet">
     <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="manifest" href="/manifest.json">
   </head>
   <body data-default-locale="{{ defaultLocale }}" data-translations="{{ translations }}">
     <div class="center">
       <form id="form" action="/medic/login" method="POST">
         <img class="logo" src="{{ branding.logo }}" title="{{ branding.name }}">
+        <p id="unsupported-browser" class="hidden">
+          <span translate="login.unsupported_browser"></span>
+          <span id="unsupported-browser-update"></span>
+        </p>
         <label for="user" translate="User Name"></label>
         <input id="user" name="user" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
         <label for="password" translate="Password"></label>
@@ -20,12 +26,18 @@
         <button id="login" class="btn" translate="login"></button>
         <div class="loader"></div>
       </form>
-      <div id="locale" class="locale-wrapper">
+      <div id="locale" class="wrapper">
         <% locales.forEach(function(locale) { %>
           <a href="#" name="{{ locale.key }}" class="locale">{{ locale.label }}</a>
         <% }); %>
       </div>
+      <% if(hasPrivacyPolicy) { %>
+      <div class="wrapper legal">
+        <a href="/medic/privacy-policy?back=true" translate="privacy.policy"></a>
+      </div>
+      <% } %>
     </div>
+    <script src="/login/lib-bowser.js"></script>
     <script src="/login/script.js"></script>
   </body>
 </html>

@@ -5,7 +5,15 @@ const sinon = require('sinon');
 const assert = require('chai').assert;
 
 describe('messages', () => {
-  afterEach(() => sinon.restore());
+  beforeEach(() => config.init({
+    getAll: sinon.stub().returns({}),
+    get: sinon.stub(),
+  }));
+
+  afterEach(() => {
+    sinon.reset();
+    sinon.restore();
+  });
 
   it('addMessage supports template variables on doc', () => {
     const doc = {
@@ -152,7 +160,7 @@ describe('messages', () => {
   });
 
   it('addMessage detects duplicate messages', () => {
-    sinon.stub(config, 'get').returns({ duplicate_limit: 1 });
+    config.get.returns({ duplicate_limit: 1 });
     const doc = {to: '+1234567'};
     messages.addMessage(doc, { message: 'Thank you.' }, '123', {});
     assert.equal(doc.tasks.length, 1);
@@ -296,9 +304,8 @@ describe('messages', () => {
         const mockConfig = {};
         mockConfig[configKey] = configValue;
 
-        const stub = sinon.stub(config, 'getAll').returns(mockConfig);
+        config.getAll.returns(mockConfig);
         assert.equal(messages.isOutgoingAllowed(phoneNumber), expectedResult);
-        stub.restore();
       });
     };
 
@@ -383,16 +390,14 @@ describe('messages', () => {
 
   it('describe isMessageFromGateway', () => {
     const tests = [
-      ['+774455558888', '77-44-5555-8888', true],
-      ['+774455558889', '77-44-5555-8888', false],
+      ['+640275552636', '64-27-555-2636', true],
+      ['+640275552637', '64-27-555-2636', false],
       // missing country code matches
       ['+41446681800', '446681800', true]
     ];
-    tests.forEach(function(t) {
-      const s = sinon.stub(config, 'get');
-      s.withArgs('gateway_number').returns(t[0]);
-      assert.equal(messages.isMessageFromGateway(t[1]), t[2]);
-      s.restore();
+    tests.forEach(([configured, requested, result]) => {
+      config.get.withArgs('gateway_number').returns(configured);
+      assert.equal(messages.isMessageFromGateway(requested), result, `failed for ${requested}`);
     });
   });
 });

@@ -1,0 +1,38 @@
+
+types {
+    text/html                             html htm shtml;
+    text/css                              css;
+    text/xml                              xml;
+    image/gif                             gif;
+    image/jpeg                            jpeg jpg;
+    application/x-javascript              js;
+    application/atom+xml                  atom;
+    application/rss+xml                   rss;
+    application/json                      json;
+
+    text/plain                            txt;
+    text/vnd.wap.wml                      wml;
+
+    image/png                             png;
+    image/tiff                            tif tiff;
+    image/x-icon                          ico;
+    image/svg+xml                         svg svgz;
+    image/webp                            webp;
+
+    application/pdf                       pdf;
+    application/rtf                       rtf;
+    application/vnd.ms-excel              xls;
+    application/x-x509-ca-cert            der pem crt;
+    application/xhtml+xml                 xhtml;
+    application/zip                       zip;
+
+    audio/mpeg                            mp3;
+    audio/ogg                             ogg;
+    audio/x-m4a                           m4a;
+
+    video/mp4                             mp4;
+    video/mpeg                            mpeg mpg;
+    video/webm                            webm;
+    video/x-m4v                           m4v;
+}
+

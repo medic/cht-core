@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 
 import { TourService } from '@mm-services/tour.service';
-import { UpdateUserService } from '@mm-services/update-user.service';
 import { SessionService } from '@mm-services/session.service';
 import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
 import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
@@ -49,7 +48,7 @@ export class StartupModalsService {
       render: () => {
         return this.modalService.show(TourSelectComponent)
           .catch(() => {})
-          .then(() => this.updateUserService.update(this.sessionService.userCtx().name, { known: true }))
+          .then(() => this.userSettingsService.setAsKnown())
           .catch(err => console.error('Error updating user', err));
       },
     },
@@ -58,7 +57,6 @@ export class StartupModalsService {
   constructor(
     private modalService: ModalService,
     private tourService: TourService,
-    private updateUserService: UpdateUserService,
     private sessionService: SessionService,
     private settingsService: SettingsService,
     private updateSettingsService: UpdateSettingsService,

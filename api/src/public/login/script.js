@@ -189,6 +189,55 @@ const checkSession = function() {
   }
 };
 
+const isUsingSupportedBrowser = () => {
+  const parser = window.bowser.getParser(window.navigator.userAgent);
+  return parser.satisfies({
+    chrome: '>=80', // Chrome 80 was released on February 4, 2020; for desktop and Android.
+    firefox: '>=98', // Firefox 93 was released on October 5, 2021; for desktop and Android.
+  });
+};
+
+const isUsingChtAndroid = () => typeof window.medicmobile_android !== 'undefined';
+
+const getAndroidAppVersion = () => {
+  if (isUsingChtAndroid() && typeof window.medicmobile_android.getAppVersion === 'function') {
+    return window.medicmobile_android.getAppVersion();
+  }
+};
+
+const isUsingChtAndroidV1 = () => {
+  const androidAppVersion = getAndroidAppVersion();
+  if (typeof androidAppVersion !== 'string') {
+    return false;
+  }
+
+  return androidAppVersion.startsWith('v1.');
+};
+
+const checkUnsupportedBrowser = () => {
+  if (!selectedLocale) {
+    return;
+  }
+
+  let outdatedComponentKey;
+  if (isUsingChtAndroid()) {
+    if (!isUsingChtAndroidV1()) {
+      outdatedComponentKey = 'login.unsupported_browser.outdated_cht_android';
+    } else if (!isUsingSupportedBrowser()) {
+      outdatedComponentKey = 'login.unsupported_browser.outdated_webview_apk';
+    }
+  } else if (!isUsingSupportedBrowser()) {
+    outdatedComponentKey = 'login.unsupported_browser.outdated_browser';
+  }
+
+  if (typeof outdatedComponentKey !== 'undefined') {
+    document.getElementById('unsupported-browser-update').setAttribute('translate', outdatedComponentKey);
+    document.getElementById('unsupported-browser-update').innerText =
+      translations[selectedLocale][outdatedComponentKey];
+    document.getElementById('unsupported-browser').classList.remove('hidden');
+  }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   translations = parseTranslations();
   selectedLocale = getLocale();
@@ -211,5 +260,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/service-worker.js');
     }
+  }
+
+  checkUnsupportedBrowser();
+});
+
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    checkSession();
   }
 });

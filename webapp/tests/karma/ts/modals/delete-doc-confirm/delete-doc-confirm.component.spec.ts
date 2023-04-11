@@ -1,7 +1,7 @@
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { async, ComponentFixture, fakeAsync, TestBed, flush } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, flush, waitForAsync } from '@angular/core/testing';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { expect } from 'chai';
 import sinon from 'sinon';
@@ -11,18 +11,21 @@ import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-
 import { DbService } from '@mm-services/db.service';
 import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
+import { Selectors } from '@mm-selectors/index';
 
 describe('DeleteDocConfirmComponent', () => {
   let component: DeleteDocConfirmComponent;
   let fixture: ComponentFixture<DeleteDocConfirmComponent>;
+  let store: MockStore;
   let bdModalRef;
   let dbService;
   let localDb;
   let router;
   let translateService;
   let globalActions;
+  let mockedSelectors;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     bdModalRef = { hide: sinon.stub(), onHide: new Subject() };
     localDb = { put: sinon.stub().resolves(true) };
     dbService = { get: sinon.stub().returns(localDb) };
@@ -33,6 +36,9 @@ describe('DeleteDocConfirmComponent', () => {
     globalActions = {
       setSnackbarContent: sinon.spy(GlobalActions.prototype, 'setSnackbarContent')
     };
+    mockedSelectors = [
+      { selector: Selectors.getSelectMode, value: false },
+    ];
 
     return TestBed
       .configureTestingModule({
@@ -44,7 +50,7 @@ describe('DeleteDocConfirmComponent', () => {
           MmModal
         ],
         providers: [
-          provideMockStore(),
+          provideMockStore({ selectors: mockedSelectors }),
           { provide: BsModalRef, useValue: bdModalRef },
           { provide: DbService, useValue: dbService },
           { provide: Router, useValue: router },
@@ -54,6 +60,7 @@ describe('DeleteDocConfirmComponent', () => {
       .then(() => {
         fixture = TestBed.createComponent(DeleteDocConfirmComponent);
         component = fixture.componentInstance;
+        store = TestBed.inject(MockStore);
         translateService = TestBed.inject(TranslateService);
         sinon.stub(translateService, 'instant').returnsArg(0);
         fixture.detectChanges();
@@ -61,6 +68,7 @@ describe('DeleteDocConfirmComponent', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 
@@ -123,7 +131,8 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should not navigate if it is selectMode', fakeAsync(() => {
       router.url = '/reports/id';
-      component.selectMode = true;
+      store.overrideSelector(Selectors.getSelectMode, true);
+      store.refreshState();
       fixture.detectChanges();
 
       component.submit();
@@ -137,7 +146,6 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should not navigate if url is not from reports or contacts', fakeAsync(() => {
       router.url = '/something';
-      component.selectMode = false;
       component.model = {
         doc: {
           id: 'id',
@@ -160,7 +168,6 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should navigate if it is not selectMode and url is from reports', fakeAsync(() => {
       router.url = '/reports/id';
-      component.selectMode = false;
       component.model = {
         doc: {
           id: 'id',
@@ -184,7 +191,6 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should navigate if it is not selectMode and url is from contact with not parent place', fakeAsync(() => {
       router.url = '/contacts/id';
-      component.selectMode = false;
       component.model = {
         doc: {
           id: 'id',
@@ -206,7 +212,6 @@ describe('DeleteDocConfirmComponent', () => {
 
     it('should navigate to parent place if it is not selectMode and url is from contact', fakeAsync(() => {
       router.url = '/contacts/id';
-      component.selectMode = false;
       component.model = {
         doc: {
           id: 'id',

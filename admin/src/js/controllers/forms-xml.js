@@ -86,6 +86,51 @@ angular.module('controllers').controller('FormsXmlCtrl',
       return formId;
     };
 
+    const getXmlHash = (xml) => {
+      const utf8 = new TextEncoder().encode(xml);
+      return crypto.subtle.digest('SHA-256', utf8).then((hashBuffer) => {
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray
+          .map((bytes) => bytes.toString(16).padStart(2, '0'))
+          .join('');
+      });
+
+    };
+
+    const addXmlVersion = (doc, xml) => {
+      return getXmlHash(xml).then((hash) => {
+        doc.xmlVersion = {
+          time: Date.now(),
+          sha256: hash
+        };
+        return doc;
+      });
+    };
+
+    const createDoc = (xml, meta) => {
+      const $xml = $($.parseXML(xml));
+      const title = getXmlTitle($xml, xml);
+      const formId = getXmlFormId($xml, meta);
+      const couchId = 'form:' + formId;
+      return DB()
+        .get(couchId, { include_attachments: true })
+        .catch(err => {
+          if (err.status === 404) {
+            return { _id: couchId };
+          }
+          throw err;
+        })
+        .then(doc => {
+          doc.title = title;
+          Object.assign(doc, meta);
+          doc.type = 'form';
+          doc.internalId = formId;
+          AddAttachment(doc, 'xml', xml, 'application/xml');
+          return doc;
+        })
+        .then(doc => addXmlVersion(doc, xml));
+    };
+
     $scope.upload = () => {
       $scope.status = {
         uploading: true,
@@ -108,37 +153,16 @@ angular.module('controllers').controller('FormsXmlCtrl',
         return uploadFinished(new Error('JSON meta file not found'));
       }
 
-      $q.all([
-        FileReader.utf8(formFiles[0]),
-        FileReader.utf8(metaFiles[0]).then(JsonParse)
-      ])
+      return $q
+        .all([
+          FileReader.utf8(formFiles[0]),
+          FileReader.utf8(metaFiles[0]).then(JsonParse),
+        ])
         .then(results => {
           const xml = results[0];
           const meta = results[1];
-
-          const $xml = $($.parseXML(xml));
-          const title = getXmlTitle($xml, xml);
-          const formId = getXmlFormId($xml, meta);
-
           return ValidateForm(xml)
-            .then(() => {
-              const couchId = 'form:' + formId;
-              return DB().get(couchId, { include_attachments:true })
-                .catch(err => {
-                  if (err.status === 404) {
-                    return { _id: couchId };
-                  }
-                  throw err;
-                })
-                .then(doc => {
-                  doc.title = title;
-                  Object.assign(doc, meta);
-                  doc.type = 'form';
-                  doc.internalId = formId;
-                  AddAttachment(doc, 'xml', xml, 'application/xml');
-                  return doc;
-                });
-            });
+            .then(() => createDoc(xml, meta));
         })
         .then(doc => DB().put(doc))
         .then(() => uploadFinished())

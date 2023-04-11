@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +16,7 @@ describe('HomeComponent', () => {
   let authServiceMock;
   let routerMock;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
 
     authServiceMock = {
       has: sinon.stub(),

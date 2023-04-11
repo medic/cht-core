@@ -4,22 +4,17 @@ const authorization = require('../services/authorization');
 const _ = require('lodash');
 const heartbeatFilter = require('../services/heartbeat-filter');
 const tombstoneUtils = require('@medic/tombstone-utils');
-const uuid = require('uuid/v4');
+const uuid = require('uuid').v4;
 const config = require('../config');
 const logger = require('../logger');
-const serverChecks = require('@medic/server-checks');
 const serverUtils = require('../server-utils');
-const environment = require('../environment');
-const semver = require('semver');
 const purgedDocs = require('../services/purged-docs');
 const replicationLimitLog = require('../services/replication-limit-log');
 
 let inited = false;
 let continuousFeed = false;
-let longpollFeeds = [];
-let normalFeeds = [];
+let changesFeeds = [];
 let currentSeq = 0;
-let limitChangesRequests = null;
 
 const cleanUp = feed => {
   clearInterval(feed.heartbeat);
@@ -28,10 +23,6 @@ const cleanUp = feed => {
   if (feed.upstreamRequest) {
     feed.upstreamRequest.cancel();
   }
-};
-
-const isLongpoll = req => {
-  return req.query && ['longpoll', 'continuous', 'eventsource'].indexOf(req.query.feed) !== -1;
 };
 
 const defibrillator = feed => {
@@ -48,24 +39,10 @@ const addTimeout = feed => {
   }
 };
 
-const endFeed = (feed, write = true, debounced = false) => {
-  if ((feed.cancelDebouncedEnd && debounced) || feed.ended) {
-    return;
-  }
-
-  if (feed.hasNewSubjects && !feed.reiterate_changes) {
-    return restartNormalFeed(feed);
-  }
-
-  if (feed.hasNewSubjects && feed.reiterate_changes) {
-    processPendingChanges(feed);
-  }
-
-  // in iteration mode OR in restart mode with no new subjects
+const endFeed = (feed, write = true) => {
   feed.ended = true;
   cleanUp(feed);
-  longpollFeeds = _.without(longpollFeeds, feed);
-  normalFeeds = _.without(normalFeeds, feed);
+  changesFeeds = _.without(changesFeeds, feed);
   if (write) {
     writeDownstream(feed, JSON.stringify(generateResponse(feed)), true);
   }
@@ -116,10 +93,10 @@ const appendChange = (results, changeObj, forceSeq = false) => {
 };
 
 // appends allowed `changes` to feed `results`
-const processPendingChanges = (feed, forceSeq = false) => {
+const processPendingChanges = (feed) => {
   authorization
     .filterAllowedDocs(feed, feed.pendingChanges)
-    .forEach(changeObj => appendChange(feed.results, changeObj, forceSeq));
+    .forEach(changeObj => appendChange(feed.results, changeObj, feed.lastSeq));
 };
 
 // returns true if an authorization change is found
@@ -152,45 +129,9 @@ const writeDownstream = (feed, content, end) => {
   }
 };
 
-const resetFeed = feed => {
-  clearTimeout(feed.timeout);
-
-  Object.assign(feed, {
-    pendingChanges: [],
-    results: [],
-    lastSeq: feed.initSeq,
-    hasNewSubjects: false
-  });
-};
-
-// converts previous longpoll feed back to a normal feed when it receives new allowed subjects
-const restartNormalFeed = feed => {
-  longpollFeeds = _.without(longpollFeeds, feed);
-  normalFeeds.push(feed);
-
-  resetFeed(feed);
-
-  return authorization
-    .getAllowedDocIds(feed)
-    .then(allowedDocIds => {
-      feed.allowedDocIds = allowedDocIds;
-      return filterPurgedIds(feed);
-    })
-    .then(() => {
-      getChanges(feed);
-    });
-};
-
 const getChanges = feed => {
   const options = { return_docs: true };
-  Object.assign(options, _.pick(feed.req.query, 'since', 'style', 'conflicts'));
-
-  // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
-  // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
-  // `limitChangesRequests` should only be true when CouchDB version is gte 2.3.0
-  if (limitChangesRequests && feed.req.query.limit) {
-    options.limit = feed.req.query.limit;
-  }
+  Object.assign(options, _.pick(feed.req.query, 'since', 'style', 'conflicts', 'limit'));
 
   options.doc_ids = feed.allowedDocIds;
   options.since = options.since || 0;
@@ -220,7 +161,7 @@ const getChanges = feed => {
       // Fixes race condition where a new doc is added while the changes feed is active,
       // but our continuousFeed listener receives the change after the response has been sent.
       // When receiving empty results, PouchDB considers replication to be complete and
-      // uses reponse.last_seq to write it's checkpointer doc.
+      // uses response.last_seq to write it's checkpointer doc.
       // By not advancing the checkpointer seq past our last change, we make sure these docs will be retrieved
       // in the next replication attempt.
       feed.lastSeq = results.length ? results[results.length - 1].seq : feed.currentSeq;
@@ -233,19 +174,14 @@ const getChanges = feed => {
         return reauthorizeRequest(feed);
       }
 
-      processPendingChanges(feed, limitChangesRequests && feed.lastSeq);
-
-      if (feed.results.length || !isLongpoll(feed.req)) {
-        // send response downstream
+      // avoid race condition where the continuous listener receives a change immediately after we ended the feed
+      return Promise.resolve().then(() => {
+        processPendingChanges(feed);
         return endFeed(feed);
-      }
-
-      // move the feed to the longpoll list to receive new changes
-      normalFeeds = _.without(normalFeeds, feed);
-      longpollFeeds.push(feed);
+      });
     })
     .catch(err => {
-      logger.info(`${feed.id} Error while requesting 'normal' changes feed`);
+      logger.info(`${feed.id} Error while requesting changes feed`);
       logger.info(err);
       // cancel ongoing requests and send error response
       feed.upstreamRequest.cancel();
@@ -256,9 +192,7 @@ const getChanges = feed => {
 
 const initFeed = (req, res) => {
   const changesControllerConfig = config.get('changes_controller') || {
-    reiterate_changes: true,
     changes_limit: 100,
-    debounce_interval: 200
   };
 
   const feed = {
@@ -271,17 +205,12 @@ const initFeed = (req, res) => {
     pendingChanges: [],
     results: [],
     limit: req.query && req.query.limit || changesControllerConfig.changes_limit,
-    reiterate_changes: changesControllerConfig.reiterate_changes,
     initialReplication: req.query && req.query.initial_replication
   };
 
-  if (changesControllerConfig.debounce_interval) {
-    feed.debounceEnd = _.debounce(() => endFeed(feed, true, true), changesControllerConfig.debounce_interval);
-  }
-
   defibrillator(feed);
   addTimeout(feed);
-  normalFeeds.push(feed);
+  changesFeeds.push(feed);
   req.on('close', () => endFeed(feed, false));
 
   return authorization
@@ -313,10 +242,7 @@ const filterPurgedIds = feed => {
 
 const processRequest = (req, res) => {
   return initFeed(req, res)
-    .then(feed => {
-      // don't return promise - could be a longpoll request
-      getChanges(feed);
-    });
+    .then(feed => getChanges(feed));
 };
 
 // restarts the request, refreshing user-settings
@@ -334,21 +260,7 @@ const reauthorizeRequest = feed => {
     });
 };
 
-const addChangeToLongpollFeed = (feed, changeObj) => {
-  appendChange(feed.results, changeObj);
-  feed.cancelDebouncedEnd = false;
-
-  if (feed.debounceEnd && --feed.limit) {
-    // debounce sending results if the feed limit is not yet reached
-    clearTimeout(feed.timeout);
-    feed.debounceEnd();
-    return;
-  }
-
-  endFeed(feed);
-};
-
-const processChange = (change, seq) => {
+const processChange = (change) => {
   const changeObj = {
     change: tombstoneUtils.isTombstoneId(change.id) ? tombstoneUtils.generateChangeFromTombstone(change) : change,
     viewResults: authorization.getViewResults(change.doc),
@@ -358,26 +270,8 @@ const processChange = (change, seq) => {
   };
   delete change.doc;
 
-  // inform the normal feeds that a change was received while they were processing
-  normalFeeds.forEach(feed => feed.pendingChanges.push(changeObj));
-
-  // send the change through to the longpoll feeds which are allowed to see it
-  longpollFeeds.forEach(feed => {
-    feed.lastSeq = seq;
-    const allowed = authorization.allowedDoc(changeObj.id, feed, changeObj.viewResults);
-    const newSubjects = authorization.updateContext(allowed, feed, changeObj.viewResults);
-
-    if (!allowed) {
-      return feed.reiterate_changes && feed.pendingChanges.push(changeObj);
-    }
-
-    if (authorization.isAuthChange(changeObj.id, feed.req.userCtx, changeObj.viewResults)) {
-      return reauthorizeRequest(feed);
-    }
-
-    feed.hasNewSubjects = feed.hasNewSubjects || newSubjects;
-    addChangeToLongpollFeed(feed, changeObj);
-  });
+  // inform feeds that a change was received while they were processing
+  changesFeeds.forEach(feed => feed.pendingChanges.push(changeObj));
 };
 
 const initContinuousFeed = since => {
@@ -399,33 +293,14 @@ const initContinuousFeed = since => {
     });
 };
 
-const initServerChecks = () => {
-  return serverChecks
-    .getCouchDbVersion(environment.serverUrl)
-    .then(shouldLimitChangesRequests);
-};
-
-const shouldLimitChangesRequests = couchDbVersion => {
-  // Prior to version 2.3.0, CouchDB had a bug where requesting _changes filtered by _doc_ids and using limit
-  // would yield an incorrect `last_seq`, resulting in overall incomplete changes.
-  const MIN_COUCH_VERSION_FOR_LIMITING_CHANGES = '2.3.0';
-  limitChangesRequests = semver.valid(couchDbVersion) ?
-    semver.lte(MIN_COUCH_VERSION_FOR_LIMITING_CHANGES, couchDbVersion) :
-    false;
-};
-
 const initCurrentSeq = () => db.medic.info().then(info => currentSeq = info.update_seq);
 
 const init = () => {
   if (!inited) {
     inited = true;
     initContinuousFeed();
-    return Promise.all([
-      initCurrentSeq(),
-      initServerChecks()
-    ]);
+    return initCurrentSeq();
   }
-
   return Promise.resolve();
 };
 
@@ -439,32 +314,3 @@ const request = (req, res) => {
 module.exports = {
   request: request,
 };
-
-// used for testing
-if (process.env.UNIT_TEST_ENV) {
-  Object.assign(module.exports, {
-    _init: init,
-    _initFeed: initFeed,
-    _processChange: processChange,
-    _writeDownstream: writeDownstream,
-    _processPendingChanges: processPendingChanges,
-    _appendChange: appendChange,
-    _generateTombstones: generateTombstones,
-    _hasAuthorizationChange: hasAuthorizationChange,
-    _generateResponse: generateResponse,
-    _reset: () => {
-      longpollFeeds = [];
-      normalFeeds = [];
-      inited = false;
-      currentSeq = 0;
-      limitChangesRequests = null;
-    },
-    _getNormalFeeds: () => normalFeeds,
-    _getLongpollFeeds: () => longpollFeeds,
-    _getCurrentSeq: () => currentSeq,
-    _inited: () => inited,
-    _getContinuousFeed: () => continuousFeed,
-    _shouldLimitChangesRequests: shouldLimitChangesRequests,
-    _getLimitChangesRequests: () => limitChangesRequests
-  });
-}

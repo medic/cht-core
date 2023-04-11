@@ -2,3 +2,15 @@
 .border-radius(@radius) {
   border-radius: @radius;
 }
+
+// Style the label of 1 to N elements in a container.
+.elements-label(@container, @element, @count, @fontSize) when (@count > 0) {
+  .elements-label(@container, @element, @count - 1, @fontSize);
+
+  @{container}:first-child:nth-last-child(@{count}),
+  @{container}:first-child:nth-last-child(@{count}) ~ @{container} {
+    .@{element} {
+      font-size: @fontSize;
+    }
+  }
+}

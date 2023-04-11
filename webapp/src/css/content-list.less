@@ -2,6 +2,7 @@
 
 .content-row {
   cursor: pointer;
+  border-left: 5px solid transparent;
   border-bottom: 1px solid @separator-color;
   position: relative;
 
@@ -56,7 +57,6 @@
     min-height: 70px;
     padding: 10px 20px 10px 15px;
     color: inherit;
-    border-left: 5px solid transparent;
 
     &:hover,
     &:focus {
@@ -182,16 +182,18 @@
   background-color: @separator-color;
 }
 
-.contacts .action .content-row > a {
-  min-height: inherit;
-
+.contacts .action .content-row {
   &:hover {
     border-left-color: transparent;
   }
 
-  .fa {
-    right: 10px;
-    position: absolute;
+  & > a {
+    min-height: inherit;
+
+    .fa {
+      right: 10px;
+      position: absolute;
+    }
   }
 }
 
@@ -205,31 +207,23 @@
   }
 }
 
-.select-mode .content-row input[type="checkbox"] {
-  display: inline;
-}
-
 .reports,
 .contacts .reports {
   .content-row {
-    &.selected {
+    &.selected, &.selected-to-view {
       background-color: @reports-highlight;
     }
-    > a:hover {
+    &:hover {
       border-left-color: @reports-color;
     }
   }
-}
-
-.select-mode.reports .content-row.selected {
-  background: @white;
 }
 
 .contacts .content-row {
   &.selected {
     background-color: @contacts-highlight;
   }
-  > a:hover {
+  &:hover {
     border-left-color: @contacts-color;
   }
 }
@@ -239,7 +233,7 @@
   &.selected {
     background-color: @messages-highlight;
   }
-  > a:hover {
+  &:hover {
     border-left-color: @messages-color;
   }
 }
@@ -250,8 +244,112 @@
     &.selected {
       background-color: @tasks-highlight;
     }
-    > a:hover {
+    &:hover {
       border-left-color: @tasks-color;
+    }
+  }
+}
+
+.select-mode-available {
+  .content-row input[type="checkbox"],
+  .select-all input[type="checkbox"] {
+    accent-color: @checkbox-selected-color;
+    display: inline;
+    width: 20px;
+    height: 20px;
+    margin: 20px 10px;
+  }
+
+  .select-all {
+    display: flex;
+    align-items: center;
+    border-bottom: solid 1px @checkbox-border-color;
+    padding: 15px;
+
+    input[type="checkbox"] {
+      margin: 0;
+    }
+
+    .select-all-label {
+      margin-left: 15px;
+      cursor: pointer;
+    }
+  }
+}
+
+mm-multiselect-bar {
+  .multiselect-bar-container {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .desktop {
+    display: flex;
+  }
+
+  .select-all-label,
+  .selection-count .minimal,
+  .deselect-all {
+    display: none;
+  }
+
+  a.bulk-delete {
+    &:hover {
+      text-decoration: none;
+    }
+
+    span {
+      color: @text-normal-color;
+    }
+  }
+}
+
+@media (max-width: @media-mobile) {
+  .select-mode-available .select-all {
+    display: none;
+  }
+
+  mm-multiselect-bar {
+    flex-grow: 2;
+
+    .multiselect-bar-container {
+      height: 50px;
+      margin: 0;
+    }
+
+    .mobile {
+      display: flex;
+    }
+
+    .desktop,
+    .bulk-delete .bulk-delete-label,
+    .selection-count .count-label {
+      display: none;
+    }
+
+    .select-all-label,
+    .selection-count,
+    .selection-count .minimal,
+    .deselect-all {
+      display: inline-block;
+    }
+
+    .bulk-delete-icon {
+      font-size: @font-extra-extra-large;
+      margin-right: 15px;
+    }
+
+    .select-all-label {
+      margin-left: 28px;
+      color: @text-normal-color;
+    }
+
+    .deselect-all {
+      font-size: @font-extra-large;
+      color: @text-normal-color;
+      margin: 0px 15px;
     }
   }
 }

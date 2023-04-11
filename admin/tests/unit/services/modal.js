@@ -99,7 +99,7 @@ describe('Modal service', () => {
     const result1 = {
       result: 'result1',
       close: sinon.stub(),
-      closed: { then: cb => { closeCallback = cb; } }
+      closed: { then: cb => (closeCallback = cb) }
     };
     const result2 = {
       result: 'result2',

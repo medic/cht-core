@@ -12,6 +12,7 @@ describe('TelemetryService', () => {
   let service: TelemetryService;
   let dbService;
   let metaDb;
+  let medicDb;
   let sessionService;
   let clock;
   let telemetryDb;
@@ -30,7 +31,7 @@ describe('TelemetryService', () => {
     hardwareConcurrency: window.navigator.hardwareConcurrency
   };
 
-  function defineWindow() {
+  const defineWindow = () => {
     Object.defineProperty(
       window.navigator,
       'userAgent',
@@ -51,9 +52,9 @@ describe('TelemetryService', () => {
       'availHeight',
       { value: 1024, configurable: true }
     );
-  }
+  };
 
-  function restoreWindow() {
+  const restoreWindow = () => {
     Object.defineProperty(
       window.navigator,
       'userAgent',
@@ -74,30 +75,36 @@ describe('TelemetryService', () => {
       'availHeight',
       { value: windowScreenOriginal.availHeight, configurable: true }
     );
-  }
+  };
 
-  function subtractDays(numDays) {
+  const subtractDays = (numDays) => {
     return moment()
       .subtract(numDays, 'days')
       .valueOf()
       .toString();
-  }
+  };
 
-  function sameDay() {
+  const sameDay = () => {
     return moment()
       .valueOf()
       .toString();
-  }
+  };
 
   beforeEach(() => {
     defineWindow();
     metaDb = {
-      info: sinon.stub(),
       put: sinon.stub(),
-      get: sinon.stub(),
-      query: sinon.stub()
     };
-    dbService = { get: () => metaDb };
+    medicDb = {
+      info: sinon.stub(),
+      get: sinon.stub(),
+      query: sinon.stub(),
+      allDocs: sinon.stub()
+    };
+    const getStub = sinon.stub();
+    getStub.withArgs({meta: true}).returns(metaDb);
+    getStub.returns(medicDb);
+    dbService = { get: getStub };
     consoleErrorSpy = sinon.spy(console, 'error');
     telemetryDb = {
       post: sinon.stub().resolves(),
@@ -160,7 +167,7 @@ describe('TelemetryService', () => {
       expect(telemetryDb.close.callCount).to.equal(1);
     });
 
-    function setupDbMocks() {
+    const setupDbMocks = () => {
       storageGetItemStub.returns('dbname');
       telemetryDb.query.resolves({
         rows: [
@@ -168,15 +175,15 @@ describe('TelemetryService', () => {
           { key: 'bar', value: {sum:93, min:43, max:50, count:2, sumsqr:4349} },
         ],
       });
-      metaDb.info.resolves({ some: 'stats' });
+      medicDb.info.resolves({ some: 'stats' });
       metaDb.put.resolves();
-      metaDb.get
+      medicDb.get
         .withArgs('_design/medic-client')
         .resolves({
           _id: '_design/medic-client',
           deploy_info: { version: '3.0.0' }
         });
-      metaDb.query.resolves({
+      medicDb.query.resolves({
         rows: [
           {
             id: 'form:anc_followup',
@@ -189,7 +196,14 @@ describe('TelemetryService', () => {
           }
         ]
       });
-    }
+      medicDb.allDocs.resolves({
+        rows: [{
+          value: {
+            rev: 'somerandomrevision'
+          }
+        }]
+      });
+    };
 
     it('should aggregate once a day and resets the db first', async () => {
       setupDbMocks();
@@ -215,8 +229,9 @@ describe('TelemetryService', () => {
       expect(aggregatedDoc.metadata.versions).to.deep.equal({
         app: '3.0.0',
         forms: {
-          'anc_followup': '1-abc'
-        }
+          anc_followup: '1-abc'
+        },
+        settings: 'somerandomrevision'
       });
       expect(aggregatedDoc.dbInfo).to.deep.equal({ some: 'stats' });
       expect(aggregatedDoc.device).to.deep.equal({
@@ -229,9 +244,9 @@ describe('TelemetryService', () => {
         deviceInfo: {}
       });
 
-      expect(metaDb.query.callCount).to.equal(1);
-      expect(metaDb.query.args[0][0]).to.equal('medic-client/doc_by_type');
-      expect(metaDb.query.args[0][1]).to.deep.equal({ key: ['form'], include_docs: true });
+      expect(medicDb.query.callCount).to.equal(1);
+      expect(medicDb.query.args[0][0]).to.equal('medic-client/doc_by_type');
+      expect(medicDb.query.args[0][1]).to.deep.equal({ key: ['form'], include_docs: true });
       expect(telemetryDb.destroy.callCount).to.equal(1);
       expect(telemetryDb.close.callCount).to.equal(0);
 
@@ -364,16 +379,23 @@ describe('TelemetryService', () => {
           },
         ],
       });
-      metaDb.info.resolves({ some: 'stats' });
+      medicDb.info.resolves({ some: 'stats' });
       metaDb.put.onFirstCall().rejects({ status: 409 });
       metaDb.put.onSecondCall().resolves();
-      metaDb.get.withArgs('_design/medic-client').resolves({
+      medicDb.get.withArgs('_design/medic-client').resolves({
         _id: '_design/medic-client',
         deploy_info: {
           version: '3.0.0'
         }
       });
-      metaDb.query.resolves({ rows: [] });
+      medicDb.allDocs.resolves({
+        rows: [{
+          value: {
+            rev: 'randomrev'
+          }
+        }]
+      });
+      medicDb.query.resolves({ rows: [] });
 
       await service.record('test', 1);
 

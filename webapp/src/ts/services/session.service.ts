@@ -2,7 +2,7 @@ const COOKIE_NAME = 'userCtx';
 const ONLINE_ROLE = 'mm-online';
 import * as _ from 'lodash-es';
 import { Injectable, Inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CookieService } from 'ngx-cookie-service';
 import { DOCUMENT } from '@angular/common';
 
@@ -13,13 +13,14 @@ import { LocationService } from '@mm-services/location.service';
 })
 export class SessionService {
   userCtxCookieValue = null
+  httpOptions = { headers: new HttpHeaders({ Accept:  'application/json' }) };
 
   constructor(
     private cookieService: CookieService,
     private http: HttpClient,
     @Inject(DOCUMENT) private document: Document,
-    private location: LocationService)
-  { }
+    private location: LocationService) {
+  }
 
   navigateToLogin() {
     console.warn('User must reauthenticate');
@@ -38,7 +39,7 @@ export class SessionService {
 
   logout() {
     return this.http
-      .delete('/_session')
+      .delete('/_session', this.httpOptions)
       .toPromise()
       .catch(() => {
         // Set cookie to force login before using app
@@ -55,7 +56,12 @@ export class SessionService {
    */
   userCtx () {
     if (!this.userCtxCookieValue) {
-      this.userCtxCookieValue = JSON.parse(this.cookieService.get(COOKIE_NAME));
+      try {
+        this.userCtxCookieValue = JSON.parse(this.cookieService.get(COOKIE_NAME));
+      } catch(error) {
+        console.error('Cookie parsing error', error);
+        this.userCtxCookieValue = null;
+      }
     }
 
     return this.userCtxCookieValue;
@@ -68,13 +74,20 @@ export class SessionService {
       .catch(this.logout);
   }
 
+  public check() {
+    if (!this.cookieService.check(COOKIE_NAME)) {
+      this.navigateToLogin();
+    }
+  }
+
   init () {
     const userCtx = this.userCtx();
     if (!userCtx || !userCtx.name) {
       return this.logout();
     }
+
     return this.http
-      .get<{ userCtx: { name:string; roles:string[] } }>('/_session', { responseType: 'json' })
+      .get<{ userCtx: { name:string; roles:string[] } }>('/_session', { responseType: 'json', ...this.httpOptions })
       .toPromise()
       .then(value => {
         const name = value && value.userCtx && value.userCtx.name;
@@ -96,26 +109,24 @@ export class SessionService {
       });
   }
 
-  private hasRole (userCtx, role) {
-    return !!(userCtx && userCtx.roles && userCtx.roles.includes(role));
+  hasRole(role, userCtx?) {
+    userCtx = userCtx || this.userCtx();
+    return !!(userCtx && userCtx.roles?.includes(role));
   }
 
   isAdmin(userCtx?) {
-    userCtx = userCtx || this.userCtx();
     return this.isDbAdmin(userCtx) ||
-      this.hasRole(userCtx, 'national_admin'); // deprecated: kept for backwards compatibility: #4525
+      this.hasRole('national_admin', userCtx); // deprecated: kept for backwards compatibility: #4525
   }
 
   isDbAdmin(userCtx?) {
-    userCtx = userCtx || this.userCtx();
-    return this.hasRole(userCtx, '_admin');
+    return this.hasRole('_admin', userCtx);
   }
 
   /**
    * Returns true if the logged in user is online only
    */
   isOnlineOnly(userCtx?) {
-    userCtx = userCtx || this.userCtx();
-    return this.isAdmin(userCtx) || this.hasRole(userCtx, ONLINE_ROLE);
+    return this.isAdmin(userCtx) || this.hasRole(ONLINE_ROLE, userCtx);
   }
 }

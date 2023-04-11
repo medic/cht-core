@@ -169,6 +169,46 @@ describe('ContactSave service', () => {
       });
   });
 
+  it('should include form_version if provided', () => {
+    const form = { getDataStr: () => '<data></data>' };
+    const docId = null;
+    const type = 'some-contact-type';
+
+    enketoTranslationService.contactRecordToJs.returns({
+      doc: { _id: 'main1', type: 'main', contact: 'NEW'},
+      siblings: {
+        contact: { _id: 'sis1', type: 'sister', parent: 'PARENT', },
+      },
+      repeats: {
+        child_data: [ { _id: 'kid1', type: 'child', parent: 'PARENT', } ],
+      },
+    });
+
+    extractLineageService.extract.callsFake(contact => {
+      contact.extracted = true;
+      return contact;
+    });
+
+    bulkDocs.resolves([]);
+
+    const xmlVersion = {
+      time: 123456,
+      sha256: '654321'
+    };
+
+    return service
+      .save(form, docId, type, xmlVersion)
+      .then(() => {
+        assert.isTrue(bulkDocs.calledOnce);
+        const savedDocs = bulkDocs.args[0][0];
+        assert.equal(savedDocs.length, 3);
+        for (const savedDoc of savedDocs) {
+          assert.equal(savedDoc.form_version.time, 123456);
+          assert.equal(savedDoc.form_version.sha256, '654321');
+        }
+      });
+  });
+
   it('should copy old properties for existing contacts', () => {
     const form = { getDataStr: () => '<data></data>' };
     const docId = 'main1';

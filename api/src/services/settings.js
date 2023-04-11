@@ -4,10 +4,12 @@ const path = require('path');
 const db = require('../db');
 const environment = require('../environment');
 const { info } = require('../logger');
+const config = require('../config');
 
 const isObject = obj => obj === Object(obj) && !Array.isArray(obj);
 
-const getDoc = () => db.medic.get('settings');
+const SETTINGS_DOC_ID = 'settings';
+const getDoc = () => db.medic.get(SETTINGS_DOC_ID);
 
 const doReplace = (target, source) => {
   Object.keys(source).forEach(k => {
@@ -31,18 +33,20 @@ const doExtend = (target, source) => {
 };
 
 const getDeprecatedTransitions = () => {
-  const transitions = require('@medic/transitions')();
+  const transitions = config.getTransitionsLib();
+
+  if (!transitions) {
+    return [];
+  }
 
   return transitions
     .getDeprecatedTransitions()
-    .map(transition => {
-      return {
-        name: transition.name,
-        deprecated: transition.deprecated,
-        deprecatedIn: transition.deprecatedIn,
-        deprecationMessage: transition.getDeprecationMessage ? transition.getDeprecationMessage() : ''
-      };
-    });
+    .map(transition => ({
+      name: transition.name,
+      deprecated: transition.deprecated,
+      deprecatedIn: transition.deprecatedIn,
+      deprecationMessage: transition.getDeprecationMessage ? transition.getDeprecationMessage() : ''
+    }));
 };
 
 module.exports = {
@@ -70,13 +74,13 @@ module.exports = {
    * @returns Boolean whether or not settings doc has been updated
    */
   update: (body, replace, overwrite) => {
-    const pathToDefaultConfig = path.resolve(environment.getExtractedResourcesPath(), 'default-docs/settings.doc.json');
+    const pathToDefaultConfig = path.join(environment.defaultDocsPath, 'settings.doc.json');
     const defaultConfig = require(pathToDefaultConfig);
 
     return getDoc()
       .catch(err => {
         if (err.status === 404) {
-          return { _id: 'settings' };
+          return { _id: SETTINGS_DOC_ID };
         }
         throw err;
       })
@@ -110,5 +114,6 @@ module.exports = {
         return Promise.resolve(false);
       });
   },
-  getDeprecatedTransitions: getDeprecatedTransitions
+  getDeprecatedTransitions: getDeprecatedTransitions,
+  SETTINGS_DOC_ID: SETTINGS_DOC_ID,
 };

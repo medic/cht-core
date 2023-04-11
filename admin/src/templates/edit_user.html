@@ -7,6 +7,7 @@
   on-cancel="cancel()"
   on-submit="editUser()"
 >
+
   <form action="" method="POST">
 
     <div class="form-group required" ng-class="{'has-error': errors.username}">
@@ -35,11 +36,23 @@
       <span class="help-block">{{errors.phone}}</span>
     </div>
 
-    <div class="form-group required" mm-auth="can_configure" ng-class="{'has-error': errors.role}">
-      <label for="role" translate>configuration.role</label>
-      <input type="text" class="form-control" ng-model="editUserModel.role" disabled="disabled" ng-if="editUserModel.role === '_admin'" />
-      <select id="role" class="form-control" ng-options="key as value.name | translate for (key, value) in roles" ng-model="editUserModel.role" ng-if="editUserModel.role !== '_admin'"></select>
-      <span class="help-block">{{errors.role}}</span>
+    <div id="role-select" class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.roles}">
+      <label translate>configuration.role</label> *
+      <input type="text" class="form-control" ng-model="editUserModel.roles" disabled="disabled" ng-if="editUserModel.roles.indexOf('_admin') !== -1" />
+      <ul>
+        <li ng-repeat="(key, value) in roles" class="checkbox" ng-if="editUserModel.roles.indexOf('_admin') === -1">
+          <label>
+            <input
+              type="checkbox"
+              name="roles[]"
+              ng-value="key"
+              ng-checked="editUserModel.roles.indexOf(key) !== -1"
+              ng-click="toggleRole(key)"
+            ><span translate>{{value.name}}</span>
+          </label>
+        </li>
+      </ul>
+      <span class="help-block">{{errors.roles}}</span>
     </div>
 
     <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.place, 'required': roles[editUserModel.role].offline || !!editUserModel.contact}">

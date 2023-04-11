@@ -1,6 +1,6 @@
 const chai = require('chai');
 const expect = chai.expect;
-const TestRunner = require('medic-conf-test-harness');
+const TestRunner = require('cht-conf-test-harness');
 const { MAX_DAYS_IN_PREGNANCY, getRangeForTask, getTaskTestDays } = require('../test-helpers');
 const { pregnancyRegistrationScenarios, pregnancyHomeVisitScenarios } = require('../form-inputs');
 const harness = new TestRunner();
@@ -47,7 +47,7 @@ describe('pregnancy home visit tests', () => {
   const pregnancyHomeVisitUnknownLMPTask = {
     pre: 6,
     post: 7,
-    triggers: Array(21).fill().map((item, index) => (1 + index) * 2),//[2, 4, 6, ..., 40, 42]
+    triggers: Array(21).fill().map((item, index) => (1 + index) * 2), //[2, 4, 6, ..., 40, 42]
     triggerUnit: 'weeks'
   };
 

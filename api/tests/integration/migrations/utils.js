@@ -67,7 +67,7 @@ const matches = (expected, actual) => {
 const assertDb = expected => {
   return db.get('medic-test').allDocs({ include_docs: true })
     .then(results => {
-      let actual = results.rows.map(row =>_.omit(row.doc, ['_rev']));
+      let actual = results.rows.map(row => _.omit(row.doc, ['_rev']));
       expected.sort(byId);
       actual.sort(byId);
 
@@ -173,14 +173,12 @@ const initDb = content => {
   return _resetDb()
     .then(() => {
       const medicPath = path.join(__dirname, '../../../../build/ddocs/medic.json');
-      const compiledPath = path.join(__dirname, '../../../../build/ddocs/medic/_attachments/ddocs/medic.json');
-      return Promise.all([ readFileAsync(medicPath), readFileAsync(compiledPath) ]);
+      return readFileAsync(medicPath);
     })
-    .then(([medicString, compiledString]) => {
-      const medicClient = JSON.parse(compiledString).docs
-        .find(doc => doc._id === '_design/medic-client');
-      const medic = JSON.parse(medicString).docs[0];
-      delete medic._attachments;
+    .then((medicDbDdocs) => {
+      const ddocs = JSON.parse(medicDbDdocs).docs;
+      const medicClient = ddocs.find(doc => doc._id === '_design/medic-client');
+      const medic = ddocs.find(doc => doc._id === '_design/medic');
       return db.medic.bulkDocs([ medic, medicClient ]);
     })
     .then(() => {

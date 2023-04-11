@@ -6,7 +6,8 @@ import {
   Input,
   OnInit,
   NgZone,
-  AfterViewChecked
+  AfterViewChecked,
+  AfterViewInit
 } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { flatten as _flatten, sortBy as _sortBy } from 'lodash-es';
@@ -20,26 +21,30 @@ import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { AbstractFilter } from '@mm-components/filters/abstract-filter';
 import { SessionService } from '@mm-services/session.service';
 import { TranslateService } from '@mm-services/translate.service';
+import { InlineFilter } from '@mm-components/filters/inline-filter';
 
 @Component({
   selector: 'mm-facility-filter',
   templateUrl: './facility-filter.component.html'
 })
-export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterViewChecked {
+export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractFilter, AfterViewChecked {
   private globalActions;
   private isOnlineOnly;
-
+  inlineFilter: InlineFilter;
   facilities = [];
   flattenedFacilities = [];
   displayedFacilities = [];
 
   private totalFacilitiesDisplayed = 0;
   private listHasScroll = false;
+  private togglingFacilities = false;
   private scrollEventListenerAdded = false;
   private displayNewFacilityQueued = false;
   private readonly MAX_LIST_HEIGHT = 300; // this is set in CSS
 
   @Input() disabled;
+  @Input() inline;
+  @Input() fieldId;
   @Output() search: EventEmitter<any> = new EventEmitter();
   @ViewChild(MultiDropdownFilterComponent)
   dropdownFilter = new MultiDropdownFilter(); // initialize variable to avoid change detection errors
@@ -52,10 +57,17 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
     private sessionService:SessionService,
   ) {
     this.globalActions = new GlobalActions(store);
+    this.inlineFilter = new InlineFilter(this.applyFilter.bind(this));
   }
 
   ngOnInit() {
     this.isOnlineOnly = this.sessionService.isOnlineOnly();
+  }
+
+  ngAfterViewInit() {
+    if (this.inline) {
+      this.loadFacilities();
+    }
   }
 
   // this method is called on dropdown open
@@ -67,7 +79,7 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
 
     return this.placeHierarchyService
       .get()
-      .then(hierarchy => {
+      .then((hierarchy = []) => {
         hierarchy = this.sortHierarchyAndAddFacilityLabels(hierarchy);
         this.facilities = hierarchy;
         this.flattenedFacilities = _flatten(this.facilities.map(facility => this.getFacilitiesRecursive(facility)));
@@ -118,7 +130,7 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
 
     // keep displaying facilities until we have a scroll or we've displayed all
     if (!this.listHasScroll && this.facilities.length && this.totalFacilitiesDisplayed < this.facilities.length) {
-      const listHeight = $('#facility-dropdown-list')[0].scrollHeight;
+      const listHeight = $('#facility-dropdown-list')[0]?.scrollHeight;
       const hasScroll = listHeight > this.MAX_LIST_HEIGHT;
       if (!hasScroll) {
         setTimeout(() => this.displayOneMoreFacility());
@@ -148,8 +160,18 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
   }
 
   applyFilter(facilities) {
+    if (this.disabled || this.togglingFacilities) {
+      return;
+    }
+
     const facilityIds = facilities.map(facility => facility.doc?._id);
-    this.globalActions.setFilter({ facilities: { selected: facilityIds } });
+    let selectedFacilities;
+
+    if (facilityIds.length) {
+      selectedFacilities = { selected: facilityIds };
+    }
+
+    this.globalActions.setFilter({ facilities: selectedFacilities });
     this.search.emit();
   }
 
@@ -165,9 +187,18 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
     return facilities;
   }
 
-  toggle(facility) {
+  private toggle(facility, filter) {
+    this.togglingFacilities = true;
+
     const recursiveFacilities = this.getFacilitiesRecursive(facility);
-    recursiveFacilities.forEach(facility => this.dropdownFilter.toggle(facility));
+    const newToggleValue = !filter.selected.has(facility);
+    // Exclude places with already correct toggle state, then toggle the rest.
+    recursiveFacilities
+      .filter(place => filter.selected.has(place) !== newToggleValue)
+      .forEach(place => filter.toggle(place));
+
+    this.togglingFacilities = false;
+    this.applyFilter(Array.from(filter.selected));
   }
 
   itemLabel(facility) {
@@ -179,6 +210,32 @@ export class FacilityFilterComponent implements OnInit, AbstractFilter, AfterVie
   }
 
   clear() {
+    if (this.disabled) {
+      return;
+    }
+
+    if (this.inline) {
+      this.inlineFilter.clear();
+      return;
+    }
+
     this.dropdownFilter?.clear(false);
+  }
+
+  countSelected() {
+    return this.inline && this.inlineFilter?.countSelected();
+  }
+
+  select(selectedParent, facility, filter, isCheckBox = false) {
+    if (!isCheckBox && this.inline) {
+      facility.toggle = !facility.toggle;
+      return;
+    }
+
+    if (selectedParent || this.disabled) {
+      return;
+    }
+
+    this.toggle(facility, filter);
   }
 }

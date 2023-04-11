@@ -3,42 +3,59 @@ require('chai').should();
 const sinon = require('sinon');
 const utils = require('../../../src/lib/utils');
 const config = require('../../../src/config');
-const transition = require('../../../src/transitions/accept_case_reports');
 
 describe('accept_case_reports', () => {
+  let transition;
+
+  beforeEach(() => {
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: sinon.stub(),
+      getTranslations: sinon.stub().returns({})
+    });
+    transition = require('../../../src/transitions/accept_case_reports');
+  });
+
   afterEach(done => {
+    sinon.reset();
     sinon.restore();
     done();
   });
 
   describe('filter', () => {
     it('empty doc returns false', () => {
-      transition.filter({}).should.equal(false);
+      transition.filter({ doc: {} }).should.equal(false);
     });
     it('no type returns false', () => {
-      transition.filter({ form: 'x' }).should.equal(false);
+      transition.filter({ doc: { form: 'x' } }).should.equal(false);
     });
     it('invalid submission returns false', () => {
-      sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
+      config.get.returns([{ form: 'x' }, { form: 'z' }]);
       sinon.stub(utils, 'isValidSubmission').returns(false);
       transition
         .filter({
-          form: 'x',
-          type: 'data_record',
-          reported_date: 1,
+          doc: {
+            form: 'x',
+            type: 'data_record',
+            reported_date: 1,
+          },
+          info: {}
         })
         .should.equal(false);
       utils.isValidSubmission.callCount.should.equal(1);
       utils.isValidSubmission.args[0].should.deep.equal([{ form: 'x', type: 'data_record', reported_date: 1 }]);
     });
     it('returns true', () => {
-      sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
+      config.get.returns([{ form: 'x' }, { form: 'z' }]);
       sinon.stub(utils, 'isValidSubmission').returns(true);
       transition
         .filter({
-          form: 'x',
-          type: 'data_record',
-          reported_date: 1,
+          doc: {
+            form: 'x',
+            type: 'data_record',
+            reported_date: 1,
+          },
+          info: {}
         })
         .should.equal(true);
       utils.isValidSubmission.callCount.should.equal(1);
@@ -48,7 +65,7 @@ describe('accept_case_reports', () => {
 
   describe('onMatch', () => {
     it('return nothing if form not included', () => {
-      sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
+      config.get.returns([{ form: 'x' }, { form: 'z' }]);
       const change = {
         doc: {
           form: 'y',
@@ -60,7 +77,7 @@ describe('accept_case_reports', () => {
     });
 
     it('with no patient id adds error msg and response', () => {
-      sinon.stub(config, 'get').returns([{ form: 'x' }, { form: 'z' }]);
+      config.get.returns([{ form: 'x' }, { form: 'z' }]);
       sinon.stub(utils, 'getReportsBySubject').resolves([]);
 
       const doc = {
@@ -77,7 +94,7 @@ describe('accept_case_reports', () => {
     });
 
     it('adds configured messages', () => {
-      sinon.stub(config, 'get').returns([{
+      config.get.returns([{
         form: 'x',
         messages: [{
           event_type: 'report_accepted',
@@ -107,7 +124,7 @@ describe('accept_case_reports', () => {
     });
 
     it('adds place id from registration', () => {
-      sinon.stub(config, 'get').returns([{
+      config.get.returns([{
         form: 'x',
         messages: [{
           event_type: 'report_accepted',

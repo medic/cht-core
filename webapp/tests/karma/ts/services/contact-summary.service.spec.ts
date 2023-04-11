@@ -152,8 +152,7 @@ describe('ContactSummary service', () => {
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0].startsWith('Configuration error in contact-summary')).to.be.true;
         expect(feedbackService.submit.callCount).to.equal(1);
-        expect(feedbackService.submit.args[0][0])
-          .to.equal('Configuration error in contact-summary function: Cannot read property \'field\' of undefined');
+        expect(feedbackService.submit.args[0][0].startsWith('Configuration error in contact-summary')).to.be.true;
       });
   });
 

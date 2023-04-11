@@ -1,11 +1,12 @@
 const DATE_RE = /(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?/;
-const sd = require('./config').get('synthetic_date');
+const config = require('./config');
 const start_date = new Date();
 const moment = require('moment');
 const logger = require('./lib/logger');
 let synth_start_date;
 
-function load() {
+const load = () => {
+  const sd = config.get('synthetic_date');
   if (sd) {
     const matches = String(sd).match(DATE_RE);
     if (matches) {
@@ -22,29 +23,29 @@ function load() {
       return;
     }
   }
-}
+};
 
 // allows us to apply a delta to a timestamp when we run sentinel in synthetic
 // time mode
-function getTimestamp() {
+const getTimestamp = () => {
   const now = new Date().valueOf();
   if (isSynthetic()) {
     return now - start_date.valueOf() + synth_start_date.valueOf();
   }
   return now;
-}
-function isSynthetic() {
+};
+const isSynthetic = () => {
   if (synth_start_date) {
     return true;
   }
   return false;
-}
-function getDate() {
+};
+const getDate = () => {
   if (synth_start_date) {
     return new Date(synth_start_date.valueOf());
   }
   return new Date();
-}
+};
 module.exports = {
   getDate: getDate,
   getTimestamp: getTimestamp,

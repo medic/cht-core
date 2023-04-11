@@ -4,16 +4,31 @@ import { CookieService } from 'ngx-cookie-service';
 import { TranslateService as NgxTranslateService } from '@ngx-translate/core';
 
 import { SettingsService } from '@mm-services/settings.service';
-
-const localeCookieKey = 'locale';
+import { FormatDateService } from '@mm-services/format-date.service';
+import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class SetLanguageCookieService {
+export class LanguageCookieService {
   constructor(
     private cookieService:CookieService
   ) {
+  }
+
+  private readonly LOCALE_COOKIE_KEY = 'locale';
+  private language;
+  private setLanguageCache(value) {
+    this.language = value;
+  }
+
+  get() {
+    if (this.language) {
+      return this.language;
+    }
+
+    this.setLanguageCache(this.cookieService.get(this.LOCALE_COOKIE_KEY));
+    return this.language;
   }
 
   /**
@@ -21,7 +36,8 @@ export class SetLanguageCookieService {
    * @param value the language code, eg. 'en', 'es' ...
    */
   set(value) {
-    this.cookieService.set(localeCookieKey, value, 365, '/');
+    this.cookieService.set(this.LOCALE_COOKIE_KEY, value, 365, '/');
+    this.setLanguageCache(value);
     return value;
   }
 }
@@ -32,7 +48,9 @@ export class SetLanguageCookieService {
 export class SetLanguageService {
   constructor(
     private ngxTranslateService:NgxTranslateService,
-    private setLanguageCookieService:SetLanguageCookieService,
+    private telemetryService:TelemetryService,
+    private languageCookieService:LanguageCookieService,
+    private formatDateService:FormatDateService,
   ) {
   }
 
@@ -48,8 +66,12 @@ export class SetLanguageService {
     await this.ngxTranslateService.use(code).toPromise();
 
     if (setLanguageCookie !== false) {
-      this.setLanguageCookieService.set(code);
+      this.languageCookieService.set(code);
     }
+
+    // formatDateService depends on the cookie, so also wait for the cookie to be updated
+    await this.formatDateService.init();
+    this.telemetryService.record(`user_settings:language:${code}`);
   }
 }
 
@@ -59,30 +81,31 @@ export class SetLanguageService {
 })
 export class LanguageService {
   constructor(
-    private cookieService:CookieService,
-    private setLanguageCookieService:SetLanguageCookieService,
+    private languageCookieService:LanguageCookieService,
     private settingsService:SettingsService,
   ) {
   }
 
   private readonly DEFAULT_LOCALE = 'en';
+  private readonly NEPALI_LOCALE = 'ne';
 
-  private fetchLocale() {
-    return this.settingsService
-      .get()
-      .then((settings:any) => {
-        return settings.locale || this.DEFAULT_LOCALE;
-      });
+  private async fetchLocale() {
+    const settings = await this.settingsService.get();
+    return settings.locale || this.DEFAULT_LOCALE;
   }
 
-  get() {
-    const cookieVal = this.cookieService.get(localeCookieKey);
+  async get() {
+    const cookieVal = this.languageCookieService.get();
     if (cookieVal) {
-      return Promise.resolve(cookieVal);
+      return cookieVal;
     }
 
-    return this
-      .fetchLocale()
-      .then(locale => this.setLanguageCookieService.set(locale));
+    const locale = await this.fetchLocale();
+    return this.languageCookieService.set(locale);
+  }
+
+  useDevanagariScript() {
+    const language = this.languageCookieService.get();
+    return language === this.NEPALI_LOCALE;
   }
 }

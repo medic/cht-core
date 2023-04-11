@@ -43,66 +43,34 @@ describe('validate doc update', () => {
   };
 
   const serverValidateDocUpdate = function() {
-    const fn = fs.readFileSync('./ddocs/medic/validate_doc_update.js');
+    const fn = fs.readFileSync('./ddocs/medic-db/medic/validate_doc_update.js');
     eval('(' + fn + ')').apply(null, arguments);
   };
 
   const allowedOnServer = _.partial(checkFn, serverValidateDocUpdate);
   const allowedOnClient = _.partial(checkFn, clientValidateDocUpdate);
 
-  it('only db and national admins are allowed change ddocs', done => {
-    const doc = { _id: '_design/something' };
-    assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
-    assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
-    assert.deepEqual(
-      allowedOnServer(userCtx({roles: [ ]}), doc),
-      disallowed('You are not authorized to edit admin only docs')
-    );
-    done();
-  });
-
-  it('only db and national admins are allowed change the resources doc', done => {
-    const doc = { _id: 'resources' };
-    assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
-    assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
-    assert.deepEqual(
-      allowedOnServer(userCtx({roles: [ ]}), doc),
-      disallowed('You are not authorized to edit admin only docs')
-    );
-    done();
-  });
-
-  it('only db and national admins are allowed change service-worker-meta doc', done => {
-    const doc = { _id: 'service-worker-meta' };
-    assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
-    assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
-    assert.deepEqual(
-      allowedOnServer(userCtx({roles: [ ]}), doc),
-      disallowed('You are not authorized to edit admin only docs')
-    );
-    done();
-  });
-
-  it('only db and national admins are allowed change forms', done => {
-    const doc = { type: 'form' };
-    assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
-    assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
-    assert.deepEqual(
-      allowedOnServer(userCtx({roles: [ ]}), doc),
-      disallowed('You are not authorized to edit admin only docs')
-    );
-    done();
-  });
-
-  it('only db and national admins are allowed change translations', done => {
-    const doc = { type: 'translations' };
-    assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
-    assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
-    assert.deepEqual(
-      allowedOnServer(userCtx({roles: [ ]}), doc),
-      disallowed('You are not authorized to edit admin only docs')
-    );
-    done();
+  describe('only db and national admins are allowed to change...', () => {
+    Object.entries({
+      'ddocs': { _id: '_design/something' },
+      'resources doc': { _id: 'resources' },
+      'service-worker-meta doc': { _id: 'service-worker-meta' },
+      'forms': { type: 'form' },
+      'translations': { type: 'translations' },
+      'extension-libs': { _id: 'extension-libs' },
+      'header logo': { _id: 'branding' },
+      'partners': { _id: 'partners' }
+    }).forEach(([ name, doc ]) => {
+      it(name, done => {
+        assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
+        assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
+        assert.deepEqual(
+          allowedOnServer(userCtx({roles: [ ]}), doc),
+          disallowed('You are not authorized to edit admin only docs')
+        );
+        done();
+      });
+    });
   });
 
   it('only db and national admins are allowed change their own place', done => {
@@ -112,28 +80,6 @@ describe('validate doc update', () => {
     assert.deepEqual(
       allowedOnServer(userCtx({roles: [ 'district_admin' ], facility_id: 'abc' }), doc),
       disallowed('You are not authorized to edit your own place')
-    );
-    done();
-  });
-
-  it('only db and national admins are allowed to change header logo', done => {
-    const doc = { _id: 'branding' };
-    assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
-    assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
-    assert.deepEqual(
-      allowedOnServer(userCtx({roles: [ ]}), doc),
-      disallowed('You are not authorized to edit admin only docs')
-    );
-    done();
-  });
-
-  it('only db and national admins are allowed to add partners', done => {
-    const doc = { _id: 'partners' };
-    assert.isOk(allowedOnServer(userCtx({roles: [ '_admin' ]}), doc));
-    assert.isOk(allowedOnServer(userCtx({roles: [ 'national_admin' ]}), doc));
-    assert.deepEqual(
-      allowedOnServer(userCtx({roles: [ ]}), doc),
-      disallowed('You are not authorized to edit admin only docs')
     );
     done();
   });
@@ -191,7 +137,7 @@ describe('validate doc update', () => {
     done();
   });
 
-  it('validateUserSettings name and usernaem must match', done => {
+  it('validateUserSettings name and username must match', done => {
     userSettings.name = 'foo';
     assert.deepEqual(
       allowedOnClient(userCtx(), userSettings),

@@ -45,8 +45,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   reportsTimeWindowMonths;
   tasksTimeWindowWeeks;
   userSettings;
-  settings;
-  childTypesBySelectedContact = [];
+  private settings;
+  private childTypesBySelectedContact = [];
+  private filters;
   canDeleteContact = false; // this disables the "Delete" button until children load
 
   filteredTasks = [];
@@ -99,7 +100,12 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.store.select(Selectors.getUserFacilityId)
       .pipe(first(id => id !== null))
       .subscribe((userFacilityId) => {
-        if (userFacilityId && !this.route.snapshot.params.id && !this.responsiveService.isMobile()) {
+        const shouldDisplayHomePlace = userFacilityId &&
+          !this.filters?.search &&
+          !this.route.snapshot.params.id &&
+          !this.responsiveService.isMobile();
+
+        if (shouldDisplayHomePlace) {
           this.contactsActions.selectContact(userFacilityId);
         }
       });
@@ -112,12 +118,14 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getLoadingSelectedContactReports),
       this.store.select(Selectors.getContactsLoadingSummary),
+      this.store.select(Selectors.getFilters),
     ).subscribe(([
       selectedContact,
       forms,
       loadingContent,
       loadingSelectedContactReports,
       contactsLoadingSummary,
+      filters,
     ]) => {
       if (this.selectedContact?._id !== selectedContact?._id) {
         // reset view when selected contact changes
@@ -128,6 +136,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       this.forms = forms;
       this.loadingSelectedContactReports = loadingSelectedContactReports;
       this.contactsLoadingSummary = contactsLoadingSummary;
+      this.filters = filters;
     });
     this.subscription.add(reduxSubscription);
 
@@ -185,7 +194,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     const routeSubscription =  this.route.params.subscribe((params) => {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
-        this.globalActions.clearCancelCallback();
+        this.globalActions.clearNavigation();
 
         $('.tooltip').remove();
       } else {
@@ -244,7 +253,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       canDelete: this.canDeleteContact,
       canEdit: this.isOnlineOnly || this.userSettings?.facility_id !== this.selectedContact?.doc?._id,
       openContactMutedModal:
-        this.openContactMutedModal.bind({}, this.router, this.modalService, this.selectedContact._id),
+        this.openContactMutedModal.bind({}, this.router, this.modalService, this.selectedContact?._id),
       openSendMessageModal: this.openSendMessageModal.bind({}, this.modalService),
     });
 
@@ -328,7 +337,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       {
         doc: this.selectedContact.doc,
         contactSummary: this.selectedContact.summary.context,
-        contactForms: false,
+        reportForms: true,
       },
       (error, forms) => {
         if (error) {

@@ -1,0 +1,23 @@
+{
+  "name": "medic-covid19-config",
+  "version": "0.1.0",
+  "description": "CHT configuration for COVID-19 response",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "eslint": "eslint **.json **.js",
+    "test": "TZ=Africa/Nairobi mocha --reporter progress test/**/*.spec.js --timeout 25000",
+    "ci": "./test/check-app-settings-is-committed && npm run eslint && npm run test"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-plugin-json": "^2.0.1",
+    "chai": "^4.2.0",
+    "cht-conf": "^3.7.0",
+    "cht-conf-test-harness": "^2.3.0",
+    "mocha": "^8.3.2",
+    "rosie": "^2.1.0"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#323232">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="manifest" href="/manifest.json">
+    <style>
+      @font-face {
+        font-family: 'Noto';
+        src: url(/fonts/NotoSans-Regular.ttf) format("truetype");
+        font-weight: normal;
+      }
+      body {
+        font-family: Noto, sans-serif;
+      }
+      div {
+        max-width: 800px;
+        margin: 40px auto;
+      }
+      a {
+        padding: 20px;
+        margin: -20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <% if(showBackButton) { %>
+      <a id="back-button" href="#">{{ translations.back }}</a>
+      <% } else { %>
+      <a href="/">{{ translations.login }}</a>
+      <% } %>
+    </div>
+    <div>
+      <h1>{{ translations.title }}</h1>
+    </div>
+    <div>
+      {{ policy }}
+    </div>
+    <div>
+      <% if(showBackButton) { %>
+      <a id="back-button" href="#">{{ translations.back }}</a>
+      <% } else { %>
+      <a href="/">{{ translations.login }}</a>
+      <% } %>
+    </div>
+  </body>
+  <script src="/privacy-policy/script.js"></script>
+</html>

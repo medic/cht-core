@@ -32,7 +32,7 @@ describe('Version service', () => {
     it('gets the version and rev from local ddoc', () => {
       get.resolves({
         _rev: '123-kldsjflksadjflksdjflksdjaf',
-        deploy_info: {
+        build_info: {
           version: '3.5.0-beta.3',
           base_version: '3.5.0'
         }
@@ -46,7 +46,7 @@ describe('Version service', () => {
     it('handles no base version', () => {
       get.resolves({
         _rev: '123-kldsjflksadjflksdjflksdjaf',
-        deploy_info: {
+        build_info: {
           version: '3.5.0-beta.3'
         }
       });
@@ -58,7 +58,7 @@ describe('Version service', () => {
     it('handles base version matching version', () => {
       get.resolves({
         _rev: '123-kldsjflksadjflksdjflksdjaf',
-        deploy_info: {
+        build_info: {
           version: '3.5.0',
           base_version: '3.5.0'
         }

@@ -400,7 +400,7 @@ describe('db-doc service', () => {
           .then(result => {
             result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
-            authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx , subjectIds: []}, { view: doc } ]);
+            authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: []}, { view: doc } ]);
             authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
               [{ doc, viewResults: { view: doc } }, undefined ]
@@ -418,7 +418,7 @@ describe('db-doc service', () => {
           .then(result => {
             result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
-            authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx , subjectIds: []}, { view: doc } ]);
+            authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: []}, { view: doc } ]);
             authorization.alwaysAllowCreate.callCount.should.equal(0);
           });
       });

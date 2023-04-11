@@ -1,25 +1,15 @@
-{
-  'use strict';
-  const Widget = require( 'enketo-core/src/js/Widget' );
-  const $ = require( 'jquery' );
-  require( 'enketo-core/src/js/plugins' );
-  const bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
+'use strict';
+const Widget = require( 'enketo-core/src/js/widget' ).default;
+const $ = require( 'jquery' );
+require( 'enketo-core/src/js/plugins' );
+const bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
 
-  const pluginName = 'bikramsambatdatepicker';
-
-  function Bikramsambatdatepicker( element, options ) {
-    this.namespace = pluginName;
-    Widget.call( this, element, options );
-    this._init();
+class Bikramsambatdatepicker extends Widget {
+  static get selector() {
+    return 'input[type=date]';
   }
 
-  //copy the prototype functions from the Widget super class
-  Bikramsambatdatepicker.prototype = Object.create( Widget.prototype );
-
-  //ensure the constructor is the new one
-  Bikramsambatdatepicker.prototype.constructor = Bikramsambatdatepicker;
-
-  Bikramsambatdatepicker.prototype._init = function() {
+  _init() {
     const el = this.element;
 
     window.CHTCore.Language
@@ -30,7 +20,7 @@
         // Here we support the appearance="bikram-sambat" attribute as
         // well to maintain compatibility with collect.
         if ( language.indexOf( 'ne' ) !== 0 &&
-                        $el.parent('.or-appearance-bikram-sambat').length === 0) {
+          $el.parent('.or-appearance-bikram-sambat').length === 0) {
           return;
         }
 
@@ -55,30 +45,10 @@
             initialVal );
         }
       });
-  };
-
-  Bikramsambatdatepicker.prototype.destroy = function( element ) {};  // eslint-disable-line no-unused-vars
-
-  $.fn[ pluginName ] = function( options, event ) {
-    return this.each( function() {
-      const $this = $( this );
-      let data = $this.data( pluginName );
-
-      options = options || {};
-
-      if ( !data && typeof options === 'object' ) {
-        $this.data( pluginName, ( data = new Bikramsambatdatepicker( this, options, event ) ) );
-      } else if ( data && typeof options === 'string' ) {
-        data[ options ]( this );
-      }
-    } );
-  };
-
-  module.exports = {
-    'name': pluginName,
-    'selector': 'input[type=date]'
-  };
+  }
 }
+
+module.exports = Bikramsambatdatepicker;
 
 const TEMPLATE =
   '<div class="input-group bikram-sambat-input-group">' +

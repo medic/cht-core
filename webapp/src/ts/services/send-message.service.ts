@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { filter as _filter, flattenDeep as _flattenDeep, groupBy as _groupBy, uniqBy as _uniqBy } from 'lodash-es';
+import { Dictionary } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import * as taskUtils from '@medic/task-utils';
 import * as phoneNumber from '@medic/phone-number';
@@ -10,7 +11,7 @@ import { MarkReadService } from '@mm-services/mark-read.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { ServicesActions } from '@mm-actions/services.ts';
+import { ServicesActions } from '@mm-actions/services';
 
 @Injectable({
   providedIn: 'root'
@@ -118,7 +119,7 @@ export class SendMessageService {
   }
 
   private formatRecipients(recipients) {
-    const splitRecipients = _groupBy(recipients, (recipient) => {
+    const splitRecipients: Dictionary<any[]> = _groupBy(recipients, (recipient) => {
       if (recipient.everyoneAt) {
         return 'explode';
       }

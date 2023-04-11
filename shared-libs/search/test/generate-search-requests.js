@@ -85,12 +85,12 @@ describe('GenerateSearchRequests service', function() {
 
     it('queries', function() {
       const verifiedValues = [[true], [false], [undefined], [false, undefined]];
-      verifiedValues.forEach(function(value) {
+      verifiedValues.forEach((value) => {
         const result = service('reports', { verified: value });
         chai.expect(result.length).to.equal(1);
         chai.expect(result[0].view).to.equal('medic-client/reports_by_verification');
         chai.expect(result[0].params).to.deep.equal({
-          keys: value.map(function(v){ return [v]; })
+          keys: value.map((v) => [v])
         });
       });
     });

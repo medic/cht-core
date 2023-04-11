@@ -5,6 +5,7 @@ const DISALLOWED_CHARS = /[^a-z0-9_$()+/-]/g;
 const USER_DB_SUFFIX = 'user';
 const META_DB_SUFFIX = 'meta';
 const USERS_DB_SUFFIX = 'users';
+const MEDIC_LOGS_DB_SUFFIX = 'logs';
 
 angular.module('inboxServices').factory('DB',
   function(
@@ -22,6 +23,7 @@ angular.module('inboxServices').factory('DB',
     const isOnlineOnly = Session.isOnlineOnly();
 
     const getUsername = remote => {
+      Session.checkCurrentSession();
       const username = Session.userCtx().name;
       if (!remote) {
         return username;
@@ -30,14 +32,19 @@ angular.module('inboxServices').factory('DB',
       return username.replace(DISALLOWED_CHARS, match => `(${match.charCodeAt(0)})`);
     };
 
-    const getDbName = (remote, meta, usersMeta) => {
+    const getDbName = (remote, meta, usersMeta, logsDB) => {
       const parts = [];
       if (remote) {
         parts.push(Location.url);
       } else {
         parts.push(Location.dbName);
       }
-      if ((!remote || meta) && !usersMeta) {
+
+      if (logsDB) {
+        parts.push(MEDIC_LOGS_DB_SUFFIX);
+      }
+
+      if ((!remote || meta) && !usersMeta && !logsDB) {
         parts.push(USER_DB_SUFFIX);
         parts.push(getUsername(remote));
       } else if (usersMeta) {
@@ -62,8 +69,8 @@ angular.module('inboxServices').factory('DB',
       return clone;
     };
 
-    const get = ({ remote=isOnlineOnly, meta=false, usersMeta=false }={}) => {
-      const name = getDbName(remote, meta, usersMeta);
+    const get = ({ remote=isOnlineOnly, meta=false, usersMeta=false, logsDB=false }={}) => {
+      const name = getDbName(remote, meta, usersMeta, logsDB);
       if (!cache[name]) {
         cache[name] = pouchDB(name, getParams(remote, meta, usersMeta));
       }

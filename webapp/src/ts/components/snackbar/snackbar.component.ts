@@ -5,7 +5,6 @@ import { Subscription } from 'rxjs';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 
-
 @Component({
   selector: 'snackbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,11 +15,15 @@ export class SnackbarComponent implements OnInit {
 
   private readonly SHOW_DURATION = 5000;
   private readonly ANIMATION_DURATION = 250;
+  private readonly ROUND_TRIP_ANIMATION_DURATION = this.ANIMATION_DURATION * 2;
 
   private globalActions;
-  private timer;
+  private hideTimeout;
+  private showNextMessageTimeout;
+  private resetMessageTimeout;
 
-  content;
+  message;
+  action;
   active = false;
 
   constructor(
@@ -39,39 +42,61 @@ export class SnackbarComponent implements OnInit {
 
   ngOnInit() {
     this.changeDetectorRef.detach();
-    const reduxSubscription = this.store.select(Selectors.getSnackbarContent).subscribe(content => {
-      if (!content) {
-        return;
-      }
+    const reduxSubscription = this.store
+      .select(Selectors.getSnackbarContent)
+      .subscribe((snackbarContent) => {
+        if (!snackbarContent?.message) {
+          this.hide();
 
-      if (this.active) {
-        this.hide(false);
-        this.setTimeout(() => this.show(content), this.ANIMATION_DURATION);
+          return;
+        }
 
-        return;
-      }
+        const { message, action } = snackbarContent;
+        if (this.active) {
+          this.queueShowMessage(message, action);
 
-      this.show(content);
-    });
+          return;
+        }
+
+        this.show(message, action);
+      });
     this.subscription.add(reduxSubscription);
     this.hide();
   }
 
-  private show(content) {
-    console.log(content);
-    this.content = content;
+  private queueShowMessage(message, action) {
+    clearTimeout(this.resetMessageTimeout);
+    clearTimeout(this.showNextMessageTimeout);
+    this.resetMessageTimeout = this.setTimeout(() => this.resetMessage(), this.ANIMATION_DURATION);
+    this.showNextMessageTimeout = this.setTimeout(
+      () => this.globalActions.setSnackbarContent(message, action),
+      this.ROUND_TRIP_ANIMATION_DURATION,
+    );
+  }
+
+  private show(message, action) {
+    clearTimeout(this.hideTimeout);
+    this.hideTimeout = undefined;
+    clearTimeout(this.showNextMessageTimeout);
+    this.showNextMessageTimeout = undefined;
+    this.message = message;
+    this.action = action;
     this.active = true;
     this.changeDetectorRef.detectChanges();
 
-    this.timer = this.setTimeout(() => this.hide(), this.SHOW_DURATION);
+    this.hideTimeout = this.setTimeout(() => this.resetMessage(), this.SHOW_DURATION);
   }
 
-  private hide(clearContent = true) {
-    clearTimeout(this.timer);
-    if (clearContent) {
-      this.globalActions.setSnackbarContent();
-      this.active = false;
-      this.changeDetectorRef.detectChanges();
-    }
+  private hide() {
+    clearTimeout(this.hideTimeout);
+    this.hideTimeout = undefined;
+    this.message = undefined;
+    this.action = undefined;
+    this.active = false;
+    this.changeDetectorRef.detectChanges();
+  }
+
+  private resetMessage() {
+    this.globalActions.setSnackbarContent();
   }
 }

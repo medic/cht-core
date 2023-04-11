@@ -2,8 +2,8 @@ const sinon = require('sinon');
 const moment = require('moment');
 const expect = require('chai').expect;
 const should = require('chai').should();
-const uuid = require('uuid');
-const utils = require('../src/index');
+const rewire = require('rewire');
+const utils = rewire('../src/index');
 
 const MAX_GSM_LENGTH = 160;
 const MAX_UNICODE_LENGTH = 70;
@@ -694,7 +694,7 @@ describe('messageUtils', () => {
   describe('generate', () => {
 
     it('adds uuid', () => {
-      sinon.stub(uuid, 'v4').returns('some-uuid');
+      utils.__set__('uuid', { v4 : sinon.stub().returns('some-uuid') });
       const config = {};
       const translate = null;
       const doc = {};
@@ -1094,30 +1094,30 @@ describe('messageUtils', () => {
     describe('bikram sambat', () => {
 
       it('integer', () => {
-        const date = 1457235941000;
+        const date = new Date(2016, 2, 6);
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}{{reported_date}}{{/bikram_sambat_date}}';
-        const doc = { reported_date: date };
+        const doc = { reported_date: date.getTime() };
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(expected);
       });
 
       it('Date object', () => {
-        const date = 1457235941000;
+        const date = new Date(2016, 2, 6);
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
-        const doc = { reported_date: date };
+        const doc = { reported_date: date.getTime() };
         const config = { reported_date_format: 'DD-MMMM-YYYY HH:mm:ss' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(expected);
       });
 
       it('i18n has no influence', () => {
-        const date = 1457235941000;
+        const date = new Date(2016, 2, 6);
         const expected = '२३ फाल्गुन २०७२';
         const input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
-        const doc = { reported_date: date, locale: 'sw' };
+        const doc = { reported_date: date.getTime(), locale: 'sw' };
         const config = { reported_date_format: 'ddd, MMM Do, YYYY' };
         const actual = utils.template(config, null, doc, { message: input });
         expect(actual).to.equal(expected);

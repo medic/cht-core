@@ -46,7 +46,8 @@
         // Require a specific member delimiter style for interfaces and type literals
         // Default Semicolon style
         "@typescript-eslint/member-delimiter-style": "error",
-        "@typescript-eslint/ban-ts-comment": "error"
+        "@typescript-eslint/ban-ts-comment": "error",
+        "quote-props": ["error", "as-needed"]
       }
     },
     {
@@ -66,6 +67,12 @@
       "rules": {
         "indent": "off", // this rule throws an error in eslint itself
         "max-len": "off"
+      }
+    },
+    {
+      "files": ["src/js/enketo/widgets/*.js"],
+      "rules": {
+        "no-inner-declarations": "off"
       }
     }
   ]

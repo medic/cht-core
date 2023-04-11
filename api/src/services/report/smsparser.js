@@ -6,8 +6,13 @@ const mpParser = require('./mp-parser');
 const javarosaParser = require('./javarosa-parser');
 const textformsParser = require('./textforms-parser');
 const logger = require('../../logger');
+const moment = require('moment');
+const bs = require('bikram-sambat');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
+// matches invisible characters that can mess up our parsing
+// specifically: u200B, u200C, u200D, uFEFF
+const ZERO_WIDTH_UNICODE_CHARACTERS = /[\u200B-\u200D\uFEFF]/g;
 
 // Devanagari
 const T_TABLE = {
@@ -40,6 +45,13 @@ const regexEscape = s => {
     return s;
   }
   return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+
+const stripInvisibleCharacters = s => {
+  if (typeof s !== 'string') {
+    return s;
+  }
+  return s.replace(ZERO_WIDTH_UNICODE_CHARACTERS, '');
 };
 
 // Remove the form code from the beginning of the message since it does
@@ -117,16 +129,35 @@ const parseNum = raw => {
   return Number(std);
 };
 
+const bsToEpoch = (bsYear, bsMonth, bsDay) => {
+  try {
+    const gregDate = bs.toGreg_text(bsYear, bsMonth, bsDay);
+    return moment(gregDate).valueOf();
+  } catch (exception) {
+    logger.error('The provided date could not be converted: %o.', exception);
+    return null;//should be caught by validation in registration
+  }
+};
+
+const getFieldByType = (def, type) => {
+  if (!def || !def.fields) {
+    return;
+  }
+  return Object
+    .keys(def.fields)
+    .find(k => def.fields[k] && def.fields[k].type === type);
+};
+
 const lower = str => (str && str.toLowerCase ? str.toLowerCase() : str);
 
-exports.parseField = (field, raw) => {
-  switch (field.type) {
-  case 'integer':
+const fieldParsers = {
+  integer: (raw, field) => {
     // store list value since it has more meaning.
     // TODO we don't have locale data inside this function so calling
     // translate does not resolve locale.
+    const cleaned = stripInvisibleCharacters(String(raw));
     if (field.list) {
-      const item = field.list.find(item => String(item[0]) === String(raw));
+      const item = field.list.find(item => String(item[0]) === cleaned);
       if (!item) {
         logger.warn(
           `Option not available for ${JSON.stringify(raw)} in list.`
@@ -135,36 +166,37 @@ exports.parseField = (field, raw) => {
       }
       return config.translate(item[1]);
     }
-    return parseNum(raw);
-  case 'string':
-    if (raw === undefined) {
-      return;
-    }
-    if (raw === '') {
-      return null;
-    }
+    return parseNum(cleaned);
+  },
+  string: (raw, field, key) => {
     if (field.list) {
+      const cleaned = stripInvisibleCharacters(raw);
       for (const i of field.list) {
         const item = field.list[i];
-        if (item[0] === raw) {
+        if (item[0] === cleaned) {
           return item[1];
         }
       }
       logger.warn(`Option not available for ${raw} in list.`);
+    } else if (key === 'patient_id' || key === 'place_id') {
+      // special handling for string IDs which must be [0-9]
+      return stripInvisibleCharacters(raw);
     }
     return raw;
-  case 'date':
-    if (!raw) {
-      return null;
-    }
+  },
+  date: (raw) => {
     // YYYY-MM-DD assume muvuku format for now
     // store in milliseconds since Epoch
-    return new Date(raw).valueOf();
-  case 'boolean': {
-    if (raw === undefined) {
-      return;
-    }
-    const val = parseNum(raw);
+    return moment(stripInvisibleCharacters(raw)).valueOf();
+  },
+  bsDate: (raw) => {
+    const cleaned = stripInvisibleCharacters(raw);
+    const separator = cleaned[cleaned.search(/[^0-9]/)];//non-numeric character
+    const dateParts = cleaned.split(separator);
+    return bsToEpoch(...dateParts);
+  },
+  boolean: (raw) => {
+    const val = parseNum(stripInvisibleCharacters(raw));
     if (val === 1) {
       return true;
     }
@@ -173,14 +205,26 @@ exports.parseField = (field, raw) => {
     }
     // if we can't parse a number then return null
     return null;
-  }
-  case 'month':
+  },
+  month: (raw) => {
     // keep months integers, not their list value.
-    return parseNum(raw);
-  default:
+    return parseNum(stripInvisibleCharacters(raw));
+  }
+};
+
+exports.parseField = (field, raw, key) => {
+  const parser = fieldParsers[field.type];
+  if (!parser) {
     logger.warn(`Unknown field type: ${field.type}`);
     return raw;
   }
+  if (raw === undefined) {
+    return;
+  }
+  if (raw === '') {
+    return null;
+  }
+  return parser(raw, field, key);
 };
 
 /**
@@ -194,7 +238,7 @@ exports.parse = (def, doc) => {
   let msgData;
   const formData = {};
   let addOmittedFields = false;
-
+  const aggregateBSDateField = getFieldByType(def, 'bsAggreDate');
   if (!def || !doc || !doc.message || !def.fields) {
     return {};
   }
@@ -232,8 +276,33 @@ exports.parse = (def, doc) => {
   // parse field types and resolve dot notation keys
   for (const k of Object.keys(def.fields)) {
     if (msgData[k] || addOmittedFields) {
-      const value = exports.parseField(def.fields[k], msgData[k]);
+      const value = exports.parseField(def.fields[k], msgData[k], k);
       createDeepKey(formData, k.split('.'), value);
+    }
+  }
+
+  if(aggregateBSDateField) {
+    let bsYear;
+    let bsMonth = 1;
+    let bsDay = 1;
+    for (const k of Object.keys(def.fields)) {
+      switch (def.fields[k].type) {
+      case 'bsYear':
+        bsYear = msgData[k];
+        break;
+      case 'bsMonth':
+        bsMonth = msgData[k];
+        break;
+      case 'bsDay':
+        bsDay = msgData[k];
+        break;
+      }
+    }
+
+    if (bsYear) {
+      formData[aggregateBSDateField] = bsToEpoch(bsYear, bsMonth, bsDay);
+    } else {
+      logger.error('Can not aggregate bsAggreDate without bsYear');
     }
   }
 

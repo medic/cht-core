@@ -1,4 +1,4 @@
-import { async, TestBed } from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import * as moment from 'moment';
@@ -9,6 +9,7 @@ import { AsyncPipe } from '@angular/common';
 import {
   AgePipe,
   AutoreplyPipe,
+  DateOfDeathPipe,
   DayMonthPipe,
   FullDatePipe,
   RelativeDatePipe,
@@ -46,6 +47,7 @@ describe('date pipes', () => {
     formatDateService = {
       age: momentDate => `${momentDate.year() - 1970} years`,
       date: d => `${d.toISOString().split('T')[0]}`,
+      dayMonth: d => moment(d).format('D MMM'),
       datetime: d => `${d.toISOString()}`,
       relative: (d:number) => `${Math.floor((d - TEST_DATE.valueOf()) / 86400000)} days`,
     };
@@ -96,6 +98,11 @@ describe('date pipes', () => {
         '</span>';
       assert.equal(pipe.transform(TEST_DATE), expected);
     });
+
+    it('should work with no age', () => {
+      const pipe = new AgePipe(formatDateService, relativeDateService, sanitizer);
+      assert.equal(pipe.transform(undefined), '<span></span>');
+    });
   });
 
   describe('autoreply', () => {
@@ -106,11 +113,16 @@ describe('date pipes', () => {
       const actual = await pipe.transform(TEST_TASK);
       assert.equal(actual, expected);
     });
+
+    it('should return empty string when no task', async () => {
+      const pipe = new AutoreplyPipe(translateService, formatDateService, relativeDateService, sanitizer);
+      assert.equal(await pipe.transform(undefined), '');
+    });
   });
 
   describe('dayMonth', () => {
     it('should return nicely-formatted output', () => {
-      const pipe = new DayMonthPipe(sanitizer);
+      const pipe = new DayMonthPipe(sanitizer, formatDateService);
       assert.equal(pipe.transform(TEST_DATE), '<span>2 Jan</span>');
     });
   });
@@ -141,6 +153,12 @@ describe('date pipes', () => {
         '</span>';
       assert.equal(pipe.transform(TEST_DATE), expected);
     });
+
+    it('should return raw output when requested', () => {
+      relativeDateService.getRelativeDate.returns('0 days');
+      const pipe = new RelativeDatePipe(sanitizer, formatDateService, relativeDateService);
+      assert.equal(pipe.transform(TEST_DATE, true), '0 days');
+    });
   });
 
   describe('relativeDay', () => {
@@ -156,6 +174,17 @@ describe('date pipes', () => {
         '</span>' +
         '</span>';
       assert.equal(pipe.transform(TEST_DATE), expected);
+    });
+
+    it('should return raw output when requested', () => {
+      relativeDateService.getRelativeDate.returns('0 days');
+      const pipe = new RelativeDayPipe(sanitizer, formatDateService, relativeDateService);
+      assert.equal(pipe.transform(TEST_DATE, true), '0 days');
+    });
+
+    it('should return undefined with raw output and no date', () => {
+      const pipe = new RelativeDayPipe(sanitizer, formatDateService, relativeDateService);
+      assert.equal(pipe.transform(undefined, true), undefined);
     });
   });
 
@@ -182,6 +211,27 @@ describe('date pipes', () => {
     });
   });
 
+  describe('DateOfDeathPipe', () => {
+    it('should return empty string for no date of death', () => {
+      const pipe = new DateOfDeathPipe(translateService, formatDateService, relativeDateService, sanitizer);
+      assert.equal(pipe.transform(undefined), '');
+    });
+
+    it('should return nicely formatted output', () => {
+      relativeDateService.getRelativeDate.returns('sometime in the past');
+
+      const pipe = new DateOfDeathPipe(translateService, formatDateService, relativeDateService, sanitizer);
+      const expected = 'contact.deceased.date.prefix&nbsp;' +
+      '<span class="relative-date future" title="2046-01-02">' +
+        '<span class="relative-date-content update-relative-date" data-date-options="someOptions">' +
+        'sometime in the past' +
+        '</span>' +
+      '</span>';
+      assert.equal(pipe.transform(TEST_DATE), expected);
+    });
+  });
+
+
   describe('weeksPregnant', () => {
     const pipe = new WeeksPregnantPipe();
     it('adds class for full term', () => {
@@ -190,10 +240,19 @@ describe('date pipes', () => {
       assert.equal(pipe.transform(weeks), expected);
     });
 
-
     it('adds class for approximate dates', () => {
       const weeks = { number: 37, approximate: true };
       const expected = '<span class="weeks-pregnant upcoming-edd approximate">37</span>';
+      assert.equal(pipe.transform(weeks), expected);
+    });
+
+    it('should return empty string when no weeks', () => {
+      assert.equal(pipe.transform(0), '');
+    });
+
+    it('should with late end and no approximate', () => {
+      const weeks = { number: 12 };
+      const expected = '<span>12</span>';
       assert.equal(pipe.transform(weeks), expected);
     });
   });
@@ -243,6 +302,9 @@ describe('date pipes rendering', () => {
 
     TestBed
       .configureTestingModule({
+        imports: [
+          AsyncPipe,
+        ],
         providers: [
           { provide: RelativeDateService, useValue: relativeDate },
           { provide: FormatDateService, useValue: formatDate },
@@ -260,7 +322,6 @@ describe('date pipes rendering', () => {
           StatePipe,
           WeeksPregnantPipe,
           TestComponent,
-          AsyncPipe,
         ]
       })
       .compileComponents();
@@ -358,7 +419,7 @@ describe('date pipes rendering', () => {
         expect(fixture.nativeElement.querySelector('.state').innerText).to.equal(expected);
       });
 
-      it('when task', async(async () => {
+      it('when task', waitForAsync(async () => {
         const task = {
           state: 'pending'
         };

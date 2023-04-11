@@ -21,7 +21,6 @@ const person = {
 };
 const personBis = Object.assign({}, person, {
   _id: '2bba279f-8ad9-4823-be69-a8eb09879402-bis',
-  simprints_id: 22,
   date_of_death: 10,
   type: 'contact',
   contact_type: 'patient',
@@ -97,7 +96,25 @@ const postNatalVisit = {
 const postNatalVisitBis = Object.assign({}, postNatalVisit, {
   _id: '4971a859-bde7-4ff0-a0ed-326925b83038-bis',
   fields: Object.assign({}, postNatalVisit.fields, {
-    patient_id: null
+    patient_id: null,
+    patient_uuid: null,
+  })
+});
+
+
+const postNatalVisitPatientIdNoUuid = Object.assign({}, postNatalVisit, {
+  _id: '4971a859-bde7-4ff0-a0ed-326925b83038-idnouuid',
+  fields: Object.assign({}, postNatalVisit.fields, {
+    patient_id: 'a29c933c-90cb-4cb0-9e25-36403499aee6',
+    patient_uuid: null,
+  })
+});
+
+const postNatalVisitPatientUuidNoId = Object.assign({}, postNatalVisit, {
+  _id: '4971a859-bde7-4ff0-a0ed-326925b83038-uuidnoid',
+  fields: Object.assign({}, postNatalVisit.fields, {
+    patient_id: null,
+    patient_uuid: 'a29c933c-90cb-4cb0-9e25-36403499aee7',
   })
 });
 
@@ -215,8 +232,8 @@ const jsonHouseholdBis = Object.assign({}, jsonHousehold, {
 });
 
 describe('doc_summaries_by_id view', () => {
-  it('indexes name, phone, type, contact, lineage, simprints, dod for non-data-records', () => {
-    const map = utils.loadView('', 'medic', 'doc_summaries_by_id');
+  it('indexes name, phone, type, contact, lineage, dod for non-data-records', () => {
+    const map = utils.loadView('medic-db', 'medic', 'doc_summaries_by_id');
 
     const emitted = map(person, true) && map(personBis, true);
     assert.deepEqual(emitted[0], {
@@ -228,7 +245,6 @@ describe('doc_summaries_by_id view', () => {
         type: 'person',
         contact_type: undefined,
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
-        simprints_id: undefined,
         date_of_death: undefined,
         contact: undefined,
         muted: undefined
@@ -243,7 +259,6 @@ describe('doc_summaries_by_id view', () => {
         type: 'contact',
         contact_type: 'patient',
         lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
-        simprints_id: 22,
         date_of_death: 10,
         contact: undefined,
         muted: true
@@ -252,7 +267,7 @@ describe('doc_summaries_by_id view', () => {
   });
 
   it('indexes data-records summary and subject', () => {
-    const map = utils.loadView('', 'medic', 'doc_summaries_by_id');
+    const map = utils.loadView('medic-db', 'medic', 'doc_summaries_by_id');
 
     const reportsList = [
       householdVisit,
@@ -266,7 +281,9 @@ describe('doc_summaries_by_id view', () => {
       jsonD,
       jsonDBis,
       jsonHousehold,
-      jsonHouseholdBis
+      jsonHouseholdBis,
+      postNatalVisitPatientIdNoUuid,
+      postNatalVisitPatientUuidNoId,
     ];
 
     let emitted = true;
@@ -511,5 +528,48 @@ describe('doc_summaries_by_id view', () => {
       }
     });
 
+    assert.deepEqual(emitted[12], {
+      key: '4971a859-bde7-4ff0-a0ed-326925b83038-idnouuid',
+      value: {
+        _rev: '1-daf9f65652fbe6da38911d3ffd6c1d77',
+        from: undefined,
+        phone: undefined,
+        form: 'postnatal_visit',
+        read: undefined,
+        valid: true,
+        verified: true,
+        reported_date: 1517392010413,
+        contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
+        lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
+        subject: {
+          name: 'mother',
+          type: 'reference',
+          value: 'a29c933c-90cb-4cb0-9e25-36403499aee6'
+        },
+        case_id: '12345'
+      }
+    });
+
+    assert.deepEqual(emitted[13], {
+      key: '4971a859-bde7-4ff0-a0ed-326925b83038-uuidnoid',
+      value: {
+        _rev: '1-daf9f65652fbe6da38911d3ffd6c1d77',
+        from: undefined,
+        phone: undefined,
+        form: 'postnatal_visit',
+        read: undefined,
+        valid: true,
+        verified: true,
+        reported_date: 1517392010413,
+        contact: 'df28f38e-cd3c-475f-96b5-48080d863e34',
+        lineage: ['1a1aac55-04d6-40dc-aae2-e67a75a1496d'],
+        subject: {
+          name: 'mother',
+          type: 'reference',
+          value: 'a29c933c-90cb-4cb0-9e25-36403499aee7'
+        },
+        case_id: '12345'
+      }
+    });
   });
 });

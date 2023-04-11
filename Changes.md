@@ -1,3 +1,3 @@
-# Medic Mobile Release Notes
+# CHT Core release notes
 
-Release notes are now published in the [release-notes](https://github.com/medic/cht-core/tree/master/release-notes) directory.
+Release notes for CHT Core have been moved to the [CHT documentation site](https://docs.communityhealthtoolkit.org/core/releases/).

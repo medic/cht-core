@@ -418,8 +418,7 @@ describe('dhis export service', () => {
         date: filterNow,
       });
       expect.fail('should throw');
-    }
-    catch (err) {
+    } catch (err) {
       expect(err.message).to.include('is not defined');
     }
   });
@@ -442,8 +441,7 @@ describe('dhis export service', () => {
         date: filterNow,
       });
       expect.fail('should throw');
-    }
-    catch (err) {
+    } catch (err) {
       expect(err.message).to.include('has no dataElements');
     }
   });
@@ -453,8 +451,7 @@ describe('dhis export service', () => {
     try {
       await service({ dataSet: 'ds-1', date: filterNow });
       expect.fail('should throw');
-    }
-    catch (err) {
+    } catch (err) {
       expect(err.message).to.include('has no dataElements');
     }
   });

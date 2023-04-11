@@ -2,46 +2,29 @@ import { TestBed } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { NgZone } from '@angular/core';
-import { Router } from '@angular/router';
 
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { SessionService } from '@mm-services/session.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 import { MRDTService } from '@mm-services/mrdt.service';
-import { SimprintsService } from '@mm-services/simprints.service';
-
+import { NavigationService } from '@mm-services/navigation.service';
+import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
 
 describe('AndroidApi service', () => {
 
   let service;
   let sessionService;
-  let router;
-  let feedbackService;
   let mrdtService;
   let geolocationService;
-  let simprintsService;
   let consoleErrorMock;
+  let navigationService;
+  let androidAppLauncherService;
 
   beforeEach(() => {
     sessionService = {
       userCtx: sinon.stub(),
       isOnlineOnly: sinon.stub(),
       logout: sinon.stub(),
-    };
-
-    router = {
-      navigate: sinon.stub(),
-      routerState: {
-        root: {
-          snapshot: {  }
-        }
-      }
-    };
-
-    feedbackService = {
-      init: sinon.stub(),
-      submit: sinon.stub(),
     };
 
     mrdtService = {
@@ -53,9 +36,13 @@ describe('AndroidApi service', () => {
       permissionRequestResolved: sinon.stub()
     };
 
-    simprintsService = {
-      identifyResponse: sinon.stub(),
-      registerResponse: sinon.stub()
+    navigationService = {
+      goBack: sinon.stub(),
+      goToPrimaryTab: sinon.stub(),
+    };
+
+    androidAppLauncherService = {
+      resolveAndroidAppResponse: sinon.stub()
     };
 
     consoleErrorMock = sinon.stub(console, 'error');
@@ -64,10 +51,9 @@ describe('AndroidApi service', () => {
       providers: [
         { provide: SessionService, useValue: sessionService },
         { provide: GeolocationService, useValue: geolocationService },
-        { provide: SimprintsService, useValue: simprintsService },
-        { provide: FeedbackService, useValue: feedbackService },
-        { provide: Router, useValue: router },
         { provide: MRDTService, useValue: mrdtService },
+        { provide: NavigationService, useValue: navigationService },
+        { provide: AndroidAppLauncherService, useValue: androidAppLauncherService },
       ],
     });
 
@@ -76,59 +62,6 @@ describe('AndroidApi service', () => {
 
   afterEach(() => {
     sinon.restore();
-  });
-  describe('simprintsResponse', () => {
-
-    it('errors when given string id', () => {
-      service.v1.simprintsResponse(null, 'hello', null);
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0].message).to.equal('Unable to parse requestId: "hello"');
-      expect(simprintsService.identifyResponse.callCount).to.equal(0);
-      expect(simprintsService.registerResponse.callCount).to.equal(0);
-    });
-
-    it('errors when given invalid response', () => {
-      service.v1.simprintsResponse(null, '1', 'not json');
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0].message).to.equal(
-        'Unable to parse JSON response from android app: "not json"'
-      );
-      expect(simprintsService.identifyResponse.callCount).to.equal(0);
-      expect(simprintsService.registerResponse.callCount).to.equal(0);
-    });
-
-    it('errors when given unknown request type', () => {
-      service.v1.simprintsResponse('query', '1', '{ "id": 153 }');
-      expect(consoleErrorMock.callCount).to.equal(1);
-      expect(consoleErrorMock.args[0][0].message).to.equal('Unknown request type: "query"');
-      expect(simprintsService.identifyResponse.callCount).to.equal(0);
-      expect(simprintsService.registerResponse.callCount).to.equal(0);
-    });
-
-    it('calls identify', () => {
-      const expectedRequestId = 55498890;
-      const expectedResponse = [
-        { id: 153, tier: 'TIER_1' },
-        { id: 486, tier: 'TIER_5' }
-      ];
-      service.v1.simprintsResponse('identify', expectedRequestId.toString(), JSON.stringify(expectedResponse));
-      expect(consoleErrorMock.callCount).to.equal(0);
-      expect(simprintsService.identifyResponse.callCount).to.equal(1);
-      expect(simprintsService.identifyResponse.args[0][0]).to.equal(expectedRequestId);
-      expect(simprintsService.identifyResponse.args[0][1]).to.deep.equal(expectedResponse);
-      expect(simprintsService.registerResponse.callCount).to.equal(0);
-    });
-
-    it('calls register', () => {
-      const expectedRequestId = 54895590;
-      const expectedResponse = { id: 849556216 };
-      service.v1.simprintsResponse('register', expectedRequestId.toString(), JSON.stringify(expectedResponse));
-      expect(consoleErrorMock.callCount).to.equal(0);
-      expect(simprintsService.identifyResponse.callCount).to.equal(0);
-      expect(simprintsService.registerResponse.callCount).to.equal(1);
-      expect(simprintsService.registerResponse.args[0][0]).to.equal(expectedRequestId);
-      expect(simprintsService.registerResponse.args[0][1]).to.deep.equal(expectedResponse);
-    });
   });
 
   describe('logout', () => {
@@ -139,55 +72,45 @@ describe('AndroidApi service', () => {
   });
 
   describe('back', () => {
-    it('should route to contacts from deceased', () => {
-      router.routerState.root.snapshot = {
-        data: { name: 'contacts.deceased' },
-        params: { id: 'my-contact-id' },
-      };
-      service.back();
-      expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'my-contact-id']]);
+    it('should return true and not navigate to primary tab when navigationService.goBack() is true', () => {
+      navigationService.goBack.returns(true);
+
+      const result = service.back();
+
+      expect(result).to.be.true;
+      expect(navigationService.goBack.callCount).to.equal(1);
+      expect(navigationService.goToPrimaryTab.callCount).to.equal(0);
     });
 
-    it('should route to contacts from contact detail', () => {
-      router.routerState.root.snapshot = {
-        params: { id: 'my-contact-id' },
-        parent: { routeConfig: { path: 'contacts' } },
-      };
-      service.back();
-      expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/', 'contacts']]);
+    it('should return true and navigate to primary tab when navigationService.goBack() is false', () => {
+      navigationService.goBack.returns(false);
+
+      const result = service.back();
+
+      expect(result).to.be.true;
+      expect(navigationService.goBack.callCount).to.equal(1);
+      expect(navigationService.goToPrimaryTab.callCount).to.equal(1);
     });
 
-    it('should route to reports from report detail', () => {
-      router.routerState.root.snapshot = {
-        params: { id: 'my-report-id' },
-        parent: { routeConfig: { path: 'reports' } },
-      };
-      service.back();
-      expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/', 'reports']]);
-    });
+    it('should always return true and not give back control to android app', () => {
+      navigationService.goBack.returns(false);
+      navigationService.goToPrimaryTab.returns(false);
 
-    it('should route to reports from random child route', () => {
-      router.routerState.root.snapshot = {
-        params: { id: 'my-random-id' },
-        parent: { routeConfig: { path: 'something' } },
-      };
-      service.back();
-      expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/', 'something']]);
-    });
+      const noNavigation = service.back();
 
-    it('should handle other routes', () => {
-      feedbackService.submit.resolves();
-      service.back();
-      // this test is temporary
-      // issue: https://github.com/medic/cht-core/issues/6698
-      expect(feedbackService.submit.callCount).to.equal(1);
-      expect(feedbackService.submit.args[0]).to.deep.equal(
-        ['Attempt to back to an undefined state [AndroidApi.back()]']
-      );
+      expect(noNavigation).to.be.true;
+      expect(navigationService.goBack.callCount).to.equal(1);
+      expect(navigationService.goToPrimaryTab.callCount).to.equal(1);
+
+      sinon.resetHistory();
+      navigationService.goBack.returns(false);
+      navigationService.goToPrimaryTab.returns(true);
+
+      const navigated = service.back();
+
+      expect(navigated).to.be.true;
+      expect(navigationService.goBack.callCount).to.equal(1);
+      expect(navigationService.goToPrimaryTab.callCount).to.equal(1);
     });
   });
 
@@ -294,6 +217,21 @@ describe('AndroidApi service', () => {
         ' status=a_status,' +
         ' detail=a_detail'
       ]);
+    });
+  });
+
+  describe('Android App Launcher', () => {
+    it('should process response after launching android app', () => {
+      const response = {
+        status: 'located',
+        person: { name: 'Jack', dateOfBirth: '13/05/1995' }
+      };
+
+      service.resolveCHTExternalAppResponse(response);
+
+      expect(androidAppLauncherService.resolveAndroidAppResponse.callCount).to.equal(1);
+      expect(androidAppLauncherService.resolveAndroidAppResponse.args[0]).to.have.members([response]);
+      expect(consoleErrorMock.callCount).to.equal(0);
     });
   });
 });

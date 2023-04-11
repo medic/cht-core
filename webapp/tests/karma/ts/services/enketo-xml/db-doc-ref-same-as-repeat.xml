@@ -1,0 +1,37 @@
+<data xmlns:jr="http://openrosa.org/javarosa">
+  <name>Sally</name>
+  <lmp>10</lmp>
+  <secret_code_name tag="hidden">S4L</secret_code_name>
+  <repeat_section db-doc="true">
+    <extra>data1</extra>
+    <type>repeater</type>
+    <some_property>some_value_1</some_property>
+    <my_parent db-doc-ref="/data"/>
+    <repeat_doc_ref db-doc-ref="/data/repeat_section">
+      value value
+    </repeat_doc_ref>
+  </repeat_section>
+  <repeat_section db-doc="true">
+    <extra>data2</extra>
+    <type>repeater</type>
+    <some_property>some_value_2</some_property>
+    <my_parent db-doc-ref="/data"/>
+    <repeat_doc_ref db-doc-ref="./repeat_section">
+      value value
+    </repeat_doc_ref>
+  </repeat_section>
+  <repeat_section db-doc="true">
+    <extra>data3</extra>
+    <type>repeater</type>
+    <some_property>some_value_3</some_property>
+    <my_parent db-doc-ref="/data"/>
+    <child>
+      <repeat_doc_ref db-doc-ref="/data/repeat_section">
+        value value
+      </repeat_doc_ref>
+    </child>
+  </repeat_section>
+  <repeat_doc_ref db-doc-ref="/data/repeat_section">
+    value value
+  </repeat_doc_ref>
+</data>

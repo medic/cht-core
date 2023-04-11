@@ -127,7 +127,7 @@ export class Select2SearchService {
         resolution = Promise.resolve();
       } else {
         resolution = this.getDoc(value)
-          .then((doc) => selectEl.select2('data')[0].doc = doc)
+          .then(doc => this.setDoc(selectEl, doc))
           .catch(err => console.error('Select2 failed to get document', err));
       }
     }
@@ -172,13 +172,26 @@ export class Select2SearchService {
 
         if (docId) {
           this.getDoc(docId)
-            .then((doc) => {
-              selectEl.select2('data')[0].doc = doc;
+            .then(doc => {
+              this.setDoc(selectEl, doc);
               selectEl.trigger('change');
             })
             .catch(err => console.error('Select2 failed to get document', err));
         }
       });
+    }
+  }
+
+  private setDoc(selectEl, doc) {
+    if (doc) {
+      selectEl.select2('data')[0].doc = doc;  // Set the value
+      // In case an unknown doc was set before, remove the "missing" style from select2
+      selectEl.removeClass('select2-missing');
+    } else {
+      // Because doc was deleted or the user don't have access to,
+      // a fixed title in the option selected is set with a "missing" style
+      selectEl.addClass('select2-missing');
+      selectEl.select2('data')[0].text = this.translateService.instant('unknown.contact');
     }
   }
 

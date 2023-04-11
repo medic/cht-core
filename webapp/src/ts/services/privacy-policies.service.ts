@@ -35,10 +35,7 @@ export class PrivacyPoliciesService {
           privacy_policy_acceptance_log: userSettings.privacy_policy_acceptance_log || [],
         };
         updatedUserSettings.privacy_policy_acceptance_log.push({ language, digest, accepted_at: new Date().getTime() });
-
-        return this.dbService
-          .get()
-          .put(updatedUserSettings);
+        return this.userSettingsService.put(updatedUserSettings);
       });
   }
 

@@ -171,7 +171,8 @@ describe('ContactsEdit component', () => {
       await createComponent();
 
       expect(component.routeSnapshot).to.equal(routeSnapshot);
-      expect(setLoadingContent.args).to.deep.equal([[true]]);
+      // Set loading content before and after form initialization.
+      expect(setLoadingContent.args).to.deep.equal([[true], [false]]);
       expect(setShowContent.args).to.deep.equal([[true]]);
       expect(unsetSelected.callCount).to.equal(1);
       expect(settingSelected.callCount).to.equal(1);
@@ -623,7 +624,7 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(contactSaveService.save.callCount).to.equal(1);
-      expect(contactSaveService.save.args[0]).to.deep.equal([ form, null, 'clinic' ]);
+      expect(contactSaveService.save.args[0]).to.deep.equal([ form, null, 'clinic', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'new_clinic_id']]);
     });
@@ -658,7 +659,7 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(contactSaveService.save.callCount).to.equal(1);
-      expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_person', 'person' ]);
+      expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_person', 'person', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_person']]);
     });
@@ -693,7 +694,7 @@ describe('ContactsEdit component', () => {
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
       expect(setEnketoError.callCount).to.equal(1);
       expect(contactSaveService.save.callCount).to.equal(1);
-      expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_patient', 'patient' ]);
+      expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_patient', 'patient', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_patient']]);
     });

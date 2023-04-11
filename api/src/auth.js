@@ -4,6 +4,7 @@ const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
 const config = require('./config');
+const { roles, users } = require('@medic/user-management')(config, db);
 
 const get = (path, headers) => {
   const dbUrl = url.parse(environment.serverUrl);
@@ -19,13 +20,6 @@ const get = (path, headers) => {
   });
 };
 
-// TODO Use a shared library for this duplicated code #4021
-const hasRole = (userCtx, role) => {
-  return _.includes(userCtx && userCtx.roles, role);
-};
-
-const isDbAdmin = userCtx => hasRole(userCtx, '_admin');
-
 const hasPermission = (userCtx, permission) => {
   const roles = config.get('permissions')[permission];
   if (!roles) {
@@ -34,44 +28,12 @@ const hasPermission = (userCtx, permission) => {
   return _.some(roles, role => _.includes(userCtx.roles, role));
 };
 
-const checkDistrict = (requested, permitted) => {
-  if (!requested) {
-    // limit to configured facility
-    return permitted;
-  }
-  if (!permitted) {
-    // national admin - give them what they want
-    return requested;
-  }
-  if (requested === permitted) {
-    // asking for the allowed facility
-    return requested;
-  }
-  throw { code: 403, message: 'Insufficient privileges' };
-};
-
-const getFacilityId = (req, userCtx) => {
-  const url = '/_users/org.couchdb.user:' + userCtx.name;
-  return get(url, req.headers).then(user => user.facility_id);
-};
-
 module.exports = {
-  isOnlineOnly: userCtx => {
-    return hasRole(userCtx, '_admin') ||
-           hasRole(userCtx, 'national_admin') || // kept for backwards compatibility
-           !module.exports.isOffline(userCtx.roles);
-  },
-
-  isOffline: roles => {
-    const configured = config.get('roles') || {};
-    const configuredRole = roles.some(role => configured[role]);
-    return !isDbAdmin({ roles }) &&
-           !configuredRole ||
-           roles.some(role => configured[role] && configured[role].offline);
-  },
-
+  isOnlineOnly: roles.isOnlineOnly,
+  isDbAdmin: roles.isDbAdmin,
+  getUserSettings: users.getUserSettings,
   hasAllPermissions: (userCtx, permissions) => {
-    if (isDbAdmin(userCtx)) {
+    if (roles.isDbAdmin(userCtx)) {
       return true;
     }
     if (!permissions || !userCtx || !userCtx.roles) {
@@ -100,21 +62,14 @@ module.exports = {
       });
   },
 
-  check: (req, permissions, districtId) => {
-    return module.exports.getUserCtx(req)
+  check: (req, permissions) => {
+    return module.exports
+      .getUserCtx(req)
       .then(userCtx => {
-        if (isDbAdmin(userCtx)) {
-          return { user: userCtx.name };
-        }
         if (!module.exports.hasAllPermissions(userCtx, permissions)) {
           throw { code: 403, message: 'Insufficient privileges' };
         }
-        return getFacilityId(req, userCtx)
-          .catch(err => {
-            throw { code: 500, message: err };
-          })
-          .then(facilityId => checkDistrict(districtId, facilityId))
-          .then(district => ({ user: userCtx.name, district: district }));
+        return userCtx;
       });
   },
 
@@ -184,18 +139,4 @@ module.exports = {
         return username;
       });
   },
-
-  getUserSettings: userCtx => {
-    return Promise
-      .all([
-        db.users.get('org.couchdb.user:' + userCtx.name),
-        db.medic.get('org.couchdb.user:' + userCtx.name)
-      ])
-      .then(([ user, medicUser ]) => {
-        Object.assign(medicUser, _.pick(user, 'name', 'roles', 'facility_id'));
-        return medicUser;
-      });
-  },
-
-  isDbAdmin: isDbAdmin,
 };

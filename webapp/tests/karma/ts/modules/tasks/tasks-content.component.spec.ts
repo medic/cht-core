@@ -17,10 +17,12 @@ import { EnketoComponent } from '@mm-components/enketo/enketo.component';
 import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TasksActions } from '@mm-actions/tasks';
+import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 
 describe('TasksContentComponent', () => {
   let tasks;
   let setEnketoEditedStatus;
+
   let render;
   let get;
   let xmlFormsService;
@@ -29,9 +31,10 @@ describe('TasksContentComponent', () => {
   let geolocationService;
   let enketoService;
   let router;
+  let tasksForContactService;
 
   let compileComponent;
-  let component:TasksContentComponent;
+  let component: TasksContentComponent;
   let fixture: ComponentFixture<TasksContentComponent>;
 
   beforeEach(() => {
@@ -43,6 +46,7 @@ describe('TasksContentComponent', () => {
     geolocationService = { init: sinon.stub() };
     enketoService = { render, unload: sinon.stub(), save: sinon.stub() };
     router = { navigate: sinon.stub() };
+    tasksForContactService = { getLeafPlaceAncestor: sinon.stub().resolves() };
 
     const mockedSelectors = [
       { selector: Selectors.getTasksLoaded, value: true },
@@ -66,6 +70,7 @@ describe('TasksContentComponent', () => {
         { provide: TelemetryService, useValue: { record: sinon.stub() }},
         { provide: GeolocationService, useValue: geolocationService },
         { provide: Router, useValue: router },
+        { provide: TasksForContactService, useValue: tasksForContactService },
       ],
     });
 
@@ -85,6 +90,7 @@ describe('TasksContentComponent', () => {
 
   afterEach(() => {
     sinon.restore();
+    store.resetSelectors();
   });
 
   it('should unsubscribe and cancel geohandle when destroyed', async () => {
@@ -107,6 +113,13 @@ describe('TasksContentComponent', () => {
     component.ngOnDestroy();
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
     expect(geoHandle.cancel.callCount).to.equal(1);
+  });
+
+  it('should clear last completed task when loaded', async () => {
+    const setLastSubmittedTask = sinon.stub(TasksActions.prototype, 'setLastSubmittedTask');
+    await compileComponent();
+    expect(setLastSubmittedTask.callCount).to.equal(1);
+    expect(setLastSubmittedTask.args[0]).to.deep.equal([null]);
   });
 
   it('loads form when task has one action and no fields (without hydration)', async () => {
@@ -360,7 +373,7 @@ describe('TasksContentComponent', () => {
   describe('perform action', () => {
     beforeEach(() => {
       sinon.stub(GlobalActions.prototype, 'setCancelCallback');
-      sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      sinon.stub(GlobalActions.prototype, 'clearNavigation');
       sinon.stub(TasksActions.prototype, 'setSelectedTask');
     });
 
@@ -397,7 +410,7 @@ describe('TasksContentComponent', () => {
       expect(component.form).to.equal(null);
       expect(component.loadingForm).to.equal(false);
       expect(component.contentError).to.equal(false);
-      expect((<any>GlobalActions.prototype.clearCancelCallback).callCount).to.equal(1);
+      expect((<any>GlobalActions.prototype.clearNavigation).callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(0);
     });
 
@@ -424,7 +437,7 @@ describe('TasksContentComponent', () => {
       expect(component.form).to.equal('someform');
       expect(component.loadingForm).to.equal(true);
       expect(component.contentError).to.equal(false);
-      expect((<any>GlobalActions.prototype.clearCancelCallback).callCount).to.equal(0);
+      expect((<any>GlobalActions.prototype.clearNavigation).callCount).to.equal(0);
 
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
@@ -467,27 +480,42 @@ describe('TasksContentComponent', () => {
       expect(enketoService.render.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'add', '']]);
+      expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(0);
     });
 
     it('should render form when action type is report', async () => {
       const form = { _id: 'myform', title: 'My Form' };
-      xmlFormsService.get.resolves(form);
+      const action = { type: 'report', form: 'myform', content: { contact: { _id: 'my_contact' } } };
+      xmlFormsService.get.resolves({ ...form });
+      tasksForContactService.getLeafPlaceAncestor.resolves({ any: 'model' });
       await compileComponent([]);
 
       sinon.resetHistory();
       sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      sinon.stub(TasksActions.prototype, 'setTaskGroupContact');
+      sinon.stub(TasksActions.prototype, 'setTaskGroupContactLoading');
       store.refreshState();
 
-      await component.performAction({ type: 'report', form: 'myform', content: { my: 'content' } });
+      await component.performAction({ ...action });
 
       expect(xmlFormsService.get.callCount).to.equal(1);
       expect(xmlFormsService.get.args[0]).to.deep.equal(['myform']);
       expect(enketoService.render.callCount).to.equal(1);
       expect(enketoService.render.args[0]).to.deep.include.members([
         '#task-report',
-        { _id: 'myform', title: 'My Form' },
-        { my: 'content' },
+        { ...form },
+        { ...action.content },
       ]);
+
+      expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(1);
+      expect(tasksForContactService.getLeafPlaceAncestor.args[0]).to.deep.equal(['my_contact']);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).args[0]).to.deep.equal([true]);
+      await Promise.resolve();
+      expect((<any>TasksActions.prototype.setTaskGroupContact).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setTaskGroupContact).args[0]).to.deep.equal([{ any: 'model' }]);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
+
       const markFormEdited = enketoService.render.args[0][3];
       const resetFormError = enketoService.render.args[0][4];
 
@@ -512,19 +540,60 @@ describe('TasksContentComponent', () => {
 
       expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(1);
     });
+
+    it('should catch contact preloading errors', async () => {
+      const form = { _id: 'myform', title: 'My Form' };
+      const action = { type: 'report', form: 'myform', content: { contact: { _id: 'the_contact' } } };
+      xmlFormsService.get.resolves({ ...form });
+      tasksForContactService.getLeafPlaceAncestor.rejects({ some: 'error' });
+      await compileComponent([]);
+
+      sinon.resetHistory();
+      sinon.stub(TasksActions.prototype, 'setTaskGroupContact');
+      sinon.stub(TasksActions.prototype, 'setTaskGroupContactLoading');
+      sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      sinon.stub();
+      store.refreshState();
+
+      await component.performAction({ ...action });
+
+      expect(xmlFormsService.get.callCount).to.equal(1);
+      expect(xmlFormsService.get.args[0]).to.deep.equal(['myform']);
+      expect(enketoService.render.callCount).to.equal(1);
+      expect(enketoService.render.args[0]).to.deep.include.members([
+        '#task-report',
+        { ...form },
+        { ...action.content },
+      ]);
+
+      expect(tasksForContactService.getLeafPlaceAncestor.callCount).to.equal(1);
+      expect(tasksForContactService.getLeafPlaceAncestor.args[0]).to.deep.equal(['the_contact']);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).args[0]).to.deep.equal([true]);
+      await Promise.resolve();
+      expect((<any>TasksActions.prototype.setTaskGroupContact).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setTaskGroupContactLoading).callCount).to.equal(1);
+      expect((<any>TasksActions.prototype.setTaskGroupContact).args[0]).to.deep.equal([null]);
+
+      expect(setEnketoEditedStatus.callCount).to.equal(1);
+      expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
+      expect((<any>GlobalActions.prototype.setEnketoError).callCount).to.equal(0);
+    });
   });
 
   describe('saving', () => {
     let setEnketoError;
     let setEnketoSavingStatus;
     let unsetSelected;
-    let clearCancelCallback;
+    let clearNavigation;
+    let setLastSubmittedTask;
 
     beforeEach(() => {
       setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
       setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
-      clearCancelCallback = sinon.stub(GlobalActions.prototype, 'clearCancelCallback');
+      clearNavigation = sinon.stub(GlobalActions.prototype, 'clearNavigation');
+      setLastSubmittedTask = sinon.stub(TasksActions.prototype, 'setLastSubmittedTask');
     });
 
     it('should do nothing if already saving', async () => {
@@ -568,9 +637,11 @@ describe('TasksContentComponent', () => {
 
       expect(setEnketoEditedStatus.callCount).to.equal(0);
       expect(enketoService.unload.callCount).to.equal(0);
-      expect(clearCancelCallback.callCount).to.equal(0);
+      expect(clearNavigation.callCount).to.equal(0);
       expect(router.navigate.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(0);
+      expect(setLastSubmittedTask.callCount).to.equal(0);
+
       expect(consoleErrorMock.callCount).to.equal(1);
       expect(consoleErrorMock.args[0][0]).to.equal('Error submitting form data: ');
     });
@@ -605,13 +676,63 @@ describe('TasksContentComponent', () => {
 
       expect(enketoService.unload.callCount).to.equal(1);
       expect(enketoService.unload.args[0]).to.deep.equal([{ the: 'form' }]);
-      expect(clearCancelCallback.callCount).to.equal(1);
+      expect(clearNavigation.callCount).to.equal(1);
 
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/tasks']]);
+      expect(router.navigate.args[0]).to.deep.equal([['/tasks', 'group']]);
 
       expect(setEnketoError.callCount).to.equal(0);
       expect(unsetSelected.callCount).to.equal(1);
+      expect(setLastSubmittedTask.callCount).to.equal(1);
+      expect(setLastSubmittedTask.args[0]).to.deep.equal([component.selectedTask]);
+    });
+  });
+
+  describe('navigationCancel', () => {
+    it('should call navigation cancel', () => {
+      const navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      component.navigationCancel();
+      expect(navigationCancel.callCount).to.equal(1);
+      expect(navigationCancel.args[0]).to.deep.equal([]);
+    });
+  });
+
+  describe('canDeactivate', () => {
+    let navigationCancel;
+    beforeEach(async () => {
+      navigationCancel = sinon.stub(GlobalActions.prototype, 'navigationCancel');
+      await compileComponent();
+    });
+
+    it('should return true when not edited', () => {
+      store.overrideSelector(Selectors.getEnketoEditedStatus, false);
+      store.overrideSelector(Selectors.getCancelCallback, sinon.stub());
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(component.canDeactivate('')).to.equal(true);
+      expect(navigationCancel.callCount).to.equal(0);
+    });
+
+    it('should return true when no cancel callback', () => {
+      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
+      store.overrideSelector(Selectors.getCancelCallback, null);
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(component.canDeactivate('')).to.equal(true);
+      expect(navigationCancel.callCount).to.equal(0);
+    });
+
+    it('should return false otherwise', () => {
+      store.overrideSelector(Selectors.getEnketoEditedStatus, true);
+      store.overrideSelector(Selectors.getCancelCallback, sinon.stub());
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(component.canDeactivate('theurl')).to.equal(false);
+      expect(navigationCancel.callCount).to.equal(1);
+      expect(navigationCancel.args[0]).to.deep.equal(['theurl']);
     });
   });
 });

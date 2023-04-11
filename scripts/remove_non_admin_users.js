@@ -62,7 +62,7 @@ httpHandler.get(all_users_url, (res) => {
 
         del_req.on('error', function (e) {
           if (e) {
-            console.log('Error from Deleting', user_id,e.message);
+            console.log('Error from Deleting', user_id, e.message);
           }
         });
         del_req.end();

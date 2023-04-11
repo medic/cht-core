@@ -28,12 +28,16 @@ describe('Session service', () => {
       get: sinon.stub(),
       delete: sinon.stub(),
     };
+    const documentMock = {
+      location: location,
+      querySelectorAll: sinon.stub().returns([]),
+    };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: CookieService, useValue: { get: cookieGet, set: cookieSet, delete: cookieDelete } },
         { provide: LocationService, useValue: Location },
-        { provide: DOCUMENT, useValue: { location: location } },
+        { provide: DOCUMENT, useValue: documentMock },
         { provide: HttpClient, useValue: $httpBackend },
       ],
     });
@@ -43,7 +47,6 @@ describe('Session service', () => {
   afterEach(() => {
     sinon.restore();
   });
-
 
   it('gets the user context', () => {
     const expected = { name: 'bryan' };
@@ -96,6 +99,8 @@ describe('Session service', () => {
     $httpBackend.get.withArgs('/_session').returns(throwError({ status: 0 }));
     await service.init();
     expect(cookieDelete.callCount).to.equal(0);
+    const headers = $httpBackend.get.args[0][1].headers;
+    expect(headers.get('Accept')).to.equal('application/json');
   });
 
   it('logs out if remote userCtx inconsistent', async () => {
@@ -118,6 +123,28 @@ describe('Session service', () => {
     $httpBackend.get.withArgs('/_session').returns(of([{ data: { userCtx: { name: 'bryan' } } }]));
     await service.init();
     expect(cookieDelete.callCount).to.equal(0);
+  });
+
+  describe('hasRole', () => {
+    it('should return false if user is not logged in', () => {
+      cookieGet.returns(JSON.stringify({}));
+      expect(service.hasRole('chw')).to.be.false;
+    });
+
+    it('should return false if user does not have the role', () => {
+      cookieGet.returns(JSON.stringify({ roles: [ 'nurse', 'chw-supervisor' ] }));
+      expect(service.hasRole('chw')).to.be.false;
+    });
+
+    it('should return false if user does not have any role', () => {
+      cookieGet.returns(JSON.stringify({ roles: [] }));
+      expect(service.hasRole('chw')).to.be.false;
+    });
+
+    it('should return true if user has the role', () => {
+      cookieGet.returns(JSON.stringify({ roles: [ 'nurse', 'chw-supervisor', 'chw' ] }));
+      expect(service.hasRole('chw')).to.be.true;
+    });
   });
 
   describe('isAdmin function', () => {

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Turn Notifications ON</h:title>
     <model>
@@ -14,7 +14,7 @@
           <text id="/collect_on/review:label">
             <value>Mengirimkan laporan untuk menghidupkan pesan untuk ID <output value=" /collect_on/id "/>, dengan catatan: <output value=" /collect_on/r "/></value></text>
         </translation>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/collect_on/id:label">
             <value>Patient ID</value>
           </text>
@@ -56,7 +56,7 @@
         </translation>
       </itext>
       <instance>
-        <collect_on delimiter="#" id="collect_on" prefix="J1!on!" version="2018-09-27_07-24">
+        <collect_on id="collect_on" prefix="J1!on!" delimiter="#" version="2018-09-27_07-24">
           <id/>
           <r/>
           <review/>
@@ -65,10 +65,10 @@
           </meta>
         </collect_on>
       </instance>
-      <bind nodeset="/collect_on/id" required="true()" type="string"/>
+      <bind nodeset="/collect_on/id" type="string" required="true()"/>
       <bind nodeset="/collect_on/r" type="string"/>
       <bind nodeset="/collect_on/review" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/collect_on/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/collect_on/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

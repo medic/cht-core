@@ -1,7 +1,7 @@
 const moment = require('moment');
 const db = require('../db');
 const logger = require('../logger');
-const DOC_IDS_WARN_LIMIT = require('./users').DOC_IDS_WARN_LIMIT;
+const DOC_IDS_WARN_LIMIT = 10000;
 
 const LOG_TYPE = 'replication-count-';
 // The count and month difference between old and new log.
@@ -94,5 +94,6 @@ module.exports = {
   put: logReplicationLimit,
   get: getReplicationLimitLog,
   _isLogDifferent: isLogDifferent,
-  LOG_TYPE
+  LOG_TYPE,
+  DOC_IDS_WARN_LIMIT,
 };

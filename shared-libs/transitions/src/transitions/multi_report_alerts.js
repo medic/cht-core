@@ -70,7 +70,7 @@ const generateMessages = (
   phones.forEach(phone => {
 
     if (phone.error) {
-      logger.error('%o',phone.error);
+      logger.error('%o', phone.error);
       messages.addError(latestReport, phone.error);
       return;
     }
@@ -294,16 +294,15 @@ const getCountedReportsBatch = (script, latestReport, alert, skip) => {
     options
   ).then(fetched => {
     const countedReports = countReports(fetched, latestReport, script);
-    const oldReportIds = _.flattenDeep(
-      countedReports.map(report => {
-        if (report.tasks) {
-          const tasks = report.tasks.filter(
-            task => task.alert_name === alert.name
-          );
-          return tasks.map(task => task.counted_reports);
-        }
-      })
-    );
+    const oldReportIds = [];
+    countedReports.forEach(report => {
+      if (!report.tasks) {
+        return;
+      }
+      report.tasks
+        .filter(task => task.alert_name === alert.name && task.counted_reports && task.counted_reports.length)
+        .forEach(task => oldReportIds.push(...task.counted_reports));
+    });
     return {
       numFetched: fetched.length,
       countedReports: countedReports,
@@ -364,7 +363,7 @@ const onMatch = change => {
 module.exports = {
   name: TRANSITION_NAME,
   asynchronousOnly: true,
-  filter: (doc, info = {}) => {
+  filter: ({ doc, info }) => {
     return !!(
       doc &&
       doc.form &&

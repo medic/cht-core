@@ -139,21 +139,43 @@ const getWeeksSinceLMP = doc => {
   }
 };
 
+/*
+* Given a doc, try to get the exact LMP date
+*/
+const getLMPDate = doc => {
+  const props = ['lmp_date', 'date_lmp'];
+  for (const prop of props) {
+    const lmp = doc.fields && doc.fields[prop] && parseInt(doc.fields[prop]);
+    if (!isNaN(lmp)) {//milliseconds since epoch
+      return lmp;
+    }
+  }
+};
+
 const setExpectedBirthDate = doc => {
-  const lmp = getWeeksSinceLMP(doc);
-  const start = moment(doc.reported_date).startOf('day');
-  if (lmp === 0) {
-    // means baby was already born, chw just wants a registration.
+  let start;
+  const lmpDate = getLMPDate(doc);
+  if (lmpDate) {
+    start = moment(lmpDate);
+  } else {
+    const lmp = getWeeksSinceLMP(doc);
+    if (lmp) {
+      start = moment(doc.reported_date).startOf('day');
+      start.subtract(lmp, 'weeks');
+    }
+  }
+
+  if (!start) {// means baby was already born, chw just wants a registration.
     doc.lmp_date = null;
     doc.expected_date = null;
-  } else {
-    start.subtract(lmp, 'weeks');
-    doc.lmp_date = start.toISOString();
-    doc.expected_date = start
-      .clone()
-      .add(40, 'weeks')
-      .toISOString();
+    return;
   }
+
+  doc.lmp_date = start.toISOString();
+  doc.expected_date = start
+    .clone()
+    .add(40, 'weeks')
+    .toISOString();
 };
 
 const setBirthDate = doc => {
@@ -643,7 +665,7 @@ module.exports = {
       }
     });
   },
-  filter: (doc, info = {}) => {
+  filter: ({ doc, info }) => {
     return Boolean(
       doc.type === 'data_record' &&
       getRegistrationConfig(getConfig(), doc.form) &&

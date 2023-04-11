@@ -1,14 +1,18 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
+import { Store } from '@ngrx/store';
 
 import { SessionService } from '@mm-services/session.service';
 import * as purger from '../../js/bootstrapper/purger';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
+import { PurgeService } from '@mm-services/purge.service';
 import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
+import { GlobalActions } from '@mm-actions/global';
+import { TranslateService } from '@mm-services/translate.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -40,6 +44,22 @@ const readOnlyFilter = function(doc) {
 // of invalidating existent replication checkpointers after upgrade, causing users to restart upwards replication.
 readOnlyFilter.toString = () => '';
 
+export enum SyncStatus {
+  Unknown = 'unknown',
+  Disabled = 'disabled',
+  InProgress = 'inProgress',
+  Success = 'success',
+  Required = 'required',
+}
+
+type SyncState = {
+  state?: SyncStatus;
+  to?: SyncStatus;
+  from?: SyncStatus;
+};
+
+type SyncStateListener = Parameters<Subject<SyncState>['subscribe']>[0];
+
 @Injectable({
   providedIn: 'root'
 })
@@ -53,7 +73,12 @@ export class DBSyncService {
     private ngZone:NgZone,
     private checkDateService:CheckDateService,
     private telemetryService:TelemetryService,
-  ) {}
+    private store:Store,
+    private translateService:TranslateService,
+    private purgeService:PurgeService,
+  ) {
+    this.globalActions = new GlobalActions(store);
+  }
 
   private readonly DIRECTIONS = [
     {
@@ -75,6 +100,8 @@ export class DBSyncService {
       onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
     }
   ];
+
+  private globalActions: GlobalActions;
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
@@ -82,7 +109,8 @@ export class DBSyncService {
     sync: undefined,
     meta: undefined,
   };
-  private readonly observable = new Subject();
+
+  private readonly observable = new Subject<SyncState>();
 
   isEnabled() {
     return !this.sessionService.isOnlineOnly();
@@ -145,9 +173,11 @@ export class DBSyncService {
   private getCurrentSeq() {
     return this.dbService.get().info().then(info => info.update_seq + '');
   }
+
   private getLastReplicatedSeq() {
     return window.localStorage.getItem(LAST_REPLICATED_SEQ_KEY);
   }
+
   private getLastReplicationDate() {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
@@ -165,32 +195,44 @@ export class DBSyncService {
         .then(errs => {
           return this.getCurrentSeq().then(currentSeq => {
             errs = errs.filter(err => err);
-            let update:any = { to: 'success', from: 'success' };
+            let syncState: SyncState = { to: SyncStatus.Success, from: SyncStatus.Success };
             if (!errs.length) {
               // no errors
               this.syncIsRecent = true;
               window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
+
             } else if (currentSeq === this.getLastReplicatedSeq()) {
               // no changes to send, but may have some to receive
-              update = { state: 'unknown' };
+              syncState = { state: SyncStatus.Unknown };
             } else {
               // definitely need to sync something
-              errs.forEach(err => {
-                update[err] = 'required';
+              errs.forEach((directionName: 'to' | 'from') => {
+                syncState[directionName] = SyncStatus.Required;
               });
             }
-            if (update.to === 'success') {
+            if (syncState.to === SyncStatus.Success) {
               window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
             }
-            this.sendUpdate(update);
+            return syncState;
           });
+        })
+        .then(syncState => {
+          return this.purgeService.updateDocsToPurge()
+            .catch(err => console.warn('Error updating to purge list', err))
+            .then(() => syncState);
+        })
+        .then(syncState => {
+          if (force) {
+            this.displayUserFeedback(syncState);
+          }
+          this.sendUpdate(syncState);
         })
         .finally(() => {
           this.inProgressSync = undefined;
         });
     }
 
-    this.sendUpdate({ state: 'inProgress' });
+    this.sendUpdate({ state: SyncStatus.InProgress });
     return this.inProgressSync;
   }
 
@@ -202,17 +244,23 @@ export class DBSyncService {
     return local
       .info()
       .then(info => currentSeq = info.update_seq)
-      .then(() => {
-        return local
-          .sync(remote)
-          .on('complete', (info) => telemetryEntry.recordSuccess(info))
-          .on('error', (err) => telemetryEntry.recordFailure(err, this.knownOnlineState));
+      .then(() => Promise.all([
+        local.replicate.to(remote),
+        local.replicate.from(remote),
+      ]))
+      .then(([ push, pull ]) => {
+        telemetryEntry.recordSuccess({ push, pull });
       })
-      .then(() => this.ngZone.runOutsideAngular(() => purger.writePurgeMetaCheckpoint(local, currentSeq)));
+      .catch(err => {
+        telemetryEntry.recordFailure(err, this.knownOnlineState);
+      })
+      .then(() => this.ngZone.runOutsideAngular(() => {
+        purger.writeMetaPurgeLog(local, { syncedSeq: currentSeq });
+      }));
   }
 
-  private sendUpdate(update) {
-    this.observable.next(update);
+  private sendUpdate(syncState: SyncState) {
+    this.observable.next(syncState);
   }
 
   private resetSyncInterval() {
@@ -227,7 +275,22 @@ export class DBSyncService {
     }, SYNC_INTERVAL);
   }
 
-  subscribe(listener) {
+  private displayUserFeedback(syncState: SyncState) {
+    if (syncState.to === SyncStatus.Success && syncState.from === SyncStatus.Success) {
+      this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.not_required'));
+      return;
+    }
+
+    this.globalActions.setSnackbarContent(
+      this.translateService.instant('sync.feedback.failure.unknown'),
+      {
+        label: this.translateService.instant('sync.retry'),
+        onClick: () => this.sync(true),
+      },
+    );
+  }
+
+  subscribe(listener: SyncStateListener) {
     return this.observable.subscribe(listener);
   }
 
@@ -261,11 +324,16 @@ export class DBSyncService {
   */
   sync(force?) {
     if (!this.isEnabled()) {
-      this.sendUpdate({ state: 'disabled' });
+      this.sendUpdate({ state: SyncStatus.Disabled });
       return Promise.resolve();
     }
 
-    if (!this.intervalPromises.meta) {
+    if (force) {
+      this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.in_progress'));
+      this.telemetryService.record('replication:user-initiated');
+    }
+
+    if (!this.intervalPromises.meta || force) {
       this.intervalPromises.meta = setInterval(this.syncMeta.bind(this), META_SYNC_INTERVAL);
       this.syncMeta();
     }

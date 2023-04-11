@@ -3,17 +3,23 @@ import * as moment from 'moment';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
+import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TasksForContactService {
+  private leafPlaceTypes$;
+
   constructor(
     private contactTypesService:ContactTypesService,
-    private rulesEngineService:RulesEngineService
-  ) { }
+    private rulesEngineService:RulesEngineService,
+    private lineageModelGeneratorService:LineageModelGeneratorService,
+  ) {
+    this.leafPlaceTypes$ = this.contactTypesService.getLeafPlaceTypes();
+  }
 
-  private getIdsForTasks(model) {
+  getIdsForTasks(model) {
     const contactIds = [];
     if (!model?.type?.person && model?.children) {
       model.children.forEach(child => {
@@ -39,18 +45,19 @@ export class TasksForContactService {
         }
 
         // must be either a person type
-        if (type?.person) {
+        if (type.person) {
           return true;
         }
 
         // ... or a leaf place type
-        return this.contactTypesService
-          .getAll()
-          .then(types => {
-            const hasChild = types.some(t => !t.person && t.parents && t.parents.includes(type?.id));
-            return !hasChild;
-          });
+        return this.isLeafPlaceType(type);
       });
+  }
+
+  private isLeafPlaceType(type) {
+    return this
+      .leafPlaceTypes$
+      .then(leafPlaceTypes => this.contactTypesService.isLeafPlaceType(leafPlaceTypes, type.id));
   }
 
   private decorateAndSortTasks(tasks) {
@@ -79,5 +86,40 @@ export class TasksForContactService {
           .fetchTaskDocsFor(contactIds)
           .then(tasks => this.decorateAndSortTasks(tasks));
       });
+  }
+
+  async getTasksBreakdown(model) {
+    const enabled = await this.areTasksEnabled(model.type);
+    if (!enabled) {
+      return;
+    }
+
+    const contactIds = this.getIdsForTasks(model);
+    return this.rulesEngineService.fetchTasksBreakdown(contactIds);
+  }
+
+  async getLeafPlaceAncestor(contactId) {
+    if (!contactId) {
+      return false;
+    }
+
+    const { doc, lineage } = await this.lineageModelGeneratorService.contact(contactId, { hydrate: false });
+    if (!doc || !lineage) {
+      return false;
+    }
+
+    const leafPlaceTypes = await this.leafPlaceTypes$;
+    const leafPlace = [doc, ...lineage].find(contact => {
+      const typeId = this.contactTypesService.getTypeId(contact);
+      return this.contactTypesService.isLeafPlaceType(leafPlaceTypes, typeId);
+    });
+
+    if (!leafPlace) {
+      return false;
+    }
+
+    const typeId = this.contactTypesService.getTypeId(leafPlace);
+    const type = this.contactTypesService.getTypeById(leafPlaceTypes, typeId);
+    return { doc: leafPlace, type };
   }
 }

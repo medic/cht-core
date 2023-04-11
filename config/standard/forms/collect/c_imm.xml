@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Immunization Visit</h:title>
     <model>
@@ -705,7 +705,7 @@
             <value>Vaksin didapat</value>
           </text>
         </translation>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/c_imm/group_bcg/g_bcg/no:label">
             <value>No</value>
           </text>
@@ -4913,7 +4913,7 @@
         </translation>
       </itext>
       <instance>
-        <c_imm delimiter="#" id="c_imm" prefix="J1!c_imm!" version="2019-02-21_04-12">
+        <c_imm id="c_imm" prefix="J1!c_imm!" delimiter="#" version="2019-02-21_04-12">
           <id/>
           <c/>
           <received>
@@ -5080,141 +5080,141 @@
           </meta>
         </c_imm>
       </instance>
-      <bind nodeset="/c_imm/id" required="true()" type="string"/>
-      <bind calculate=" /c_imm/group_chw_info/attended_imm " nodeset="/c_imm/c" type="string"/>
-      <bind calculate="if( /c_imm/group_bcg/g_bcg  = 'yes','yes','no')" nodeset="/c_imm/received/bcg" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_cholera/g_cholera ,'CH1'),'yes','no')" nodeset="/c_imm/received/ch1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_cholera/g_cholera ,'CH2'),'yes','no')" nodeset="/c_imm/received/ch2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_cholera/g_cholera ,'CH3'),'yes','no')" nodeset="/c_imm/received/ch3" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_hep_a/g_hep_a ,'HA1'),'yes','no')" nodeset="/c_imm/received/ha1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_hep_a/g_hep_a ,'HA2'),'yes','no')" nodeset="/c_imm/received/ha2" type="string"/>
-      <bind calculate="if( /c_imm/group_hep_b/g_hep_b  = 'yes','yes','no')" nodeset="/c_imm/received/hb" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_hpv/g_hpv ,'HPV1'),'yes','no')" nodeset="/c_imm/received/hpv1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_hpv/g_hpv ,'HPV2'),'yes','no')" nodeset="/c_imm/received/hpv2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_hpv/g_hpv ,'HPV3'),'yes','no')" nodeset="/c_imm/received/hpv3" type="string"/>
-      <bind calculate="if( /c_imm/group_flu/g_flu  = 'yes','yes','no')" nodeset="/c_imm/received/flu" type="string"/>
-      <bind calculate="if( /c_imm/group_jap_enc/g_jap_enc  = 'yes','yes','no')" nodeset="/c_imm/received/je" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_meningococcal/g_meningococcal ,'MN1'),'yes','no')" nodeset="/c_imm/received/mn1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_meningococcal/g_meningococcal ,'MN2'),'yes','no')" nodeset="/c_imm/received/mn2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_meningococcal/g_meningococcal ,'MN3'),'yes','no')" nodeset="/c_imm/received/mn3" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_meningococcal/g_meningococcal ,'MN4'),'yes','no')" nodeset="/c_imm/received/mn4" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_mmr/g_mmr ,'MMR1'),'yes','no')" nodeset="/c_imm/received/mmr1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_mmr/g_mmr ,'MMR2'),'yes','no')" nodeset="/c_imm/received/mmr2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1'),'yes','no')" nodeset="/c_imm/received/mmrv1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2'),'yes','no')" nodeset="/c_imm/received/mmrv2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV0'),'yes','no')" nodeset="/c_imm/received/opv0" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV1'),'yes','no')" nodeset="/c_imm/received/opv1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV2'),'yes','no')" nodeset="/c_imm/received/opv2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV3'),'yes','no')" nodeset="/c_imm/received/opv3" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'IPV1'),'yes','no')" nodeset="/c_imm/received/ipv1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'IPV2'),'yes','no')" nodeset="/c_imm/received/ipv2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'IPV3'),'yes','no')" nodeset="/c_imm/received/ipv3" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'FIPV1'),'yes','no')" nodeset="/c_imm/received/fipv1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_polio/g_polio ,'FIPV2'),'yes','no')" nodeset="/c_imm/received/fipv2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1'),'yes','no')" nodeset="/c_imm/received/penta1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2'),'yes','no')" nodeset="/c_imm/received/penta2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'),'yes','no')" nodeset="/c_imm/received/penta3" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_dpt/g_dpt ,'DPT4'),'yes','no')" nodeset="/c_imm/received/dpt4" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_dpt/g_dpt ,'DPT5'),'yes','no')" nodeset="/c_imm/received/dpt5" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1'),'yes','no')" nodeset="/c_imm/received/pcv1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV2'),'yes','no')" nodeset="/c_imm/received/pcv2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV3'),'yes','no')" nodeset="/c_imm/received/pcv3" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV4'),'yes','no')" nodeset="/c_imm/received/pcv4" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_rotavirus/g_rotavirus ,'RV1'),'yes','no')" nodeset="/c_imm/received/rv1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_rotavirus/g_rotavirus ,'RV2'),'yes','no')" nodeset="/c_imm/received/rv2" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_rotavirus/g_rotavirus ,'RV3'),'yes','no')" nodeset="/c_imm/received/rv3" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_typhoid/g_typhoid ,'TY1'),'yes','no')" nodeset="/c_imm/received/ty1" type="string"/>
-      <bind calculate="if(selected( /c_imm/group_typhoid/g_typhoid ,'TY2'),'yes','no')" nodeset="/c_imm/received/ty2" type="string"/>
-      <bind calculate="if( /c_imm/group_vitamin_a/g_vitamin_a  = 'yes','yes','no')" nodeset="/c_imm/received/vita" type="string"/>
-      <bind calculate="if( /c_imm/group_yellow_fever/g_yellow_fever  = 'yes','yes','no')" nodeset="/c_imm/received/yf" type="string"/>
-      <bind nodeset="/c_imm/group_chw_info/attended_imm" required="true()" type="select1"/>
+      <bind nodeset="/c_imm/id" type="string" required="true()"/>
+      <bind nodeset="/c_imm/c" type="string" calculate=" /c_imm/group_chw_info/attended_imm "/>
+      <bind nodeset="/c_imm/received/bcg" type="string" calculate="if( /c_imm/group_bcg/g_bcg  = 'yes','yes','no')"/>
+      <bind nodeset="/c_imm/received/ch1" type="string" calculate="if(selected( /c_imm/group_cholera/g_cholera ,'CH1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/ch2" type="string" calculate="if(selected( /c_imm/group_cholera/g_cholera ,'CH2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/ch3" type="string" calculate="if(selected( /c_imm/group_cholera/g_cholera ,'CH3'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/ha1" type="string" calculate="if(selected( /c_imm/group_hep_a/g_hep_a ,'HA1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/ha2" type="string" calculate="if(selected( /c_imm/group_hep_a/g_hep_a ,'HA2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/hb" type="string" calculate="if( /c_imm/group_hep_b/g_hep_b  = 'yes','yes','no')"/>
+      <bind nodeset="/c_imm/received/hpv1" type="string" calculate="if(selected( /c_imm/group_hpv/g_hpv ,'HPV1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/hpv2" type="string" calculate="if(selected( /c_imm/group_hpv/g_hpv ,'HPV2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/hpv3" type="string" calculate="if(selected( /c_imm/group_hpv/g_hpv ,'HPV3'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/flu" type="string" calculate="if( /c_imm/group_flu/g_flu  = 'yes','yes','no')"/>
+      <bind nodeset="/c_imm/received/je" type="string" calculate="if( /c_imm/group_jap_enc/g_jap_enc  = 'yes','yes','no')"/>
+      <bind nodeset="/c_imm/received/mn1" type="string" calculate="if(selected( /c_imm/group_meningococcal/g_meningococcal ,'MN1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/mn2" type="string" calculate="if(selected( /c_imm/group_meningococcal/g_meningococcal ,'MN2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/mn3" type="string" calculate="if(selected( /c_imm/group_meningococcal/g_meningococcal ,'MN3'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/mn4" type="string" calculate="if(selected( /c_imm/group_meningococcal/g_meningococcal ,'MN4'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/mmr1" type="string" calculate="if(selected( /c_imm/group_mmr/g_mmr ,'MMR1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/mmr2" type="string" calculate="if(selected( /c_imm/group_mmr/g_mmr ,'MMR2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/mmrv1" type="string" calculate="if(selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/mmrv2" type="string" calculate="if(selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/opv0" type="string" calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV0'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/opv1" type="string" calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/opv2" type="string" calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/opv3" type="string" calculate="if(selected( /c_imm/group_polio/g_polio ,'OPV3'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/ipv1" type="string" calculate="if(selected( /c_imm/group_polio/g_polio ,'IPV1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/ipv2" type="string" calculate="if(selected( /c_imm/group_polio/g_polio ,'IPV2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/ipv3" type="string" calculate="if(selected( /c_imm/group_polio/g_polio ,'IPV3'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/fipv1" type="string" calculate="if(selected( /c_imm/group_polio/g_polio ,'FIPV1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/fipv2" type="string" calculate="if(selected( /c_imm/group_polio/g_polio ,'FIPV2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/penta1" type="string" calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/penta2" type="string" calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/penta3" type="string" calculate="if(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/dpt4" type="string" calculate="if(selected( /c_imm/group_dpt/g_dpt ,'DPT4'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/dpt5" type="string" calculate="if(selected( /c_imm/group_dpt/g_dpt ,'DPT5'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/pcv1" type="string" calculate="if(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/pcv2" type="string" calculate="if(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/pcv3" type="string" calculate="if(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV3'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/pcv4" type="string" calculate="if(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV4'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/rv1" type="string" calculate="if(selected( /c_imm/group_rotavirus/g_rotavirus ,'RV1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/rv2" type="string" calculate="if(selected( /c_imm/group_rotavirus/g_rotavirus ,'RV2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/rv3" type="string" calculate="if(selected( /c_imm/group_rotavirus/g_rotavirus ,'RV3'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/ty1" type="string" calculate="if(selected( /c_imm/group_typhoid/g_typhoid ,'TY1'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/ty2" type="string" calculate="if(selected( /c_imm/group_typhoid/g_typhoid ,'TY2'),'yes','no')"/>
+      <bind nodeset="/c_imm/received/vita" type="string" calculate="if( /c_imm/group_vitamin_a/g_vitamin_a  = 'yes','yes','no')"/>
+      <bind nodeset="/c_imm/received/yf" type="string" calculate="if( /c_imm/group_yellow_fever/g_yellow_fever  = 'yes','yes','no')"/>
+      <bind nodeset="/c_imm/group_chw_info/attended_imm" type="select1" required="true()"/>
       <bind nodeset="/c_imm/group_select_vaccines" relevant=" /c_imm/group_chw_info/attended_imm  = 'yes'"/>
-      <bind nodeset="/c_imm/group_select_vaccines/g_vaccines" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_select_vaccines/g_vaccines" type="select" required="true()"/>
       <bind nodeset="/c_imm/group_bcg" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'bcg')"/>
-      <bind nodeset="/c_imm/group_bcg/g_bcg" required="true()" type="select1"/>
+      <bind nodeset="/c_imm/group_bcg/g_bcg" type="select1" required="true()"/>
       <bind nodeset="/c_imm/group_cholera" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'cholera')"/>
-      <bind constraint="(not(selected( /c_imm/group_cholera/g_cholera ,'none')) and (selected( /c_imm/group_cholera/g_cholera ,'CH1') or selected( /c_imm/group_cholera/g_cholera ,'CH2') or selected( /c_imm/group_cholera/g_cholera ,'CH3'))) or (selected( /c_imm/group_cholera/g_cholera ,'none') and not(selected( /c_imm/group_cholera/g_cholera ,'CH1') or selected( /c_imm/group_cholera/g_cholera ,'CH2') or selected( /c_imm/group_cholera/g_cholera ,'CH3')))" jr:constraintMsg="jr:itext('/c_imm/group_cholera/g_cholera:jr:constraintMsg')" nodeset="/c_imm/group_cholera/g_cholera" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_cholera/g_cholera" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_cholera/g_cholera:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_cholera/g_cholera ,'none')) and (selected( /c_imm/group_cholera/g_cholera ,'CH1') or selected( /c_imm/group_cholera/g_cholera ,'CH2') or selected( /c_imm/group_cholera/g_cholera ,'CH3'))) or (selected( /c_imm/group_cholera/g_cholera ,'none') and not(selected( /c_imm/group_cholera/g_cholera ,'CH1') or selected( /c_imm/group_cholera/g_cholera ,'CH2') or selected( /c_imm/group_cholera/g_cholera ,'CH3')))"/>
       <bind nodeset="/c_imm/group_hep_a" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'hep_a')"/>
-      <bind constraint="(not(selected( /c_imm/group_hep_a/g_hep_a ,'none')) and (selected( /c_imm/group_hep_a/g_hep_a ,'HA1') or selected( /c_imm/group_hep_a/g_hep_a ,'HA2'))) or (selected( /c_imm/group_hep_a/g_hep_a ,'none') and not(selected( /c_imm/group_hep_a/g_hep_a ,'HA1') or selected( /c_imm/group_hep_a/g_hep_a ,'HA2')))" jr:constraintMsg="jr:itext('/c_imm/group_hep_a/g_hep_a:jr:constraintMsg')" nodeset="/c_imm/group_hep_a/g_hep_a" required="true()" type="select"/>
-      <bind nodeset="/c_imm/group_hep_b/g_hep_b" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'hep_b')" required="true()" type="select1"/>
+      <bind nodeset="/c_imm/group_hep_a/g_hep_a" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_hep_a/g_hep_a:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_hep_a/g_hep_a ,'none')) and (selected( /c_imm/group_hep_a/g_hep_a ,'HA1') or selected( /c_imm/group_hep_a/g_hep_a ,'HA2'))) or (selected( /c_imm/group_hep_a/g_hep_a ,'none') and not(selected( /c_imm/group_hep_a/g_hep_a ,'HA1') or selected( /c_imm/group_hep_a/g_hep_a ,'HA2')))"/>
+      <bind nodeset="/c_imm/group_hep_b/g_hep_b" type="select1" required="true()" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'hep_b')"/>
       <bind nodeset="/c_imm/group_hpv" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'hpv')"/>
-      <bind constraint="(not(selected( /c_imm/group_hpv/g_hpv ,'none')) and (selected( /c_imm/group_hpv/g_hpv ,'HPV1') or selected( /c_imm/group_hpv/g_hpv ,'HPV2') or selected( /c_imm/group_hpv/g_hpv ,'HPV3'))) or selected( /c_imm/group_hpv/g_hpv ,'none') and not(selected( /c_imm/group_hpv/g_hpv ,'HPV1') or selected( /c_imm/group_hpv/g_hpv ,'HPV2') or selected( /c_imm/group_hpv/g_hpv ,'HPV3'))" jr:constraintMsg="jr:itext('/c_imm/group_hpv/g_hpv:jr:constraintMsg')" nodeset="/c_imm/group_hpv/g_hpv" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_hpv/g_hpv" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_hpv/g_hpv:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_hpv/g_hpv ,'none')) and (selected( /c_imm/group_hpv/g_hpv ,'HPV1') or selected( /c_imm/group_hpv/g_hpv ,'HPV2') or selected( /c_imm/group_hpv/g_hpv ,'HPV3'))) or selected( /c_imm/group_hpv/g_hpv ,'none') and not(selected( /c_imm/group_hpv/g_hpv ,'HPV1') or selected( /c_imm/group_hpv/g_hpv ,'HPV2') or selected( /c_imm/group_hpv/g_hpv ,'HPV3'))"/>
       <bind nodeset="/c_imm/group_flu" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'flu')"/>
-      <bind nodeset="/c_imm/group_flu/g_flu" required="true()" type="select1"/>
+      <bind nodeset="/c_imm/group_flu/g_flu" type="select1" required="true()"/>
       <bind nodeset="/c_imm/group_jap_enc" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'jap_enc')"/>
-      <bind nodeset="/c_imm/group_jap_enc/g_jap_enc" required="true()" type="select1"/>
+      <bind nodeset="/c_imm/group_jap_enc/g_jap_enc" type="select1" required="true()"/>
       <bind nodeset="/c_imm/group_meningococcal" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'meningococcal')"/>
-      <bind constraint="(not(selected( /c_imm/group_meningococcal/g_meningococcal ,'none')) and (selected( /c_imm/group_meningococcal/g_meningococcal ,'MN1') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN2') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN3') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN4'))) or selected( /c_imm/group_meningococcal/g_meningococcal ,'none') and not(selected( /c_imm/group_meningococcal/g_meningococcal ,'MN1') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN2') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN3') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN4'))" jr:constraintMsg="jr:itext('/c_imm/group_meningococcal/g_meningococcal:jr:constraintMsg')" nodeset="/c_imm/group_meningococcal/g_meningococcal" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_meningococcal/g_meningococcal" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_meningococcal/g_meningococcal:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_meningococcal/g_meningococcal ,'none')) and (selected( /c_imm/group_meningococcal/g_meningococcal ,'MN1') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN2') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN3') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN4'))) or selected( /c_imm/group_meningococcal/g_meningococcal ,'none') and not(selected( /c_imm/group_meningococcal/g_meningococcal ,'MN1') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN2') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN3') or selected( /c_imm/group_meningococcal/g_meningococcal ,'MN4'))"/>
       <bind nodeset="/c_imm/group_mmr" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'mmr')"/>
-      <bind constraint="(not(selected( /c_imm/group_mmr/g_mmr ,'none')) and (selected( /c_imm/group_mmr/g_mmr ,'MMR1') or selected( /c_imm/group_mmr/g_mmr ,'MMR2'))) or selected( /c_imm/group_mmr/g_mmr ,'none') and not(selected( /c_imm/group_mmr/g_mmr ,'MMR1') or selected( /c_imm/group_mmr/g_mmr ,'MMR2'))" jr:constraintMsg="jr:itext('/c_imm/group_mmr/g_mmr:jr:constraintMsg')" nodeset="/c_imm/group_mmr/g_mmr" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_mmr/g_mmr" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_mmr/g_mmr:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_mmr/g_mmr ,'none')) and (selected( /c_imm/group_mmr/g_mmr ,'MMR1') or selected( /c_imm/group_mmr/g_mmr ,'MMR2'))) or selected( /c_imm/group_mmr/g_mmr ,'none') and not(selected( /c_imm/group_mmr/g_mmr ,'MMR1') or selected( /c_imm/group_mmr/g_mmr ,'MMR2'))"/>
       <bind nodeset="/c_imm/group_mmrv" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'mmrv')"/>
-      <bind constraint="(not(selected( /c_imm/group_mmrv/g_mmrv ,'none')) and (selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1') or selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2'))) or selected( /c_imm/group_mmrv/g_mmrv ,'none') and not(selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1') or selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2'))" jr:constraintMsg="jr:itext('/c_imm/group_mmrv/g_mmrv:jr:constraintMsg')" nodeset="/c_imm/group_mmrv/g_mmrv" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_mmrv/g_mmrv" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_mmrv/g_mmrv:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_mmrv/g_mmrv ,'none')) and (selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1') or selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2'))) or selected( /c_imm/group_mmrv/g_mmrv ,'none') and not(selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1') or selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2'))"/>
       <bind nodeset="/c_imm/group_polio" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'polio')"/>
-      <bind constraint="(not(selected( /c_imm/group_polio/g_polio ,'none')) and (selected( /c_imm/group_polio/g_polio ,'OPV0') or selected( /c_imm/group_polio/g_polio ,'OPV1') or selected( /c_imm/group_polio/g_polio ,'OPV2') or selected( /c_imm/group_polio/g_polio ,'OPV3') or selected( /c_imm/group_polio/g_polio ,'IPV1') or selected( /c_imm/group_polio/g_polio ,'IPV2') or selected( /c_imm/group_polio/g_polio ,'IPV3') or selected( /c_imm/group_polio/g_polio ,'FIPV1') or selected( /c_imm/group_polio/g_polio ,'FIPV2'))) or selected( /c_imm/group_polio/g_polio ,'none') and not(selected( /c_imm/group_polio/g_polio ,'OPV0') or selected( /c_imm/group_polio/g_polio ,'OPV1') or selected( /c_imm/group_polio/g_polio ,'OPV2') or selected( /c_imm/group_polio/g_polio ,'OPV3') or selected( /c_imm/group_polio/g_polio ,'IPV1') or selected( /c_imm/group_polio/g_polio ,'IPV2') or selected( /c_imm/group_polio/g_polio ,'IPV3') or selected( /c_imm/group_polio/g_polio ,'FIPV1') or selected( /c_imm/group_polio/g_polio ,'FIPV2'))" jr:constraintMsg="jr:itext('/c_imm/group_polio/g_polio:jr:constraintMsg')" nodeset="/c_imm/group_polio/g_polio" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_polio/g_polio" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_polio/g_polio:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_polio/g_polio ,'none')) and (selected( /c_imm/group_polio/g_polio ,'OPV0') or selected( /c_imm/group_polio/g_polio ,'OPV1') or selected( /c_imm/group_polio/g_polio ,'OPV2') or selected( /c_imm/group_polio/g_polio ,'OPV3') or selected( /c_imm/group_polio/g_polio ,'IPV1') or selected( /c_imm/group_polio/g_polio ,'IPV2') or selected( /c_imm/group_polio/g_polio ,'IPV3') or selected( /c_imm/group_polio/g_polio ,'FIPV1') or selected( /c_imm/group_polio/g_polio ,'FIPV2'))) or selected( /c_imm/group_polio/g_polio ,'none') and not(selected( /c_imm/group_polio/g_polio ,'OPV0') or selected( /c_imm/group_polio/g_polio ,'OPV1') or selected( /c_imm/group_polio/g_polio ,'OPV2') or selected( /c_imm/group_polio/g_polio ,'OPV3') or selected( /c_imm/group_polio/g_polio ,'IPV1') or selected( /c_imm/group_polio/g_polio ,'IPV2') or selected( /c_imm/group_polio/g_polio ,'IPV3') or selected( /c_imm/group_polio/g_polio ,'FIPV1') or selected( /c_imm/group_polio/g_polio ,'FIPV2'))"/>
       <bind nodeset="/c_imm/group_pentavalent" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'penta')"/>
-      <bind constraint="(not(selected( /c_imm/group_pentavalent/g_pentavalent ,'none')) and (selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'))) or selected( /c_imm/group_pentavalent/g_pentavalent ,'none') and not(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'))" jr:constraintMsg="jr:itext('/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg')" nodeset="/c_imm/group_pentavalent/g_pentavalent" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_pentavalent/g_pentavalent" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_pentavalent/g_pentavalent:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_pentavalent/g_pentavalent ,'none')) and (selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'))) or selected( /c_imm/group_pentavalent/g_pentavalent ,'none') and not(selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2') or selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3'))"/>
       <bind nodeset="/c_imm/group_dpt" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'dpt')"/>
-      <bind constraint="(not(selected( /c_imm/group_dpt/g_dpt , 'none')) and (selected( /c_imm/group_dpt/g_dpt , 'DPT4') or selected( /c_imm/group_dpt/g_dpt , 'DPT5'))) or selected( /c_imm/group_dpt/g_dpt , 'none') and not(selected( /c_imm/group_dpt/g_dpt , 'DPT4') or selected( /c_imm/group_dpt/g_dpt ,'DPT5'))" jr:constraintMsg="jr:itext('/c_imm/group_dpt/g_dpt:jr:constraintMsg')" nodeset="/c_imm/group_dpt/g_dpt" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_dpt/g_dpt" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_dpt/g_dpt:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_dpt/g_dpt , 'none')) and (selected( /c_imm/group_dpt/g_dpt , 'DPT4') or selected( /c_imm/group_dpt/g_dpt , 'DPT5'))) or selected( /c_imm/group_dpt/g_dpt , 'none') and not(selected( /c_imm/group_dpt/g_dpt , 'DPT4') or selected( /c_imm/group_dpt/g_dpt ,'DPT5'))"/>
       <bind nodeset="/c_imm/group_pneumococcal" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'pneumococcal')"/>
-      <bind constraint="(not(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'none')) and (selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV2') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV3') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV4'))) or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'none') and not(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV2') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV3') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV4'))" jr:constraintMsg="jr:itext('/c_imm/group_pneumococcal/g_pneumococcal:jr:constraintMsg')" nodeset="/c_imm/group_pneumococcal/g_pneumococcal" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_pneumococcal/g_pneumococcal" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_pneumococcal/g_pneumococcal:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'none')) and (selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV2') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV3') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV4'))) or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'none') and not(selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV1') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV2') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV3') or selected( /c_imm/group_pneumococcal/g_pneumococcal ,'PCV4'))"/>
       <bind nodeset="/c_imm/group_rotavirus" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'rotavirus')"/>
-      <bind constraint="(not(selected( /c_imm/group_rotavirus/g_rotavirus ,'none')) and (selected( /c_imm/group_rotavirus/g_rotavirus ,'RV1') or selected( /c_imm/group_rotavirus/g_rotavirus ,'RV2') or selected( /c_imm/group_rotavirus/g_rotavirus ,'RV3'))) or selected( /c_imm/group_rotavirus/g_rotavirus ,'none') and not(selected( /c_imm/group_rotavirus/g_rotavirus ,'RV1') or selected( /c_imm/group_rotavirus/g_rotavirus ,'RV2') or selected( /c_imm/group_rotavirus/g_rotavirus ,'RV3'))" jr:constraintMsg="jr:itext('/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg')" nodeset="/c_imm/group_rotavirus/g_rotavirus" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_rotavirus/g_rotavirus" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_rotavirus/g_rotavirus:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_rotavirus/g_rotavirus ,'none')) and (selected( /c_imm/group_rotavirus/g_rotavirus ,'RV1') or selected( /c_imm/group_rotavirus/g_rotavirus ,'RV2') or selected( /c_imm/group_rotavirus/g_rotavirus ,'RV3'))) or selected( /c_imm/group_rotavirus/g_rotavirus ,'none') and not(selected( /c_imm/group_rotavirus/g_rotavirus ,'RV1') or selected( /c_imm/group_rotavirus/g_rotavirus ,'RV2') or selected( /c_imm/group_rotavirus/g_rotavirus ,'RV3'))"/>
       <bind nodeset="/c_imm/group_typhoid" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'typhoid')"/>
-      <bind constraint="(not(selected( /c_imm/group_typhoid/g_typhoid ,'none')) and (selected( /c_imm/group_typhoid/g_typhoid ,'TY1') or selected( /c_imm/group_typhoid/g_typhoid ,'TY2'))) or selected( /c_imm/group_typhoid/g_typhoid ,'none') and not(selected( /c_imm/group_typhoid/g_typhoid ,'TY1') or selected( /c_imm/group_typhoid/g_typhoid ,'TY2'))" jr:constraintMsg="jr:itext('/c_imm/group_typhoid/g_typhoid:jr:constraintMsg')" nodeset="/c_imm/group_typhoid/g_typhoid" required="true()" type="select"/>
+      <bind nodeset="/c_imm/group_typhoid/g_typhoid" type="select" required="true()" jr:constraintMsg="jr:itext('/c_imm/group_typhoid/g_typhoid:jr:constraintMsg')" constraint="(not(selected( /c_imm/group_typhoid/g_typhoid ,'none')) and (selected( /c_imm/group_typhoid/g_typhoid ,'TY1') or selected( /c_imm/group_typhoid/g_typhoid ,'TY2'))) or selected( /c_imm/group_typhoid/g_typhoid ,'none') and not(selected( /c_imm/group_typhoid/g_typhoid ,'TY1') or selected( /c_imm/group_typhoid/g_typhoid ,'TY2'))"/>
       <bind nodeset="/c_imm/group_vitamin_a" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'vitamin_a')"/>
-      <bind nodeset="/c_imm/group_vitamin_a/g_vitamin_a" required="true()" type="select1"/>
+      <bind nodeset="/c_imm/group_vitamin_a/g_vitamin_a" type="select1" required="true()"/>
       <bind nodeset="/c_imm/group_yellow_fever" relevant="selected( /c_imm/group_select_vaccines/g_vaccines ,'yellow_fever')"/>
-      <bind nodeset="/c_imm/group_yellow_fever/g_yellow_fever" required="true()" type="select1"/>
-      <bind nodeset="/c_imm/group_review/r_visit_no" readonly="true()" relevant="selected( /c_imm/group_chw_info/attended_imm ,'no')" type="string"/>
-      <bind nodeset="/c_imm/group_review/r_visit_yes" readonly="true()" relevant="selected( /c_imm/group_chw_info/attended_imm , 'yes')" type="string"/>
+      <bind nodeset="/c_imm/group_yellow_fever/g_yellow_fever" type="select1" required="true()"/>
+      <bind nodeset="/c_imm/group_review/r_visit_no" readonly="true()" type="string" relevant="selected( /c_imm/group_chw_info/attended_imm ,'no')"/>
+      <bind nodeset="/c_imm/group_review/r_visit_yes" readonly="true()" type="string" relevant="selected( /c_imm/group_chw_info/attended_imm , 'yes')"/>
       <bind nodeset="/c_imm/group_review_vaccines" relevant="selected( /c_imm/group_chw_info/attended_imm , 'yes')"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_bcg" readonly="true()" relevant=" /c_imm/group_bcg/g_bcg  = 'yes'" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_cholera_1" readonly="true()" relevant="selected( /c_imm/group_cholera/g_cholera ,'CH1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_cholera_2" readonly="true()" relevant="selected( /c_imm/group_cholera/g_cholera ,'CH2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_cholera_3" readonly="true()" relevant="selected( /c_imm/group_cholera/g_cholera ,'CH3')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_hep_a_1" readonly="true()" relevant="selected( /c_imm/group_hep_a/g_hep_a ,'HA1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_hep_a_2" readonly="true()" relevant="selected( /c_imm/group_hep_a/g_hep_a ,'HA2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_hep_b" readonly="true()" relevant=" /c_imm/group_hep_b/g_hep_b  = 'yes'" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_hpv_1" readonly="true()" relevant="selected( /c_imm/group_hpv/g_hpv ,'HPV1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_hpv_2" readonly="true()" relevant="selected( /c_imm/group_hpv/g_hpv ,'HPV2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_hpv_3" readonly="true()" relevant="selected( /c_imm/group_hpv/g_hpv ,'HPV3')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_flu" readonly="true()" relevant=" /c_imm/group_flu/g_flu  = 'yes'" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_jap_enc" readonly="true()" relevant=" /c_imm/group_jap_enc/g_jap_enc  = 'yes'" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_meningococcal_1" readonly="true()" relevant="selected( /c_imm/group_meningococcal/g_meningococcal ,'MN1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_meningococcal_2" readonly="true()" relevant="selected( /c_imm/group_meningococcal/g_meningococcal ,'MN2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_meningococcal_3" readonly="true()" relevant="selected( /c_imm/group_meningococcal/g_meningococcal ,'MN3')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_meningococcal_4" readonly="true()" relevant="selected( /c_imm/group_meningococcal/g_meningococcal ,'MN4')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_mmr_1" readonly="true()" relevant="selected( /c_imm/group_mmr/g_mmr ,'MMR1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_mmr_2" readonly="true()" relevant="selected( /c_imm/group_mmr/g_mmr ,'MMR2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_mmrv_1" readonly="true()" relevant="selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_mmrv_2" readonly="true()" relevant="selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_opv_0" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'OPV0')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_opv_1" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'OPV1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_opv_2" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'OPV2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_opv_3" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'OPV3')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_1" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'IPV1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_2" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'IPV2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_3" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'IPV3')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_fipv_1" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'FIPV1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_fipv_2" readonly="true()" relevant="selected( /c_imm/group_polio/g_polio ,'FIPV2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_penta_1" readonly="true()" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_penta_2" readonly="true()" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_penta_3" readonly="true()" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_dpt_4" readonly="true()" relevant="selected( /c_imm/group_dpt/g_dpt ,'DPT4')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_dpt_5" readonly="true()" relevant="selected( /c_imm/group_dpt/g_dpt ,'DPT5')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_pneumococcal_1" readonly="true()" relevant="selected( /c_imm/group_pneumococcal/g_pneumococcal ,'MN1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_pneumococcal_2" readonly="true()" relevant="selected( /c_imm/group_pneumococcal/g_pneumococcal ,'MN2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_pneumococcal_3" readonly="true()" relevant="selected( /c_imm/group_pneumococcal/g_pneumococcal ,'MN3')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_pneumococcal_4" readonly="true()" relevant="selected( /c_imm/group_pneumococcal/g_pneumococcal ,'MN4')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_rotavirus_1" readonly="true()" relevant="selected( /c_imm/group_rotavirus/g_rotavirus ,'RV1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_rotavirus_2" readonly="true()" relevant="selected( /c_imm/group_rotavirus/g_rotavirus ,'RV2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_rotavirus_3" readonly="true()" relevant="selected( /c_imm/group_rotavirus/g_rotavirus ,'RV3')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_typhoid_1" readonly="true()" relevant="selected( /c_imm/group_typhoid/g_typhoid ,'TY1')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_typhoid_2" readonly="true()" relevant="selected( /c_imm/group_typhoid/g_typhoid ,'TY2')" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_vitamin_a" readonly="true()" relevant=" /c_imm/group_vitamin_a/g_vitamin_a  = 'yes'" type="string"/>
-      <bind nodeset="/c_imm/group_review_vaccines/r_yellow_fever" readonly="true()" relevant=" /c_imm/group_yellow_fever/g_yellow_fever  = 'yes'" type="string"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_bcg" readonly="true()" type="string" relevant=" /c_imm/group_bcg/g_bcg  = 'yes'"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_cholera_1" readonly="true()" type="string" relevant="selected( /c_imm/group_cholera/g_cholera ,'CH1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_cholera_2" readonly="true()" type="string" relevant="selected( /c_imm/group_cholera/g_cholera ,'CH2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_cholera_3" readonly="true()" type="string" relevant="selected( /c_imm/group_cholera/g_cholera ,'CH3')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_hep_a_1" readonly="true()" type="string" relevant="selected( /c_imm/group_hep_a/g_hep_a ,'HA1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_hep_a_2" readonly="true()" type="string" relevant="selected( /c_imm/group_hep_a/g_hep_a ,'HA2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_hep_b" readonly="true()" type="string" relevant=" /c_imm/group_hep_b/g_hep_b  = 'yes'"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_hpv_1" readonly="true()" type="string" relevant="selected( /c_imm/group_hpv/g_hpv ,'HPV1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_hpv_2" readonly="true()" type="string" relevant="selected( /c_imm/group_hpv/g_hpv ,'HPV2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_hpv_3" readonly="true()" type="string" relevant="selected( /c_imm/group_hpv/g_hpv ,'HPV3')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_flu" readonly="true()" type="string" relevant=" /c_imm/group_flu/g_flu  = 'yes'"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_jap_enc" readonly="true()" type="string" relevant=" /c_imm/group_jap_enc/g_jap_enc  = 'yes'"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_meningococcal_1" readonly="true()" type="string" relevant="selected( /c_imm/group_meningococcal/g_meningococcal ,'MN1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_meningococcal_2" readonly="true()" type="string" relevant="selected( /c_imm/group_meningococcal/g_meningococcal ,'MN2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_meningococcal_3" readonly="true()" type="string" relevant="selected( /c_imm/group_meningococcal/g_meningococcal ,'MN3')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_meningococcal_4" readonly="true()" type="string" relevant="selected( /c_imm/group_meningococcal/g_meningococcal ,'MN4')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_mmr_1" readonly="true()" type="string" relevant="selected( /c_imm/group_mmr/g_mmr ,'MMR1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_mmr_2" readonly="true()" type="string" relevant="selected( /c_imm/group_mmr/g_mmr ,'MMR2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_mmrv_1" readonly="true()" type="string" relevant="selected( /c_imm/group_mmrv/g_mmrv ,'MMRV1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_mmrv_2" readonly="true()" type="string" relevant="selected( /c_imm/group_mmrv/g_mmrv ,'MMRV2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_opv_0" readonly="true()" type="string" relevant="selected( /c_imm/group_polio/g_polio ,'OPV0')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_opv_1" readonly="true()" type="string" relevant="selected( /c_imm/group_polio/g_polio ,'OPV1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_opv_2" readonly="true()" type="string" relevant="selected( /c_imm/group_polio/g_polio ,'OPV2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_opv_3" readonly="true()" type="string" relevant="selected( /c_imm/group_polio/g_polio ,'OPV3')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_1" readonly="true()" type="string" relevant="selected( /c_imm/group_polio/g_polio ,'IPV1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_2" readonly="true()" type="string" relevant="selected( /c_imm/group_polio/g_polio ,'IPV2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_ipv_3" readonly="true()" type="string" relevant="selected( /c_imm/group_polio/g_polio ,'IPV3')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_fipv_1" readonly="true()" type="string" relevant="selected( /c_imm/group_polio/g_polio ,'FIPV1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_fipv_2" readonly="true()" type="string" relevant="selected( /c_imm/group_polio/g_polio ,'FIPV2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_penta_1" readonly="true()" type="string" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_penta_2" readonly="true()" type="string" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_penta_3" readonly="true()" type="string" relevant="selected( /c_imm/group_pentavalent/g_pentavalent ,'DT3')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_dpt_4" readonly="true()" type="string" relevant="selected( /c_imm/group_dpt/g_dpt ,'DPT4')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_dpt_5" readonly="true()" type="string" relevant="selected( /c_imm/group_dpt/g_dpt ,'DPT5')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_pneumococcal_1" readonly="true()" type="string" relevant="selected( /c_imm/group_pneumococcal/g_pneumococcal ,'MN1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_pneumococcal_2" readonly="true()" type="string" relevant="selected( /c_imm/group_pneumococcal/g_pneumococcal ,'MN2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_pneumococcal_3" readonly="true()" type="string" relevant="selected( /c_imm/group_pneumococcal/g_pneumococcal ,'MN3')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_pneumococcal_4" readonly="true()" type="string" relevant="selected( /c_imm/group_pneumococcal/g_pneumococcal ,'MN4')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_rotavirus_1" readonly="true()" type="string" relevant="selected( /c_imm/group_rotavirus/g_rotavirus ,'RV1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_rotavirus_2" readonly="true()" type="string" relevant="selected( /c_imm/group_rotavirus/g_rotavirus ,'RV2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_rotavirus_3" readonly="true()" type="string" relevant="selected( /c_imm/group_rotavirus/g_rotavirus ,'RV3')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_typhoid_1" readonly="true()" type="string" relevant="selected( /c_imm/group_typhoid/g_typhoid ,'TY1')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_typhoid_2" readonly="true()" type="string" relevant="selected( /c_imm/group_typhoid/g_typhoid ,'TY2')"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_vitamin_a" readonly="true()" type="string" relevant=" /c_imm/group_vitamin_a/g_vitamin_a  = 'yes'"/>
+      <bind nodeset="/c_imm/group_review_vaccines/r_yellow_fever" readonly="true()" type="string" relevant=" /c_imm/group_yellow_fever/g_yellow_fever  = 'yes'"/>
       <bind nodeset="/c_imm/group_review_vaccines/r_end" readonly="true()" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/c_imm/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/c_imm/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

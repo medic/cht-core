@@ -1,13 +1,12 @@
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { async, ComponentFixture, fakeAsync, TestBed, flush } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, flush, waitForAsync } from '@angular/core/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { Subject } from 'rxjs';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 
-import { UpdateUserService } from '@mm-services/update-user.service';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
@@ -20,15 +19,11 @@ describe('EditUserSettingsComponent', () => {
   let fixture: ComponentFixture<EditUserSettingsComponent>;
   let userSettingsService;
   let languageService;
-  let updateUserService;
   let languagesService;
   let setLanguageService;
   let bdModalRef;
 
-  beforeEach(async(() => {
-    updateUserService = {
-      update: sinon.stub().resolves(),
-    };
+  beforeEach(waitForAsync(() => {
     userSettingsService = {
       get: sinon.stub().resolves(
         {
@@ -38,7 +33,8 @@ describe('EditUserSettingsComponent', () => {
           email: 'admin@demo.medic.com',
           phone: '+99 999 9999'
         }
-      )
+      ),
+      put: sinon.stub().resolves()
     };
     languageService = { get: sinon.stub().resolves('es') };
     languagesService = {
@@ -65,7 +61,6 @@ describe('EditUserSettingsComponent', () => {
           FormsModule,
         ],
         providers: [
-          { provide: UpdateUserService, useValue: updateUserService },
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: LanguageService, useValue: languageService },
           { provide: LanguagesService, useValue: languagesService },
@@ -115,7 +110,7 @@ describe('EditUserSettingsComponent', () => {
       severity: true,
     };
 
-    await component.editUserSettings();
+    component.editUserSettings();
 
     expect(component.status).to.deep.equal({
       processing: true,   // Processing ...

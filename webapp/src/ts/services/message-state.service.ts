@@ -12,6 +12,7 @@ export class MessageStateService {
     private dbService:DbService,
   ) {
   }
+
   any (group, state) {
     return _some(group.rows, (msg) => msg.state === state);
   }

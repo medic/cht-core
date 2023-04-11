@@ -1,5 +1,5 @@
 import { provideMockActions } from '@ngrx/effects/testing';
-import { async, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { Observable, of } from 'rxjs';
 import { expect } from 'chai';
@@ -68,6 +68,7 @@ describe('Contacts effects', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 
@@ -123,7 +124,7 @@ describe('Contacts effects', () => {
       simulateContactsReducer();
     });
 
-    it('should deselect when no provided id', async (() => {
+    it('should deselect when no provided id', waitForAsync(() => {
       clearSelection = sinon.stub(ContactsActions.prototype, 'clearSelection');
       actions$ = of(ContactActionList.selectContact({  }));
       effects.selectContact.subscribe();

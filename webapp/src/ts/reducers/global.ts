@@ -7,22 +7,27 @@ const initialState = {
     left: {},
     right: {}
   },
-  cancelCallback: null,
+  navigation: {
+    cancelCallback: null,
+    preventNavigation: null,
+    cancelTranslationKey: null,
+    recordTelemetry: null,
+  },
   currentTab: null,
   snapshotData: null,
   enketoStatus: {
+    form: false,
     edited: false,
     saving: false,
     error: null
   },
   facilities: [],
-  filters: {},
+  filters: {}, // Selected criteria to filter data.
+  sidebarFilter: {}, // Component state.
   forms: null,
-  isAdmin: false,
   lastChangedDoc: false,
   loadingContent: false,
   loadingSubActionBar: false,
-  minimalTabs: false,
   replicationStatus: {},
   selectMode: false,
   privacyPolicyAccepted: false,
@@ -35,14 +40,10 @@ const initialState = {
   snackbarContent: null,
   translationsLoaded: false,
   userFacilityId: null,
+  trainingCardFormId: null,
 };
 
 const setShowContent = (state, showContent) => {
-  const selectMode = state.selectMode;
-  if (showContent && selectMode) {
-    // when in select mode we never show the RHS on mobile
-    return state;
-  }
   if (showContent) {
     $('.app-root').addClass('show-content');
   } else {
@@ -61,17 +62,14 @@ const _globalReducer = createReducer(
   on(Actions.setAndroidAppVersion, (state, { payload: { androidAppVersion } }) => {
     return { ...state, androidAppVersion };
   }),
-  on(Actions.setMinimalTabs, (state, { payload: { minimalTabs } } ) => {
-    return { ...state, minimalTabs };
-  }),
   on(Actions.setCurrentTab, (state, { payload: { currentTab } }) => {
     return { ...state, currentTab };
   }),
   on(Actions.setSnapshotData, (state, { payload: { snapshotData } }) => {
     return { ...state, snapshotData };
   }),
-  on(Actions.setSnackbarContent, (state, { payload: { content } }) => {
-    return { ...state, snackbarContent: content };
+  on(Actions.setSnackbarContent, (state, { payload: { message, action } }) => {
+    return { ...state, snackbarContent: { message, action } };
   }),
   on(Actions.setLoadingContent, (state, { payload: { loadingContent } }) => {
     return { ...state, loadingContent };
@@ -82,8 +80,9 @@ const _globalReducer = createReducer(
   on(Actions.setForms, (state, { payload: { forms } }) => {
     return { ...state, forms };
   }),
-  on(Actions.clearFilters, (state) => {
-    return { ...state, filters: {} };
+  on(Actions.clearFilters, (state, { payload: { skip } }) => {
+    const newValue = skip && state.filters[skip] ? { [skip]: state.filters[skip] } : {};
+    return { ...state, filters: newValue };
   }),
   on(Actions.setFilters, (state, { payload: { filters } }) => {
     return { ...state, filters };
@@ -94,10 +93,16 @@ const _globalReducer = createReducer(
       filters: { ...state.filters, ...filter }
     };
   }),
-  on(Actions.setIsAdmin, (state, { payload: { isAdmin } }) => {
-    return { ...state, isAdmin };
+  on(Actions.setSidebarFilter, (state, { payload: { sidebarFilter } }) => {
+    return {
+      ...state,
+      sidebarFilter: { ...state.sidebarFilter, ...sidebarFilter }
+    };
   }),
-  on(Actions.setTitle, (state, { payload: { title} }) => {
+  on(Actions.clearSidebarFilter, (state) => {
+    return { ...state, sidebarFilter: {} };
+  }),
+  on(Actions.setTitle, (state, { payload: { title } }) => {
     return { ...state, title };
   }),
   on(Actions.setShowContent, (state, { payload: { showContent } }) => {
@@ -148,9 +153,10 @@ const _globalReducer = createReducer(
   on(Actions.setEnketoStatus, (state, { payload: { enketoStatus } }) => {
     return {
       ...state,
-      enketoStatus: { ...state.enketoStatus, ...enketoStatus },
+      enketoStatus: { ...state.enketoStatus, ...enketoStatus, form: true },
     };
   }),
+  on(Actions.clearEnketoStatus, state => ({ ...state, enketoStatus: { ...initialState.enketoStatus } })),
   on(Actions.setPrivacyPolicyAccepted, (state, { payload: { accepted } }) => {
     return { ...state, privacyPolicyAccepted: accepted };
   }),
@@ -158,7 +164,35 @@ const _globalReducer = createReducer(
     return { ...state, showPrivacyPolicy: show };
   }),
   on(Actions.setCancelCallback, (state, { payload: { cancelCallback } }) => {
-    return { ...state, cancelCallback };
+    return {
+      ...state,
+      navigation: {
+        ...state.navigation,
+        cancelCallback,
+      },
+    };
+  }),
+  on(Actions.setNavigation, (state, { payload }) => {
+    const { cancelCallback, preventNavigation, cancelTranslationKey, recordTelemetry } = payload;
+    return {
+      ...state,
+      navigation: {
+        ...state.navigation,
+        cancelCallback,
+        preventNavigation,
+        cancelTranslationKey,
+        recordTelemetry,
+      }
+    };
+  }),
+  on(Actions.setPreventNavigation, (state, { payload: { preventNavigation } }) => {
+    return {
+      ...state,
+      navigation: {
+        ...state.navigation,
+        preventNavigation,
+      },
+    };
   }),
   on(Actions.setLoadingSubActionBar, (state, { payload: { loading } }) => {
     return { ...state, loadingSubActionBar: loading };
@@ -172,6 +206,9 @@ const _globalReducer = createReducer(
   on(Actions.setTranslationsLoaded, (state) => ({ ...state, translationsLoaded: true })),
   on(Actions.setUserFacilityId, (state, { payload: { userFacilityId }}) => {
     return { ...state, userFacilityId };
+  }),
+  on(Actions.setTrainingCardFormId, (state, { payload: { trainingCardFormId }}) => {
+    return { ...state, trainingCardFormId };
   }),
 );
 

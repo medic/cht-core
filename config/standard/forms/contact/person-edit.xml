@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Edit Person</h:title>
     <model>
@@ -666,7 +666,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:person:edit" prefix="J1!contact:person:edit!" version="2019-01-22_12-31">
+        <data id="contact:person:edit" prefix="J1!contact:person:edit!" delimiter="#" version="2022-09-26 12-46">
           <inputs>
             <meta>
               <location>
@@ -726,36 +726,36 @@
       <bind nodeset="/data/inputs/user/contact_id" type="string"/>
       <bind nodeset="/data/inputs/user/facility_id" type="string"/>
       <bind nodeset="/data/inputs/user/name" type="string"/>
-      <bind calculate="../../person/name" nodeset="/data/init/person_name" type="string"/>
-      <bind calculate="../name" nodeset="/data/init/person_place_name" type="string"/>
-      <bind calculate=" /data/person/parent " nodeset="/data/init/person_parent" readonly="true()" type="string"/>
+      <bind nodeset="/data/init/person_name" type="string" calculate="../../person/name"/>
+      <bind nodeset="/data/init/person_place_name" type="string" calculate="../name"/>
+      <bind nodeset="/data/init/person_parent" type="string" readonly="true()" calculate=" /data/person/parent "/>
       <bind nodeset="/data/init/type" type="string"/>
       <bind nodeset="/data/init/name" type="string"/>
       <bind nodeset="/data/init/note_place" readonly="true()" type="string"/>
-      <bind nodeset="/data/init/change_parent" required="true()" type="select1"/>
-      <bind nodeset="/data/init/edited_place_type" relevant="selected( /data/init/change_parent , 'true')" required="true()" type="select1"/>
-      <bind nodeset="/data/init/id_district_hospital" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'district_hospital')" required="true()" type="db:district_hospital"/>
-      <bind nodeset="/data/init/id_health_center" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'health_center')" required="true()" type="db:health_center"/>
-      <bind nodeset="/data/init/id_clinic" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'clinic')" required="true()" type="db:clinic"/>
-      <bind calculate="coalesce(coalesce(coalesce( /data/init/id_district_hospital ,  /data/init/id_health_center ),  /data/init/id_clinic ), /data/person/parent )" nodeset="/data/person/parent" type="string"/>
-      <bind nodeset="/data/person/_id" readonly="true()" type="string"/>
-      <bind nodeset="/data/person/type" readonly="true()" type="string"/>
-      <bind nodeset="/data/person/name" required="true()" type="string"/>
-      <bind constraint=". &lt;= today()" jr:constraintMsg="jr:itext('/data/person/date_of_birth:jr:constraintMsg')" nodeset="/data/person/date_of_birth" type="date"/>
-      <bind constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" nodeset="/data/person/phone" type="tel"/>
-      <bind constraint="true()" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')" nodeset="/data/person/phone_alternate" type="tel"/>
+      <bind nodeset="/data/init/change_parent" type="select1" required="true()"/>
+      <bind nodeset="/data/init/edited_place_type" type="select1" required="true()" relevant="selected( /data/init/change_parent , 'true')"/>
+      <bind nodeset="/data/init/id_district_hospital" type="db:district_hospital" required="true()" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'district_hospital')"/>
+      <bind nodeset="/data/init/id_health_center" type="db:health_center" required="true()" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'health_center')"/>
+      <bind nodeset="/data/init/id_clinic" type="db:clinic" required="true()" relevant="selected( /data/init/change_parent , 'true') and selected( /data/init/edited_place_type , 'clinic')"/>
+      <bind nodeset="/data/person/parent" type="string" calculate="coalesce(coalesce(coalesce( /data/init/id_district_hospital ,  /data/init/id_health_center ),  /data/init/id_clinic ), /data/person/parent )"/>
+      <bind nodeset="/data/person/_id" type="string" readonly="true()"/>
+      <bind nodeset="/data/person/type" type="string" readonly="true()"/>
+      <bind nodeset="/data/person/name" type="string" required="true()"/>
+      <bind nodeset="/data/person/date_of_birth" type="date" constraint=". &lt;= now()" jr:constraintMsg="jr:itext('/data/person/date_of_birth:jr:constraintMsg')"/>
+      <bind nodeset="/data/person/phone" type="tel" jr:constraintMsg="jr:itext('/data/person/phone:jr:constraintMsg')" constraint="true()"/>
+      <bind nodeset="/data/person/phone_alternate" type="tel" jr:constraintMsg="jr:itext('/data/person/phone_alternate:jr:constraintMsg')" constraint="true()"/>
       <bind nodeset="/data/person/sex" type="select1"/>
       <bind nodeset="/data/person/role" type="select1"/>
-      <bind nodeset="/data/person/role_other" relevant="selected(  /data/person/role ,'other')" required="true()" type="string"/>
+      <bind nodeset="/data/person/role_other" type="string" required="true()" relevant="selected(  /data/person/role ,'other')"/>
       <bind nodeset="/data/person/external_id" type="string"/>
       <bind nodeset="/data/person/notes" type="string"/>
-      <bind nodeset="/data/person/meta/created_by" readonly="true()" type="string"/>
-      <bind nodeset="/data/person/meta/created_by_person_uuid" readonly="true()" type="string"/>
-      <bind nodeset="/data/person/meta/created_by_place_uuid" readonly="true()" type="string"/>
-      <bind calculate="../../../inputs/user/name" nodeset="/data/person/meta/last_edited_by" type="string"/>
-      <bind calculate="../../../inputs/user/contact_id" nodeset="/data/person/meta/last_edited_by_person_uuid" type="string"/>
-      <bind calculate="../../../inputs/user/facility_id" nodeset="/data/person/meta/last_edited_by_place_uuid" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/data/person/meta/created_by" type="string" readonly="true()"/>
+      <bind nodeset="/data/person/meta/created_by_person_uuid" type="string" readonly="true()"/>
+      <bind nodeset="/data/person/meta/created_by_place_uuid" type="string" readonly="true()"/>
+      <bind nodeset="/data/person/meta/last_edited_by" type="string" calculate="../../../inputs/user/name"/>
+      <bind nodeset="/data/person/meta/last_edited_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
+      <bind nodeset="/data/person/meta/last_edited_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

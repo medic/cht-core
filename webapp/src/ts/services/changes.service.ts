@@ -33,7 +33,9 @@ export class ChangesService {
       subscriptions: {},
     }
   };
+
   private watches = [];
+
   private lastChangedDoc;
   private servicesActions;
 

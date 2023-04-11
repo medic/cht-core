@@ -1,17 +1,15 @@
-import { async, TestBed, ComponentFixture, fakeAsync, flush } from '@angular/core/testing';
+import { TestBed, ComponentFixture, fakeAsync, flush, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { of } from 'rxjs';
 
 import { ContactsComponent } from '@mm-modules/contacts/contacts.component';
 import { Selectors } from '@mm-selectors/index';
 import { ChangesService } from '@mm-services/changes.service';
 import { SearchService } from '@mm-services/search.service';
-import { SimprintsService } from '@mm-services/simprints.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { GetDataRecordsService } from '@mm-services/get-data-records.service';
@@ -23,13 +21,13 @@ import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { ContactsFiltersComponent } from '@mm-modules/contacts/contacts-filters.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { SimprintsFilterComponent } from '@mm-components/filters/simprints-filter/simprints-filter.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
 import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
+import { NavigationService } from '@mm-services/navigation.service';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -47,14 +45,13 @@ describe('Contacts component', () => {
   let scrollLoaderCallback;
   let scrollLoaderProvider;
   let contactListContains;
-  let simprintsService;
   let tourService;
   let exportService;
   let xmlFormsService;
   let globalActions;
   let district;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     district = {
       _id: 'district-id',
       name: 'My District',
@@ -68,9 +65,7 @@ describe('Contacts component', () => {
     };
     tourService = { startIfNeeded: sinon.stub() };
     authService = { has: sinon.stub().resolves(false) };
-    changesService = {
-      subscribe: sinon.stub().resolves(of({}))
-    };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userSettingsService = {
       get: sinon.stub().resolves({ facility_id: district._id })
     };
@@ -94,12 +89,8 @@ describe('Contacts component', () => {
         scrollLoaderCallback = callback;
       }
     };
-    simprintsService = {
-      enabled: sinon.stub().resolves([]),
-      identify: sinon.stub().resolves([])
-    };
     exportService = { export: sinon.stub() };
-    xmlFormsService = { subscribe: sinon.stub() };
+    xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
 
     contactListContains = sinon.stub();
     const selectedContact =  {
@@ -130,7 +121,6 @@ describe('Contacts component', () => {
           ContactsFiltersComponent,
           FreetextFilterComponent,
           NavigationComponent,
-          SimprintsFilterComponent,
           ResetFiltersComponent,
           SortFilterComponent,
         ],
@@ -138,7 +128,6 @@ describe('Contacts component', () => {
           provideMockStore({ selectors: mockedSelectors }),
           { provide: ChangesService, useValue: changesService },
           { provide: SearchService, useValue: searchService },
-          { provide: SimprintsService, useValue: simprintsService },
           { provide: SettingsService, useValue: settingsService },
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: GetDataRecordsService, useValue: getDataRecordsService },
@@ -149,6 +138,7 @@ describe('Contacts component', () => {
           { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
           { provide: ExportService, useValue: exportService },
           { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: NavigationService, useValue: {} },
         ]
       })
       .compileComponents().then(() => {
@@ -160,6 +150,7 @@ describe('Contacts component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 
@@ -345,7 +336,6 @@ describe('Contacts component', () => {
     }));
 
     it('when paginating, does not skip the extra place for admins #4085', fakeAsync(() => {
-      store.overrideSelector(Selectors.getIsAdmin, true);
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(50).fill(searchResult);
@@ -387,7 +377,6 @@ describe('Contacts component', () => {
     }));
 
     it('when refreshing list as admin, does not modify limit #4085', fakeAsync(() => {
-      store.overrideSelector(Selectors.getIsAdmin, true);
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
@@ -573,7 +562,6 @@ describe('Contacts component', () => {
 
     it('when handling deletes, does not shorten the list #4080', fakeAsync(() => {
       const changesCallback = changesService.subscribe.args[0][0].callback;
-      store.overrideSelector(Selectors.getIsAdmin, true);
       userSettingsService.get.resolves({ facility_id: undefined });
       const searchResult = { _id: 'search-result' };
       searchResults = Array(60).fill(searchResult);
@@ -605,8 +593,9 @@ describe('Contacts component', () => {
 
   describe('last visited date', () => {
     it('does not enable LastVisitedDate features not allowed', () => {
-      expect(authService.has.callCount).equal(1);
+      expect(authService.has.callCount).equal(2);
       expect(authService.has.args[0]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.args[1]).to.deep.equal(['can_view_old_filter_and_search']);
       expect(component.lastVisitedDateExtras).to.equal(false);
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');
@@ -630,8 +619,9 @@ describe('Contacts component', () => {
       userSettingsService.get.resetHistory();
       component.ngOnInit();
       flush();
-      expect(authService.has.callCount).equal(2);
-      expect(authService.has.args[1]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.callCount).equal(3);
+      expect(authService.has.args[2]).to.deep.equal(['can_view_last_visited_date']);
+      expect(authService.has.args[1]).to.deep.equal(['can_view_old_filter_and_search']);
       expect(component.lastVisitedDateExtras).to.equal(true);
       expect(component.visitCountSettings).to.deep.equal({});
       expect(component.sortDirection).to.equal('alpha');

@@ -23,7 +23,7 @@ describe('Constants', () => {
     expect(POUCHDB_OPTIONS.remote).to.have.all.keys(['skip_setup', 'fetch']);
     expect(POUCHDB_OPTIONS.remote.skip_setup).to.equal(true);
     expect(POUCHDB_OPTIONS.remote.fetch).to.be.a('function');
-    expect(POUCHDB_OPTIONS.remote_headers).to.deep.equal({ 'Accept': 'application/json' });
+    expect(POUCHDB_OPTIONS.remote_headers).to.deep.equal({ Accept: 'application/json' });
   });
 
   describe('fetch()', () => {

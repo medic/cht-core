@@ -1,7 +1,7 @@
 const config = require('./config');
 const octokit = require('@octokit/rest')({ headers: config.headers });
 
-async function createProject(projectName) {
+const createProject = async (projectName) => {
   octokit.authenticate({
     type: 'token',
     token: config.token
@@ -16,9 +16,9 @@ async function createProject(projectName) {
   } catch (err) {
     console.log('Error occured when creating the project ' + err);
   }
-}
+};
 
-async function addColumnsToProject(columnName, projectId) {
+const addColumnsToProject = async (columnName, projectId) => {
   const data = {
     project_id: projectId,
     name: columnName
@@ -28,17 +28,17 @@ async function addColumnsToProject(columnName, projectId) {
   } catch (err) {
     console.log(err);
   }
-}
+};
 
-function sortColumnData(columns) {
+const sortColumnData = (columns) => {
   const sorted = columns.map((column, index) => {
-    sorted.push([index, column.order]);
+    return [index, column.order];
   });
   sorted.sort((a, b) => a[1] - b[1]);
   return sorted;
-}
+};
 
-function generateMoveBody(columns, sortedData) {
+const generateMoveBody = (columns, sortedData) => {
   const data = [];
   let i;
   for (i = 1; i < sortedData.length; i++) {
@@ -49,17 +49,17 @@ function generateMoveBody(columns, sortedData) {
     });
   }
   return data;
-}
+};
 
-async function reOrderColumns(columns) {
+const reOrderColumns = async (columns) => {
   const sorted = sortColumnData(columns);
   const data = generateMoveBody(columns, sorted);
   for (let i = 0; i < data.length; i++) {
     await octokit.projects.moveProjectColumn(data[i]);
   }
-}
+};
 
-function addIssuesToColumn(columnId, issueIds) {
+const addIssuesToColumn = (columnId, issueIds) => {
   issueIds.forEach((issueId) => {
     const data = {
       column_id: columnId,
@@ -72,7 +72,7 @@ function addIssuesToColumn(columnId, issueIds) {
       console.log(err);
     }
   });
-}
+};
 
 module.exports = {
   createProject: createProject,

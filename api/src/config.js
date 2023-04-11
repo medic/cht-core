@@ -1,16 +1,6 @@
 const _ = require('lodash');
 
-const db = require('./db');
-const ddocExtraction = require('./ddoc-extraction');
-const generateXform = require('./services/generate-xform');
-const logger = require('./logger');
-const resourceExtraction = require('./resource-extraction');
-const settingsService = require('./services/settings');
-const translations = require('./translations');
-const translationUtils = require('@medic/translation-utils');
-const viewMapUtils = require('@medic/view-map-utils');
-
-const translationCache = {};
+let translationCache = {};
 let settings = {};
 let transitionsLib;
 
@@ -59,58 +49,27 @@ const getMessage = (value, locale) => {
   return result;
 };
 
-const loadSettings = () => {
-  return settingsService.update({})
-    .then(() => settingsService.get())
-    .then(newSettings => settings = newSettings);
-};
+module.exports = {
+  set: (newSettings) => settings = newSettings,
+  setTranslationCache: (newTranslations) => translationCache = newTranslations,
+  setTransitionsLib: (newTransitionsLib) => transitionsLib = newTransitionsLib,
 
-const initTransitionLib = () => {
-  transitionsLib = require('@medic/transitions')(db, settings, translationCache, logger);
-  // loadTransitions could throw errors when some transitions are misconfigured
-  try {
-    transitionsLib.loadTransitions(true);
-  } catch(err) {
-    logger.error(err);
-  }
-};
+  get: key => (key ? settings[key] : settings),
+  getAll: () => settings,
+  getTranslations: keys => {
+    if (!keys) {
+      return translationCache;
+    }
 
-const loadTranslations = () => {
-  const options = { key: ['translations', true], include_docs: true };
-  return db.medic
-    .query('medic-client/doc_by_type', options)
-    .catch(err => {
-      logger.error('Error loading translations - starting up anyway: %o', err);
-    })
-    .then(result => {
-      if (!result) {
-        return;
-      }
-      result.rows.forEach(row => {
-        // If the field generic does not exist then we assume that the translation document
-        // has not been converted to the new format so we will use the field values
-        const values = row.doc.generic ? Object.assign(row.doc.generic, row.doc.custom || {}) : row.doc.values;
-        translationCache[row.doc.code] = translationUtils.loadTranslations(values);
+    const result = {};
+    Object.keys(translationCache).forEach(locale => {
+      result[locale] = {};
+      keys.forEach(key => {
+        result[locale][key] = translationCache[locale][key];
       });
     });
-};
-
-const loadViewMaps = () => {
-  db.medic.get('_design/medic', function(err, ddoc) {
-    if (err) {
-      logger.error('Error loading view maps for medic ddoc: %o', err);
-      return;
-    }
-    viewMapUtils.loadViewMaps(
-      ddoc,
-      'docs_by_replication_key',
-      'contacts_by_depth'
-    );
-  });
-};
-
-module.exports = {
-  get: key => (key ? settings[key] : settings),
+    return result;
+  },
   translate: (key, locale, ctx) => {
     if (_.isObject(locale)) {
       ctx = locale;
@@ -132,62 +91,5 @@ module.exports = {
       return value;
     }
   },
-  getTranslationValues: keys => {
-    const result = {};
-    Object.keys(translationCache).forEach(locale => {
-      result[locale] = {};
-      keys.forEach(key => {
-        result[locale][key] = translationCache[locale][key];
-      });
-    });
-    return result;
-  },
-  load: () => {
-    loadViewMaps();
-    return Promise.all([ loadTranslations(), loadSettings() ]).then(() => initTransitionLib());
-  },
-  listen: () => {
-    db.medic
-      .changes({ live: true, since: 'now', return_docs: false })
-      .on('change', change => {
-        if (change.id === '_design/medic') {
-          logger.info('Detected ddoc change - reloading');
-          translations.run().catch(err => {
-            logger.error('Failed to update translation docs: %o', err);
-          });
-          ddocExtraction.run().catch(err => {
-            logger.error('Something went wrong trying to extract ddocs: %o', err);
-            process.exit(1);
-          });
-          resourceExtraction.run().catch(err => {
-            logger.error('Something went wrong trying to extract resources: %o', err);
-            process.exit(1);
-          });
-          loadViewMaps();
-        } else if (change.id === 'settings') {
-          logger.info('Detected settings change - reloading');
-          loadSettings()
-            .catch(err => {
-              logger.error('Failed to reload settings: %o', err);
-              process.exit(1);
-            })
-            .then(() => initTransitionLib())
-            .then(() => logger.debug('Settings updated'));
-        } else if (change.id.startsWith('messages-')) {
-          logger.info('Detected translations change - reloading');
-          return loadTranslations().then(() => initTransitionLib());
-        } else if (change.id.startsWith('form:')) {
-          logger.info('Detected form change - generating attachments');
-          generateXform.update(change.id).catch(err => {
-            logger.error('Failed to update xform: %o', err);
-          });
-        }
-      })
-      .on('error', err => {
-        logger.error('Error watching changes, restarting: %o', err);
-        process.exit(1);
-      });
-  },
-  initTransitionLib: initTransitionLib,
   getTransitionsLib: () => transitionsLib
 };

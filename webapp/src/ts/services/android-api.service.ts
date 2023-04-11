@@ -1,12 +1,10 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Router } from '@angular/router';
 
-import { FeedbackService } from '@mm-services/feedback.service';
+import { AndroidAppLauncherService } from '@mm-services/android-app-launcher.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { MRDTService } from '@mm-services/mrdt.service';
 import { SessionService } from '@mm-services/session.service';
-import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
-import { SimprintsService } from '@mm-services/simprints.service';
+import { NavigationService } from '@mm-services/navigation.service';
 
 /**
  * An API to provide integration with the medic-android app.
@@ -18,17 +16,15 @@ import { SimprintsService } from '@mm-services/simprints.service';
   providedIn: 'root',
 })
 export class AndroidApiService {
+
   constructor(
-    private feedbackService:FeedbackService,
+    private androidAppLauncherService:AndroidAppLauncherService,
     private geolocationService:GeolocationService,
     private mrdtService:MRDTService,
     private sessionService:SessionService,
-    private router:Router,
-    private simprintsService:SimprintsService,
     private zone:NgZone,
-    private routeSnapshotService:RouteSnapshotService,
-  ) {
-  }
+    private navigationService:NavigationService,
+  ) { }
 
   private runInZone(property:string, args:any[]=[]) {
     if (!this[property] || typeof this[property] !== 'function') {
@@ -62,7 +58,6 @@ export class AndroidApiService {
       });
     return closed;
   }
-
 
   /**
    * Close the highest-priority dropdown within a particular container.
@@ -116,21 +111,8 @@ export class AndroidApiService {
     }
   }
 
-  /**
-   * Kill the session.
-   */
-  logout() {
-    this.sessionService.logout();
-  }
-
-  /**
-   * Handle hardware back-button presses when inside the android app.
-   * @return {boolean} `true` if angular handled the back button; otherwise
-   *   the android app will handle it as it sees fit.
-   */
-  back() {
-    // If there's a modal open, close any dropdowns inside it, or try to
-    // close the modal itself.
+  private closeUserInterfaceElements() {
+    // If there's a modal open, close any dropdowns inside it, or try to close the modal itself.
     const $modals = $('.modal:visible');
     if ($modals.length) {
       this.closeTopModal($modals);
@@ -155,35 +137,40 @@ export class AndroidApiService {
       return true;
     }
 
-    const routeSnapshot = this.routeSnapshotService.get();
-    if (routeSnapshot?.data?.name === 'contacts.deceased') {
-      this.router.navigate(['/contacts', routeSnapshot.params.id]);
-      return true;
-    }
-
-    if (routeSnapshot?.params?.id) {
-      this.router.navigate(['/', routeSnapshot.parent.routeConfig.path]);
-      return true;
-    }
-
-    // If we're viewing a tab, but not the primary tab, go to primary tab
-    const primaryTab = $('.header .tabs').find('> a:visible:first');
-    if (!primaryTab.is('.selected')) {
-      const href = primaryTab.attr('href');
-      if (href) {
-        this.router.navigate([href.replace('#','')]);
-        return true;
-      } else {
-        const message = 'Attempt to back to an undefined state [AndroidApi.back()]';
-        this.feedbackService
-          .submit(message)
-          .catch(err => {
-            console.error('Error saving feedback', err);
-          });
-      }
-    }
-
+    // Nothing to close.
     return false;
+  }
+
+  /**
+   * Handle hardware back-button when it's pressed inside the Android app.
+   *
+   * This function is intended to always return 'true' and not give back the control of back-button to the Android app.
+   * This prevents Android from minimizing the app when the primary tab is active. Ref: #6698.
+   *
+   * Warning: If this function returns a falsy value, the Android app will handle the back-button
+   *          and possibly minimize the app.
+   *
+   * @return {boolean}
+   */
+  back() {
+    if (this.closeUserInterfaceElements()) {
+      return true;
+    }
+
+    if (this.navigationService.goBack()) {
+      return true;
+    }
+
+    this.navigationService.goToPrimaryTab();
+    // Not giving back the control to the Android app so it doesn't minimize the app. Ref: #6698
+    return true;
+  }
+
+  /**
+   * Kill the session.
+   */
+  logout() {
+    this.sessionService.logout();
   }
 
   /**
@@ -214,32 +201,6 @@ export class AndroidApiService {
     }
   }
 
-  /**
-   * Handle the response from the simprints device
-   *
-   * @param requestType Indicates the response handler to call. Either 'identify' or 'register'.
-   * @param requestIdString The unique ID of the request to the simprints device.
-   * @param response The stringified JSON response from the simprints device.
-   */
-  simprintsResponse(requestType, requestIdString, response) {
-    const requestId = parseInt(requestIdString, 10);
-    if (isNaN(requestId)) {
-      return console.error(new Error('Unable to parse requestId: "' + requestIdString + '"'));
-    }
-    try {
-      response = JSON.parse(response);
-    } catch(e) {
-      return console.error(new Error('Unable to parse JSON response from android app: "' + response + '"'));
-    }
-    if (requestType === 'identify') {
-      this.simprintsService.identifyResponse(requestId, response);
-    } else if (requestType === 'register') {
-      this.simprintsService.registerResponse(requestId, response);
-    } else {
-      return console.error(new Error('Unknown request type: "' + requestType + '"'));
-    }
-  }
-
   smsStatusUpdate(id, destination, content, status, detail) {
     console.debug('smsStatusUpdate() :: ' +
       ' id=' + id +
@@ -254,13 +215,17 @@ export class AndroidApiService {
     this.geolocationService.permissionRequestResolved();
   }
 
+  resolveCHTExternalAppResponse(response) {
+    this.androidAppLauncherService.resolveAndroidAppResponse(response);
+  }
+
   v1 = {
     back: () => this.runInZone('back'),
     logout: () => this.runInZone('logout'),
     mrdtResponse: (...args) => this.runInZone('mrdtResponse', args),
     mrdtTimeTakenResponse: (...args) => this.runInZone('mrdtTimeTakenResponse', args),
-    simprintsResponse: (...args) => this.runInZone('simprintsResponse', args),
     smsStatusUpdate: (...args) => this.runInZone('smsStatusUpdate', args),
     locationPermissionRequestResolved: () => this.runInZone('locationPermissionRequestResolve'),
+    resolveCHTExternalAppResponse: (...args) => this.runInZone('resolveCHTExternalAppResponse', args),
   };
 }

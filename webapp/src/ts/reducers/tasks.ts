@@ -7,6 +7,11 @@ const initialState = {
   tasksList: [],
   selected: null,
   loaded: false,
+  taskGroup: {
+    lastSubmittedTask: null,
+    contact: null,
+    loadingContact: null,
+  },
 };
 
 const orderByDueDate = (t1, t2) => {
@@ -39,8 +44,47 @@ const _tasksReducer = createReducer(
   on(Actions.setTasksLoaded, (state, { payload: { loaded }}) => ({ ...state, loaded })),
 
   on(Actions.setSelectedTask, (state, { payload: { selected } }) => ({ ...state, selected })),
+
+  on(Actions.setLastSubmittedTask, (state, { payload: { task } }) => ({
+    ...state,
+    taskGroup: {
+      ...state.taskGroup,
+      lastSubmittedTask: task
+    },
+  })),
+
+  on(Actions.setTaskGroupContact, (state, { payload: { contact } }) => ({
+    ...state,
+    taskGroup: {
+      ...state.taskGroup,
+      contact,
+      loadingContact: false,
+    },
+  })),
+
+  on(Actions.setTaskGroupContactLoading, (state, { payload: { loading } }) => ({
+    ...state,
+    taskGroup: {
+      ...state.taskGroup,
+      loadingContact: loading,
+    },
+  })),
+
+  on(Actions.setTaskGroup, (state, { payload: { taskGroup } }) => ({
+    ...state,
+    taskGroup: {
+      lastSubmittedTask: taskGroup.lastSubmittedTask || state.taskGroup.lastSubmittedTask,
+      contact: taskGroup.contact || state.taskGroup.contact,
+      loadingContact: taskGroup.loadingContact || state.taskGroup.loadingContact,
+    },
+  })),
+
+  on(Actions.clearTaskGroup, (state) => ({
+    ...state,
+    taskGroup: { ...initialState.taskGroup },
+  }))
 );
 
-export function tasksReducer(state, action) {
+export const tasksReducer = (state, action) => {
   return _tasksReducer(state, action);
-}
+};

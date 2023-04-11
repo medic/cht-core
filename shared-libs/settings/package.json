@@ -11,10 +11,5 @@
   "dependencies": {
     "request": "^2.88.2",
     "request-promise-native": "^1.0.8"
-  },
-  "devDependencies": {
-    "chai": "^4.3.4",
-    "mocha": "^7.2.0",
-    "sinon": "^8.1.1"
   }
 }

@@ -23,7 +23,7 @@ describe('Bulk GET controller', () => {
   });
 
   describe('request', () => {
-    it ('filters offline requests', () => {
+    it('filters offline requests', () => {
       service.filterOfflineRequest.resolves(['a', 'b', 'c']);
       return controller
         .request(testReq, testRes)

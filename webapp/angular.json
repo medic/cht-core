@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "$schema": "../node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-builders/custom-webpack:browser",
           "options": {
-            "outputPath": "../build/ddocs/medic/_attachments",
+            "outputPath": "../api/build/static/webapp",
             "index": "src/ts/index.html",
             "main": "src/ts/main.ts",
             "polyfills": "src/ts/polyfills.ts",
@@ -49,7 +49,6 @@
               "deleteOutputPath": false,
               "outputHashing": "none",
               "sourceMap": true,
-              "extractCss": true,
               "namedChunks": true,
               "extractLicenses": false,
               "vendorChunk": false,
@@ -64,10 +63,16 @@
                 }
               ],
               "deleteOutputPath": false,
-              "optimization": true,
+              "optimization": {
+                "fonts": true,
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                }
+              },
               "outputHashing": "none",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
@@ -94,6 +99,9 @@
             "polyfills": "src/ts/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "tests/karma/karma-unit.conf.js",
+            "include": [
+              "../tests/karma/**/*.spec.ts"
+            ],
             "codeCoverage": true,
             "codeCoverageExclude": [
               "src/js/bootstrapper/**",

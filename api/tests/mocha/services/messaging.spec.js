@@ -73,7 +73,8 @@ describe('messaging service', () => {
     it('takes a collection of state changes and saves it to docs', () => {
       sinon.stub(db.medic, 'query').resolves({rows: [
         {id: 'testMessageId1'},
-        {id: 'testMessageId2'}]});
+        {id: 'testMessageId2'},
+      ]});
 
       sinon.stub(db.medic, 'allDocs').resolves({rows: [
         {doc: {
@@ -162,7 +163,8 @@ describe('messaging service', () => {
 
     it('DOES NOT throw an error if it cannot find the message', () => {
       sinon.stub(db.medic, 'query').resolves({rows: [
-        {id: 'testMessageId1'}]});
+        { id: 'testMessageId1' },
+      ]});
 
       sinon.stub(db.medic, 'allDocs').resolves({rows: [
         {doc: {
@@ -196,9 +198,11 @@ describe('messaging service', () => {
       const view = sinon.stub(db.medic, 'query')
         .onFirstCall().resolves({rows: [
           {id: 'testMessageId1'},
-          {id: 'testMessageId2'}]})
+          {id: 'testMessageId2'},
+        ]})
         .onSecondCall().resolves({rows: [
-          {id: 'testMessageId2'}]});
+          {id: 'testMessageId2'},
+        ]});
 
       sinon.stub(db.medic, 'allDocs')
         .onFirstCall().resolves({rows: [
@@ -233,9 +237,11 @@ describe('messaging service', () => {
       const bulk = sinon.stub(db.medic, 'bulkDocs')
         .onFirstCall().resolves([
           {id: 'testDoc', ok: true},
-          {id: 'testDoc2', error: 'oh no!'}])
+          {id: 'testDoc2', error: 'oh no!'},
+        ])
         .onSecondCall().resolves([
-          {id: 'testDoc2', ok: true}]);
+          {id: 'testDoc2', ok: true},
+        ]);
 
       return service.updateMessageTaskStates([
         {

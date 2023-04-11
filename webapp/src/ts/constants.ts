@@ -6,6 +6,32 @@
 // go and if it's still too long then API will respond with a 413.
 const BODY_LENGTH_LIMIT = 32000000; // 32 million
 
+// To keep long _changes requests open, API sends a heartbeat (a new line character"\n") every 10 seconds,
+// starting on the 10th second. Sending any data through automatically sends a 200 status header,
+// even though the result of the request is not yet known, and it could still fail.
+// PouchDb only checks the response status to determine whether the request was successful or not.
+// In order to enable a retry, and not incorrectly communicate success to the client, validate _changes
+// responses and update the response object accordingly, before passing it to PouchDb for processing.
+const processChangesResponse = (response) => {
+  if (!response.ok) {
+    return Promise.resolve(response);
+  }
+
+  const clone = response.clone();
+  return clone.json().then(json => {
+    const validChangesResponse = json.results && !json.error;
+    if (validChangesResponse) {
+      return response;
+    }
+
+    return {
+      ok: false,
+      status: json.code || 500,
+      ...response,
+    };
+  });
+};
+
 export const POUCHDB_OPTIONS = {
   local: { auto_compaction: true, skip_setup: false },
   remote: {
@@ -26,10 +52,15 @@ export const POUCHDB_OPTIONS = {
         opts.headers.set(header, POUCHDB_OPTIONS.remote_headers[header]);
       });
       opts.credentials = 'same-origin';
-      return window.PouchDB.fetch(url, opts);
+
+      const promise = window.PouchDB.fetch(url, opts);
+      if (parsedUrl.pathname.endsWith('/_changes')) {
+        return promise.then(response => processChangesResponse(response));
+      }
+      return promise;
     },
   },
   remote_headers: {
-    'Accept': 'application/json'
+    Accept: 'application/json'
   }
 };

@@ -87,8 +87,8 @@ export class ContactTypesService {
     return contactTypesUtils.getTypeId(contact);
   }
 
-  getTypeById(contactTypes = [], typeId) {
-    return contactTypes?.find(type => type.id === typeId);
+  getTypeById(contactTypes, typeId) {
+    return contactTypes?.find(type => type?.id === typeId);
   }
 
   /**
@@ -97,4 +97,21 @@ export class ContactTypesService {
   isPersonType(type?) {
     return contactTypesUtils.isPersonType(type);
   }
+
+  getLeafPlaceTypes() {
+    return this.settingsService
+      .get()
+      .then(config => contactTypesUtils.getLeafPlaceTypes(config));
+  }
+
+  isLeafPlaceType(types, typeId) {
+    if (!typeId || !types?.length) {
+      return false;
+    }
+    return !!types.find((type:ContactType) => type?.id === typeId);
+  }
+}
+
+interface ContactType {
+  id:string;
 }

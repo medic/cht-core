@@ -37,7 +37,9 @@ describe('Images header-tabs controller', () => {
       };
     });
   });
-  afterEach(() => { sinon.restore(); });
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it('should load settings, tabs and resource icons', () => {
     const tabs = [

@@ -6,7 +6,7 @@ const utils = require('../lib/utils');
 const logger = require('../lib/logger');
 const config = require('../config');
 const infodoc = require('@medic/infodoc');
-const uuid = require('uuid');
+const uuid = require('uuid').v4;
 
 infodoc.initLib(db.medic, db.sentinel);
 /*
@@ -31,7 +31,6 @@ const AVAILABLE_TRANSITIONS = [
   'generate_patient_id_on_people',
   'default_responses',
   'update_sent_by',
-  'update_sent_forms',
   'death_reporting',
   'conditional_alerts',
   'multi_report_alerts',
@@ -39,7 +38,8 @@ const AVAILABLE_TRANSITIONS = [
   'update_scheduled_reports',
   'resolve_pending',
   'muting',
-  'mark_for_outbound'
+  'mark_for_outbound',
+  'create_user_for_contacts'
 ];
 
 const transitions = [];
@@ -52,12 +52,13 @@ const processChange = (change, callback) => {
       change.doc = doc;
       return infodoc.get(change).then(infoDoc => {
         change.info = infoDoc;
+        change.initialProcessing = !infoDoc.transitions;
         // Remove transitions from doc since those
         // will be handled by the info doc(sentinel db) after this
         if (change.doc.transitions) {
           delete change.doc.transitions;
         }
-        applyTransitions(change, callback);
+        module.exports.applyTransitions(change, callback);
       });
     })
     .catch(err => {
@@ -91,6 +92,7 @@ const processDocs = docs => {
     .then(infoDocs => {
       changes.forEach(change => {
         change.info = infoDocs.find(infoDoc => infoDoc.doc_id === change.id);
+        change.initialProcessing = !change.info.transitions;
       });
       return infodoc.bulkUpdate(infoDocs);
     })
@@ -218,7 +220,7 @@ const canRun = ({ key, change, transition }) => {
     !change.deleted &&
     doc &&
     !isRevSame(doc, info) &&
-    transition.filter(doc, info)
+    transition.filter(change)
   );
 };
 
@@ -235,7 +237,17 @@ const finalize = ({ change, results }, callback) => {
     logger.debug(
       `nothing changed skipping saveDoc for doc ${change.id} seq ${change.seq}`
     );
-    return callback();
+    // info.transitions is how we know if a doc has been processed by Sentinel before. Even if no transitions ran,
+    // we still want to save transitions, so we know it's been processed.
+    return Promise
+      .resolve()
+      .then(() => {
+        if (change.initialProcessing) {
+          return infodoc.saveTransitions(change);
+        }
+      })
+      .then(() => callback())
+      .catch(err => callback(err));
   }
   logger.debug(`calling saveDoc on doc ${change.id} seq ${change.seq}`);
 
@@ -268,11 +280,14 @@ const saveDoc = (change, callback) => {
  * change/write.
  */
 const applyTransition = ({ key, change, transition, force }, callback) => {
-  if (!force && !canRun({ key, change, transition })) {
-    logger.debug(
-      `canRun test failed on transition ${key} for doc ${change.id} seq ${change.seq}`
-    );
-    return callback();
+  try {
+    if (!force && !canRun({ key, change, transition })) {
+      logger.debug(`canRun test failed on transition ${key} for doc ${change.id} seq ${change.seq}`);
+      return callback();
+    }
+  } catch (err) {
+    logger.error(`canRun test errored on transition ${key} for doc ${change.id}: %o`, err);
+    return callback(null, false);
   }
 
   logger.debug(

@@ -1,8 +1,8 @@
 # The Core Framework of the Community Health Toolkit (CHT)
 
-This is the repository of the CHT Core Framework, a technical resource of the [Community Health Toolkit (CHT)](https://communityhealthtoolkit.org) contributed by Medic Mobile.
+This is the repository of the CHT Core Framework, a technical resource of the [Community Health Toolkit (CHT)](https://communityhealthtoolkit.org) contributed by Medic.
 
-Medic Mobile is a nonprofit organization on a mission to improve health in the hardest-to-reach communities through open-source software. Medic Mobile serves as the technical steward of the Community Health Toolkit.
+Medic is a nonprofit organization on a mission to improve health in the hardest-to-reach communities through open-source software. Medic serves as the technical steward of the Community Health Toolkit.
 
 For the latest changes and release announcements see our [release notes](https://github.com/medic/cht-core/tree/master/release-notes). Our exact support matrix (including older app versions) can be found [in our docs](https://docs.communityhealthtoolkit.org/core/overview/supported-software/).
 
@@ -14,7 +14,7 @@ The Core Framework addresses complexities like health system roles and reporting
 
 Mobile and web applications built with the Core Framework support a team-based approach to healthcare delivery and management. Health workers can use SMS messages or mobile applications to submit health data that can then be viewed and exported using a web application. These web applications are fully responsive with a mobile-first design, and support localization using any written language. They can be installed locally or in the cloud by setting up the individual components or as a Docker container.
 
-For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://docs.communityhealthtoolkit.org/core/overview/architecture/).
+For more information about Medic's architecture and how the pieces fit together, see [Architecture Overview](https://docs.communityhealthtoolkit.org/core/overview/architecture/).
 For more information about the format of docs in the database, see [Database Schema](https://docs.communityhealthtoolkit.org/core/overview/db-schema/).
 For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://docs.communityhealthtoolkit.org/apps/guides/messaging/sms-states/).
 
@@ -22,9 +22,9 @@ For more information about the SMS exchange protocol between webapp and gateway,
 
 If you are a developer looking to contribute to the Core Framework itself, you should follow the [development setup instructions](./DEVELOPMENT.md).
 
-If you wish to evaluate the Core Framework, _or_ you are a developer looking to create or modify applications built with the Core Framework, you can instead follow the [easy deployment](./INSTALL.md) instructions, which will get the latest stable release running locally via Docker.
+If you wish to evaluate the Core Framework, _or_ you are a developer looking to create or modify applications built with the Core Framework, you can instead follow the [easy deployment](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/) instructions, which will get the latest stable release running locally via Docker.
 
-You will need to also familiarise yourself with [medic-conf](https://github.com/medic/medic-conf), a tool to manage and configure your apps built using the Core Framework. A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [cht-docs](https://docs.communityhealthtoolkit.org/apps/).
+You will need to also familiarise yourself with [cht-conf](https://github.com/medic/cht-conf), a tool to manage and configure your apps built using the Core Framework. A brief guide for modifying the config is available [alongside the config](./config/default/GUIDE.md). A more detailed guide is available in [cht-docs](https://docs.communityhealthtoolkit.org/apps/).
 
 ### Supported Browsers
 
@@ -57,7 +57,7 @@ Builds brought to you courtesy of GitHub Actions.
 
 ## Copyright
 
-Copyright 2013-2021 Medic Mobile, Inc. <hello@medic.org>
+Copyright 2013-2022 Medic Mobile, Inc. <hello@medic.org>
 
 ## License
 

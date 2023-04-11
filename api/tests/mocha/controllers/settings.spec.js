@@ -101,12 +101,12 @@ describe('Settings controller', () => {
         chai.expect(auth.getUserCtx.callCount).to.equal(1);
         chai.expect(auth.getUserCtx.args[0]).to.deep.equal([req]);
         chai.expect(auth.hasAllPermissions.callCount).to.equal(1);
-        chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([ctx, 'can_configure']);
+        chai.expect(auth.hasAllPermissions.args[0]).to.deep.equal([ctx, ['can_edit', 'can_configure']]);
         chai.expect(settingsService.update.callCount).to.equal(0);
         chai.expect(res.json.callCount).to.equal(0);
         chai.expect(serverUtils.error.callCount).to.equal(1);
         chai.expect(serverUtils.error.args[0]).to.deep.equal([
-          { code: 403, message: 'Insufficient permissions' },
+          { code: 403, message: 'Insufficient privileges' },
           req,
           res,
           true

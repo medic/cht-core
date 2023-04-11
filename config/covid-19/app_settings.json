@@ -1,0 +1,233 @@
+{
+  "setup_complete": true,
+  "locales": [
+    {
+      "code": "en",
+      "name": "English"
+    }
+  ],
+  "locale": "en",
+  "locale_outgoing": "en",
+  "date_format": "YYYY-MM-DD",
+  "reported_date_format": "YYYY-MM-DD HH:mm:ss",
+  "forms_only_mode": false,
+  "default_responses": {
+    "start_date": ""
+  },
+  "district_admins_access_unallocated_messages": false,
+  "public_access": false,
+  "default_country_code": 1,
+  "gateway_number": "+13125551212",
+  "schedule_morning_hours": 0,
+  "schedule_morning_minutes": 0,
+  "schedule_evening_hours": 23,
+  "schedule_evening_minutes": 0,
+  "synthetic_date": "",
+  "contact_display_short": "clinic.name",
+  "roles": {
+    "chw_supervisor": {
+      "name": "usertype.chw-supervisor",
+      "offline": true
+    },
+    "chw": {
+      "name": "usertype.chw",
+      "offline": true
+    }
+  },
+  "permissions": {
+    "can_bulk_delete_reports": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_create_people": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_create_places": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_create_records": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_delete_contacts": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_delete_messages": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_delete_reports": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_edit": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_edit_profile": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_edit_verification": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_all": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_contacts": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_feedback": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_messages": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_update_places": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_update_reports": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_export_dhis": [
+      "chw_supervisor"
+    ],
+    "can_verify_reports": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_analytics": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_analytics_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_call_action": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_contacts": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_contacts_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_message_action": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_messages": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_messages_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_reports": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_reports_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_tasks": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_tasks_tab": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_view_unallocated_data_records": [
+      "chw_supervisor",
+      "chw"
+    ],
+    "can_aggregate_targets": [
+      "chw_supervisor"
+    ]
+  },
+  "place_hierarchy_types": [
+    "district_hospital",
+    "health_center"
+  ],
+  "contact_types": [
+    {
+      "id": "district_hospital",
+      "name_key": "contact.type.district_hospital",
+      "group_key": "contact.type.district_hospital.plural",
+      "create_key": "contact.type.district_hospital.new",
+      "edit_key": "contact.type.place.edit",
+      "icon": "medic-district-hospital",
+      "create_form": "form:contact:district_hospital:create",
+      "edit_form": "form:contact:district_hospital:edit"
+    },
+    {
+      "id": "health_center",
+      "name_key": "contact.type.health_center",
+      "group_key": "contact.type.health_center.plural",
+      "create_key": "contact.type.health_center.new",
+      "edit_key": "contact.type.place.edit",
+      "parents": [
+        "district_hospital"
+      ],
+      "icon": "medic-health-center",
+      "create_form": "form:contact:health_center:create",
+      "edit_form": "form:contact:health_center:edit"
+    },
+    {
+      "id": "clinic",
+      "name_key": "contact.type.clinic",
+      "group_key": "contact.type.clinic.plural",
+      "create_key": "contact.type.clinic.new",
+      "edit_key": "contact.type.place.edit",
+      "parents": [
+        "health_center"
+      ],
+      "icon": "medic-clinic",
+      "create_form": "form:contact:clinic:create",
+      "edit_form": "form:contact:clinic:edit",
+      "count_visits": true
+    },
+    {
+      "id": "person",
+      "name_key": "contact.type.person",
+      "group_key": "contact.type.person.plural",
+      "create_key": "contact.type.person.new",
+      "edit_key": "contact.type.person.edit",
+      "primary_contact_key": "clinic.field.contact",
+      "parents": [
+        "district_hospital",
+        "health_center",
+        "clinic"
+      ],
+      "icon": "medic-person",
+      "create_form": "form:contact:person:create",
+      "edit_form": "form:contact:person:edit",
+      "person": true
+    }
+  ],
+  "contact_summary": "var ContactSummary = {}; !function(e,t){if('object'==typeof exports&&'object'==typeof module)module.exports=t();else if('function'==typeof define&&define.amd)define([],t);else{var n=t();for(var r in n)('object'==typeof exports?exports:e)[r]=n[r]}}(ContactSummary,(function(){return function(e){var t={};function n(r){if(t[r])return t[r].exports;var o=t[r]={i:r,l:!1,exports:{}};return e[r].call(o.exports,o,o.exports,n),o.l=!0,o.exports}return n.m=e,n.c=t,n.d=function(e,t,r){n.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:r})},n.r=function(e){'undefined'!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:'Module'}),Object.defineProperty(e,'__esModule',{value:!0})},n.t=function(e,t){if(1&t&&(e=n(e)),8&t)return e;if(4&t&&'object'==typeof e&&e&&e.__esModule)return e;var r=Object.create(null);if(n.r(r),Object.defineProperty(r,'default',{enumerable:!0,value:e}),2&t&&'string'!=typeof e)for(var o in e)n.d(r,o,function(t){return e[t]}.bind(null,o));return r},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,'a',t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p='',n(n.s=0)}([function(e,t,n){var r=n(1),o=n(2);e.exports=o(r,contact,reports)},function(e,t){const n=contact,r=lineage,o=[{appliesToType:'person',label:'patient_id',value:n.patient_id,width:4},{appliesToType:'person',label:'contact.age',value:n.date_of_birth,filter:'age',width:4},{appliesToType:'person',label:'contact.sex',value:'contact.sex.'+n.sex,translate:!0,width:4},{appliesToType:'person',label:'person.field.phone',value:n.phone,width:4},{appliesToType:'person',label:'person.field.alternate_phone',value:n.phone_alternate,width:4},{appliesToType:'!person',label:'contact',value:n.contact&&n.contact.name,width:4},{appliesToType:'!person',label:'contact.phone',value:n.contact&&n.contact.phone,width:4},{label:'External ID',value:n.external_id,width:4},{label:'contact.parent',appliesIf:()=>n.parent&&r[0],value:r,filter:'lineage'},{label:'Address',value:n.address},{label:'contact.notes',value:n.notes}];e.exports={context:{},cards:[],fields:o}},function(e,t){function n(e){return e?Array.isArray(e)?e:[e]:[]}function r(e,t){switch(typeof e){case'undefined':return!0;case'function':return e(t);default:return e}}function o(e,t,n){if(r(e.appliesIf,n)){var o='function'==typeof e.fields?e.fields(n):e.fields.filter((function(e){return r(e.appliesIf,n)})).map((function(e){var t={};return a(e,t,'label'),a(e,t,'value'),a(e,t,'translate'),a(e,t,'filter'),a(e,t,'width'),a(e,t,'icon'),e.context&&(t.context={},a(e.context,t.context,'count'),a(e.context,t.context,'total')),t}));return e.modifyContext&&e.modifyContext(t,n),{label:e.label,fields:o}}function a(e,t,r){switch(typeof e[r]){case'undefined':return;case'function':t[r]=e[r](n);break;default:t[r]=e[r]}}}e.exports=function(e,t,r){var a=e.fields||[],l=e.context||{},i=e.cards||[],c=t&&('contact'===t.type?t.contact_type:t.type),p={cards:[],fields:a.filter((function(e){var t=n(e.appliesToType),r=t.filter((function(e){return e&&'!'===e.charAt(0)}));if((0===t.length||t.includes(c)||r.length>0&&!r.includes('!'+c))&&(!e.appliesIf||e.appliesIf()))return delete e.appliesToType,delete e.appliesIf,!0}))};return i.forEach((function(e){var t,a,i,u,f=n(e.appliesToType);if(f.includes('report')&&f.length>1)throw new Error('You cannot set appliesToType to an array which includes the type \\'report\\' and another type.');if(f.includes('report'))for(t=0;t<r.length;++t)a=r[t],!(u=a)||u.errors&&u.errors.length||(i=o(e,l,a))&&p.cards.push(i);else{if(!f.includes(c)&&f.length>0)return;(i=o(e,l))&&p.cards.push(i)}})),p.context=l,p}}])})); return ContactSummary;",
+  "tasks": {
+    "rules": "define Target { _id: null, contact: null, deleted: null, type: null, pass: null, date: null, groupBy: null }\ndefine Contact { contact: null, reports: null, tasks: null }\ndefine Task { _id: null, deleted: null, doc: null, contact: null, icon: null, date: null, readyStart: null, readyEnd: null, title: null, fields: null, resolved: null, priority: null, priorityLabel: null, reports: null, actions: null }\nrule GenerateEvents {\n  when { c: Contact } then { !function(e){var t={};function r(n){if(t[n])return t[n].exports;var o=t[n]={i:n,l:!1,exports:{}};return e[n].call(o.exports,o,o.exports,r),o.l=!0,o.exports}r.m=e,r.c=t,r.d=function(e,t,n){r.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:n})},r.r=function(e){'undefined'!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:'Module'}),Object.defineProperty(e,'__esModule',{value:!0})},r.t=function(e,t){if(1&t&&(e=r(e)),8&t)return e;if(4&t&&'object'==typeof e&&e&&e.__esModule)return e;var n=Object.create(null);if(r.r(n),Object.defineProperty(n,'default',{enumerable:!0,value:e}),2&t&&'string'!=typeof e)for(var o in e)r.d(n,o,function(t){return e[t]}.bind(null,o));return n},r.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return r.d(t,'a',t),t},r.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},r.p='',r(r.s=1)}([function(e,t){e.exports=function(e){var t={};!function e(t,r){var n=Object.keys(t);for(var o in n){var i=n[o];switch(typeof t[i]){case'object':e(t[i],r);break;case'function':t[i]=t[i].bind(r)}}}(e,t),t.definition=function e(t){var r=Object.assign({},t),n=Object.keys(r);for(var o in n){var i=n[o];if(Array.isArray(r[i])){r[i]=r[i].slice(0);for(var a=0;a<r[i].length;++a)'object'==typeof r[i][a]&&(r[i][a]=e(r[i][a]))}else'object'==typeof r[i]&&(r[i]=e(r[i]))}return r}(e)}},function(e,t,r){var n=r(2),o=r(4),i=r(5);r(7)(o,c,Utils,Target,emit),i(n,c,Utils,Task,emit),emit('_complete',{_id:!0})},function(e,t,r){const n=r(3),{isFormArraySubmittedInWindow:o,addDays:i,getField:a}=n;e.exports=[{name:'covid19-rdt-capture-results',icon:'icon-follow-up',title:'task.covid19.capture.title',appliesTo:'reports',appliesToType:['covid19_rdt_provision'],appliesIf:(e,t)=>!!a(t,'test-reference.test_id'),resolvedIf:(e,t,r,n)=>{if(!e.reports)return!1;if(!e.reports.find(e=>{if('covid19_rdt_capture'!==e.form)return!1;const r=a(t,'test-reference.test_id');return a(e,'test-information.test_id')===r}))return!1;const s=Math.max(i(n,-r.start).getTime(),t.reported_date+1),c=i(n,r.end+1).getTime();return o(e.reports,['covid19_rdt_capture'],s,c)},actions:[{type:'report',form:'covid19_rdt_capture',modifyContent:function(e,t,r){e.patient_uuid=a(r,'patient_uuid'),e['test-information']={session_id:a(r,'test-reference.session_id'),administrator_id:a(r,'inputs.user.contact_id'),administrator_name:a(r,'inputs.user.name'),test_id:a(r,'test-reference.test_id'),facility_id:a(r,'test-reference.facility_id'),facility_name:a(r,'test-reference.facility_name')||a(r,'test-reference.other_facility_name'),facility_address:a(r,'test-reference.facility_address')||a(r,'test-reference.other_facility_address'),facility_test_setting:a(r,'test-reference.other_facility_test_setting'),other_test_setting:a(r,'test-reference.other_test_setting'),test_reason:a(r,'test-reference.test_reason'),symptoms:a(r,'test-reference.symptoms'),days_since_symptoms_began:a(r,'test-reference.days_since_symptoms_began'),specimen_type:a(r,'spec-lot.specimen_type'),specimen_type_other:a(r,'spec-lot.specimen_type_other'),rdt_lot:a(r,'spec-lot.rdt_lot'),rdt_lot_expiry_date:a(r,'spec-lot.rdt_lot_expiry_date'),additional_notes:a(r,'spec-lot.additional_notes')}}}],events:[{id:'covid19-rdt-capture-event',start:1,end:2,days:1}]},{name:'covid19-rdt-repeat',icon:'icon-follow-up',title:'task.covid19.repeat.title',appliesTo:'reports',appliesToType:['covid19_rdt_capture'],appliesIf:(e,t)=>'yes'===a(t,'repeat-test.repeat_test'),resolvedIf:(e,t,r,n)=>{if(!e.reports)return!1;if(!e.reports.find(e=>'covid19_rdt_provision'===e.form&&a(e,'patient_uuid')===a(t,'patient_uuid')))return!1;const s=Math.max(i(n,-r.start).getTime(),t.reported_date+1),c=i(n,r.end+1).getTime();return o(e.reports,['covid19_rdt_provision'],s,c)},actions:[{type:'report',form:'covid19_rdt_provision',modifyContent:function(e,t,r){e.patient_uuid=a(r,'patient_uuid')}}],events:[{id:'covid19-rdt-capture-event',start:1,end:2,days:1}]}]},function(e,t){e.exports={addDays:function(e,t){const r=function(e){const t=new Date(e);return t.setHours(0),t.setMinutes(0),t.setSeconds(0),t.setMilliseconds(0),t}(new Date(e));return r.setDate(r.getDate()+t),r},isFormArraySubmittedInWindow:function(e,t,r,n,o){const i=(e||[]).filter(e=>(t||[]).includes(e.form)&&e.reported_date>=r&&e.reported_date<=n);return o?i.length>=o:!!i.length},getField:function(e,t){return['fields',...(t||'').split('.')].reduce((e,t)=>{if(void 0!==e)return e[t]},e)}}},function(e,t){e.exports=[]},function(e,t,r){var n=r(0),o=r(6);function i(e,t,r,n,o,i){var a;if(e.appliesToType){var s;if('contacts'===e.appliesTo){if(!o.contact)return;s='contact'===o.contact.type?o.contact.contact_type:o.contact.type}else{if(!i)return;s=i.form}if(-1===e.appliesToType.indexOf(s))return}if('scheduled_tasks'===e.appliesTo||!e.appliesIf||e.appliesIf(o,i))if('scheduled_tasks'===e.appliesTo){if(i&&e.appliesIf){if(!i.scheduled_tasks)return;for(a=0;a<i.scheduled_tasks.length;a++)e.appliesIf(o,i,a)&&d(a)}}else d();function c(e,t,r){var n;return(n='function'==typeof e.contactLabel?e.contactLabel(t,r):e.contactLabel)?{name:n}:t.contact}function d(a){var s,d,f,u,l=null;for(s=0;s<e.events.length;s++){if((d=e.events[s]).dueDate)l=d.dueDate(d,o,i,a);else if(i)l=void 0!==a?new Date(t.addDate(new Date(i.scheduled_tasks[a].due),d.days)):new Date(t.addDate(new Date(i.reported_date),d.days));else if(d.dueDate)l=d.dueDate(d,o);else{var _=o.contact&&o.contact.reported_date?new Date(o.contact.reported_date):new Date;l=new Date(t.addDate(_,d.days))}t.isTimely(l,d)&&(u={_id:(i?i._id:o.contact&&o.contact._id)+'~'+(d.id||s)+'~'+e.name,deleted:!(!(o.contact&&o.contact.deleted||i)||!i.deleted),doc:o,contact:c(e,o,i),icon:e.icon,date:l,readyStart:d.start||0,readyEnd:d.end||0,title:e.title,resolved:e.resolvedIf(o,i,d,l,a),actions:p(e.actions,d)},void 0!==a&&(u._id+='-'+a),'function'==typeof(f=e.priority)&&(f=f(o,i)),f&&(u.priority=f.level,u.priorityLabel=f.label),n('task',new r(u)))}}function p(t,r){return e.actions.map((function(e){return function(e,t){var r={source:'task',source_id:i?i._id:o.contact&&o.contact._id,contact:o.contact};e.modifyContent&&e.modifyContent(r,o,i,t);return{type:e.type||'report',form:e.form,label:e.label||'Follow up',content:r}}(e,r)}))}}e.exports=function(e,t,r,a,s){if(e)for(var c,d,p=0;p<e.length;++p)switch('function'!=typeof(c=Object.assign({},e[p],o)).resolvedIf&&(c.resolvedIf=function(e,t,n,o){return c.defaultResolvedIf(e,t,n,o,r)}),n(c),c.appliesTo){case'reports':case'scheduled_tasks':for(var f=0;f<t.reports.length;++f)d=t.reports[f],i(c,r,a,s,t,d);break;case'contacts':t.contact&&i(c,r,a,s,t);break;default:throw new Error('Unrecognised task.appliesTo: '+c.appliesTo)}}},function(e,t){e.exports={defaultResolvedIf:function(e,t,r,n,o){var i,a;o||(o=Utils);var s=function(e){var t;if(!e||!e.actions)return;return(t=e.actions.find((function(e){return!e.type||'report'===e.type})))&&t.form}(this.definition);if(!s)throw new Error('Could not find the default resolving form!');return i=0,i=t?Math.max(o.addDate(n,-r.start).getTime(),t.reported_date+1):o.addDate(n,-r.start).getTime(),a=o.addDate(n,r.end+1).getTime(),o.isFormSubmittedInWindow(e.reports,s,i,a)}}},function(e,t,r){var n=r(0);function o(e,t,r,n,o,i){var a=!!i;if(o.contact){var s='contact'===o.contact.type?o.contact.contact_type:o.contact.type,c=a?i.form:s;if(!(e.appliesToType&&e.appliesToType.indexOf(c)<0)&&(!e.appliesIf||e.appliesIf(o,i)))for(var d=a?i:o.contact,p=function(e,t,r){var n;return n='function'==typeof e.idType?e.idType(t,r):'report'===e.idType?r&&r._id:t.contact&&t.contact._id,Array.isArray(n)||(n=[n]),n}(e,o,i),f=!e.passesIf||!!e.passesIf(o,i),u=function(e,t,r,n){if('function'==typeof e.date)return e.date(r,n);if(void 0===e.date||'now'===e.date)return t.now().getTime();if('reported'===e.date)return n?n.reported_date:r.contact.reported_date;throw new Error('Unrecognised value for target.date: '+e.date)}(e,r,o,i),l=e.groupBy&&e.groupBy(o,i),_=0;_<p.length;++_){var y=new t({_id:p[_]+'~'+e.id,contact:o.contact,deleted:!!d.deleted,type:e.id,pass:f,groupBy:l,date:u});e.emitCustom?e.emitCustom(v,y,o,i):v(y)}}function v(e){n('target',e)}}e.exports=function(e,t,r,i,a){for(var s=0;s<e.length;++s){var c=e[s];switch(n(c),c.appliesTo){case'contacts':o(c,i,r,a,t);break;case'reports':for(var d=0;d<t.reports.length;++d){o(c,i,r,a,t,t.reports[d])}break;default:throw new Error('Unrecognised target.appliesTo: '+c.appliesTo)}}}}]); }\n}",
+    "targets": {
+      "enabled": true,
+      "items": []
+    }
+  }
+}

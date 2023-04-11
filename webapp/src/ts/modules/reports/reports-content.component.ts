@@ -12,21 +12,21 @@ import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { MessageStateService } from '@mm-services/message-state.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
+import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Component({
   templateUrl: './reports-content.component.html'
 })
 export class ReportsContentComponent implements OnInit, OnDestroy {
   subscription: Subscription = new Subscription();
-  private globalActions;
-  private reportsActions;
+  private globalActions: GlobalActions;
+  private reportsActions: ReportsActions;
   forms;
   loadingContent;
   selectedReports;
   selectMode;
   validChecks;
   summaries;
-
 
   constructor(
     private changesService:ChangesService,
@@ -35,6 +35,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
     private router:Router,
     private searchFiltersService:SearchFiltersService,
     private messageStateService:MessageStateService,
+    private responsiveService:ResponsiveService,
     private modalService:ModalService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -42,29 +43,63 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const reduxSubscription = combineLatest(
+    this.subscribeToStore();
+    this.watchReportsContentChanges();
+
+    const routeSubscription = this.route.params.subscribe(params => {
+      if (params.id) {
+        this.reportsActions.selectReportToOpen(this.route.snapshot.params.id);
+        this.globalActions.clearNavigation();
+        $('.tooltip').remove();
+        return;
+      }
+      this.globalActions.unsetComponents();
+    });
+    this.subscription.add(routeSubscription);
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+    this.reportsActions.setSelectedReport();
+  }
+
+  private subscribeToStore() {
+    const reportsSubscription = combineLatest(
+      this.store.select(Selectors.getSelectedReport),
       this.store.select(Selectors.getSelectedReports),
-      this.store.select(Selectors.getSelectedReportsSummaries),
-      this.store.select(Selectors.getSelectedReportsValidChecks),
+    ).subscribe(([
+      selectedReport,
+      selectedReports,
+    ]) => {
+      if (selectedReport) {
+        this.selectedReports = [ selectedReport ];
+      } else {
+        this.selectedReports = selectedReports && !this.isMobile() ? selectedReports: [];
+      }
+
+      this.summaries = this.selectedReports.map(item => item.formatted || item.summary);
+      this.validChecks = this.selectedReports.map(item => item.summary?.valid || !item.formatted?.errors?.length);
+    });
+    this.subscription.add(reportsSubscription);
+
+    const contextSubscription = combineLatest(
       this.store.select(Selectors.getForms),
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getSelectMode),
     ).subscribe(([
-      selectedReports,
-      summaries,
-      validChecks,
       forms,
       loadingContent,
       selectMode,
     ]) => {
-      this.selectedReports = selectedReports;
-      this.summaries = summaries;
-      this.validChecks = validChecks;
       this.loadingContent = loadingContent;
       this.forms = forms;
       this.selectMode = selectMode;
     });
-    this.subscription.add(reduxSubscription);
+    this.subscription.add(contextSubscription);
+  }
+
+  private watchReportsContentChanges() {
+    const isMatchingRouteParam = (change) => this.route.snapshot.params?.id === change.id;
 
     const changesSubscription = this.changesService.subscribe({
       key: 'reports-content',
@@ -74,39 +109,26 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
           _.some(this.selectedReports, (item) => item._id === change.id);
         // When submitting new report that gets updated immediately by Sentinel,
         // we might be in a situation where we receive the change before the report was fully selected
-        const isMatchingRouteParam = this.route.snapshot.params?.id === change.id;
-        return isSelected || isMatchingRouteParam;
+        return isSelected || isMatchingRouteParam(change);
       },
       callback: (change) => {
         if (change.deleted) {
           if (this.selectMode) {
-            this.reportsActions.removeSelectedReport(change.id);
-          } else {
-            return this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
+            this.deselect(change.id);
+            return;
           }
-        } else {
-          this.reportsActions.selectReport(change.id, { silent: true });
+          this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
+          return;
+        }
+
+        if (!this.route.snapshot.params?.id || isMatchingRouteParam(change)) {
+          // Avoid selecting this report if a different report is already being routed to
+          this.reportsActions.selectReportToOpen(change.id, { silent: true });
+          return;
         }
       }
     });
     this.subscription.add(changesSubscription);
-
-    const routeSubscription =  this.route.params.subscribe((params) => {
-      if (params.id) {
-        this.reportsActions.selectReport(this.route.snapshot.params.id);
-        this.globalActions.clearCancelCallback();
-
-        $('.tooltip').remove();
-      } else {
-        this.globalActions.unsetSelected();
-      }
-    });
-    this.subscription.add(routeSubscription);
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
-    this.reportsActions.setSelectedReports([]);
   }
 
   trackByFn(index, item) {
@@ -120,18 +142,23 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
 
     const id = report._id;
     if (report.doc || report.expanded) {
-      this.reportsActions.updateSelectedReportItem(id, { expanded: !report.expanded });
+      this.reportsActions.updateSelectedReportsItem(id, { expanded: !report.expanded });
     } else {
-      this.reportsActions.updateSelectedReportItem(id, { loading: true, expanded: true });
-      this.reportsActions.selectReport(id, { silent: true });
+      this.reportsActions.updateSelectedReportsItem(id, { loading: true, expanded: true });
+      this.reportsActions.selectReport(id);
     }
   }
 
-  deselect(report, event) {
-    if (this.selectMode) {
-      event.stopPropagation();
-      this.reportsActions.removeSelectedReport(report);
+  deselect(report:string|Record<string, any>, event?) {
+    if (!this.selectMode) {
+      return;
     }
+
+    if (event) {
+      event.stopPropagation();
+    }
+
+    this.reportsActions.removeSelectedReport(report);
   }
 
   search(query) {
@@ -173,5 +200,9 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
         { initialState: { model: { report, group: _.cloneDeep(group) } } },
       )
       .catch(() => {});
+  }
+
+  isMobile() {
+    return this.responsiveService.isMobile();
   }
 }

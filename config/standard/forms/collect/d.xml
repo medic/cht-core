@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>Delivery Report (D)</h:title>
     <model>
@@ -33,7 +33,7 @@
             <value>Mengirimkan laporan kelahiran untuk ID <output value=" /d/id "/>. Persalinan di <output value=" /d/c_label "/>.</value>
           </text>
         </translation>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/d/c/F:label">
             <value>Facility</value>
           </text>
@@ -150,7 +150,7 @@
         </translation>
       </itext>
       <instance>
-        <d delimiter="#" id="d" prefix="J1!d!" version="2018-09-27_07-24">
+        <d id="d" prefix="J1!d!" delimiter="#" version="2022-02-25 15-08">
           <id/>
           <c/>
           <d/>
@@ -162,13 +162,13 @@
           </meta>
         </d>
       </instance>
-      <bind nodeset="/d/id" required="true()" type="string"/>
-      <bind nodeset="/d/c" required="true()" type="select1"/>
-      <bind constraint=". &gt;= 0 and . &lt;= 365" jr:constraintMsg="jr:itext('/d/d:jr:constraintMsg')" nodeset="/d/d" type="int"/>
-      <bind calculate="jr:choice-name( /d/c , ' /d/c ')" nodeset="/d/c_label" type="string"/>
-      <bind nodeset="/d/review_with_days" readonly="true()" relevant="../d &gt;= 0" type="string"/>
-      <bind nodeset="/d/review_without_days" readonly="true()" relevant="not(../d &gt;= 0)" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/d/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/d/id" type="string" required="true()"/>
+      <bind nodeset="/d/c" type="select1" required="true()"/>
+      <bind nodeset="/d/d" type="int" constraint=". &gt;= 0 and . &lt;= 365" jr:constraintMsg="jr:itext('/d/d:jr:constraintMsg')"/>
+      <bind nodeset="/d/c_label" type="string" calculate="jr:choice-name( /d/c , ' /d/c ')"/>
+      <bind nodeset="/d/review_with_days" readonly="true()" type="string" relevant="coalesce(../d, 0) &gt;= 0"/>
+      <bind nodeset="/d/review_without_days" readonly="true()" type="string" relevant="not(coalesce(../d, 0) &gt;= 0)"/>
+      <bind nodeset="/d/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

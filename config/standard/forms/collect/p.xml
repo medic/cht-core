@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
   <h:head>
     <h:title>New Pregnancy (P)</h:title>
     <model>
@@ -30,7 +30,7 @@
             <value>Mengirimkan laporan kehamilan untuk ID <output value=" /p/id "/>, dengan tidak diketahui menstruasi terakhir</value>
           </text>
         </translation>
-        <translation default="true()" lang="English (en)">
+        <translation lang="English (en)" default="true()">
           <text id="/p/id:label">
             <value>Patient ID</value>
           </text>
@@ -136,7 +136,7 @@
         </translation>
       </itext>
       <instance>
-        <p delimiter="#" id="p" prefix="J1!p!" version="2018-11-14_10-25">
+        <p id="p" prefix="J1!p!" delimiter="#" version="2018-11-14_10-25">
           <id/>
           <lmp_known/>
           <lmp/>
@@ -147,12 +147,12 @@
           </meta>
         </p>
       </instance>
-      <bind nodeset="/p/id" required="true()" type="string"/>
+      <bind nodeset="/p/id" type="string" required="true()"/>
       <bind nodeset="/p/lmp_known" type="select1"/>
-      <bind constraint=". &gt;= 2 and . &lt;= 42" jr:constraintMsg="jr:itext('/p/lmp:jr:constraintMsg')" nodeset="/p/lmp" relevant="selected( /p/lmp_known ,'yes')" required="true()" type="int"/>
-      <bind nodeset="/p/review_with_lmp" readonly="true()" relevant="selected( /p/lmp_known ,'yes')" type="string"/>
-      <bind nodeset="/p/review_without_lmp" readonly="true()" relevant="not(selected( /p/lmp_known ,'yes'))" type="string"/>
-      <bind calculate="concat('uuid:', uuid())" nodeset="/p/meta/instanceID" readonly="true()" type="string"/>
+      <bind nodeset="/p/lmp" type="int" required="true()" jr:constraintMsg="jr:itext('/p/lmp:jr:constraintMsg')" relevant="selected( /p/lmp_known ,'yes')" constraint=". &gt;= 2 and . &lt;= 42"/>
+      <bind nodeset="/p/review_with_lmp" readonly="true()" type="string" relevant="selected( /p/lmp_known ,'yes')"/>
+      <bind nodeset="/p/review_without_lmp" readonly="true()" type="string" relevant="not(selected( /p/lmp_known ,'yes'))"/>
+      <bind nodeset="/p/meta/instanceID" type="string" readonly="true()" calculate="concat('uuid:', uuid())"/>
     </model>
   </h:head>
   <h:body class="pages">

@@ -18,14 +18,14 @@ angular.module('inboxServices').factory('HeaderTabs',
         state: 'tasks.detail',
         defaultIcon: 'fa-flag',
         translation: 'Tasks',
-        permissions: ['can_view_tasks','can_view_tasks_tab'],
+        permissions: ['can_view_tasks', 'can_view_tasks_tab'],
       },
       {
         name: 'reports',
         state: 'reports.detail',
         defaultIcon: 'fa-list-alt',
         translation: 'Reports',
-        permissions: ['can_view_reports','can_view_reports_tab'],
+        permissions: ['can_view_reports', 'can_view_reports_tab'],
         typeName: 'report',
       },
       {
@@ -33,14 +33,14 @@ angular.module('inboxServices').factory('HeaderTabs',
         state:'contacts.detail',
         defaultIcon:'fa-user',
         translation:'Contacts',
-        permissions: ['can_view_contacts','can_view_contacts_tab'],
+        permissions: ['can_view_contacts', 'can_view_contacts_tab'],
       },
       {
         name: 'analytics',
         state: 'analytics',
         defaultIcon: 'fa-bar-chart-o',
         translation: 'Analytics',
-        permissions: ['can_view_analytics','can_view_analytics_tab'],
+        permissions: ['can_view_analytics', 'can_view_analytics_tab'],
       }
     ];
 

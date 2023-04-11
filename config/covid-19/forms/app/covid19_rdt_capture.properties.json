@@ -1,0 +1,9 @@
+{
+  "icon": "icon-follow-up",
+  "title": "RDT Covid-19 - Capture",
+  "context": {
+    "person": false,
+    "place": false,
+    "expression": "false"
+  }
+}

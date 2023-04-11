@@ -6,7 +6,7 @@ Detailed tutorials on how to build apps from scratch with the Core Framework wil
 
 ## Modifying the Reference Application
 
-You should have the [Core Framework running](../../INSTALL.md), have installed [medic-conf](https://github.com/medic/medic-conf) and have checked out or otherwise downloaded the [Reference Application](./).
+You should have the [Core Framework running](https://docs.communityhealthtoolkit.org/apps/tutorials/local-setup/), have installed [medic-conf](https://github.com/medic/medic-conf) and have checked out or otherwise downloaded the [Reference Application](./).
 
 Once you've made a change you must compile and upload that configuration to the Core Framework to see the change. You can do this by using `medic-conf`'s default action:
 

@@ -20,33 +20,53 @@ When development is ready to begin one of the engineers should be nominated as a
 
 - [ ] Set the version number in `package.json` and `package-lock.json` and submit a PR. The easiest way to do this is to use `npm --no-git-tag-version version <major|minor>`.
 - [ ] Raise a new issue called `Update dependencies for <version>` with a description that links to [the documentation](https://docs.communityhealthtoolkit.org/core/guides/update-dependencies/). This should be done early in the release cycle so find a volunteer to take this on and assign it to them.
-- [ ] Write an update in the weekly Product Team call agenda summarising development and acceptance testing progress and identifying any blockers. The release Engineer is to update this every week until the version is released.
+- [ ] Write an update in the #product-team Slack channel summarising development and acceptance testing progress and identifying any blockers (the [milestone-status](https://github.com/medic/support-scripts/tree/master/milestone-status) script can be used to get a breakdown of the issues). The release Engineer is to update this every week until the version is released.
 
 # Releasing - Release Engineer
 
 Once all issues have passed acceptance testing and have been merged into `master` release testing can begin.
 
-- [ ] Create a new release branch from `master` named `<major>.<minor>.x` in `cht-core`. Post a message to #development using this template:
+- [ ] Create a new release branch from `master` named `<major>.<minor>.x` in `cht-core`. Post a message to #development Slack channel using this template:
 ```
 @core_devs I've just created the `<major>.<minor>.x` release branch. Please be aware that any further changes intended for this release will have to be merged to `master` then backported. Thanks!
 ```
-- [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by pushing a git tag and when CI completes successfully notify the QA team that it's ready for release testing.
-- [ ] Create a new document in the [release-notes folder](https://github.com/medic/cht-core/tree/master/release-notes) in `master`. Ensure all issues are in the GH Milestone, that they're correctly labelled (in particular: they have the right Type, "UI/UX" if they change the UI, and "Breaking change" if appropriate), and have human readable descriptions. Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes) to export the issues into our release note format. Manually document any known migration steps and known issues. Provide description, screenshots, videos, and anything else to help communicate particularly important changes. Document any required or recommended upgrades to our other products (eg: medic-conf,  medic-gateway, medic-android). Assign the PR to a) the Director of Technology, and b) an SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient.
+- [ ] Build a beta named `<major>.<minor>.<patch>-beta.1` by pushing a git tag (e.g. `git tag <major>.<minor>.<patch>-beta.1`). When CI completes successfully notify the QA team in the #quality-assurance Slack channel that it's ready for release testing.
+- [ ] Announce the start of release testing on the [CHT forum](https://forum.communityhealthtoolkit.org/c/product/releases/26), under the "Product - Releases" category using this template:
+```
+*Release testing has started for {{version}} of {{product}}*
+
+To get a sneak peak at this upcoming release, you can install `<major>.<minor>.<patch>-beta.1` on your testing environment. We suggest you test your forms and workflows with this release candidate version and raise any issues that you experience. This helps to to discover any potential regressions that wouldn't otherwise be caught during release testing.
+
+Keep an eye on the forum for the release announcement in the next couple of weeks!
+```
+- [ ] Add release notes to the [Core Framework Releases](https://docs.communityhealthtoolkit.org/core/releases/) page:
+  - [ ] Create a new document for the release in the [releases folder](https://github.com/medic/cht-docs/tree/main/content/en/core/releases).
+  - [ ] Ensure all issues are in the GH Milestone, that they're correctly labelled (in particular: they have the right Type, "UI/UX" if they change the UI, and "Breaking change" if appropriate), and have human readable descriptions.
+  - [ ] Use [this script](https://github.com/medic/cht-core/blob/master/scripts/release-notes) to export the issues into our release note format.
+  - [ ] Manually document any known migration steps and known issues.
+  - [ ] Provide description, screenshots, videos, and anything else to help communicate particularly important changes.
+  - [ ] Document any required or recommended upgrades to our other products (eg: cht-conf, cht-gateway, cht-android).
+  - [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions) and update the EOL date and status of previous releases. Also add a link in the `Release Notes` section to the new release page.
+  - [ ] Assign the PR to:
+    - The Director of Technology or a developer
+    - An SRE to review and confirm the documentation on upgrade instructions and breaking changes is sufficient
 - [ ] Until release testing passes, make sure regressions are fixed in `master`, cherry-pick them into the release branch, and release another beta.
-- [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/cht-core/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Link to the release notes in the description of the release.
-- [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/builds/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
+- [ ] Create a release in GitHub from the release branch so it shows up under the [Releases tab](https://github.com/medic/cht-core/releases) with the naming convention `<major>.<minor>.<patch>`. This will create the git tag automatically. Ensure the release notes PR above is merged. Link to the release notes in the description of the release.
+- [ ] Confirm the release build completes successfully and the new release is available on the [market](https://staging.dev.medicmobile.org/builds_4/releases). Make sure that the document has new entry with `id: medic:medic:<major>.<minor>.<patch>`
+- [ ] Execute the scalability testing suite on the final build and download the scalability results on S3 at medic-e2e/scalability/$TAG_NAME. Add the release `.jtl` file to `cht-core/tests/scalability/previous_results`. More info in the  [scalability documentation](https://github.com/medic/cht-core/blob/master/tests/scalability/README.md).
 - [ ] Upgrade the `demo-cht.dev` instance to this version.
-- [ ] Add the release to the [Supported versions](https://docs.communityhealthtoolkit.org/core/overview/supported-software/) and update the EOL date and status of previous releases.
 - [ ] Announce the release on the [CHT forum](https://forum.communityhealthtoolkit.org/c/product/releases/26), under the "Product - Releases" category using this template:
 ```
-@channel *We're excited to announce the release of {{version}} of {{product}}*
+*We're excited to announce the release of {{version}} of {{product}}*
 
 New features include {{key_features}}. We've also implemented loads of other improvements and fixed a heap of bugs.
 
-Read the release notes for full details: {{url}}
+Read the [release notes]({{url}}) for full details.
 
-Following our support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read our software support documentation: https://docs.communityhealthtoolkit.org/core/overview/supported-software/
+Following our support policy, versions {{versions}} are no longer supported. Projects running these versions should start planning to upgrade in the near future. For more details read our [software support documentation](https://docs.communityhealthtoolkit.org/core/releases/#supported-versions).
 
-See what's scheduled for the next releases: https://github.com/medic/cht-core/milestones
+Check out our [roadmap](https://github.com/orgs/medic/projects/112) to see what we're working on next.
 ```
+- [ ] Add one last update to the #product-team Slack channel and use the thread to lead an internal release retrospective covering what went well and areas to improve for next time.
+- [ ] Add any open "known issues" from the prior release that were not fixed in this release. Done by adding the correct `Affects: 4.x.x` label.  
 - [ ] Mark this issue "done" and close the Milestone.

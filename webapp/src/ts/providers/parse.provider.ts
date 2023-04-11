@@ -5,13 +5,14 @@ import {
   PropertyRead,
   ImplicitReceiver,
   LiteralPrimitive,
-  MethodCall,
+  Call,
   Conditional,
+  Unary,
   Binary,
   PrefixNot,
   KeyedRead,
   LiteralMap,
-  LiteralArray
+  LiteralArray,
 } from '@angular/compiler';
 import { Injectable } from '@angular/core';
 import { PipesService } from '@mm-services/pipes.service';
@@ -21,7 +22,15 @@ import { PipesService } from '@mm-services/pipes.service';
 const isString = v => typeof v === 'string';
 const isDef = v => v !== void 0;
 const ifDef = (v, d) => v === void 0 ? d : v;
-const plus = (a, b) => void 0 === a ? b : void 0 === b ? a : a + b;
+const plus = (a, b) => {
+  if (void 0 === a) {
+    return b;
+  }
+  if (void 0 === b) {
+    return a;
+  }
+  return a + b;
+};
 const minus = (a, b) => ifDef(a, 0) - ifDef(b, 0);
 const noop = () => {};
 
@@ -148,9 +157,18 @@ class ASTCompiler {
     return 'ctx';
   }
 
-  processLiteralPrimitive() {
-    const ast = this.cAst;
+  processLiteralPrimitive(ast) {
     return isString(ast.value) ? `"${ast.value}"` : ast.value;
+  }
+
+  processUnaryLiteralPrimitive(ast) {
+    const literalValue = this.processLiteralPrimitive(ast.expr);
+
+    if (ast.operator === '-') {
+      return isString(literalValue) ? '-' + literalValue : (literalValue * -1);
+    }
+
+    return literalValue;
   }
 
   processLiteralArray() {
@@ -190,7 +208,7 @@ class ASTCompiler {
     const ast = this.cAst;
     const stmts = this.cStmts;
     const k = this.build(ast.key);
-    const o = this.build(ast.obj);
+    const o = this.build(ast.receiver);
     const v = this.createVar();
     stmts.push(`${v}=${o}["${k}"]`);
     return v;
@@ -264,12 +282,16 @@ class ASTCompiler {
     const ast = this.cAst;
     const stmts = this.cStmts;
     const _args = [];
+
     for (const arg of ast.args) {
       _args.push(this.build(arg));
     }
-    const fn = this.build(ast.receiver);
+
+    const functionName = ast.receiver.name;
+    const receiver = this.build(ast.receiver.receiver);
     const v = this.createVar();
-    stmts.push(`${v}=${fn}&&${fn}.${ast.name}&&${fn}.${ast.name}(${_args.join(',')})`);
+
+    stmts.push(`${v}=${receiver}&&${receiver}.${functionName}&&${receiver}.${functionName}(${_args.join(',')})`);
     return v;
   }
 
@@ -308,7 +330,7 @@ class ASTCompiler {
     if (ast instanceof ImplicitReceiver) {
       return this.processImplicitReceiver();
     } else if (ast instanceof LiteralPrimitive) {
-      return this.processLiteralPrimitive();
+      return this.processLiteralPrimitive(this.cAst);
     } else if (ast instanceof LiteralArray) {
       return this.processLiteralArray();
     } else if (ast instanceof LiteralMap) {
@@ -319,11 +341,13 @@ class ASTCompiler {
       return this.processKeyedRead();
     } else if (ast instanceof PrefixNot) {
       return this.processPrefixNot();
+    } else if (ast instanceof Unary && ast.expr instanceof LiteralPrimitive) {
+      return this.processUnaryLiteralPrimitive(this.cAst);
     } else if (ast instanceof Binary) {
       return this.processBinary();
     } else if (ast instanceof Conditional) {
       return this.processConditional();
-    } else if (ast instanceof MethodCall) {
+    } else if (ast instanceof Call) {
       return this.processMethod();
     } else if (ast instanceof BindingPipe) {
       return this.processPipe();

@@ -5,19 +5,28 @@ const chaiExclude = require('chai-exclude');
 const db = require('../../src/db');
 const config = require('../../src/config');
 const infodoc = require('@medic/infodoc');
-const updateClinics = require('../../src/transitions/update_clinics');
 
 chai.use(chaiExclude);
 
+let updateClinics;
 let transitions;
 let configGet;
 
 describe('functional transitions', () => {
   beforeEach(() => {
-    configGet = sinon.stub(config, 'get');
+    configGet = sinon.stub();
+    config.init({
+      getAll: sinon.stub().returns({}),
+      get: configGet,
+      getTranslations: sinon.stub()
+    });
+    updateClinics = require('../../src/transitions/update_clinics');
     transitions = require('../../src/transitions/index');
   });
-  afterEach(() => sinon.restore());
+
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it('transitions are only executed once if successful', done => {
     configGet.withArgs('transitions').returns({ conditional_alerts: {} });
@@ -264,54 +273,65 @@ describe('functional transitions', () => {
       });
     });
 
-    it('should update infodocs and update minified doc and return true when at least one change', done => {
-      configGet.withArgs('transitions').returns({ conditional_alerts: {}, default_responses: {} });
-      configGet.withArgs('alerts').returns({
-        V: {
+    [
+      [{ _id: 'my_id-info', transitions: {} }, false],
+      [{ _id: 'my_id-info' }, true]
+    ].forEach(([info, initialProcessing]) => {
+      it('should update infodocs and update minified doc and return true when at least one change', done => {
+        configGet.withArgs('transitions').returns({ conditional_alerts: {}, default_responses: {} });
+        configGet.withArgs('alerts').returns({
+          V: {
+            form: 'V',
+            recipient: 'reporting_unit',
+            message: 'alert!',
+            condition: 'true',
+          },
+        });
+        configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
+        configGet.withArgs('forms').returns({ V: { }});
+
+        sinon.stub(infodoc, 'get').resolves(info);
+        sinon.stub(infodoc, 'saveTransitions').resolves();
+
+        sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+        sinon.spy(transitions, 'applyTransitions');
+
+        const doc = {
+          _id: 'my_id',
+          _rev: '1-abc',
           form: 'V',
-          recipient: 'reporting_unit',
-          message: 'alert!',
-          condition: 'true',
-        },
-      });
-      configGet.withArgs('default_responses').returns({ start_date: '2019-01-01' });
-      configGet.withArgs('forms').returns({ V: { }});
+          from: '123456',
+          type: 'data_record',
+          contact: {
+            phone: '12345'
+          },
+          reported_date: new Date('2018-01-01').valueOf()
+        };
+        sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
+        sinon.stub(transitions._lineage, 'minify').callsFake(r => r);
 
-      sinon.stub(infodoc, 'get').resolves({_id: 'my_id-info', transitions: {}});
-      sinon.stub(infodoc, 'saveTransitions').resolves();
+        transitions.processChange({ id: doc._id }, (err, changed) => {
+          assert(!err);
+          assert(changed);
+          assert.equal(doc.tasks[0].messages[0].message, 'alert!');
+          assert.equal(infodoc.get.callCount, 1);
+          assert.equal(infodoc.saveTransitions.callCount, 1);
 
-      sinon.stub(db.medic, 'put').callsArgWith(1, null, { ok: true });
+          const saveWrite = infodoc.saveTransitions.args[0][0].info;
+          assert.equal(Object.keys(saveWrite.transitions).length, 1);
+          assert.equal(saveWrite.transitions.conditional_alerts.ok, true);
+          assert.equal(db.medic.put.callCount, 1);
 
-      const doc = {
-        _id: 'my_id',
-        _rev: '1-abc',
-        form: 'V',
-        from: '123456',
-        type: 'data_record',
-        contact: {
-          phone: '12345'
-        },
-        reported_date: new Date('2018-01-01').valueOf()
-      };
-      sinon.stub(transitions._lineage, 'fetchHydratedDoc').resolves(doc);
-      sinon.stub(transitions._lineage, 'minify').callsFake(r => r);
-
-      transitions.processChange({ id: doc._id }, (err, changed) => {
-        assert(!err);
-        assert(changed);
-        assert.equal(doc.tasks[0].messages[0].message, 'alert!');
-        assert.equal(infodoc.get.callCount, 1);
-        assert.equal(infodoc.saveTransitions.callCount, 1);
-
-        const saveWrite = infodoc.saveTransitions.args[0][0].info;
-        assert.equal(Object.keys(saveWrite.transitions).length, 1);
-        assert.equal(saveWrite.transitions.conditional_alerts.ok, true);
-        assert.equal(db.medic.put.callCount, 1);
-
-        assert.equal(transitions._lineage.fetchHydratedDoc.callCount, 1);
-        assert.equal(transitions._lineage.minify.callCount, 1);
-        assert.deepEqual(transitions._lineage.minify.args[0], [doc]);
-        done();
+          assert.equal(transitions._lineage.fetchHydratedDoc.callCount, 1);
+          assert.equal(transitions._lineage.minify.callCount, 1);
+          assert.deepEqual(transitions._lineage.minify.args[0], [doc]);
+          assert.equal(transitions.applyTransitions.callCount, 1);
+          assert.deepEqual(
+            transitions.applyTransitions.args[0][0],
+            { id: doc._id, doc, info, initialProcessing }
+          );
+          done();
+        });
       });
     });
 
@@ -512,7 +532,7 @@ describe('functional transitions', () => {
 
       sinon.stub(updateClinics._lineage, 'fetchHydratedDoc').withArgs('contact1').resolves(contact1);
 
-      sinon.stub(config, 'getTranslations').returns({
+      config.getTranslations.returns({
         en: {
           sms_received: 'SMS received'
         }
@@ -557,7 +577,7 @@ describe('functional transitions', () => {
 
         assert.deepEqualExcluding(savedDocs[2], originalDocs[2], '_id');
         infodocSaves = db.sentinel.put.args.filter(args => args[0].doc_id === savedDocs[2]._id);
-        assert.equal(infodocSaves.length, 0);
+        assert.equal(infodocSaves.length, 1);
 
         assert.equal(savedDocs[3].id, 'random form with contact');
         assert.equal(savedDocs[3].sent_by, 'Angela');

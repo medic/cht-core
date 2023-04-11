@@ -47,7 +47,8 @@
 
     .accordion-toggle {
       display: flex;
-      &:before {
+      &:before,
+      &:after {
         color: @top-header-color;
         font-family: FontAwesome;
         margin-right: 10px;
@@ -71,6 +72,7 @@
       border: 2px solid @separator-color;
       text-align: center;
       margin-right: 5px;
+      font-size: @font-size-base;
       .fa {
         display: none;
       }

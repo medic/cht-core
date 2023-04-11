@@ -12,7 +12,7 @@ angular.module('services').factory('MessageQueueUtils',
     'ngInject';
 
     return {
-      lineage: lineageFactory($q,DB({ remote: true })),
+      lineage: lineageFactory($q, DB({ remote: true })),
       messages: messageUtils,
       registrations: registrationUtils
     };

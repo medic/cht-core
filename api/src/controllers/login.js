@@ -1,5 +1,3 @@
-const fs = require('fs');
-const { promisify } = require('util');
 const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
@@ -7,12 +5,15 @@ const _ = require('lodash');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
-const users = require('../services/users');
-const tokenLogin = require('../services/token-login');
+const privacyPolicy = require('../services/privacy-policy');
 const logger = require('../logger');
 const db = require('../db');
+const { tokenLogin, roles, users } = require('@medic/user-management')(config, db);
 const localeUtils = require('locale');
 const cookie = require('../services/cookie');
+const brandingService = require('../services/branding');
+const translations = require('../translations');
+const template = require('../services/template');
 
 const templates = {
   login: {
@@ -22,9 +23,14 @@ const templates = {
       'login',
       'login.error',
       'login.incorrect',
+      'login.unsupported_browser',
+      'login.unsupported_browser.outdated_cht_android',
+      'login.unsupported_browser.outdated_webview_apk',
+      'login.unsupported_browser.outdated_browser',
       'online.action.message',
       'User Name',
-      'Password'
+      'Password',
+      'privacy.policy'
     ],
   },
   tokenLogin: {
@@ -39,6 +45,7 @@ const templates = {
       'login.token.loading',
       'login.token.redirect.login.info',
       'login.token.redirect.login',
+      'privacy.policy'
     ],
   },
 };
@@ -46,7 +53,7 @@ const templates = {
 const getHomeUrl = userCtx => {
   // https://github.com/medic/medic/issues/5035
   // For Test DB, always redirect to the application, the tests rely on the UI elements of application page
-  if (auth.isOnlineOnly(userCtx) &&
+  if (roles.isOnlineOnly(userCtx) &&
       auth.hasAllPermissions(userCtx, 'can_configure') &&
       !environment.isTesting) {
     return '/admin/';
@@ -70,11 +77,12 @@ const getRedirectUrl = (userCtx, requested) => {
 };
 
 const getEnabledLocales = () => {
-  const options = { key: ['translations', true], include_docs: true };
-  return db.medic
-    .query('medic-client/doc_by_type', options)
-    .then(result => result.rows.map(row => ({ key: row.doc.code, label: row.doc.name })))
-    .then(enabled => (enabled.length < 2) ? [] : enabled) // hide selector if only one option
+  return translations
+    .getEnabledLocales()
+    .then(docs => {
+      const enabledLocales = docs.map(doc => ({ key: doc.code, label: doc.name }));
+      return enabledLocales.length < 2 ? [] : enabledLocales; // hide selector if only one option
+    })
     .catch(err => {
       logger.error('Error loading translations: %o', err);
       return [];
@@ -82,18 +90,14 @@ const getEnabledLocales = () => {
 };
 
 const getTemplate = (page) => {
-  if (templates[page].content) {
-    return templates[page].content;
-  }
   const filepath = path.join(__dirname, '..', 'templates', 'login', templates[page].file);
-  templates[page].content = promisify(fs.readFile)(filepath, { encoding: 'utf-8' })
-    .then(file => _.template(file));
+  templates[page].content = template.getTemplate(filepath);
   return templates[page].content;
 };
 
 const getTranslationsString = page => {
   const translationStrings = templates[page].translationStrings;
-  return encodeURIComponent(JSON.stringify(config.getTranslationValues(translationStrings)));
+  return encodeURIComponent(JSON.stringify(config.getTranslations(translationStrings)));
 };
 
 const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
@@ -102,18 +106,22 @@ const getBestLocaleCode = (acceptedLanguages, locales, defaultLocale) => {
   return headerLocales.best(supportedLocales).language;
 };
 
-const render = (page, req, branding, extras = {}) => {
+const render = (page, req, extras = {}) => {
+  const acceptLanguageHeader = req && req.locale;
   return Promise
     .all([
       getTemplate(page),
       getEnabledLocales(),
+      brandingService.get(),
+      privacyPolicy.exists()
     ])
-    .then(([ template, locales ]) => {
+    .then(([ template, locales, branding, hasPrivacyPolicy ]) => {
       const options = Object.assign(
         {
-          branding: branding,
-          locales: locales,
-          defaultLocale: getBestLocaleCode(req.headers['accept-language'], locales, config.get('locale')),
+          branding,
+          locales,
+          hasPrivacyPolicy,
+          defaultLocale: getBestLocaleCode(acceptLanguageHeader, locales, config.get('locale')),
           translations: getTranslationsString(page)
         },
         extras
@@ -174,9 +182,9 @@ const setCookies = (req, res, sessionRes) => {
 
       return Promise.resolve()
         .then(() => {
-          if (auth.isDbAdmin(userCtx)) {
+          if (roles.isDbAdmin(userCtx)) {
             return users.createAdmin(userCtx);
-          }      
+          }
         })
         .then(() => {
           const selectedLocale = req.body.locale
@@ -191,37 +199,8 @@ const setCookies = (req, res, sessionRes) => {
     });
 };
 
-const getInlineImage = (data, contentType) => `data:${contentType};base64,${data}`;
-
-const getDefaultBranding = () => {
-  const logoPath = path.join(__dirname, '..', 'resources', 'logo', 'medic-logo-light-full.svg');
-  return promisify(fs.readFile)(logoPath, {}).then(logo => {
-    const data = Buffer.from(logo).toString('base64');
-    return {
-      name: 'Medic Mobile',
-      logo: getInlineImage(data, 'image/svg+xml')
-    };
-  });
-};
-
-const getBranding = () => {
-  return db.medic.get('branding', {attachments: true})
-    .then(doc => {
-      const image = doc._attachments[doc.resources.logo];
-      return {
-        name: doc.title,
-        logo: getInlineImage(image.data, image.content_type)
-      };
-    })
-    .catch(err => {
-      logger.warn('Could not find branding doc on CouchDB: %o', err);
-      return getDefaultBranding();
-    });
-};
-
 const renderTokenLogin = (req, res) => {
-  return getBranding()
-    .then(branding => render('tokenLogin', req, branding, { tokenUrl: req.url }))
+  return render('tokenLogin', req, { tokenUrl: req.url })
     .then(body => res.send(body));
 };
 
@@ -281,15 +260,21 @@ const loginByToken = (req, res) => {
     });
 };
 
+const renderLogin = (req) => {
+  return render('login', req);
+};
+
 module.exports = {
+  renderLogin,
+
   get: (req, res, next) => {
-    return getBranding()
-      .then(branding => render('login', req, branding))
+    return renderLogin(req)
       .then(body => {
         res.setHeader(
           'Link',
           '</login/style.css>; rel=preload; as=style, '
-          + '</login/script.js>; rel=preload; as=script'
+          + '</login/script.js>; rel=preload; as=script, '
+          + '</login/lib-bowser.js>; rel=preload; as=script'
         );
         res.send(body);
       })
@@ -343,12 +328,5 @@ module.exports = {
         }
         next(err);
       });
-  },
-
-  // exposed for testing
-  _safePath: getRedirectUrl,
-  _reset: () => {
-    templates.login.content = null;
-    templates.tokenLogin.content = null;
   },
 };

@@ -1,12 +1,13 @@
 import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
+import { MatIconRegistry } from '@angular/material/icon';
 import * as moment from 'moment';
-import { Component, NgZone, OnInit, HostListener } from '@angular/core';
+import { AfterViewInit, Component, HostListener, NgZone, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { setTheme as setBootstrapTheme} from 'ngx-bootstrap/utils';
+import { setTheme as setBootstrapTheme } from 'ngx-bootstrap/utils';
 import { combineLatest } from 'rxjs';
 
-import { DBSyncService } from '@mm-services/db-sync.service';
-import { Selectors } from './selectors';
+import { DBSyncService, SyncStatus } from '@mm-services/db-sync.service';
+import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -17,7 +18,7 @@ import { LocationService } from '@mm-services/location.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { FeedbackService } from '@mm-services/feedback.service';
-import { environment } from './environments/environment';
+import { environment } from '@mm-environments/environment';
 import { FormatDateService } from '@mm-services/format-date.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { JsonFormsService } from '@mm-services/json-forms.service';
@@ -44,6 +45,8 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
+import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -72,7 +75,7 @@ const SYNC_STATUS = {
   selector: 'app-root',
   templateUrl: './app.component.html',
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
   private globalActions;
   private analyticsActions;
   setupPromise;
@@ -80,14 +83,14 @@ export class AppComponent implements OnInit {
 
   currentTab = '';
   privacyPolicyAccepted;
+  isSidebarFilterOpen = false;
   showPrivacyPolicy;
   selectMode;
-  minimalTabs;
   adminUrl;
   canLogOut;
   replicationStatus;
   androidAppVersion;
-  nonContactForms;
+  reportForms;
   unreadCount = {};
 
   constructor (
@@ -126,10 +129,14 @@ export class AppComponent implements OnInit {
     private ngZone:NgZone,
     private chtScriptApiService: CHTScriptApiService,
     private analyticsModulesService: AnalyticsModulesService,
+    private trainingCardsService: TrainingCardsService,
+    private matIconRegistry: MatIconRegistry,
   ) {
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
 
+    matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
+    matIconRegistry.setDefaultFontSetClass('fa');
     moment.locale(['en']);
 
     this.formatDateService.init();
@@ -214,12 +221,12 @@ export class AppComponent implements OnInit {
     };
 
     this.dbSyncService.subscribe(({ state, to, from }) => {
-      if (state === 'disabled') {
+      if (state === SyncStatus.Disabled) {
         this.globalActions.updateReplicationStatus({ disabled: true });
         return;
       }
 
-      if (state === 'unknown') {
+      if (state === SyncStatus.Unknown) {
         this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.unknown });
         return;
       }
@@ -228,7 +235,7 @@ export class AppComponent implements OnInit {
       const lastTrigger = this.replicationStatus.lastTrigger;
       const delay = lastTrigger ? Math.round((now - lastTrigger) / 1000) : 'unknown';
 
-      if (state === 'inProgress') {
+      if (state === SyncStatus.InProgress) {
         this.globalActions.updateReplicationStatus({
           current: SYNC_STATUS.inProgress,
           lastTrigger: now
@@ -238,13 +245,13 @@ export class AppComponent implements OnInit {
       }
 
       const statusUpdates:any = {};
-      if (to === 'success') {
+      if (to === SyncStatus.Success) {
         statusUpdates.lastSuccessTo = now;
       }
-      if (from === 'success') {
+      if (from === SyncStatus.Success) {
         statusUpdates.lastSuccessFrom = now;
       }
-      if (to === 'success' && from === 'success') {
+      if (to === SyncStatus.Success && from === SyncStatus.Success) {
         console.info(`Replication succeeded after ${delay} seconds`);
         statusUpdates.current = SYNC_STATUS.success;
       } else {
@@ -263,10 +270,10 @@ export class AppComponent implements OnInit {
     this.setupDb();
     this.countMessageService.init();
     this.feedbackService.init();
+    this.sessionService.init();
 
     // initialisation tasks that can occur after the UI has been rendered
-    this.setupPromise = this.sessionService
-      .init()
+    this.setupPromise = Promise.resolve()
       .then(() => this.chtScriptApiService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
       .then(() => this.initRulesEngine())
@@ -276,7 +283,6 @@ export class AppComponent implements OnInit {
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses());
 
-    this.globalActions.setIsAdmin(this.sessionService.isAdmin());
     this.watchBrandingChanges();
     this.watchDDocChanges();
     this.watchUserContextChanges();
@@ -289,6 +295,10 @@ export class AppComponent implements OnInit {
     this.startWealthQuintiles();
     this.enableTooltips();
     this.initAnalyticsModules();
+  }
+
+  ngAfterViewInit() {
+    this.subscribeToSideFilterStore();
   }
 
   private initTransitions() {
@@ -420,7 +430,6 @@ export class AppComponent implements OnInit {
       this.store.select(Selectors.getReplicationStatus),
       this.store.select(Selectors.getAndroidAppVersion),
       this.store.select(Selectors.getCurrentTab),
-      this.store.select(Selectors.getMinimalTabs),
       this.store.select(Selectors.getPrivacyPolicyAccepted),
       this.store.select(Selectors.getShowPrivacyPolicy),
       this.store.select(Selectors.getSelectMode),
@@ -428,7 +437,6 @@ export class AppComponent implements OnInit {
       replicationStatus,
       androidAppVersion,
       currentTab,
-      minimalTabs,
       privacyPolicyAccepted,
       showPrivacyPolicy,
       selectMode,
@@ -436,11 +444,22 @@ export class AppComponent implements OnInit {
       this.replicationStatus = replicationStatus;
       this.androidAppVersion = androidAppVersion;
       this.currentTab = currentTab;
-      this.minimalTabs = minimalTabs;
       this.showPrivacyPolicy = showPrivacyPolicy;
       this.privacyPolicyAccepted = privacyPolicyAccepted;
       this.selectMode = selectMode;
     });
+  }
+
+  private async subscribeToSideFilterStore() {
+    const isDisabled = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_REPORTS_FILTER_PERMISSION);
+
+    if (isDisabled) {
+      return;
+    }
+
+    this.store
+      .select(Selectors.getSidebarFilter)
+      .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
   }
 
   private initForms() {
@@ -466,7 +485,7 @@ export class AppComponent implements OnInit {
         });
         this.xmlFormsService.subscribe(
           'FormsFilter',
-          { contactForms: false, ignoreContext: true },
+          { reportForms: true, ignoreContext: true },
           (err, xForms) => {
             if (err) {
               return console.error('Error fetching form definitions', err);
@@ -484,20 +503,27 @@ export class AppComponent implements OnInit {
             this.globalActions.setForms(forms);
           }
         );
+
         // get the forms for the Add Report menu
-        this.xmlFormsService.subscribe('AddReportMenu', { contactForms: false }, (err, xForms) => {
-          if (err) {
-            return console.error('Error fetching form definitions', err);
-          }
-          this.nonContactForms = xForms
-            .map((xForm) => ({
-              id: xForm._id,
-              code: xForm.internalId,
-              icon: xForm.icon,
-              title: translateTitle(xForm.translation_key, xForm.title),
-            }))
-            .sort((a, b) => a.title - b.title);
-        });
+        this.xmlFormsService.subscribe(
+          'AddReportMenu',
+          { reportForms: true },
+          (err, xForms) => {
+            if (err) {
+              return console.error('Error fetching form definitions', err);
+            }
+            this.reportForms = xForms
+              .map((xForm) => ({
+                id: xForm._id,
+                code: xForm.internalId,
+                icon: xForm.icon,
+                title: translateTitle(xForm.translation_key, xForm.title),
+              }))
+              .sort((a, b) => a.title - b.title);
+          });
+
+        // Get forms for training cards and display the cards if necessary
+        this.trainingCardsService.initTrainingCards();
       })
       .catch(err => console.error('Failed to retrieve forms', err));
   }
@@ -563,7 +589,7 @@ export class AppComponent implements OnInit {
   private initRulesEngine() {
     return this.rulesEngineService
       .isEnabled()
-      .then(isEnabled => console.info(`RulesEngine Status: ${ isEnabled ? 'Enabled' : 'Disabled' }`))
+      .then(isEnabled => console.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
       .catch(err => console.error('RuleEngine failed to initialize', err));
   }
 
@@ -633,14 +659,44 @@ export class AppComponent implements OnInit {
       'boot_time:1:to_first_code_execution',
       window.startupTimes.firstCodeExecution - window.startupTimes.start
     );
+
+    if (window.startupTimes.replication) {
+      this.telemetryService.record('boot_time:2_1:to_replication', window.startupTimes.replication);
+    }
+
+    if (window.startupTimes.purgingFailed) {
+      this.feedbackService.submit(`Error when purging on device startup: ${window.startupTimes.purgingFailed}`);
+      this.telemetryService.record('boot_time:purging_failed');
+    } else {
+      // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
+      this.telemetryService.record(`boot_time:purging:${window.startupTimes.purging}`);
+    }
+    if (window.startupTimes.purge) {
+      this.telemetryService.record('boot_time:2_2:to_purge', window.startupTimes.purge);
+    }
+
+    if (window.startupTimes.purgingMetaFailed) {
+      const message = `Error when purging meta on device startup: ${window.startupTimes.purgingMetaFailed}`;
+      this.feedbackService.submit(message);
+      this.telemetryService.record('boot_time:purging_meta_failed');
+    } else {
+      // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
+      this.telemetryService.record(`boot_time:purging_meta:${window.startupTimes.purgingMeta}`);
+    }
+    if (window.startupTimes.purgeMeta) {
+      this.telemetryService.record('boot_time:2_3:to_purge_meta', window.startupTimes.purgeMeta);
+    }
+
     this.telemetryService.record(
       'boot_time:2:to_bootstrap',
       window.startupTimes.bootstrapped - window.startupTimes.firstCodeExecution
     );
+
     this.telemetryService.record(
       'boot_time:3:to_angular_bootstrap',
       window.startupTimes.angularBootstrapped - window.startupTimes.bootstrapped
     );
+
     this.telemetryService.record('boot_time', window.startupTimes.angularBootstrapped - window.startupTimes.start);
   }
 
@@ -648,6 +704,13 @@ export class AppComponent implements OnInit {
   private stopWatchingChanges() {
     // avoid Failed to fetch errors being logged when the browser window is reloaded
     this.changesService.killWatchers();
+  }
+
+  @HostListener('window:pageshow', ['$event'])
+  private pageshow(event) {
+    if (event.persisted) {
+      this.sessionService.check();
+    }
   }
 
   private async initAnalyticsModules() {

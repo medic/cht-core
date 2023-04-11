@@ -5,9 +5,14 @@ import { AuthService } from '@mm-services/auth.service';
 import { ChangesService } from '@mm-services/changes.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
+import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-utils.service';
 import { ParseProvider } from '@mm-providers/parse.provider';
+import { FeedbackService } from '@mm-services/feedback.service';
+
+export const TRAINING_FORM_ID_PREFIX: string = 'form:training:';
+export const CONTACT_FORM_ID_PREFIX: string = 'form:contact:';
 
 @Injectable({
   providedIn: 'root'
@@ -21,8 +26,10 @@ export class XmlFormsService {
     private changesService:ChangesService,
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
+    private fileReaderService: FileReaderService,
     private userContactService:UserContactService,
     private xmlFormsContextUtilsService:XmlFormsContextUtilsService,
+    private feedbackService:FeedbackService,
     private parseProvider:ParseProvider,
     private ngZone:NgZone,
   ) {
@@ -71,12 +78,19 @@ export class XmlFormsService {
       .then(docs => docs?.filter(doc => doc.internalId === internalId))
       .then(docs => {
         if (!docs.length) {
-          return Promise.reject(new Error(`No form found for internalId "${internalId}"`));
+          const message = `No form found for internalId : "${internalId}"`;
+          return Promise.reject(new Error(message));
         }
         if (docs.length > 1) {
-          return Promise.reject(new Error(`Multiple forms found for internalId: "${internalId}"`));
+          const message = `Multiple forms found for internalId : "${internalId}"`;
+          return Promise.reject(new Error(message));
         }
         return docs[0];
+      })
+      .catch(err => {
+        const errorTitle = 'Error in XMLFormService : getByView : ';
+        console.error(errorTitle, err.message);
+        return Promise.reject(new Error(errorTitle + err.message));
       });
   }
 
@@ -137,52 +151,108 @@ export class XmlFormsService {
     });
   }
 
-  private filter(form, options, user) {
-    if (!options.includeCollect && form.context && form.context.collect) {
-      return false;
+  private checkFormExpression(form, doc, user, contactSummary) {
+    if (!form.context.expression) {
+      return true;
     }
 
-    if (options.contactForms !== undefined) {
-      const isContactForm = form._id.indexOf('form:contact:') === 0;
-      if (options.contactForms !== isContactForm) {
-        return false;
-      }
+    try {
+      return this.evaluateExpression(
+        form.context.expression,
+        doc,
+        user,
+        contactSummary
+      );
+    } catch(err) {
+      console.error(`Unable to evaluate expression for form: ${form._id}`, err);
+      return false;
+    }
+  }
+
+  private checkFormPermissions(form) {
+    if (!form.context.permission) {
+      return true;
+    }
+
+    return this.authService.has(form.context.permission);
+  }
+
+  /**
+   * Filters forms based on criteria defined in the options parameter.
+   *
+   * @param form {Object} : Form's document from CouchDB
+   *
+   * @param options {Object} : Object for filtering. Possible values:
+   *   - ignoreContext (boolean) : Each xml form has a context field, that helps specify in which cases
+   *   it should be shown or not shown.
+   *   E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "xyz"}`
+   *   Using ignoreContext = true will ignore that filter.
+   *
+   *   - doc (Object) : When the context filter is on, the doc to pass to the forms context expression to
+   *   determine if the form is applicable.
+   *   E.g. for context above, `{type: "district_hospital"}` passes,
+   *   but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
+   *
+   *   - contactSummary (Object) : When the context filter is on, the contactSummary is passed to the form's context
+   *   expression to determine if the form is applicable.
+   *
+   *   - reportForms (boolean) : When set true, it will return report forms.
+   *   - contactForms (boolean) : When set true, it will return contact forms.
+   *   - trainingCards (boolean) : When set true, it will return training forms.
+   *   - collectForms (boolean) : When set true, it will return collect forms.
+   * To match all forms, then reportForms, contactForms and trainingCards should be undefined.
+   *
+   * @param user {Object} : User context document from CouchDB.
+   */
+  private filter(form, options, user) {
+    const isContactForm = form._id.indexOf(CONTACT_FORM_ID_PREFIX) === 0;
+    const isTrainingCard = form._id.indexOf(TRAINING_FORM_ID_PREFIX) === 0;
+    const isCollectForm = !!form.context?.collect;
+    const isReportForm = !isContactForm && !isTrainingCard && !isCollectForm;
+
+    const allFormTypes = options.contactForms === undefined
+      && options.trainingCards === undefined
+      && options.collectForms === undefined
+      && options.reportForms === undefined;
+
+    const isFormMatchingFilter = (options.reportForms && isReportForm)
+      || (options.collectForms && isCollectForm)
+      || (options.contactForms && isContactForm)
+      || (options.trainingCards && isTrainingCard);
+
+    if (!allFormTypes && !isFormMatchingFilter) {
+      return false;
     }
 
     // Context filters
     if (options.ignoreContext) {
       return true;
     }
+
     if (!form.context) {
-      // no defined filters
+      // No defined filters
       return true;
     }
 
-    return this.filterContactTypes(form.context, options.doc).then(validSoFar => {
-      if (!validSoFar) {
-        return false;
-      }
-      if (form.context.expression) {
-        try {
-          return this.evaluateExpression(form.context.expression, options.doc, user, options.contactSummary);
-        } catch(err) {
-          console.error(`Unable to evaluate expression for form: ${form._id}`, err);
-          return false;
-        }
-      }
-      if (form.context.expression &&
-        !this.evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)) {
-        return false;
-      }
-      if (!form.context.permission) {
-        return true;
-      }
-      return this.authService.has(form.context.permission);
-    });
+    return this
+      .filterContactTypes(form.context, options.doc)
+      .then(valid => valid && this.checkFormPermissions(form))
+      .then(valid => valid && this.checkFormExpression(form, options.doc, user, options.contactSummary));
   }
 
   private notify(error, forms?) {
     this.observable.next({ error, forms });
+  }
+
+  /**
+   * @memberof XmlForms
+   * @param {Object} doc The document find the xform attachment for
+   * @returns {String} The name of the xform attachment.
+   */
+  private findXFormAttachmentName(doc) {
+    return doc &&
+      doc._attachments &&
+      Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
   }
 
   /**
@@ -195,17 +265,25 @@ export class XmlFormsService {
    * @param {String} name Uniquely identify the callback to stop duplicate registration
    *
    * @param {Object} [options={}] Object for filtering. Possible values:
-   *   - contactForms (boolean) : true will return only contact forms. False will exclude contact forms.
-   *     Undefined will ignore this filter.
    *   - ignoreContext (boolean) : Each xml form has a context field, which helps specify in which cases
-   * it should be shown or not shown.
-   * E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "xyz"}`
-   * Using ignoreContext = true will ignore that filter.
-   *   - doc (Object) : when the context filter is on, the doc to pass to the forms context expression to
-   *     determine if the form is applicable.
-   * E.g. for context above, `{type: "district_hospital"}` passes,
-   * but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
-   * See tests for more examples.
+   *   it should be shown or not shown.
+   *   E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "xyz"}`
+   *   Using ignoreContext = true will ignore that filter.
+   *
+   *   - doc (Object) : When the context filter is on, the doc to pass to the forms context expression to
+   *   determine if the form is applicable.
+   *   E.g. for context above, `{type: "district_hospital"      }` passes,
+   *   but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
+   *   See tests for more examples.
+   *
+   *   - contactSummary (Object) : When the context filter is on, the contactSummary is passed to the form's context
+   *   expression to determine if the form is applicable.
+   *
+   *   - reportForms (boolean) : When set true, it will return report forms.
+   *   - contactForms (boolean) : When set true, it will return contact forms.
+   *   - trainingCards (boolean) : When set true, it will return training forms.
+   *   - collectForms (boolean) : When set true, it will return collect forms.
+   * To match all forms, then reportForms, contactForms and trainingCards should be undefined.
    *
    * @param {Function} callback Invoked when complete and again when results have changed.
    */
@@ -238,6 +316,7 @@ export class XmlFormsService {
     return this
       .getById(internalId)
       .catch(err => {
+        console.warn('Error in XMLFormService : getById : ', err?.message, err?.status, err);
         if (err.status === 404) {
           // fallback for backwards compatibility
           return this.getByView(internalId);
@@ -246,21 +325,37 @@ export class XmlFormsService {
       })
       .then(doc => {
         if (!this.findXFormAttachmentName(doc)) {
-          return Promise.reject(new Error(`The form "${internalId}" doesn't have an xform attachment`));
+          const errorTitle = 'Error in XMLFormService : findXFormAttachmentName : ';
+          const errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
+          console.error(errorTitle, errorMessage);
+          return Promise.reject(new Error(errorTitle + errorMessage));
         }
         return doc;
+      }).catch(err => {
+        this.feedbackService.submit(err.message, false);
+        throw err;
       });
+
   }
 
-  /**
-   * @memberof XmlForms
-   * @param {Object} doc The document find the xform attachment for
-   * @returns {String} The name of the xform attachment.
-   */
-  findXFormAttachmentName(doc) {
-    return doc &&
-      doc._attachments &&
-      Object.keys(doc._attachments).find(name => name === 'xml' || name.endsWith('.xml'));
+  getDocAndFormAttachment(internalId) {
+    return this.get(internalId)
+      .then(doc => {
+        const attachmentName = this.findXFormAttachmentName(doc);
+        return this.dbService.get().getAttachment(doc._id, attachmentName)
+          .then(blob => this.fileReaderService.utf8(blob))
+          .then(xml => ({ doc, xml }))
+          .catch(err => {
+            const errorTitle = 'Error in XMLFormService : getDocAndFormAttachment : ';
+            let errorMessage = `Failed to get the form "${internalId}" xform attachment`;
+            if (err.status === 404) {
+              errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
+            }
+            console.error(errorTitle, errorMessage);
+            this.feedbackService.submit(errorTitle + errorMessage, false);
+            return Promise.reject(new Error(errorTitle + errorMessage));
+          });
+      });
   }
 
   /**
