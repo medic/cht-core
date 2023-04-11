@@ -1,11 +1,11 @@
 const constants = require('../../../constants');
 const https = require('https');
-const utils = require('../../../utils');
+const utils = require('@utils');
 const uuid = require('uuid').v4;
 const querystring = require('querystring');
 const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));
-const sentinelUtils = require('../../../utils/sentinel');
+const sentinelUtils = require('@utils/sentinel');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 

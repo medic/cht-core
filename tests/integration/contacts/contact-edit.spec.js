@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const utils = require('../../utils');
+const utils = require('@utils');
 const personFactory = require('../../factories/cht/contacts/person');
 const placeFactory = require('../../factories/cht/contacts/place');
 

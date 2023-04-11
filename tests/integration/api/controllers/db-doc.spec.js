@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const chai = require('chai');
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const constants = require('../../../constants');
 const uuid = require('uuid').v4;
 

@@ -1,4 +1,4 @@
-const utils = require('../../utils');
+const utils = require('@utils');
 const request = require('request');
 const constants = require('../../constants');
 const _ = require('lodash');
