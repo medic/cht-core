@@ -407,8 +407,8 @@ const getCardFieldInfo = async (label) => {
   return {
     label: await (await $(`.cell.${label} label`)).getText(),
     value: await (await $(`.cell.${label} p`)).getText(),
-  }
-}
+  };
+};
 
 const getCurrentContactId = async () => {
   const currentUrl = await browser.getUrl();
