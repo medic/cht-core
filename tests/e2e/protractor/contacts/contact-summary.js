@@ -1,10 +1,10 @@
 const moment = require('moment');
 const constants = require('../../../constants');
-const utils = require('../../../utils');
+const utils = require('@utils');
 const helper = require('../../../helper');
-const commonElements = require('../../../page-objects/protractor/common/common.po.js');
-const loginPage = require('../../../page-objects/protractor/login/login.po.js');
-const contactsPo = require('../../../page-objects/protractor/contacts/contacts.po');
+const commonElements = require('@page-objects/protractor/common/common.po.js');
+const loginPage = require('@page-objects/protractor/login/login.po.js');
+const contactsPo = require('@page-objects/protractor/contacts/contacts.po');
 
 
 describe('Contact summary info', () => {

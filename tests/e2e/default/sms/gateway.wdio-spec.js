@@ -1,9 +1,9 @@
-const utils = require('../../../utils');
-const messagesPo = require('../../../page-objects/default/sms/messages.wdio.page');
-const reportsPo = require('../../../page-objects/default/reports/reports.wdio.page');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const smsPregancy = require('../../../factories/cht/reports/sms-pregnancy');
+const utils = require('@utils');
+const messagesPo = require('@page-objects/default/sms/messages.wdio.page');
+const reportsPo = require('@page-objects/default/reports/reports.wdio.page');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const smsPregancy = require('@factories/cht/reports/sms-pregnancy');
 
 const pollSmsApi = body => {
   return utils.request({

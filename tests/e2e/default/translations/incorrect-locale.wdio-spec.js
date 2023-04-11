@@ -1,9 +1,9 @@
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const userSettingsElements = require('../../../page-objects/default/users/user-settings.wdio.page');
-const contactElements = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const placeFactory = require('../../../factories/cht/contacts/place');
+const utils = require('@utils');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const userSettingsElements = require('@page-objects/default/users/user-settings.wdio.page');
+const contactElements = require('@page-objects/default/contacts/contacts.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
 
 describe('Testing Incorrect locale', () => {
   const createLanguage = async () =>  await utils.addTranslations('hil', {
@@ -16,15 +16,15 @@ describe('Testing Incorrect locale', () => {
     'Reports': 'HilReports',
     'view.all':'View all'
   });
-  
-  const contact = placeFactory.place().build({ 
+
+  const contact = placeFactory.place().build({
     _id: 'district_hil_locale',
     name: 'hil district',
     type: 'district_hospital',
     reported_date: 1000,
     parent: '',
   });
-  
+
   after(async () => await browser.setCookies({ name: 'locale', value: 'en' }));
 
   before(async () => {

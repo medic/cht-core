@@ -1,3 +1,4 @@
+const wdioBaseConfig = require('../default/wdio.conf');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -6,8 +7,7 @@ const { spawn } = require('child_process');
 chai.use(require('chai-exclude'));
 const rpn = require('request-promise-native');
 
-const utils = require('../../utils');
-const wdioBaseConfig = require('../default/wdio.conf');
+const utils = require('@utils');
 const constants = require('../../constants');
 
 constants.DB_NAME = 'medic';

@@ -1,6 +1,6 @@
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const contactPage = require('../../../page-objects/standard/contacts/contacts.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const contactPage = require('@page-objects/standard/contacts/contacts.wdio.page');
 
 describe('Creating contacts with standard config. ', () => {
   const PLACE_TYPES = { CLINIC: 'clinic', HEALTH_CENTER: 'health_center', DISTRICT: 'district_hospital' };

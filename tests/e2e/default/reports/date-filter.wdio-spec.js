@@ -1,13 +1,13 @@
 const moment = require('moment');
 
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const reportsTab = require('../../../page-objects/default/reports/reports.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const reportFactory = require('../../../factories/cht/reports/generic-report');
+const utils = require('@utils');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const reportsTab = require('@page-objects/default/reports/reports.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const reportFactory = require('@factories/cht/reports/generic-report');
 
 
 describe('Report Filter', () => {

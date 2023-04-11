@@ -1,16 +1,16 @@
 const fs = require('fs');
 const { expect } = require('chai');
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const messagesUtils = require('../../../utils/messages');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const userFactory = require('../../../factories/cht/users/users');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const messagesUtils = require('@utils/messages');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const { BASE_URL } = require('../../../constants');
-const { cookieLogin } = require('../../../page-objects/default/login/login.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
+const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 
 const CONTACT_NAME = 'Bob_chw';
 const ADD_CHW_FORM = 'form[data-form-id="add_chw"]';

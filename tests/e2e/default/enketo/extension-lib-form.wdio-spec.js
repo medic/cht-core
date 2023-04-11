@@ -1,14 +1,14 @@
-const extensionLibsPage = require('../../../page-objects/default/enketo/extension-lib.wdio.page');
-const common = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const utils = require('../../../utils');
-const userData = require('../../../page-objects/default/users/user.data');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const extensionLibsPage = require('@page-objects/default/enketo/extension-lib.wdio.page');
+const common = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const utils = require('@utils');
+const userData = require('@page-objects/default/users/user.data');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 const { userContactDoc, docs } = userData;
 
 describe('Extension lib xpath function', () => {
-  
+
   before(async () => {
     await utils.saveDocs(docs);
 

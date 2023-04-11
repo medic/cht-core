@@ -1,12 +1,12 @@
 const fs = require('fs');
 const { expect } = require('chai');
-const utils = require('../../../utils');
+const utils = require('@utils');
 const constants = require('../../../constants');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPo = require('../../../page-objects/default/reports/reports.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const reportsPo = require('@page-objects/default/reports/reports.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 const requireNodeXml = fs.readFileSync(`${__dirname}/forms/required-note.xml`, 'utf8');
 
 describe('Submit Enketo form', () => {

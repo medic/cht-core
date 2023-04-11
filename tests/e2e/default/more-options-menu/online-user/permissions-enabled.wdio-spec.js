@@ -1,13 +1,13 @@
 const uuid = require('uuid').v4;
-const commonPage = require('../../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../../page-objects/default/login/login.wdio.page');
-const reportPage = require('../../../../page-objects/default/reports/reports.wdio.page');
-const placeFactory = require('../../../../factories/cht/contacts/place');
-const reportFactory = require('../../../../factories/cht/reports/generic-report');
-const personFactory = require('../../../../factories/cht/contacts/person');
-const userFactory = require('../../../../factories/cht/users/users');
-const utils = require('../../../../utils');
-const sms = require('../../../../utils/sms');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const reportPage = require('@page-objects/default/reports/reports.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
+const reportFactory = require('@factories/cht/reports/generic-report');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
+const utils = require('@utils');
+const sms = require('@utils/sms');
 
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
@@ -48,18 +48,18 @@ const smsReport = reportFactory.build(
   },
 );
 
-describe('Online User', async () => {  
+describe('Online User', async () => {
   let xmlReportId;
-  let smsReportId;  
+  let smsReportId;
   describe('Options disabled when no items - messages, contacts, people', async () => {
     before(async () => await loginPage.cookieLogin());
-    
+
     afterEach(async () => await commonPage.goToBase());
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionEnabled('export', 'messages')).to.be.false;    
+      expect(await commonPage.isMenuOptionEnabled('export', 'messages')).to.be.false;
     });
 
     it(' - Contact tab', async () => {
@@ -67,7 +67,7 @@ describe('Online User', async () => {
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'contacts')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'contacts')).to.be.false;
-      expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;     
+      expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;
     });
 
     it('- Report tab', async () => {
@@ -75,7 +75,7 @@ describe('Online User', async () => {
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;     
+      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
     });
   });
 
@@ -100,7 +100,7 @@ describe('Online User', async () => {
       xmlReportId = result.id;
       result = await utils.saveDoc(smsReport);
       smsReportId = result.id;
-      await sms.sendSms('testing', contact.phone);    
+      await sms.sendSms('testing', contact.phone);
     });
 
     afterEach(async () => await commonPage.goToBase());
@@ -108,27 +108,27 @@ describe('Online User', async () => {
     it('- Reports tab - Edit/export invisible when NON XML report selected', async () => {
       await commonPage.goToReports();
       await reportPage.goToReportById(smsReportId);
-      await reportPage.reportBodyDetails().waitForDisplayed();      
+      await reportPage.reportBodyDetails().waitForDisplayed();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;       
+      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
     });
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.waitForLoaderToDisappear();
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionEnabled('export', 'messages')).to.be.true;    
+      expect(await commonPage.isMenuOptionEnabled('export', 'messages')).to.be.true;
     });
 
     it('- Reports tab - options enabled when XML report selected', async () => {
       await reportPage.goToReportById(xmlReportId);
-      await reportPage.reportBodyDetails().waitForDisplayed();      
+      await reportPage.reportBodyDetails().waitForDisplayed();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.true;
-      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true; 
-      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;     
+      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
     });
 
     it(' - Contact Tab  - contact selected', async () => {

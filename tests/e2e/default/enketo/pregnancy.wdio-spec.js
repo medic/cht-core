@@ -1,24 +1,24 @@
 const moment = require('moment');
-const utils = require('../../../utils');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const tasksPage = require('../../../page-objects/default/tasks/tasks.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const pregnancyForm = require('../../../page-objects/default/enketo/pregnancy.wdio.page');
+const utils = require('@utils');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const pregnancyForm = require('@page-objects/default/enketo/pregnancy.wdio.page');
 
 describe('Pregnancy registration', () => {
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const pregnantWoman = personFactory.build({
-    date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'), 
-    parent: {_id: healthCenter._id, parent: healthCenter.parent} 
+    date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'),
+    parent: {_id: healthCenter._id, parent: healthCenter.parent}
   });
   let countRiskFactors = 0;
   let countDangerSigns = 0;
@@ -26,7 +26,7 @@ describe('Pregnancy registration', () => {
   before(async () => {
     await utils.saveDocs([...places.values(), pregnantWoman]);
     await utils.createUsers([offlineUser]);
-    await loginPage.login(offlineUser);    
+    await loginPage.login(offlineUser);
   });
 
   it('Should submit a new pregnancy', async () => {
@@ -101,7 +101,7 @@ describe('Pregnancy registration', () => {
     const tasksTitles = ['Health facility ANC reminder', 'Danger sign follow up', 'Pregnancy home visit'];
 
     await commonPage.goToTasks();
-    const tasks = await tasksPage.getTasks();    
+    const tasks = await tasksPage.getTasks();
     expect(tasks.length).to.equal(3);
 
     for (const task of tasks) {
@@ -125,13 +125,13 @@ describe('Pregnancy registration', () => {
     const targets = await analyticsPage.getTargets();
 
     expect(targets).to.have.deep.members([
-      { title: 'Deaths', goal: '0', count: '0' }, 
-      { title: 'New pregnancies', goal: '20', count: '1' }, 
-      { title: 'Live births', count: '0' }, 
-      { title: 'Active pregnancies', count: '1' }, 
-      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' }, 
-      { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' }, 
-      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' }, 
+      { title: 'Deaths', goal: '0', count: '0' },
+      { title: 'New pregnancies', goal: '20', count: '1' },
+      { title: 'Live births', count: '0' },
+      { title: 'Active pregnancies', count: '1' },
+      { title: 'Active pregnancies with 1+ routine facility visits', count: '0' },
+      { title: 'In-facility deliveries', percent: '0%', percentCount: '(0 of 0)' },
+      { title: 'Active pregnancies with 4+ routine facility visits', count: '0' },
       { title: 'Active pregnancies with 8+ routine contacts', count: '0' }
     ]);
   });

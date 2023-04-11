@@ -1,10 +1,10 @@
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const usersAdminPage = require('../../../page-objects/default/users/user.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const utils = require('../../../utils');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const utils = require('@utils');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
 const places = placeFactory.generateHierarchy(); // This generates ['district_hospital', 'health_center', 'clinic']
 const districtHospital = places.get('district_hospital');
 

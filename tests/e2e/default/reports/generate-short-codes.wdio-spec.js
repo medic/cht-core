@@ -1,10 +1,10 @@
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const personFactory = require('../../../factories/cht/contacts/person');
-const place = require('../../../factories/cht/contacts/place');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const personFactory = require('@factories/cht/contacts/person');
+const place = require('@factories/cht/contacts/place');
 const places = place.generateHierarchy();
 const clinic = places.get('clinic');
 

@@ -1,9 +1,9 @@
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/protractor/common/common.po.js');
-const reportsTab = require('../../../page-objects/protractor/reports/reports.po');
+const utils = require('@utils');
+const commonElements = require('@page-objects/protractor/common/common.po.js');
+const reportsTab = require('@page-objects/protractor/reports/reports.po');
 const helper = require('../../../helper');
 const moment = require('moment');
-const sentinelUtils = require('../../../utils/sentinel');
+const sentinelUtils = require('@utils/sentinel');
 
 describe('Reports Summary', () => {
   const PHONE_CAROL = '+64271234567';

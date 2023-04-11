@@ -1,16 +1,16 @@
 const moment = require('moment');
-const utils = require('../../../utils');
+const utils = require('@utils');
 const gatewayApiUtils = require('../../../gateway-api.utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const userFactory = require('../../../factories/cht/users/users');
-const contactPage = require('../../../page-objects/standard/contacts/contacts.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const pregnancyForm = require('../../../page-objects/standard/enketo/pregnancy.wdio.page');
-const pregnancyVisitForm = require('../../../page-objects/standard/enketo/pregnancy-visit.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
+const contactPage = require('@page-objects/standard/contacts/contacts.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page');
+const pregnancyVisitForm = require('@page-objects/standard/enketo/pregnancy-visit.wdio.page');
 
 describe('Pregnancy Visit', () => {
   const places = placeFactory.generateHierarchy();

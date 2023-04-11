@@ -1,10 +1,10 @@
 const fs = require('fs');
 
 const constants = require('../../../constants');
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 
 const readFormDocument = (formId) => {
   const form = fs.readFileSync(`${__dirname}/forms/${formId}.xml`, 'utf8');
