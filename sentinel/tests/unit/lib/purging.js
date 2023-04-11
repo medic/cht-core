@@ -2668,9 +2668,9 @@ describe('ServerSidePurge', () => {
 
     it('purgeFn should pass cht script api and permission settings', () => {
       const roles = { 'a': [1, 2, 3], 'b': [4, 5, 6] };
-      sinon.stub(request, 'get');
+      sinon.stub(db, 'queryMedic');
       sinon.stub(config, 'get').returns({ can_export_messages: [ 'a' ]});
-      request.get.onCall(0).resolves({ rows: [
+      db.queryMedic.onCall(0).resolves({ rows: [
         { id: 'r1', doc: { _id: 'r1', form: 'a' } },
         { id: 'r2', doc: { _id: 'r2', form: 'a' } },
         { id: 'r3', doc: { _id: 'r3' } },
@@ -2679,14 +2679,14 @@ describe('ServerSidePurge', () => {
         { id: 'r6', doc: { _id: 'r6', form: 'a' } },
       ]});
 
-      request.get.onCall(1).resolves({ rows: [
+      db.queryMedic.onCall(1).resolves({ rows: [
         { id: 'r6', doc: { _id: 'r6' } },
       ]});
 
       sinon.stub(db, 'get').returns({ changes: sinon.stub().resolves({ results: [] }) });
 
       return service.__get__('batchedUnallocatedPurge')(roles, purgeFn).then(() => {
-        chai.expect(request.get.callCount).to.equal(2);
+        chai.expect(db.queryMedic.callCount).to.equal(2);
         chai.expect(purgeFn.callCount).to.equal(12);
         chai.expect(typeof(purgeFn.args[0][4].v1.hasPermissions)).to.equal('function');
         chai.expect(typeof(purgeFn.args[0][4].v1.hasAnyPermission)).to.equal('function');
@@ -2701,7 +2701,9 @@ describe('ServerSidePurge', () => {
           return [ 'purge 1', 'purge 2' ];
         }
       };
-      sinon.stub(request, 'get').resolves({ rows: [{ id: 'first', key: 'district_hospital', doc: { _id: 'first' } }]});
+      sinon.stub(db, 'queryMedic').resolves(
+        { rows: [{ id: 'first', key: 'district_hospital', doc: { _id: 'first' } }]}
+      );
       sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'first', doc: { _id: 'first' } }] });
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
       sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
