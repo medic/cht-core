@@ -21,7 +21,8 @@ describe('Extension lib xpath function', () => {
     await browser.refresh();
     await commonPage.goToReports();
 
-    await commonPage.openFastActionReport(extensionLibsPage.INTERNAL_ID);
+    await commonPage.openFastActionReport(extensionLibsPage.INTERNAL_ID, false);
+
     await extensionLibsPage.typeFirst(5);
     await extensionLibsPage.typeSecond(8);
     await extensionLibsPage.blur();
