@@ -18,7 +18,7 @@ describe('Pregnancy registration', () => {
   const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const pregnantWoman = personFactory.build({
     date_of_birth: moment().subtract(25, 'years').format('YYYY-MM-DD'),
-    parent: {_id: healthCenter._id, parent: healthCenter.parent}
+    parent: { _id: healthCenter._id, parent: healthCenter.parent }
   });
   let countRiskFactors = 0;
   let countDangerSigns = 0;
