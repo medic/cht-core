@@ -35,6 +35,10 @@ const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
+const CARD = '.content-pane .meta > div > .card ';
+const pregnancyLabel = () => $(`${CARD} .action-header h3`);
+const visitLabel = () => $(`${CARD} .row label`);
+const numberOfReports = () => $((`${CARD} .row p`));
 
 const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
 const rhsReportListSelector = '.card.reports mm-content-row h4 span';
@@ -127,7 +131,7 @@ const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
 };
 
-const submitForm = async (waitForLoad=true) => {
+const submitForm = async (waitForLoad = true) => {
   await (await genericForm.submitButton()).waitForDisplayed();
   await (await genericForm.submitButton()).click();
   waitForLoad && await waitForContactLoaded();
@@ -332,6 +336,21 @@ const getPregnancyCardInfo = async () => {
   };
 };
 
+const getPregnancyLabel = async () => {
+  await pregnancyLabel().waitForDisplayed();
+  return (await pregnancyLabel()).getText();
+};
+
+const getVisitLabel = async () => {
+  await visitLabel().waitForDisplayed();
+  return (await visitLabel()).getText();
+};
+
+const getNumberOfReports = async () => {
+  await numberOfReports().waitForDisplayed();
+  return (await numberOfReports()).getText();
+};
+
 const getDeathCardInfo = async () => {
   await deathCard().waitForDisplayed();
   return {
@@ -349,6 +368,13 @@ const exportContacts = async () => {
   await commonElements.openMoreOptionsMenu();
   await (await exportButton()).waitForClickable();
   await (await exportButton()).click();
+};
+
+const getCardFieldInfo = async (label) => {
+  return {
+    label: await (await $(`.cell.${label} label`)).getText(),
+    value: await (await $(`.cell.${label} p`)).getText(),
+  };
 };
 
 const getCurrentContactId = async () => {
@@ -417,5 +443,12 @@ module.exports = {
   contactMuted,
   openFormWithWarning,
   getContactListLoadingStatus,
+  getCardFieldInfo,
   getCurrentContactId,
+  pregnancyLabel,
+  visitLabel,
+  numberOfReports,
+  getPregnancyLabel,
+  getVisitLabel,
+  getNumberOfReports,
 };
