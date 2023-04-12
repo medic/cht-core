@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const constants = require('../../../constants');
+const constants = require('@constants');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');

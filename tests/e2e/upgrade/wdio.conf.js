@@ -8,7 +8,7 @@ chai.use(require('chai-exclude'));
 const rpn = require('request-promise-native');
 
 const utils = require('@utils');
-const constants = require('../../constants');
+const constants = require('@constants');
 
 constants.DB_NAME = 'medic';
 const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;

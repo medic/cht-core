@@ -3,6 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "@utils": ["./utils"],
+      "@constants": ["./constants"],
       "@utils/*": ["./utils/*"],
       "@page-objects/*": ["./page-objects/*"],
       "@factories/*": ["./factories/*"]

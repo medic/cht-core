@@ -1,7 +1,7 @@
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
-const constants = require('../../../constants');
+const constants = require('@constants');
 
 const auth = {
   username: constants.USERNAME,

@@ -8,7 +8,7 @@ const userFactory = require('@factories/cht/users/users');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
-const { BASE_URL } = require('../../../constants');
+const { BASE_URL } = require('@constants');
 const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 

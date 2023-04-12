@@ -6,7 +6,7 @@ const fs = require('fs');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 
-const constants = require('../../constants');
+const constants = require('@constants');
 const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
 const browserUtils = require('@utils/browser');

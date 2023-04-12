@@ -12,7 +12,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const replaceUserForm = require('@page-objects/default/enketo/replace-user.wdio.page');
-const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('../../../constants');
+const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('@constants');
 
 const USER_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw' }));
 

@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { expect } = require('chai');
 const utils = require('@utils');
-const constants = require('../../../constants');
+const constants = require('@constants');
 const commonElements = require('@page-objects/default/common/common.wdio.page');
 const reportsPo = require('@page-objects/default/reports/reports.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
