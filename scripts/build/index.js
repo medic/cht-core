@@ -21,13 +21,7 @@ const stagingAttachmentsPath = path.resolve(stagingPath, '_attachments');
 const localBuildPath = path.resolve(__dirname, '..', '..', 'local-build');
 const ddocsBuildPath = path.resolve(buildPath, 'ddocs');
 
-let couchConfig;
-
 const getCouchConfig = () => {
-  if (couchConfig) {
-    return couchConfig;
-  }
-
   if (!COUCH_URL) {
     throw new Error('Required environment variable COUCH_URL is undefined. (eg. http://your:pass@localhost:5984/medic)');
   }
@@ -36,15 +30,13 @@ const getCouchConfig = () => {
     throw 'COUCH_URL must contain admin authentication information';
   }
 
-  couchConfig = {
+  return {
     username: parsedUrl.username,
     password: parsedUrl.password,
     dbName: parsedUrl.pathname.substring(1),
     withPath: path => `${parsedUrl.protocol}//${parsedUrl.username}:${parsedUrl.password}@${parsedUrl.host}/${path}`,
     withPathNoAuth: path => `${parsedUrl.protocol}//${parsedUrl.host}/${path}`,
   };
-
-  return couchConfig;
 };
 
 const getApiUrl = (pathname = '') => {
