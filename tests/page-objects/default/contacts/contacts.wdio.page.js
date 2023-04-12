@@ -1,11 +1,10 @@
 const ENTER = '\uE007';
 
 const genericForm = require('../enketo/generic-form.wdio.page');
-const commonElements = require('../common/common.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 const utils = require('../../../utils');
-const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const modalPage = require('../common/modal.wdio.page');
+const commonPage = require('../common/common.wdio.page');
 
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
@@ -78,7 +77,7 @@ const deathPlace = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await browser.keys(ENTER);
-  await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
+  await commonPage.waitForLoaderToDisappear(await $('.left-pane'));
 };
 
 const findRowByText = async (text) => {
@@ -90,7 +89,7 @@ const findRowByText = async (text) => {
 };
 
 const selectLHSRowByText = async (text, executeSearch = true) => {
-  await commonElements.waitForLoaderToDisappear();
+  await commonPage.waitForLoaderToDisappear();
   if (executeSearch) {
     await search(text);
   }
@@ -203,7 +202,7 @@ const addPerson = async ({
 const editPerson = async (currentName, { name, phone, dob }) => {
   await selectLHSRowByText(currentName);
   await waitForContactLoaded();
-  await commonElements.openMoreOptionsMenu();
+  await commonPage.openMoreOptionsMenu();
   await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
@@ -231,7 +230,7 @@ const editPersonName = async (name, updatedName) => {
 };
 
 const deletePerson = async () => {
-  await commonElements.openMoreOptionsMenu();
+  await commonPage.openMoreOptionsMenu();
   await (await deleteContactButton()).waitForClickable();
   await (await deleteContactButton()).click();
   await (await deleteConfirmationModalButton()).waitForClickable();
@@ -250,22 +249,22 @@ const getPrimaryContactName = async () => {
 
 const getAllLHSContactsNames = async () => {
   await (await contentRow()).waitForDisplayed();
-  return commonElements.getTextForElements(contactName);
+  return commonPage.getTextForElements(contactName);
 };
 
 const getAllRHSPeopleNames = async () => {
   await (await name()).waitForDisplayed();
-  return commonElements.getTextForElements(rhsPeopleListSelector);
+  return commonPage.getTextForElements(rhsPeopleListSelector);
 };
 
 const getAllRHSReportsNames = async () => {
   await (await rhsReportListElement()).waitForDisplayed();
-  return commonElements.getTextForElements(rhsReportElementList);
+  return commonPage.getTextForElements(rhsReportElementList);
 };
 
 const getAllRHSTaskNames = async () => {
   await (await rhsTaskListElement()).waitForDisplayed();
-  return commonElements.getTextForElements(rhsTaskListElementList);
+  return commonPage.getTextForElements(rhsTaskListElementList);
 };
 
 const allContactsList = async () => {
@@ -282,7 +281,7 @@ const editDistrict = async (districtName, editedName) => {
   await selectLHSRowByText(districtName, true);
   await waitForContactLoaded();
 
-  await commonElements.openMoreOptionsMenu();
+  await commonPage.openMoreOptionsMenu();
   await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
@@ -299,10 +298,10 @@ const openFormWithWarning = async (formId) => {
 };
 
 const openReport = async () => {
-  await commonElements.toggleActionbar(true);
+  await commonPage.toggleActionbar(true);
   await (await rhsReportListElement()).waitForDisplayed();
   await (await rhsReportListElement()).click();
-  await commonElements.toggleActionbar();
+  await commonPage.toggleActionbar();
 };
 
 const getContactCardTitle = async () => {
@@ -365,7 +364,7 @@ const getContactCardText = async () => {
 };
 
 const exportContacts = async () => {
-  await commonElements.openMoreOptionsMenu();
+  await commonPage.openMoreOptionsMenu();
   await (await exportButton()).waitForClickable();
   await (await exportButton()).click();
 };
