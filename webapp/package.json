@@ -63,7 +63,7 @@
     "mustache": "^4.2.0",
     "ngrx-store-logger": "^0.2.4",
     "ngx-bootstrap": "^7.1.2",
-    "ngx-cookie-service": "^11.0.2",
+    "ngx-cookie-service": "^15.0.0",
     "object-path": "^0.11.8",
     "odk-xform-compact-record-representation-for-sms": "^1.0.1",
     "openrosa-xpath-evaluator": "^2.0.13",
