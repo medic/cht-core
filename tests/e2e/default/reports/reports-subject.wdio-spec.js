@@ -185,7 +185,7 @@ describe('Reports Subject', () => {
     await sentinelUtils.waitForSentinel([report._id]);
 
     await verifyListReportContent({ formName: 'NAM_NAM', subject: 'Unknown subject' });
-    await  verifyOpenReportContent({ formName: 'NAM_NAM', subject: 'Unknown subject' });
+    await  verifyOpenReportContent({ formName: 'NAM_NAM ', subject: 'Unknown subject' });
   });
 
   it('should create a report using place_id with a place_uuid', async () => {
