@@ -23,16 +23,49 @@ const AGGREGATE_LIST = '#target-aggregates-list';
 const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
 const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li`);
 const targetAggregateListItem = (contactId) => $(`.aggregate-detail li[data-record-id="${contactId}"] a`);
-
-const labels = () => $$('.content-pane .meta > div > .card .row label');
-const meta = () => $$('.content-pane .meta > div > .card .row p');
-const rows = () => $$('.content-pane .meta > div > .card .row p');
-const pane = () => $$('.content-pane .meta > div > .card .row label');
+const AGGREGATE_DETAIL_LIST = '.aggregate-detail li';
+const targetAggregateDetailTitle = (element) => element.$('h4');
+const targetAggregateDetailDetail = (element) => element.$('.detail');
+const AGGREGATE_DETAIL_PROGRESS_BAR = '.progress-bar';
+const getTargetAggregateDetailProgressBar = (element) => element.$(`${AGGREGATE_DETAIL_PROGRESS_BAR} span`);
+const getTargetAggregateDetailGoal = (element) => element.$$('.goal');
 const emptySelectionError = () => $('.content-pane .item-content.empty-selection.selection-error');
 const emptySelectionNoError = () => $('.content-pane .item-content.empty-selection:not(.selection-error)');
 
 const NAVIGATION_LINK = '.mm-navigation-menu li a';
 const CONTENT_DISABLED = '.page .item-content.disabled';
+
+const getAggregateDetailListLength = async () => {
+  return await $$(AGGREGATE_DETAIL_LIST).length;
+};
+
+const getAggregateDetailListElementbyIndex = async (index) => {
+  return await $$(AGGREGATE_DETAIL_LIST)[index];
+};
+
+const getAggregateDetailElementInfo = async (element) => {
+  return {
+    recordId: await element.getAttribute('data-record-id'),
+    title: await (await targetAggregateDetailTitle(element)).getText(),
+    detail: await (await targetAggregateDetailDetail(element)).getText()
+  };
+};
+
+const getAggregateDetailProgressBarLength = async (element) => {
+  return await (await element.$$(AGGREGATE_DETAIL_PROGRESS_BAR)).length;
+};
+
+const getAggregateDetailProgressBarValue = async (element) => {
+  return await (await getTargetAggregateDetailProgressBar(element)).getText();
+};
+
+const getAggregateDetailGoalLength = async (element) => {
+  return await (await getTargetAggregateDetailGoal(element)).length;
+};
+
+const getAggregateDetailGoalValue = async (element) => {
+  return await (await getTargetAggregateDetailGoal(element)[0]).getText();
+};
 
 const getTargetInfo = async (targetElement) => {
   const target = {
@@ -114,10 +147,6 @@ module.exports = {
   getTargets,
   expectModulesToBeAvailable,
   goToTargetAggregates,
-  labels,
-  meta,
-  pane,
-  rows,
   loadingStatus,
   aggregateList,
   getTargetItem,
@@ -126,4 +155,13 @@ module.exports = {
   emptySelectionError,
   emptySelectionNoError,
   targetAggregateListItem,
+  getAggregateDetailListLength,
+  getAggregateDetailListElementbyIndex,
+  getAggregateDetailElementInfo,
+  getTargetAggregateDetailProgressBar,
+  getAggregateDetailProgressBarLength,
+  getAggregateDetailProgressBarValue,
+  getTargetAggregateDetailGoal,
+  getAggregateDetailGoalValue,
+  getAggregateDetailGoalLength,
 };
