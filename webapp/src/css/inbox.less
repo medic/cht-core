@@ -1739,6 +1739,14 @@ mm-search-bar {
     left: 100%;
   }
 
+  .app-root:not(.show-content) {
+    .right-pane {
+      .fast-action-trigger {
+        display: none;
+      }
+    }
+  }
+
   .app-root.show-content {
     .header,
     mm-multiselect-bar,
