@@ -5,8 +5,7 @@ const login = require('../../../page-objects/default/login/login.wdio.page');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
 
-const addPlace = 'Add place';
-const addPerson = 'Add person';
+const addPlace = 'New Place';
 let translations;
 let forms;
 
@@ -70,13 +69,13 @@ describe('Creating custom places', () => {
     await utils.revertDb([/^form:/], true);
   });
 
-  it('the LHS add place button should show the appropriate title', async () => {
+  it('the LHS button should show the appropriate label when only one action', async () => {
     await login.cookieLogin();
     await commonPage.goToPeople();
-    expect(await (await contactsPage.leftAddPlace()).getText()).to.contain(translations[customTopLevel.create_key]);
+    expect(await commonPage.getFastActionFlatText()).to.contain(translations[customTopLevel.create_key]);
   });
 
-  it('the LHS add place button should read add place when multiple places exist at the current level', async () => {
+  it('the LHS button should show the appropriate label when multiple places exist at the current level', async () => {
     const settings = await utils.getSettings();
     settings.contact_types.push(secondTopLevel);
     const forms = customTypeFactory.formsForTypes([secondTopLevel], ngoCreateXML);
@@ -85,38 +84,43 @@ describe('Creating custom places', () => {
     await utils.saveDocs(forms);
     await login.cookieLogin();
     await commonPage.goToPeople();
-    expect(await (await contactsPage.leftAddPlace()).getText()).to.contain(addPlace);
+    expect(await commonPage.getFastActionFlatText()).to.contain(addPlace);
   });
 
-  it('the RHS add place button should show the custom title', async () => {
+  it('the RHS button should show the action with custom label', async () => {
     const ngoPlace = placeFactory.place().build({ name: 'NGO', type: 'contact', contact_type: customTopLevel.id });
     await utils.saveDoc(ngoPlace);
     await commonPage.goToPeople(ngoPlace._id);
-    expect(await (await contactsPage.rightAddPlace()).getText()).to.contain(translations[customMidLevel.create_key]);
+    const actionText = await commonPage.getFastActionFABTextById(customMidLevel.id);
+    expect(actionText).to.contain(translations[customMidLevel.create_key]);
   });
 
-  it('the RHS add place button should show the add place title', async () => {
+  it('the RHS button show the appropriate label when multiple places exist at the current level', async () => {
     const lowLevel = placeFactory.place().build({ name: 'LowLevel', type: 'contact', contact_type: customLowLevel.id });
     await utils.saveDoc(lowLevel);
     await commonPage.goToPeople(lowLevel._id);
-    expect(await (await contactsPage.rightAddPlace()).getText()).to.contain(addPlace);
+    const firstPlaceText = await commonPage.getFastActionFABTextById(firstChildPlaceToTopLevel.id);
+    await commonPage.closeFastActionList();
+    const secondPlaceText = await commonPage.getFastActionFABTextById(secondChildPlaceToTopLevel.id);
+    expect(firstPlaceText).to.contain(translations[firstChildPlaceToTopLevel.create_key]);
+    expect(secondPlaceText).to.contain(translations[secondChildPlaceToTopLevel.create_key]);
   });
 
-  it('should show the single add person button with the correct title', async () => {
+  it('should show the single add person button with the correct label', async () => {
     const ngoPlace = placeFactory.place().build({ name: 'NGO', type: 'contact', contact_type: customTopLevel.id });
     await utils.saveDoc(ngoPlace);
     await commonPage.goToPeople(ngoPlace._id);
-    expect(
-      await (await contactsPage.rightAddPerson(person1.create_key)).getText()
-    ).to.contain(translations[person1.create_key]);
+    expect(await commonPage.getFastActionFABTextById(person1.id)).to.contain(translations[person1.create_key]);
   });
 
-  it('should show the multi add person button with the correct title', async () => {
+  it('should show the multi person actions with the correct label', async () => {
     const multiPerson = placeFactory.place()
       .build({ name: 'multiPerson', type: 'contact', contact_type: customParentWithMultiplePersons.id });
     await utils.saveDoc(multiPerson);
     await commonPage.goToPeople(multiPerson._id);
-    expect(await (await contactsPage.rightAddPersons()).getText()).to.contain(addPerson);
+    expect(await commonPage.getFastActionFABTextById(person2.id)).to.contain(translations[person2.create_key]);
+    await commonPage.closeFastActionList();
+    expect(await commonPage.getFastActionFABTextById(person3.id)).to.contain(translations[person3.create_key]);
   });
 
   it('should show custom places in their own list', async () => {

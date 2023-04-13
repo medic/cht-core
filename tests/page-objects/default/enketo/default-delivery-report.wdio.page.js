@@ -161,7 +161,7 @@ const getAliveBabyUUID = async (index) => {
 };
 
 module.exports = {
-  formTitle: docs[0].title,
+  formInternalId: docs[0].internalId,
   configureForm: (userContactDoc) => {
     return utils.seedTestData(userContactDoc, docs);
   },
