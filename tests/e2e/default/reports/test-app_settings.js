@@ -1,13 +1,6 @@
-const TEST_REPORTS = {
+const WITH_SMS_FORMS = {
   transitions: {
-    accept_patient_reports: true,
-    conditional_alerts: true,
-    default_responses: true,
-    update_sent_by: true,
-    registration: true,
     update_clinics: true,
-    update_notifications: true,
-    update_scheduled_reports: true,
   },
   forms: {
     R: {
@@ -126,10 +119,9 @@ const TEST_REPORTS = {
       public_form: true,
       use_sentinel: true
     }
-  },
-  registrations: []
+  }
 };
 
 module.exports = {
-  TEST_REPORTS,
+  WITH_SMS_FORMS,
 };

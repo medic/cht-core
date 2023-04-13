@@ -340,16 +340,6 @@ const getAutomaticReply = async () => {
   };
 };
 
-/*const getReportSubject = async () => {
-  await patientName().waitForDisplayed();
-  return (await patientName()).getText();
-};
-
-const getReportType = async () => {
-  await reportType().waitForDisplayed();
-  return (await reportType()).getText();
-};*/
-
 const getOpenReportInfo = async () => {
   return {
     patientName: await getElementText(patientName()),
