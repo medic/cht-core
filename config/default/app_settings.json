@@ -3,6 +3,14 @@
     {
       "locale": "en",
       "enabled": true
+    },
+    {
+      "locale": "ne",
+      "enabled": true
+    },
+    {
+      "locale": "sw",
+      "enabled": true
     }
   ],
   "locale": "en",
