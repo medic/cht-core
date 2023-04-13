@@ -49,29 +49,28 @@ const expectTargets = async (targets) => {
  */
 const expectContacts = async (contacts, target) => {
   contacts = contacts.sort((a, b) => a.name > b.name ? 1 : -1);
-  expect(await $$(`.aggregate-detail li`).length).to.equal(contacts.length);
+  expect(await analytics.getAggregateDetailListLength()).to.equal(contacts.length);
   // eslint-disable-next-line guard-for-in
   for (const idx in contacts) {
     const contact = contacts[idx];
-    const lineItem = $$(`.aggregate-detail li`)[idx];
-    expect(await lineItem.getAttribute('data-record-id')).to.equal(contact._id);
-    expect(await lineItem.$('h4').getText()).to.equal(contact.name);
-    expect(await lineItem.$('.detail').getText()).to.equal(contact.counter);
-
+    const lineItem = await analytics.getAggregateDetailListElementbyIndex(idx);
+    const lineItemInfo = await analytics.getAggregateDetailElementInfo(lineItem);
+    expect(await lineItemInfo.recordId).to.equal(contact._id);
+    expect(await lineItemInfo.title).to.equal(contact.name);
+    expect(await lineItemInfo.detail).to.equal(contact.counter);
     if (!target.progressBar) {
-      expect(await lineItem.$$('.progress-bar').length).to.equal(0);
+      expect(await analytics.getAggregateDetailProgressBarLength(lineItem)).to.equal(0);
     } else {
       if (!contact.progress) {
-        expect(await lineItem.$('.progress-bar span').isDisplayed()).to.be.false;
+        expect(await (await analytics.getTargetAggregateDetailProgressBar(lineItem)).isDisplayed()).to.be.false;
       } else {
-        expect(await lineItem.$('.progress-bar span').getText()).to.equal(contact.progress);
+        expect(await analytics.getAggregateDetailProgressBarValue(lineItem)).to.equal(contact.progress);
       }
     }
-
     if (!target.goal) {
-      expect(await lineItem.$$('.goal').length).to.equal(0);
+      expect(await analytics.getAggregateDetailGoalLength(lineItem)).to.equal(0);
     } else {
-      const text = await (await lineItem.$$('.goal')[0]).getText();
+      const text = await analytics.getAggregateDetailGoalValue(lineItem);
       expect(text.indexOf(target.goal)).not.to.equal(-1);
     }
   }
@@ -94,6 +93,11 @@ const clickOnTargetAggregateListItem = async (contactId) => {
   await contactsPageObject.contactCard().waitForDisplayed();
 };
 
+const validateCardField = async (label, value) => {
+  expect((await contactPage.getCardFieldInfo(label)).label).to.equal(label);
+  expect((await contactPage.getCardFieldInfo(label)).value).to.equal(value);
+};
+
 describe('Target aggregates', () => {
 
   describe('as a db admin', () => {
@@ -103,7 +107,7 @@ describe('Target aggregates', () => {
       await browser.refresh();
     });
 
-    afterEach(async () => await utils.revertDb([], true));
+    afterEach(async () => await utils.revertDb([/^form:/], true));
 
     it('should display an empty list when there are no aggregates', async () => {
       await commonElements.goToAnalytics();
@@ -400,10 +404,9 @@ describe('Target aggregates', () => {
       expect(await contactsPageObject.getContactInfoName()).to.equal('Clarissa');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPageObject.getContactCardTitle()).to.equal('Activity this month');
-      expect(await commonElements.getTextForElements(analytics.labels))
-        .to.deep.equal(['Last updated', 'what a target!', 'the most target']);
-      expect(await commonElements.getTextForElements(analytics.rows))
-        .to.deep.equal(['yesterday Clarissa', '40', '50%']);
+      validateCardField('Last updated', 'yesterday Clarissa');
+      validateCardField('what a target!', '40');
+      validateCardField('the most target', '50%');
 
       await browser.back();
       await analytics.expectTargetDetails(expectedTargets[0]);
@@ -414,10 +417,9 @@ describe('Target aggregates', () => {
       expect(await contactsPageObject.getContactInfoName()).to.equal('Prometheus');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPageObject.getContactCardTitle()).to.equal('Activity this month');
-      expect(await commonElements.getTextForElements(analytics.pane))
-        .to.deep.equal(['Last updated', 'what a target!', 'the most target']);
-      expect(await commonElements.getTextForElements(analytics.meta))
-        .to.deep.equal(['yesterday Prometheus', '18', '15%']);
+      validateCardField('Last updated', 'yesterday Prometheus');
+      validateCardField('what a target!', '18');
+      validateCardField('the most target', '15%');
 
       await browser.back();
       await analytics.expectTargetDetails(expectedTargets[1]);
