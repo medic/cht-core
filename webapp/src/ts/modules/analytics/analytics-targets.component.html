@@ -7,13 +7,33 @@
     <div><div class="loader"></div></div>
   </div>
 
-  <div class="item-content empty-selection" *ngIf="!targetsDisabled && !loading && !targets?.length">
+  <div class="item-content empty-selection" *ngIf="!targetsDisabled && !loading && !targets?.length && !error">
     <div>{{ 'targets.no_targets' | translate }}</div>
   </div>
 
-  <div class="targets" *ngIf="!targetsDisabled && !loading && targets?.length">
-    <div class="target"
-      *ngFor="let target of targets"
+  <div class="targets" id="target-error-detail" *ngIf="!targetsDisabled && !loading && error">
+    <div class="alert alert-danger" role="alert">
+      <div class="error-details">
+        <span>{{'Error fetching targets' | translate}}</span>
+        <dl>
+          <dt>{{'User Name' | translate}}</dt>
+          <dd>{{userCtx.name}}</dd>
+          <dt>{{'url' | translate}}</dt>
+          <dd>{{url}}</dd>
+          <dt>{{'date.time.title' | translate}}</dt>
+          <dd>{{currentDate | simpleDateTime}}</dd>
+          <dt>{{'sync.last_success' | translate}}</dt>
+          <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">
+            {{replicationStatus.lastSuccessTo | simpleDateTime}}
+          </dd>
+        </dl>
+      </div>
+      <pre><code>{{errorDetails}}</code></pre>
+    </div>
+  </div>
+
+  <div class="targets" *ngIf="!targetsDisabled && !loading && targets?.length && !error">
+    <div class="target" *ngFor="let target of targets"
       [ngClass]="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value?.pass >= target.goal) || (target.value?.percent >= target.goal) }"
       attr.test-target-id="{{ target.id }}">
       <div class="heading">
