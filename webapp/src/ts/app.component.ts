@@ -47,6 +47,7 @@ import { AnalyticsModulesService } from '@mm-services/analytics-modules.service'
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
+import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -92,6 +93,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   androidAppVersion;
   reportForms;
   unreadCount = {};
+  useOldActionBar = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -298,6 +300,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.enableOldActionBar();
     this.subscribeToSideFilterStore();
   }
 
@@ -462,6 +465,10 @@ export class AppComponent implements OnInit, AfterViewInit {
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
   }
 
+  private async enableOldActionBar() {
+    this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
+  }
+
   private initForms() {
     /**
      * Translates using the key if truthy using the old style label
@@ -504,7 +511,7 @@ export class AppComponent implements OnInit, AfterViewInit {
           }
         );
 
-        // get the forms for the Add Report menu
+        // ToDo: remove when deprecating Action Bar Component. This subscribe gets the forms for the Add Report action.
         this.xmlFormsService.subscribe(
           'AddReportMenu',
           { reportForms: true },

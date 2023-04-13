@@ -35,15 +35,13 @@ describe('Testing Incorrect locale', () => {
   });
 
   it('should work with incorrect locale', async () => {
-    await commonElements.openHamburgerMenu();
-    await commonElements.openUserSettingsAndFetchProperties();
-    await userSettingsElements.openEditSettings();
-    await userSettingsElements.selectLanguage('hil');
+    await userSettingsElements.setLanguage('hil');
 
     const text = await commonElements.getReportsButtonLabel().getText();
     expect(text).to.equal('HilReports');
 
     await commonElements.goToPeople();
+    await commonElements.waitForPageLoaded();
     await contactElements.selectLHSRowByText('hil district');
 
     const reportsFilter = await contactElements.getReportFiltersText();

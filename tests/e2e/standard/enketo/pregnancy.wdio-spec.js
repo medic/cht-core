@@ -51,7 +51,7 @@ describe('New pregnancy', () => {
     await commonPage.goToPeople(healthCenter._id);
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
     const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
-    await contactPage.contactPageDefault.createNewAction('New Pregnancy');
+    await commonPage.openFastActionReport('pregnancy');
 
     await pregnancyForm.selectKnowLMP();
     await pregnancyForm.selectAproxLMP(pregnancyForm.APROX_LMP.b7To8Months);

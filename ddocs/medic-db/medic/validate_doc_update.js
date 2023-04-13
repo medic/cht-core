@@ -18,6 +18,7 @@ function(newDoc, oldDoc, userCtx, secObj) {
     'branding',
     'partners',
     'privacy-policies',
+    'extension-libs',
   ];
 
   var _err = function(msg) {

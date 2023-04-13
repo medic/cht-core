@@ -15,7 +15,7 @@ describe('Pregnancy Visit', () => {
   });
 
   it('Submit and validate Pregnancy Visit form and keeps the report minified', async () => {
-    await reportsPage.openForm('Pregnancy Visit');
+    await commonPage.openFastActionReport('pregnancy-visit', false);
     await pregnancyVisitForm.selectPatient(userData.userContactDoc.name);
     await genericForm.nextPage();
     const selectedDangerSigns = await pregnancyVisitForm.selectAllDangerSigns();

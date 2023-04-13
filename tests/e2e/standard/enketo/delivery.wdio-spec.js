@@ -66,7 +66,7 @@ describe('Delivery', () => {
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
     await commonPage.waitForPageLoaded();
     const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
-    await contactPage.contactPageDefault.createNewAction('Delivery');
+    await commonPage.openFastActionReport('delivery');
 
     const pregnancyOutcome = await deliveryForm.selectPregnancyOutcome();
     const locationDelivery = await deliveryForm.selectDeliveryLocation();

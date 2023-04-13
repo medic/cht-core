@@ -136,10 +136,11 @@ a {
   .detail {
     overflow: auto;
     .status {
-      float: right;
-      text-align: right;
-      clear: right;
+      display: inline-block;
       margin-left: 10px;
+      svg {
+        vertical-align: middle;
+      }
     }
     .time .full-date {
       color: @label-color;
