@@ -6,6 +6,7 @@ const viewMapUtils = require('@medic/view-map-utils');
 const db = require('../../../src/db');
 const settingsService = require('../../../src/services/settings');
 const translations = require('../../../src/translations');
+const extensionLibsService = require('../../../src/services/extension-libs');
 const generateServiceWorker = require('../../../src/generate-service-worker');
 const generateXform = require('../../../src/services/generate-xform');
 const config = require('../../../src/config');
@@ -33,6 +34,7 @@ describe('Configuration', () => {
     sinon.stub(settingsService, 'update');
     sinon.stub(generateServiceWorker, 'run');
     sinon.stub(manifest, 'generate');
+    sinon.stub(extensionLibsService, 'isLibChange').returns(false);
     sinon.spy(config, 'set');
     sinon.spy(config, 'setTranslationCache');
     sinon.spy(config, 'setTransitionsLib');
@@ -313,6 +315,19 @@ describe('Configuration', () => {
           chai.expect(generateXform.update.callCount).to.equal(0);
         });
       });
+    });
+
+    describe('extension libs changes', () => {
+
+      it('generates service worker when extension libs doc is updated', () => {
+        extensionLibsService.isLibChange.returns(true);
+        generateServiceWorker.run.resolves();
+        return emitChange({ id: 'my-secret-id' }).then(() => {
+          extensionLibsService.isLibChange.returns(true);
+          chai.expect(generateServiceWorker.run.callCount).to.equal(1);
+        });
+      });
+
     });
 
   });

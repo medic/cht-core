@@ -1,4 +1,4 @@
-FROM haproxy:2.6
+FROM haproxy:2.7
 
 USER root
 RUN apt-get update && apt-get install rsyslog luarocks gettext jq curl -y
