@@ -94,8 +94,8 @@ const clickOnTargetAggregateListItem = async (contactId) => {
 };
 
 const validateCardField = async (label, value) => {
-  expect((await contactPage.getCardFieldInfo(label)).label).to.equal(label);
-  expect((await contactPage.getCardFieldInfo(label)).value).to.equal(value);
+  expect((await contactsPageObject.getCardFieldInfo(label)).label).to.equal(label);
+  expect((await contactsPageObject.getCardFieldInfo(label)).value).to.equal(value);
 };
 
 describe('Target aggregates', () => {
