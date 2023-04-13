@@ -4,7 +4,7 @@ const NAME = 'update_sent_by';
 
 module.exports = {
   name: NAME,
-  filter: function(doc, info={}) {
+  filter: function({ doc, info }) {
     const self = module.exports;
     return Boolean(
       doc &&

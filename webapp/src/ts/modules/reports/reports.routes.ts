@@ -30,14 +30,14 @@ export const routes:Routes = [
       {
         path: 'add/:formId',
         component: ReportsAddComponent,
-        data: { permissions: ['can_edit'] },
+        data: { permissions: ['can_edit'], hideTraining: true },
         canActivate: [AppRouteGuardProvider],
         canDeactivate: [ReportsAddDeactivationGuardProvider],
       },
       {
         path: 'edit/:reportId',
         component: ReportsAddComponent,
-        data: { permissions: ['can_edit'] },
+        data: { permissions: ['can_edit'], hideTraining: true },
         canActivate: [AppRouteGuardProvider],
         canDeactivate: [ReportsAddDeactivationGuardProvider],
       }

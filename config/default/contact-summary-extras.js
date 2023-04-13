@@ -144,7 +144,7 @@ function getRiskFactorsFromPregnancy(report) {
     if (riskFactorsPrimary) {
       riskFactors.push(...riskFactorsPrimary.split(' '));
     }
-    else if (riskFactorsSecondary) {
+    if (riskFactorsSecondary) {
       riskFactors.push(...riskFactorsSecondary.split(' '));
     }
   }
@@ -404,5 +404,6 @@ module.exports = {
   getDeliveryDate,
   getFormArraySubmittedInWindow,
   getRecentANCVisitWithEvent,
-  getField
+  getField,
+  getRiskFactorsFromPregnancy
 };

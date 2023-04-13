@@ -30,6 +30,8 @@ import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 @Injectable({
   providedIn: 'root'
@@ -53,10 +55,12 @@ export class EnketoService {
     private userContactService: UserContactService,
     private xmlFormsService: XmlFormsService,
     private zScoreService: ZScoreService,
+    private trainingCardsService: TrainingCardsService,
     private transitionsService: TransitionsService,
     private translateService: TranslateService,
     private feedbackService:FeedbackService,
     private ngZone: NgZone,
+    private chtScriptApiService: CHTScriptApiService
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -68,7 +72,7 @@ export class EnketoService {
   private readonly HTML_ATTACHMENT_NAME = 'form.html';
   private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
   private readonly objUrls = [];
-  private inited = false;
+  private inited;
 
   private currentForm;
   getCurrentForm() {
@@ -76,13 +80,18 @@ export class EnketoService {
   }
 
   private init() {
-    return this.zScoreService
-      .getScoreUtil()
-      .then((zscoreUtil) => {
-        medicXpathExtensions.init(zscoreUtil, toBik_text, moment);
+    if (this.inited) {
+      return this.inited;
+    }
+    return Promise.all([
+      this.zScoreService.getScoreUtil(),
+      this.chtScriptApiService.getApi()
+    ])
+      .then(([zscoreUtil, api]) => {
+        medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
       })
       .catch((err) => {
-        console.error('Error initialising zscore util', err);
+        console.error('Error initialising enketo service', err);
       });
   }
 
@@ -276,7 +285,7 @@ export class EnketoService {
   }
 
   private renderFromXmls(xmlFormContext: XmlFormContext) {
-    const { doc, instanceData, titleKey, wrapper } = xmlFormContext;
+    const { doc, instanceData, titleKey, wrapper, isFormInModal } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
     formContainer.html(doc.html.get(0));
@@ -294,12 +303,11 @@ export class EnketoService {
       .then((title) => {
         this.setFormTitle(wrapper, title);
         wrapper.show();
+        wrapper
+          .find('input')
+          .on('keydown', this.handleKeypressOnInputField);
 
-        wrapper.find('input').on('keydown', this.handleKeypressOnInputField);
-
-        // handle page turning using browser history
-        window.history.replaceState({ enketo_page_number: 0 }, '');
-        this.overrideNavigationButtons(this.currentForm, wrapper);
+        this.setNavigation(this.currentForm, wrapper, !isFormInModal);
         this.addPopStateHandler(this.currentForm, wrapper);
         this.forceRecalculate(this.currentForm);
         // forceRecalculate can cause form to be marked as edited
@@ -321,10 +329,10 @@ export class EnketoService {
     }
   }
 
-  private setFormTitle(wrapper, title) {
+  private setFormTitle($wrapper, title) {
     // manually translate the title as enketo-core doesn't have any way to do this
     // https://github.com/enketo/enketo-core/issues/405
-    const $title = wrapper.find('#form-title');
+    const $title = $wrapper.find('#form-title');
     if (title) {
       // overwrite contents
       $title.text(title);
@@ -334,7 +342,12 @@ export class EnketoService {
     } // else the title is hardcoded in the form definition - leave it alone
   }
 
-  private overrideNavigationButtons(form, $wrapper) {
+  private setNavigation(form, $wrapper, useWindowHistory=true) {
+    if (useWindowHistory) {
+      // Handle page turning using browser history
+      window.history.replaceState({ enketo_page_number: 0 }, '');
+    }
+
     $wrapper
       .find('.btn.next-page')
       .off('.pagemode')
@@ -344,7 +357,9 @@ export class EnketoService {
           .then(valid => {
             if (valid) {
               const currentIndex = form.pages._getCurrentIndex();
-              window.history.pushState({ enketo_page_number: currentIndex }, '');
+              if (useWindowHistory) {
+                window.history.pushState({ enketo_page_number: currentIndex }, '');
+              }
               this.setupNavButtons($wrapper, currentIndex);
               this.pauseMultimedia($wrapper);
             }
@@ -357,8 +372,17 @@ export class EnketoService {
       .find('.btn.previous-page')
       .off('.pagemode')
       .on('click.pagemode', () => {
-        window.history.back();
-        this.setupNavButtons($wrapper, form.pages._getCurrentIndex() - 1);
+        let pageIndex;
+
+        if (useWindowHistory) {
+          window.history.back();
+          pageIndex = form.pages._getCurrentIndex() - 1;
+        } else {
+          form.pages._prev();
+          pageIndex = form.pages._getCurrentIndex();
+        }
+
+        this.setupNavButtons($wrapper, pageIndex);
         this.forceRecalculate(form);
         this.pauseMultimedia($wrapper);
         return false;
@@ -419,8 +443,10 @@ export class EnketoService {
       selector,
       titleKey,
       valuechangeListener,
+      isFormInModal,
     } = formContext;
 
+    this.unload(this.currentForm);
     const $selector = $(selector);
     return this
       .transformXml(formDoc)
@@ -431,6 +457,7 @@ export class EnketoService {
           wrapper: $selector,
           instanceData,
           titleKey,
+          isFormInModal
         };
         return this.renderFromXmls(xmlFormContext);
       })
@@ -453,13 +480,13 @@ export class EnketoService {
       });
   }
 
-  render(selector, form, instanceData, editedListener, valuechangeListener) {
+  render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal = false) {
     return this.ngZone.runOutsideAngular(() => {
-      return this._render(selector, form, instanceData, editedListener, valuechangeListener);
+      return this._render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal);
     });
   }
 
-  private _render(selector, form, instanceData, editedListener, valuechangeListener) {
+  private _render(selector, form, instanceData, editedListener, valuechangeListener, isFormInModal) {
     return Promise
       .all([
         this.inited,
@@ -472,6 +499,7 @@ export class EnketoService {
           instanceData,
           editedListener,
           valuechangeListener,
+          isFormInModal,
         };
         return this.renderForm(formContext);
       });
@@ -684,16 +712,24 @@ export class EnketoService {
   }
 
   private create(formInternalId) {
-    return this.getUserContact().then((contact) => {
-      return {
-        form: formInternalId,
-        type: 'data_record',
-        content_type: 'xml',
-        reported_date: Date.now(),
-        contact: this.extractLineageService.extract(contact),
-        from: contact && contact.phone
-      };
-    });
+    return this
+      .getUserContact()
+      .then(contact => {
+        const doc:any = {
+          form: formInternalId,
+          type: 'data_record',
+          content_type: 'xml',
+          reported_date: Date.now(),
+          contact: this.extractLineageService.extract(contact),
+          from: contact && contact.phone
+        };
+
+        if (this.trainingCardsService.isTrainingCardForm(formInternalId)) {
+          doc._id = this.trainingCardsService.getTrainingCardDocId();
+        }
+
+        return doc;
+      });
   }
 
   private forceRecalculate(form) {
@@ -706,7 +742,7 @@ export class EnketoService {
   }
 
   private setupNavButtons($wrapper, currentIndex) {
-    if(!this.currentForm?.pages) {
+    if (!this.currentForm?.pages) {
       return;
     }
     const lastIndex = this.currentForm.pages.activePages.length - 1;
@@ -808,10 +844,12 @@ export class EnketoService {
   }
 
   unload(form) {
-    $(window).off('.enketo-pagemode');
-    if (form) {
-      form.resetView();
+    if (form !== this.currentForm) {
+      return;
     }
+
+    $(window).off('.enketo-pagemode');
+    form?.resetView();
     // unload blobs
     this.objUrls.forEach((url) => {
       (window.URL || window.webkitURL).revokeObjectURL(url);
@@ -844,6 +882,7 @@ interface XmlFormContext {
   wrapper: JQuery;
   instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey: string;
+  isFormInModal?: boolean;
 }
 
 export interface EnketoFormContext {
@@ -853,4 +892,5 @@ export interface EnketoFormContext {
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;
+  isFormInModal?: boolean;
 }

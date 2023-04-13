@@ -29,15 +29,19 @@ describe('New pregnancy', () => {
     await commonPage.goToPeople(healthCenter._id);
 
     // Create Woman1 - webapp
-    await contactPage.contactPageDefault.addPerson(pregnantWoman1,
-      {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
+    await contactPage.contactPageDefault.addPerson({
+      name: pregnantWoman1,
+      dob: moment().subtract(25, 'years').format('YYYY-MM-DD')
+    });
     await commonPage.waitForPageLoaded();
     await sentinelUtils.waitForSentinel();
 
     // Create Woman2 - SMS N form
     await commonPage.goToPeople(healthCenter._id);
-    await contactPage.contactPageDefault.addPerson(pregnantWoman2,
-      {dob: moment().subtract(25, 'years').format('YYYY-MM-DD')});
+    await contactPage.contactPageDefault.addPerson({
+      name: pregnantWoman2,
+      dob: moment().subtract(25, 'years').format('YYYY-MM-DD')
+    });
     await commonPage.waitForPageLoaded();
     await sentinelUtils.waitForSentinel();
   });
@@ -86,7 +90,7 @@ describe('New pregnancy', () => {
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect((await reportsPage.getTaskDetails(1, 1)).state).to.contain('scheduled');
   });
 
   it('Submit new pregnancy - Woman2 - SMS P form', async () => {
@@ -117,7 +121,7 @@ describe('New pregnancy', () => {
     expect(firstReportInfo.heading).to.equal('Woman2');
     expect(firstReportInfo.form).to.equal('New Pregnancy (SMS)');
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect((await reportsPage.getTaskDetails(1, 1)).state).to.contain('scheduled');
   });
 
   it('Verify the targets page', async () => {

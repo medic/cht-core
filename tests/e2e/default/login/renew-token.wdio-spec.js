@@ -3,7 +3,7 @@ const loginPage = require('../../../page-objects/default/login/login.wdio.page')
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const moment = require('moment');
 const browserPage = require('../../../utils/browser');
-const chai = require('chai');
+const utils = require('../../../utils');
 
 describe('should renew token', async () => {
 
@@ -15,15 +15,15 @@ describe('should renew token', async () => {
     await commonPage.waitForPageLoaded();
 
     for (let counter = 0; counter < 3; counter++) {
-      const beforePageLoadTime = moment();
+      const beforePageLoadTime = moment().add(utils.ONE_YEAR_IN_S, 'seconds');
       await browser.refresh();
       await commonPage.waitForPageLoaded();
-      const afterPageLoadTime = moment();
+      const afterPageLoadTime = moment().add(utils.ONE_YEAR_IN_S, 'seconds');
       const ctxExpiry = await getCtxCookieExpiry();
 
-      chai.expect(
-        ctxExpiry.isBetween(beforePageLoadTime.add(1, 'year'), afterPageLoadTime.add(1, 'year')),
-        `Failed for counter = ${counter}, ${ctxExpiry.toISOString()} ${beforePageLoadTime.toISOString()}`
+      expect(
+        ctxExpiry.isBetween(beforePageLoadTime, afterPageLoadTime),
+        `Failed for counter = ${counter}, ${ctxExpiry} ${beforePageLoadTime} ${afterPageLoadTime}`
       ).to.be.true;
     }
   });

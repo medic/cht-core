@@ -7,18 +7,18 @@
         class="general-actions left-pane"
         *ngIf="currentTab === 'reports' && !selectMode"
         [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
-        <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!nonContactForms?.length">
+        <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!reportForms?.length">
           <a
             mmAuth="can_edit"
             class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
             dropdownToggle dropdata-toggle="dropdown"
-            [ngClass]="{'mm-icon-disabled': !nonContactForms?.length}"
+            [ngClass]="{'mm-icon-disabled': !reportForms?.length}"
           >
             <span class="fa fa-plus"></span>
             <p>{{'Submit Report' | translate}}</p>
           </a>
           <ul class="dropdown-menu mm-dropdown-menu with-icon" *dropdownMenu>
-            <li *ngFor="let form of nonContactForms; trackBy: trackById">
+            <li *ngFor="let form of reportForms; trackBy: trackById">
               <a [routerLink]="['/reports', 'add', form.code]">
                 <span [innerHTML]="form.icon | resourceIcon"></span>
                 <span class="content">{{ form.title }}</span>

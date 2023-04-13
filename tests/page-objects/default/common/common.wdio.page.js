@@ -188,6 +188,11 @@ const waitForPageLoaded = async () => {
   } while ((await loaders()).length > 0);
 };
 
+const syncAndNotWaitForSuccess = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
+};
+
 const syncAndWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
@@ -202,6 +207,11 @@ const sync = async (expectReload) => {
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
   await syncAndWaitForSuccess();
+};
+
+const syncWithoutWaitForSuccess = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
 };
 
 const closeReloadModal = async () => {
@@ -298,6 +308,7 @@ module.exports = {
   hideSnackbar,
   waitForLoaders,
   sync,
+  syncAndNotWaitForSuccess,
   syncButton,
   closeReloadModal,
   goToMessages,
@@ -329,4 +340,5 @@ module.exports = {
   isMenuOptionEnabled,
   isMenuOptionVisible,
   moreOptionsMenu,
+  syncWithoutWaitForSuccess,
 };

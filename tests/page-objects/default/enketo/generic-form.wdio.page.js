@@ -88,6 +88,10 @@ const verifyReport = async () => {
 
 const submitForm = () => submitButton().click();
 
+const cancelForm = async () => {
+  await (await cancelButton()).click();
+};
+
 module.exports = {
   submitButton,
   cancelButton,
@@ -99,5 +103,6 @@ module.exports = {
   selectContact,
   verifyReport,
   editForm,
+  cancelForm,
   submitForm,
 };

@@ -18,6 +18,8 @@ process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 
+const ONE_YEAR_IN_S = 31536000;
+
 const PROJECT_NAME = 'cht-e2e';
 const NETWORK = 'cht-net-e2e';
 const services = {
@@ -141,7 +143,7 @@ const updatePermissions = async (roles, addPermissions, removePermissions = []) 
     }
     settings.permissions[permission].push(...roles);
   });
-    
+
   removePermissions.forEach(permission => {
     settings.permissions[permission] = [];
   });
@@ -986,6 +988,14 @@ module.exports = {
     return results;
   },
 
+  saveDocIfNotExists: async doc => {
+    try {
+      await module.exports.getDoc(doc._id);
+    } catch (_) {
+      await module.exports.saveDoc(doc);
+    }
+  },
+
   saveMetaDocs: (user, docs) => {
     const options = {
       userName: user,
@@ -1218,6 +1228,12 @@ module.exports = {
   stopSentinel: () => stopService('sentinel'),
   startSentinel: () => startService('sentinel'),
 
+  stopApi: () => stopService('api'),
+  startApi: async () => {
+    await startService('api');
+    await listenForApi();
+  },
+
   saveCredentials: (key, password) => {
     const options = {
       path: `/api/v1/credentials/${key}`,
@@ -1332,7 +1348,7 @@ module.exports = {
   tearDownServices: stopServices,
   endSession: async (exitCode) => {
     await module.exports.tearDownServices();
-    return module.exports.reporter.afterLaunch(exitCode);
+    await new Promise((resolve) => module.exports.reporter.afterLaunch(resolve.bind(this, exitCode)));
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
@@ -1360,4 +1376,6 @@ module.exports = {
   makeTempDir,
   SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
   updatePermissions,
+
+  ONE_YEAR_IN_S,
 };
