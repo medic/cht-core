@@ -7,7 +7,7 @@ const loginPage = require('@page-objects/protractor/login/login.po.js');
 const contactsObjects = require('@page-objects/protractor/contacts/contacts.po');
 const sentinelUtils = require('@utils/sentinel');
 const formsUtils = require('./forms');
-const constants = require('@constants.js');
+const constants = require('@constants');
 
 /* global window */
 

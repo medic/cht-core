@@ -1,6 +1,6 @@
 const { spawn } = require('child_process');
 const path = require('path');
-const constants = require('../../constants');
+const constants = require('@constants');
 const utils = require('@utils');
 const { expect } = require('chai');
 

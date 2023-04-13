@@ -4,7 +4,7 @@ chai.use(chaiExclude);
 const _ = require('lodash');
 const utils = require('@utils');
 const sUtils = require('@utils/sentinel');
-const constants = require('../../../constants');
+const constants = require('@constants');
 
 const password = 'passwordSUP3RS3CR37!';
 

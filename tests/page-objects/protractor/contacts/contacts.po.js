@@ -1,6 +1,6 @@
 const helper = require('../../../helper');
 const genericForm = require('../enketo/generic-form.po');
-const utils = require('../../../utils');
+const utils = require('@utils');
 
 const searchBox = element(by.css('input#freetext'));
 const newDistrictButton = element(by.css('a[href="#/contacts/add/district_hospital?from=list"]'));

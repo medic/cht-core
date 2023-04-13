@@ -1,6 +1,6 @@
 const { element } = require('protractor');
 const helper = require('../../../helper');
-const utils = require('../../../utils');
+const utils = require('@utils');
 const nameField = element(by.css('#report-form form [name="/data/name"]'));
 const submitButton = element(by.css('.enketo .submit'));
 const submittedName = element(by.css('#reports-content .details ul li:first-child p'));

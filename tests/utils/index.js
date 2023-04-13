@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 const _ = require('lodash');
-const constants = require('../constants');
+const constants = require('@constants');
 const rpn = require('request-promise-native');
 const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;

@@ -4,7 +4,7 @@ const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const http = require('http');
 const querystring = require('querystring');
-const constants = require('../../../constants');
+const constants = require('@constants');
 const chai = require('chai');
 
 const DEFAULT_EXPECTED = [

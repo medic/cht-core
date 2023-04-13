@@ -1,4 +1,4 @@
-const constants = require('../../../constants');
+const constants = require('@constants');
 const https = require('https');
 const utils = require('@utils');
 const uuid = require('uuid').v4;

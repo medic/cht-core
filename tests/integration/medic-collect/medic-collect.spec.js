@@ -1,5 +1,5 @@
 const assert = require('chai').assert;
-const constants = require('../../constants');
+const constants = require('@constants');
 const request = require('request-promise-native');
 const utils = require('@utils');
 const host = 'localhost';

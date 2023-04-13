@@ -1,5 +1,5 @@
 const fs = require('fs');
-const utils = require('../../../utils');
+const utils = require('@utils');
 const genericForm = require('./generic-form.wdio.page');
 const xmlForm = fs.readFileSync(`${__dirname}/../../../../config/standard/forms/app/pregnancy_visit.xml`, 'utf8');
 const formDocument = {

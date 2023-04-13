@@ -1,6 +1,6 @@
 const chai = require('chai');
 const path = require('path');
-const constants = require('../../../constants');
+const constants = require('@constants');
 const utils = require('@utils');
 
 const getDoc = () => {

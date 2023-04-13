@@ -1,6 +1,6 @@
 const utils = require('@utils');
 const request = require('request');
-const constants = require('../../constants');
+const constants = require('@constants');
 const _ = require('lodash');
 const {expect} = require('chai');
 
