@@ -36,10 +36,10 @@ describe('Pregnancy Visit', () => {
     expect(firstReport.lineage).to.equal(userData.docs[0].name);
 
     //report details
-    expect(await (await reportsPage.submitterName()).getText())
-      .to.equal(`Submitted by ${userData.userContactDoc.name} `);
-    expect(await (await reportsPage.submitterPhone()).getText()).to.equal(userData.userContactDoc.phone);
-    expect(await (await reportsPage.submitterPlace()).getText()).to.equal(userData.docs[0].name);
+    const openReportInfo = await reportsPage.getOpenReportInfo();
+    expect(openReportInfo.senderName).to.equal(`Submitted by ${userData.userContactDoc.name} `);
+    expect(openReportInfo.senderPhone).to.equal(userData.userContactDoc.phone);
+    expect(openReportInfo.lineage).to.equal(userData.docs[0].name);
     expect(await (await reportsPage.selectedCaseId()).getText()).to.match(/^\d{5}$/);
   });
 });
