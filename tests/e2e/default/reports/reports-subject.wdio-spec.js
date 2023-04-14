@@ -26,9 +26,9 @@ describe('Reports Subject', () => {
     await elementGetter.getText() === expectedText);
 
   const verifyListReportContent = async ({
-    formName: formNameValue,
-    subject: subjectValue = person.name,
-    lineage: lineageValue = `${clinic.name}${healthCenter.name}${districtHospital.name}`
+    formName,
+    subject = person.name,
+    lineage = `${clinic.name}${healthCenter.name}${districtHospital.name}`
   }) => {
     await commonPage.goToReports();
     const firstReport = await reportsPage.firstReport();
@@ -36,24 +36,24 @@ describe('Reports Subject', () => {
     await commonPage.waitForPageLoaded();
 
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
-    expect(firstReportInfo.heading).to.equal(subjectValue);
-    expect(firstReportInfo.form).to.equal(formNameValue);
-    expect(firstReportInfo.lineage).to.equal(lineageValue);
+    expect(firstReportInfo.heading).to.equal(subject);
+    expect(firstReportInfo.form).to.equal(formName);
+    expect(firstReportInfo.lineage).to.equal(lineage);
   };
 
   const verifyOpenReportContent = async ({
-    formName: formNameValue,
-    subject: subjectValue,
-    lineage: lineageValue = `${clinic.name}${healthCenter.name}${districtHospital.name}`,
-    senderName: senderNameValue = `Submitted by ${user.contact.name} `,
-    senderPhone: senderPhoneValue = user.phone
+    formName,
+    subject,
+    lineage = `${clinic.name}${healthCenter.name}${districtHospital.name}`,
+    senderName = `Submitted by ${user.contact.name} `,
+    senderPhone = user.phone
   }) => {
     const openReportInfo = await reportsPage.getOpenReportInfo();
-    expect(openReportInfo.patientName).to.equal(subjectValue);
-    expect(openReportInfo.reportName).to.equal(formNameValue);
-    expect(openReportInfo.lineage).to.equal(lineageValue);
-    expect(openReportInfo.senderName).to.equal(senderNameValue);
-    expect(openReportInfo.senderPhone).to.equal(senderPhoneValue);
+    expect(openReportInfo.patientName).to.equal(subject);
+    expect(openReportInfo.reportName).to.equal(formName);
+    expect(openReportInfo.lineage).to.equal(lineage);
+    expect(openReportInfo.senderName).to.equal(senderName);
+    expect(openReportInfo.senderPhone).to.equal(senderPhone);
   };
 
   before(async () => {
