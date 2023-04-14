@@ -6,8 +6,9 @@ const loginPage = require('../../../page-objects/default/login/login.wdio.page')
 const placeFactory = require('../../../factories/cht/contacts/place');
 
 describe('Testing Incorrect locale', () => {
+  const languageCode = 'hil';
   const createLanguage = async () =>  {
-    await utils.addTranslations('hil', {
+    await utils.addTranslations(languageCode, {
       'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
       'n.week': '{WEEKS, plural, =1{1 saptamana} other{# saptamani}}',
       'reports.none.n.months':
@@ -17,12 +18,7 @@ describe('Testing Incorrect locale', () => {
       'Reports': 'HilReports',
       'view.all':'View all'
     });
-    const { languages } = await utils.getSettings();
-    languages.push({
-      locale: 'hil',
-      enabled: true,
-    });
-    await utils.updateSettings({ languages }, true);
+    await utils.enableLanguage(languageCode);
   };
 
   const contact = placeFactory.place().build({
@@ -33,7 +29,10 @@ describe('Testing Incorrect locale', () => {
     parent: '',
   });
 
-  after(async () => await browser.setCookies({ name: 'locale', value: 'en' }));
+  after(async () => {
+    await browser.setCookies({ name: 'locale', value: 'en' });
+    await utils.revertSettings(true);
+  });
 
   before(async () => {
     await loginPage.cookieLogin();
@@ -43,7 +42,7 @@ describe('Testing Incorrect locale', () => {
   });
 
   it('should work with incorrect locale', async () => {
-    await userSettingsElements.setLanguage('hil');
+    await userSettingsElements.setLanguage(languageCode);
 
     const text = await commonElements.getReportsButtonLabel().getText();
     expect(text).to.equal('HilReports');
