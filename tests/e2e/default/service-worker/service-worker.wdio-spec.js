@@ -167,8 +167,15 @@ describe('Service worker cache', () => {
   });
 
   it('adding new languages triggers login page refresh', async () => {
+    const localeCode = 'ro';
+    const { languages } = await utils.getSettings();
+    languages.push({
+      locale: localeCode,
+      enabled: true,
+    });
+    await utils.updateSettings({ languages }, true);
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-    await utils.addTranslations('ro', {
+    await utils.addTranslations(localeCode, {
       'User Name': 'Utilizator',
       'Password': 'Parola',
       'login': 'Autentificare',
@@ -178,11 +185,13 @@ describe('Service worker cache', () => {
     await commonPage.sync(true);
     await commonPage.logout();
 
-    await loginPage.changeLanguage('ro', 'Utilizator');
+    await loginPage.changeLanguage(localeCode, 'Utilizator');
 
     expect(await (await loginPage.labelForUser()).getText()).to.equal('Utilizator');
     expect(await (await loginPage.loginButton()).getText()).to.equal('Autentificare');
     expect(await (await loginPage.labelForPassword()).getText()).to.equal('Parola');
+
+    await utils.revertSettings(true);
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {
