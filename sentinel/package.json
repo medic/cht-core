@@ -8,6 +8,7 @@
     "npm": ">=8.3.1"
   },
   "dependencies": {
+    "@medic/cht-script-api": "file:../shared-libs/cht-script-api",
     "@medic/contact-types-utils": "file:../shared-libs/contact-types-utils",
     "@medic/infodoc": "file:../shared-libs/infodoc",
     "@medic/lineage": "file:../shared-libs/lineage",
