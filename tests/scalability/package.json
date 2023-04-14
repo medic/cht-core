@@ -3,6 +3,7 @@
   "author": "garethbowen",
   "private": true,
   "dependencies": {
+    "cht-conf": "^3.18.0",
     "csv-parser": "^3.0.0",
     "minimist": "^1.2.7",
     "pouchdb": "^7.3.1",
