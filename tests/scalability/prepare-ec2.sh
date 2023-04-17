@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-BUILD=//medic:medic:
-
 shutdown -P +60
 mkdir /cht
 chmod 777 /cht;

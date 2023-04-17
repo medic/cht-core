@@ -9,6 +9,7 @@ echo Triggering EC2 Run Instance Command and getting Instance ID
 
 runInstance () {
   echo $(aws ec2 run-instances \
+    # --profile CA \
     --image-id ami-0c3d8c5445511bd1d \
     --instance-type c5.2xlarge \
     --block-device-mappings file://block-device-mapping.json \
@@ -16,8 +17,7 @@ runInstance () {
     --instance-initiated-shutdown-behavior terminate \
     --security-group-ids sg-0fa20cd785acec256 \
     --key-name cht-scalability-ca \
-    --iam-instance-profile Arn=$SCALABILITY_ARN \
-    --profile CA
+    --iam-instance-profile Arn=$SCALABILITY_ARN
     )
 }
 
