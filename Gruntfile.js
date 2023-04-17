@@ -636,14 +636,6 @@ module.exports = function(grunt) {
             }
           }
         }
-      },
-      'performance-tests-and-services': {
-        options: {
-          args: {
-            suite: 'performance'
-          },
-          configFile: 'tests/conf.js'
-        }
       }
     },
     mochaTest: {
@@ -866,17 +858,6 @@ module.exports = function(grunt) {
     'exec:eslint-sw'
   ]);
 
-  /*grunt.registerTask('test-perf', 'Run performance-specific tests', [
-    'exec:clean-test-database',
-    'exec:setup-test-database',
-    'build-service-images',
-    'couch-compile:secondary',
-    'couch-compile:primary',
-    'couch-push:test',
-    'copy:api-ddocs',
-    'protractor:performance-tests-and-services',
-  ]);*/
-
   grunt.registerTask('unit-webapp', 'Run webapp unit test after installing dependencies.', [
     'install-dependencies',
     'exec:unit-webapp'
@@ -960,11 +941,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-webdriver-default-mobile', 'Run e2e tests using webdriverIO for default config in mobile screen', [
     'exec:wdio-run-default-mobile'
-  ]);
-
-  grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    'start-webdriver',
-    'protractor:performance-tests-and-services',
   ]);
 
   // Dev tasks
