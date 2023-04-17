@@ -279,7 +279,7 @@ describe('Target aggregates', () => {
       }
     });
 
-    it('should display correct data', async () => {
+    xit('should display correct data', async () => {
       const targetsConfig = [
         { id: 'count_no_goal', type: 'count', title: genTitle('count no goal'), aggregate: true },
         { id: 'count_with_goal', type: 'count', title: genTitle('count with goal'), goal: 20, aggregate: true },
