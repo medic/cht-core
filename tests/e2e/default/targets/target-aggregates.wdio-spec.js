@@ -1,6 +1,7 @@
 const utils = require('../../../utils');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
+const targetAggregatesPage = require('../../../page-objects/default/targets/target-aggregates.wdio.page');
 const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page.js');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const moment = require('moment');
@@ -20,10 +21,10 @@ const randomNumber = (max) => Math.floor(Math.random() * max);
  * @param {string} targets[].counter
  */
 const expectTargets = async (targets) => {
-  expect(await (await analyticsPage.aggregateList()).length).to.equal(targets.length);
+  expect(await (await targetAggregatesPage.aggregateList()).length).to.equal(targets.length);
   for (const target of targets) {
-    expect(await (await analyticsPage.getTargetItem(target)).title).to.equal(target.title);
-    expect(await (await analyticsPage.getTargetItem(target)).status).to.equal(target.counter);
+    expect(await (await targetAggregatesPage.getTargetItem(target)).title).to.equal(target.title);
+    expect(await (await targetAggregatesPage.getTargetItem(target)).status).to.equal(target.counter);
   }
 };
 /**
@@ -39,12 +40,12 @@ const expectTargets = async (targets) => {
  */
 const expectContacts = async (contacts, target) => {
   contacts = contacts.sort((a, b) => a.name.localeCompare(b.name));
-  expect(await analyticsPage.getAggregateDetailListLength()).to.equal(contacts.length);
+  expect(await targetAggregatesPage.getAggregateDetailListLength()).to.equal(contacts.length);
   // eslint-disable-next-line guard-for-in
   for (const idx in contacts) {
     const contact = contacts[idx];
-    const lineItem = await analyticsPage.getAggregateDetailListElementbyIndex(idx);
-    const lineItemInfo = await analyticsPage.getAggregateDetailElementInfo(lineItem);
+    const lineItem = await targetAggregatesPage.getAggregateDetailListElementbyIndex(idx);
+    const lineItemInfo = await targetAggregatesPage.getAggregateDetailElementInfo(lineItem);
     expect(await lineItemInfo.recordId).to.equal(contact._id);
     expect(await lineItemInfo.title).to.equal(contact.name);
     expect(await lineItemInfo.detail).to.equal(contact.counter);
@@ -78,7 +79,7 @@ const updateSettings = async (targetsConfig, user, contactSummary) => {
 };
 
 const clickOnTargetAggregateListItem = async (contactId) => {
-  await analyticsPage.targetAggregateListItem(contactId).click();
+  await targetAggregatesPage.targetAggregateListItem(contactId).click();
   // wait until contact-summary is loaded
   await contactsPage.contactCard().waitForDisplayed();
 };
@@ -101,14 +102,14 @@ describe('Target aggregates', () => {
 
     it('should display an empty list when there are no aggregates', async () => {
       await commonPage.goToAnalytics();
-      await analyticsPage.expectModulesToBeAvailable([
+      await targetAggregatesPage.expectModulesToBeAvailable([
         '#/analytics/targets',
         '#/analytics/target-aggregates'
       ]);
 
-      await analyticsPage.goToTargetAggregates(true);
-      expect(await (await analyticsPage.aggregateList()).length).to.equal(0);
-      expect(await (await analyticsPage.loadingStatus()).isDisplayed()).to.be.true;
+      await targetAggregatesPage.goToTargetAggregates(true);
+      expect(await (await targetAggregatesPage.aggregateList()).length).to.equal(0);
+      expect(await (await targetAggregatesPage.loadingStatus()).isDisplayed()).to.be.true;
       expect(
         await (await analyticsPage.emptySelectionNoError()).isDisplayed()
       ).to.be.true;
@@ -122,8 +123,8 @@ describe('Target aggregates', () => {
       await commonPage.closeReloadModal();
 
       await commonPage.goToAnalytics();
-      await analyticsPage.goToTargetAggregates(true);
-      expect((await analyticsPage.aggregateList()).length).to.equal(0);
+      await targetAggregatesPage.goToTargetAggregates(true);
+      expect((await targetAggregatesPage.aggregateList()).length).to.equal(0);
       expect(
         await (await analyticsPage.emptySelectionError()).isDisplayed()
       ).to.be.true;
@@ -191,7 +192,7 @@ describe('Target aggregates', () => {
       await updateSettings(targetsConfig, user);
 
       await commonPage.goToAnalytics();
-      await analyticsPage.goToTargetAggregates(true);
+      await targetAggregatesPage.goToTargetAggregates(true);
 
       const expectedTargets = [
         { id: 'count_no_goal', title: 'count no goal', counter: '0', progressBar: false, goal: false },
@@ -206,8 +207,8 @@ describe('Target aggregates', () => {
       await expectTargets(expectedTargets);
 
       for (const target of expectedTargets) {
-        await analyticsPage.openTargetDetails(target.id);
-        await analyticsPage.expectTargetDetails(target);
+        await targetAggregatesPage.openTargetDetails(target.id);
+        await targetAggregatesPage.expectTargetDetails(target);
         await expectContacts(expectedContacts, target);
       }
     });
@@ -282,7 +283,7 @@ describe('Target aggregates', () => {
       await updateSettings(targetsConfig, user);
 
       await commonPage.goToAnalytics();
-      await analyticsPage.goToTargetAggregates(true);
+      await targetAggregatesPage.goToTargetAggregates(true);
 
       const expectedTargets = [
         { id: 'count_no_goal', title: 'count no goal', progressBar: false, goal: false, counter: '27' },
@@ -296,8 +297,8 @@ describe('Target aggregates', () => {
 
       await expectTargets(expectedTargets);
       for (const target of expectedTargets) {
-        await analyticsPage.openTargetDetails(target.id);
-        await analyticsPage.expectTargetDetails(target);
+        await targetAggregatesPage.openTargetDetails(target.id);
+        await targetAggregatesPage.expectTargetDetails(target);
         const expectedContacts = contacts.map(contact => ({
           _id: contact._id,
           name: contact.name,
@@ -309,9 +310,9 @@ describe('Target aggregates', () => {
 
       // refreshing with an open target works correctly
       const target = expectedTargets[2];
-      await analyticsPage.openTargetDetails(target.id);
+      await targetAggregatesPage.openTargetDetails(target.id);
       await browser.refresh();
-      await analyticsPage.expectTargetDetails(target);
+      await targetAggregatesPage.expectTargetDetails(target);
     });
 
     it('should route to contact-detail on list item click and display contact summary target card', async () => {
@@ -382,7 +383,7 @@ describe('Target aggregates', () => {
       await updateSettings(targetsConfig, user, contactSummaryScript);
 
       await commonPage.goToAnalytics();
-      await analyticsPage.goToTargetAggregates(true);
+      await targetAggregatesPage.goToTargetAggregates(true);
 
       const expectedTargets = [
         { id: 'a_target', title: 'what a target!', progressBar: false, counter: '58' },
@@ -390,7 +391,7 @@ describe('Target aggregates', () => {
       ];
 
       await expectTargets(expectedTargets);
-      await analyticsPage.openTargetDetails(expectedTargets[0].id);
+      await targetAggregatesPage.openTargetDetails(expectedTargets[0].id);
       await clickOnTargetAggregateListItem(clarissa._id);
       expect(await contactsPage.getContactInfoName()).to.equal('Clarissa');
       // assert that the activity card exists and has the right fields.
@@ -400,9 +401,9 @@ describe('Target aggregates', () => {
       validateCardField('the most target', '50%');
 
       await browser.back();
-      await analyticsPage.expectTargetDetails(expectedTargets[0]);
+      await targetAggregatesPage.expectTargetDetails(expectedTargets[0]);
 
-      await analyticsPage.openTargetDetails(expectedTargets[1].id);
+      await targetAggregatesPage.openTargetDetails(expectedTargets[1].id);
       await clickOnTargetAggregateListItem(prometheus._id);
 
       expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
@@ -412,7 +413,7 @@ describe('Target aggregates', () => {
       validateCardField('what a target!', '18');
       validateCardField('the most target', '15%');
       await browser.back();
-      await analyticsPage.expectTargetDetails(expectedTargets[1]);
+      await targetAggregatesPage.expectTargetDetails(expectedTargets[1]);
     });
   });
 });
