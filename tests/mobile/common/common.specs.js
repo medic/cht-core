@@ -40,11 +40,6 @@ describe('Navigation tests : ', () => {
     await commonElements.checkConfigurationWizard();
   });
 
-  it('should open Guided tour', async () => {
-    await commonElements.openMenuNative();
-    await commonElements.checkGuidedTour();
-  });
-
   it('should open About', async () => {
     await commonElements.openMenuNative();
     await commonElements.checkAbout();
@@ -125,7 +120,6 @@ describe('Navigation tests : ', () => {
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative(user.username, user.password);
       await commonElements.waitForLoaderToDisappear();
-      await utils.closeTour();
       const tabTexts = await element.all(by.css('.button-label')).getText();
       expect(tabTexts.length).toBe(3);
       expect(tabTexts).toEqual([ 'Messages', 'Reports', 'People']);

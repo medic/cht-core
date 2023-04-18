@@ -25,7 +25,6 @@ import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { StartupModalsService } from '@mm-services/startup-modals.service';
-import { TourService } from '@mm-services/tour.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
@@ -63,7 +62,6 @@ describe('AppComponent', () => {
   let jsonFormsService;
   let countMessageService;
   let privacyPoliciesService;
-  let tourService;
   let checkDateService;
   let rulesEngineService;
   let recurringProcessManagerService;
@@ -109,7 +107,6 @@ describe('AppComponent', () => {
     jsonFormsService = { get: sinon.stub().resolves([]) };
     languageService = { get: sinon.stub().resolves({}) };
     rulesEngineService = { isEnabled: sinon.stub().resolves(true) };
-    tourService = { endCurrent: sinon.stub() };
     resourceIconsService = { getAppTitle: sinon.stub().resolves() };
     privacyPoliciesService = { hasAccepted: sinon.stub().resolves() };
     formatDateService = { init: sinon.stub() };
@@ -203,7 +200,6 @@ describe('AppComponent', () => {
           { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
           { provide: RouteSnapshotService, useValue: {} },
           { provide: StartupModalsService, useValue: startupModalsService },
-          { provide: TourService, useValue: tourService },
           { provide: CheckDateService, useValue: checkDateService },
           { provide: UnreadRecordsService, useValue: unreadRecordsService },
           { provide: RulesEngineService, useValue: rulesEngineService },

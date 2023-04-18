@@ -10,7 +10,6 @@ import { ReportsActions } from '@mm-actions/reports';
 import { ServicesActions } from '@mm-actions/services';
 import { ChangesService } from '@mm-services/changes.service';
 import { SearchService } from '@mm-services/search.service';
-import { TourService } from '@mm-services/tour.service';
 import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
@@ -72,7 +71,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
-    private tourService:TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
     private ngZone:NgZone,
@@ -98,7 +96,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.error = false;
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
-    this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
 
     this.currentLevel = this.authService.online(true) ? Promise.resolve() : this.getCurrentLineageLevel();

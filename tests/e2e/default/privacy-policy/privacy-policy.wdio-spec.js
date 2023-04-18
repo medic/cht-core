@@ -128,7 +128,6 @@ describe('Privacy policy', () => {
     it('should not fail due to document conflict for new offline user', async () => {
       await privacyPage.waitForPolicy(await privacyPage.privacyWrapper(), englishTexts);
       await privacyPage.acceptPrivacyPolicy();
-      await commonElements.closeTour();
       await commonElements.sync();
       expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       passed = true;

@@ -323,7 +323,6 @@ describe('Create user for contacts', () => {
         expect(cookie.value).to.include(newUserSettings.name);
 
         // Can still login as the original user (with the manually updated password)
-        await commonPage.closeTour();
         await commonPage.logout();
         await loginPage.login({ ...ORIGINAL_USER, password: DISABLED_USER_PASSWORD });
         await commonPage.waitForPageLoaded();
@@ -594,7 +593,6 @@ describe('Create user for contacts', () => {
         const [otherUserSettings] = await utils.getUserSettings({ name: otherUser.username });
         expect(otherUserSettings.contact_id).to.equal(ORIGINAL_USER.contact._id);
         // Can still log in as other user
-        await commonPage.closeTour();
         await commonPage.logout();
         await loginPage.login(otherUser);
         await commonPage.waitForPageLoaded();
@@ -694,7 +692,6 @@ describe('Create user for contacts', () => {
         await commonPage.waitForPageLoaded();
         const [cookie] = await browser.getCookies('userCtx');
         expect(cookie.value).to.include(newUserSettings.name);
-        await commonPage.closeTour();
         await commonPage.logout();
 
         // Log back in as original user and sync
