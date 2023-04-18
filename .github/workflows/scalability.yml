@@ -1,11 +1,11 @@
 name: Scalability Workflow
 # This workflow is triggered on pushes to the repository.
-on:
-  workflow_run:
-    workflows: [ "Build and test" ]
-    branches: [ "8024-ci-scalability-suite" ]
-    types:
-      - completed
+on: workflow_dispatch
+#  workflow_run:
+#    workflows: [ "Build and test" ]
+#    branches: [ "8024-ci-scalability-suite" ]
+#    types:
+#      - completed
 
 env:
   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_4' || '_couch/builds_external' }}
