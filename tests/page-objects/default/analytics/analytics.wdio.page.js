@@ -44,10 +44,23 @@ const getAggregateDetailListElementbyIndex = async (index) => {
 };
 
 const getAggregateDetailElementInfo = async (element) => {
+  let progressBar = { length: await getAggregateDetailProgressBarLength(element) };
+  if (progressBar.length > 0) {
+    progressBar = { ...progressBar, ...{ isDisplayed: await (await getTargetAggregateDetailProgressBar(element)).isDisplayed() } };
+    if (progressBar.isDisplayed) {
+      progressBar = { ...progressBar, ...{ value: await getAggregateDetailProgressBarValue(element) } };
+    }
+  }
+  let goal = { length: await getAggregateDetailGoalLength(element) };
+  if (goal.length > 0) {
+    goal = { ...goal, ...{ value: await getAggregateDetailGoalValue(element) } };
+  }
   return {
     recordId: await element.getAttribute('data-record-id'),
     title: await (await targetAggregateDetailTitle(element)).getText(),
-    detail: await (await targetAggregateDetailDetail(element)).getText()
+    detail: await (await targetAggregateDetailDetail(element)).getText(),
+    progressBar: progressBar,
+    goal: goal,
   };
 };
 
@@ -129,13 +142,6 @@ const openTargetDetails = async (targetID) => {
   await $('.target-detail.card h2').waitForDisplayed();
 };
 
-/**
- * Expect certain RHS target details
- * @param {Object} target
- * @param {string} target.id
- * @param {string} target.title
- * @param {string} target.counter
- */
 const expectTargetDetails = async (target) => {
   expect(await $('.target-detail h2').getText()).to.equal(target.title);
   expect(await $('.target-detail .cell p').getText()).to.equal(target.counter);
