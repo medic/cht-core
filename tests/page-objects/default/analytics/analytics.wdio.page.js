@@ -46,7 +46,10 @@ const getAggregateDetailListElementbyIndex = async (index) => {
 const getAggregateDetailElementInfo = async (element) => {
   let progressBar = { length: await getAggregateDetailProgressBarLength(element) };
   if (progressBar.length > 0) {
-    progressBar = { ...progressBar, ...{ isDisplayed: await (await getTargetAggregateDetailProgressBar(element)).isDisplayed() } };
+    progressBar = {
+      ...progressBar,
+      ...{ isDisplayed: await (await getTargetAggregateDetailProgressBar(element)).isDisplayed() }
+    };
     if (progressBar.isDisplayed) {
       progressBar = { ...progressBar, ...{ value: await getAggregateDetailProgressBarValue(element) } };
     }
