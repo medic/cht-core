@@ -246,6 +246,15 @@ angular.module('adminApp').config(function(
       controller: 'UsersCtrl',
       templateUrl: 'templates/users.html'
     })
+    .state('edit-user', {
+      url: '/users/edit/:name',
+      controller: 'EditUserCtrl',
+      templateUrl: 'templates/edit_user.html',
+      params: {
+        user: null,
+        name: null
+      },
+    })
     .state('export', {
       url: '/export',
       templateUrl: 'templates/export.html'

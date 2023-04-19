@@ -15,7 +15,7 @@
         <div class="navigation">
           <ul>
             <li ng-class="{'active-nav': checkActive('display')}" mm-auth="can_configure"><a ui-sref="display.date-time" translate>admin.display</a></li>
-            <li ui-sref-active="active-nav" mm-auth="can_configure"><a ui-sref="users" translate>Users</a></li>
+            <li ng-class="{'active-nav': checkActive('users')}" mm-auth="can_configure"><a ui-sref="users" translate>Users</a></li>
             <li ng-class="{'active-nav': checkActive('authorization')}" mm-auth="can_configure"><a ui-sref="authorization.permissions" translate>configuration.authorization</a></li>
             <li ng-class="{'active-nav': checkActive('sms')}" mm-auth="can_configure"><a ui-sref="sms.settings" translate>configuration.sms</a></li>
             <li ui-sref-active="active-nav" mm-auth="can_configure"><a ui-sref="forms" translate>Forms</a></li>

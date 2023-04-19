@@ -4,6 +4,7 @@ angular.module('controllers').controller('UsersCtrl',
   function (
     $log,
     $scope,
+    $state,
     DB,
     Modal,
     Settings
@@ -45,11 +46,7 @@ angular.module('controllers').controller('UsersCtrl',
     };
 
     $scope.editUser = function(user) {
-      Modal({
-        templateUrl: 'templates/edit_user.html',
-        controller: 'EditUserCtrl',
-        model: user
-      });
+      $state.go('edit-user', { user: user, name: user.name });
     };
 
     $scope.showAddMultipleUsersModal = function() {

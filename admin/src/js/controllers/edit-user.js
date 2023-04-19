@@ -1,3 +1,5 @@
+const _ = require('lodash/core');
+
 const passwordTester = require('simple-password-tester');
 const phoneNumber = require('@medic/phone-number');
 const PASSWORD_MINIMUM_LENGTH = 8;
@@ -20,8 +22,9 @@ angular
     $q,
     $rootScope,
     $scope,
+    $state,
+    $stateParams,
     $translate,
-    $uibModalInstance,
     ContactTypes,
     CreateUser,
     DB,
@@ -35,7 +38,11 @@ angular
     'use strict';
     'ngInject';
 
-    $scope.cancel = () => $uibModalInstance.dismiss();
+    $scope.errors = {};
+    $scope.status = null;
+    $scope.saving = false;
+    $scope.user = $stateParams.user;
+    $scope.name = $stateParams.name;
 
     Languages().then(languages => $scope.enabledLocales = languages);
 
@@ -60,17 +67,17 @@ angular
 
     const determineEditUserModel = function() {
       // Edit a user that's not the current user.
-      // $scope.model is the user object passed in by controller creating the Modal.
-      // If $scope.model === {}, we're creating a new user.
+      // $scope.user is the user object passed in by controller creating the Modal.
+      // If $scope.user === {}, we're creating a new user.
       return Settings()
         .then(settings => {
           $scope.roles = settings.roles;
           $scope.allowTokenLogin = allowTokenLogin(settings);
-          if (!$scope.model) {
+          if (!$scope.user) {
             return $q.resolve({});
           }
 
-          const tokenLoginData = $scope.model.token_login;
+          const tokenLoginData = $scope.user.token_login;
           const tokenLoginEnabled = tokenLoginData &&
             {
               expirationDate: FormatDate.datetime(tokenLoginData.expiration_date),
@@ -80,19 +87,19 @@ angular
             };
 
           return $q.resolve({
-            id: $scope.model._id,
-            username: $scope.model.name,
-            fullname: $scope.model.fullname,
-            email: $scope.model.email,
-            phone: $scope.model.phone,
+            id: $scope.user._id,
+            username: $scope.user.name,
+            fullname: $scope.user.fullname,
+            email: $scope.user.email,
+            phone: $scope.user.phone,
             // FacilitySelect is what binds to the select, place is there to
             // compare to later to see if it's changed once we've run computeFields();
-            facilitySelect: $scope.model.facility_id,
-            place: $scope.model.facility_id,
-            roles: getRoles($scope.model.roles),
+            facilitySelect: $scope.user.facility_id,
+            place: $scope.user.facility_id,
+            roles: getRoles($scope.user.roles),
             // ^ Same with contactSelect vs. contact
-            contactSelect: $scope.model.contact_id,
-            contact: $scope.model.contact_id,
+            contactSelect: $scope.user.contact_id,
+            contact: $scope.user.contact_id,
             tokenLoginEnabled: tokenLoginEnabled,
           });
         });
@@ -106,7 +113,7 @@ angular
         $log.error('Error determining user model', err);
       });
 
-    $uibModalInstance.rendered
+    Settings()
       .then(() => ContactTypes.getAll())
       .then(contactTypes => {
         // only the #edit-user-profile modal has these fields
@@ -408,22 +415,22 @@ angular
           return CreateUser.createSingleUser(updates);
         })
         .then(() => {
-          $scope.setFinished();
+          $scope.status = 'Saved';
           // TODO: change this from a broadcast to a changes watcher
           //       https://github.com/medic/medic/issues/4094
           $rootScope.$broadcast(
             'UsersUpdated',
             $scope.editUserModel.id
           );
-          $uibModalInstance.close();
+          $state.go('users');
         })
         .catch(err => {
           if (err && err.data && err.data.error && err.data.error.translationKey) {
             $translate(err.data.error.translationKey, err.data.error.translationParams).then(function(value) {
-              $scope.setError(err, value);
+              $log.error(value, err);
             });
           } else {
-            $scope.setError(err, 'Error updating user');
+            $log.error('Error updating user', err);
           }
         });
     };
@@ -438,8 +445,7 @@ angular
     };
 
     // #edit-user-profile is the admin view, which has additional fields.
-    $scope.editUser = () => {
-      $scope.setProcessing();
+    $scope.editUser = function() {
       $scope.errors = {};
       computeFields();
 
@@ -450,7 +456,8 @@ angular
                                      validateEmailAddress();
 
       if (!synchronousValidations) {
-        $scope.setError();
+        // $scope.setError();
+        $log.info("FIX ME SYNC VALID")
         return;
       }
 
@@ -464,7 +471,8 @@ angular
       return asynchronousValidations
         .then(valid => {
           if (!valid) {
-            $scope.setError();
+            // $scope.setError();
+            $log.info("FIX ME ASYNC VALID")
             return;
           }
 
@@ -472,9 +480,11 @@ angular
         })
         .catch(err => {
           if (err.key) {
-            $translate(err.key, err.params).then(value => $scope.setError(err, value, err.severity));
+            $translate(err.key, err.params).then(value => $log.error(value, err));
           } else {
-            $scope.setError(err, 'Error validating user');
+            $log.error('Error updating settings', err);
+            $scope.saving = false;
+            $scope.status = 'Save failed';
           }
         });
 

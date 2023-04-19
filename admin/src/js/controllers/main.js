@@ -46,6 +46,9 @@ angular.module('controllers').controller('MainCtrl',
         // a special case for a route that doesn't match our usual pattern
         return true;
       }
+      if (state === 'users' && $state.is('edit-user')) {
+        return true;
+      }
       return $state.includes(state);
     };
   }

@@ -1,117 +1,111 @@
-<mm-modal
-  status="status"
-  id="'edit-user-profile'"
-  title-key="editUserModel.id ? 'Edit User' : 'Add User'"
-  submit-key="editUserModel.id ? 'Submit' : 'Add User'"
-  submitting-key="'Submitting'"
-  on-cancel="cancel()"
-  on-submit="editUser()"
->
+<form action="" method="POST" class="col-xs-8" id="edit-user-profile">
 
-  <form action="" method="POST">
+  <div class="form-group required" ng-class="{'has-error': errors.username}">
+    <label for="edit-username" translate>User Name</label>
+    <input id="edit-username" name="edit-username" type="text" class="form-control" autocomplete="off" ng-model="editUserModel.username" ng-disabled="editUserModel.id" />
+    <span class="help-block" translate>user.username.help</span>
+    <span class="help-block" test-id="errors-username">{{errors.username}}</span>
+  </div>
 
-    <div class="form-group required" ng-class="{'has-error': errors.username}">
-      <label for="edit-username" translate>User Name</label>
-      <input id="edit-username" name="edit-username" type="text" class="form-control" autocomplete="off" ng-model="editUserModel.username" ng-disabled="editUserModel.id" />
-      <span class="help-block" translate>user.username.help</span>
-      <span class="help-block" test-id="errors-username">{{errors.username}}</span>
-    </div>
+  <div class="form-group">
+    <label for="fullname" translate>Full Name</label>
+    <input id="fullname" type="text" class="form-control" ng-model="editUserModel.fullname" />
+    <span class="help-block" translate>user.fullname.help</span>
+  </div>
 
-    <div class="form-group">
-      <label for="fullname" translate>Full Name</label>
-      <input id="fullname" type="text" class="form-control" ng-model="editUserModel.fullname" />
-      <span class="help-block" translate>user.fullname.help</span>
-    </div>
+  <div class="form-group" ng-class="{'has-error': errors.email}">
+    <label for="email" translate>Email Address</label>
+    <input id="email" type="text" class="form-control" ng-model="editUserModel.email" />
+    <span class="help-block">{{errors.email}}</span>
+  </div>
 
-    <div class="form-group" ng-class="{'has-error': errors.email}">
-      <label for="email" translate>Email Address</label>
-      <input id="email" type="text" class="form-control" ng-model="editUserModel.email" />
-      <span class="help-block">{{errors.email}}</span>
-    </div>
+  <div class="form-group" ng-class="{'has-error': errors.phone, 'required': editUserModel.token_login }">
+    <label for="phone" translate>Phone Number</label>
+    <input id="phone" type="text" class="form-control" ng-model="editUserModel.phone"/>
+    <span class="help-block" translate>user.phone.help</span>
+    <span class="help-block">{{errors.phone}}</span>
+  </div>
 
-    <div class="form-group" ng-class="{'has-error': errors.phone, 'required': editUserModel.token_login }">
-      <label for="phone" translate>Phone Number</label>
-      <input id="phone" type="text" class="form-control" ng-model="editUserModel.phone"/>
-      <span class="help-block" translate>user.phone.help</span>
-      <span class="help-block">{{errors.phone}}</span>
-    </div>
-
-    <div id="role-select" class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.roles}">
-      <label translate>configuration.role</label> *
-      <input type="text" class="form-control" ng-model="editUserModel.roles" disabled="disabled" ng-if="editUserModel.roles.indexOf('_admin') !== -1" />
-      <ul>
-        <li ng-repeat="(key, value) in roles" class="checkbox" ng-if="editUserModel.roles.indexOf('_admin') === -1">
-          <label>
-            <input
-              type="checkbox"
-              name="roles[]"
-              ng-value="key"
-              ng-checked="editUserModel.roles.indexOf(key) !== -1"
-              ng-click="toggleRole(key)"
-            ><span translate>{{value.name}}</span>
-          </label>
-        </li>
-      </ul>
-      <span class="help-block">{{errors.roles}}</span>
-    </div>
-
-    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.place, 'required': roles[editUserModel.role].offline || !!editUserModel.contact}">
-      <label for="facilitySelect" translate>Facility</label>
-      <select id="facilitySelect" name="facilitySelect">
-        <option ng-value="editUserModel.facilitySelect" ng-if="editUserModel.facilitySelect"></option>
-      </select>
-      <span class="help-block">{{errors.place}}</span>
-      <span class="help-block" translate>user.place.help</span>
-    </div>
-
-    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.contact, 'required': roles[editUserModel.role].offline}">
-      <label for="contactSelect" translate>associated.contact</label>
-      <div class="text-muted" translate>associated.contact.help</div>
-      <select id="contactSelect" name="contactSelect" autocomplete="off">
-        <option ng-value="editUserModel.contactSelect" ng-if="editUserModel.contactSelect"></option>
-      </select>
-      <span class="help-block">{{errors.contact}}</span>
-    </div>
-
-    <div class="form-group" ng-if="allowTokenLogin && !editUserModel.tokenLoginEnabled">
-      <input type="checkbox" id="tokenLogin" ng-true-value="true" ng-false-value="" ng-model="editUserModel.token_login">
-      <label for="tokenLogin" translate class="form-check-label">configuration.enable.token.login</label>
-      <div class="help-block" translate>configuration.enable.token.login.help</div>
-    </div>
-
-    <div class="form-group" ng-if="allowTokenLogin && editUserModel.tokenLoginEnabled">
-      <p>
-        <label class="form-check-label">
-          <span ng-if="editUserModel.tokenLoginEnabled.active && !editUserModel.tokenLoginEnabled.expired" translate translate-values="{ date: '{{editUserModel.tokenLoginEnabled.expirationDate}}' }">configuration.enable.token.login.enabled.active</span>
-          <span ng-if="editUserModel.tokenLoginEnabled.active && editUserModel.tokenLoginEnabled.expired" translate translate-values="{ date: '{{editUserModel.tokenLoginEnabled.expirationDate}}' }">configuration.enable.token.login.enabled.expired</span>
-          <span ng-if="!editUserModel.tokenLoginEnabled.active" translate translate-values="{ date: '{{editUserModel.tokenLoginEnabled.loginDate}}' }">configuration.enable.token.login.enabled.inactive</span>
+  <div id="role-select" class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.roles}">
+    <label translate>configuration.role</label> *
+    <input type="text" class="form-control" ng-model="editUserModel.roles" disabled="disabled" ng-if="editUserModel.roles.indexOf('_admin') !== -1" />
+    <ul>
+      <li ng-repeat="(key, value) in roles" class="checkbox" ng-if="editUserModel.roles.indexOf('_admin') === -1">
+        <label>
+          <input
+            type="checkbox"
+            name="roles[]"
+            ng-value="key"
+            ng-checked="editUserModel.roles.indexOf(key) !== -1"
+            ng-click="toggleRole(key)"
+          ><span translate>{{value.name}}</span>
         </label>
-      </p>
-      <div>
-        <input type="radio" id="unmodifiedTokenLogin" ng-value="" ng-model="editUserModel.token_login">
-        <label for="unmodifiedTokenLogin" translate class="form-check-label">configuration.enable.token.login.no.modify</label>
-      </div>
-      <div>
-        <input type="radio" id="disabletokenLogin" ng-value="false" ng-model="editUserModel.token_login">
-        <label for="disabletokenLogin" translate class="form-check-label">configuration.enable.token.login.disable</label>
-      </div>
-      <div>
-        <input type="radio" id="refreshTokenLogin" ng-value="true" ng-model="editUserModel.token_login">
-        <label for="refreshTokenLogin" translate class="form-check-label">configuration.enable.token.login.refresh</label>
-      </div>
-      <div class="help-block" translate>configuration.enable.token.login.refresh.help</div>
-    </div>
+      </li>
+    </ul>
+    <span class="help-block">{{errors.roles}}</span>
+  </div>
 
-    <div class="form-group" ng-class="{ 'has-error': errors.password, 'required': !editUserModel.id, 'hidden': allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled)) }">
-      <label for="edit-password" translate>Password</label>
-      <input id="edit-password" name="edit-password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="new-password" ng-disabled="editUserModel.role === '_admin'"/>
-      <span class="help-block">{{errors.password}}</span>
-    </div>
+  <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.place, 'required': roles[editUserModel.role].offline || !!editUserModel.contact}">
+    <label for="facilitySelect" translate>Facility</label>
+    <select id="facilitySelect" name="facilitySelect">
+      <option ng-value="editUserModel.facilitySelect" ng-if="editUserModel.facilitySelect"></option>
+    </select>
+    <span class="help-block">{{errors.place}}</span>
+    <span class="help-block" translate>user.place.help</span>
+  </div>
 
-    <div class="form-group" ng-class="{ 'required': !editUserModel.id, 'hidden': allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled)) }">
-      <label for="edit-password-confirm" translate>Confirm Password</label>
-      <input id="edit-password-confirm" name="edit-password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="new-password" ng-disabled="editUserModel.role === '_admin'"/>
-    </div>
+  <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.contact, 'required': roles[editUserModel.role].offline}">
+    <label for="contactSelect" translate>associated.contact</label>
+    <div class="text-muted" translate>associated.contact.help</div>
+    <select id="contactSelect" name="contactSelect" autocomplete="off">
+      <option ng-value="editUserModel.contactSelect" ng-if="editUserModel.contactSelect"></option>
+    </select>
+    <span class="help-block">{{errors.contact}}</span>
+  </div>
 
-  </form>
-</mm-modal>
+  <div class="form-group" ng-if="allowTokenLogin && !editUserModel.tokenLoginEnabled">
+    <input type="checkbox" id="tokenLogin" ng-true-value="true" ng-false-value="" ng-model="editUserModel.token_login">
+    <label for="tokenLogin" translate class="form-check-label">configuration.enable.token.login</label>
+    <div class="help-block" translate>configuration.enable.token.login.help</div>
+  </div>
+
+  <div class="form-group" ng-if="allowTokenLogin && editUserModel.tokenLoginEnabled">
+    <p>
+      <label class="form-check-label">
+        <span ng-if="editUserModel.tokenLoginEnabled.active && !editUserModel.tokenLoginEnabled.expired" translate translate-values="{ date: '{{editUserModel.tokenLoginEnabled.expirationDate}}' }">configuration.enable.token.login.enabled.active</span>
+        <span ng-if="editUserModel.tokenLoginEnabled.active && editUserModel.tokenLoginEnabled.expired" translate translate-values="{ date: '{{editUserModel.tokenLoginEnabled.expirationDate}}' }">configuration.enable.token.login.enabled.expired</span>
+        <span ng-if="!editUserModel.tokenLoginEnabled.active" translate translate-values="{ date: '{{editUserModel.tokenLoginEnabled.loginDate}}' }">configuration.enable.token.login.enabled.inactive</span>
+      </label>
+    </p>
+    <div>
+      <input type="radio" id="unmodifiedTokenLogin" ng-value="" ng-model="editUserModel.token_login">
+      <label for="unmodifiedTokenLogin" translate class="form-check-label">configuration.enable.token.login.no.modify</label>
+    </div>
+    <div>
+      <input type="radio" id="disabletokenLogin" ng-value="false" ng-model="editUserModel.token_login">
+      <label for="disabletokenLogin" translate class="form-check-label">configuration.enable.token.login.disable</label>
+    </div>
+    <div>
+      <input type="radio" id="refreshTokenLogin" ng-value="true" ng-model="editUserModel.token_login">
+      <label for="refreshTokenLogin" translate class="form-check-label">configuration.enable.token.login.refresh</label>
+    </div>
+    <div class="help-block" translate>configuration.enable.token.login.refresh.help</div>
+  </div>
+
+  <div class="form-group" ng-class="{ 'has-error': errors.password, 'required': !editUserModel.id, 'hidden': allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled)) }">
+    <label for="edit-password" translate>Password</label>
+    <input id="edit-password" name="edit-password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="new-password" ng-disabled="editUserModel.role === '_admin'"/>
+    <span class="help-block">{{errors.password}}</span>
+  </div>
+
+  <div class="form-group" ng-class="{ 'required': !editUserModel.id, 'hidden': allowTokenLogin && (editUserModel.token_login || (editUserModel.token_login !== false && editUserModel.tokenLoginEnabled)) }">
+    <label for="edit-password-confirm" translate>Confirm Password</label>
+    <input id="edit-password-confirm" name="edit-password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="new-password" ng-disabled="editUserModel.role === '_admin'"/>
+  </div>
+
+  <a ng-if="editUserModel.id" class="btn btn-primary" ng-click="editUser()" ng-disabled="saving" translate>Submit</a>
+  <a ng-if="!editUserModel.id" class="btn btn-primary" ng-click="editUser()" ng-disabled="saving" translate>Add User</a>
+  <span ng-if="status" translate>{{status}}</span>
+  <a ng-if="!status" ui-sref="users" translate>Cancel</span>
+
+</form>
