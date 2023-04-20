@@ -1,4 +1,13 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
+const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
+const FAST_ACTION_TRIGGER = '.fast-action-trigger';
+const fastActionFAB = () => $(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
+const fastActionFlat = () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`);
+const multipleActions = () => $(`${FAST_ACTION_TRIGGER}[test-id="multiple-actions-menu"]`);
+const FAST_ACTION_LIST_CONTAINER = '.fast-action-content-wrapper';
+const fastActionListContainer = () => $(FAST_ACTION_LIST_CONTAINER);
+const fastActionListCloseButton = () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-header .panel-header-close`);
+const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item[test-id="${id}"]`);
 const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trigger');
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
@@ -22,6 +31,7 @@ const messagesLanguage = () => $('.locale a.selected span');
 const defaultLanguage = () => $('.locale-outgoing a.selected span');
 const activeSnackbar = () => $('#snackbar.active');
 const inactiveSnackbar = () => $('#snackbar:not(.active)');
+const snackbar = () => $('#snackbar.active .snackbar-message');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
@@ -32,6 +42,72 @@ const isHamburgerMenuOpen = async () => {
 const openMoreOptionsMenu = async () => {
   await (await moreOptionsMenu()).waitForClickable();
   await (await moreOptionsMenu()).click();
+};
+
+const waitForSnackbarToClose = async () => {
+  if (await (await snackbar()).isExisting()) {
+    await (await snackbar()).waitForDisplayed({ reverse: true });
+  }
+};
+
+const clickFastActionById = async (id) => {
+  // Wait for the Angular Material's animation to complete.
+  await browser.pause(500);
+  await (await fastActionListContainer()).waitForDisplayed();
+  await (await fastActionById(id)).scrollIntoView();
+  await (await fastActionById(id)).waitForClickable();
+  await (await fastActionById(id)).click();
+};
+
+const clickFastActionFAB = async ({ actionId, waitForList }) => {
+  await closeHamburgerMenu();
+  await (await fastActionFAB()).waitForDisplayed();
+  await (await fastActionFAB()).waitForClickable();
+  waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
+  await (await fastActionFAB()).click();
+  if (waitForList) {
+    await clickFastActionById(actionId);
+  }
+};
+
+const clickFastActionFlat = async ({ actionId, waitForList }) => {
+  await waitForSnackbarToClose();
+  await (await fastActionFlat()).waitForDisplayed();
+  await (await fastActionFlat()).waitForClickable();
+  waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
+  await (await fastActionFlat()).click();
+  if (waitForList) {
+    await clickFastActionById(actionId);
+  }
+};
+
+const openFastActionReport = async (formId, rightSideAction=true) => {
+  await waitForPageLoaded();
+  if (rightSideAction) {
+    await clickFastActionFAB({ actionId: formId });
+  } else {
+    await clickFastActionFlat({ actionId: formId });
+  }
+  await waitForPageLoaded();
+  await (await $('#form-title')).waitForDisplayed();
+};
+
+const getFastActionFABTextById = async (actionId) => {
+  await clickFastActionFAB({ actionId, waitForList: false });
+  await (await fastActionListContainer()).waitForDisplayed();
+  return await (await fastActionById(actionId)).getText();
+};
+
+const getFastActionFlatText = async () => {
+  await waitForSnackbarToClose();
+  await (await fastActionFlat()).waitForDisplayed();
+  return await (await fastActionFlat()).getText();
+};
+
+const closeFastActionList = async () => {
+  await (await fastActionListContainer()).waitForDisplayed();
+  await (await fastActionListCloseButton()).waitForClickable();
+  await (await fastActionListCloseButton()).click();
 };
 
 const isMessagesListPresent = () => {
@@ -64,6 +140,14 @@ const isElementByIdPresent = async (elementId) => {
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
+    await (await hamburgerMenu()).waitForClickable();
+    await (await hamburgerMenu()).click();
+  }
+};
+
+const closeHamburgerMenu = async () => {
+  if (await isHamburgerMenuOpen()) {
+    await (await hamburgerMenu()).waitForClickable();
     await (await hamburgerMenu()).click();
   }
 };
@@ -188,6 +272,11 @@ const waitForPageLoaded = async () => {
   } while ((await loaders()).length > 0);
 };
 
+const syncAndNotWaitForSuccess = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
+};
+
 const syncAndWaitForSuccess = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
@@ -202,6 +291,11 @@ const sync = async (expectReload) => {
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
   await syncAndWaitForSuccess();
+};
+
+const syncWithoutWaitForSuccess = async () => {
+  await openHamburgerMenu();
+  await (await syncButton()).click();
 };
 
 const closeReloadModal = async () => {
@@ -248,6 +342,11 @@ const openUserSettingsAndFetchProperties = async () => {
   await (await $('=Edit user profile')).waitForDisplayed();
 };
 
+const openUserSettings = async () => {
+  await (await userSettingsMenuOption()).waitForClickable();
+  await (await userSettingsMenuOption()).click();
+};
+
 const openAppManagement = async () => {
   await (await $('i.fa-cog')).click();
   await (await $('.navbar-brand')).waitForDisplayed();
@@ -283,6 +382,12 @@ const isMenuOptionVisible = async (action, item) => {
 
 module.exports = {
   openMoreOptionsMenu,
+  closeFastActionList,
+  clickFastActionFAB,
+  clickFastActionFlat,
+  openFastActionReport,
+  getFastActionFABTextById,
+  getFastActionFlatText,
   logout,
   logoutButton,
   getLogoutMessage,
@@ -298,6 +403,7 @@ module.exports = {
   hideSnackbar,
   waitForLoaders,
   sync,
+  syncAndNotWaitForSuccess,
   syncButton,
   closeReloadModal,
   goToMessages,
@@ -313,6 +419,7 @@ module.exports = {
   openHamburgerMenu,
   openAboutMenu,
   openUserSettingsAndFetchProperties,
+  openUserSettings,
   openReportBugAndFetchProperties,
   openAppManagement,
   waitForLoaderToDisappear,
@@ -329,4 +436,5 @@ module.exports = {
   isMenuOptionEnabled,
   isMenuOptionVisible,
   moreOptionsMenu,
+  syncWithoutWaitForSuccess,
 };

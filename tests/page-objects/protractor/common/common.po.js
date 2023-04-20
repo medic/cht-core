@@ -199,16 +199,8 @@ module.exports = {
   goToReports: refresh => {
     utils.deprecated('goToReports', 'goToReportsNative');
     browser.get(utils.getBaseUrl() + 'reports/');
-    helper.waitElementToPresent(
-      element(
-        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
-      )
-    );
-    helper.waitElementToBeClickable(
-      element(
-        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
-      )
-    );
+    helper.waitElementToPresent(element(by.css('.fast-action-trigger button')));
+    helper.waitElementToBeClickable(element(by.css('.fast-action-trigger button')));
     helper.waitElementToBeVisible(element(by.id('reports-list')));
     if (refresh) {
       browser.refresh();
@@ -223,16 +215,8 @@ module.exports = {
 
   goToReportsNative: async (refresh) => {
     await browser.get(utils.getBaseUrl() + 'reports/');
-    await helper.waitElementToPresentNative(
-      element(
-        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
-      )
-    );
-    await helper.waitElementToBeClickable(
-      element(
-        by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')
-      )
-    );
+    await helper.waitElementToPresentNative(element(by.css('.fast-action-trigger button')));
+    await helper.waitElementToBeClickable(element(by.css('.fast-action-trigger button')));
     await helper.waitElementToBeVisibleNative(element(by.id('reports-list')));
 
     if (refresh) {

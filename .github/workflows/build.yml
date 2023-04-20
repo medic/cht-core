@@ -175,7 +175,7 @@ jobs:
         mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/history
         cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report | true
     - name: Upload allure report history
-      if: always()
+      if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       uses: actions-js/push@master
       with:
         github_token: ${{ secrets.BUILD_HISTORY_DATA_PUSH_TOKEN }}

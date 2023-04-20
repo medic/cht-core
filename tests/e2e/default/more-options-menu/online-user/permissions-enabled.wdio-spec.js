@@ -48,13 +48,12 @@ const smsReport = reportFactory.build(
   },
 );
 
-describe('Online User', async () => {  
-  let xmlReportId;
-  let smsReportId;  
+describe('Online User', async () => {
+
+  afterEach(async () => await commonPage.goToBase());
+
   describe('Options disabled when no items - messages, contacts, people', async () => {
     before(async () => await loginPage.cookieLogin());
-    
-    afterEach(async () => await commonPage.goToBase());
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
@@ -81,7 +80,7 @@ describe('Online User', async () => {
 
   describe(' - Contact tab - user has no contact ', async () => {
     before(async () => await utils.saveDocs([ ...places.values(), contact, patient]));
-   
+
     it(' - no contact selected', async () => {
       await commonPage.goToPeople();
       await commonPage.openMoreOptionsMenu();
@@ -92,6 +91,9 @@ describe('Online User', async () => {
   });
 
   describe(' - Options enabled when there are items', async () => {
+    let xmlReportId;
+    let smsReportId;
+
     before(async () => {
       await utils.createUsers([onlineUser]);
       await loginPage.cookieLogin({ ...onlineUser, createUser: false });

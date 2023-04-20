@@ -120,7 +120,7 @@ describe('Bikram Sambat date display', () => {
 
   it('enketo xpath extension function should display correct values when Nepali is not selected', async () => {
     await commonPage.goToReports();
-    await reportsPage.openForm('Bikram Sambat Date');
+    await commonPage.openFastActionReport('bikram-sambat-dates', false);
 
     const date1 = '2021-01-01';
     const dateBk1 = bikramSambat.toBik_text(date1);
@@ -143,7 +143,7 @@ describe('Bikram Sambat date display', () => {
     await setLanguage(NEPALI_LOCALE_CODE);
 
     await commonPage.goToReports();
-    await reportsPage.openForm('Bikram Sambat Date');
+    await commonPage.openFastActionReport('bikram-sambat-dates', false);
 
     const date1 = '2020-01-01';
     const dateBk1 = bikramSambat.toBik_text(date1);

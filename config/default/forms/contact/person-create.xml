@@ -807,7 +807,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2022-09-26 12-15">
+        <data id="contact:person:create" prefix="J1!contact:person:create!" delimiter="#" version="2023-02-14 7-40">
           <inputs>
             <meta>
               <location>
@@ -848,6 +848,9 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
             <role_other/>
             <external_id/>
             <notes/>
+            <user_for_contact>
+              <create/>
+            </user_for_contact>
             <meta tag="hidden">
               <created_by/>
               <created_by_person_uuid/>
@@ -899,6 +902,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/person/role_other" type="string" relevant="selected(  /data/person/role ,'other')" required="true()"/>
       <bind nodeset="/data/person/external_id" type="string"/>
       <bind nodeset="/data/person/notes" type="string"/>
+      <bind nodeset="/data/person/user_for_contact/create" type="string" calculate=" /data/person/phone  != '' and (selected(  /data/person/role ,'chw') or selected(  /data/person/role ,'chw_supervisor'))"/>
       <bind nodeset="/data/person/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/person/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/person/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
@@ -1028,6 +1032,7 @@ DOB ISO: <output value=" /data/person/ephemeral_dob/dob_iso "/></value></text>
       <input appearance="multiline" ref="/data/person/notes">
         <label ref="jr:itext('/data/person/notes:label')"/>
       </input>
+      <group ref="/data/person/user_for_contact"/>
       <group appearance="hidden" ref="/data/person/meta"/>
     </group>
   </h:body>

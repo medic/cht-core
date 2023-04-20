@@ -26,19 +26,22 @@ describe('accept_patient_reports', () => {
 
   describe('filter', () => {
     it('empty doc returns false', () => {
-      transition.filter({}).should.equal(false);
+      transition.filter({ doc: {} }).should.equal(false);
     });
     it('no type returns false', () => {
-      transition.filter({ form: 'x' }).should.equal(false);
+      transition.filter({ doc: { form: 'x' }}).should.equal(false);
     });
     it('invalid submission returns false', () => {
       config.get.returns([{ form: 'x' }, { form: 'z' }]);
       sinon.stub(utils, 'isValidSubmission').returns(false);
       transition
         .filter({
-          form: 'x',
-          type: 'data_record',
-          reported_date: 1,
+          doc: {
+            form: 'x',
+            type: 'data_record',
+            reported_date: 1,
+          },
+          info: {}
         })
         .should.equal(false);
       utils.isValidSubmission.callCount.should.equal(1);
@@ -49,9 +52,12 @@ describe('accept_patient_reports', () => {
       sinon.stub(utils, 'isValidSubmission').returns(true);
       transition
         .filter({
-          form: 'x',
-          type: 'data_record',
-          reported_date: 1,
+          doc: {
+            form: 'x',
+            type: 'data_record',
+            reported_date: 1,
+          },
+          info: {}
         })
         .should.equal(true);
       utils.isValidSubmission.callCount.should.equal(1);

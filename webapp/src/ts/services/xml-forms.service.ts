@@ -11,6 +11,9 @@ import { XmlFormsContextUtilsService } from '@mm-services/xml-forms-context-util
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { FeedbackService } from '@mm-services/feedback.service';
 
+export const TRAINING_FORM_ID_PREFIX: string = 'form:training:';
+export const CONTACT_FORM_ID_PREFIX: string = 'form:contact:';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -174,24 +177,60 @@ export class XmlFormsService {
     return this.authService.has(form.context.permission);
   }
 
+  /**
+   * Filters forms based on criteria defined in the options parameter.
+   *
+   * @param form {Object} : Form's document from CouchDB
+   *
+   * @param options {Object} : Object for filtering. Possible values:
+   *   - ignoreContext (boolean) : Each xml form has a context field, that helps specify in which cases
+   *   it should be shown or not shown.
+   *   E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "xyz"}`
+   *   Using ignoreContext = true will ignore that filter.
+   *
+   *   - doc (Object) : When the context filter is on, the doc to pass to the forms context expression to
+   *   determine if the form is applicable.
+   *   E.g. for context above, `{type: "district_hospital"}` passes,
+   *   but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
+   *
+   *   - contactSummary (Object) : When the context filter is on, the contactSummary is passed to the form's context
+   *   expression to determine if the form is applicable.
+   *
+   *   - reportForms (boolean) : When set true, it will return report forms.
+   *   - contactForms (boolean) : When set true, it will return contact forms.
+   *   - trainingCards (boolean) : When set true, it will return training forms.
+   *   - collectForms (boolean) : When set true, it will return collect forms.
+   * To match all forms, then reportForms, contactForms and trainingCards should be undefined.
+   *
+   * @param user {Object} : User context document from CouchDB.
+   */
   private filter(form, options, user) {
-    if (!options.includeCollect && form.context && form.context.collect) {
-      return false;
-    }
+    const isContactForm = form._id.indexOf(CONTACT_FORM_ID_PREFIX) === 0;
+    const isTrainingCard = form._id.indexOf(TRAINING_FORM_ID_PREFIX) === 0;
+    const isCollectForm = !!form.context?.collect;
+    const isReportForm = !isContactForm && !isTrainingCard && !isCollectForm;
 
-    if (options.contactForms !== undefined) {
-      const isContactForm = form._id.indexOf('form:contact:') === 0;
-      if (options.contactForms !== isContactForm) {
-        return false;
-      }
+    const allFormTypes = options.contactForms === undefined
+      && options.trainingCards === undefined
+      && options.collectForms === undefined
+      && options.reportForms === undefined;
+
+    const isFormMatchingFilter = (options.reportForms && isReportForm)
+      || (options.collectForms && isCollectForm)
+      || (options.contactForms && isContactForm)
+      || (options.trainingCards && isTrainingCard);
+
+    if (!allFormTypes && !isFormMatchingFilter) {
+      return false;
     }
 
     // Context filters
     if (options.ignoreContext) {
       return true;
     }
+
     if (!form.context) {
-      // no defined filters
+      // No defined filters
       return true;
     }
 
@@ -226,17 +265,25 @@ export class XmlFormsService {
    * @param {String} name Uniquely identify the callback to stop duplicate registration
    *
    * @param {Object} [options={}] Object for filtering. Possible values:
-   *   - contactForms (boolean) : true will return only contact forms. False will exclude contact forms.
-   *     Undefined will ignore this filter.
    *   - ignoreContext (boolean) : Each xml form has a context field, which helps specify in which cases
-   * it should be shown or not shown.
-   * E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "xyz"}`
-   * Using ignoreContext = true will ignore that filter.
-   *   - doc (Object) : when the context filter is on, the doc to pass to the forms context expression to
-   *     determine if the form is applicable.
-   * E.g. for context above, `{type: "district_hospital"}` passes,
-   * but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
-   * See tests for more examples.
+   *   it should be shown or not shown.
+   *   E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "xyz"}`
+   *   Using ignoreContext = true will ignore that filter.
+   *
+   *   - doc (Object) : When the context filter is on, the doc to pass to the forms context expression to
+   *   determine if the form is applicable.
+   *   E.g. for context above, `{type: "district_hospital"      }` passes,
+   *   but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
+   *   See tests for more examples.
+   *
+   *   - contactSummary (Object) : When the context filter is on, the contactSummary is passed to the form's context
+   *   expression to determine if the form is applicable.
+   *
+   *   - reportForms (boolean) : When set true, it will return report forms.
+   *   - contactForms (boolean) : When set true, it will return contact forms.
+   *   - trainingCards (boolean) : When set true, it will return training forms.
+   *   - collectForms (boolean) : When set true, it will return collect forms.
+   * To match all forms, then reportForms, contactForms and trainingCards should be undefined.
    *
    * @param {Function} callback Invoked when complete and again when results have changed.
    */
