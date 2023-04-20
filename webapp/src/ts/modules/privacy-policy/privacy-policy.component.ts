@@ -3,7 +3,6 @@ import { Store } from '@ngrx/store';
 
 import { GlobalActions } from '@mm-actions/global';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
-import { StartupModalsService } from '@mm-services/startup-modals.service';
 
 @Component({
   selector: 'mm-privacy-policy',
@@ -19,7 +18,6 @@ export class PrivacyPolicyComponent implements OnInit {
   constructor(
     private store: Store,
     private privacyPoliciesService: PrivacyPoliciesService,
-    private startupModalsService: StartupModalsService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -51,7 +49,6 @@ export class PrivacyPolicyComponent implements OnInit {
     return this.privacyPoliciesService
       .accept(this.privacyPolicy)
       .catch(err => console.warn('Error accepting privacy policy - continuing.', err))
-      .then(() => this.globalActions.setPrivacyPolicyAccepted(true))
-      .then(() => this.startupModalsService.showStartupModals());
+      .then(() => this.globalActions.setPrivacyPolicyAccepted(true));
   }
 }

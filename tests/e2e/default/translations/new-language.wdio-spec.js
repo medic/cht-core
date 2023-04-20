@@ -44,14 +44,6 @@ describe('Adding new language', () => {
     expect(await languagesPage.selectLanguage(languagesPage.outgoingLanguageDropdown, NEW_LANG_CODE)).to.be.true;
   });
 
-  it('should reflect in config wizard', async () => {
-    await languagesPage.goToApplication();
-    const [heading, messageLanguage, appLanguage] = await commonPage.getDefaultLanguages();
-    expect(heading).to.equal(`${NEW_LANG_NAME}, ${NEW_LANG_NAME}`);
-    expect(messageLanguage).to.equal(NEW_LANG_NAME);
-    expect(appLanguage).to.equal(NEW_LANG_NAME);
-  });
-
   it('should add new translations', async () => {
     await commonPage.goToBase();
     await userSettingsElements.setLanguage(ENG_LANG_CODE);
