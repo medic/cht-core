@@ -2,6 +2,7 @@ const commonElements = require('../../page-objects/protractor/common/common.po.j
 const utils = require('../../utils');
 const loginPage = require('../../page-objects/protractor/login/login.po');
 const constants = require('../../constants.js');
+const helper = require('../../helper');
 
 describe('Navigation tests : ', () => {
   beforeEach(utils.beforeEach);
@@ -115,7 +116,7 @@ describe('Navigation tests : ', () => {
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative(user.username, user.password);
       await commonElements.waitForLoaderToDisappear();
-      const tabTexts = await element.all(by.css('.button-label')).getText();
+      const tabTexts = await helper.getTextFromElementNative(element.all(by.css('.button-label')));
       expect(tabTexts.length).toBe(3);
       expect(tabTexts).toEqual([ 'Messages', 'Reports', 'People']);
     });
