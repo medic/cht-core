@@ -25,6 +25,10 @@ const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)'
 const jsonError = async () => (await $('pre')).getText();
 
 //languages
+const languagePreferenceHeading = () => $('#language-preference-heading');
+const selectedPreferenceHeading = () => $('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)');
+const messagesLanguage = () => $('.locale a.selected span');
+const defaultLanguage = () => $('.locale-outgoing a.selected span');
 const activeSnackbar = () => $('#snackbar.active');
 const inactiveSnackbar = () => $('#snackbar:not(.active)');
 const snackbar = () => $('#snackbar.active .snackbar-message');
@@ -307,6 +311,17 @@ const openAboutMenu = async () => {
   await (await $('.btn-primary=Reload')).waitForDisplayed();
 };
 
+const openConfigurationWizardAndFetchProperties = async () => {
+  await (await $('i.fa-list-ol')).click();
+  await (await $('#guided-setup')).waitForDisplayed();
+
+  return {
+    modelTitle: await (await $('#guided-setup .modal-header > h2')).getText(),
+    defaultCountryCode: await (await $('#select2-default-country-code-setup-container')).getText(),
+    modelFinishButtonText: await (await $('#guided-setup .modal-footer>a:nth-of-type(2)')).getText()
+  };
+};
+
 const openUserSettingsAndFetchProperties = async () => {
   await (await $('=User settings')).click();
   await (await $('=Update password')).waitForDisplayed();
@@ -321,6 +336,19 @@ const openUserSettings = async () => {
 const openAppManagement = async () => {
   await (await $('i.fa-cog')).click();
   await (await $('.navbar-brand')).waitForDisplayed();
+};
+
+const getDefaultLanguages = async () => {
+  await (await hamburgerMenu()).click();
+  await openConfigurationWizardAndFetchProperties();
+  await (await languagePreferenceHeading()).click();
+  const messagesLang = async () => await (await messagesLanguage()).getText();
+  await browser.waitUntil(async () => await messagesLang() !== '');
+
+  const headingText = await (await selectedPreferenceHeading()).getText();
+  const defaultLang = await (await defaultLanguage()).getText();
+
+  return [headingText, await messagesLang(), defaultLang];
 };
 
 const getTextForElements = async (elements) => {
@@ -370,6 +398,7 @@ module.exports = {
   isTasksListPresent,
   isPeopleListPresent,
   isReportsListPresent,
+  openConfigurationWizardAndFetchProperties,
   isTargetMenuItemPresent,
   isTargetAggregatesMenuItemPresent,
   openHamburgerMenu,
@@ -385,6 +414,7 @@ module.exports = {
   inactiveSnackbar,
   snackbarMessage,
   snackbarAction,
+  getDefaultLanguages,
   getTextForElements,
   toggleActionbar,
   jsonError,

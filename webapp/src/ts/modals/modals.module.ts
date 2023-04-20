@@ -10,6 +10,7 @@ import { ComponentsModule } from '@mm-components/components.module';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
+import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
@@ -33,6 +34,7 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     ReloadingComponent,
     LogoutConfirmComponent,
     FeedbackComponent,
+    GuidedSetupComponent,
     SendMessageComponent,
     DeleteDocConfirmComponent,
     UpdatePasswordComponent,

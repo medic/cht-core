@@ -10,6 +10,16 @@ describe('Hamburger Menu tests', async () => {
     await commonPage.goToReports();
   });
 
+  it('should open Configuration wizard', async () => {
+    await commonPage.openHamburgerMenu();
+    const actualProperties = await commonPage.openConfigurationWizardAndFetchProperties();
+    expect(actualProperties).to.deep.equal({
+      modelTitle: 'Configuration wizard',
+      defaultCountryCode: 'Canada (+1)',
+      modelFinishButtonText: 'Finish'
+    });
+  });
+
   it('should open About', async () => {
     await commonPage.openHamburgerMenu();
     await commonPage.openAboutMenu();

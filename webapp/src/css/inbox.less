@@ -1118,6 +1118,71 @@ a.fa:hover {
   }
 }
 
+.guided-setup {
+  .panel-group .panel-body {
+    text-align: center;
+  }
+  .horizontal-options {
+    .icon {
+      background-size: contain;
+      background-repeat: no-repeat;
+      padding-top: 100px;
+    }
+    .contact-pregnant {
+      background-image: url('/img/icon-pregnant.svg');
+      &.selected {
+        background-image: url('/img/icon-pregnant-selected.svg');
+      }
+    }
+    .contact-chw {
+      background-image: url('/img/icon-chw.svg');
+      &.selected {
+        background-image: url('/img/icon-chw-selected.svg');
+      }
+    }
+    .contact-nurse {
+      background-image: url('/img/icon-nurse.svg');
+      &.selected {
+        background-image: url('/img/icon-nurse-selected.svg');
+      }
+    }
+  }
+  .primary-contact-content .horizontal-options a {
+    width: 100px;
+    vertical-align: top;
+    .circle {
+      height: 100px;
+      width: 100px;
+    }
+  }
+  .registration-form-content .horizontal-options a {
+    width: 150px;
+    vertical-align: top;
+    .circle {
+      height: 20px;
+      width: 20px;
+      font-size: @font-size-base;
+      .fa {
+        visibility: hidden;
+        margin: 0px;
+      }
+    }
+    .description {
+      display: inline-block;
+    }
+    &.selected .fa {
+      visibility: visible;
+    }
+  }
+  .modem-setup-content {
+    label {
+      margin-top: 10px;
+      margin-bottom: 0;
+      display: block;
+    }
+  }
+}
+
 .section {
   margin-top: 30px;
 }

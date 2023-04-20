@@ -24,6 +24,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
+import { StartupModalsService } from '@mm-services/startup-modals.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
@@ -67,6 +68,7 @@ describe('AppComponent', () => {
   let formatDateService;
   let feedbackService;
   let wealthQuintilesWatcherService;
+  let startupModalsService;
   let unreadRecordsService;
   let setLanguageService;
   let translateService;
@@ -109,6 +111,7 @@ describe('AppComponent', () => {
     privacyPoliciesService = { hasAccepted: sinon.stub().resolves() };
     formatDateService = { init: sinon.stub() };
     wealthQuintilesWatcherService = { start: sinon.stub() };
+    startupModalsService = { showStartupModals: sinon.stub() };
     unreadRecordsService = { init: sinon.stub() };
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
@@ -196,6 +199,7 @@ describe('AppComponent', () => {
           { provide: CountMessageService, useValue: countMessageService },
           { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
           { provide: RouteSnapshotService, useValue: {} },
+          { provide: StartupModalsService, useValue: startupModalsService },
           { provide: CheckDateService, useValue: checkDateService },
           { provide: UnreadRecordsService, useValue: unreadRecordsService },
           { provide: RulesEngineService, useValue: rulesEngineService },
@@ -340,6 +344,7 @@ describe('AppComponent', () => {
     expect(globalActions.setPrivacyPolicyAccepted.args[0]).to.have.members([false]);
     expect(globalActions.setShowPrivacyPolicy.callCount).to.equal(1);
     expect(globalActions.setShowPrivacyPolicy.args[0]).to.have.members(['The policy...']);
+    expect(startupModalsService.showStartupModals.callCount).to.equal(0);
 
     privacyPoliciesService.hasAccepted.resolves({ privacyPolicy: undefined, accepted: false });
     await getComponent();
@@ -349,6 +354,7 @@ describe('AppComponent', () => {
     expect(globalActions.setPrivacyPolicyAccepted.getCall(1).args).to.have.members([false]);
     expect(globalActions.setShowPrivacyPolicy.callCount).to.equal(2);
     expect(globalActions.setShowPrivacyPolicy.getCall(1).args).to.have.members([undefined]);
+    expect(startupModalsService.showStartupModals.callCount).to.equal(1);
   });
 
   it('should start the UpdateReadDocsCount recurring process for online users', async () => {

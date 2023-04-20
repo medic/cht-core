@@ -75,6 +75,12 @@
 
           <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
 
+          <li role="presentation" mmAuth="can_configure">
+            <a role="menuitem" tabindex="-1" (click)="openGuidedSetup()">
+              <i class="fa fa-fw fa-list-ol"></i>
+              <span>{{'Easy Setup Wizard' | translate}}</span>
+            </a>
+          </li>
           <li role="presentation">
             <a routerLink="about" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-question"></i>

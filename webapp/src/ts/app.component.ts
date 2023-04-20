@@ -26,6 +26,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
+import { StartupModalsService } from '@mm-services/startup-modals.service';
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { RecurringProcessManagerService } from '@mm-services/recurring-process-manager.service';
@@ -115,6 +116,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private countMessageService:CountMessageService,
     private privacyPoliciesService:PrivacyPoliciesService,
     private routeSnapshotService:RouteSnapshotService,
+    private startupModalsService:StartupModalsService,
     private checkDateService:CheckDateService,
     private unreadRecordsService:UnreadRecordsService,
     private rulesEngineService:RulesEngineService,
@@ -566,7 +568,16 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
         return { privacyPolicy, accepted };
       })
-      .catch(err => console.error('Failed to load privacy policy', err));
+      .catch(err => console.error('Failed to load privacy policy', err))
+      .then(({ privacyPolicy, accepted }: any = {}) => {
+        if (!privacyPolicy || accepted) {
+          // If there is no privacy policy or the user already
+          // accepted the policy show the startup modals,
+          // otherwise the modals will start from the privacy
+          // policy component after the user accepts the terms
+          this.startupModalsService.showStartupModals();
+        }
+      });
   }
 
   private initUnreadCount() {

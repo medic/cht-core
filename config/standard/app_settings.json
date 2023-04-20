@@ -232,6 +232,7 @@
     "can_view_old_filter_and_search": [],
     "can_view_old_action_bar": []
   },
+  "setup_complete": true,
   "outgoing_phone_replace": {
     "match": "",
     "replace": ""
