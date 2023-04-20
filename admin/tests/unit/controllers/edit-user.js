@@ -74,12 +74,10 @@ describe('EditUserCtrl controller', () => {
     });
 
     inject((translate, $rootScope, $controller) => {
-      const createController = model => {
+      const createController = user => {
         scope = $rootScope.$new();
-        scope.model = model;
-        scope.setProcessing = sinon.stub();
-        scope.setFinished = sinon.stub();
-        scope.setError = sinon.stub();
+        scope.user = user;
+        scope.name = user.name;
         return $controller('EditUserCtrl', {
           $scope: scope,
           $rootScope: $rootScope,
