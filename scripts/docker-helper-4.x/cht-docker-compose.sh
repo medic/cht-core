@@ -319,9 +319,9 @@ while [[ "$isNginxRunning" != "true" ]]; do
 	isNginxRunning=$(get_is_container_running "$nginxContainerId")
 done
 
-docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/chain"
+docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
 docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
-docker restart "$nginxContainerId" 1>/dev/null
+docker exec -it $nginxContainerId bash -c "nginx -s reload"
 
 echo ""
 echo ""
