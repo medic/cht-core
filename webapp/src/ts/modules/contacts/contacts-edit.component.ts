@@ -12,8 +12,8 @@ import { ContactSaveService } from '@mm-services/contact-save.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { ContactsActions } from '@mm-actions/contacts';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
-
 
 @Component({
   templateUrl: './contacts-edit.component.html'
@@ -28,6 +28,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
     private contactTypesService:ContactTypesService,
     private dbService:DbService,
     private contactSaveService:ContactSaveService,
+    private xmlFormsService:XmlFormsService,
     private translateService:TranslateService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -241,6 +242,11 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private async renderForm(formId: string, titleKey: string) {
     const formDoc = await this.dbService.get().get(formId);
+
+    if (!await this.xmlFormsService.canAccessForm(formDoc)) {
+      return Promise.reject({ translationKey: 'error.loading.form.no_authorized' });
+    }
+
     this.xmlVersion = formDoc.xmlVersion;
     const instanceData = this.getFormInstanceData();
     const markFormEdited = this.markFormEdited.bind(this);

@@ -236,8 +236,16 @@ export class XmlFormsService {
 
     return this
       .filterContactTypes(form.context, options.doc)
-      .then(valid => valid && this.checkFormPermissions(form))
-      .then(valid => valid && this.checkFormExpression(form, options.doc, user, options.contactSummary));
+      .then(valid => valid && this.canAccessForm(form, user, options));
+  }
+
+  async canAccessForm(form, userContact?, options?) {
+    if (!await this.checkFormPermissions(form)) {
+      return false;
+    }
+
+    const user = userContact || await this.userContactService.get();
+    return await this.checkFormExpression(form, options?.doc, user, options?.contactSummary);
   }
 
   private notify(error, forms?) {
@@ -323,7 +331,11 @@ export class XmlFormsService {
         }
         throw err;
       })
-      .then(doc => {
+      .then(async doc => {
+        if (!await this.canAccessForm(doc)) {
+          return Promise.reject({ translationKey: 'error.loading.form.no_authorized' });
+        }
+
         if (!this.findXFormAttachmentName(doc)) {
           const errorTitle = 'Error in XMLFormService : findXFormAttachmentName : ';
           const errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
