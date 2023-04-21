@@ -1,4 +1,7 @@
-const submiButton = () => $('.btn.submit.btn-primary');
+const commonPage = require('../common/common.wdio.page');
+
+const submitButton = () => $('.btn.submit.btn-primary');
+const languageDropDown = () => $('#language');
 
 const openEditSettings = async () => {
   const links = await $('.content .configuration');
@@ -9,14 +12,23 @@ const openEditSettings = async () => {
 };
 
 const selectLanguage = async (code) => {
-  const languageDropDown = () => $('#language');
-  await browser.waitUntil(async () => await (await languageDropDown()).getValue() === 'en');
+  await (await languageDropDown()).waitForDisplayed();
+  await browser.waitUntil(async () => (await (await languageDropDown()).getValue()).length);
   await (await languageDropDown()).selectByAttribute('value', code);
-  await (await submiButton()).click();
-  await (await submiButton()).waitForDisplayed({timeout:60000, reverse:true});
+  await (await submitButton()).waitForClickable();
+  await (await submitButton()).click();
+  await (await submitButton()).waitForDisplayed({ timeout: 60000, reverse: true });
+};
+
+const setLanguage = async (code) => {
+  await commonPage.waitForPageLoaded();
+  await commonPage.openHamburgerMenu();
+  await commonPage.openUserSettings();
+  await openEditSettings();
+  await selectLanguage(code);
 };
 
 module.exports = {
   openEditSettings,
-  selectLanguage,
+  setLanguage,
 };

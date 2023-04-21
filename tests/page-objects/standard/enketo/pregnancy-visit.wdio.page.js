@@ -1,5 +1,5 @@
 const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const contactPage = require('../../../page-objects//default/contacts/contacts.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 
 const FORM = 'form[data-form-id="pregnancy_visit"]';
 const dangerSig = () => $$(`${FORM} input[name="/pregnancy_visit/group_danger_signs/g_danger_signs"]`);
@@ -28,7 +28,7 @@ const getFollowUpSMS = async () => {
 };
 
 const submitPregnancyVisit = async () => {
-  await contactPage.createNewAction('Pregnancy Visit');
+  await commonPage.openFastActionReport('pregnancy_visit');
   await selectAllDangerSigns();
   await genericForm.nextPage();
   await setNote('Test note');

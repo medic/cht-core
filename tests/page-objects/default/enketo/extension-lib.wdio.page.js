@@ -58,13 +58,13 @@ return function(first, second) {
 }
 `;
 
-const TITLE = 'Average Calculator';
+const INTERNAL_ID = 'average';
 
 const docs = [
   {
     _id: 'form:average',
-    internalId: 'average',
-    title: TITLE,
+    internalId: INTERNAL_ID,
+    title: 'Average Calculator',
     type: 'form',
     _attachments: {
       xml: {
@@ -107,7 +107,7 @@ const blur = async () => {
 };
 
 module.exports = {
-  TITLE,
+  INTERNAL_ID,
   configure,
   typeFirst: async (val) => await setField('first', val),
   typeSecond: async (val) => await setField('second', val),

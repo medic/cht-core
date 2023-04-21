@@ -31,13 +31,13 @@ const xml = `<?xml version="1.0"?>
 </h:html>
 `;
 
-const TITLE = 'Countdown Timer';
+const INTERNAL_ID = 'countdown-timer';
 
 const docs = [
   {
     _id: 'form:countdown-timer',
-    internalId: 'countdown-timer',
-    title: TITLE,
+    internalId: INTERNAL_ID,
+    title: 'Countdown Timer',
     type: 'form',
     _attachments: {
       xml: {
@@ -58,7 +58,7 @@ const clickTimer = async () => {
 };
 
 module.exports = {
-  TITLE,
+  INTERNAL_ID,
   configureForm,
   clickTimer,
 };
