@@ -45,7 +45,6 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
-import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 
 const SYNC_STATUS = {
@@ -129,7 +128,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     private ngZone:NgZone,
     private chtScriptApiService: CHTScriptApiService,
     private analyticsModulesService: AnalyticsModulesService,
-    private trainingCardsService: TrainingCardsService,
     private matIconRegistry: MatIconRegistry,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -275,10 +273,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = Promise.resolve()
       .then(() => this.chtScriptApiService.isInitialized())
-      .then(() => this.checkPrivacyPolicy())
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
+      .then(() => this.checkPrivacyPolicy())
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses());
@@ -521,9 +519,6 @@ export class AppComponent implements OnInit, AfterViewInit {
               }))
               .sort((a, b) => a.title - b.title);
           });
-
-        // Get forms for training cards and display the cards if necessary
-        this.trainingCardsService.initTrainingCards();
       })
       .catch(err => console.error('Failed to retrieve forms', err));
   }

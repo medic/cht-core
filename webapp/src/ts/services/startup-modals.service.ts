@@ -9,6 +9,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdateSettingsService } from '@mm-services/update-settings.service';
 import { WelcomeComponent } from '@mm-modals/welcome/welcome.component';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 interface StartupModal {
   required: (settings, user?) => boolean;
@@ -26,7 +27,7 @@ export class StartupModalsService {
   startupModals: StartupModal[] = [
     // welcome screen
     {
-      required: settings => !settings.setup_complete,
+      required: settings => true, // !settings.setup_complete,
       render: () => {
         return this.modalService.show(WelcomeComponent, { class: 'welcome' })
           .catch(() => {});
@@ -34,7 +35,7 @@ export class StartupModalsService {
     },
     // guided setup
     {
-      required: settings => !settings.setup_complete,
+      required: settings => true, // !settings.setup_complete,
       render: () => {
         return this.modalService.show(GuidedSetupComponent)
           .catch(() => {})
@@ -42,9 +43,18 @@ export class StartupModalsService {
           .catch(err => console.error('Error updating settings', err));
       },
     },
+    // training cards
+    {
+      // The process to initialize training cards should occur for every user.
+      required: () => true,
+      render: () => {
+        return this.trainingCardsService.showTrainingCards()
+          .catch(() => {});
+      },
+    },
     // tour
     {
-      required: (settings, user) => !user.known && this.tours.length > 0,
+      required: (settings, user) => true, // !user.known && this.tours.length > 0,
       render: () => {
         return this.modalService.show(TourSelectComponent)
           .catch(() => {})
@@ -61,6 +71,7 @@ export class StartupModalsService {
     private settingsService: SettingsService,
     private updateSettingsService: UpdateSettingsService,
     private userSettingsService: UserSettingsService,
+    private trainingCardsService: TrainingCardsService
   ) {
     this.initialized = this.tourService.getTours().then(tours => {
       this.tours = tours;

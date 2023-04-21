@@ -43,7 +43,6 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { Selectors } from '@mm-selectors/index';
-import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -81,7 +80,6 @@ describe('AppComponent', () => {
   let transitionsService;
   let chtScriptApiService;
   let analyticsModulesService;
-  let trainingCardsService;
   // End Services
 
   let globalActions;
@@ -163,7 +161,6 @@ describe('AppComponent', () => {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
-    trainingCardsService = { initTrainingCards: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
@@ -215,7 +212,6 @@ describe('AppComponent', () => {
           { provide: TransitionsService, useValue: transitionsService },
           { provide: CHTScriptApiService, useValue: chtScriptApiService },
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
-          { provide: TrainingCardsService, useValue: trainingCardsService },
         ]
       })
       .compileComponents();
@@ -273,7 +269,7 @@ describe('AppComponent', () => {
     expect(component.isSidebarFilterOpen).to.be.true;
   }));
 
-  it('should subscribe to xmlFormService to retrieve forms and initialize training cards', async () => {
+  it('should subscribe to xmlFormService to retrieve forms', async () => {
     const form1 = {
       code: '123',
       name: 'something',
@@ -335,7 +331,6 @@ describe('AppComponent', () => {
       icon: 'icon',
       title: 'form2'
     }]);
-    expect(trainingCardsService.initTrainingCards.calledOnce).to.be.true;
   });
 
   it('should set privacy policy and start modals if privacy accepted', async () => {

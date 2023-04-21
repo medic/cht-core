@@ -3,6 +3,7 @@ import { SettingsService } from '@mm-services/settings.service';
 import { StartupModalsService } from '@mm-services/startup-modals.service';
 import { UpdateSettingsService } from '@mm-services/update-settings.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { TourService } from '@mm-services/tour.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 
@@ -15,6 +16,7 @@ describe('StartupModalsService', () => {
   let service: StartupModalsService;
   let modalService;
   let userSettingsService;
+  let trainingCardsService;
 
   afterEach(() => {
     sinon.restore();
@@ -39,6 +41,7 @@ describe('StartupModalsService', () => {
       { provide: SettingsService, useValue: { get: () => ({ setup_complete: true }) } },
       { provide: UpdateSettingsService, useValue: { update: sinon.stub().resolves() } },
       { provide: ModalService, useValue: { show: sinon.stub().resolves() } },
+      { provide: TrainingCardsService, useValue: { showTrainingCards: sinon.stub().resolves() } },
       { provide: TourService, useValue: { getTours: sinon.stub().resolves(toursResult) } },
     ];
   };
@@ -47,6 +50,7 @@ describe('StartupModalsService', () => {
     service = TestBed.inject(StartupModalsService);
     modalService = TestBed.inject(ModalService);
     userSettingsService = TestBed.inject(UserSettingsService);
+    trainingCardsService = TestBed.inject(TrainingCardsService);
   };
 
   describe('showStartupModals', () => {

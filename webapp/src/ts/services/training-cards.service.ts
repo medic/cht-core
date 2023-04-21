@@ -11,6 +11,7 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { FeedbackService } from '@mm-services/feedback.service';
+import { Subject } from 'rxjs';
 
 export const TRAINING_PREFIX: string = 'training:';
 
@@ -19,6 +20,7 @@ export const TRAINING_PREFIX: string = 'training:';
 })
 export class TrainingCardsService {
   private globalActions;
+  private observable = new Subject();
 
   constructor(
     private store: Store,
@@ -82,35 +84,50 @@ export class TrainingCardsService {
     return docs?.rows?.length ? new Set(docs.rows.map(row => row?.doc?.form)) : new Set();
   }
 
+  private deployTrainingCards() {
+      // Send the promise returned by .show() to an observable, so that it
+      // can be used externally after handleTrainingCards has been called
+      // through xmlFormsService
+      this.observable.next(
+        this.modalService
+          .show(TrainingCardsComponent, { backdrop: 'static', keyboard: false })
+          .catch(() => {})
+      );
+  }
+
+  private deployEmpty() {
+    // This should be called when handleTrainingCards doesn't have any cards
+    // to display.
+    this.observable.next(void 0)
+  }
+
   private async handleTrainingCards(error, xForms) {
     if (error) {
       const message = 'Training Cards :: Error fetching forms.';
       console.error(message, error);
       this.feedbackService.submit(message);
-      return;
+      return this.deployEmpty();
     }
 
     const routeSnapshot = this.routeSnapshotService.get();
     if (routeSnapshot?.data?.hideTraining) {
-      return;
+      return this.deployEmpty();
     }
 
     try {
       const firstChronologicalTrainingCard = await this.getFirstChronologicalForm(xForms);
       if (!firstChronologicalTrainingCard) {
-        return;
+        return this.deployEmpty();
       }
 
       this.globalActions.setTrainingCardFormId(firstChronologicalTrainingCard.code);
-      this.modalService
-        .show(TrainingCardsComponent, { backdrop: 'static', keyboard: false })
-        .catch(() => {});
+      this.deployTrainingCards();
 
     } catch (error) {
       const message = 'Training Cards :: Error showing modal.';
       console.error(message, error);
       this.feedbackService.submit(message);
-      return;
+      return this.deployEmpty();
     }
   }
 
@@ -134,6 +151,16 @@ export class TrainingCardsService {
       { trainingCards: true },
       (error, xForms) => this.handleTrainingCards(error, xForms)
     );
+  }
+
+  public showTrainingCards() {
+    this.initTrainingCards();
+
+    // this.observable will send out a value once it has heard back from
+    // xmlFormsService.
+    return new Promise(resolve => {
+      this.observable.subscribe(showCards => { resolve(showCards) });
+    });
   }
 
   public isTrainingCardForm(formInternalId) {
