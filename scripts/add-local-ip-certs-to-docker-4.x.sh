@@ -52,7 +52,7 @@ if [ "$status" = "true" ]; then
   result=""
   if [ "$action" = "refresh" ]; then
     result="downloaded fresh local-ip.medicmobile.org"
-    docker exec -it $container bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/chain"
+    docker exec -it $container bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
     docker exec -it $container bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
   elif [ "$action" = "expire" ]; then
     result="installed expired local-ip.co"
