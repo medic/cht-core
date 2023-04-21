@@ -18,9 +18,11 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
 import { EnketoService } from '@mm-services/enketo.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';
 import { GlobalActions } from '@mm-actions/global';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
 
 
 describe('ContactsEdit component', () => {
+  let consoleError;
   let contactTypesService;
   let translateService;
   let router;
@@ -32,6 +34,7 @@ describe('ContactsEdit component', () => {
   let enketoService;
   let lineageModelGeneratorService;
   let contactSaveService;
+  let xmlFormsService;
   let routeSnapshot;
 
   beforeEach(() => {
@@ -55,9 +58,10 @@ describe('ContactsEdit component', () => {
       unload: sinon.stub(),
     };
     lineageModelGeneratorService = { contact: sinon.stub().resolves({ doc: { } }) };
+    xmlFormsService =  { canAccessForm: sinon.stub() };
     contactSaveService =  { save: sinon.stub() };
 
-    sinon.stub(console, 'error');
+    consoleError = sinon.stub(console, 'error');
 
     const mockedSelectors = [
       { selector: Selectors.getEnketoStatus, value: { } },
@@ -83,6 +87,7 @@ describe('ContactsEdit component', () => {
         { provide: LineageModelGeneratorService, useValue: lineageModelGeneratorService },
         { provide: EnketoService, useValue: enketoService },
         { provide: ContactTypesService, useValue: contactTypesService },
+        { provide: XmlFormsService, useValue: xmlFormsService },
         { provide: ContactSaveService, useValue: contactSaveService },
       ],
       declarations: [
@@ -202,7 +207,7 @@ describe('ContactsEdit component', () => {
     it('should respond to url changes', fakeAsync(async () => {
       routeSnapshot.params = { type: 'random' };
       route.params.next({ type: 'random' });
-
+      xmlFormsService.canAccessForm.resolves(true);
       contactTypesService.get
         .withArgs('random')
         .resolves({
@@ -255,6 +260,7 @@ describe('ContactsEdit component', () => {
     describe('for new contact', () => {
       it('should fail when no type', async () => {
         contactTypesService.get.resolves();
+        xmlFormsService.canAccessForm.resolves(true);
 
         await createComponent();
         await fixture.whenStable();
@@ -269,6 +275,7 @@ describe('ContactsEdit component', () => {
       it('should fail when no formId', async () => {
         routeSnapshot.params = { type: 'random' };
         contactTypesService.get.resolves({});
+        xmlFormsService.canAccessForm.resolves(true);
         await createComponent();
         await fixture.whenStable();
 
@@ -281,6 +288,7 @@ describe('ContactsEdit component', () => {
 
       it('should fail when no form', async () => {
         routeSnapshot.params = { type: 'person' };
+        xmlFormsService.canAccessForm.resolves(true);
         contactTypesService.get.resolves({
           create_form: 'person_create_form_id',
           create_key: 'person_create_key',
@@ -299,8 +307,35 @@ describe('ContactsEdit component', () => {
         expect(component.contentError).to.equal(true);
       });
 
+      it('should fail when user cannot access form', async () => {
+        xmlFormsService.canAccessForm.resolves(false);
+        routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+        contactTypesService.get.resolves({
+          create_form: 'clinic_create_form_id',
+          create_key: 'clinic_create_key',
+        });
+        dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
+
+        await createComponent();
+        await fixture.whenStable();
+
+        expect(contactTypesService.get.calledOnce).to.be.true;
+        expect(contactTypesService.get.args[0]).to.deep.equal(['clinic']);
+        expect(dbGet.calledOnce).to.be.true;
+        expect(dbGet.args[0]).to.deep.equal(['clinic_create_form_id']);
+        expect(enketoService.renderContactForm.notCalled).to.be.true;
+        expect(component.errorTranslationKey).to.equal('error.loading.form.no_authorized');
+        expect(component.contentError).to.be.true;
+        expect(consoleError.calledOnce).to.be.true;
+        expect(consoleError.args[0]).to.have.deep.members([
+          'Error loading contact form.',
+          { translationKey: 'error.loading.form.no_authorized' },
+        ]);
+      });
+
       it('should render form with parent', async () => {
         routeSnapshot.params = { type: 'clinic', parent_id: 'the_district' };
+        xmlFormsService.canAccessForm.resolves(true);
         contactTypesService.get.resolves({
           create_form: 'clinic_create_form_id',
           create_key: 'clinic_create_key',
@@ -331,6 +366,7 @@ describe('ContactsEdit component', () => {
 
       it('should render form without parent', async () => {
         routeSnapshot.params = { type: 'district_hospital' };
+        xmlFormsService.canAccessForm.resolves(true);
         contactTypesService.get.resolves({
           create_form: 'district_create_form_id',
           create_key: 'district_create_key',
@@ -364,6 +400,7 @@ describe('ContactsEdit component', () => {
     describe('for existent contact', () => {
       it('should fail when no type', async () => {
         routeSnapshot.params = { id: 'the_clinic' };
+        xmlFormsService.canAccessForm.resolves(true);
         lineageModelGeneratorService.contact.resolves({
           doc: {
             _id: 'the_clinic',
@@ -371,7 +408,6 @@ describe('ContactsEdit component', () => {
           },
         });
         contactTypesService.get.resolves();
-
 
         await createComponent();
         await fixture.whenStable();
@@ -385,6 +421,7 @@ describe('ContactsEdit component', () => {
 
       it('should fail when no formId', async () => {
         routeSnapshot.params = { id: 'the_person' };
+        xmlFormsService.canAccessForm.resolves(true);
         lineageModelGeneratorService.contact.resolves({
           doc: {
             _id: 'the_person',
@@ -405,6 +442,7 @@ describe('ContactsEdit component', () => {
 
       it('should fail when no form', async () => {
         routeSnapshot.params = { id: 'the_patient' };
+        xmlFormsService.canAccessForm.resolves(true);
         lineageModelGeneratorService.contact.resolves({
           doc: {
             _id: 'the_patient',
@@ -429,8 +467,41 @@ describe('ContactsEdit component', () => {
         expect(component.contentError).to.equal(true);
       });
 
+      it('should fail when user cannot access form', async () => {
+        xmlFormsService.canAccessForm.resolves(false);
+        routeSnapshot.params = { id: 'the_patient' };
+        lineageModelGeneratorService.contact.resolves({
+          doc: {
+            _id: 'the_patient',
+            type: 'patient',
+          },
+        });
+        contactTypesService.get.resolves({
+          edit_form: 'patient_edit_form',
+          create_form: 'patient_create_form',
+          edit_key: 'patient_edit_key',
+        });
+        dbGet.resolves({ _id: 'patient_edit_form', form: true });
+        await createComponent();
+        await fixture.whenStable();
+
+        expect(contactTypesService.get.calledOnce).to.be.true;
+        expect(contactTypesService.get.args[0]).to.deep.equal(['patient']);
+        expect(dbGet.calledOnce).to.be.true;
+        expect(dbGet.args[0]).to.deep.equal(['patient_edit_form']);
+        expect(enketoService.renderContactForm.notCalled).to.be.true;
+        expect(component.errorTranslationKey).to.equal('error.loading.form.no_authorized');
+        expect(component.contentError).to.be.true;
+        expect(consoleError.calledOnce).to.be.true;
+        expect(consoleError.args[0]).to.have.deep.members([
+          'Error loading contact form.',
+          { translationKey: 'error.loading.form.no_authorized' },
+        ]);
+      });
+
       it('should render form with edit form', async () => {
         routeSnapshot.params = { id: 'the_patient' };
+        xmlFormsService.canAccessForm.resolves(true);
         lineageModelGeneratorService.contact.resolves({
           doc: {
             _id: 'the_patient',
@@ -467,6 +538,7 @@ describe('ContactsEdit component', () => {
 
       it('should render form with create form', async () => {
         routeSnapshot.params = { id: 'the_clinic' };
+        xmlFormsService.canAccessForm.resolves(true);
         lineageModelGeneratorService.contact.resolves({
           doc: {
             _id: 'the_clinic',
@@ -503,6 +575,7 @@ describe('ContactsEdit component', () => {
 
       it('should select correct form for correct type', async () => {
         routeSnapshot.params = { id: 'the_clinic' };
+        xmlFormsService.canAccessForm.resolves(true);
         lineageModelGeneratorService.contact.resolves({
           doc: {
             _id: 'the_clinic',
@@ -549,6 +622,7 @@ describe('ContactsEdit component', () => {
     beforeEach(() => {
       setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
+      xmlFormsService.canAccessForm.resolves(true);
     });
 
     it('should not save when already saving', async () => {

@@ -1355,6 +1355,85 @@ describe('XmlForms service', () => {
           expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorTitle + expectedErrorDetail);
         });
     });
+
+    it('should return expected form when user can access the form', async () => {
+      const internalId = 'birth';
+      const expected = {
+        type: 'form',
+        context: {
+          permission: 'can_view_this_form',
+          expression: 'user.name === "Frank"',
+        },
+        _attachments: { xml: { stub: true } }
+      };
+      dbQuery.resolves([]);
+      dbGet.resolves(expected);
+      const service = getService();
+
+      UserContact.resolves({ name: 'Frank' });
+      hasAuth.withArgs('can_view_this_form').resolves(true);
+      try {
+        const actual = await service.get(internalId);
+
+        expect(actual).to.deep.equal(expected);
+        expect(dbGet.calledOnce).to.be.true;
+        expect(dbGet.args[0][0]).to.equal(`form:${internalId}`);
+      } catch(error) {
+        assert.fail('should have thrown');
+      }
+    });
+
+    it('should reject when user cannot access the form because expression does not match', async () => {
+      const internalId = 'birth';
+      const expected = {
+        type: 'form',
+        context: {
+          permission: 'can_view_this_form',
+          expression: 'user.name === "Frank"',
+        },
+        _attachments: { xml: { stub: true } }
+      };
+      dbQuery.resolves([]);
+      dbGet.resolves(expected);
+      const service = getService();
+
+      UserContact.resolves({ name: 'Anna' });
+      hasAuth.withArgs('can_view_this_form').resolves(true);
+      try {
+        await service.get(internalId);
+        assert.fail('should have thrown');
+      } catch(error) {
+        expect(error).to.deep.equal({ translationKey: 'error.loading.form.no_authorized' });
+        expect(dbGet.calledOnce).to.be.true;
+        expect(dbGet.args[0][0]).to.equal(`form:${internalId}`);
+      }
+    });
+
+    it('should reject when user cannot access the form because missing permissions', async () => {
+      const internalId = 'birth';
+      const expected = {
+        type: 'form',
+        context: {
+          permission: 'can_view_this_form',
+          expression: 'user.name === "Frank"',
+        },
+        _attachments: { xml: { stub: true } }
+      };
+      dbQuery.resolves([]);
+      dbGet.resolves(expected);
+      const service = getService();
+
+      UserContact.resolves({ name: 'Frank' });
+      hasAuth.withArgs('can_view_this_form').resolves(false);
+      try {
+        await service.get(internalId);
+        assert.fail('should have thrown');
+      } catch(error) {
+        expect(error).to.deep.equal({ translationKey: 'error.loading.form.no_authorized' });
+        expect(dbGet.calledOnce).to.be.true;
+        expect(dbGet.args[0][0]).to.equal(`form:${internalId}`);
+      }
+    });
   });
 
   describe('getDocAndFormAttachment', () => {

@@ -152,7 +152,7 @@ export class XmlFormsService {
   }
 
   private checkFormExpression(form, doc, user, contactSummary) {
-    if (!form.context.expression) {
+    if (!form.context?.expression) {
       return true;
     }
 
@@ -170,7 +170,7 @@ export class XmlFormsService {
   }
 
   private checkFormPermissions(form) {
-    if (!form.context.permission) {
+    if (!form.context?.permission) {
       return true;
     }
 
