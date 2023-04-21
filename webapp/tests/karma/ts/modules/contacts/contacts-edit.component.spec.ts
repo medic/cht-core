@@ -1,7 +1,7 @@
 import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { Subject } from 'rxjs';
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import sinon from 'sinon';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -316,21 +316,25 @@ describe('ContactsEdit component', () => {
         });
         dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
 
-        await createComponent();
-        await fixture.whenStable();
+        try {
+          await createComponent();
+          await fixture.whenStable();
 
-        expect(contactTypesService.get.calledOnce).to.be.true;
-        expect(contactTypesService.get.args[0]).to.deep.equal(['clinic']);
-        expect(dbGet.calledOnce).to.be.true;
-        expect(dbGet.args[0]).to.deep.equal(['clinic_create_form_id']);
-        expect(enketoService.renderContactForm.notCalled).to.be.true;
-        expect(component.errorTranslationKey).to.equal('error.loading.form.no_authorized');
-        expect(component.contentError).to.be.true;
-        expect(consoleError.calledOnce).to.be.true;
-        expect(consoleError.args[0]).to.have.deep.members([
-          'Error loading contact form.',
-          { translationKey: 'error.loading.form.no_authorized' },
-        ]);
+          expect(contactTypesService.get.calledOnce).to.be.true;
+          expect(contactTypesService.get.args[0]).to.deep.equal(['clinic']);
+          expect(dbGet.calledOnce).to.be.true;
+          expect(dbGet.args[0]).to.deep.equal(['clinic_create_form_id']);
+          expect(enketoService.renderContactForm.notCalled).to.be.true;
+          expect(component.errorTranslationKey).to.equal('error.loading.form.no_authorized');
+          expect(component.contentError).to.be.true;
+          expect(consoleError.calledOnce).to.be.true;
+          expect(consoleError.args[0]).to.have.deep.members([
+            'Error loading contact form.',
+            { translationKey: 'error.loading.form.no_authorized' },
+          ]);
+        } catch(error) {
+          assert.fail('should have not thrown');
+        }
       });
 
       it('should render form with parent', async () => {
@@ -342,26 +346,30 @@ describe('ContactsEdit component', () => {
         });
         dbGet.resolves({ _id: 'clinic_create_form_id', the: 'form' });
 
-        await createComponent();
-        await fixture.whenStable();
+        try {
+          await createComponent();
+          await fixture.whenStable();
 
-        expect(contactTypesService.get.callCount).to.equal(1);
-        expect(contactTypesService.get.args[0]).to.deep.equal(['clinic']);
-        expect(dbGet.callCount).to.equal(1);
-        expect(dbGet.args[0]).to.deep.equal(['clinic_create_form_id']);
-        expect(component.enketoContact).to.deep.equal({
-          type: 'clinic',
-          formInstance: undefined,
-          docId: null,
-        });
-        expect(enketoService.renderContactForm.callCount).to.equal(1);
-        expect(enketoService.renderContactForm.args[0][0]).to.deep.include({
-          selector: '#contact-form',
-          formDoc: { _id: 'clinic_create_form_id', the: 'form' },
-          instanceData: { clinic: { type: 'contact', contact_type: 'clinic', parent: 'the_district' } },
-          titleKey: 'clinic_create_key',
-        });
-        expect(component.contentError).to.equal(false);
+          expect(contactTypesService.get.callCount).to.equal(1);
+          expect(contactTypesService.get.args[0]).to.deep.equal(['clinic']);
+          expect(dbGet.callCount).to.equal(1);
+          expect(dbGet.args[0]).to.deep.equal(['clinic_create_form_id']);
+          expect(component.enketoContact).to.deep.equal({
+            type: 'clinic',
+            formInstance: undefined,
+            docId: null,
+          });
+          expect(enketoService.renderContactForm.callCount).to.equal(1);
+          expect(enketoService.renderContactForm.args[0][0]).to.deep.include({
+            selector: '#contact-form',
+            formDoc: { _id: 'clinic_create_form_id', the: 'form' },
+            instanceData: { clinic: { type: 'contact', contact_type: 'clinic', parent: 'the_district' } },
+            titleKey: 'clinic_create_key',
+          });
+          expect(component.contentError).to.equal(false);
+        } catch(error) {
+          assert.fail('should have not thrown');
+        }
       });
 
       it('should render form without parent', async () => {

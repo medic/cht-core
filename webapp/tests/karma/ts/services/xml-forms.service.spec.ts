@@ -1379,7 +1379,7 @@ describe('XmlForms service', () => {
         expect(dbGet.calledOnce).to.be.true;
         expect(dbGet.args[0][0]).to.equal(`form:${internalId}`);
       } catch(error) {
-        assert.fail('should have thrown');
+        assert.fail('should have not thrown');
       }
     });
 
