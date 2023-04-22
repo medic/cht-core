@@ -35,7 +35,7 @@ describe('Pregnancy Visit', () => {
 
   it('Submit new pregnancy visit - webapp', async () => {
     const note = 'Test note - pregnancy visit';
-    await contactPage.contactPageDefault.createNewAction('Pregnancy Visit');
+    await commonPage.openFastActionReport('pregnancy_visit');
 
     const dangerSigns = await pregnancyVisitForm.selectAllDangerSigns();
     await genericForm.nextPage();

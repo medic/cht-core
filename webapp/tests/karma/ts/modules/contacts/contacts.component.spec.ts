@@ -28,6 +28,7 @@ import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
 import { NavigationService } from '@mm-services/navigation.service';
+import { FastActionButtonService } from '@mm-services/fast-action-button.service';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -48,6 +49,7 @@ describe('Contacts component', () => {
   let tourService;
   let exportService;
   let xmlFormsService;
+  let fastActionButtonService;
   let globalActions;
   let district;
 
@@ -91,6 +93,10 @@ describe('Contacts component', () => {
     };
     exportService = { export: sinon.stub() };
     xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
+    fastActionButtonService = {
+      getContactLeftSideActions: sinon.stub(),
+      getButtonTypeForContentList: sinon.stub(),
+    };
 
     contactListContains = sinon.stub();
     const selectedContact =  {
@@ -138,6 +144,7 @@ describe('Contacts component', () => {
           { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
           { provide: ExportService, useValue: exportService },
           { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
           { provide: NavigationService, useValue: {} },
         ]
       })
@@ -187,6 +194,10 @@ describe('Contacts component', () => {
       expect(globalActions.setLeftActionBar.args[0][0].hasResults).to.equal(false);
       expect(globalActions.setLeftActionBar.args[0][0].userFacilityId).to.equal('district-id');
       expect(globalActions.setLeftActionBar.args[0][0].exportFn).to.be.a('function');
+
+      expect(fastActionButtonService.getContactLeftSideActions.calledOnce).to.be.true;
+      expect(fastActionButtonService.getContactLeftSideActions.args[0][0].parentFacilityId).to.equal('district-id');
+      expect(fastActionButtonService.getContactLeftSideActions.args[0][0].childContactTypes.length).to.equal(0);
     }));
 
     it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
@@ -230,6 +241,19 @@ describe('Contacts component', () => {
           create_form: 'form:contact:create:type3',
         },
       ]);
+
+      expect(fastActionButtonService.getContactLeftSideActions.calledTwice).to.be.true;
+      expect(fastActionButtonService.getContactLeftSideActions.args[1][0].childContactTypes).to.have.deep.members([
+        {
+          id: 'type2',
+          create_form: 'form:contact:create:type2',
+        },
+        {
+          id: 'type3',
+          create_form: 'form:contact:create:type3',
+        },
+      ]);
+
       // Checking that childPlaces didn't changed after operations, because used in search feature.
       expect(component.childPlaces).to.have.deep.members([
         {

@@ -51,9 +51,36 @@
   }
 }
 
+.mat-bottom-sheet-container {
+  padding: 0 !important;
+}
+
 /**
  * Medic's custom component style
  */
+mm-panel-header {
+  display: flex;
+  padding: 14px 20px 10px 20px;
+  border-bottom: 1px solid @separator-dark-color;
+
+  .panel-header {
+    display: flex;
+    align-self: stretch;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .panel-header-title {
+    font-size: @font-medium;
+    margin: 0;
+  }
+
+  .panel-header-close {
+    font-size: @font-extra-large;
+    margin: 0;
+  }
+}
+
 .material {
   .card {
     border: 1px solid @separator-color;

@@ -33,7 +33,7 @@
 |e2e/protractor/rapidpro.spec.js	|	|	|	|	|
 |e2e/protractor/registration-by-sms.js	| Done | Bede/Tatiana | [#8146](https://github.com/medic/cht-core/pull/8146) |	|
 |e2e/protractor/report-date-filter.js	|Done	|Bede	|[#7429](https://github.com/medic/cht-core/pull/7429)	|	|
-|e2e/protractor/reports-subject.js	|	|	|	|	|
+|e2e/protractor/reports-subject.js	| Done | Bede/Tatiana | [#8163](https://github.com/medic/cht-core/pull/8163 |	|
 |e2e/protractor/send-message.js	|	|	|	|	|
 |e2e/protractor/sms-gateway.js	|Done	|Nick	|[#7367](https://github.com/medic/cht-core/pull/7367)	|	|
 |e2e/protractor/submit-enketo-form.js	|Done	|Bede	|[#7424](https://github.com/medic/cht-core/pull/7424)	|	|
