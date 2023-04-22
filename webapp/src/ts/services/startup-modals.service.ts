@@ -27,7 +27,7 @@ export class StartupModalsService {
   startupModals: StartupModal[] = [
     // welcome screen
     {
-      required: settings => true, // !settings.setup_complete,
+      required: settings => !settings.setup_complete,
       render: () => {
         return this.modalService.show(WelcomeComponent, { class: 'welcome' })
           .catch(() => {});
@@ -35,7 +35,7 @@ export class StartupModalsService {
     },
     // guided setup
     {
-      required: settings => true, // !settings.setup_complete,
+      required: settings => !settings.setup_complete,
       render: () => {
         return this.modalService.show(GuidedSetupComponent)
           .catch(() => {})
@@ -54,7 +54,7 @@ export class StartupModalsService {
     },
     // tour
     {
-      required: (settings, user) => true, // !user.known && this.tours.length > 0,
+      required: (settings, user) => !user.known && this.tours.length > 0,
       render: () => {
         return this.modalService.show(TourSelectComponent)
           .catch(() => {})
