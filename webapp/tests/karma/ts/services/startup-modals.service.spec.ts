@@ -74,5 +74,14 @@ describe('StartupModalsService', () => {
       expect(modalService.show.callCount).to.equal(1);
       expect(userSettingsService.setAsKnown.callCount).to.equal(1);
     });
+
+    it('Training cards service should be initialized', async () => {
+      TestBed.configureTestingModule({
+        providers: getProviders([]),
+      });
+      injectService();
+      await service.showStartupModals();
+      expect(trainingCardsService.showTrainingCards.callCount).to.equal(1);
+    });
   });
 });
