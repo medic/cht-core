@@ -564,7 +564,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(({ privacyPolicy, accepted }: any = {}) => {
         this.globalActions.setPrivacyPolicyAccepted(accepted);
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
-        return { privacyPolicy, accepted };
       })
       .catch(err => console.error('Failed to load privacy policy', err));
   }
