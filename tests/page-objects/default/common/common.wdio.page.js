@@ -21,6 +21,7 @@ const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
 const jsonError = async () => (await $('pre')).getText();
 
@@ -171,6 +172,11 @@ const getLogoutMessage = async () => {
   return body.getText();
 };
 
+const refresh = async () => {
+  await browser.refresh();
+  await waitForPageLoaded();
+};
+
 const goToBase = async () => {
   await browser.url('/');
   await waitForPageLoaded();
@@ -293,9 +299,11 @@ const sync = async (expectReload) => {
   await syncAndWaitForSuccess();
 };
 
-const syncWithoutWaitForSuccess = async () => {
+const syncAndWaitForFailure = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
+  await openHamburgerMenu();
+  await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
 };
 
 const closeReloadModal = async () => {
@@ -436,5 +444,6 @@ module.exports = {
   isMenuOptionEnabled,
   isMenuOptionVisible,
   moreOptionsMenu,
-  syncWithoutWaitForSuccess,
+  refresh,
+  syncAndWaitForFailure,
 };
