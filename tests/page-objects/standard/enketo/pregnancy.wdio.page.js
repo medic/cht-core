@@ -1,5 +1,5 @@
 const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 
 const APROX_LMP = {up2Months: 61, up3Months: 91, up4Months: 122, b5To6Months: 183, b7To8Months: 244};
 
@@ -57,7 +57,7 @@ const getFollowUpSMS = async () => {
 };
 
 const submitPregnancy = async () => {
-  await contactPage.createNewAction('New Pregnancy');
+  await commonPage.openFastActionReport('pregnancy');
   await selectKnowLMP();
   await selectAproxLMP(APROX_LMP.b7To8Months);
   await genericForm.nextPage();

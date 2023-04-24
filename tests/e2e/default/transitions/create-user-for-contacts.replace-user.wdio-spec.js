@@ -91,8 +91,8 @@ const loginAsOfflineUser = () => loginAsUser(ORIGINAL_USER);
 
 const loginAsOnlineUser = () => loginAsUser(ONLINE_USER);
 
-const populateReplaceUserForm = async (formTitle) => {
-  await contactsPage.createNewAction(formTitle);
+const populateReplaceUserForm = async (formID) => {
+  await commonPage.openFastActionReport(formID);
   await replaceUserForm.selectAdminCode('1234');
   await genericForm.nextPage();
   await replaceUserForm.selectContactFullName('Replacement User');
@@ -103,8 +103,9 @@ const populateReplaceUserForm = async (formTitle) => {
 };
 
 const submitBasicForm = async () => {
-  await reportsPage.openForm('Form basic_form');
+  await commonPage.openFastActionReport('basic_form', false);
   await reportsPage.submitForm();
+  await commonPage.waitForPageLoaded();
   return reportsPage.getCurrentReportId();
 };
 
@@ -213,8 +214,8 @@ describe('Create user for contacts', () => {
         await commonPage.goToReports();
         const existingBasicReportId = await submitBasicForm();
 
-        await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
+        await commonPage.goToPeople(originalContactId, true);
+        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
         await contactsPage.submitForm();
         const reportNames = await contactsPage.getAllRHSReportsNames();
         expect(reportNames.filter(name => name === REPLACE_USER_FORM_TITLE)).to.have.lengthOf(1);
@@ -292,7 +293,7 @@ describe('Create user for contacts', () => {
         const originalContactId = ORIGINAL_USER.contact._id;
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
+        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
         await (await genericForm.submitButton()).waitForDisplayed();
         await (await genericForm.submitButton()).click();
 
@@ -345,7 +346,7 @@ describe('Create user for contacts', () => {
         const originalContactId = ORIGINAL_USER.contact._id;
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
+        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
         await contactsPage.submitForm(false);
 
         // Logout triggered immediately
@@ -395,7 +396,7 @@ describe('Create user for contacts', () => {
         await browser.throttle('offline');
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
+        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
         await contactsPage.submitForm();
         let reportNames = await contactsPage.getAllRHSReportsNames();
         expect(reportNames.filter(name => name === REPLACE_USER_FORM_TITLE)).to.have.lengthOf(1);
@@ -423,7 +424,7 @@ describe('Create user for contacts', () => {
 
         // Submit another replace user form
         await commonPage.goToPeople(replacementContactId0);
-        await populateReplaceUserForm(OTHER_REPLACE_FORM_DOC.title);
+        await populateReplaceUserForm(OTHER_REPLACE_FORM_DOC.internalId);
         await contactsPage.submitForm();
         reportNames = await contactsPage.getAllRHSReportsNames();
         expect(reportNames.filter(name => name === OTHER_REPLACE_FORM_DOC.title)).to.have.lengthOf(1);
@@ -499,7 +500,7 @@ describe('Create user for contacts', () => {
         const originalContactId = ORIGINAL_USER.contact._id;
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
+        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
         await (await genericForm.submitButton()).waitForDisplayed();
         await (await genericForm.submitButton()).click();
 
@@ -569,7 +570,7 @@ describe('Create user for contacts', () => {
         await browser.throttle('offline');
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
+        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
         await contactsPage.submitForm();
         const reportNames = await contactsPage.getAllRHSReportsNames();
         expect(reportNames.filter(name => name === REPLACE_USER_FORM_TITLE)).to.have.lengthOf(1);
@@ -604,7 +605,7 @@ describe('Create user for contacts', () => {
         await loginPage.login(otherUser);
         await commonPage.waitForPageLoaded();
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
+        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
         await contactsPage.submitForm(false);
 
         // Logout triggered immediately
@@ -680,7 +681,7 @@ describe('Create user for contacts', () => {
         const originalContactId = ORIGINAL_USER.contact._id;
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
+        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
         await contactsPage.submitForm();
         // No logout triggered
         await commonPage.goToReports();
@@ -716,7 +717,7 @@ describe('Create user for contacts', () => {
         await browser.throttle('offline');
 
         await commonPage.goToPeople(originalContactId);
-        await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
+        await populateReplaceUserForm(REPLACE_USER_FORM_ID);
         await contactsPage.submitForm();
         const reportNames = await contactsPage.getAllRHSReportsNames();
         expect(reportNames.filter(name => name === REPLACE_USER_FORM_TITLE)).to.have.lengthOf(1);
@@ -793,7 +794,7 @@ describe('Create user for contacts', () => {
       const originalContactId = ONLINE_USER.contact._id;
       await commonPage.goToPeople(originalContactId);
 
-      await populateReplaceUserForm(REPLACE_USER_FORM_TITLE);
+      await populateReplaceUserForm(REPLACE_USER_FORM_ID);
       await contactsPage.submitForm();
       // No logout triggered
       await commonPage.goToReports();
