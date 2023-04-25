@@ -1,8 +1,6 @@
 #!/bin/bash
 
 set -e
-# Make sure service is running
-service rsyslog start
 
 DEFAULT="/usr/local/etc/haproxy/default_frontend.cfg"
 BACKEND="/usr/local/etc/haproxy/backend.cfg"

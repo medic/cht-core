@@ -1,4 +1,4 @@
-FROM haproxy:2.7
+FROM haproxy:2.6
 
 USER root
 RUN apt-get update && apt-get install rsyslog luarocks gettext jq curl -y
@@ -11,4 +11,3 @@ ADD rsyslog.conf /etc/rsyslog.conf
 COPY scripts /usr/local/etc/haproxy/
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["haproxy", "-f", "/usr/local/etc/haproxy/default_frontend.cfg", "-f", "/usr/local/etc/haproxy/backend.cfg"]
