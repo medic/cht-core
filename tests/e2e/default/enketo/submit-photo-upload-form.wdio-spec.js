@@ -1,5 +1,5 @@
 const photoUpload = require('../../../page-objects/default/enketo/photo-upload.wdio.page');
-const common = require('../../../page-objects/default/common/common.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
 const utils = require('../../../utils');
 const userData = require('../../../page-objects/default/users/user.data');
@@ -13,13 +13,13 @@ describe('Submit Photo Upload form', () => {
     await utils.saveDocs(docs);
     await photoUpload.configureForm(userContactDoc);
     await loginPage.cookieLogin();
-    await common.hideSnackbar();
+    await commonPage.hideSnackbar();
   });
 
   it('submit and edit (no changes)', async () => {
-    await common.goToReports();
+    await commonPage.goToReports();
 
-    await reportsPage.openForm(photoUpload.docs[0].title);
+    await commonPage.openFastActionReport(photoUpload.docs[0].internalId, false);
     await photoUpload.selectImage(path.join(__dirname, '../../../../webapp/src/img/setup-wizard-demo.png'));
     await (photoUpload.imagePreview()).waitForDisplayed();
 
@@ -43,9 +43,9 @@ describe('Submit Photo Upload form', () => {
   });
 
   it('submit and edit (with changes)', async () => {
-    await common.goToReports();
+    await commonPage.goToReports();
 
-    await reportsPage.openForm(photoUpload.docs[0].title);
+    await commonPage.openFastActionReport(photoUpload.docs[0].internalId, false);
     await photoUpload.selectImage(path.join(__dirname, '../../../../webapp/src/img/setup-wizard-demo.png'));
     await (photoUpload.imagePreview()).waitForDisplayed();
 

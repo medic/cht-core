@@ -12,6 +12,7 @@
     "test-tasks": "npm run eslint && TZ=Africa/Nairobi mocha --reporter progress test/tasks/*.spec.js --timeout 10000",
     "test-targets": "npm run eslint && TZ=Africa/Nairobi mocha --reporter progress test/targets/*.spec.js --timeout 10000",
     "test-contact-summary": "npm run eslint && TZ=Africa/Nairobi mocha --reporter progress test/contact-summary/*.spec.js --timeout 10000",
+    "test-contact-summary-extras": "npm run eslint && TZ=Africa/Nairobi mocha --reporter progress test/contact-summary-extras/*.spec.js --timeout 10000",
     "test-unit": "TZ=Africa/Nairobi mocha --recursive --reporter spec test --timeout 20000"
   },
   "devDependencies": {
@@ -19,10 +20,10 @@
     "chai-exclude": "^1.0.8",
     "chai-like": "^1.1.1",
     "chai-things": "^0.2.0",
+    "cht-conf": "^3.16.2",
+    "cht-conf-test-harness": "^2.4.2",
     "eslint-plugin-json": "^2.0.1",
-    "cht-conf": "^3.7.0",
-    "cht-conf-test-harness": "^2.4.1",
-    "mocha": "^5.1.1",
+    "mocha": "^5.2.0",
     "sinon": "^11.1.2"
   },
   "dependencies": {

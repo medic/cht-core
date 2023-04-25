@@ -84,6 +84,11 @@
         <div class="loader" *ngIf="loading"></div>
         <div class="padding"></div>
       </div>
+
+      <mm-fast-action-button
+        [config]="{ button: { type: getFastActionButtonType(), label: 'report.new_report.button' } }"
+        [fastActions]="fastActionList">
+      </mm-fast-action-button>
     </div>
 
     <div class="content-pane right-pane">

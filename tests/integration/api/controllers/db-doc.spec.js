@@ -666,10 +666,8 @@ describe('db-doc handler', () => {
             // can read reports about deleted patients
             results.forEach((result, idx) => {
               if (reportScenarios[idx].allowed) {
-                console.log(idx, reportScenarios[idx].doc);
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc, idx);
               } else {
-                console.log(idx);
                 chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'}, idx);
               }
             });
@@ -1615,11 +1613,11 @@ describe('db-doc handler', () => {
 
           return sentinelUtils.waitForSentinel(ids).then(() => sentinelUtils.getInfoDocs(ids));
         }).then(([a1, a2, d1, d2, n1, n2]) => {
-          chai.expect(a1._rev.substring(0, 2)).to.equal('3-');
-          chai.expect(a2._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(d1._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(d2._rev.substring(0, 2)).to.equal('2-');
-          chai.expect(n1._rev.substring(0, 2)).to.equal('2-');
+          chai.expect(a1._rev.substring(0, 2)).to.equal('4-');
+          chai.expect(a2._rev.substring(0, 2)).to.equal('3-');
+          chai.expect(d1._rev.substring(0, 2)).to.equal('3-');
+          chai.expect(d2._rev.substring(0, 2)).to.equal('3-');
+          chai.expect(n1._rev.substring(0, 2)).to.equal('3-');
           chai.expect(n2).to.be.undefined;
         });
     });

@@ -8,6 +8,8 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatDialogModule } from '@angular/material/dialog';
 
 import { PipesModule } from '@mm-pipes/pipes.module';
 import { HomeComponent } from '@mm-modules/home/home.component';
@@ -90,6 +92,8 @@ import { DirectivesModule } from '@mm-directives/directives.module';
     DirectivesModule,
     MatIconModule,
     MatButtonModule,
+    MatBottomSheetModule,
+    MatDialogModule,
     MatMenuModule,
   ],
   exports: [

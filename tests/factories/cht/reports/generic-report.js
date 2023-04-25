@@ -1,4 +1,6 @@
 const Factory = require('rosie').Factory;
+const uuid = require('uuid');
+
 const minify = parent => {
   if (!parent || !parent._id) {
     return parent;
@@ -18,6 +20,7 @@ const minify = parent => {
 module.exports = new Factory()
   .option('patient')
   .option('submitter')
+  .sequence('_id', uuid.v4)
   .attrs({
     type: 'data_record',
     reported_date: () => new Date().getTime(),

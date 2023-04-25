@@ -27,9 +27,9 @@ describe('Delivery', () => {
     await commonPage.goToPeople(healthCenter._id);
 
     //Create Woman1
-    await contactPage.contactPageDefault.addPerson(
-      pregnantWoman1,
-      { dob: moment().subtract(25, 'years').format('YYYY-MM-DD') }
+    await contactPage.contactPageDefault.addPerson({
+      name: pregnantWoman1,
+      dob: moment().subtract(25, 'years').format('YYYY-MM-DD') }
     );
 
     // Submit new pregnancy for Woman1
@@ -44,9 +44,9 @@ describe('Delivery', () => {
 
     // Create Woman2
     await commonPage.goToPeople(healthCenter._id);
-    await contactPage.contactPageDefault.addPerson(
-      pregnantWoman2,
-      { dob: moment().subtract(25, 'years').format('YYYY-MM-DD') }
+    await contactPage.contactPageDefault.addPerson({
+      name: pregnantWoman2,
+      dob: moment().subtract(25, 'years').format('YYYY-MM-DD') }
     );
 
 
@@ -66,7 +66,7 @@ describe('Delivery', () => {
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
     await commonPage.waitForPageLoaded();
     const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
-    await contactPage.contactPageDefault.createNewAction('Delivery');
+    await commonPage.openFastActionReport('delivery');
 
     const pregnancyOutcome = await deliveryForm.selectPregnancyOutcome();
     const locationDelivery = await deliveryForm.selectDeliveryLocation();
@@ -101,7 +101,7 @@ describe('Delivery', () => {
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect((await reportsPage.getTaskDetails(1, 1)).state).to.contain('scheduled');
   });
 
   it('Delivery - Woman2 - SMS D form', async () => {
@@ -134,7 +134,7 @@ describe('Delivery', () => {
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect((await reportsPage.getTaskDetails(1, 1)).state).to.contain('scheduled');
   });
 
   it('Verify the targets page', async () => {
