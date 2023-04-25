@@ -2701,8 +2701,8 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should be possible to use cht script api in purge functions', () => {
-      const roles = { 'a': [1, 2, 3], 'b': [4, 5, 6] };
+    it('should be possible to use hasPermissions from cht script api in purge function', () => {
+      const roles = { 'chw': [1, 2, 3], 'chw_supervisor': [4, 5, 6] };
       const purgeFunction = (userCtx, contact, reports, messages, chtScript, settings) => {
         if(chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
           return [ 'purge 1', 'purge 2' ];
@@ -2723,6 +2723,32 @@ describe('ServerSidePurge', () => {
         );
         chai.expect(chtScriptApi.v1.hasPermissions.args[1]).to.deep.equal(
           [ 'can_export_messages', [ 4, 5, 6 ], { can_export_messages: [ 1 ] } ]
+        );
+      });
+    });
+
+    it('should be possible to use hasAnyPermission from cht script api in purge function', () => {
+      const roles = { 'chw': [1, 2, 3], 'chw_supervisor': [4, 5, 6] };
+      const purgeFunction = (userCtx, contact, reports, messages, chtScript, settings) => {
+        if(chtScript.v1.hasAnyPermission(['can_export_messages', 'can_edit'], userCtx.roles, settings)) {
+          return [ 'purge 1', 'purge 2' ];
+        }
+      };
+      sinon.stub(db, 'queryMedic').resolves(
+        { rows: [{ id: 'first', key: 'district_hospital', doc: { _id: 'first' } }]}
+      );
+      sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'first', doc: { _id: 'first' } }] });
+      const purgeDbChanges = sinon.stub().resolves({ results: [] });
+      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+      sinon.stub(config, 'get').returns({ can_export_messages: [ 1 ]});
+      sinon.stub(chtScriptApi.v1, 'hasAnyPermission');
+
+      return service.__get__('batchedContactsPurge')(roles, purgeFunction).then(() => {
+        chai.expect(chtScriptApi.v1.hasAnyPermission.args[0]).to.deep.equal(
+          [ ['can_export_messages', 'can_edit'], [ 1, 2, 3 ], { can_export_messages: [ 1 ] } ]
+        );
+        chai.expect(chtScriptApi.v1.hasAnyPermission.args[1]).to.deep.equal(
+          [ ['can_export_messages', 'can_edit'], [ 4, 5, 6 ], { can_export_messages: [ 1 ] } ]
         );
       });
     });
