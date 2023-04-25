@@ -28,16 +28,21 @@ describe('Adding new language', () => {
     await commonPage.waitForPageLoaded();
   };
 
-  before(async () => await loginPage.cookieLogin());
+  before(async () => {
+    await utils.enableLanguages([NEW_LANG_CODE, 'nl']);
+    await loginPage.cookieLogin();
+  });
 
-  after(async () => await browser.setCookies({ name: 'locale', value: ENG_LANG_CODE }));
+  after(async () => {
+    await browser.setCookies({ name: 'locale', value: ENG_LANG_CODE });
+    await utils.revertSettings(true);
+  });
 
   it('should show in enabled language list', async () => {
     await languagesPage.goToLanguagesTab();
     await languagesPage.addNewLanguage(NEW_LANG_CODE, NEW_LANG_NAME);
     const languageName = await languagesPage.languageDisplayed(NEW_LANG_CODE);
     expect(languageName.trim()).to.equal(NEW_LANG_NAME);
-    await utils.revertSettings(true);
   });
 
   it('should be set as Default language ', async () => {

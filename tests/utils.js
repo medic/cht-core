@@ -1365,6 +1365,22 @@ module.exports = {
     await module.exports.updateSettings({ languages }, true);
   },
 
+  enableLanguages: async (languageCodes) => {
+    const { languages } = await module.exports.getSettings();
+    for (const languageCode of languageCodes) {
+      const language = languages.find(language => language.locale === languageCode);
+      if (language) {
+        language.enabled = true;
+      } else {
+        languages.push({
+          locale: languageCode,
+          enabled: true,
+        });
+      }
+    }
+    await module.exports.updateSettings({ languages }, true);
+  },
+
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),
 
   prepServices: prepServices,

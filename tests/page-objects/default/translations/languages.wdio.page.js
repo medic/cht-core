@@ -24,8 +24,6 @@ const addNewLanguage = async (code, name) => {
   await (await languageNameInput()).setValue(name);
   await (await languageSubmitButton()).click();
   await (await languageSubmitButton()).waitForDisplayed({reverse:true});
-
-  await utils.enableLanguage(code);
 };
 
 const languageDisplayed = async (code) => {
