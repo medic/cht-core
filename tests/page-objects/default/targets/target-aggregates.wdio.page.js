@@ -1,8 +1,8 @@
 const AGGREGATE_LIST = '#target-aggregates-list';
 const loadingStatus = () => $(`${AGGREGATE_LIST} .loading-status`);
 const aggregateList = () => $$(`${AGGREGATE_LIST}  ul li`);
-const targetAggregateListItem = (contactId) => $(`.aggregate-detail li[data-record-id="${contactId}"] a`);
 const AGGREGATE_DETAIL_LIST = '.aggregate-detail li';
+const targetAggregateListItem = (contactId) => $(`${AGGREGATE_DETAIL_LIST}[data-record-id="${contactId}"] a`);
 const targetAggregateDetailTitle = (element) => element.$('h4');
 const targetAggregateDetailDetail = (element) => element.$('.detail');
 const AGGREGATE_DETAIL_PROGRESS_BAR = '.progress-bar';
@@ -10,6 +10,10 @@ const getTargetAggregateDetailProgressBar = (element) => element.$(`${AGGREGATE_
 const getTargetAggregateDetailGoal = (element) => element.$$('.goal');
 const NAVIGATION_LINK = '.mm-navigation-menu li a';
 const CONTENT_DISABLED = '.page .item-content.disabled';
+const lineItem = (elementId) => $(`${AGGREGATE_LIST}  li[data-record-id=${elementId}]`);
+const getAggregateDetailListElementbyIndex = async (index) => {
+  return await $$(AGGREGATE_DETAIL_LIST)[index];
+};
 
 const expectModulesToBeAvailable = async (modules) => {
   for (const module of modules) {
@@ -21,23 +25,27 @@ const expectModulesToBeAvailable = async (modules) => {
 const goToTargetAggregates = async (enabled) => {
   await (await $(`${NAVIGATION_LINK}[href="#/analytics/target-aggregates"]`)).click();
   if (enabled) {
-    await (await $(`${AGGREGATE_LIST}`)).waitForDisplayed();
-  } else {
-    await (await $(CONTENT_DISABLED)).waitForDisplayed();
+    await (await $(AGGREGATE_LIST)).waitForDisplayed();
+    return;
   }
+  await (await $(CONTENT_DISABLED)).waitForDisplayed();
 };
 
 const getTargetItem = async (target) => {
-  const lineItem = () => $(`${AGGREGATE_LIST}  li[data-record-id=${target.id}]`);
+  const item = lineItem(target.id);
+  await (await item.$('h4')).waitForDisplayed();
+  await (await item.$('.aggregate-status span')).waitForDisplayed();
   return {
-    title: await lineItem().$('h4').getText(),
-    status: await lineItem().$('.aggregate-status span').getText()
+    title: await (await item.$('h4')).getText(),
+    status: await (await item.$('.aggregate-status span')).getText()
   };
 };
 
 const openTargetDetails = async (targetID) => {
-  await $(`${AGGREGATE_LIST} li[data-record-id=${targetID}] a`).click();
-  await $('.target-detail.card h2').waitForDisplayed();
+  const item = lineItem(targetID);
+  await item.$('a').waitForClickable();
+  await item.$('a').click();
+  await (await $('.target-detail.card h2')).waitForDisplayed();
 };
 
 const expectTargetDetails = async (target) => {
@@ -49,33 +57,6 @@ const getAggregateDetailListLength = async () => {
   return await $$(AGGREGATE_DETAIL_LIST).length;
 };
 
-const getAggregateDetailListElementbyIndex = async (index) => {
-  return await $$(AGGREGATE_DETAIL_LIST)[index];
-};
-
-const getAggregateDetailElementInfo = async (element) => {
-  let progressBar = { length: await getAggregateDetailProgressBarLength(element) };
-  if (progressBar.length > 0) {
-    progressBar = {
-      ...progressBar,
-      ...{ isDisplayed: await (await getTargetAggregateDetailProgressBar(element)).isDisplayed() }
-    };
-    if (progressBar.isDisplayed) {
-      progressBar = { ...progressBar, ...{ value: await getAggregateDetailProgressBarValue(element) } };
-    }
-  }
-  let goal = { length: await getAggregateDetailGoalLength(element) };
-  if (goal.length > 0) {
-    goal = { ...goal, ...{ value: await getAggregateDetailGoalValue(element) } };
-  }
-  return {
-    recordId: await element.getAttribute('data-record-id'),
-    title: await (await targetAggregateDetailTitle(element)).getText(),
-    detail: await (await targetAggregateDetailDetail(element)).getText(),
-    progressBar: progressBar,
-    goal: goal,
-  };
-};
 
 const getAggregateDetailProgressBarLength = async (element) => {
   return await (await element.$$(AGGREGATE_DETAIL_PROGRESS_BAR)).length;
@@ -93,6 +74,42 @@ const getAggregateDetailGoalValue = async (element) => {
   return await (await getTargetAggregateDetailGoal(element)[0]).getText();
 };
 
+const getAggregateTargetProgressBar = async (element) => {
+  const length = await getAggregateDetailProgressBarLength(element);
+  if (!length) {
+    return { length };
+  }
+
+  const isDisplayed = await (await getTargetAggregateDetailProgressBar(element)).isDisplayed();
+  return {
+    length,
+    isDisplayed,
+    value: isDisplayed && await getAggregateDetailProgressBarValue(element),
+  };
+};
+
+const getAggregateTargetGoal = async (element) => {
+  const length = await getAggregateDetailGoalLength(element);
+  if (!length) {
+    return { length };
+  }
+
+  return {
+    length,
+    value: await getAggregateDetailGoalValue(element),
+  };
+};
+
+const getAggregateDetailElementInfo = async (element) => {
+  return {
+    recordId: await element.getAttribute('data-record-id'),
+    title: await (await targetAggregateDetailTitle(element)).getText(),
+    detail: await (await targetAggregateDetailDetail(element)).getText(),
+    progressBar: await getAggregateTargetProgressBar(element),
+    goal: await getAggregateTargetGoal(element),
+  };
+};
+
 module.exports = {
   expectModulesToBeAvailable,
   goToTargetAggregates,
@@ -104,12 +121,6 @@ module.exports = {
   targetAggregateListItem,
   getAggregateDetailListLength,
   getAggregateDetailListElementbyIndex,
-  getAggregateDetailElementInfo,
-  getTargetAggregateDetailProgressBar,
-  getAggregateDetailProgressBarLength,
-  getAggregateDetailProgressBarValue,
-  getTargetAggregateDetailGoal,
-  getAggregateDetailGoalValue,
-  getAggregateDetailGoalLength,
+  getAggregateDetailElementInfo
 };
 

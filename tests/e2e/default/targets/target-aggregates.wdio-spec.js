@@ -13,31 +13,15 @@ const personFactory = require('../../../factories/cht/contacts/person');
 const randomString = (length) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
 const randomNumber = (max) => Math.floor(Math.random() * max);
 
-/**
- * Expect certain LHS targets
- * @param {Object[]} targets
- * @param {string} targets[].id
- * @param {string} targets[].title
- * @param {string} targets[].counter
- */
 const expectTargets = async (targets) => {
   expect(await (await targetAggregatesPage.aggregateList()).length).to.equal(targets.length);
   for (const target of targets) {
-    expect(await (await targetAggregatesPage.getTargetItem(target)).title).to.equal(target.title);
-    expect(await (await targetAggregatesPage.getTargetItem(target)).status).to.equal(target.counter);
+    const targetItem = await (await targetAggregatesPage.getTargetItem(target));
+    expect(target.title).to.equal(targetItem.title);
+    expect(target.status).to.equal(targetItem.counter);
   }
 };
-/**
- * Expect certain RHS target aggregate list
- * @param {Object[]} contacts
- * @param {string} contacts[]._id
- * @param {string} contacts[].name
- * @param {string} contacts[].counter
- * @param {string} contacts[].progress
- * @param {Object} target
- * @param {boolean} target.progressBar
- * @param {string} target.goal
- */
+
 const expectContacts = async (contacts, target) => {
   contacts = contacts.sort((a, b) => a.name.localeCompare(b.name));
   expect(await targetAggregatesPage.getAggregateDetailListLength()).to.equal(contacts.length);
@@ -79,14 +63,16 @@ const updateSettings = async (targetsConfig, user, contactSummary) => {
 };
 
 const clickOnTargetAggregateListItem = async (contactId) => {
-  await targetAggregatesPage.targetAggregateListItem(contactId).click();
+  await (await targetAggregatesPage.targetAggregateListItem(contactId)).waitForClickable();
+  await (await targetAggregatesPage.targetAggregateListItem(contactId)).click();
   // wait until contact-summary is loaded
-  await contactsPage.contactCard().waitForDisplayed();
+  await (await contactsPage.contactCard()).waitForDisplayed();
 };
 
 const validateCardField = async (label, value) => {
-  expect((await contactsPage.getCardFieldInfo(label)).label).to.equal(label);
-  expect((await contactsPage.getCardFieldInfo(label)).value).to.equal(value);
+  const card = await contactsPage.getCardFieldInfo(label);
+  expect(card.label).to.equal(label);
+  expect(card.value).to.equal(value);
 };
 
 describe('Target aggregates', () => {
@@ -94,6 +80,7 @@ describe('Target aggregates', () => {
   describe('as a db admin', () => {
     before(async () => await loginPage.cookieLogin());
     after(async () => {
+      await utils.revertSettings(true);
       await browser.deleteCookies();
       await browser.refresh();
     });
@@ -136,30 +123,30 @@ describe('Target aggregates', () => {
     const otherParentPlace = placeFactory.place().build({ type: 'district_hospital' });
     const user = userFactory.build({ place: parentPlace._id, roles: ['program_officer'] });
     const names = ['Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle'];
-    const genPlace = (parent, idx = false) => {
+    const generatePlace = (parent, idx) => {
       const place = placeFactory.place().build({ type: 'health_center', parent: { _id: parent._id } });
       const contact = personFactory.build({
-        name: idx === false ? randomString(8) : names[idx],
+        name: idx === 'undefined' ? randomString(8) : names[idx],
         parent: { _id: place._id, parent: place.parent }
       });
       place.contact = { _id: contact._id, parent: contact.parent };
       return [place, contact];
     };
     const docs = _.flattenDeep([
-      Array.from({ length: 5 }).map((e, i) => genPlace(parentPlace, i)),
-      Array.from({ length: 5 }).map(() => genPlace(otherParentPlace)),
+      Array.from({ length: 5 }).map((e, i) => generatePlace(parentPlace, i)),
+      Array.from({ length: 5 }).map(() => generatePlace(otherParentPlace)),
     ]);
     const genTitle = (title) => ({ en: title });
     const docTags = [
       // current targets
       moment().format('YYYY-MM'),
       // next month targets, in case the reporting period switches mid-test
-      moment().date(1).add(1, 'month').format('YYYY-MM'),
+      moment().add(1, 'months').format('YYYY-MM'),
     ];
 
     before(async () => {
-      await utils.saveDocs([parentPlace, otherParentPlace]);
-      await utils.saveDocs(docs);
+      const allDocs = [...docs, ...[parentPlace], ...[otherParentPlace]];
+      await utils.saveDocs(allDocs);
       await utils.createUsers([user]);
       await browser.url('/medic/login');
       await loginPage.login({ username: user.username, password: user.password });
@@ -278,7 +265,6 @@ describe('Target aggregates', () => {
             user: 'irrelevant',
           }));
         }));
-
       await utils.saveDocs(targetDocs);
       await updateSettings(targetsConfig, user);
 
