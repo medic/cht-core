@@ -16,22 +16,22 @@ describe('Testing Incorrect locale', () => {
     'Reports': 'HilReports',
     'view.all':'View all'
   });
-  
-  const contact = placeFactory.place().build({ 
+
+  const contact = placeFactory.place().build({
     _id: 'district_hil_locale',
     name: 'hil district',
     type: 'district_hospital',
     reported_date: 1000,
     parent: '',
   });
-  
+
   after(async () => await browser.setCookies({ name: 'locale', value: 'en' }));
 
   before(async () => {
     await loginPage.cookieLogin();
     await utils.saveDoc(contact);
     await createLanguage();
-    await commonElements.closeReloadModal();
+    await commonElements.closeReloadModal(true);
   });
 
   it('should work with incorrect locale', async () => {

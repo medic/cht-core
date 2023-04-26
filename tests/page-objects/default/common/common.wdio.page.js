@@ -22,6 +22,7 @@ const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
+const reloadModalUpdate = () => $('#update-available [test-id="Update"]');
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
 const jsonError = async () => (await $('pre')).getText();
 
@@ -306,12 +307,13 @@ const syncAndWaitForFailure = async () => {
   await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
 };
 
-const closeReloadModal = async () => {
+const closeReloadModal = async (shouldUpdate = false) => {
   try {
-    await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
+    const button = shouldUpdate ? reloadModalUpdate() : reloadModalCancel();
+    await browser.waitUntil(async () => await (await button).waitForExist({ timeout: 2000 }));
     // wait for the animation to complete
     await browser.pause(500);
-    await (await reloadModalCancel()).click();
+    await (await button).click();
     await browser.pause(500);
   } catch (err) {
     console.error('Reload modal not showed up');
