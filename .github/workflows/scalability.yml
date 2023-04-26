@@ -20,15 +20,16 @@ jobs:
   build:
     name: Set up Medic on EC2 and Execute Jmeter on another EC2
     runs-on: ubuntu-22.04
-    if: ${{ env.INTERNAL_CONTRIBUTOR }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Configure AWS Credentials
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.SCALABILITY_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
           aws-region: ca-central-1
       - name: Start EC2 and CHT
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
         run: cd tests/scalability && ./start_ec2_cht.sh $BRANCH
