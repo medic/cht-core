@@ -331,11 +331,7 @@ export class XmlFormsService {
         }
         throw err;
       })
-      .then(async doc => {
-        if (!await this.canAccessForm(doc)) {
-          return Promise.reject({ translationKey: 'error.loading.form.no_authorized' });
-        }
-
+      .then(doc => {
         if (!this.findXFormAttachmentName(doc)) {
           const errorTitle = 'Error in XMLFormService : findXFormAttachmentName : ';
           const errorMessage = `The form "${internalId}" doesn't have an xform attachment`;
