@@ -53,7 +53,7 @@ seedData () {
 
   echo Seeding data
   echo cht url is $1
-  cht --url="$1" --accept-self-signed-certs --force \
+  ./node_modules/.bin/cht --url="$1" --accept-self-signed-certs --force \
       csv-to-docs \
       upload-docs \
       create-users
