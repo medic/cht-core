@@ -40,7 +40,7 @@ java -cp jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.reposit
 ./jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults
 
 echo "jmeter do it!"
-./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jnumber_of_threads=2 -l ./report/cli_run.jtl -e -o ./report
+./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jnumber_of_threads=10 -l ./report/cli_run.jtl -e -o ./report
 mv ./jmeter.log ./report/jmeter.log
 
 echo "Installing AWS CLI"
