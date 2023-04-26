@@ -114,4 +114,7 @@ sed -i '4s~^~'S3_PATH=s3://medic-e2e/scalability/$BRANCH-$GITHUB_RUN_ID'\n~' run
 sed -i '4s~^~'BRANCH=$BRANCH'\n~' run_suite.sh
 
 echo Triggering EC2 Run Instance Command and getting Instance ID
-runInstance "run_suite.sh"
+
+jmeterInstanceResponse=$(runInstance "run_suite.sh")
+jmeterInstanceID=$(getInstanceId "$jmeterInstanceResponse")
+echo jmeter Instance id is "$jmeterInstanceID"
