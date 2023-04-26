@@ -8,8 +8,8 @@ sed -i '4s~^~'BUILD=$MARKET_URL_READ/$STAGING_SERVER/medic:medic:$1'\n\n~' prepa
 echo Triggering EC2 Run Instance Command and getting Instance ID
 
 runInstance () {
+  # --profile CA \ # for local runs
   echo $(aws ec2 run-instances \
-    # --profile CA \
     --image-id ami-0c3d8c5445511bd1d \
     --instance-type c5.2xlarge \
     --block-device-mappings file://block-device-mapping.json \
@@ -26,7 +26,8 @@ getInstanceId () {
 }
 
 getPublicDnsName () {
-  echo $(aws ec2 describe-instances --instance-ids "$1" --profile CA | jq .Reservations[0].Instances[0].PublicDnsName -r)
+  # --profile CA
+  echo $(aws ec2 describe-instances --instance-ids "$1" | jq .Reservations[0].Instances[0].PublicDnsName -r)
 }
 
 waitForInstanceUp () {
