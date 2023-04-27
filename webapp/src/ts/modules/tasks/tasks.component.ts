@@ -43,12 +43,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
   tasksList;
   selectedTask;
-  error;
-  errorDetails;
-  url;
-  currentDate;
-  userCtx;
-  replicationStatus;
+  errorStack;
   hasTasks;
   loading;
   tasksDisabled;
@@ -62,17 +57,14 @@ export class TasksComponent implements OnInit, OnDestroy {
       this.store.select(Selectors.getTasksList),
       this.store.select(Selectors.getTasksLoaded),
       this.store.select(Selectors.getSelectedTask),
-      this.store.select(Selectors.getReplicationStatus)
     ).subscribe(([
       tasksList,
       tasksLoaded,
       selectedTask,
-      replicationStatus
     ]) => {
       this.tasksList = tasksList;
       this.tasksLoaded = tasksLoaded;
       this.selectedTask = selectedTask;
-      this.replicationStatus = replicationStatus;
     });
     this.subscription.add(reduxSubscription);
   }
@@ -107,11 +99,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.subscribeToStore();
     this.subscribeToChanges();
     this.subscribeToRulesEngine();
-
-    this.error = false;
-    this.url = window.location.hostname;
-    this.currentDate = Date.now();
-    this.userCtx = this.sessionService.userCtx();
     this.hasTasks = false;
     this.loading = true;
     this.debouncedReload = _debounce(this.refreshTasks.bind(this), 1000, { maxWait: 10 * 1000 });
@@ -183,8 +170,7 @@ export class TasksComponent implements OnInit, OnDestroy {
 
     } catch (exception) {
       console.error('Error getting tasks for all contacts', exception);
-      this.errorDetails = exception.stack;
-      this.error = true;
+      this.errorStack = exception.stack;
       this.loading = false;
       this.hasTasks = false;
       this.tasksActions.setTasksList([]);

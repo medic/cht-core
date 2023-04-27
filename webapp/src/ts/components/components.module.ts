@@ -39,6 +39,7 @@ import {
   AnalyticsTargetsDetailsComponent
 } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
+import { ErrorConfigDetailsComponent } from '@mm-components/error-config-details/error-config-details.component';
 
 @NgModule({
   declarations: [
@@ -66,6 +67,7 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     AnalyticsFilterComponent,
     AnalyticsTargetsDetailsComponent,
     MobileDetectionComponent,
+    ErrorConfigDetailsComponent,
   ],
   imports: [
     CommonModule,
@@ -97,6 +99,7 @@ import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile
     ActionbarComponent,
     EnketoComponent,
     AnalyticsTargetsProgressComponent,
+    ErrorConfigDetailsComponent,
     AnalyticsFilterComponent,
     AnalyticsTargetsDetailsComponent,
   ]

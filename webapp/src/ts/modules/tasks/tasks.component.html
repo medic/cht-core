@@ -8,7 +8,7 @@
   <div class="inbox page">
 
     <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
-      <ul *ngIf="!error && hasTasks">
+      <ul *ngIf="!errorStack && hasTasks">
         <li *ngFor="let task of tasksList; trackBy: listTrackBy"
             [attr.data-record-id]="task._id"
             [class.selected] = "task._id === selectedTask?._id"
@@ -38,29 +38,12 @@
         </li>
       </ul>
 
-      <div *ngIf="error" class="alert alert-danger" role="alert">
-        <div class="error-details">
-          <span>{{'Error fetching tasks' | translate}}</span>
-          <a (click)="refreshTaskList()">{{'Reload' | translate}}</a>
-          <dl>
-            <dt>{{'User Name' | translate}}</dt>
-            <dd>{{userCtx.name}}</dd>
-            <dt>{{'url' | translate}}</dt>
-            <dd>{{url}}</dd>
-            <dt>{{'date.time.title' | translate}}</dt>
-            <dd>{{currentDate | simpleDateTime}}</dd>
-            <dt>{{'sync.last_success' | translate}}</dt>
-            <dd *ngIf="!replicationStatus.disabled && replicationStatus.lastSuccessTo">
-              {{replicationStatus.lastSuccessTo | simpleDateTime}}
-            </dd>
-          </dl>
-        </div>
-        <pre><code>{{errorDetails}}</code></pre>
-      </div>
-      <p class="loading-status" *ngIf="!error && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
-      <p class="loading-status" *ngIf="!error && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
+      <error-config-details *ngIf="!!errorStack" [errorStack]="errorStack" [reload]="refreshTaskList"></error-config-details>
+
+      <p class="loading-status" *ngIf="!errorStack && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
+      <p class="loading-status" *ngIf="!errorStack && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
       <p class="loading-status" *ngIf="tasksDisabled">{{'tasks.disabled' | translate}}</p>
-      <div class="loader" *ngIf="loading && !tasksDisabled && !error"></div>
+      <div class="loader" *ngIf="loading && !tasksDisabled && !errorStack"></div>
     </div>
 
     <router-outlet></router-outlet>
