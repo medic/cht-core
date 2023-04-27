@@ -7,6 +7,7 @@ import { Actions } from '@mm-actions/contacts';
 const initialState = {
   contacts: [],
   contactsById: new Map(),
+  contactIdToFetch: null,
   selected: null,
   filters: {},
   loadingSelectedChildren: false,
@@ -140,6 +141,7 @@ const receiveSelectedContactTargetDoc = (state, targetDoc) => {
 
 const _contactsReducer = createReducer(
   initialState,
+  on(Actions.setContactIdToFetch, (state, { payload: { id } }) => ({ ...state, contactIdToFetch: id })),
   on(Actions.updateContactsList, (state, { payload: { contacts } }) => updateContacts(state, contacts)),
   on(Actions.resetContactsList, (state) => ({ ...state, contacts: [], contactsById: new Map() })),
   on(Actions.removeContactFromList, (state, { payload: { contact } }) => removeContact(state, contact)),

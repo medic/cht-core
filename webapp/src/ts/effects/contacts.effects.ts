@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store, select } from '@ngrx/store';
-import { of } from 'rxjs';
+import { combineLatest, of } from 'rxjs';
 import { exhaustMap, withLatestFrom } from 'rxjs/operators';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
@@ -16,10 +16,11 @@ import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable()
 export class ContactsEffects {
-  private contactsActions;
-  private globalActions;
+  private contactsActions: ContactsActions;
+  private globalActions: GlobalActions;
 
   private selectedContact;
+  private contactIdToFetch;
 
   constructor(
     private actions$: Actions,
@@ -34,9 +35,13 @@ export class ContactsEffects {
     this.contactsActions = new ContactsActions(store);
     this.globalActions = new GlobalActions(store);
 
-    this.store
-      .select(Selectors.getSelectedContact)
-      .subscribe(selectedContact => this.selectedContact = selectedContact);
+    combineLatest(
+      this.store.select(Selectors.getSelectedContact),
+      this.store.select(Selectors.getContactIdToFetch),
+    ).subscribe(([ selectedContact, contactIdToFetch ]) => {
+      this.selectedContact = selectedContact;
+      this.contactIdToFetch = contactIdToFetch;
+    });
   }
 
   selectContact = createEffect(() => {
@@ -65,6 +70,12 @@ export class ContactsEffects {
           .then(() => this.loadTargetDoc(id))
           .then(() => this.loadContactSummary(id))
           .then(() => this.loadTasks(id))
+          .then(() => {
+            if (id === this.contactIdToFetch) {
+              // Clear ID after loading contact
+              this.contactsActions.setContactIdToFetch(null);
+            }
+          })
           .catch(err => {
             // If the selected contact has changed, just stop loading this one
             if (err.code === 'SELECTED_CONTACT_CHANGED') {
@@ -75,6 +86,7 @@ export class ContactsEffects {
             }
             console.error('Error selecting contact', err);
             this.globalActions.unsetSelected();
+            this.contactsActions.setContactIdToFetch(null);
             return of(this.contactsActions.setSelectedContact(null));
           });
 
@@ -96,16 +108,21 @@ export class ContactsEffects {
   }
 
   private loadContact(id) {
+    this.contactsActions.setContactIdToFetch(id);
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
       .then(model => {
-        this.globalActions.settingSelected();
-        this.contactsActions.setSelectedContact(model);
+        return this
+          .verifySelectedContactNotChanged(model._id)
+          .then(() => {
+            this.globalActions.settingSelected();
+            this.contactsActions.setSelectedContact(model);
+          });
       });
   }
 
   private verifySelectedContactNotChanged(id) {
-    return this.selectedContact?._id !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
+    return this.contactIdToFetch !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
   }
 
   private loadChildren(contactId, userFacilityId) {
