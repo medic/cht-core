@@ -13,7 +13,6 @@ export class AnalyticsTargetsComponent implements OnInit {
   loading = true;
   targetsDisabled = false;
   errorStack;
-  userCtx;
   telemetryData = {
     start: Date.now(),
     end: undefined
