@@ -40,8 +40,9 @@ java -cp jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.reposit
 ./jmeter/bin/PluginsManagerCMD.sh install jpgc-mergeresults
 
 echo "jmeter do it!"
-./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jnumber_of_threads=10 -l ./report/cli_run.jtl -e -o ./report
-mv ./jmeter.log ./report/jmeter.log
+tmp_dir=$(mktemp -d -t -p ./ report-XXXXXXXXXX)
+./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jnumber_of_threads=10 -l ./report/cli_run.jtl -e -o $tmp_dir
+mv ./jmeter.log $tmp_dir/jmeter.log
 
 echo "Installing AWS CLI"
 apt-get install unzip -y
@@ -49,5 +50,5 @@ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
 unzip awscliv2.zip
 ./aws/install
 echo "Uploading logs and screenshots to ${S3_PATH}..."
-/usr/local/bin/aws s3 cp ./report "$S3_PATH" --recursive
+/usr/local/bin/aws s3 cp $tmp_dir "$S3_PATH" --recursive
 echo "FINISHED! "
