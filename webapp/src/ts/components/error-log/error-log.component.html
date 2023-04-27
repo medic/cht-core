@@ -1,6 +1,6 @@
 <div class="alert alert-danger" role="alert">
   <div class="error-details">
-    <span>{{'Error fetching tasks' | translate}}</span>
+    <span>{{'Error fetching ' + errorDetails[0] | translate}}</span>
     <a *ngIf="!!reload" (click)="reload()">{{'Reload' | translate}}</a>
     <dl>
       <dt>{{'User Name' | translate}}</dt>
@@ -17,5 +17,5 @@
       </dd>
     </dl>
   </div>
-  <pre><code>{{errorStack}}</code></pre>
+  <pre><code>{{errorDetails[1]}}</code></pre>
 </div>

@@ -5,11 +5,11 @@ import { Store } from '@ngrx/store';
 import { Selectors } from '@mm-selectors/index';
 
 @Component({
-  selector: 'error-config-details',
-  templateUrl: './error-config-details.component.html'
+  selector: 'error-log',
+  templateUrl: './error-log.component.html'
 })
-export class ErrorConfigDetailsComponent implements AfterViewInit, OnDestroy {
-  @Input() errorStack;
+export class ErrorLogComponent implements AfterViewInit, OnDestroy {
+  @Input() errorDetails;
   @Input() reload;
 
   url;
