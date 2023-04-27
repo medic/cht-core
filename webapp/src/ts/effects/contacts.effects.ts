@@ -59,6 +59,7 @@ export class ContactsEffects {
 
         const loadContact = this
           .loadContact(id)
+          .then(() => this.setTitle(id))
           .then(() => this.loadChildren(id, userFacilityId))
           .then(() => this.loadReports(id, forms))
           .then(() => this.loadTargetDoc(id))
@@ -82,12 +83,16 @@ export class ContactsEffects {
     );
   }, { dispatch: false });
 
-  private setTitle(selected) {
-    const routeSnapshot = this.routeSnapshotService.get();
-    const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
-      ? this.translateService.instant('contact.deceased.title') : null;
-    const title = deceasedTitle || selected.type?.name_key || 'contact.profile';
-    this.globalActions.setTitle(this.translateService.instant(title));
+  private setTitle(contactId) {
+    return this
+      .verifySelectedContactNotChanged(contactId)
+      .then(() => {
+        const routeSnapshot = this.routeSnapshotService.get();
+        const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
+          ? this.translateService.instant('contact.deceased.title') : null;
+        const title = deceasedTitle || this.selectedContact.type?.name_key || 'contact.profile';
+        this.globalActions.setTitle(this.translateService.instant(title));
+      });
   }
 
   private loadContact(id) {
@@ -96,7 +101,6 @@ export class ContactsEffects {
       .then(model => {
         this.globalActions.settingSelected();
         this.contactsActions.setSelectedContact(model);
-        this.setTitle(model);
       });
   }
 
