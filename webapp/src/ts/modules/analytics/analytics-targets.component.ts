@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
 
 @Component({
   templateUrl: './analytics-targets.component.html'
@@ -18,12 +16,9 @@ export class AnalyticsTargetsComponent implements OnInit {
     end: undefined
   };
 
-  subscription = new Subscription();
-
   constructor(
     private rulesEngineService: RulesEngineService,
-    private telemetryService: TelemetryService,
-    private store: Store
+    private telemetryService: TelemetryService
   ) { }
 
   ngOnInit(): void {
