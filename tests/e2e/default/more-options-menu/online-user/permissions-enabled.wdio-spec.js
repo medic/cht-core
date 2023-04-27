@@ -48,18 +48,17 @@ const smsReport = reportFactory.build(
   },
 );
 
-describe('Online User', async () => {  
-  let xmlReportId;
-  let smsReportId;  
+describe('Online User', async () => {
+
+  afterEach(async () => await commonPage.goToBase());
+
   describe('Options disabled when no items - messages, contacts, people', async () => {
     before(async () => await loginPage.cookieLogin());
-    
-    afterEach(async () => await commonPage.goToBase());
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionEnabled('export', 'messages')).to.be.false;    
+      expect(await commonPage.isMenuOptionEnabled('export', 'messages')).to.be.false;
     });
 
     it(' - Contact tab', async () => {
@@ -67,7 +66,7 @@ describe('Online User', async () => {
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'contacts')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'contacts')).to.be.false;
-      expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;     
+      expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;
     });
 
     it('- Report tab', async () => {
@@ -75,13 +74,12 @@ describe('Online User', async () => {
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;     
+      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
     });
   });
 
   describe(' - Contact tab - user has no contact ', async () => {
     before(async () => await utils.saveDocs([ ...places.values(), contact, patient]));
-    after(async () => await commonPage.goToBase());
 
     it(' - no contact selected', async () => {
       await commonPage.goToPeople();
@@ -93,6 +91,9 @@ describe('Online User', async () => {
   });
 
   describe(' - Options enabled when there are items', async () => {
+    let xmlReportId;
+    let smsReportId;
+
     before(async () => {
       await utils.createUsers([onlineUser]);
       await loginPage.cookieLogin({ ...onlineUser, createUser: false });
@@ -100,35 +101,33 @@ describe('Online User', async () => {
       xmlReportId = result.id;
       result = await utils.saveDoc(smsReport);
       smsReportId = result.id;
-      await sms.sendSms('testing', contact.phone);    
+      await sms.sendSms('testing', contact.phone);
     });
-
-    afterEach(async () => await commonPage.goToBase());
 
     it('- Reports tab - Edit/export invisible when NON XML report selected', async () => {
       await commonPage.goToReports();
       await reportPage.goToReportById(smsReportId);
-      await reportPage.reportBodyDetails().waitForDisplayed();      
+      await reportPage.reportBodyDetails().waitForDisplayed();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;       
+      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
     });
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.waitForLoaderToDisappear();
       await commonPage.openMoreOptionsMenu();
-      expect(await commonPage.isMenuOptionEnabled('export', 'messages')).to.be.true;    
+      expect(await commonPage.isMenuOptionEnabled('export', 'messages')).to.be.true;
     });
 
     it('- Reports tab - options enabled when XML report selected', async () => {
       await reportPage.goToReportById(xmlReportId);
-      await reportPage.reportBodyDetails().waitForDisplayed();      
+      await reportPage.reportBodyDetails().waitForDisplayed();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionEnabled('export', 'reports')).to.be.true;
-      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true; 
-      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;     
+      expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
+      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
     });
 
     it(' - Contact Tab  - contact selected', async () => {

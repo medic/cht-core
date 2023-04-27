@@ -197,7 +197,7 @@ const deleteAll = (except) => {
     'branding',
     'partners',
     'settings',
-    /^form:contact:/,
+    /^form:/,
     /^_design/
   );
   const ignoreFns = [];
@@ -319,6 +319,17 @@ const setUserContactDoc = (attempt=0) => {
     });
 };
 
+const deleteLocalDocs = async () => {
+  const localDocs = await module.exports.requestOnTestDb({ path: '/_local_docs?include_docs=true' });
+
+  for (const row of localDocs.rows) {
+    if (row && row.doc && row.doc.replicator === 'pouchdb') {
+      row.doc._deleted = true;
+      await module.exports.saveDoc(row.doc);
+    }
+  }
+};
+
 /**
  * Deletes documents from the database, including Enketo forms. Use with caution.
  * @param {array} except - exeptions in the delete method. If this parameter is empty
@@ -330,6 +341,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
+  await deleteLocalDocs();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {

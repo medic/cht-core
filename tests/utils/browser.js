@@ -1,4 +1,7 @@
 const fs = require('fs');
+
+/* global window */
+
 const feedBackDocs = async (testName = 'allLogs', existingDocIds = []) => {
   const feedBackDocs = await browser.executeAsync(feedBackDocsScript);
   const flattened = feedBackDocs.flat();
@@ -32,7 +35,93 @@ const getCookies = (...cookieNameList) => {
   return browser.getCookies(cookieNameList);
 };
 
+const createDoc = async (doc) => {
+  const { err, result } = await browser.executeAsync((doc, callback) => {
+    const db = window.CHTCore.DB.get();
+    return db
+      .put(doc)
+      .then(result => callback({ result }))
+      .catch(err => callback({ err }));
+  }, doc);
+
+  if (err) {
+    throw err;
+  }
+
+  return result;
+};
+
+const executeAsync = async (fn, ...args) => {
+  // https://w3c.github.io/webdriver/#dfn-execute-async-script doesn't accept functions as params
+  const fnString = fn.toString();
+  const { err, result } = await browser.executeAsync((fnString, ...args) => {
+    const fn = new Function(`const r = ${fnString}; return r`)();
+    const callback = args.pop();
+    return fn(...args)
+      .then(result => callback({ result }))
+      .catch(err => callback({ err }));
+  }, fnString, ...args);
+
+  if (err) {
+    throw err;
+  }
+
+  return result;
+};
+
+const updateDoc = async (docId, changes, overwrite = false) => {
+  return await executeAsync((docId, changes, overwrite) => {
+    const db = window.CHTCore.DB.get();
+    return db
+      .get(docId)
+      .then(doc => {
+        if (overwrite) {
+          doc = { _rev: doc._rev, _id: doc._id };
+        }
+
+        Object.assign(doc, changes);
+        return db.put(doc);
+      });
+  }, docId, changes, overwrite);
+};
+
+const getDoc = async (docId) => {
+  return await executeAsync((docId) => {
+    return window.CHTCore.DB.get().get(docId, { conflicts: true });
+  }, docId);
+};
+
+const deleteDoc = async (docId) => {
+  return await executeAsync((docId) => {
+    const db = window.CHTCore.DB.get();
+    return db
+      .get(docId)
+      .then(doc => {
+        doc._deleted = true;
+        return db.put(doc);
+      });
+  }, docId);
+};
+
+const getDocs = async (docIds) => {
+  return await executeAsync((docIds) => {
+    return window.CHTCore.DB.get()
+      .allDocs({ keys: docIds, include_docs: true })
+      .then(result => result.rows.map(row => row.doc));
+  }, docIds);
+};
+
+const info = async () => {
+  return await executeAsync(() => window.CHTCore.DB.get().info());
+};
+
 module.exports = {
   feedBackDocs,
-  getCookies
+  getCookies,
+  createDoc,
+  updateDoc,
+  getDoc,
+  getDocs,
+  deleteDoc,
+  info,
 };

@@ -4,6 +4,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatListModule } from '@angular/material/list';
 
 import { HeaderComponent } from '@mm-components/header/header.component';
 import { PipesModule } from '@mm-pipes/pipes.module';
@@ -20,6 +25,7 @@ import {
 import { DateFilterComponent } from '@mm-components/filters/date-filter/date-filter.component';
 import { FacilityFilterComponent } from '@mm-components/filters/facility-filter/facility-filter.component';
 import { FormTypeFilterComponent } from '@mm-components/filters/form-type-filter/form-type-filter.component';
+import { FastActionButtonComponent } from '@mm-components/fast-action-button/fast-action-button.component';
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
@@ -40,6 +46,7 @@ import {
 } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
 import { ErrorConfigDetailsComponent } from '@mm-components/error-config-details/error-config-details.component';
+import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 @NgModule({
   declarations: [
@@ -54,6 +61,7 @@ import { ErrorConfigDetailsComponent } from '@mm-components/error-config-details
     FormTypeFilterComponent,
     StatusFilterComponent,
     FreetextFilterComponent,
+    FastActionButtonComponent,
     SearchBarComponent,
     MultiselectBarComponent,
     ResetFiltersComponent,
@@ -68,6 +76,7 @@ import { ErrorConfigDetailsComponent } from '@mm-components/error-config-details
     AnalyticsTargetsDetailsComponent,
     MobileDetectionComponent,
     ErrorConfigDetailsComponent,
+    PanelHeaderComponent,
   ],
   imports: [
     CommonModule,
@@ -76,6 +85,11 @@ import { ErrorConfigDetailsComponent } from '@mm-components/error-config-details
     FormsModule,
     PipesModule,
     DirectivesModule,
+    MatIconModule,
+    MatButtonModule,
+    MatBottomSheetModule,
+    MatDialogModule,
+    MatListModule,
     BsDropdownModule,
   ],
   exports: [
@@ -87,6 +101,7 @@ import { ErrorConfigDetailsComponent } from '@mm-components/error-config-details
     DateFilterComponent,
     FacilityFilterComponent,
     FormTypeFilterComponent,
+    FastActionButtonComponent,
     StatusFilterComponent,
     SearchBarComponent,
     MultiselectBarComponent,
@@ -102,6 +117,7 @@ import { ErrorConfigDetailsComponent } from '@mm-components/error-config-details
     ErrorConfigDetailsComponent,
     AnalyticsFilterComponent,
     AnalyticsTargetsDetailsComponent,
+    PanelHeaderComponent,
   ]
 })
 export class ComponentsModule { }

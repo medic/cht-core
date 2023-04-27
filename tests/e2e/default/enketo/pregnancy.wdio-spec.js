@@ -34,7 +34,7 @@ describe('Pregnancy registration', () => {
     const nextANCVisit = moment().add(1, 'day');
 
     await commonPage.goToPeople(pregnantWoman._id);
-    await contactPage.createNewAction('Pregnancy registration');
+    await commonPage.openFastActionReport('pregnancy');
     await pregnancyForm.selectGestationAge();
     await genericForm.nextPage();
     await pregnancyForm.setDeliveryDate(edd.format('YYYY-MM-DD'));
