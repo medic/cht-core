@@ -300,6 +300,7 @@ module.exports = function(grunt) {
               `cd ${service}`,
               `npm ci --production`,
               `npm dedupe`,
+              `rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch`,
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
             ].join(' && ')
@@ -385,7 +386,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci --legacy-peer-deps && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci --legacy-peer-deps && rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {

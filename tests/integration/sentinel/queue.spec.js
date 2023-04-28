@@ -126,6 +126,7 @@ describe('Sentinel queue drain', () => {
     await utils.stopNginx();
     await utils.startNginx();
     await utils.listenForApi();
+
     const settings = { transitions: { update_clinics: true } };
     await utils.updateSettings(settings, 'api');
 
@@ -137,6 +138,7 @@ describe('Sentinel queue drain', () => {
       reported_date: new Date().getTime(),
     };
     await utils.saveDoc(doc);
+    console.log(doc);
     await sentinelUtils.waitForSentinel();
     const [info] = await sentinelUtils.getInfoDocs(doc._id);
     expect(info.transitions.update_clinics.ok).to.be.true;
