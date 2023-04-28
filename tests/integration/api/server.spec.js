@@ -182,7 +182,7 @@ describe('server', () => {
   });
 
   describe('DNS resolver', () => {
-    it('nginx should resolve updated IP', async () => {
+    it('nginx should resolve updated api ips', async () => {
       await utils.stopHaproxy();
       await utils.stopApi();
       await utils.startHaproxy();

@@ -1246,9 +1246,7 @@ module.exports = {
     await listenForApi();
   },
   stopHaproxy: () => stopService('haproxy'),
-  startHaproxy: async () => {
-    await startService('haproxy');
-  },
+  startHaproxy: () => startService('haproxy'),
 
   saveCredentials: (key, password) => {
     const options = {
