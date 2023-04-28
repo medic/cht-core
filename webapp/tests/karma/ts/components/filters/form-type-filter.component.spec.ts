@@ -52,6 +52,7 @@ describe('Form Type Filter Component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 

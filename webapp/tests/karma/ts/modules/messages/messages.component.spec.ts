@@ -2,7 +2,6 @@ import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angul
 import { provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -17,6 +16,8 @@ import { TourService } from '@mm-services/tour.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { AuthService } from '@mm-services/auth.service';
+import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -26,6 +27,7 @@ describe('Messages Component', () => {
   let exportService;
   let modalService;
   let userContactService;
+  let fastActionButtonService;
   let authService;
 
   const userContactGrandparent = { _id: 'grandparent' };
@@ -44,11 +46,13 @@ describe('Messages Component', () => {
       getList: sinon.stub().resolves([]),
       isRelevantChange: sinon.stub()
     };
-    changesService = {
-      subscribe: sinon.stub().resolves(of({}))
-    };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
+    };
+    fastActionButtonService = {
+      getMessageActions: sinon.stub(),
+      getButtonTypeForContentList: sinon.stub(),
     };
     authService = { online: sinon.stub().returns(false) };
     const tourServiceMock = {
@@ -82,6 +86,7 @@ describe('Messages Component', () => {
           { provide: NavigationService, useValue: {} },
           { provide: UserContactService, useValue: userContactService },
           { provide: AuthService, useValue: authService },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
         ]
       })
       .compileComponents()
@@ -129,6 +134,24 @@ describe('Messages Component', () => {
     component.ngOnDestroy();
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+  });
+
+  it('should update fast actions', async () => {
+    sinon.resetHistory();
+    modalService.show.resolves();
+    messageContactService.getList.resolves([
+      { key: 'a', message: { inAllMessages: true } },
+      { key: 'c', message: { inAllMessages: true } },
+    ]);
+
+    await component.updateConversations();
+
+    expect(fastActionButtonService.getMessageActions.calledOnce).to.be.true;
+
+    const params = fastActionButtonService.getMessageActions.args[0][0];
+    params.callbackOpenSendMessage();
+    expect(modalService.show.calledOnce).to.be.true;
+    expect(modalService.show.args[0][0]).to.equal(SendMessageComponent);
   });
 
   describe('updateConversations()', () => {

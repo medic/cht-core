@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
+chai.use(require('chai-as-promised'));
 
 const constants = require('../../constants');
 const utils = require('../../utils');
@@ -41,7 +42,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    './tests/e2e/default/**/*.wdio-spec.js',
+    '**/*.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
@@ -169,6 +170,7 @@ const baseConfig = {
   mochaOpts: {
     ui: 'bdd',
     timeout: 120000,
+    retries: 5,
   },
   //
   // =====
@@ -188,8 +190,10 @@ const baseConfig = {
     if (fs.existsSync(ALLURE_OUTPUT)) {
       const files = fs.readdirSync(ALLURE_OUTPUT) || [];
       files.forEach(fileName => {
-        const filePath = path.join(ALLURE_OUTPUT, fileName);
-        fs.unlinkSync(filePath);
+        if (fileName !== 'history') {
+          const filePath = path.join(ALLURE_OUTPUT, fileName);
+          fs.unlinkSync(filePath);
+        }
       });
     }
 
@@ -293,7 +297,7 @@ const baseConfig = {
   afterTest: async (test, context, { passed }) => {
     const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
     existingFeedBackDocIds.push(feedBackDocs);
-    if(feedBackDocs){
+    if (feedBackDocs) {
       if(passed){
         context.test.callback(new Error('Feedback docs were generated during the test.'));
       }
@@ -357,7 +361,7 @@ const baseConfig = {
     await utils.tearDownServices();
     const reportError = new Error('Could not generate Allure report');
     const timeoutError = new Error('Timeout generating report');
-    const generation = allure(['generate', 'allure-results', '--clean']);
+    const generation = allure(['generate', 'allure-results']);
 
     return new Promise((resolve, reject) => {
       const generationTimeout = setTimeout(

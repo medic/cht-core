@@ -34,13 +34,13 @@ module.exports = {
   editForm: () => {
     helper.waitForAngularComplete();
     const moreOptionsMenu = element.all(
-      by.css('.more-options-menu-container>.mat-menu-trigger')
+      by.css('.more-options-menu-container>.mat-mdc-menu-trigger')
     );
     helper.waitUntilReady(moreOptionsMenu);
     moreOptionsMenu.click();
 
     const editFormBtn = element.all(
-      by.css('.mat-menu-content .mat-menu-item[test-id="edit-reports"]')
+      by.css('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-reports"]')
     );
     helper.waitUntilReady(editFormBtn);
     editFormBtn.click();
@@ -48,13 +48,13 @@ module.exports = {
 
   editFormNative: async () => {
     const moreOptionsMenu = element.all(
-      by.css('.more-options-menu-container>.mat-menu-trigger')
+      by.css('.more-options-menu-container>.mat-mdc-menu-trigger')
     );
     helper.waitUntilReadyNative(moreOptionsMenu);
     moreOptionsMenu.click();
 
     const editFormBtn = element(
-      by.css('.mat-menu-content .mat-menu-item[test-id="edit-reports"]')
+      by.css('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-reports"]')
     );
     await helper.waitUntilReadyNative(editFormBtn);
     await editFormBtn.click();

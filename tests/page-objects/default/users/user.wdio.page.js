@@ -1,19 +1,13 @@
 const _ = require('lodash');
 const commonElements = require('../common/common.wdio.page');
 const addUserButton = () => $('a#add-user');
-const cancelUserModalButton = () => $('[test-id="modal-cancel-btn"]');
 const addUserDialog = () => $('div#edit-user-profile');
 const userName = () => $('#edit-username');
 const userFullName = () => $('#fullname');
-const userPlace = () => $('//span[@aria-labelledby="select2-facilitySelect-container"]');
-const userAssociatedContact = () => $('//span[@aria-labelledby="select2-contactSelect-container"]');
 const userPassword = () => $('#edit-password');
 const userConfirmPassword = () => $('#edit-password-confirm');
 const saveUserButton = () => $('//a[@test-id="modal-submit-btn"]');
 const logoutButton = () => $('i.fa-power-off');
-const select2SearchInputBox = () => $('//input[@aria-controls="select2-facilitySelect-results"]');
-const select2Name = () => $('.name');
-const select2SearchContactInputBox = () => $('//input[@aria-controls="select2-contactSelect-results"]');
 const usernameTextSelector = '[test-id="username-list"]';
 const usernameText = () => $(usernameTextSelector);
 const usernameTextList = () => $$(usernameTextSelector);
@@ -46,24 +40,28 @@ const openAddUserDialog = async () => {
   await browser.pause(500);
 };
 
-const closeUserDialog = async () => {
-  await (await cancelUserModalButton()).waitForDisplayed();
-  await (await cancelUserModalButton()).click();
-  await (await addUserDialog()).waitForDisplayed({ reverse: true });
+const scrollToBottomOfModal = async () => {
+  await browser.execute(() => {
+    const modalWindow = document.querySelector('.modal');
+    modalWindow.scrollTop = modalWindow.scrollHeight;
+  });
 };
 
-const inputAddUserFields = async (username, fullname, role, place, associatedContact, password,
-  confirmPassword = password) => {
+const inputAddUserFields = async (username, fullname, role, place, contact, password, confirmPassword = password) => {
   await (await userName()).addValue(username);
   await (await userFullName()).addValue(fullname);
   await (await $(`#role-select input[value="${role}"]`)).click();
+
+  // we need to scroll to the bottom to bring the select2 elements into view
+  // scrollIntoView doesn't work because they're within a scrollable div (the modal)
+  await scrollToBottomOfModal();
 
   if (!_.isEmpty(place)) {
     await selectPlace(place);
   }
 
-  if (!_.isEmpty(associatedContact)) {
-    await selectContact(associatedContact);
+  if (!_.isEmpty(contact)) {
+    await selectContact(contact);
   }
 
   await (await userPassword()).addValue(password);
@@ -74,23 +72,27 @@ const inputUploadUsersFields = async (filePath) => {
   await (await $('input[type="file"]')).setValue(filePath);
 };
 
-const selectPlace = async (place) => {
-  await (await userPlace()).waitForDisplayed();
-  await (await userPlace()).scrollIntoView();
-  await (await userPlace()).click();
-  await (await select2SearchInputBox()).waitForDisplayed();
-  await (await select2SearchInputBox()).addValue(place);
-  await (await select2Name()).click();
+const setSelect2 = async (id, value) => {
+  const input = await $(`span.select2-selection[aria-labelledby=select2-${id}-container]`);
+  await input.waitForExist();
+  await input.click();
 
+  const searchField = await $('.select2-search__field');
+  await searchField.waitForExist();
+  await searchField.setValue(value);
+
+  const option = await $('.name');
+  await option.waitForExist();
+  await option.waitForClickable();
+  await option.click();
+};
+
+const selectPlace = async (place) => {
+  await setSelect2('facilitySelect', place);
 };
 
 const selectContact = async (associatedContact) => {
-  await (await userAssociatedContact()).waitForDisplayed();
-  await (await userAssociatedContact()).scrollIntoView();
-  await (await userAssociatedContact()).click();
-  await (await select2SearchContactInputBox()).waitForDisplayed();
-  await (await select2SearchContactInputBox()).addValue(associatedContact);
-  await (await select2Name()).click();
+  await setSelect2('contactSelect', associatedContact);
 };
 
 const saveUser = async (isSuccessExpected = true)  => {
@@ -165,7 +167,6 @@ module.exports = {
   goToAdminUser,
   goToAdminUpgrade,
   openAddUserDialog,
-  closeUserDialog,
   inputAddUserFields,
   saveUser,
   logout,

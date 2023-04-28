@@ -12,19 +12,23 @@ const reportBody = () => $(REPORT_BODY);
 const noReportSelectedLabel = () => $('.empty-selection');
 const selectedCaseId = () => $(`${reportBodyDetailsSelector} > ul > li > p > span > a`);
 const selectedCaseIdLabel = () => $(`${reportBodyDetailsSelector} ul > li > label > span`);
-const submitterPlace = () => $('.position a');
-const submitterPhone = () => $('.sender .phone');
-const submitterName = () => $('.sender .name');
 const firstReport = () => $(`${REPORTS_LIST_ID} li:first-child`);
 const reportList = () => $(`${REPORTS_LIST_ID}`);
+const reportListLoadingStatus = () => $(`${REPORTS_LIST_ID} .loading-status`);
 const allReports = () => $$(`${REPORTS_LIST_ID} li.content-row`);
 const reportsByUUID = (uuid) => $$(`${REPORTS_LIST_ID} li.content-row[data-record-id="${uuid}"]`);
 const reportRowSelector = `${REPORTS_LIST_ID} .content-row`;
 const reportRow = () => $(reportRowSelector);
 const reportRowsText = () => $$(`${reportRowSelector} .heading h4 span`);
-const editReportButton = () => $('.mat-menu-content .mat-menu-item[test-id="edit-reports"]');
-const deleteButton = () => $('.mat-menu-content .mat-menu-item[test-id="delete-reports"]');
-const exportButton = () => $('.mat-menu-content .mat-menu-item[test-id="export-reports"]');
+const editReportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-reports"]');
+const deleteButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-reports"]');
+const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-reports"]');
+const reviewButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="review-report"]');
+const REVIEW_REPORT_CONTAINER = '.verify-report-options-wrapper';
+const reviewReportContainer = () => $(REVIEW_REPORT_CONTAINER);
+const reviewReportOptionById = (id) => $(`${REVIEW_REPORT_CONTAINER} button.${id}`);
+const activeReviewOption = () => $(`${REVIEW_REPORT_CONTAINER} button.active-option`);
+const reviewReportCloseButton = () => $(`${REVIEW_REPORT_CONTAINER} .panel-header .panel-header-close`);
 
 const sidebarFilterDateAccordionHeader = () => $('#date-filter-accordion .panel-heading');
 const sidebarFilterDateAccordionBody = () => $('#date-filter-accordion .panel-collapse.show');
@@ -35,8 +39,12 @@ const filterResetBtn = () => $('.sidebar-reset');
 
 const reportDetailsFieldsSelector = `${reportBodyDetailsSelector} > ul > li`;
 const reportDetailsFields = () => $$(reportDetailsFieldsSelector);
+const rawReportContent = () => $(`${reportBodyDetailsSelector} p[test-id='raw-report-content']`);
+const automaticReplySection = `${reportBodyDetailsSelector} ul[test-id='automated-reply']`;
+const automaticReplyMessage = () => $(`${automaticReplySection} p[test-id='message-content']`);
+const automaticReplyState = () => $(`${automaticReplySection} .state`);
+const automaticReplyRecipient = () => $(`${automaticReplySection} .recipient`);
 
-const submitReportButton = () => $('.action-container .general-actions:not(.ng-hide) .fa-plus');
 const deleteAllButton = () => $('.desktop.multiselect-bar-container .bulk-delete');
 const selectedReportsCount = () => $('.desktop.multiselect-bar-container .count-label');
 const DELETE_CONFIRM_MODAL = 'mm-modal#bulk-delete-confirm';
@@ -45,22 +53,22 @@ const dateFilter = () => $('#date-filter');
 const datePickerStart = () => $('.daterangepicker [name="daterangepicker_start"]');
 const datePickerEnd = () => $('.daterangepicker [name="daterangepicker_end"]');
 
-const formActionsLink = (formId) => {
-  return $(`.action-container .general-actions .dropup.open .dropdown-menu li a[href="#/reports/add/${formId}"]`);
-};
 const unreadCount = () => $('#reports-tab .mm-badge');
 const formTitle = () => $('#report-form #form-title');
 const submitButton = () => $('#report-form .form-footer .btn.submit');
 
-const forms = () => $$('.action-container .general-actions .actions.dropup .dropdown-menu li');
 const itemSummary = () => $(`${REPORT_BODY} .item-summary`);
 const reportCheckbox = (uuid) => $(`${REPORTS_LIST_ID} li[data-record-id="${uuid}"] input[type="checkbox"]`);
 const selectedReportsCheckboxes = () => $$(`${REPORTS_LIST_ID} li input[type="checkbox"]:checked`);
 const sentTask = async () => (await reportBodyDetails()).$('ul .task-list .task-state .state');
 const reportByUUID = (uuid) => $(`li[data-record-id="${uuid}"]`);
 
-const patientName = () => $('.subject .name');
-const reportType = () => $('div[test-id="form-title"]');
+const patientName = () => itemSummary().$('.subject .name');
+const reportName = () => itemSummary().$('div[test-id="form-title"]');
+const senderName = () => itemSummary().$('.sender .name');
+const senderPhone = () => itemSummary().$('.sender .phone');
+const lineage = () => itemSummary().$('.position');
+const relativeDate = () => itemSummary().$('.relative-date');
 
 // warning: the unread element is not displayed when there are no unread reports
 const getUnreadCount = async () => {
@@ -70,26 +78,15 @@ const getUnreadCount = async () => {
 
 const goToReportById = (reportId) => browser.url(`#/reports/${reportId}`);
 
-const getTaskState = async (first, second) => {
-  return (await reportBodyDetails())
-    .$(`.scheduled-tasks > ul > li:nth-child(${first}) > ul > li:nth-child(${second}) .task-state .state`);
-};
-
-const openForm = async (name) => {
-  await (await submitReportButton()).waitForClickable();
-  await (await submitReportButton()).click();
-  // this is annoying but there's a race condition where the click could end up on another form if we don't
-  // wait for the animation to finish
-  await (await $('.action-container .general-actions .actions.dropup.open')).waitForDisplayed();
-  await browser.pause(50);
-  for (const form of await forms()) {
-    if (await form.getText() === name) {
-      await form.click();
-      await (await formTitle()).waitForDisplayed();
-      return;
-    }
-  }
-  throw new Error(`Form with name: "${name}" not found`);
+const getTaskDetails = async (taskNumber, messageNumber) => {
+  const task = await reportTasks().$(`li[test-id='tasks']:nth-child(${taskNumber})`);
+  const message = await task.$(`li[test-id='task-message']:nth-child(${messageNumber})`);
+  return {
+    title: await task.$('h3[test-id="task-title"]').getText(),
+    message: await message.$('p[test-id="message-content"]').getText(),
+    state: await message.$('.state').getText(),
+    recipient: await message.$('.recipient').getText(),
+  };
 };
 
 const setDateInput = async (name, date) => {
@@ -316,14 +313,27 @@ const getReportDetailFieldValueByLabel = async (label) => {
   }
 };
 
-const getReportSubject = async () => {
-  await patientName().waitForDisplayed();
-  return (await patientName()).getText();
+const getRawReportContent = async () => {
+  return await (await rawReportContent()).getText();
 };
 
-const getReportType = async () => {
-  await reportType().waitForDisplayed();
-  return (await reportType()).getText();
+const getAutomaticReply = async () => {
+  return {
+    message: await automaticReplyMessage().getText(),
+    state: await automaticReplyState().getText(),
+    recipient: await automaticReplyRecipient().getText(),
+  };
+};
+
+const getOpenReportInfo = async () => {
+  return {
+    patientName: await getElementText(patientName()),
+    reportName: await getElementText(reportName()),
+    senderName: await getElementText(senderName()),
+    senderPhone: await getElementText(senderPhone()),
+    lineage: await getElementText(lineage()),
+    relativeDate: await getElementText(relativeDate()),
+  };
 };
 
 const openSelectedReport = async (listElement) => {
@@ -371,24 +381,52 @@ const deleteReport = async () => {
   await (await deleteButton()).click();
 };
 
+const openReview = async () => {
+  await commonElements.openMoreOptionsMenu();
+  await (await reviewButton()).waitForClickable();
+  await (await reviewButton()).click();
+  await (await reviewReportContainer()).waitForDisplayed();
+};
+
+const closeReview = async () => {
+  await (await reviewReportContainer()).waitForDisplayed();
+  await (await reviewReportCloseButton()).waitForClickable();
+  await (await reviewReportCloseButton()).click();
+};
+
+const openReviewAndSelectOption = async (optionId) => {
+  await openReview();
+  await (await reviewReportOptionById(optionId)).waitForClickable();
+  await (await reviewReportOptionById(optionId)).click();
+};
+
+const getSelectedReviewOption = async () => {
+  await openReview();
+  await (await activeReviewOption()).waitForDisplayed();
+  const label = (await (await activeReviewOption()).getText()).trim();
+  await closeReview();
+  return label;
+};
+
+const getReportListLoadingStatus = async () => {
+  await (await reportListLoadingStatus()).waitForDisplayed();
+  return await (await reportListLoadingStatus()).getText();
+};
+
 module.exports = {
   getCurrentReportId,
   getLastSubmittedReportId,
   noReportSelectedLabel,
   reportList,
   firstReport,
-  submitterName,
-  submitterPhone,
-  submitterPlace,
+  patientName,
+  senderPhone,
   selectedCaseId,
   selectedCaseIdLabel,
-  submitReportButton,
-  formActionsLink,
   getUnreadCount,
   goToReportById,
   sentTask,
-  getTaskState,
-  openForm,
+  getTaskDetails,
   formTitle,
   openSidebarFilter,
   openSidebarFilterDateAccordion,
@@ -418,8 +456,9 @@ module.exports = {
   reportsByUUID,
   getAllReportsText,
   getReportDetailFieldValueByLabel,
-  getReportSubject,
-  getReportType,
+  getRawReportContent,
+  getAutomaticReply,
+  getOpenReportInfo,
   getListReportInfo,
   resetFilter,
   openReport,
@@ -428,7 +467,10 @@ module.exports = {
   editReport,
   deleteReport,
   exportReports,
+  openReviewAndSelectOption,
+  getSelectedReviewOption,
   fieldByIndex,
   reportBodyDetails,
+  getReportListLoadingStatus,
   openSelectedReport,
 };

@@ -46,14 +46,14 @@ CHT_NETWORK=$projectName-cht-net
 EOL
 }
 
-get_latest_release_url() {
+get_latest_release() {
   latest=$(curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases\?limit\=1\&descending\=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*')
   echo "https://staging.dev.medicmobile.org/_couch/builds_4/${latest}"
 }
 
 create_compose_files() {
   echo "Downloading compose files ..." | tr -d '\n'
-  stagingUrlBase=$(get_latest_release_url)
+  stagingUrlBase=$(get_latest_release)
   mkdir -p "$homeDir/couch"
   mkdir -p "$homeDir/compose"
   curl -s -o "$homeDir/upgrade-service.yml" \
@@ -90,6 +90,70 @@ show_help_existing_stop_and_destroy() {
     echo "https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/"
     echo ""
 }
+
+get_lan_ip() {
+  # init empty lan address
+  lanAddress=""
+
+  # "system_profiler" exists only on MacOS, if it's not here, then run linux style command for
+  # getting localhost's IP.  Otherwise use MacOS style command
+  if [ -n "$(required_apps_installed "system_profiler")" ];then
+    # todo - some of these calls fail when there's no network connectivity - output stuff it shouldn't:
+    #       Device "" does not exist.
+    routerIP=$(ip r | grep default | head -n1 | awk '{print $3}')
+    subnet=$(echo "$routerIP" | cut -d'.' -f1,2,3 )
+    if [ -z $subnet ]; then
+      subnet=127.0.0
+    fi
+    lanInterface=$(ip r | grep $subnet | grep default | head -n1 | cut -d' ' -f 5)
+    lanAddress=$(ip a s "$lanInterface" | awk '/inet /{gsub(/\/.*/,"");print $2}' | head -n1)
+  else
+    subnet=$(netstat -rn| grep default | awk '{print $2}'|grep -Ev '^[a-f]' |cut -f1,2,3 -d'.')
+    ifconfig_line=$(ifconfig|grep inet|grep "$subnet" | cut -d' ' -f 2)
+    lanAddress=$ifconfig_line
+  fi
+
+  # always fall back to localhost if lanAddress wasn't set
+  if [ -z "$lanAddress" ]; then
+    lanAddress=127.0.0.1
+  fi
+  echo "$lanAddress"
+}
+
+get_local_ip_url(){
+  lanIp=$1
+  cookedLanAddress=$(echo "$lanIp" | tr . -)
+  url="https://${cookedLanAddress}.local-ip.medicmobile.org:${NGINX_HTTPS_PORT}"
+  echo "$url"
+}
+
+required_apps_installed(){
+  error=''
+  appString=$1
+  IFS=';' read -ra appsArray <<<"$appString"
+  for app in "${appsArray[@]}"; do
+    if ! command -v "$app" &>/dev/null; then
+      error="${app} ${error}"
+    fi
+  done
+  echo "${error}"
+}
+
+get_nginx_container_id() {
+	docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
+}
+
+get_is_container_running() {
+	containerId=$1
+	docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
+}
+
+if [ -n "$(required_apps_installed "docker-compose")" ];then
+  echo ""
+  echo -e "${red}\"docker-compose\" is not installed or could not be found. Please install and try again!${noColor}"
+  show_help_existing_stop_and_destroy
+  exit 0
+fi
 
 # can pass a project .env file as argument
 if [[ -n "${1-}" ]]; then
@@ -224,20 +288,13 @@ fi
 # shellcheck disable=SC1090
 source "./$projectFile"
 
+projectURL=$(get_local_ip_url "$(get_lan_ip)")
+
 echo ""
 docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
 
 set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
-
-get_nginx_container_id() {
-	docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
-}
-
-get_is_container_running() {
-	containerId=$1
-	docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
-}
 
 nginxContainerId=$(get_nginx_container_id)
 isNginxRunning=$(get_is_container_running "$nginxContainerId")
@@ -262,11 +319,9 @@ while [[ "$isNginxRunning" != "true" ]]; do
 	isNginxRunning=$(get_is_container_running "$nginxContainerId")
 done
 
-docker exec -it "$nginxContainerId" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
-docker exec -it "$nginxContainerId" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
-docker exec -it "$nginxContainerId" bash -c "cat server.pem chain.pem > /etc/nginx/private/cert.pem"
-docker exec -it "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem http://local-ip.co/cert/server.key"
-docker restart "$nginxContainerId" 1>/dev/null
+docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
+docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
+docker exec -it $nginxContainerId bash -c "nginx -s reload"
 
 echo ""
 echo ""
@@ -274,8 +329,8 @@ echo " -------------------------------------------------------- "
 echo ""
 echo "  Success! \"${projectName}\" is set up:"
 echo ""
-echo "    https://127-0-0-1.my.local-ip.co:${NGINX_HTTPS_PORT}/ (CHT)"
-echo "    https://127-0-0-1.my.local-ip.co:${NGINX_HTTPS_PORT}/_utils/ (Fauxton)"
+echo "    ${projectURL}/ (CHT)"
+echo "    ${projectURL}/_utils/ (Fauxton)"
 echo ""
 echo "    Login: ${COUCHDB_USER}"
 echo "    Password: ${COUCHDB_PASSWORD}"

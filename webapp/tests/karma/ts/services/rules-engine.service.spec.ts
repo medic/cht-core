@@ -86,6 +86,7 @@ describe('RulesEngineService', () => {
     targets: [{ id: 'target' }],
     enableTasks: true,
     enableTargets: true,
+    rulesAreDeclarative: false,
     contact: userContactDoc,
     user: userSettingsDoc,
     monthStartDate: 1,
@@ -97,7 +98,7 @@ describe('RulesEngineService', () => {
 
   beforeEach(() => {
     authService = { has: sinon.stub().resolves(true) };
-    changesService = { subscribe: sinon.stub() };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     sessionService = { isOnlineOnly: sinon.stub().returns(false), userCtx: () => ({ name: 'fred' }) };
     settingsService = { get: sinon.stub().resolves(settingsDoc) };
     translateFromService = { get: sinon.stub().resolves(settingsDoc) };
@@ -276,6 +277,25 @@ describe('RulesEngineService', () => {
       expect(result).to.be.true;
       expect(rulesEngineCoreStubs.initialize.callCount).to.eq(1);
       expect(rulesEngineCoreStubs.initialize.args[0][0]).to.deep.eq(expectedRulesConfig);
+    });
+
+    it('tasks.isDeclarative flag (set via cht-conf) disables nools', async () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const settingsDoc = {
+        _id: 'settings',
+        tasks: {
+          rules: 'rules',
+          isDeclarative: true,
+        },
+      };
+      settingsService.get.resolves(settingsDoc);
+      
+      const result = await service.isEnabled();
+
+      expect(result).to.be.true;
+      expect(rulesEngineCoreStubs.initialize.callCount).to.eq(1);
+      expect(rulesEngineCoreStubs.initialize.args[0][0]).to.include({ rulesAreDeclarative: true });
     });
   });
 

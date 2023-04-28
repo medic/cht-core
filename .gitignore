@@ -23,6 +23,7 @@ dist
 .vscode/
 .idea/
 /build/
+/local-build/
 api/**/extracted-resources/**/*
 api/build/**/*
 jsdocs
@@ -50,3 +51,4 @@ tests/cht-couchdb-cluster-test.yml
 couchdb/srv*
 tests/scalability/jmeter/
 webapp/analyzer.report.html
+/webapp/.angular/

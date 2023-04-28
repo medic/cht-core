@@ -34,7 +34,7 @@ describe('TasksContentComponent', () => {
   let tasksForContactService;
 
   let compileComponent;
-  let component:TasksContentComponent;
+  let component: TasksContentComponent;
   let fixture: ComponentFixture<TasksContentComponent>;
 
   beforeEach(() => {
@@ -90,6 +90,7 @@ describe('TasksContentComponent', () => {
 
   afterEach(() => {
     sinon.restore();
+    store.resetSelectors();
   });
 
   it('should unsubscribe and cancel geohandle when destroyed', async () => {

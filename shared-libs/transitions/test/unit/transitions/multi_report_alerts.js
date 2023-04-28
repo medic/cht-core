@@ -63,27 +63,39 @@ describe('multi report alerts', () => {
   it('filter validation', () => {
     sinon.stub(utils, 'isValidSubmission').returns(false);
 
-    assert.equal(transition.filter({}), false);
+    assert.equal(transition.filter({ doc: {} }), false);
     assert.equal(transition.filter({
-      form: 'x',
-      type: 'badtype'
+      doc: {
+        form: 'x',
+        type: 'badtype'
+      }
     }), false);
     assert.equal(transition.filter({
-      type: 'data_record'
+      doc: {
+        type: 'data_record'
+      }
     }), false);
     assert.equal(transition.filter({
-      form: 'x',
+      doc: {
+        form: 'x',
+      }
     }), false);
 
     assert.equal(transition.filter({
-      form: 'x',
-      type: 'data_record'
+      doc: {
+        form: 'x',
+        type: 'data_record'
+      },
+      info: {}
     }), false);
 
     utils.isValidSubmission.returns(true);
     assert.equal(transition.filter({
-      form: 'x',
-      type: 'data_record'
+      doc: {
+        form: 'x',
+        type: 'data_record'
+      },
+      info: {}
     }), true);
 
     assert.equal(utils.isValidSubmission.callCount, 2);
@@ -93,9 +105,16 @@ describe('multi report alerts', () => {
   it('filter validation hasRun', () => {
     sinon.stub(utils, 'isValidSubmission').returns(true);
     assert.equal(transition.filter({
-      form: 'x',
-      type: 'data_record'
-    }, {transitions : { multi_report_alerts: 'hi' }}), false);
+      doc: {
+        form: 'x',
+        type: 'data_record'
+      },
+      info: {
+        transitions: {
+          multi_report_alerts: 'hi'
+        }
+      }
+    }), false);
   });
 
   const assertConfigIsInvalid = (done, alerts) => {
@@ -210,8 +229,12 @@ describe('multi report alerts', () => {
   const assertMessages = (addMessageStub, alert) => {
     addMessageStub.getCalls().forEach((call, i) => {
       assertMessage(
-        call.args, alert.recipients[i], alert.message, alert.name,
-        alert.num_reports_threshold, alert.time_window_in_days
+        call.args,
+        alert.recipients[i],
+        alert.message,
+        alert.name,
+        alert.num_reports_threshold,
+        alert.time_window_in_days
       );
     });
   };
@@ -477,15 +500,39 @@ describe('multi report alerts', () => {
       assert.equal(messages.addError.getCalls().length, 0);
 
       // first recipient
-      assertMessage(messages.addMessage.getCall(0).args, '+254111222333', alertConfig.message,
-        alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+      assertMessage(
+        messages.addMessage.getCall(0).args,
+        '+254111222333',
+        alertConfig.message,
+        alertConfig.name,
+        alertConfig.num_reports_threshold,
+        alertConfig.time_window_in_days
+      );
       // second recipient : matched 3 phones
-      assertMessage(messages.addMessage.getCall(1).args, doc.contact.phone, alertConfig.message,
-        alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
-      assertMessage(messages.addMessage.getCall(2).args, hydratedReports[0].contact.phone, alertConfig.message,
-        alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
-      assertMessage(messages.addMessage.getCall(3).args, hydratedReports[1].contact.phone, alertConfig.message,
-        alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+      assertMessage(
+        messages.addMessage.getCall(1).args,
+        doc.contact.phone,
+        alertConfig.message,
+        alertConfig.name,
+        alertConfig.num_reports_threshold,
+        alertConfig.time_window_in_days
+      );
+      assertMessage(
+        messages.addMessage.getCall(2).args,
+        hydratedReports[0].contact.phone,
+        alertConfig.message,
+        alertConfig.name,
+        alertConfig.num_reports_threshold,
+        alertConfig.time_window_in_days
+      );
+      assertMessage(
+        messages.addMessage.getCall(3).args,
+        hydratedReports[1].contact.phone,
+        alertConfig.message,
+        alertConfig.name,
+        alertConfig.num_reports_threshold,
+        alertConfig.time_window_in_days
+      );
 
       assert.equal(messages.addMessage.getCalls().length, 4);
     });
@@ -552,12 +599,30 @@ describe('multi report alerts', () => {
       assert.equal(messages.addError.getCalls().length, 0);
 
       assert.equal(messages.addMessage.getCalls().length, 3); // alert[0].recipients + alert[1].recipients
-      assertMessage(messages.addMessage.getCall(0).args, twoAlerts[0].recipients[0], twoAlerts[0].message,
-        twoAlerts[0].name, twoAlerts[0].num_reports_threshold, twoAlerts[0].time_window_in_days);
-      assertMessage(messages.addMessage.getCall(1).args, twoAlerts[1].recipients[0], twoAlerts[1].message,
-        twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
-      assertMessage(messages.addMessage.getCall(2).args, twoAlerts[1].recipients[1], twoAlerts[1].message,
-        twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
+      assertMessage(
+        messages.addMessage.getCall(0).args,
+        twoAlerts[0].recipients[0],
+        twoAlerts[0].message,
+        twoAlerts[0].name,
+        twoAlerts[0].num_reports_threshold,
+        twoAlerts[0].time_window_in_days
+      );
+      assertMessage(
+        messages.addMessage.getCall(1).args,
+        twoAlerts[1].recipients[0],
+        twoAlerts[1].message,
+        twoAlerts[1].name,
+        twoAlerts[1].num_reports_threshold,
+        twoAlerts[1].time_window_in_days
+      );
+      assertMessage(
+        messages.addMessage.getCall(2).args,
+        twoAlerts[1].recipients[1],
+        twoAlerts[1].message,
+        twoAlerts[1].name,
+        twoAlerts[1].num_reports_threshold,
+        twoAlerts[1].time_window_in_days
+      );
 
       assert(docNeedsSaving);
     });

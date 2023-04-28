@@ -915,7 +915,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
         </translation>
       </itext>
       <instance>
-        <data id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" delimiter="#" version="2022-09-26 12-17">
+        <data id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" delimiter="#" version="2023-02-14 7-41">
           <inputs>
             <meta>
               <location>
@@ -984,6 +984,9 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
             <role_other/>
             <external_id/>
             <notes/>
+            <user_for_contact>
+              <create/>
+            </user_for_contact>
             <meta tag="hidden">
               <created_by/>
               <created_by_person_uuid/>
@@ -1035,6 +1038,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <bind nodeset="/data/contact/role_other" type="string" relevant="selected(  /data/contact/role ,'other')" required="true()"/>
       <bind nodeset="/data/contact/external_id" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
       <bind nodeset="/data/contact/notes" type="string" relevant="selected( /data/init/create_new_person ,'new_person')"/>
+      <bind nodeset="/data/contact/user_for_contact/create" type="string" calculate=" /data/contact/phone  != '' and (selected(  /data/contact/role ,'chw') or selected(  /data/contact/role ,'chw_supervisor'))"/>
       <bind nodeset="/data/contact/meta/created_by" type="string" calculate="../../../inputs/user/name"/>
       <bind nodeset="/data/contact/meta/created_by_person_uuid" type="string" calculate="../../../inputs/user/contact_id"/>
       <bind nodeset="/data/contact/meta/created_by_place_uuid" type="string" calculate="../../../inputs/user/facility_id"/>
@@ -1203,6 +1207,7 @@ DOB ISO: <output value=" /data/contact/ephemeral_dob/dob_iso "/></value></text>
       <input appearance="multiline" ref="/data/contact/notes">
         <label ref="jr:itext('/data/contact/notes:label')"/>
       </input>
+      <group ref="/data/contact/user_for_contact"/>
       <group appearance="hidden" ref="/data/contact/meta"/>
     </group>
     <group appearance="field-list" ref="/data/district_hospital">

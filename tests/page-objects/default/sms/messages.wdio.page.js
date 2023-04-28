@@ -1,9 +1,10 @@
-const commonElements = require('../common/common.wdio.page');
+const commonPage = require('../common/common.wdio.page');
 
 // LHS Elements
 const messageByIndex = index => $(`#message-list li:nth-child(${index})`);
 const messageInList = identifier => $(`#message-list li[test-id="${identifier}"]`);
 const messagesList = () => $('#message-list');
+const messagesLoadingStatus = () => $('#message-list .loading-status');
 const waitForMessagesInLHS = async () => await browser.waitUntil(
   async () => await (await messageByIndex(1)).waitForDisplayed(),
   5000,
@@ -30,46 +31,38 @@ const messageContentText = (messageContentElement) => messageContentElement.$('.
 const messageDetailStatus = async () => (await messageContentIndex()).$('.data .state.received');
 
 const messageText = text => $('#send-message textarea').setValue(text);
-const sendMessageButton = () => $('.general-actions .send-message');
-const sendMessageModal = () => $('#send-message');
 const sendMessageModalSubmit = () => $('a.btn.submit:not(.ng-hide)');
-const recipientField = () => $('#send-message input.select2-search__field');
-const exportButton = () => $('.mat-menu-content .mat-menu-item[test-id="export-messages"]');
-const lastMessageText = () => $('#message-content li:first-child span[test-id="sms-content"]').getText();
+const messageRecipientSelect = () => $('#send-message input.select2-search__field');
+const contactNameSelector = () => $('.sender .name');
+const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-messages"]');
 
-const selectOptions = '.select2-results__option';
-const contactNameSelector = '.sender .name';
-
-const openSendMessageModal = async () => {
-  await (await sendMessageButton()).waitForClickable();
-  await (await sendMessageButton()).click();
-  await (await sendMessageModal()).waitForDisplayed();
-};
 const submitMessage = async () => {
   await (await sendMessageModalSubmit()).waitForClickable();
   await (await sendMessageModalSubmit()).click();
 };
 
-const sendMessage = async (message, recipient, entrySelector, entryText) => {
-  await openSendMessageModal();
+const sendMessageToPhone = async (message, phone) => {
+  await commonPage.clickFastActionFlat({ waitForList: false });
   await messageText(message);
-  await searchSelect(recipient, entrySelector, entryText);
+  await searchSelect(phone);
   await submitMessage();
-  await commonElements.waitForPageLoaded();
 };
 
-const searchSelect = async (recipient, entrySelector, entryText) => {
-  await recipientField().setValue(recipient);
-  //Selector needs review, not sure how it works :S test
-  const recipientOption = $(`${selectOptions} ${entrySelector}`).$(`//*[text()='${entryText}']`);
-  await recipientOption.waitForDisplayed();
-  await (await recipientOption).click();
+const searchSelect = async (searchText) => {
+  await messageRecipientSelect().setValue(searchText);
+  await (await contactNameSelector()).waitForClickable(5000);
+  await (await contactNameSelector()).click();
 };
 
 const exportMessages = async () => {
-  await commonElements.openMoreOptionsMenu();
+  await commonPage.openMoreOptionsMenu();
   await (await exportButton()).waitForClickable();
   await (await exportButton()).click();
+};
+
+const getMessageLoadingStatus = async () => {
+  await (await messagesLoadingStatus()).waitForDisplayed();
+  return await (await messagesLoadingStatus()).getText();
 };
 
 module.exports = {
@@ -85,11 +78,9 @@ module.exports = {
   messageContentIndex,
   messageDetailStatus,
   messagesList,
-  openSendMessageModal,
   messageText,
   submitMessage,
   searchSelect,
-  sendMessage,
-  lastMessageText,
-  contactNameSelector,
+  getMessageLoadingStatus,
+  sendMessageToPhone,
 };

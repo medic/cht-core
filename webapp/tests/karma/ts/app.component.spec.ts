@@ -1,4 +1,4 @@
-import { ComponentFixture, fakeAsync, TestBed, tick, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
@@ -43,9 +43,9 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { Selectors } from '@mm-selectors/index';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 describe('AppComponent', () => {
-  let getComponent;
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let store;
@@ -81,6 +81,7 @@ describe('AppComponent', () => {
   let transitionsService;
   let chtScriptApiService;
   let analyticsModulesService;
+  let trainingCardsService;
   // End Services
 
   let globalActions;
@@ -89,7 +90,13 @@ describe('AppComponent', () => {
   const changesListener:any = {};
   let consoleErrorStub;
 
-  beforeEach(waitForAsync(() => {
+  const getComponent = () => {
+    fixture = TestBed.createComponent(AppComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  };
+
+  beforeEach(async () => {
     // set this in index.html
     window.startupTimes = {};
 
@@ -98,7 +105,7 @@ describe('AppComponent', () => {
     checkDateService = { check: sinon.stub() };
     countMessageService = { init: sinon.stub() };
     feedbackService = { init: sinon.stub() };
-    xmlFormsService = { subscribe: sinon.stub() };
+    xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     jsonFormsService = { get: sinon.stub().resolves([]) };
     languageService = { get: sinon.stub().resolves({}) };
     rulesEngineService = { isEnabled: sinon.stub().resolves(true) };
@@ -156,72 +163,67 @@ describe('AppComponent', () => {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
+    trainingCardsService = { initTrainingCards: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
       { selector: Selectors.getSidebarFilter, value: {} },
     ];
 
-    TestBed.configureTestingModule({
-      declarations: [
-        AppComponent,
-        ActionbarComponent,
-        SnackbarComponent,
-      ],
-      imports: [
-        TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
-        RouterTestingModule,
-      ],
-      providers: [
-        provideMockStore({ selectors: mockedSelectors }),
-        { provide: DBSyncService, useValue: dbSyncService },
-        { provide: TranslateService, useValue: translateService },
-        { provide: LanguageService, useValue: languageService },
-        { provide: SetLanguageService, useValue: setLanguageService },
-        { provide: SessionService, useValue: sessionService },
-        { provide: AuthService, useValue: authService },
-        { provide: ResourceIconsService, useValue: resourceIconsService },
-        { provide: ChangesService, useValue: changesService },
-        { provide: UpdateServiceWorkerService, useValue: {} },
-        { provide: LocationService, useValue: locationService },
-        { provide: ModalService, useValue: modalService },
-        { provide: FeedbackService, useValue: feedbackService },
-        { provide: FormatDateService, useValue: formatDateService },
-        { provide: XmlFormsService, useValue: xmlFormsService },
-        { provide: JsonFormsService, useValue: jsonFormsService },
-        { provide: TranslateFromService, useValue: {} },
-        { provide: CountMessageService, useValue: countMessageService },
-        { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
-        { provide: RouteSnapshotService, useValue: {} },
-        { provide: StartupModalsService, useValue: startupModalsService },
-        { provide: TourService, useValue: tourService },
-        { provide: CheckDateService, useValue: checkDateService },
-        { provide: UnreadRecordsService, useValue: unreadRecordsService },
-        { provide: RulesEngineService, useValue: rulesEngineService },
-        { provide: RecurringProcessManagerService, useValue: recurringProcessManagerService },
-        { provide: WealthQuintilesWatcherService, useValue: wealthQuintilesWatcherService },
-        { provide: DatabaseConnectionMonitorService, useValue: databaseConnectionMonitorService },
-        { provide: TranslateLocaleService, useValue: translateLocaleService },
-        { provide: TelemetryService, useValue: telemetryService },
-        { provide: TransitionsService, useValue: transitionsService },
-        { provide: CHTScriptApiService, useValue: chtScriptApiService },
-        { provide: AnalyticsModulesService, useValue: analyticsModulesService },
-      ]
-    });
-
-    getComponent = () => {
-      return TestBed
-        .compileComponents()
-        .then(() => {
-          fixture = TestBed.createComponent(AppComponent);
-          component = fixture.componentInstance;
-          fixture.detectChanges();
-          store = TestBed.inject(MockStore);
-        });
-    };
-  }));
+    await TestBed
+      .configureTestingModule({
+        declarations: [
+          AppComponent,
+          ActionbarComponent,
+          SnackbarComponent,
+        ],
+        imports: [
+          TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
+          RouterTestingModule,
+        ],
+        providers: [
+          provideMockStore({ selectors: mockedSelectors }),
+          { provide: DBSyncService, useValue: dbSyncService },
+          { provide: TranslateService, useValue: translateService },
+          { provide: LanguageService, useValue: languageService },
+          { provide: SetLanguageService, useValue: setLanguageService },
+          { provide: SessionService, useValue: sessionService },
+          { provide: AuthService, useValue: authService },
+          { provide: ResourceIconsService, useValue: resourceIconsService },
+          { provide: ChangesService, useValue: changesService },
+          { provide: UpdateServiceWorkerService, useValue: {} },
+          { provide: LocationService, useValue: locationService },
+          { provide: ModalService, useValue: modalService },
+          { provide: FeedbackService, useValue: feedbackService },
+          { provide: FormatDateService, useValue: formatDateService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
+          { provide: JsonFormsService, useValue: jsonFormsService },
+          { provide: TranslateFromService, useValue: {} },
+          { provide: CountMessageService, useValue: countMessageService },
+          { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
+          { provide: RouteSnapshotService, useValue: {} },
+          { provide: StartupModalsService, useValue: startupModalsService },
+          { provide: TourService, useValue: tourService },
+          { provide: CheckDateService, useValue: checkDateService },
+          { provide: UnreadRecordsService, useValue: unreadRecordsService },
+          { provide: RulesEngineService, useValue: rulesEngineService },
+          { provide: RecurringProcessManagerService, useValue: recurringProcessManagerService },
+          { provide: WealthQuintilesWatcherService, useValue: wealthQuintilesWatcherService },
+          { provide: DatabaseConnectionMonitorService, useValue: databaseConnectionMonitorService },
+          { provide: TranslateLocaleService, useValue: translateLocaleService },
+          { provide: TelemetryService, useValue: telemetryService },
+          { provide: TransitionsService, useValue: transitionsService },
+          { provide: CHTScriptApiService, useValue: chtScriptApiService },
+          { provide: AnalyticsModulesService, useValue: analyticsModulesService },
+          { provide: TrainingCardsService, useValue: trainingCardsService },
+        ]
+      })
+      .compileComponents();
+    store = TestBed.inject(MockStore);
+  });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
     clock && clock.restore();
     window.PouchDB = originalPouchDB;
@@ -271,7 +273,7 @@ describe('AppComponent', () => {
     expect(component.isSidebarFilterOpen).to.be.true;
   }));
 
-  it('should subscribe to xmlFormService when initing forms', async () => {
+  it('should subscribe to xmlFormService to retrieve forms and initialize training cards', async () => {
     const form1 = {
       code: '123',
       name: 'something',
@@ -299,7 +301,10 @@ describe('AppComponent', () => {
     expect(xmlFormsService.subscribe.callCount).to.equal(2);
 
     expect(xmlFormsService.subscribe.getCall(0).args[0]).to.equal('FormsFilter');
-    expect(xmlFormsService.subscribe.getCall(0).args[1]).to.deep.equal( { contactForms: false, ignoreContext: true });
+    expect(xmlFormsService.subscribe.getCall(0).args[1]).to.deep.equal({
+      reportForms: true,
+      ignoreContext: true,
+    });
     expect(xmlFormsService.subscribe.getCall(0).args[2]).to.be.a('Function');
     xmlFormsService.subscribe.getCall(0).args[2](false, [form2]);
     expect(globalActions.setForms.callCount).to.equal(1);
@@ -321,15 +326,16 @@ describe('AppComponent', () => {
     ]);
 
     expect(xmlFormsService.subscribe.getCall(1).args[0]).to.equal('AddReportMenu');
-    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal( { contactForms: false });
+    expect(xmlFormsService.subscribe.getCall(1).args[1]).to.deep.equal({ reportForms: true });
     expect(xmlFormsService.subscribe.getCall(1).args[2]).to.be.a('Function');
     xmlFormsService.subscribe.getCall(1).args[2](false, [form2]);
-    expect(component.nonContactForms).to.have.deep.members([{
+    expect(component.reportForms).to.have.deep.members([{
       id: 'form:456',
       code: '456',
       icon: 'icon',
       title: 'form2'
     }]);
+    expect(trainingCardsService.initTrainingCards.calledOnce).to.be.true;
   });
 
   it('should set privacy policy and start modals if privacy accepted', async () => {

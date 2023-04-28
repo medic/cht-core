@@ -11,7 +11,7 @@ describe('Add new district tests : ', () => {
   it('should add new district with a new person', async () => {
     await commonElements.goToPeople();
     const district = 'TestDistrict';
-    await contactPage.addPlace('district_hospital', 'TestDistrict', 'Tester');
+    await contactPage.addPlace({ placeName: 'TestDistrict', contactName: 'Tester' }, false);
 
     await sentinelUtils.waitForSentinel();
 

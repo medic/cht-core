@@ -25,6 +25,7 @@ import * as bootstrapper from '../js/bootstrapper';
 require('../js/moment-locales/tl');
 require('../js/moment-locales/hil');
 require('../js/moment-locales/ceb');
+require('../js/moment-locales/lg');
 require('moment/locale/fr');
 require('moment/locale/es');
 require('moment/locale/bm');
@@ -50,7 +51,7 @@ bootstrapper(POUCHDB_OPTIONS, (err) => {
     console.error('Error bootstrapping', err);
     setTimeout(() => {
       // retry initial replication automatically after one minute
-      window.location.reload(false);
+      window.location.reload();
     }, 60 * 1000);
 
     return;

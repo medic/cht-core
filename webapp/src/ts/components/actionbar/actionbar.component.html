@@ -7,18 +7,18 @@
         class="general-actions left-pane"
         *ngIf="currentTab === 'reports' && !selectMode"
         [ngClass]="{ 'col-sm-3': sidebarFilter?.isOpen, 'col-sm-4': !sidebarFilter?.isOpen }">
-        <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!nonContactForms?.length">
+        <div class="actions dropup" dropdown [dropup]="true" [isDisabled]="!reportForms?.length">
           <a
             mmAuth="can_edit"
             class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle"
             dropdownToggle dropdata-toggle="dropdown"
-            [ngClass]="{'mm-icon-disabled': !nonContactForms?.length}"
+            [ngClass]="{'mm-icon-disabled': !reportForms?.length}"
           >
             <span class="fa fa-plus"></span>
             <p>{{'Submit Report' | translate}}</p>
           </a>
           <ul class="dropdown-menu mm-dropdown-menu with-icon" *dropdownMenu>
-            <li *ngFor="let form of nonContactForms; trackBy: trackById">
+            <li *ngFor="let form of reportForms; trackBy: trackById">
               <a [routerLink]="['/reports', 'add', form.code]">
                 <span [innerHTML]="form.icon | resourceIcon"></span>
                 <span class="content">{{ form.title }}</span>
@@ -27,7 +27,7 @@
           </ul>
           <a class="mm-icon mm-icon-inverse mm-icon-caption"
              mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_messages']"
-             *ngIf="actionBar?.left?.exportFn && useOldActionBar"
+             *ngIf="actionBar?.left?.exportFn"
              (click)="actionBar?.left?.exportFn($event)"
              [ngClass]="{'mm-icon-disabled':  !actionBar?.left?.hasResults}"
           >
@@ -78,7 +78,7 @@
             <p>{{ actionBar.left.childPlaces[0].create_key | translate}}</p>
           </a>
 
-          <a *ngIf="actionBar?.left?.exportFn && useOldActionBar"
+          <a *ngIf="actionBar?.left?.exportFn"
              mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_contacts']"
              class="mm-icon mm-icon-inverse mm-icon-caption"
              (click)="actionBar?.left?.exportFn()"
@@ -102,7 +102,7 @@
             <p>{{'Send Message' | translate}}</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption"
-             *ngIf="actionBar?.left?.exportFn && useOldActionBar"
+             *ngIf="actionBar?.left?.exportFn"
              mmAuth [mmAuthOnline]="true" [mmAuthAny]="['can_export_all', 'can_export_messages']"
              (click)="actionBar?.left?.exportFn()"
              [ngClass]="{'mm-icon-disabled': !actionBar?.left?.hasResults}"
@@ -146,7 +146,7 @@
               <span class="fa fa-check"></span>
               <p>{{'reports.verify' | translate}}</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml' && useOldActionBar" mmAuth="can_edit,can_update_reports" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="actionBar?.right?.type === 'xml'" mmAuth="can_edit,can_update_reports" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
               <span class="fa fa-pencil"></span>
               <p>{{'Edit' | translate}}</p>
             </a>
@@ -154,7 +154,7 @@
               <span class="fa fa-pencil"></span>
               <p>{{'Update Facility' | translate}}</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" *ngIf="useOldActionBar" (click)="deleteDoc(selectedReportDoc)" mmAuth="can_edit,can_delete_reports">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" (click)="deleteDoc(selectedReportDoc)" mmAuth="can_edit,can_delete_reports">
               <span class="fa fa-trash-o"></span>
               <p>{{'Delete' | translate}}</p>
             </a>
@@ -244,8 +244,7 @@
             <p>{{'Send Message' | translate}}</p>
           </a>
 
-          <a *ngIf="useOldActionBar"
-            mmAuth="can_edit"
+          <a mmAuth="can_edit"
             class="mm-icon mm-icon-inverse mm-icon-caption"
             [routerLink]="['/', 'contacts', selectedContactDoc._id, 'edit']"
             [ngClass]="{'mm-icon-disabled': !actionBar?.right?.canEdit}"
@@ -254,8 +253,7 @@
             <p>{{'Edit' | translate}}</p>
           </a>
 
-          <a *ngIf="useOldActionBar"
-            mmAuth="can_edit,can_delete_contacts"
+          <a mmAuth="can_edit,can_delete_contacts"
             class="mm-icon mm-icon-inverse mm-icon-caption"
             (click)="deleteDoc(selectedContactDoc)"
             [ngClass]="{ 'mm-icon-disabled': !actionBar?.right?.canDelete }"

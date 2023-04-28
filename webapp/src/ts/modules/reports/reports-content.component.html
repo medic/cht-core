@@ -13,6 +13,8 @@
     class="report-wrap"
     *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
 
+    <mm-fast-action-button [fastActions]="fastActionList"></mm-fast-action-button>
+
     <div *ngFor="let selection of selectedReports; trackBy: trackByFn; let $index = index;" class="body report-body">
 
       <div class="item-summary" (click)="toggleExpand(selection)">
@@ -21,15 +23,6 @@
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="status" *ngIf="!validChecks[$index] || summaries[$index].verified !== undefined">
-            <span *ngIf="validChecks[$index] && summaries[$index].verified" class="verification-badge verified">
-              <report-verify-valid-icon></report-verify-valid-icon>
-            </span>
-            <span *ngIf="!(validChecks[$index] && summaries[$index].verified)" class="verification-badge error">
-              <report-verify-invalid-icon></report-verify-invalid-icon>
-            </span>
-          </div>
-
           <div *ngIf="summaries[$index]?.subject?.type" class="subject">
             <a class="name" *ngIf="summaries[$index]?.subject._id"
               [routerLink]="['/contacts', summaries[$index].subject._id]"
@@ -40,7 +33,17 @@
             </span>
           </div>
           <mm-sender *ngIf="!summaries[$index]?.subject?.type" [message]="selection" [hideLineage]="true"></mm-sender>
-          <div test-id="form-title">{{summaries[$index] | title:forms}}</div>
+          <div test-id="form-title">
+            <span>{{ summaries[$index] | title:forms }}</span>
+            <div class="status" *ngIf="!validChecks[$index] || summaries[$index]?.verified !== undefined">
+              <span *ngIf="validChecks[$index] && summaries[$index]?.verified" class="verification-badge verified">
+                <report-verify-valid-icon></report-verify-valid-icon>
+              </span>
+              <span *ngIf="!(validChecks[$index] && summaries[$index]?.verified)" class="verification-badge error">
+                <report-verify-invalid-icon></report-verify-invalid-icon>
+              </span>
+            </div>
+          </div>
           <div class="position small-font"
             *ngIf="summaries[$index]?.subject?.lineage || selection.lineage || selection.contact?.parent || selection.place || (!selection.form && selection.name)"
             [innerHTML]="summaries[$index]?.subject?.lineage || selection.lineage || selection.contact?.parent || selection.place | lineage">
@@ -89,16 +92,16 @@
           </li>
           <li *ngIf="selection?.formatted?.sms_message?.message">
             <label>{{'selection.doc.content.raw' | translate}}</label>
-            <p>{{selection.formatted.sms_message.message}}</p>
+            <p [attr.test-id]="'raw-report-content'">{{selection.formatted.sms_message.message}}</p>
           </li>
           <li *ngIf="selection?.formatted?.tasks?.length">
             <label *ngIf="selection.formatted.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
             <label *ngIf="!selection.formatted.kujua_message">{{'Automated Reply' | translate}}</label>
-            <ul class="task-list">
+            <ul class="task-list" [attr.test-id]="'automated-reply'">
               <li *ngFor="let task of selection.formatted.tasks">
                 <ul>
                   <li *ngFor="let message of task.messages">
-                    <p>{{selection.formatted.kujua_message ? message.to : message.message}}</p>
+                    <p [attr.test-id]="'message-content'">{{selection.formatted.kujua_message ? message.to : message.message}}</p>
                   </li>
                 </ul>
                 <span class="task-state" [innerHTML]="task | state | async"></span>
@@ -110,9 +113,9 @@
         <div class="scheduled-tasks" *ngIf="selection?.formatted?.scheduled_tasks_by_group?.length">
           <h2>{{'tasks' | translate}}</h2>
           <ul>
-            <li *ngFor="let group of selection.formatted.scheduled_tasks_by_group">
+            <li [attr.test-id]="'tasks'" *ngFor="let group of selection.formatted.scheduled_tasks_by_group">
               <ng-container *ngIf="{ loading: false } as localContext">
-                <h3>{{group.name}}</h3>
+                <h3 [attr.test-id]="'task-title'">{{group.name}}</h3>
                 <p>
                   <span *ngIf="!localContext.loading">
                     <a class="btn btn-link" (click)="edit(selection, group)">{{'Edit' | translate}}</a>
@@ -124,10 +127,10 @@
                   <span class="inline loader" *ngIf="localContext.loading"></span>
                 </p>
                 <ul class="task-list">
-                  <li *ngFor="let task of group.rows_sorted">
+                  <li [attr.test-id]="'task-message'" *ngFor="let task of group.rows_sorted">
                     <ul>
                       <li *ngFor="let message of task?.messages">
-                        <p>{{message.message}}</p>
+                        <p [attr.test-id]="'message-content'">{{message.message}}</p>
                         <div class="message-error" *ngIf="message.error">
                           <span>{{'messages.errors.invalid' | translate}}</span>
                           <span>{{message.error | translate}}</span>

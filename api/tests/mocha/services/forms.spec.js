@@ -38,26 +38,42 @@ describe('forms service', () => {
 
     it('returns an empty array when no docs found', () => {
       const given = [];
-      sinon.stub(db.medic, 'query').resolves({ rows: given });
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: given });
       return service.getFormDocs().then(actual => {
         expect(actual).to.deep.equal([]);
+        expect(db.medic.allDocs.args).to.deep.equal([[{
+          startkey: 'form:',
+          endkey: 'form:\ufff0',
+          include_docs: true,
+          attachments: true,
+          binary: true,
+        }]]);
       });
     });
 
     it('returns an empty array when no xform docs found', () => {
       const given = [ { doc: {} } ];
-      sinon.stub(db.medic, 'query').resolves({ rows: given });
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: given });
       return service.getFormDocs().then(actual => {
         expect(actual).to.deep.equal([]);
+        expect(db.medic.allDocs.args).to.deep.equal([[{
+          startkey: 'form:',
+          endkey: 'form:\ufff0',
+          include_docs: true,
+          attachments: true,
+          binary: true,
+        }]]);
       });
     });
 
-    it('returns doc with "xml" attachment', () => {
+    it('returns doc with form type and "xml" attachment', () => {
       const given = [
-        { doc: { _id: 'form:a', _attachments: { xml: '<myxml/>' } } },
-        { doc: { _id: 'form:b', _attachments: { xsl: '<myxsl/>' } } }
+        { doc: { _id: 'form:a', type: 'form', _attachments: { xml: '<myxml/>' } } },
+        { doc: { _id: 'form:b', type: 'form', _attachments: { xsl: '<myxsl/>' } } },
+        { doc: { _id: 'form:c', _attachments: { xml: '<myxml/>' } } },
+        { doc: { _id: 'form:d', type: 'not_form', _attachments: { xml: '<myxml/>' } } },
       ];
-      sinon.stub(db.medic, 'query').resolves({ rows: given });
+      sinon.stub(db.medic, 'allDocs').resolves({ rows: given });
       return service.getFormDocs().then(actual => {
         expect(actual.length).to.equal(1);
         expect(actual[0]._id).to.equal('form:a');

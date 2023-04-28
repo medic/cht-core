@@ -32,7 +32,7 @@ describe('Edit contacts with the default config. ', () => {
   it('should edit contact name', async () => {
     await commonPage.goToPeople();
     await contactPage.selectLHSRowByText(healthCenter.name);
-    await contactPage.editPerson(CONTACT_NAME, CONTACT_UPDATED_NAME);
+    await contactPage.editPersonName(CONTACT_NAME, CONTACT_UPDATED_NAME);
     await commonPage.waitForPageLoaded();
     await commonPage.goToPeople(healthCenter._id);
     const primaryContactName = await contactPage.getPrimaryContactName();

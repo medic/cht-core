@@ -18,6 +18,7 @@ const DEFAULT_API_PORT = 5988;
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
 const stagingAttachmentsPath = path.resolve(stagingPath, '_attachments');
+const localBuildPath = path.resolve(__dirname, '..', '..', 'local-build');
 const ddocsBuildPath = path.resolve(buildPath, 'ddocs');
 
 const getCouchConfig = () => {
@@ -110,7 +111,7 @@ const copyBuildInfo = (destPath) => {
   });
 };
 
-const saveDockerComposeFiles = () => {
+const saveDockerComposeFiles = (dockerComposeFolder) => {
   const servicesTemplatePath = path.resolve(__dirname, 'cht-core.yml.template');
   const singleCouchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb-single-node.yml.template');
   const clusteredCouchDbTemplatePath = path.resolve(__dirname, 'cht-couchdb-cluster.yml.template');
@@ -127,14 +128,14 @@ const saveDockerComposeFiles = () => {
   };
   const viewClustered = {
     ...view,
-    couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
+    couchdb_servers: 'couchdb-1.local,couchdb-2.local,couchdb-3.local',
   };
 
   const compiledServicesDockerCompose = mustache.render(servicesTemplate, view);
   const compiledCouchDbDockerCompose = mustache.render(singleCouchDbTemplate, view);
   const compiledClusteredCouchDbDockerCompose = mustache.render(clusteredCouchDbTemplate, viewClustered);
 
-  const dockerComposeFolder = path.resolve(stagingAttachmentsPath, 'docker-compose');
+  dockerComposeFolder = dockerComposeFolder || path.resolve(stagingAttachmentsPath, 'docker-compose');
   mkdirSync(dockerComposeFolder);
 
   const servicesDockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-core.yml');
@@ -145,6 +146,10 @@ const saveDockerComposeFiles = () => {
 
   const clusteredCouchDbDockerComposeFilePath = path.resolve(dockerComposeFolder, 'cht-couchdb-clustered.yml');
   fs.writeFileSync(clusteredCouchDbDockerComposeFilePath, compiledClusteredCouchDbDockerCompose);
+};
+
+const localDockerComposeFiles = () => {
+  saveDockerComposeFiles(localBuildPath);
 };
 
 const saveServiceTags = () => {
@@ -199,4 +204,5 @@ module.exports = {
   createStagingDoc,
   populateStagingDoc,
   updateServiceWorker,
+  localDockerComposeFiles,
 };

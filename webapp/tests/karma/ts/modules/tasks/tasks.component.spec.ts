@@ -45,7 +45,7 @@ describe('TasksComponent', () => {
   };
 
   beforeEach(async () => {
-    changesService = { subscribe: sinon.stub() };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     rulesEngineService = {
       isEnabled: sinon.stub().resolves(true),
       fetchTaskDocsForAllContacts: sinon.stub().resolves([]),
@@ -99,6 +99,7 @@ describe('TasksComponent', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
     clock?.restore();
   });

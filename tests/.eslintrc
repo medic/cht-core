@@ -28,6 +28,7 @@
   },
   "globals": {
     "$": true,
-    "$$": true
+    "$$": true,
+    "document": true
   }
 }

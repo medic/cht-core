@@ -2,7 +2,7 @@ const fs = require('fs');
 
 const familyForm = require('../../../page-objects/default/enketo/add-family.wdio.page');
 const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const common = require('../../../page-objects/default/common/common.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const utils = require('../../../utils');
 const userData = require('../../../page-objects/default/users/user.data');
 const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
@@ -14,7 +14,7 @@ describe('Family form', () => {
   const formXML = fs.readFileSync(`${__dirname}/forms/add-family-multiple-repeats.xml`, 'utf8');
   const formDoc = {
     _id: 'form:add-family',
-    internalId: 'any',
+    internalId: 'add-family',
     title: 'AddFamily',
     type: 'form',
     _attachments: {
@@ -32,8 +32,8 @@ describe('Family form', () => {
   });
 
   it('Submit Add Family form', async () => {
-    await common.goToReports();
-    await reportsPage.openForm(formDoc.title);
+    await commonPage.goToReports();
+    await commonPage.openFastActionReport(formDoc.internalId, false);
     await familyForm.fillPrimaryCaregiver('test');
     await genericForm.nextPage();
     await familyForm.fillPrimaryTel();

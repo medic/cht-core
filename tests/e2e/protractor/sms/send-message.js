@@ -115,7 +115,7 @@ describe('Send message', () => {
   const contactNameSelector = ' .sender .name';
   const everyoneAtText = name => `${name} - all  contacts`;
 
-  describe('Send message modal', () => {
+  xdescribe('Send message modal', () => {
     it('can send messages to raw phone numbers', async () => {
       await common.goToMessagesNative();
       expect(await messagesPo.messageInList(RAW_PH).isPresent()).toBeFalsy();

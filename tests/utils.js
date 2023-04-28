@@ -18,14 +18,16 @@ process.env.CERTIFICATE_MODE = constants.CERTIFICATE_MODE;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED=0; // allow self signed certificates
 const auth = { username: constants.USERNAME, password: constants.PASSWORD };
 
+const ONE_YEAR_IN_S = 31536000;
+
 const PROJECT_NAME = 'cht-e2e';
 const NETWORK = 'cht-net-e2e';
 const services = {
   haproxy: 'haproxy',
   nginx: 'nginx',
-  couch1: 'couchdb.1',
-  couch2: 'couchdb.2',
-  couch3: 'couchdb.3',
+  couch1: 'couchdb-1.local',
+  couch2: 'couchdb-2.local',
+  couch3: 'couchdb-3.local',
   api: 'api',
   sentinel: 'sentinel',
   haproxy_healthcheck: 'healthcheck',
@@ -133,6 +135,20 @@ const updateSettings = updates => {
       });
     });
 };
+const updatePermissions = async (roles, addPermissions, removePermissions = []) => {
+  const settings = await module.exports.getSettings();
+  addPermissions.forEach(permission => {
+    if (!settings.permissions[permission]) {
+      settings.permissions[permission] = [];
+    }
+    settings.permissions[permission].push(...roles);
+  });
+
+  removePermissions.forEach(permission => {
+    settings.permissions[permission] = [];
+  });
+  await module.exports.updateSettings({ permissions: settings.permissions }, true);
+};
 
 const revertTranslations = async () => {
   const updatedTranslations = Object.keys(originalTranslations);
@@ -181,7 +197,7 @@ const deleteAll = (except) => {
     'branding',
     'partners',
     'settings',
-    /^form:contact:/,
+    /^form:/,
     /^_design/
   );
   const ignoreFns = [];
@@ -303,6 +319,17 @@ const setUserContactDoc = (attempt=0) => {
     });
 };
 
+const deleteLocalDocs = async () => {
+  const localDocs = await module.exports.requestOnTestDb({ path: '/_local_docs?include_docs=true' });
+
+  for (const row of localDocs.rows) {
+    if (row && row.doc && row.doc.replicator === 'pouchdb') {
+      row.doc._deleted = true;
+      await module.exports.saveDoc(row.doc);
+    }
+  }
+};
+
 /**
  * Deletes documents from the database, including Enketo forms. Use with caution.
  * @param {array} except - exeptions in the delete method. If this parameter is empty
@@ -310,15 +337,11 @@ const setUserContactDoc = (attempt=0) => {
  * @param {boolean} ignoreRefresh
  */
 const revertDb = async (except, ignoreRefresh) => {
-  if (!except || !except.length) {
-    console.warn('Utils :: revertDb() :: The "except" parameter is empty, ' +
-      'all documents from the database will be deleted, ' +
-      'including Enketo forms from the config, this might cause some automated tests to fail.');
-  }
   const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
+  await deleteLocalDocs();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {
@@ -645,7 +668,7 @@ const generateComposeFiles = async () => {
     repo: buildVersions.getRepo(),
     tag: buildVersions.getImageTag(),
     db_name: 'medic-test',
-    couchdb_servers: 'couchdb.1,couchdb.2,couchdb.3',
+    couchdb_servers: 'couchdb-1.local,couchdb-2.local,couchdb-3.local',
   };
 
   for (const file of COMPOSE_FILES) {
@@ -977,6 +1000,14 @@ module.exports = {
     return results;
   },
 
+  saveDocIfNotExists: async doc => {
+    try {
+      await module.exports.getDoc(doc._id);
+    } catch (_) {
+      await module.exports.saveDoc(doc);
+    }
+  },
+
   saveMetaDocs: (user, docs) => {
     const options = {
       userName: user,
@@ -1209,6 +1240,12 @@ module.exports = {
   stopSentinel: () => stopService('sentinel'),
   startSentinel: () => startService('sentinel'),
 
+  stopApi: () => stopService('api'),
+  startApi: async () => {
+    await startService('api');
+    await listenForApi();
+  },
+
   saveCredentials: (key, password) => {
     const options = {
       path: `/api/v1/credentials/${key}`,
@@ -1323,7 +1360,7 @@ module.exports = {
   tearDownServices: stopServices,
   endSession: async (exitCode) => {
     await module.exports.tearDownServices();
-    return module.exports.reporter.afterLaunch(exitCode);
+    await new Promise((resolve) => module.exports.reporter.afterLaunch(resolve.bind(this, exitCode)));
   },
 
   runAndLogApiStartupMessage: runAndLogApiStartupMessage,
@@ -1350,4 +1387,7 @@ module.exports = {
   listenForApi,
   makeTempDir,
   SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
+  updatePermissions,
+
+  ONE_YEAR_IN_S,
 };

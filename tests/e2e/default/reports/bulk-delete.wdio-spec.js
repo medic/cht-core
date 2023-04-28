@@ -70,9 +70,6 @@ describe('Bulk delete reports', () => {
     expect(selectAllResult.countLabel).to.equal('3 records selected');
     expect(selectAllResult.selectedCount).to.equal(3);
 
-    await reportsPage.expandSelectedReportSummary();
-    await reportsPage.collapseSelectedReportSummary();
-
     const deselectAllResult = await reportsPage.deselectAll();
     expect(deselectAllResult.selectedCount).to.equal(0);
 
@@ -84,6 +81,9 @@ describe('Bulk delete reports', () => {
 
     expect(deselectSomeResult.countLabel).to.equal('1 record selected');
     expect(deselectSomeResult.selectedCount).to.equal(1);
+
+    await reportsPage.expandSelectedReportSummary();
+    await reportsPage.collapseSelectedReportSummary();
 
     await reportsPage.deleteSelectedReports();
     expect(await (await reportsPage.reportsListDetails()).length).to.equal(2);

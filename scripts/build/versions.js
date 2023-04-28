@@ -7,6 +7,7 @@ const {
   BRANCH,
   BUILD_NUMBER,
   TAG,
+  INTERNAL_CONTRIBUTOR,
 } = process.env;
 
 const getBranchVersion = (release) => {
@@ -19,7 +20,15 @@ const getTagVersion = (release) => {
 };
 
 const getRepo = (repo) => {
-  return repo || ECR_REPO || 'medicmobile';
+  if (!INTERNAL_CONTRIBUTOR) {
+    return 'medicmobile';
+  }
+
+  if (repo) {
+    return repo;
+  }
+
+  return ECR_REPO;
 };
 
 const getVersion = (release) => {

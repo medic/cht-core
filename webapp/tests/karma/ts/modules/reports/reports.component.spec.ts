@@ -1,9 +1,9 @@
 import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { DatePipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -33,7 +33,8 @@ import { ResponsiveService } from '@mm-services/responsive.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
 
 describe('Reports Component', () => {
   let component: ReportsComponent;
@@ -48,6 +49,8 @@ describe('Reports Component', () => {
   let responsiveService;
   let modalService;
   let userContactService;
+  let fastActionButtonService;
+  let xmlFormsService;
   let store;
   let route;
   let router;
@@ -81,7 +84,7 @@ describe('Reports Component', () => {
     (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
 
     searchService = { search: sinon.stub().resolves([]) };
-    changesService = { subscribe: sinon.stub().resolves(of({})) };
+    changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     addReadStatusService = { updateReports: sinon.stub().resolvesArg(0) };
     authService = {
       has: sinon.stub().resolves(false),
@@ -97,8 +100,18 @@ describe('Reports Component', () => {
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };
-    router = { navigate: sinon.stub() };
+    fastActionButtonService = {
+      getReportLeftSideActions: sinon.stub(),
+      getButtonTypeForContentList: sinon.stub(),
+    };
+    xmlFormsService = { subscribe: sinon.stub() };
     route = { snapshot: { queryParams: { query:'' } } };
+    router = {
+      navigate: sinon.stub(),
+      events: {
+        pipe: sinon.stub().returns({ subscribe: sinon.stub() }),
+      },
+    };
 
     return TestBed
       .configureTestingModule({
@@ -138,6 +151,8 @@ describe('Reports Component', () => {
           { provide: DatePipe, useValue: datePipe },
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: XmlFormsService, useValue: xmlFormsService },
         ]
       })
       .compileComponents()
@@ -150,6 +165,7 @@ describe('Reports Component', () => {
   }));
 
   afterEach(() => {
+    store.resetSelectors();
     sinon.restore();
   });
 
@@ -205,6 +221,37 @@ describe('Reports Component', () => {
     expect(setSelectedReportsStub.calledOnce).to.be.true;
     expect(setSelectedReportsStub.args[0]).to.deep.equal([ [] ]);
     expect(unsetComponentsStub.calledOnce).to.be.true;
+  });
+
+  it('should update fast actions', () => {
+    const forms = [
+      { _id: 'form:test_report_type_1', title: 'Type 1', internalId: 'test_report_type_1', icon: 'a' },
+      { _id: 'form:test_report_type_2', title: 'Type 2', internalId: 'test_report_type_2', icon: 'b' },
+    ];
+
+    expect(xmlFormsService.subscribe.calledOnce).to.be.true;
+    expect(xmlFormsService.subscribe.args[0][0]).to.equal('AddReportMenu');
+    expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ reportForms: true });
+
+    xmlFormsService.subscribe.args[0][2](null, forms);
+
+    expect(fastActionButtonService.getReportLeftSideActions.calledOnce).to.be.true;
+    expect(fastActionButtonService.getReportLeftSideActions.args[0][0].xmlReportForms).to.have.deep.members([
+      {
+        id: 'form:test_report_type_2',
+        code: 'test_report_type_2',
+        icon: 'b',
+        titleKey: undefined,
+        title: 'Type 2',
+      },
+      {
+        id: 'form:test_report_type_1',
+        code: 'test_report_type_1',
+        icon: 'a',
+        titleKey: undefined,
+        title: 'Type 1',
+      }
+    ]);
   });
 
   describe('selectAllReports', () => {
@@ -770,6 +817,7 @@ describe('Reports Component', () => {
       const setSelectMode = sinon.spy(GlobalActions.prototype, 'setSelectMode');
       const unsetComponents = sinon.spy(GlobalActions.prototype, 'unsetComponents');
       store.overrideSelector(Selectors.getSelectedReports, [{ _id: 'report' }]);
+      store.overrideSelector(Selectors.getSelectMode, false);
       store.refreshState();
 
       flush();
@@ -784,6 +832,7 @@ describe('Reports Component', () => {
     it('should unset select mode when there are no selected reports', fakeAsync(() => {
       const setSelectMode = sinon.spy(GlobalActions.prototype, 'setSelectMode');
       const unsetComponents = sinon.spy(GlobalActions.prototype, 'unsetComponents');
+      store.overrideSelector(Selectors.getSelectedReports, []);
       store.overrideSelector(Selectors.getSelectMode, true);
       store.refreshState();
 

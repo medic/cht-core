@@ -29,7 +29,7 @@ const getParentId = contact => {
 
 module.exports = {
   name: NAME,
-  filter: (doc, info = {}) => {
+  filter: ({ doc, info }) => {
     return Boolean(
       doc &&
       doc.form &&
