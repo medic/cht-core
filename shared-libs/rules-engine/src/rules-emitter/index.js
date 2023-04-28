@@ -1,22 +1,26 @@
 /**
  * @module rules-emitter
- * Encapsulates interactions with the nools library
- * Handles marshaling of documents into nools facts
- * Promisifies the execution of partner "rules" code
- * Ensures memory allocated by nools is freed after each run
+ * Handles the lifecycle of a @RulesEmitter and marshales of documents into the emitter by contact
+ * 
+ * @typedef {Object} RulesEmitter Responsible for executing the logic in _rules_ and returning _emissions_
  */
-const nools = require('nools');
 const nootils = require('cht-nootils');
 const registrationUtils = require('@medic/registration-utils');
 
-let flow;
+const javascriptEmitter = require('./emitter.javascript');
+const noolsEmitter = require('./emitter.nools');
+
+let emitter;
 
 /**
 * Sets the rules emitter to an uninitialized state.
 */
 const shutdown = () => {
-  nools.deleteFlows();
-  flow = undefined;
+  if (emitter) {
+    emitter.shutdown();
+  }
+
+  emitter = undefined;
 };
 
 module.exports = {
@@ -26,11 +30,14 @@ module.exports = {
    * @param {Object} settings Settings for the behavior of the rules emitter
    * @param {Object} settings.rules Rules code from settings doc
    * @param {Object[]} settings.taskSchedules Task schedules from settings doc
+   * @param {Boolean} [settings.rulesAreDeclarative=true] Flag to indicate the content of settings.rules. When true, 
+   * rules is processed as native JavaScript. When false, nools is used.
+   * @param {RulesEmitter} [settings.customEmitter] Optional custom RulesEmitter object
    * @param {Object} settings.contact The logged in user's contact document
    * @returns {Boolean} Success
    */
   initialize: (settings) => {
-    if (flow) {
+    if (emitter) {
       throw Error('Attempted to initialize the rules emitter multiple times.');
     }
 
@@ -39,43 +46,35 @@ module.exports = {
     }
 
     shutdown();
+    emitter = resolveEmitter(settings);
 
     try {
       const settingsDoc = { tasks: { schedules: settings.taskSchedules } };
       const nootilsInstance = nootils(settingsDoc);
-      flow = nools.compile(settings.rules, {
-        name: 'medic',
-        scope: {
-          Utils: nootilsInstance,
-          user: settings.contact,
-          cht: settings.chtScriptApi,
-        },
-      });
+      const scope = {
+        Utils: nootilsInstance,
+        user: settings.contact,
+        cht: settings.chtScriptApi,
+      };
+      return emitter.initialize(settings, scope);
     } catch (err) {
       shutdown();
       throw err;
     }
-
-    return !!flow;
   },
 
   /**
    * When upgrading to version 3.8, partners are required to make schema changes in their partner code
-   * TODO: Add link to documentation
+   * https://docs.communityhealthtoolkit.org/core/releases/3.8.0/#breaking-changes
    *
    * @returns True if the schema changes are in place
    */
   isLatestNoolsSchema: () => {
-    if (!flow) {
+    if (!emitter) {
       throw Error('task emitter is not enabled -- cannot determine schema version');
     }
 
-    const Task = flow.getDefined('task');
-    const Target = flow.getDefined('target');
-    const hasProperty = (obj, attr) => Object.hasOwnProperty.call(obj, attr);
-    return hasProperty(Task.prototype, 'readyStart') &&
-      hasProperty(Task.prototype, 'readyEnd') &&
-      hasProperty(Target.prototype, 'contact');
+    return emitter.isLatestNoolsSchema();
   },
 
   /**
@@ -90,7 +89,7 @@ module.exports = {
    * @returns {Object[]} emissions.targets Array of target emissions
    */
   getEmissionsFor: (contactDocs, reportDocs = [], taskDocs = []) => {
-    if (!flow) {
+    if (!emitter) {
       throw Error('task emitter is not enabled -- cannot get emissions');
     }
 
@@ -106,58 +105,28 @@ module.exports = {
       throw Error('invalid argument: taskDocs is expected to be an array');
     }
 
-    const session = startSession();
+    const session = emitter.startSession();
     try {
-      const facts = marshalDocsIntoNoolsFacts(contactDocs, reportDocs, taskDocs);
-      facts.forEach(session.assert);
+      const Contact = emitter.getContact();
+      const docsByContact = marshalDocsByContact(Contact, contactDocs, reportDocs, taskDocs);
+      docsByContact.forEach(session.processDocsByContact);
     } catch (err) {
       session.dispose();
       throw err;
     }
 
-    return session.match();
+    return session.result();
   },
 
   /**
    * @returns True if the rules emitter is initialized and ready for use
    */
-  isEnabled: () => !!flow,
+  isEnabled: () => !!emitter,
 
   shutdown,
 };
 
-const startSession = function() {
-  if (!flow) {
-    throw Error('Failed to start task session. Not initialized');
-  }
-
-  const session = flow.getSession();
-  const tasks = [];
-  const targets = [];
-  session.on('task', task => tasks.push(task));
-  session.on('target', target => targets.push(target));
-
-  return {
-    assert: session.assert.bind(session),
-    dispose: session.dispose.bind(session),
-
-    // session.match can return a thenable but not a promise. so wrap it in a real promise
-    match: () => new Promise((resolve, reject) => {
-      session.match(err => {
-        session.dispose();
-        if (err) {
-          return reject(err);
-        }
-
-        resolve({ tasks, targets });
-      });
-    }),
-  };
-};
-
-const marshalDocsIntoNoolsFacts = (contactDocs, reportDocs, taskDocs) => {
-  const Contact = flow.getDefined('contact');
-
+const marshalDocsByContact = (Contact, contactDocs, reportDocs, taskDocs) => {
   const factByContactId = contactDocs.reduce((agg, contact) => {
     agg[contact._id] = new Contact({ contact, reports: [], tasks: [] });
     return agg;
@@ -194,9 +163,17 @@ const marshalDocsIntoNoolsFacts = (contactDocs, reportDocs, taskDocs) => {
     }
   }
 
-
   return Object.keys(factByContactId).map(key => {
     factByContactId[key].reports = factByContactId[key].reports.sort((a, b) => a.reported_date - b.reported_date);
     return factByContactId[key];
   }); // Object.values(factByContactId)
+};
+
+const resolveEmitter = (settings = {}) => {
+  const { rulesAreDeclarative, customEmitter } = settings;
+  if (customEmitter !== null && typeof customEmitter === 'object') {
+    return customEmitter;
+  }
+  
+  return rulesAreDeclarative ? javascriptEmitter : noolsEmitter;
 };
