@@ -14,5 +14,6 @@ WORKDIR /sentinel
 COPY sentinel/ /sentinel
 COPY shared-libs /shared-libs
 ENV NODE_PATH=/sentinel/node_modules
+RUN rm -rf /sentinel/node_modules/pouchdb-fetch/node_modules/node-fetch
 
 ENTRYPOINT ["/bin/bash", "/sentinel/docker-entrypoint.sh", "main"]

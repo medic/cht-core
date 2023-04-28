@@ -1245,6 +1245,11 @@ module.exports = {
     await startService('api');
     await listenForApi();
   },
+  stopHaproxy: () => stopService('haproxy'),
+  startHaproxy: () => startService('haproxy'),
+
+  stopNginx: () => stopService('nginx'),
+  startNginx: () => startService('nginx'),
 
   saveCredentials: (key, password) => {
     const options = {

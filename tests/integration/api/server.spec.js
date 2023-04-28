@@ -2,7 +2,6 @@ const utils = require('../../utils');
 const request = require('request');
 const constants = require('../../constants');
 const _ = require('lodash');
-const {expect} = require('chai');
 
 describe('server', () => {
   describe('JSON-only endpoints', () => {
@@ -179,6 +178,30 @@ describe('server', () => {
       expect(res.headers[ 'content-type' ]).to.equal('image/png');
       expect(res.headers[ 'content-encoding' ]).to.be.undefined;
       expect(attachmentBody).to.equal(png);
+    });
+  });
+
+  describe('API changes feed', () => {
+    it('should respond to changes even after services are restarted', async () => {
+      await utils.stopHaproxy(); // this will also crash API
+      await utils.startHaproxy();
+      // the nginx restart is required because of https://github.com/medic/cht-core/issues/8205
+      await utils.stopNginx();
+      await utils.startNginx();
+      await utils.listenForApi();
+
+      const forms = await utils.db.allDocs({
+        start_key: 'form:',
+        end_key: 'form:\ufff0',
+        include_docs: true,
+        limit: 1,
+      });
+      const formDoc = forms.rows[0].doc;
+      delete formDoc._attachments['form.html'];
+      delete formDoc._attachments['model.xml'];
+      await utils.saveDoc(formDoc);
+      const updatedFormDoc = await utils.getDoc(formDoc._id);
+      expect(updatedFormDoc._attachments).to.have.keys(['xml', 'form.html', 'model.xml']);
     });
   });
 });

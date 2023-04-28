@@ -15,5 +15,6 @@ WORKDIR /api
 COPY api/ /api
 COPY shared-libs /shared-libs
 ENV NODE_PATH=/api/node_modules
+RUN rm -rf /api/node_modules/pouchdb-fetch/node_modules/node-fetch
 
 ENTRYPOINT ["/bin/bash", "/api/docker-entrypoint.sh", "main"]
