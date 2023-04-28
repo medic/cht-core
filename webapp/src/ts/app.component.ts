@@ -275,10 +275,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     // initialisation tasks that can occur after the UI has been rendered
     this.setupPromise = Promise.resolve()
       .then(() => this.chtScriptApiService.isInitialized())
+      .then(() => this.checkPrivacyPolicy())
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
-      .then(() => this.checkPrivacyPolicy())
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses());

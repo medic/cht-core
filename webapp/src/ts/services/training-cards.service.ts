@@ -85,20 +85,20 @@ export class TrainingCardsService {
   }
 
   private deployTrainingCards() {
-      // Send the promise returned by .show() to an observable, so that it
-      // can be used externally after handleTrainingCards has been called
-      // through xmlFormsService
-      this.observable.next(
-        this.modalService
-          .show(TrainingCardsComponent, { backdrop: 'static', keyboard: false })
-          .catch(() => {})
-      );
+    // Send the promise returned by .show() to an observable, so that it
+    // can be used externally after handleTrainingCards has been called
+    // through xmlFormsService
+    this.observable.next(
+      this.modalService
+        .show(TrainingCardsComponent, { backdrop: 'static', keyboard: false })
+        .catch(() => {})
+    );
   }
 
   private deployEmpty() {
     // This should be called when handleTrainingCards doesn't have any cards
     // to display.
-    this.observable.next(void 0)
+    this.observable.next(void 0);
   }
 
   private async handleTrainingCards(error, xForms) {
@@ -159,7 +159,7 @@ export class TrainingCardsService {
     // this.observable will send out a value once it has heard back from
     // xmlFormsService.
     return new Promise(resolve => {
-      this.observable.subscribe(showCards => { resolve(showCards) });
+      this.observable.subscribe(showCards => resolve(showCards));
     });
   }
 
