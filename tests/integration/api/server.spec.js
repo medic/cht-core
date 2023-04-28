@@ -2,7 +2,6 @@ const utils = require('../../utils');
 const request = require('request');
 const constants = require('../../constants');
 const _ = require('lodash');
-const {expect} = require('chai');
 
 describe('server', () => {
   describe('JSON-only endpoints', () => {
@@ -179,6 +178,17 @@ describe('server', () => {
       expect(res.headers[ 'content-type' ]).to.equal('image/png');
       expect(res.headers[ 'content-encoding' ]).to.be.undefined;
       expect(attachmentBody).to.equal(png);
+    });
+  });
+
+  describe('DNS resolver', () => {
+    it('nginx should resolve updated IP', async () => {
+      await utils.stopHaproxy();
+      await utils.stopApi();
+      await utils.startHaproxy();
+      await utils.startApi();
+
+      await utils.request('/');
     });
   });
 });
