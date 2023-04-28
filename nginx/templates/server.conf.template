@@ -1,5 +1,8 @@
+resolver 127.0.0.11 valid=2s; # 127.0.0.11 is from default /etc/resolv.conf
+set $upstream_endpoint http://${API_HOST}:${API_PORT};
+
 location / {
-  proxy_pass              http://${API_HOST}:${API_PORT};
+  proxy_pass              $upstream_endpoint;
   proxy_set_header        Host            $host;
   proxy_set_header        X-Real-IP       $remote_addr;
   proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
