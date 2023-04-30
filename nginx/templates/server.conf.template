@@ -1,4 +1,4 @@
-resolver 127.0.0.11 valid=2s; # 127.0.0.11 is from default /etc/resolv.conf
+resolver 127.0.0.11 valid=10s; # 127.0.0.11 is from default /etc/resolv.conf
 set $upstream_endpoint http://${API_HOST}:${API_PORT};
 
 location / {
