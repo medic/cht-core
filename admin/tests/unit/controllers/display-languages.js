@@ -158,15 +158,92 @@ describe('Display Languages controller', function() {
     createController();
     setTimeout(() => {
       rootScope.$digest();
-      const englishLanguageDoc = scope.languagesModel.locales[0].doc;
-      chai.expect(scope.languagesModel.locales[0].doc).to.deep.include({ code: 'en', enabled: true });
-      scope.disableLanguage(englishLanguageDoc);
+      const englishLanguage = scope.languagesModel.locales.find(locale => locale.doc.code === 'en');
+      chai.expect(englishLanguage.doc.code).to.equal('en');
+      chai.expect(englishLanguage.enabled).to.eq(true);
+      scope.disableLanguage(englishLanguage.doc);
+    });
 
-      setTimeout(() => {
-        chai.expect(updateSettings.called).to.be.true;
-        chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'en', enabled: false });
-        done();
-      });
+    setTimeout(() => {
+      chai.expect(updateSettings.called).to.be.true;
+      chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'en', enabled: false });
+      done();
+    });
+  });
+
+  it('should enable languages', (done) => {
+    settings.resolves({
+      locale: 'en',
+      locale_outgoing: 'sw',
+      languages: [
+        { locale: 'en', enabled: true },
+        { locale: 'sw', enabled: false },
+      ],
+    });
+    db.query.withArgs('medic-client/doc_by_type').resolves({
+      rows: [
+        {
+          id: 'messages-en',
+          doc: {
+            _id: 'messages-en',
+            code: 'en',
+            type: 'translations',
+            enabled: true,
+            generic: { 'a': 'a v1', 'b': 'b v1', 'c': 'c v1' },
+            custom: { 'a': 'a v2', 'c': 'c v2', 'd': 'd v1' }
+          }
+        },
+        {
+          id: 'messages-sw',
+          doc: {
+            _id: 'messages-sw',
+            code: 'sw',
+            type: 'translations',
+            enabled: true,
+            generic: {},
+            custom: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1', 'e': 'e v1'}
+          }
+        },
+        {
+          id: 'messages-ne',
+          doc: {
+            _id: 'messages-ne',
+            code: 'ne',
+            type: 'translations',
+            enabled: true,
+            generic: {},
+            custom: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1', 'e': 'e v1'}
+          }
+        },
+      ]
+    });
+
+    createController();
+    // enable swahili
+    setTimeout(() => {
+      rootScope.$digest();
+      const swahiliLanguage = scope.languagesModel.locales.find(locale => locale.doc.code === 'sw');
+      chai.expect(swahiliLanguage.doc.code).to.equal('sw');
+      chai.expect(swahiliLanguage.enabled).to.equal(false);
+      scope.enableLanguage(swahiliLanguage.doc);
+    });
+    setTimeout(() => {
+      chai.expect(updateSettings.called).to.be.true;
+      chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'sw', enabled: true });
+    });
+
+    // enable nepali
+    setTimeout(() => {
+      rootScope.$digest();
+      const nepaliLanguage = scope.languagesModel.locales.find(locale => locale.doc.code === 'ne');
+      chai.expect(nepaliLanguage.doc.code).to.equal('ne');
+      chai.expect(nepaliLanguage.enabled).to.equal(false);
+      scope.enableLanguage(nepaliLanguage.doc);
+    });
+    setTimeout(() => {
+      chai.expect(updateSettings.called).to.be.true;
+      chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'ne', enabled: true });
+      done();
     });
   });
 });
