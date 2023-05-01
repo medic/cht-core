@@ -1,11 +1,17 @@
 # base build
-FROM nginx:1.19.6-alpine as base_nginx
+
+FROM nginx:1.24.0-alpine as base_nginx
 RUN apk add --update --no-cache \
     curl \
     socat \
     sed \
     bash \
     openssl
+RUN apk add nginx-mod-http-lua=1.24.0-r2 --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main
+
+# install nginx-lua-prometheus
+RUN curl -Lo /nginx-lua-prometheus.tar.gz https://github.com/knyar/nginx-lua-prometheus/archive/0.20221218.tar.gz
+RUN tar -C / -xvzf /nginx-lua-prometheus.tar.gz
 
 COPY ssl-install.sh /docker-entrypoint.d
 RUN chmod 755 /docker-entrypoint.d/ssl-install.sh
