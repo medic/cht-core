@@ -85,7 +85,7 @@ The script `start-ec2-cht.sh` begins by requesting an ec2 instance in the ca-cen
 
 While docker-compose is bringing up CHT, `start-ec2-cht.sh` starts to check for API to be up by curling  `https://$PublicDnsName/api/info` until a version number is returned.
 
-Medic-conf and it's dependencies are now installed. Medic-conf then uploads the seed data which is located in `cht-core/tests/scalability/csv`. Then we wait for sentinel to process all these changes by checking the sentinel-meta-data processed sequence against the `_changes`  feed with the since request param.
+cht-conf and its dependencies are now installed. cht-conf then uploads the seed data which is located in `cht-core/tests/scalability/csv`. Then we wait for sentinel to process all these changes by checking the sentinel-meta-data processed sequence against the `_changes`  feed with the since request param.
 
 ### Start Jmeter Script
 
