@@ -41,7 +41,7 @@ java -cp jmeter/lib/ext/jmeter-plugins-manager-1.4.jar org.jmeterplugins.reposit
 
 echo "jmeter do it!"
 tmp_dir=$(mktemp -d -t -p ./ report-XXXXXXXXXX)
-./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=./ -Jnode_binary=$(which node) -Jnumber_of_threads=10 -l $tmp_dir/cli_run.jtl -e -o $tmp_dir
+./jmeter/bin/jmeter -n  -t sync.jmx -Jworking_dir=$tmp_dir -Jnode_binary=$(which node) -Jnumber_of_threads=10 -l $tmp_dir/cli_run.jtl -e -o $tmp_dir
 mv ./jmeter.log $tmp_dir/jmeter.log
 
 echo "Installing AWS CLI"
