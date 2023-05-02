@@ -54,7 +54,9 @@ export class CHTScriptApiService {
     try {
       const request = this.http.get('/extension-libs/' + name, { responseType: 'text' });
       const result = await lastValueFrom(request);
-      this.extensionLibs[name] = new Function(result)();
+      const module = { exports: null };
+      new Function('module', result)(module);
+      this.extensionLibs[name] = module.exports;
     } catch(e) {
       console.error(`Error loading extension lib: "${name}"`, e);
     }
