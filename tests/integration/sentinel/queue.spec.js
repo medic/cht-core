@@ -122,9 +122,6 @@ describe('Sentinel queue drain', () => {
   it('queue should work after restarting haproxy', async () => {
     await utils.stopHaproxy(); // this will also crash Sentinel and API
     await utils.startHaproxy();
-    // the nginx restart is required because of https://github.com/medic/cht-core/issues/8205
-    await utils.stopNginx();
-    await utils.startNginx();
     await utils.listenForApi();
 
     const settings = { transitions: { update_clinics: true } };
