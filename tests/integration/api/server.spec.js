@@ -185,9 +185,6 @@ describe('server', () => {
     it('should respond to changes even after services are restarted', async () => {
       await utils.stopHaproxy(); // this will also crash API
       await utils.startHaproxy();
-      // the nginx restart is required because of https://github.com/medic/cht-core/issues/8205
-      await utils.stopNginx();
-      await utils.startNginx();
       await utils.listenForApi();
 
       const forms = await utils.db.allDocs({
@@ -202,6 +199,24 @@ describe('server', () => {
       await utils.saveDoc(formDoc);
       const updatedFormDoc = await utils.getDoc(formDoc._id);
       expect(updatedFormDoc._attachments).to.have.keys(['xml', 'form.html', 'model.xml']);
+    });
+  });
+
+  describe('DNS resolver', () => {
+    it('nginx should resolve updated api ips', async () => {
+      await utils.stopHaproxy();
+      await utils.stopApi();
+      await utils.startHaproxy();
+      await utils.startApi();
+
+      await utils.request('/');
+
+      await utils.stopHaproxy();
+      await utils.stopApi();
+      await utils.startApi();
+      await utils.startHaproxy();
+
+      await utils.request('/');
     });
   });
 });
