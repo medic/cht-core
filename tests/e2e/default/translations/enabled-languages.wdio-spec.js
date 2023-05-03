@@ -56,7 +56,24 @@ describe('Enabling/disabling languages', () => {
       return esLanguage.enabled === false;
     });
 
-    // assert Spanish has been disabled in the app_settings
+    // enable Swahili
+    await $('.tab-content > #language-accordion > .panel').waitForDisplayed();
+    const swLanguageHeader = await $('#locale-sw.panel-heading a[data-target="#locale-sw-body"]');
+    await swLanguageHeader.click();
+    const swLanguageAccordion = await $('#locale-sw-body');
+    const ddd = await swLanguageAccordion.$('span=Enable');
+    await ddd.waitForDisplayed();
+    await ddd.click();
+    // await (await swLanguageAccordion.$('button=Enable')).click();
+    await browser.waitUntil(async () => {
+      const settings = await utils.getSettings();
+      const swLanguage = settings.languages.find(language => language.locale === 'sw');
+      return swLanguage.enabled === true;
+    });
+
+    // assert:
+    //   - Spanish has been disabled in the app_settings
+    //   - Swahili has been enabled in the app_settings
     const settings = await utils.getSettings();
     expect(settings.languages).to.deep.equal([
       {
@@ -71,9 +88,15 @@ describe('Enabling/disabling languages', () => {
         locale: 'fr',
         enabled: true,
       },
+      {
+        locale: 'sw',
+        enabled: true,
+      },
     ]);
 
-    // assert Spanish is not available on the login page
+    // assert:
+    //   - Spanish is not available on the login page
+    //   - Swahili is available on the login page
     const logoutButton = await $('span=Log out');
     await logoutButton.click();
     await loginPage.loginButton().waitForDisplayed();
@@ -83,6 +106,7 @@ describe('Enabling/disabling languages', () => {
     expect(locales).to.deep.equal([
       { code: 'en', name: 'English' },
       { code: 'fr', name: 'Français (French)' },
+      { code: 'sw', name: 'Kiswahili (Swahili)' },
     ]);
   });
 });
