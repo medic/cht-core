@@ -1,9 +1,10 @@
+const isEqual = require('lodash/isEqual');
 const utils = require('../../../utils');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 
 describe('Enabling/disabling languages', () => {
   before(async () => {
-    const settingsUpdate = {
+    const settings = {
       languages: [
         {
           locale: 'en',
@@ -19,11 +20,10 @@ describe('Enabling/disabling languages', () => {
         },
       ],
     };
-    await utils.updateSettings(settingsUpdate, true);
+    await utils.updateSettings(settings, true);
     await browser.waitUntil(async () => {
-      const settings = await utils.getSettings();
-      console.log("settings.languages", settings.languages);
-      return settings.languages.every(language => settingsUpdate.languages.findIndex(l => l.locale === language.locale) > -1);
+      const { languages } = await utils.getSettings();
+      return isEqual(languages, settings.languages);
     });
     await browser.refresh();
   });
@@ -34,7 +34,6 @@ describe('Enabling/disabling languages', () => {
 
   it('should disable a language', async () => {
     let locales = await loginPage.getAllLocales();
-    console.log("locales", locales);
     expect(locales).to.deep.equal([
       { code: 'en', name: 'English' },
       { code: 'es', name: 'Español (Spanish)' },
@@ -42,12 +41,11 @@ describe('Enabling/disabling languages', () => {
     ]);
     await loginPage.cookieLogin();
 
-
+    // open admin app on the languages configuration tab
     await browser.url('/admin/#/display/languages');
-    await $('.tab-content > #language-accordion > .panel').waitForDisplayed();
-    const languages = await $$('.tab-content > #language-accordion > .panel');
-    console.log('languages', languages.length);
 
+    // disable Spanish
+    await $('.tab-content > #language-accordion > .panel').waitForDisplayed();
     const esLanguageHeader = await $('#locale-es.panel-heading a[data-target="#locale-es-body"]');
     await esLanguageHeader.click();
     const esLanguageAccordion = await $('#locale-es-body');
@@ -58,6 +56,7 @@ describe('Enabling/disabling languages', () => {
       return esLanguage.enabled === false;
     });
 
+    // assert Spanish has been disabled in the app_settings
     const settings = await utils.getSettings();
     expect(settings.languages).to.deep.equal([
       {
@@ -74,22 +73,16 @@ describe('Enabling/disabling languages', () => {
       },
     ]);
 
+    // assert Spanish is not available on the login page
     const logoutButton = await $('span=Log out');
     await logoutButton.click();
     await loginPage.loginButton().waitForDisplayed();
     await browser.reloadSession();
     await browser.url('/');
-
     locales = await loginPage.getAllLocales();
-    console.log("locales", locales);
     expect(locales).to.deep.equal([
       { code: 'en', name: 'English' },
       { code: 'fr', name: 'Français (French)' },
     ]);
-
-    // click on one language
-    // enable/disable it
-    // check in app_settings.languages it's getting updated
-    // check the login page only has the enabled languages
   });
 });
