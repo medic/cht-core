@@ -1102,6 +1102,11 @@ module.exports = {
    */
   setUserContactDoc,
 
+  getSettings: () => request({
+    path: '/api/v1/settings',
+    method: 'GET',
+  }),
+
   /**
    * Update settings and refresh if required
    *
