@@ -32,31 +32,24 @@ describe('Enabling/disabling languages', () => {
     await utils.revertSettings(true);
   });
 
-  const disableLanguage = async (locale) => {
+  const toggleLanguage = async (locale, shouldEnable) => {
     await $('.tab-content > #language-accordion > .panel').waitForDisplayed();
     const languageHeader = await $(`#locale-${locale}.panel-heading a[data-target="#locale-${locale}-body"]`);
     await languageHeader.click();
     const languageAccordion = await $(`#locale-${locale}-body`);
-    await (await languageAccordion.$('span=Disable')).click();
+    await languageAccordion.waitForDisplayed();
+    const buttonLabel = shouldEnable ? 'Enable' : 'Disable';
+    console.log("buttonLabel", buttonLabel, locale);
+    await (await languageAccordion.$(`span=${buttonLabel}`)).click();
     await browser.waitUntil(async () => {
       const settings = await utils.getSettings();
       const language = settings.languages.find(language => language.locale === locale);
-      return language.enabled === false;
+      return language.enabled === shouldEnable;
     });
   };
 
-  const enableLanguage = async (locale) => {
-    await $('.tab-content > #language-accordion > .panel').waitForDisplayed();
-    const languageHeader = await $(`#locale-${locale}.panel-heading a[data-target="#locale-${locale}-body"]`);
-    await languageHeader.click();
-    const languageAccordion = await $(`#locale-${locale}-body`);
-    await (await languageAccordion.$('span=Enable')).click();
-    await browser.waitUntil(async () => {
-      const settings = await utils.getSettings();
-      const language = settings.languages.find(language => language.locale === locale);
-      return language.enabled === true;
-    });
-  };
+  const disableLanguage = (locale) => toggleLanguage(locale, false);
+  const enableLanguage = (locale) => toggleLanguage(locale, true);
 
   it('should disable a language and enable another', async () => {
     // assert English, Spanish, and French are available on the login page
