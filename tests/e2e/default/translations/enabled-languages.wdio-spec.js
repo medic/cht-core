@@ -32,7 +32,7 @@ describe('Enabling/disabling languages', () => {
     await utils.revertSettings(true);
   });
 
-  it('should disable a language', async () => {
+  it('should disable a language and enable another', async () => {
     let locales = await loginPage.getAllLocales();
     expect(locales).to.deep.equal([
       { code: 'en', name: 'English' },
@@ -49,7 +49,7 @@ describe('Enabling/disabling languages', () => {
     const esLanguageHeader = await $('#locale-es.panel-heading a[data-target="#locale-es-body"]');
     await esLanguageHeader.click();
     const esLanguageAccordion = await $('#locale-es-body');
-    await (await esLanguageAccordion.$('button=Disable')).click();
+    await (await esLanguageAccordion.$('span=Disable')).click();
     await browser.waitUntil(async () => {
       const settings = await utils.getSettings();
       const esLanguage = settings.languages.find(language => language.locale === 'es');
@@ -61,10 +61,7 @@ describe('Enabling/disabling languages', () => {
     const swLanguageHeader = await $('#locale-sw.panel-heading a[data-target="#locale-sw-body"]');
     await swLanguageHeader.click();
     const swLanguageAccordion = await $('#locale-sw-body');
-    const ddd = await swLanguageAccordion.$('span=Enable');
-    await ddd.waitForDisplayed();
-    await ddd.click();
-    // await (await swLanguageAccordion.$('button=Enable')).click();
+    await (await swLanguageAccordion.$('span=Enable')).click();
     await browser.waitUntil(async () => {
       const settings = await utils.getSettings();
       const swLanguage = settings.languages.find(language => language.locale === 'sw');
