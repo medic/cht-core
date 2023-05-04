@@ -1241,9 +1241,9 @@ module.exports = {
   startSentinel: () => startService('sentinel'),
 
   stopApi: () => stopService('api'),
-  startApi: async () => {
+  startApi: async (listen = true) => {
     await startService('api');
-    await listenForApi();
+    listen && await listenForApi();
   },
   stopHaproxy: () => stopService('haproxy'),
   startHaproxy: () => startService('haproxy'),

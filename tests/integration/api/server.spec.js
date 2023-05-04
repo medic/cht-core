@@ -213,10 +213,12 @@ describe('server', () => {
 
       await utils.stopHaproxy();
       await utils.stopApi();
-      await utils.startApi();
+      await utils.startApi(false);
       await utils.startHaproxy();
 
       await utils.request('/');
+
+      await utils.listenForApi();
     });
   });
 });
