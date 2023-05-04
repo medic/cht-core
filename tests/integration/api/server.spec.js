@@ -216,8 +216,6 @@ describe('server', () => {
       await utils.startApi(false);
       await utils.startHaproxy();
 
-      await utils.request('/');
-
       await utils.listenForApi();
     });
   });
