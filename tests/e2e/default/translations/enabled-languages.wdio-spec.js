@@ -34,7 +34,9 @@ describe('Enabling/disabling languages', () => {
     const languageAccordion = await $(`#locale-${locale}-body`);
     await languageAccordion.waitForDisplayed();
     const buttonLabel = shouldEnable ? 'Enable' : 'Disable';
-    await (await languageAccordion.$(`span=${buttonLabel}`)).click();
+    const button = languageAccordion.$(`span=${buttonLabel}`);
+    await button.waitForDisplayed();
+    await (await button).click();
     await browser.waitUntil(async () => {
       const settings = await utils.getSettings();
       const language = settings.languages.find(language => language.locale === locale);
