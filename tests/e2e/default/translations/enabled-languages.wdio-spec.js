@@ -1,4 +1,3 @@
-const isEqual = require('lodash/isEqual');
 const utils = require('../../../utils');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 
@@ -21,10 +20,6 @@ describe('Enabling/disabling languages', () => {
       ],
     };
     await utils.updateSettings(settings, true);
-    await browser.waitUntil(async () => {
-      const { languages } = await utils.getSettings();
-      return isEqual(languages, settings.languages);
-    });
     await browser.refresh();
   });
 
