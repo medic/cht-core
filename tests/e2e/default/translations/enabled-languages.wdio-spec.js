@@ -1,5 +1,6 @@
 const utils = require('../../../utils');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const adminPage = require('../../../page-objects/default/admin/admin.wdio.page');
 
 describe('Enabling/disabling languages', () => {
   before(async () => {
@@ -27,26 +28,6 @@ describe('Enabling/disabling languages', () => {
     await utils.revertSettings(true);
   });
 
-  const toggleLanguage = async (locale, shouldEnable) => {
-    await $('.tab-content > #language-accordion > .panel').waitForDisplayed();
-    const languageHeader = await $(`#locale-${locale}.panel-heading a[data-target="#locale-${locale}-body"]`);
-    await languageHeader.click();
-    const languageAccordion = await $(`#locale-${locale}-body`);
-    await languageAccordion.waitForDisplayed();
-    const buttonLabel = shouldEnable ? 'Enable' : 'Disable';
-    const button = languageAccordion.$(`span=${buttonLabel}`);
-    await button.waitForDisplayed();
-    await (await button).click();
-    await browser.waitUntil(async () => {
-      const settings = await utils.getSettings();
-      const language = settings.languages.find(language => language.locale === locale);
-      return language.enabled === shouldEnable;
-    });
-  };
-
-  const disableLanguage = (locale) => toggleLanguage(locale, false);
-  const enableLanguage = (locale) => toggleLanguage(locale, true);
-
   it('should disable a language and enable another', async () => {
     // assert English, Spanish, and French are available on the login page
     let locales = await loginPage.getAllLocales();
@@ -61,10 +42,10 @@ describe('Enabling/disabling languages', () => {
     await browser.url('/admin/#/display/languages');
 
     // disable Spanish
-    await disableLanguage('es');
+    await adminPage.disableLanguage('es');
 
     // enable Swahili
-    await enableLanguage('sw');
+    await adminPage.enableLanguage('sw');
 
     // assert:
     //   - Spanish has been disabled in the app_settings
