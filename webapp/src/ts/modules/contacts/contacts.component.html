@@ -24,7 +24,6 @@
 <div class="inner">
   <div class="inbox page">
     <div id="contacts-list" class="col-sm-4 inbox-items left-pane ">
-
       <div class="items-container">
         <ul [hidden]="loading && !appending">
           <li *ngFor="let contact of contactsList; trackBy: listTrackBy"
