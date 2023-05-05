@@ -25,7 +25,7 @@
   <div class="inbox page">
     <div id="contacts-list" class="col-sm-4 inbox-items left-pane">
 
-      <div class="items-container">
+      <div class="items-container" style="overflow-y: auto;overflow-x: hidden;height: 100%;">
         <ul [hidden]="loading && !appending">
           <li *ngFor="let contact of contactsList; trackBy: listTrackBy"
               [attr.data-record-id]="contact._id"
