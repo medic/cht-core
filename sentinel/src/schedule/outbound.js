@@ -3,6 +3,8 @@ const db = require('../db');
 const logger = require('../lib/logger');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const outbound = require('@medic/outbound')(logger);
+const infodocLib = require('@medic/infodoc');
+infodocLib.initLib(db.medic, db.sentinel);
 
 const CONFIGURED_PUSHES = 'outbound';
 const BATCH_SIZE = 1000;
@@ -102,7 +104,8 @@ const removeConfigKeyFromTask = (taskDoc, key) => {
  * Push a payload, cleanup afterwards if successful
  *
  */
-const singlePush = (taskDoc, medicDoc, infoDoc, config, key) => Promise.resolve()
+const singlePush = (taskDoc, medicDoc, infoDoc, config, key) => Promise
+  .resolve()
   .then(() => {
     if (!config) {
       // The outbound config entry has been deleted / renamed / something!
@@ -112,28 +115,14 @@ const singlePush = (taskDoc, medicDoc, infoDoc, config, key) => Promise.resolve(
       return removeConfigKeyFromTask(taskDoc, key);
     }
 
-    return outbound.send(config, key, medicDoc, infoDoc)
-      .then(() => {
-        // Worked, remove entry from queue and store infodoc that outbound service has updated
-        return removeConfigKeyFromTask(taskDoc, key)
-          .then(() => db.sentinel.put(infoDoc))
-          .catch(err => {
-            if (err.status !== 409) {
-              logger.error('Failed to save infodoc');
-              logger.error(err);
-              throw err;
-            }
-
-            // While we held the infodoc open something else wrote to it. Presume it wasn't
-            // anything task related, load a fresh version and overwrite
-            return db.sentinel.get(infoDoc._id)
-              .then(freshInfoDoc => {
-                freshInfoDoc.completed_tasks = infoDoc.completed_tasks;
-                return db.sentinel.put(freshInfoDoc);
-              });
-          });
-      });
-  }).catch(() => {
+    return outbound
+      .send(config, key, medicDoc, infoDoc)
+      // Worked, remove entry from queue and store infodoc that outbound service has updated
+      .then(() => removeConfigKeyFromTask(taskDoc, key))
+      .then(() => infodocLib.saveCompletedTasks(medicDoc._id, infoDoc));
+  })
+  .catch((err) => {
+    logger.warn(`Unable to push ${medicDoc._id} for ${key}: %eo`, err);
     // Failed!
     // Don't remove the entry from the task's queue so it will be tried again next time
   });
