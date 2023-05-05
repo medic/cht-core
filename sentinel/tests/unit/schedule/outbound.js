@@ -319,7 +319,6 @@ describe('outbound schedule', () => {
   describe('single push', () => {
     let mapDocumentToPayload;
     let sentinelPut;
-    let sentinelGet;
     let send;
     let infodocSaveCompletedTasks;
 
@@ -340,7 +339,6 @@ describe('outbound schedule', () => {
       restores.push(outbound.__set__('outbound', { send: send }));
       restores.push(outbound.__set__('infodocLib', { saveCompletedTasks: infodocSaveCompletedTasks }));
       sentinelPut = sinon.stub(db.sentinel, 'put');
-      sentinelGet = sinon.stub(db.sentinel, 'get');
     });
 
     afterEach(() => restores.forEach(restore => restore()));
