@@ -27,9 +27,9 @@
               <div class="marker" *ngIf="firstUnread && firstUnread.id === message.doc?._id">{{'Unread below' | translate}}</div>
               <span class="message-body" [class.last-message]="lastMessage">
                 <div class="data">
-                  <p>
+                  <p [attr.test-id]="'sms-content'">
                     {{message.doc?.sms_message?.message}}
-                    <span [attr.test-id]="'sms-content'" *ngIf="message.doc?.kujua_message && message.doc?.tasks && message.doc?.tasks[0]?.messages">
+                    <span *ngIf="message.doc?.kujua_message && message.doc?.tasks && message.doc?.tasks[0]?.messages">
                       {{message.doc?.tasks[0]?.messages[0]?.message}}
                     </span>
                   </p>

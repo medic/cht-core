@@ -8,9 +8,10 @@ const personFactory = require('../../../factories/cht/contacts/person');
 const messagesPage = require('../../../page-objects/default/sms/messages.wdio.page');
 
 describe('Send message', () => {
+  const rawNumer = '+50683858585';
+  const anotherRawNumber = '+50689232323';
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
-  const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'] });
   const anne = personFactory.build({
     name: 'Anne',
     phone: '+50683333333',
@@ -22,32 +23,131 @@ describe('Send message', () => {
     parent: {_id: healthCenter._id, parent: healthCenter.parent}
   });
 
-  const smsMsg = key => `Hello ${key} this is a test SMS`;
+  const offlineUser = userFactory.build({ place: healthCenter._id, roles: ['chw'], contact: anne });
+
+  const smsMsg = (person, type = 'regular')  => `Test SMS - ${person} - ${type}`;
+
+  const verifyMessageHeader = async (personName, phoneNumber) => {
+    const { name, phone } = await messagesPage.getMessageHeader();
+    expect(name).to.equal(personName);
+    expect(phone).to.equal(phoneNumber);
+  };
+
+  const verifyLastSmsContent = async (msg, type) => {
+    const messages = await messagesPage.getAmountOfMessages();
+    const { content, state } = await messagesPage.getMessageContent(messages);
+    expect(content).to.equal(smsMsg(msg, type));
+    expect(state).to.equal('pending');
+  };
+
+  const verifyMessageModalContent = async (recipientName, messageValue) => {
+    const { recipient, message } = await messagesPage.getMessagesModalDetails();
+    expect(recipient).to.contain(recipientName);
+    expect(message).to.equal(messageValue);
+  };
 
   before(async () => {
-    await utils.saveDocs([...places.values(), anne, bob]);
+    await utils.saveDocs([...places.values(), bob]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);    
   });
 
-  it('Should send a message to a raw phone number', async () => {
+  beforeEach(async () => {
     await commonPage.goToMessages();
     await commonPage.waitForPageLoaded();
-
-    const rawNumer = '+50683858585';
-    await messagesPage.sendMessage(smsMsg('raw'), rawNumer, '', rawNumer);
-    await messagesPage.clickLhsEntry(rawNumer);
-    
-    expect(await messagesPage.lastMessageText()).to.equal(smsMsg('raw'));
   });
 
-  it('Should send a message to a contact with a phone number', async () => {
+  it('should send messages to all the contacts, under a place, that have a primary phone number assigned', async () => {
+    await messagesPage.sendMessage(
+      smsMsg(healthCenter.name),
+      healthCenter.name,
+      `${healthCenter.name} - all  contacts`);
+
+    const messages = await messagesPage.messagesList();
+    expect(messages.length).to.equal(2);
+
+    await messagesPage.openMessage(anne._id);
+    await verifyMessageHeader(anne.name, anne.phone);
+    await verifyLastSmsContent(healthCenter.name);
+
+    await messagesPage.openMessage(bob._id);
+    await verifyMessageHeader(bob.name, bob.phone);
+    await verifyLastSmsContent(healthCenter.name);
+  });
+
+  it('should send a message to a raw phone number', async () => {
+    await messagesPage.sendMessage(smsMsg('raw'), rawNumer, rawNumer);
+    await messagesPage.openMessage(rawNumer);
+    await verifyMessageHeader(rawNumer, '');
+    await verifyLastSmsContent('raw');
+  });
+
+  it('should send a message to a contact with a phone number', async () => {
+    await messagesPage.sendMessage(smsMsg(anne.name), anne.name, anne.phone);
+    await messagesPage.openMessage(anne._id);
+    await verifyMessageHeader(anne.name, anne.phone);
+    await verifyLastSmsContent(anne.name, 'regular');
+  });
+
+  it('should reply to an existing message - raw phone number', async () => {
+    await messagesPage.openMessage(rawNumer);
+    await verifyMessageHeader(rawNumer, '');
+    await messagesPage.sendReply(smsMsg('raw', 'reply'));
+    await browser.refresh();
+    await verifyLastSmsContent('raw', 'reply');
+  });
+
+  it('should reply to an existing message - contact with a phone number',  async () => {
+    await messagesPage.openMessage(anne._id);
+    await verifyMessageHeader(anne.name, anne.phone);
+    await messagesPage.sendReply(smsMsg(anne.name, 'reply'));
+    await browser.refresh();
+    await verifyLastSmsContent(anne.name, 'reply');
+  });
+
+  it('should reply to an existing message and add a new recipient - raw phone number ', async () => {
+    await messagesPage.openMessage(rawNumer);
+    await verifyMessageHeader(rawNumer, '');
+    const newMessage = smsMsg('raw', 'add recipient');
+
+    await messagesPage.replyAddRecipients(newMessage);
+    await verifyMessageModalContent(rawNumer, newMessage);
+    await messagesPage.sendReplyNewRecipient(anotherRawNumber, anotherRawNumber);
+    await browser.refresh();
+    await verifyLastSmsContent('raw', 'add recipient');
+
+    await messagesPage.openMessage(anotherRawNumber);
+    await verifyMessageHeader(anotherRawNumber, '');
+    await verifyLastSmsContent('raw', 'add recipient');
+  });
+
+  it('should reply to an existing message and add a new recipient - contact with a phone number ', async () => {
+    await messagesPage.openMessage(anne._id);
+    await verifyMessageHeader(anne.name, anne.phone);
+    const newMessage = smsMsg('all', 'add recipient');
+
+    await messagesPage.replyAddRecipients(newMessage);
+    await verifyMessageModalContent(anne.name, newMessage);
+    await messagesPage.sendReplyNewRecipient(bob.name, bob.phone);
+    await browser.refresh();
+    await verifyLastSmsContent('all', 'add recipient');
+
+    await messagesPage.openMessage(bob._id);
+    await verifyMessageHeader(bob.name, bob.phone);
+    await verifyLastSmsContent('all', 'add recipient');
+  });
+
+  it('should send a message using FAB at people\'s tab', async () => {
+    await commonPage.goToPeople(bob._id);
+    await commonPage.clickFastActionFAB({ actionId: 'send-message' });
+    await verifyMessageModalContent(bob.name, null);
+    await messagesPage.sendMessageToContact(smsMsg(bob.name, 'People\'s Tab'));
+
     await commonPage.goToMessages();
     await commonPage.waitForPageLoaded();
-
-    await messagesPage.sendMessage(smsMsg(anne.name), anne.name, messagesPage.contactNameSelector, anne.phone);
-    await messagesPage.clickLhsEntry(anne._id, anne.name);
-
-    expect(await messagesPage.lastMessageText()).to.equal(smsMsg(anne.name));
+    await messagesPage.openMessage(bob._id);
+    await verifyMessageHeader(bob.name, bob.phone);
+    await verifyLastSmsContent(bob.name, 'People\'s Tab');
   });
+
 });

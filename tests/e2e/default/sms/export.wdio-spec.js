@@ -29,9 +29,7 @@ describe('Export Messages', () => {
   });
 
   it('Should download export file', async () => {
-    await messagesPage.sendMessage('It is working!', patient.phone, messagesPage.contactNameSelector, patient.name);
-    await messagesPage.waitForMessagesInLHS();
-
+    await messagesPage.sendMessage('It is working!', patient.phone, patient.name);
     await messagesPage.exportMessages();
 
     const files = await fileDownloadUtils.waitForDownload(`messages-${today.format('YYYYMMDD')}`);
