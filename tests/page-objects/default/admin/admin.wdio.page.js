@@ -4,6 +4,7 @@ const adminNavbarLogo = () => $('.navbar-header .navbar-brand');
 const languagesPanel = () => $('.tab-content > #language-accordion > .panel');
 const localePanelHeader = (locale) => $(`#locale-${locale}.panel-heading a[data-target="#locale-${locale}-body"]`);
 const localePanelBody = (locale) => $(`#locale-${locale}-body`);
+const logoutButton = () => $('span=Log out');
 
 const toggleLanguage = async (locale, shouldEnable) => {
   await languagesPanel().waitForDisplayed();
@@ -24,8 +25,11 @@ const toggleLanguage = async (locale, shouldEnable) => {
 const disableLanguage = (locale) => toggleLanguage(locale, false);
 const enableLanguage = (locale) => toggleLanguage(locale, true);
 
+const logout = () => logoutButton.click();
+
 module.exports = {
   adminNavbarLogo,
   disableLanguage,
   enableLanguage,
+  logout,
 };

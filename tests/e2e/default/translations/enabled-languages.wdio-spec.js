@@ -73,8 +73,7 @@ describe('Enabling/disabling languages', () => {
     // assert:
     //   - Spanish is not available on the login page
     //   - Swahili is available on the login page
-    const logoutButton = await $('span=Log out');
-    await logoutButton.click();
+    await adminPage.logout();
     await loginPage.loginButton().waitForDisplayed();
     await browser.reloadSession();
     await browser.url('/');
