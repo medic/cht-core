@@ -25,7 +25,7 @@ const toggleLanguage = async (locale, shouldEnable) => {
 const disableLanguage = (locale) => toggleLanguage(locale, false);
 const enableLanguage = (locale) => toggleLanguage(locale, true);
 
-const logout = async () => (await logoutButton).click();
+const logout = async () => (await logoutButton()).click();
 
 module.exports = {
   adminNavbarLogo,
