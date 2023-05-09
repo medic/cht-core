@@ -2,8 +2,8 @@
 set -e
 
 NODE_TLS_REJECT_UNAUTHORIZED=0
-BRANCH=$1
-sed -i '4s~^~'BUILD=$MARKET_URL_READ/$STAGING_SERVER/medic:medic:$1'\n\n~' prepare-ec2.sh
+TAG=$1
+sed -i '4s~^~'BUILD=$MARKET_URL_READ/$STAGING_SERVER/medic:medic:$TAG'\n\n~' prepare-ec2.sh
 
 echo Triggering EC2 Run Instance Command and getting Instance ID
 
@@ -110,8 +110,8 @@ seedData $MEDIC_CONF_URL
 waitForSentinel $MEDIC_CONF_URL
 
 sed -i '4s~^~'MEDIC_URL=$url'\n~' run_suite.sh
-sed -i '4s~^~'S3_PATH=s3://medic-e2e/scalability/$BRANCH-$GITHUB_RUN_ID'\n~' run_suite.sh
-sed -i '4s~^~'BRANCH=$BRANCH'\n~' run_suite.sh
+sed -i '4s~^~'S3_PATH=s3://medic-e2e/scalability/$TAG-$GITHUB_RUN_ID'\n~' run_suite.sh
+sed -i '4s~^~'TAG=$TAG'\n~' run_suite.sh
 
 echo Triggering EC2 Run Instance Command and getting Instance ID
 
