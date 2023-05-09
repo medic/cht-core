@@ -13,6 +13,16 @@ const outboundConfig = (port) => ({
     },
     relevant_to: 'false'
   },
+  also_working: {
+    destination: {
+      base_url: utils.hostURL(port),
+      path: '/test-working'
+    },
+    mapping: {
+      id: 'doc._id'
+    },
+    relevant_to: 'false'
+  },
   broken: {
     destination: {
       base_url: utils.hostURL(port),
@@ -34,12 +44,12 @@ const tasks = [{
   _id: `task:outbound:test-aaa`,
   type: 'task:outbound',
   doc_id: 'test-aaa',
-  queue: ['working', 'broken'],
+  queue: ['working', 'also_working', 'broken'],
 }, {
   _id: `task:outbound:test-zzz`,
   type: 'task:outbound',
   doc_id: 'test-zzz',
-  queue: ['working'],
+  queue: ['working', 'also_working'],
 }];
 
 const express = require('express');
@@ -51,13 +61,11 @@ destinationApp.use(jsonParser);
 destinationApp.post('/test-working', (req, res) => inboxes.working.push(req.body) && res.send('true'));
 destinationApp.post('/test-broken', (req, res) => inboxes.broken.push(req.body) && res.status(500).end());
 let server;
+let port;
 
-const waitForPushes = () => {
+const waitForPushes = (expectedTasks = 1) => {
   return getTasks().then(result => {
-    // waiting for 1 task left should imply that the first task, which should stay because it points
-    // to a broken endpoint, has executed, since the second task has executed successfully and been
-    // deleted
-    if (result.rows.length === 1) {
+    if (result.rows.length === expectedTasks) {
       return;
     }
     return utils.delayPromise(waitForPushes, 100);
@@ -75,7 +83,11 @@ const wipeTasks = () => {
 
 describe('Outbound', () => {
   before(() => {
+    // get a random port assigned. we will reuse this port when starting the server again.
+    // the known port is necessary for the outbound config
     server = destinationApp.listen();
+    port = server.address().port;
+    server.close();
   });
 
   after(() => {
@@ -85,28 +97,44 @@ describe('Outbound', () => {
   afterEach(() => utils.revertDb([], true).then(() => wipeTasks()));
 
   it('should find existing outbound tasks and execute them, leaving them if the send was unsuccessful', () => {
+    const settings = {
+      outbound: outboundConfig(port),
+      transitions: {
+        mark_for_outbound: true,
+      }
+    };
     return utils
-      .updateSettings({ outbound: outboundConfig(server.address().port) }, true)
-      .then(() => utils.stopSentinel())
+      .updateSettings(settings, 'sentinel')
+      .then(() => console.log('settings'))
       .then(() => utils.saveDocs(docs))
-      .then(() => utils.sentinelDb.bulkDocs(tasks))
+      // pushes will fail if destination server is not up, so tasks will get created
+      .then(() => waitForPushes(2))
+      .then(() => console.log('wait'))
+      .then(() => utils.stopSentinel())
       .then(() => utils.startSentinel())
+      .then(() => server = destinationApp.listen(port)) // and they will generate tasks
       .then(() => console.log('Waiting for schedules'))
-      .then(() => waitForPushes())
+      // waiting for 1 task left should imply that the first task, which should stay because it points
+      // to a broken endpoint, has executed, since the second task has executed successfully and been
+      // deleted
+      .then(() => waitForPushes(1))
       .then(() => {
-        chai.expect(inboxes.working).to.have.lengthOf(2);
+        console.log(inboxes.working);
+        chai.expect(inboxes.working).to.have.lengthOf(4);
         chai.expect(inboxes.broken).to.have.lengthOf(1);
 
         chai.expect(inboxes.working).to.have.deep.members([
-          {id: 'test-aaa'},
-          {id: 'test-zzz'}
+          { id: 'test-aaa' },
+          { id: 'test-aaa' },
+          { id: 'test-zzz' },
+          { id: 'test-zzz' },
         ]);
 
         chai.expect(inboxes.broken).to.have.deep.members([
           {id: 'test-aaa'}
         ]);
       })
-      .then(() => utils.sentinelDb.allDocs({ keys: tasks.map(task => task._id), include_docs: true }))
+      .then(() => utils.sentinelDb.allDocs({ keys: docs.map(doc => `task:outbound:${doc._id}`), include_docs: true }))
       .then(tasksResult => {
         chai.expect(tasksResult.rows).to.have.lengthOf(2);
         chai.expect(tasksResult.rows[0].doc).to.deep.equal({
@@ -130,14 +158,18 @@ describe('Outbound', () => {
           type: 'info',
           doc_id: 'test-aaa',
           'completed_tasks[0].type': 'outbound',
-          'completed_tasks[0].name': 'working'
+          'completed_tasks[0].name': 'working',
+          'completed_tasks[1].type': 'outbound',
+          'completed_tasks[1].name': 'also_working',
         });
         chai.expect(infoDocs[1]).to.nested.include({
           _id: 'test-zzz-info',
           type: 'info',
           doc_id: 'test-zzz',
           'completed_tasks[0].type': 'outbound',
-          'completed_tasks[0].name': 'working'
+          'completed_tasks[0].name': 'working',
+          'completed_tasks[1].type': 'outbound',
+          'completed_tasks[1].name': 'also_working',
         });
       }).catch(err => {
         // We don't really have a reliable way to know when these writes happen, because of how
