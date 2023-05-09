@@ -62,13 +62,6 @@ const updateSettings = async (targetsConfig, user, contactSummary) => {
   await commonPage.goToBase();
 };
 
-const clickOnTargetAggregateListItem = async (contactId) => {
-  await (await targetAggregatesPage.targetAggregateListItem(contactId)).waitForClickable();
-  await (await targetAggregatesPage.targetAggregateListItem(contactId)).click();
-  // wait until contact-summary is loaded
-  await (await contactsPage.contactCard()).waitForDisplayed();
-};
-
 const validateCardField = async (label, value) => {
   const card = await contactsPage.getCardFieldInfo(label);
   expect(card.label).to.equal(label);
@@ -123,25 +116,26 @@ describe('Target aggregates', () => {
     const otherParentPlace = placeFactory.place().build({ type: 'district_hospital' });
     const user = userFactory.build({ place: parentPlace._id, roles: ['program_officer'] });
     const names = ['Clarissa', 'Prometheus', 'Alabama', 'Jasmine', 'Danielle'];
-    const generatePlace = (parent, idx) => {
+    const otherNames = ['Viviana', 'Ximena', 'Esteban', 'Luis', 'Marta'];
+    const generatePlace = (parent, idx, otherPlace) => {
       const place = placeFactory.place().build({ type: 'health_center', parent: { _id: parent._id } });
       const contact = personFactory.build({
-        name: idx === 'undefined' ? randomString(8) : names[idx],
+        name: otherPlace === true ? otherNames[idx] : names[idx],
         parent: { _id: place._id, parent: place.parent }
       });
       place.contact = { _id: contact._id, parent: contact.parent };
       return [place, contact];
     };
     const docs = _.flattenDeep([
-      Array.from({ length: 5 }).map((e, i) => generatePlace(parentPlace, i)),
-      Array.from({ length: 5 }).map(() => generatePlace(otherParentPlace)),
+      Array.from({ length: 5 }).map((e, i) => generatePlace(parentPlace, i, false)),
+      Array.from({ length: 5 }).map((e, i) => generatePlace(otherParentPlace, i, true)),
     ]);
-    const genTitle = (title) => ({ en: title });
+    const generateTitle = (title) => ({ en: title });
     const docTags = [
       // current targets
       moment().format('YYYY-MM'),
       // next month targets, in case the reporting period switches mid-test
-      moment().add(1, 'months').format('YYYY-MM'),
+      moment().date(10).add(1, 'month').format('YYYY-MM'),
     ];
 
     before(async () => {
@@ -167,13 +161,13 @@ describe('Target aggregates', () => {
 
     it('should display no data when no targets are uploaded', async () => {
       const targetsConfig = [
-        { id: 'not_aggregate', type: 'count', title: genTitle('my task') },
-        { id: 'count_no_goal', type: 'count', title: genTitle('count no goal'), aggregate: true },
-        { id: 'count_with_goal', type: 'count', title: genTitle('count with goal'), goal: 20, aggregate: true },
-        { id: 'also_not_aggregate', type: 'count', title: genTitle('my task') },
-        { id: 'percent_no_goal', type: 'percent', title: genTitle('percent no goal'), aggregate: true },
-        { id: 'percent_with_goal', type: 'percent', title: genTitle('percent with goal'), aggregate: true, goal: 80 },
-        { id: 'also_also_not_aggregate', type: 'count', title: genTitle('my task'), aggregate: false },
+        { id: 'not_aggregate', type: 'count', title: generateTitle('my task') },
+        { id: 'count_no_goal', type: 'count', title: generateTitle('count no goal'), aggregate: true },
+        { id: 'count_with_goal', type: 'count', title: generateTitle('count with goal'), goal: 20, aggregate: true },
+        { id: 'also_not_aggregate', type: 'count', title: generateTitle('my task') },
+        { id: 'percent_no_goal', type: 'percent', title: generateTitle('percent no goal'), aggregate: true },
+        { id: 'percent_with_goal', type: 'percent', title: generateTitle('percent with goal'), aggregate: true, goal: 80 },
+        { id: 'also_also_not_aggregate', type: 'count', title: generateTitle('my task'), aggregate: false },
       ];
 
       await updateSettings(targetsConfig, user);
@@ -202,11 +196,11 @@ describe('Target aggregates', () => {
 
     it('should display correct data', async () => {
       const targetsConfig = [
-        { id: 'count_no_goal', type: 'count', title: genTitle('count no goal'), aggregate: true },
-        { id: 'count_with_goal', type: 'count', title: genTitle('count with goal'), goal: 20, aggregate: true },
-        { id: 'percent_no_goal', type: 'percent', title: genTitle('percent no goal'), aggregate: true },
-        { id: 'percent_with_goal', type: 'percent', title: genTitle('percent with goal'), aggregate: true, goal: 80 },
-        { id: 'percent_achieved', type: 'percent', title: genTitle('percent achieved'), aggregate: true, goal: 10 },
+        { id: 'count_no_goal', type: 'count', title: generateTitle('count no goal'), aggregate: true },
+        { id: 'count_with_goal', type: 'count', title: generateTitle('count with goal'), goal: 20, aggregate: true },
+        { id: 'percent_no_goal', type: 'percent', title: generateTitle('percent no goal'), aggregate: true },
+        { id: 'percent_with_goal', type: 'percent', title: generateTitle('percent with goal'), aggregate: true, goal: 80 },
+        { id: 'percent_achieved', type: 'percent', title: generateTitle('percent achieved'), aggregate: true, goal: 10 },
       ];
 
       const targetValuesByContact = {
@@ -303,8 +297,8 @@ describe('Target aggregates', () => {
 
     it('should route to contact-detail on list item click and display contact summary target card', async () => {
       const targetsConfig = [
-        { id: 'a_target', type: 'count', title: genTitle('what a target!'), aggregate: true },
-        { id: 'b_target', type: 'percent', title: genTitle('the most target'), aggregate: true },
+        { id: 'a_target', type: 'count', title: generateTitle('what a target!'), aggregate: true },
+        { id: 'b_target', type: 'percent', title: generateTitle('the most target'), aggregate: true },
       ];
       const contactSummaryScript = `
     let cards = [];
@@ -378,7 +372,9 @@ describe('Target aggregates', () => {
 
       await expectTargets(expectedTargets);
       await targetAggregatesPage.openTargetDetails(expectedTargets[0].id);
-      await clickOnTargetAggregateListItem(clarissa._id);
+      await targetAggregatesPage.clickOnTargetAggregateListItem(clarissa._id);
+      // wait until contact-summary is loaded
+      await (await contactsPage.contactCard()).waitForDisplayed();
       expect(await contactsPage.getContactInfoName()).to.equal('Clarissa');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');
@@ -390,8 +386,10 @@ describe('Target aggregates', () => {
       await targetAggregatesPage.expectTargetDetails(expectedTargets[0]);
 
       await targetAggregatesPage.openTargetDetails(expectedTargets[1].id);
-      await clickOnTargetAggregateListItem(prometheus._id);
 
+      await targetAggregatesPage.clickOnTargetAggregateListItem(prometheus._id);
+      // wait until contact-summary is loaded
+      await (await contactsPage.contactCard()).waitForDisplayed();
       expect(await contactsPage.getContactInfoName()).to.equal('Prometheus');
       // assert that the activity card exists and has the right fields.
       expect(await contactsPage.getContactCardTitle()).to.equal('Activity this month');

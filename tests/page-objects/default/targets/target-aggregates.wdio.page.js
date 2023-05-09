@@ -110,6 +110,11 @@ const getAggregateDetailElementInfo = async (element) => {
   };
 };
 
+const clickOnTargetAggregateListItem = async (contactId) => {
+  await (await targetAggregateListItem(contactId)).waitForClickable();
+  await (await targetAggregateListItem(contactId)).click();
+};
+
 module.exports = {
   expectModulesToBeAvailable,
   goToTargetAggregates,
@@ -121,6 +126,7 @@ module.exports = {
   targetAggregateListItem,
   getAggregateDetailListLength,
   getAggregateDetailListElementbyIndex,
-  getAggregateDetailElementInfo
+  getAggregateDetailElementInfo,
+  clickOnTargetAggregateListItem,
 };
 
