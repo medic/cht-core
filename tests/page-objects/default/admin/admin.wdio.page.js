@@ -13,7 +13,7 @@ const toggleLanguage = async (locale, shouldEnable) => {
   await languageAccordion.waitForDisplayed();
   const buttonLabel = shouldEnable ? 'Enable' : 'Disable';
   const button = languageAccordion.$(`span=${buttonLabel}`);
-  await button.waitForDisplayed();
+  await button.waitForClickable();
   await (await button).click();
   await browser.waitUntil(async () => {
     const settings = await utils.getSettings();
