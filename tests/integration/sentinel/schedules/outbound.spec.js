@@ -11,7 +11,7 @@ const outboundConfig = (port) => ({
     mapping: {
       id: 'doc._id'
     },
-    relevant_to: 'false'
+    relevant_to: 'doc._id.startsWith("test")'
   },
   also_working: {
     destination: {
@@ -21,7 +21,7 @@ const outboundConfig = (port) => ({
     mapping: {
       id: 'doc._id'
     },
-    relevant_to: 'false'
+    relevant_to: 'doc._id.startsWith("test")'
   },
   broken: {
     destination: {
@@ -31,13 +31,13 @@ const outboundConfig = (port) => ({
     mapping: {
       id: 'doc._id'
     },
-    relevant_to: 'false'
+    relevant_to: 'doc._id.startsWith("test-aaa")'
   }
 });
 
 const docs = [
-  {_id: 'test-aaa'},
-  {_id: 'test-zzz'}
+  { _id: 'test-aaa' },
+  { _id: 'test-zzz' }
 ];
 
 const tasks = [{
@@ -68,7 +68,7 @@ const waitForPushes = (expectedTasks = 1) => {
     if (result.rows.length === expectedTasks) {
       return;
     }
-    return utils.delayPromise(waitForPushes, 100);
+    return utils.delayPromise(() => waitForPushes(expectedTasks), 100);
   });
 };
 
@@ -105,21 +105,17 @@ describe('Outbound', () => {
     };
     return utils
       .updateSettings(settings, 'sentinel')
-      .then(() => console.log('settings'))
       .then(() => utils.saveDocs(docs))
       // pushes will fail if destination server is not up, so tasks will get created
       .then(() => waitForPushes(2))
-      .then(() => console.log('wait'))
       .then(() => utils.stopSentinel())
       .then(() => utils.startSentinel())
       .then(() => server = destinationApp.listen(port)) // and they will generate tasks
-      .then(() => console.log('Waiting for schedules'))
       // waiting for 1 task left should imply that the first task, which should stay because it points
       // to a broken endpoint, has executed, since the second task has executed successfully and been
       // deleted
       .then(() => waitForPushes(1))
       .then(() => {
-        console.log(inboxes.working);
         chai.expect(inboxes.working).to.have.lengthOf(4);
         chai.expect(inboxes.broken).to.have.lengthOf(1);
 
@@ -137,7 +133,7 @@ describe('Outbound', () => {
       .then(() => utils.sentinelDb.allDocs({ keys: docs.map(doc => `task:outbound:${doc._id}`), include_docs: true }))
       .then(tasksResult => {
         chai.expect(tasksResult.rows).to.have.lengthOf(2);
-        chai.expect(tasksResult.rows[0].doc).to.deep.equal({
+        chai.expect(tasksResult.rows[0].doc).excluding('created').to.deep.equal({
           _id: `task:outbound:test-aaa`,
           _rev: tasksResult.rows[0].doc._rev,
           type: 'task:outbound',
