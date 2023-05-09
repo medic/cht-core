@@ -51,8 +51,26 @@ const createDoc = async (doc) => {
   return result;
 };
 
+const executeAsync = async (fn, ...args) => {
+  // https://w3c.github.io/webdriver/#dfn-execute-async-script doesn't accept functions as params
+  const fnString = fn.toString();
+  const { err, result } = await browser.executeAsync((fnString, ...args) => {
+    const fn = new Function(`const r = ${fnString}; return r`)();
+    const callback = args.pop();
+    return fn(...args)
+      .then(result => callback({ result }))
+      .catch(err => callback({ err }));
+  }, fnString, ...args);
+
+  if (err) {
+    throw err;
+  }
+
+  return result;
+};
+
 const updateDoc = async (docId, changes, overwrite = false) => {
-  const { err, result } = await browser.executeAsync((docId, changes, overwrite, callback) => {
+  return await executeAsync((docId, changes, overwrite) => {
     const db = window.CHTCore.DB.get();
     return db
       .get(docId)
@@ -63,48 +81,38 @@ const updateDoc = async (docId, changes, overwrite = false) => {
 
         Object.assign(doc, changes);
         return db.put(doc);
-      })
-      .then(result => callback({ result }))
-      .catch(err => callback({ err }));
+      });
   }, docId, changes, overwrite);
-
-  if (err) {
-    throw err;
-  }
-
-  return result;
 };
 
 const getDoc = async (docId) => {
-  const { err, result } = await browser.executeAsync((docId, callback) => {
+  return await executeAsync((docId) => {
+    return window.CHTCore.DB.get().get(docId, { conflicts: true });
+  }, docId);
+};
+
+const deleteDoc = async (docId) => {
+  return await executeAsync((docId) => {
     const db = window.CHTCore.DB.get();
     return db
-      .get(docId, { conflicts: true })
-      .then(result => callback({ result }))
-      .catch(err => callback({ err }));
+      .get(docId)
+      .then(doc => {
+        doc._deleted = true;
+        return db.put(doc);
+      });
   }, docId);
-
-  if (err) {
-    throw err;
-  }
-
-  return result;
 };
 
 const getDocs = async (docIds) => {
-  const { err, result } = await browser.executeAsync((docIds, callback) => {
-    const db = window.CHTCore.DB.get();
-    return db
+  return await executeAsync((docIds) => {
+    return window.CHTCore.DB.get()
       .allDocs({ keys: docIds, include_docs: true })
-      .then(response => callback({ result: response.rows.map(row => row.doc) }))
-      .catch(err => callback({ err }));
+      .then(result => result.rows.map(row => row.doc));
   }, docIds);
+};
 
-  if (err) {
-    throw err;
-  }
-
-  return result;
+const info = async () => {
+  return await executeAsync(() => window.CHTCore.DB.get().info());
 };
 
 module.exports = {
@@ -114,4 +122,6 @@ module.exports = {
   updateDoc,
   getDoc,
   getDocs,
+  deleteDoc,
+  info,
 };

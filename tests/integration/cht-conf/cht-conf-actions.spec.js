@@ -6,6 +6,7 @@ const utils = require('../../utils');
 //Not all actions tested here due to missing forms and config
 //[convert-collect-forms , upload-collect-form, upload-branding, upload-partners, upload-privacy-policies]
 const actions = [
+  'delete-all-forms',
   'compile-app-settings',
   'backup-app-settings',
   'convert-app-forms',
@@ -24,14 +25,13 @@ let originalVersion;
 describe('cht-conf actions tests', () => {
   before(async () => {
     const settings = await utils.getDoc('settings');
-    console.log('originalVersion', settings._rev);
     originalVersion = Number(settings._rev.charAt(0));
     expect(settings.settings.roles).to.not.include.any.keys('program_officer', 'chw_supervisor', 'chw');
   });
 
   after(async () => await utils.revertSettings(true));
 
-  it('should execute  upload-app-settings', async () => {
+  it('should execute upload-app-settings', async () => {
     const result = await runCommand('upload-app-settings', configPath);
     expect(result).to.contain(`INFO Settings updated successfully`);
     const settings = await utils.getDoc('settings');
@@ -48,7 +48,7 @@ describe('cht-conf actions tests', () => {
     });
   }
 
-  it('should upload  branding', async () => {
+  it('should upload branding', async () => {
     const branding = await utils.getDoc('branding').catch(error => {
       if(error){
         console.err(error);
@@ -57,7 +57,7 @@ describe('cht-conf actions tests', () => {
     expect(branding.title).to.equal('Medic');
   });
 
-  it('should uploadload  forms', async () => {
+  it('should upload forms', async () => {
     const forms = await utils.request({
       path: '/api/v1/forms',
       method: 'GET'
@@ -89,7 +89,7 @@ describe('cht-conf actions tests', () => {
     ]);
   });
 
-  it('should upload  resources', async () => {
+  it('should upload resources', async () => {
     const resources = await utils.getDoc('resources').catch(error => {
       if(error){
         console.log(error);

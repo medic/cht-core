@@ -90,7 +90,8 @@ module.exports = {
     exportButton.click();
   },
   openSendMessageModal: async () => {
-    await helper.clickElementNative(module.exports.sendMessage());
+    await helper.waitUntilReadyNative(module.exports.sendMessage());
+    await module.exports.sendMessage().click();
     await helper.waitUntilReadyNative(module.exports.sendMessageModal());
   },
   getSendMessageButton: () => {

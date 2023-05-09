@@ -1,5 +1,6 @@
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const utils = require('../../../utils');
+const browserDbUtils = require('../../../utils/browser');
 const sentinelUtils = require('../../../utils/sentinel');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');

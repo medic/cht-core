@@ -123,7 +123,7 @@ get_lan_ip() {
 get_local_ip_url(){
   lanIp=$1
   cookedLanAddress=$(echo "$lanIp" | tr . -)
-  url="https://${cookedLanAddress}.my.local-ip.co:${NGINX_HTTPS_PORT}"
+  url="https://${cookedLanAddress}.local-ip.medicmobile.org:${NGINX_HTTPS_PORT}"
   echo "$url"
 }
 
@@ -319,11 +319,9 @@ while [[ "$isNginxRunning" != "true" ]]; do
 	isNginxRunning=$(get_is_container_running "$nginxContainerId")
 done
 
-docker exec -it "$nginxContainerId" bash -c "curl -s -o server.pem http://local-ip.co/cert/server.pem"
-docker exec -it "$nginxContainerId" bash -c "curl -s -o chain.pem http://local-ip.co/cert/chain.pem"
-docker exec -it "$nginxContainerId" bash -c "cat server.pem chain.pem > /etc/nginx/private/cert.pem"
-docker exec -it "$nginxContainerId" bash -c "curl -s -o /etc/nginx/private/key.pem http://local-ip.co/cert/server.key"
-docker restart "$nginxContainerId" 1>/dev/null
+docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
+docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
+docker exec -it $nginxContainerId bash -c "nginx -s reload"
 
 echo ""
 echo ""

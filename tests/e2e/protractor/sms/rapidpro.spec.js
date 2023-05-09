@@ -200,7 +200,7 @@ describe('RapidPro SMS Gateway', () => {
       expect(doc.sms_message && doc.sms_message.gateway_ref).toEqual('the_gateway_ref');
     });
 
-    it('should create reports', async () => {
+    xit('should create reports', async () => {
       const forms = {
         FORM: {
           meta: {

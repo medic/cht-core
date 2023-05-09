@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { chtDocs, mockEmission, MS_IN_DAY, chtRulesSettings } = require('./mocks');
+const { chtDocs, mockEmission, MS_IN_DAY, engineSettings } = require('./mocks');
 const moment = require('moment');
 const rewire = require('rewire');
 const sinon = require('sinon');
@@ -310,7 +310,7 @@ describe('refresh-rules-emissions', () => {
     const NOW = 11430000000;
 
     beforeEach(() => {
-      const isInitialized = RulesEmitter.initialize(chtRulesSettings(), userDoc);
+      const isInitialized = RulesEmitter.initialize(engineSettings(), userDoc);
       expect(isInitialized).to.be.true;
       refreshRulesEmissionsContact.__set__('rulesEmitter', RulesEmitter);
       clock = sinon.useFakeTimers(NOW);

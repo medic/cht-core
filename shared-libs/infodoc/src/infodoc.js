@@ -152,26 +152,35 @@ const updateTransition = (change, transition, ok) => {
 };
 
 const saveTransitions = change => {
-  return db.sentinel.get(getInfoDocId(change.id))
-    .catch(err => {
-      if (err.status !== 404) {
-        throw err;
-      }
-
-      return change.info;
-    })
-    .then(doc => {
-      doc.transitions = change.info.transitions || {};
-      return db.sentinel.put(doc);
-    })
-    .catch(err => {
-      if (err.status !== 409) {
-        throw err;
-      }
-
-      return saveTransitions(change);
-    });
+  return saveProperty(change.id, change.info, 'transitions', {});
 };
+
+const saveCompletedTasks = (id, infodoc) => {
+  return saveProperty(id, infodoc, 'completed_tasks', {});
+};
+
+const saveProperty = async (id, infodoc, property, defaultValue) => {
+  let updatedInfoDoc;
+  try {
+    updatedInfoDoc = await db.sentinel.get(getInfoDocId(id));
+    updatedInfoDoc[property] = (infodoc && infodoc[property]) || defaultValue;
+  } catch (err) {
+    if (err.status !== 404) {
+      throw err;
+    }
+    updatedInfoDoc = infodoc;
+  }
+
+  try {
+    return await db.sentinel.put(updatedInfoDoc);
+  } catch (err) {
+    if (err.status !== 409) {
+      throw err;
+    }
+    return saveProperty(id, infodoc, property, defaultValue);
+  }
+};
+
 
 const bulkUpdate = infoDocs => {
   if (!infoDocs || !infoDocs.length) {
@@ -276,6 +285,7 @@ module.exports = {
   bulkGet: changes => resolveInfoDocs(changes, false),
   bulkUpdate: bulkUpdate,
   saveTransitions: saveTransitions,
+  saveCompletedTasks: saveCompletedTasks,
 
   // Used to update infodoc metadata that occurs at write time. A delete does not count as a write
   // in this instance, as deletes resolve as infodoc cleanups once sentinel's background-cleanup
