@@ -40,17 +40,6 @@ const docs = [
   { _id: 'test-zzz' }
 ];
 
-const tasks = [{
-  _id: `task:outbound:test-aaa`,
-  type: 'task:outbound',
-  doc_id: 'test-aaa',
-  queue: ['working', 'also_working', 'broken'],
-}, {
-  _id: `task:outbound:test-zzz`,
-  type: 'task:outbound',
-  doc_id: 'test-zzz',
-  queue: ['working', 'also_working'],
-}];
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -109,8 +98,8 @@ describe('Outbound', () => {
       // pushes will fail if destination server is not up, so tasks will get created
       .then(() => waitForPushes(2))
       .then(() => utils.stopSentinel())
-      .then(() => utils.startSentinel())
       .then(() => server = destinationApp.listen(port)) // and they will generate tasks
+      .then(() => utils.startSentinel())
       // waiting for 1 task left should imply that the first task, which should stay because it points
       // to a broken endpoint, has executed, since the second task has executed successfully and been
       // deleted
