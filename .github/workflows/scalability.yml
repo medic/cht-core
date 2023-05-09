@@ -2,8 +2,8 @@ name: Scalability Workflow
 
 on:
   push:
-   tags:
-     - "*-beta.*"
+    tags:
+      - "*-beta.*"
 
 env:
   STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_4' || '_couch/builds_external' }}
