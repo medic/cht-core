@@ -6,7 +6,6 @@ const MESSAGE_CONTENT = '#message-content';
 const SEND_MESSAGE_MODAL = '#send-message';
 const MESSAGE_FOOTER = '#message-footer';
 
-//const messageByIndex = index => $(`${MESSAGES_LIST} li.content-row:nth-child(${index})`);
 const messageInList = identifier => $(`${MESSAGES_LIST} li[test-id="${identifier}"]`);
 const messagesList = () => $$(`${MESSAGES_LIST} li.content-row`);
 const messagesLoadingStatus = () => $('#message-list .loading-status');
@@ -47,7 +46,7 @@ const getMessageHeader = async () => {
 };
 
 const getMessageContent = async  (index = 1) => {
-  const sms = $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
+  const sms = await $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
   return {
     content: await sms.$('p[test-id="sms-content"]').getText(),
     state: await sms.$('.state').getText(),

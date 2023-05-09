@@ -1,4 +1,3 @@
-//const moment = require('moment');
 const utils = require('../../../utils');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
@@ -114,10 +113,12 @@ describe('Send message', () => {
     await verifyMessageModalContent(rawNumer, newMessage);
     await messagesPage.sendReplyNewRecipient(anotherRawNumber, anotherRawNumber);
     await browser.refresh();
+    console.log('**** TEST: verify inside the raw phone number ****');
     await verifyLastSmsContent('raw', 'add recipient');
 
     await messagesPage.openMessage(anotherRawNumber);
     await verifyMessageHeader(anotherRawNumber, '');
+    console.log('**** TEST: verify inside the ANOTHER raw phone number ****');
     await verifyLastSmsContent('raw', 'add recipient');
   });
 
