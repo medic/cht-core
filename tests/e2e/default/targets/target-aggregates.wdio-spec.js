@@ -10,7 +10,6 @@ const placeFactory = require('../../../factories/cht/contacts/place');
 const userFactory = require('../../../factories/cht/users/users');
 const personFactory = require('../../../factories/cht/contacts/person');
 
-const randomString = (length) => Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, length);
 const randomNumber = (max) => Math.floor(Math.random() * max);
 
 const expectTargets = async (targets) => {
@@ -166,7 +165,13 @@ describe('Target aggregates', () => {
         { id: 'count_with_goal', type: 'count', title: generateTitle('count with goal'), goal: 20, aggregate: true },
         { id: 'also_not_aggregate', type: 'count', title: generateTitle('my task') },
         { id: 'percent_no_goal', type: 'percent', title: generateTitle('percent no goal'), aggregate: true },
-        { id: 'percent_with_goal', type: 'percent', title: generateTitle('percent with goal'), aggregate: true, goal: 80 },
+        {
+          id: 'percent_with_goal',
+          type: 'percent',
+          title: generateTitle('percent with goal'),
+          aggregate: true,
+          goal: 80
+        },
         { id: 'also_also_not_aggregate', type: 'count', title: generateTitle('my task'), aggregate: false },
       ];
 
@@ -199,8 +204,20 @@ describe('Target aggregates', () => {
         { id: 'count_no_goal', type: 'count', title: generateTitle('count no goal'), aggregate: true },
         { id: 'count_with_goal', type: 'count', title: generateTitle('count with goal'), goal: 20, aggregate: true },
         { id: 'percent_no_goal', type: 'percent', title: generateTitle('percent no goal'), aggregate: true },
-        { id: 'percent_with_goal', type: 'percent', title: generateTitle('percent with goal'), aggregate: true, goal: 80 },
-        { id: 'percent_achieved', type: 'percent', title: generateTitle('percent achieved'), aggregate: true, goal: 10 },
+        {
+          id: 'percent_with_goal',
+          type: 'percent',
+          title: generateTitle('percent with goal'),
+          aggregate: true,
+          goal: 80
+        },
+        {
+          id: 'percent_achieved',
+          type: 'percent',
+          title: generateTitle('percent achieved'),
+          aggregate: true,
+          goal: 10
+        },
       ];
 
       const targetValuesByContact = {
