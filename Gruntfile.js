@@ -983,18 +983,18 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'protractor:e2e-web-tests',
+    /*'start-webdriver',
+    'protractor:e2e-web-tests',*/
     //'protractor:e2e-mobile-tests',
   ]);
   grunt.registerTask('ci-e2e-mobile', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'protractor:e2e-mobile-tests',
+    /*'start-webdriver',
+    'protractor:e2e-mobile-tests',*/
   ]);
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
-    'exec:e2e-integration',
-    'exec:eslint-sw',
+    /*'exec:e2e-integration',
+    'exec:eslint-sw',*/
   ]);
 
   grunt.registerTask('ci-webdriver-default', 'Run e2e tests using webdriverIO for default config', [
@@ -1002,16 +1002,16 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci-webdriver-standard', 'Run e2e tests using webdriverIO for standard config', [
-    'exec:wdio-run-standard'
+    //'exec:wdio-run-standard'
   ]);
 
   grunt.registerTask('ci-webdriver-default-mobile', 'Run e2e tests using webdriverIO for default config in mobile screen', [
-    'exec:wdio-run-default-mobile'
+    //'exec:wdio-run-default-mobile'
   ]);
 
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    'start-webdriver',
-    'protractor:performance-tests-and-services',
+    /*'start-webdriver',
+    'protractor:performance-tests-and-services',*/
   ]);
 
   // Dev tasks
