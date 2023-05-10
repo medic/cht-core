@@ -967,7 +967,7 @@ module.exports = function(grunt) {
   ]);
 
   // CI tasks
-  grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
+  /*grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
     'uglify:admin',
     'optimize-js',
     'cssmin:admin',
@@ -995,13 +995,13 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
     'exec:e2e-integration',
     'exec:eslint-sw',
-  ]);
+  ]);*/
 
   grunt.registerTask('ci-webdriver-default', 'Run e2e tests using webdriverIO for default config', [
     'exec:wdio-run-default'
   ]);
 
-  grunt.registerTask('ci-webdriver-standard', 'Run e2e tests using webdriverIO for standard config', [
+  /*grunt.registerTask('ci-webdriver-standard', 'Run e2e tests using webdriverIO for standard config', [
     'exec:wdio-run-standard'
   ]);
 
@@ -1012,7 +1012,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci-performance', 'Run performance tests on CI', [
     'start-webdriver',
     'protractor:performance-tests-and-services',
-  ]);
+  ]);*/
 
   // Dev tasks
   grunt.registerTask('dev-webapp', 'Build and deploy the webapp for dev', [

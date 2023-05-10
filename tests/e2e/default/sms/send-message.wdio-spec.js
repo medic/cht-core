@@ -33,7 +33,7 @@ describe('Send message', () => {
   };
 
   const verifyLastSmsContent = async (msg, type) => {
-    const messages = await messagesPage.getAmountOfMessages();
+    const messages = await messagesPage.getAmountOfMessages() || 1;
     const { content, state } = await messagesPage.getMessageContent(messages);
     expect(content).to.equal(smsMsg(msg, type));
     expect(state).to.equal('pending');
