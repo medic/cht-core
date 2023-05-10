@@ -51,7 +51,7 @@ describe('New pregnancy', () => {
     await commonPage.goToPeople(healthCenter._id);
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
     const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
-    await contactPage.contactPageDefault.createNewAction('New Pregnancy');
+    await commonPage.openFastActionReport('pregnancy');
 
     await pregnancyForm.selectKnowLMP();
     await pregnancyForm.selectAproxLMP(pregnancyForm.APROX_LMP.b7To8Months);
@@ -90,7 +90,7 @@ describe('New pregnancy', () => {
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect((await reportsPage.getTaskDetails(1, 1)).state).to.contain('scheduled');
   });
 
   it('Submit new pregnancy - Woman2 - SMS P form', async () => {
@@ -121,7 +121,7 @@ describe('New pregnancy', () => {
     expect(firstReportInfo.heading).to.equal('Woman2');
     expect(firstReportInfo.form).to.equal('New Pregnancy (SMS)');
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect((await reportsPage.getTaskDetails(1, 1)).state).to.contain('scheduled');
   });
 
   it('Verify the targets page', async () => {

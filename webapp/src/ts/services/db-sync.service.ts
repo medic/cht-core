@@ -13,6 +13,7 @@ import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
+import { MigrationsService } from '@mm-services/migrations.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -76,6 +77,7 @@ export class DBSyncService {
     private store:Store,
     private translateService:TranslateService,
     private purgeService:PurgeService,
+    private migrationsService:MigrationsService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -85,7 +87,6 @@ export class DBSyncService {
       name: 'to',
       options: {
         filter: readOnlyFilter,
-        checkpoint: 'source',
       },
       allowed: () => this.authService.has('can_edit'),
       onDenied: (err?) => this.dbSyncRetryService.retryForbiddenFailure(err),
@@ -317,16 +318,30 @@ export class DBSyncService {
     }
   }
 
+  private async migrateDb() {
+    try {
+      await this.migrationsService.runMigrations();
+    } catch (err) {
+      if (this.knownOnlineState) {
+        console.error('Error while running DB migrations', err);
+      }
+      this.sendUpdate({ state: SyncStatus.Unknown });
+      throw err;
+    }
+  }
+
   /**
   * Synchronize the local database with the remote database.
   *
   * @returns Promise which resolves when both directions of the replication complete.
   */
-  sync(force?) {
+  async sync(force?) {
     if (!this.isEnabled()) {
       this.sendUpdate({ state: SyncStatus.Disabled });
       return Promise.resolve();
     }
+
+    await this.migrateDb();
 
     if (force) {
       this.globalActions.setSnackbarContent(this.translateService.instant('sync.status.in_progress'));

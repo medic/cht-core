@@ -105,10 +105,9 @@ const deleteDoc = async (docId) => {
 
 const getDocs = async (docIds) => {
   return await executeAsync((docIds) => {
-    const options = docIds ? { keys: docIds, include_docs: true, attachments: true } : {};
     return window.CHTCore.DB.get()
-      .allDocs(options)
-      .then(result => docIds ? result.rows.map(row => row.doc) : result.rows);
+      .allDocs({ keys: docIds, include_docs: true })
+      .then(result => result.rows.map(row => row.doc));
   }, docIds);
 };
 

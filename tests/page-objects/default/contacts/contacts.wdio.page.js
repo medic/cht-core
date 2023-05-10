@@ -1,10 +1,11 @@
 const ENTER = '\uE007';
 
 const genericForm = require('../enketo/generic-form.wdio.page');
-const commonElements = require('../common/common.wdio.page');
 const sentinelUtils = require('../../../utils/sentinel');
 const utils = require('../../../utils');
-const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
+const modalPage = require('../common/modal.wdio.page');
+const commonPage = require('../common/common.wdio.page');
+
 const searchBox = () => $('.mm-search-bar-container input#freetext');
 const contentRowSelector = '#contacts-list .content-row';
 const contentRow = () => $(contentRowSelector);
@@ -17,10 +18,10 @@ const taskFilterSelector = '.card.tasks .table-filter a';
 const taskFilter = () => $(taskFilterSelector);
 const taskFilters = () => $$(taskFilterSelector);
 const contactList = () => $('#contacts-list');
+const contactListLoadingStatus = () => $('#contacts-list .loading-status');
 const newPlaceName = () => $('[name="/data/init/custom_place_name"]');
 const newPrimaryContactName = () => $('[name="/data/contact/name"]');
 const newPrimaryContactButton = () => $('[name="/data/init/create_new_person"][value="new_person"]');
-const actionResourceIcon = (name) => $(`.actions.dropup .mm-icon .resource-icon[title="medic-${name}"]`);
 const dateOfBirthField = () => $('[placeholder="yyyy-mm-dd"]');
 const sexField = (type, value) => $(`[data-name="/data/${type}/sex"][value="${value}"]`);
 const roleField = (type, role) => $(`span[data-itext-id="/data/${type}/role/${role}:label"].active`);
@@ -33,6 +34,10 @@ const notes = (place) => $(`[name="/data/${place}/notes"]`);
 const writeNamePlace = (place) => $(`[name="/data/${place}/is_name_generated"][value="false"]`);
 const contactCard = () => $('.card h2');
 const contactCardIcon = (name) => $(`.card .heading .resource-icon[title="medic-${name}"]`);
+const CARD = '.content-pane .meta > div > .card ';
+const pregnancyLabel = () => $(`${CARD} .action-header h3`);
+const visitLabel = () => $(`${CARD} .row label`);
+const numberOfReports = () => $((`${CARD} .row p`));
 
 const rhsPeopleListSelector = () => $$('.card.children.persons h4 span');
 const rhsReportListSelector = '.card.reports mm-content-row h4 span';
@@ -48,17 +53,9 @@ const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="
 const editContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]');
 const deleteContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]');
 const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
-const leftAddPlace = () => $('.dropup a.create-place');
-const rightAddPlace = () => $('span[test-id="rhs_add_contact"] a');
-const rightAddPlaces = () => $('span[test-id="rhs_add_contact"] p[test-key="Add place"]');
-const rightAddPersons = () => $('span[test-id="rhs_add_contact"] p[test-key="Add person"]');
-const rightAddPerson = (create_key) => $(`span[test-id="rhs_add_contact"] p[test-key="${create_key}"]`);
 const contactCards = () => $$('.card.children');
 const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
 const childrenCards = () => $$('.right-pane .card.children');
-const newActionContactButton = () => $('.action-container .right-pane .actions .mm-icon .fa-stack');
-const forms = () => $$('.action-container .detail-actions .actions.dropup .open .dropdown-menu li');
-const formTitle = () => $('#form-title');
 const contactCardTitle = () => $('.inbox .content-pane .material .body .action-header');
 const contactInfoName = () => $('h2[test-id="contact-name"]');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
@@ -80,7 +77,7 @@ const deathPlace = () => $(`${DEATH_CARD_SELECTOR} div[test-id="contact.profile.
 const search = async (query) => {
   await (await searchBox()).setValue(query);
   await browser.keys(ENTER);
-  await commonElements.waitForLoaderToDisappear(await $('.left-pane'));
+  await commonPage.waitForLoaderToDisappear(await $('.left-pane'));
 };
 
 const findRowByText = async (text) => {
@@ -92,7 +89,7 @@ const findRowByText = async (text) => {
 };
 
 const selectLHSRowByText = async (text, executeSearch = true) => {
-  await commonElements.waitForLoaderToDisappear();
+  await commonPage.waitForLoaderToDisappear();
   if (executeSearch) {
     await search(text);
   }
@@ -101,7 +98,9 @@ const selectLHSRowByText = async (text, executeSearch = true) => {
   if (!row) {
     throw new Error(`Contact "${text}" was not found`);
   }
-  return await row.click();
+  await row.waitForClickable();
+  await row.click();
+  await waitForContactLoaded();
 };
 
 const selectRHSRowById = async (id) => {
@@ -131,7 +130,7 @@ const waitForContactUnloaded = async () => {
   await (await emptySelection()).waitForDisplayed();
 };
 
-const submitForm = async (waitForLoad=true) => {
+const submitForm = async (waitForLoad = true) => {
   await (await genericForm.submitButton()).waitForDisplayed();
   await (await genericForm.submitButton()).click();
   waitForLoad && await waitForContactLoaded();
@@ -147,10 +146,14 @@ const addPlace = async ({
   role: roleValue = 'chw',
   externalID: externalIDValue = '12345678',
   notes: notesValue = 'Some test notes',
-} = {}) => {
-  const dashedType = typeValue.replace('_', '-');
-  await (await actionResourceIcon(dashedType)).waitForDisplayed();
-  await (await actionResourceIcon(dashedType)).click();
+} = {},
+rightSideAction = true,
+) => {
+  if (rightSideAction) {
+    await commonPage.clickFastActionFAB({ actionId: typeValue });
+  } else {
+    await commonPage.clickFastActionFlat({ waitForList: false });
+  }
   await (await newPrimaryContactButton()).waitForDisplayed();
   await (await newPrimaryContactButton()).click();
   await (await newPrimaryContactName()).addValue(contactNameValue);
@@ -165,6 +168,7 @@ const addPlace = async ({
   await (await notes(typeValue)).addValue(notesValue);
   await (await genericForm.submitButton()).waitForClickable();
   await (await genericForm.submitButton()).click();
+  const dashedType = typeValue.replace('_', '-');
   await waitForContactLoaded(dashedType);
 };
 
@@ -178,8 +182,7 @@ const addPerson = async ({
   notes: notesValue = 'Some test notes',
 } = {}, waitForSentinel = true) => {
   const type = 'person';
-  await (await actionResourceIcon(type)).waitForDisplayed();
-  await (await actionResourceIcon(type)).click();
+  await commonPage.clickFastActionFAB({ actionId: type });
   await (await personName()).addValue(nameValue);
   await (await dateOfBirthField()).addValue(dobValue);
   await (await personName()).click(); // blur the datepicker field so the sex field is visible
@@ -199,7 +202,7 @@ const addPerson = async ({
 const editPerson = async (currentName, { name, phone, dob }) => {
   await selectLHSRowByText(currentName);
   await waitForContactLoaded();
-  await commonElements.openMoreOptionsMenu();
+  await commonPage.openMoreOptionsMenu();
   await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
@@ -227,7 +230,7 @@ const editPersonName = async (name, updatedName) => {
 };
 
 const deletePerson = async () => {
-  await commonElements.openMoreOptionsMenu();
+  await commonPage.openMoreOptionsMenu();
   await (await deleteContactButton()).waitForClickable();
   await (await deleteContactButton()).click();
   await (await deleteConfirmationModalButton()).waitForClickable();
@@ -246,22 +249,22 @@ const getPrimaryContactName = async () => {
 
 const getAllLHSContactsNames = async () => {
   await (await contentRow()).waitForDisplayed();
-  return commonElements.getTextForElements(contactName);
+  return commonPage.getTextForElements(contactName);
 };
 
 const getAllRHSPeopleNames = async () => {
   await (await name()).waitForDisplayed();
-  return commonElements.getTextForElements(rhsPeopleListSelector);
+  return commonPage.getTextForElements(rhsPeopleListSelector);
 };
 
 const getAllRHSReportsNames = async () => {
   await (await rhsReportListElement()).waitForDisplayed();
-  return commonElements.getTextForElements(rhsReportElementList);
+  return commonPage.getTextForElements(rhsReportElementList);
 };
 
 const getAllRHSTaskNames = async () => {
   await (await rhsTaskListElement()).waitForDisplayed();
-  return commonElements.getTextForElements(rhsTaskListElementList);
+  return commonPage.getTextForElements(rhsTaskListElementList);
 };
 
 const allContactsList = async () => {
@@ -278,7 +281,7 @@ const editDistrict = async (districtName, editedName) => {
   await selectLHSRowByText(districtName, true);
   await waitForContactLoaded();
 
-  await commonElements.openMoreOptionsMenu();
+  await commonPage.openMoreOptionsMenu();
   await (await editContactButton()).waitForClickable();
   await (await editContactButton()).click();
 
@@ -288,48 +291,17 @@ const editDistrict = async (districtName, editedName) => {
   await submitForm();
 };
 
-const createNewAction = async (formName) => {
-  await (await newActionContactButton()).waitForDisplayed();
-  await (await newActionContactButton()).waitForClickable();
-  await (await newActionContactButton()).click();
-  await openForm(formName);
-};
-
-const openForm = async (name) => {
-  const parent = await newActionContactButton().parentElement();
-  await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
-
-  for (const form of await forms()) {
-    if (await form.getText() === name) {
-      await form.click();
-      await (await formTitle()).waitForDisplayed();
-      return;
-    }
-  }
-  throw new Error(`Form with name: "${name}" not found`);
-};
-
-const openFormWithWarning = async (formName) => {
-  await (await newActionContactButton()).waitForClickable();
-  await (await newActionContactButton()).click();
-  const parent = await newActionContactButton().parentElement();
-  await browser.waitUntil(async () => await parent.getAttribute('aria-expanded') === 'true');
-
-  for (const form of await forms()) {
-    if (await form.getText() === formName) {
-      await form.click();
-      await (await modalPage.body()).waitForExist();
-      return modalPage.getModalDetails();
-    }
-  }
-  throw new Error(`Form with name: "${formName}" not found`);
+const openFormWithWarning = async (formId) => {
+  await commonPage.clickFastActionFAB({ actionId: formId });
+  await (await modalPage.body()).waitForExist();
+  return modalPage.getModalDetails();
 };
 
 const openReport = async () => {
-  await commonElements.toggleActionbar(true);
+  await commonPage.toggleActionbar(true);
   await (await rhsReportListElement()).waitForDisplayed();
   await (await rhsReportListElement()).click();
-  await commonElements.toggleActionbar();
+  await commonPage.toggleActionbar();
 };
 
 const getContactCardTitle = async () => {
@@ -363,6 +335,21 @@ const getPregnancyCardInfo = async () => {
   };
 };
 
+const getPregnancyLabel = async () => {
+  await pregnancyLabel().waitForDisplayed();
+  return (await pregnancyLabel()).getText();
+};
+
+const getVisitLabel = async () => {
+  await visitLabel().waitForDisplayed();
+  return (await visitLabel()).getText();
+};
+
+const getNumberOfReports = async () => {
+  await numberOfReports().waitForDisplayed();
+  return (await numberOfReports()).getText();
+};
+
 const getDeathCardInfo = async () => {
   await deathCard().waitForDisplayed();
   return {
@@ -377,9 +364,16 @@ const getContactCardText = async () => {
 };
 
 const exportContacts = async () => {
-  await commonElements.openMoreOptionsMenu();
+  await commonPage.openMoreOptionsMenu();
   await (await exportButton()).waitForClickable();
   await (await exportButton()).click();
+};
+
+const getCardFieldInfo = async (label) => {
+  return {
+    label: await (await $(`.cell.${label} label`)).getText(),
+    value: await (await $(`.cell.${label} p`)).getText(),
+  };
 };
 
 const getCurrentContactId = async () => {
@@ -390,6 +384,11 @@ const getCurrentContactId = async () => {
   }
 
   return currentUrl.slice(contactBaseUrl.length);
+};
+
+const getContactListLoadingStatus = async () => {
+  await (await contactListLoadingStatus()).waitForDisplayed();
+  return await (await contactListLoadingStatus()).getText();
 };
 
 module.exports = {
@@ -418,22 +417,15 @@ module.exports = {
   getAllRHSTaskNames,
   rhsTaskListElement,
   deletePerson,
-  leftAddPlace,
-  rightAddPlace,
-  rightAddPlaces,
-  rightAddPersons,
-  rightAddPerson,
   allContactsList,
   editDistrict,
   childrenCards,
-  createNewAction,
   submitForm,
   openReport,
   getContactCardTitle,
   getContactInfoName,
   getContactMedicID,
   getContactDeceasedStatus,
-  actionResourceIcon,
   newPrimaryContactButton,
   newPrimaryContactName,
   writeNamePlace,
@@ -449,5 +441,13 @@ module.exports = {
   getDeathCardInfo,
   contactMuted,
   openFormWithWarning,
+  getContactListLoadingStatus,
+  getCardFieldInfo,
   getCurrentContactId,
+  pregnancyLabel,
+  visitLabel,
+  numberOfReports,
+  getPregnancyLabel,
+  getVisitLabel,
+  getNumberOfReports,
 };
