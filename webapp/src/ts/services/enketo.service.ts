@@ -434,8 +434,7 @@ export class EnketoService {
     });
   }
 
-  private async canAccessForm(formDoc, userContact, instanceData, contactSummary) {
-    const user = userContact || await this.getUserContact();
+  private canAccessForm(formDoc, user, instanceData, contactSummary) {
     return this.xmlFormsService.canAccessForm(
       formDoc,
       user,
@@ -522,7 +521,9 @@ export class EnketoService {
       });
   }
 
-  renderContactForm(formContext: EnketoFormContext) {
+  async renderContactForm(formContext: EnketoFormContext) {
+    // Users can access contact forms even when they don't have a contact associated. So not throwing an error.
+    formContext.userContact = await this.userContactService.get();
     return this.renderForm(formContext);
   }
 

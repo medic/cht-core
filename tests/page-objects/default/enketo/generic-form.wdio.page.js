@@ -6,6 +6,7 @@ const submitButton = () => $('.enketo .submit');
 const cancelButton = () => $('.enketo .cancel');
 const nextButton = () => $('button.btn.btn-primary.next-page');
 const nameField = () => $('#report-form form [name="/data/name"]');
+const errorContainer = () => $('.empty-selection');
 
 const nextPage = async (numberOfPages = 1) => {
   for (let i = 0; i < numberOfPages; i++) {
@@ -69,7 +70,13 @@ const cancelForm = async () => {
   await (await cancelButton()).click();
 };
 
+const getErrorMessage = async () => {
+  await (await errorContainer()).waitForDisplayed();
+  return await (await errorContainer()).getText();
+};
+
 module.exports = {
+  getErrorMessage,
   submitButton,
   cancelButton,
   nextPage,

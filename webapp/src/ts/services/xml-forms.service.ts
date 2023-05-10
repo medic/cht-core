@@ -239,13 +239,12 @@ export class XmlFormsService {
       .then(valid => valid && this.canAccessForm(form, user, options));
   }
 
-  async canAccessForm(form, userContact?, options?) {
+  async canAccessForm(form, userContact, options?) {
     if (!await this.checkFormPermissions(form)) {
       return false;
     }
 
-    const user = userContact || await this.userContactService.get();
-    return await this.checkFormExpression(form, options?.doc, user, options?.contactSummary);
+    return await this.checkFormExpression(form, options?.doc, userContact, options?.contactSummary);
   }
 
   private notify(error, forms?) {
