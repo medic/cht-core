@@ -49,7 +49,7 @@ const getValue = function(obj) {
   return isNaN(parsed) ? 0 : parsed;
 };
 
-return function(first, second) {
+module.exports = function(first, second) {
   const average = (getValue(first) + getValue(second)) / 2;
   return {
     t: 'num',
