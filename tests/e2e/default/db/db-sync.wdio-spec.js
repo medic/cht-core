@@ -6,7 +6,6 @@ const loginPage = require('../../../page-objects/default/login/login.wdio.page')
 const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
 const chai = require('chai');
 const uuid = require('uuid').v4;
-const browserDbUtils = require('../../../utils/browser');
 
 /* global window */
 
