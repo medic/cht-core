@@ -120,8 +120,8 @@ const getAmountOfMessages = async () => {
 const getMessagesModalDetails = async () => {
   await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
   return {
-    recipient: await $(`${SEND_MESSAGE_MODAL} .select2-selection__choice`).getText(),
-    message: await messageText().getAttribute('ng-reflect-model'),
+    recipient: await (await $(`${SEND_MESSAGE_MODAL} .select2-selection__choice`)).getText(),
+    message: await (await messageText()).getAttribute('ng-reflect-model'),
   };
 };
 
