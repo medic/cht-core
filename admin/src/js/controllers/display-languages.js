@@ -51,19 +51,28 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       return result;
     };
 
+    const updateLanguageSettings = (languages, doc, enabled) => {
+      let language = languages.find(language => language.locale === doc.code);
+      if (!language) {
+        language = { locale: doc.code };
+        languages.push(language);
+      }
+      language.enabled = enabled;
+      return UpdateSettings({ languages });
+    };
+
+    const updateLanguageDoc = (doc, enabled) => {
+      doc.enabled = enabled;
+      return DB().put(doc);
+    };
+
     const setLanguageStatus = function(doc, enabled) {
-      Settings().then(settings => {
+      return Settings().then(settings => {
         if (hasEnabledLanguages(settings.languages)) {
-          let language = settings.languages.find(language => language.locale === doc.code);
-          if (!language) {
-            language = { locale: doc.code };
-            settings.languages.push(language);
-          }
-          language.enabled = enabled;
-          return UpdateSettings({ languages: settings.languages });
+          return updateLanguageSettings(settings.languages, doc, enabled);
         }
-        doc.enabled = enabled;
-        return DB().put(doc);
+
+        return updateLanguageDoc(doc, enabled);
       }).catch(err => {
         $log.error('Error updating translation doc', err);
       });
@@ -125,10 +134,10 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       });
     };
     $scope.disableLanguage = function(doc) {
-      setLanguageStatus(doc, false);
+      return setLanguageStatus(doc, false);
     };
     $scope.enableLanguage = function(doc) {
-      setLanguageStatus(doc, true);
+      return setLanguageStatus(doc, true);
     };
     $scope.prepareImport = function(doc) {
       Modal({
