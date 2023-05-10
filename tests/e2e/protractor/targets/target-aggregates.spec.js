@@ -242,7 +242,7 @@ describe('Target aggregates', () => {
       '^target~'
     ];
 
-    afterEach(() => utils.revertDb(DOCS_TO_KEEP));
+    afterEach(() => utils.revertDb(DOCS_TO_KEEP, true).then(() => utils.refreshToGetNewSettings()));
 
     it('should display no data when no targets are uploaded', async () => {
       const targetsConfig = [
@@ -279,7 +279,7 @@ describe('Target aggregates', () => {
       }
     });
 
-    xit('should display correct data', async () => {
+    it('should display correct data', async () => {
       const targetsConfig = [
         { id: 'count_no_goal', type: 'count', title: genTitle('count no goal'), aggregate: true },
         { id: 'count_with_goal', type: 'count', title: genTitle('count with goal'), goal: 20, aggregate: true },
