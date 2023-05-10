@@ -967,7 +967,7 @@ module.exports = function(grunt) {
   ]);
 
   // CI tasks
-  /*grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
+  grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
     'uglify:admin',
     'optimize-js',
     'cssmin:admin',
@@ -982,7 +982,7 @@ module.exports = function(grunt) {
     'unit',
   ]);
 
-  grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
+  /*grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
     'start-webdriver',
     'protractor:e2e-web-tests',
     //'protractor:e2e-mobile-tests',
