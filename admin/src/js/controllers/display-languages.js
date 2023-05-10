@@ -60,17 +60,12 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
             settings.languages.push(language);
           }
           language.enabled = enabled;
-
-          return UpdateSettings({ languages: settings.languages })
-            .catch(err => {
-              $log.error('Error updating settings', err);
-            });
+          return UpdateSettings({ languages: settings.languages });
         }
-
         doc.enabled = enabled;
-        return DB().put(doc).catch(err => {
-          $log.error('Error updating translation doc', err);
-        });
+        return DB().put(doc);
+      }).catch(err => {
+        $log.error('Error updating translation doc', err);
       });
     };
 
