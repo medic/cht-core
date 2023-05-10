@@ -43,6 +43,7 @@ describe('Send message', () => {
     const { recipient, message } = await messagesPage.getMessagesModalDetails();
     expect(recipient).to.contain(recipientName);
     console.warn(`**** MESSAGE: ${message} ***`);
+    console.warn(`**** MESSAGE_VALUE: ${messageValue} ***`);
     //expect(message).to.equal(messageValue);
   };
 
