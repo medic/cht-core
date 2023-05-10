@@ -8,8 +8,7 @@ const MESSAGE_FOOTER = '#message-footer';
 
 const messageInList = identifier => $(`${MESSAGES_LIST} li[test-id="${identifier}"]`);
 const messagesList = () => $$(`${MESSAGES_LIST} li.content-row`);
-const messagesLoadingStatus = () => $('#message-list .loading-status');
-const messageDetailsHeader = () => $('#message-header .name');
+const messagesLoadingStatus = () => $(`${MESSAGES_LIST} .loading-status`);
 const messageText = () => $(`${SEND_MESSAGE_MODAL} textarea[name="message"]`);
 const sendMessageModalSubmit = () => $(`${SEND_MESSAGE_MODAL} a.btn.submit:not(.ng-hide)`);
 const recipientField = () => $(`${SEND_MESSAGE_MODAL} input.select2-search__field`);
@@ -47,6 +46,7 @@ const getMessageHeader = async () => {
 
 const getMessageContent = async  (index = 1) => {
   const sms = await $(`${MESSAGE_CONTENT} li:nth-child(${index})`);
+  await sms.waitForDisplayed();
   return {
     content: await sms.$('p[test-id="sms-content"]').getText(),
     state: await sms.$('.state').getText(),
@@ -60,29 +60,28 @@ const searchSelect = async (recipient, option) => {
   await (await recipientOption).click();
 };
 
+const clickModalSubmit = async () => {
+  await (await sendMessageModalSubmit()).waitForClickable();
+  await (await sendMessageModalSubmit()).click();
+  await $(SEND_MESSAGE_MODAL).waitForDisplayed({ reverse: true });
+};
 
 const sendMessage = async (message, recipient, entryText) => {
   await commonPage.clickFastActionFlat({ waitForList: false });
   await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
   await searchSelect(recipient, entryText);
   await (await messageText()).setValue(message);
-  await (await sendMessageModalSubmit()).waitForClickable();
-  await (await sendMessageModalSubmit()).click();
-  await $(SEND_MESSAGE_MODAL).waitForDisplayed({ reverse: true });
+  await clickModalSubmit();
 };
 
 const sendReplyNewRecipient = async (recipient, entryText) => {
   await searchSelect(recipient, entryText);
-  await (await sendMessageModalSubmit()).waitForClickable();
-  await (await sendMessageModalSubmit()).click();
-  await $(SEND_MESSAGE_MODAL).waitForDisplayed({ reverse: true });
+  await clickModalSubmit();
 };
 
 const sendMessageToContact = async (message) => {
   await (await messageText()).setValue(message);
-  await (await sendMessageModalSubmit()).waitForClickable();
-  await (await sendMessageModalSubmit()).click();
-  await $(SEND_MESSAGE_MODAL).waitForDisplayed({ reverse: true });
+  await clickModalSubmit();
 };
 
 const exportMessages = async () => {
@@ -126,7 +125,6 @@ const getMessagesModalDetails = async () => {
 };
 
 module.exports = {
-  //messageByIndex,
   openMessage,
   getMessageInListDetails,
   getMessageHeader,
@@ -135,9 +133,7 @@ module.exports = {
   sendReplyNewRecipient,
   sendMessageToContact,
   exportMessages,
-  messageDetailsHeader,
   messagesList,
-  messageText,
   getMessageLoadingStatus,
   sendReply,
   replyAddRecipients,

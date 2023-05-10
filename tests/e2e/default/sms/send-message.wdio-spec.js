@@ -7,7 +7,7 @@ const personFactory = require('../../../factories/cht/contacts/person');
 const messagesPage = require('../../../page-objects/default/sms/messages.wdio.page');
 
 describe('Send message', () => {
-  const rawNumer = '+50683858585';
+  const rawNumber = '+50683858585';
   const anotherRawNumber = '+50689232323';
   const places = placeFactory.generateHierarchy();
   const healthCenter = places.get('health_center');
@@ -75,9 +75,9 @@ describe('Send message', () => {
   });
 
   it('should send a message to a raw phone number', async () => {
-    await messagesPage.sendMessage(smsMsg('raw'), rawNumer, rawNumer);
-    await messagesPage.openMessage(rawNumer);
-    await verifyMessageHeader(rawNumer, '');
+    await messagesPage.sendMessage(smsMsg('raw'), rawNumber, rawNumber);
+    await messagesPage.openMessage(rawNumber);
+    await verifyMessageHeader(rawNumber, '');
     await verifyLastSmsContent('raw');
   });
 
@@ -89,8 +89,8 @@ describe('Send message', () => {
   });
 
   it('should reply to an existing message - raw phone number', async () => {
-    await messagesPage.openMessage(rawNumer);
-    await verifyMessageHeader(rawNumer, '');
+    await messagesPage.openMessage(rawNumber);
+    await verifyMessageHeader(rawNumber, '');
     await messagesPage.sendReply(smsMsg('raw', 'reply'));
     await browser.refresh();
     await verifyLastSmsContent('raw', 'reply');
@@ -105,12 +105,12 @@ describe('Send message', () => {
   });
 
   it('should reply to an existing message and add a new recipient - raw phone number ', async () => {
-    await messagesPage.openMessage(rawNumer);
-    await verifyMessageHeader(rawNumer, '');
+    await messagesPage.openMessage(rawNumber);
+    await verifyMessageHeader(rawNumber, '');
     const newMessage = smsMsg('raw', 'add recipient');
 
     await messagesPage.replyAddRecipients(newMessage);
-    await verifyMessageModalContent(rawNumer, newMessage);
+    await verifyMessageModalContent(rawNumber, newMessage);
     await messagesPage.sendReplyNewRecipient(anotherRawNumber, anotherRawNumber);
     await browser.refresh();
     await verifyLastSmsContent('raw', 'add recipient');
