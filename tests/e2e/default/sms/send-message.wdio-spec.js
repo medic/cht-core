@@ -5,6 +5,7 @@ const userFactory = require('../../../factories/cht/users/users');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const personFactory = require('../../../factories/cht/contacts/person');
 const messagesPage = require('../../../page-objects/default/sms/messages.wdio.page');
+const logger = require('../../../../api/src/logger');
 
 describe('Send message', () => {
   const rawNumer = '+50683858585';
@@ -34,6 +35,7 @@ describe('Send message', () => {
 
   const verifyLastSmsContent = async (msg, type) => {
     const messages = await messagesPage.getAmountOfMessages() || 1;
+    logger.warn(`**** NUMBER OF MESSAGES: ${messages} *****`);
     const { content, state } = await messagesPage.getMessageContent(messages);
     expect(content).to.equal(smsMsg(msg, type));
     expect(state).to.equal('pending');
@@ -113,10 +115,12 @@ describe('Send message', () => {
     await verifyMessageModalContent(rawNumer, newMessage);
     await messagesPage.sendReplyNewRecipient(anotherRawNumber, anotherRawNumber);
     await browser.refresh();
+    logger.warn('**** FIRST ASSERT ***');
     await verifyLastSmsContent('raw', 'add recipient');
 
     await messagesPage.openMessage(anotherRawNumber);
     await verifyMessageHeader(anotherRawNumber, '');
+    logger.warn('**** SECOND ASSERT ***');
     await verifyLastSmsContent('raw', 'add recipient');
   });
 
