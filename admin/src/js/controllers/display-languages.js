@@ -25,9 +25,12 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       return languages && Array.isArray(languages) && languages.length > 0;
     };
 
-    const isLocaleEnabled = (doc, languages) => hasEnabledLanguages(languages) ?
-      languages.some(translation => translation.enabled !== false && translation.locale === doc.code) :
-      doc.enabled;
+    const isLocaleEnabled = (doc, languages) => {
+      if (hasEnabledLanguages(languages)) {
+        return languages.some(translation => translation.enabled !== false && translation.locale === doc.code);
+      }
+      return doc.enabled;
+    };
 
     const createLocaleModel = function(doc, totalTranslations, languages) {
       const result = {
