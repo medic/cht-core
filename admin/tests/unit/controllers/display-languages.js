@@ -1,4 +1,4 @@
-describe.only('Display Languages controller', function() {
+describe('Display Languages controller', function() {
 
   'use strict';
 
@@ -45,7 +45,7 @@ describe.only('Display Languages controller', function() {
 
   afterEach(() => sinon.restore());
 
-  it('should not mutate the language object', (done) => {
+  it('should not mutate the language object', async () => {
     settings.resolves({ locale: 'en', locale_outgoing: 'sw' });
     db.query.withArgs('medic-client/doc_by_type').resolves({
       rows: [
@@ -84,39 +84,36 @@ describe.only('Display Languages controller', function() {
       ]
     });
 
-    createController();
-    setTimeout(() => {
-      rootScope.$digest();
-      chai.expect(scope.languagesModel.totalTranslations).to.equal(5);
-      chai.expect(scope.languagesModel.locales.length).to.equal(3);
-      chai.expect(scope.languagesModel.locales[0].doc).to.deep.equal({
-        _id: 'messages-en',
-        code: 'en',
-        type: 'translations',
-        enabled: true,
-        generic: { 'a': 'a v1', 'b': 'b v1', 'c': 'c v1' },
-        custom: { 'a': 'a v2', 'c': 'c v2', 'd': 'd v1' }
-      });
-      chai.expect(scope.languagesModel.locales[0].missing).to.equal(1);
-      chai.expect(scope.languagesModel.locales[1].doc).to.deep.equal({
-        _id: 'messages-sw',
-        code: 'sw',
-        type: 'translations',
-        enabled: true,
-        generic: {},
-        custom: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1', 'e': 'e v1'}
-      });
-      chai.expect(scope.languagesModel.locales[1].missing).to.equal(1);
-      chai.expect(scope.languagesModel.locales[2].doc).to.deep.equal({
-        _id: 'messages-sw',
-        code: 'sw',
-        type: 'translations',
-        enabled: true,
-        generic: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1' }
-      });
-      chai.expect(scope.languagesModel.locales[2].missing).to.equal(2);
-      done();
+    await createController();
+    rootScope.$digest();
+    chai.expect(scope.languagesModel.totalTranslations).to.equal(5);
+    chai.expect(scope.languagesModel.locales.length).to.equal(3);
+    chai.expect(scope.languagesModel.locales[0].doc).to.deep.equal({
+      _id: 'messages-en',
+      code: 'en',
+      type: 'translations',
+      enabled: true,
+      generic: { 'a': 'a v1', 'b': 'b v1', 'c': 'c v1' },
+      custom: { 'a': 'a v2', 'c': 'c v2', 'd': 'd v1' }
     });
+    chai.expect(scope.languagesModel.locales[0].missing).to.equal(1);
+    chai.expect(scope.languagesModel.locales[1].doc).to.deep.equal({
+      _id: 'messages-sw',
+      code: 'sw',
+      type: 'translations',
+      enabled: true,
+      generic: {},
+      custom: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1', 'e': 'e v1'}
+    });
+    chai.expect(scope.languagesModel.locales[1].missing).to.equal(1);
+    chai.expect(scope.languagesModel.locales[2].doc).to.deep.equal({
+      _id: 'messages-sw',
+      code: 'sw',
+      type: 'translations',
+      enabled: true,
+      generic: { 'a': 'a v1', 'c': 'c v1', 'b': 'b v1' }
+    });
+    chai.expect(scope.languagesModel.locales[2].missing).to.equal(2);
   });
 
   it('should disable a language', async () => {
@@ -166,7 +163,7 @@ describe.only('Display Languages controller', function() {
     chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'en', enabled: false });
   });
 
-  it('should enable languages', (done) => {
+  it('should enable languages', async () => {
     settings.resolves({
       locale: 'en',
       locale_outgoing: 'sw',
@@ -213,32 +210,25 @@ describe.only('Display Languages controller', function() {
       ]
     });
 
-    createController();
+    await createController();
     // enable swahili
-    setTimeout(() => {
-      rootScope.$digest();
-      const swahiliLanguage = scope.languagesModel.locales.find(locale => locale.doc.code === 'sw');
-      chai.expect(swahiliLanguage.doc.code).to.equal('sw');
-      chai.expect(swahiliLanguage.enabled).to.equal(false);
-      scope.enableLanguage(swahiliLanguage.doc);
-    });
-    setTimeout(() => {
-      chai.expect(updateSettings.called).to.be.true;
-      chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'sw', enabled: true });
-    });
+    rootScope.$digest();
+    const swahiliLanguage = scope.languagesModel.locales.find(locale => locale.doc.code === 'sw');
+    chai.expect(swahiliLanguage.doc.code).to.equal('sw');
+    chai.expect(swahiliLanguage.enabled).to.equal(false);
+    await scope.enableLanguage(swahiliLanguage.doc);
+
+    chai.expect(updateSettings.called).to.be.true;
+    chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'sw', enabled: true });
 
     // enable nepali
-    setTimeout(() => {
-      rootScope.$digest();
-      const nepaliLanguage = scope.languagesModel.locales.find(locale => locale.doc.code === 'ne');
-      chai.expect(nepaliLanguage.doc.code).to.equal('ne');
-      chai.expect(nepaliLanguage.enabled).to.equal(false);
-      scope.enableLanguage(nepaliLanguage.doc);
-    });
-    setTimeout(() => {
-      chai.expect(updateSettings.called).to.be.true;
-      chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'ne', enabled: true });
-      done();
-    });
+    rootScope.$digest();
+    const nepaliLanguage = scope.languagesModel.locales.find(locale => locale.doc.code === 'ne');
+    chai.expect(nepaliLanguage.doc.code).to.equal('ne');
+    chai.expect(nepaliLanguage.enabled).to.equal(false);
+    await scope.enableLanguage(nepaliLanguage.doc);
+
+    chai.expect(updateSettings.called).to.be.true;
+    chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'ne', enabled: true });
   });
 });
