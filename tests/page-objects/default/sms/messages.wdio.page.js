@@ -119,7 +119,7 @@ const getAmountOfMessages = async () => {
 
 const getMessagesModalDetails = async () => {
   await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
-  await browser.pause(8000);
+  await browser.waitUntil(async () => await messageText().getAttribute('ng-reflect-model') !== null);
   return {
     recipient: await $(`${SEND_MESSAGE_MODAL} .select2-selection__choice`).getText(),
     message: await messageText().getAttribute('ng-reflect-model'),
