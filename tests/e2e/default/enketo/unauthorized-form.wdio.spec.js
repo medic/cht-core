@@ -28,13 +28,8 @@ describe('Unauthorized form', () => {
     await loginPage.login(offlineUser);
   });
 
-  after(async () => {
-    await utils.deleteDocs([ customPlaceType.create_form ]);
-    await utils.revertSettings(true);
-  });
-
   it('should display unauthorized error message in reports tab when form expression does not match', async () => {
-    await browser.refresh();
+    await commonPage.goToBase();
     await browser.url('#/reports/add/pregnancy');
     await commonPage.waitForPageLoaded();
 
@@ -42,7 +37,7 @@ describe('Unauthorized form', () => {
   });
 
   it('should display unauthorized error message in contacts tab when user does not have form permission', async () => {
-    await browser.refresh();
+    await commonPage.goToBase();
     await browser.url(`#/contacts/add/${customPlaceType.id}`);
     await commonPage.waitForPageLoaded();
 
