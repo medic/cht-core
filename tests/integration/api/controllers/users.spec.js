@@ -1157,7 +1157,7 @@ describe('Users API', () => {
           chai.expect(responseUser.token_login).to.have.keys('expiration_date');
         });
 
-        await utils.delayPromise(1000);
+        await utils.delayPromise(4000);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
