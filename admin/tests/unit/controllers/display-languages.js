@@ -1,4 +1,4 @@
-describe('Display Languages controller', function() {
+describe.only('Display Languages controller', function() {
 
   'use strict';
 
@@ -119,7 +119,7 @@ describe('Display Languages controller', function() {
     });
   });
 
-  it('should disable a language', (done) => {
+  it('should disable a language', async () => {
     settings.resolves({
       locale: 'en',
       locale_outgoing: 'sw',
@@ -155,20 +155,15 @@ describe('Display Languages controller', function() {
       ]
     });
 
-    createController();
-    setTimeout(() => {
-      rootScope.$digest();
-      const englishLanguage = scope.languagesModel.locales.find(locale => locale.doc.code === 'en');
-      chai.expect(englishLanguage.doc.code).to.equal('en');
-      chai.expect(englishLanguage.enabled).to.eq(true);
-      scope.disableLanguage(englishLanguage.doc);
-    });
+    await createController();
+    rootScope.$digest();
+    const englishLanguage = scope.languagesModel.locales.find(locale => locale.doc.code === 'en');
+    chai.expect(englishLanguage.doc.code).to.equal('en');
+    chai.expect(englishLanguage.enabled).to.eq(true);
+    await scope.disableLanguage(englishLanguage.doc);
 
-    setTimeout(() => {
-      chai.expect(updateSettings.called).to.be.true;
-      chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'en', enabled: false });
-      done();
-    });
+    chai.expect(updateSettings.called).to.be.true;
+    chai.expect(updateSettings.getCall(0).args[0].languages).to.deep.include({ locale: 'en', enabled: false });
   });
 
   it('should enable languages', (done) => {
