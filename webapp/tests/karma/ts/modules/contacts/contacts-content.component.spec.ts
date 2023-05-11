@@ -81,7 +81,8 @@ describe('Contacts content component', () => {
     };
     globalActions = {
       setRightActionBar: sinon.spy(GlobalActions.prototype, 'setRightActionBar'),
-      updateRightActionBar: sinon.spy(GlobalActions.prototype, 'updateRightActionBar')
+      updateRightActionBar: sinon.spy(GlobalActions.prototype, 'updateRightActionBar'),
+      unsetSelected: sinon.spy(GlobalActions.prototype, 'unsetSelected'),
     };
     mutingTransition = { isUnmuteForm: sinon.stub() };
     contactMutedService = { getMuted: sinon.stub() };
@@ -105,7 +106,7 @@ describe('Contacts content component', () => {
       { selector: Selectors.getSelectedContactChildren, value: null },
       { selector: Selectors.getFilters, value: {} },
     ];
-    activatedRoute = { params: of({ id: 'load contact' }), snapshot: { params: { id: 'load contact'} } };
+    activatedRoute = { params: of({}), snapshot: { params: {} } };
     router = { navigate: sinon.stub() };
     responsiveService = { isMobile: sinon.stub() };
 
@@ -155,6 +156,23 @@ describe('Contacts content component', () => {
     expect(component).to.exist;
   });
 
+  it('ngOnDestroy() should unsubscribe from observables and reset state', () => {
+    const unsubscribeSpy = sinon.spy(component.subscription, 'unsubscribe');
+    const setContactIdToFetchStub = sinon.stub(ContactsActions.prototype, 'setContactIdToFetch');
+    const setSelectedContactStub = sinon.stub(ContactsActions.prototype, 'setSelectedContact');
+    sinon.resetHistory();
+
+    component.ngOnDestroy();
+
+    expect(unsubscribeSpy.calledOnce).to.be.true;
+    expect(setContactIdToFetchStub.calledOnce).to.be.true;
+    expect(setContactIdToFetchStub.args[0][0]).to.equal(null);
+    expect(setSelectedContactStub.calledOnce).to.be.true;
+    expect(setSelectedContactStub.args[0][0]).to.equal(null);
+    expect(globalActions.setRightActionBar.calledOnce).to.be.true;
+    expect(globalActions.setRightActionBar.args[0][0]).to.deep.equal({});
+  });
+
   describe('load the user home place on mobile', () => {
     it(`should not load the user's home place when on mobile`, fakeAsync(() => {
       const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
@@ -172,11 +190,14 @@ describe('Contacts content component', () => {
   it(`should not load the user's home place when a param id is set`, fakeAsync(() => {
     const selectContact = sinon.stub(ContactsActions.prototype, 'selectContact');
     store.overrideSelector(Selectors.getUserFacilityId, 'homeplace');
+    activatedRoute.params = of({ id: 'contact-1234' });
+    activatedRoute.snapshot.params = { id: 'contact-1234' };
+
     component.ngOnInit();
     flush();
 
-    expect(selectContact.callCount).to.equal(1);
-    expect(selectContact.args[0][0]).to.equal('load contact');
+    expect(selectContact.calledOnce).to.be.true;
+    expect(selectContact.args[0][0]).to.equal('contact-1234');
   }));
 
   it(`should not load the user's home place when a search term exists`, fakeAsync(() => {
@@ -186,8 +207,7 @@ describe('Contacts content component', () => {
     component.ngOnInit();
     flush();
 
-    expect(selectContact.callCount).to.equal(1);
-    expect(selectContact.args[0][0]).to.equal('load contact');
+    expect(selectContact.notCalled).to.be.true;
   }));
 
   it(`should load the user's home place when a param id not set and no search term exists`, fakeAsync(() => {
@@ -201,6 +221,22 @@ describe('Contacts content component', () => {
 
     expect(selectContact.callCount).to.equal(1);
     expect(selectContact.args[0][0]).to.equal('homeplace');
+  }));
+
+  it('should unset selected contact when a param id not set and no search term exists', fakeAsync(() => {
+    const setContactIdToFetchStub = sinon.stub(ContactsActions.prototype, 'setContactIdToFetch');
+    const setSelectedContactStub = sinon.stub(ContactsActions.prototype, 'setSelectedContact');
+    store.overrideSelector(Selectors.getFilters, undefined);
+    sinon.resetHistory();
+
+    component.ngOnInit();
+    flush();
+
+    expect(globalActions.unsetSelected.calledOnce).to.be.true;
+    expect(setContactIdToFetchStub.calledOnce).to.be.true;
+    expect(setContactIdToFetchStub.args[0][0]).to.equal(null);
+    expect(setSelectedContactStub.calledOnce).to.be.true;
+    expect(setSelectedContactStub.args[0][0]).to.equal(null);
   }));
 
   describe('Change feed process', () => {

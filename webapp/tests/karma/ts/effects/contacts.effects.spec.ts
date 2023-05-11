@@ -79,9 +79,11 @@ describe('Contacts effects', () => {
 
     const simulateContactsReducer = () => {
       let selectedContact = null;
+      let contactIdToFetch = null;
 
       const refreshState = () => {
         store.overrideSelector(Selectors.getSelectedContact, selectedContact);
+        store.overrideSelector(Selectors.getContactIdToFetch, contactIdToFetch);
         store.refreshState();
       };
       refreshState();
@@ -114,6 +116,11 @@ describe('Contacts effects', () => {
 
       sinon.stub(ContactsActions.prototype, 'updateSelectedContactSummary').callsFake(summary => {
         selectedContact = { ...selectedContact, summary };
+        refreshState();
+      });
+
+      sinon.stub(ContactsActions.prototype, 'setContactIdToFetch').callsFake(id => {
+        contactIdToFetch = id;
         refreshState();
       });
     };

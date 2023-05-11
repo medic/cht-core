@@ -93,6 +93,7 @@ const state = {
       reports: [{ _id: 'report1' }],
       tasks: [{ _id: 'task1' }],
     },
+    contactIdToFetch: 'contact3',
     loadingSelectedReports: 'is loading reports',
     loadingSummary: 'is loading summary',
   },
@@ -378,6 +379,10 @@ describe('Selectors', () => {
 
     it('should null check selected contact', () => {
       expect(Selectors.getSelectedContactChildren.projector({})).to.deep.equal(undefined);
+    });
+
+    it('should getContactIdToFetch', () => {
+      expect(Selectors.getContactIdToFetch.projector(state.contacts)).to.deep.equal('contact3');
     });
   });
 

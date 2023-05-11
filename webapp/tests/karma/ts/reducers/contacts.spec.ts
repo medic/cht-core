@@ -11,6 +11,7 @@ describe('Contacts Reducer', () => {
       contacts: [],
       contactsById: new Map(),
       selected: [],
+      contactIdToFetch: null,
       filters: {},
       loadingSummary: false,
     };
@@ -22,6 +23,7 @@ describe('Contacts Reducer', () => {
       contacts: [],
       contactsById: new Map(),
       selected: [],
+      contactIdToFetch: null,
       filters: {},
       loadingSummary: true,
     });
@@ -31,6 +33,7 @@ describe('Contacts Reducer', () => {
       contacts: [],
       contactsById: new Map(),
       selected: [],
+      contactIdToFetch: null,
       filters: {},
       loadingSummary: false,
     });
@@ -62,6 +65,7 @@ describe('Contacts Reducer', () => {
         ]),
         filters: {},
         selected: null,
+        contactIdToFetch: null,
         loadingSelectedChildren: false,
         loadingSelectedReports: false,
         loadingSummary: false,
@@ -340,6 +344,7 @@ describe('Contacts Reducer', () => {
         contactsById: new Map(),
         filters: {},
         selected: { _id: 'selected_contact', some: 'data' },
+        contactIdToFetch: null,
         loadingSummary: false,
       });
     });
@@ -444,6 +449,7 @@ describe('Contacts Reducer', () => {
         selected: {
           summary: { some: 'summary' }
         },
+        contactIdToFetch: null,
         loadingSummary: false,
       });
     });
@@ -496,6 +502,7 @@ describe('Contacts Reducer', () => {
           _id: 'selected_contact',
           children: [{ _id: 'child-1' }]
         },
+        contactIdToFetch: null,
         loadingSummary: false,
         loadingSelectedChildren: false,
       });
@@ -520,6 +527,7 @@ describe('Contacts Reducer', () => {
             { _id: 'child-2' }
           ]
         },
+        contactIdToFetch: null,
         loadingSummary: false,
         loadingSelectedChildren: false,
       });
@@ -541,6 +549,7 @@ describe('Contacts Reducer', () => {
           _id: 'selected_contact',
           reports: [{ _id: 'report-1' }]
         },
+        contactIdToFetch: null,
         loadingSummary: false,
         loadingSelectedReports: false
       });
@@ -565,6 +574,7 @@ describe('Contacts Reducer', () => {
             { _id: 'report-2' }
           ]
         },
+        contactIdToFetch: null,
         loadingSelectedReports: false,
         loadingSummary: false,
       });
@@ -633,6 +643,7 @@ describe('Contacts Reducer', () => {
             { forId: 'contact-3' }
           ]
         },
+        contactIdToFetch: null,
         loadingSummary: false,
       });
     });
@@ -660,6 +671,7 @@ describe('Contacts Reducer', () => {
             { forId: 'contact-1' }
           ]
         },
+        contactIdToFetch: null,
         loadingSummary: false,
       });
     });
@@ -680,6 +692,7 @@ describe('Contacts Reducer', () => {
           _id: 'selected_contact',
           targetDoc: { _id: 'doc-1' }
         },
+        contactIdToFetch: null,
         loadingSummary: false,
       });
     });
@@ -701,6 +714,54 @@ describe('Contacts Reducer', () => {
           _id: 'selected_contact',
           targetDoc: { _id: 'doc-2' }
         },
+        contactIdToFetch: null,
+        loadingSummary: false,
+      });
+    });
+  });
+
+  describe('setContactIdToFetch', () => {
+    it('should set contactIdToFetch in the state', () => {
+      state.contactIdToFetch = null;
+
+      const newState = contactsReducer(state, Actions.setContactIdToFetch('selected_contact_1'));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: [],
+        contactIdToFetch: 'selected_contact_1',
+        loadingSummary: false,
+      });
+    });
+
+    it('should update contactIdToFetch in the state', () => {
+      state.contactIdToFetch = 'selected_contact_1';
+
+      const newState = contactsReducer(state, Actions.setContactIdToFetch('selected_contact_2'));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: [],
+        contactIdToFetch: 'selected_contact_2',
+        loadingSummary: false,
+      });
+    });
+
+    it('should unset contactIdToFetch in the state', () => {
+      state.contactIdToFetch = 'selected_contact_1';
+
+      const newState = contactsReducer(state, Actions.setContactIdToFetch(null));
+
+      expect(newState).to.deep.equal({
+        contacts: [],
+        contactsById: new Map(),
+        filters: {},
+        selected: [],
+        contactIdToFetch: null,
         loadingSummary: false,
       });
     });
