@@ -11,7 +11,7 @@ const getTargetAggregateDetailGoal = (element) => element.$$('.goal');
 const NAVIGATION_LINK = '.mm-navigation-menu li a';
 const CONTENT_DISABLED = '.page .item-content.disabled';
 const lineItem = (elementId) => $(`${AGGREGATE_LIST}  li[data-record-id=${elementId}]`);
-const getAggregateDetailListElementbyIndex = async (index) => {
+const getAggregateDetailListElementByIndex = async (index) => {
   return await $$(AGGREGATE_DETAIL_LIST)[index];
 };
 
@@ -125,7 +125,7 @@ module.exports = {
   expectTargetDetails,
   targetAggregateListItem,
   getAggregateDetailListLength,
-  getAggregateDetailListElementbyIndex,
+  getAggregateDetailListElementByIndex,
   getAggregateDetailElementInfo,
   clickOnTargetAggregateListItem,
 };

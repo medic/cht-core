@@ -20,11 +20,11 @@ const targetNumberPercentCount = (targetElement) => targetElement.$('.body .targ
 
 const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal p');
 
-const emptySelection = '.content-pane .item-content.empty-selection';
+const EMPTY_SELECTION = '.content-pane .item-content.empty-selection';
 
-const emptySelectionError = () => $(`${emptySelection}.selection-error`);
+const emptySelectionError = () => $(`${EMPTY_SELECTION}.selection-error`);
 
-const emptySelectionNoError = () => $(`${emptySelection}:not(.selection-error)`);
+const emptySelectionNoError = () => $(`${EMPTY_SELECTION}:not(.selection-error)`);
 
 const getTargetInfo = async (targetElement) => {
   const target = {
