@@ -76,6 +76,7 @@ describe('Contacts effects', () => {
     let setLoadingSelectedContact;
     let setContactsLoadingSummary;
     let clearSelection;
+    let setContactIdToFetchStub;
 
     const simulateContactsReducer = () => {
       let selectedContact = null;
@@ -119,7 +120,7 @@ describe('Contacts effects', () => {
         refreshState();
       });
 
-      sinon.stub(ContactsActions.prototype, 'setContactIdToFetch').callsFake(id => {
+      setContactIdToFetchStub.callsFake(id => {
         contactIdToFetch = id;
         refreshState();
       });
@@ -128,6 +129,7 @@ describe('Contacts effects', () => {
     beforeEach(() => {
       setLoadingSelectedContact = sinon.stub(ContactsActions.prototype, 'setLoadingSelectedContact');
       setContactsLoadingSummary = sinon.stub(ContactsActions.prototype, 'setContactsLoadingSummary');
+      setContactIdToFetchStub = sinon.stub(ContactsActions.prototype, 'setContactIdToFetch');
       simulateContactsReducer();
     });
 
@@ -160,6 +162,9 @@ describe('Contacts effects', () => {
       expect(setContactsLoadingSummary.args).to.deep.equal([[true], [false]]);
       expect(settingSelected.callCount).to.equal(1);
       expect(settingSelected.args[0]).to.deep.equal([]);
+      expect(setContactIdToFetchStub.calledTwice).to.be.true;
+      expect(setContactIdToFetchStub.args[0][0]).to.equal('contactid');
+      expect(setContactIdToFetchStub.args[1][0]).to.equal(null);
     });
 
     it('should load the contact when silent', async () => {
@@ -180,6 +185,9 @@ describe('Contacts effects', () => {
       expect(setLoadingSelectedContact.callCount).to.equal(0);
       expect(settingSelected.callCount).to.equal(1);
       expect(settingSelected.args[0]).to.deep.equal([]);
+      expect(setContactIdToFetchStub.calledTwice).to.be.true;
+      expect(setContactIdToFetchStub.args[0][0]).to.equal('contactid');
+      expect(setContactIdToFetchStub.args[1][0]).to.equal(null);
     });
 
     it('should handle missing contacts', fakeAsync(() => {
