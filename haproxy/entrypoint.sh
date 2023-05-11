@@ -1,8 +1,6 @@
 #!/bin/bash
 
 set -e
-# Make sure service is running
-service rsyslog start
 
 DEFAULT="/usr/local/etc/haproxy/default_frontend.cfg"
 BACKEND="/usr/local/etc/haproxy/backend.cfg"
@@ -24,4 +22,4 @@ echo $COUCHDB_USER > /srv/storage/haproxy/passwd/username
 echo $COUCHDB_PASSWORD > /srv/storage/haproxy/passwd/admin
 
 # Start haproxy
-exec /usr/local/bin/docker-entrypoint.sh "$@"
+exec /usr/local/bin/docker-entrypoint.sh -f $DEFAULT -f $BACKEND
