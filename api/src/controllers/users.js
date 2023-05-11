@@ -5,9 +5,7 @@ const { bulkUploadLog, roles, users } = require('@medic/user-management')(config
 const auth = require('../auth');
 const logger = require('../logger');
 const serverUtils = require('../server-utils');
-const authorization = require('../services/authorization');
-const purgedDocs = require('../services/purged-docs');
-const { DOC_IDS_WARN_LIMIT } = require('../services/replication-limit-log');
+const initialReplication = require('../services/initial-replication');
 
 const hasFullPermission = req => {
   return auth
@@ -98,20 +96,13 @@ const getInfoUserCtx = req => {
 };
 
 const getAllowedDocsCounts = async (userCtx) => {
-  const authCtx = await authorization.getAuthorizationContext(userCtx);
-  const docsByReplicationKey = await authorization.getDocsByReplicationKey(authCtx);
-
-  const excludeTombstones = { includeTombstones: false };
-  const allAllowedIds = authorization.filterAllowedDocIds(authCtx, docsByReplicationKey, excludeTombstones);
-  const allUnpurgedIds = await purgedDocs.getUnPurgedIds(userCtx.roles, allAllowedIds);
-
-  const excludeTombstonesAndTasks = { includeTombstones: false, includeTasks: false };
-  const allWarnIds = authorization.filterAllowedDocIds(authCtx, docsByReplicationKey, excludeTombstonesAndTasks);
-  const unpurgedWarnIds = _.intersection(allUnpurgedIds, allWarnIds);
+  const { docIds, warnDocIds, warn, limit } = await initialReplication.getContext(userCtx);
 
   return {
-    total: allUnpurgedIds.length,
-    warn: unpurgedWarnIds.length,
+    total_docs: docIds.length,
+    warn_docs: warnDocIds.length,
+    warn,
+    limit,
   };
 };
 
@@ -238,12 +229,7 @@ module.exports = {
       return serverUtils.error(err, req, res);
     }
     return getAllowedDocsCounts(userCtx)
-      .then(({ total, warn }) => res.json({
-        total_docs: total,
-        warn_docs: warn,
-        warn: warn >= DOC_IDS_WARN_LIMIT,
-        limit: DOC_IDS_WARN_LIMIT,
-      }))
+      .then((result) => res.json(result))
       .catch(err => serverUtils.error(err, req, res));
   },
 

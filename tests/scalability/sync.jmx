@@ -46,7 +46,7 @@
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="Argument">
                 <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">${working_dir}/initial-replication.js</stringProp>
+                <stringProp name="Argument.value">${working_dir}/../initial-replication.js</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
               <elementProp name="" elementType="Argument">
@@ -61,8 +61,8 @@
           </elementProp>
           <stringProp name="SystemSampler.directory"></stringProp>
           <longProp name="SystemSampler.timeout">-1</longProp>
-          <stringProp name="SystemSampler.stderr">./report/stderr${__threadNum}</stringProp>
-          <stringProp name="SystemSampler.stdout">./report/stdout${__threadNum}</stringProp>
+          <stringProp name="SystemSampler.stderr">${working_dir}/stderr${__threadNum}</stringProp>
+          <stringProp name="SystemSampler.stdout">${working_dir}/stdout${__threadNum}</stringProp>
         </SystemSampler>
         <hashTree/>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
@@ -127,7 +127,7 @@
             <bytes>true</bytes>
           </value>
         </objProp>
-        <stringProp name="filename">./report/initial-replication.jtl</stringProp>
+        <stringProp name="filename">${working_dir}/initial-replication.jtl</stringProp>
         <boolProp name="ResultCollector.success_only_logging">true</boolProp>
       </ResultCollector>
       <hashTree/>

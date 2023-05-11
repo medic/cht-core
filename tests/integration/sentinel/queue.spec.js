@@ -1,7 +1,6 @@
 const utils = require('../../utils');
 const sentinelUtils = require('../../utils/sentinel');
 const uuid = require('uuid').v4;
-const { expect } = require('chai');
 
 const NBR_DOCS = 300;
 
@@ -119,4 +118,26 @@ describe('Sentinel queue drain', () => {
         });
       });
   }).timeout(300 * 1000);
+
+  it('queue should work after restarting haproxy', async () => {
+    await utils.stopHaproxy(); // this will also crash Sentinel and API
+    await utils.startHaproxy();
+    await utils.listenForApi();
+
+    const settings = { transitions: { update_clinics: true } };
+    await utils.updateSettings(settings, 'api');
+
+    const doc = {
+      _id: uuid(),
+      type: 'data_record',
+      from: 'phone1',
+      fields: { patient_id: 'patient' },
+      reported_date: new Date().getTime(),
+    };
+    await utils.saveDoc(doc);
+    console.log(doc);
+    await sentinelUtils.waitForSentinel();
+    const [info] = await sentinelUtils.getInfoDocs(doc._id);
+    expect(info.transitions.update_clinics.ok).to.be.true;
+  });
 });
