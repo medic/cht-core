@@ -8,28 +8,38 @@ const utils = require('../../../utils');
 
 describe('Unauthorized form', () => {
 
+  const updateSettings = async (customPlaceType, permissions = {}) => {
+    const settings = await utils.getSettings();
+    const newSettings = {
+      contact_types: [ ...settings.contact_types, customPlaceType ],
+      permissions: { ...settings.permissions, ...permissions },
+    };
+    await utils.updateSettings(newSettings, true);
+    await commonPage.sync(true);
+  };
+
   const EXPECTED_UNAUTHORIZED_MESSAGE = 'Error loading form. Your user is not authorized to access this form. ' +
     'Talk to your administrator to correct this.';
+
   const PLACE_XML_PATH = `${__dirname}/forms/unauthorized-place.xml`;
   const customPlaceType = customTypeFactory.customType().build({}, { name: 'unauthorized-contact-form' });
+  const customPlace = customTypeFactory.formsForTypes([ { id: customPlaceType.id } ], PLACE_XML_PATH)[0];
+
   const places = placeFactory.generateHierarchy();
   const offlineUser = userFactory.build({ place: places.get('district_hospital')._id, roles: [ 'chw' ] });
 
   before(async () => {
-    const settings = await utils.getSettings();
-    const contactTypes = [ customPlaceType, ...settings.contact_types ];
-    await utils.updateSettings({ contact_types: contactTypes }, true);
-
-    const customPlace = customTypeFactory.formsForTypes([ { id: customPlaceType.id } ], PLACE_XML_PATH)[0];
     customPlace.context = { permission: 'can_create_clinic' };
     await utils.saveDocs([ ...places.values(), customPlace ]);
-
     await utils.createUsers([ offlineUser ]);
     await loginPage.login(offlineUser);
   });
 
+  afterEach(async () => await utils.revertSettings(true));
+
   it('should display unauthorized error message in reports tab when form expression does not match', async () => {
-    await commonPage.goToBase();
+    await commonPage.goToReports();
+
     await browser.url('#/reports/add/pregnancy');
     await commonPage.waitForPageLoaded();
 
@@ -37,10 +47,22 @@ describe('Unauthorized form', () => {
   });
 
   it('should display unauthorized error message in contacts tab when user does not have form permission', async () => {
-    await commonPage.goToBase();
+    await commonPage.goToPeople();
+    await updateSettings(customPlaceType);
+
     await browser.url(`#/contacts/add/${customPlaceType.id}`);
     await commonPage.waitForPageLoaded();
 
     expect(await genericFormPage.getErrorMessage()).to.equal(EXPECTED_UNAUTHORIZED_MESSAGE);
+  });
+
+  it('should not display unauthorized error message in contacts tab when user has the form permission', async () => {
+    await commonPage.goToPeople();
+    await updateSettings(customPlaceType, { can_create_clinic: [ 'chw' ] });
+
+    await browser.url(`#/contacts/add/${customPlaceType.id}`);
+    await commonPage.waitForPageLoaded();
+
+    expect(await genericFormPage.getFormTitle()).to.equal('contact.type.unauthorized-contact-form.new');
   });
 });
