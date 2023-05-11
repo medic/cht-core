@@ -3,7 +3,7 @@ const moment = require('moment');
 const rewire = require('rewire');
 const sinon = require('sinon');
 
-const { chtRulesSettings, chtDocs, mockEmission, MS_IN_DAY } = require('./mocks');
+const { engineSettings, chtDocs, mockEmission, MS_IN_DAY } = require('./mocks');
 const rulesEmitter = require('../src/rules-emitter');
 const transformTaskEmissionToDoc = rewire('../src/transform-task-emission-to-doc');
 
@@ -219,7 +219,7 @@ describe('transform-task-emission-to-doc', () => {
     });
 
     it('transform task.anc.facility_reminder.title', async () => {
-      const initialized = rulesEmitter.initialize(chtRulesSettings(), user);
+      const initialized = rulesEmitter.initialize(engineSettings(), user);
       expect(initialized).to.be.true;
 
       const { tasks } = await rulesEmitter.getEmissionsFor([chtDocs.contact], [chtDocs.pregnancyReport]);

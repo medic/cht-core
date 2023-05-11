@@ -26,7 +26,6 @@ angular
     CreateUser,
     DB,
     FormatDate,
-    Languages,
     Select2Search,
     Settings,
     Translate,
@@ -36,8 +35,6 @@ angular
     'ngInject';
 
     $scope.cancel = () => $uibModalInstance.dismiss();
-
-    Languages().then(languages => $scope.enabledLocales = languages);
 
     const getRoles = roles => {
       if (!roles || !roles.length) {
