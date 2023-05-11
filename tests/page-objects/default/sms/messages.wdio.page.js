@@ -7,7 +7,7 @@ const SEND_MESSAGE_MODAL = '#send-message';
 const MESSAGE_FOOTER = '#message-footer';
 
 const messageInList = identifier => $(`${MESSAGES_LIST} li[test-id="${identifier}"]`);
-const messagesList = () => $$(`${MESSAGES_LIST} li.content-row`);
+const messagesListLeftPanel = () => $$(`${MESSAGES_LIST} li.content-row`);
 const messagesLoadingStatus = () => $(`${MESSAGES_LIST} .loading-status`);
 const messageText = () => $(`${SEND_MESSAGE_MODAL} textarea[name="message"]`);
 const sendMessageModalSubmit = () => $(`${SEND_MESSAGE_MODAL} a.btn.submit:not(.ng-hide)`);
@@ -110,7 +110,7 @@ const replyAddRecipients = async (message) => {
   await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
 };
 
-const getAmountOfMessages = async () => {
+const getAmountOfMessagesByPhone = async () => {
   await (await $(MESSAGE_CONTENT)).waitForDisplayed();
   const listedMessages = (await messages());
   return listedMessages.length;
@@ -120,7 +120,7 @@ const getMessagesModalDetails = async () => {
   await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
   return {
     recipient: await $(`${SEND_MESSAGE_MODAL} .select2-selection__choice`).getText(),
-    message: await messageText().getAttribute('ng-reflect-model'),
+    message: await messageText().getValue(),
   };
 };
 
@@ -133,10 +133,10 @@ module.exports = {
   sendReplyNewRecipient,
   sendMessageToContact,
   exportMessages,
-  messagesList,
+  messagesListLeftPanel,
   getMessageLoadingStatus,
   sendReply,
   replyAddRecipients,
-  getAmountOfMessages,
+  getAmountOfMessagesByPhone,
   getMessagesModalDetails,
 };

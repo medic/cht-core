@@ -33,7 +33,7 @@ describe('Send message', () => {
   };
 
   const verifyLastSmsContent = async (msg, type) => {
-    const messages = await messagesPage.getAmountOfMessages();
+    const messages = await messagesPage.getAmountOfMessagesByPhone();
     const { content, state } = await messagesPage.getMessageContent(messages);
     expect(content).to.equal(smsMsg(msg, type));
     expect(state).to.equal('pending');
@@ -62,7 +62,7 @@ describe('Send message', () => {
       healthCenter.name,
       `${healthCenter.name} - all  contacts`);
 
-    const messages = await messagesPage.messagesList();
+    const messages = await messagesPage.messagesListLeftPanel();
     expect(messages.length).to.equal(2);
 
     await messagesPage.openMessage(anne._id);
@@ -139,7 +139,7 @@ describe('Send message', () => {
   it('should send a message using FAB at people\'s tab', async () => {
     await commonPage.goToPeople(bob._id);
     await commonPage.clickFastActionFAB({ actionId: 'send-message' });
-    await verifyMessageModalContent(bob.name, null);
+    await verifyMessageModalContent(bob.name, '');
     await messagesPage.sendMessageToContact(smsMsg(bob.name, 'People\'s Tab'));
 
     await commonPage.goToMessages();
