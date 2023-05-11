@@ -32,6 +32,7 @@ if (UNIT_TEST_ENV) {
     'close',
     'compact',
     'viewCleanup',
+    'info',
   ];
   const GLOBAL_FUNCTIONS_TO_STUB = [
     'get',

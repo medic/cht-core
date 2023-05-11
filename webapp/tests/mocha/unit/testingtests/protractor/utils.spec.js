@@ -23,7 +23,7 @@ describe('Protractor utils', () => {
         {id: '002', doc: {type: 'translations-backup'}},
         {id: '003', doc: {type: 'user-settings'}},
         {id: '004', doc: {type: 'info'}},
-        {id: 'ME', doc: {_id: 'ME'}}
+        {id: 'ME', doc: {_id: 'ME', _rev: 1}}
       ]});
       request.onSecondCall().resolves();
 
@@ -43,14 +43,14 @@ describe('Protractor utils', () => {
         .then(() => {
           const deleteOptions = request.args[1][0];
           assert.equal(deleteOptions.path, '/_bulk_docs');
-          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone', _rev: 1}]});
           assert.deepEqual(sentinelBulkDocs.args[0][0], [{_id: 'me-info', _rev: '1-abc', _deleted: true}]);
         });
     });
     it('Supports extra strings as exceptions', () => {
       const request = sinon.stub(utils, 'requestOnTestDb');
       request.onFirstCall().resolves({rows: [
-        {id: 'ME', doc: {_id: 'ME'}},
+        {id: 'ME', doc: {_id: 'ME', _rev: 1}},
         {id: 'YOU', doc: {_id: 'YOU'}}
       ]});
       request.onSecondCall().resolves();
@@ -72,13 +72,13 @@ describe('Protractor utils', () => {
           const deleteOptions = request.args[1][0];
           assert.deepEqual(sentinelBulkDocs.args[0][0], [{_id: 'ME-info', _rev: '1-abc', _deleted: true}]);
           assert.equal(deleteOptions.path, '/_bulk_docs');
-          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone', _rev: 1}]});
         });
     });
     it('Supports extra regex as exceptions', () => {
       const request = sinon.stub(utils, 'requestOnTestDb');
       request.onFirstCall().resolves({rows: [
-        {id: 'ME', doc: {_id: 'ME'}},
+        {id: 'ME', doc: {_id: 'ME', _rev: 1}},
         {id: 'YOU', doc: {_id: 'YOU'}}
       ]});
       request.onSecondCall().resolves();
@@ -99,13 +99,13 @@ describe('Protractor utils', () => {
         .then(() => {
           const deleteOptions = request.args[1][0];
           assert.equal(deleteOptions.path, '/_bulk_docs');
-          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone', _rev: 1}]});
         });
     });
     it('Supports extra functions as exceptions', () => {
       const request = sinon.stub(utils, 'requestOnTestDb');
       request.onFirstCall().resolves({rows: [
-        {id: 'ME', doc: {_id: 'ME'}},
+        {id: 'ME', doc: {_id: 'ME', _rev: 1}},
         {id: 'YOU', doc: {_id: 'YOU'}}
       ]});
       request.onSecondCall().resolves();
@@ -127,7 +127,7 @@ describe('Protractor utils', () => {
         .then(() => {
           const deleteOptions = request.args[1][0];
           assert.equal(deleteOptions.path, '/_bulk_docs');
-          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone'}]});
+          assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone', _rev: 1}]});
         });
     });
   });

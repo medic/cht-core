@@ -226,9 +226,12 @@ const deleteAll = (except) => {
       rows
         .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
         .map(({ doc }) => {
-          doc._deleted = true;
-          doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
-          return doc;
+          return {
+            _id: doc._id,
+            _rev: doc._rev,
+            _deleted: true,
+            type: 'tombstone' // circumvent tombstones being created when DB is cleaned up
+          };
         })
     )
     .then(toDelete => {
@@ -322,12 +325,14 @@ const setUserContactDoc = (attempt=0) => {
 const deleteLocalDocs = async () => {
   const localDocs = await module.exports.requestOnTestDb({ path: '/_local_docs?include_docs=true' });
 
-  for (const row of localDocs.rows) {
-    if (row && row.doc && row.doc.replicator === 'pouchdb') {
+  const docsToDelete = localDocs.rows
+    .filter(row => row && row.doc && row.doc.replicator === 'pouchdb')
+    .map(row => {
       row.doc._deleted = true;
-      await module.exports.saveDoc(row.doc);
-    }
-  }
+      return row.doc;
+    });
+
+  await module.exports.saveDocs(docsToDelete);
 };
 
 /**

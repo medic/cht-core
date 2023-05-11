@@ -283,6 +283,8 @@ module.exports = function(grunt) {
             'build/**',
             '**/pupil/**',
             'api/src/enketo-transformer/**',
+            'tests/scalability/report*/**',
+            'tests/scalability/jmeter/**'
           ];
 
           return [ESLINT_COMMAND]
