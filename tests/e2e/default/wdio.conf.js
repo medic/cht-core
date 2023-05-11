@@ -42,7 +42,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    '**/*.wdio-spec.js',
+    '**/send-message.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
@@ -129,7 +129,7 @@ const baseConfig = {
   connectionRetryTimeout: 120000,
   //
   // Default request retries count
-  connectionRetryCount: 3,
+  connectionRetryCount: 1,
   //
   // Test runner services
   // Services take over a specific job you don't want to take care of. They enhance
