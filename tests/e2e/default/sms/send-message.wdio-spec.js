@@ -139,7 +139,7 @@ describe('Send message', () => {
   it('should send a message using FAB at people\'s tab', async () => {
     await commonPage.goToPeople(bob._id);
     await commonPage.clickFastActionFAB({ actionId: 'send-message' });
-    await verifyMessageModalContent(bob.name, null);
+    await verifyMessageModalContent(bob.name, '');
     await messagesPage.sendMessageToContact(smsMsg(bob.name, 'People\'s Tab'));
 
     await commonPage.goToMessages();
