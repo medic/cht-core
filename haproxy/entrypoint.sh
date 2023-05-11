@@ -22,4 +22,4 @@ echo $COUCHDB_USER > /srv/storage/haproxy/passwd/username
 echo $COUCHDB_PASSWORD > /srv/storage/haproxy/passwd/admin
 
 # Start haproxy
-exec /usr/local/bin/docker-entrypoint.sh "$@"
+exec /usr/local/bin/docker-entrypoint.sh -f $DEFAULT -f $BACKEND

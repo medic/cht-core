@@ -1,24 +1,36 @@
 {
-  "locales": [
+  "languages": [
     {
-      "code": "en",
-      "name": "English"
+      "locale": "bm",
+      "enabled": true
     },
     {
-      "code": "es",
-      "name": "Español (Spanish)"
+      "locale": "en",
+      "enabled": true
     },
     {
-      "code": "fr",
-      "name": "Français (French)"
+      "locale": "es",
+      "enabled": true
     },
     {
-      "code": "ne",
-      "name": "नेपाली (Nepali)"
+      "locale": "fr",
+      "enabled": true
     },
     {
-      "code": "sw",
-      "name": "Kiswahili (Swahili)"
+      "locale": "hi",
+      "enabled": true
+    },
+    {
+      "locale": "id",
+      "enabled": true
+    },
+    {
+      "locale": "ne",
+      "enabled": true
+    },
+    {
+      "locale": "sw",
+      "enabled": true
     }
   ],
   "locale": "en",

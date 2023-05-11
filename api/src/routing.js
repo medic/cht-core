@@ -62,6 +62,7 @@ const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const dbDocHandler = require('./controllers/db-doc');
 const extensionLibs = require('./controllers/extension-libs');
+const initialReplication = require('./controllers/initial-replication');
 const app = express.Router({ strict: true });
 const MAX_REQUEST_SIZE = '32mb';
 
@@ -657,6 +658,12 @@ app.all(
   jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
+app.get(
+  '/api/v1/initial-replication/get-ids',
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  initialReplication.getDocIds,
 );
 
 const metaPathPrefix = `/${environment.db}-user-*-meta/`;

@@ -139,7 +139,6 @@ describe('Storing checkpointer on target migration', () => {
     expect(replicateToDocBrowser).excludingEvery('_rev').to.deep.equal(replicateToDocServer);
 
     const revDiffCalls = await captureLogs();
-    console.log(JSON.stringify(revDiffCalls, null, 2));
     expect(revDiffCalls.length).to.equal(0);
   });
 

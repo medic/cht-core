@@ -28,7 +28,7 @@ describe('Extension lib xpath function', () => {
     await extensionLibsPage.blur();
 
     const average = await extensionLibsPage.getAverage();
-    expect(average).to.deep.equal('6.5');
+    expect(average).to.equal('6.5');
 
     // no need to submit - if the value is updated then we're good to go
   });

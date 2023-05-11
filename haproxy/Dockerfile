@@ -10,4 +10,3 @@ ADD backend.cfg.template /usr/local/etc/haproxy
 COPY scripts /usr/local/etc/haproxy/
 
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["haproxy", "-f", "/usr/local/etc/haproxy/default_frontend.cfg", "-f", "/usr/local/etc/haproxy/backend.cfg"]
