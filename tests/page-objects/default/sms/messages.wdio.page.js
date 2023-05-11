@@ -27,8 +27,8 @@ const openMessage = async (identifier) => {
 
 const getMessageInListDetails = async (identifier) => {
   const sms = await messageInList(identifier);
-  const lineageValue = await sms.$('.lineage').isExisting() ?
-    await $(`${MESSAGE_HEADER} .horizontal.lineage`).getText() : '';
+  const lineageValue = await sms.$('.horizontal.lineage').isExisting() ?
+    await sms.$('.horizontal.lineage').getText() : '';
   return {
     heading: await sms.$('.heading h4').getText(),
     summary: await sms.$('.summary').getText(),
