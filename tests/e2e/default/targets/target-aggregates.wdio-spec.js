@@ -6,6 +6,7 @@ const contactsPage = require('../../../page-objects/default/contacts/contacts.wd
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const moment = require('moment');
 const _ = require('lodash');
+const fs = require('fs');
 const placeFactory = require('../../../factories/cht/contacts/place');
 const userFactory = require('../../../factories/cht/users/users');
 const personFactory = require('../../../factories/cht/contacts/person');
@@ -27,7 +28,7 @@ const expectContacts = async (contacts, target) => {
   // eslint-disable-next-line guard-for-in
   for (const idx in contacts) {
     const contact = contacts[idx];
-    const lineItem = await targetAggregatesPage.getAggregateDetailListElementbyIndex(idx);
+    const lineItem = await targetAggregatesPage.getAggregateDetailListElementByIndex(idx);
     const lineItemInfo = await targetAggregatesPage.getAggregateDetailElementInfo(lineItem);
     expect(await lineItemInfo.recordId).to.equal(contact._id);
     expect(await lineItemInfo.title).to.equal(contact.name);
@@ -138,7 +139,7 @@ describe('Target aggregates', () => {
     ];
 
     before(async () => {
-      const allDocs = [...docs, ...[parentPlace], ...[otherParentPlace]];
+      const allDocs = [...docs, parentPlace, otherParentPlace];
       await utils.saveDocs(allDocs);
       await utils.createUsers([user]);
       await browser.url('/medic/login');
@@ -317,36 +318,7 @@ describe('Target aggregates', () => {
         { id: 'a_target', type: 'count', title: generateTitle('what a target!'), aggregate: true },
         { id: 'b_target', type: 'percent', title: generateTitle('the most target'), aggregate: true },
       ];
-      const contactSummaryScript = `
-    let cards = [];
-    let context = {};
-    let fields = [];
-    if (contact.type === "person") {
-      fields = [{ label: "test.pid", value: contact.patient_id, width: 3 }];
-      if (targetDoc) {
-        const card = {
-          label: "Activity this month",
-          fields: [],
-        };
-        card.fields.push({ label: "Last updated", value: targetDoc.date_updated });
-        targetDoc.targets.forEach(target => {
-          let value;
-          if (target.type === 'percent') {
-            value = (target.value.total ? target.value.pass * 100 / target.value.total : 0) + "%";
-          } else {
-            value = target.value.pass;
-          }
-          card.fields.push({ label: target.title.en, value: value });
-        });
-        cards.push(card);
-      }
-    }
-    return {
-      fields: fields,
-      cards: cards,
-      context: context
-    };
-  `;
+      const contactSummaryScript = fs.readFileSync(`${__dirname}/config/contact-summary-target-aggregates.js`, 'utf8');
 
       const clarissa = docs.find(doc => doc.name === names[0]);
       const prometheus = docs.find(doc => doc.name === names[1]);
