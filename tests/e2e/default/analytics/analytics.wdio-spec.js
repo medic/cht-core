@@ -54,7 +54,6 @@ describe('Targets', () => {
     await sentinelUtils.waitForSentinel();
 
     await loginPage.login({ username: chw.username, password: chw.password });
-    await commonPage.closeTour();
     await (await commonPage.analyticsTab()).waitForDisplayed();
   });
 

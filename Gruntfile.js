@@ -275,7 +275,6 @@ module.exports = function(grunt) {
           ];
           const ignore = [
             'webapp/src/ts/providers/xpath-element-path.provider.ts',
-            'webapp/src/js/bootstrap-tour-standalone.js',
             'api/src/public/login/lib-bowser.js',
             'api/extracted-resources/**/*',
             'api/build/**/*',
@@ -283,6 +282,8 @@ module.exports = function(grunt) {
             'build/**',
             '**/pupil/**',
             'api/src/enketo-transformer/**',
+            'tests/scalability/report*/**',
+            'tests/scalability/jmeter/**'
           ];
 
           return [ESLINT_COMMAND]

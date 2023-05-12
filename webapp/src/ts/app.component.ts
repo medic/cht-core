@@ -27,7 +27,6 @@ import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
 import { StartupModalsService } from '@mm-services/startup-modals.service';
-import { TourService } from '@mm-services/tour.service';
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { RecurringProcessManagerService } from '@mm-services/recurring-process-manager.service';
@@ -118,7 +117,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     private privacyPoliciesService:PrivacyPoliciesService,
     private routeSnapshotService:RouteSnapshotService,
     private startupModalsService:StartupModalsService,
-    private tourService:TourService,
     private checkDateService:CheckDateService,
     private unreadRecordsService:UnreadRecordsService,
     private rulesEngineService:RulesEngineService,
@@ -178,7 +176,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       if (event instanceof ActivationEnd) {
         const tab = getTab(event.snapshot);
         if (tab !== this.currentTab) {
-          this.tourService.endCurrent();
           this.globalActions.setCurrentTab(tab);
         }
         const data = this.routeSnapshotService.get()?.data;

@@ -217,20 +217,6 @@ const goToAboutPage = async () => {
   await waitForLoaders();
 };
 
-const closeTour = async () => {
-  const closeButton = await $('#tour-select a.btn.cancel');
-  try {
-    await closeButton.waitForDisplayed();
-    await closeButton.click();
-    // wait for the request to the server to execute
-    // is there a way to leverage wdio to achieve this???
-    await browser.pause(500);
-  } catch (err) {
-    // there might not be a tour, show a warning
-    console.warn('Tour modal has not appeared after 2 seconds');
-  }
-};
-
 const waitForLoaderToDisappear = async (element) => {
   const loaderSelector = '.loader';
   const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
@@ -268,10 +254,14 @@ const waitForLoaders = async () => {
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
+const waitForAngularLoaded = async (timeout = 30000) => {
+  await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+};
+
 const waitForPageLoaded = async () => {
   // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
   // so waiting for the main page to load.
-  await (await $('#header-dropdown-link')).waitForDisplayed();
+  await waitForAngularLoaded();
   // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
   // get all loaders.
   do {
@@ -284,20 +274,20 @@ const syncAndNotWaitForSuccess = async () => {
   await (await syncButton()).click();
 };
 
-const syncAndWaitForSuccess = async () => {
+const syncAndWaitForSuccess = async (timeout=20000) => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
-  await (await syncSuccess()).waitForDisplayed({ timeout: 20000 });
+  await (await syncSuccess()).waitForDisplayed({ timeout });
 };
 
-const sync = async (expectReload) => {
-  await syncAndWaitForSuccess();
+const sync = async (expectReload, timeout) => {
+  await syncAndWaitForSuccess(timeout);
   if (expectReload) {
     await closeReloadModal();
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
-  await syncAndWaitForSuccess();
+  await syncAndWaitForSuccess(timeout);
 };
 
 const syncAndWaitForFailure = async () => {
@@ -409,7 +399,6 @@ module.exports = {
   getMessagesButtonLabel,
   getTasksButtonLabel,
   goToBase,
-  closeTour,
   hideSnackbar,
   waitForLoaders,
   sync,
@@ -448,4 +437,5 @@ module.exports = {
   moreOptionsMenu,
   refresh,
   syncAndWaitForFailure,
+  waitForAngularLoaded,
 };
