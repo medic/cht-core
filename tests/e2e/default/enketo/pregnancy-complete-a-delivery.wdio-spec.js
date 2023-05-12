@@ -92,7 +92,6 @@ describe('Contact Delivery Form', () => {
     await utils.createUsers([chw]);
     await sentinelUtils.waitForSentinel();
     await loginPage.login({ username: chw.username, password: chw.password, locale: DEFAULT_LOCALE });
-    await commonPage.closeTour();
     await commonPage.goToPeople('fixture:woman', true);
   });
 

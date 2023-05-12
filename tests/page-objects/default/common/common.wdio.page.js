@@ -217,20 +217,6 @@ const goToAboutPage = async () => {
   await waitForLoaders();
 };
 
-const closeTour = async () => {
-  const closeButton = await $('#tour-select a.btn.cancel');
-  try {
-    await closeButton.waitForDisplayed();
-    await closeButton.click();
-    // wait for the request to the server to execute
-    // is there a way to leverage wdio to achieve this???
-    await browser.pause(500);
-  } catch (err) {
-    // there might not be a tour, show a warning
-    console.warn('Tour modal has not appeared after 2 seconds');
-  }
-};
-
 const waitForLoaderToDisappear = async (element) => {
   const loaderSelector = '.loader';
   const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
@@ -413,7 +399,6 @@ module.exports = {
   getMessagesButtonLabel,
   getTasksButtonLabel,
   goToBase,
-  closeTour,
   hideSnackbar,
   waitForLoaders,
   sync,

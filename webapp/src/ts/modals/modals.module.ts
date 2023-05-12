@@ -17,9 +17,7 @@ import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.co
 import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
-import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
-import { WelcomeComponent } from '@mm-modals/welcome/welcome.component';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
@@ -43,9 +41,7 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
-    TourSelectComponent,
     TrainingCardsComponent,
-    WelcomeComponent,
     BulkDeleteConfirmComponent,
     EditReportComponent,
     VerifyReportComponent,
@@ -71,9 +67,7 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
-    TourSelectComponent,
     TrainingCardsComponent,
-    WelcomeComponent,
     BulkDeleteConfirmComponent,
     EditReportComponent,
     VerifyReportComponent,

@@ -23,8 +23,6 @@ const defaultCountryCode = element(
 );
 const skipSetup = element(by.css('#guided-setup .modal-footer>a:first-of-type'));
 const finishBtn = element(by.css('#guided-setup .modal-footer>a:nth-of-type(2)'));
-// Tour
-const tourBtns = element.all(by.css('.btn.tour-option'));
 // User settings
 const settings = element.all(by.css('.configuration a>span'));
 // Report bug
@@ -118,12 +116,6 @@ module.exports = {
     const defaultLang = await defaultLanguage.getAttribute('innerText');
     await utils.resetBrowserNative();
     return  [headingText, messageLang, defaultLang];
-  },
-
-  checkGuidedTour: async () => {
-    await openSubmenu('guided tour');
-    expect(await tourBtns.count()).toEqual(4);
-    await helper.clickElementNative(genericCancelBtn);
   },
 
   checkReportBug: async () => {
