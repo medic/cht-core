@@ -148,5 +148,4 @@ describe('Send message', () => {
     await verifyMessageHeader(bob.name, bob.phone);
     await verifyLastSmsContent(bob.name, 'People\'s Tab');
   });
-
 });
