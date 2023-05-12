@@ -18,6 +18,7 @@ describe('Hamburger Menu tests', async () => {
       defaultCountryCode: 'Canada (+1)',
       modelFinishButtonText: 'Finish'
     });
+    await commonPage.closeConfigurationWizard();
   });
 
   it('should open About', async () => {

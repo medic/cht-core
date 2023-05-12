@@ -37,6 +37,13 @@ const snackbar = () => $('#snackbar.active .snackbar-message');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
+// Configuration wizard
+const CONFIGURATION_WIZARD = '#guided-setup';
+const configurationWizardTitle = () => $(`${CONFIGURATION_WIZARD} .modal-header > h2`);
+const defaultCountryCode = () => $('#select2-default-country-code-setup-container');
+const skipSetup = () => $(`${CONFIGURATION_WIZARD} .modal-footer>a:first-of-type`);
+const finishButton = () => $(`${CONFIGURATION_WIZARD} .modal-footer>a:nth-of-type(2)`);
+
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
 };
@@ -83,7 +90,7 @@ const clickFastActionFlat = async ({ actionId, waitForList }) => {
   }
 };
 
-const openFastActionReport = async (formId, rightSideAction=true) => {
+const openFastActionReport = async (formId, rightSideAction = true) => {
   await waitForPageLoaded();
   if (rightSideAction) {
     await clickFastActionFAB({ actionId: formId });
@@ -288,7 +295,7 @@ const syncAndNotWaitForSuccess = async () => {
   await (await syncButton()).click();
 };
 
-const syncAndWaitForSuccess = async (timeout=20000) => {
+const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
@@ -340,14 +347,25 @@ const openAboutMenu = async () => {
 };
 
 const openConfigurationWizardAndFetchProperties = async () => {
+  await (await $('i.fa-list-ol')).waitForClickable();
   await (await $('i.fa-list-ol')).click();
-  await (await $('#guided-setup')).waitForDisplayed();
-
+  await (await $(CONFIGURATION_WIZARD)).waitForDisplayed();
   return {
-    modelTitle: await (await $('#guided-setup .modal-header > h2')).getText(),
-    defaultCountryCode: await (await $('#select2-default-country-code-setup-container')).getText(),
-    modelFinishButtonText: await (await $('#guided-setup .modal-footer>a:nth-of-type(2)')).getText()
+    modelTitle: await (await configurationWizardTitle()).getText(),
+    defaultCountryCode: await (await defaultCountryCode()).getText(),
+    modelFinishButtonText: await (await finishButton()).getText()
   };
+};
+
+const isConfigurationWizardOpen = async () => {
+  return await (await configurationWizardTitle()).isExisting();
+};
+
+const closeConfigurationWizard = async () => {
+  if (await isConfigurationWizardOpen()) {
+    await (await skipSetup()).waitForClickable();
+    await (await skipSetup()).click();
+  }
 };
 
 const openUserSettingsAndFetchProperties = async () => {
@@ -453,4 +471,5 @@ module.exports = {
   refresh,
   syncAndWaitForFailure,
   waitForAngularLoaded,
+  closeConfigurationWizard,
 };
