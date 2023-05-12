@@ -36,11 +36,6 @@ describe('Navigation tests : ', () => {
     expect(await browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'analytics');
   });
 
-  it('should open Configuration wizard', async () => {
-    await commonElements.openMenuNative();
-    await commonElements.checkConfigurationWizard();
-  });
-
   it('should open About', async () => {
     await commonElements.openMenuNative();
     await commonElements.checkAbout();

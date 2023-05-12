@@ -11,7 +11,6 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { DBSyncService } from '@mm-services/db-sync.service';
-import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
 
 @Component({
   selector: 'mm-header',
@@ -78,12 +77,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .then(permittedTabs => {
         this.permittedTabs = permittedTabs;
       });
-  }
-
-  openGuidedSetup() {
-    this.modalService
-      .show(GuidedSetupComponent)
-      .catch(() => {});
   }
 
   openFeedback() {
