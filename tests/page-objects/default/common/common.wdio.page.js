@@ -21,6 +21,8 @@ const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
+const reloadModalUpdate = () => $('#update-available [test-id="Update"]');
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
 const jsonError = async () => (await $('pre')).getText();
 
@@ -167,6 +169,11 @@ const getLogoutMessage = async () => {
   return body.getText();
 };
 
+const refresh = async () => {
+  await browser.refresh();
+  await waitForPageLoaded();
+};
+
 const goToBase = async () => {
   await browser.url('/');
   await waitForPageLoaded();
@@ -243,10 +250,14 @@ const waitForLoaders = async () => {
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
+const waitForAngularLoaded = async (timeout = 30000) => {
+  await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+};
+
 const waitForPageLoaded = async () => {
   // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
   // so waiting for the main page to load.
-  await (await $('#header-dropdown-link')).waitForDisplayed();
+  await waitForAngularLoaded();
   // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
   // get all loaders.
   do {
@@ -259,33 +270,36 @@ const syncAndNotWaitForSuccess = async () => {
   await (await syncButton()).click();
 };
 
-const syncAndWaitForSuccess = async () => {
+const syncAndWaitForSuccess = async (timeout=20000) => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
-  await (await syncSuccess()).waitForDisplayed({ timeout: 20000 });
+  await (await syncSuccess()).waitForDisplayed({ timeout });
 };
 
-const sync = async (expectReload) => {
-  await syncAndWaitForSuccess();
+const sync = async (expectReload, timeout) => {
+  await syncAndWaitForSuccess(timeout);
   if (expectReload) {
     await closeReloadModal();
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
-  await syncAndWaitForSuccess();
+  await syncAndWaitForSuccess(timeout);
 };
 
-const syncWithoutWaitForSuccess = async () => {
+const syncAndWaitForFailure = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
+  await openHamburgerMenu();
+  await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
 };
 
-const closeReloadModal = async () => {
+const closeReloadModal = async (shouldUpdate = false) => {
   try {
-    await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
+    const button = shouldUpdate ? reloadModalUpdate() : reloadModalCancel();
+    await browser.waitUntil(async () => await (await button).waitForExist({ timeout: 2000 }));
     // wait for the animation to complete
     await browser.pause(500);
-    await (await reloadModalCancel()).click();
+    await (await button).click();
     await browser.pause(500);
   } catch (err) {
     console.error('Reload modal not showed up');
@@ -391,5 +405,7 @@ module.exports = {
   isMenuOptionEnabled,
   isMenuOptionVisible,
   moreOptionsMenu,
-  syncWithoutWaitForSuccess,
+  refresh,
+  syncAndWaitForFailure,
+  waitForAngularLoaded,
 };

@@ -86,6 +86,7 @@ describe('RulesEngineService', () => {
     targets: [{ id: 'target' }],
     enableTasks: true,
     enableTargets: true,
+    rulesAreDeclarative: false,
     contact: userContactDoc,
     user: userSettingsDoc,
     monthStartDate: 1,
@@ -276,6 +277,25 @@ describe('RulesEngineService', () => {
       expect(result).to.be.true;
       expect(rulesEngineCoreStubs.initialize.callCount).to.eq(1);
       expect(rulesEngineCoreStubs.initialize.args[0][0]).to.deep.eq(expectedRulesConfig);
+    });
+
+    it('tasks.isDeclarative flag (set via cht-conf) disables nools', async () => {
+      service = TestBed.inject(RulesEngineService);
+
+      const settingsDoc = {
+        _id: 'settings',
+        tasks: {
+          rules: 'rules',
+          isDeclarative: true,
+        },
+      };
+      settingsService.get.resolves(settingsDoc);
+      
+      const result = await service.isEnabled();
+
+      expect(result).to.be.true;
+      expect(rulesEngineCoreStubs.initialize.callCount).to.eq(1);
+      expect(rulesEngineCoreStubs.initialize.args[0][0]).to.include({ rulesAreDeclarative: true });
     });
   });
 

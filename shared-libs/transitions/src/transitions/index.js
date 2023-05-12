@@ -43,6 +43,7 @@ const AVAILABLE_TRANSITIONS = [
 ];
 
 const transitions = [];
+let loadErrors = false;
 
 // applies all loaded transitions over a change
 const processChange = (change, callback) => {
@@ -131,7 +132,7 @@ const processDocs = docs => {
 const loadTransitions = (synchronous = false) => {
   const self = module.exports;
   const transitionsConfig = config.get('transitions') || [];
-  let loadError = false;
+  loadErrors = false;
 
   transitions.splice(0, transitions.length);
 
@@ -148,8 +149,9 @@ const loadTransitions = (synchronous = false) => {
     try {
       self._loadTransition(transition, synchronous);
     } catch (e) {
-      loadError = true;
-      logger.error(`Failed loading transition "${transition}"`);
+      const errorMessage = `Failed loading transition "${transition}"`;
+      loadErrors = [errorMessage, e && e.message || 'unknown'];
+      logger.error(errorMessage);
       logger.error('%o', e);
     }
   });
@@ -157,12 +159,13 @@ const loadTransitions = (synchronous = false) => {
   // Warn if there are configured transitions that are not available
   Object.keys(transitionsConfig).forEach(key => {
     if (!AVAILABLE_TRANSITIONS.includes(key)) {
-      loadError = true;
-      logger.error(`Unknown transition "${key}"`);
+      const errorMessage = `Unknown transition "${key}"`;
+      loadErrors = [errorMessage];
+      logger.error(errorMessage);
     }
   });
 
-  if (loadError) {
+  if (loadErrors) {
     // empty transitions list
     // Sentinel detaches from the changes feed when transitions are misconfigured,
     // but API continues and should not run partial transitions
@@ -376,14 +379,16 @@ const getDeprecatedTransitions = () => {
 module.exports = {
   _loadTransition: loadTransition,
   _lineage: lineage,
-  availableTransitions: availableTransitions,
-  loadTransitions: loadTransitions,
-  canRun: canRun,
-  finalize: finalize,
+  _transitions: () => transitions,
+  
   applyTransition: applyTransition,
   applyTransitions: applyTransitions,
+  availableTransitions: availableTransitions,
+  canRun: canRun,
+  finalize: finalize,
+  getDeprecatedTransitions: getDeprecatedTransitions,
+  getLoadingErrors: () => loadErrors,
+  loadTransitions: loadTransitions,
   processChange: processChange,
   processDocs: processDocs,
-  _transitions: () => transitions,
-  getDeprecatedTransitions: getDeprecatedTransitions
 };
