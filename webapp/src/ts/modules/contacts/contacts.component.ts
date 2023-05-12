@@ -19,16 +19,16 @@ import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
-import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
+import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 
 @Component({
   templateUrl: './contacts.component.html'
 })
-export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
+export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly PAGE_SIZE = 50;
   private subscription: Subscription = new Subscription();
   private globalActions: GlobalActions;
@@ -38,6 +38,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
   private destroyed: boolean;
   private isOnlineOnly: boolean;
 
+  fastActionList: FastAction[];
   contactsList;
   loading = false;
   error;
@@ -63,6 +64,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
     private store: Store,
     private route: ActivatedRoute,
     private changesService: ChangesService,
+    private fastActionButtonService: FastActionButtonService,
     private translateService: TranslateService,
     private searchService: SearchService,
     private contactTypesService: ContactTypesService,
@@ -74,7 +76,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
     private UHCSettings: UHCSettingsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private relativeDateService: RelativeDateService,
-    private tourService: TourService,
     private router: Router,
     private exportService: ExportService,
     private xmlFormsService: XmlFormsService,
@@ -152,8 +153,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
         this.appending = false;
         console.error('Error searching for contacts', err);
       });
-
-    this.tourService.startIfNeeded(this.route.snapshot);
   }
 
   async ngAfterViewInit() {
@@ -395,6 +394,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
         this.appending = false;
         this.error = false;
         this.initScroll();
+        this.updateFastActions();
         this.setLeftActionBar();
       })
       .catch(err => {
@@ -438,6 +438,23 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
     });
   }
 
+  private async updateFastActions() {
+    if (this.destroyed) {
+      // Don't update the fast actions, if the component has already been destroyed
+      // This callback can be queued up and persist even after component destruction
+      return;
+    }
+
+    this.fastActionList = await this.fastActionButtonService.getContactLeftSideActions({
+      parentFacilityId: this.usersHomePlace?._id,
+      childContactTypes: this.allowedChildPlaces,
+    });
+  }
+
+  getFastActionButtonType() {
+    return this.fastActionButtonService.getButtonTypeForContentList();
+  }
+
   exportContacts() {
     this.exportService.export('contacts', this.filters, { humanReadable: true });
   }
@@ -454,6 +471,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy{
 
         this.allowedChildPlaces = this.filterAllowedChildType(forms, this.childPlaces);
         this.globalActions.updateLeftActionBar({ childPlaces: this.allowedChildPlaces });
+        this.updateFastActions();
       }
     );
     this.subscription.add(subscription);

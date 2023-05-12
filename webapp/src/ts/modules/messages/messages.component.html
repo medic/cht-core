@@ -9,33 +9,39 @@
   <div class="inbox page">
 
     <div id="message-list" class="col-sm-4 inbox-items left-pane">
-      <ul *ngIf="!loading">
-        <li class="content-row"
-          *ngFor="let msg of conversations; trackBy: listTrackBy"
-          [attr.test-id]="msg.key"
-          [ngClass]="{
-            'unread': !msg.read,
-            'selected': msg.selected
-          }"
-        >
-          <a [routerLink]="['/', 'messages', msg.type + ':' + msg.key]">
-            <div class="content">
-              <div class="heading">
-                <h4>{{msg.contact || msg.from || ('messages.unknown.sender' | translate)}}</h4>
-                <div class="date"><span [innerHTML]="msg.date | relativeDate"></span></div>
+      <div class="items-container">
+        <ul *ngIf="!loading">
+          <li class="content-row"
+            *ngFor="let msg of conversations; trackBy: listTrackBy"
+            [attr.test-id]="msg.key"
+            [ngClass]="{
+              'unread': !msg.read,
+              'selected': msg.selected
+            }"
+          >
+            <a [routerLink]="['/', 'messages', msg.type + ':' + msg.key]">
+              <div class="content">
+                <div class="heading">
+                  <h4>{{msg.contact || msg.from || ('messages.unknown.sender' | translate)}}</h4>
+                  <div class="date"><span [innerHTML]="msg.date | relativeDate"></span></div>
+                </div>
+                <div class="summary"><p>{{ msg.message }}</p></div>
+                <div class="detail" *ngIf="msg.lineage && msg.lineage.length" [innerHTML]="msg.lineage | lineage"></div>
               </div>
-              <div class="summary"><p>{{ msg.message }}</p></div>
-              <div class="detail" *ngIf="msg.lineage && msg.lineage.length" [innerHTML]="msg.lineage | lineage"></div>
-            </div>
-          </a>
-        </li>
-      </ul>
+            </a>
+          </li>
+        </ul>
 
-      <p *ngIf="error" class="alert alert-danger" role="alert">{{'Error fetching messages' | translate}}</p>
-      <p class="loading-status" *ngIf="!error && !loading && !conversations.length">{{'No messages found' | translate}}</p>
-      <p class="loading-status" *ngIf="!error && !loading && conversations.length">{{'message.list.complete' | translate}}</p>
-      <div class="loader" *ngIf="loading"></div>
-      <div class="padding"></div>
+        <p *ngIf="error" class="alert alert-danger" role="alert">{{'Error fetching messages' | translate}}</p>
+        <p class="loading-status" *ngIf="!error && !loading && !conversations.length">{{'No messages found' | translate}}</p>
+        <p class="loading-status" *ngIf="!error && !loading && conversations.length">{{'message.list.complete' | translate}}</p>
+        <div class="loader" *ngIf="loading"></div>
+        <div class="padding"></div>
+      </div>
+      <mm-fast-action-button
+        [config]="{ button: { type: getFastActionButtonType() } }"
+        [fastActions]="fastActionList">
+      </mm-fast-action-button>
     </div>
 
     <router-outlet></router-outlet>

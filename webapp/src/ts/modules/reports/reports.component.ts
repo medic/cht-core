@@ -10,7 +10,6 @@ import { ReportsActions } from '@mm-actions/reports';
 import { ServicesActions } from '@mm-actions/services';
 import { ChangesService } from '@mm-services/changes.service';
 import { SearchService } from '@mm-services/search.service';
-import { TourService } from '@mm-services/tour.service';
 import { Selectors } from '@mm-selectors/index';
 import { AddReadStatusService } from '@mm-services/add-read-status.service';
 import { ExportService } from '@mm-services/export.service';
@@ -23,6 +22,8 @@ import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { XmlFormsService } from '@mm-services/xml-forms.service';
 
 const PAGE_SIZE = 50;
 
@@ -52,13 +53,13 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   hasReports: boolean;
   selectMode = false;
   selectModeAvailable = false;
-  verifyingReport: boolean;
   showContent: boolean;
   enketoEdited: boolean;
   useSidebarFilter = true;
   isSidebarFilterOpen = false;
   isExporting = false;
   currentLevel;
+  fastActionList: FastAction[];
 
   LIMIT_SELECT_ALL_REPORTS = 500;
 
@@ -70,7 +71,6 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private changesService:ChangesService,
     private searchService:SearchService,
     private translateService:TranslateService,
-    private tourService:TourService,
     private addReadStatusService:AddReadStatusService,
     private exportService:ExportService,
     private ngZone:NgZone,
@@ -79,6 +79,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private scrollLoaderProvider:ScrollLoaderProvider,
     private responsiveService:ResponsiveService,
     private modalService:ModalService,
+    private fastActionButtonService:FastActionButtonService,
+    private xmlFormsService:XmlFormsService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.reportsActions = new ReportsActions(store);
@@ -87,15 +89,13 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.subscribeToStore();
+    this.subscribeToXmlFormsService();
     this.watchReportList();
-
     this.reportsActions.setSelectedReports([]);
     this.appending = false;
     this.error = false;
-    this.verifyingReport = false;
 
     this.globalActions.setFilter({ search: this.route.snapshot.queryParams.query || '' });
-    this.tourService.startIfNeeded(this.route.snapshot);
     this.setActionBarData();
 
     this.currentLevel = this.authService.online(true) ? Promise.resolve() : this.getCurrentLineageLevel();
@@ -179,6 +179,27 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .select(Selectors.getSidebarFilter)
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
     this.subscription.add(subscription);
+  }
+
+  private subscribeToXmlFormsService() {
+    this.xmlFormsService.subscribe(
+      'AddReportMenu',
+      { reportForms: true },
+      async (error, xForms) => {
+        if (error) {
+          return console.error('Error fetching form definitions', error);
+        }
+
+        const xmlReportForms = xForms.map((xForm) => ({
+          id: xForm._id,
+          code: xForm.internalId,
+          icon: xForm.icon,
+          title: xForm.title,
+          titleKey: xForm.translation_key,
+        }));
+
+        this.fastActionList = await this.fastActionButtonService.getReportLeftSideActions({ xmlReportForms });
+      });
   }
 
   private watchReportList() {
@@ -476,5 +497,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private getCurrentLineageLevel() {
     return this.userContactService.get().then(user => user?.parent?.name);
+  }
+
+  getFastActionButtonType() {
+    return this.fastActionButtonService.getButtonTypeForContentList();
   }
 }

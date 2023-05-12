@@ -11,7 +11,6 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { TourService } from '@mm-services/tour.service';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { UserContactService } from '@mm-services/user-contact.service';
@@ -27,7 +26,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     private contactTypesService: ContactTypesService,
     private rulesEngineService: RulesEngineService,
     private telemetryService: TelemetryService,
-    private tourService: TourService,
     private route: ActivatedRoute,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private userContactService: UserContactService,
@@ -108,8 +106,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
 
     this.refreshTasks();
-
-    this.tourService.startIfNeeded(this.route.snapshot);
   }
 
   ngOnDestroy() {

@@ -253,7 +253,6 @@ module.exports = function(grunt) {
           ];
           const ignore = [
             'webapp/src/ts/providers/xpath-element-path.provider.ts',
-            'webapp/src/js/bootstrap-tour-standalone.js',
             'api/src/public/login/lib-bowser.js',
             'api/extracted-resources/**/*',
             'api/build/**/*',
@@ -261,6 +260,8 @@ module.exports = function(grunt) {
             'build/**',
             '**/pupil/**',
             'api/src/enketo-transformer/**',
+            'tests/scalability/report*/**',
+            'tests/scalability/jmeter/**'
           ];
 
           return [ESLINT_COMMAND]
@@ -278,6 +279,7 @@ module.exports = function(grunt) {
               `cd ${service}`,
               `npm ci --production`,
               `npm dedupe`,
+              `rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch`,
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
             ].join(' && ')
@@ -344,7 +346,9 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
+          // removing pouchdb-fetch/node-fetch forces PouchDb to use a newer version node-fetch
+          // https://github.com/medic/cht-core/issues/8173
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {

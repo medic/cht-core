@@ -69,8 +69,8 @@ describe('CHTScriptApiService service', () => {
     it('should initialize extension libs', async () => {
       settingsService.get.resolves();
       http.get.onCall(0).returns(of([ 'bar.js', 'foo.js' ]));
-      http.get.onCall(1).returns(of('return (a) => a + a'));
-      http.get.onCall(2).returns(of('return function() { return "foo"; }'));
+      http.get.onCall(1).returns(of('module.exports = (a) => a + a'));
+      http.get.onCall(2).returns(of('module.exports = function() { return "foo"; }'));
       await service.isInitialized();
 
       expect(http.get.callCount).to.equal(3);
