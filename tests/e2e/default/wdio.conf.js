@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
+chai.use(require('chai-as-promised'));
 
 const constants = require('../../constants');
 const utils = require('../../utils');
@@ -296,7 +297,7 @@ const baseConfig = {
   afterTest: async (test, context, { passed }) => {
     const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
     existingFeedBackDocIds.push(feedBackDocs);
-    if(feedBackDocs){
+    if (feedBackDocs) {
       if(passed){
         context.test.callback(new Error('Feedback docs were generated during the test.'));
       }

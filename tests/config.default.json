@@ -119,7 +119,8 @@
     "can_write_wealth_quintiles": [],
     "can_edit_verification": ["national_admin", "district_admin"],
     "can_view_outgoing_messages": ["national_admin"],
-    "can_export_all": ["national_admin"]
+    "can_export_all": ["national_admin"],
+    "can_view_old_action_bar": ["national_admin", "district_admin", "gateway", "data_entry", "analytics"]
   },
   "uhc": {
     "month_start_date": 1,

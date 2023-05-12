@@ -21,10 +21,12 @@ const deliveryCode = () => $(`${PAST_PREG_CARD_SELECTOR} div[test-id*="contact.p
 const ancVisitsCompleted = () => $(`${PAST_PREG_CARD_SELECTOR} ` +
   `div[test-id="contact.profile.anc_visit"] p.card-field-value`);
 
-const addPlace = async (type, placeName, contactName) => {
-  const dashedType = type.replace('_', '-');
-  await (await contactPageDefault.actionResourceIcon(dashedType)).waitForDisplayed();
-  await (await contactPageDefault.actionResourceIcon(dashedType)).click();
+const addPlace = async (type, placeName, contactName, rightSideAction=true) => {
+  if (rightSideAction) {
+    await commonPageDefault.clickFastActionFAB({ actionId: type });
+  } else {
+    await commonPageDefault.clickFastActionFlat({ waitForList: false });
+  }
   await (await contactPageDefault.newPrimaryContactButton()).waitForDisplayed();
   await (await contactPageDefault.newPrimaryContactButton()).click();
   await (await contactPageDefault.newPrimaryContactName()).addValue(contactName);
@@ -34,6 +36,7 @@ const addPlace = async (type, placeName, contactName) => {
   await (await contactPageDefault.externalIdField(type)).addValue('1234457');
   await (await contactPageDefault.notes(type)).addValue(`Some ${type} notes`);
   await (await contactPageDefault.genericForm.submitButton()).click();
+  const dashedType = type.replace('_', '-');
   await (await contactPageDefault.contactCardIcon(dashedType)).waitForDisplayed();
   await (await contactPageDefault.contactCard()).waitForDisplayed();
 };

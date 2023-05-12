@@ -197,7 +197,7 @@ const deleteAll = (except) => {
     'branding',
     'partners',
     'settings',
-    /^form:contact:/,
+    /^form:/,
     /^_design/
   );
   const ignoreFns = [];
@@ -226,9 +226,12 @@ const deleteAll = (except) => {
       rows
         .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
         .map(({ doc }) => {
-          doc._deleted = true;
-          doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
-          return doc;
+          return {
+            _id: doc._id,
+            _rev: doc._rev,
+            _deleted: true,
+            type: 'tombstone' // circumvent tombstones being created when DB is cleaned up
+          };
         })
     )
     .then(toDelete => {
@@ -319,6 +322,19 @@ const setUserContactDoc = (attempt=0) => {
     });
 };
 
+const deleteLocalDocs = async () => {
+  const localDocs = await module.exports.requestOnTestDb({ path: '/_local_docs?include_docs=true' });
+
+  const docsToDelete = localDocs.rows
+    .filter(row => row && row.doc && row.doc.replicator === 'pouchdb')
+    .map(row => {
+      row.doc._deleted = true;
+      return row.doc;
+    });
+
+  await module.exports.saveDocs(docsToDelete);
+};
+
 /**
  * Deletes documents from the database, including Enketo forms. Use with caution.
  * @param {array} except - exeptions in the delete method. If this parameter is empty
@@ -330,6 +346,7 @@ const revertDb = async (except, ignoreRefresh) => {
   const needsRefresh = await revertSettings();
   await deleteAll(except);
   await revertTranslations();
+  await deleteLocalDocs();
 
   // only refresh if the settings were changed or modal was already present and we're not explicitly ignoring
   if (!ignoreRefresh && (needsRefresh || await hasModal())) {
@@ -1229,10 +1246,15 @@ module.exports = {
   startSentinel: () => startService('sentinel'),
 
   stopApi: () => stopService('api'),
-  startApi: async () => {
+  startApi: async (listen = true) => {
     await startService('api');
-    await listenForApi();
+    listen && await listenForApi();
   },
+  stopHaproxy: () => stopService('haproxy'),
+  startHaproxy: () => startService('haproxy'),
+
+  stopNginx: () => stopService('nginx'),
+  startNginx: () => startService('nginx'),
 
   saveCredentials: (key, password) => {
     const options = {
@@ -1335,6 +1357,24 @@ module.exports = {
       Object.assign(translationsDoc.generic, translations);
       return db.put(translationsDoc);
     });
+  },
+
+  enableLanguage: (languageCode) => module.exports.enableLanguages([languageCode]),
+
+  enableLanguages: async (languageCodes) => {
+    const { languages } = await module.exports.getSettings();
+    for (const languageCode of languageCodes) {
+      const language = languages.find(language => language.locale === languageCode);
+      if (language) {
+        language.enabled = true;
+      } else {
+        languages.push({
+          locale: languageCode,
+          enabled: true,
+        });
+      }
+    }
+    await module.exports.updateSettings({ languages }, true);
   },
 
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),

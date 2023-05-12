@@ -26,14 +26,18 @@ const getBaseUrl = () => {
   return `${location.protocol}//${location.hostname}${port}`;
 };
 
-const fetchJSON = (path) => {
+const fetchJSON = async (path) => {
   const baseUrl = getBaseUrl();
   const options = {
     credentials: 'same-origin',
     headers: opts.remote_headers
   };
-  return fetch(`${baseUrl}${path}`, options)
-    .then(res => res.json());
+  const response = await fetch(`${baseUrl}${path}`, options);
+  const jsonResponse = await response.json();
+  if (response.ok) {
+    return jsonResponse;
+  }
+  throw jsonResponse;
 };
 
 module.exports = {

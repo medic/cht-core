@@ -30,6 +30,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { TransitionsService } from '@mm-services/transitions.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 @Injectable({
@@ -59,6 +60,7 @@ export class EnketoService {
     private translateService: TranslateService,
     private feedbackService:FeedbackService,
     private ngZone: NgZone,
+    private chtScriptApiService: CHTScriptApiService
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -70,7 +72,7 @@ export class EnketoService {
   private readonly HTML_ATTACHMENT_NAME = 'form.html';
   private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
   private readonly objUrls = [];
-  private inited = false;
+  private inited;
 
   private currentForm;
   getCurrentForm() {
@@ -78,13 +80,18 @@ export class EnketoService {
   }
 
   private init() {
-    return this.zScoreService
-      .getScoreUtil()
-      .then((zscoreUtil) => {
-        medicXpathExtensions.init(zscoreUtil, toBik_text, moment);
+    if (this.inited) {
+      return this.inited;
+    }
+    return Promise.all([
+      this.zScoreService.getScoreUtil(),
+      this.chtScriptApiService.getApi()
+    ])
+      .then(([zscoreUtil, api]) => {
+        medicXpathExtensions.init(zscoreUtil, toBik_text, moment, api);
       })
       .catch((err) => {
-        console.error('Error initialising zscore util', err);
+        console.error('Error initialising enketo service', err);
       });
   }
 

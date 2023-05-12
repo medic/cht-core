@@ -4,7 +4,6 @@ const constants = require('../../../constants');
 const utils = require('../../../utils');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
 
 const readFormDocument = (formId) => {
   const form = fs.readFileSync(`${__dirname}/forms/${formId}.xml`, 'utf8');
@@ -40,9 +39,9 @@ const login = async () => {
   await commonPage.goToBase();
 };
 
-const openRepeatForm = async (formTitle) => {
+const openRepeatForm = async (formId) => {
   await commonPage.goToReports();
-  await reportsPage.openForm(formTitle);
+  await commonPage.openFastActionReport(formId, false);
 };
 
 const getField = async (fieldName, fieldValue) => {
@@ -101,7 +100,7 @@ describe('RepeatForm', () => {
       const neUserName = 'प्रयोगकर्ताको नाम';
       await loginPage.changeLanguage('ne', neUserName);
       await login();
-      await openRepeatForm(countFormDocument.title);
+      await openRepeatForm(countFormDocument.internalId);
 
       const stateLabel = await $(stateLabelPath);
       expect(await stateLabel.getText()).to.equal('Select a state: - NE');
@@ -120,7 +119,7 @@ describe('RepeatForm', () => {
       const enUserName = 'User name';
       await loginPage.changeLanguage('en', enUserName);
       await login();
-      await openRepeatForm(countFormDocument.title);
+      await openRepeatForm(countFormDocument.internalId);
 
       const stateLabel = await $(stateLabelPath);
       expect(await stateLabel.getText()).to.equal('Select a state:');
@@ -146,7 +145,7 @@ describe('RepeatForm', () => {
       const swUserName = 'Jina la mtumizi';
       await loginPage.changeLanguage('sw', swUserName);
       await login();
-      await openRepeatForm(buttonFormDocument.title);
+      await openRepeatForm(buttonFormDocument.internalId);
 
       const stateLabel = await $(stateLabelPath);
       expect(await stateLabel.getText()).to.equal('Select a state: - SV');
@@ -165,7 +164,7 @@ describe('RepeatForm', () => {
       const enUserName = 'User name';
       await loginPage.changeLanguage('en', enUserName);
       await login();
-      await openRepeatForm(buttonFormDocument.title);
+      await openRepeatForm(buttonFormDocument.internalId);
 
       const stateLabel = await $(stateLabelPath);
       expect(await stateLabel.getText()).to.equal('Select a state:');
@@ -186,7 +185,7 @@ describe('RepeatForm', () => {
       const swUserName = 'Jina la mtumizi';
       await loginPage.changeLanguage('sw', swUserName);
       await login();
-      await openRepeatForm(selectFormDocument.title);
+      await openRepeatForm(selectFormDocument.internalId);
 
       const { input: washingtonInput, label: washingtonLabel } = await getField('selected_state', 'washington');
       expect(await washingtonLabel.getText()).to.equal('Washington');

@@ -10,6 +10,8 @@ import { SessionService } from '@mm-services/session.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsMoreMenuComponent } from '@mm-modules/reports/reports-more-menu.component';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatDialog } from '@angular/material/dialog';
 
 describe('Reports More Menu Component', () => {
   let component: ReportsMoreMenuComponent;
@@ -18,6 +20,8 @@ describe('Reports More Menu Component', () => {
   let sessionService;
   let authService;
   let responsiveService;
+  let matBottomSheet;
+  let matDialog;
 
   beforeEach(async () => {
     const mockedSelectors = [
@@ -34,6 +38,8 @@ describe('Reports More Menu Component', () => {
     };
     sessionService = { isDbAdmin: sinon.stub().returns(false) };
     responsiveService = { isMobile: sinon.stub().returns(false) };
+    matBottomSheet = { open: sinon.stub() };
+    matDialog = { open: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -45,6 +51,8 @@ describe('Reports More Menu Component', () => {
           { provide: AuthService, useValue: authService },
           { provide: SessionService, useValue: sessionService },
           { provide: ResponsiveService, useValue: responsiveService },
+          { provide: MatBottomSheet, useValue: matBottomSheet },
+          { provide: MatDialog, useValue: matDialog },
         ]
       })
       .compileComponents()

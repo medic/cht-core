@@ -5,6 +5,7 @@ const fs = require('fs');
 const rewire = require('rewire');
 
 const db = require('../../src/db');
+const settings = require('../../src/services/settings');
 const environment = require('../../src/environment');
 
 let translations;
@@ -514,6 +515,48 @@ describe('translations', () => {
             { startkey: 'messages-', endkey: `messages-\ufff0`, include_docs: true }
           ]);
         });
+      });
+    });
+
+    describe('with new "languages" setting', () => {
+      it('should only return translation docs enabled in "languages" setting', async () => {
+        sinon.stub(settings, 'get').resolves({
+          languages: [
+            { locale: 'en', enabled: true },
+            { locale: 'fr', enabled: true },
+            { locale: 'es', enabled: false },
+          ],
+        });
+        sinon.stub(db.medic, 'allDocs').resolves({
+          rows: [
+            { doc: { _id: 'messages-en', type: 'translations', code: 'en', generic: {}, enabled: true } },
+            { doc: { _id: 'messages-fr', type: 'translations', code: 'fr', generic: {}, enabled: false } },
+            { doc: { _id: 'messages-es', type: 'translations', code: 'es', generic: {}, enabled: true } },
+          ],
+        });
+        const enabledLocales = await translations.getEnabledLocales();
+        chai.expect(enabledLocales).to.deep.equal([
+          { _id: 'messages-en', type: 'translations', code: 'en', generic: {}, enabled: true },
+          { _id: 'messages-fr', type: 'translations', code: 'fr', generic: {}, enabled: false },
+        ]);
+      });
+    });
+
+    describe('without new "languages" setting', () => {
+      it('should only return translation docs enabled in translation doc', async () => {
+        sinon.stub(settings, 'get').resolves({});
+        sinon.stub(db.medic, 'allDocs').resolves({
+          rows: [
+            { doc: { _id: 'messages-en', type: 'translations', code: 'en', generic: {}, enabled: true } },
+            { doc: { _id: 'messages-fr', type: 'translations', code: 'fr', generic: {}, enabled: false } },
+            { doc: { _id: 'messages-es', type: 'translations', code: 'es', generic: {}, enabled: true } },
+          ],
+        });
+        const enabledLocales = await translations.getEnabledLocales();
+        chai.expect(enabledLocales).to.deep.equal([
+          { _id: 'messages-en', type: 'translations', code: 'en', generic: {}, enabled: true },
+          { _id: 'messages-es', type: 'translations', code: 'es', generic: {}, enabled: true },
+        ]);
       });
     });
   });

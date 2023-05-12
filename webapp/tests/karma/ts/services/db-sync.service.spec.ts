@@ -13,6 +13,7 @@ import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { PurgeService } from '@mm-services/purge.service';
+import { MigrationsService } from '@mm-services/migrations.service';
 
 describe('DBSync service', () => {
   let service:DBSyncService;
@@ -37,6 +38,7 @@ describe('DBSync service', () => {
   let telemetryService;
   let translateService;
   let purgeService;
+  let migrationService;
   let store;
 
   let localMedicDb;
@@ -122,6 +124,7 @@ describe('DBSync service', () => {
     getItem = sinon.stub(window.localStorage, 'getItem');
     sinon.stub(window.localStorage, 'setItem');
     checkDateService = { check: sinon.stub().resolves() };
+    migrationService = { runMigrations: sinon.stub().resolves() };
 
     TestBed.configureTestingModule({
       providers: [
@@ -134,7 +137,8 @@ describe('DBSync service', () => {
         { provide: TranslateService, useValue: translateService },
         { provide: Store, useValue: store },
         { provide: CheckDateService, useValue: checkDateService },
-        { provide: PurgeService, useValue: purgeService }
+        { provide: PurgeService, useValue: purgeService },
+        { provide: MigrationsService, useValue: migrationService },
       ]
     });
 
@@ -162,15 +166,37 @@ describe('DBSync service', () => {
       return service.sync().then(() => {
         expect(hasAuth.callCount).to.equal(1);
         expect(hasAuth.args[0][0]).to.equal('can_edit');
+        expect(migrationService.runMigrations.callCount).to.equal(1);
         expectSyncCall(1);
         expect(from.args[0][1]).to.have.keys('heartbeat', 'timeout', 'batch_size');
         expect(from.args[0][1]).to.not.have.keys('filter', 'checkpoint');
-        expect(to.args[0][1]).to.have.keys('filter', 'checkpoint', 'batch_size');
+        expect(to.args[0][1]).to.have.keys('filter', 'batch_size');
+        expect(to.args[0][1]).to.not.have.keys('checkpoint');
         expect(checkDateService.check.callCount).to.equal(1);
         expect(checkDateService.check.args[0]).to.deep.equal([]);
         expectSyncMetaCall(1);
         expect(purgeService.updateDocsToPurge.callCount).to.equal(1);
       });
+    });
+
+    it('should not start bi-direction replication when migrations fail', async () => {
+      migrationService.runMigrations.rejects(new Error('migration failed'));
+
+      await expect(service.sync()).to.be.rejectedWith(Error, 'migration failed');
+      expectSyncCall(0);
+      expect(migrationService.runMigrations.callCount).to.equal(1);
+    });
+
+    it('should run migrations on subsequent syncs', async () => {
+      isOnlineOnly.returns(false);
+      hasAuth.resolves(true);
+
+      await service.sync();
+      expectSyncCall(1);
+      expect(migrationService.runMigrations.callCount).to.equal(1);
+      await service.sync();
+      expectSyncCall(2);
+      expect(migrationService.runMigrations.callCount).to.equal(2);
     });
 
     it('should record telemetry for bi-directional replication', async () => {
@@ -221,6 +247,7 @@ describe('DBSync service', () => {
 
       await service.sync();
       expectSyncCall(1);
+      expect(migrationService.runMigrations.callCount).to.equal(1);
       clock.tick(5 * 60 * 1000 + 1);
       await nextTick();
       expectSyncCall(2);
@@ -395,6 +422,7 @@ describe('DBSync service', () => {
           expectSyncCall(1);
           expect(telemetryService.record.callCount).to.equal(9);
           expect(telemetryService.record.args).to.have.deep.members([
+
             ['replication:medic:from:failure', 2000],
             ['replication:medic:from:ms-since-last-replicated-date', 800],
             ['replication:medic:from:docs', 22],
@@ -988,6 +1016,7 @@ describe('DBSync service', () => {
         metaFrom.callsFake(() => new Promise(resolve => metaFromResolve = resolve));
 
         const syncCall = service.sync();
+        await nextTick();
         clock.tick(1000);
         await nextTick();
 
@@ -1013,6 +1042,7 @@ describe('DBSync service', () => {
         metaFrom.returns(new Promise(resolve => metaFromResolve = resolve));
 
         const syncCall = service.sync();
+        await nextTick();
         clock.tick(1000);
         await nextTick();
 
@@ -1040,6 +1070,7 @@ describe('DBSync service', () => {
         service.setOnlineStatus(false);
 
         const syncCall = service.sync(true);
+        await nextTick();
         clock.tick(1312321);
         await nextTick();
 
