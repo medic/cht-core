@@ -37,12 +37,29 @@ const snackbar = () => $('#snackbar.active .snackbar-message');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
+//Hamburguer menu
 // Configuration wizard
+const CONFIGURATION_WIZARD_MENU = 'i.fa-list-ol';
 const CONFIGURATION_WIZARD = '#guided-setup';
 const configurationWizardTitle = () => $(`${CONFIGURATION_WIZARD} .modal-header > h2`);
 const defaultCountryCode = () => $('#select2-default-country-code-setup-container');
-const skipSetup = () => $(`${CONFIGURATION_WIZARD} .modal-footer>a:first-of-type`);
-const finishButton = () => $(`${CONFIGURATION_WIZARD} .modal-footer>a:nth-of-type(2)`);
+const configurationWizardSkipSetup = () => $(`${CONFIGURATION_WIZARD} .modal-footer>a:first-of-type`);
+const configurationWizardFinishButton = () => $(`${CONFIGURATION_WIZARD} .modal-footer>a:nth-of-type(2)`);
+//User settings
+const USER_SETTINGS = '=User settings';
+const UPDATE_PASSWORD = '=Update password';
+const EDIT_PROFILE = '=Edit user profile';
+// Feedback or Report bug
+const FEEDBACK_MENU = 'i.fa-bug';
+const FEEDBACK = '#feedback';
+const feedbackTitle = () => $(`${FEEDBACK} .modal-header > h2`);
+const feedbackCancelButton = () => $(`${FEEDBACK} .btn.cancel`);
+const feedbackSubmitButton = () => $(`${FEEDBACK} .btn-primary`);
+//About menu
+const ABOUT_MENU = 'i.fa-question';
+const RELOAD_BUTTON = '.btn-primary=Reload';
+//Configuration App
+const CONFIGURATION_APP_MENU = 'i.fa-cog';
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
@@ -332,28 +349,41 @@ const closeReloadModal = async (shouldUpdate = false) => {
 };
 
 const openReportBugAndFetchProperties = async () => {
-  await (await $('i.fa-bug')).click();
-  await (await $('#feedback')).waitForDisplayed();
+  await (await $(FEEDBACK_MENU)).waitForClickable();
+  await (await $(FEEDBACK_MENU)).click();
+  await (await $(FEEDBACK)).waitForDisplayed();
   return {
-    modalHeader: await (await $('#feedback .modal-header > h2')).getText(),
-    modelCancelButtonText: await (await $('#feedback .btn.cancel')).getText(),
-    modelSubmitButtonText: await (await $('#feedback .btn-primary')).getText()
+    modalHeader: await (await feedbackTitle()).getText(),
+    modelCancelButtonText: await (await feedbackCancelButton()).getText(),
+    modelSubmitButtonText: await (await feedbackSubmitButton()).getText()
   };
 };
 
+const isReportBugOpen = async () => {
+  return await (await feedbackTitle()).isExisting();
+};
+
+const closeReportBug = async () => {
+  if (await isReportBugOpen()) {
+    await (await feedbackCancelButton()).waitForClickable();
+    await (await feedbackCancelButton()).click();
+  }
+};
+
 const openAboutMenu = async () => {
-  await (await $('i.fa-question')).click();
-  await (await $('.btn-primary=Reload')).waitForDisplayed();
+  await (await $(ABOUT_MENU)).waitForClickable();
+  await (await $(ABOUT_MENU)).click();
+  await (await $(RELOAD_BUTTON)).waitForDisplayed();
 };
 
 const openConfigurationWizardAndFetchProperties = async () => {
-  await (await $('i.fa-list-ol')).waitForClickable();
-  await (await $('i.fa-list-ol')).click();
+  await (await $(CONFIGURATION_WIZARD_MENU)).waitForClickable();
+  await (await $(CONFIGURATION_WIZARD_MENU)).click();
   await (await $(CONFIGURATION_WIZARD)).waitForDisplayed();
   return {
     modelTitle: await (await configurationWizardTitle()).getText(),
     defaultCountryCode: await (await defaultCountryCode()).getText(),
-    modelFinishButtonText: await (await finishButton()).getText()
+    modelFinishButtonText: await (await configurationWizardFinishButton()).getText()
   };
 };
 
@@ -363,15 +393,9 @@ const isConfigurationWizardOpen = async () => {
 
 const closeConfigurationWizard = async () => {
   if (await isConfigurationWizardOpen()) {
-    await (await skipSetup()).waitForClickable();
-    await (await skipSetup()).click();
+    await (await configurationWizardSkipSetup()).waitForClickable();
+    await (await configurationWizardSkipSetup()).click();
   }
-};
-
-const openUserSettingsAndFetchProperties = async () => {
-  await (await $('=User settings')).click();
-  await (await $('=Update password')).waitForDisplayed();
-  await (await $('=Edit user profile')).waitForDisplayed();
 };
 
 const openUserSettings = async () => {
@@ -379,8 +403,16 @@ const openUserSettings = async () => {
   await (await userSettingsMenuOption()).click();
 };
 
+const openUserSettingsAndFetchProperties = async () => {
+  await (await $(USER_SETTINGS)).waitForClickable();
+  await (await $(USER_SETTINGS)).click();
+  await (await $(UPDATE_PASSWORD)).waitForDisplayed();
+  await (await $(EDIT_PROFILE)).waitForDisplayed();
+};
+
 const openAppManagement = async () => {
-  await (await $('i.fa-cog')).click();
+  await (await $(CONFIGURATION_APP_MENU)).waitForClickable();
+  await (await $(CONFIGURATION_APP_MENU)).click();
   await (await $('.navbar-brand')).waitForDisplayed();
 };
 
@@ -472,4 +504,5 @@ module.exports = {
   syncAndWaitForFailure,
   waitForAngularLoaded,
   closeConfigurationWizard,
+  closeReportBug,
 };
