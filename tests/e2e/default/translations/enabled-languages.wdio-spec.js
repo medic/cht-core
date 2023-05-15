@@ -18,6 +18,10 @@ describe('Enabling/disabling languages', () => {
           locale: 'fr',
           enabled: true,
         },
+        {
+          locale: 'sw',
+          enabled: false,
+        },
       ],
     };
     await utils.updateSettings(settings, true);
