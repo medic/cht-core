@@ -9,7 +9,7 @@ export const Actions = {
   selectContact: createMultiValueAction('SELECT_CONTACT'),
   setSelectedContact: createSingleValueAction('SET_SELECTED_CONTACT', 'selected'),
   setContactsLoadingSummary: createSingleValueAction('SET_CONTACT_LOADING_SUMMARY', 'value'),
-  setContactIdToFetch: createSingleValueAction('SET_CONTACT_ID_TO_FETCH', 'id'),
+  setContactIdToLoad: createSingleValueAction('SET_CONTACT_ID_TO_LOAD', 'id'),
   setLoadingSelectedContact: createAction('SET_LOADING_SELECTED_CONTACT'),
   receiveSelectedContactChildren: createSingleValueAction('RECEIVE_SELECTED_CONTACT_CHILDREN', 'children'),
   receiveSelectedContactReports: createSingleValueAction('RECEIVE_SELECTED_CONTACT_REPORTS', 'reports'),
@@ -23,8 +23,8 @@ export class ContactsActions {
     private store: Store
   ) {}
 
-  setContactIdToFetch(id) {
-    return this.store.dispatch(Actions.setContactIdToFetch(id));
+  setContactIdToLoad(id) {
+    return this.store.dispatch(Actions.setContactIdToLoad(id));
   }
 
   updateContactsList(contacts) {
@@ -32,6 +32,7 @@ export class ContactsActions {
   }
 
   clearSelection() {
+    this.store.dispatch(Actions.setContactIdToLoad(null));
     return this.store.dispatch(Actions.setSelectedContact(null));
   }
 

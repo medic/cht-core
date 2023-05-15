@@ -75,16 +75,16 @@ describe('Contacts effects', () => {
   describe('selectContact', () => {
     let setLoadingSelectedContact;
     let setContactsLoadingSummary;
-    let clearSelection;
-    let setContactIdToFetchStub;
+    let clearSelectionStub;
+    let setContactIdToLoadStub;
 
     const simulateContactsReducer = () => {
       let selectedContact = null;
-      let contactIdToFetch = null;
+      let contactIdToLoad = null;
 
       const refreshState = () => {
         store.overrideSelector(Selectors.getSelectedContact, selectedContact);
-        store.overrideSelector(Selectors.getContactIdToFetch, contactIdToFetch);
+        store.overrideSelector(Selectors.getContactIdToLoad, contactIdToLoad);
         store.refreshState();
       };
       refreshState();
@@ -120,8 +120,8 @@ describe('Contacts effects', () => {
         refreshState();
       });
 
-      setContactIdToFetchStub.callsFake(id => {
-        contactIdToFetch = id;
+      setContactIdToLoadStub.callsFake(id => {
+        contactIdToLoad = id;
         refreshState();
       });
     };
@@ -129,17 +129,17 @@ describe('Contacts effects', () => {
     beforeEach(() => {
       setLoadingSelectedContact = sinon.stub(ContactsActions.prototype, 'setLoadingSelectedContact');
       setContactsLoadingSummary = sinon.stub(ContactsActions.prototype, 'setContactsLoadingSummary');
-      setContactIdToFetchStub = sinon.stub(ContactsActions.prototype, 'setContactIdToFetch');
+      setContactIdToLoadStub = sinon.stub(ContactsActions.prototype, 'setContactIdToLoad');
+      clearSelectionStub = sinon.stub(ContactsActions.prototype, 'clearSelection');
       simulateContactsReducer();
     });
 
     it('should deselect when no provided id', waitForAsync(() => {
-      clearSelection = sinon.stub(ContactsActions.prototype, 'clearSelection');
       actions$ = of(ContactActionList.selectContact({  }));
       effects.selectContact.subscribe();
 
-      expect(clearSelection.callCount).to.equal(1);
-      expect(contactViewModelGeneratorService.getContact.callCount).to.equal(0);
+      expect(clearSelectionStub.calledOnce).to.be.true;
+      expect(contactViewModelGeneratorService.getContact.notCalled).to.be.true;
     }));
 
     it('should load the contact when not silent', async () => {
@@ -162,9 +162,8 @@ describe('Contacts effects', () => {
       expect(setContactsLoadingSummary.args).to.deep.equal([[true], [false]]);
       expect(settingSelected.callCount).to.equal(1);
       expect(settingSelected.args[0]).to.deep.equal([]);
-      expect(setContactIdToFetchStub.calledTwice).to.be.true;
-      expect(setContactIdToFetchStub.args[0][0]).to.equal('contactid');
-      expect(setContactIdToFetchStub.args[1][0]).to.equal(null);
+      expect(setContactIdToLoadStub.calledOnce).to.be.true;
+      expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
     });
 
     it('should load the contact when silent', async () => {
@@ -185,16 +184,14 @@ describe('Contacts effects', () => {
       expect(setLoadingSelectedContact.callCount).to.equal(0);
       expect(settingSelected.callCount).to.equal(1);
       expect(settingSelected.args[0]).to.deep.equal([]);
-      expect(setContactIdToFetchStub.calledTwice).to.be.true;
-      expect(setContactIdToFetchStub.args[0][0]).to.equal('contactid');
-      expect(setContactIdToFetchStub.args[1][0]).to.equal(null);
+      expect(setContactIdToLoadStub.calledOnce).to.be.true;
+      expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
     });
 
     it('should handle missing contacts', fakeAsync(() => {
       const consoleErrorMock = sinon.stub(console, 'error');
       const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
       const unsetSelected = sinon.stub(GlobalActions.prototype, 'unsetSelected');
-      const setSelectedContact:any = ContactsActions.prototype.setSelectedContact;
       contactViewModelGeneratorService.getContact.rejects({ code: 404, error: 'not found'});
       actions$ = of(ContactActionList.selectContact({ id: 'contactid', silent: false }));
       effects.selectContact.subscribe();
@@ -204,8 +201,7 @@ describe('Contacts effects', () => {
       expect(consoleErrorMock.args[0][0]).to.equal('Error selecting contact');
       expect(setSnackbarContent.callCount).to.equal(1);
       expect(unsetSelected.callCount).to.equal(1);
-      expect(setSelectedContact.callCount).to.equal(1);
-      expect(setSelectedContact.args[0][0]).to.equal(null);
+      expect(clearSelectionStub.calledOnce).to.be.true;
       expect(contactViewModelGeneratorService.getContact.callCount).to.equal(1);
       expect(contactViewModelGeneratorService.loadChildren.callCount).to.equal(0);
       expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(0);

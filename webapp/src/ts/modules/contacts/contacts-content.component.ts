@@ -96,8 +96,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    this.contactsActions.setContactIdToFetch(null);
-    this.contactsActions.setSelectedContact(null);
+    this.contactsActions.clearSelection();
     this.globalActions.setRightActionBar({});
   }
 
@@ -207,8 +206,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
         $('.tooltip').remove();
       } else {
-        this.contactsActions.setContactIdToFetch(null);
-        this.contactsActions.setSelectedContact(null);
+        this.contactsActions.clearSelection();
         this.globalActions.unsetSelected();
       }
     });

@@ -20,7 +20,7 @@ export class ContactsEffects {
   private globalActions: GlobalActions;
 
   private selectedContact;
-  private contactIdToFetch;
+  private contactIdToLoad;
 
   constructor(
     private actions$: Actions,
@@ -37,10 +37,10 @@ export class ContactsEffects {
 
     combineLatest(
       this.store.select(Selectors.getSelectedContact),
-      this.store.select(Selectors.getContactIdToFetch),
-    ).subscribe(([ selectedContact, contactIdToFetch ]) => {
+      this.store.select(Selectors.getContactIdToLoad),
+    ).subscribe(([ selectedContact, contactIdToLoad ]) => {
       this.selectedContact = selectedContact;
-      this.contactIdToFetch = contactIdToFetch;
+      this.contactIdToLoad = contactIdToLoad;
     });
   }
 
@@ -64,18 +64,13 @@ export class ContactsEffects {
 
         const loadContact = this
           .loadContact(id)
-          .then(() => this.setTitle(id))
+          .then(() => this.verifySelectedContactNotChanged(id))
+          .then(() => this.setTitle())
           .then(() => this.loadChildren(id, userFacilityId))
           .then(() => this.loadReports(id, forms))
           .then(() => this.loadTargetDoc(id))
           .then(() => this.loadContactSummary(id))
           .then(() => this.loadTasks(id))
-          .then(() => {
-            if (id === this.contactIdToFetch) {
-              // Clear ID after loading contact
-              this.contactsActions.setContactIdToFetch(null);
-            }
-          })
           .catch(err => {
             // If the selected contact has changed, just stop loading this one
             if (err.code === 'SELECTED_CONTACT_CHANGED') {
@@ -86,8 +81,7 @@ export class ContactsEffects {
             }
             console.error('Error selecting contact', err);
             this.globalActions.unsetSelected();
-            this.contactsActions.setContactIdToFetch(null);
-            return of(this.contactsActions.setSelectedContact(null));
+            return of(this.contactsActions.clearSelection());
           });
 
         return of(loadContact);
@@ -95,20 +89,16 @@ export class ContactsEffects {
     );
   }, { dispatch: false });
 
-  private setTitle(contactId) {
-    return this
-      .verifySelectedContactNotChanged(contactId)
-      .then(() => {
-        const routeSnapshot = this.routeSnapshotService.get();
-        const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
-          ? this.translateService.instant('contact.deceased.title') : null;
-        const title = deceasedTitle || this.selectedContact.type?.name_key || 'contact.profile';
-        this.globalActions.setTitle(this.translateService.instant(title));
-      });
+  private setTitle() {
+    const routeSnapshot = this.routeSnapshotService.get();
+    const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
+      ? this.translateService.instant('contact.deceased.title') : null;
+    const title = deceasedTitle || this.selectedContact.type?.name_key || 'contact.profile';
+    this.globalActions.setTitle(this.translateService.instant(title));
   }
 
   private loadContact(id) {
-    this.contactsActions.setContactIdToFetch(id);
+    this.contactsActions.setContactIdToLoad(id);
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
       .then(model => {
@@ -122,7 +112,7 @@ export class ContactsEffects {
   }
 
   private verifySelectedContactNotChanged(id) {
-    return this.contactIdToFetch !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
+    return this.contactIdToLoad !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
   }
 
   private loadChildren(contactId, userFacilityId) {

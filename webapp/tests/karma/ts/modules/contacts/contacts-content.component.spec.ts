@@ -158,17 +158,13 @@ describe('Contacts content component', () => {
 
   it('ngOnDestroy() should unsubscribe from observables and reset state', () => {
     const unsubscribeSpy = sinon.spy(component.subscription, 'unsubscribe');
-    const setContactIdToFetchStub = sinon.stub(ContactsActions.prototype, 'setContactIdToFetch');
-    const setSelectedContactStub = sinon.stub(ContactsActions.prototype, 'setSelectedContact');
+    const clearSelectionStub = sinon.stub(ContactsActions.prototype, 'clearSelection');
     sinon.resetHistory();
 
     component.ngOnDestroy();
 
     expect(unsubscribeSpy.calledOnce).to.be.true;
-    expect(setContactIdToFetchStub.calledOnce).to.be.true;
-    expect(setContactIdToFetchStub.args[0][0]).to.equal(null);
-    expect(setSelectedContactStub.calledOnce).to.be.true;
-    expect(setSelectedContactStub.args[0][0]).to.equal(null);
+    expect(clearSelectionStub.calledOnce).to.be.true;
     expect(globalActions.setRightActionBar.calledOnce).to.be.true;
     expect(globalActions.setRightActionBar.args[0][0]).to.deep.equal({});
   });
@@ -224,8 +220,7 @@ describe('Contacts content component', () => {
   }));
 
   it('should unset selected contact when a param id not set and no search term exists', fakeAsync(() => {
-    const setContactIdToFetchStub = sinon.stub(ContactsActions.prototype, 'setContactIdToFetch');
-    const setSelectedContactStub = sinon.stub(ContactsActions.prototype, 'setSelectedContact');
+    const clearSelectionStub = sinon.stub(ContactsActions.prototype, 'clearSelection');
     store.overrideSelector(Selectors.getFilters, undefined);
     sinon.resetHistory();
 
@@ -233,10 +228,7 @@ describe('Contacts content component', () => {
     flush();
 
     expect(globalActions.unsetSelected.calledOnce).to.be.true;
-    expect(setContactIdToFetchStub.calledOnce).to.be.true;
-    expect(setContactIdToFetchStub.args[0][0]).to.equal(null);
-    expect(setSelectedContactStub.calledOnce).to.be.true;
-    expect(setSelectedContactStub.args[0][0]).to.equal(null);
+    expect(clearSelectionStub.calledOnce).to.be.true;
   }));
 
   describe('Change feed process', () => {
