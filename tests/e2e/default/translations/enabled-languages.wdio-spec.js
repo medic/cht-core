@@ -24,7 +24,9 @@ describe('Enabling/disabling languages', () => {
         },
       ],
     };
+    const logWatcher = utils.waitForApiLogs(/Service worker generated successfully/);
     await utils.updateSettings(settings, true);
+    await logWatcher;
     await browser.refresh();
   });
 
