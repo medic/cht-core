@@ -27,8 +27,11 @@ describe('Enabling/disabling languages', () => {
     const logWatcher = utils.waitForApiLogs(/Service worker generated successfully/);
     await utils.updateSettings(settings, true);
     await logWatcher;
+    await browser.pause(1000);
     await browser.refresh();
+    await browser.pause(1000);
     await browser.refresh(); // first refresh gets the sw update, second refresh to load the new page
+    await browser.pause(1000);
   });
 
   after(async () => {
