@@ -28,6 +28,7 @@ describe('Enabling/disabling languages', () => {
     await utils.updateSettings(settings, true);
     await logWatcher;
     await browser.refresh();
+    await browser.refresh(); // first refresh gets the sw update, second refresh to load the new page
   });
 
   after(async () => {
