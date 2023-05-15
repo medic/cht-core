@@ -574,7 +574,7 @@ const validateUserContact = (data, user, userSettings) => {
  * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
  * @param {string=} data.fullname Full name
  * @param {string=} data.email Email address
- * @param {Boolean=} data.known Boolean to define if the user has logged in before. Used mainly to determine whether or not to start a tour on first login.
+ * @param {Boolean=} data.known Boolean to define if the user has logged in before.
  * @param {string=} data.type Deprecated. Used to infer user's roles
  * @param {string} appUrl request protocol://hostname
  */
@@ -797,7 +797,7 @@ module.exports = {
    * @param {Boolean=} data.token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
    * @param {string=} data.fullname Full name
    * @param {string=} data.email Email address
-   * @param {Boolean=} data.known Boolean to define if the user has logged in before. Used mainly to determine whether or not to start a tour on first login.
+   * @param {Boolean=} data.known Boolean to define if the user has logged in before.
    * @param {string=} data.type Deprecated. Used to infer user's roles
    * @param {string} appUrl request protocol://hostname
    * @api public
@@ -840,7 +840,7 @@ module.exports = {
    * @param {Boolean=} users[].token_login A boolean representing whether or not the Login by SMS should be enabled for this user.
    * @param {string=} users[].fullname Full name
    * @param {string=} users[].email Email address
-   * @param {Boolean=} users[].known Boolean to define if the user has logged in before. Used mainly to determine whether or not to start a tour on first login.
+   * @param {Boolean=} users[].known Boolean to define if the user has logged in before.
    * @param {string=} users[].type Deprecated. Used to infer user's roles
    * @param {string} appUrl request protocol://hostname
    */

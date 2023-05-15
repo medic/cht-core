@@ -80,6 +80,7 @@ export const Selectors = {
   contactListContains: createSelector(getContactsState, (contactsState) => {
     return (id) => contactsState.contactsById.has(id);
   }),
+  getContactIdToLoad: createSelector(getContactsState, (contactState) => contactState.contactIdToLoad),
   getSelectedContact: createSelector(getContactsState, (contactState) => contactState.selected),
   getSelectedContactDoc: createSelector(getContactsState, (contactState) => contactState.selected?.doc),
   getSelectedContactSummary: createSelector(getContactsState, (contactState) => contactState.selected?.summary),

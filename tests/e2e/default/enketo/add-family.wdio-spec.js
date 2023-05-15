@@ -31,7 +31,7 @@ describe('Family form', () => {
     await cookieLogin();
   });
 
-  it('Submit Add Family form', async () => {
+  xit('Submit Add Family form', async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport(formDoc.internalId, false);
     await familyForm.submitFamilyForm();

@@ -12,7 +12,6 @@ import { ChangesService } from '@mm-services/changes.service';
 import { ExportService } from '@mm-services/export.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
-import { TourService } from '@mm-services/tour.service';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -44,7 +43,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
     private messageContactService: MessageContactService,
     private exportService: ExportService,
     private modalService: ModalService,
-    private tourService: TourService,
     private responsiveService: ResponsiveService,
     private userContactService: UserContactService,
     private authService: AuthService,
@@ -55,7 +53,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscribeToStore();
-    this.tourService.startIfNeeded(this.route.snapshot);
 
     this.currentLevel = this.authService.online(true) ? Promise.resolve() : this.getCurrentLineageLevel();
 

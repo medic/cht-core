@@ -10,16 +10,13 @@ import { ComponentsModule } from '@mm-components/components.module';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
-import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
 import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
-import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
-import { WelcomeComponent } from '@mm-modals/welcome/welcome.component';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
@@ -36,16 +33,13 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     ReloadingComponent,
     LogoutConfirmComponent,
     FeedbackComponent,
-    GuidedSetupComponent,
     SendMessageComponent,
     DeleteDocConfirmComponent,
     UpdatePasswordComponent,
     ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
-    TourSelectComponent,
     TrainingCardsComponent,
-    WelcomeComponent,
     BulkDeleteConfirmComponent,
     EditReportComponent,
     VerifyReportComponent,
@@ -71,9 +65,7 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
-    TourSelectComponent,
     TrainingCardsComponent,
-    WelcomeComponent,
     BulkDeleteConfirmComponent,
     EditReportComponent,
     VerifyReportComponent,
