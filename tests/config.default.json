@@ -39,7 +39,6 @@
   "schedule_evening_hours": 23,
   "schedule_evening_minutes": 0,
   "synthetic_date": "",
-  "setup_complete": true,
   "contact_display_short": "clinic.name",
   "roles": {
     "national_admin": {
