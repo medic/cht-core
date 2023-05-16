@@ -882,6 +882,10 @@ const formDocProcessing = async (docs) => {
   };
 };
 
+const syncShards = async () => {
+  await request({ path: '/medic/_sync_shards', method: 'POST' });
+};
+
 module.exports = {
   hostURL,
   parseCookieResponse,
@@ -1400,6 +1404,7 @@ module.exports = {
   makeTempDir,
   SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
   updatePermissions,
+  syncShards,
 
   ONE_YEAR_IN_S,
 };
