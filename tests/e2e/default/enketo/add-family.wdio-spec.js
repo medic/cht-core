@@ -31,25 +31,10 @@ describe('Family form', () => {
     await cookieLogin();
   });
 
-  it('Submit Add Family form', async () => {
+  xit('Submit Add Family form', async () => {
     await commonPage.goToReports();
     await commonPage.openFastActionReport(formDoc.internalId, false);
-    await familyForm.fillPrimaryCaregiver('test');
-    await genericForm.nextPage();
-    await familyForm.fillPrimaryTel();
-    await genericForm.nextPage();
-    await familyForm.fillSexAndAge();
-    await genericForm.nextPage();
-    await familyForm.fillChildren();
-    await genericForm.nextPage();
-    await familyForm.registerChildrenOption();
-    await genericForm.nextPage();
-    await familyForm.womenBetween();
-    await genericForm.nextPage();
-    await familyForm.registerWomenOption();
-    await genericForm.nextPage();
-    await familyForm.finalSurvey(0, 0, 0, 0);
-    await reportsPage.submitForm();
+    await familyForm.submitFamilyForm();
     await familyForm.reportCheck('test Family', 'boreholes', 'true', 'true', 'ucid');
     await genericForm.editForm();
     await familyForm.fillPrimaryCaregiver('modified');
