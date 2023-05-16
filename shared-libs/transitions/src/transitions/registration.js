@@ -185,6 +185,20 @@ const setBirthDate = doc => {
   }
 };
 
+const getPhoneNumber = doc => {
+  if (!doc || !doc.fields) {
+    return '';
+  }
+  return doc.fields.phone_number;
+};
+
+const setPhoneNumber = doc => {
+  const phoneNumber = getPhoneNumber(doc);
+  // get default country code
+  //countryCode = codeFromSettings()
+  doc.phone_number = countryCode.concat(phoneNumber.toString());
+};
+
 const getConfig = () => config.get('registrations');
 
 /*
@@ -218,6 +232,9 @@ const triggers = {
     // Deprecated name for add_patient
     logger.warn('Use of add_patient_id trigger. This is deprecated in favour of add_patient.');
     return triggers.add_patient(options);
+  },
+  add_phone_number: (options) => {
+    return setPhoneNumber(options.doc);
   },
   add_expected_date: (options) => {
     return setExpectedBirthDate(options.doc);
@@ -309,7 +326,7 @@ const addMessages = (config, doc) => {
       utils.getRegistrations({ id: patientId }),
       utils.getRegistrations({ id: placeId }),
     ])
-    .then(([ patientRegistrations, placeRegistrations ]) => {
+    .then(([patientRegistrations, placeRegistrations]) => {
       const context = {
         patient: doc.patient,
         place: doc.place,
@@ -337,7 +354,7 @@ const assignSchedule = (options) => {
       utils.getRegistrations({ id: patientId }),
       utils.getRegistrations({ id: placeId }),
     ])
-    .then(([ patientRegistrations, placeRegistrations ]) => {
+    .then(([patientRegistrations, placeRegistrations]) => {
       options.params.forEach(scheduleName => {
         const schedule = schedules.getScheduleConfig(scheduleName);
         const context = {
