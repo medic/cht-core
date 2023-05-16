@@ -12,7 +12,6 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { TourService } from '@mm-services/tour.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -55,9 +54,6 @@ describe('Messages Component', () => {
       getButtonTypeForContentList: sinon.stub(),
     };
     authService = { online: sinon.stub().returns(false) };
-    const tourServiceMock = {
-      startIfNeeded: () => {}
-    };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
       { selector: 'getLoadingContent', value: false },
@@ -82,7 +78,6 @@ describe('Messages Component', () => {
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
           { provide: exportService, useValue: {} },
           { provide: ModalService, useValue: modalService },
-          { provide: TourService, useValue: tourServiceMock },
           { provide: NavigationService, useValue: {} },
           { provide: UserContactService, useValue: userContactService },
           { provide: AuthService, useValue: authService },

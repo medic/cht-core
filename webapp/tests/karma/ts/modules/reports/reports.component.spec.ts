@@ -21,7 +21,6 @@ import { Selectors } from '@mm-selectors/index';
 import { ComponentsModule } from '@mm-components/components.module';
 import { PlaceHierarchyService } from '@mm-services/place-hierarchy.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { TourService } from '@mm-services/tour.service';
 import { SessionService } from '@mm-services/session.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { AuthService } from '@mm-services/auth.service';
@@ -80,7 +79,6 @@ describe('Reports Component', () => {
       { selector: Selectors.getEnketoSavingStatus, value: false },
       { selector: Selectors.getSidebarFilter, value: {} },
     ];
-    const tourServiceMock = { startIfNeeded: () => {} };
     (<any>$.fn).daterangepicker = sinon.stub().returns({ on: sinon.stub() });
 
     searchService = { search: sinon.stub().resolves([]) };
@@ -141,7 +139,6 @@ describe('Reports Component', () => {
           { provide: PlaceHierarchyService, useValue: { get: sinon.stub().resolves() } },
           // Needed because of Reports Sidebar Filter
           { provide: TelemetryService, useValue: { record: sinon.stub() } },
-          { provide: TourService, useValue: tourServiceMock },
           { provide: SessionService, useValue: sessionService },
           { provide: UserContactService, useValue: userContactService },
           { provide: NavigationService, useValue: {} },

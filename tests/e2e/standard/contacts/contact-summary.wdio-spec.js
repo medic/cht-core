@@ -228,7 +228,6 @@ describe('Contact summary info', () => {
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
     await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
-    await commonElements.closeTour();
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
     permissions.can_view_uhc_stats = districtAdminUser.roles;
@@ -251,7 +250,6 @@ describe('Contact summary info', () => {
   it('should have access to the "cht" global api variable', async () => {
     await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
-    await commonElements.closeTour();
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
     permissions.can_configure = districtAdminUser.roles;

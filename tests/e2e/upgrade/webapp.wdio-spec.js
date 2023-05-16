@@ -40,12 +40,10 @@ describe('Webapp after upgrade', () => {
 
   it('should login with admin account', async () => {
     await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
-    await common.closeTour();
   });
 
   it('report page should display one report', async () => {
     await common.goToReports();
-    await common.closeTour();
     const reports = await reportsPage.getAllReportsText();
     expect(reports).to.deep.equal(['John']);
   });

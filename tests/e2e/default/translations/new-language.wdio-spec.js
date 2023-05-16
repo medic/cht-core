@@ -28,9 +28,15 @@ describe('Adding new language', () => {
     await commonPage.waitForPageLoaded();
   };
 
-  before(async () => await loginPage.cookieLogin());
+  before(async () => {
+    await utils.enableLanguages([NEW_LANG_CODE, 'nl']);
+    await loginPage.cookieLogin();
+  });
 
-  after(async () => await browser.setCookies({ name: 'locale', value: ENG_LANG_CODE }));
+  after(async () => {
+    await browser.setCookies({ name: 'locale', value: ENG_LANG_CODE });
+    await utils.revertSettings(true);
+  });
 
   it('should show in enabled language list', async () => {
     await languagesPage.goToLanguagesTab();
@@ -42,14 +48,6 @@ describe('Adding new language', () => {
   it('should be set as Default language ', async () => {
     expect(await languagesPage.selectLanguage(languagesPage.defaultLanguageDropdown, NEW_LANG_CODE)).to.be.true;
     expect(await languagesPage.selectLanguage(languagesPage.outgoingLanguageDropdown, NEW_LANG_CODE)).to.be.true;
-  });
-
-  it('should reflect in config wizard', async () => {
-    await languagesPage.goToApplication();
-    const [heading, messageLanguage, appLanguage] = await commonPage.getDefaultLanguages();
-    expect(heading).to.equal(`${NEW_LANG_NAME}, ${NEW_LANG_NAME}`);
-    expect(messageLanguage).to.equal(NEW_LANG_NAME);
-    expect(appLanguage).to.equal(NEW_LANG_NAME);
   });
 
   it('should add new translations', async () => {
