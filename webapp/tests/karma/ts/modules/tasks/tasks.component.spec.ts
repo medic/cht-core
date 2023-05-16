@@ -11,7 +11,6 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { TourService } from '@mm-services/tour.service';
 import { TasksComponent } from '@mm-modules/tasks/tasks.component';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { Selectors } from '@mm-selectors/index';
@@ -25,7 +24,6 @@ describe('TasksComponent', () => {
   let changesService;
   let rulesEngineService;
   let telemetryService;
-  let tourService;
   let contactTypesService;
   let clock;
   let store;
@@ -52,7 +50,6 @@ describe('TasksComponent', () => {
       contactsMarkedAsDirty: sinon.stub(),
     };
 
-    tourService = { startIfNeeded: sinon.stub() };
     telemetryService = { record: sinon.stub() };
     contactTypesService = {
       includes: sinon.stub(),
@@ -75,7 +72,6 @@ describe('TasksComponent', () => {
         { provide: ChangesService, useValue: changesService },
         { provide: RulesEngineService, useValue: rulesEngineService },
         { provide: TelemetryService, useValue: telemetryService },
-        { provide: TourService, useValue: tourService },
         { provide: ContactTypesService, useValue: contactTypesService },
         { provide: NavigationService, useValue: {} },
         { provide: SessionService, useValue: sessionService },
@@ -130,7 +126,6 @@ describe('TasksComponent', () => {
     expect(!!component.hasTasks).to.be.false;
     expect(!!component.error).to.be.false;
     expect(!!component.tasksDisabled).to.be.false;
-    expect(tourService.startIfNeeded.callCount).to.eq(1);
   });
 
   it('rules engine is disabled', async () => {

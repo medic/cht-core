@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store, select } from '@ngrx/store';
-import { of } from 'rxjs';
+import { combineLatest, of } from 'rxjs';
 import { exhaustMap, withLatestFrom } from 'rxjs/operators';
 
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
@@ -16,10 +16,11 @@ import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable()
 export class ContactsEffects {
-  private contactsActions;
-  private globalActions;
+  private contactsActions: ContactsActions;
+  private globalActions: GlobalActions;
 
   private selectedContact;
+  private contactIdToLoad;
 
   constructor(
     private actions$: Actions,
@@ -34,9 +35,13 @@ export class ContactsEffects {
     this.contactsActions = new ContactsActions(store);
     this.globalActions = new GlobalActions(store);
 
-    this.store
-      .select(Selectors.getSelectedContact)
-      .subscribe(selectedContact => this.selectedContact = selectedContact);
+    combineLatest(
+      this.store.select(Selectors.getSelectedContact),
+      this.store.select(Selectors.getContactIdToLoad),
+    ).subscribe(([ selectedContact, contactIdToLoad ]) => {
+      this.selectedContact = selectedContact;
+      this.contactIdToLoad = contactIdToLoad;
+    });
   }
 
   selectContact = createEffect(() => {
@@ -59,6 +64,8 @@ export class ContactsEffects {
 
         const loadContact = this
           .loadContact(id)
+          .then(() => this.verifySelectedContactNotChanged(id))
+          .then(() => this.setTitle())
           .then(() => this.loadChildren(id, userFacilityId))
           .then(() => this.loadReports(id, forms))
           .then(() => this.loadTargetDoc(id))
@@ -74,7 +81,7 @@ export class ContactsEffects {
             }
             console.error('Error selecting contact', err);
             this.globalActions.unsetSelected();
-            return of(this.contactsActions.setSelectedContact(null));
+            return of(this.contactsActions.clearSelection());
           });
 
         return of(loadContact);
@@ -82,26 +89,30 @@ export class ContactsEffects {
     );
   }, { dispatch: false });
 
-  private setTitle(selected) {
+  private setTitle() {
     const routeSnapshot = this.routeSnapshotService.get();
     const deceasedTitle = routeSnapshot?.data?.name === 'contacts.deceased'
       ? this.translateService.instant('contact.deceased.title') : null;
-    const title = deceasedTitle || selected.type?.name_key || 'contact.profile';
+    const title = deceasedTitle || this.selectedContact.type?.name_key || 'contact.profile';
     this.globalActions.setTitle(this.translateService.instant(title));
   }
 
   private loadContact(id) {
+    this.contactsActions.setContactIdToLoad(id);
     return this.contactViewModelGeneratorService
       .getContact(id, { merge: false })
       .then(model => {
-        this.globalActions.settingSelected();
-        this.contactsActions.setSelectedContact(model);
-        this.setTitle(model);
+        return this
+          .verifySelectedContactNotChanged(model._id)
+          .then(() => {
+            this.globalActions.settingSelected();
+            this.contactsActions.setSelectedContact(model);
+          });
       });
   }
 
   private verifySelectedContactNotChanged(id) {
-    return this.selectedContact?._id !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
+    return this.contactIdToLoad !== id ? Promise.reject({code: 'SELECTED_CONTACT_CHANGED'}) : Promise.resolve();
   }
 
   private loadChildren(contactId, userFacilityId) {
