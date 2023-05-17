@@ -569,7 +569,7 @@ const waitForDockerLogs = (container, ...regex) => {
   // It takes a while until the process actually starts tailing logs, and initiating next test steps immediately
   // after watching results in a race condition, where the log is created before watching started.
   // As a fix, watch the logs with tail=1, so we always receive one log line immediately, then proceed with next
-  // steps of testing afterwards.
+  // steps of testing afterward.
   const params = `logs ${container} -f --tail=1`;
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
@@ -580,7 +580,7 @@ const waitForDockerLogs = (container, ...regex) => {
       console.log('Found logs', logs, 'watched for', ...regex);
       reject(new Error('Timed out looking for details in logs.'));
       killSpawnedProcess(proc);
-    }, 6000);
+    }, 10000);
 
     const checkOutput = (data) => {
       if (!firstLine) {
