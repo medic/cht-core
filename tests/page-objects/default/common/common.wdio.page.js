@@ -19,7 +19,6 @@ const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.button-label');
-const buttonLabels = () => $('.button-label');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
@@ -436,7 +435,7 @@ const getTextForElements = async (elements) => {
 };
 
 const getAllButtonLabelsNames = async () => {
-  return getTextForElements(getAllButtonLabels);
+  return await getTextForElements(getAllButtonLabels);
 };
 
 //more options menu

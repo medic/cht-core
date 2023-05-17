@@ -66,7 +66,12 @@ describe('Navigation tests', async () => {
     });
 
     it('should display tab labels, when some tabs are enabled', async () => {
-      const permissionsToRemove = ['can_view_analytics', 'can_view_analytics_tab', 'can_view_tasks', 'can_view_tasks_tab'];
+      const permissionsToRemove = [
+        'can_view_analytics',
+        'can_view_analytics_tab',
+        'can_view_tasks',
+        'can_view_tasks_tab'
+      ];
       await utils.updatePermissions(user.roles, [], permissionsToRemove);
 
       await loginPage.login(user);
