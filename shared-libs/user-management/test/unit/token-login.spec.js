@@ -18,6 +18,7 @@ describe('TokenLogin service', () => {
     db.init({
       medic: { get: sinon.stub(), put: sinon.stub(), allDocs: sinon.stub() },
       users: { get: sinon.stub(), put: sinon.stub() },
+      syncShards: sinon.stub().resolves(),
     });
     clock = sinon.useFakeTimers();
   });
