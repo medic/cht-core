@@ -18,6 +18,8 @@ const taskTab = () => $('#tasks-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
+const getAllButtonLabels = async () => await $$('.button-label');
+const buttonLabels = () => $('.button-label');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
@@ -433,6 +435,10 @@ const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
 };
 
+const getAllButtonLabelsNames = async () => {
+  return getTextForElements(getAllButtonLabels);
+};
+
 //more options menu
 const optionSelector = (action, item) => $(`[test-id="${action}-${item}"]`);
 
@@ -505,4 +511,5 @@ module.exports = {
   waitForAngularLoaded,
   closeConfigurationWizard,
   closeReportBug,
+  getAllButtonLabelsNames,
 };
