@@ -28,10 +28,6 @@ const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)'
 const jsonError = async () => (await $('pre')).getText();
 
 //languages
-const languagePreferenceHeading = () => $('#language-preference-heading');
-const selectedPreferenceHeading = () => $('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)');
-const messagesLanguage = () => $('.locale a.selected span');
-const defaultLanguage = () => $('.locale-outgoing a.selected span');
 const activeSnackbar = () => $('#snackbar.active');
 const inactiveSnackbar = () => $('#snackbar:not(.active)');
 const snackbar = () => $('#snackbar.active .snackbar-message');
@@ -39,13 +35,6 @@ const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
 //Hamburguer menu
-// Configuration wizard
-const CONFIGURATION_WIZARD_MENU = 'i.fa-list-ol';
-const CONFIGURATION_WIZARD = '#guided-setup';
-const configurationWizardTitle = () => $(`${CONFIGURATION_WIZARD} .modal-header > h2`);
-const defaultCountryCode = () => $('#select2-default-country-code-setup-container');
-const configurationWizardSkipSetup = () => $(`${CONFIGURATION_WIZARD} .modal-footer>a:first-of-type`);
-const configurationWizardFinishButton = () => $(`${CONFIGURATION_WIZARD} .modal-footer>a:nth-of-type(2)`);
 //User settings
 const USER_SETTINGS = '=User settings';
 const UPDATE_PASSWORD = '=Update password';
@@ -242,20 +231,6 @@ const goToAboutPage = async () => {
   await waitForLoaders();
 };
 
-const closeTour = async () => {
-  const closeButton = await $('#tour-select a.btn.cancel');
-  try {
-    await closeButton.waitForDisplayed();
-    await closeButton.click();
-    // wait for the request to the server to execute
-    // is there a way to leverage wdio to achieve this???
-    await browser.pause(500);
-  } catch (err) {
-    // there might not be a tour, show a warning
-    console.warn('Tour modal has not appeared after 2 seconds');
-  }
-};
-
 const waitForLoaderToDisappear = async (element) => {
   const loaderSelector = '.loader';
   const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
@@ -377,28 +352,6 @@ const openAboutMenu = async () => {
   await (await $(RELOAD_BUTTON)).waitForDisplayed();
 };
 
-const openConfigurationWizardAndFetchProperties = async () => {
-  await (await $(CONFIGURATION_WIZARD_MENU)).waitForClickable();
-  await (await $(CONFIGURATION_WIZARD_MENU)).click();
-  await (await $(CONFIGURATION_WIZARD)).waitForDisplayed();
-  return {
-    modelTitle: await (await configurationWizardTitle()).getText(),
-    defaultCountryCode: await (await defaultCountryCode()).getText(),
-    modelFinishButtonText: await (await configurationWizardFinishButton()).getText()
-  };
-};
-
-const isConfigurationWizardOpen = async () => {
-  return await (await configurationWizardTitle()).isExisting();
-};
-
-const closeConfigurationWizard = async () => {
-  if (await isConfigurationWizardOpen()) {
-    await (await configurationWizardSkipSetup()).waitForClickable();
-    await (await configurationWizardSkipSetup()).click();
-  }
-};
-
 const openUserSettings = async () => {
   await (await userSettingsMenuOption()).waitForClickable();
   await (await userSettingsMenuOption()).click();
@@ -415,19 +368,6 @@ const openAppManagement = async () => {
   await (await $(CONFIGURATION_APP_MENU)).waitForClickable();
   await (await $(CONFIGURATION_APP_MENU)).click();
   await (await $('.navbar-brand')).waitForDisplayed();
-};
-
-const getDefaultLanguages = async () => {
-  await (await hamburgerMenu()).click();
-  await openConfigurationWizardAndFetchProperties();
-  await (await languagePreferenceHeading()).click();
-  const messagesLang = async () => await (await messagesLanguage()).getText();
-  await browser.waitUntil(async () => await messagesLang() !== '');
-
-  const headingText = await (await selectedPreferenceHeading()).getText();
-  const defaultLang = await (await defaultLanguage()).getText();
-
-  return [headingText, await messagesLang(), defaultLang];
 };
 
 const getTextForElements = async (elements) => {
@@ -468,7 +408,6 @@ module.exports = {
   getMessagesButtonLabel,
   getTasksButtonLabel,
   goToBase,
-  closeTour,
   hideSnackbar,
   waitForLoaders,
   sync,
@@ -482,7 +421,6 @@ module.exports = {
   isTasksListPresent,
   isPeopleListPresent,
   isReportsListPresent,
-  openConfigurationWizardAndFetchProperties,
   isTargetMenuItemPresent,
   isTargetAggregatesMenuItemPresent,
   openHamburgerMenu,
@@ -498,7 +436,6 @@ module.exports = {
   inactiveSnackbar,
   snackbarMessage,
   snackbarAction,
-  getDefaultLanguages,
   getTextForElements,
   toggleActionbar,
   jsonError,
@@ -508,7 +445,6 @@ module.exports = {
   refresh,
   syncAndWaitForFailure,
   waitForAngularLoaded,
-  closeConfigurationWizard,
   closeReportBug,
   getAllButtonLabelsNames,
 };

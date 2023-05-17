@@ -1,9 +1,9 @@
 const utils = require('../../../utils');
-const messagesPo = require('../../../page-objects/default/sms/messages.wdio.page');
-const reportsPo = require('../../../page-objects/default/reports/reports.wdio.page');
+const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
 const commonElements = require('../../../page-objects/default/common/common.wdio.page');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const smsPregancy = require('../../../factories/cht/reports/sms-pregnancy');
+const messagesPage = require('../../../page-objects/default/sms/messages.wdio.page');
 
 const pollSmsApi = body => {
   return utils.request({
@@ -37,22 +37,18 @@ describe('sms-gateway api', () => {
       const phone = '+64271234567';
       const msg = 'hello';
       await commonElements.goToMessages();
-      await messagesPo.waitForMessagesInLHS();
-      const message = await messagesPo.messageByIndex(1);
-      const heading = await (await messagesPo.listMessageHeading(message)).getText();
-      const listSummary = await(await messagesPo.listMessageSummary(message)).getText();
+      const { heading, summary} = await messagesPage.getMessageInListDetails(phone);
       await expect(heading).to.equal(phone);
-      await expect(listSummary).to.equal(msg);
+      await expect(summary).to.equal(msg);
 
       // RHS
-      const id = await (await messagesPo.messageByIndex(1)).getAttribute('test-id');
-      await messagesPo.clickLhsEntry(id);
-      const headerDetail = await(await messagesPo.messageDetailsHeader()).getText();
-      const msgContent = await (await messagesPo.messageContentText(await messagesPo.messageContentIndex())).getText();
-      const messageStatus = await (await messagesPo.messageDetailStatus()).getText();
-      await expect(headerDetail).to.equal(phone);
-      await expect(msgContent).to.equal(msg);
-      await expect(messageStatus).to.equal('received');
+      await messagesPage.openMessage(phone);
+      const { name} = await messagesPage.getMessageHeader();
+      const { content, state } = await messagesPage.getMessageContent(1);
+
+      await expect(name).to.equal(phone);
+      await expect(content).to.equal(msg);
+      await expect(state).to.equal('received');
     });
   });
 
@@ -79,14 +75,14 @@ describe('sms-gateway api', () => {
 
     it('- shows content', async () => {
 
-      await reportsPo.goToReportById(savedDoc);
+      await reportsPage.goToReportById(savedDoc);
 
       // tasks
 
-      const sentTask = await (await reportsPo.sentTask()).getText();
-      const deliveredTask = (await reportsPo.getTaskDetails(1, 1)).state;
-      const scheduledTask = (await reportsPo.getTaskDetails(1, 2)).state;
-      const failedTask = (await reportsPo.getTaskDetails(2, 1)).state;
+      const sentTask = await (await reportsPage.sentTask()).getText();
+      const deliveredTask = (await reportsPage.getTaskDetails(1, 1)).state;
+      const scheduledTask = (await reportsPage.getTaskDetails(1, 2)).state;
+      const failedTask = (await reportsPage.getTaskDetails(2, 1)).state;
       expect(sentTask).to.contain('sent');
       expect(deliveredTask).to.contain('delivered');
       expect(scheduledTask).to.contain('scheduled');
@@ -125,14 +121,14 @@ describe('sms-gateway api', () => {
       expect(response.messages[1].to).to.equal(taskMessage.to);
       expect(response.messages[1].content).to.equal(taskMessage.message);
 
-      await reportsPo.goToReportById(savedDoc);
+      await reportsPage.goToReportById(savedDoc);
 
       // tasks
-      const forwardedMessage = await (await reportsPo.sentTask()).getText();
+      const forwardedMessage = await (await reportsPage.sentTask()).getText();
       expect(forwardedMessage).to.equal('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      const messageState = (await reportsPo.getTaskDetails(1, 1)).state;
+      const messageState = (await reportsPage.getTaskDetails(1, 1)).state;
       expect(messageState).to.equal('forwarded to gateway');
     });
   });

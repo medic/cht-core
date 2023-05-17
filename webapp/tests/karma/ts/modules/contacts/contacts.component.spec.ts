@@ -23,7 +23,6 @@ import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { SortFilterComponent } from '@mm-components/filters/sort-filter/sort-filter.component';
 import { ResetFiltersComponent } from '@mm-components/filters/reset-filters/reset-filters.component';
-import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -46,7 +45,6 @@ describe('Contacts component', () => {
   let scrollLoaderCallback;
   let scrollLoaderProvider;
   let contactListContains;
-  let tourService;
   let exportService;
   let xmlFormsService;
   let fastActionButtonService;
@@ -65,7 +63,6 @@ describe('Contacts component', () => {
       isDbAdmin: sinon.stub().returns(false),
       isOnlineOnly: sinon.stub().returns(false),
     };
-    tourService = { startIfNeeded: sinon.stub() };
     authService = { has: sinon.stub().resolves(false) };
     changesService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     userSettingsService = {
@@ -138,7 +135,6 @@ describe('Contacts component', () => {
           { provide: UserSettingsService, useValue: userSettingsService },
           { provide: GetDataRecordsService, useValue: getDataRecordsService },
           { provide: SessionService, useValue: sessionService },
-          { provide: TourService, useValue: tourService },
           { provide: AuthService, useValue: authService },
           { provide: ContactTypesService, useValue: contactTypesService },
           { provide: ScrollLoaderProvider, useValue: scrollLoaderProvider },
