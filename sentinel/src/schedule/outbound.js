@@ -122,7 +122,7 @@ const singlePush = (taskDoc, medicDoc, infoDoc, config, key) => Promise
       .then(() => infodocLib.saveCompletedTasks(medicDoc._id, infoDoc));
   })
   .catch((err) => {
-    logger.warn(`Unable to push ${medicDoc._id} for ${key}: %eo`, err);
+    logger.warn(`Unable to push ${medicDoc._id} for ${key}: %o`, err);
     // Failed!
     // Don't remove the entry from the task's queue so it will be tried again next time
   });
