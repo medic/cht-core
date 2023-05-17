@@ -301,14 +301,17 @@ const getUserByToken = (token) => {
  * @returns {Promise<Object>} - object containing the user's name and the new password
  */
 const resetPassword = userId => {
-  return db.users.get(userId).then(user => {
-    if (!user.token_login || !user.token_login.active) {
-      return Promise.reject({ code: 400, message: 'invalid user' });
-    }
+  return db.users
+    .get(userId)
+    .then(user => {
+      if (!user.token_login || !user.token_login.active) {
+        return Promise.reject({ code: 400, message: 'invalid user' });
+      }
 
-    user.password = passwords.generate();
-    return db.users.put(user).then(() => ({ user: user.name, password: user.password }));
-  });
+      user.password = passwords.generate();
+      return db.users.put(user).then(() => ({ user: user.name, password: user.password }));
+    })
+    .then((result) => db.syncShards('_users').then(() => result));
 };
 
 
