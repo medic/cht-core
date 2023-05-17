@@ -1,7 +1,6 @@
 const util = require('util');
-const fs = require('fs');
 const couchCompile = util.promisify(require('couchdb-compile'));
-const write = util.promisify(fs.writeFile);
+const { writeFile } = require('node:fs/promises');
 
 const compilePrimary = async () => {
   await compile('build/ddocs/medic-db/', 'build/ddocs/medic.json');
@@ -34,8 +33,10 @@ const getCommand = () => {
 
 const compile = async (inputDir, outputFile) => {
   const doc = await couchCompile(inputDir);
-  await write(outputFile, JSON.stringify(doc, null, 2));
+  await writeFile(outputFile, JSON.stringify(doc, null, 2));
   console.log('ddoc compiled successfully');
 };
 
-getCommand()();
+(async () => {
+  await getCommand()();
+})();

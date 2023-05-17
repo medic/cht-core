@@ -28,7 +28,6 @@ module.exports = function(grunt) {
   'use strict';
 
   require('jit-grunt')(grunt, {
-    'couch-push': 'grunt-couch',
     ngtemplates: 'grunt-angular-templates',
     protractor: 'grunt-protractor-runner',
     uglify: 'grunt-contrib-uglify-es',
@@ -37,22 +36,6 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
-    'couch-push': {
-      test: {
-        files: {
-          ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
-          ['http://admin:pass@localhost:4984/medic-test-logs']: 'build/ddocs/medic/_attachments/ddocs/logs.json',
-        },
-      },
-      testing: {
-        files: [
-          {
-            src: 'build/staging.json',
-            dest: `${MARKET_URL}/${BUILDS_SERVER}`,
-          },
-        ],
-      }
-    },
     browserify: {
       options: {
         browserifyOptions: {
@@ -207,9 +190,10 @@ module.exports = function(grunt) {
       },
     },
     exec: {
-      'compile-ddocs-primary': 'node ./scripts/build/couch.js primary',
-      'compile-ddocs-staging': 'node ./scripts/build/couch.js staging',
-      'compile-ddocs-secondary': 'node ./scripts/build/couch.js secondary',
+      'compile-ddocs-primary': 'node ./scripts/build/ddoc-compile.js primary',
+      'compile-ddocs-staging': 'node ./scripts/build/ddoc-compile.js staging',
+      'compile-ddocs-secondary': 'node ./scripts/build/ddoc-compile.js secondary',
+      'push-ddoc-to-staging': 'node ./scripts/build/push-ddoc-to-staging.js',
       'clean-build-dir': {
         cmd: 'rm -rf build && mkdir build',
       },
@@ -970,7 +954,7 @@ module.exports = function(grunt) {
     'build-service-images',
     'publish-service-images',
     'exec:compile-ddocs-staging',
-    'couch-push:testing',
+    'exec:push-ddoc-to-staging',
   ]);
 
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [
