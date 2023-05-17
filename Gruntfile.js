@@ -28,7 +28,6 @@ module.exports = function(grunt) {
   'use strict';
 
   require('jit-grunt')(grunt, {
-    'couch-compile': 'grunt-couch',
     'couch-push': 'grunt-couch',
     ngtemplates: 'grunt-angular-templates',
     protractor: 'grunt-protractor-runner',
@@ -38,25 +37,6 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
-    'couch-compile': {
-      primary: {
-        files: {
-          'build/ddocs/medic.json': 'build/ddocs/medic-db/*',
-        },
-      },
-      secondary: {
-        files: {
-          'build/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
-          'build/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
-          'build/ddocs/logs.json': 'build/ddocs/logs-db/*',
-        },
-      },
-      staging: {
-        files: {
-          'build/staging.json': 'build/staging',
-        }
-      }
-    },
     'couch-push': {
       test: {
         files: {
@@ -227,6 +207,9 @@ module.exports = function(grunt) {
       },
     },
     exec: {
+      'compile-ddocs-primary': 'node ./scripts/build/couch.js primary',
+      'compile-ddocs-staging': 'node ./scripts/build/couch.js staging',
+      'compile-ddocs-secondary': 'node ./scripts/build/couch.js secondary',
       'clean-build-dir': {
         cmd: 'rm -rf build && mkdir build',
       },
@@ -553,7 +536,7 @@ module.exports = function(grunt) {
         tasks: [
           'copy:ddocs',
           'set-ddocs-version',
-          'couch-compile:primary',
+          'exec:compile-ddocs-primary',
           'copy:api-ddocs',
           'notify:deployed',
         ],
@@ -563,7 +546,7 @@ module.exports = function(grunt) {
         tasks: [
           'copy:ddocs',
           'set-ddocs-version',
-          'couch-compile:secondary',
+          'exec:compile-ddocs-secondary',
           'copy:api-ddocs',
           'notify:deployed',
         ],
@@ -780,8 +763,8 @@ module.exports = function(grunt) {
     'copy:ddocs',
     'set-ddocs-version',
     'set-build-info',
-    'couch-compile:primary',
-    'couch-compile:secondary',
+    'exec:compile-ddocs-primary',
+    'exec:compile-ddocs-secondary',
     'copy:api-ddocs',
   ]);
 
@@ -986,7 +969,7 @@ module.exports = function(grunt) {
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
     'build-service-images',
     'publish-service-images',
-    'couch-compile:staging',
+    'exec:compile-ddocs-staging',
     'couch-push:testing',
   ]);
 

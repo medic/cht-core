@@ -68,6 +68,7 @@
     "chai-exclude": "^2.1.0",
     "chai-shallow-deep-equal": "^1.4.6",
     "cht-conf": "^3.15.2",
+    "couchdb-compile": "^1.11.2",
     "csv-writer": "^1.6.0",
     "deep-equal-in-any-order": "^1.1.15",
     "doctoc": "^2.2.1",
