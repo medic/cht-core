@@ -30,7 +30,6 @@ module.exports = function(grunt) {
   require('jit-grunt')(grunt, {
     ngtemplates: 'grunt-angular-templates',
     protractor: 'grunt-protractor-runner',
-    uglify: 'grunt-contrib-uglify-es',
   });
   require('time-grunt')(grunt);
 
@@ -57,25 +56,6 @@ module.exports = function(grunt) {
           },
         },
       },
-    },
-    uglify: {
-      options: {
-        banner:
-          '/*! Medic <%= grunt.template.today("yyyy-mm-dd") %> */\n',
-      },
-      admin: {
-        files: {
-          'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
-          'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js'
-        },
-      },
-      api: {
-        files: {
-          // static api files
-          'api/build/static/login/script.js': 'api/build/static/login/script.js',
-          'api/build/static/login/lib-bowser.js': 'api/build/static/login/lib-bowser.js',
-        }
-      }
     },
     env: {
       'unit-test': {
@@ -193,6 +173,12 @@ module.exports = function(grunt) {
       'compile-ddocs-primary': 'node ./scripts/build/ddoc-compile.js primary',
       'compile-ddocs-staging': 'node ./scripts/build/ddoc-compile.js staging',
       'compile-ddocs-secondary': 'node ./scripts/build/ddoc-compile.js secondary',
+      'uglify-api':
+        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/script.js -o api/build/static/login/script.js && ' +
+        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/lib-browser.js -o api/build/static/login/lib-browser.js',
+      'uglify-admin':
+        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && ' +
+        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js',
       'push-ddoc-to-staging': 'node ./scripts/build/push-ddoc-to-staging.js',
       'clean-build-dir': {
         cmd: 'rm -rf build && mkdir build',
@@ -765,7 +751,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-service-images', 'Build api and sentinel images', [
     'copy-static-files-to-api',
-    'uglify:api',
+    'exec:uglify-api',
     'cssmin:api',
     'env:version',
     'exec:build-service-images',
@@ -854,7 +840,7 @@ module.exports = function(grunt) {
 
   // CI tasks
   grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
-    'uglify:admin',
+    'exec:uglify-admin',
     'optimize-js',
     'cssmin:admin',
   ]);
