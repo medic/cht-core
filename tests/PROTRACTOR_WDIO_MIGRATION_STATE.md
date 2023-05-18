@@ -24,7 +24,7 @@
 |e2e/protractor/transitions/sms_workflows.spec.js	|Done	|	Bede|[#7316](https://github.com/medic/cht-core/pull/7316)	| Does not need browser	|
 |e2e/protractor/translations/incorrect-locale.spec.js	|	|	|	|	|
 |e2e/protractor/translations/new-language.spec.js	|Done	|Bede	|[#7641](https://github.com/medic/cht-core/pull/7641)	|	|
-|e2e/protractor/sms/africas-talking.js	|	|	|	|	|
+|e2e/protractor/sms/africas-talking.js  | Done | Tatiana | [#8256](https://github.com/medic/cht-core/pull/8256)  |  |
 |e2e/protractor/bulk-delete.js	|Done	|Bede	|[#7430](https://github.com/medic/cht-core/pull/7430)	|	|
 |e2e/protractor/concatenate-xpath-strings.spec.js	|Done	|Bede	|[#7333](https://github.com/medic/cht-core/pull/7333)	|	|
 |e2e/protractor/contact-summary.js	|	|	|	|	|
