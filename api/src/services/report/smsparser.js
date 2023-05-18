@@ -8,6 +8,7 @@ const textformsParser = require('./textforms-parser');
 const logger = require('../../logger');
 const moment = require('moment');
 const bs = require('bikram-sambat');
+const phoneNumberParser = require('@medic/phone-number');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 // matches invisible characters that can mess up our parsing
@@ -78,12 +79,12 @@ const getParser = (exports.getParser = (def, doc) => {
   const match = msg.match(MUVUKU_REGEX);
   if (match && match[1]) {
     switch (match[1].toUpperCase()) {
-    case '1':
-      return mpParser.parse;
-    case 'J1':
-      return javarosaParser.parse;
-    default:
-      return;
+      case '1':
+        return mpParser.parse;
+      case 'J1':
+        return javarosaParser.parse;
+      default:
+        return;
     }
   }
   msg = stripFormCode(code, msg);
@@ -209,9 +210,15 @@ const fieldParsers = {
   month: (raw) => {
     // keep months integers, not their list value.
     return parseNum(stripInvisibleCharacters(raw));
+  },
+  phone_number: (raw) => {
+    if (phoneNumberParser.validate(config.getAll(), raw)) {
+      return raw;
+    }
   }
 };
 
+//selects parser by field type and parses and validates the given data.
 exports.parseField = (field, raw, key) => {
   const parser = fieldParsers[field.type];
   if (!parser) {
@@ -281,21 +288,21 @@ exports.parse = (def, doc) => {
     }
   }
 
-  if(aggregateBSDateField) {
+  if (aggregateBSDateField) {
     let bsYear;
     let bsMonth = 1;
     let bsDay = 1;
     for (const k of Object.keys(def.fields)) {
       switch (def.fields[k].type) {
-      case 'bsYear':
-        bsYear = msgData[k];
-        break;
-      case 'bsMonth':
-        bsMonth = msgData[k];
-        break;
-      case 'bsDay':
-        bsDay = msgData[k];
-        break;
+        case 'bsYear':
+          bsYear = msgData[k];
+          break;
+        case 'bsMonth':
+          bsMonth = msgData[k];
+          break;
+        case 'bsDay':
+          bsDay = msgData[k];
+          break;
       }
     }
 

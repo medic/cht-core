@@ -271,22 +271,61 @@
   ],
   "registrations": [
     {
-      "form":"NP",
-      "events": [
-        {
-          "name": "on_create",
-          "trigger": "add_phone_number",
-          "params": "phone_number",
-          "bool_expr": "doc.fields.phone_number || doc.fields.phone_number === 0"
-        },
-        {
-          "name": "on_create",
-          "trigger": "add_patient",
-          "params": "",
-          "bool_expr": ""
-        }
-      ]
-    }
+			"form": "NP",
+			"events": [{
+					"name": "on_create",
+					"trigger": "add_phone_number",
+					"params": "phone_number",
+					"bool_expr": "doc.fields.phone_number || doc.fields.phone_number === 0"
+				},
+				{
+					"name": "on_create",
+					"trigger": "add_patient",
+					"params": "",
+					"bool_expr": ""
+				}
+			],
+			"validations": {
+				"join_responses": false,
+				"list": [
+					{
+						"property": "patient_age",
+						"rule": "(integer && min(0) && max(125))",
+						"translation_key": "",
+						"message": [{
+							"content": "The registration format for {{patient_name}} is incorrect, please ensure that age is a number between 0 and 125.",
+							"locale": "en"
+						}]
+					},
+					{
+						"property": "patient_name",
+						"rule": "(string && lenMin(1) && lenMax(30))",
+						"translation_key": "",
+						"message": [{
+							"content": "The registration format for {{patient_name}} is incorrect, please ensure that name length is between 2 and 42.",
+							"locale": "en"
+						}]
+					},
+					{
+						"property": "phone_nume",
+						"rule": "(lenMin(10) && lenMax(13))",
+						"translation_key": "",
+						"message": [{
+							"content": "The registration format for {{patient_name}} is incorrect, please ensure that phone number length is between 9 and 13.",
+							"locale": "en"
+						}]
+					}
+				]
+			},
+			"messages": [{
+				"translation_key": "",
+				"message": [{
+					"content": "Thankyou{{contact.name}}, for registering {{patient_name}} with ID: ({{patient_id}})",
+					"locale": ""
+				}],
+				"recipient": ""
+			}]
+		},
     {
       "form": "CW",
       "events": [
@@ -3931,56 +3970,80 @@
     "date_field": "fields.date_of_death"
   },
   "forms": {
-    "NP":{
-      "meta": {
-      "code": "NP",
-      "label": {
-        "en": "New Person with phone_number Registration"
-      }
-    },
-      "fields": {
-        "phone": {
-          "labels": {
-            "tiny": {
-              "en": "phone number"
-            },
-            "description": {
-              "en": "phone number"
-            },
-            "short": {
-              "en": "phone number"
-            }
-          },
-          "position": 0,
-          "type": "integer",
-          "length": [
-            9,
-            10
-          ],
-          "required": true
-        },
-        "patient_name": {
-          "labels": {
-            "tiny": {
-              "en": "patient_name"
-            },
-            "description": {
-              "en": "Patient name"
-            },
-            "short": {
-              "en": "Patient name"
-            }
-          },
-          "position": 1,
-          "type": "string",
-          "length": [
-            3,
-            30
-          ],
-          "required": true
-        }
-      }
-    },
+    "NP": {
+			"meta": {
+				"code": "NP",
+				"translation_key": "forms.np.title",
+				"label": {
+					"en": "New Person with phone_number Registration"
+				}
+			},
+			"fields": {
+				"patient_age": {
+					"labels": {
+						"tiny": {
+							"en": "Person Age"
+						},
+						"short": {
+							"en": "Person Age"
+						}
+					},
+					"position": 0,
+					"type": "integer",
+					"length": [
+						1,
+						3
+					],
+					"range": [
+						0,
+						125
+					],
+					"required": true
+				},
+				"patient_name": {
+					"labels": {
+						"tiny": {
+							"en": "patient_name"
+						},
+						"description": {
+							"en": "Patient name"
+						},
+						"short": {
+							"en": "Patient name"
+						}
+					},
+					"position": 1,
+					"type": "string",
+					"length": [
+						3,
+						30
+					],
+					"required": true
+				},
+				"phone": {
+					"labels": {
+						"tiny": {
+							"en": "phone number"
+						},
+						"description": {
+							"en": "phone number"
+						},
+						"short": {
+							"en": "phone number"
+						}
+					},
+					"position": 2,
+					"type": "phone_number",
+					"length": [
+						9,
+						10
+					],
+					"required": true
+				}
+			},
+			"public_form": false,
+			"use_sentinel": true
+		},
     "DR": {
       "meta": {
         "code": "DR",
