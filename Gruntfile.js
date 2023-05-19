@@ -4,8 +4,6 @@ const fs = require('fs');
 const path = require('path');
 
 const {
-  MARKET_URL,
-  BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
   INTERNAL_CONTRIBUTOR,
@@ -35,6 +33,7 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
+    // this probably needs a script - can't find an config file option
     browserify: {
       options: {
         browserifyOptions: {
