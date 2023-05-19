@@ -15,7 +15,6 @@ const DEV = !BUILD_NUMBER;
 
 const buildUtils = require('./scripts/build');
 const buildVersions = require('./scripts/build/versions');
-const couchConfig = buildUtils.getCouchConfig();
 
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 
@@ -59,27 +58,6 @@ module.exports = function(grunt) {
       }
     },
     'couch-push': {
-      localhost: {
-        options: {
-          user: couchConfig.username,
-          pass: couchConfig.password,
-        },
-        files: {
-          [couchConfig.withPathNoAuth(couchConfig.dbName)]: 'build/ddocs/medic.json',
-        },
-      },
-      // push just the secondary ddocs to save time in dev
-      'localhost-secondary': {
-        options: {
-          user: couchConfig.username,
-          pass: couchConfig.password,
-        },
-        files: {
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-sentinel')]: 'build/ddocs/sentinel.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-users-meta')]: 'build/ddocs/users-meta.json',
-          [couchConfig.withPathNoAuth(couchConfig.dbName + '-logs')]: 'build/ddocs/logs.json',
-        }
-      },
       test: {
         files: {
           ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
@@ -274,7 +252,6 @@ module.exports = function(grunt) {
           ];
           const ignore = [
             'webapp/src/ts/providers/xpath-element-path.provider.ts',
-            'webapp/src/js/bootstrap-tour-standalone.js',
             'api/src/public/login/lib-bowser.js',
             'api/extracted-resources/**/*',
             'api/build/**/*',
@@ -336,7 +313,7 @@ module.exports = function(grunt) {
       },
       'api-dev': {
         cmd:
-          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/build/**" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
+          'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "api/build/static" --ignore "api/build/public" --watch api --watch "shared-libs/**/src/**" api/server.js -- --allow-cors',
       },
       'sentinel-dev': {
         cmd:
@@ -349,25 +326,6 @@ module.exports = function(grunt) {
                       grep -Ev '^\\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
-      'setup-admin': {
-        cmd:
-          ` curl -X PUT ${couchConfig.withPathNoAuth(`_node/_local/_config/admins/${couchConfig.username}`)} -d '"${couchConfig.password}"'` +
-          ` && curl -X PUT --data '"true"' ${couchConfig.withPathNoAuth('_node/_local/_config/chttpd/require_valid_user')}` +
-          ` && curl -X PUT --data '"4294967296"' ${couchConfig.withPath('_node/_local/_config/httpd/max_http_request_size')}` +
-          ` && curl -X PUT ${couchConfig.withPath(couchConfig.dbName)}`
-      },
-      'setup-test-database': {
-        cmd: [
-          `docker run -d -p 4984:5984 -p 4986:5986 -e COUCHDB_PASSWORD=pass -e COUCHDB_USER=admin --rm --name e2e-couchdb --mount type=tmpfs,destination=/opt/couchdb/data medicmobile/cht-couchdb:clustered-test4`,
-          'sh tests/scripts/wait_for_response_code.sh 4984 401 couch',
-        ].join('&& ')
-      },
-      'clean-test-database': {
-        cmd: [
-          'docker stop e2e-couchdb'
-        ].join('&& '),
-        exitCodes: [0, 1] // 1 if e2e-couchdb doesn't exist, which is fine
-      },
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js',
       },
@@ -378,7 +336,7 @@ module.exports = function(grunt) {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
           // removing pouchdb-fetch/node-fetch forces PouchDb to use a newer version node-fetch
           // https://github.com/medic/cht-core/issues/8173
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci --legacy-peer-deps && rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
@@ -596,9 +554,8 @@ module.exports = function(grunt) {
           'copy:ddocs',
           'set-ddocs-version',
           'couch-compile:primary',
-          'couch-push:localhost',
-          'notify:deployed',
           'copy:api-ddocs',
+          'notify:deployed',
         ],
       },
       'secondary-ddocs': {
@@ -607,9 +564,8 @@ module.exports = function(grunt) {
           'copy:ddocs',
           'set-ddocs-version',
           'couch-compile:secondary',
-          'couch-push:localhost-secondary',
-          'notify:deployed',
           'copy:api-ddocs',
+          'notify:deployed',
         ],
       },
       'api-public-files': {
@@ -666,14 +622,6 @@ module.exports = function(grunt) {
               args: ['window-size=1024,768', 'ignore-certificate-errors']
             }
           }
-        }
-      },
-      'performance-tests-and-services': {
-        options: {
-          args: {
-            suite: 'performance'
-          },
-          configFile: 'tests/conf.js'
         }
       }
     },
@@ -814,6 +762,8 @@ module.exports = function(grunt) {
     'build-admin',
     'build-config',
     'copy-static-files-to-api',
+    'copy:api-ddocs',
+    'notify:deployed',
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
@@ -844,12 +794,6 @@ module.exports = function(grunt) {
     'browserify:admin',
     'less:admin',
     'minify-admin',
-  ]);
-
-  grunt.registerTask('deploy', 'Deploy the webapp', [
-    'couch-push:localhost',
-    'couch-push:localhost-secondary',
-    'notify:deployed',
   ]);
 
   grunt.registerTask('build-service-images', 'Build api and sentinel images', [
@@ -898,17 +842,6 @@ module.exports = function(grunt) {
     'e2e-env-setup',
     'exec:e2e-integration',
     'exec:eslint-sw'
-  ]);
-
-  grunt.registerTask('test-perf', 'Run performance-specific tests', [
-    'exec:clean-test-database',
-    'exec:setup-test-database',
-    'build-service-images',
-    'couch-compile:secondary',
-    'couch-compile:primary',
-    'couch-push:test',
-    'copy:api-ddocs',
-    'protractor:performance-tests-and-services',
   ]);
 
   grunt.registerTask('unit-webapp', 'Run webapp unit test after installing dependencies.', [
@@ -995,11 +928,6 @@ module.exports = function(grunt) {
     'exec:wdio-run-default-mobile'
   ]);
 
-  grunt.registerTask('ci-performance', 'Run performance tests on CI', [
-    'start-webdriver',
-    'protractor:performance-tests-and-services',
-  ]);
-
   // Dev tasks
   grunt.registerTask('dev-webapp', 'Build and deploy the webapp for dev', [
     'install-dependencies',
@@ -1017,7 +945,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build-dev',
-    'deploy',
     'exec:watch-webapp',
     'watch',
   ]);

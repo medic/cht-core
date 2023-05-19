@@ -16,15 +16,6 @@ const modal = element(by.css('div.modal-dialog'));
 const modlaBody = element(by.css('div.modal-body'));
 const yesButton = element(by.css('a.btn.submit.btn-danger'));
 
-// Configuration wizard
-const wizardTitle = element(by.css('#guided-setup .modal-header > h2'));
-const defaultCountryCode = element(
-  by.css('#select2-default-country-code-setup-container')
-);
-const skipSetup = element(by.css('#guided-setup .modal-footer>a:first-of-type'));
-const finishBtn = element(by.css('#guided-setup .modal-footer>a:nth-of-type(2)'));
-// Tour
-const tourBtns = element.all(by.css('.btn.tour-option'));
 // User settings
 const settings = element.all(by.css('.configuration a>span'));
 // Report bug
@@ -34,10 +25,6 @@ const deleteButton = element(by.css('#delete-confirm')).element(by.css('.btn.sub
 const displayTime = element(by.css('[ui-sref="display.date-time"]'));
 const messagesList = element(by.id('message-list'));
 const snackBarContent = element(by.css('.snackbar-content'));
-const languagePreferenceHeading = element(by.css('#language-preference-heading'));
-const selectedPreferenceHeading = element(by.css('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)'));
-const messagesLanguage = element(by.css('.locale a.selected span.rectangle'));
-const defaultLanguage=  element(by.css('.locale-outgoing a.selected span.rectangle'));
 
 const searchBox = element(by.css('input#freetext'));
 
@@ -92,38 +79,6 @@ module.exports = {
   checkAbout: async () => {
     await openSubmenu('about');
     expect(await genericSubmitButton.getText()).toEqual('Reload');
-  },
-
-  checkConfigurationWizard: async () => {
-    await openSubmenu('wizard');
-    await helper.waitUntilReadyNative(wizardTitle);
-    await helper.waitUntilTranslated(wizardTitle);
-    const wizardTitleText = await helper.getTextFromElementNative(wizardTitle);
-    expect(wizardTitleText.toLowerCase()).toContain('wizard');
-    expect(await helper.getTextFromElementNative(defaultCountryCode)).toEqual('Canada (+1)');
-    const texts = ['setup.start', 'Finish'];
-    const displayed = await helper.getTextFromElementNative(finishBtn);
-    expect(texts).toContain(displayed);
-    await skipSetup.click();
-  },
-
-  getDefaultLanguages: async () => {
-    await module.exports.openMenuNative();
-    await openSubmenu(['configuration wizard', 'easy setup wizard ']);
-    await helper.waitUntilReadyNative(wizardTitle);
-    await helper.waitUntilTranslated(wizardTitle);
-    await helper.clickElementNative(languagePreferenceHeading);
-    const headingText = await helper.getTextFromElementNative(selectedPreferenceHeading);
-    const messageLang = await messagesLanguage.getAttribute('innerText');
-    const defaultLang = await defaultLanguage.getAttribute('innerText');
-    await utils.resetBrowserNative();
-    return  [headingText, messageLang, defaultLang];
-  },
-
-  checkGuidedTour: async () => {
-    await openSubmenu('guided tour');
-    expect(await tourBtns.count()).toEqual(4);
-    await helper.clickElementNative(genericCancelBtn);
   },
 
   checkReportBug: async () => {
