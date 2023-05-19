@@ -9,7 +9,8 @@ import { Selectors } from '@mm-selectors/index';
   templateUrl: './error-log.component.html'
 })
 export class ErrorLogComponent implements AfterViewInit, OnDestroy {
-  @Input() errorDetails;
+  @Input() errorStack;
+  @Input() errorFor;
   @Input() reload;
 
   url;

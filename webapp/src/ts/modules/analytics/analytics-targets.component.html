@@ -11,9 +11,7 @@
     <div>{{ 'targets.no_targets' | translate }}</div>
   </div>
 
-  <div class="targets" id="target-error-log" *ngIf="!targetsDisabled && !loading && !!errorStack">
-    <error-log [errorDetails]="['targets', errorStack]"></error-log>
-  </div>
+  <error-log class="targets" *ngIf="!targetsDisabled && !loading && !!errorStack" [errorStack]="errorStack" [errorFor]="'targets'"></error-log>
 
   <div class="targets" *ngIf="!targetsDisabled && !loading && targets?.length && !errorStack">
     <div class="target" *ngFor="let target of targets"

@@ -38,7 +38,7 @@
         </li>
       </ul>
 
-      <error-log *ngIf="!!errorStack" [errorDetails]="['tasks', errorStack]" [reload]="refreshTaskList"></error-log>
+      <error-log *ngIf="!!errorStack" [errorStack]="errorStack" [errorFor]="'tasks'" [reload]="refreshTaskList"></error-log>
 
       <p class="loading-status" *ngIf="!errorStack && !loading && !hasTasks && !tasksDisabled">{{'No tasks found' | translate}}</p>
       <p class="loading-status" *ngIf="!errorStack && !loading && hasTasks && !tasksDisabled">{{'task.list.complete' | translate}}</p>
