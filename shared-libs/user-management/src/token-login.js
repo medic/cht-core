@@ -307,7 +307,10 @@ const resetPassword = userId => {
     }
 
     user.password = passwords.generate();
-    return db.users.put(user).then(() => ({ user: user.name, password: user.password }));
+    return db.users
+      .put(user)
+      .then(() => db.syncShards('_users'))
+      .then(() => ({ user: user.name, password: user.password }));
   });
 };
 

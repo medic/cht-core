@@ -511,6 +511,8 @@ const saveUserUpdates = async (user) => {
     await couchSettings.updateAdminPassword(user.name, user.password);
   }
 
+  await db.syncShards('_users');
+
   return {
     id: savedDoc.id,
     rev: savedDoc.rev
@@ -822,7 +824,10 @@ module.exports = {
       return Promise.reject(passwordError);
     }
 
-    return await createUserEntities(data, appUrl);
+    const response = await createUserEntities(data, appUrl);
+    await db.syncShards('_users');
+
+    return response;
   },
 
   /* eslint-disable max-len */
@@ -905,6 +910,7 @@ module.exports = {
 
       responses.push(response);
     }
+    await db.syncShards('_users');
 
     progress.status = BULK_UPLOAD_PROGRESS_STATUSES.FINISHED;
     await bulkUploadLog.updateLog(logId, progress, logData);

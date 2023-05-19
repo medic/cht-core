@@ -41,7 +41,8 @@ if (UNIT_TEST_ENV) {
     'allDbs',
     'activeTasks',
     'saveDocs',
-    'createVault'
+    'createVault',
+    'syncShards',
   ];
 
   const notStubbed = (first, second) => {
@@ -162,5 +163,16 @@ if (UNIT_TEST_ENV) {
     // todo try one by one!
 
     throw new Error(`Error while saving docs: ${errors.join(', ')}`);
+  };
+
+  module.exports.syncShards = async (dbName) => {
+    if (!dbName) {
+      return;
+    }
+
+    await rpn.post({
+      url: `${environment.serverUrl}/${dbName}/_sync_shards`,
+      json: true
+    });
   };
 }

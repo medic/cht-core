@@ -18,6 +18,7 @@ describe('TokenLogin service', () => {
     db.init({
       medic: { get: sinon.stub(), put: sinon.stub(), allDocs: sinon.stub() },
       users: { get: sinon.stub(), put: sinon.stub() },
+      syncShards: sinon.stub().resolves(),
     });
     clock = sinon.useFakeTimers();
   });
@@ -319,6 +320,7 @@ describe('TokenLogin service', () => {
         .resetPassword('userId')
         .then(() => chai.assert.fail('should have thrown'))
         .catch(err => {
+          chai.expect(db.syncShards.called).to.equal(false);
           chai.expect(err).to.include({ status: 404 });
         });
     });
@@ -329,6 +331,7 @@ describe('TokenLogin service', () => {
         .resetPassword('userId')
         .then(() => chai.assert.fail('should have thrown'))
         .catch(err => {
+          chai.expect(db.syncShards.called).to.equal(false);
           chai.expect(err).to.deep.equal({ code: 400, message: 'invalid user' });
         });
     });
@@ -339,6 +342,7 @@ describe('TokenLogin service', () => {
         .resetPassword('userId')
         .then(() => chai.assert.fail('should have thrown'))
         .catch(err => {
+          chai.expect(db.syncShards.called).to.equal(false);
           chai.expect(err).to.deep.equal({ code: 400, message: 'invalid user' });
         });
     });
@@ -382,6 +386,7 @@ describe('TokenLogin service', () => {
           },
           password: user.password,
         }]);
+        chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
       });
     });
   });

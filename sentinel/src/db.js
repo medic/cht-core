@@ -53,6 +53,7 @@ if (UNIT_TEST_ENV) {
   module.exports.close = stubMe('close');
   module.exports.medicDbName = stubMe('medicDbName');
   module.exports.queryMedic = stubMe('queryMedic');
+  module.exports.syncShards = stubMe('syncShards');
 } else if (COUCH_URL) {
   const PouchDB = require('pouchdb-core');
   PouchDB.plugin(require('pouchdb-adapter-http'));
@@ -103,6 +104,17 @@ if (UNIT_TEST_ENV) {
       qs: queryParams,
       json: true,
       body,
+    });
+  };
+
+  module.exports.syncShards = async (dbName) => {
+    if (!dbName) {
+      return;
+    }
+
+    await request.post({
+      url: `${module.exports.serverUrl}/${dbName}/_sync_shards`,
+      json: true
     });
   };
 } else {
