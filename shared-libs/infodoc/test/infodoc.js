@@ -471,12 +471,53 @@ describe('infodoc', () => {
       };
       sinon.stub(db.sentinel, 'get').resolves(info);
       const sentinelPut = sinon.stub(db.sentinel, 'put');
-      sentinelPut.onFirstCall().rejects({status: 409});
-      sentinelPut.onSecondCall().resolves();
+      sentinelPut.rejects({ status: 409 });
+      sentinelPut.onCall(20).resolves();
 
       return lib.saveTransitions(change).then(() => {
-        assert.equal(db.sentinel.get.callCount, 2);
-        assert.equal(db.sentinel.put.callCount, 2);
+        assert.equal(db.sentinel.get.callCount, 21);
+        assert.equal(db.sentinel.put.callCount, 21);
+        assert.deepEqual(db.sentinel.put.args[20], [{ ...info, transitions: change.info.transitions }]);
+      });
+    });
+  });
+
+  describe('saveCompletedTasks', () => {
+    it('saveCompletedTasks should update infodoc', () => {
+      const serverInfo = { _id: 'some-info', _rev: 2, doc_id: 'some' };
+      sinon.stub(db.sentinel, 'get').resolves(serverInfo);
+      sinon.stub(db.sentinel, 'put').resolves();
+      const providedInfo = {
+        _id: 'some-info',
+        _rev: 1,
+        completed_tasks: { completed: 'tasks' },
+      };
+
+      return lib.saveCompletedTasks('some', providedInfo).then(() => {
+        assert.equal(db.sentinel.get.callCount, 1);
+        assert.deepEqual(db.sentinel.get.args[0], ['some-info']);
+        assert.equal(db.sentinel.put.callCount, 1);
+        assert.deepEqual(db.sentinel.put.args[0], [{ ...serverInfo, completed_tasks: providedInfo.completed_tasks }]);
+      });
+    });
+
+    it('should handle conflicts correctly', () => {
+      const serverInfo = { _id: 'some-info', _rev: 2, doc_id: 'some' };
+      sinon.stub(db.sentinel, 'get').resolves(serverInfo);
+      const sentinelPut = sinon.stub(db.sentinel, 'put');
+      sentinelPut.rejects({ status: 409 });
+      sentinelPut.onCall(45).resolves();
+
+      const providedInfo = {
+        _id: 'some-info',
+        _rev: 1,
+        completed_tasks: { success: 'tasks', failure: 'othertasks' },
+      };
+
+      return lib.saveCompletedTasks('some', providedInfo).then(() => {
+        assert.equal(db.sentinel.get.callCount, 46);
+        assert.equal(db.sentinel.put.callCount, 46);
+        assert.deepEqual(db.sentinel.put.args[45], [{ ...serverInfo, completed_tasks: providedInfo.completed_tasks }]);
       });
     });
   });

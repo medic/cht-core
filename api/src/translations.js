@@ -6,6 +6,8 @@ const fs = require('fs');
 const logger = require('./logger');
 const util = require('util');
 const path = require('path');
+const settingsService = require('./services/settings');
+
 const TRANSLATION_FILE_NAME_REGEX = /messages-([a-z]*)\.properties/;
 const DOC_TYPE = 'translations';
 const MESSAGES_DOC_ID_PREFIX = 'messages-';
@@ -89,7 +91,7 @@ const overwrite = (translationFiles, docs) => {
   return updatedDocs;
 };
 
-const getTranslationDocs = () => {
+const getTranslationDocs = async () => {
   return db.medic
     .allDocs({ startkey: MESSAGES_DOC_ID_PREFIX, endkey: `${MESSAGES_DOC_ID_PREFIX}\ufff0`, include_docs: true })
     .then(response => {
@@ -99,8 +101,22 @@ const getTranslationDocs = () => {
     });
 };
 
-const getEnabledLocales = () => {
-  return getTranslationDocs().then(docs => docs.filter(doc => doc.enabled));
+const getEnabledLocaleCodes = (languages, translationDocs) => {
+  if (
+    languages &&
+    Array.isArray(languages) &&
+    languages.length > 0
+  ) {
+    return languages.filter(language => language.enabled !== false).map(language => language.locale);
+  }
+
+  return translationDocs.filter(doc => doc.enabled).map(doc => doc.code);
+};
+
+const getEnabledLocales = async () => {
+  const [settings, translationDocs] = await Promise.all([settingsService.get(), getTranslationDocs()]);
+  const enabledLocaleCodes = getEnabledLocaleCodes(settings.languages, translationDocs);
+  return translationDocs.filter(doc => enabledLocaleCodes.includes(doc.code));
 };
 
 const readTranslationFile = (fileName, folderPath) => {
@@ -129,9 +145,8 @@ module.exports = {
         return;
       }
 
-      return Promise
-        .all([ getTranslationDocs() ])
-        .then(([ docs ]) => overwrite(files, docs))
+      return getTranslationDocs()
+        .then((docs) => overwrite(files, docs))
         .then(updated => {
           if (updated.length) {
             return db.medic.bulkDocs(updated);

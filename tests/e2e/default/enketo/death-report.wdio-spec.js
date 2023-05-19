@@ -28,7 +28,7 @@ describe('Submit a death report', () => {
     const deathNote = 'Test note';
 
     await commonPage.goToPeople(person._id);
-    await contactPage.createNewAction('Death report');
+    await commonPage.openFastActionReport('death_report');
     await deathReportForm.selectDeathPlace(deathReportForm.PLACE_OF_DEATH.healthFacility);
     await deathReportForm.setDeathInformation(deathNote);
     await deathReportForm.setDeathDate(deathDate.format('YYYY-MM-DD'));

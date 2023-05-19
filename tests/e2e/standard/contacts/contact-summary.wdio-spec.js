@@ -117,79 +117,72 @@ describe('Contact summary info', () => {
 `;
 
   const placeBobClinic = placeFactory.place().build({ name: 'Bob Place', type: 'clinic' });
-  const nationalAdminUser = userFactory.build(
-    {
-      username: 'national-user', place: placeBobClinic._id, roles: ['national_admin'],
-      contact: {
-        _id: 'fixture:national-user:offline',
-        name: 'national-user'
-      }
-    });
   const districtAdminUser = userFactory.build(
     {
       username: 'user-district', place: placeBobClinic._id,
       contact: {
         _id: 'fixture:user-district:offline',
-        name: 'user-district'
+        name: 'user-district',
       },
       roles: ['district_admin'],
-      known: false
+      known: false,
     });
   const patientAlice = personFactory.build({ name: 'Alice Alison', phone: '+447765902001' });
   const patientDavid = personFactory.build({ name: 'David Davidson', phone: '+447765902002', parent: placeBobClinic });
   const davidVisit = reportFactory.build(
-    { form: 'visit' }, { patient: patientDavid, submitter: nationalAdminUser.contact });
+    { form: 'visit' },
+    { patient: patientDavid, submitter: districtAdminUser.contact },
+  );
   const patientCarol = personFactory.build({
     name: 'Carol Carolina', sex: 'f', parent: placeBobClinic, patient_id: '05946',
     linked_docs: {
       aliceTag: patientAlice._id,
       davidTag: { _id: patientDavid._id },
       visitTag: { _id: davidVisit._id },
-    }
+    },
   });
   const carolPregnancy = reportFactory.build(
     { form: 'P' },
-    {
-      patient: patientCarol,
-      submitter: nationalAdminUser.contact
-    });
+    { patient: patientCarol, submitter: districtAdminUser.contact },
+  );
   const carolVisit = reportFactory.build(
     { form: 'V' },
     {
       patient: patientCarol,
-      submitter: nationalAdminUser.contact,
+      submitter: districtAdminUser.contact,
       reported_date: moment().set('date', 5).valueOf(),
       fields: {
         visited_contact_uuid: placeBobClinic._id,
-        patient_id: patientCarol.patient_id
-      }
-    });
+        patient_id: patientCarol.patient_id,
+      },
+    },
+  );
 
-  const docs = [patientAlice, placeBobClinic, patientCarol, patientDavid, carolPregnancy, davidVisit, carolVisit];
+  const docs = [ patientAlice, placeBobClinic, patientCarol, patientDavid, carolPregnancy, davidVisit, carolVisit ];
 
   const settings = {
     uhc: {
       visit_count: {
         month_start_date: 1,
-        visit_count_goal: 2
-      }
+        visit_count_goal: 2,
+      },
     },
     contact_summary: SCRIPT,
     contact_types: [
       {
         id: 'clinic',
-        count_visits: true
+        count_visits: true,
       },
       {
         id: 'person',
-        count_visits: false
-      }
+        count_visits: false,
+      },
     ]
   };
 
   before(async () => {
     await utils.saveDocs(docs);
-    await utils.createUsers([districtAdminUser, nationalAdminUser]);
+    await utils.createUsers([ districtAdminUser ]);
   });
 
   afterEach(async () => {
@@ -199,7 +192,7 @@ describe('Contact summary info', () => {
   });
 
   after(async () => {
-    await utils.deleteUsers([nationalAdminUser, districtAdminUser]);
+    await utils.deleteUsers([ districtAdminUser ]);
     await utils.revertDb([/^form:/], true);
   });
 
@@ -233,12 +226,11 @@ describe('Contact summary info', () => {
   });
 
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
-    await loginPage.login({ username: nationalAdminUser.username, password: nationalAdminUser.password });
+    await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
-    await commonElements.closeTour();
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
-    permissions.can_view_uhc_stats = nationalAdminUser.roles;
+    permissions.can_view_uhc_stats = districtAdminUser.roles;
     await utils.updateSettings({ ...settings, permissions }, true);
 
     await commonElements.closeReloadModal();
@@ -258,7 +250,6 @@ describe('Contact summary info', () => {
   it('should have access to the "cht" global api variable', async () => {
     await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
-    await commonElements.closeTour();
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
     permissions.can_configure = districtAdminUser.roles;

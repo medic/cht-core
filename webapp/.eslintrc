@@ -4,6 +4,9 @@
     "jquery": true,
     "node": true
   },
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
   "plugins": ["compat"],
   "rules": {
     "compat/compat": "error"

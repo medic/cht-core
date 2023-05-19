@@ -51,7 +51,7 @@ describe('Immunization Visit', () => {
     await commonPage.goToPeople();
     await contactPage.contactPageDefault.selectLHSRowByText(babyName);
     babyMedicID = await contactPage.contactPageDefault.getContactMedicID();
-    await contactPage.contactPageDefault.createNewAction('Immunization Visit');
+    await commonPage.openFastActionReport('immunization_visit');
 
     await immVisitForm.selectAllVaccines();
     await genericForm.nextPage();

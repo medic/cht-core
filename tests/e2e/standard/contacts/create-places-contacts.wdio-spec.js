@@ -16,7 +16,7 @@ describe('Creating contacts with standard config. ', () => {
 
   it('should create a new district hospital', async () => {
     await commonPage.goToPeople();
-    await contactPage.addPlace(PLACE_TYPES.DISTRICT, DISTRICT_NAME, DISTRICT_NAME + CONTACT_NAME_SUFFIX);
+    await contactPage.addPlace(PLACE_TYPES.DISTRICT, DISTRICT_NAME, DISTRICT_NAME + CONTACT_NAME_SUFFIX, false);
     await commonPage.waitForPageLoaded();
     const primaryContactName = await contactPage.contactPageDefault.getPrimaryContactName();
     const contactCardText = await contactPage.contactPageDefault.getContactCardText();

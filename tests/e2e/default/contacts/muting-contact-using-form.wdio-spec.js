@@ -42,7 +42,7 @@ describe('Mute/Unmute contacts using a specific form.', () => {
 
   it('Should mute a contact using the defined mute_forms (death_report).', async () => {
     await commonPage.goToPeople(person._id);
-    await contactPage.createNewAction('Death report');
+    await commonPage.openFastActionReport('death_report');
     await deathReportForm.submitDeathReport();
     await commonPage.sync(true);
 
@@ -52,7 +52,7 @@ describe('Mute/Unmute contacts using a specific form.', () => {
 
   it('Should unmute a contact using the defined unmute_forms (undo_death_report).', async () => {
     await commonPage.goToPeople(person._id);
-    await contactPage.createNewAction('Undo death report');
+    await commonPage.openFastActionReport('undo_death_report');
     await undoDeathReportForm.setConfirmUndoDeathOption();
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
@@ -66,7 +66,7 @@ describe('Mute/Unmute contacts using a specific form.', () => {
     await utils.revertSettings(true);
     await commonPage.goToPeople(mutePerson._id);
 
-    const modalDetails = await contactPage.openFormWithWarning('Death report');
+    const modalDetails = await contactPage.openFormWithWarning('death_report');
     expect(modalDetails.header).to.contain('Muted contact');
 
     await (await modalPage.cancel()).click();

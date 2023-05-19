@@ -34,50 +34,50 @@ describe('Submit Enketo form', () => {
 
   const contactId = constants.USER_CONTACT_ID;
 
-  const docs = [
-    {
-      _id: 'form:assessment',
-      internalId: 'A',
-      title: 'Assessment',
-      type: 'form',
-      _attachments: {
-        xml: {
-          content_type: 'application/octet-stream',
-          data: Buffer.from(xml).toString('base64'),
-        },
+  const assessmentForm = {
+    _id: 'form:assessment',
+    internalId: 'A',
+    title: 'Assessment',
+    type: 'form',
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer.from(xml).toString('base64'),
       },
     },
-    {
-      _id: 'c49385b3594af7025ef097114104ef48',
-      reported_date: 1469578114543,
-      notes: '',
-      contact: {
-        _id: contactId,
-        name: 'Jack',
-        date_of_birth: '',
-        phone: '+64274444444',
-        alternate_phone: '',
-        notes: '',
-        type: 'person',
-        reported_date: 1478469976421,
-      },
-      name: 'Number three district',
-      external_id: '',
-      type: 'district_hospital',
-    },
-    {
-      _id: 'form:required-note',
-      internalId: 'required-note',
-      title: 'Required Note',
-      type: 'form',
-      _attachments: {
-        xml: {
-          content_type: 'application/octet-stream',
-          data: Buffer.from(requireNodeXml).toString('base64')
-        }
+  };
+
+  const requiredNoteForm = {
+    _id: 'form:required-note',
+    internalId: 'required-note',
+    title: 'Required Note',
+    type: 'form',
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer.from(requireNodeXml).toString('base64')
       }
     }
-  ];
+  };
+
+  const district = {
+    _id: 'c49385b3594af7025ef097114104ef48',
+    reported_date: 1469578114543,
+    notes: '',
+    contact: {
+      _id: contactId,
+      name: 'Jack',
+      date_of_birth: '',
+      phone: '+64274444444',
+      alternate_phone: '',
+      notes: '',
+      type: 'person',
+      reported_date: 1478469976421,
+    },
+    name: 'Number three district',
+    external_id: '',
+    type: 'district_hospital',
+  };
 
   const userContactDoc = {
     _id: contactId,
@@ -110,22 +110,17 @@ describe('Submit Enketo form', () => {
 
   before(async () => {
     await loginPage.cookieLogin();
-    await utils.seedTestData(userContactDoc, docs);
+    await utils.seedTestData(userContactDoc, [ assessmentForm, district, requiredNoteForm ]);
   });
 
   it('submits on reports tab', async () => {
     await commonElements.goToReports();
-    await (await reportsPo.submitReportButton()).waitForClickable();
-
-    // select form
-    await reportsPo.openForm('Assessment');
+    await commonElements.openFastActionReport(assessmentForm.internalId, false);
 
     // enter name
-
     await (await genericForm.nameField()).setValue('Jones');
 
     // submit form
-
     await (await genericForm.submitButton()).click();
 
     // check the submitted name
@@ -137,15 +132,14 @@ describe('Submit Enketo form', () => {
   // that should prevent notes from ever being required.
   it('allows forms with required notes to be submitted', async () => {
     await commonElements.goToReports();
-    await reportsPo.openForm('Required Note');
-
+    await commonElements.openFastActionReport(requiredNoteForm.internalId, false);
     await reportsPo.submitForm();
   });
 
   it('cancelling form with no input does not trigger confirmation dialog', async () => {
     await commonElements.goToReports();
     const originalReportsText = await reportsPo.getAllReportsText();
-    await reportsPo.openForm('Assessment');
+    await commonElements.openFastActionReport(assessmentForm.internalId, false);
     // Do not set any values before cancelling
     await (await genericForm.cancelButton()).click();
 
@@ -158,7 +152,7 @@ describe('Submit Enketo form', () => {
   it('cancelling form with input triggers confirmation dialog box', async () => {
     await commonElements.goToReports();
     const originalReportsText = await reportsPo.getAllReportsText();
-    await reportsPo.openForm('Assessment');
+    await commonElements.openFastActionReport(assessmentForm.internalId, false);
     await (await genericForm.nameField()).setValue('Jones');
     await (await genericForm.cancelButton()).click();
 

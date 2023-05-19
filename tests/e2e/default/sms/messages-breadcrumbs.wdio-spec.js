@@ -64,15 +64,12 @@ describe('Message tab breadcrumbs', () => {
     await loginPage.login(onlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
-    await messagesPage.sendMessageToPhone('Contact', patient.phone);
+    await messagesPage.sendMessage('Contact', patient.phone, patient.name);
 
-    await messagesPage.waitForMessagesInLHS();
-    const message = await messagesPage.messageByIndex(1);
-    const messagesLineages =  await (await messagesPage.listMessageLineage(message)).getText();
-
+    const { lineage} = await messagesPage.getMessageInListDetails(patient._id);
     const expectedLineage = clinic.name.concat(health_center.name, district_hospital.name);
 
-    expect(messagesLineages).to.equal(expectedLineage);
+    expect(lineage).to.equal(expectedLineage);
   });
 
 
@@ -81,13 +78,10 @@ describe('Message tab breadcrumbs', () => {
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
 
-    await messagesPage.waitForMessagesInLHS();
-    const message = await messagesPage.messageByIndex(1);
-    const messagesLineages =  await (await messagesPage.listMessageLineage(message)).getText();
-
+    const { lineage} = await messagesPage.getMessageInListDetails(patient._id);
     const expectedLineage = clinic.name;
 
-    expect(messagesLineages).to.equal(expectedLineage);
+    expect(lineage).to.equal(expectedLineage);
   });
 
 });

@@ -59,7 +59,6 @@ describe('Create Person Under Area', async () => {
     await browser.url('/');
 
     await loginPage.login({ username, password });
-    await commonPage.closeTour();
 
     await commonPage.goToPeople();
     const rows = await contactPage.getAllLHSContactsNames();

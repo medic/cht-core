@@ -4,7 +4,7 @@ const moment = require('moment');
 const deliveryReport = require('@page-objects/default/enketo/default-delivery-report.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
-const common = require('@page-objects/default/common/common.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const utils = require('@utils');
 const userData = require('@page-objects/default/users/user.data');
@@ -18,13 +18,13 @@ describe.skip('Submit Default Delivery Report', () => {
     await utils.saveDocs(docs);
     await deliveryReport.configureForm(userContactDoc);
     await loginPage.cookieLogin();
-    await common.hideSnackbar();
+    await commonPage.hideSnackbar();
   });
 
   it('open, submit and edit (no changes) default delivery form', async () => {
-    await common.goToReports();
+    await commonPage.goToReports();
 
-    await reportsPage.openForm(deliveryReport.formTitle);
+    await commonPage.openFastActionReport(deliveryReport.formInternalId, false);
     //select name
     await deliveryReport.selectPatientName('jack');
     await genericForm.nextPage();
@@ -212,9 +212,9 @@ describe.skip('Submit Default Delivery Report', () => {
   });
 
   it('open, submit and edit default delivery form', async () => {
-    await common.goToReports();
+    await commonPage.goToReports();
 
-    await reportsPage.openForm(deliveryReport.formTitle);
+    await commonPage.openFastActionReport(deliveryReport.formInternalId, false);
     //select name
     await deliveryReport.selectPatientName('jack');
     await genericForm.nextPage();
@@ -325,7 +325,7 @@ describe.skip('Submit Default Delivery Report', () => {
     expect(updatedReport.fields.inputs.contact.name).to.equal('Jill');
 
     // submit same information in new report
-    await reportsPage.openForm(deliveryReport.formTitle);
+    await commonPage.openFastActionReport(deliveryReport.formInternalId, false);
     //select name
     await deliveryReport.selectPatientName('jill');
     await genericForm.nextPage();

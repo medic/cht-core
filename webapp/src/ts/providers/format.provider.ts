@@ -62,7 +62,7 @@ export class FormatProvider {
       parts.push('<span class="muted">' + _.escape(this.translateService.instant('contact.muted')) + '</span>');
     }
     if (options.phone) {
-      parts.push('<span>' + _.escape(options.phone) + '</span>');
+      parts.push('<span test-id="phone">' + _.escape(options.phone) + '</span>');
     }
     const position = this.lineage(options.parent || options.lineage);
     if (position) {
