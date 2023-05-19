@@ -163,15 +163,4 @@ if (UNIT_TEST_ENV) {
 
     throw new Error(`Error while saving docs: ${errors.join(', ')}`);
   };
-
-  module.exports.syncShards = async (db) => {
-    if (!db) {
-      throw new Error('Invalid database to sync shards: %o', db);
-    }
-
-    await rpn.post({
-      url: `${environment.serverUrl}/${db}/_sync_shards`,
-      json: true,
-    });
-  };
 }

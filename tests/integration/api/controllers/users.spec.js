@@ -1045,7 +1045,7 @@ describe('Users API', () => {
           contact: { id: user.contact._id },
         })));
 
-        await utils.syncShards();
+        await utils.delayPromise(1000);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
@@ -1157,7 +1157,7 @@ describe('Users API', () => {
           chai.expect(responseUser.token_login).to.have.keys('expiration_date');
         });
 
-        await utils.syncShards();
+        await utils.delayPromise(1000);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
@@ -1414,7 +1414,7 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
-          .then(() => utils.syncShards())
+          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1450,7 +1450,7 @@ describe('Users API', () => {
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
-            return utils.syncShards();
+            return utils.delayPromise(1000);
           })
           .then(() => expectPasswordLoginToFail(user))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
