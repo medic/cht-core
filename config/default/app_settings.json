@@ -307,8 +307,8 @@
 						}]
 					},
 					{
-						"property": "phone_nume",
-						"rule": "(lenMin(10) && lenMax(13))",
+						"property": "phone_number",
+						"rule": "(lenMin(9) && lenMax(13))",
 						"translation_key": "",
 						"message": [{
 							"content": "The registration format for {{patient_name}} is incorrect, please ensure that phone number length is between 9 and 13.",
