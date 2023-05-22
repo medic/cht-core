@@ -1,5 +1,5 @@
-const utils = require('../../utils');
-const sentinelUtils = require('../../utils/sentinel');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 

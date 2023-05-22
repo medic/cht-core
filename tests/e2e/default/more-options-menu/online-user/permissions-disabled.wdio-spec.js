@@ -1,13 +1,13 @@
 const uuid = require('uuid').v4;
-const commonPage = require('../../../../page-objects/default/common/common.wdio.page');
-const reportPage = require('../../../../page-objects/default/reports/reports.wdio.page');
-const loginPage = require('../../../../page-objects/default/login/login.wdio.page');
-const utils = require('../../../../utils');
-const reportFactory = require('../../../../factories/cht/reports/generic-report');
-const personFactory = require('../../../../factories/cht/contacts/person');
-const userFactory = require('../../../../factories/cht/users/users');
-const placeFactory = require('../../../../factories/cht/contacts/place');
-const sms = require('../../../../utils/sms');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportPage = require('@page-objects/default/reports/reports.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const utils = require('@utils');
+const reportFactory = require('@factories/cht/reports/generic-report');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const sms = require('@utils/sms');
 
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
@@ -39,7 +39,7 @@ const patient = personFactory.build({
 
 const reports = [
   reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact })
-];  
+];
 
 describe('- permissions disabled', async () => {
   before(async () => {
@@ -61,7 +61,7 @@ describe('- permissions disabled', async () => {
     });
 
     after(async () => await utils.revertSettings(true));
-  
+
     it(' - Contact Tab - contact selected', async () => {
       await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
@@ -69,22 +69,22 @@ describe('- permissions disabled', async () => {
       expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
       expect(await commonPage.isMenuOptionEnabled('delete', 'contacts')).to.be.true;
     });
-  
+
     it('- Report Tab - report selected', async () => {
       await commonPage.goToReports();
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
       (await reportPage.firstReport()).click();
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;     
-    }); 
+      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
+    });
 
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await commonPage.waitForLoaderToDisappear();
       expect(await commonPage.isMessagesListPresent()).to.be.true;
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
-    }); 
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+    });
   });
 
   describe('- DELETE permissions disabled', async () => {
@@ -100,13 +100,13 @@ describe('- permissions disabled', async () => {
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('delete', 'contacts')).to.be.false;
     });
-  
+
     it('- Report Tab - option disabled when report selected', async () => {
       await commonPage.goToReports();
       (await reportPage.firstReport()).click();
-      await commonPage.openMoreOptionsMenu(); 
-      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;     
-    });  
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isMenuOptionVisible('delete', 'reports')).to.be.false;
+    });
   });
 
   describe('- EDIT permissions disabled', async () => {
@@ -114,21 +114,21 @@ describe('- permissions disabled', async () => {
       await utils.updatePermissions(onlineUser.roles, [], ['can_edit']);
       await commonPage.closeReloadModal();
     });
-    
+
     after(async () => await utils.revertSettings(true));
-    
+
     it(' - Contact Tab - contact selected', async () => {
       await commonPage.goToPeople(contact._id);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('edit', 'contacts')).to.be.false;
     });
-  
+
     it('- Report Tab - option disabled when report selected', async () => {
       await commonPage.goToReports();
       (await reportPage.firstReport()).click();
-      await commonPage.openMoreOptionsMenu(); 
-      expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;     
-    });  
+      await commonPage.openMoreOptionsMenu();
+      expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
+    });
   });
 });
 

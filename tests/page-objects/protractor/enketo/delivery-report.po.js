@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const helper = require('../../../helper');
 const fs = require('fs');
 

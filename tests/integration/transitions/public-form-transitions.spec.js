@@ -1,5 +1,5 @@
-const sentinelUtils = require('../../utils/sentinel');
-const utils = require('../../utils');
+const sentinelUtils = require('@utils/sentinel');
+const utils = require('@utils');
 const apiUtils = require('./utils');
 const { expect } = require('chai');
 

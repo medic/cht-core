@@ -1,8 +1,8 @@
-const commonElements = require('../../../page-objects/default/common/common.wdio.page.js');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page.js');
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonElements = require('@page-objects/default/common/common.wdio.page.js');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page.js');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 describe('Add new district tests : ', () => {
   before(async () => await loginPage.cookieLogin());

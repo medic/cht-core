@@ -1,9 +1,9 @@
-const ZScoreForm = require('../../../page-objects/default/enketo/z-score.wdio.page');
-const userData = require('../../../page-objects/default/users/user.data');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const utils = require('../../../utils');
+const ZScoreForm = require('@page-objects/default/enketo/z-score.wdio.page');
+const userData = require('@page-objects/default/users/user.data');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const utils = require('@utils');
 
 describe('Submit Z-Score form', () => {
   before(async () => {
