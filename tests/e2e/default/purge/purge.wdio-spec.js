@@ -43,6 +43,13 @@ const purgeHomeVisitFn = (userCtx, contact, reports) => {
   return reports.filter(r => r.form === 'home_visit').map(r => r._id);
 };
 
+const purgeUsingChtApitFn = (userCtx, contact, reports, messages, chtScript) => {
+  if(chtScript.v1.hasPermissions('can_edit')) {
+    return reports.filter(r => r.form === 'purge').map(r => r._id);
+  }
+  return reports;
+};
+
 const reportsToPurge = Array
   .from({ length: 50 })
   .map(() => genericReportFactory.build({ form: 'purge' }, { patient, submitter: contact }));
@@ -93,6 +100,11 @@ const parsePurgingLogEntries = (logEntries) => {
     return match && match[1];
   });
 };
+
+afterEach(async () => {
+  await utils.deleteUsers([user]);
+  await utils.revertDb([/^form:/], true);
+});
 
 describe('purge', () => {
   it('purging runs on sync and startup', async () => {
@@ -148,5 +160,33 @@ describe('purge', () => {
     expect(purgeLog.history[1].count).to.equal(PURGE_BATCH_SIZE);
     expect(purgeLog.history[2].count).to.equal(0);
     expect(purgeLog.to_purge.length).to.equal(0); // queue is empty
+  });
+
+  it('purging runs when using chtScriptApi', async () => {
+
+    await updateSettings(purgeUsingChtApitFn); // settings should be at the beginning of the changes feed
+
+    await utils.saveDocs([district, healthCenter, contact, patient]);
+    await utils.createUsers([user]);
+    await utils.saveDocs(reportsToPurge);
+    await utils.saveDocs(homeVisits);
+    await utils.saveDocs(pregnancies);
+    await sentinelUtils.waitForSentinel();
+
+    await runPurging();
+
+    await loginPage.login({ username: user.username, password: user.password, loadPage: true });
+
+    const purgingRequestsPromise = await utils.collectApiLogs(/REQ.*purging/);
+    await commonElements.sync();
+    const purgingRequests = parsePurgingLogEntries(await purgingRequestsPromise());
+    expect(purgingRequests).to.deep.equal([
+      '/purging/changes',
+      '/purging/checkpoint',
+    ]);
+
+    const allReports = await getAllReports();
+    expect(allReports.length).to.equal(homeVisits.length + pregnancies.length);
+    expect(allReports.some(report => report.form === 'purge')).to.equal(false);
   });
 });
