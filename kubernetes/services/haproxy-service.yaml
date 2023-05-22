@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    cht.service: haproxy
+  name: haproxy
+spec:
+  ports:
+    - name: "5984"
+      port: 5984
+      targetPort: 5984
+  selector:
+    cht.service: haproxy
+status:
+  loadBalancer: {}

@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: upgrade-service
+  name: upgrade-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: upgrade-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        cht.service: upgrade-service
+    spec:
+      restartPolicy: Always
+      serviceAccountName: cht-upgrade-service-user
+      containers:
+      - image: medicmobile/upgrade-service:0.28
+        name: upgrade-service
+        resources: {}
+        env:
+          - name: CHT_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: CHT_DEPLOYMENT_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.labels['app']
+        ports:
+          - containerPort: 5008

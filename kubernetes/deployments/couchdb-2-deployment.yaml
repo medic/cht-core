@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: couchdb-2
+  name: couchdb-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: couchdb-2
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        cht.service: couchdb-2
+    spec:
+      containers:
+        - env:
+            - name: COUCHDB_LOG_LEVEL
+              value: error
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_PASSWORD
+            - name: COUCHDB_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_SECRET
+            - name: COUCHDB_SYNC_ADMINS_NODE
+              value: couchdb-1
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_USER
+            - name: COUCHDB_UUID
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_UUID
+            - name: SVC_NAME
+              value: couchdb-2
+          image: public.ecr.aws/s5s3h4s7/cht-couchdb:4.1.1-4.1.1
+          name: couchdb-2
+          ports:
+            - containerPort: 5984
+          resources: {}
+          volumeMounts:
+            - mountPath: /opt/couchdb/data
+              name: couchdb-2-claim0
+      restartPolicy: Always
+      volumes:
+        - name: couchdb-2-claim0
+          persistentVolumeClaim:
+            claimName: couchdb-2-claim0
+status: {}
