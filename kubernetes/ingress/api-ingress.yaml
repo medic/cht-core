@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+spec:
+  tls:
+  - hosts:
+    - cht-dev.my.local-ip.co
+    secretName: api-tls-secret
+  rules:
+  - host: cht-dev.my.local-ip.co
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: api
+            port:
+              number: 5988

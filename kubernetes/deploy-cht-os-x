@@ -1,0 +1,134 @@
+#!/bin/bash
+set -e
+
+# Function to draw progress bar
+progress_bar() {
+    local total=$1
+    local current=$2
+    local width=50
+    local perc=$((current*100/total))
+    local prog=$((perc*width/100))
+    printf -v bar "%*s" $prog
+    printf -v spaces "%*s" $((width-prog))
+    printf "\r[%s%s] %d%%" "${bar// /#}" "${spaces}" "$perc"
+}
+
+total_steps=15
+step=0
+
+# Check if brew is installed, if not install it
+if test ! $(which brew); then
+    echo "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+# Install curl if not already installed
+if test ! $(which curl); then
+    echo "Installing curl..."
+    brew install curl
+    step=$((step+1))
+    progress_bar $total_steps $step
+fi
+
+# Install kubectl if not already installed
+if test ! $(which kubectl); then
+    echo "Installing kubectl..."
+    brew install kubectl
+    step=$((step+1))
+    progress_bar $total_steps $step
+fi
+
+# Download and install k3d
+echo "Downloading and installing k3d..."
+brew install k3d
+step=$((step+1))
+progress_bar $total_steps $step
+
+# Create cluster with port mapping
+# Check if a cluster with the name 'k3s-default' already exists
+if ! k3d cluster list | grep -q 'k3s-default'; then
+    echo "Creating k3d cluster..."
+    k3d cluster create --port '443:443@loadbalancer'
+    step=$((step+1))
+    progress_bar $total_steps $step
+else
+    echo "K3d cluster 'k3s-default' already exists. Skipping creation."
+fi
+
+
+# Obtain certificate and key from local-ip.co
+echo "Obtaining certificate from local-ip.co..."
+curl http://local-ip.co/cert/server.pem > certificate.crt
+curl http://local-ip.co/cert/server.key > private.key
+step=$((step+1))
+progress_bar $total_steps $step
+
+# Check if the secret api-tls-secret already exists
+if kubectl -n cht-dev-namespace get secret api-tls-secret >/dev/null 2>&1; then
+    echo
+    echo "Deleting existing secret api-tls-secret..."
+    kubectl -n cht-dev-namespace delete secret api-tls-secret
+    step=$((step + 1))
+    progress_bar "$total_steps" "$step"
+fi
+
+# Create namespace
+kubectl apply -f ./namespace.yaml
+
+# Create a Secret from the certificate and key
+echo "Creating Secret from certificate and key..."
+kubectl -n cht-dev-namespace create secret tls api-tls-secret --cert=certificate.crt --key=private.key
+step=$((step+1))
+progress_bar $total_steps $step
+
+# Apply the configuration files
+echo "Applying Kubernetes configurations..."
+
+# 1. Service Accounts
+kubectl -n cht-dev-namespace apply -f service-accounts/
+step=$((step+1))
+progress_bar $total_steps $step
+
+# 2. RBAC
+kubectl -n cht-dev-namespace apply -f rbac/
+step=$((step+1))
+progress_bar $total_steps $step
+
+# 3. ConfigMaps
+kubectl -n cht-dev-namespace apply -f configmaps/
+step=$((step+1))
+progress_bar $total_steps $step
+
+# 4. Secrets
+kubectl -n cht-dev-namespace apply -f secrets/
+step=$((step+1))
+progress_bar $total_steps $step
+
+# 5. Persistent Volumes and Persistent Volume Claims
+kubectl -n cht-dev-namespace apply -f pv-pvc/
+step=$((step+1))
+progress_bar $total_steps $step
+
+# 6. Deployments
+kubectl -n cht-dev-namespace apply -f deployments/
+step=$((step+1))
+progress_bar $total_steps $step
+
+# 7. Services
+kubectl -n cht-dev-namespace apply -f services/
+step=$((step+1))
+progress_bar $total_steps $step
+
+# 8. Ingress
+kubectl -n cht-dev-namespace apply -f ingress/
+step=$((step+1))
+progress_bar $total_steps $step
+
+# 9. Finalization
+echo -e "\nConfiguration applied. Checking status..."
+kubectl -n cht-dev-namespace get all
+step=$((step+1))
+progress_bar $total_steps $step
+
+echo -e "\nAll done."
+
