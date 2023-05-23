@@ -51,20 +51,23 @@ export class TasksComponent implements OnInit, OnDestroy {
   private debouncedReload;
 
   private subscribeToStore() {
-    const reduxSubscription = combineLatest(
+    const assignment$ = this.store
+      .select(Selectors.getTasksLoaded)
+      .subscribe(tasksLoaded => this.tasksLoaded = tasksLoaded);
+    this.subscription.add(assignment$);
+
+    const taskList$ = combineLatest(
       this.store.select(Selectors.getTasksList),
-      this.store.select(Selectors.getTasksLoaded),
       this.store.select(Selectors.getSelectedTask),
     ).subscribe(([
-      tasksList,
-      tasksLoaded,
+      tasksList = [],
       selectedTask,
     ]) => {
-      this.tasksList = tasksList;
-      this.tasksLoaded = tasksLoaded;
       this.selectedTask = selectedTask;
+      // Make new reference because the one from store is read-only. Fixes: ExpressionChangedAfterItHasBeenCheckedError
+      this.tasksList = tasksList.map(task => ({ ...task, selected: task._id === this.selectedTask?._id }));
     });
-    this.subscription.add(reduxSubscription);
+    this.subscription.add(taskList$);
   }
 
   private subscribeToChanges() {

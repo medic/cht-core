@@ -30,7 +30,6 @@ export class MessagesComponent implements OnInit, OnDestroy {
   loading = true;
   loadingContent = false;
   conversations = [];
-  selectedConversationId = null;
   error = false;
   currentLevel;
 
@@ -69,26 +68,31 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const subscription = combineLatest(
-      this.store.select(Selectors.getConversations),
-      this.store.select(Selectors.getSelectedConversation),
+    const assignments$ = combineLatest(
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getMessagesError),
     ).subscribe(([
-      conversations = [],
-      selectedConversation,
       loadingContent,
       error,
     ]) => {
-      // Create new reference of conversation's items
-      // because the ones from store can't be modified as they are read only.
-      this.conversations = conversations.map(conversation => {
-        return { ...conversation, selected: conversation.key === selectedConversation?.id };
-      });
       this.loadingContent = loadingContent;
       this.error = error;
     });
-    this.subscriptions.add(subscription);
+    this.subscriptions.add(assignments$);
+
+    const conversations$ = combineLatest(
+      this.store.select(Selectors.getConversations),
+      this.store.select(Selectors.getSelectedConversation),
+    ).subscribe(([
+      conversations = [],
+      selectedConversation,
+    ]) => {
+      // Make new reference because the one from store is read-only. Fixes: ExpressionChangedAfterItHasBeenCheckedError
+      this.conversations = conversations.map(conversation => {
+        return { ...conversation, selected: conversation.key === selectedConversation?.id };
+      });
+    });
+    this.subscriptions.add(conversations$);
   }
 
   private displayFirstConversation(conversations = []) {
