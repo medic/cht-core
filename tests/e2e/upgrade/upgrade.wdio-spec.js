@@ -1,9 +1,9 @@
-const utils = require('../../utils');
+const utils = require('@utils');
 
 const { BRANCH, TAG } = process.env;
-const loginPage = require('../../page-objects/default/login/login.wdio.page');
-const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
-const constants = require('../../constants');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
+const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
 
 const getDdocs = async () => {

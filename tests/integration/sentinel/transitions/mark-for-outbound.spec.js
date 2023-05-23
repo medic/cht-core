@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 
 // Mock server code, consider moving this elsewhere?

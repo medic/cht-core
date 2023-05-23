@@ -1,7 +1,7 @@
-const commonElements = require('../../page-objects/protractor/common/common.po.js');
-const utils = require('../../utils');
-const loginPage = require('../../page-objects/protractor/login/login.po');
-const constants = require('../../constants.js');
+const commonElements = require('@page-objects/protractor/common/common.po.js');
+const utils = require('@utils');
+const loginPage = require('@page-objects/protractor/login/login.po');
+const constants = require('@constants');
 const helper = require('../../helper');
 
 describe('Navigation tests : ', () => {

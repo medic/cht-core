@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const commonPage = require('../common/common.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
 
