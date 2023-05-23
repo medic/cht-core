@@ -486,12 +486,14 @@ const deprecated = (name, replacement) => {
   }
 };
 
-const waitForSettingsUpdateLogs = (type) => {
+const waitForSettingsUpdateLogs = (type, updated) => {
   if (type === 'sentinel') {
     return module.exports.waitForSentinelLogs(/Reminder messages allowed between/);
   }
 
-  return module.exports.waitForApiLogs(/Settings updated/);
+  if(updated){
+    return module.exports.waitForApiLogs(/Settings updated/);
+  }
 };
 
 const killSpawnedProcess = (proc) => {
@@ -1117,10 +1119,10 @@ module.exports = {
    *                                       api logs, if value equals 'sentinel', will watch sentinel logs instead.
    * @return {Promise}        completion promise
    */
-  updateSettings: async (updates, ignoreReload) => {
+  updateSettings: async (updates, ignoreReload, updated = true) => {
     const watcher = ignoreReload &&
       Object.keys(updates).length &&
-      await waitForSettingsUpdateLogs(ignoreReload);
+      await waitForSettingsUpdateLogs(ignoreReload, updated);
     await updateSettings(updates);
     if (!ignoreReload) {
       return await refreshToGetNewSettings();
