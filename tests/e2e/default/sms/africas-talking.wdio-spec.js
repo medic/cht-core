@@ -1,9 +1,9 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const querystring = require('querystring');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const messagesPage = require('../../../page-objects/default/sms/messages.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
+const loginPage = require('@page-objects//default/login/login.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 
 const CREDENTIAL_PASS = 'yabbadabbadoo';
 const CREDENTIAL_KEY = 'africastalking.com:incoming';
