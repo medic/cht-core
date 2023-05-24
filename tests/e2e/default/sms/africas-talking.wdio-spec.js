@@ -51,7 +51,7 @@ describe('africas talking api', () => {
       expect(state).to.equal('received');
 
       const doc = await utils.getDoc(dataID);
-      expect(doc.sms_message && doc.sms_message.gateway_ref).to.equal('messageID');
+      expect(doc.sms_message.gateway_ref).to.equal('messageID');
     });
 
   });
