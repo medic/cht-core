@@ -25,6 +25,7 @@
     "pouchdb-mapreduce": "^7.3.1",
     "pouchdb-replication": "^7.3.1",
     "request": "^2.88.2",
+    "request-promise-native": "^1.0.9",
     "simple-password-tester": "^1.0.0",
     "url-join": "^4.0.1",
     "uuid": "^8.3.2",
