@@ -30,6 +30,7 @@ services:
     environment:
       - DOCKER_NETWORK_NAME=haproxy
       - DOCKER_COUCHDB_ADMIN_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
+    platform: linux/amd64
 
   haproxy:
 
@@ -41,6 +42,7 @@ services:
       - HA_PASSWORD=${DOCKER_COUCHDB_ADMIN_PASSWORD:-password}
     networks:
       - medic-net
+    platform: linux/amd64
 
 volumes:
   medic-data:
