@@ -34,7 +34,7 @@ const patient = personFactory.build({
   parent: { _id: 'health_center', parent: { _id: 'district' } },
 });
 const user = userFactory.build({ username: 'offlineuser-purge', place: 'health_center' });
-
+const user2 = userFactory.build({ username: 'offlineuser-purge2', place: 'health_center' });
 const purgeFn = (userCtx, contact, reports) => {
   return reports.filter(r => r.form === 'purge').map(r => r._id);
 };
@@ -43,8 +43,8 @@ const purgeHomeVisitFn = (userCtx, contact, reports) => {
   return reports.filter(r => r.form === 'home_visit').map(r => r._id);
 };
 
-const purgeUsingChtApitFn = (userCtx, contact, reports, messages, chtScript) => {
-  if(chtScript.v1.hasPermissions('can_edit')) {
+const purgeUsingChtApitFn = (userCtx, contact, reports, messages, chtScript, settings) => {
+  if (chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
     return reports.filter(r => r.form === 'purge').map(r => r._id);
   }
   return reports;
@@ -102,7 +102,7 @@ const parsePurgingLogEntries = (logEntries) => {
 };
 
 afterEach(async () => {
-  await utils.deleteUsers([user]);
+  await utils.deleteUsers([user, user2]);
   await utils.revertDb([/^form:/], true);
 });
 
@@ -167,7 +167,7 @@ describe('purge', () => {
     await updateSettings(purgeUsingChtApitFn); // settings should be at the beginning of the changes feed
 
     await utils.saveDocs([district, healthCenter, contact, patient]);
-    await utils.createUsers([user]);
+    await utils.createUsers([user2]);
     await utils.saveDocs(reportsToPurge);
     await utils.saveDocs(homeVisits);
     await utils.saveDocs(pregnancies);
@@ -175,7 +175,7 @@ describe('purge', () => {
 
     await runPurging();
 
-    await loginPage.login({ username: user.username, password: user.password, loadPage: true });
+    await loginPage.login({ username: user2.username, password: user2.password, loadPage: true });
 
     const purgingRequestsPromise = await utils.collectApiLogs(/REQ.*purging/);
     await commonElements.sync();
