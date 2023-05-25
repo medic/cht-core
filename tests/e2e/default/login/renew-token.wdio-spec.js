@@ -1,9 +1,9 @@
 
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const moment = require('moment');
-const browserPage = require('../../../utils/browser');
-const utils = require('../../../utils');
+const browserPage = require('@utils/browser');
+const utils = require('@utils');
 
 describe('should renew token', async () => {
 

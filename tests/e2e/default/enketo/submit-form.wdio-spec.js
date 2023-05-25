@@ -1,12 +1,12 @@
 const fs = require('fs');
 const { expect } = require('chai');
-const utils = require('../../../utils');
-const constants = require('../../../constants');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPo = require('../../../page-objects/default/reports/reports.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const modalPage = require('../../../page-objects/default/common/modal.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const utils = require('@utils');
+const constants = require('@constants');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const modalPage = require('@page-objects/default/common/modal.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 const requireNodeXml = fs.readFileSync(`${__dirname}/forms/required-note.xml`, 'utf8');
 
 describe('Submit Enketo form', () => {
@@ -124,8 +124,8 @@ describe('Submit Enketo form', () => {
     await (await genericForm.submitButton()).click();
 
     // check the submitted name
-    await (await reportsPo.firstReportDetailField()).waitForDisplayed();
-    expect(await (await reportsPo.firstReportDetailField()).getText()).to.equal('Jones');
+    await (await reportsPage.firstReportDetailField()).waitForDisplayed();
+    expect(await (await reportsPage.firstReportDetailField()).getText()).to.equal('Jones');
   });
 
   // If this test fails, it means something has gone wrong with the custom logic in openrosa2html5form.xsl
@@ -133,25 +133,25 @@ describe('Submit Enketo form', () => {
   it('allows forms with required notes to be submitted', async () => {
     await commonElements.goToReports();
     await commonElements.openFastActionReport(requiredNoteForm.internalId, false);
-    await reportsPo.submitForm();
+    await reportsPage.submitForm();
   });
 
   it('cancelling form with no input does not trigger confirmation dialog', async () => {
     await commonElements.goToReports();
-    const originalReportsText = await reportsPo.getAllReportsText();
+    const originalReportsText = await reportsPage.getAllReportsText();
     await commonElements.openFastActionReport(assessmentForm.internalId, false);
     // Do not set any values before cancelling
     await (await genericForm.cancelButton()).click();
 
     await commonElements.waitForPageLoaded();
-    await (await reportsPo.noReportSelectedLabel()).waitForDisplayed();
+    await (await reportsPage.noReportSelectedLabel()).waitForDisplayed();
     // No new report added
-    expect(await reportsPo.getAllReportsText()).to.deep.equal(originalReportsText);
+    expect(await reportsPage.getAllReportsText()).to.deep.equal(originalReportsText);
   });
 
   it('cancelling form with input triggers confirmation dialog box', async () => {
     await commonElements.goToReports();
-    const originalReportsText = await reportsPo.getAllReportsText();
+    const originalReportsText = await reportsPage.getAllReportsText();
     await commonElements.openFastActionReport(assessmentForm.internalId, false);
     await (await genericForm.nameField()).setValue('Jones');
     await (await genericForm.cancelButton()).click();
@@ -160,8 +160,8 @@ describe('Submit Enketo form', () => {
     await (await modalPage.submit()).click();
 
     await commonElements.waitForPageLoaded();
-    await (await reportsPo.noReportSelectedLabel()).waitForDisplayed();
+    await (await reportsPage.noReportSelectedLabel()).waitForDisplayed();
     // No new report added
-    expect(await reportsPo.getAllReportsText()).to.deep.equal(originalReportsText);
+    expect(await reportsPage.getAllReportsText()).to.deep.equal(originalReportsText);
   });
 });

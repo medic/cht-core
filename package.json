@@ -118,6 +118,7 @@
     "loose-envify": "^1.4.0",
     "medic-conf": "^3.2.1",
     "mocha": "^10.2.0",
+    "module-alias": "^2.2.2",
     "moment": "^2.29.1",
     "moment-locales-webpack-plugin": "^1.2.0",
     "mustache": "^4.2.0",

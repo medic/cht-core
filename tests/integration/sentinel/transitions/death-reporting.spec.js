@@ -1,5 +1,5 @@
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const chai = require('chai');
 
