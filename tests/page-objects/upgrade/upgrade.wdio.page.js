@@ -1,5 +1,5 @@
 const common = require('../default/common/common.wdio.page');
-const utils = require('../../utils');
+const utils = require('@utils');
 
 const cancelUpgradeButton = () => $('button*=Cancel');
 const deploymentInProgress = () => $('legend*=Deployment in progress');

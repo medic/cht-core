@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 
 const submitButton = () => $('div.form-actions button.btn.btn-primary');
 const addLanguageButton = () => $('span=Add new language');

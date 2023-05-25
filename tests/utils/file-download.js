@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 
-const constants = require('./../constants');
+const constants = require('@constants');
 
 const DOWNLOAD_PATH = path.join(__dirname, '..', constants.DOWNLOAD_DIRECTORY);
 

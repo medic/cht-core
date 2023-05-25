@@ -1,8 +1,8 @@
 const chai = require('chai');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 
 const getAppVersion = async () => {
   const deployInfo = await utils.request({ path: '/api/deploy-info' });

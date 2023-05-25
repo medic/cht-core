@@ -1,14 +1,14 @@
-const countdownTimerPage = require('../../../page-objects/default/enketo/countdown-timer.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const utils = require('../../../utils');
-const userData = require('../../../page-objects/default/users/user.data');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const countdownTimerPage = require('@page-objects/default/enketo/countdown-timer.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const utils = require('@utils');
+const userData = require('@page-objects/default/users/user.data');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 const { userContactDoc, docs } = userData;
 
 describe('Countdown timer widget', () => {
-  
+
   before(async () => {
     await utils.saveDocs(docs);
     await countdownTimerPage.configureForm(userContactDoc);

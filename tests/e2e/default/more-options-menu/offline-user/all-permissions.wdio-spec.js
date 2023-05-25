@@ -1,14 +1,14 @@
 const uuid = require('uuid').v4;
-const commonPage = require('../../../../page-objects/default/common/common.wdio.page');
-const contactPage = require('../../../../page-objects/default/contacts/contacts.wdio.page');
-const reportPage = require('../../../../page-objects/default/reports/reports.wdio.page');
-const utils = require('../../../../utils');
-const placeFactory = require('../../../../factories/cht/contacts/place');
-const reportFactory = require('../../../../factories/cht/reports/generic-report');
-const personFactory = require('../../../../factories/cht/contacts/person');
-const userFactory = require('../../../../factories/cht/users/users');
-const loginPage = require('../../../../page-objects/default/login/login.wdio.page');
-const sms = require('../../../../utils/sms');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const reportPage = require('@page-objects/default/reports/reports.wdio.page');
+const utils = require('@utils');
+const placeFactory = require('@factories/cht/contacts/place');
+const reportFactory = require('@factories/cht/reports/generic-report');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const sms = require('@utils/sms');
 
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
@@ -65,14 +65,14 @@ describe('More Options Menu - Offline User', async () => {
   });
 
   afterEach(async () => await commonPage.goToBase());
-  
+
   after(async () => await utils.revertSettings(true));
 
   describe('all permissions enabled', async () => {
     it('- Message tab', async () => {
       await commonPage.goToMessages();
       await sms.sendSms('testing', contact.phone);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
     });
 
     it('- Contact tab - no contact selected', async () => {
@@ -101,34 +101,34 @@ describe('More Options Menu - Offline User', async () => {
 
     it('Report tab - options enabled when sms report selected', async () => {
       await commonPage.goToReports();
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
       await reportPage.goToReportById(smsReportId);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionVisible('edit', 'reports')).to.be.false;
-      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;     
+      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
     });
 
-    it('Report tab - options enabled when xml report selected', async () => {  
+    it('Report tab - options enabled when xml report selected', async () => {
       await reportPage.goToReportById(xmlReportId);
       await commonPage.openMoreOptionsMenu();
       expect(await commonPage.isMenuOptionVisible('export', 'reports')).to.be.false;
       expect(await commonPage.isMenuOptionEnabled('edit', 'reports')).to.be.true;
-      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;     
+      expect(await commonPage.isMenuOptionEnabled('delete', 'reports')).to.be.true;
     });
   });
 
   describe('all permissions disabled', async () => {
     before(async () => {
-      const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all', 
-        'can_export_contacts', 'can_export_messages', 
+      const allPermissions = ['can_edit', 'can_delete_contacts', 'can_export_all',
+        'can_export_contacts', 'can_export_messages',
         'can_delete_reports', 'can_update_reports'];
       await utils.updatePermissions(offlineUser.roles, [], allPermissions);
       await commonPage.closeReloadModal();
     });
 
     after(async () => await utils.revertSettings(true));
-  
+
     it(' - all tabs, kebab menu not available', async () => {
       await commonPage.goToMessages();
       await sms.sendSms('testing', contact.phone);
@@ -136,17 +136,17 @@ describe('More Options Menu - Offline User', async () => {
 
       await commonPage.goToPeople();
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
-        
+
       await contactPage.selectLHSRowByText(contact.name);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;  
-    
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+
       await commonPage.goToReports();
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
       await reportPage.goToReportById(smsReportId);
       expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
       await reportPage.goToReportById(xmlReportId);
-      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;   
-    });    
+      expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+    });
   });
 });
 
