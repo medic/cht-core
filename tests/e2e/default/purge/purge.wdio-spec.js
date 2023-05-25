@@ -47,7 +47,7 @@ const purgeUsingChtApitFn = (userCtx, contact, reports, messages, chtScript, set
   if (chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
     return reports.filter(r => r.form === 'purge').map(r => r._id);
   }
-  return reports;
+  return reports.map(r => r._id);
 };
 
 const reportsToPurge = Array
@@ -101,12 +101,12 @@ const parsePurgingLogEntries = (logEntries) => {
   });
 };
 
-afterEach(async () => {
-  await utils.deleteUsers([user, user2]);
-  await utils.revertDb([/^form:/], true);
-});
-
 describe('purge', () => {
+  afterEach(async () => {
+    await utils.deleteUsers([user, user2]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('purging runs on sync and startup', async () => {
     let purgeLog;
 
