@@ -1,8 +1,9 @@
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const browserDbUtils = require('@utils/browser');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const chai = require('chai');
 const uuid = require('uuid').v4;
 
@@ -147,46 +148,6 @@ describe('db-sync', () => {
     },
   ];
 
-  const updateDoc = async (docId, changes, overwrite = false) => {
-    const { err, result } = await browser.executeAsync((docId, changes, overwrite, callback) => {
-      const db = window.CHTCore.DB.get();
-      return db
-        .get(docId)
-        .then(doc => {
-          if (overwrite) {
-            doc = { _rev: doc._rev, _id: doc._id };
-          }
-
-          Object.assign(doc, changes);
-          return db.put(doc);
-        })
-        .then(result => callback({ result }))
-        .catch(err => callback({ err }));
-    }, docId, changes, overwrite);
-
-    if (err) {
-      throw err;
-    }
-
-    return result;
-  };
-
-  const createDoc = async (doc) => {
-    const { err, result } = await browser.executeAsync((doc, callback) => {
-      const db = window.CHTCore.DB.get();
-      return db
-        .put(doc)
-        .then(result => callback({ result }))
-        .catch(err => callback({ err }));
-    }, doc);
-
-    if (err) {
-      throw err;
-    }
-
-    return result;
-  };
-
   const getServerRevs = async (docIds) => {
     const result = await utils.requestOnMedicDb({ path: '/_all_docs', qs: { keys: JSON.stringify(docIds) } });
     return result.rows;
@@ -205,11 +166,11 @@ describe('db-sync', () => {
   });
 
   it('should not filter allowed docs', async () => {
-    await updateDoc(report1, { extra: '1' });
-    await updateDoc(report2, { extra: '2' });
-    await updateDoc(patientId, { extra: '3' });
+    await browserDbUtils.updateDoc(report1, { extra: '1' });
+    await browserDbUtils.updateDoc(report2, { extra: '2' });
+    await browserDbUtils.updateDoc(patientId, { extra: '3' });
     const newReport = { ...initialReports[0], _id: uuid(), extra: '4' };
-    const { rev } = await createDoc(newReport);
+    const { rev } = await browserDbUtils.createDoc(newReport);
     newReport._rev = rev;
 
     await commonElements.sync();
@@ -229,7 +190,7 @@ describe('db-sync', () => {
   });
 
   it('should not filter deletes', async () => {
-    await updateDoc(report1, { _deleted: true });
+    await browserDbUtils.updateDoc(report1, { _deleted: true });
 
     await commonElements.sync();
 
@@ -251,7 +212,7 @@ describe('db-sync', () => {
     ];
     const serverRevs = await getServerRevs(docIds);
     for (const docId of docIds) {
-      await updateDoc(docId, { something: 'random' });
+      await browserDbUtils.updateDoc(docId, { something: 'random' });
     }
 
     await commonElements.sync();
@@ -261,7 +222,7 @@ describe('db-sync', () => {
   });
 
   it('should filter locally purged docs', async () => {
-    const { rev:localRev } = await updateDoc(report3, { _deleted: true, purged: true }, true);
+    const { rev:localRev } = await browserDbUtils.updateDoc(report3, { _deleted: true, purged: true }, true);
 
     await commonElements.sync();
 
@@ -273,9 +234,9 @@ describe('db-sync', () => {
 
   it('should filter ddocs', async () => {
     const newDdoc = { _id: '_design/test' };
-    await createDoc(newDdoc);
+    await browserDbUtils.createDoc(newDdoc);
     const serverRevs = await getServerRevs(['_design/medic-client']);
-    await updateDoc('_design/medic-client', { something: 'random' });
+    await browserDbUtils.updateDoc('_design/medic-client', { something: 'random' });
     // updating the ddoc will throw the "upgrade" popup, ignore it!
     await commonElements.closeReloadModal();
     await commonElements.sync();

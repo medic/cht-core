@@ -1439,4 +1439,69 @@ describe('XmlForms service', () => {
     });
 
   });
+
+  describe('canAccessForm', () => {
+    it('should return true when user can access the form', async () => {
+      const form = {
+        type: 'form',
+        context: {
+          permission: 'can_view_this_form',
+          expression: 'user.name === "Frank"',
+        },
+        _attachments: { xml: { stub: true } },
+      };
+      const userContact = { name: 'Frank' };
+      hasAuth.withArgs('can_view_this_form').resolves(true);
+      dbQuery.resolves([]);
+      const service = getService();
+
+      const result = await service.canAccessForm(form, userContact);
+
+      expect(result).to.be.true;
+      expect(hasAuth.calledOnce).to.be.true;
+      expect(hasAuth.args[0][0]).to.equal('can_view_this_form');
+    });
+
+    it('should return false when user cannot access the form because expression does not match', async () => {
+      const form = {
+        type: 'form',
+        context: {
+          permission: 'can_view_this_form',
+          expression: 'user.name === "Frank"',
+        },
+        _attachments: { xml: { stub: true } },
+      };
+      const userContact = { name: 'Anna' };
+      hasAuth.withArgs('can_view_this_form').resolves(true);
+      dbQuery.resolves([]);
+      const service = getService();
+
+      const result = await service.canAccessForm(form, userContact);
+
+      expect(result).to.be.false;
+      expect(hasAuth.calledOnce).to.be.true;
+      expect(hasAuth.args[0][0]).to.equal('can_view_this_form');
+    });
+
+    it('should return false when user cannot access the form because missing permissions', async () => {
+      const form = {
+        type: 'form',
+        context: {
+          permission: 'can_view_this_form',
+          expression: 'user.name === "Frank"',
+        },
+        _attachments: { xml: { stub: true } },
+      };
+      const userContact = { name: 'Frank' };
+      hasAuth.withArgs('can_view_this_form').resolves(false);
+      dbQuery.resolves([]);
+      const service = getService();
+
+      const result = await service.canAccessForm(form, userContact);
+
+      expect(result).to.be.false;
+      expect(hasAuth.calledOnce).to.be.true;
+      expect(hasAuth.args[0][0]).to.equal('can_view_this_form');
+    });
+  });
 });

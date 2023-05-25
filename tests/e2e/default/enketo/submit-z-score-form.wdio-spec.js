@@ -1,20 +1,20 @@
-const ZScoreForm = require('../../../page-objects/default/enketo/z-score.wdio.page');
-const userData = require('../../../page-objects/default/users/user.data');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const common = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const utils = require('../../../utils');
+const ZScoreForm = require('@page-objects/default/enketo/z-score.wdio.page');
+const userData = require('@page-objects/default/users/user.data');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const utils = require('@utils');
 
 describe('Submit Z-Score form', () => {
   before(async () => {
     await ZScoreForm.configureForm(userData.userContactDoc);
     await loginPage.cookieLogin();
-    await common.hideSnackbar();
+    await commonPage.hideSnackbar();
   });
 
   it('Autofills zscore fields with correct values', async () => {
-    await common.goToReports();
-    await reportsPage.openForm(ZScoreForm.docs[0].title);
+    await commonPage.goToReports();
+    await commonPage.openFastActionReport(ZScoreForm.docs[0].internalId, false);
 
     await ZScoreForm.setPatient({ sex: 'female', height: 45, weight: 2, age: 0 });
 
@@ -44,8 +44,8 @@ describe('Submit Z-Score form', () => {
   });
 
   it('saves z-score values', async () => {
-    await common.goToReports();
-    await reportsPage.openForm(ZScoreForm.docs[0].title);
+    await commonPage.goToReports();
+    await commonPage.openFastActionReport(ZScoreForm.docs[0].internalId, false);
 
     await ZScoreForm.setPatient({ sex: 'female', height: 45.1, weight: 3, age: 2 });
 

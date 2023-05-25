@@ -1,3 +1,4 @@
+const wdioBaseConfig = require('../default/wdio.conf');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -6,9 +7,8 @@ const { spawn } = require('child_process');
 chai.use(require('chai-exclude'));
 const rpn = require('request-promise-native');
 
-const utils = require('../../utils');
-const wdioBaseConfig = require('../default/wdio.conf');
-const constants = require('../../constants');
+const utils = require('@utils');
+const constants = require('@constants');
 
 constants.DB_NAME = 'medic';
 const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;

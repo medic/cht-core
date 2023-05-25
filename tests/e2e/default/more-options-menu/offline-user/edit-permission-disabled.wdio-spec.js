@@ -1,12 +1,12 @@
 const uuid = require('uuid').v4;
-const commonPage = require('../../../../page-objects/default/common/common.wdio.page');
-const reportPage = require('../../../../page-objects/default/reports/reports.wdio.page');
-const utils = require('../../../../utils');
-const placeFactory = require('../../../../factories/cht/contacts/place');
-const reportFactory = require('../../../../factories/cht/reports/generic-report');
-const personFactory = require('../../../../factories/cht/contacts/person');
-const userFactory = require('../../../../factories/cht/users/users');
-const loginPage = require('../../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportPage = require('@page-objects/default/reports/reports.wdio.page');
+const utils = require('@utils');
+const placeFactory = require('@factories/cht/contacts/place');
+const reportFactory = require('@factories/cht/reports/generic-report');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
@@ -65,7 +65,7 @@ describe('- EDIT permissions disabled', async () => {
   });
 
   after(async () => await utils.revertSettings(true));
-  
+
   it(' - Contact Tab - contact selected', async () => {
     await commonPage.goToPeople(patient._id);
     expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
@@ -73,11 +73,11 @@ describe('- EDIT permissions disabled', async () => {
 
   it('- Report tab - menu not displayed when sms report selected', async () => {
     await reportPage.goToReportById(smsReportId);
-    expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
+    expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
   });
 
   it('- Report tab - menu not displayed when xml report selected', async () => {
     await reportPage.goToReportById(xmlReportId);
-    expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;    
-  });   
+    expect(await (await commonPage.moreOptionsMenu()).isExisting()).to.be.false;
+  });
 });

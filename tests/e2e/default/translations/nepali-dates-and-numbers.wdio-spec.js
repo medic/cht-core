@@ -3,13 +3,13 @@ const bikramSambat = require('bikram-sambat');
 const { devanagari } = require('eurodigit/src/to_non_euro');
 const moment = require('moment');
 
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const chtConfUtils = require('../../../cht-conf-utils');
-const gatewayApiUtils = require('../../../gateway-api.utils');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const chtConfUtils = require('@utils/cht-conf');
+const gatewayApiUtils = require('@utils/gateway-api');
 
 const NEPALI_LOCALE_CODE = 'ne';
 
@@ -120,7 +120,7 @@ describe('Bikram Sambat date display', () => {
 
   it('enketo xpath extension function should display correct values when Nepali is not selected', async () => {
     await commonPage.goToReports();
-    await reportsPage.openForm('Bikram Sambat Date');
+    await commonPage.openFastActionReport('bikram-sambat-dates', false);
 
     const date1 = '2021-01-01';
     const dateBk1 = bikramSambat.toBik_text(date1);
@@ -143,7 +143,7 @@ describe('Bikram Sambat date display', () => {
     await setLanguage(NEPALI_LOCALE_CODE);
 
     await commonPage.goToReports();
-    await reportsPage.openForm('Bikram Sambat Date');
+    await commonPage.openFastActionReport('bikram-sambat-dates', false);
 
     const date1 = '2020-01-01';
     const dateBk1 = bikramSambat.toBik_text(date1);

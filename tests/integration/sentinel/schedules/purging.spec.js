@@ -1,5 +1,5 @@
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const querystring = require('querystring');
 const chai = require('chai');
 const moment = require('moment');

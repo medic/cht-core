@@ -1,10 +1,10 @@
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const personFactory = require('../../../factories/cht/contacts/person');
-const place = require('../../../factories/cht/contacts/place');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const personFactory = require('@factories/cht/contacts/person');
+const place = require('@factories/cht/contacts/place');
 const places = place.generateHierarchy();
 const clinic = places.get('clinic');
 
@@ -56,9 +56,11 @@ describe('generating short codes', () => {
     await sentinelUtils.waitForSentinel();
     await commonElements.goToReports();
     await (await reportsPage.firstReport()).click();
-    expect(await (await reportsPage.submitterName()).getText()).to.contain(contact.name);
-    expect(await (await reportsPage.submitterPhone()).getText()).to.contain(contact.phone);
-    expect(await (await reportsPage.submitterPlace()).getText()).to.contain(clinic.name);
+
+    const openReportInfo = await reportsPage.getOpenReportInfo();
+    expect(openReportInfo.senderName).to.contain(contact.name);
+    expect(openReportInfo.senderPhone).to.contain(contact.phone);
+    expect(openReportInfo.lineage).to.contain(clinic.name);
     expect(await (await reportsPage.selectedCaseIdLabel()).getText()).to.contain('Case ID');
     expect(await (await reportsPage.selectedCaseId()).getText()).to.match(/^\d{5}$/);
   });

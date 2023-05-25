@@ -1,5 +1,5 @@
 const fs = require('fs');
-const utils = require('./utils');
+const utils = require('@utils');
 const EC = protractor.ExpectedConditions;
 
 const writeScreenShot = (data, filename) => {

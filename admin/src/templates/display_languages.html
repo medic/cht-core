@@ -3,23 +3,23 @@
 
     <div class="form-group">
       <label for="locale" translate>Default Application Language</label>
-      <select id="locale" class="form-control small" ng-model="basicLanguagesModel.locale" ng-options="locale.doc.code as locale.doc.name disable when !locale.doc.enabled for locale in languagesModel.locales"></select>
+      <select id="locale" class="form-control small" ng-model="basicLanguagesModel.locale" ng-options="locale.doc.code as locale.doc.name disable when !locale.enabled for locale in languagesModel.locales"></select>
       <p class="help-block" translate>setup.language.subtitle</p>
     </div>
-      
+
     <div class="form-group">
       <label for="locale-outgoing" translate>Language For Outgoing Messages</label>
-      <select id="locale-outgoing" class="form-control small" ng-model="basicLanguagesModel.locale_outgoing" ng-options="locale.doc.code as locale.doc.name disable when !locale.doc.enabled for locale in languagesModel.locales"></select>
+      <select id="locale-outgoing" class="form-control small" ng-model="basicLanguagesModel.locale_outgoing" ng-options="locale.doc.code as locale.doc.name disable when !locale.enabled for locale in languagesModel.locales"></select>
       <p class="help-block" translate>setup.language.outgoing.subtitle</p>
     </div>
-      
+
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" ng-click="submitLanguageSettings()" ng-disabled="status.loading" translate>Submit</button>
       <span ng-if="status.success" class="success">{{status.msg}}</span>
       <span ng-if="status.error" class="error">{{status.msg}}</span>
       <div class="loader inline" ng-show="status.loading"></div>
     </div>
-    
+
   </form>
 </div>
 
@@ -35,7 +35,7 @@
 <p class="help-block" translate>display.language.accordion.title</p>
 
 <div id="language-accordion" ng-show="!loading" class="panel-group" role="tablist">
-  <div class="panel panel-default" ng-repeat="localeModel in languagesModel.locales track by localeModel.doc._id" ng-class="{'disabled': !localeModel.doc.enabled}">
+  <div class="panel panel-default" ng-repeat="localeModel in languagesModel.locales track by localeModel.doc._id" ng-class="{'disabled': !localeModel.enabled}">
     <div class="panel-heading" role="tab" id="locale-{{localeModel.doc.code}}">
       <h4 class="panel-title">
         <a class="collapsed" data-toggle="collapse" data-target="#locale-{{localeModel.doc.code}}-body" data-parent="#language-accordion">
@@ -59,12 +59,12 @@
             <i class="fa fa-pencil"></i><span translate>edit.name</span>
           </button>
         </div>
-        <div ng-if="localeModel.doc.enabled">
+        <div ng-if="localeModel.enabled">
           <button type="button" class="btn btn-link" ng-click="disableLanguage(localeModel.doc)">
             <i class="fa fa-ban"></i><span translate>Disable</span>
           </button>
         </div>
-        <div ng-if="!localeModel.doc.enabled">
+        <div ng-if="!localeModel.enabled">
           <button type="button" class="btn btn-link" ng-click="enableLanguage(localeModel.doc)">
             <i class="fa fa-circle-o"></i><span translate>Enable</span>
           </button>

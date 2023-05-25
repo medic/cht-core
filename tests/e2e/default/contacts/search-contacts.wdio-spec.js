@@ -1,10 +1,10 @@
-const searchPage = require('../../../page-objects/default/search/search.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const utils = require('../../../utils');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
+const searchPage = require('@page-objects/default/search/search.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const utils = require('@utils');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
 const places = placeFactory.generateHierarchy();
 
 //Add two more health_center

@@ -1,15 +1,15 @@
 const moment = require('moment');
-const utils = require('../../../utils');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const deathReportForm = require('../../../page-objects/default/enketo/death-report.page');
+const utils = require('@utils');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const deathReportForm = require('@page-objects/default/enketo/death-report.page');
 
 describe('Submit a death report', () => {
   const places = placeFactory.generateHierarchy();
@@ -28,7 +28,7 @@ describe('Submit a death report', () => {
     const deathNote = 'Test note';
 
     await commonPage.goToPeople(person._id);
-    await contactPage.createNewAction('Death report');
+    await commonPage.openFastActionReport('death_report');
     await deathReportForm.selectDeathPlace(deathReportForm.PLACE_OF_DEATH.healthFacility);
     await deathReportForm.setDeathInformation(deathNote);
     await deathReportForm.setDeathDate(deathDate.format('YYYY-MM-DD'));
@@ -42,7 +42,7 @@ describe('Submit a death report', () => {
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
     await commonPage.sync(true);
-    
+
     expect(await contactPage.getContactDeceasedStatus()).to.equal('Deceased');
     expect(await (await contactPage.deathCard()).isDisplayed()).to.be.true;
 

@@ -1,13 +1,13 @@
 const moment = require('moment');
 
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const fileDownloadUtils = require('../../../utils/file-download');
-const utils = require('../../../utils');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const fileDownloadUtils = require('@utils/file-download');
+const utils = require('@utils');
 
 describe('Export Contacts', () => {
   const places = placeFactory.generateHierarchy();

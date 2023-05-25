@@ -3,7 +3,7 @@ const { promisify } = require('util');
 const { readFile } = require('fs');
 const path = require('path');
 
-const utils = require('../../../utils');
+const utils = require('@utils');
 
 const DEFAULT_MANIFEST = {
   start_url: './',

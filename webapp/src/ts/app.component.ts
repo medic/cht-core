@@ -26,8 +26,6 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
-import { StartupModalsService } from '@mm-services/startup-modals.service';
-import { TourService } from '@mm-services/tour.service';
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { RecurringProcessManagerService } from '@mm-services/recurring-process-manager.service';
@@ -47,6 +45,7 @@ import { AnalyticsModulesService } from '@mm-services/analytics-modules.service'
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
+import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 
 const SYNC_STATUS = {
   inProgress: {
@@ -92,6 +91,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   androidAppVersion;
   reportForms;
   unreadCount = {};
+  useOldActionBar = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -115,8 +115,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     private countMessageService:CountMessageService,
     private privacyPoliciesService:PrivacyPoliciesService,
     private routeSnapshotService:RouteSnapshotService,
-    private startupModalsService:StartupModalsService,
-    private tourService:TourService,
     private checkDateService:CheckDateService,
     private unreadRecordsService:UnreadRecordsService,
     private rulesEngineService:RulesEngineService,
@@ -176,7 +174,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       if (event instanceof ActivationEnd) {
         const tab = getTab(event.snapshot);
         if (tab !== this.currentTab) {
-          this.tourService.endCurrent();
           this.globalActions.setCurrentTab(tab);
         }
         const data = this.routeSnapshotService.get()?.data;
@@ -298,6 +295,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.enableOldActionBar();
     this.subscribeToSideFilterStore();
   }
 
@@ -462,6 +460,10 @@ export class AppComponent implements OnInit, AfterViewInit {
       .subscribe(({ isOpen }) => this.isSidebarFilterOpen = !!isOpen);
   }
 
+  private async enableOldActionBar() {
+    this.useOldActionBar = !this.sessionService.isDbAdmin() && await this.authService.has(OLD_ACTION_BAR_PERMISSION);
+  }
+
   private initForms() {
     /**
      * Translates using the key if truthy using the old style label
@@ -504,7 +506,7 @@ export class AppComponent implements OnInit, AfterViewInit {
           }
         );
 
-        // get the forms for the Add Report menu
+        // ToDo: remove when deprecating Action Bar Component. This subscribe gets the forms for the Add Report action.
         this.xmlFormsService.subscribe(
           'AddReportMenu',
           { reportForms: true },
@@ -562,18 +564,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(({ privacyPolicy, accepted }: any = {}) => {
         this.globalActions.setPrivacyPolicyAccepted(accepted);
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
-        return { privacyPolicy, accepted };
       })
-      .catch(err => console.error('Failed to load privacy policy', err))
-      .then(({ privacyPolicy, accepted }: any = {}) => {
-        if (!privacyPolicy || accepted) {
-          // If there is no privacy policy or the user already
-          // accepted the policy show the startup modals,
-          // otherwise the modals will start from the privacy
-          // policy component after the user accepts the terms
-          this.startupModalsService.showStartupModals();
-        }
-      });
+      .catch(err => console.error('Failed to load privacy policy', err));
   }
 
   private initUnreadCount() {
