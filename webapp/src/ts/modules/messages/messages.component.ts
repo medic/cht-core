@@ -80,10 +80,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
     });
     this.subscriptions.add(assignments$);
 
-    const conversations$ = combineLatest(
+    const conversations$ = combineLatest([
       this.store.select(Selectors.getConversations),
       this.store.select(Selectors.getSelectedConversation),
-    ).subscribe(([
+    ]).subscribe(([
       conversations = [],
       selectedConversation,
     ]) => {
