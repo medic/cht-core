@@ -1,7 +1,7 @@
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const usersAdminPage = require('../../../page-objects/default/users/user.wdio.page');
-const constants = require('../../../constants');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
+const constants = require('@constants');
 
 describe('bfcache', async () => {
   beforeEach(async () => {
@@ -9,7 +9,7 @@ describe('bfcache', async () => {
       username: constants.USERNAME,
       password: constants.PASSWORD,
       createUser: true,
-    }); 
+    });
   });
 
   afterEach(async () => {

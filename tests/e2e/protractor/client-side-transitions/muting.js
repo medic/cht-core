@@ -1,13 +1,13 @@
 const _ = require('lodash');
 const { expect } = require('chai');
 
-const commonElements = require('../../../page-objects/protractor/common/common.po.js');
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/protractor/login/login.po.js');
-const contactsObjects = require('../../../page-objects/protractor/contacts/contacts.po');
-const sentinelUtils = require('../../../utils/sentinel');
+const commonElements = require('@page-objects/protractor/common/common.po.js');
+const utils = require('@utils');
+const loginPage = require('@page-objects/protractor/login/login.po.js');
+const contactsObjects = require('@page-objects/protractor/contacts/contacts.po');
+const sentinelUtils = require('@utils/sentinel');
 const formsUtils = require('./forms');
-const constants = require('../../../constants.js');
+const constants = require('@constants');
 
 /* global window */
 
@@ -219,7 +219,6 @@ describe('Muting', () => {
       await utils.createUsers([onlineUser]);
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative('online', password);
-      await utils.closeTour();
     });
 
     afterAll(async () => {

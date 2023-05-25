@@ -1,5 +1,5 @@
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 describe('Hamburger Menu tests', async () => {
   before(async () => {
@@ -8,16 +8,6 @@ describe('Hamburger Menu tests', async () => {
 
   beforeEach(async () => {
     await commonPage.goToReports();
-  });
-
-  it('should open Configuration wizard', async () => {
-    await commonPage.openHamburgerMenu();
-    const actualProperties = await commonPage.openConfigurationWizardAndFetchProperties();
-    expect(actualProperties).to.deep.equal({
-      modelTitle: 'Configuration wizard',
-      defaultCountryCode: 'Canada (+1)',
-      modelFinishButtonText: 'Finish'
-    });
   });
 
   it('should open About', async () => {

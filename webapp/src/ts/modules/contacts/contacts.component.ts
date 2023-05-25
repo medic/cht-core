@@ -19,7 +19,6 @@ import { SearchService } from '@mm-services/search.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
-import { TourService } from '@mm-services/tour.service';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TranslateService } from '@mm-services/translate.service';
@@ -77,7 +76,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     private UHCSettings: UHCSettingsService,
     private scrollLoaderProvider: ScrollLoaderProvider,
     private relativeDateService: RelativeDateService,
-    private tourService: TourService,
     private router: Router,
     private exportService: ExportService,
     private xmlFormsService: XmlFormsService,
@@ -155,8 +153,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.appending = false;
         console.error('Error searching for contacts', err);
       });
-
-    this.tourService.startIfNeeded(this.route.snapshot);
   }
 
   async ngAfterViewInit() {

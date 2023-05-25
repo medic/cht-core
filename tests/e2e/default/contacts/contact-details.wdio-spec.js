@@ -1,12 +1,12 @@
-const commonElements = require('../../../page-objects/default/common/common.wdio.page.js');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page.js');
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonElements = require('@page-objects/default/common/common.wdio.page.js');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page.js');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const reportFactory = require('../../../factories/cht/reports/generic-report');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const reportFactory = require('@factories/cht/reports/generic-report');
 
 const updateSettings = async (settings) => {
   await utils.revertSettings(true);

@@ -1,18 +1,18 @@
 const fs = require('fs');
-const utils = require('../../../utils');
-const browserUtils = require('../../../utils/browser');
-const sentinelUtils = require('../../../utils/sentinel');
-const messagesUtils = require('../../../utils/messages');
-const personFactory = require('../../../factories/cht/contacts/person');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const userFactory = require('../../../factories/cht/users/users');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const replaceUserForm = require('../../../page-objects/default/enketo/replace-user.wdio.page');
-const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('../../../constants');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const browserUtils = require('@utils/browser');
+const messagesUtils = require('@utils/messages');
+const personFactory = require('@factories/cht/contacts/person');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const replaceUserForm = require('@page-objects/default/enketo/replace-user.wdio.page');
+const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('@constants');
 
 const USER_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw' }));
 
@@ -275,7 +275,6 @@ describe('Create user for contacts', () => {
         expect(cookie.value).to.include(newUserSettings.name);
 
         // Can still login as the original user (with the manually updated password)
-        await commonPage.closeTour();
         await commonPage.logout();
         await loginPage.login({ ...ORIGINAL_USER, password: DISABLED_USER_PASSWORD });
         await commonPage.waitForPageLoaded();
@@ -546,7 +545,6 @@ describe('Create user for contacts', () => {
         const [otherUserSettings] = await utils.getUserSettings({ name: otherUser.username });
         expect(otherUserSettings.contact_id).to.equal(ORIGINAL_USER.contact._id);
         // Can still log in as other user
-        await commonPage.closeTour();
         await commonPage.logout();
         await loginPage.login(otherUser);
         await commonPage.waitForPageLoaded();
@@ -646,7 +644,6 @@ describe('Create user for contacts', () => {
         await commonPage.waitForPageLoaded();
         const [cookie] = await browser.getCookies('userCtx');
         expect(cookie.value).to.include(newUserSettings.name);
-        await commonPage.closeTour();
         await commonPage.logout();
 
         // Log back in as original user and sync

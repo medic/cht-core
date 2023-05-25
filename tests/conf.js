@@ -1,4 +1,5 @@
-const utils = require('./utils');
+require('./aliases');
+const utils = require('@utils');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 chai.use(require('chai-shallow-deep-equal'));

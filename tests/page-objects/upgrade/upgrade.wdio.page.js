@@ -1,12 +1,16 @@
 const common = require('../default/common/common.wdio.page');
-const utils = require('../../utils');
+const utils = require('@utils');
 
 const cancelUpgradeButton = () => $('button*=Cancel');
 const deploymentInProgress = () => $('legend*=Deployment in progress');
 const deploymentComplete = () => $('div*=Deployment complete');
 
 const getInstallButton = async (branch, tag) => {
-  const element = tag ? await $(`span=${tag}`) : await $(`span*=${branch} (`);
+  let selector = `span*=${branch} (`;
+  if (tag) {
+    selector = tag.includes('beta') ? `span*=${tag}` : `span=${tag}`;
+  }
+  const element = await $(selector);
   const parent = await (await element.parentElement()).parentElement();
   return await parent.$('.btn-primary');
 };

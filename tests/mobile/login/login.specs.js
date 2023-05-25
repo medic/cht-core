@@ -1,12 +1,12 @@
-const utils = require('../../utils');
-const commonElements = require('../../page-objects/protractor/common/common.po.js');
-const loginPage = require('../../page-objects/protractor/login/login.po.js');
-const constants = require('../../constants');
+const utils = require('@utils');
+const commonElements = require('@page-objects/protractor/common/common.po');
+const loginPage = require('@page-objects/protractor/login/login.po');
+const constants = require('@constants');
 let branding;
 
 describe('Login tests : ', () => {
   const wrongUsername = 'fakeuser';
-  const wrongPassword = 'fakepass';  
+  const wrongPassword = 'fakepass';
   beforeAll(async () => {
     branding = await utils.getDoc('branding');
   });

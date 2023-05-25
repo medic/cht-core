@@ -42,6 +42,7 @@ const tasks = {
   replications: require('./replications'),
   outbound: require('./outbound'),
   purging: require('./purging'),
+  transitionsDisabledReminder: require('./transitions-disabled-reminder'),
   backgroundCleanup: require('./background-cleanup')
 };
 

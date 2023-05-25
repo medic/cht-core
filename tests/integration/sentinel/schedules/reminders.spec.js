@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const chai = require('chai');
 const moment = require('moment');
 

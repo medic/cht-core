@@ -1,13 +1,13 @@
-const common = require('../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../page-objects/default/reports/reports.wdio.page');
-const peoplePage = require('../../page-objects/default/contacts/contacts.wdio.page');
-const utils = require('../../utils');
+const common = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const peoplePage = require('@page-objects/default/contacts/contacts.wdio.page');
+const utils = require('@utils');
 
 const { BRANCH, TAG } = process.env;
 
-const loginPage = require('../../page-objects/default/login/login.wdio.page');
-const upgradePage = require('../../page-objects/upgrade/upgrade.wdio.page');
-const constants = require('../../constants');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
+const constants = require('@constants');
 
 const docs = [
   {
@@ -40,12 +40,10 @@ describe('Webapp after upgrade', () => {
 
   it('should login with admin account', async () => {
     await loginPage.login({ username: constants.USERNAME, password: constants.PASSWORD, adminApp: true });
-    await common.closeTour();
   });
 
   it('report page should display one report', async () => {
     await common.goToReports();
-    await common.closeTour();
     const reports = await reportsPage.getAllReportsText();
     expect(reports).to.deep.equal(['John']);
   });

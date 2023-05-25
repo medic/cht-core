@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const {expect} = require('chai');
 
 const getRows = (result) => {

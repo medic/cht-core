@@ -1,7 +1,8 @@
-const commonElements = require('../../page-objects/protractor/common/common.po.js');
-const utils = require('../../utils');
-const loginPage = require('../../page-objects/protractor/login/login.po');
-const constants = require('../../constants.js');
+const commonElements = require('@page-objects/protractor/common/common.po.js');
+const utils = require('@utils');
+const loginPage = require('@page-objects/protractor/login/login.po');
+const constants = require('@constants');
+const helper = require('../../helper');
 
 describe('Navigation tests : ', () => {
   beforeEach(utils.beforeEach);
@@ -33,16 +34,6 @@ describe('Navigation tests : ', () => {
   it('should open Analytics tab', async () => {
     await commonElements.goToAnalytics();
     expect(await browser.getCurrentUrl()).toEqual(utils.getBaseUrl() + 'analytics');
-  });
-
-  it('should open Configuration wizard', async () => {
-    await commonElements.openMenuNative();
-    await commonElements.checkConfigurationWizard();
-  });
-
-  it('should open Guided tour', async () => {
-    await commonElements.openMenuNative();
-    await commonElements.checkGuidedTour();
   });
 
   it('should open About', async () => {
@@ -125,8 +116,7 @@ describe('Navigation tests : ', () => {
       await commonElements.goToLoginPageNative();
       await loginPage.loginNative(user.username, user.password);
       await commonElements.waitForLoaderToDisappear();
-      await utils.closeTour();
-      const tabTexts = await element.all(by.css('.button-label')).getText();
+      const tabTexts = await helper.getTextFromElementNative(element.all(by.css('.button-label')));
       expect(tabTexts.length).toBe(3);
       expect(tabTexts).toEqual([ 'Messages', 'Reports', 'People']);
     });

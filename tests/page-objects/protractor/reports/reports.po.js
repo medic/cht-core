@@ -1,5 +1,5 @@
 const helper = require('../../../helper');
-const utils = require('../../../utils');
+const utils = require('@utils');
 
 const itemSummary = '#reports-content .report-body .item-summary';
 const reportBody = '#reports-content .report-body';
