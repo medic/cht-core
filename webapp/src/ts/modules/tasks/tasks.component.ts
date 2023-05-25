@@ -56,10 +56,10 @@ export class TasksComponent implements OnInit, OnDestroy {
       .subscribe(tasksLoaded => this.tasksLoaded = tasksLoaded);
     this.subscription.add(assignment$);
 
-    const taskList$ = combineLatest(
+    const taskList$ = combineLatest([
       this.store.select(Selectors.getTasksList),
       this.store.select(Selectors.getSelectedTask),
-    ).subscribe(([
+    ]).subscribe(([
       tasksList = [],
       selectedTask,
     ]) => {

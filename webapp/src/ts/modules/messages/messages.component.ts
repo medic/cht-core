@@ -68,10 +68,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToStore() {
-    const assignments$ = combineLatest(
+    const assignments$ = combineLatest([
       this.store.select(Selectors.getLoadingContent),
       this.store.select(Selectors.getMessagesError),
-    ).subscribe(([
+    ]).subscribe(([
       loadingContent,
       error,
     ]) => {
