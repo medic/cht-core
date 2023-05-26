@@ -18,7 +18,7 @@ const taskTab = () => $('#tasks-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
-const getAllButtonLabels = async () => await $$('.button-label');
+const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
@@ -36,20 +36,20 @@ const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
 //Hamburguer menu
 //User settings
-const USER_SETTINGS = '=User settings';
-const UPDATE_PASSWORD = '=Update password';
-const EDIT_PROFILE = '=Edit user profile';
+const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user'
+const UPDATE_PASSWORD = '.user .configuration.page i.fa-key';
+const EDIT_PROFILE = '.user .configuration.page i.fa-user';
 // Feedback or Report bug
-const FEEDBACK_MENU = 'i.fa-bug';
+const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
 const FEEDBACK = '#feedback';
 const feedbackTitle = () => $(`${FEEDBACK} .modal-header > h2`);
 const feedbackCancelButton = () => $(`${FEEDBACK} .btn.cancel`);
 const feedbackSubmitButton = () => $(`${FEEDBACK} .btn-primary`);
 //About menu
-const ABOUT_MENU = 'i.fa-question';
-const RELOAD_BUTTON = '.btn-primary=Reload';
+const ABOUT_MENU = '#header-dropdown i.fa-question';
+const RELOAD_BUTTON = '.about.page .btn-primary';
 //Configuration App
-const CONFIGURATION_APP_MENU = 'i.fa-cog';
+const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
