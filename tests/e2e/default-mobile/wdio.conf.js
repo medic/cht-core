@@ -6,7 +6,10 @@ chai.use(require('chai-exclude'));
 // Override specific properties from wdio base config
 exports.config = Object.assign(wdioBaseConfig.config, {
   specs: [
-    '**/*.wdio-spec.js'
+    '**/*.wdio-spec.js',
+    [
+      '../default/login/login-logout.wdio-spec.js',
+    ],
   ],
   beforeSuite: async () => {
     // We tried the browser.emulateDevice('...') function but it's not stable enough,
