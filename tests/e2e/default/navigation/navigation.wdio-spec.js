@@ -61,7 +61,6 @@ describe('Navigation tests', async () => {
     it('should display tab labels, when all tabs are enabled', async () => {
       await loginPage.cookieLogin();
       const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
-      expect(tabsButtonLabelsNames.length).to.deep.equal(5);
       expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Tasks', 'Reports', 'People', 'Targets']);
     });
 
@@ -76,7 +75,6 @@ describe('Navigation tests', async () => {
 
       await loginPage.login(user);
       const tabsButtonLabelsNames = await commonPage.getAllButtonLabelsNames();
-      expect(tabsButtonLabelsNames.length).to.deep.equal(3);
       expect(tabsButtonLabelsNames).to.deep.equal(['Messages', 'Reports', 'People']);
     });
   });
