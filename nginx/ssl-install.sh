@@ -130,8 +130,13 @@ EOF
   echo "nginx configured to work with certbot"
 }
 
+prepare_android_assetlink(){
+  mkdir -p /etc/nginx/private/android
+}
+
 main (){
   welcome_message
+  prepare_android_assetlink
   select_ssl_certificate_mode
   echo "Launching Nginx" >&2
 }
