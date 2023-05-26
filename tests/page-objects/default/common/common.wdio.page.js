@@ -36,7 +36,7 @@ const snackbarAction = () => $('#snackbar.active .snackbar-action');
 
 //Hamburguer menu
 //User settings
-const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user'
+const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user';
 const UPDATE_PASSWORD = '.user .configuration.page i.fa-key';
 const EDIT_PROFILE = '.user .configuration.page i.fa-user';
 // Feedback or Report bug
