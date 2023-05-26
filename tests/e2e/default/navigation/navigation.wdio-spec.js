@@ -1,8 +1,9 @@
 const utils = require('../../../utils');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+
 
 describe('Navigation tests', async () => {
   describe('Navigation functionality', async () => {

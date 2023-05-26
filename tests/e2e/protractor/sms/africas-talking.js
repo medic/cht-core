@@ -1,7 +1,7 @@
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/protractor/common/common.po.js');
-const messagesElements = require('../../../page-objects/protractor/sms/messages.po');
-const reportsElements = require('../../../page-objects/protractor/reports/reports.po');
+const utils = require('@utils');
+const commonElements = require('@page-objects/protractor/common/common.po.js');
+const messagesElements = require('@page-objects/protractor/sms/messages.po');
+const reportsElements = require('@page-objects/protractor/reports/reports.po');
 const helper = require('../../../helper');
 const querystring = require('querystring');
 

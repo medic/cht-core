@@ -11,6 +11,7 @@
     "node": ">=16.12.0",
     "npm": ">=8.3.1"
   },
+  "workspaces": ["./shared-libs/*"],
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
@@ -38,7 +39,6 @@
     "@angular/localize": "^15.0.4",
     "@faker-js/faker": "^6.1.2",
     "@medic/eslint-config": "^1.1.0",
-    "@medic/memdown": "file:shared-libs/memdown",
     "@types/chai": "^4.3.4",
     "@types/chai-as-promised": "^7.1.5",
     "@types/jquery": "^3.5.6",
@@ -118,6 +118,7 @@
     "loose-envify": "^1.4.0",
     "medic-conf": "^3.2.1",
     "mocha": "^10.2.0",
+    "module-alias": "^2.2.2",
     "moment": "^2.29.1",
     "moment-locales-webpack-plugin": "^1.2.0",
     "mustache": "^4.2.0",

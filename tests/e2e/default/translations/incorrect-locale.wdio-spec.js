@@ -1,9 +1,9 @@
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const userSettingsElements = require('../../../page-objects/default/users/user-settings.wdio.page');
-const contactElements = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const placeFactory = require('../../../factories/cht/contacts/place');
+const utils = require('@utils');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const userSettingsElements = require('@page-objects/default/users/user-settings.wdio.page');
+const contactElements = require('@page-objects/default/contacts/contacts.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
 
 describe('Testing Incorrect locale', () => {
   const languageCode = 'hil';

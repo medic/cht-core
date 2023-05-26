@@ -1,6 +1,6 @@
 const _ = require('lodash');
-const utils = require('../../utils');
-const constants = require('../../constants');
+const utils = require('@utils');
+const constants = require('@constants');
 const moment = require('moment');
 
 const password = 'passwordSUP3RS3CR37!';

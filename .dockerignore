@@ -1,4 +1,7 @@
 **
+!package.json
+!package-lock.json
+!node_modules/@medic
 !/api/
 /api/tests/
 /api/build/static/webapp/service-worker.js

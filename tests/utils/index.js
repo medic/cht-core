@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 const _ = require('lodash');
-const constants = require('./constants');
+const constants = require('@constants');
 const rpn = require('request-promise-native');
 const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
@@ -56,8 +56,8 @@ const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinel = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
 const medicLogs = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 let browserLogStream;
-const userSettings = require('./factories/cht/users/user-settings');
-const buildVersions = require('../scripts/build/versions');
+const userSettings = require('@factories/cht/users/user-settings');
+const buildVersions = require('../../scripts/build/versions');
 
 let originalSettings;
 const originalTranslations = {};
@@ -66,8 +66,8 @@ const hasModal = () => element(by.css('#update-available')).isPresent();
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
-const getTemplateComposeFilePath = file => path.resolve(__dirname, '..', 'scripts', 'build', `${file}.yml.template`);
-const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml`);
+const getTemplateComposeFilePath = file => path.resolve(__dirname, '../..', 'scripts', 'build', `${file}.yml.template`);
+const getTestComposeFilePath = file => path.resolve(__dirname, `../${file}-test.yml`);
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const db1Data = makeTempDir('ci-dbdata');
@@ -472,7 +472,7 @@ const waitForDocRev = (ids) => {
 };
 
 const getDefaultSettings = () => {
-  const pathToDefaultAppSettings = path.join(__dirname, './config.default.json');
+  const pathToDefaultAppSettings = path.join(__dirname, '../config.default.json');
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
@@ -651,7 +651,7 @@ const setupSettings = () => {
 const saveBrowserLogs = () => {
   // wdio also writes in this file
   if (!browserLogStream) {
-    browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
+    browserLogStream = fs.createWriteStream(path.join(__dirname, '..', 'logs/browser.console.log'));
   }
 
   return browser
@@ -686,7 +686,7 @@ const generateComposeFiles = async () => {
 };
 
 const createLogDir = async () => {
-  const logDirPath = path.join(__dirname, 'logs');
+  const logDirPath = path.join(__dirname, '../logs');
   if (fs.existsSync(logDirPath)) {
     await fs.promises.rmdir(logDirPath, { recursive: true });
   }
@@ -744,7 +744,7 @@ const dockerComposeCmd = (...params) => {
 };
 
 const getDockerLogs = (container) => {
-  const logFile = path.resolve(__dirname, 'logs', `${container}.log`);
+  const logFile = path.resolve(__dirname, '../logs', `${container}.log`);
   const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
 
   return new Promise((resolve, reject) => {

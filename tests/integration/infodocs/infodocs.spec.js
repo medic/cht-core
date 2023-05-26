@@ -1,6 +1,6 @@
 const { assert } = require('chai');
-const utils = require('../../utils');
-const sentinelUtils = require('../../utils/sentinel');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 
 //
 // NB: using sentinel processing to delay the reading of infodocs is not guaranteed to be successful

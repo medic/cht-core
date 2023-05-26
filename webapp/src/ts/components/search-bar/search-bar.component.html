@@ -1,7 +1,7 @@
 <section class="mm-search-bar-container" [class.open-search]="openSearch" [class.disabled]="disabled">
   <div class="search-bar-left-icon">
-    <span class="fa fa-search" *ngIf="!openSearch && !freetextFilter?.inputText" (click)="toggleMobileSearch()"></span>
-    <a class="fa fa-chevron-left search-bar-clear" *ngIf="openSearch || !!freetextFilter?.inputText" (click)="clear()"></a>
+    <span class="fa fa-search" *ngIf="showSearchIcon()" (click)="toggleMobileSearch()"></span>
+    <a class="fa fa-chevron-left search-bar-clear" *ngIf="showClearIcon()" (click)="clear()"></a>
   </div>
 
   <mm-freetext-filter class="filter" (search)="search.emit($event)" [disabled]="disabled"></mm-freetext-filter>
