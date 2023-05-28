@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: couchdb-servers-configmap
+data:
+  COUCHDB_SERVERS: |
+    couchdb-1.{{ .Values.namespace }}.svc.cluster.local
+    couchdb-2.{{ .Values.namespace }}.svc.cluster.local
+    couchdb-3.{{ .Values.namespace }}.svc.cluster.local

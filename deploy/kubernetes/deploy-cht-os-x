@@ -131,4 +131,5 @@ step=$((step+1))
 progress_bar $total_steps $step
 
 echo -e "\nAll done."
-
+step=$((step+1))
+progress_bar $total_steps $step
