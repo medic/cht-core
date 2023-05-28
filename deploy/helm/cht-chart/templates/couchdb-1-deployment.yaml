@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: couchdb-1
+  name: couchdb-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: couchdb-1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        cht.service: couchdb-1
+    spec:
+      containers:
+        - env:
+            - name: CLUSTER_PEER_IPS
+              value: couchdb-2.{{ .Values.namespace }}.svc.cluster.local,couchdb-3-service.{{ .Values.namespace }}.svc.cluster.local
+            - name: COUCHDB_LOG_LEVEL
+              value: error
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_PASSWORD
+            - name: COUCHDB_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_SECRET
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_USER
+            - name: COUCHDB_UUID
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCHDB_UUID
+            - name: SVC_NAME
+              value: couchdb-1
+          image: public.ecr.aws/s5s3h4s7/cht-couchdb:{{ .Values.chtversion }}-{{ .Values.chtversion }}
+          name: couchdb-1
+          ports:
+            - containerPort: 5984
+          resources: {}
+          volumeMounts:
+            - mountPath: /opt/couchdb/data
+              name: couchdb-1-claim0
+            - mountPath: /opt/couchdb/etc/local.d/
+              name: cht-credentials
+      restartPolicy: Always
+      volumes:
+        - name: couchdb-1-claim0
+          persistentVolumeClaim:
+            claimName: couchdb-1-claim0
+        - name: cht-credentials
+          persistentVolumeClaim:
+            claimName: cht-credentials
+status: {}

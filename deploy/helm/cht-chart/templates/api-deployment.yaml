@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    cht.service: api
+  name: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cht.service: api
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        cht.service: api
+    spec:
+      containers:
+        - env:
+            - name: BUILDS_URL
+              value: https://staging.dev.medicmobile.org/_couch/builds_4
+            - name: COUCH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: cht-couchdb-credentials
+                  key: COUCH_URL
+            - name: UPGRADE_SERVICE_URL
+              value: http://upgrade-service.{{ .Values.namespace }}.svc.cluster.local:5008
+          image: public.ecr.aws/s5s3h4s7/cht-api:{{ .Values.chtversion }}-{{ .Values.chtversion }}
+          name: api
+          ports:
+            - containerPort: 5988
+          resources: {}
+      restartPolicy: Always
+status: {}
