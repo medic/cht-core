@@ -1,0 +1,7 @@
+namespace: cht-dev-namespace
+chtversion: 4.1.1
+couchdb:
+  password: <password-value>
+  secret: <secret-value>
+  user: <user-name>
+  uuid: <uuid-value>
