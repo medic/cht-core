@@ -36,7 +36,10 @@ spec:
                   name: cht-couchdb-credentials
                   key: COUCHDB_SECRET
             - name: COUCHDB_SYNC_ADMINS_NODE
-              value: couchdb-1
+              valueFrom:
+                configMapKeyRef:
+                  name: couchdb-servers-configmap
+                  key: COUCHDB_SYNC_ADMINS_NODE
             - name: COUCHDB_USER
               valueFrom:
                 secretKeyRef:
