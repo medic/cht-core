@@ -8,3 +8,9 @@ couchdb:
   node1_storageSize: 100Mi
   node2_storageSize: 100Mi
   node3_storageSize: 100Mi
+ingress:
+  annotations:
+    groupname: "dev-cht-alb"
+    tags: "Environment=dev,Team=QA"
+    certificate: "arn:aws:iam::<account-id>:server-certificate/2023-wildcard-dev-medicmobile-org-chain"
+  host: "gamma-cht.dev.medicmobile.org"
