@@ -8,6 +8,11 @@ couchdb:
   node1_storageSize: 100Mi
   node2_storageSize: 100Mi
   node3_storageSize: 100Mi
+toleration:
+  key: "dev-couchdb-only"
+  operator: "Equal"
+  value: "true"
+  effect: "NoSchedule"
 ingress:
   annotations:
     groupname: "dev-cht-alb"

@@ -16,6 +16,11 @@ spec:
       labels:
         cht.service: couchdb-3
     spec:
+      tolerations:
+      - key: {{ .Values.toleration.key }}
+        operator: {{ .Values.toleration.operator }}
+        value: {{ .Values.toleration.value }}
+        effect: {{ .Values.toleration.effect }}
       containers:
         - env:
             - name: COUCHDB_LOG_LEVEL

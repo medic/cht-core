@@ -16,6 +16,11 @@ spec:
       labels:
         cht.service: couchdb-3
     spec:
+      tolerations:
+      - key: "dev-couchdb-only"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
       containers:
         - env:
             - name: COUCHDB_LOG_LEVEL
