@@ -19,7 +19,7 @@ spec:
       tolerations:
       - key: {{ .Values.toleration.key }}
         operator: {{ .Values.toleration.operator }}
-        value: {{ .Values.toleration.value }}
+        value: {{ .Values.toleration.value | quote }}
         effect: {{ .Values.toleration.effect }}
       containers:
         - env:
