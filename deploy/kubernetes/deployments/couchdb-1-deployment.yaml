@@ -16,6 +16,11 @@ spec:
       labels:
         cht.service: couchdb-1
     spec:
+      tolerations:
+      - key: "dev-couchdb-only"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
       containers:
         - env:
             - name: CLUSTER_PEER_IPS
