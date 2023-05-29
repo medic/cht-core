@@ -11,7 +11,7 @@ couchdb:
 toleration:
   key: "dev-couchdb-only"
   operator: "Equal"
-  value: "true"
+  value: "myvalue"
   effect: "NoSchedule"
 ingress:
   annotations:
