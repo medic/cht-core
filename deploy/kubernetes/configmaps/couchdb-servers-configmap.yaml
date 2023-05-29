@@ -4,6 +4,7 @@ metadata:
   name: couchdb-servers-configmap
 data:
   COUCHDB_SERVERS: |
-    couchdb-1.cht-dev-namespace.svc.cluster.local
-    couchdb-2.cht-dev-namespace.svc.cluster.local
+    couchdb-1.cht-dev-namespace.svc.cluster.local,
+    couchdb-2.cht-dev-namespace.svc.cluster.local,
     couchdb-3.cht-dev-namespace.svc.cluster.local
+  COUCHDB_SYNC_ADMINS_NODE: couchdb-1.cht-dev-namespace.svc.cluster.local
