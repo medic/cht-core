@@ -5,3 +5,6 @@ couchdb:
   secret: <secret-value>
   user: <user-name>
   uuid: <uuid-value>
+  node1_storageSize: 100Mi
+  node2_storageSize: 100Mi
+  node3_storageSize: 100Mi
