@@ -1,21 +1,21 @@
-{{- if .Values.clusteredCouch_enabled }}
+{{- if not .Values.clusteredCouch_enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    cht.service: couchdb-2
-  name: couchdb-2
+    cht.service: couchdb
+  name: couchdb
 spec:
   replicas: 1
   selector:
     matchLabels:
-      cht.service: couchdb-2
+      cht.service: couchdb
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        cht.service: couchdb-2
+        cht.service: couchdb
     spec:
       tolerations:
       - key: {{ .Values.toleration.key }}
@@ -36,11 +36,6 @@ spec:
                 secretKeyRef:
                   name: cht-couchdb-credentials
                   key: COUCHDB_SECRET
-            - name: COUCHDB_SYNC_ADMINS_NODE
-              valueFrom:
-                configMapKeyRef:
-                  name: couchdb-servers-configmap
-                  key: COUCHDB_SYNC_ADMINS_NODE
             - name: COUCHDB_USER
               valueFrom:
                 secretKeyRef:
@@ -52,19 +47,19 @@ spec:
                   name: cht-couchdb-credentials
                   key: COUCHDB_UUID
             - name: SVC_NAME
-              value: couchdb-2.{{ .Values.namespace }}.svc.cluster.local
+              value: couchdb.{{ .Values.namespace }}.svc.cluster.local
           image: public.ecr.aws/s5s3h4s7/cht-couchdb:{{ .Values.chtversion }}-{{ .Values.chtversion }}
-          name: couchdb-2
+          name: couchdb
           ports:
             - containerPort: 5984
           resources: {}
           volumeMounts:
             - mountPath: /opt/couchdb/data
-              name: couchdb-2-claim0
+              name: couchdb-claim0
       restartPolicy: Always
       volumes:
-        - name: couchdb-2-claim0
+        - name: couchdb-claim0
           persistentVolumeClaim:
-            claimName: couchdb-2-claim0
+            claimName: couchdb-claim0
 status: {}
 {{- end }}
