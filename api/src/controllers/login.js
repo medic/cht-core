@@ -1,4 +1,3 @@
-const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
 const _ = require('lodash');
@@ -67,12 +66,12 @@ const getRedirectUrl = (userCtx, requested) => {
     return root;
   }
   try {
-    requested = url.resolve('/', requested);
+    requested = new URL('/', requested);
   } catch (e) {
     // invalid url - return the default
     return root;
   }
-  const parsed = url.parse(requested);
+  const parsed = new URL(requested);
   return parsed.path + (parsed.hash || '');
 };
 
@@ -141,12 +140,7 @@ const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
   return request.post({
-    url: url.format({
-      protocol: environment.protocol,
-      hostname: environment.host,
-      port: environment.port,
-      pathname: '_session',
-    }),
+    url: new URL('/_session', environment.serverUrlNoAuth).toString(),
     json: true,
     resolveWithFullResponse: true,
     simple: false, // doesn't throw an error on non-200 responses

@@ -1,5 +1,4 @@
 const request = require('request-promise-native');
-const url = require('url');
 const _ = require('lodash');
 const db = require('./db');
 const environment = require('./environment');
@@ -7,14 +6,9 @@ const config = require('./config');
 const { roles, users } = require('@medic/user-management')(config, db);
 
 const get = (path, headers) => {
-  const dbUrl = url.parse(environment.serverUrl);
-  const fullUrl = url.format({
-    protocol: dbUrl.protocol,
-    host: dbUrl.host,
-    pathname: path
-  });
+  const url = new URL(path, environment.serverUrlNoAuth);
   return request.get({
-    url: fullUrl,
+    url: url.toString(),
     headers: headers,
     json: true
   });
@@ -77,14 +71,9 @@ module.exports = {
     if (!req.params || !req.params.path) {
       return Promise.reject(new Error('No path given'));
     }
-    const dbUrl = url.parse(environment.serverUrl);
-    const fullUrl = url.format({
-      protocol: dbUrl.protocol,
-      host: dbUrl.host,
-      pathname: req.params.path
-    });
+    const dbUrl = new URL(req.params.path, environment.serverUrlNoAuth);
     return request.head({
-      url: fullUrl,
+      url: dbUrl.toString(),
       headers: req.headers,
       resolveWithFullResponse: true
     })
@@ -124,12 +113,12 @@ module.exports = {
    * @param      {Object}    Credentials object as created by basicAuthCredentials
    */
   validateBasicAuth: ({ username, password }) => {
-    const authUrl = url.parse(process.env.COUCH_URL);
+    const authUrl = new URL(process.env.COUCH_URL);
     delete authUrl.pathname;
-    authUrl.auth = `${username}:${password}`;
-
+    authUrl.username = username;
+    authUrl.password = password;
     return request.head({
-      uri: url.format(authUrl),
+      uri: authUrl.toString(),
       resolveWithFullResponse: true
     })
       .then(res => {
