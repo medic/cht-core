@@ -1,3 +1,4 @@
+{{- if .Values.clusteredCouch_enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -12,3 +13,4 @@ spec:
       storage: {{ .Values.couchdb.node2_storageSize }}
   storageClassName: ebs-gp2
 status: {}
+{{- end }}

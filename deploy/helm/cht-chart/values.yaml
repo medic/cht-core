@@ -5,13 +5,15 @@ couchdb:
   secret: <secret-value>
   user: <user-name>
   uuid: <uuid-value>
+  clusteredCouch_enabled: true
   node1_storageSize: 100Mi
   node2_storageSize: 100Mi
   node3_storageSize: 100Mi
+  single_node_storageSize: 100Mi  #For when clusteredCouch is disabled
 toleration:
   key: "dev-couchdb-only"
   operator: "Equal"
-  value: "myvalue"
+  value: "true"
   effect: "NoSchedule"
 ingress:
   annotations:
