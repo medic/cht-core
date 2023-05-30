@@ -50,6 +50,8 @@ spec:
                 secretKeyRef:
                   name: cht-couchdb-credentials
                   key: COUCHDB_UUID
+            - name: SVC_NAME
+              value: couchdb-3.cht-dev-namespace.svc.cluster.local
           image: public.ecr.aws/s5s3h4s7/cht-couchdb:4.1.1-4.1.1
           name: couchdb-3
           ports:
