@@ -51,7 +51,7 @@ spec:
                   name: cht-couchdb-credentials
                   key: COUCHDB_UUID
             - name: SVC_NAME
-              value: couchdb-2
+              value: couchdb-2.{{ .Values.namespace }}.svc.cluster.local
           image: public.ecr.aws/s5s3h4s7/cht-couchdb:{{ .Values.chtversion }}-{{ .Values.chtversion }}
           name: couchdb-2
           ports:
