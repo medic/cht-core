@@ -822,9 +822,7 @@ module.exports = {
       return Promise.reject(passwordError);
     }
 
-    const response = await createUserEntities(data, appUrl);
-
-    return response;
+    return await createUserEntities(data, appUrl);
   },
 
   /* eslint-disable max-len */
