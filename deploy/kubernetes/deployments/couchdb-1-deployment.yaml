@@ -24,7 +24,7 @@ spec:
       containers:
         - env:
             - name: CLUSTER_PEER_IPS
-              value: couchdb-2.cht-dev-namespace.svc.cluster.local,couchdb-3-service.cht-dev-namespace.svc.cluster.local
+              value: couchdb-2.cht-dev-namespace.svc.cluster.local,couchdb-3.cht-dev-namespace.svc.cluster.local
             - name: COUCHDB_LOG_LEVEL
               value: error
             - name: COUCHDB_PASSWORD
