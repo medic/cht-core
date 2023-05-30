@@ -10,5 +10,5 @@ spec:
   resources:
     requests:
       storage: {{ .Values.couchdb.node2_storageSize }}
-  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ebs-gp2
 status: {}
