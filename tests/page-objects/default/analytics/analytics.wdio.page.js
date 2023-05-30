@@ -20,6 +20,12 @@ const targetNumberPercentCount = (targetElement) => targetElement.$('.body .targ
 
 const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal p');
 
+const EMPTY_SELECTION = '.content-pane .item-content.empty-selection';
+
+const emptySelectionError = () => $(`${EMPTY_SELECTION}.selection-error`);
+
+const emptySelectionNoError = () => $(`${EMPTY_SELECTION}:not(.selection-error)`);
+
 const getTargetInfo = async (targetElement) => {
   const target = {
     title: await (await targetTitle(targetElement)).getText()
@@ -58,4 +64,7 @@ module.exports = {
   noSelectedTarget,
   goToTargets,
   getTargets,
+  emptySelectionError,
+  emptySelectionNoError,
 };
+

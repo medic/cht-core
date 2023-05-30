@@ -1,12 +1,12 @@
 const moment = require('moment');
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const reportFactory = require('../../../factories/cht/reports/generic-report');
+const utils = require('@utils');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const reportFactory = require('@factories/cht/reports/generic-report');
 
 
 const validateCardField = async (label, value) => {
@@ -228,7 +228,6 @@ describe('Contact summary info', () => {
   it('should display UHC Stats in contact summary, if contact counts visits and user has permission', async () => {
     await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
-    await commonElements.closeTour();
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
     permissions.can_view_uhc_stats = districtAdminUser.roles;
@@ -251,7 +250,6 @@ describe('Contact summary info', () => {
   it('should have access to the "cht" global api variable', async () => {
     await loginPage.login({ username: districtAdminUser.username, password: districtAdminUser.password });
     await commonElements.waitForPageLoaded();
-    await commonElements.closeTour();
     const originalSettings = await utils.getSettings();
     const permissions = originalSettings.permissions;
     permissions.can_configure = districtAdminUser.roles;

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
 const _ = require('lodash');
-const constants = require('./constants');
+const constants = require('@constants');
 const rpn = require('request-promise-native');
 const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
@@ -56,8 +56,8 @@ const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinel = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
 const medicLogs = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 let browserLogStream;
-const userSettings = require('./factories/cht/users/user-settings');
-const buildVersions = require('../scripts/build/versions');
+const userSettings = require('@factories/cht/users/user-settings');
+const buildVersions = require('../../scripts/build/versions');
 
 let originalSettings;
 const originalTranslations = {};
@@ -66,8 +66,8 @@ const hasModal = () => element(by.css('#update-available')).isPresent();
 const COUCH_USER_ID_PREFIX = 'org.couchdb.user:';
 
 const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
-const getTemplateComposeFilePath = file => path.resolve(__dirname, '..', 'scripts', 'build', `${file}.yml.template`);
-const getTestComposeFilePath = file => path.resolve(__dirname, `${file}-test.yml`);
+const getTemplateComposeFilePath = file => path.resolve(__dirname, '../..', 'scripts', 'build', `${file}.yml.template`);
+const getTestComposeFilePath = file => path.resolve(__dirname, `../${file}-test.yml`);
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const db1Data = makeTempDir('ci-dbdata');
@@ -226,9 +226,12 @@ const deleteAll = (except) => {
       rows
         .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
         .map(({ doc }) => {
-          doc._deleted = true;
-          doc.type = 'tombstone'; // circumvent tombstones being created when DB is cleaned up
-          return doc;
+          return {
+            _id: doc._id,
+            _rev: doc._rev,
+            _deleted: true,
+            type: 'tombstone' // circumvent tombstones being created when DB is cleaned up
+          };
         })
     )
     .then(toDelete => {
@@ -322,12 +325,14 @@ const setUserContactDoc = (attempt=0) => {
 const deleteLocalDocs = async () => {
   const localDocs = await module.exports.requestOnTestDb({ path: '/_local_docs?include_docs=true' });
 
-  for (const row of localDocs.rows) {
-    if (row && row.doc && row.doc.replicator === 'pouchdb') {
+  const docsToDelete = localDocs.rows
+    .filter(row => row && row.doc && row.doc.replicator === 'pouchdb')
+    .map(row => {
       row.doc._deleted = true;
-      await module.exports.saveDoc(row.doc);
-    }
-  }
+      return row.doc;
+    });
+
+  await module.exports.saveDocs(docsToDelete);
 };
 
 /**
@@ -467,7 +472,7 @@ const waitForDocRev = (ids) => {
 };
 
 const getDefaultSettings = () => {
-  const pathToDefaultAppSettings = path.join(__dirname, './config.default.json');
+  const pathToDefaultAppSettings = path.join(__dirname, '../config.default.json');
   return JSON.parse(fs.readFileSync(pathToDefaultAppSettings).toString());
 };
 
@@ -646,7 +651,7 @@ const setupSettings = () => {
 const saveBrowserLogs = () => {
   // wdio also writes in this file
   if (!browserLogStream) {
-    browserLogStream = fs.createWriteStream(__dirname + '/../tests/logs/browser.console.log');
+    browserLogStream = fs.createWriteStream(path.join(__dirname, '..', 'logs/browser.console.log'));
   }
 
   return browser
@@ -681,7 +686,7 @@ const generateComposeFiles = async () => {
 };
 
 const createLogDir = async () => {
-  const logDirPath = path.join(__dirname, 'logs');
+  const logDirPath = path.join(__dirname, '../logs');
   if (fs.existsSync(logDirPath)) {
     await fs.promises.rmdir(logDirPath, { recursive: true });
   }
@@ -739,7 +744,7 @@ const dockerComposeCmd = (...params) => {
 };
 
 const getDockerLogs = (container) => {
-  const logFile = path.resolve(__dirname, 'logs', `${container}.log`);
+  const logFile = path.resolve(__dirname, '../logs', `${container}.log`);
   const logWriteStream = fs.createWriteStream(logFile, { flags: 'w' });
 
   return new Promise((resolve, reject) => {
@@ -803,9 +808,9 @@ const protractorLogin = async (browser, timeout = 20) => {
 };
 
 const setupUser = () => {
-  return module.exports.setupUserDoc()
-    .then(() => refreshToGetNewSettings())
-    .then(() => module.exports.closeTour());
+  return module.exports
+    .setupUserDoc()
+    .then(() => refreshToGetNewSettings());
 };
 
 const setupUserDoc = (userName = constants.USERNAME, userDoc = userSettings.build()) => {
@@ -1241,10 +1246,15 @@ module.exports = {
   startSentinel: () => startService('sentinel'),
 
   stopApi: () => stopService('api'),
-  startApi: async () => {
+  startApi: async (listen = true) => {
     await startService('api');
-    await listenForApi();
+    listen && await listenForApi();
   },
+  stopHaproxy: () => stopService('haproxy'),
+  startHaproxy: () => startService('haproxy'),
+
+  stopNginx: () => stopService('nginx'),
+  startNginx: () => startService('nginx'),
 
   saveCredentials: (key, password) => {
     const options = {
@@ -1293,22 +1303,6 @@ module.exports = {
   refreshToGetNewSettings: refreshToGetNewSettings,
   closeReloadModal: closeReloadModal,
 
-  closeTour: async () => {
-    const closeButton = element(by.css('#tour-select a.btn.cancel'));
-    try {
-      await browser.wait(protractor.ExpectedConditions.visibilityOf(closeButton), 10000);
-      await browser.wait(protractor.ExpectedConditions.elementToBeClickable(closeButton), 1000);
-      await closeButton.click();
-      // wait for the request to the server to execute
-      // is there a way to leverage protractor to achieve this???
-      await browser.sleep(500);
-    } catch (err) {
-      // there might not be a tour, show a warning
-      console.warn('Tour modal has not appeared after 2 seconds');
-    }
-
-  },
-
   waitForDocRev: waitForDocRev,
 
   getDefaultSettings: getDefaultSettings,
@@ -1347,6 +1341,24 @@ module.exports = {
       Object.assign(translationsDoc.generic, translations);
       return db.put(translationsDoc);
     });
+  },
+
+  enableLanguage: (languageCode) => module.exports.enableLanguages([languageCode]),
+
+  enableLanguages: async (languageCodes) => {
+    const { languages } = await module.exports.getSettings();
+    for (const languageCode of languageCodes) {
+      const language = languages.find(language => language.locale === languageCode);
+      if (language) {
+        language.enabled = true;
+      } else {
+        languages.push({
+          locale: languageCode,
+          enabled: true,
+        });
+      }
+    }
+    await module.exports.updateSettings({ languages }, true);
   },
 
   getSettings: () => module.exports.getDoc('settings').then(settings => settings.settings),

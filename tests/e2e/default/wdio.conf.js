@@ -1,14 +1,16 @@
+require('../../aliases');
+const path = require('path');
 const allure = require('allure-commandline');
 const fs = require('fs');
-const path = require('path');
+
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 chai.use(require('chai-as-promised'));
 
-const constants = require('../../constants');
-const utils = require('../../utils');
-const fileDownloadUtils = require('../../utils/file-download');
-const browserUtils = require('../../utils/browser');
+const constants = require('@constants');
+const utils = require('@utils');
+const fileDownloadUtils = require('@utils/file-download');
+const browserUtils = require('@utils/browser');
 
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');

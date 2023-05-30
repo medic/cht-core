@@ -3,7 +3,6 @@
 @import '../../node_modules/font-awesome/less/font-awesome';
 @import (inline) '../../node_modules/select2/dist/css/select2.css';
 @import (inline) '../../node_modules/bootstrap-daterangepicker/daterangepicker.css';
-@import (inline) './bootstrap-tour.css';
 
 @import 'variables';
 @import 'font';
@@ -493,7 +492,7 @@ body {
   background-color: @background-color;
 }
 
-.reports .inbox-items {
+.reports .inbox-items, .contacts .inbox-items, .messages .inbox-items {
   overflow-y: hidden;
   overflow-x: hidden;
   height: 100%;
@@ -1087,50 +1086,8 @@ a.fa:hover {
   max-width: 300px;
 }
 
-.tour-select {
-  z-index: 2000;
-  .tour-option {
-    width: 100px;
-    margin: 10px;
-    padding: 0.5em 0;
-    .button-text;
-    .button-label {
-      white-space: normal;
-    }
-  }
-  .modal-body {
-    text-align: center;
-  }
-  .fa {
-    font-size: 20px;
-  }
-  .tour-option-messages {
-    background-color: @messages-color;
-  }
-  .tour-option-tasks {
-    background-color: @tasks-color;
-  }
-  .tour-option-reports {
-    background-color: @reports-color;
-  }
-  .tour-option-contacts {
-    background-color: @contacts-color;
-  }
-  .tour-option-analytics {
-    background-color: @analytics-color;
-  }
-  .tour-option-admin {
-    background-color: @admin-color;
-  }
-}
-
 .daterangepicker.dropdown-menu {
   z-index: 1050;
-}
-
-.screenshot {
-  text-align: center;
-  margin-top: 10px;
 }
 
 .horizontal-options {
@@ -1158,71 +1115,6 @@ a.fa:hover {
   .selected .rectangle {
     background-color: @ok-color;
     color: #ffffff;
-  }
-}
-
-.guided-setup {
-  .panel-group .panel-body {
-    text-align: center;
-  }
-  .horizontal-options {
-    .icon {
-      background-size: contain;
-      background-repeat: no-repeat;
-      padding-top: 100px;
-    }
-    .contact-pregnant {
-      background-image: url('/img/icon-pregnant.svg');
-      &.selected {
-        background-image: url('/img/icon-pregnant-selected.svg');
-      }
-    }
-    .contact-chw {
-      background-image: url('/img/icon-chw.svg');
-      &.selected {
-        background-image: url('/img/icon-chw-selected.svg');
-      }
-    }
-    .contact-nurse {
-      background-image: url('/img/icon-nurse.svg');
-      &.selected {
-        background-image: url('/img/icon-nurse-selected.svg');
-      }
-    }
-  }
-  .primary-contact-content .horizontal-options a {
-    width: 100px;
-    vertical-align: top;
-    .circle {
-      height: 100px;
-      width: 100px;
-    }
-  }
-  .registration-form-content .horizontal-options a {
-    width: 150px;
-    vertical-align: top;
-    .circle {
-      height: 20px;
-      width: 20px;
-      font-size: @font-size-base;
-      .fa {
-        visibility: hidden;
-        margin: 0px;
-      }
-    }
-    .description {
-      display: inline-block;
-    }
-    &.selected .fa {
-      visibility: visible;
-    }
-  }
-  .modem-setup-content {
-    label {
-      margin-top: 10px;
-      margin-bottom: 0;
-      display: block;
-    }
   }
 }
 

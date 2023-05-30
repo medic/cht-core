@@ -1,15 +1,15 @@
 const fs = require('fs');
 const moment = require('moment');
 const expect = require('chai').expect;
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const reportPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const deliveryForm = require('../../../page-objects/default/enketo/delivery.wdio.page');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const reportPage = require('@page-objects/default/reports/reports.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const deliveryForm = require('@page-objects/default/enketo/delivery.wdio.page');
 
 const DEFAULT_LOCALE = 'en';
 const BABYS_NAME = 'Benja';
@@ -92,7 +92,6 @@ describe('Contact Delivery Form', () => {
     await utils.createUsers([chw]);
     await sentinelUtils.waitForSentinel();
     await loginPage.login({ username: chw.username, password: chw.password, locale: DEFAULT_LOCALE });
-    await commonPage.closeTour();
     await commonPage.goToPeople('fixture:woman', true);
   });
 

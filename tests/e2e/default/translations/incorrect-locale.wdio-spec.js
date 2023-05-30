@@ -1,41 +1,48 @@
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const userSettingsElements = require('../../../page-objects/default/users/user-settings.wdio.page');
-const contactElements = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const placeFactory = require('../../../factories/cht/contacts/place');
+const utils = require('@utils');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const userSettingsElements = require('@page-objects/default/users/user-settings.wdio.page');
+const contactElements = require('@page-objects/default/contacts/contacts.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
 
 describe('Testing Incorrect locale', () => {
-  const createLanguage = async () =>  await utils.addTranslations('hil', {
-    'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
-    'n.week': '{WEEKS, plural, =1{1 saptamana} other{# saptamani}}',
-    'reports.none.n.months':
-      '{MONTHS, plural, =1{No reports in the last month.} other{No reports in the last # months.}}',
-    'task.days.left': '{DAYS, plural, =1{1 day left} other{# days left}',
-    'tasks.none.n.weeks': '{WEEKS, plural, =1{No tasks in the next week.} other{No tasks in the next # weeks.}}',
-    'Reports': 'HilReports',
-    'view.all':'View all'
-  });
-  
-  const contact = placeFactory.place().build({ 
+  const languageCode = 'hil';
+  const createLanguage = async () =>  {
+    await utils.addTranslations(languageCode, {
+      'n.month': '{MONTHS, plural, =1{1 luna} other{# luni}}',
+      'n.week': '{WEEKS, plural, =1{1 saptamana} other{# saptamani}}',
+      'reports.none.n.months':
+          '{MONTHS, plural, =1{No reports in the last month.} other{No reports in the last # months.}}',
+      'task.days.left': '{DAYS, plural, =1{1 day left} other{# days left}',
+      'tasks.none.n.weeks': '{WEEKS, plural, =1{No tasks in the next week.} other{No tasks in the next # weeks.}}',
+      'Reports': 'HilReports',
+      'view.all':'View all'
+    });
+    await utils.enableLanguage(languageCode);
+  };
+
+  const contact = placeFactory.place().build({
     _id: 'district_hil_locale',
     name: 'hil district',
     type: 'district_hospital',
     reported_date: 1000,
     parent: '',
   });
-  
-  after(async () => await browser.setCookies({ name: 'locale', value: 'en' }));
+
+  after(async () => {
+    await browser.setCookies({ name: 'locale', value: 'en' });
+    await utils.revertSettings(true);
+  });
 
   before(async () => {
     await loginPage.cookieLogin();
     await utils.saveDoc(contact);
     await createLanguage();
-    await commonElements.closeReloadModal();
+    await commonElements.closeReloadModal(true);
   });
 
   it('should work with incorrect locale', async () => {
-    await userSettingsElements.setLanguage('hil');
+    await userSettingsElements.setLanguage(languageCode);
 
     const text = await commonElements.getReportsButtonLabel().getText();
     expect(text).to.equal('HilReports');

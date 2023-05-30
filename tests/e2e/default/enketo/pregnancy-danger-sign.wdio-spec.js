@@ -1,10 +1,10 @@
-const utils = require('../../../utils');
-const userData = require('../../../page-objects/default/users/user.data');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const pregnancyDangerSignForm = require('../../../page-objects/default/enketo/pregnancy-danger-sign.wdio.page');
+const utils = require('@utils');
+const userData = require('@page-objects/default/users/user.data');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const pregnancyDangerSignForm = require('@page-objects/default/enketo/pregnancy-danger-sign.wdio.page');
 
 describe('Pregnancy danger sign follow-up form', () => {
   before(async () => {

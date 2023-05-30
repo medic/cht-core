@@ -1,8 +1,8 @@
-const utils = require('../../../utils');
-const usersAdminPage = require('../../../page-objects/default/users/user.wdio.page');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const personFactory = require('../../../factories/cht/contacts/person');
+const utils = require('@utils');
+const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const personFactory = require('@factories/cht/contacts/person');
 
 const onlineUserRole = 'program_officer';
 const offlineUserRole = 'chw';

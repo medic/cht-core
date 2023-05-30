@@ -1,6 +1,6 @@
 const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));
-const utils = require('../../../utils');
+const utils = require('@utils');
 
 let user;
 const password = 'passwordSUP3RS3CR37!';

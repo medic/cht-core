@@ -10,12 +10,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { LogoutConfirmComponent } from '@mm-modals/logout/logout-confirm.component';
 import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
-
 import { DBSyncService } from '@mm-services/db-sync.service';
-import { GuidedSetupComponent } from '@mm-modals/guided-setup/guided-setup.component';
-import { TourSelectComponent } from '@mm-modals/tour/tour-select.component';
-import { TourService } from '@mm-services/tour.service';
-
 
 @Component({
   selector: 'mm-header',
@@ -26,7 +21,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   @Input() adminUrl;
   @Input() canLogOut;
-  @Input() tours;
 
   showPrivacyPolicy = false;
   replicationStatus;
@@ -43,7 +37,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private modalService: ModalService,
     private dbSyncService: DBSyncService,
-    private tourService: TourService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -51,9 +44,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscribeToStore();
     this.getHeaderTabs();
-    this.tourService
-      .getTours()
-      .then(tours => this.tours = tours);
   }
 
   ngOnDestroy() {
@@ -87,18 +77,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .then(permittedTabs => {
         this.permittedTabs = permittedTabs;
       });
-  }
-
-  openGuidedSetup() {
-    this.modalService
-      .show(GuidedSetupComponent)
-      .catch(() => {});
-  }
-
-  openTourSelect() {
-    this.modalService
-      .show(TourSelectComponent)
-      .catch(() => {});
   }
 
   openFeedback() {

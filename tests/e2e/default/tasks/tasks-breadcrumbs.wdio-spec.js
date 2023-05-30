@@ -1,12 +1,12 @@
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const tasksPage = require('../../../page-objects/default/tasks/tasks.wdio.page');
-const chtConfUtils = require('../../../cht-conf-utils');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
+const chtConfUtils = require('@utils/cht-conf');
 const path = require('path');
-const sentinelUtils = require('../../../utils/sentinel');
+const sentinelUtils = require('@utils/sentinel');
 
 describe('Tasks tab breadcrumbs', () => {
 
