@@ -10,4 +10,5 @@ spec:
   resources:
     requests:
       storage: {{ .Values.couchdb.node3_storageSize }}
+  persistentVolumeReclaimPolicy: Retain
 status: {}
