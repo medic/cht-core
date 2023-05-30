@@ -3,8 +3,5 @@ kind: ConfigMap
 metadata:
   name: couchdb-servers-configmap
 data:
-  COUCHDB_SERVERS: |
-    couchdb-1.{{ .Values.namespace }}.svc.cluster.local,
-    couchdb-2.{{ .Values.namespace }}.svc.cluster.local,
-    couchdb-3.{{ .Values.namespace }}.svc.cluster.local
+  COUCHDB_SERVERS: couchdb-1.{{ .Values.namespace }}.svc.cluster.local,couchdb-2.{{ .Values.namespace }}.svc.cluster.local,couchdb-3.{{ .Values.namespace }}.svc.cluster.local
   COUCHDB_SYNC_ADMINS_NODE: couchdb-1.{{ .Values.namespace }}.svc.cluster.local
