@@ -96,6 +96,8 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     if [ "$COUCHDB_LOG_LEVEL" ]; then
         if ! grep -Pzoqr "\[log\]\nlevel =" /opt/couchdb/etc/local.d/*.ini; then
             printf "\n[log]\nlevel = %s\n" "$COUCHDB_LOG_LEVEL" >> $CLUSTER_CREDENTIALS
+        else
+            sed -i "s/level = .*/level = $COUCHDB_LOG_LEVEL/g" $CLUSTER_CREDENTIALS
         fi
     fi
 
