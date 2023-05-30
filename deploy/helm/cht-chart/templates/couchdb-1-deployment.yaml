@@ -19,7 +19,7 @@ spec:
       tolerations:
       - key: {{ .Values.toleration.key }}
         operator: {{ .Values.toleration.operator }}
-        value: {{ .Values.toleration.value }}
+        value: {{ .Values.toleration.value | quote }}
         effect: {{ .Values.toleration.effect }}
       containers:
         - env:
@@ -57,14 +57,9 @@ spec:
           volumeMounts:
             - mountPath: /opt/couchdb/data
               name: couchdb-1-claim0
-            - mountPath: /opt/couchdb/etc/local.d/
-              name: cht-credentials
       restartPolicy: Always
       volumes:
         - name: couchdb-1-claim0
           persistentVolumeClaim:
             claimName: couchdb-1-claim0
-        - name: cht-credentials
-          persistentVolumeClaim:
-            claimName: cht-credentials
 status: {}
