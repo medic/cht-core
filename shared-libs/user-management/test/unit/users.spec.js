@@ -33,7 +33,6 @@ describe('Users service', () => {
       medic: { get: sinon.stub(), put: sinon.stub(), allDocs: sinon.stub(), query: sinon.stub() },
       medicLogs: { get: sinon.stub(), put: sinon.stub(), },
       users: { get: sinon.stub(), put: sinon.stub() },
-      syncShards: sinon.stub().resolves(),
     });
     lineage.init(require('@medic/lineage')(Promise, db.medic));
     addMessage = sinon.stub();
@@ -1027,6 +1026,7 @@ describe('Users service', () => {
       service.__set__('createUserSettings', sinon.stub().resolves());
       sinon.stub(places, 'getPlace').resolves({ _id: 'foo' });
       userData.place = 'foo';
+      return service.createUser(userData);
     });
 
     it('succeeds if contact is within place', () => {
@@ -1045,7 +1045,6 @@ describe('Users service', () => {
       userData.place = 'florida';
       return service.createUser(userData).then(response => {
         chai.expect(response).to.deep.equal({});
-        chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
       });
     });
 
@@ -1055,7 +1054,6 @@ describe('Users service', () => {
       return service.createUser(userData).catch(err => {
         chai.expect(err.name).to.equal('sorry');
         chai.expect(insert.callCount).to.equal(0);
-        chai.expect(db.syncShards.called).to.equal(false);
       });
     });
 
@@ -1560,7 +1558,6 @@ describe('Users service', () => {
       chai.expect(response[0]).to.deep.equal({});
       chai.expect(response[1].error.message).to.equal('Contact is not within place.');
       chai.expect(response[1].error.translationKey).to.equal('configuration.user.place.contact');
-      chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
     });
 
     it('succeeds if contact and place are the same', async () => {
@@ -1585,7 +1582,6 @@ describe('Users service', () => {
       const response = await service.createUsers([userData]);
 
       chai.expect(response).to.deep.equal([{}]);
-      chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
     });
 
     it('succeeds and response contains the user, contact and user settings fields for each inserted user', async () => {
@@ -1662,7 +1658,6 @@ describe('Users service', () => {
       ]);
       chai.expect(getOrCreatePerson.callCount).to.equal(2);
       chai.expect(getOrCreatePerson.args).to.deep.equal([['user1'], ['user2']]);
-      chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
     });
 
     it('succeeds if contact is within place', async () => {
@@ -2114,7 +2109,6 @@ describe('Users service', () => {
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
-        chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
       });
     });
 
@@ -2129,7 +2123,6 @@ describe('Users service', () => {
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
-        chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
       });
     });
 
@@ -2145,7 +2138,6 @@ describe('Users service', () => {
       return service.updateUser('paul', data, true).then(() => {
         chai.expect(db.medic.put.callCount).to.equal(1);
         chai.expect(db.users.put.callCount).to.equal(1);
-        chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
       });
     });
 
@@ -2386,7 +2378,6 @@ describe('Users service', () => {
           'type': 'user',
           '_id': 'org.couchdb.user:paul'
         } ]);
-        chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
       });
     });
 
@@ -2411,7 +2402,6 @@ describe('Users service', () => {
           'type': 'user',
           '_id': 'org.couchdb.user:paul'
         } ]);
-        chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
       });
     });
 
@@ -2445,7 +2435,6 @@ describe('Users service', () => {
       chai.expect(couchSettings.updateAdminPassword.args[0]).to.deep.equal(['admin2', COMPLEX_PASSWORD]);
       chai.expect(couchSettings.getCouchConfig.calledOnce).to.be.true;
       chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
-      chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
     });
 
     it('should update admin when no password is sent', async () => {
@@ -2476,7 +2465,6 @@ describe('Users service', () => {
       });
       chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(0);
       chai.expect(couchSettings.getCouchConfig.callCount).to.equal(0);
-      chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
     });
 
     it('should not update the password in CouchDB config if user isnt admin', async () => {
@@ -2508,7 +2496,6 @@ describe('Users service', () => {
       chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(0);
       chai.expect(couchSettings.getCouchConfig.callCount).to.equal(1);
       chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
-      chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
     });
   });
 
@@ -3054,7 +3041,6 @@ describe('Users service', () => {
       chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
       chai.expect(db.users.put.callCount).to.equal(1);
       chai.expect(db.users.put.args[0][0]).to.include({ password: expectedPassword, });
-      chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
     });
 
     it('should reset password for admin user', async () => {
@@ -3082,7 +3068,6 @@ describe('Users service', () => {
       chai.expect(couchSettings.getCouchConfig.args[0]).to.deep.equal(['admins']);
       chai.expect(couchSettings.updateAdminPassword.callCount).to.equal(1);
       chai.expect(couchSettings.updateAdminPassword.args[0]).to.deep.equal(['sally', expectedPassword]);
-      chai.expect(db.syncShards.args).to.deep.equal([['_users']]);
     });
 
     it('should throw error for non-existent user', async () => {
@@ -3099,7 +3084,6 @@ describe('Users service', () => {
         chai.expect(db.users.get.callCount).to.equal(1);
         chai.expect(db.users.get.args[0]).to.deep.equal(['org.couchdb.user:sally']);
         chai.expect(db.users.put.callCount).to.equal(0);
-        chai.expect(db.syncShards.called).to.equal(false);
       }
     });
   });

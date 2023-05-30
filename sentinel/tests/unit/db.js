@@ -170,22 +170,4 @@ describe('db', () => {
         });
     });
   });
-
-  describe('syncShards', () => {
-    it('should do nothing when no db name is passed', async () => {
-      sinon.stub(request, 'post');
-
-      await db.syncShards();
-      expect(request.post.called).to.equal(false);
-    });
-
-    it('should call _sync_shards for the requested db', async () => {
-      sinon.stub(request, 'post').resolves();
-      await db.syncShards('a_db_name');
-      expect(request.post.args).to.deep.equal([[{
-        url: `http://admin:pass@127.0.0.1:5984/a_db_name/_sync_shards`,
-        json: true,
-      }]]);
-    });
-  });
 });

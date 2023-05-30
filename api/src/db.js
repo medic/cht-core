@@ -41,8 +41,7 @@ if (UNIT_TEST_ENV) {
     'allDbs',
     'activeTasks',
     'saveDocs',
-    'createVault',
-    'syncShards',
+    'createVault'
   ];
 
   const notStubbed = (first, second) => {
@@ -138,7 +137,7 @@ if (UNIT_TEST_ENV) {
   };
 
   /**
-   * @param {Database} database
+   * @param {Database} db
    * @param {Array<DesignDocument>} docs
    * @return {[{ id: string, rev: string }]}
    */
@@ -163,16 +162,5 @@ if (UNIT_TEST_ENV) {
     // todo try one by one!
 
     throw new Error(`Error while saving docs: ${errors.join(', ')}`);
-  };
-
-  module.exports.syncShards = async (dbName) => {
-    if (!dbName) {
-      return;
-    }
-
-    await rpn.post({
-      url: `${environment.serverUrl}/${dbName}/_sync_shards`,
-      json: true
-    });
   };
 }

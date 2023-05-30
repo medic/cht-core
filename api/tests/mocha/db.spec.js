@@ -202,22 +202,4 @@ describe('db', () => {
       expect(db.close.args).to.deep.equal([[dbObject]]);
     });
   });
-
-  describe('syncShards', () => {
-    it('should do nothing when no db name is passed', async () => {
-      sinon.stub(rpn, 'post');
-
-      await db.syncShards();
-      expect(rpn.post.called).to.equal(false);
-    });
-
-    it('should call _sync_shards for the requested db', async () => {
-      sinon.stub(rpn, 'post').resolves();
-      await db.syncShards('the_db_name');
-      expect(rpn.post.args).to.deep.equal([[{
-        url: `${env.serverUrl}/the_db_name/_sync_shards`,
-        json: true,
-      }]]);
-    });
-  });
 });
