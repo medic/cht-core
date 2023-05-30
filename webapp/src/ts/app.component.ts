@@ -43,6 +43,7 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 
@@ -126,6 +127,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private ngZone:NgZone,
     private chtScriptApiService: CHTScriptApiService,
     private analyticsModulesService: AnalyticsModulesService,
+    private trainingCardsService: TrainingCardsService,
     private matIconRegistry: MatIconRegistry,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -559,8 +561,19 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(({ privacyPolicy, accepted }: any = {}) => {
         this.globalActions.setPrivacyPolicyAccepted(accepted);
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
+        return { privacyPolicy, accepted };
       })
-      .catch(err => console.error('Failed to load privacy policy', err));
+      .catch(err => console.error('Failed to load privacy policy', err))
+      .then(({ privacyPolicy, accepted }: any = {}) => {
+        if (!privacyPolicy || accepted) {
+          // If there is no privacy policy or the user already
+          // accepted the policy show the training cards,
+          // otherwise the training cards will start from the
+          // privacy policy component after the user accepts
+          // the terms
+          this.trainingCardsService.showTrainingCards();
+        }
+      });
   }
 
   private initUnreadCount() {
