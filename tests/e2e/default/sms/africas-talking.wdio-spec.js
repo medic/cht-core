@@ -42,15 +42,14 @@ describe('africas talking api', () => {
       expect(summary).to.equal(message);
 
       await messagesPage.openMessage(rawNumber);
-
       const { name } = await messagesPage.getMessageHeader();
       expect(name).to.equal(rawNumber);
 
-      const { content, state, dataID } = await messagesPage.getMessageContent(1);
+      const { content, state, dataId } = await messagesPage.getMessageContent(1);
       expect(content).to.equal(message);
       expect(state).to.equal('received');
 
-      const doc = await utils.getDoc(dataID);
+      const doc = await utils.getDoc(dataId);
       expect(doc.sms_message.gateway_ref).to.equal('messageID');
     });
 
