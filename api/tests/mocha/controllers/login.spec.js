@@ -497,7 +497,7 @@ describe('login controller', () => {
       sinon.stub(res, 'status').returns(res);
       sinon.stub(res, 'send').returns(res);
       sinon.stub(res, 'cookie');
-      sinon.stub(auth, 'getUserCtx').rejects('boom');
+      sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
       auth.getUserCtx.onCall(9).resolves({ name: 'shazza', roles: [ 'project-stuff' ] });
 
       await controller.post(req, res);
@@ -534,10 +534,30 @@ describe('login controller', () => {
       const post = sinon.stub(request, 'post').resolves(postResponse);
       const status = sinon.stub(res, 'status').returns(res);
       const json = sinon.stub(res, 'json').returns(res);
-      const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('boom');
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
       return controller.post(req, res).then(() => {
         chai.expect(post.callCount).to.equal(1);
         chai.expect(getUserCtx.callCount).to.equal(11);
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(401);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0]).to.deep.equal({ error: 'Error getting authCtx' });
+      });
+    });
+
+    it('returns errors immediately from auth if code is not 401', () => {
+      req.body = { user: 'sharon', password: 'p4ss' };
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      const post = sinon.stub(request, 'post').resolves(postResponse);
+      const status = sinon.stub(res, 'status').returns(res);
+      const json = sinon.stub(res, 'json').returns(res);
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects('boom');
+      return controller.post(req, res).then(() => {
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(getUserCtx.callCount).to.equal(1);
         chai.expect(status.callCount).to.equal(1);
         chai.expect(status.args[0][0]).to.equal(401);
         chai.expect(json.callCount).to.equal(1);

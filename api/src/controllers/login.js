@@ -205,7 +205,8 @@ const getUserCtxRetry = async (options, retry = 10) => {
   try {
     return await auth.getUserCtx(options);
   } catch (err) {
-    if (retry > 0) {
+    // in a clustered setup, requesting session immediately after changing a password might 401
+    if (retry > 0 && err && err.code === 401) {
       await new Promise(r => setTimeout(r, 10));
       return getUserCtxRetry(options, --retry);
     }
