@@ -1,4 +1,4 @@
-{{- if not .Values.clusteredCouch_enabled }}
+{{- if not .Values.couchdb.clusteredCouch_enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
