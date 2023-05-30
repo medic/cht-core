@@ -1,16 +1,16 @@
-{{- if .Values.clusteredCouch_enabled }}
+{{- if not .Values.clusteredCouch_enabled }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   labels:
-    cht.service: couchdb-3-claim0
-  name: couchdb-3-claim0
+    cht.service: couchdb-claim0
+  name: couchdb-claim0
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.couchdb.node3_storageSize }}
+      storage: {{ .Values.couchdb.single_node_storageSize }}
   storageClassName: ebs-gp2
 status: {}
 {{- end }}
