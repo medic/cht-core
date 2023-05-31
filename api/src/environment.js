@@ -33,7 +33,7 @@ if (UNIT_TEST_ENV) {
     protocol: parsedUrl.protocol,
     port: parsedUrl.port,
     host: parsedUrl.hostname,
-    db: parsedUrl.path.replace('/', ''),
+    db: parsedUrl.pathname.replace('/', ''),
     ddoc: 'medic',
     username: parsedUrl.username,
     password: parsedUrl.password
