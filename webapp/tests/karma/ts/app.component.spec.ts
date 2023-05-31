@@ -41,6 +41,7 @@ import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { Selectors } from '@mm-selectors/index';
+import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -76,6 +77,7 @@ describe('AppComponent', () => {
   let transitionsService;
   let chtScriptApiService;
   let analyticsModulesService;
+  let trainingCardsService;
   // End Services
 
   let globalActions;
@@ -155,6 +157,7 @@ describe('AppComponent', () => {
       fetch: sinon.stub()
     };
     telemetryService = { record: sinon.stub() };
+    trainingCardsService = { showTrainingCards: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
@@ -204,6 +207,7 @@ describe('AppComponent', () => {
           { provide: TransitionsService, useValue: transitionsService },
           { provide: CHTScriptApiService, useValue: chtScriptApiService },
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
+          { provide: TrainingCardsService, useValue: trainingCardsService },
         ]
       })
       .compileComponents();
@@ -325,7 +329,7 @@ describe('AppComponent', () => {
     }]);
   });
 
-  it('should set privacy policy and start modals if privacy accepted', async () => {
+  it('should set privacy policy and init training cards if privacy accepted', async () => {
     privacyPoliciesService.hasAccepted.resolves({ privacyPolicy: 'The policy...', accepted: false });
     await getComponent();
     await component.setupPromise;
@@ -344,6 +348,7 @@ describe('AppComponent', () => {
     expect(globalActions.setPrivacyPolicyAccepted.getCall(1).args).to.have.members([false]);
     expect(globalActions.setShowPrivacyPolicy.callCount).to.equal(2);
     expect(globalActions.setShowPrivacyPolicy.getCall(1).args).to.have.members([undefined]);
+    expect(trainingCardsService.showTrainingCards.callCount).to.equal(1);
   });
 
   it('should start the UpdateReadDocsCount recurring process for online users', async () => {
