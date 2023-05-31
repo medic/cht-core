@@ -109,7 +109,7 @@ describe('Messages Component', () => {
 
     expect(spyUpdateConversations.callCount).to.equal(1);
     expect(changesService.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(2);
+    expect(spySubscriptionsAdd.callCount).to.equal(3);
   });
 
   it('listTrackBy() should return unique identifier', () => {

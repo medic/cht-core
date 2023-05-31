@@ -11,6 +11,7 @@
     "node": ">=16.12.0",
     "npm": ">=8.3.1"
   },
+  "workspaces": ["./shared-libs/*"],
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
@@ -22,7 +23,8 @@
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
     "standard-wdio": "wdio run ./tests/e2e/standard/wdio.conf.js",
     "default-wdio-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
-    "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && grunt build-service-images && grunt create-local-docker-compose-files"
+    "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && grunt build-service-images && grunt create-local-docker-compose-files",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^15.0.0",
@@ -38,7 +40,6 @@
     "@angular/localize": "^15.0.4",
     "@faker-js/faker": "^6.1.2",
     "@medic/eslint-config": "^1.1.0",
-    "@medic/memdown": "file:shared-libs/memdown",
     "@types/chai": "^4.3.4",
     "@types/chai-as-promised": "^7.1.5",
     "@types/jquery": "^3.5.6",
@@ -143,7 +144,8 @@
     "typescript": "4.8",
     "uuid": "^8.3.2",
     "webpack-bundle-analyzer": "^4.7.0",
-    "zone.js": "^0.11.8"
+    "zone.js": "^0.11.8",
+    "husky": "^8.0.0"
   },
   "bundlesize": [
     {
