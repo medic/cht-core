@@ -13,6 +13,7 @@
       {
         "allowModules": [
           "@medic/bulk-docs-utils",
+          "@medic/cht-script-api",
           "@medic/contact-types-utils",
           "@medic/contacts",
           "@medic/infodoc",
