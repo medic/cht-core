@@ -195,7 +195,28 @@ const getPhoneNumber = doc => {
 const setPhoneNumber = doc => {
   const phoneNumber = getPhoneNumber(doc);
   const countryCode = config.getAll().default_country_code;
-  doc.phone_number = countryCode.concat(phoneNumber.toString());
+  // By default for a valid phone number SmsParser itself adds a country code if not provided
+  // So if country code is not present in phone_number throw error
+  if (!phoneNumber.includes(countryCode)) {
+    throw new Error(
+      `${doc.phoneNumber} does not have country code`
+    );
+  }
+  else {
+    doc.phone_number = phoneNumber;
+  }
+};
+
+const getAge = doc => {
+  if (!doc || !doc.fields) {
+    return '';
+  }
+  return doc.fields.age;
+};
+
+const setAge = doc => {
+  const age = getAge(doc);
+  doc.age = age;
 };
 
 const getConfig = () => config.get('registrations');
@@ -234,6 +255,9 @@ const triggers = {
   },
   add_phone_number: (options) => {
     return setPhoneNumber(options.doc);
+  },
+  add_age: (options) => {
+    return setAge(options.doc);
   },
   add_expected_date: (options) => {
     return setExpectedBirthDate(options.doc);
