@@ -212,9 +212,15 @@ const fieldParsers = {
     return parseNum(stripInvisibleCharacters(raw));
   },
   phone_number: (raw) => {
-    if (phoneNumberParser.validate(config.getAll(), raw)) {
-      return raw;
+    let formattedAndValidatedPhone = phoneNumberParser.format(config.getAll(), raw);
+    if (formattedAndValidatedPhone) {
+      return formattedAndValidatedPhone;
     }
+    else {
+      logger.error(`The provided phone number ${raw} is invalid`);
+      return null;
+    }
+
   }
 };
 

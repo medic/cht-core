@@ -194,8 +194,7 @@ const getPhoneNumber = doc => {
 
 const setPhoneNumber = doc => {
   const phoneNumber = getPhoneNumber(doc);
-  // get default country code
-  //countryCode = codeFromSettings()
+  const countryCode = config.getAll().default_country_code;
   doc.phone_number = countryCode.concat(phoneNumber.toString());
 };
 
