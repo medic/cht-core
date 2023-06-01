@@ -58,7 +58,7 @@ const closePurgeDbs = () => {
 };
 
 const getRoles = () => {
-  const list = {};
+  const list = [];
   const roles = {};
 
   return db.users
@@ -74,13 +74,13 @@ const getRoles = () => {
           return;
         }
 
-        const rolesString = serverSidePurgeUtils.sortedUniqueRoles(row.doc.roles);
-        list[JSON.stringify(rolesString)] = rolesString;
+        const uniqueRoles = serverSidePurgeUtils.sortedUniqueRoles(row.doc.roles);
+        list.push(uniqueRoles);
       });
 
-      Object.values(list).forEach(list => {
-        const hash = serverSidePurgeUtils.getRoleHash(list);
-        roles[hash] = list;
+      list.forEach(uniqueRoles => {
+        const hash = serverSidePurgeUtils.getRoleHash(uniqueRoles);
+        roles[hash] = uniqueRoles;
       });
 
       return roles;
@@ -480,7 +480,7 @@ const purgeUnallocatedRecords = async (roles, purgeFn) => {
         if (!validPurgeResults(purgeIds)) {
           return;
         }
-        toPurge[hash][doc._id] = purgeIds.includes(doc._id);
+        toPurge[hash][doc._id] = purgeIds.includes(doc._id); // Record<hash, Record<docId, boolean>>
       });
     });
 
