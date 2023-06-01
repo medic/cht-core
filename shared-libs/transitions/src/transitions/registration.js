@@ -10,6 +10,7 @@ const acceptPatientReports = require('./accept_patient_reports');
 const moment = require('moment');
 const config = require('../config');
 const date = require('../date');
+const phoneNumberParser = require('@medic/phone-number');
 
 const contactTypesUtils = require('@medic/contact-types-utils');
 
@@ -194,12 +195,12 @@ const getPhoneNumber = doc => {
 
 const setPhoneNumber = doc => {
   const phoneNumber = getPhoneNumber(doc);
-  const countryCode = config.getAll().default_country_code;
   // By default for a valid phone number SmsParser itself adds a country code if not provided
   // So if country code is not present in phone_number throw error
-  if (!phoneNumber.includes(countryCode)) {
+  const validPhone = phoneNumberParser.validate(config.getAll(), phoneNumber);
+  if (!validPhone) {
     throw new Error(
-      `${doc.phoneNumber} does not have country code`
+      `${doc.phoneNumber} submitted by ${doc.from} is not a valid phone number`
     );
   }
   else {
