@@ -26,9 +26,24 @@ const getUpgradeServiceDockerCompose = async () => {
   await fs.promises.writeFile(UPGRADE_SERVICE_DC, contents);
 };
 
+const getLatestRelease = async () => {
+  const url = `${MARKET_URL_READ}/${STAGING_SERVER}/_design/builds/_view/releases`;
+  const query = {
+    startKey: [ 'release', 'medic', 'medic', {}],
+    descending: true,
+    limit: 1,
+  };
+  const releases = await rpn.get({ url: url, qs: query, json: true });
+  if (!releases.rows.length) {
+    return MAIN_BRANCH;
+  }
+  return releases.rows[0].id;
+};
+
 const getMainCHTDockerCompose = async () => {
+  const latestRelease = await getLatestRelease();
   for (const composeFile of COMPOSE_FILES) {
-    const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${MAIN_BRANCH}/docker-compose/${composeFile}.yml`;
+    const composeFileUrl = `${MARKET_URL_READ}/${STAGING_SERVER}/${latestRelease}/docker-compose/${composeFile}.yml`;
     const contents = await rpn.get(composeFileUrl);
     const filePath = path.join(CHT_DOCKER_COMPOSE_FOLDER, `${composeFile}.yml`);
     await fs.promises.writeFile(filePath, contents);
