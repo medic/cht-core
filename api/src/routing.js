@@ -41,6 +41,7 @@ const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
 const purgedDocsController = require('./controllers/purged-docs');
+const purgingConfigController = require('./controllers/purging-config');
 const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
@@ -501,6 +502,14 @@ app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); //
 app.putJson('/api/v1/settings', settings.put);
 
 app.get('/api/couch-config-attachments', couchConfigController.getAttachments);
+
+app.post(
+  '/purging-config/dry-run',
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  jsonParser,
+  purgingConfigController.dryRun,
+);
 
 app.get(
   '/purging',
