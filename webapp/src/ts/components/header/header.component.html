@@ -68,8 +68,10 @@
               <span>{{replicationStatus.current.key | translate}}</span>
             </a>
             <a class="no-click" *ngIf="replicationStatus.lastSuccessTo">
-              <span>{{'sync.last_success' | translate}}</span>
-              <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate"></span>
+              <span class="last-sync">
+                <span>{{'sync.last_success' | translate}}</span>
+                <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate"></span>
+              </span>
             </a>
           </li>
 

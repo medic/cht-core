@@ -1,0 +1,39 @@
+@import 'variables';
+
+@media (pointer: coarse), (hover: none) {
+  /**
+   * Makes native “title” accessible from mobile devices if the element has tabindex=“0"
+   * since it makes the element focusable.
+   */
+  [title] {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+  }
+
+  [title]:focus::after {
+    content: attr(title);
+    font-size: @font-extra-small;
+    color: @tooltip-text;
+    background-color: @tooltip-background;
+    position: absolute;
+    top: 20px;
+    right: 0px;
+    width: max-content;
+    padding: 3px;
+    z-index: 1;
+  }
+
+  // Manually expand, when parent element can't do it by automatically.
+  .item-summary .relative-date:focus,
+  .sync-status .last-sync:focus-within {
+    display: inline-flex;
+    justify-content: left;
+    min-width: 140px;
+    min-height: 45px;
+  }
+
+  .sync-status .last-sync:focus-within .relative-date-content {
+    margin-left: 5px;
+  }
+}

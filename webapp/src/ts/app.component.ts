@@ -290,7 +290,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupAndroidVersion();
     this.requestPersistentStorage();
     this.startWealthQuintiles();
-    this.enableTooltips();
     this.initAnalyticsModules();
   }
 
@@ -613,35 +612,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       } catch (e) {
         // exception thrown on clicking 'close'
       }
-    });
-  }
-
-  // enables tooltips that are visible on mobile devices
-  private enableTooltips() {
-    // running this code in NgZone will end up triggering app-wide change detection on every
-    // mouseover and mouseout event over every element on the page!
-    this.ngZone.runOutsideAngular(() => {
-      $('body').on('mouseenter', '.relative-date, .autoreply', (event) => {
-        const element = $(event.currentTarget);
-        if (element.data('tooltipLoaded') !== true) {
-          element
-            .data('tooltipLoaded', true)
-            .tooltip({
-              placement: 'bottom',
-              trigger: 'manual',
-              container: element.closest('.inbox-items, .item-content, .page'),
-            })
-            .tooltip('show');
-        }
-      });
-      $('body').on('mouseleave', '.relative-date, .autoreply', (event) => {
-        const element = $(event.currentTarget);
-        if (element.data('tooltipLoaded') === true) {
-          element
-            .data('tooltipLoaded', false)
-            .tooltip('hide');
-        }
-      });
     });
   }
 
