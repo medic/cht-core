@@ -689,8 +689,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
-    'copy:api-resources',
     'copy:api-bowser',
+    'copy:api-resources',
     'copy:built-resources',
     'copy:webapp-static',
     'copy:admin-static',
