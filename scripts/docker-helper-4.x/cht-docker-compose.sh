@@ -140,7 +140,7 @@ required_apps_installed(){
 }
 
 get_nginx_container_id() {
-	docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet
+	docker ps --all --filter "publish=${NGINX_HTTPS_PORT}" --filter "name=${projectName}" --quiet  2>/dev/null
 }
 
 get_is_container_running() {
@@ -163,7 +163,7 @@ service_has_image_downloaded(){
 	if [ $imageDownloadName ];then
 	  echo ${imageDownloadName}
   else
-    echo "false"
+    echo "NA"
   fi
 }
 
@@ -187,19 +187,44 @@ container_status(){
   fi
 }
 
-get_system_and_docker_info(){
-	echo "Project: ${projectName}";echo
+get_load_avg() {
+  # "system_profiler" exists only on MacOS, if it's not here, then run linux style command for
+  # load avg.  Otherwise use MacOS style command
+  if [ -n "$(required_apps_installed "system_profiler")" ];then
+    awk '{print  $1 " " $2 " " $3 }' < /proc/loadavg
+  else
+    avg=$(sysctl -n vm.loadavg)
+    # replace { and } in the output to match linux's output
+    echo "${avg//[\}\{]/}"
+  fi
+}
 
+get_running_container_count(){
+  docker ps -qf "name=^${projectName}[-_]+.*[-_]+[0-9]" | wc -l
+}
+
+get_global_running_container_count(){
+  docker ps --format '{{.Names}}' | wc -l
+}
+
+get_system_and_docker_info(){
+  info='Service Status Container Image'
   services="cht-upgrade-service haproxy healthcheck api sentinel nginx"
   IFS=' ' read -ra servicesArray <<<"$services"
   for service in "${servicesArray[@]}"; do
-    echo "${service}?"
-    service_has_image_downloaded ${service}
+    image=$(service_has_image_downloaded ${service})
     container=$(service_has_container ${service})
-    echo $container
-    container_status ${container}
-    echo
+    status=$(container_status ${container})
+#    echo "${service}: image=${image} container=${container} status=${status}"
+    info="${info}"$'\n'"${service} ${status} ${container} ${image}"
   done
+  echo
+  echo "---DEBUG INFO---"
+  echo "Load: $(get_load_avg)"
+  echo "CHT Containers: $(get_running_container_count)"
+  echo "Global Containers $(get_global_running_container_count)"
+  echo
+  echo $"$info" | column -t
 }
 
 if [ -n "$(required_apps_installed "docker-compose")" ];then
@@ -343,9 +368,11 @@ fi
 source "./$projectFile"
 
 projectURL=$(get_local_ip_url "$(get_lan_ip)")
+if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
 
 echo ""
-#docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
+docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
+if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
 
 set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
@@ -353,8 +380,10 @@ echo "Starting project \"${projectName}\". First run takes a while. Will try for
 nginxContainerId=$(get_nginx_container_id)
 isNginxRunning=$(get_is_container_running "$nginxContainerId")
 i=0
+
+if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
 while [[ "$isNginxRunning" != "true" ]]; do
-	if [[ $i -gt 0 ]]; then
+	if [[ $i -gt 300 ]]; then
 		echo ""
 		echo ""
 		echo -e "${red}Failed to start - check docker logs for errors and try again.${noColor}"
@@ -364,7 +393,11 @@ while [[ "$isNginxRunning" != "true" ]]; do
 		exit 1
 	fi
 
-	echo '.' | tr -d '\n'
+  if [ ! -z ${DEBUG+x} ];then
+    clear;get_system_and_docker_info
+  else
+  	echo '.' | tr -d '\n'
+	fi
 	((i++))
 	sleep 1
 
@@ -375,9 +408,9 @@ while [[ "$isNginxRunning" != "true" ]]; do
 	isNginxRunning=$(get_is_container_running "$nginxContainerId")
 done
 
-docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"
-docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"
-docker exec -it $nginxContainerId bash -c "nginx -s reload"
+docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/cert.pem https://local-ip.medicmobile.org/fullchain"  2>/dev/null
+docker exec -it $nginxContainerId bash -c "curl -s -o /etc/nginx/private/key.pem https://local-ip.medicmobile.org/key"  2>/dev/null
+docker exec -it $nginxContainerId bash -c "nginx -s reload"  2>/dev/null
 
 echo ""
 echo ""
@@ -397,4 +430,5 @@ echo ""
 echo -e "${green} Have a great day!${noColor} "
 echo ""
 
+if [ ! -z ${DEBUG+x} ];then get_system_and_docker_info; fi
 set -e
