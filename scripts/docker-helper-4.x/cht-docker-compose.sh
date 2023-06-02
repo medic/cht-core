@@ -148,6 +148,60 @@ get_is_container_running() {
 	docker inspect --format="{{.State.Running}}" "$containerId" 2>/dev/null
 }
 
+service_has_image_downloaded(){
+	service=$1
+  if [ "$service" == "cht-upgrade-service" ]; then
+    compose_path="${homeDir}/upgrade-service.yml"
+	elif [ "$service" == "couchdb" ]; then
+    compose_path="${homeDir}/compose/couchdb.yml"
+	else
+    compose_path="${homeDir}/compose/cht-core.yml"
+	fi
+	image=$(grep "${service}:" ${compose_path} | grep image | cut -f2,3 -d":" | xargs)
+
+  imageDownloadName=$(docker image ls  --format {{.Repository}}:{{.Tag}} -f "reference=${image}" 2>/dev/null)
+	if [ $imageDownloadName ];then
+	  echo ${imageDownloadName}
+  else
+    echo "false"
+  fi
+}
+
+service_has_container(){
+	service=$1
+  container_name=$(docker ps -af "name=^${projectName}[-_]+.*[-_]+[0-9]" --format '{{.Names}}' | grep ${service} 2>/dev/null)
+  if [ $container_name ];then
+    echo ${container_name}
+  else
+    echo "NA"
+  fi
+}
+
+container_status(){
+	contianer=$1
+	status=$(docker inspect --format="{{.State.Status}}" "$contianer" 2>/dev/null)
+  if [ $status ];then
+    echo ${status}
+  else
+    echo "NA"
+  fi
+}
+
+get_system_and_docker_info(){
+	echo "Project: ${projectName}";echo
+
+  services="cht-upgrade-service haproxy healthcheck api sentinel nginx"
+  IFS=' ' read -ra servicesArray <<<"$services"
+  for service in "${servicesArray[@]}"; do
+    echo "${service}?"
+    service_has_image_downloaded ${service}
+    container=$(service_has_container ${service})
+    echo $container
+    container_status ${container}
+    echo
+  done
+}
+
 if [ -n "$(required_apps_installed "docker-compose")" ];then
   echo ""
   echo -e "${red}\"docker-compose\" is not installed or could not be found. Please install and try again!${noColor}"
@@ -291,7 +345,7 @@ source "./$projectFile"
 projectURL=$(get_local_ip_url "$(get_lan_ip)")
 
 echo ""
-docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
+#docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
 
 set +e
 echo "Starting project \"${projectName}\". First run takes a while. Will try for up to five minutes..." | tr -d '\n'
@@ -300,10 +354,12 @@ nginxContainerId=$(get_nginx_container_id)
 isNginxRunning=$(get_is_container_running "$nginxContainerId")
 i=0
 while [[ "$isNginxRunning" != "true" ]]; do
-	if [[ $i -gt 300 ]]; then
+	if [[ $i -gt 0 ]]; then
 		echo ""
 		echo ""
-		echo "${red}Failed to start - check docker logs for errors and try again.${noColor}"
+		echo -e "${red}Failed to start - check docker logs for errors and try again.${noColor}"
+		echo ""
+		get_system_and_docker_info
 		echo ""
 		exit 1
 	fi
