@@ -16,7 +16,7 @@ describe('utils', () => {
       hostname: 'localhost',
       port: '5984',
       protocol: 'http:',
-    } })
+    } });
   });
 
   describe('fetchJSON', () => {
