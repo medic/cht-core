@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     cht.service: couchdb-2
-  name: couchdb-2
+  name: cht-couchdb-2
 spec:
   replicas: 1
   selector:

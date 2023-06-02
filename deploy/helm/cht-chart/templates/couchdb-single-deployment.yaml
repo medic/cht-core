@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   labels:
     cht.service: couchdb
-  name: couchdb
+  name: cht-couchdb
 spec:
   replicas: 1
   selector:
@@ -49,7 +49,7 @@ spec:
             - name: SVC_NAME
               value: couchdb.{{ .Values.namespace }}.svc.cluster.local
           image: public.ecr.aws/s5s3h4s7/cht-couchdb:{{ .Values.chtversion }}-{{ .Values.chtversion }}
-          name: couchdb
+          name: cht-couchdb
           ports:
             - containerPort: 5984
           resources: {}

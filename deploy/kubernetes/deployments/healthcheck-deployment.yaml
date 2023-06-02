@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     cht.service: healthcheck
-  name: healthcheck
+  name: cht-haproxy-healthcheck
 spec:
   replicas: 1
   selector:

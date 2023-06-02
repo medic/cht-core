@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     cht.service: haproxy
-  name: haproxy
+  name: cht-haproxy
 spec:
   replicas: 1
   selector:
@@ -39,7 +39,7 @@ spec:
             - name: HEALTHCHECK_ADDR
               value: healthcheck.{{ .Values.namespace }}.svc.cluster.local
           image: public.ecr.aws/s5s3h4s7/cht-haproxy:{{ .Values.chtversion }}-{{ .Values.chtversion }}
-          name: haproxy
+          name: cht-haproxy
           ports:
             - containerPort: 5984
           resources: {}
