@@ -11,7 +11,9 @@
     "node": ">=16.12.0",
     "npm": ">=8.3.1"
   },
-  "workspaces": ["./shared-libs/*"],
+  "workspaces": [
+    "./shared-libs/*"
+  ],
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
@@ -97,12 +99,12 @@
     "grunt-exec": "^3.0.0",
     "grunt-jsdoc": "^2.4.1",
     "grunt-karma": "^4.0.2",
-    "grunt-mocha-test": "^0.13.3",
     "grunt-notify": "^0.4.5",
     "grunt-optimize-js": "^0.6.0",
     "grunt-protractor-runner": "^5.0.0",
     "grunt-sass": "^3.1.0",
     "grunt-text-replace": "^0.4.0",
+    "husky": "^8.0.0",
     "jasmine-spec-reporter": "^7.0.0",
     "jit-grunt": "^0.10.0",
     "jsverify": "^0.8.4",
@@ -144,8 +146,7 @@
     "uglify-js": "^3.17.4",
     "uuid": "^8.3.2",
     "webpack-bundle-analyzer": "^4.7.0",
-    "zone.js": "^0.11.8",
-    "husky": "^8.0.0"
+    "zone.js": "^0.11.8"
   },
   "bundlesize": [
     {

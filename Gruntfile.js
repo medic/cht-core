@@ -57,13 +57,6 @@ module.exports = function(grunt) {
       },
     },
     env: {
-      'unit-test': {
-        options: {
-          add: {
-            UNIT_TEST_ENV: '1',
-          },
-        },
-      },
       'version': {
         options: {
           add: {
@@ -179,9 +172,12 @@ module.exports = function(grunt) {
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && ' +
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js',
       'push-ddoc-to-staging': 'node ./scripts/build/push-ddoc-to-staging.js',
-      'clean-build-dir': {
-        cmd: 'rm -rf build && mkdir build',
-      },
+      'clean-build-dir': 'rm -rf build && mkdir build',
+      'mocha-unit-webapp': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "webapp/tests/mocha/**/*.spec.js"',
+      'mocha-unit-api': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "api/tests/mocha/**/*.js"',
+      'mocha-unit-sentinel': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "sentinel/tests/**/*.js"',
+      'mocha-integration-api': './node_modules/mocha/bin/_mocha "api/tests/integration/**/*.js" -t 10000',
+
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
       'eslint': {
@@ -363,7 +359,7 @@ module.exports = function(grunt) {
         stdio: 'inherit', // enable colors!
       },
       'shared-lib-unit': {
-        cmd: 'npm test --workspaces --if-present',
+        cmd: 'UNIT_TEST_ENV=1 npm test --workspaces --if-present',
         stdio: 'inherit', // enable colors!
       },
       // To monkey patch a library...
@@ -436,7 +432,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            `../node_modules/.bin/ng test webapp --watch=false --progress=${DEV ? 'true' : 'false'}`,
+            `UNIT_TEST_ENV=1 ../node_modules/.bin/ng test webapp --watch=false --progress=${DEV ? 'true' : 'false'}`,
             'cd ../',
           ].join(' && ');
         },
@@ -446,7 +442,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            '../node_modules/.bin/ng test webapp --watch=true --progress=true',
+            'UNIT_TEST_ENV=1 ../node_modules/.bin/ng test webapp --watch=true --progress=true',
             'cd ../',
           ].join(' && ');
         },
@@ -575,32 +571,6 @@ module.exports = function(grunt) {
             }
           }
         }
-      }
-    },
-    mochaTest: {
-      unit: {
-        src: [
-          'webapp/tests/mocha/unit/**/*.spec.js',
-          'webapp/tests/mocha/unit/*.spec.js',
-          'api/tests/mocha/**/*.js',
-          'sentinel/tests/**/*.js',
-        ],
-      },
-      'api-integration': {
-        src: 'api/tests/integration/**/*.js',
-        options: {
-          timeout: 10000,
-        },
-      },
-      api: {
-        src: [
-          'api/tests/mocha/**/*.js'
-        ],
-      },
-      sentinel: {
-        src: [
-          'sentinel/tests/**/*.js'
-        ],
       }
     },
     ngtemplates: {
@@ -816,25 +786,24 @@ module.exports = function(grunt) {
   grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
     'exec:check-env-vars',
     'exec:npm-ci-api',
-    'mochaTest:api-integration',
+    'exec:mocha-integration-api',
   ]);
 
   grunt.registerTask('unit', 'Unit tests', [
-    'env:unit-test',
     'unit-webapp-no-dependencies',
     'unit-admin',
     'exec:shared-lib-unit',
-    'mochaTest:unit',
+    'exec:mocha-unit-webapp',
+    'exec:mocha-unit-api',
+    'exec:mocha-unit-sentinel',
   ]);
 
   grunt.registerTask('unit-api', 'API unit tests', [
-    'env:unit-test',
-    'mochaTest:api',
+    'exec:mocha-unit-api',
   ]);
 
   grunt.registerTask('unit-sentinel', 'Sentinel unit tests', [
-    'env:unit-test',
-    'mochaTest:sentinel',
+    'exec:mocha-unit-sentinel',
   ]);
 
   // CI tasks
@@ -849,7 +818,7 @@ module.exports = function(grunt) {
     'static-analysis',
     'install-dependencies',
     'build',
-    'mochaTest:api-integration',
+    'exec:mocha-integration-api',
     'unit',
   ]);
 
