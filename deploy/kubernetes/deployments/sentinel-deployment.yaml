@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     cht.service: sentinel
-  name: sentinel
+  name: cht-sentinel
 spec:
   replicas: 1
   selector:

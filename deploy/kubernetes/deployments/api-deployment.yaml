@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     cht.service: api
-  name: api
+  name: cht-api
 spec:
   replicas: 1
   selector:

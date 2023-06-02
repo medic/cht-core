@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     cht.service: healthcheck
-  name: healthcheck
+  name: cht-haproxy-healthcheck
 spec:
   replicas: 1
   selector:
@@ -33,7 +33,7 @@ spec:
                   name: cht-couchdb-credentials
                   key: COUCHDB_USER
           image: public.ecr.aws/s5s3h4s7/cht-haproxy-healthcheck:{{ .Values.chtversion }}-{{ .Values.chtversion }}
-          name: healthcheck
+          name: cht-haproxy-healthcheck
           resources: {}
           ports:
             - containerPort: 5555
