@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     cht.service: sentinel
-  name: sentinel
+  name: cht-sentinel
 spec:
   replicas: 1
   selector:
@@ -25,7 +25,7 @@ spec:
                   name: cht-couchdb-credentials
                   key: COUCH_URL
           image: public.ecr.aws/s5s3h4s7/cht-sentinel:{{ .Values.chtversion }}-{{ .Values.chtversion }}
-          name: sentinel
+          name: cht-sentinel
           resources: {}
       restartPolicy: Always
 status: {}
