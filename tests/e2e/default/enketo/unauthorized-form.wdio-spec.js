@@ -1,10 +1,10 @@
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const genericFormPage = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const customTypeFactory = require('../../../factories/cht/contacts/custom_type');
-const utils = require('../../../utils');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const genericFormPage = require('@page-objects/default/enketo/generic-form.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const customTypeFactory = require('@factories/cht/contacts/custom_type');
+const utils = require('@utils');
 
 describe('Unauthorized form', () => {
 

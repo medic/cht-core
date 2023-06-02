@@ -1,15 +1,15 @@
 const Faker = require('@faker-js/faker').faker;
 const _ = require('lodash');
 
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const userFactory = require('../../../factories/cht/users/users');
-const utils = require('../../../utils');
-const browserUtils = require('../../../utils/browser');
-const sentinelUtils = require('../../../utils/sentinel');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
+const utils = require('@utils');
+const browserUtils = require('@utils/browser');
+const sentinelUtils = require('@utils/sentinel');
 
 const MIGRATION_FLAG_ID = '_local/migration-checkpointer';
 
