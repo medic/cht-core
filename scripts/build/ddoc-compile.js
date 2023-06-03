@@ -32,8 +32,8 @@ const getCommand = () => {
 };
 
 const compile = async (inputDir, outputFile) => {
-  const docs = Object.values(await couchCompile(inputDir));
-  await writeFile(outputFile, JSON.stringify({ docs }, null, 2));
+  const ddoc = await couchCompile(inputDir);
+  await writeFile(outputFile, JSON.stringify({ docs: [ ddoc ] }, null, 2));
   console.log('ddoc compiled successfully');
 };
 
