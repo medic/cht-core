@@ -4,7 +4,7 @@ const { writeFile } = require('node:fs/promises');
 
 const compilePrimary = async () => {
   await compile(
-    [
+    [ // todo: scan directory?
       'build/ddocs/medic-db/medic',
       'build/ddocs/medic-db/medic-admin',
       'build/ddocs/medic-db/medic-client',
