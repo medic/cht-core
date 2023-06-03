@@ -167,7 +167,7 @@ module.exports = function(grunt) {
       'compile-ddocs-secondary': 'node ./scripts/build/ddoc-compile.js secondary',
       'uglify-api':
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/script.js -o api/build/static/login/script.js && ' +
-        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/lib-browser.js -o api/build/static/login/lib-browser.js',
+        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js',
       'uglify-admin':
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && ' +
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js',
