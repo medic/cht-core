@@ -209,7 +209,7 @@ get_global_running_container_count(){
 
 get_system_and_docker_info(){
   info='Service Status Container Image'
-  services="cht-upgrade-service haproxy healthcheck api sentinel nginx"
+  services="cht-upgrade-service haproxy healthcheck api sentinel nginx couchdb"
   IFS=' ' read -ra servicesArray <<<"$services"
   for service in "${servicesArray[@]}"; do
     image=$(service_has_image_downloaded ${service})
