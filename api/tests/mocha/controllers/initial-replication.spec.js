@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const sinon = require('sinon');
-const controller = require('../../../src/controllers/initial-replication');
+const controller = require('../../../src/controllers/replication');
 const initialReplicationService = require('../../../src/services/initial-replication');
 const serverUtils = require('../../../src/server-utils');
 

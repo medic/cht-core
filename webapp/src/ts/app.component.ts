@@ -405,7 +405,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       callback: () => {
         if (!this.dbSyncService.isSyncInProgress()) {
           this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.required });
-          this.dbSyncService.sync();
+          this.dbSyncService.sync(false, true);
         }
       },
     });

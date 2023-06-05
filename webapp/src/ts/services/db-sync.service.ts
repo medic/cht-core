@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Subject } from 'rxjs';
+import { lastValueFrom, Subject } from 'rxjs';
 import { Store } from '@ngrx/store';
 
 import { SessionService } from '@mm-services/session.service';
@@ -14,6 +14,7 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
+import { HttpClient } from '@angular/common/http';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -22,6 +23,7 @@ const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
+const BATCH_SIZE = 100;
 
 const readOnlyFilter = function(doc) {
   // Never replicate "purged" documents upwards
@@ -78,29 +80,23 @@ export class DBSyncService {
     private translateService:TranslateService,
     private purgeService:PurgeService,
     private migrationsService:MigrationsService,
+    private http:HttpClient,
   ) {
     this.globalActions = new GlobalActions(store);
   }
 
-  private readonly DIRECTIONS = [
-    {
-      name: 'to',
+  private readonly DIRECTIONS = {
+    to: {
       options: {
         filter: readOnlyFilter,
       },
-      allowed: () => this.authService.has('can_edit'),
       onDenied: (err?) => this.dbSyncRetryService.retryForbiddenFailure(err),
     },
-    {
-      name: 'from',
-      options: {
-        heartbeat: 10000, // 10 seconds
-        timeout: 1000 * 60 * 10, // 10 minutes
-      },
-      allowed: () => Promise.resolve(true),
-      onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
+    from: {
+      // todo
+      //onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
     }
-  ];
+  }
 
   private globalActions: GlobalActions;
   private inProgressSync;
@@ -117,7 +113,7 @@ export class DBSyncService {
     return !this.sessionService.isOnlineOnly();
   }
 
-  private replicate(direction, { batchSize=100 }={}) {
+  private replicate(direction, { batchSize=BATCH_SIZE }={}) {
     const telemetryEntry = new DbSyncTelemetry(
       this.telemetryService,
       'medic',
@@ -161,14 +157,49 @@ export class DBSyncService {
       });
   }
 
-  private replicateIfAllowed(direction) {
-    return direction.allowed().then(allowed => {
-      if (!allowed) {
-        // not authorized to replicate - that's ok, skip silently
-        return;
-      }
-      return this.replicate(direction);
-    });
+  private async replicateTo() {
+    if (!await this.authService.has('can_edit')) {
+      // not authorized to replicate - that's ok, skip silently
+      return;
+    }
+
+    return this.replicate(this.DIRECTIONS.to);
+  }
+
+  private async downloadDocsBatch (batch) {
+    if (!batch.length) {
+      return;
+    }
+
+    const res = await this.dbService.get({ remote: true }).bulkGet({ docs: batch, attachments: true });
+    const docs = res.results
+      .map(result => result.docs && result.docs[0] && result.docs[0].ok)
+      .filter(doc => doc);
+    await this.dbService.get().bulkDocs(docs, { new_edits: false });
+  }
+
+  private async replicateFrom() {
+    const getIdsReq = this.http.get<{ doc_ids_revs: { id; rev }[]}>(
+      '/api/v1/replication/get-ids',
+      { responseType: 'json' }
+    );
+    const remoteDocIdsRevs = (await lastValueFrom(getIdsReq)).doc_ids_revs;
+    const remoteDocsMap = {};
+    remoteDocIdsRevs.forEach(({ id, rev }) => remoteDocsMap[id] = rev);
+
+    const localDocs = await this.dbService.get().allDocs();
+    const localDocMap = {};
+    localDocs.rows.forEach(row => localDocMap[row.id] = row.value && row.value.rev);
+
+    const docIdRevsToDownload = remoteDocIdsRevs
+      .filter(({ id, rev }) => !localDocMap[id] || localDocMap[id] !== rev);
+    do {
+      const batch = docIdRevsToDownload.splice(0, BATCH_SIZE);
+      await this.downloadDocsBatch(batch);
+    } while (docIdRevsToDownload.length > 0);
+
+    const toDelete = localDocs.rows.filter(row => !remoteDocsMap[row.id]);
+
   }
 
   private getCurrentSeq() {
@@ -183,58 +214,63 @@ export class DBSyncService {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
 
-  private syncMedic(force?) {
+  private async syncMedic(force?, quick?) {
     if (!this.knownOnlineState && !force) {
       return Promise.resolve();
     }
 
-    this.checkDateService.check();
+    await this.checkDateService.check();
 
-    if (!this.inProgressSync) {
-      this.inProgressSync = Promise
-        .all(this.DIRECTIONS.map(direction => this.replicateIfAllowed(direction)))
-        .then(errs => {
-          return this.getCurrentSeq().then(currentSeq => {
-            errs = errs.filter(err => err);
-            let syncState: SyncState = { to: SyncStatus.Success, from: SyncStatus.Success };
-            if (!errs.length) {
-              // no errors
-              this.syncIsRecent = true;
-              window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
-
-            } else if (currentSeq === this.getLastReplicatedSeq()) {
-              // no changes to send, but may have some to receive
-              syncState = { state: SyncStatus.Unknown };
-            } else {
-              // definitely need to sync something
-              errs.forEach((directionName: 'to' | 'from') => {
-                syncState[directionName] = SyncStatus.Required;
-              });
-            }
-            if (syncState.to === SyncStatus.Success) {
-              window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
-            }
-            return syncState;
-          });
-        })
-        .then(syncState => {
-          return this.purgeService.updateDocsToPurge()
-            .catch(err => console.warn('Error updating to purge list', err))
-            .then(() => syncState);
-        })
-        .then(syncState => {
-          if (force) {
-            this.displayUserFeedback(syncState);
-          }
-          this.sendUpdate(syncState);
-        })
-        .finally(() => {
-          this.inProgressSync = undefined;
-        });
+    if (this.inProgressSync) {
+      this.sendUpdate({ state: SyncStatus.InProgress });
+      return this.inProgressSync;
     }
 
-    this.sendUpdate({ state: SyncStatus.InProgress });
-    return this.inProgressSync;
+    try {
+      const replicationErrors = {
+        to: await this.replicateTo(),
+        from: undefined,
+      };
+      if (force || !quick) {
+        replicationErrors.from = await this.replicateFrom();
+      }
+
+      const currentSeq = await this.getCurrentSeq();
+      let syncState: SyncState = { to: SyncStatus.Success, from: SyncStatus.Success };
+      if (replicationErrors.to || replicationErrors.from) {
+        // no errors
+        this.syncIsRecent = true;
+        window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
+
+      } else if (currentSeq === this.getLastReplicatedSeq()) {
+        // no changes to send, but may have some to receive
+        syncState = { state: SyncStatus.Unknown };
+      } else {
+        // definitely need to sync something
+        Object.keys(replicationErrors).forEach((directionName: 'to' | 'from') => {
+          syncState[directionName] = SyncStatus.Required;
+        });
+      }
+      if (syncState.to === SyncStatus.Success) {
+        window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
+      }
+
+      try {
+        await this.purgeService.updateDocsToPurge();
+      } catch (err) {
+        console.warn('Error updating to purge list', err)
+      }
+
+      if (force) {
+        this.displayUserFeedback(syncState);
+      }
+      this.sendUpdate(syncState);
+
+      this.sendUpdate({ state: SyncStatus.InProgress });
+      return this.inProgressSync;
+    } finally {
+      this.inProgressSync = undefined;
+    }
   }
 
   private syncMeta() {
@@ -335,7 +371,7 @@ export class DBSyncService {
   *
   * @returns Promise which resolves when both directions of the replication complete.
   */
-  async sync(force?) {
+  async sync(force?, quick?) {
     if (!this.isEnabled()) {
       this.sendUpdate({ state: SyncStatus.Disabled });
       return Promise.resolve();
@@ -354,7 +390,7 @@ export class DBSyncService {
     }
 
     this.resetSyncInterval();
-    return this.syncMedic(force);
+    return this.syncMedic(force, quick);
   }
 }
 

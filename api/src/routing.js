@@ -62,7 +62,7 @@ const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const dbDocHandler = require('./controllers/db-doc');
 const extensionLibs = require('./controllers/extension-libs');
-const initialReplication = require('./controllers/initial-replication');
+const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
 const MAX_REQUEST_SIZE = '32mb';
 
@@ -663,7 +663,20 @@ app.get(
   '/api/v1/initial-replication/get-ids',
   authorization.handleAuthErrors,
   authorization.onlineUserPassThrough,
-  initialReplication.getDocIds,
+  replication.getDocIds,
+);
+app.get(
+  '/api/v1/replication/get-ids',
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  replication.getDocIds,
+);
+app.post(
+  '/api/v1/replication/get-deletes',
+  jsonParser,
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  replication.getDocIdsToDelete,
 );
 
 const metaPathPrefix = `/${environment.db}-user-*-meta/`;

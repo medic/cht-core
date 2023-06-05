@@ -25,8 +25,33 @@ const setLocale = (userCtx) => {
   translator.setLocale(userCtx.locale);
 };
 
+const displayTooManyDocsWarning = ({ warn_docs, limit }) => {
+  return new Promise(resolve => {
+    const translateParams = { count: warn_docs, limit: limit };
+    const errorMessage = translator.translate('TOO_MANY_DOCS', translateParams);
+    const continueBtn = translator.translate('CONTINUE');
+    const abort = translator.translate('ABORT');
+    const content = `
+            <div>
+              <p class="alert alert-warning">${errorMessage}</p>
+              <a id="btn-continue" class="btn btn-primary pull-left" href="#">${continueBtn}</a>
+              <a id="btn-abort" class="btn btn-danger pull-right" href="#">${abort}</a>
+            </div>`;
+
+    $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
+    $('.bootstrap-layer .error').show();
+    $('.bootstrap-layer .error').html(content);
+    $('#btn-continue').click(() => resolve());
+    $('#btn-abort').click(() => {
+      document.cookie = 'login=force;path=/';
+      window.location.reload(false);
+    });
+  });
+};
+
 module.exports = {
   setUiError,
   setUiStatus,
   setLocale,
+  displayTooManyDocsWarning,
 };

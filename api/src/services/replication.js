@@ -33,6 +33,15 @@ const getDocIdsRevPairs = async (docIds) => {
     .map(row => ({ id: row.id, rev: row.value.rev }));
 };
 
+const getDocIdsToDelete = async (docIds) => {
+  const result = await db.medic.allDocs({ keys: docIds });
+  const toDelete = result.rows
+    .filter(row => row.error === 'deleted' || (row.value && row.value.deleted))
+    .map(row => row.key);
+
+
+};
+
 module.exports = {
   getDocIdsRevPairs,
   getContext,

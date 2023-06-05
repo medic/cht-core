@@ -1,6 +1,5 @@
 const utils = require('./utils');
-const translator = require('./translator');
-const { setUiStatus } = require('./ui-status');
+const { setUiStatus, displayTooManyDocsWarning } = require('./ui-status');
 
 let docIdsRevs;
 let lastSeq;
@@ -50,36 +49,12 @@ const getDataUsage = () => {
   }
 };
 
-const displayTooManyDocsWarning = ({ warn_docs, limit }) => {
-  return new Promise(resolve => {
-    const translateParams = { count: warn_docs, limit: limit };
-    const errorMessage = translator.translate('TOO_MANY_DOCS', translateParams);
-    const continueBtn = translator.translate('CONTINUE');
-    const abort = translator.translate('ABORT');
-    const content = `
-            <div>
-              <p class="alert alert-warning">${errorMessage}</p>
-              <a id="btn-continue" class="btn btn-primary pull-left" href="#">${continueBtn}</a>
-              <a id="btn-abort" class="btn btn-danger pull-right" href="#">${abort}</a>
-            </div>`;
-
-    $('.bootstrap-layer .loader, .bootstrap-layer .status').hide();
-    $('.bootstrap-layer .error').show();
-    $('.bootstrap-layer .error').html(content);
-    $('#btn-continue').click(() => resolve());
-    $('#btn-abort').click(() => {
-      document.cookie = 'login=force;path=/';
-      window.location.reload(false);
-    });
-  });
-};
-
 const getMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
   const localDocs = await getLocalDocList(localDb);
   return remoteDocIdsRevs.filter(({ id, rev }) => !localDocs[id] || localDocs[id] !== rev);
 };
 
-const getDownloadList = async (localDb) => {
+const getDownloadList = async (localDb = true) => {
   const response = await utils.fetchJSON('/api/v1/initial-replication/get-ids');
 
   docIdsRevs = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
