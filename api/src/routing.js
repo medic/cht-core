@@ -504,9 +504,9 @@ app.putJson('/api/v1/settings', settings.put);
 app.get('/api/couch-config-attachments', couchConfigController.getAttachments);
 
 app.post(
-  '/purging-config/dry-run',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
+  '/api/v1/purging-config/dry-run',
+  // authorization.handleAuthErrors,
+  // authorization.onlineUserPassThrough,
   jsonParser,
   purgingConfigController.dryRun,
 );

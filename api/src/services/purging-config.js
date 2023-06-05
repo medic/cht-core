@@ -5,7 +5,6 @@ const logger = require('../logger');
 const config = require('../config');
 
 const purgeDbs = {};
-const MAX_BATCH_SIZE = 20 * 1000;
 
 const parsePurgeFn = (purgeFnString) => {
   let purgeFn;
@@ -100,41 +99,37 @@ const getAlreadyPurgedDocs = (roleHashes, ids) => {
       return purged;
     });
 };
-const updatePurgedDocs = (rolesHashes, ids, alreadyPurged, toPurge) => {
-  const docs = {};
+const getPurgingChangesCounts = (rolesHashes, ids, alreadyPurged, toPurge) => {
+  let wontChangeCount = 0;
+  let willPurgeCount = 0;
+  let willUnpurgeCount = 0;
 
   ids.forEach(id => {
     rolesHashes.forEach(hash => {
-      docs[hash] = docs[hash] || [];
-
       const isPurged = alreadyPurged[hash][id];
       const shouldPurge = toPurge[hash][id];
 
       // do nothing if purge state is unchanged
       if (!!isPurged === !!shouldPurge) {
+        wontChangeCount++;
         return;
       }
 
       if (isPurged) {
-        docs[hash].push({ _id: serverSidePurgeUtils.getPurgedId(id), _rev: isPurged, _deleted: true });
+        willUnpurgeCount++;
       } else {
-        docs[hash].push({ _id: serverSidePurgeUtils.getPurgedId(id) });
+        willPurgeCount++;
       }
     });
   });
 
-  return Promise.all(rolesHashes.map(hash => {
-    if (!docs[hash] || !docs[hash].length) {
-      return Promise.resolve([]);
-    }
-    // TODO: don't edit the db, just estimate how many docs *would* change
-    return getPurgeDb(hash).bulkDocs({ docs: docs[hash] });
-  }));
+  return {
+    wontChangeCount,
+    willPurgeCount,
+    willUnpurgeCount,
+  };
 };
-const batchedPurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
-  let nextKey = false;
-  let nextKeyDocId = false;
-  let nextBatch = false;
+const simulatePurge = (getBatch, getIdsToPurge, roles) => {
   const rows = [];
   const docIds = [];
   const rolesHashes = Object.keys(roles);
@@ -142,12 +137,6 @@ const batchedPurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
   return getBatch()
     .then(result => {
       result.rows.forEach(row => {
-        if (row.id === startKeyDocId) {
-          return;
-        }
-
-        ({ id: nextKeyDocId, key: nextKey } = row);
-        nextBatch = true;
         docIds.push(row.id);
         rows.push(row);
       });
@@ -156,24 +145,15 @@ const batchedPurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
     })
     .then(alreadyPurged => {
       const toPurge = getIdsToPurge(rolesHashes, rows);
-      return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
-    })
-    .then(() => ({ nextKey, nextKeyDocId, nextBatch }));
+      return getPurgingChangesCounts(rolesHashes, docIds, alreadyPurged, toPurge);
+    });
 };
 const countPurgedUnallocatedRecords = async (roles, purgeFn) => {
-  let startKeyDocId = '';
-  let startKey = '';
-  let nextBatch;
-
-  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () => db.queryMedic('medic/docs_by_replication_key', {
-    limit: MAX_BATCH_SIZE,
-    key: JSON.stringify('_unassigned'),
-    startkey_docid: startKeyDocId,
-    include_docs: true
-  });
   const permissionSettings = config.get('permissions');
-
+  const getBatch = () =>  db.medic.query('medic/docs_by_replication_key', {
+    key: '_unassigned',
+    include_docs: true,
+  });
   const getIdsToPurge = (rolesHashes, rows) => {
     const toPurge = {};
     rows.forEach(row => {
@@ -194,11 +174,7 @@ const countPurgedUnallocatedRecords = async (roles, purgeFn) => {
     return toPurge;
   };
 
-  do {
-    logger.info(`Purging: Starting "unallocated reports" purge batch with id "${startKeyDocId}"`);
-    const result = await batchedPurge(getBatch, getIdsToPurge, roles, startKeyDocId, startKey);
-    ({ nextKey: startKey, nextKeyDocId: startKeyDocId, nextBatch } = result);
-  } while (nextBatch);
+  return await simulatePurge(getBatch, getIdsToPurge, roles);
 };
 
 const dryRun = async (purgeFnString) => {
@@ -214,7 +190,7 @@ const dryRun = async (purgeFnString) => {
   const roles = await getRoles();
   await initPurgeDbs(roles);
 
-  // purgeContacts(roles, purgeFn)
+  // countPurgedContacts(roles, purgeFn)
   await countPurgedUnallocatedRecords(roles, purgeFn);
 
   const documentsPurged = 0;
