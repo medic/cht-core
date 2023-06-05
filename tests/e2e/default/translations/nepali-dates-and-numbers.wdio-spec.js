@@ -209,10 +209,10 @@ describe('Bikram Sambat date display', () => {
     const relativeDateLocale = moment.localeData().relativeTime(devanagari(years), true, 'yy', false);
     const relativeDateLocaleSuffix = moment.localeData().pastFuture(years * -1, relativeDateLocale);
 
-    // space between prefix and the date is &nbsp;
-    expect(await contactsPage.getContactSummaryField('dateOfDeath')).to.match(
-      new RegExp(`contact\\.deceased\\.date\\.prefix[\\s\\h]${relativeDateLocale}`)
-    );
+    const dateOfDeath = await contactsPage.getContactSummaryField('dateOfDeath');
+    expect(dateOfDeath).to.not.be.undefined;
+    // Space between prefix and the date is &nbsp;
+    expect(dateOfDeath.replace(/\s/g, ' ').trim()).to.equal('contact.deceased.date.prefix १३ बर्ष अगाडि');
     expect(await contactsPage.getContactSummaryField('age')).to.equal(relativeDateLocale);
     expect(await contactsPage.getContactSummaryField('dayMonth')).to.equal(`${bkDay} ${bkMonth}`);
     expect(await contactsPage.getContactSummaryField('relativeDate')).to.equal(relativeDateSuffix);
