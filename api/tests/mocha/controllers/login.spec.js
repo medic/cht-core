@@ -14,8 +14,6 @@ const { tokenLogin, roles, users } = require('@medic/user-management')(config, d
 const request = require('request-promise-native');
 const template = require('../../../src/services/template');
 const fs = require('fs');
-const DB_NAME = 'lg';
-const DDOC_NAME = 'medic';
 
 let controller;
 
@@ -50,11 +48,7 @@ describe('login controller', () => {
       setHeader: () => {}
     };
 
-    sinon.stub(environment, 'db').get(() => DB_NAME);
-    sinon.stub(environment, 'ddoc').get(() => DDOC_NAME);
-    sinon.stub(environment, 'protocol').get(() => 'http');
-    sinon.stub(environment, 'host').get(() => 'test.com');
-    sinon.stub(environment, 'port').get(() => 1234);
+    sinon.stub(environment, 'serverUrlNoAuth').get(() => 'http://test.com:1234');
     sinon.stub(environment, 'isTesting').get(() => false);
 
     sinon.stub(roles, 'isOnlineOnly').returns(false);

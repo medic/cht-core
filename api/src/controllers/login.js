@@ -1,6 +1,7 @@
 const path = require('path');
 const request = require('request-promise-native');
 const _ = require('lodash');
+const url = require('node:url');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
@@ -66,13 +67,13 @@ const getRedirectUrl = (userCtx, requested) => {
     return root;
   }
   try {
-    requested = new URL('/', requested);
+    requested = url.resolve('/', requested);
   } catch (e) {
     // invalid url - return the default
     return root;
   }
-  const parsed = new URL(requested);
-  return parsed.path + (parsed.hash || '');
+  const parsed = new URL(requested, 'resolve://');
+  return parsed.pathname + (parsed.hash || '');
 };
 
 const getEnabledLocales = () => {
