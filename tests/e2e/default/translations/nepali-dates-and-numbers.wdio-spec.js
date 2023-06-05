@@ -212,7 +212,7 @@ describe('Bikram Sambat date display', () => {
     const dateOfDeath = await contactsPage.getContactSummaryField('dateOfDeath');
     expect(dateOfDeath).to.not.be.undefined;
     // Space between prefix and the date is &nbsp;
-    expect(dateOfDeath.replace(/\s/g, ' ').trim()).to.equal('contact.deceased.date.prefix १३ बर्ष अगाडि');
+    expect(dateOfDeath.replace(/\s|\n/g, ' ').trim()).to.equal('contact.deceased.date.prefix १३ बर्ष अगाडि');
     expect(await contactsPage.getContactSummaryField('age')).to.equal(relativeDateLocale);
     expect(await contactsPage.getContactSummaryField('dayMonth')).to.equal(`${bkDay} ${bkMonth}`);
     expect(await contactsPage.getContactSummaryField('relativeDate')).to.equal(relativeDateSuffix);
