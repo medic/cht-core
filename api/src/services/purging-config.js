@@ -190,14 +190,21 @@ const dryRun = async (purgeFnString) => {
   const roles = await getRoles();
   await initPurgeDbs(roles);
 
-  // countPurgedContacts(roles, purgeFn)
-  await countPurgedUnallocatedRecords(roles, purgeFn);
+  // const ddd = await countPurgedContacts(roles, purgeFn);
+  const unallocatedRecords = await countPurgedUnallocatedRecords(roles, purgeFn);
 
-  const documentsPurged = 0;
-  const contactsPurged = 0;
+  // TODO: maybe breakdown unallocatedRecords/contacts/reports/tasks/...
+  let wontChangeCount = 0;
+  wontChangeCount += unallocatedRecords.wontChangeCount;
+  let willPurgeCount = 0;
+  willPurgeCount += unallocatedRecords.willPurgeCount;
+  let willUnpurgeCount = 0;
+  willUnpurgeCount += unallocatedRecords.willUnpurgeCount;
+
+  // TODO: parse cron like in `scheduling.js`
   const nextRun = new Date().toISOString();
 
-  return { documentsPurged, contactsPurged, nextRun };
+  return { wontChangeCount, willPurgeCount, willUnpurgeCount, nextRun };
 };
 
 module.exports = {
