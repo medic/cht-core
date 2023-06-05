@@ -40,7 +40,7 @@
 |e2e/protractor/target-aggregates.spec.js	| Done | Bede/Lorena | [#8059](https://github.com/medic/cht-core/pull/8059) |	|
 |e2e/protractor/cht/pregnancy.spec.js	|Done	|Tatiana	|[#7844](https://github.com/medic/cht-core/pull/7844)	|	|
 |mobile/common/common.specs.js	|Done	|Lorena	|	[#8255](https://github.com/medic/cht-core/pull/8255)|	|
-|mobile/content-security-policy.specs.js	|	|	|	|	|
+|mobile/content-security-policy.specs.js	|Done	|Lorena	|	|	|
 |mobile/docs-by-replication-key-view.js	|Done	|Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|
 |mobile/login/login.specs.js	|	|	|	|	|
 |mobile/medic-collect.specs.js	| Done	|Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|
