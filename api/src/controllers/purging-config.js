@@ -14,12 +14,13 @@ module.exports = {
     }
 
     return auth.check(req, ['can_edit', 'can_configure'])
-      .then(purgingConfig.dryRun(purgeFn))
-      .then(({ documentsPurged, contactsPurged, nextRun }) => {
-        res.json({
+      .then(() => purgingConfig.dryRun(purgeFn))
+      .then(({ wontChangeCount, willPurgeCount, willUnpurgeCount, nextRun }) => {
+        return res.json({
           next_run: nextRun,
-          documents_purged: documentsPurged,
-          contacts_purged: contactsPurged,
+          wont_change_count: wontChangeCount,
+          will_purge_count: willPurgeCount,
+          will_unpurge_count: willUnpurgeCount,
         });
       })
       .catch(err => serverUtils.serverError(err, req, res));
