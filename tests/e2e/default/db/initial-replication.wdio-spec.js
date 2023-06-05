@@ -1,16 +1,16 @@
 const _ = require('lodash');
 
-const utils = require('../../../utils');
-const browserUtils = require('../../../utils/browser');
-const sentinelUtils = require('../../../utils/sentinel');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const deliveryFactory = require('../../../factories/cht/reports/delivery');
-const pregnancyFactory = require('../../../factories/cht/reports/pregnancy');
-const pregnancyVisitFactory = require('../../../factories/cht/reports/pregnancy-visit');
+const utils = require('@utils');
+const browserUtils = require('@utils/browser');
+const sentinelUtils = require('@utils/sentinel');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const deliveryFactory = require('@factories/cht/reports/delivery');
+const pregnancyFactory = require('@factories/cht/reports/pregnancy');
+const pregnancyVisitFactory = require('@factories/cht/reports/pregnancy-visit');
 
 const LOCAL_LOG = '_local/initial-replication';
 

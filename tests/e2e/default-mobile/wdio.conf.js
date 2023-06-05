@@ -9,6 +9,8 @@ exports.config = Object.assign(wdioBaseConfig.config, {
     '**/*.wdio-spec.js',
     [
       '../default/login/login-logout.wdio-spec.js',
+      '../default/navigation/navigation.wdio-spec.js',
+      '../default/navigation/hamburger-menu.wdio-spec.js',
     ],
   ],
   beforeSuite: async () => {
