@@ -23,7 +23,8 @@
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
     "standard-wdio": "wdio run ./tests/e2e/standard/wdio.conf.js",
     "default-wdio-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
-    "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && grunt build-service-images && grunt create-local-docker-compose-files"
+    "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && grunt build-service-images && grunt create-local-docker-compose-files",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^15.0.0",
@@ -143,7 +144,8 @@
     "typescript": "4.8",
     "uuid": "^8.3.2",
     "webpack-bundle-analyzer": "^4.7.0",
-    "zone.js": "^0.11.8"
+    "zone.js": "^0.11.8",
+    "husky": "^8.0.0"
   },
   "bundlesize": [
     {

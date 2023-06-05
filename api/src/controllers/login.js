@@ -167,8 +167,7 @@ const setCookies = (req, res, sessionRes) => {
     throw { status: 401, error: 'Not logged in' };
   }
   const options = { headers: { Cookie: sessionCookie } };
-  return auth
-    .getUserCtx(options)
+  return getUserCtxRetry(options)
     .then(userCtx => {
       cookie.setSession(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
@@ -197,6 +196,19 @@ const setCookies = (req, res, sessionRes) => {
 const renderTokenLogin = (req, res) => {
   return render('tokenLogin', req, { tokenUrl: req.url })
     .then(body => res.send(body));
+};
+
+const getUserCtxRetry = async (options, retry = 10) => {
+  try {
+    return await auth.getUserCtx(options);
+  } catch (err) {
+    // in a clustered setup, requesting session immediately after changing a password might 401
+    if (retry > 0 && err && err.code === 401) {
+      await new Promise(r => setTimeout(r, 10));
+      return getUserCtxRetry(options, --retry);
+    }
+    throw err;
+  }
 };
 
 const createSessionRetry = (req, retry=10) => {

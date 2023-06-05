@@ -1,6 +1,6 @@
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const adminPage = require('../../../page-objects/default/admin/admin.wdio.page');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 
 describe('Enabling/disabling languages', () => {
   before(async () => {
