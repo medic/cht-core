@@ -141,7 +141,6 @@ const getTokenLoginDocId = token => `token:login:${token}`;
  *
  * @param {Object} user - the _users doc
  * @param {Object} user.token_login - token-login information
- * @param {Boolean} user.token_login.active - whether the token-login is active or not
  * @param {String} user.token_login.token - the current token
  * @returns {Promise}
  */

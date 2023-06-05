@@ -140,13 +140,11 @@ const getSessionCookie = res => {
 const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
+  const url = new URL('/_session', environment.serverUrl);
+  url.username = '';
+  url.password = '';
   return request.post({
-    url: url.format({
-      protocol: environment.protocol,
-      hostname: environment.host,
-      port: environment.port,
-      pathname: '_session',
-    }),
+    url: url.toString(),
     json: true,
     resolveWithFullResponse: true,
     simple: false, // doesn't throw an error on non-200 responses
@@ -172,8 +170,7 @@ const setCookies = (req, res, sessionRes) => {
     throw { status: 401, error: 'Not logged in' };
   }
   const options = { headers: { Cookie: sessionCookie } };
-  return auth
-    .getUserCtx(options)
+  return getUserCtxRetry(options)
     .then(userCtx => {
       cookie.setSession(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
@@ -202,6 +199,19 @@ const setCookies = (req, res, sessionRes) => {
 const renderTokenLogin = (req, res) => {
   return render('tokenLogin', req, { tokenUrl: req.url })
     .then(body => res.send(body));
+};
+
+const getUserCtxRetry = async (options, retry = 10) => {
+  try {
+    return await auth.getUserCtx(options);
+  } catch (err) {
+    // in a clustered setup, requesting session immediately after changing a password might 401
+    if (retry > 0 && err && err.code === 401) {
+      await new Promise(r => setTimeout(r, 10));
+      return getUserCtxRetry(options, --retry);
+    }
+    throw err;
+  }
 };
 
 const createSessionRetry = (req, retry=10) => {

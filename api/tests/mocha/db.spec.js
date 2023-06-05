@@ -22,6 +22,7 @@ describe('db', () => {
 
   afterEach(() => {
     process.env.UNIT_TEST_ENV = unitTestEnv;
+    sinon.restore();
   });
 
   describe('saveDocs', () => {
