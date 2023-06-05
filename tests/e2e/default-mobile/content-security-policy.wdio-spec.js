@@ -2,7 +2,7 @@ const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 describe('Content Security Policy', () => {
-  let logEntries = [];
+  const logEntries = [];
   const getBrowserLogs = async (logLevels) => {
     try {
       await browser.url('/');
