@@ -209,18 +209,12 @@ describe('Bikram Sambat date display', () => {
     const relativeDateLocale = moment.localeData().relativeTime(devanagari(years), true, 'yy', false);
     const relativeDateLocaleSuffix = moment.localeData().pastFuture(years * -1, relativeDateLocale);
 
-    commonPage.waitForPageLoaded();
-    const windowSize = await browser.getWindowSize();
-    console.log('windowSize', windowSize);
     const dateOfDeath = await contactsPage.getContactSummaryField('dateOfDeath');
-    console.log('dateOfDeath', Array.from(dateOfDeath).map(letter => letter.charCodeAt(0)));
-    // Space between prefix and the date is &nbsp;
-    const expectedDateOfDeath = new RegExp(`contact\\.deceased\\.date\\.prefix[\\s\\h]${relativeDateLocale}`);
-
-    commonPage.waitForPageLoaded();
-
+    // This text has &nbsp; which wdio is translating in different ways -> Local: just spaces, CI: spaces and new line
+    const expectedDateOfDeath = new RegExp(`contact\\.deceased\\.date\\.prefix[\\s\\h|\\s\\h\\n]${relativeDateLocale}`);
     expect(dateOfDeath).to.not.be.undefined;
     expect(dateOfDeath).to.match(expectedDateOfDeath);
+
     expect(await contactsPage.getContactSummaryField('age')).to.equal(relativeDateLocale);
     expect(await contactsPage.getContactSummaryField('dayMonth')).to.equal(`${bkDay} ${bkMonth}`);
     expect(await contactsPage.getContactSummaryField('relativeDate')).to.equal(relativeDateSuffix);
