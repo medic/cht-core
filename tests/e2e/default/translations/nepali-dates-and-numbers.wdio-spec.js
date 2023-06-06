@@ -210,7 +210,8 @@ describe('Bikram Sambat date display', () => {
     const relativeDateLocaleSuffix = moment.localeData().pastFuture(years * -1, relativeDateLocale);
 
     commonPage.waitForPageLoaded();
-
+    const windowSize = await browser.getWindowSize();
+    console.log("windowSize", windowSize);
     const dateOfDeath = await contactsPage.getContactSummaryField('dateOfDeath');
     console.log("dateOfDeath", Array.from(dateOfDeath).map(letter => letter.charCodeAt(0)));
     // Space between prefix and the date is &nbsp;
