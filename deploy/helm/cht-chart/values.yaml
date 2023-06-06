@@ -10,7 +10,7 @@ couchdb:
   node2_storageSize: 100Mi
   node3_storageSize: 100Mi
   single_node_storageSize: 100Mi  #For when clusteredCouch is disabled
-toleration:
+toleration:   # This is for the couchdb pods. Don't change this unless you know what you're doing.
   key: "dev-couchdb-only"
   operator: "Equal"
   value: "true"
@@ -22,7 +22,7 @@ ingress:
     certificate: "arn:aws:iam::<account-id>:server-certificate/2023-wildcard-dev-medicmobile-org-chain"
   host: "gamma-cht.dev.medicmobile.org"
 
-environment: "local"  # or "remote"
+environment: "local"  # "local" or "remote"
 
 local:
   namespace: "default"
