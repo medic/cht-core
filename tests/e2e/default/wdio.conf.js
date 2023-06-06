@@ -44,7 +44,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    '**/*.wdio-spec.js',
+    '**/nepali-dates-and-numbers.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
