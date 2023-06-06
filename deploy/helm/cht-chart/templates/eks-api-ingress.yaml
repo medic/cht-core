@@ -1,3 +1,5 @@
+{{- if eq .Values.environment "remote" }}
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -24,3 +26,4 @@ spec:
                 name: api
                 port:
                   number: 5988
+{{- end }}
