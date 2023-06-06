@@ -212,6 +212,9 @@ describe('Bikram Sambat date display', () => {
     const dateOfDeath = await contactsPage.getContactSummaryField('dateOfDeath');
     // Space between prefix and the date is &nbsp;
     const expectedDateOfDeath = new RegExp(`contact\\.deceased\\.date\\.prefix[\\s\\h]${relativeDateLocale}`);
+
+    commonPage.waitForPageLoaded();
+
     expect(dateOfDeath).to.not.be.undefined;
     expect(dateOfDeath).to.match(expectedDateOfDeath);
     expect(await contactsPage.getContactSummaryField('age')).to.equal(relativeDateLocale);
