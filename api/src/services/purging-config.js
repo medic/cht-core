@@ -1,10 +1,13 @@
 const serverSidePurgeUtils = require('@medic/purging-utils');
 const chtScriptApi = require('@medic/cht-script-api');
+const tombstoneUtils = require('@medic/tombstone-utils');
+const registrationUtils = require('@medic/registration-utils');
 const db = require('../db');
 const logger = require('../logger');
 const config = require('../config');
 
 const purgeDbs = {};
+const VIEW_LIMIT = 100 * 1000;
 
 const parsePurgeFn = (purgeFnString) => {
   let purgeFn;
@@ -21,6 +24,175 @@ const parsePurgeFn = (purgeFnString) => {
   }
 
   return purgeFn;
+};
+const assignContactToGroups = (row, groups, subjectIds) => {
+  const group = {
+    reports: [],
+    messages: [],
+    ids: []
+  };
+  let key;
+  const contact = row.doc;
+  if (tombstoneUtils.isTombstoneId(row.id)) {
+    // we keep tombstones here just as a means to group reports and messages from deleted contacts, but
+    // finally not provide the actual contact in the purge function. we will also not "purge" tombstones.
+    key =  tombstoneUtils.extractStub(row.id).id;
+    group.contact = { _deleted: true };
+    group.subjectIds = registrationUtils.getSubjectIds(row.doc.tombstone);
+  } else {
+    key = row.id;
+    group.contact = row.doc;
+    group.subjectIds = registrationUtils.getSubjectIds(contact);
+    group.ids.push(row.id);
+  }
+
+  groups[key] = group;
+  subjectIds.push(...group.subjectIds);
+};
+const isRelevantRecordEmission = (row, groups) => {
+  if (groups[row.id]) { // groups keys are contact ids, we already know everything about contacts
+    return false;
+  }
+
+  if (tombstoneUtils.isTombstoneId(row.id)) { // we don't purge tombstones
+    return false;
+  }
+
+  if (row.value.type !== 'data_record') {
+    return false;
+  }
+
+  if (row.value.needs_signoff && row.key !== row.value.subject) {
+    // reports with `needs_signoff` will emit for every contact from their submitter lineage,
+    // but we only want to process them once, either associated to their subject, or to their submitter
+    // when they have no subject or have an invalid subject.
+    // if the report has a subject, but it's not the the same as the emission key, we hit the emit
+    // for the submitter or submitter lineage via the `needs_signoff` path. Skip.
+    return false;
+  }
+
+  return true;
+};
+const getRecordGroupInfo = (row) => {
+  if (row.doc.form) {
+    const subjectId = registrationUtils.getSubjectId(row.doc);
+    // use subject as a key, as to keep subject to report associations correct
+    // reports without a subject are processed separately
+    const key = subjectId === row.key ? subjectId : row.id;
+    return { key, report: row.doc };
+  }
+
+  // messages only emit once, either their sender or receiver
+  return { key: row.key, message: row.doc };
+};
+const hydrateRecords = async (recordRows) => {
+  const recordIds = recordRows.map(row => row.id);
+
+  const allDocsResult = await db.medic.allDocs({ keys: recordIds, include_docs: true });
+  recordRows.forEach((row, idx) => row.doc = allDocsResult.rows[idx].doc);
+  return recordRows.filter(row => row.doc);
+};
+const getRecordsByKey = (rows) => {
+  const recordsByKey = {};
+  rows.forEach(row => {
+    const { key, report, message } = getRecordGroupInfo(row);
+    recordsByKey[key] = recordsByKey[key] || { reports: [], messages: [] };
+
+    return report ?
+      recordsByKey[key].reports.push(report) :
+      recordsByKey[key].messages.push(message);
+  });
+  return recordsByKey;
+};
+const assignRecordsToGroups = (recordsByKey, groups) => {
+  Object.keys(recordsByKey).forEach(key => {
+    const records = recordsByKey[key];
+    const group = Object.values(groups).find(group => group.subjectIds.includes(key));
+    if (!group) {
+      // reports that have no subject are processed separately
+      records.reports.forEach(report => {
+        groups[report._id] = { contact: {}, reports: [report], messages: [], ids: [], subjectIds: [] };
+      });
+      return;
+    }
+
+    group.reports.push(...records.reports);
+    group.messages.push(...records.messages);
+  });
+};
+const getIdsFromGroups = (groups) => {
+  const ids = [];
+  Object.values(groups).forEach(group => {
+    group.ids.push(...group.messages.map(message => message._id));
+    group.ids.push(...group.reports.map(message => message._id));
+    ids.push(...group.ids);
+  });
+  return ids;
+};
+const getDocsToPurge = (purgeFn, groups, roles) => {
+  const rolesHashes = Object.keys(roles);
+  const toPurge = {};
+
+  Object.values(groups).forEach(group => {
+    rolesHashes.forEach(hash => {
+      toPurge[hash] = toPurge[hash] || {};
+      if (!group.ids.length) {
+        return;
+      }
+
+      const permissionSettings = config.get('permissions');
+
+      const idsToPurge = purgeFn(
+        { roles: roles[hash] },
+        group.contact,
+        group.reports,
+        group.messages,
+        chtScriptApi,
+        permissionSettings
+      );
+      if (!validPurgeResults(idsToPurge)) {
+        return;
+      }
+
+      idsToPurge.forEach(id => {
+        toPurge[hash][id] = group.ids.includes(id);
+      });
+    });
+  });
+
+  return toPurge;
+};
+const getRecordsForContacts = async (groups, subjectIds) => {
+  if (!subjectIds.length) {
+    return;
+  }
+
+  const relevantRows = [];
+  let skip = 0;
+  let requestNext;
+
+  do {
+    const opts = {
+      keys: subjectIds,
+      limit: VIEW_LIMIT,
+      skip: skip,
+    };
+    const result = await db.medic.query('medic/docs_by_replication_key', opts);
+
+    skip += result.rows.length;
+    requestNext = result.rows.length === VIEW_LIMIT;
+
+    relevantRows.push(...result.rows.filter(row => isRelevantRecordEmission(row, groups)));
+  } while (requestNext);
+
+  logger.info(`Found ${relevantRows.length} records`);
+  if (!relevantRows.length) {
+    return;
+  }
+
+  const hydratedRows = await hydrateRecords(relevantRows);
+  const recordsByKey = getRecordsByKey(hydratedRows);
+  assignRecordsToGroups(recordsByKey, groups);
 };
 const getRoles = async () => {
   const list = [];
@@ -148,6 +320,22 @@ const simulatePurge = (getBatch, getIdsToPurge, roles) => {
       return getPurgingChangesCounts(rolesHashes, docIds, alreadyPurged, toPurge);
     });
 };
+const countPurgedContacts = async (roles, purgeFn) => {
+  const groups = {};
+  const subjectIds = [];
+  const rolesHashes = Object.keys(roles);
+
+  const result = await db.medic.query('medic-client/contacts_by_type', { include_docs: true });
+  result.rows.forEach(row => assignContactToGroups(row, groups, subjectIds));
+
+  await getRecordsForContacts(groups, subjectIds);
+
+  const docIds = getIdsFromGroups(groups);
+  const alreadyPurged = await getAlreadyPurgedDocs(rolesHashes, docIds);
+
+  const toPurge = getDocsToPurge(purgeFn, groups, roles);
+  return getPurgingChangesCounts(rolesHashes, docIds, alreadyPurged, toPurge);
+};
 const countPurgedUnallocatedRecords = async (roles, purgeFn) => {
   const permissionSettings = config.get('permissions');
   const getBatch = () =>  db.medic.query('medic/docs_by_replication_key', {
@@ -190,16 +378,15 @@ const dryRun = async (purgeFnString) => {
   const roles = await getRoles();
   await initPurgeDbs(roles);
 
-  // const ddd = await countPurgedContacts(roles, purgeFn);
+  const contacts = await countPurgedContacts(roles, purgeFn);
+  console.log("contacts", contacts);
   const unallocatedRecords = await countPurgedUnallocatedRecords(roles, purgeFn);
+  console.log("unallocatedRecords", unallocatedRecords);
 
   // TODO: maybe breakdown unallocatedRecords/contacts/reports/tasks/...
-  let wontChangeCount = 0;
-  wontChangeCount += unallocatedRecords.wontChangeCount;
-  let willPurgeCount = 0;
-  willPurgeCount += unallocatedRecords.willPurgeCount;
-  let willUnpurgeCount = 0;
-  willUnpurgeCount += unallocatedRecords.willUnpurgeCount;
+  const wontChangeCount = contacts.wontChangeCount + unallocatedRecords.wontChangeCount;
+  const willPurgeCount = contacts.willPurgeCount + unallocatedRecords.willPurgeCount;
+  const willUnpurgeCount = contacts.willUnpurgeCount + unallocatedRecords.willUnpurgeCount;
 
   // TODO: parse cron like in `scheduling.js`
   const nextRun = new Date().toISOString();
