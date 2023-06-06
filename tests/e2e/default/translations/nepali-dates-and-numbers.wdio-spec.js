@@ -212,9 +212,10 @@ describe('Bikram Sambat date display', () => {
     const dateOfDeath = await contactsPage.getContactSummaryField('dateOfDeath');
     expect(dateOfDeath).to.not.be.undefined;
     console.log('dateOfDeath: ', dateOfDeath);
+    console.log('relativeDateLocale: ', relativeDateLocale);
     // The text has &nbsp; which wdio translates in different ways -> Local: just spaces, CI: spaces and new line
     expect(dateOfDeath).to.match(
-      new RegExp(`/^contact\\.deceased\\.date\\.prefix((\\s){1,2}|(\\s\\n))${relativeDateLocale}$/g`)
+      new RegExp(`contact\\.deceased\\.date\\.prefix((\\s){1,2}|(\\s\\n))${relativeDateLocale}`)
     );
 
     expect(await contactsPage.getContactSummaryField('age')).to.equal(relativeDateLocale);
