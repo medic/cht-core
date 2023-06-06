@@ -209,6 +209,8 @@ describe('Bikram Sambat date display', () => {
     const relativeDateLocale = moment.localeData().relativeTime(devanagari(years), true, 'yy', false);
     const relativeDateLocaleSuffix = moment.localeData().pastFuture(years * -1, relativeDateLocale);
 
+    commonPage.waitForPageLoaded();
+
     const dateOfDeath = await contactsPage.getContactSummaryField('dateOfDeath');
     // Space between prefix and the date is &nbsp;
     const expectedDateOfDeath = new RegExp(`contact\\.deceased\\.date\\.prefix[\\s\\h]${relativeDateLocale}`);
