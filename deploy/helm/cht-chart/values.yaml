@@ -21,3 +21,12 @@ ingress:
     tags: "Environment=dev,Team=QA"
     certificate: "arn:aws:iam::<account-id>:server-certificate/2023-wildcard-dev-medicmobile-org-chain"
   host: "gamma-cht.dev.medicmobile.org"
+
+environment: "local"  # or "remote"
+
+local:
+  namespace: "default"
+  diskPath: "/var/lib/couchdb"
+
+remote:
+  namespace: "cht-dev-namespace"

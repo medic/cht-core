@@ -1,4 +1,4 @@
-{{- if .Values.couchdb.clusteredCouch_enabled }}
+{{- if and (.Values.couchdb.clusteredCouch_enabled) (eq .Values.environment "remote") }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
