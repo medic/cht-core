@@ -53,13 +53,26 @@ spec:
           ports:
             - containerPort: 5984
           resources: {}
+          {{- if eq .Values.environment "local" }}
+          volumeMounts:
+            - mountPath: /opt/couchdb/data
+              name: local-volume
+          {{- else }}
           volumeMounts:
             - mountPath: /opt/couchdb/data
               name: couchdb-claim0
+          {{- end }}
       restartPolicy: Always
+      {{- if eq .Values.environment "local" }}
+      volumes:
+        - name: local-volume
+          hostPath:
+            path: {{ .Values.local.diskPath }}
+      {{- else }}
       volumes:
         - name: couchdb-claim0
           persistentVolumeClaim:
             claimName: couchdb-claim0
+      {{- end }}
 status: {}
 {{- end }}
