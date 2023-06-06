@@ -211,9 +211,9 @@ describe('Bikram Sambat date display', () => {
 
     commonPage.waitForPageLoaded();
     const windowSize = await browser.getWindowSize();
-    console.log("windowSize", windowSize);
+    console.log('windowSize', windowSize);
     const dateOfDeath = await contactsPage.getContactSummaryField('dateOfDeath');
-    console.log("dateOfDeath", Array.from(dateOfDeath).map(letter => letter.charCodeAt(0)));
+    console.log('dateOfDeath', Array.from(dateOfDeath).map(letter => letter.charCodeAt(0)));
     // Space between prefix and the date is &nbsp;
     const expectedDateOfDeath = new RegExp(`contact\\.deceased\\.date\\.prefix[\\s\\h]${relativeDateLocale}`);
 
