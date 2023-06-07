@@ -97,18 +97,6 @@ const downloadDocs = async (remoteDb, localDb) => {
 };
 
 const writeCheckpointers = async (remoteDb, localDb) => {
-  const replicateFromPromise = localDb.replicate.from(remoteDb, {
-    live: false,
-    retry: false,
-    heartbeat: 10000,
-    timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-    query_params: { initial_replication: true },
-    since: lastSeq,
-  });
-
-  replicateFromPromise.on('change', () => replicateFromPromise.cancel());
-  await replicateFromPromise;
-
   const localInfo = await localDb.info();
   await localDb.replicate.to(remoteDb, {
     since: localInfo.update_seq,

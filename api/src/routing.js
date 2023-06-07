@@ -40,7 +40,6 @@ const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
-const purgedDocsController = require('./controllers/purged-docs');
 const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
@@ -501,25 +500,6 @@ app.putJson(`${appPrefix}update_settings/${environment.ddoc}`, settings.put); //
 app.putJson('/api/v1/settings', settings.put);
 
 app.get('/api/couch-config-attachments', couchConfigController.getAttachments);
-
-app.get(
-  '/purging',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  purgedDocsController.info
-);
-app.get(
-  '/purging/changes',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  purgedDocsController.getPurgedDocs
-);
-app.get(
-  '/purging/checkpoint',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  purgedDocsController.checkpoint
-);
 
 app.put(
   '/api/v1/credentials/:key',

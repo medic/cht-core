@@ -38,8 +38,8 @@ const getDocIdsToDelete = async (userCtx, docIds) => {
     .filter(row => row.error === 'deleted' || (row.value && row.value.deleted))
     .map(row => row.key);
 
-  const purgedDocs = await purgedDocs.getPurgedIds(userCtx, docIds, false);
-  toDelete.push(...purgedDocs);
+  const toPurge = await purgedDocs.getPurgedIds(userCtx, docIds, false);
+  toDelete.push(...toPurge);
 
   return toDelete;
 };

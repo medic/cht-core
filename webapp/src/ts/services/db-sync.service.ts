@@ -14,6 +14,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { HttpClient } from '@angular/common/http';
+import * as repl from 'repl';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -83,19 +84,6 @@ export class DBSyncService {
     this.globalActions = new GlobalActions(store);
   }
 
-  private readonly DIRECTIONS = {
-    to: {
-      options: {
-        filter: readOnlyFilter,
-      },
-      onDenied: (err?) => this.dbSyncRetryService.retryForbiddenFailure(err),
-    },
-    from: {
-      // todo
-      //onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
-    }
-  }
-
   private globalActions: GlobalActions;
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
@@ -111,47 +99,45 @@ export class DBSyncService {
     return !this.sessionService.isOnlineOnly();
   }
 
-  private replicate(direction, { batchSize=BATCH_SIZE }={}) {
+  private replicateToRetry({ batchSize=BATCH_SIZE }={}) {
     const telemetryEntry = new DbSyncTelemetry(
       this.telemetryService,
       'medic',
-      direction.name,
+      'to',
       this.getLastReplicationDate(),
     );
 
+    const options = {
+      filter: readOnlyFilter,
+      batch_size: batchSize
+    };
+
     const remote = this.dbService.get({ remote: true });
-    const options = Object.assign({}, direction.options, { batch_size: batchSize });
     return this.dbService.get()
-      .replicate[direction.name](remote, options)
-      .on('change', replicationResult => {
-        if (direction.onChange) {
-          direction.onChange(replicationResult);
-        }
-      })
+      .replicate
+      .to(remote, options)
       .on('denied', (err) => {
-        console.error(`Denied replicating ${direction.name} remote server`, err);
-        if (direction.onDenied) {
-          direction.onDenied(err);
-        }
+        console.error(`Denied replicating to remote server`, err);
+        this.dbSyncRetryService.retryForbiddenFailure(err);
         telemetryEntry.recordDenied();
       })
       .on('error', (err) => {
-        console.error(`Error replicating ${direction.name} remote server`, err);
+        console.error(`Error replicating to remote server`, err);
         telemetryEntry.recordFailure(err, this.knownOnlineState);
       })
       .then(info => {
-        console.debug(`Replication ${direction.name} successful`, info);
+        console.debug(`Replication to successful`, info);
         telemetryEntry.recordSuccess(info);
       })
       .catch(err => {
-        if (err.code === 413 && direction.name === 'to' && batchSize > 1) {
+        if (err.code === 413 && batchSize > 1) {
           batchSize = Math.floor(batchSize / 2);
           console.warn('Error attempting to replicate too much data to the server. ' +
             `Trying again with batch size of ${batchSize}`);
-          return this.replicate(direction, { batchSize });
+          return this.replicateToRetry({ batchSize });
         }
-        console.error(`Error replicating ${direction.name} remote server`, err);
-        return direction.name;
+        console.error(`Error replicating to remote server`, err);
+        throw err;
       });
   }
 
@@ -161,7 +147,11 @@ export class DBSyncService {
       return;
     }
 
-    return this.replicate(this.DIRECTIONS.to);
+    try {
+      await this.replicateToRetry();
+    } catch (err) {
+      return err;
+    }
   }
 
   private async downloadDocsBatch (batch) {
@@ -177,28 +167,41 @@ export class DBSyncService {
   }
 
   private async replicateFrom() {
+    try {
+      const remoteDocIdsRevs = await this.getRemoteDocs();
+      const localDocs = await this.dbService.get().allDocs();
+
+      const localIdRevMap = Object.assign({}, ...localDocs.rows.map(row => ({ [row.id]: row.value?.rev })));
+      const remoteIdRevMap = Object.assign({}, remoteDocIdsRevs.map(({ id, rev }) => ({ [id]: rev })));
+
+      await this.getMissingDocs(localIdRevMap, remoteDocIdsRevs);
+      await this.getDeletesAndPurges(localIdRevMap, remoteIdRevMap);
+    } catch (err) {
+      return err;
+    }
+  }
+
+  private async getRemoteDocs() {
     const getIdsReq = this.http.get<{ doc_ids_revs: { id; rev }[]}>(
       '/api/v1/replication/get-ids',
       { responseType: 'json' }
     );
-    const remoteDocIdsRevs = (await lastValueFrom(getIdsReq)).doc_ids_revs;
-    const remoteDocsMap = {};
-    remoteDocIdsRevs.forEach(({ id, rev }) => remoteDocsMap[id] = rev);
+    const response = await lastValueFrom(getIdsReq);
+    return response.doc_ids_revs;
+  }
 
-    const localDocs = await this.dbService.get().allDocs();
-    const localDocMap = {};
-    localDocs.rows.forEach(row => localDocMap[row.id] = row.value && row.value.rev);
-
+  private async getMissingDocs(localIdRevMap, remoteDocIdsRevs) {
     const docIdRevsToDownload = remoteDocIdsRevs
-      .filter(({ id, rev }) => !localDocMap[id] || localDocMap[id] !== rev);
+      .filter(({ id, rev }) => !localIdRevMap[id] || localIdRevMap[id] !== rev);
+
     do {
       const batch = docIdRevsToDownload.splice(0, BATCH_SIZE);
       await this.downloadDocsBatch(batch);
     } while (docIdRevsToDownload.length > 0);
+  }
 
-    const missingRemoteIds = localDocs.rows
-      .filter(row => !remoteDocsMap[row.id])
-      .map(row => row.id);
+  private async getDeletesAndPurges(localIdRevMap, remoteIdRevMap) {
+    const missingRemoteIds = Object.keys(localIdRevMap).filter(id => !remoteIdRevMap[id]);
 
     const getDeleteListReq =  this.http.post<{ doc_ids: []}>(
       '/api/v1/replication/get-deletes',
@@ -206,7 +209,7 @@ export class DBSyncService {
       { responseType: 'json' }
     );
     const localIdsToDelete = (await lastValueFrom(getDeleteListReq)).doc_ids;
-    const deleteDocs = localIdsToDelete.map(id => ({ _id: id, _rev: localDocMap[id], _delete: true, purged: true }));
+    const deleteDocs = localIdsToDelete.map(id => ({ _id: id, _rev: localIdRevMap[id], _deleted: true, purged: true }));
     await this.dbService.get().bulkDocs(deleteDocs);
   }
 
@@ -235,21 +238,21 @@ export class DBSyncService {
     }
 
     try {
-      const replicationErrors = {
-        to: await this.replicateTo(),
-        from: undefined,
-      };
+      this.sendUpdate({ state: SyncStatus.InProgress });
+      this.inProgressSync = true;
+
+      const replicationErrors = { to: null, from: null };
+      replicationErrors.to = await this.replicateTo();
+
       if (force || !quick) {
         replicationErrors.from = await this.replicateFrom();
       }
 
       const currentSeq = await this.getCurrentSeq();
       let syncState: SyncState = { to: SyncStatus.Success, from: SyncStatus.Success };
-      if (replicationErrors.to || replicationErrors.from) {
-        // no errors
+      if (!replicationErrors.to && !replicationErrors.from) {
         this.syncIsRecent = true;
         window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
-
       } else if (currentSeq === this.getLastReplicatedSeq()) {
         // no changes to send, but may have some to receive
         syncState = { state: SyncStatus.Unknown };
@@ -267,9 +270,6 @@ export class DBSyncService {
         this.displayUserFeedback(syncState);
       }
       this.sendUpdate(syncState);
-
-      this.sendUpdate({ state: SyncStatus.InProgress });
-      return this.inProgressSync;
     } finally {
       this.inProgressSync = undefined;
     }

@@ -656,17 +656,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.telemetryService.record('boot_time:2_1:to_replication', window.startupTimes.replication);
     }
 
-    if (window.startupTimes.purgingFailed) {
-      this.feedbackService.submit(`Error when purging on device startup: ${window.startupTimes.purgingFailed}`);
-      this.telemetryService.record('boot_time:purging_failed');
-    } else {
-      // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
-      this.telemetryService.record(`boot_time:purging:${window.startupTimes.purging}`);
-    }
-    if (window.startupTimes.purge) {
-      this.telemetryService.record('boot_time:2_2:to_purge', window.startupTimes.purge);
-    }
-
     if (window.startupTimes.purgingMetaFailed) {
       const message = `Error when purging meta on device startup: ${window.startupTimes.purgingMetaFailed}`;
       this.feedbackService.submit(message);
