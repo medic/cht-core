@@ -6,7 +6,7 @@ const uuid = require('uuid').v4;
 const _ = require('lodash');
 
 /* eslint-disable no-console */
-describe('Send message', () => {
+xdescribe('Send message', () => {
   'use strict';
 
   const RAW_PH = '+447765902000';

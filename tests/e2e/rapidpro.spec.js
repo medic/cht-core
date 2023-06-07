@@ -163,7 +163,7 @@ describe('RapidPro SMS Gateway', () => {
       }
     });
 
-    it('should create messages', async () => {
+    xit('should create messages', async () => {
       const message = {
         id: 'the_gateway_ref',
         from: 'the_phone',

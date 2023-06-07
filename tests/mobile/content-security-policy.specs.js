@@ -1,7 +1,7 @@
-/*const utils = require('../utils');
+const utils = require('../utils');
 const { expect } = require('chai');
 
-describe('Content Security Policy', () => {
+xdescribe('Content Security Policy', () => {
   beforeEach(() => utils.resetBrowser());
 
   // If this test fails, you've probably changed the inline telemetry script
@@ -17,4 +17,4 @@ describe('Content Security Policy', () => {
         });
       });
   });
-});*/
+});

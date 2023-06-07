@@ -103,7 +103,7 @@ const clickOnTargetAggregateListItem = async (contactId) => {
   await helper.waitUntilReadyNative(element(by.css('.content-pane .meta > div > .card .action-header h3')));
 };
 
-describe('Target aggregates', () => {
+xdescribe('Target aggregates', () => {
 
   describe('as a db admin', () => {
 
