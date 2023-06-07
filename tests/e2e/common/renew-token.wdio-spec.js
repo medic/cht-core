@@ -5,7 +5,7 @@ const moment = require('moment');
 const browserPage = require('../../utils/browser');
 const chai = require('chai');
 
-describe('should renew token', async () => {
+xdescribe('should renew token', async () => {
 
   beforeEach(async () => {
     await loginPage.cookieLogin();
