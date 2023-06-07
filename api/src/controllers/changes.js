@@ -1,7 +1,15 @@
 const serverUtils = require('../server-utils');
+const db = require('../db');
 
-const processRequest = () => {
-  // todo just send the new service worker!
+const processRequest = async (req, res) => {
+  const docIds = [
+    'service-worker-meta',
+    '_design/medic-client',
+    'settings'
+  ];
+
+  const changes = await db.medic.changes({ doc_ids: docIds });
+  res.json(changes);
 };
 
 const request = (req, res) => {
