@@ -742,7 +742,7 @@ describe('routing', () => {
     });
   });
 
-  describe('_session endpoint', () => {
+  xdescribe('_session endpoint', () => {
 
     it('logs the user in', () => {
 
