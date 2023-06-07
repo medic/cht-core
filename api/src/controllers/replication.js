@@ -18,7 +18,12 @@ module.exports = {
     }
   },
   getDocIdsToDelete: async (req, res) => {
-    const docIdRevs = req.body;
-
+    const docIds = req.body?.doc_ids;
+    try {
+      const docIdsToDelete = await replication.getDocIdsToDelete(req.userCtx, docIds);
+      return res.json({ doc_ids: docIdsToDelete });
+    } catch (err) {
+      return serverUtils.serverError(err, req, res);
+    }
   },
 };

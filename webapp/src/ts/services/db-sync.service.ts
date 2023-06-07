@@ -7,7 +7,6 @@ import * as purger from '../../js/bootstrapper/purger';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
-import { PurgeService } from '@mm-services/purge.service';
 import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
@@ -78,7 +77,6 @@ export class DBSyncService {
     private telemetryService:TelemetryService,
     private store:Store,
     private translateService:TranslateService,
-    private purgeService:PurgeService,
     private migrationsService:MigrationsService,
     private http:HttpClient,
   ) {
@@ -198,8 +196,18 @@ export class DBSyncService {
       await this.downloadDocsBatch(batch);
     } while (docIdRevsToDownload.length > 0);
 
-    const toDelete = localDocs.rows.filter(row => !remoteDocsMap[row.id]);
+    const missingRemoteIds = localDocs.rows
+      .filter(row => !remoteDocsMap[row.id])
+      .map(row => row.id);
 
+    const getDeleteListReq =  this.http.post<{ doc_ids: []}>(
+      '/api/v1/replication/get-deletes',
+      { doc_ids: missingRemoteIds },
+      { responseType: 'json' }
+    );
+    const localIdsToDelete = (await lastValueFrom(getDeleteListReq)).doc_ids;
+    const deleteDocs = localIdsToDelete.map(id => ({ _id: id, _rev: localDocMap[id], _delete: true, purged: true }));
+    await this.dbService.get().bulkDocs(deleteDocs);
   }
 
   private getCurrentSeq() {
@@ -253,12 +261,6 @@ export class DBSyncService {
       }
       if (syncState.to === SyncStatus.Success) {
         window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
-      }
-
-      try {
-        await this.purgeService.updateDocsToPurge();
-      } catch (err) {
-        console.warn('Error updating to purge list', err)
       }
 
       if (force) {

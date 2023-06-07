@@ -2,7 +2,6 @@ const db = require('../db');
 const environment = require('../environment');
 const purgingUtils = require('@medic/purging-utils');
 const cacheService = require('./cache');
-const crypto = require('crypto');
 const logger = require('../logger');
 const _ = require('lodash');
 
@@ -26,13 +25,8 @@ const catchDbNotFoundError = (err, purgeDb) => {
   }
 };
 
-const getCacheKey = (roles, docIds) => {
-  const hash = crypto
-    .createHash('md5')
-    .update(JSON.stringify(docIds), 'utf8')
-    .digest('hex');
-
-  return `purged-${JSON.stringify(roles)}-${hash}`;
+const getCacheKey = (userCtx) => {
+  return `purged-${JSON.stringify(userCtx.roles)}-${userCtx.name}`;
 };
 
 const clearCache = () => cacheService.instance(CACHE_NAME).flushAll();
@@ -51,116 +45,38 @@ const getPurgedIdsFromChanges = result => {
   return purgedIds;
 };
 
-const getPurgedIds = (roles, docIds) => {
+const getPurgedIds = (userCtx, docIds, useCache = true) => {
   let purgeIds = [];
-  if (!docIds || !docIds.length || !roles || !roles.length) {
+  let cache;
+  if (!docIds || !docIds.length || !userCtx.roles || !userCtx.roles.length) {
     return Promise.resolve(purgeIds);
   }
 
-  const cache = cacheService.instance(CACHE_NAME);
-  const cacheKey = getCacheKey(roles, docIds);
-  const cached = cache.get(cacheKey);
-  if (cached) {
-    cache.ttl(cacheKey);
-    return Promise.resolve(cached);
+  if (useCache) {
+    cache = cacheService.instance(CACHE_NAME, { stdTTL: 0 });
+    const cached = cache.get(getCacheKey(userCtx));
+    if (cached) {
+      return Promise.resolve(cached);
+    }
   }
+
   const ids = docIds.map(purgingUtils.getPurgedId);
   let purgeDb;
   // requesting _changes instead of _all_docs because it's roughly twice faster
-  return getPurgeDb(roles)
+  return getPurgeDb(userCtx.roles)
     .then(tempDb => purgeDb = tempDb)
     .then(() => purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length }))
     .then(result => {
       purgeIds = getPurgedIdsFromChanges(result);
-      cache.set(cacheKey, purgeIds);
+      cache && cache.set(getCacheKey(userCtx), purgeIds);
       db.close(purgeDb);
     })
     .catch(err => catchDbNotFoundError(err, purgeDb))
     .then(() => purgeIds);
 };
 
-const getUnPurgedIds = (roles, docIds) => {
-  return getPurgedIds(roles, docIds).then(purgedIds => _.difference(docIds, purgedIds));
-};
-
-const getPurgedIdsSince = (roles, docIds, { checkPointerId = '', limit = 100 } = {}) => {
-  let purgeIds = {};
-  if (!docIds || !docIds.length || !roles || !roles.length) {
-    return Promise.resolve(purgeIds);
-  }
-
-  let purgeDb;
-  const ids = docIds.map(purgingUtils.getPurgedId);
-
-  return getPurgeDb(roles)
-    .then(tempDb => purgeDb = tempDb)
-    .then(() => getLastSeq(purgeDb, checkPointerId))
-    .then(lastSeq => {
-      const opts = {
-        doc_ids: ids,
-        batch_size: ids.length + 1,
-        limit: limit,
-        since: lastSeq,
-        seq_interval: ids.length
-      };
-
-      return purgeDb.changes(opts);
-    })
-    .then(result => {
-      const purgedDocIds = getPurgedIdsFromChanges(result);
-      purgeIds = { purgedDocIds,  lastSeq: result.last_seq };
-      db.close(purgeDb);
-    })
-    .catch(err => catchDbNotFoundError(err, purgeDb))
-    .then(() => purgeIds);
-};
-
-const getCheckPointer = (db, checkPointerId) => {
-  return db
-    .get(`_local/${checkPointerId}`)
-    .catch(() => ({
-      _id: `_local/${checkPointerId}`,
-      last_seq: 0
-    }));
-};
-
-const getLastSeq = (db, checkPointerId) => {
-  if (!checkPointerId) {
-    return Promise.resolve(0);
-  }
-  return getCheckPointer(db, checkPointerId)
-    .then(doc => doc.last_seq);
-};
-
-const writeCheckPointer = (roles, checkPointerId, seq = 0) => {
-  let purgeDb;
-  return getPurgeDb(roles)
-    .then(tempDb => purgeDb = tempDb)
-    .then(() => Promise.all([
-      getCheckPointer(purgeDb, checkPointerId),
-      purgeDb.info()
-    ]))
-    .then(([ checkPointer, info ]) => {
-      checkPointer.last_seq = seq === 'now' ? info.update_seq : seq;
-      return purgeDb.put(checkPointer);
-    })
-    .then(result => {
-      db.close(purgeDb);
-      return result;
-    })
-    .catch(err => catchDbNotFoundError(err, purgeDb));
-};
-
-const info = (roles) => {
-  let purgeDb;
-  return getPurgeDb(roles)
-    .then(tempDb => purgeDb = tempDb)
-    .then(() => purgeDb.info())
-    .catch(err => catchDbNotFoundError(err, purgeDb))
-    .then(info => {
-      db.close(purgeDb);
-      return info || false; // fetch needs valid JSON.
-    });
+const getUnPurgedIds = (userCtx, docIds) => {
+  return getPurgedIds(userCtx, docIds).then(purgedIds => _.difference(docIds, purgedIds));
 };
 
 const listen = (seq = 'now') => {
@@ -185,8 +101,5 @@ if (!process.env.UNIT_TEST_ENV) {
 module.exports = {
   getPurgedIds,
   getUnPurgedIds,
-  getPurgedIdsSince,
-  writeCheckPointer,
-  info,
 };
 

@@ -498,7 +498,7 @@ const getDocsByReplicationKey = (authorizationContext) => {
   });
 };
 
-const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTombstones = true, includeTasks = true } = {}) => {
+const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = true } = {}) => {
   const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(authCtx.userCtx.name)];
   const tombstoneIds = [];
 
@@ -510,11 +510,6 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTombstones 
     if (isTaskDoc(row) && !includeTasks) {
       return;
     }
-
-    if (tombstoneUtils.isTombstoneId(row.id)) {
-      return includeTombstones && tombstoneIds.push(row.id);
-    }
-
     validatedIds.push(row.id);
   });
 
@@ -533,9 +528,9 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTombstones 
   return _.uniq(validatedIds);
 };
 
-const getAllowedDocIds = (authorizationContext, { includeTombstones = true, includeTasks = true } = {}) => {
+const getAllowedDocIds = (authorizationContext, { includeTasks = true } = {}) => {
   return getDocsByReplicationKey(authorizationContext).then(docsByReplicationKey => {
-    return filterAllowedDocIds(authorizationContext, docsByReplicationKey, { includeTombstones, includeTasks });
+    return filterAllowedDocIds(authorizationContext, docsByReplicationKey, { includeTasks });
   });
 };
 
@@ -554,12 +549,7 @@ const getViewResults = (doc) => {
   };
 };
 
-const isAuthChange = (docId, userCtx, { couchDbUser }) => {
-  return docId === 'org.couchdb.user:' + userCtx.name && !!couchDbUser;
-};
-
 module.exports = {
-  isAuthChange: isAuthChange,
   allowedDoc: allowedDoc,
   getViewResults: getViewResults,
   getAuthorizationContext: getAuthorizationContext,
@@ -569,7 +559,6 @@ module.exports = {
   excludeTombstoneIds: excludeTombstoneIds,
   convertTombstoneIds: convertTombstoneIds,
   alwaysAllowCreate: alwaysAllowCreate,
-  updateContext: updateContext,
   filterAllowedDocs: filterAllowedDocs,
   isDeleteStub: tombstoneUtils._isDeleteStub,
   generateTombstoneId: tombstoneUtils.generateTombstoneId,

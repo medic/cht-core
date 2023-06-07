@@ -32,52 +32,6 @@ const appendToPurgeList = (localDb, ids) => {
     });
 };
 
-const purgeMain = (localDb, userCtx) => {
-
-  let totalPurged = 0;
-  const eventListeners = {};
-
-  const emit = (name, event) => {
-    console.debug(`Emitting '${name}' event with:`, event);
-    (eventListeners[name] || []).forEach(callback => callback(event));
-  };
-
-  const batchedPurge = (ids) => {
-    if (!ids || !ids.length) {
-      return;
-    }
-    const batch = ids.slice(0, BATCH_SIZE);
-    return purgeIds(localDb, batch)
-      .then(nbr => {
-        totalPurged += nbr;
-        emit('progress', { purged: totalPurged });
-        return writePurgeLog(localDb, userCtx, nbr, batch);
-      })
-      .then(() => batchedPurge(ids.slice(BATCH_SIZE)));
-  };
-
-  const p = Promise.resolve()
-    .then(() => {
-      return getPurgeLog(localDb)
-        .then(log => {
-          if (!log.to_purge || !log.to_purge.length) {
-            return;
-          }
-          emit('start');
-          return batchedPurge(log.to_purge)
-            .then(() => emit('done', { totalPurged }));
-        });
-    });
-
-  p.on = (type, callback) => {
-    eventListeners[type] = eventListeners[type] || [];
-    eventListeners[type].push(callback);
-    return p;
-  };
-
-  return p;
-};
-
 const purgeMeta = (localDb) => {
 
   const eventListeners = {};
@@ -206,7 +160,6 @@ const purgeIds = (db, ids) => {
 };
 
 module.exports = {
-  purgeMain,
   purgeMeta,
   appendToPurgeList,
   writeMetaPurgeLog,

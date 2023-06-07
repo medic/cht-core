@@ -1,8 +1,4 @@
 function (doc) {
-  if (doc.type === 'tombstone' && doc.tombstone) {
-    doc = doc.tombstone;
-  }
-
   if (doc._id === 'resources' ||
       doc._id === 'branding' ||
       doc._id === 'partners' ||
