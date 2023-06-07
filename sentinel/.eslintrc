@@ -1,11 +1,49 @@
 {
+  "extends": ["plugin:node/recommended"],
   "env": {
     "node": true
   },
   "parserOptions": {
-    "ecmaVersion": 2017,
+    "ecmaVersion": 2018
   },
   "rules": {
-    "no-console": "error"
-  }
+    "no-console": "error",
+    "no-process-exit": "off",
+    "node/no-extraneous-require": ["error",
+      {
+        "allowModules": [
+          "@medic/bulk-docs-utils",
+          "@medic/cht-script-api",
+          "@medic/contact-types-utils",
+          "@medic/contacts",
+          "@medic/infodoc",
+          "@medic/lineage",
+          "@medic/message-utils",
+          "@medic/outbound",
+          "@medic/phone-number",
+          "@medic/purging-utils",
+          "@medic/registration-utils",
+          "@medic/search",
+          "@medic/server-checks",
+          "@medic/settings",
+          "@medic/task-utils",
+          "@medic/tombstone-utils",
+          "@medic/transitions",
+          "@medic/translation-utils",
+          "@medic/user-management",
+          "@medic/validation",
+          "@medic/view-map-utils"
+        ]
+      }]
+  },
+  "overrides": [
+    {
+      "files": [
+        "tests/**/*.js"
+      ],
+      "rules": {
+        "node/no-extraneous-require": "off"
+      }
+    }
+  ]
 }

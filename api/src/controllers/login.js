@@ -1,7 +1,7 @@
-const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
 const _ = require('lodash');
+const url = require('node:url');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
@@ -72,8 +72,8 @@ const getRedirectUrl = (userCtx, requested) => {
     // invalid url - return the default
     return root;
   }
-  const parsed = url.parse(requested);
-  return parsed.path + (parsed.hash || '');
+  const parsed = new URL(requested, 'resolve://');
+  return parsed.pathname + (parsed.hash || '');
 };
 
 const getEnabledLocales = () => {
@@ -140,11 +140,8 @@ const getSessionCookie = res => {
 const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
-  const url = new URL('/_session', environment.serverUrl);
-  url.username = '';
-  url.password = '';
   return request.post({
-    url: url.toString(),
+    url: new URL('/_session', environment.serverUrlNoAuth).toString(),
     json: true,
     resolveWithFullResponse: true,
     simple: false, // doesn't throw an error on non-200 responses
