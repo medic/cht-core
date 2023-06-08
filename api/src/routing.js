@@ -156,7 +156,8 @@ app.use(
         connectSrc: [
           `'self'`,
           BUILDS_DB,
-          'maps.googleapis.com' // used for enketo geopoint widget
+          'maps.googleapis.com', // used for enketo geopoint widget
+          'www.google-analytics.com',
         ],
         childSrc:  [`'self'`],
         formAction: [`'self'`],
@@ -180,6 +181,8 @@ app.use(
           // https://github.com/medic/cht-core/issues/6988
           `'unsafe-hashes'`,
           `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
+          `www.googletagmanager.com`,
+          `'sha256-/RtAEt8HF5I5SY0Msaa2ElNo86mSiEN9brp2Td2gCIc='`,
         ],
         styleSrc: [
           `'self'`,
