@@ -10,7 +10,6 @@ function (doc) {
       doc.type === 'translations') {
     return emit('_all', {});
   }
-
   var getSubject = function() {
     if (doc.form) {
       // report

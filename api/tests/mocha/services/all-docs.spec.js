@@ -17,8 +17,6 @@ describe('All Docs service', () => {
 
     sinon.stub(authorization, 'getAuthorizationContext').resolves({});
     sinon.stub(authorization, 'getAllowedDocIds').resolves([]);
-    sinon.stub(authorization, 'excludeTombstoneIds').callsFake(list => list);
-    sinon.stub(authorization, 'convertTombstoneIds').callsFake(list => list);
     sinon.stub(db.medic, 'allDocs').resolves([]);
   });
 
@@ -201,37 +199,6 @@ describe('All Docs service', () => {
             subjectIds: ['a', 'b'],
             userCtx: userCtx
           }]);
-        });
-    });
-
-    it('excludes tombstone ids from allowed ids list when request has no `keys` parameter', () => {
-      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'] });
-      authorization.getAllowedDocIds.resolves(['a', 'b', 'tombstone1', 'tombstone2']);
-      authorization.excludeTombstoneIds.withArgs(['a', 'b', 'tombstone1', 'tombstone2']).returns(['a', 'b']);
-
-      return service
-        .filterOfflineRequest(userCtx, query, body)
-        .then(() => {
-          authorization.excludeTombstoneIds.callCount.should.equal(1);
-          authorization.excludeTombstoneIds.args[0][0].should.deep.equal(['a', 'b', 'tombstone1', 'tombstone2']);
-          authorization.convertTombstoneIds.callCount.should.equal(0);
-          db.medic.allDocs.args[0][0].keys.should.deep.equal(['a', 'b']);
-        });
-    });
-
-    it('converts tombstone ids from allowed ids list when request has `keys` parameter', () => {
-      authorization.getAuthorizationContext.resolves({ subjectIds: ['a', 'b'] });
-      authorization.getAllowedDocIds.resolves(['a', 'b', 'tombstone1', 'tombstone2']);
-      authorization.convertTombstoneIds.withArgs(['a', 'b', 'tombstone1', 'tombstone2']).returns(['a', 'b', '1', '2']);
-      body = { keys: ['1', '2', '3', '4'] };
-
-      return service
-        .filterOfflineRequest(userCtx, query, body)
-        .then(() => {
-          authorization.excludeTombstoneIds.callCount.should.equal(0);
-          authorization.convertTombstoneIds.callCount.should.equal(1);
-          authorization.convertTombstoneIds.args[0][0].should.deep.equal(['a', 'b', 'tombstone1', 'tombstone2']);
-          db.medic.allDocs.args[0][0].keys.should.deep.equal(['1', '2']);
         });
     });
 

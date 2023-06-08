@@ -12,8 +12,8 @@ const getContext = async (userCtx) => {
   const allowedIds = authorization.filterAllowedDocIds(authContext, docsByReplicationKey);
   const unpurgedIds = await purgedDocs.getUnPurgedIds(userCtx, allowedIds);
 
-  const excludeTombstonesAndTasks = { includeTombstones: false, includeTasks: false };
-  const warnIds = authorization.filterAllowedDocIds(authContext, docsByReplicationKey, excludeTombstonesAndTasks);
+  const excludeTasks = { includeTasks: false };
+  const warnIds = authorization.filterAllowedDocIds(authContext, docsByReplicationKey, excludeTasks);
   const unpurgedWarnIds = _.intersection(unpurgedIds, warnIds);
 
   return {

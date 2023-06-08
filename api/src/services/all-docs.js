@@ -82,9 +82,6 @@ const filterAllowedDocIds = (authorizationContext, options, query) => {
     .getAllowedDocIds(authorizationContext)
     .then(allowedDocIds => {
       // when specific keys are requested, the expectation is to send deleted documents as well
-      allowedDocIds = options.keys ?
-        authorization.convertTombstoneIds(allowedDocIds) : authorization.excludeTombstoneIds(allowedDocIds);
-
       const filteredIds = filterRequestIds(allowedDocIds, options.keys, query);
 
       if (!filteredIds.length) {

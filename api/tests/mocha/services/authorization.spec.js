@@ -28,7 +28,6 @@ describe('Authorization service', () => {
   afterEach(() => sinon.restore());
 
   beforeEach(() => {
-    sinon.stub(tombstoneUtils, 'extractStub').callsFake(t => ({ id: t.replace('tombstone', 'deleted')}));
     sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
     sinon.stub(config, 'get');
     sinon.stub(auth, 'hasAllPermissions');
@@ -126,39 +125,6 @@ describe('Authorization service', () => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
           db.medic.query.args[0][1].should.deep.equal({ keys: [[ 'facilityId' ]] });
-        });
-    });
-
-    it('extracts original docId from tombstone ID, pushes ids and values to subject list', () => {
-      auth.hasAllPermissions.returns(false);
-      config.get.returns(false);
-      service.__get__('getDepth').returns({ contactDepth: -1, reportDepth: -1 });
-      tombstoneUtils.isTombstoneId.withArgs('tombstone-1').returns(true);
-      tombstoneUtils.isTombstoneId.withArgs('tombstone-2').returns(true);
-      tombstoneUtils.isTombstoneId.withArgs('tombstone-3').returns(true);
-
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
-        rows: [
-          { id: 1, key: 'key', value: 's1' },
-          { id: 2, key: 'key', value: 's2' },
-          { id: 'tombstone-1', key: 'key', value: 's3' },
-          { id: 'tombstone-2', key: 'key', value: 's4' },
-          { id: 'tombstone-3', key: 'key', value: 's5' }
-        ]
-      });
-
-      return service
-        .getAuthorizationContext({ facility_id: 'facilityId', name: 'username' })
-        .then(result => {
-          tombstoneUtils.extractStub.callCount.should.equal(3);
-          tombstoneUtils.extractStub.args.should.deep.equal([
-            ['tombstone-1'], ['tombstone-2'], ['tombstone-3']
-          ]);
-          result.subjectIds.should.have.members([
-            1, 2, 'deleted-1', 'deleted-2', 'deleted-3', '_all',
-            's1', 's2', 's3', 's4', 's5',
-            'org.couchdb.user:username',
-          ]);
         });
     });
 
@@ -320,36 +286,6 @@ describe('Authorization service', () => {
         });
     });
 
-    it('should skip tombstones of documents that were re-added', () => {
-      const subjectIds = ['subject'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows: [
-          { id: 'r1', key: 'subject', value: {} },
-          { id: 'r1_tombstone', key: 'subject', value: {} }, // skipped cause r1 winning is not deleted
-          { id: 'r2', key: 'subject', value: {} },
-          { id: 'r2_tombstone', key: 'subject', value: {} },  // skipped cause r2 winning is not deleted
-          { id: 'r3_tombstone', key: 'subject', value: {} },
-          { id: 'r4_tombstone', key: 'subject', value: {} },
-        ]});
-
-      tombstoneUtils.isTombstoneId.callsFake(id => id.endsWith('tombstone'));
-      tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('_tombstone', '') }));
-
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' }
-        })
-        .then(result => {
-          result.should.deep.equal([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'r2',
-            'r3_tombstone', 'r4_tombstone'
-          ]);
-        });
-    });
-
     it('should not return duplicates', () => {
       const subjectIds = ['subject', 'contact', 'parent'];
       db.medic.query
@@ -471,70 +407,6 @@ describe('Authorization service', () => {
         });
     });
 
-    it('should include tombstones and tasks if no options are passed', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'r3', key: 'contact', value: { type: 'person' } },
-              { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-            ]
-        });
-
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: 'parent', contact_id: 'contact' },
-          subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-        })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'task1', 'ts-r2', 'ts-task3', 'r3', 'task2', 'ts-r5',
-          ]);
-        });
-    });
-
-    it('should exclude tombstones if param is passed', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'r3', key: 'contact', value: { type: 'person' } },
-              { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-            ]
-        });
-
-      const ctx = {
-        subjectIds,
-        userCtx: { name: 'user', facility_id: 'parent', contact_id: 'contact' },
-        subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-      };
-
-      return service
-        .getAllowedDocIds(ctx, { includeTombstones: false })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'task1', 'r3', 'task2',
-          ]);
-        });
-    });
-
     it('should exclude tasks if param is passed', () => {
       const subjectIds = ['contact', 'parent', 'place'];
       tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
@@ -565,36 +437,6 @@ describe('Authorization service', () => {
             '_design/medic-client', 'org.couchdb.user:user',
             'r1', 'ts-r2', 'r3', 'ts-r5',
           ]);
-        });
-    });
-
-    it('should exclude tasks and tombstones if param is passed', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'r3', key: 'contact', value: { type: 'person' } },
-              { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-            ]
-        });
-
-      const ctx = {
-        subjectIds,
-        userCtx: { name: 'user', facility_id: 'parent', contact_id: 'contact' },
-        subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-      };
-
-      return service
-        .getAllowedDocIds(ctx, { includeTasks: false, includeTombstones: false })
-        .then(result => {
-          result.should.have.members([ '_design/medic-client', 'org.couchdb.user:user', 'r1', 'r3' ]);
         });
     });
   });
@@ -775,44 +617,6 @@ describe('Authorization service', () => {
           ]);
         });
     });
-
-    it('should include all tombstones', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'r1', key: 'parent', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'r2', key: 'parent', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'r3', key: 'contact', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'r4', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'r5', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-            ]
-        });
-
-      tombstoneUtils.isTombstoneId.returns(true);
-
-      return service
-        .getDocsByReplicationKey({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: 'parent', contact_id: 'contact' },
-          subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-        })
-        .then(result => {
-          tombstoneUtils.isTombstoneId.callCount.should.equal(7);
-          result.should.have.deep.members([
-            { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-            { id: 'r1', key: 'parent', value: { submitter: 'p', type: 'data_record' } },
-            { id: 'r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-            { id: 'r2', key: 'parent', value: { submitter: 'contact', type: 'data_record' } },
-            { id: 'r3', key: 'contact', value: { submitter: 'contact', type: 'data_record' } },
-            { id: 'r4', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-            { id: 'r5', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-          ]);
-        });
-    });
   });
 
   describe('filterAllowedDocIds', () => {
@@ -820,26 +624,6 @@ describe('Authorization service', () => {
       const authCtx = { userCtx: { name: 'joe' } };
       service.filterAllowedDocIds(authCtx, []).should.deep.equal([
         '_design/medic-client', 'org.couchdb.user:joe'
-      ]);
-    });
-
-    it('should skip tombstones of documents that were re-added', () => {
-      const docsByReplicationKey = [
-        { id: 'r1', key: 'subject', value: {} },
-        { id: 'r1_tombstone', key: 'subject', value: {} }, // skipped cause r1 winning is not deleted
-        { id: 'r2', key: 'subject', value: {} },
-        { id: 'r2_tombstone', key: 'subject', value: {} },  // skipped cause r2 winning is not deleted
-        { id: 'r3_tombstone', key: 'subject', value: {} },
-        { id: 'r4_tombstone', key: 'subject', value: {} },
-      ];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.endsWith('tombstone'));
-      tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('_tombstone', '') }));
-
-      const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
-      result.should.deep.equal([
-        '_design/medic-client', 'org.couchdb.user:user',
-        'r1', 'r2',
-        'r3_tombstone', 'r4_tombstone'
       ]);
     });
 
@@ -857,42 +641,18 @@ describe('Authorization service', () => {
       result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user', 'r1', 'r2', 'r3']);
     });
 
-    it('should include tombstones and tasks if no options are passed', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
+    it('should include tasks if no options are passed', () => {
       const docsByReplicationKey = [
         { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
         { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-        { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
         { id: 'r3', key: 'contact', value: { type: 'person' } },
         { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
       ];
 
       const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
       result.should.have.members([
         '_design/medic-client', 'org.couchdb.user:user',
-        'r1', 'task1', 'ts-r2', 'ts-task3', 'r3', 'task2', 'ts-r5',
-      ]);
-    });
-
-    it('should exclude tombstones if param is passed', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
-      const docsByReplicationKey = [
-        { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-        { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-        { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'r3', key: 'contact', value: { type: 'person' } },
-        { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-      ];
-
-      const ctx = { userCtx: { name: 'user' }};
-      const result = service.filterAllowedDocIds(ctx, docsByReplicationKey, { includeTombstones: false });
-      result.should.have.members([
-        '_design/medic-client', 'org.couchdb.user:user',
-        'r1', 'task1', 'r3', 'task2',
+        'r1', 'task1', 'r3', 'task2'
       ]);
     });
 
@@ -914,23 +674,6 @@ describe('Authorization service', () => {
         '_design/medic-client', 'org.couchdb.user:user',
         'r1', 'ts-r2', 'r3', 'ts-r5',
       ]);
-    });
-
-    it('should exclude tasks and tombstones if param is passed', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
-      const docsByRepKey = [
-        { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-        { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-        { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'r3', key: 'contact', value: { type: 'person' } },
-        { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-      ];
-
-      const ctx = { userCtx: { name: 'user' } };
-      const result = service.filterAllowedDocIds(ctx, docsByRepKey, { includeTasks: false, includeTombstones: false });
-      result.should.have.members([ '_design/medic-client', 'org.couchdb.user:user', 'r1', 'r3' ]);
     });
   });
 
@@ -1605,27 +1348,6 @@ describe('Authorization service', () => {
         service.isAuthChange('org.couchdb.user:user', userCtx, { couchDbUser: undefined }).should.equal(false);
         service.isAuthChange('someid', userCtx, { couchDbUser: 'aaaa'}).should.equal(false);
       });
-    });
-  });
-
-  describe('excludeTombstoneIds', () => {
-    it('excludes tombstone IDS', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone') !== -1);
-      service.excludeTombstoneIds(['1', '2', 'tombstone-a', 'b-tombstone', '3', '5'])
-        .should.deep.equal(['1', '2', '3', '5']);
-      tombstoneUtils.isTombstoneId.callCount.should.equal(6);
-    });
-  });
-
-  describe('convertTombstoneIds', () => {
-    it('converts tombstone ids to their corresponding doc ids', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone') !== -1);
-      tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('tombstone', '') }));
-
-      service.convertTombstoneIds(['1', '2', 'tombstone-a', 'b-tombstone', '3', '5'])
-        .should.deep.equal(['1', '2', '-a', 'b-', '3', '5']);
-      tombstoneUtils.isTombstoneId.callCount.should.equal(6);
-      tombstoneUtils.extractStub.callCount.should.equal(2);
     });
   });
 

@@ -8,7 +8,6 @@ const moment = require('moment');
 const { performance } = require('perf_hooks');
 
 const registrationUtils = require('@medic/registration-utils');
-const tombstoneUtils = require('@medic/tombstone-utils');
 const config = require('../../../src/config');
 const purgingUtils = require('@medic/purging-utils');
 const db = require('../../../src/db');
@@ -786,52 +785,6 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should set correct start_key and startkey_docid when last result is a tombstone', () => {
-      sinon.stub(db, 'queryMedic');
-      db.queryMedic.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'district', doc: { _id: 'first', place_id: 'firsts' } },
-        { id: 'f1', key: 'district', doc: { _id: 'f1', place_id: 's1' } },
-        { id: 'f2', key: 'health_center', doc: { _id: 'f2', place_id: 's3' } },
-        { id: 'f3-tombstone', key: 'health_center',
-          doc: { _id: 'f3-tombstone', tombstone: { _id: 'f3', place_id: 's3' } } },
-      ]});
-
-      db.queryMedic.onCall(1).resolves({ rows: [
-        { id: 'f3-tombstone', key: 'health_center',
-          doc: { _id: 'f3-tombstone', tombstone: { _id: 'f3', place_id: 's3' } } },
-        { id: 'f4-tombstone', key: 'clinic', doc: { _id: 'f4-tombstone', tombstone: { _id: 'f4', place_id: 's4' } } },
-        { id: 'f5', key: 'person', doc: { _id: 'f5', patient_id: 's5' } },
-      ]});
-
-      db.queryMedic.onCall(2).resolves({ rows: [
-        { id: 'f5', key: 'person', doc: { _id: 'f5', patient_id: 's5' } },
-        { id: 'f6-tombstone', key: 'person', doc: { _id: 'f6-tombstone', tombstone: { _id: 'f6', patient_id: 's6' } } },
-        { id: 'f7', key: 'person', doc: { _id: 'f7', patient_id: 's7' } },
-        { id: 'f8-tombstone', key: 'person', doc: { _id: 'f8-tombstone', tombstone: { _id: 'f8', patient_id: 's8' } } },
-      ]});
-
-      db.queryMedic.onCall(3).resolves({ rows: [
-        { id: 'f8-tombstone', key: 'person', doc: { _id: 'f8-tombstone', tombstone: { _id: 'f8', patient_id: 's8' } } },
-      ]});
-
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
-      sinon.stub(tombstoneUtils, 'extractStub').callsFake(id => ({ id: id.replace('-tombstone', '') }));
-
-      sinon.stub(db.medic, 'query').resolves({ rows: [] });
-      const purgeDbChanges = sinon.stub().resolves({ results: [] });
-      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
-
-      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
-        chai.expect(db.queryMedic.callCount).to.equal(4);
-        chai.expect(db.queryMedic.args).to.deep.equal([
-          getContactsByTypeArgs({ limit: 1000, id: '', key: '' }),
-          getContactsByTypeArgs({ limit: 1001, id: 'f3-tombstone', key: 'health_center' }),
-          getContactsByTypeArgs({ limit: 1001, id: 'f5', key: 'person' }),
-          getContactsByTypeArgs({ limit: 1001, id: 'f8-tombstone', key: 'person' }),
-        ]);
-      });
-    });
-
     it('should get docs_by_replication_key using the retrieved contacts and purge docs', () => {
       sinon.stub(db, 'queryMedic');
       db.queryMedic.onCall(0).resolves({ rows: [
@@ -845,7 +798,6 @@ describe('ServerSidePurge', () => {
         { id: 'f4', key: 'clinic', doc: { _id: 'f4', place_id: 's4' }},
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
@@ -915,7 +867,7 @@ describe('ServerSidePurge', () => {
         }]);
 
         // mock chtScriptApi
-        
+
 
         chai.expect(purgeFn.callCount).to.equal(8);
         chai.expect(purgeFn.args[0]).to.shallowDeepEqual([
@@ -926,7 +878,7 @@ describe('ServerSidePurge', () => {
         ]);
         // expect the fifth argument to be an object with the expected functions
         chai.expect(purgeFn.args[0][4]).to.have.keys('v1');
-        
+
         chai.expect(purgeFn.args[1]).to.shallowDeepEqual([
           { roles:roles.b },
           { _id: 'first', type: 'district_hospital' },
@@ -1000,26 +952,15 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should correctly group messages and reports for tombstones and tombstoned reports', () => {
+    it('should correctly group messages and reports for deletes', () => {
       sinon.stub(db, 'queryMedic');
       db.queryMedic.onCall(0).resolves({ rows: [
         { id: 'first', key: 'district_hospital', doc: { _id: 'first', type: 'district_hospital' } },
-        { id: 'f1-tombstone', key: 'clinic',
-          doc: { _id: 'f1-tombstone', tombstone: { _id: 'f1', type: 'clinic', place_id: 's1'  } } },
-        { id: 'f2-tombstone', key: 'person',
-          doc: { _id: 'f2-tombstone', tombstone: { _id: 'f2', type: 'person' } } },
         { id: 'f3', key: 'health_center', doc: { _id: 'f3', type: 'health_center' } },
-        { id: 'f4-tombstone', key: 'person',
-          doc: { _id: 'f4-tombstone', tombstone: { _id: 'f4', type: 'person', patient_id: 's4' } } },
       ]});
 
-      db.queryMedic.onCall(1).resolves({ rows: [
-        { id: 'f4-tombstone', key: 'person',
-          doc: { _id: 'f4-tombstone', tombstone: { _id: 'f4', type: 'person', patient_id: 's4' } } },
-      ]});
+      db.queryMedic.onCall(1).resolves({ rows: []});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
-      sinon.stub(tombstoneUtils, 'extractStub').callsFake(id => ({ id: id.replace('-tombstone', '') }));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
@@ -1028,20 +969,15 @@ describe('ServerSidePurge', () => {
       sinon.stub(db.medic, 'query');
       db.medic.query.onCall(0).resolves({ rows: [
         { id: 'first', key: 'first', value: { type: 'district_hospital' }},
-        { id: 'f1-tombstone', key: 'f1', value: { type: 'clinic' } },
         { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1' } },
         { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
         { id: 'f1-r2', key: 's1', value: { type: 'data_record', subject: 's1' } },
         { id: 'f1-m2', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
-        { id: 'f2-tombstone', key: 'f2', value: { type: 'clinic' } },
         { id: 'f2-r1', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
         { id: 'f2-r2', key: 'f2', value: { type: 'data_record',  subject: 'f2' } },
         { id: 'f3', key: 'f3', value: { type: 'health_center' }},
-        { id: 'f3-m1-tombstone', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
-        { id: 'f3-r1-tombstone', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
         { id: 'f3-m2', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
         { id: 'f3-r2', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
-        { id: 'f4-tombstone', key: 'f4', value: { type: 'person' }},
       ] });
 
       sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
@@ -1060,7 +996,7 @@ describe('ServerSidePurge', () => {
         chai.expect(db.medic.query.callCount).to.equal(1);
         chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
           'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'], limit: 100000, skip: 0 },
+          { keys: [ 'first', 'f3' ], limit: 100000, skip: 0 },
         ]);
         chai.expect(db.medic.allDocs.callCount).to.equal(1);
         chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
@@ -1071,26 +1007,26 @@ describe('ServerSidePurge', () => {
         chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
-            'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
-            'purged:f2-r2', 'purged:f2-r1',
+            'purged:f1-r1', 'purged:f1-r2',
+            'purged:f2-r1',
             'purged:f3', 'purged:f3-m2', 'purged:f3-r2'
           ],
-          batch_size: 11,
-          seq_interval: 10
+          batch_size: 8,
+          seq_interval: 7
         }]);
 
         chai.expect(purgeDbChanges.args[1]).to.deep.equalInAnyOrder([{
           doc_ids: [
             'purged:first',
-            'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
-            'purged:f2-r2', 'purged:f2-r1',
+            'purged:f1-r1', 'purged:f1-r2',
+            'purged:f2-r1',
             'purged:f3', 'purged:f3-m2', 'purged:f3-r2'
           ],
-          batch_size: 11,
-          seq_interval: 10
+          batch_size: 8,
+          seq_interval: 7
         }]);
 
-        chai.expect(purgeFn.callCount).to.equal(8);
+        chai.expect(purgeFn.callCount).to.equal(10);
         chai.expect(purgeFn.args[0]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
@@ -1100,7 +1036,7 @@ describe('ServerSidePurge', () => {
 
         chai.expect(purgeFn.args[2]).to.shallowDeepEqual([
           { roles: roles.a },
-          { _deleted: true },
+          {},
           [
             { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' },
             { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' }
@@ -1142,7 +1078,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person', patient_id: 's2' } },
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id || doc.place_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
@@ -1242,7 +1177,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
@@ -1337,7 +1271,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2', value: null },
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       sinon.stub(db.medic, 'query');
@@ -1445,7 +1378,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2', key: 'clinic', doc: { _id: 'f2', type: 'clinic' } },
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       sinon.stub(db.medic, 'query');
@@ -1532,7 +1464,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2', key: 'clinic', doc: { _id: 'f2', type: 'clinic' } },
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       sinon.stub(db.medic, 'query');
