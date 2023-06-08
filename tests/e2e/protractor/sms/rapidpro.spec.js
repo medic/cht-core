@@ -37,7 +37,7 @@ const startMockApp = () => {
 };
 
 const stopMockApp = () => {
-  server && server.close();
+  server?.close();
 };
 
 const INCOMING_KEY = 'thecakeisalie';
@@ -197,7 +197,7 @@ describe('RapidPro SMS Gateway', () => {
       // database
       const id = await firstMessageContent.getAttribute('data-id');
       const doc = await utils.getDoc(id);
-      expect(doc.sms_message && doc.sms_message.gateway_ref).toEqual('the_gateway_ref');
+      expect(doc.sms_message?.gateway_ref).toEqual('the_gateway_ref');
     });
 
     xit('should create reports', async () => {

@@ -48,7 +48,7 @@ module.exports = {
         throw err;
       })
       .then(auth => {
-        if (auth && auth.userCtx && auth.userCtx.name) {
+        if (auth?.userCtx?.name) {
           req.headers['X-Medic-User'] = auth.userCtx.name;
           return auth.userCtx;
         }
