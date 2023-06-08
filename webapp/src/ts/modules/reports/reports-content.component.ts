@@ -56,7 +56,6 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       if (params.id) {
         this.reportsActions.selectReportToOpen(this.route.snapshot.params.id);
         this.globalActions.clearNavigation();
-        $('.tooltip').remove();
         return;
       }
       this.globalActions.unsetComponents();
