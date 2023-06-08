@@ -21,9 +21,9 @@ const compileStaging = async () => {
 };
 
 const compileSecondary = async () => {
-  await compile([ 'build/ddocs/sentinel-db' ], 'build/ddocs/sentinel.json');
-  await compile([ 'build/ddocs/users-meta-db' ], 'build/ddocs/users-meta.json');
-  await compile([ 'build/ddocs/logs-db' ], 'build/ddocs/logs.json');
+  await compile([ 'build/ddocs/sentinel-db/sentinel' ], 'build/ddocs/sentinel.json');
+  await compile([ 'build/ddocs/users-meta-db/users-meta' ], 'build/ddocs/users-meta.json');
+  await compile([ 'build/ddocs/logs-db/logs' ], 'build/ddocs/logs.json');
 };
 
 const commands = {

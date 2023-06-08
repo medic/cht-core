@@ -783,7 +783,7 @@ module.exports = function(grunt) {
     'exec:unit-webapp-continuous'
   ]);
 
-  grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
+  grunt.registerTask('test-api-integration', 'Integration tests for api', [
     'exec:check-env-vars',
     'exec:npm-ci-api',
     'exec:mocha-integration-api',
