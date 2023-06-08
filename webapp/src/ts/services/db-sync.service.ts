@@ -172,7 +172,7 @@ export class DBSyncService {
       const localDocs = await this.dbService.get().allDocs();
 
       const localIdRevMap = Object.assign({}, ...localDocs.rows.map(row => ({ [row.id]: row.value?.rev })));
-      const remoteIdRevMap = Object.assign({}, remoteDocIdsRevs.map(({ id, rev }) => ({ [id]: rev })));
+      const remoteIdRevMap = Object.assign({}, ...remoteDocIdsRevs.map(({ id, rev }) => ({ [id]: rev })));
 
       await this.getMissingDocs(localIdRevMap, remoteDocIdsRevs);
       await this.getDeletesAndPurges(localIdRevMap, remoteIdRevMap);

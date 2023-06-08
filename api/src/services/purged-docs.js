@@ -10,6 +10,7 @@ const DB_NOT_FOUND_ERROR = new Error('not_found');
 const getPurgeDb = (roles) => {
   const hash = purgingUtils.getRoleHash(roles);
   const dbName = purgingUtils.getPurgeDbName(environment.db, hash);
+  logger.warn(dbName);
   return db.exists(dbName).then(purgeDb => {
     if (!purgeDb) {
       throw DB_NOT_FOUND_ERROR;
@@ -48,7 +49,7 @@ const getPurgedIdsFromChanges = result => {
 const getPurgedIds = (userCtx, docIds, useCache = true) => {
   let purgeIds = [];
   let cache;
-  if (!docIds || !docIds.length || !userCtx.roles || !userCtx.roles.length) {
+  if (!docIds?.length || !userCtx.roles?.length) {
     return Promise.resolve(purgeIds);
   }
 
@@ -62,14 +63,17 @@ const getPurgedIds = (userCtx, docIds, useCache = true) => {
 
   const ids = docIds.map(purgingUtils.getPurgedId);
   let purgeDb;
+  const n = Date.now();
+  logger.warn(docIds.length);
   // requesting _changes instead of _all_docs because it's roughly twice faster
   return getPurgeDb(userCtx.roles)
     .then(tempDb => purgeDb = tempDb)
     .then(() => purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length }))
     .then(result => {
       purgeIds = getPurgedIdsFromChanges(result);
-      cache && cache.set(getCacheKey(userCtx), purgeIds);
+      cache?.set(getCacheKey(userCtx), purgeIds);
       db.close(purgeDb);
+      logger.warn('get purges took %s', (Date.now() - n) / 1000);
     })
     .catch(err => catchDbNotFoundError(err, purgeDb))
     .then(() => purgeIds);

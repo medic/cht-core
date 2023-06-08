@@ -39,6 +39,7 @@ const getDocIdsToDelete = async (userCtx, docIds) => {
     .map(row => row.key);
 
   const toPurge = await purgedDocs.getPurgedIds(userCtx, docIds, false);
+  console.log(toPurge);
   toDelete.push(...toPurge);
 
   return toDelete;
