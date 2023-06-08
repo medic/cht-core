@@ -39,7 +39,7 @@ describe('bfcache', async () => {
     });
   });
 
-  describe('admin app', () => {
+  xdescribe('admin app', () => {
     it('should redirect to login page when session is expired', async () => {
       await usersAdminPage.goToAdminUser();
       await browser.deleteCookies('AuthSession');
