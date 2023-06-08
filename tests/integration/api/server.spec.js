@@ -1,6 +1,6 @@
-const utils = require('../../utils');
+const utils = require('@utils');
 const request = require('request');
-const constants = require('../../constants');
+const constants = require('@constants');
 const _ = require('lodash');
 
 describe('server', () => {
@@ -209,6 +209,7 @@ describe('server', () => {
       await utils.stopApi();
       await utils.startHaproxy();
       await utils.startApi();
+      await utils.delayPromise(1000);
 
       await utils.delayPromise(1000);
 
@@ -221,6 +222,7 @@ describe('server', () => {
       await utils.delayPromise(1000);
 
       await utils.listenForApi();
+      await utils.delayPromise(1000);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subject, Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -18,7 +18,7 @@ import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 @Component({
   templateUrl: './tasks-content.component.html'
 })
-export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
+export class TasksContentComponent implements OnInit, OnDestroy {
   constructor(
     private translateService:TranslateService,
     private route:ActivatedRoute,
@@ -43,7 +43,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
   enketoStatus;
   private enketoEdited;
   loadingContent;
-  selectedTask;
+  selectedTask = null;
   form;
   loadingForm;
   contentError;
@@ -67,6 +67,7 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
     this.resetFormError();
 
     this.tasksActions.setLastSubmittedTask(null);
+    this.viewInited.next(true);
   }
 
   ngOnDestroy() {
@@ -125,10 +126,6 @@ export class TasksContentComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
     this.subscription.add(setSelectedSubscription);
-  }
-
-  ngAfterViewInit() {
-    this.viewInited.next(true);
   }
 
   private setSelected(id) {

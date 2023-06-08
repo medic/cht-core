@@ -1,5 +1,5 @@
-const usersAdminPage = require('../../../page-objects/default/users/user.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const usersAdminPage = require('@page-objects/default/users/user.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 describe('Bulk User Creation ->', () => {
   before(async () => {
@@ -19,7 +19,7 @@ describe('Bulk User Creation ->', () => {
       this.localStorage.removeItem('isTestEnv');
     });
   });
-  
+
   it('should show an upload summary with a successful upload and a failed upload', async () => {
     const path = require('path');
     const filePath = path.join(__dirname, 'bulk-upload-test.csv');

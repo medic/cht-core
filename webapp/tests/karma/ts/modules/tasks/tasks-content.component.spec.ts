@@ -81,7 +81,6 @@ describe('TasksContentComponent', () => {
       return TestBed.compileComponents().then(() => {
         fixture = TestBed.createComponent(TasksContentComponent);
         component = fixture.componentInstance;
-        component.ngAfterViewInit();
         fixture.detectChanges();
         return fixture.whenStable();
       });

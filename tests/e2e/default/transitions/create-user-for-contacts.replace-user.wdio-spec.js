@@ -1,18 +1,18 @@
 const fs = require('fs');
-const utils = require('../../../utils');
-const browserUtils = require('../../../utils/browser');
-const sentinelUtils = require('../../../utils/sentinel');
-const messagesUtils = require('../../../utils/messages');
-const personFactory = require('../../../factories/cht/contacts/person');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const userFactory = require('../../../factories/cht/users/users');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const replaceUserForm = require('../../../page-objects/default/enketo/replace-user.wdio.page');
-const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('../../../constants');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const browserUtils = require('@utils/browser');
+const messagesUtils = require('@utils/messages');
+const personFactory = require('@factories/cht/contacts/person');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const replaceUserForm = require('@page-objects/default/enketo/replace-user.wdio.page');
+const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('@constants');
 
 const USER_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw' }));
 

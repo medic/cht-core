@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 
-const { runCommand } = require('../../cht-conf-utils');
-const utils = require('../../utils');
+const { runCommand } = require('@utils/cht-conf');
+const utils = require('@utils');
 
 //Not all actions tested here due to missing forms and config
 //[convert-collect-forms , upload-collect-form, upload-branding, upload-partners, upload-privacy-policies]

@@ -1,11 +1,11 @@
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const utils = require('../../../utils');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const utils = require('@utils');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 describe('Delete Contacts', () => {
   const places = placeFactory.generateHierarchy();

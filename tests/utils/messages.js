@@ -1,4 +1,4 @@
-const utils = require('../utils');
+const utils = require('@utils');
 
 const getQueuedMessages = () => utils.db
   .query('medic-admin/message_queue', { reduce: false, include_docs: true })

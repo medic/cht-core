@@ -1,4 +1,4 @@
-const utils = require('../../utils');
+const utils = require('@utils');
 
 const getApiSmsChanges = (messages) => {
   const expectedMessages = messages.map(message => message.content);

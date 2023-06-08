@@ -1,3 +1,4 @@
+require('../aliases');
 const chaiExclude = require('chai-exclude');
 const chaiAsPromised = require('chai-as-promised');
 const chai = require('chai');

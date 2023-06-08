@@ -1,5 +1,5 @@
-const constants = require('../../../constants');
-const utils = require('../../../utils');
+const constants = require('@constants');
+const utils = require('@utils');
 const commonPage = require('../common/common.wdio.page');
 const loginButton = () => $('#login');
 const userField = () => $('#user');
@@ -8,6 +8,11 @@ const labelForUser = () => $('label[for="user"]');
 const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
+
+const getErrorMessage = async () => {
+  await (await errorMessageField()).waitForDisplayed();
+  return await (await errorMessageField()).getText();
+};
 
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
   await (await userField()).setValue(username);
@@ -113,5 +118,6 @@ module.exports = {
   returnToLoginButtonExists,
   getTokenError,
   getToLoginLinkText,
-  getCurrentLanguage
+  getCurrentLanguage,
+  getErrorMessage,
 };

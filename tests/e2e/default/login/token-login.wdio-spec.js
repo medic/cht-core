@@ -1,6 +1,6 @@
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const utils = require('../../../utils');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const utils = require('@utils');
 
 const INVALID = 'Your link is invalid.';
 const EXPIRED = 'Your link has expired.';

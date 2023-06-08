@@ -3,13 +3,13 @@ const bikramSambat = require('bikram-sambat');
 const { devanagari } = require('eurodigit/src/to_non_euro');
 const moment = require('moment');
 
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const chtConfUtils = require('../../../cht-conf-utils');
-const gatewayApiUtils = require('../../../gateway-api.utils');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const chtConfUtils = require('@utils/cht-conf');
+const gatewayApiUtils = require('@utils/gateway-api');
 
 const NEPALI_LOCALE_CODE = 'ne';
 
@@ -209,10 +209,13 @@ describe('Bikram Sambat date display', () => {
     const relativeDateLocale = moment.localeData().relativeTime(devanagari(years), true, 'yy', false);
     const relativeDateLocaleSuffix = moment.localeData().pastFuture(years * -1, relativeDateLocale);
 
-    // space between prefix and the date is &nbsp;
-    expect(await contactsPage.getContactSummaryField('dateOfDeath')).to.match(
-      new RegExp(`contact\\.deceased\\.date\\.prefix[\\s\\h]${relativeDateLocale}`)
+    const dateOfDeath = await contactsPage.getContactSummaryField('dateOfDeath');
+    expect(dateOfDeath).to.not.be.undefined;
+    // The text has &nbsp; which wdio translates in different ways -> Local: just spaces, CI: spaces and new line
+    expect(dateOfDeath).to.match(
+      new RegExp(`contact\\.deceased\\.date\\.prefix((\\s){1,2})${relativeDateLocale}`)
     );
+
     expect(await contactsPage.getContactSummaryField('age')).to.equal(relativeDateLocale);
     expect(await contactsPage.getContactSummaryField('dayMonth')).to.equal(`${bkDay} ${bkMonth}`);
     expect(await contactsPage.getContactSummaryField('relativeDate')).to.equal(relativeDateSuffix);

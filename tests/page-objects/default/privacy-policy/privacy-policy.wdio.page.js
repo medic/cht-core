@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const commonElements = require('../common/common.wdio.page');
 const privacyWrapper = () => $('#privacy-policy-wrapper');
 const privacyAccept = async () => (await privacyWrapper()).$('.btn');

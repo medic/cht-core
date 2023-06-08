@@ -1,8 +1,8 @@
 const _ = require('lodash');
-const utils = require('../../../utils');
-const usersPage = require('../../../page-objects/default/users/user.wdio.page');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const utils = require('@utils');
+const usersPage = require('@page-objects/default/users/user.wdio.page');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 const uuid = require('uuid').v4;
 
 const username = 'fulltester';

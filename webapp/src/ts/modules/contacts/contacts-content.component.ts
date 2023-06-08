@@ -203,12 +203,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
       if (params.id) {
         this.contactsActions.selectContact(this.route.snapshot.params.id);
         this.globalActions.clearNavigation();
-
-        $('.tooltip').remove();
-      } else {
-        this.contactsActions.clearSelection();
-        this.globalActions.unsetSelected();
+        return;
       }
+      this.contactsActions.clearSelection();
+      this.globalActions.unsetSelected();
     });
     this.subscription.add(routeSubscription);
   }

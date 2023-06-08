@@ -159,7 +159,7 @@ const saveCompletedTasks = (id, infodoc) => {
   return saveProperty(id, infodoc, 'completed_tasks', {});
 };
 
-const saveProperty = async (id, infodoc, property, defaultValue) => {
+const saveProperty = async (id, infodoc, property, defaultValue = {}) => {
   let updatedInfoDoc;
   try {
     updatedInfoDoc = await db.sentinel.get(getInfoDocId(id));

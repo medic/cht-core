@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const commonPage = require('../common/common.wdio.page');
 const reportsPage = require('../reports/reports.wdio.page');
 
@@ -6,6 +6,8 @@ const submitButton = () => $('.enketo .submit');
 const cancelButton = () => $('.enketo .cancel');
 const nextButton = () => $('button.btn.btn-primary.next-page');
 const nameField = () => $('#report-form form [name="/data/name"]');
+const errorContainer = () => $('.empty-selection');
+const formTitle = () => $('.enketo form #form-title');
 
 const nextPage = async (numberOfPages = 1) => {
   for (let i = 0; i < numberOfPages; i++) {
@@ -63,13 +65,29 @@ const verifyReport = async () => {
   expect(validatedReport.patient).to.be.undefined;
 };
 
-const submitForm = () => submitButton().click();
+const submitForm = async () => {
+  await (await submitButton()).waitForClickable();
+  await (await submitButton()).click();
+};
 
 const cancelForm = async () => {
+  await (await cancelButton()).waitForClickable();
   await (await cancelButton()).click();
 };
 
+const getErrorMessage = async () => {
+  await (await errorContainer()).waitForDisplayed();
+  return await (await errorContainer()).getText();
+};
+
+const getFormTitle = async () => {
+  await (await formTitle()).waitForDisplayed();
+  return await (await formTitle()).getText();
+};
+
 module.exports = {
+  getFormTitle,
+  getErrorMessage,
   submitButton,
   cancelButton,
   nextPage,

@@ -138,7 +138,7 @@ if (UNIT_TEST_ENV) {
   };
 
   /**
-   * @param {Database} database
+   * @param {Database} db
    * @param {Array<DesignDocument>} docs
    * @return {[{ id: string, rev: string }]}
    */

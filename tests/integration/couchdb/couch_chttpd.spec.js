@@ -1,7 +1,7 @@
 const { spawn } = require('child_process');
 const path = require('path');
-const constants = require('../../constants');
-const utils = require('../../utils');
+const constants = require('@constants');
+const utils = require('@utils');
 const { expect } = require('chai');
 
 const runDockerCommand = (command, params, env=process.env) => {
@@ -27,7 +27,7 @@ const getLogs = async () => {
   const containerName = (await runDockerCommand('docker-compose', ['ps', '-q', '-a']))[0];
   const logs = await runDockerCommand('docker', ['logs', containerName]);
   try {
-    return logs && logs.filter(log => log).map(log => JSON.parse(log));
+    return logs?.filter(log => log).map(log => JSON.parse(log));
   } catch (err) {
     console.log(logs);
     throw err;

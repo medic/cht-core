@@ -1,10 +1,10 @@
-const photoUpload = require('../../../page-objects/default/enketo/photo-upload.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const utils = require('../../../utils');
-const userData = require('../../../page-objects/default/users/user.data');
+const photoUpload = require('@page-objects/default/enketo/photo-upload.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const utils = require('@utils');
+const userData = require('@page-objects/default/users/user.data');
 const path = require('path');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 const { userContactDoc, docs } = userData;
 
