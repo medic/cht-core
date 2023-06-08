@@ -24,7 +24,7 @@ const saveBrowserLogs = async (logLevels, browserLogPath) => {
       }
     });
     browser.on('Log.entryAdded', (params) => {
-      if (params?.entry) {
+      if (params && params.entry) {
         const entry = params.entry;
         const logEntry = `[${entry.level}]: ${entry.source} ${entry.text} url: ${entry.url} at ${entry.timestamp}\n`;
         if (logEntry !== lastMessage) {
