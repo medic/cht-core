@@ -8,18 +8,13 @@ const saveBrowserLogs = async (logLevels, browserLogPath) => {
     await browser.cdp('Log', 'enable');
     await browser.cdp('Runtime', 'enable');
     const writeToFile = browserLogPath === undefined ? false : true;
-    // dedupe the messages to work around to known issue: https://github.com/webdriverio/webdriverio/issues/6347
-    let lastMessage = '';
     browser.on('Runtime.consoleAPICalled', (data) => {
       if (data && logLevels.indexOf(data.type) >= 0) {
         const logEntry = `[${data.type}] Console Api Event: ${JSON.stringify(data.args)}\n`;
-        if (logEntry !== lastMessage) {
-          if (writeToFile) {
-            fs.appendFileSync(browserLogPath, logEntry);
-          } else {
-            logEntries.push(logEntry);
-          }
-          lastMessage = logEntry;
+        if (writeToFile) {
+          fs.appendFileSync(browserLogPath, logEntry);
+        } else {
+          logEntries.push(logEntry);
         }
       }
     });
@@ -27,12 +22,10 @@ const saveBrowserLogs = async (logLevels, browserLogPath) => {
       if (params && params.entry) {
         const entry = params.entry;
         const logEntry = `[${entry.level}]: ${entry.source} ${entry.text} url: ${entry.url} at ${entry.timestamp}\n`;
-        if (logEntry !== lastMessage) {
-          if (writeToFile) {
-            fs.appendFileSync(browserLogPath, logEntry);
-          } else {
-            logEntries.push(logEntry);
-          }
+        if (writeToFile) {
+          fs.appendFileSync(browserLogPath, logEntry);
+        } else {
+          logEntries.push(logEntry);
         }
       }
     });
