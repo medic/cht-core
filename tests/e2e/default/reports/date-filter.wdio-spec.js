@@ -17,22 +17,22 @@ describe('Report Filter', () => {
   const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
   const reports = [
     // one registration half an hour before the start date
-    reportFactory.build(
+    reportFactory.report().build(
       { form: 'P', reported_date: moment([2016, 4, 15, 23, 30]).valueOf() },
       { patient, submitter: user.contact, fields: { lmp_date: 'Feb 3, 2016' } }
     ),
     // one registration half an hour after the start date
-    reportFactory.build(
+    reportFactory.report().build(
       { form: 'P', reported_date: moment([2016, 4, 16, 0, 30]).valueOf() },
       { patient, submitter: user.contact, fields: { lmp_date: 'Feb 15, 2016' } }
     ),
     // one visit half an hour after the end date
-    reportFactory.build(
+    reportFactory.report().build(
       { form: 'V', reported_date: moment([2016, 4, 18, 0, 30]).valueOf() },
       { patient, submitter: user.contact, fields: { ok: 'Yes!' } }
     ),
     // one visit half an hour before the end date
-    reportFactory.build(
+    reportFactory.report().build(
       { form: 'V', reported_date: moment([2016, 4, 17, 23, 30]).valueOf() },
       { patient, submitter: user.contact, fields: { ok: 'Yes!' } }
     ),

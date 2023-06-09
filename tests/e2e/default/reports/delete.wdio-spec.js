@@ -17,14 +17,14 @@ describe('Delete Reports', () => {
 
   const today = moment();
   const reports = [
-    reportFactory.build(
+    reportFactory.report().build(
       {
         form: 'P',
         reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf()
       },
       { patient, submitter: onlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' } },
     ),
-    reportFactory.build(
+    reportFactory.report().build(
       {
         form: 'P',
         reported_date: moment([today.year(), today.month(), 12, 10, 30]).subtract(1, 'month').valueOf()

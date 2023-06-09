@@ -129,7 +129,7 @@ describe('Contact summary info', () => {
     });
   const patientAlice = personFactory.build({ name: 'Alice Alison', phone: '+447765902001' });
   const patientDavid = personFactory.build({ name: 'David Davidson', phone: '+447765902002', parent: placeBobClinic });
-  const davidVisit = reportFactory.build(
+  const davidVisit = reportFactory.report().build(
     { form: 'visit' },
     { patient: patientDavid, submitter: districtAdminUser.contact },
   );
@@ -141,11 +141,11 @@ describe('Contact summary info', () => {
       visitTag: { _id: davidVisit._id },
     },
   });
-  const carolPregnancy = reportFactory.build(
+  const carolPregnancy = reportFactory.report().build(
     { form: 'P' },
     { patient: patientCarol, submitter: districtAdminUser.contact },
   );
-  const carolVisit = reportFactory.build(
+  const carolVisit = reportFactory.report().build(
     { form: 'V' },
     {
       patient: patientCarol,

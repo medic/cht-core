@@ -54,7 +54,7 @@ describe('Reports tab breadcrumbs', () => {
 
   const today = moment();
   const reports = [
-    reportFactory.build(
+    reportFactory.report().build(
       {
         form: 'P',
         reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf(),

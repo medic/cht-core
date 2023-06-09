@@ -37,9 +37,9 @@ const patient = personFactory.build({
   _id: uuid(),
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
-const xmlReport = reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
+const xmlReport = reportFactory.report().build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
 
-const smsReport = reportFactory.build(
+const smsReport = reportFactory.report().build(
   {
     form: 'P',
     patient_id: patient._id,

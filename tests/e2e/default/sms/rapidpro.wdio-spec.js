@@ -1,11 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const _ = require('lodash');
 const utils = require('@utils');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
-//const smsPregancy = require('@factories/cht/reports/sms-pregnancy');
+const pregnancyReportFactory = require('@factories/cht/reports/sms-pregnancy');
+const genericReportFactory = require('@factories/cht/reports/generic-report');
 
 describe('RapidPro SMS Gateway', () => {
   let server;
@@ -15,8 +17,8 @@ describe('RapidPro SMS Gateway', () => {
   const mockApp = express();
   const broadcastsEndpoint = '/api/v2/broadcasts.json';
   const messagesEndpoint = '/api/v2/messages.json';
-  const broadcastsResult = (req, res) => res.status(200).end();
-  const messagesResult = (req, res) => res.status(200).end();
+  let broadcastsResult = (req, res) => res.status(200).end();
+  let messagesResult = (req, res) => res.status(200).end();
 
   mockApp.use(bodyParser.json());
 
@@ -73,7 +75,8 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).to.contain({ code: 403, error: 'No incoming key configured' });
+        //expect(err.responseBody).to.contain({ code: 403, error: 'No incoming key configured' });
+        expect(err.responseBody).to.eql({ code: 403, error: 'No incoming key configured' });
       }
     });
 
@@ -89,7 +92,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).to.contain({ code: 403, error: 'Missing authorization token' });
+        expect(err.responseBody).to.eql({ code: 403, error: 'Missing authorization token' });
       }
     });
 
@@ -106,7 +109,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).to.contain({ code: 403, error: 'Incorrect token' });
+        expect(err.responseBody).to.eql({ code: 403, error: 'Incorrect token' });
       }
     });
 
@@ -123,7 +126,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).to.contain({ code: 403, error: 'Missing authorization token' });
+        expect(err.responseBody).to.eql({ code: 403, error: 'Missing authorization token' });
       }
     });
 
@@ -141,7 +144,7 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        expect(err.responseBody).to.contain({ code: 400, error: 'Message was not saved' });
+        expect(err.responseBody).to.eql({ code: 400, error: 'Message was not saved' });
       }
     });
 
@@ -166,7 +169,7 @@ describe('RapidPro SMS Gateway', () => {
         body: message,
       });
 
-      expect(messageResult).to.contain({ saved: 1 });
+      expect(messageResult).to.eql({ saved: 1 });
 
       await loginPage.cookieLogin();
       await commonPage.goToMessages();
@@ -223,7 +226,7 @@ describe('RapidPro SMS Gateway', () => {
         body: message,
       });
 
-      expect(messageResult).to.contain({ saved: 1 });
+      expect(messageResult).to.eql({ saved: 1 });
       await loginPage.cookieLogin();
       await commonPage.goToReports();
 
@@ -235,101 +238,353 @@ describe('RapidPro SMS Gateway', () => {
 
       const reportDoc = await utils.getDoc(firstReportInfo.dataId);
       expect(reportDoc.form).to.equal('FORM');
-      expect(reportDoc.fields).to.contain({ some_data: 'the data' });
+      expect(reportDoc.fields).to.eql({ some_data: 'the data' });
     });
   }); // End describe 'Webapp Terminating messages'
 
   describe('Webapp originating messages and state updates', () => {
-    let settings;
-    let reportWithTasks;
-
     const OUTGOING_KEY = 'ermahgerd';
     const setOutgoingKey = () => {
       return utils.saveCredentials('rapidpro:outgoing', OUTGOING_KEY);
     };
 
-    beforeEach(() => {
-      settings = {
+    const verifyPhoneAndMessage = (obj, index) => {
+      expect(obj.urns).to.eql([`tel:phone${index}`]);
+      expect(obj.text).to.equal(`message${index}`);
+    };
+
+    const verifyGatewayRefAndState = (obj, gateway, state) => {
+      expect(obj.gateway_ref).to.equal(gateway);
+      expect(obj.state).to.equal(state);
+    };
+
+    const pregnancyReportWithTasks = pregnancyReportFactory.pregnancy().build({
+      tasks: [
+        {
+          messages: [{ to: 'phone1', message: 'message1', uuid: 'uuid1' }],
+          state: 'pending',
+        },
+        {
+          messages: [{ to: 'phone2', message: 'message2', uuid: 'uuid2' }],
+          state: 'sent',
+        },
+      ],
+      scheduled_tasks: [
+        {
+          messages: [{ to: 'phone3', message: 'message3', uuid: 'uuid3' }],
+          state: 'pending',
+          group: 2,
+          type: 'ANC Reminders LMP',
+        },
+        {
+          messages: [{ to: 'phone4', message: 'message4', uuid: 'uuid4' }],
+          state: 'pending',
+          group: 2,
+          type: 'ANC Reminders LMP',
+        },
+        {
+          messages: [{ to: 'phone5', message: 'message5', uuid: 'uuid5' }],
+          state: 'pending',
+          group: 3,
+          type: 'ANC Reminders LMP',
+        },
+      ]
+    });
+
+    beforeEach(async () => {
+      const settings = {
         sms: {
           outgoing_service: 'rapidpro',
           rapidpro: {url: utils.hostURL(server.address().port)},
         }
       };
-      //reportWithTasks = smsPregancy.pregnancy().build();
-      reportWithTasks = {
-        _id: 'report_with_tasks',
-        type: 'data_record',
-        form: 'P',
-        errors: [],
-        reported_date: new Date().getTime(),
-        tasks: [
-          {
-            messages: [{to: 'phone1', message: 'message1', uuid: 'uuid1'}],
-            state: 'pending',
-          },
-          {
-            messages: [{to: 'phone2', message: 'message2', uuid: 'uuid2'}],
-            state: 'sent',
-          },
-        ],
-        scheduled_tasks: [
-          {
-            messages: [{to: 'phone3', message: 'message3', uuid: 'uuid3'}],
-            state: 'pending',
-            group: 2,
-            type: 'ANC Reminders LMP',
-          },
-          {
-            messages: [{to: 'phone4', message: 'message4', uuid: 'uuid4'}],
-            state: 'pending',
-            group: 2,
-            type: 'ANC Reminders LMP',
-          },
-          {
-            messages: [{to: 'phone5', message: 'message5', uuid: 'uuid5'}],
-            state: 'pending',
-            group: 3,
-            type: 'ANC Reminders LMP',
-          },
-        ]
-      };
+      await utils.updateSettings(settings, true);
     });
 
     afterEach(() => utils.revertDb([], true));
 
-    //});
 
     it('should not call RapidPro endpoint when credentials are not set', async () => {
-      await utils.updateSettings(settings, true);
-      await utils.saveDoc(reportWithTasks);
-
+      await utils.saveDoc(pregnancyReportWithTasks);
+      await browser.pause(1200); // interval to check the queue should run every second
       expect(broadcastsEndpointRequests.length).to.equal(0);
     });
 
-    // eslint-disable-next-line no-only-tests/no-only-tests
-    it.only('should call endpoint with set credentials', async () => {
-      await utils.updateSettings(settings, true);
+    it('should call endpoint with set credentials', async () => {
       await setOutgoingKey();
 
-      await utils.saveDoc(reportWithTasks);
+      await utils.saveDoc(pregnancyReportWithTasks);
       await browser.waitUntil(() => broadcastsEndpointRequests.length === 4, 1200);
 
       const bodies = broadcastsEndpointRequests
         .map(item => item[0])
         .sort((a, b) => a.text.localeCompare(b.text));
 
+      verifyPhoneAndMessage(bodies[0], 1);
+      verifyPhoneAndMessage(bodies[1], 3);
+      verifyPhoneAndMessage(bodies[2], 4);
+      verifyPhoneAndMessage(bodies[3], 5);
+
       const headers = broadcastsEndpointRequests.map(item => item[1]);
-      expect(bodies).to.equal([
-        { urns: ['tel:phone1'], text: 'message1' },
-        { urns: ['tel:phone3'], text: 'message3' },
-        { urns: ['tel:phone4'], text: 'message4' },
-        { urns: ['tel:phone5'], text: 'message5' },
+      headers.forEach(header => expect(header.authorization).to.equal(`Token ${OUTGOING_KEY}`));
+    });
+
+    it('should set correct states from broadcast api', async () => {
+      await setOutgoingKey();
+
+      const statuses = ['queued', '', 'queued', 'sent', 'failed'];
+      broadcastsResult = (req, res) => {
+        const idx = req.body.text.replace('message', '');
+        res.json({
+          id: `broadcast${idx}`,
+          status: statuses[idx - 1],
+        });
+      };
+
+      const { rev } = await utils.saveDoc(pregnancyReportWithTasks);
+      const revNumber = parseInt(rev);
+      await browser.waitUntil(() => broadcastsEndpointRequests.length === 4, 1200);
+      await utils.waitForDocRev([{ id: pregnancyReportWithTasks._id, rev: revNumber + 1 }]);
+
+      const report = await utils.getDoc(pregnancyReportWithTasks._id);
+      verifyGatewayRefAndState(report.tasks[0], 'broadcast1', 'received-by-gateway');
+      verifyGatewayRefAndState(report.tasks[1], undefined, 'sent');
+      verifyGatewayRefAndState(report.scheduled_tasks[0], 'broadcast3', 'received-by-gateway');
+      verifyGatewayRefAndState(report.scheduled_tasks[1], 'broadcast4', 'sent');
+      verifyGatewayRefAndState(report.scheduled_tasks[2], 'broadcast5', 'failed');
+    });
+
+    it('should update the states correctly from messages api', async () => {
+      const genReport = (id, index) => genericReportFactory.reportWithTasks().build({
+        _id: id,
+        tasks: [{
+          messages: [{ to: `phone${index}`, message: `message${index}`, uuid: `uuid${index}` }],
+          gateway_ref: `gateway_ref_${id}`,
+          state: 'received-by-gateway',
+        }]
+      });
+
+      const docs = [
+        genReport('received_to_queued', 1),
+        genReport('received_to_wired', 2),
+        genReport('received_to_sent', 3),
+        genReport('received_to_resent', 4),
+        genReport('received_to_delivered', 5),
+        genReport('received_to_errored', 6),
+        genReport('received_to_failed', 7),
+      ];
+
+      messagesResult = (req, res) => {
+        const id = req.query.broadcast.replace('gateway_ref_', '');
+        const nextStatus = id.replace('received_to_', '');
+        res.json({ results: [{ status: nextStatus }] });
+      };
+
+      await setOutgoingKey();
+      await utils.saveDocs(docs);
+
+      await browser.waitUntil(() => {
+        const requestedBroadcastIds = messagesEndpointRequests.map(([query]) => query.broadcast);
+        return _.uniq(requestedBroadcastIds).length === 7;
+      }, 4000);
+      await browser.pause(1000); // wait for the docs to actually be updated
+
+      const requestedBroadcastIds = [];
+      const expectedBroadcastIds = docs.map(doc => doc.tasks[0].gateway_ref).sort();
+      messagesEndpointRequests.forEach(([ query, headers ]) => {
+        expect(query.broadcast).to.not.be.undefined;
+        expect(expectedBroadcastIds.includes(query.broadcast)).to.be.true;
+        requestedBroadcastIds.push(query.broadcast);
+        expect(headers.authorization).to.equal(`Token ${OUTGOING_KEY}`);
+      });
+
+      // we don't have complete control over which docs are requested in the provided timespan
+      const sortedUniqueRequestedBroadcasts = _.uniq(requestedBroadcastIds.sort());
+      expect(expectedBroadcastIds).to.eql(sortedUniqueRequestedBroadcasts);
+
+      const updatedDocs = await utils.getDocs(docs.map(doc => doc._id));
+      const statusMap = [
+        ['queued', 'received-by-gateway'],
+        ['wired', 'forwarded-by-gateway'],
+        ['sent', 'sent'],
+        ['delivered', 'delivered'],
+        ['resent', 'sent'],
+        ['errored', 'received-by-gateway'],
+        ['failed', 'failed'],
+      ];
+
+      updatedDocs.forEach((updatedDoc) => {
+        const status = updatedDoc._id.replace('received_to_', '');
+        const state = statusMap.find(map => map[0] === status)[1];
+        expect(updatedDoc.tasks[0].state).to.equal(state);
+      });
+    });
+
+    it('should not poll messages for docs that are in pending or scheduled states or lack gateway ref ', async () => {
+      const genReport = (state) => genericReportFactory.reportWithTasks().build({
+        tasks: [{
+          messages: [{ to: 'phone', message: 'message', uuid: 'uuid' }],
+          gateway_ref: 'gateway_ref',
+          state: state,
+        }]
+      });
+
+      const docs = [
+        genReport('queued'),
+        genReport('scheduled'),
+        genReport('muted'),
+        genReport('duplicate'),
+        genReport('cleared'),
+        genericReportFactory.reportWithTasks().build({
+          tasks: [{
+            messages: [{ to: 'phone', message: 'message', uuid: 'uuid' }],
+            state: 'received-by-gateway',
+          }]
+        })
+      ];
+
+      await setOutgoingKey();
+      await utils.saveDocs(docs);
+      await browser.pause(1200); // wait for timer to trigger
+      expect(messagesEndpointRequests.length).to.equal(0); // no requests made
+    });
+
+    it('should keep updating until record is in final state', async () => {
+      const statusChangeList = [
+        'queued',
+        'wired',
+        'sent',
+        'errored',
+        'resent',
+        'delivered',
+      ];
+
+      const doc = genericReportFactory.reportWithTasks().build();
+
+      let idx = 0;
+      messagesResult = (req, res) => {
+        const nextStatus = statusChangeList[idx];
+        idx++;
+        res.json({ results: [{ status: nextStatus }] });
+      };
+
+      await setOutgoingKey();
+      await utils.saveDoc(doc);
+
+      await browser.waitUntil(() => messagesEndpointRequests.length === 6, 7 * 1000 );
+      await browser.pause(1200); // wait for one extra iteration
+
+      expect(messagesEndpointRequests.length).to.equal(6); // no additional requests
+
+      const updatedDoc = await utils.getDoc(doc._id);
+      expect(updatedDoc.tasks[0].state_history.length).to.equal(6);
+      expect(updatedDoc.tasks[0].state).to.equal('delivered');
+
+      const states = updatedDoc.tasks[0].state_history.map(history => history.state);
+      expect(states).to.eql([
+        'received-by-gateway',
+        'forwarded-by-gateway',
+        'sent',
+        'received-by-gateway',
+        'sent',
+        'delivered',
       ]);
-      //const headers = broadcastsEndpointRequests.map(item => item[1]);
-      expect(headers[0].authorization).to.equal(`Token ${OUTGOING_KEY}`);
-      expect(headers[1].authorization).to.equal(`Token ${OUTGOING_KEY}`);
-      expect(headers[2].authorization).to.equal(`Token ${OUTGOING_KEY}`);
-      expect(headers[3].authorization).to.equal(`Token ${OUTGOING_KEY}`);
+
+      messagesEndpointRequests.forEach(([ query ]) => {
+        expect(query.broadcast).to.equal('gateway_ref');
+      });
+    });
+
+    it('should poll for state updates and consume queue', async () => {
+      const nonFinalStates = ['received-by-gateway', 'forwarded-by-gateway', 'sent'];
+      const finalStates = ['delivered', 'failed'];
+      const docsCount = 90;
+      const getNonFinalStateByIds = (idx) => nonFinalStates[idx % 3];
+      const getFinalStateByIdx = (idx) => finalStates[idx % 2];
+      const getIdx = (ref) => ref.replace('gateway_ref', '');
+
+      const docs = Array.from({ length: docsCount }).map((_, idx) =>
+        genericReportFactory.reportWithTasks().build({
+          tasks: [{
+            messages: [{ to: `phone${idx}`, message: `message${idx}`, uuid: `uuid${idx}` }],
+            gateway_ref: `gateway_ref${idx}`,
+            state: getNonFinalStateByIds(idx),
+          }],
+        }));
+
+      messagesResult = (req, res) => {
+        const idx = getIdx(req.query.broadcast);
+        res.json({ results: [{ status: getFinalStateByIdx(idx) }] });
+      };
+
+      await setOutgoingKey();
+      await utils.saveDocs(docs);
+
+      const iterations = docsCount / 25; // batch size is 25
+      await browser.waitUntil(() => messagesEndpointRequests.length === docsCount, (iterations + 2) * 1000 );
+
+      const queriedBroadcasts = messagesEndpointRequests.map(request => request[0].broadcast).sort();
+      const expectedBroadcasts = docs.map(doc => doc.tasks[0].gateway_ref).sort();
+      expect(queriedBroadcasts).to.eql(expectedBroadcasts);
+
+      await browser.pause(1100); // wait for another polling iteration
+
+      expect(messagesEndpointRequests.length).to.equal(docsCount); // no additional requests were made
+
+      const updatedDocs = await utils.getDocs(docs.map(doc => doc._id));
+      updatedDocs.forEach(doc => {
+        const task = doc.tasks[0];
+        const idx = getIdx(task.gateway_ref);
+        const expectedState = getFinalStateByIdx(idx);
+        expect(task.state).to.equal(expectedState, `Doc ${idx}(${doc._id}) has incorrect state`);
+      });
+    });
+
+    it('should handle rate limiting when polling', async () => {
+      const docs = Array.from({ length: 90 }).map((_, idx) =>
+        genericReportFactory.reportWithTasks().build({
+          tasks: [{
+            messages: [{ to: `phone${idx}`, message: `message${idx}`, uuid: `uuid${idx}` }],
+            gateway_ref: `gateway_ref${idx}`,
+            state: 'received-by-gateway',
+          }],
+        }));
+
+      messagesResult = (req, res) => {
+        if (messagesEndpointRequests.length > 10) {
+          res.status(429);
+          return res.end();
+        }
+        res.json({ results: [{ status: 'delivered' }] });
+      };
+
+      await setOutgoingKey();
+      await utils.saveDocs(docs);
+
+      await browser.pause(4 * 1000);
+      // depending on how many polling iterations (each iteration will try to get state for one message, fail and stop)
+      // we get an additional request per iteration
+      expect(messagesEndpointRequests.length).to.be.below(16); // maximum 4 polling iterations
+      let updatedDocs = await utils.getDocs(docs.map(doc => doc._id));
+      let docsWithUpdatedMessages = updatedDocs.filter(doc => doc.tasks[0].state === 'delivered');
+      expect(docsWithUpdatedMessages.length).to.equal(10);
+
+      const requestsAfterFirstPass = messagesEndpointRequests.length;
+
+      messagesResult = (req, res) => {
+        if (messagesEndpointRequests.length > requestsAfterFirstPass + 10) {
+          res.status(429);
+          return res.end();
+        }
+        res.json({ results: [{ status: 'delivered' }] });
+      };
+
+      await browser.pause(4 * 1000);
+      expect(messagesEndpointRequests.length).to.be.below(requestsAfterFirstPass + 15);
+
+      updatedDocs = await utils.getDocs(docs.map(doc => doc._id));
+      docsWithUpdatedMessages = updatedDocs.filter(doc => doc.tasks[0].state === 'delivered');
+      expect(docsWithUpdatedMessages.length).to.equal(20);
     });
 
   }); //End describe 'Webapp originating messages and state updates'

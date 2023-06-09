@@ -32,7 +32,7 @@ describe('Contact details page', () => {
     const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
     const user = userFactory.build({ username: 'offlineuser', roles: [role] });
     const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
-    const report = reportFactory.build(
+    const report = reportFactory.report().build(
       { form: 'pregnancy_danger_sign' },
       { patient, submitter: user.contact, fields: { t_danger_signs_referral_follow_up: 'yes' },
       });

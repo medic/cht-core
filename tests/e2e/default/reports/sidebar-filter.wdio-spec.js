@@ -17,28 +17,28 @@ describe('Reports Sidebar Filter', () => {
 
   const today = moment();
   const reports = [
-    reportFactory.build(
+    reportFactory.report().build(
       {
         form: 'P',
         reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf()
       },
       { patient, submitter: user.contact, fields: { lmp_date: 'Feb 3, 2022' }}
     ),
-    reportFactory.build(
+    reportFactory.report().build(
       {
         form: 'P',
         reported_date: moment([today.year(), today.month(), 12, 10, 30]).subtract(1, 'month').valueOf()
       },
       { patient, submitter: user.contact, fields: { lmp_date: 'Feb 16, 2022' }}
     ),
-    reportFactory.build(
+    reportFactory.report().build(
       {
         form: 'V',
         reported_date: moment([today.year(), today.month(), 15, 0, 30]).subtract(5, 'month').valueOf()
       },
       { patient, submitter: user.contact, fields: { ok: 'Yes!' }}
     ),
-    reportFactory.build(
+    reportFactory.report().build(
       {
         form: 'V',
         reported_date: moment([today.year(), today.month(), 16, 9, 10]).subtract(1, 'month').valueOf()
