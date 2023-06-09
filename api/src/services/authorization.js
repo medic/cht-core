@@ -491,6 +491,7 @@ const getViewResults = (doc) => {
 };
 
 module.exports = {
+  updateContext,
   allowedDoc: allowedDoc,
   getViewResults: getViewResults,
   getAuthorizationContext: getAuthorizationContext,

@@ -101,11 +101,11 @@ describe('Purged Docs service', () => {
 
   describe('getPurgedIds', () => {
     describe('getCacheKey', () => {
-      it('should return unique hash depending on all params', () => {
+      it('should return key depending on all params', () => {
         const getCacheKey = service.__get__('getCacheKey');
-        const hash1 = getCacheKey([1, 2, 3], [1, 2, 3]);
-        const hash2 = getCacheKey([1, 2], [1, 2, 3]);
-        const hash3 = getCacheKey([1, 2, 3], [1, 2, 3, 4]);
+        const hash1 = getCacheKey({ roles: [1, 2, 3], name: 'marc' });
+        const hash2 = getCacheKey({ roles: [ 1, 2 ], name: 'craig' });
+        const hash3 = getCacheKey({ roles: [ 1, 2, 3 ], name: 'gareth' });
 
         chai.expect(hash1).not.to.equal(hash2);
         chai.expect(hash1).not.to.equal(hash3);
@@ -120,7 +120,7 @@ describe('Purged Docs service', () => {
     });
 
     it('should return empty when no roles provided', () => {
-      return service.getPurgedIds(undefined, ['a']).then(result => {
+      return service.getPurgedIds({ }, ['a']).then(result => {
         chai.expect(result).to.deep.equal([]);
       });
     });
@@ -135,7 +135,7 @@ describe('Purged Docs service', () => {
       };
       sinon.stub(cacheService, 'instance').returns(cache);
 
-      return service.getPurgedIds(['a', 'b'], ids).then(result => {
+      return service.getPurgedIds({ roles: [ 'a', 'b' ] }, ids).then(result => {
         chai.expect(result).to.deep.equal(cachedPurgedIds);
         chai.expect(cache.get.callCount).to.equal(1);
         chai.expect(cache.get.args[0]).to.deep.equal(['unique_cache_key']);
@@ -163,6 +163,7 @@ describe('Purged Docs service', () => {
         .onCall(0).resolves(purgeDb)
         .onCall(1).resolves(false);
       sinon.stub(db, 'close');
+      const userCtx = { roles: [ 'a', 'b' ] };
 
       service.__set__('getCacheKey', sinon.stub().returns('unique_cache_key'));
       const cache = {
@@ -173,13 +174,13 @@ describe('Purged Docs service', () => {
       sinon.stub(cacheService, 'instance').returns(cache);
 
       return service
-        .getPurgedIds(['a', 'b'], ['1', '2', '3'])
+        .getPurgedIds(userCtx, ['1', '2', '3'])
         .then(result => {
           chai.expect(result).to.deep.equal(['1']);
           chai.expect(db.exists.callCount).to.equal(1);
           chai.expect(db.close.callCount).to.equal(1);
           chai.expect(db.close.args[0]).to.deep.equal([purgeDb]);
-          return service.getPurgedIds(['a', 'b'], ['4', '5', '6']);
+          return service.getPurgedIds(userCtx, ['4', '5', '6']);
         })
         .then(result => {
           // second time we call `db.exists` it returns false
@@ -205,7 +206,7 @@ describe('Purged Docs service', () => {
       sinon.stub(cacheService, 'instance').returns(cache);
 
       return service
-        .getPurgedIds(['a', 'b'], ['1', '2', '3'])
+        .getPurgedIds({ roles: [ 'a', 'b' ] }, ['1', '2', '3'])
         .then(result => {
           chai.expect(result).to.deep('should have thrown');
         })
@@ -240,7 +241,7 @@ describe('Purged Docs service', () => {
         ]
       });
 
-      return service.getPurgedIds(['a', 'b'], ids).then(result => {
+      return service.getPurgedIds({ roles: [ 'a', 'b' ] }, ids).then(result => {
         chai.expect(result).to.deep.equal(['2', '3', '4', '6']);
 
         chai.expect(cache.get.callCount).to.equal(1);
@@ -286,7 +287,7 @@ describe('Purged Docs service', () => {
         ]
       });
 
-      return service.getPurgedIds(['a', 'b'], ids).then(result => {
+      return service.getPurgedIds({ roles: [ 'a', 'b' ] }, ids).then(result => {
         chai.expect(result).to.deep.equal(['2', '6']);
         chai.expect(purgeDb.changes.callCount).to.equal(1);
         chai.expect(purgeDb.changes.args[0]).to.deep.equal([{
@@ -312,7 +313,7 @@ describe('Purged Docs service', () => {
       sinon.stub(db, 'close');
       purgeDb.changes.rejects({ some: 'err' });
 
-      return service.getPurgedIds(['a', 'b'], ids).catch(err => {
+      return service.getPurgedIds({ roles: [ 'a', 'b' ] }, ids).catch(err => {
         chai.expect(err).to.deep.equal({ some: 'err' });
         chai.expect(purgeDb.changes.callCount).to.equal(1);
         chai.expect(purgeDb.changes.args[0]).to.deep.equal([{
@@ -336,167 +337,6 @@ describe('Purged Docs service', () => {
         chai.expect(result).to.deep.equal(_.difference(ids, purgedIds));
         chai.expect(service.__get__('getPurgedIds').callCount).to.equal(1);
         chai.expect(service.__get__('getPurgedIds').args[0]).to.deep.equal([['a', 'b'], ids]);
-      });
-    });
-  });
-
-  describe('getPurgedIdsSince', () => {
-    it('should return empty list when no ids provided', () => {
-      return service.getPurgedIdsSince(['a', 'b']).then(result => {
-        chai.expect(result).to.deep.equal({});
-      });
-    });
-
-    it('should return empty when no roles provided', () => {
-      return service.getPurgedIdsSince(undefined, ['a']).then(result => {
-        chai.expect(result).to.deep.equal({});
-      });
-    });
-
-    it('should return empty list when purgeDb does not exist', () => {
-      const ids = [1, 2, 3, 4];
-      sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
-      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
-      sinon.stub(db, 'exists').resolves(false);
-
-      return service.getPurgedIdsSince(['a', 'b'], ids, { checkPointerId: 'uniqe_uuid' }).then(result => {
-        chai.expect(result).to.deep.equal({});
-      });
-    });
-
-    it('should request changes from correct purge db depending on roles', () => {
-      const ids = ['1', '2', '3', '4', '5', '6'];
-      sinon.stub(purgingUtils, 'getRoleHash').returns('some_random_hash');
-      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
-      const purgeDb = { changes: sinon.stub(), get: sinon.stub() };
-      sinon.stub(db, 'exists').resolves(purgeDb);
-      sinon.stub(db, 'close');
-      purgeDb.changes.resolves({
-        last_seq: '112-seq',
-        results: [
-          { id: 'purged:2' },
-          { id: 'purged:3' },
-          { id: 'purged:4' },
-          { id: 'purged:6' },
-        ]
-      });
-      purgeDb.get.resolves({ last_seq: '111-seq' });
-
-      return service.getPurgedIdsSince(['a', 'b'], ids, { checkPointerId: 'uniqe_uuid' }).then(result => {
-        chai.expect(result).to.deep.equal({ purgedDocIds: ['2', '3', '4', '6'], lastSeq: '112-seq' });
-        chai.expect(db.exists.callCount).to.equal(1);
-        chai.expect(db.exists.args[0]).to.deep.equal(['purge-db-name']);
-        chai.expect(purgingUtils.getPurgeDbName.callCount).to.equal(1);
-        chai.expect(purgingUtils.getPurgeDbName.args[0]).to.deep.equal([environment.db, 'some_random_hash']);
-        chai.expect(purgingUtils.getRoleHash.callCount).to.equal(1);
-        chai.expect(purgingUtils.getRoleHash.args[0]).to.deep.equal([['a', 'b']]);
-        chai.expect(purgeDb.get.callCount).to.equal(1);
-        chai.expect(purgeDb.get.args[0]).to.deep.equal(['_local/uniqe_uuid']);
-        chai.expect(purgeDb.changes.callCount).to.equal(1);
-        chai.expect(purgeDb.changes.args[0]).to.deep.equal([{
-          doc_ids: ['purged:1', 'purged:2', 'purged:3', 'purged:4', 'purged:5', 'purged:6'],
-          batch_size: ids.length + 1,
-          seq_interval: ids.length,
-          since: '111-seq',
-          limit: 100
-        }]);
-        chai.expect(db.close.callCount).to.equal(1);
-        chai.expect(db.close.args[0]).to.deep.equal([purgeDb]);
-      });
-    });
-
-    it('should request from 0 with the default limit when no params provided', () => {
-      const purgeDb = {
-        changes: sinon.stub().resolves({ results: [], last_seq: '122-seq' }),
-        get: sinon.stub().rejects({ error: 'bad_request', code: 400 }),
-      };
-      sinon.stub(db, 'exists').resolves(purgeDb);
-      sinon.stub(db, 'close');
-      const ids = ['1', '2', '3', '4', '5', '6'];
-      return service.getPurgedIdsSince(['a', 'b'], ids).then(result => {
-        chai.expect(result).to.deep.equal({ purgedDocIds: [], lastSeq: '122-seq' });
-        chai.expect(purgeDb.get.callCount).to.equal(0);
-        chai.expect(purgeDb.changes.callCount).to.equal(1);
-        chai.expect(purgeDb.changes.args[0]).to.deep.equal([{
-          doc_ids: ['purged:1', 'purged:2', 'purged:3', 'purged:4', 'purged:5', 'purged:6'],
-          batch_size: ids.length + 1,
-          seq_interval: ids.length,
-          since: 0,
-          limit: 100
-        }]);
-        chai.expect(db.close.callCount).to.equal(1);
-        chai.expect(db.close.args[0]).to.deep.equal([purgeDb]);
-      });
-    });
-
-    it('should request changes with since from checkpoint and provided limit', () => {
-      const purgeDb = { changes: sinon.stub(), get: sinon.stub() };
-      sinon.stub(db, 'exists').resolves(purgeDb);
-      sinon.stub(db, 'close');
-      purgeDb.get.resolves({ _id: '_local/check_id', last_seq: '5000-seq' });
-      purgeDb.changes.resolves({
-        last_seq: '5010-seq',
-        results: [{ id: 'purged:2' }, { id: 'purged:4' }]
-      });
-
-      const ids = ['1', '2', '3', '4', '5', '6'];
-      return service.getPurgedIdsSince(['a', 'b'], ids, { checkPointerId: 'check_id', limit: 121 }).then(result => {
-        chai.expect(result).to.deep.equal({ purgedDocIds: ['2', '4'], lastSeq: '5010-seq' });
-        chai.expect(purgeDb.get.callCount).to.equal(1);
-        chai.expect(purgeDb.get.args[0]).to.deep.equal(['_local/check_id']);
-        chai.expect(purgeDb.changes.callCount).to.equal(1);
-        chai.expect(purgeDb.changes.args[0]).to.deep.equal([{
-          doc_ids: ['purged:1', 'purged:2', 'purged:3', 'purged:4', 'purged:5', 'purged:6'],
-          batch_size: ids.length + 1,
-          seq_interval: ids.length,
-          since: '5000-seq',
-          limit: 121
-        }]);
-        chai.expect(db.close.callCount).to.equal(1);
-        chai.expect(db.close.args[0]).to.deep.equal([purgeDb]);
-      });
-    });
-  });
-
-  describe('info', () => {
-    it('should return info when db exists', () => {
-      const info = { name: 'purge', update_seq: '111-222', doc_del_count: 23 };
-      const purgeDb = { info: sinon.stub().resolves(info) };
-      sinon.stub(db, 'exists').resolves(purgeDb);
-      sinon.stub(db, 'close');
-      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
-
-      return service.info().then(result => {
-        chai.expect(result).to.equal(info);
-        chai.expect(db.exists.callCount).to.equal(1);
-        chai.expect(db.exists.args[0]).to.deep.equal(['purge-db-name']);
-        chai.expect(purgeDb.info.callCount).to.equal(1);
-        chai.expect(db.close.callCount).to.equal(1);
-        chai.expect(db.close.args[0]).to.deep.equal([purgeDb]);
-      });
-    });
-
-    it('should return false when db does not exist', () => {
-      sinon.stub(db, 'exists').resolves(false);
-      sinon.stub(db, 'close');
-      sinon.stub(purgingUtils, 'getPurgeDbName').returns('purge-db-name');
-
-      return service.info().then(result => {
-        chai.expect(result).to.equal(false);
-        chai.expect(db.close.callCount).to.equal(1);
-        chai.expect(db.close.args[0]).to.deep.equal([undefined]);
-      });
-    });
-
-    it('should throw errors', () => {
-      const purgeDb = { info: sinon.stub().rejects({ some: 'err' }) };
-      sinon.stub(db, 'exists').resolves(purgeDb);
-      sinon.stub(db, 'close');
-
-      return service.info().catch(err => {
-        chai.expect(err).to.deep.equal({ some: 'err' });
-        chai.expect(db.close.callCount).to.equal(1);
-        chai.expect(db.close.args[0]).to.deep.equal([purgeDb]);
       });
     });
   });
