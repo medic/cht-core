@@ -9,6 +9,11 @@ const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
 const localeByName = (locale) => $(`.locale[name="${locale}"]`);
 
+const getErrorMessage = async () => {
+  await (await errorMessageField()).waitForDisplayed();
+  return await (await errorMessageField()).getText();
+};
+
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
   await (await userField()).setValue(username);
   await (await passwordField()).setValue(password);
@@ -113,5 +118,6 @@ module.exports = {
   returnToLoginButtonExists,
   getTokenError,
   getToLoginLinkText,
-  getCurrentLanguage
+  getCurrentLanguage,
+  getErrorMessage,
 };

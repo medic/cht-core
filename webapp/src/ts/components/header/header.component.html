@@ -67,7 +67,7 @@
               <i class="fa fa-fw" [ngClass]="replicationStatus.current?.icon"></i>
               <span>{{replicationStatus.current.key | translate}}</span>
             </a>
-            <a class="no-click" *ngIf="replicationStatus.lastSuccessTo">
+            <a class="no-click last-sync" *ngIf="replicationStatus.lastSuccessTo">
               <span>{{'sync.last_success' | translate}}</span>
               <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate"></span>
             </a>

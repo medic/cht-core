@@ -14,8 +14,6 @@ const { tokenLogin, roles, users } = require('@medic/user-management')(config, d
 const request = require('request-promise-native');
 const template = require('../../../src/services/template');
 const fs = require('fs');
-const DB_NAME = 'lg';
-const DDOC_NAME = 'medic';
 
 let controller;
 
@@ -50,11 +48,7 @@ describe('login controller', () => {
       setHeader: () => {}
     };
 
-    sinon.stub(environment, 'db').get(() => DB_NAME);
-    sinon.stub(environment, 'ddoc').get(() => DDOC_NAME);
-    sinon.stub(environment, 'protocol').get(() => 'http');
-    sinon.stub(environment, 'host').get(() => 'test.com');
-    sinon.stub(environment, 'port').get(() => 1234);
+    sinon.stub(environment, 'serverUrlNoAuth').get(() => 'http://test.com:1234');
     sinon.stub(environment, 'isTesting').get(() => false);
 
     sinon.stub(roles, 'isOnlineOnly').returns(false);
@@ -489,7 +483,65 @@ describe('login controller', () => {
       });
     });
 
-    it('returns errors from auth', () => {
+    it('should retry getting userCtx 10 times', async () => {
+      req.body = { user: 'sharon', password: 'p4ss', locale: 'fr' };
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      sinon.stub(request, 'post').resolves(postResponse);
+      sinon.stub(res, 'status').returns(res);
+      sinon.stub(res, 'send').returns(res);
+      sinon.stub(res, 'cookie');
+      sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
+      auth.getUserCtx.onCall(9).resolves({ name: 'shazza', roles: [ 'project-stuff' ] });
+
+      await controller.post(req, res);
+
+      chai.expect(request.post.callCount).to.equal(1);
+      chai.expect(request.post.args[0][0].url).to.equal('http://test.com:1234/_session');
+      chai.expect(request.post.args[0][0].body.name).to.equal('sharon');
+      chai.expect(request.post.args[0][0].body.password).to.equal('p4ss');
+      chai.expect(request.post.args[0][0].auth.user).to.equal('sharon');
+      chai.expect(request.post.args[0][0].auth.pass).to.equal('p4ss');
+      chai.expect(auth.getUserCtx.callCount).to.equal(10);
+      chai.expect(auth.getUserCtx.args[0][0].headers.Cookie).to.equal('AuthSession=abc;');
+      chai.expect(res.status.callCount).to.equal(1);
+      chai.expect(res.status.args).to.deep.equal([[302]]);
+      chai.expect(res.send.args).to.deep.equal([['/']]);
+      chai.expect(res.cookie.callCount).to.equal(3);
+      chai.expect(res.cookie.args[0][0]).to.equal('AuthSession');
+      chai.expect(res.cookie.args[0][1]).to.equal('abc');
+      chai.expect(res.cookie.args[0][2]).to.deep.equal({ sameSite: 'lax', secure: false, httpOnly: true });
+      chai.expect(res.cookie.args[1][0]).to.equal('userCtx');
+      chai.expect(res.cookie.args[1][1]).to.equal(JSON.stringify({ name: 'shazza', roles: [ 'project-stuff' ] }));
+      chai.expect(res.cookie.args[1][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+      chai.expect(res.cookie.args[2][0]).to.equal('locale');
+      chai.expect(res.cookie.args[2][1]).to.equal('fr');
+      chai.expect(res.cookie.args[2][2]).to.deep.equal({ sameSite: 'lax', secure: false, maxAge: 31536000000 });
+    });
+
+    it('returns errors from auth after 10 retries', () => {
+      req.body = { user: 'sharon', password: 'p4ss' };
+      const postResponse = {
+        statusCode: 200,
+        headers: { 'set-cookie': [ 'AuthSession=abc;' ] }
+      };
+      const post = sinon.stub(request, 'post').resolves(postResponse);
+      const status = sinon.stub(res, 'status').returns(res);
+      const json = sinon.stub(res, 'json').returns(res);
+      const getUserCtx = sinon.stub(auth, 'getUserCtx').rejects({ code: 401 });
+      return controller.post(req, res).then(() => {
+        chai.expect(post.callCount).to.equal(1);
+        chai.expect(getUserCtx.callCount).to.equal(11);
+        chai.expect(status.callCount).to.equal(1);
+        chai.expect(status.args[0][0]).to.equal(401);
+        chai.expect(json.callCount).to.equal(1);
+        chai.expect(json.args[0][0]).to.deep.equal({ error: 'Error getting authCtx' });
+      });
+    });
+
+    it('returns errors immediately from auth if code is not 401', () => {
       req.body = { user: 'sharon', password: 'p4ss' };
       const postResponse = {
         statusCode: 200,

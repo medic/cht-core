@@ -894,8 +894,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
     'exec:check-version',
-    'static-analysis',
     'install-dependencies',
+    'static-analysis',
     'build',
     'mochaTest:api-integration',
     'unit',

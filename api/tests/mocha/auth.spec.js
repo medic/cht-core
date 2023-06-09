@@ -6,23 +6,19 @@ const auth = require('../../src/auth');
 const config = require('../../src/config');
 const environment = require('../../src/environment');
 
-let originalServerUrl;
-
 describe('Auth', () => {
 
   beforeEach(() => {
-    originalServerUrl = environment.serverUrl;
+    sinon.stub(environment, 'serverUrlNoAuth').get(() => 'http://abc.com');
   });
 
   afterEach(() => {
     sinon.restore();
-    environment.serverUrl = originalServerUrl;
   });
 
   describe('check', () => {
 
     it('returns error when not logged in', () => {
-      environment.serverUrl = 'http://abc.com';
       const get = sinon.stub(request, 'get').rejects({ statusCode: 401 });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
@@ -33,7 +29,6 @@ describe('Auth', () => {
     });
 
     it('returns error with incomplete session', () => {
-      environment.serverUrl = 'http://abc.com';
       const get = sinon.stub(request, 'get').resolves();
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
@@ -44,7 +39,6 @@ describe('Auth', () => {
     });
 
     it('returns error when no user context', () => {
-      environment.serverUrl = 'http://abc.com';
       const get = sinon.stub(request, 'get').resolves({ roles: [] });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
@@ -54,7 +48,6 @@ describe('Auth', () => {
     });
 
     it('returns error when request errors', () => {
-      environment.serverUrl = 'http://abc.com';
       const get = sinon.stub(request, 'get').rejects({ error: 'boom' });
       return auth.check({ }).catch(err => {
         chai.expect(get.callCount).to.equal(1);
@@ -64,7 +57,6 @@ describe('Auth', () => {
     });
 
     it('returns error when it has insufficient privilege', () => {
-      environment.serverUrl = 'http://abc.com';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz' ] } };
       const get = sinon.stub(request, 'get').resolves(userCtx);
       sinon.stub(config, 'get').returns({ can_edit: ['abc'] });
@@ -76,7 +68,6 @@ describe('Auth', () => {
     });
 
     it('returns username for admin', () => {
-      environment.serverUrl = 'http://abc.com';
       const userCtx = { userCtx: { name: 'steve', roles: [ '_admin' ] } };
       const get = sinon.stub(request, 'get').resolves(userCtx);
       return auth.check({headers: []}, 'can_edit').then(ctx => {
@@ -86,7 +77,6 @@ describe('Auth', () => {
     });
 
     it('returns username of non-admin user', () => {
-      environment.serverUrl = 'http://abc.com';
       const userCtx = { userCtx: { name: 'laura', roles: [ 'xyz', 'district_admin' ] } };
       const get = sinon.stub(request, 'get').resolves(userCtx);
       sinon.stub(config, 'get').returns({ can_edit: ['district_admin'] });
@@ -97,7 +87,6 @@ describe('Auth', () => {
     });
 
     it('accepts multiple required roles', () => {
-      environment.serverUrl = 'http://abc.com';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
       const get = sinon.stub(request, 'get').resolves(userCtx);
@@ -112,7 +101,6 @@ describe('Auth', () => {
     });
 
     it('checks all required roles', () => {
-      environment.serverUrl = 'http://abc.com';
       const userCtx = { userCtx: { name: 'steve', roles: [ 'xyz', 'district_admin' ] } };
       sinon.stub(url, 'format').returns('http://abc.com');
       const get = sinon.stub(request, 'get').resolves(userCtx);
@@ -131,14 +119,10 @@ describe('Auth', () => {
   describe('checkUrl', () => {
 
     it('requests the given url and returns status', () => {
-      environment.serverUrl = 'http://abc.com';
-      const format = sinon.stub(url, 'format').returns('http://abc.com');
       const head = sinon.stub(request, 'head').resolves({ statusCode: 444 });
       return auth.checkUrl({ params: { path: '/home/screen' } }).then(actual => {
-        chai.expect(format.callCount).to.equal(1);
-        chai.expect(format.args[0][0].pathname).to.equal('/home/screen');
         chai.expect(head.callCount).to.equal(1);
-        chai.expect(head.args[0][0].url).to.equal('http://abc.com');
+        chai.expect(head.args[0][0].url).to.equal('http://abc.com/home/screen');
         chai.expect(actual).to.equal(444);
       });
     });
