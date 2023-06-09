@@ -42,6 +42,6 @@
 |mobile/common/common.specs.js	|Done	|Lorena	|	[#8255](https://github.com/medic/cht-core/pull/8255)|	|
 |mobile/content-security-policy.specs.js	|	|	|	|	|
 |mobile/docs-by-replication-key-view.js	|Done	|Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|
-|mobile/login/login.specs.js	|	|	|	|	|
+|mobile/login/login.specs.js	|	Done	|Lorena	|[#8276](https://github.com/medic/cht-core/pull/8276)	|	|
 |mobile/medic-collect.specs.js	| Done	|Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|
 |mobile/service-worker.specs.js	|Done	|Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|

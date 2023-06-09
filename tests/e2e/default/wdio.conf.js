@@ -249,7 +249,7 @@ const baseConfig = {
       }
     });
     browser.on('Log.entryAdded', (params) => {
-      if(params && params.entry) {
+      if(params?.entry) {
         const entry = params.entry;
         const logEntry = `[${entry.level}]: ${entry.source} ${entry.text} url: ${entry.url} at ${entry.timestamp}\n`;
         if (logEntry !== lastMessage) {

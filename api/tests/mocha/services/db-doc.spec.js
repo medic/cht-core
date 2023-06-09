@@ -799,7 +799,7 @@ describe('db-doc service', () => {
         { error: { _id: 'id', _rev: 7 } }
       ]);
 
-      authorization.getViewResults.callsFake(doc => doc && doc._rev);
+      authorization.getViewResults.callsFake(doc => doc?._rev);
       authorization.allowedDoc.withArgs('id', sinon.match.any, 1).returns(true);
       authorization.allowedDoc.withArgs('id', sinon.match.any, 2).returns(false);
       authorization.allowedDoc.withArgs('id', sinon.match.any, 4).returns(false);

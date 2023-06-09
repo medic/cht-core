@@ -97,7 +97,7 @@ const parsePurgingLogEntries = (logEntries) => {
   const re = /^REQ .* GET (\/purging[a-z/]*)/;
   return logEntries.map(entry => {
     const match = entry.match(re);
-    return match && match[1];
+    return match?.[1];
   });
 };
 

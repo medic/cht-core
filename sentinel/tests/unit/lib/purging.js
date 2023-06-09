@@ -24,7 +24,7 @@ describe('ServerSidePurge', () => {
 
   afterEach(() => {
     sinon.restore();
-    clock && clock.restore();
+    clock?.restore();
   });
 
   describe('getPurgeFn', () => {
@@ -915,7 +915,7 @@ describe('ServerSidePurge', () => {
         }]);
 
         // mock chtScriptApi
-        
+
 
         chai.expect(purgeFn.callCount).to.equal(8);
         chai.expect(purgeFn.args[0]).to.shallowDeepEqual([
@@ -926,7 +926,7 @@ describe('ServerSidePurge', () => {
         ]);
         // expect the fifth argument to be an object with the expected functions
         chai.expect(purgeFn.args[0][4]).to.have.keys('v1');
-        
+
         chai.expect(purgeFn.args[1]).to.shallowDeepEqual([
           { roles:roles.b },
           { _id: 'first', type: 'district_hospital' },
