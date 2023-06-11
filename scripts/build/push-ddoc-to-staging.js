@@ -7,7 +7,7 @@ const URL = `${MARKET_URL}/${BUILDS_SERVER}`;
 (async () => {
   const ddocsBuffer = await readFile('build/staging.json');
   const ddocs = JSON.parse(ddocsBuffer.toString());
-  const ddoc = ddocs && ddocs.docs && ddocs.docs.length && ddocs.docs[0];
+  const ddoc = ddocs?.docs?.[0];
   if (!ddoc) {
     throw new Error('error parsing staging.json');
   }
