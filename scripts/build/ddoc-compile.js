@@ -1,19 +1,15 @@
 const util = require('util');
 const couchCompile = util.promisify(require('couchdb-compile'));
-const { writeFile } = require('node:fs/promises');
+const { writeFile, readdir } = require('node:fs/promises');
+
+const getSubDirs = async (base) => {
+  const dirs = await readdir(base);
+  return dirs.map(dir => `${base}/${dir}`);
+};
 
 const compilePrimary = async () => {
-  await compile(
-    [ // todo: scan directory?
-      'build/ddocs/medic-db/medic',
-      'build/ddocs/medic-db/medic-admin',
-      'build/ddocs/medic-db/medic-client',
-      'build/ddocs/medic-db/medic-conflicts',
-      'build/ddocs/medic-db/medic-scripts',
-      'build/ddocs/medic-db/medic-sms',
-    ],
-    'build/ddocs/medic.json'
-  );
+  const dirs = await getSubDirs('build/ddocs/medic-db');
+  await compile(dirs, 'build/ddocs/medic.json');
 };
 
 const compileStaging = async () => {
@@ -44,7 +40,7 @@ const getCommand = () => {
 const compile = async (inputDirs, outputFile) => {
   const docs = await Promise.all(inputDirs.map(dir => couchCompile(dir)));
   await writeFile(outputFile, JSON.stringify({ docs }, null, 2));
-  console.log('ddoc compiled successfully');
+  console.log(`ddoc compiled successfully: ${outputFile}`);
 };
 
 (async () => {
