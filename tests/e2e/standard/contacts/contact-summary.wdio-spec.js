@@ -129,34 +129,41 @@ describe('Contact summary info', () => {
     });
   const patientAlice = personFactory.build({ name: 'Alice Alison', phone: '+447765902001' });
   const patientDavid = personFactory.build({ name: 'David Davidson', phone: '+447765902002', parent: placeBobClinic });
-  const davidVisit = reportFactory.report().build(
-    { form: 'visit' },
-    { patient: patientDavid, submitter: districtAdminUser.contact },
-  );
-  const patientCarol = personFactory.build({
-    name: 'Carol Carolina', sex: 'f', parent: placeBobClinic, patient_id: '05946',
-    linked_docs: {
-      aliceTag: patientAlice._id,
-      davidTag: { _id: patientDavid._id },
-      visitTag: { _id: davidVisit._id },
-    },
-  });
-  const carolPregnancy = reportFactory.report().build(
-    { form: 'P' },
-    { patient: patientCarol, submitter: districtAdminUser.contact },
-  );
-  const carolVisit = reportFactory.report().build(
-    { form: 'V' },
-    {
-      patient: patientCarol,
-      submitter: districtAdminUser.contact,
-      reported_date: moment().set('date', 5).valueOf(),
-      fields: {
-        visited_contact_uuid: placeBobClinic._id,
-        patient_id: patientCarol.patient_id,
+  const davidVisit = reportFactory
+    .report()
+    .build(
+      { form: 'visit' },
+      { patient: patientDavid, submitter: districtAdminUser.contact },
+    );
+  const patientCarol = personFactory
+    .build({
+      name: 'Carol Carolina', sex: 'f', parent: placeBobClinic, patient_id: '05946',
+      linked_docs: {
+        aliceTag: patientAlice._id,
+        davidTag: { _id: patientDavid._id },
+        visitTag: { _id: davidVisit._id },
       },
-    },
-  );
+    });
+  const carolPregnancy = reportFactory
+    .report()
+    .build(
+      { form: 'P' },
+      { patient: patientCarol, submitter: districtAdminUser.contact },
+    );
+  const carolVisit = reportFactory
+    .report()
+    .build(
+      { form: 'V' },
+      {
+        patient: patientCarol,
+        submitter: districtAdminUser.contact,
+        reported_date: moment().set('date', 5).valueOf(),
+        fields: {
+          visited_contact_uuid: placeBobClinic._id,
+          patient_id: patientCarol.patient_id,
+        },
+      },
+    );
 
   const docs = [ patientAlice, placeBobClinic, patientCarol, patientDavid, carolPregnancy, davidVisit, carolVisit ];
 

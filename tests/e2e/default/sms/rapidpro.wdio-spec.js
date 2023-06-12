@@ -75,7 +75,6 @@ describe('RapidPro SMS Gateway', () => {
         });
         throw new Error('should have thrown');
       } catch (err) {
-        //expect(err.responseBody).to.contain({ code: 403, error: 'No incoming key configured' });
         expect(err.responseBody).to.eql({ code: 403, error: 'No incoming key configured' });
       }
     });
@@ -295,7 +294,7 @@ describe('RapidPro SMS Gateway', () => {
       const settings = {
         sms: {
           outgoing_service: 'rapidpro',
-          rapidpro: {url: utils.hostURL(server.address().port)},
+          rapidpro: { url: utils.hostURL(server.address().port) },
         }
       };
       await utils.updateSettings(settings, true);
@@ -326,6 +325,7 @@ describe('RapidPro SMS Gateway', () => {
       verifyPhoneAndMessage(bodies[3], 5);
 
       const headers = broadcastsEndpointRequests.map(item => item[1]);
+      expect(headers.length).to.equal(4);
       headers.forEach(header => expect(header.authorization).to.equal(`Token ${OUTGOING_KEY}`));
     });
 
@@ -392,7 +392,7 @@ describe('RapidPro SMS Gateway', () => {
       const requestedBroadcastIds = [];
       const expectedBroadcastIds = docs.map(doc => doc.tasks[0].gateway_ref).sort();
       messagesEndpointRequests.forEach(([ query, headers ]) => {
-        expect(query.broadcast).to.not.be.undefined;
+        expect(query.broadcast).to.exist;
         expect(expectedBroadcastIds.includes(query.broadcast)).to.be.true;
         requestedBroadcastIds.push(query.broadcast);
         expect(headers.authorization).to.equal(`Token ${OUTGOING_KEY}`);

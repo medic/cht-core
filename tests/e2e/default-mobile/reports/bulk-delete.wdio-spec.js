@@ -13,18 +13,24 @@ describe('Bulk delete reports', () => {
   const offlineUser = userFactory.build({ username: 'offline_chw_bulk_delete', place: healthCenter._id });
   const patient = personFactory.build({ parent: { _id: healthCenter._id } });
   const reports = [
-    reportFactory.report().build(
-      { form: 'P' },
-      { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' }}
-    ),
-    reportFactory.report().build(
-      { form: 'P' },
-      { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' }}
-    ),
-    reportFactory.report().build(
-      { form: 'V' },
-      { patient, submitter: offlineUser.contact, fields: { ok: 'Yes!' }}
-    ),
+    reportFactory
+      .report()
+      .build(
+        { form: 'P' },
+        { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' }}
+      ),
+    reportFactory
+      .report()
+      .build(
+        { form: 'P' },
+        { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' }}
+      ),
+    reportFactory
+      .report()
+      .build(
+        { form: 'V' },
+        { patient, submitter: offlineUser.contact, fields: { ok: 'Yes!' }}
+      ),
   ];
 
   const savedUuids = [];
