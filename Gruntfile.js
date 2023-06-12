@@ -4,8 +4,6 @@ const fs = require('fs');
 const path = require('path');
 
 const {
-  MARKET_URL,
-  BUILDS_SERVER,
   BUILD_NUMBER,
   CI,
   INTERNAL_CONTRIBUTOR,
@@ -28,51 +26,14 @@ module.exports = function(grunt) {
   'use strict';
 
   require('jit-grunt')(grunt, {
-    'couch-compile': 'grunt-couch',
-    'couch-push': 'grunt-couch',
     ngtemplates: 'grunt-angular-templates',
     protractor: 'grunt-protractor-runner',
-    uglify: 'grunt-contrib-uglify-es',
   });
   require('time-grunt')(grunt);
 
   // Project configuration
   grunt.initConfig({
-    'couch-compile': {
-      primary: {
-        files: {
-          'build/ddocs/medic.json': 'build/ddocs/medic-db/*',
-        },
-      },
-      secondary: {
-        files: {
-          'build/ddocs/sentinel.json': 'build/ddocs/sentinel-db/*',
-          'build/ddocs/users-meta.json': 'build/ddocs/users-meta-db/*',
-          'build/ddocs/logs.json': 'build/ddocs/logs-db/*',
-        },
-      },
-      staging: {
-        files: {
-          'build/staging.json': 'build/staging',
-        }
-      }
-    },
-    'couch-push': {
-      test: {
-        files: {
-          ['http://admin:pass@localhost:4984/medic-test']: 'build/ddocs/medic.json',
-          ['http://admin:pass@localhost:4984/medic-test-logs']: 'build/ddocs/medic/_attachments/ddocs/logs.json',
-        },
-      },
-      testing: {
-        files: [
-          {
-            src: 'build/staging.json',
-            dest: `${MARKET_URL}/${BUILDS_SERVER}`,
-          },
-        ],
-      }
-    },
+    // this probably needs a script - can't find an config file option
     browserify: {
       options: {
         browserifyOptions: {
@@ -95,33 +56,7 @@ module.exports = function(grunt) {
         },
       },
     },
-    uglify: {
-      options: {
-        banner:
-          '/*! Medic <%= grunt.template.today("yyyy-mm-dd") %> */\n',
-      },
-      admin: {
-        files: {
-          'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
-          'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js'
-        },
-      },
-      api: {
-        files: {
-          // static api files
-          'api/build/static/login/script.js': 'api/build/static/login/script.js',
-          'api/build/static/login/lib-bowser.js': 'api/build/static/login/lib-bowser.js',
-        }
-      }
-    },
     env: {
-      'unit-test': {
-        options: {
-          add: {
-            UNIT_TEST_ENV: '1',
-          },
-        },
-      },
       'version': {
         options: {
           add: {
@@ -227,9 +162,22 @@ module.exports = function(grunt) {
       },
     },
     exec: {
-      'clean-build-dir': {
-        cmd: 'rm -rf build && mkdir build',
-      },
+      'compile-ddocs-primary': 'node ./scripts/build/ddoc-compile.js primary',
+      'compile-ddocs-staging': 'node ./scripts/build/ddoc-compile.js staging',
+      'compile-ddocs-secondary': 'node ./scripts/build/ddoc-compile.js secondary',
+      'uglify-api':
+        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/script.js -o api/build/static/login/script.js && ' +
+        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js',
+      'uglify-admin':
+        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && ' +
+        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js',
+      'push-ddoc-to-staging': 'node ./scripts/build/push-ddoc-to-staging.js',
+      'clean-build-dir': 'rm -rf build && mkdir build',
+      'mocha-unit-webapp': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "webapp/tests/mocha/**/*.spec.js"',
+      'mocha-unit-api': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "api/tests/mocha/**/*.js"',
+      'mocha-unit-sentinel': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "sentinel/tests/**/*.js"',
+      'mocha-integration-api': './node_modules/mocha/bin/_mocha "api/tests/integration/**/*.js" -t 10000',
+
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
       'eslint': {
@@ -411,7 +359,7 @@ module.exports = function(grunt) {
         stdio: 'inherit', // enable colors!
       },
       'shared-lib-unit': {
-        cmd: 'npm test --workspaces --if-present',
+        cmd: 'UNIT_TEST_ENV=1 npm test --workspaces --if-present',
         stdio: 'inherit', // enable colors!
       },
       // To monkey patch a library...
@@ -484,7 +432,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            `../node_modules/.bin/ng test webapp --watch=false --progress=${DEV ? 'true' : 'false'}`,
+            `UNIT_TEST_ENV=1 ../node_modules/.bin/ng test webapp --watch=false --progress=${DEV ? 'true' : 'false'}`,
             'cd ../',
           ].join(' && ');
         },
@@ -494,7 +442,7 @@ module.exports = function(grunt) {
         cmd: () => {
           return [
             'cd webapp',
-            '../node_modules/.bin/ng test webapp --watch=true --progress=true',
+            'UNIT_TEST_ENV=1 ../node_modules/.bin/ng test webapp --watch=true --progress=true',
             'cd ../',
           ].join(' && ');
         },
@@ -553,7 +501,7 @@ module.exports = function(grunt) {
         tasks: [
           'copy:ddocs',
           'set-ddocs-version',
-          'couch-compile:primary',
+          'exec:compile-ddocs-primary',
           'copy:api-ddocs',
           'notify:deployed',
         ],
@@ -563,7 +511,7 @@ module.exports = function(grunt) {
         tasks: [
           'copy:ddocs',
           'set-ddocs-version',
-          'couch-compile:secondary',
+          'exec:compile-ddocs-secondary',
           'copy:api-ddocs',
           'notify:deployed',
         ],
@@ -623,32 +571,6 @@ module.exports = function(grunt) {
             }
           }
         }
-      }
-    },
-    mochaTest: {
-      unit: {
-        src: [
-          'webapp/tests/mocha/unit/**/*.spec.js',
-          'webapp/tests/mocha/unit/*.spec.js',
-          'api/tests/mocha/**/*.js',
-          'sentinel/tests/**/*.js',
-        ],
-      },
-      'api-integration': {
-        src: 'api/tests/integration/**/*.js',
-        options: {
-          timeout: 10000,
-        },
-      },
-      api: {
-        src: [
-          'api/tests/mocha/**/*.js'
-        ],
-      },
-      sentinel: {
-        src: [
-          'sentinel/tests/**/*.js'
-        ],
       }
     },
     ngtemplates: {
@@ -767,8 +689,8 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
-    'copy:api-resources',
     'copy:api-bowser',
+    'copy:api-resources',
     'copy:built-resources',
     'copy:webapp-static',
     'copy:admin-static',
@@ -780,8 +702,8 @@ module.exports = function(grunt) {
     'copy:ddocs',
     'set-ddocs-version',
     'set-build-info',
-    'couch-compile:primary',
-    'couch-compile:secondary',
+    'exec:compile-ddocs-primary',
+    'exec:compile-ddocs-secondary',
     'copy:api-ddocs',
   ]);
 
@@ -798,7 +720,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-service-images', 'Build api and sentinel images', [
     'copy-static-files-to-api',
-    'uglify:api',
+    'exec:uglify-api',
     'cssmin:api',
     'env:version',
     'exec:build-service-images',
@@ -861,33 +783,32 @@ module.exports = function(grunt) {
     'exec:unit-webapp-continuous'
   ]);
 
-  grunt.registerTask('test-api-integration', 'Integration tests for medic-api', [
+  grunt.registerTask('test-api-integration', 'Integration tests for api', [
     'exec:check-env-vars',
     'exec:npm-ci-api',
-    'mochaTest:api-integration',
+    'exec:mocha-integration-api',
   ]);
 
   grunt.registerTask('unit', 'Unit tests', [
-    'env:unit-test',
     'unit-webapp-no-dependencies',
     'unit-admin',
     'exec:shared-lib-unit',
-    'mochaTest:unit',
+    'exec:mocha-unit-webapp',
+    'exec:mocha-unit-api',
+    'exec:mocha-unit-sentinel',
   ]);
 
   grunt.registerTask('unit-api', 'API unit tests', [
-    'env:unit-test',
-    'mochaTest:api',
+    'exec:mocha-unit-api',
   ]);
 
   grunt.registerTask('unit-sentinel', 'Sentinel unit tests', [
-    'env:unit-test',
-    'mochaTest:sentinel',
+    'exec:mocha-unit-sentinel',
   ]);
 
   // CI tasks
   grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
-    'uglify:admin',
+    'exec:uglify-admin',
     'optimize-js',
     'cssmin:admin',
   ]);
@@ -897,7 +818,7 @@ module.exports = function(grunt) {
     'install-dependencies',
     'static-analysis',
     'build',
-    'mochaTest:api-integration',
+    'exec:mocha-integration-api',
     'unit',
   ]);
 
@@ -986,8 +907,8 @@ module.exports = function(grunt) {
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
     'build-service-images',
     'publish-service-images',
-    'couch-compile:staging',
-    'couch-push:testing',
+    'exec:compile-ddocs-staging',
+    'exec:push-ddoc-to-staging',
   ]);
 
   grunt.registerTask('default', 'Build and deploy the webapp for dev', [
