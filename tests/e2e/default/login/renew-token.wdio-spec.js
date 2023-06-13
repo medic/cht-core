@@ -2,7 +2,7 @@
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const moment = require('moment');
-const browserPage = require('@utils/browser');
+const chtDbUtils = require('@utils/cht-db');
 const utils = require('@utils');
 
 describe('should renew token', async () => {
@@ -30,7 +30,7 @@ describe('should renew token', async () => {
 });
 
 const getCtxCookieExpiry = async () => {
-  const userCtxCookie = await browserPage.getCookies('userCtx');
+  const userCtxCookie = await chtDbUtils.getCookies('userCtx');
   const momentObj = moment.unix(userCtxCookie[0].expires);
   if (!momentObj.isValid()) {
     throw new Error(`Unable to construct moment object from cookie expiration: ${userCtxCookie}`);
