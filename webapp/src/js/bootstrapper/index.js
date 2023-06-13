@@ -87,6 +87,17 @@
 
   /* pouch db set up function */
   module.exports = (POUCHDB_OPTIONS) => {
+    utils.checkApiAccessible()
+      .then((apiAccessible) => {
+        if (!apiAccessible) {
+          setUiError();
+          return Promise.reject();
+        }
+      }).catch(() => {
+        setUiError();
+        return Promise.reject();
+      });
+    
 
     const dbInfo = getDbInfo();
     const userCtx = getUserCtx();
