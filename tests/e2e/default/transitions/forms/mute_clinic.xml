@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Mute clinic</h:title>
+    <model>
+      <instance>
+        <mute_clinic delimiter="#" id="mute_clinic" prefix="J1!mute_clinic!" version="2016-12-21">
+          <inputs>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <parent>
+                <contact>
+                  <name/>
+                </contact>
+              </parent>
+            </contact>
+          </inputs>
+          <place_id/>
+          <place_name/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </mute_clinic>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/mute_clinic/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/mute_clinic/inputs/source" type="string"/>
+      <bind nodeset="/mute_clinic/inputs/source_id" type="string"/>
+      <bind nodeset="/mute_clinic/inputs/contact/_id" type="db:clinic"/>
+      <bind nodeset="/mute_clinic/inputs/contact/name" type="string"/>
+      <bind nodeset="/mute_clinic/inputs/contact/parent/contact/name" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/mute_clinic/place_id" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/mute_clinic/place_name" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/mute_clinic/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/mute_clinic/inputs">
+      <label>Clinic</label>
+      <input appearance="hidden" ref="/mute_clinic/inputs/source">
+        <label>Source</label>
+      </input>
+      <input appearance="hidden" ref="/mute_clinic/inputs/source_id">
+        <label>Source ID</label>
+      </input>
+      <group ref="/mute_clinic/inputs/contact">
+        <input appearance="db-object" ref="/mute_clinic/inputs/contact/_id">
+          <label>What is the name of the Clinic?</label>
+          <hint>Select a place from list</hint>
+        </input>
+        <input appearance="hidden" ref="/mute_clinic/inputs/contact/name">
+          <label>Name</label>
+        </input>
+      </group>
+    </group>
+  </h:body>
+</h:html>
