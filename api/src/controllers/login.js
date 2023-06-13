@@ -22,7 +22,9 @@ const templates = {
     translationStrings: [
       'login',
       'login.error',
+      'login.hide_password',
       'login.incorrect',
+      'login.show_password',
       'login.unsupported_browser',
       'login.unsupported_browser.outdated_cht_android',
       'login.unsupported_browser.outdated_webview_apk',

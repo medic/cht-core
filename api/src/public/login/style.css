@@ -147,6 +147,32 @@ form {
   text-decoration: none;
 }
 
+#password-container {
+  position: relative;
+  height: 40px;
+}
+
+#password-container #password {
+  width: 245px;
+  padding: 6px 43px 6px 10px;
+}
+
+#password-container #password-toggle {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  height: 100%;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+#password-container #password-toggle img:not(.hidden) {
+  width: 24px;
+  height: 100%;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .hidden {
   display: none;
   visibility: hidden;

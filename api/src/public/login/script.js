@@ -1,6 +1,9 @@
 let selectedLocale;
 let translations;
 
+const HIDDEN_CLASS = 'hidden';
+const PASSWORD_INPUT_ID = 'password';
+
 const setState = function(className) {
   document.getElementById('form').className = className;
 };
@@ -31,7 +34,7 @@ const submit = function(e) {
   const url = document.getElementById('form').action;
   const payload = JSON.stringify({
     user: getUsername(),
-    password: document.getElementById('password').value,
+    password: document.getElementById(PASSWORD_INPUT_ID).value,
     redirect: getRedirectUrl(),
     locale: selectedLocale
   });
@@ -85,7 +88,7 @@ const requestTokenLogin = (retry = 20) => {
 const focusOnPassword = function(e) {
   if (e.keyCode === 13) {
     e.preventDefault();
-    document.getElementById('password').focus();
+    document.getElementById(PASSWORD_INPUT_ID).focus();
   }
 };
 
@@ -137,15 +140,17 @@ const getLocale = function() {
   return;
 };
 
-const translate = function() {
+const translate = () => {
   if (!selectedLocale) {
     return console.error('No enabled locales found - not translating');
   }
   highlightSelectedLocale();
-  document.querySelectorAll('[translate]').forEach(function(elem) {
-    const key = elem.getAttribute('translate');
-    elem.innerText = translations[selectedLocale][key];
-  });
+  document
+    .querySelectorAll('[translate]')
+    .forEach(elem => elem.innerText = translations[selectedLocale][elem.getAttribute('translate')]);
+  document
+    .querySelectorAll('[translate-title]')
+    .forEach(elem => elem.title = translations[selectedLocale][elem.getAttribute('translate-title')]);
 };
 
 const parseTranslations = function() {
@@ -234,8 +239,15 @@ const checkUnsupportedBrowser = () => {
     document.getElementById('unsupported-browser-update').setAttribute('translate', outdatedComponentKey);
     document.getElementById('unsupported-browser-update').innerText =
       translations[selectedLocale][outdatedComponentKey];
-    document.getElementById('unsupported-browser').classList.remove('hidden');
+    document.getElementById('unsupported-browser').classList.remove(HIDDEN_CLASS);
   }
+};
+
+const togglePassword = () => {
+  const input = document.getElementById(PASSWORD_INPUT_ID);
+  input.type = input.type === 'password' ? 'text' : 'password';
+  document.getElementById('show-password').classList.toggle(HIDDEN_CLASS);
+  document.getElementById('hide-password').classList.toggle(HIDDEN_CLASS);
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -245,6 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
   translate();
 
   document.getElementById('locale').addEventListener('click', handleLocaleSelection, false);
+  document.getElementById('password-toggle').addEventListener('click', togglePassword, false);
 
   if (document.getElementById('tokenLogin')) {
     requestTokenLogin();
@@ -256,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
     user.addEventListener('keydown', focusOnPassword, false);
     user.focus();
 
-    document.getElementById('password').addEventListener('keydown', focusOnSubmit, false);
+    document.getElementById(PASSWORD_INPUT_ID).addEventListener('keydown', focusOnSubmit, false);
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/service-worker.js');
     }
