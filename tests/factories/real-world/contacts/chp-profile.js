@@ -25,7 +25,7 @@ module.exports = new Factory()
     const gContactInfo = {
       phone_number: phone_number,
       alternate_number: alternate_number,
-      brac_bank: Faker.faker.finance.account()
+      bank: Faker.faker.finance.account()
     };
     return gContactInfo;
   })
