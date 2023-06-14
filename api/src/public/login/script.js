@@ -1,7 +1,6 @@
 let selectedLocale;
 let translations;
 
-const HIDDEN_CLASS = 'hidden';
 const PASSWORD_INPUT_ID = 'password';
 
 const setState = function(className) {
@@ -239,15 +238,14 @@ const checkUnsupportedBrowser = () => {
     document.getElementById('unsupported-browser-update').setAttribute('translate', outdatedComponentKey);
     document.getElementById('unsupported-browser-update').innerText =
       translations[selectedLocale][outdatedComponentKey];
-    document.getElementById('unsupported-browser').classList.remove(HIDDEN_CLASS);
+    document.getElementById('unsupported-browser').classList.remove('hidden');
   }
 };
 
 const togglePassword = () => {
   const input = document.getElementById(PASSWORD_INPUT_ID);
   input.type = input.type === 'password' ? 'text' : 'password';
-  document.getElementById('show-password').classList.toggle(HIDDEN_CLASS);
-  document.getElementById('hide-password').classList.toggle(HIDDEN_CLASS);
+  document.getElementById('password-container').classList.toggle('hidden-password');
 };
 
 document.addEventListener('DOMContentLoaded', function() {

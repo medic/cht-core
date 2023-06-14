@@ -19,11 +19,11 @@
         <label for="user" translate="User Name"></label>
         <input id="user" name="user" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
         <label for="password" translate="Password"></label>
-        <div id="password-container">
+        <div id="password-container" class="hidden-password">
           <input id="password" name="password" type="password"/>
           <div id="password-toggle">
-            <img id="show-password" src="/login/images/show-password.svg" translate-title="login.show_password">
-            <img id="hide-password" src="/login/images/hide-password.svg" class="hidden" translate-title="login.hide_password">
+            <img class="show-password-icon" src="/login/images/show-password.svg" translate-title="login.show_password">
+            <img class="hide-password-icon" src="/login/images/hide-password.svg" translate-title="login.hide_password">
           </div>
         </div>
         <p class="error offline" translate="online.action.message"></p>

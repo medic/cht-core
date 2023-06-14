@@ -166,11 +166,17 @@ form {
   cursor: pointer;
 }
 
-#password-container #password-toggle img:not(.hidden) {
+#password-container.hidden-password .show-password-icon,
+#password-container .hide-password-icon {
   width: 24px;
   height: 100%;
   display: inline-block;
   vertical-align: middle;
+}
+
+#password-container .show-password-icon,
+#password-container.hidden-password .hide-password-icon {
+  display: none;
 }
 
 .hidden {
