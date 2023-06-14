@@ -255,7 +255,10 @@ document.addEventListener('DOMContentLoaded', function() {
   translate();
 
   document.getElementById('locale').addEventListener('click', handleLocaleSelection, false);
-  document.getElementById('password-toggle').addEventListener('click', togglePassword, false);
+  const passwordToggle = document.getElementById('password-toggle');
+  if (passwordToggle) {
+    passwordToggle.addEventListener('click', togglePassword, false);
+  }
 
   if (document.getElementById('tokenLogin')) {
     requestTokenLogin();
