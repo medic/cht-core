@@ -3,7 +3,6 @@ const sentinelUtils = require('../../../utils/sentinel');
 const uuid = require('uuid').v4;
 const moment = require('moment');
 const chai = require('chai');
-
 const defaultSettings = utils.getDefaultSettings();
 
 const contacts = [
@@ -97,6 +96,72 @@ describe('registration', () => {
   before(() => utils.saveDocs(contacts));
   after(() => utils.revertDb([], true));
   afterEach(() => utils.revertDb(getIds(contacts), true));
+
+
+  [['+918750660880', '+91 87506 60880'],
+  ['+255712262987', '+255 712 262 987']].forEach(phoneNumerWithParsed => {
+    console.log(phoneNumerWithParsed[0]);
+    it('should create new person with phone number if correct number is supplied', () => {
+      console.log("Phone" + phoneNumerWithParsed[0]);
+      const settings = {
+        transitions: { registration: true },
+        registrations: [{
+          form: 'FORM',
+          events: [{
+            name: 'on_create',
+            trigger: 'add_phone_number',
+            params: '',
+            bool_expr: ''
+          }],
+          messages: [],
+        }],
+        forms: { FORM: {} }
+      };
+
+      const formWithPhone = {
+        _id: uuid(),
+        type: 'data_record',
+        form: 'FORM',
+        from: '+444999',
+        fields: {
+          patient_id: 'patient',
+          phone_Number: phoneNumerWithParsed[0]
+        },
+        reported_date: moment().valueOf(),
+        contact: {
+          _id: 'person',
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+        }
+      };
+
+      const docs = [formWithPhone];
+      const docIds = getIds(docs);
+
+      return utils
+        .updateSettings(settings, 'sentinel')
+        .then(() => {
+          utils.saveDocs(docs)
+          console.log(docs);
+        })
+        .then(() => {
+          sentinelUtils.waitForSentinel(docIds)
+          console.log(docIds);
+        })
+        .then(() => {
+          sentinelUtils.getInfoDocs(docIds)
+        })
+        .then(infos => {
+          infos.forEach(info => {
+            chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
+          });
+        })
+        .then(() => utils.getDocs(docIds))
+        .then(updated => {
+          chai.expect(updated[0].phoneNumber).to.not.be.null;
+          chai.expect(updated[0].phoneNumber).to.equal(phoneNumerWithParsed[1]);
+        });
+    })
+  });
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
@@ -857,11 +922,8 @@ describe('registration', () => {
       });
   });
 
-  it('should create new person with when correct phone number is supplied', () => {
 
-  });
-
-  it('should not create new person when invalid phone number is supplied', () => {
+  it('should not add phone number when invalid phone number is supplied', () => {
 
   });
 
