@@ -159,8 +159,8 @@ form {
 
 #password-container #password-toggle {
   position: absolute;
-  right: 0px;
-  top: 0px;
+  right: 0;
+  top: 0;
   height: 100%;
   padding: 0 10px;
   cursor: pointer;
