@@ -162,16 +162,19 @@ form {
   right: 0px;
   top: 0px;
   height: 100%;
-  padding: 0 10px;
+  padding: 2px 10px;
   cursor: pointer;
+}
+
+#password-container #password-toggle img {
+  width: 24px;
+  height: 100%;
+  vertical-align: middle;
 }
 
 #password-container.hidden-password .show-password-icon,
 #password-container .hide-password-icon {
-  width: 24px;
-  height: 100%;
   display: inline-block;
-  vertical-align: middle;
 }
 
 #password-container .show-password-icon,
