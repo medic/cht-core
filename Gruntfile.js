@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 
-const fs = require('fs');
 const path = require('path');
 
 const {
@@ -15,12 +14,6 @@ const buildUtils = require('./scripts/build');
 const buildVersions = require('./scripts/build/versions');
 
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
-
-const getSharedLibDirs = () => {
-  return fs
-    .readdirSync('shared-libs')
-    .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
-};
 
 module.exports = function(grunt) {
   'use strict';
@@ -463,11 +456,11 @@ module.exports = function(grunt) {
       },
       'admin-css': {
         files: ['admin/src/css/**/*'],
-        tasks: ['less:admin',],
+        tasks: ['less:admin'],
       },
       'admin-js': {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
-        tasks: ['browserify:admin',],
+        tasks: ['browserify:admin'],
       },
       'admin-index': {
         files: ['admin/src/templates/index.html'],
