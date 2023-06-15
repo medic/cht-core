@@ -16,8 +16,7 @@ const LOCAL_LOG = '_local/initial-replication';
 
 const getReportContext = (patient, submitter) => {
   const context = {
-    fields:
-    {
+    fields: {
       patient_id: patient._id,
       patient_uuid: patient._id,
       patient_name: patient.name,
