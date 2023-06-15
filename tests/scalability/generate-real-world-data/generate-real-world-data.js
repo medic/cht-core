@@ -1,4 +1,4 @@
-const realworldPlaceFactory = require('../../factories/real-world/contacts/place');
+const realWorldPlaceFactory = require('../../factories/real-world/contacts/place');
 const realWorldPersonFactory = require('../../factories/real-world/contacts/person');
 const realWorldUserFactory = require('../../factories/real-world/users/user');
 const realWorldSurvey = require('../../factories/real-world/reports/survey');
@@ -147,13 +147,13 @@ const generateReports = async (parentPlace, place, person, isMainData) => {
     await createDataDirectory(mainDataDirectory, parentPlace.contact._id);
   }
   if (realWorldPersonFactory.shouldGeneratePregnancySurvey(person)) {
-    const pregnancySurvey = realWorldSurvey.generaterealWorldSurvey('pregnancy', parentPlace, place, person);
+    const pregnancySurvey = realWorldSurvey.generateSurvey('pregnancy', parentPlace, place, person);
     await createDataDoc(reportsDirectory, pregnancySurvey._id, pregnancySurvey);
   }
   if (realWorldPersonFactory.shouldGenerateAssessmentSurvey(person)) {
-    const assesmentSurvey = realWorldSurvey.generaterealWorldSurvey('assesment', parentPlace, place, person);
+    const assesmentSurvey = realWorldSurvey.generateSurvey('assesment', parentPlace, place, person);
     await createDataDoc(reportsDirectory, assesmentSurvey._id, assesmentSurvey);
-    const assesmentFollowUpSurvey = realWorldSurvey.generaterealWorldSurvey(
+    const assesmentFollowUpSurvey = realWorldSurvey.generateSurvey(
       'assesment_follow_up', parentPlace, place, person);
     await createDataDoc(reportsDirectory, assesmentFollowUpSurvey._id, assesmentFollowUpSurvey);
   }
@@ -164,7 +164,7 @@ const generateHierarchy = async (type, placeName, parentPlace, numberOfPersons) 
   if (parentPlace) {
     placeLineage = { _id: parentPlace._id, parent: parentPlace.parent };
   }
-  const place = realworldPlaceFactory.generatePlace(placeName, type, placeLineage);
+  const place = realWorldPlaceFactory.generatePlace(placeName, type, placeLineage);
   const personLineage = { _id: place._id, parent: place.parent };
 
   let isPrimaryContact = true;
