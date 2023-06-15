@@ -56,15 +56,6 @@ module.exports = function(grunt) {
         },
       },
     },
-    env: {
-      'version': {
-        options: {
-          add: {
-            VERSION: buildVersions.getVersion(),
-          },
-        },
-      }
-    },
     less: {
       admin: {
         files: {
@@ -177,6 +168,13 @@ module.exports = function(grunt) {
       'mocha-unit-api': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "api/tests/mocha/**/*.js"',
       'mocha-unit-sentinel': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "sentinel/tests/**/*.js"',
       'mocha-integration-api': './node_modules/mocha/bin/_mocha "api/tests/integration/**/*.js" -t 10000',
+      'optimize-js':
+        './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/main.js > api/build/static/admin/js/main.js && ' +
+        './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/templates.js > api/build/static/admin/js/templates.js',
+      'jsdoc-admin': './node_modules/jsdoc/jsdoc.js -d jsdocs/admin -c node_modules/angular-jsdoc/common/conf.json -t node_modules/angular-jsdoc/angular-template admin/src/js/**/*.js',
+      'jsdoc-sentinel': './node_modules/jsdoc/jsdoc.js -d jsdocs/sentinel sentinel/src/**/*.js',
+      'jsdoc-api': './node_modules/jsdoc/jsdoc.js -d jsdocs/api -R api/README.md api/src/**/*.js',
+      'jsdoc-shared-libs': './node_modules/jsdoc/jsdoc.js -d jsdocs/shared-libs shared-libs/**/src/**/*.js',
 
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
@@ -465,36 +463,24 @@ module.exports = function(grunt) {
       },
       'admin-css': {
         files: ['admin/src/css/**/*'],
-        tasks: [
-          'less:admin',
-          'notify:deployed',
-        ],
+        tasks: ['less:admin',],
       },
       'admin-js': {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
-        tasks: [
-          'browserify:admin',
-          'notify:deployed',
-        ],
+        tasks: ['browserify:admin',],
       },
       'admin-index': {
         files: ['admin/src/templates/index.html'],
-        tasks: [
-          'copy:admin-static',
-          'notify:deployed',
-        ],
+        tasks: ['copy:admin-static'],
       },
       'admin-templates': {
         files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
-        tasks: [
-          'ngtemplates:adminApp',
-          'notify:deployed',
-        ],
+        tasks: ['ngtemplates:adminApp'],
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
         files: ['api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js'],
-        tasks: ['update-service-worker', 'notify:deployed'],
+        tasks: ['update-service-worker'],
       },
       'primary-ddoc': {
         files: ['ddocs/medic-db/**/*'],
@@ -503,7 +489,6 @@ module.exports = function(grunt) {
           'set-ddocs-version',
           'exec:compile-ddocs-primary',
           'copy:api-ddocs',
-          'notify:deployed',
         ],
       },
       'secondary-ddocs': {
@@ -513,21 +498,12 @@ module.exports = function(grunt) {
           'set-ddocs-version',
           'exec:compile-ddocs-secondary',
           'copy:api-ddocs',
-          'notify:deployed',
         ],
       },
       'api-public-files': {
         files: ['api/src/public/**/*'],
         tasks: ['copy:api-resources'],
       }
-    },
-    notify: {
-      deployed: {
-        options: {
-          title: 'Medic',
-          message: 'Deployed successfully',
-        },
-      },
     },
     karma: {
       admin: {
@@ -606,47 +582,7 @@ module.exports = function(grunt) {
         flatten: true,
         extDot: 'last',
       },
-    },
-    'optimize-js': {
-      'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
-      'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js',
-    },
-    jsdoc: {
-      admin: {
-        src: [
-          'admin/src/js/**/*.js'
-        ],
-        options: {
-          destination: 'jsdocs/admin',
-          configure: 'node_modules/angular-jsdoc/common/conf.json',
-          template: 'node_modules/angular-jsdoc/angular-template'
-        }
-      },
-      api: {
-        src: [
-          'api/src/**/*.js',
-          '!api/extracted-resources/**',
-        ],
-        options: {
-          destination: 'jsdocs/api',
-          readme: 'api/README.md'
-        }
-      },
-      sentinel: {
-        src: [
-          'sentinel/src/**/*.js'
-        ],
-        options: {
-          destination: 'jsdocs/sentinel'
-        }
-      },
-      'shared-libs': {
-        src: getSharedLibDirs().map(lib => path.resolve(__dirname, 'shared-libs', lib, 'src') + '/**/*.js'),
-        options: {
-          destination: 'jsdocs/shared-libs'
-        }
-      },
-    },
+    }
   });
 
   // Build tasks
@@ -685,7 +621,6 @@ module.exports = function(grunt) {
     'build-config',
     'copy-static-files-to-api',
     'copy:api-ddocs',
-    'notify:deployed',
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
@@ -722,7 +657,6 @@ module.exports = function(grunt) {
     'copy-static-files-to-api',
     'exec:uglify-api',
     'cssmin:api',
-    'env:version',
     'exec:build-service-images',
     'exec:build-images',
   ]);
@@ -809,7 +743,7 @@ module.exports = function(grunt) {
   // CI tasks
   grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
     'exec:uglify-admin',
-    'optimize-js',
+    'exec:optimize-js',
     'cssmin:admin',
   ]);
 
@@ -916,6 +850,9 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-documentation', 'Build documentation using jsdoc', [
-    'jsdoc'
+    'exec:jsdoc-admin',
+    'exec:jsdoc-api',
+    'exec:jsdoc-sentinel',
+    'exec:jsdoc-shared-libs',
   ]);
 };
