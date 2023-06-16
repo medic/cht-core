@@ -148,6 +148,9 @@
     "webpack-bundle-analyzer": "^4.7.0",
     "zone.js": "^0.11.8"
   },
+  "overrides": {
+    "minimist": "1.2.6"
+  },
   "bundlesize": [
     {
       "path": "./api/build/static/webapp/main.js",
