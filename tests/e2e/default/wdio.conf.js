@@ -10,7 +10,7 @@ chai.use(require('chai-as-promised'));
 const constants = require('@constants');
 const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
-const browserUtils = require('@utils/browser');
+const chtDbUtils = require('@utils/cht-db');
 const browserLogsUtils = require('@utils/browser-logs');
 
 const ALLURE_OUTPUT = 'allure-results';
@@ -275,7 +275,7 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
-    const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
+    const feedBackDocs = await chtDbUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
     existingFeedBackDocIds.push(feedBackDocs);
     if (feedBackDocs) {
       if (passed) {

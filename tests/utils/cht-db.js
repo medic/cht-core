@@ -31,10 +31,6 @@ const feedBackDocsScript = async (done) => {
   })));
 };
 
-const getCookies = (...cookieNameList) => {
-  return browser.getCookies(cookieNameList);
-};
-
 const createDoc = async (doc) => {
   const { err, result } = await browser.executeAsync((doc, callback) => {
     const db = window.CHTCore.DB.get();
@@ -118,7 +114,6 @@ const info = async () => {
 
 module.exports = {
   feedBackDocs,
-  getCookies,
   createDoc,
   updateDoc,
   getDoc,

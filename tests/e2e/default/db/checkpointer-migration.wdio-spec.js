@@ -8,7 +8,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const userFactory = require('@factories/cht/users/users');
 const utils = require('@utils');
-const browserUtils = require('@utils/browser');
+const chtDbUtils = require('@utils/cht-db');
 const sentinelUtils = require('@utils/sentinel');
 
 const MIGRATION_FLAG_ID = '_local/migration-checkpointer';
@@ -99,12 +99,12 @@ describe('Storing checkpointer on target migration', () => {
     const checkpointerDocs = await loginAndGetCheckpointerDocs(user);
 
     for (const checkpointerDoc of checkpointerDocs) {
-      const browserCheckpointer = await browserUtils.getDoc(checkpointerDoc._id);
+      const browserCheckpointer = await chtDbUtils.getDoc(checkpointerDoc._id);
       expect(browserCheckpointer).excludingEvery('_rev').to.deep.equal(checkpointerDoc);
     }
 
     // expect migration to have run
-    await browserUtils.getDoc(MIGRATION_FLAG_ID);
+    await chtDbUtils.getDoc(MIGRATION_FLAG_ID);
 
     // subsequent syncs don't trigger _revs_diffs calls
     const captureLogs = await utils.collectApiLogs(/_revs_diff/);
@@ -123,7 +123,7 @@ describe('Storing checkpointer on target migration', () => {
     await browser.throttle('offline');
 
     await utils.deleteDoc(replicateToDoc._id);
-    await browserUtils.deleteDoc(MIGRATION_FLAG_ID);
+    await chtDbUtils.deleteDoc(MIGRATION_FLAG_ID);
 
     const captureLogs = await utils.collectApiLogs(/medic\/_revs_diff/);
 
@@ -132,10 +132,10 @@ describe('Storing checkpointer on target migration', () => {
     await commonPage.sync();
 
     // migration doc created again
-    await browserUtils.getDoc(MIGRATION_FLAG_ID);
+    await chtDbUtils.getDoc(MIGRATION_FLAG_ID);
     // checkpointer doc exists on the server again
     const replicateToDocServer = await utils.getDoc(replicateToDoc._id);
-    const replicateToDocBrowser = await browserUtils.getDoc(replicateToDoc._id);
+    const replicateToDocBrowser = await chtDbUtils.getDoc(replicateToDoc._id);
     expect(replicateToDocBrowser).excludingEvery('_rev').to.deep.equal(replicateToDocServer);
 
     const revDiffCalls = await captureLogs();
@@ -145,7 +145,7 @@ describe('Storing checkpointer on target migration', () => {
   it('should not flag migration as ran if the browser was offline', async () => {
     await loginPage.login(user);
 
-    await expect(browserUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith({ status: 404 });
+    await expect(chtDbUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith({ status: 404 });
 
     await browser.throttle('offline');
     await commonPage.syncAndWaitForFailure();
@@ -154,27 +154,27 @@ describe('Storing checkpointer on target migration', () => {
     await commonPage.refresh();
     await commonPage.syncAndWaitForFailure();
 
-    await expect(browserUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith({ status: 404 });
+    await expect(chtDbUtils.getDoc(MIGRATION_FLAG_ID)).to.be.rejectedWith({ status: 404 });
 
     await browser.throttle('online');
     await commonPage.refresh();
     await commonPage.sync();
 
-    await browserUtils.getDoc(MIGRATION_FLAG_ID);
+    await chtDbUtils.getDoc(MIGRATION_FLAG_ID);
   });
 
   it('should re-upload docs when the server rolls back', async () => {
     const checkpointerDocs = await loginAndGetCheckpointerDocs(user);
     const replicateToDoc = checkpointerDocs.find(doc => typeof doc.last_seq === 'number');
 
-    await browserUtils.getDoc(MIGRATION_FLAG_ID);
-    const localInfo = await browserUtils.info();
+    await chtDbUtils.getDoc(MIGRATION_FLAG_ID);
+    const localInfo = await chtDbUtils.info();
 
     const newContact = personFactory.build({
       name: Faker.name.firstName(),
       parent: { _id: user.place },
     });
-    await browserUtils.createDoc(newContact);
+    await chtDbUtils.createDoc(newContact);
     await commonPage.sync();
 
     const serverContact = await utils.db.get(newContact._id);
