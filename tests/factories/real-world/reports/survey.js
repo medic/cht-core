@@ -1,10 +1,10 @@
 const Factory = require('rosie').Factory;
 const uuid = require('uuid');
-const assesmentFactory = require('./brac-assessment');
-const pregnancyFactory = require('./brac-pregnancy');
-const assesmentFollowUpFactory = require('./brac-assessment-follow-up');
+const assesmentFactory = require('./assessment');
+const pregnancyFactory = require('./pregnancy');
+const assesmentFollowUpFactory = require('./assessment-follow-up');
 
-const bracSurvey = () => {
+const survey = () => {
   return new Factory()
     .sequence('_id', uuid.v4)
     .option('patient', '')
@@ -30,13 +30,13 @@ const bracSurvey = () => {
     .attr('geolocation', '');
 };
 
-const generateBracSurvey = (form, parentPlace, place, patient) => {
+const generateSurvey = (form, parentPlace, place, patient) => {
   const contactParent = {
     _id: parentPlace.contact._id,
     parent: place.parent
   };
 
-  return bracSurvey().build({
+  return survey().build({
     form: form,
     contact: contactParent,
     from: parentPlace.contact.phone
@@ -47,6 +47,6 @@ const generateBracSurvey = (form, parentPlace, place, patient) => {
 };
 
 module.exports = {
-  generateBracSurvey,
-  bracSurvey
+  generateSurvey,
+  survey
 };

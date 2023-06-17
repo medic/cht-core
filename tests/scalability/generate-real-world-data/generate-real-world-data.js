@@ -1,7 +1,7 @@
-const bracPlaceFactory = require('../../factories/brac/contacts/brac-place');
-const bracPersonFactory = require('../../factories/brac/contacts/brac-person');
-const bracUserFactory = require('../../factories/brac/users/brac-user');
-const bracSurvey = require('../../factories/brac/reports/brac-survey');
+const realWorldPlaceFactory = require('../../factories/real-world/contacts/place');
+const realWorldPersonFactory = require('../../factories/real-world/contacts/person');
+const realWorldUserFactory = require('../../factories/real-world/users/user');
+const realWorldSurvey = require('../../factories/real-world/reports/survey');
 const fs = require('fs');
 const path = require('path');
 const dataConfig = require('./data-config.json');
@@ -108,7 +108,7 @@ const generatePerson = async (type, parents, isPrimaryContact) => {
   if (type === 'clinic' && !isPrimaryContact) {
     subtype = 'other';
   }
-  const person = bracPersonFactory.generateBracPerson(parents, subtype);
+  const person = realWorldPersonFactory.generatePerson(parents, subtype);
   await createDataDoc(preconditionDataDirectory, person._id, person);
   if (type === 'district_hospital') {
     managers.push(person);
@@ -121,7 +121,7 @@ const generateUser = async (type, placeId, userName, person, isPrimaryContact) =
   if (isPrimaryContact && type === 'district_hospital') {
     roles = ['national_admin', 'mm-online'];
   }
-  const personUser = bracUserFactory.generateBracUser(
+  const personUser = realWorldUserFactory.generateUser(
     userName,
     roles,
     placeId);
@@ -146,14 +146,14 @@ const generateReports = async (parentPlace, place, person, isMainData) => {
     reportsDirectory = path.join(mainDataDirectory, parentPlace.contact._id);
     await createDataDirectory(mainDataDirectory, parentPlace.contact._id);
   }
-  if (bracPersonFactory.shouldGeneratePregnancySurvey(person)) {
-    const pregnancySurvey = bracSurvey.generateBracSurvey('pregnancy', parentPlace, place, person);
+  if (realWorldPersonFactory.shouldGeneratePregnancySurvey(person)) {
+    const pregnancySurvey = realWorldSurvey.generateSurvey('pregnancy', parentPlace, place, person);
     await createDataDoc(reportsDirectory, pregnancySurvey._id, pregnancySurvey);
   }
-  if (bracPersonFactory.shouldGenerateAssessmentSurvey(person)) {
-    const assesmentSurvey = bracSurvey.generateBracSurvey('assesment', parentPlace, place, person);
+  if (realWorldPersonFactory.shouldGenerateAssessmentSurvey(person)) {
+    const assesmentSurvey = realWorldSurvey.generateSurvey('assesment', parentPlace, place, person);
     await createDataDoc(reportsDirectory, assesmentSurvey._id, assesmentSurvey);
-    const assesmentFollowUpSurvey = bracSurvey.generateBracSurvey(
+    const assesmentFollowUpSurvey = realWorldSurvey.generateSurvey(
       'assesment_follow_up', parentPlace, place, person);
     await createDataDoc(reportsDirectory, assesmentFollowUpSurvey._id, assesmentFollowUpSurvey);
   }
@@ -164,7 +164,7 @@ const generateHierarchy = async (type, placeName, parentPlace, numberOfPersons) 
   if (parentPlace) {
     placeLineage = { _id: parentPlace._id, parent: parentPlace.parent };
   }
-  const place = bracPlaceFactory.generateBracPlace(placeName, type, placeLineage);
+  const place = realWorldPlaceFactory.generatePlace(placeName, type, placeLineage);
   const personLineage = { _id: place._id, parent: place.parent };
 
   let isPrimaryContact = true;
@@ -183,7 +183,7 @@ const generateHierarchy = async (type, placeName, parentPlace, numberOfPersons) 
         person,
         isPrimaryContact);
     }
-    if (bracPersonFactory.shouldGenerateSurvey(person)) {
+    if (realWorldPersonFactory.shouldGenerateSurvey(person)) {
       await generateReports(parentPlace, place, person, (i % 2 !== 0));
     }
     isPrimaryContact = false;
@@ -232,7 +232,7 @@ const generateData = async () => {
     users: chwUsers
   };
   await createDataDoc(
-    '../replicate-brac-docs',
+    '../replicate-real-world-docs',
     'config',
     config2,
     '.json',
