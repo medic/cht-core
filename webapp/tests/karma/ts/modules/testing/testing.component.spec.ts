@@ -10,7 +10,6 @@ import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';
 import { SessionService } from '@mm-services/session.service';
 import { TestingComponent } from '@mm-modules/testing/testing.component';
-import { PurgeService } from '@mm-services/purge.service';
 
 describe('Testing Component', () => {
   let component: TestingComponent;
@@ -53,7 +52,6 @@ describe('Testing Component', () => {
           { provide: FeedbackService, useValue: feedbackService },
           { provide: SessionService, useValue: sessionService },
           { provide: CookieService, useValue: cookieService },
-          { provide: PurgeService, useValue: purgeService }
         ]
       })
       .compileComponents()
@@ -109,42 +107,6 @@ describe('Testing Component', () => {
     expect(component.generatingFeedback).to.equal(false);
     expect(feedbackService.submit.callCount).to.equal(0);
   });
-
-  it('should not purge if user is online only', () => {
-    sessionService.isOnlineOnly.returns(true);
-    purgeService.updateDocsToPurge.resolves();
-    const purgeEvent = { on: sinon.stub() };
-    const purgeSub = sinon.stub(Purger, 'purgeMain').returns(purgeEvent);
-
-    component.purge();
-
-    expect(component.purging).to.equal(false);
-    expect(dbService.get.callCount).to.equal(0);
-    expect(sessionService.userCtx.callCount).to.equal(0);
-    expect(purgeSub.callCount).to.equal(0);
-    expect(purgeEvent.on.callCount).to.equal(0);
-  });
-
-  it('should purge if user is not online only', fakeAsync(() => {
-    sessionService.isOnlineOnly.returns(false);
-    purgeService.updateDocsToPurge.resolves();
-    const purgeEvent = { on: sinon.stub().resolves() };
-    const purgeSub = sinon.stub(Purger, 'purgeMain').returns(purgeEvent);
-
-    component.purge();
-
-    expect(component.purging).to.equal(true);
-    tick();
-    expect(dbService.get.callCount).to.equal(1);
-    expect(dbService.get.args[0][0]).to.deep.equal({ remote: false });
-    expect(sessionService.userCtx.callCount).to.equal(1);
-    expect(purgeSub.callCount).to.equal(1);
-    expect(purgeSub.args[0]).to.have.deep.members([database, { _id: '123' }]);
-    expect(purgeEvent.on.callCount).to.equal(1);
-    expect(purgeEvent.on.args[0][0]).to.equal('progress');
-    tick();
-    expect(component.purging).to.equal(false);
-  }));
 
   it('should wipe', fakeAsync(() => {
     const clearLocalStorageStub = sinon.stub(window.localStorage, 'clear');
