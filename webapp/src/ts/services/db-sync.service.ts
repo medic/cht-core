@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { lastValueFrom, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { Store } from '@ngrx/store';
 
 import { SessionService } from '@mm-services/session.service';
@@ -14,6 +14,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { HttpClient } from '@angular/common/http';
+import { ReplicationService } from '@mm-services/replication.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -78,7 +79,7 @@ export class DBSyncService {
     private store:Store,
     private translateService:TranslateService,
     private migrationsService:MigrationsService,
-    private http:HttpClient,
+    private replicationService:ReplicationService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
@@ -153,64 +154,24 @@ export class DBSyncService {
     }
   }
 
-  private async downloadDocsBatch (batch) {
-    if (!batch.length) {
-      return;
-    }
-
-    const res = await this.dbService.get({ remote: true }).bulkGet({ docs: batch, attachments: true });
-    const docs = res.results
-      .map(result => result.docs && result.docs[0] && result.docs[0].ok)
-      .filter(doc => doc);
-    await this.dbService.get().bulkDocs(docs, { new_edits: false });
-  }
-
   private async replicateFrom() {
+    const telemetryEntry = new DbSyncTelemetry(
+      this.telemetryService,
+      'medic',
+      'from',
+      this.getLastReplicationDate(),
+    );
+
     try {
-      const remoteDocIdsRevs = await this.getRemoteDocs();
-      const localDocs = await this.dbService.get().allDocs();
-
-      const localIdRevMap = Object.assign({}, ...localDocs.rows.map(row => ({ [row.id]: row.value?.rev })));
-      const remoteIdRevMap = Object.assign({}, ...remoteDocIdsRevs.map(({ id, rev }) => ({ [id]: rev })));
-
-      await this.getMissingDocs(localIdRevMap, remoteDocIdsRevs);
-      await this.getDeletesAndPurges(localIdRevMap, remoteIdRevMap);
+      const result = await this.replicationService.replicateFrom();
+      telemetryEntry.recordSuccess(result);
     } catch (err) {
+      telemetryEntry.recordFailure(err, this.knownOnlineState);
+      console.error(`Error replicating from remote server`, err);
       return err;
     }
   }
 
-  private async getRemoteDocs() {
-    const getIdsReq = this.http.get<{ doc_ids_revs: { id; rev }[]}>(
-      '/api/v1/replication/get-ids',
-      { responseType: 'json' }
-    );
-    const response = await lastValueFrom(getIdsReq);
-    return response.doc_ids_revs;
-  }
-
-  private async getMissingDocs(localIdRevMap, remoteDocIdsRevs) {
-    const docIdRevsToDownload = remoteDocIdsRevs
-      .filter(({ id, rev }) => !localIdRevMap[id] || localIdRevMap[id] !== rev);
-
-    do {
-      const batch = docIdRevsToDownload.splice(0, BATCH_SIZE);
-      await this.downloadDocsBatch(batch);
-    } while (docIdRevsToDownload.length > 0);
-  }
-
-  private async getDeletesAndPurges(localIdRevMap, remoteIdRevMap) {
-    const missingRemoteIds = Object.keys(localIdRevMap).filter(id => !remoteIdRevMap[id]);
-
-    const getDeleteListReq =  this.http.post<{ doc_ids: []}>(
-      '/api/v1/replication/get-deletes',
-      { doc_ids: missingRemoteIds },
-      { responseType: 'json' }
-    );
-    const localIdsToDelete = (await lastValueFrom(getDeleteListReq)).doc_ids;
-    const deleteDocs = localIdsToDelete.map(id => ({ _id: id, _rev: localIdRevMap[id], _deleted: true, purged: true }));
-    await this.dbService.get().bulkDocs(deleteDocs);
-  }
 
   private getCurrentSeq() {
     return this.dbService.get().info().then(info => info.update_seq + '');
@@ -249,6 +210,7 @@ export class DBSyncService {
 
       const currentSeq = await this.getCurrentSeq();
       let syncState: SyncState = { to: SyncStatus.Success, from: SyncStatus.Success };
+
       if (!replicationErrors.to && !replicationErrors.from) {
         this.syncIsRecent = true;
         window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
@@ -261,6 +223,7 @@ export class DBSyncService {
           syncState[directionName] = SyncStatus.Required;
         });
       }
+
       if (syncState.to === SyncStatus.Success) {
         window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
       }
