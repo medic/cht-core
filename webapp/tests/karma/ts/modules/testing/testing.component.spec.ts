@@ -4,7 +4,6 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { CookieService } from 'ngx-cookie-service';
 
-import * as Purger from '../../../../../src/js/bootstrapper/purger';
 import { DebugService } from '@mm-services/debug.service';
 import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';
@@ -20,7 +19,6 @@ describe('Testing Component', () => {
   let feedbackService;
   let sessionService;
   let cookieService;
-  let purgeService;
 
   beforeEach(waitForAsync(() => {
     database = { destroy: sinon.stub() };
@@ -36,7 +34,6 @@ describe('Testing Component', () => {
       logout: sinon.stub()
     };
     cookieService = { deleteAll: sinon.stub() };
-    purgeService = { updateDocsToPurge: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
