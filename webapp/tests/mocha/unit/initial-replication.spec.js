@@ -9,7 +9,6 @@ let localDb;
 let remoteDb;
 let userCtx;
 let clock;
-let onPromise;
 
 const FLAG_ID = '_local/initial-replication';
 
@@ -159,7 +158,6 @@ describe('Initial replication', () => {
         get: sinon.stub(),
         put: sinon.stub(),
         replicate: {
-          from: sinon.stub(),
           to: sinon.stub(),
         },
         info: sinon.stub(),
@@ -168,9 +166,6 @@ describe('Initial replication', () => {
         bulkGet: sinon.stub(),
       };
       clock = sinon.useFakeTimers();
-      onPromise = Promise.resolve();
-      onPromise.on = sinon.stub();
-      onPromise.cancel = sinon.stub();
     });
 
     it('should perform initial replication', async () => {
@@ -204,7 +199,6 @@ describe('Initial replication', () => {
       localDb.get.onCall(0).rejects({ status: 404 }).resolves({ _id: FLAG_ID, start_time: 0 });
       localDb.put.resolves();
 
-      localDb.replicate.from.returns(onPromise);
       localDb.replicate.to.resolves();
       localDb.info.resolves({ update_seq: 5 });
 
@@ -249,18 +243,6 @@ describe('Initial replication', () => {
         }]
       ]);
 
-      expect(localDb.replicate.from.args).to.deep.equal([[
-        remoteDb,
-        {
-          live: false,
-          retry: false,
-          heartbeat: 10000,
-          timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-          query_params: { initial_replication: true },
-          since: '123-fdhsfs',
-        }
-      ]]);
-
       expect(localDb.replicate.to.args).to.deep.equal([[
         remoteDb,
         { since: 5 },
@@ -299,7 +281,6 @@ describe('Initial replication', () => {
         .resolves({ _id: FLAG_ID, start_time: 1000, start_data_usage: { app: { rx: 100 } } });
       localDb.put.resolves();
 
-      localDb.replicate.from.returns(onPromise);
       localDb.replicate.to.resolves();
       localDb.info.resolves({ update_seq: 2 });
       window.medicmobile_android = { getDataUsage: sinon.stub() };
@@ -343,18 +324,6 @@ describe('Initial replication', () => {
         }]
       ]);
 
-      expect(localDb.replicate.from.args).to.deep.equal([[
-        remoteDb,
-        {
-          live: false,
-          retry: false,
-          heartbeat: 10000,
-          timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-          query_params: { initial_replication: true },
-          since: '456-111',
-        }
-      ]]);
-
       expect(localDb.replicate.to.args).to.deep.equal([[
         remoteDb,
         { since: 2 },
@@ -388,7 +357,6 @@ describe('Initial replication', () => {
         .resolves({ _id: FLAG_ID, start_time: 0 });
       localDb.put.resolves();
 
-      localDb.replicate.from.returns(onPromise);
       localDb.replicate.to.resolves();
       localDb.info.resolves({ update_seq: 650 });
 
@@ -427,18 +395,6 @@ describe('Initial replication', () => {
           start_time: 0,
         }]
       ]);
-
-      expect(localDb.replicate.from.args).to.deep.equal([[
-        remoteDb,
-        {
-          live: false,
-          retry: false,
-          heartbeat: 10000,
-          timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-          query_params: { initial_replication: true },
-          since: '456-111',
-        }
-      ]]);
 
       expect(localDb.replicate.to.args).to.deep.equal([[
         remoteDb,
@@ -482,7 +438,6 @@ describe('Initial replication', () => {
         .resolves({ _id: FLAG_ID, start_time: 0 });
       localDb.put.resolves();
 
-      localDb.replicate.from.returns(onPromise);
       localDb.replicate.to.resolves();
       localDb.info.resolves({ update_seq: 5 });
 
@@ -535,7 +490,6 @@ describe('Initial replication', () => {
         .resolves({ _id: FLAG_ID, start_time: 0 });
       localDb.put.resolves();
 
-      localDb.replicate.from.returns(onPromise);
       localDb.replicate.to.resolves();
       localDb.info.resolves({ update_seq: 5 });
 
@@ -558,23 +512,6 @@ describe('Initial replication', () => {
           start_time: 0,
         }]
       ]);
-
-      expect(localDb.replicate.from.args).to.deep.equal([[
-        remoteDb,
-        {
-          live: false,
-          retry: false,
-          heartbeat: 10000,
-          timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-          query_params: { initial_replication: true },
-          since: '123-fdhsfs',
-        }
-      ]]);
-      expect(onPromise.on.callCount).to.equal(1);
-      expect(onPromise.on.args[0][0]).to.equal('change');
-      expect(onPromise.cancel.callCount).to.equal(0);
-      onPromise.on.args[0][1]();
-      expect(onPromise.cancel.callCount).to.equal(1);
 
       expect(localDb.replicate.to.args).to.deep.equal([[
         remoteDb,
@@ -614,7 +551,6 @@ describe('Initial replication', () => {
         .resolves({ _id: FLAG_ID, start_time: 0 });
       localDb.put.resolves();
 
-      localDb.replicate.from.returns(onPromise);
       localDb.replicate.to.resolves();
       localDb.info.resolves({ update_seq: 5 });
 
@@ -664,7 +600,6 @@ describe('Initial replication', () => {
       localDb.get.resolves({ _id: FLAG_ID, start_time: 0 });
       localDb.put.resolves();
 
-      localDb.replicate.from.resolves(onPromise);
       localDb.replicate.to.resolves();
       localDb.info.resolves({ update_seq: 5 });
 
@@ -711,7 +646,6 @@ describe('Initial replication', () => {
         ]
       });
 
-      localDb.replicate.from.returns(onPromise);
       localDb.replicate.to.resolves();
       localDb.info.resolves({ update_seq: 200 });
       const displayTooManyDocsWarning = sinon.stub().resolves();
@@ -736,18 +670,6 @@ describe('Initial replication', () => {
         }]
       ]);
 
-      expect(localDb.replicate.from.args).to.deep.equal([[
-        remoteDb,
-        {
-          live: false,
-          retry: false,
-          heartbeat: 10000,
-          timeout: 1000 * 60 * 10, // try for ten minutes then give up,
-          query_params: { initial_replication: true },
-          since: '456-fdhsfs',
-        }
-      ]]);
-
       expect(localDb.replicate.to.args).to.deep.equal([[
         remoteDb,
         { since: 200 },
@@ -764,7 +686,6 @@ describe('Initial replication', () => {
         start_data_usage: undefined,
         start_time: 0,
       }]]);
-      expect(localDb.replicate.from.callCount).to.equal(0);
       expect(localDb.replicate.to.callCount).to.equal(0);
     });
 
@@ -786,7 +707,6 @@ describe('Initial replication', () => {
         start_data_usage: undefined,
         start_time: 0,
       }]]);
-      expect(localDb.replicate.from.callCount).to.equal(0);
       expect(localDb.replicate.to.callCount).to.equal(0);
     });
 
@@ -810,7 +730,6 @@ describe('Initial replication', () => {
         start_data_usage: undefined,
         start_time: 0,
       }]]);
-      expect(localDb.replicate.from.callCount).to.equal(0);
       expect(localDb.replicate.to.callCount).to.equal(0);
     });
 
@@ -841,41 +760,7 @@ describe('Initial replication', () => {
         start_data_usage: undefined,
         start_time: 0,
       }]]);
-      expect(localDb.replicate.from.callCount).to.equal(0);
       expect(localDb.replicate.to.callCount).to.equal(0);
-    });
-
-    it('should throw replicate from errors', async () => {
-      sinon.stub(utils, 'fetchJSON').resolves({
-        doc_ids_revs: [ { id: 'four', rev: 3 }, { id: 'five', rev: 1 }, ],
-        warn_docs: 5,
-        last_seq: '123-fdhsfs',
-        warn: false,
-        limit: 10000
-      });
-
-      localDb.allDocs.resolves({ rows: [] });
-      remoteDb.bulkGet.resolves({
-        results: [
-          { id: 'four', docs: [{ ok: { _id: 'four', _rev: 1, field: 'four' } }], },
-          { id: 'five', docs: [{ ok: { _id: 'five', _rev: 1, field: 'five' } }], },
-        ]
-      });
-      localDb.bulkDocs.resolves();
-      localDb.get.rejects({ status: 404 });
-      localDb.put.resolves();
-
-      const err = Promise.reject('boom?');
-      err.on = sinon.stub();
-      localDb.replicate.from.returns(err);
-
-      await expect(initialReplication.replicate(remoteDb, localDb)).to.be.rejectedWith( 'boom?');
-
-      expect(localDb.put.args).to.deep.equal([[{
-        _id: FLAG_ID,
-        start_data_usage: undefined,
-        start_time: 0,
-      }]]);
     });
 
     it('should throw replicate to errors', async () => {
@@ -897,7 +782,6 @@ describe('Initial replication', () => {
       localDb.get.rejects({ status: 404 });
       localDb.put.resolves();
 
-      localDb.replicate.from.returns(onPromise);
       localDb.info.resolves({ update_seq: 7 });
       localDb.replicate.to.rejects(new Error('gone'));
 
@@ -928,7 +812,6 @@ describe('Initial replication', () => {
       localDb.get.rejects({ status: 404 });
       localDb.put.rejects(new Error('boom!'));
 
-      localDb.replicate.from.resolves();
       localDb.replicate.to.resolves();
       localDb.info.resolves({ update_seq: 5 });
 
@@ -953,7 +836,6 @@ describe('Initial replication', () => {
       localDb.get.rejects({ status: 404 });
       localDb.put.resolves();
 
-      localDb.replicate.from.returns(onPromise);
       localDb.replicate.to.resolves();
       localDb.info.resolves({ update_seq: 5 });
 

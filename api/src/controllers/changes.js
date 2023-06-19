@@ -18,5 +18,5 @@ const request = (req, res) => {
 };
 
 module.exports = {
-  request: request,
+  request,
 };

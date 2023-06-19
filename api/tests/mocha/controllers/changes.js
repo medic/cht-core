@@ -1,25 +1,53 @@
 const sinon = require('sinon');
-const rewire = require('rewire');
+const db = require('../../../src/db');
 const serverUtils = require('../../../src/server-utils');
 
-let controller;
+const controller =  require('../../../src/controllers/changes');
+let req;
+let res;
 
-require('chai').should();
+const expect = require('chai').expect;
 
 describe('Changes controller', () => {
   afterEach(() => {
     sinon.restore();
   });
-
   beforeEach(() => {
-    controller = rewire('../../../src/controllers/changes');
+    req = {  };
+    res = {
+      type: sinon.stub(),
+      json: sinon.stub(),
+    };
   });
 
-  it('should resond with ddoc and service worker meta', async () => {
-
+  it('should respond with ddoc and service worker meta', async () => {
+    sinon.stub(db.medic, 'changes').resolves({
+      changes: [
+        { id: 'service-worker-meta' },
+        { id: '_design/medic-client', },
+        { id: 'settings' },
+      ],
+    });
+    await controller.request(req, res);
+    expect(db.medic.changes.args).to.deep.equal([[{ doc_ids: [
+      'service-worker-meta',
+      '_design/medic-client',
+      'settings'
+    ] }]]);
+    expect(res.json.args).to.deep.equal([[{
+      changes: [
+        { id: 'service-worker-meta' },
+        { id: '_design/medic-client', },
+        { id: 'settings' },
+      ],
+    }]]);
   });
 
   it('should fail on error', async () => {
+    sinon.stub(db.medic, 'changes').rejects({ oh: 'no' });
+    sinon.stub(serverUtils, 'error');
 
+    await controller.request(req, res);
+    expect(serverUtils.error.args).to.deep.equal([[{ oh: 'no' }, req, res]]);
   });
 });

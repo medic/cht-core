@@ -2,7 +2,6 @@ const utils = require('./utils');
 const { setUiStatus, displayTooManyDocsWarning } = require('./ui-status');
 
 let docIdsRevs;
-let lastSeq;
 let remoteDocCount;
 
 const INITIAL_REPLICATION_LOG = '_local/initial-replication';
@@ -58,7 +57,6 @@ const getDownloadList = async (localDb = true) => {
   const response = await utils.fetchJSON('/api/v1/initial-replication/get-ids');
 
   docIdsRevs = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
-  lastSeq = response.last_seq;
   remoteDocCount = response.doc_ids_revs.length;
 
   if (response.warn) {

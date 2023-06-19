@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import { CookieService } from 'ngx-cookie-service';
 
-import * as Purger from '../../../js/bootstrapper/purger';
 import { DebugService } from '@mm-services/debug.service';
 import { DbService } from '@mm-services/db.service';
 import { FeedbackService } from '@mm-services/feedback.service';

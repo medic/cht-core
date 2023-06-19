@@ -14,7 +14,6 @@ import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
 import { HttpClient } from '@angular/common/http';
-import * as repl from 'repl';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
