@@ -1,4 +1,5 @@
-namespace: cht-dev-namespace
+project_name: <your-project-name>
+namespace: "cht-dev-namespace"
 chtversion: 4.1.1
 couchdb:
   password: <password-value>
@@ -25,8 +26,4 @@ ingress:
 environment: "local"  # "local" or "remote"
 
 local:
-  namespace: "default"
   diskPath: "/var/lib/couchdb"
-
-remote:
-  namespace: "cht-dev-namespace"
