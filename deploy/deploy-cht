@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Check if Python is installed
+if ! command -v python3 &> /dev/null ; then
+    echo "Python is not installed. Please install Python 3."
+    exit 1
+fi
+
+# Check if pip is installed
+if ! command -v pip3 &> /dev/null ; then
+    echo "pip is not installed. Please install pip for Python 3."
+    exit 1
+fi
+
+# Check if Invoke is installed
+if ! python3 -c "import invoke" &> /dev/null ; then
+    echo "Invoke is not installed. Installing it..."
+    pip3 install invoke
+fi
+
+# Check if PyYAML is installed
+if ! python3 -c "import yaml" &> /dev/null ; then
+    echo "PyYAML is not installed. Installing it..."
+    pip3 install PyYAML
+fi
+
+# Validate that -f argument is provided
+if [[ $1 != "-f" || -z $2 ]]; then
+    echo "No values file provided. Please specify a values file using -f <file>"
+    exit 1
+fi
+
+# Pass command line arguments to invoke script
+invoke install $@
