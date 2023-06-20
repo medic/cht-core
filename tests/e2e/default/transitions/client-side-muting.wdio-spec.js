@@ -1,19 +1,16 @@
 const _ = require('lodash');
 const { expect } = require('chai');
 
-const commonElements = require('@page-objects/protractor/common/common.po.js');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const utils = require('@utils');
-const loginPage = require('@page-objects/protractor/login/login.po.js');
-const contactsObjects = require('@page-objects/protractor/contacts/contacts.po');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const formsUtils = require('./forms');
-const constants = require('@constants');
 
 /* global window */
 
 describe('Muting', () => {
-  let originalTimeout;
-
   const password = 'Sup3rSecret!';
   const DISTRICT = {
     _id: 'DISTRICT',
@@ -50,6 +47,7 @@ describe('Muting', () => {
     parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } },
     contact: { _id: 'contact1' },
   };
+
   const patient1 = {
     _id: 'patient1',
     name: 'patient one',
@@ -89,10 +87,11 @@ describe('Muting', () => {
       _id: 'fixture:user:offline',
       name: 'Offline'
     },
-    roles: ['district_admin'],
+    roles: ['chw'],
     known: true,
   };
 
+  
   const onlineUser = {
     username: 'online',
     password: password,
@@ -101,7 +100,7 @@ describe('Muting', () => {
       _id: 'fixture:user:online',
       name: 'Offline'
     },
-    roles: ['national_admin'],
+    roles: ['program_officer'],
     known: true,
   };
 
@@ -114,7 +113,7 @@ describe('Muting', () => {
   };
 
   const getLastSubmittedReport = () => {
-    return browser.executeAsyncScript(() => {
+    return browser.executeAsync(() => {
       const callback = arguments[arguments.length - 1];
       const db = window.CHTCore.DB.get();
       return db
@@ -125,7 +124,7 @@ describe('Muting', () => {
   };
 
   const getLocalDoc = (uuid) => {
-    return browser.executeAsyncScript((uuid) => {
+    return browser.executeAsync((uuid) => {
       const callback = arguments[arguments.length - 1];
       const db = window.CHTCore.DB.get();
       return db
@@ -136,7 +135,7 @@ describe('Muting', () => {
   };
 
   const ensureSync = async (localDoc) => {
-    await commonElements.syncNative();
+    await commonPage.sync();
     try {
       const onlineDoc = await utils.getDoc(localDoc._id, localDoc._rev);
       expect(onlineDoc).excludingEvery('_attachments').to.deep.equal(localDoc);
@@ -146,37 +145,39 @@ describe('Muting', () => {
   };
 
   const submitMutingForm = async (contact, form, sync = false) =>  {
-    await contactsObjects.loadContact(contact._id);
-
-    await formsUtils.openForm(form);
-    await formsUtils.submit();
+    await commonPage.refresh();
+    await commonPage.goToPeople(contact._id, false);
+    await commonPage.openFastActionReport(form);
+    await genericForm.submitForm();
+    await commonPage.waitForLoaders();
+    
     if (sync) {
       const lastSubmittedReport = await getLastSubmittedReport();
       await ensureSync(lastSubmittedReport);
     }
   };
 
-  const muteClinic = (contact, sync = false) => {
-    return submitMutingForm(contact, 'mute_clinic', sync);
+  const muteClinic = async (contact, sync = false) => {
+    await submitMutingForm(contact, 'mute_clinic', sync);
   };
 
-  const unmuteClinic = (contact, sync = false) => {
-    return submitMutingForm(contact, 'unmute_clinic', sync);
+  const unmuteClinic = async (contact, sync = false) => {
+    await submitMutingForm(contact, 'unmute_clinic', sync);
   };
 
-  const mutePerson = (contact, sync = false) => {
-    return submitMutingForm(contact, 'mute_person', sync);
+  const mutePerson = async (contact, sync = false) => {
+    await submitMutingForm(contact, 'mute_person', sync);
   };
 
-  const unmutePerson = (contact, sync = false) => {
-    return submitMutingForm(contact, 'unmute_person', sync);
+  const unmutePerson = async (contact, sync = false) => {
+    await submitMutingForm(contact, 'unmute_person', sync);
   };
 
   const restartSentinel = async (sync = false) => {
     await utils.startSentinel();
     await sentinelUtils.waitForSentinel();
-    await utils.resetBrowserNative();
-    sync && await commonElements.syncNative();
+    await browser.refresh();
+    sync && await commonPage.sync();
   };
 
   const expectUnmutedNoHistory = (doc) => {
@@ -187,111 +188,80 @@ describe('Muting', () => {
     expect(doc.muted).to.be.ok;
     expect(doc.muting_history).to.be.undefined;
   };
-
-  const setBrowserOffline = () => {
-    return browser.driver.setNetworkConditions({ offline: true, latency: 0, throughput: 0 });
+  const setBrowserOffline = async () => {
+    await browser.throttle({
+      offline: true,
+      downloadThroughput: 0,
+      uploadThroughput: 0,
+      latency: 0
+    });
   };
-  const setBrowserOnline = () => {
-    return browser.driver.setNetworkConditions({ latency: 0, throughput: 1000 * 1000 }, 'No throttling');
+  const setBrowserOnline = async () => {
+    await browser.throttle({
+      offline: false,
+      downloadThroughput: 1000 * 1000,
+      uploadThroughput: 1000 * 1000,
+      latency: 0
+    });
   };
 
-  beforeAll(async () => {
-    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
-
+  before(async () => {
     await utils.saveDocs([DISTRICT, HEALTH_CENTER]);
     await formsUtils.uploadForms();
   });
 
-  afterAll(async () => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-
-    await utils.startSentinel();
-    await commonElements.goToLoginPageNative();
-    await loginPage.loginNative(constants.USERNAME, constants.PASSWORD);
-    await utils.revertDb();
-    await commonElements.calmNative();
-  });
+  after( async () => await utils.startSentinel());
 
   describe('for an online user',  () => {
-    beforeAll(async () => {
+    before(async () => {
       await utils.saveDocs(contacts);
       await utils.createUsers([onlineUser]);
-      await commonElements.goToLoginPageNative();
-      await loginPage.loginNative('online', password);
     });
 
-    afterAll(async () => {
+    after(async () => {
       await utils.deleteUsers([onlineUser]);
     });
 
     afterEach(async () => {
-      await utils.revertDb([DISTRICT._id, HEALTH_CENTER._id, /^form:/]);
+      await utils.revertDb([DISTRICT._id, HEALTH_CENTER._id, /^form:/], true);
     });
 
     it('should not process client-side when muting as an online user', async () => {
-      // turning off sentinel so it doesn't process muting
+      await loginPage.login({username:onlineUser.username, password: onlineUser.password});
       await utils.stopSentinel();
       await utils.updateSettings(settings);
-
+      
       await muteClinic(clinic1);
-
+      await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(clinic1._id));
       expectUnmutedNoHistory(await utils.getDoc(patient1._id));
 
       await restartSentinel();
-
+      await commonPage.waitForLoaders();
       expectMutedNoHistory(await utils.getDoc(clinic1._id));
+      await commonPage.waitForLoaders();
       expectMutedNoHistory(await utils.getDoc(patient1._id));
     });
   });
 
   describe('for an offline user', () => {
-    beforeAll(async () => {
-      await utils.saveDocs(contacts);
-      await utils.createUsers([offlineUser]);
-      await commonElements.goToLoginPageNative();
-      await loginPage.loginNative(offlineUser.username, password);
-      try {
-        await commonElements.calmNative();
-      } catch (err) {
-        console.warn('Error when expecting page load', err);
-        await browser.driver.navigate().refresh();
-        await commonElements.calmNative();
-      }
-    });
-
-    afterAll(async () => {
-      await utils.deleteUsers([offlineUser]);
-    });
-
-    afterEach(async () => {
-      await commonElements.syncNative();
-      await setBrowserOffline();
-      await utils.revertSettings(true);
-      await unmuteContacts();
-      await setBrowserOnline();
-      await utils.refreshToGetNewSettings();
-    });
-
     const updateSettings = async (settings) => {
       await setBrowserOffline();
-      await utils.updateSettings(settings, true);
+      await utils.updateSettings(settings);
       await setBrowserOnline();
       try {
-        await commonElements.syncNative();
-        await utils.refreshToGetNewSettings();
+        await commonPage.sync();
       } catch (err) {
         // sometimes sync happens by itself, on timeout
         console.error('Error when trying to sync', err);
-        await utils.refreshToGetNewSettings();
-        await commonElements.syncNative();
+        await commonPage.closeReloadModal(true);
+        await commonPage.sync();
       }
     };
 
     const unmuteContacts = () => {
       const ids = contacts.map(c => c._id);
-      return browser.executeAsyncScript((ids) => {
+      return browser.executeAsync((ids) => {
         const callback = arguments[arguments.length - 1];
         const db = window.CHTCore.DB.get();
         return db
@@ -313,7 +283,26 @@ describe('Muting', () => {
       }, ids);
     };
 
-    it('should not process muting client-side if not enabled', async () => {
+    before(async () => {
+      await utils.saveDocs(contacts);
+      await utils.createUsers([offlineUser]);
+      await loginPage.login({username:offlineUser.username, password: offlineUser.password});      
+    });
+
+    after(async () => {
+      await utils.deleteUsers([offlineUser]);
+    });
+
+    afterEach(async () => {
+      await commonPage.sync();
+      await setBrowserOffline();
+      await utils.revertSettings(true);
+      await unmuteContacts();
+      await setBrowserOnline();
+    });
+
+    it( 'should not process muting client-side if not enabled', async () => {
+
       const settingsWithDisabled = _.cloneDeep(settings);
       settingsWithDisabled.transitions.muting = { client_side: false };
 
@@ -321,18 +310,20 @@ describe('Muting', () => {
       await updateSettings(settingsWithDisabled);
 
       await muteClinic(clinic2, true);
-
+      await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(clinic2._id));
       expectUnmutedNoHistory(await utils.getDoc(patient2._id));
 
       await restartSentinel(true);
+      await commonPage.waitForLoaders();
 
       expectMutedNoHistory(await utils.getDoc(clinic2._id));
+      await commonPage.waitForLoaders();
       expectMutedNoHistory(await utils.getDoc(patient2._id));
     });
 
     // for simplicity, offline means sentinel is stopped
-    it('should mute and unmute a person while "offline", with processing in between', async () => {
+    it( 'should mute and unmute a person while "offline", with processing in between', async () => {
       await utils.stopSentinel();
       await updateSettings(settings);
 
@@ -353,10 +344,11 @@ describe('Muting', () => {
         client_side: [{ muted: true, date: updatedPatient1.muted, report_id: mutingReport._id }],
       });
       const clientMutingDate = updatedPatient1.muted;
-
+      await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(clinic1._id));
 
       // other contacts are not muted
+      await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(patient2._id));
       expectUnmutedNoHistory(await utils.getDoc(clinic2._id));
 
@@ -370,7 +362,7 @@ describe('Muting', () => {
         client_side: [{ muted: true, date: clientMutingDate, report_id: mutingReport._id }],
       });
       const serverMutedDate = updatedPatient1.muted;
-
+      await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(clinic1._id));
 
       await utils.stopSentinel();
@@ -411,7 +403,7 @@ describe('Muting', () => {
           { muted: false, date: unmutingDate, report_id: unmutingReport._id },
         ],
       });
-
+      await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(clinic1._id));
 
       const infodoc = await sentinelUtils.getInfoDoc(patient1._id);
@@ -421,7 +413,7 @@ describe('Muting', () => {
       ]);
     });
 
-    it('should mute and unmute a person while "offline", without processing in between', async () => {
+    it( 'should mute and unmute a person while "offline", without processing in between', async () => {
       await utils.stopSentinel();
       await updateSettings(settings);
 
@@ -487,7 +479,7 @@ describe('Muting', () => {
       ]);
     });
 
-    it('should mute and unmute a clinic while "offline", with processing in between', async () => {
+    it( 'should mute and unmute a clinic while "offline", with processing in between', async () => {
       await utils.stopSentinel();
       await updateSettings(settings);
 
@@ -524,9 +516,11 @@ describe('Muting', () => {
         server_side: { muted: false },
         client_side: [{ muted: true, date: updatedPatient3.muted, report_id: mutingReport._id }],
       });
-
+      await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(clinic2._id));
+      await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(patient2._id));
+      await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(contact1._id));
 
       const clientMutingDate = updatedPatient1.muted;
@@ -631,7 +625,7 @@ describe('Muting', () => {
       ]);
     });
 
-    it('should mute and unmute a clinic while "offline", without processing in between', async () => {
+    it( 'should mute and unmute a clinic while "offline", without processing in between', async () => {
       await utils.stopSentinel();
       await updateSettings(settings);
 
@@ -732,7 +726,7 @@ describe('Muting', () => {
       ]);
     });
 
-    it('should mute a clinic and unmute a patient while "offline", without processing in between', async () => {
+    it( 'should mute a clinic and unmute a patient while "offline", without processing in between', async () => {
       await utils.stopSentinel();
       await updateSettings(settings);
 
@@ -862,11 +856,11 @@ describe('Muting', () => {
       ]);
     });
 
-    it('should handle offline multiple muting/unmuting events gracefully', async () => {
+    it( 'should handle offline multiple muting/unmuting events gracefully', async () => {
       // this test has value after it ran for at least 100 times
       await utils.stopSentinel();
       await updateSettings(settings);
-
+      await commonPage.waitForLoaders();
       await muteClinic(clinic1);
       await unmutePerson(patient1); // also unmutes clinic
       await mutePerson(patient1);
@@ -876,12 +870,14 @@ describe('Muting', () => {
       await mutePerson(patient1);
 
       let updatePatient1 = await utils.getDoc(patient1._id);
+      await commonPage.waitForLoaders();
       expect(updatePatient1.muted).to.be.ok;
       expect(updatePatient1.muting_history.last_update).to.equal('client_side');
       expect(updatePatient1.muting_history.server_side).to.deep.equal({ muted: false });
       expect(updatePatient1.muting_history.client_side.length).to.equal(7);
 
       let updatedClinic = await utils.getDoc(clinic1._id);
+      await commonPage.waitForLoaders();
       expect(updatedClinic.muted).to.be.undefined;
       expect(updatedClinic.muting_history.last_update).to.equal('client_side');
       expect(updatedClinic.muting_history.server_side).to.deep.equal({ muted: false });
@@ -904,7 +900,7 @@ describe('Muting', () => {
       expect(updatedClinic.muting_history.client_side.length).to.equal(4);
     });
 
-    it('should save validation errors on docs', async () => {
+    it( 'should save validation errors on docs', async () => {
       await utils.addTranslations('en', {
         'muting.validation.message':
           '{{contact.name}}, field incorrect {{patient_name}} ({{patient_id}}) {{meta.instanceID}}',
@@ -926,8 +922,8 @@ describe('Muting', () => {
 
       await mutePerson(patient1);
       let updatedPatient1 = await utils.getDoc(patient1._id);
-      expectUnmutedNoHistory(updatedPatient1);
-
+      expectUnmutedNoHistory(await updatedPatient1);
+      await commonPage.waitForLoaders();
       const report = await getLastSubmittedReport();
       expect(report.errors.length).to.equal(1);
       expect(report.errors[0]).to.deep.equal({
@@ -941,23 +937,25 @@ describe('Muting', () => {
       await sentinelUtils.waitForSentinel(report._id);
 
       updatedPatient1 = await utils.getDoc(patient1._id);
-      expectUnmutedNoHistory(updatedPatient1);
+      await commonPage.waitForLoaders();
+      expectUnmutedNoHistory(await updatedPatient1);
       const serverReport = await utils.getDoc(report._id);
       expect(serverReport.errors).to.deep.equal(report.errors);
       expect(serverReport.tasks.length).to.equal(1);
       expect(serverReport.tasks[0].messages[0].message).to.equal(serverReport.errors[0].message);
     });
 
-    it('should work with composite forms', async () => {
+    it( 'should work with composite forms', async () => {
       await utils.stopSentinel();
       await updateSettings(settings);
 
-      await contactsObjects.loadContact(HEALTH_CENTER._id);
-      await formsUtils.openForm('mute_new_clinic');
+      await commonPage.goToPeople(HEALTH_CENTER._id);
+      await commonPage.openFastActionReport('mute_new_clinic');
       await formsUtils.selectHealthCenter(HEALTH_CENTER.name);
       await formsUtils.fillPatientName('new patient');
 
-      await formsUtils.submit();
+      await formsUtils.submit( );
+      await commonPage.waitForLoaders();
 
       const mutingReport = await getLastSubmittedReport();
       const mainReport = await getLocalDoc(mutingReport.created_by_doc);
