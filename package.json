@@ -15,7 +15,7 @@
     "./shared-libs/*"
   ],
   "scripts": {
-    "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
+    "test": "grunt eslint && grunt unit && grunt test-api-integration",
     "webdriver": "webdriver-manager update && webdriver-manager start",
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js",
     "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js",
@@ -101,7 +101,6 @@
     "grunt-karma": "^4.0.2",
     "grunt-notify": "^0.4.5",
     "grunt-optimize-js": "^0.6.0",
-    "grunt-protractor-runner": "^5.0.0",
     "grunt-sass": "^3.1.0",
     "grunt-text-replace": "^0.4.0",
     "husky": "^8.0.0",
@@ -130,8 +129,6 @@
     "pouchdb-adapter-memory": "^7.3.1",
     "pouchdb-core": "^7.3.1",
     "pouchdb-mapreduce": "^7.3.1",
-    "protractor": "^7.0.0",
-    "protractor-jasmine2-screenshot-reporter": "^0.5.0",
     "raw-loader": "^4.0.2",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
