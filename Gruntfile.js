@@ -173,44 +173,7 @@ module.exports = function(grunt) {
 
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
-      'eslint': {
-        cmd: () => {
-          const paths = [
-            'Gruntfile.js',
-            'admin/**/*.js',
-            'api/**/*.js',
-            'ddocs/**/*.js',
-            'sentinel/**/*.js',
-            'shared-libs/**/*.js',
-            'tests/**/*.js',
-            'webapp/src/**/*.js',
-            'webapp/src/**/*.ts',
-            'webapp/tests/**/*.js',
-            'webapp/tests/**/*.ts',
-            'config/**/*.js',
-            'scripts/**/*.js',
-            'webapp/src/ts/**/*.component.html',
-          ];
-          const ignore = [
-            'webapp/src/ts/providers/xpath-element-path.provider.ts',
-            'api/src/public/login/lib-bowser.js',
-            'api/extracted-resources/**/*',
-            'api/build/**/*',
-            '**/node_modules/**',
-            'build/**',
-            '**/pupil/**',
-            'api/src/enketo-transformer/**',
-            'tests/scalability/report*/**',
-            'tests/scalability/jmeter/**'
-          ];
-
-          return [ESLINT_COMMAND]
-            .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
-            .concat(paths.map(glob => `"${glob}"`))
-            .join(' ');
-        },
-        stdio: 'inherit', // enable colors!
-      },
+      'eslint': ESLINT_COMMAND + ' .',
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
       'build-service-images': {
         cmd: () => buildVersions.SERVICES
