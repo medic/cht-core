@@ -3,7 +3,7 @@
   'use strict';
 
   const registerServiceWorker = require('./swRegister');
-  const { setUiStatus, setUiError, setLocale } = require('./ui-status');
+  const uiStatus = require('./ui-status');
   const utils = require('./utils');
   const purger = require('./purger');
   const initialReplicationLib = require('./initial-replication');
@@ -86,18 +86,7 @@
   };
 
   /* pouch db set up function */
-  module.exports = (POUCHDB_OPTIONS) => {
-    utils.checkApiAccessible()
-      .then((apiAccessible) => {
-        if (!apiAccessible) {
-          setUiError();
-          return Promise.reject();
-        }
-      }).catch(() => {
-        setUiError();
-        return Promise.reject();
-      });
-    
+  module.exports = (POUCHDB_OPTIONS) => {  
 
     const dbInfo = getDbInfo();
     const userCtx = getUserCtx();
@@ -107,12 +96,23 @@
     }
 
     if (hasFullDataAccess(userCtx)) {
-      return Promise.resolve();
+      return utils.checkApiAccessible()
+        .then((apiAccessible) => {
+          if (apiAccessible) {
+            return Promise.resolve();
+          }
+          throw new Error('API not accessible');
+        }).catch((err) => {
+          uiStatus.setUiError();
+          console.error(err);
+        }).finally(() => {
+          return Promise.resolve();
+        });
     }
 
-    setLocale(userCtx);
+    uiStatus.setLocale(userCtx);
 
-    const onServiceWorkerInstalling = () => setUiStatus('DOWNLOAD_APP');
+    const onServiceWorkerInstalling = () => uiStatus.setUiStatus('DOWNLOAD_APP');
     const swRegistration = registerServiceWorker(onServiceWorkerInstalling);
 
     const localDbName = getLocalDbName(dbInfo, userCtx.name);
@@ -148,8 +148,8 @@
         const purgeStarted = performance.now();
         return purger
           .purgeMain(localDb, userCtx)
-          .on('start', () => setUiStatus('PURGE_INIT'))
-          .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
+          .on('start', () => uiStatus.setUiStatus('PURGE_INIT'))
+          .on('progress', progress => uiStatus.setUiStatus('PURGE_INFO', { count: progress.purged }))
           .on('done', () => window.startupTimes.purge = performance.now() - purgeStarted)
           .catch(err => {
             console.error('Error attempting to purge main db - continuing', err);
@@ -161,14 +161,14 @@
         return purger
           .purgeMeta(localMetaDb)
           .on('should-purge', shouldPurge => window.startupTimes.purgingMeta = shouldPurge)
-          .on('start', () => setUiStatus('PURGE_META'))
+          .on('start', () => uiStatus.setUiStatus('PURGE_META'))
           .on('done', () => window.startupTimes.purgeMeta = performance.now() - purgeMetaStarted)
           .catch(err => {
             console.error('Error attempting to purge meta db - continuing', err);
             window.startupTimes.purgingMetaFailed = err.message;
           });
       })
-      .then(() => setUiStatus('STARTING_APP'))
+      .then(() => uiStatus.setUiStatus('STARTING_APP'))
       .catch(err => err)
       .then(err => {
         localDb.close();
@@ -180,7 +180,7 @@
           if (errorCode === 401) {
             return redirectToLogin(dbInfo);
           }
-          setUiError(err);
+          uiStatus.setUiError(err);
           throw(err);
         }
       });
