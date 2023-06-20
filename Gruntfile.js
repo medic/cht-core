@@ -5,7 +5,7 @@ const path = require('path');
 
 const {
   BUILD_NUMBER,
-  CI,
+  //CI,
   INTERNAL_CONTRIBUTOR,
 } = process.env;
 
