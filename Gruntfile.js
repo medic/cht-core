@@ -49,13 +49,6 @@ module.exports = function(grunt) {
         },
       },
     },
-    less: {
-      admin: {
-        files: {
-          'api/build/static/admin/css/main.css': 'admin/src/css/main.less',
-        },
-      },
-    },
     cssmin: {
       admin: {
         options: {
@@ -170,6 +163,7 @@ module.exports = function(grunt) {
       'jsdoc-sentinel': './node_modules/jsdoc/jsdoc.js -d jsdocs/sentinel sentinel/src/**/*.js',
       'jsdoc-api': './node_modules/jsdoc/jsdoc.js -d jsdocs/api -R api/README.md api/src/**/*.js',
       'jsdoc-shared-libs': './node_modules/jsdoc/jsdoc.js -d jsdocs/shared-libs shared-libs/**/src/**/*.js',
+      'less': './node_modules/less/bin/lessc admin/src/css/main.less api/build/static/admin/css/main.css',
 
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
@@ -421,7 +415,7 @@ module.exports = function(grunt) {
       },
       'admin-css': {
         files: ['admin/src/css/**/*'],
-        tasks: ['less:admin'],
+        tasks: ['exec:less'],
       },
       'admin-js': {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
@@ -607,7 +601,7 @@ module.exports = function(grunt) {
   grunt.registerTask('build-admin', 'Build the admin app', [
     'ngtemplates:adminApp',
     'browserify:admin',
-    'less:admin',
+    'exec:less',
     'minify-admin',
   ]);
 
