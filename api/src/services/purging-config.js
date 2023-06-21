@@ -11,6 +11,7 @@ const config = require('../config');
 
 const purgeDbs = {};
 const TASK_EXPIRATION_PERIOD = 60; // days
+const TARGET_EXPIRATION_PERIOD = 6; // months
 const VIEW_LIMIT = 100 * 1000;
 
 const parsePurgeFn = (purgeFnString) => {
@@ -372,6 +373,7 @@ const countPurgedTasks = async (roles) => {
   const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
 
   const getBatch = () => db.medic.query('medic/tasks_in_terminal_state', {
+    start_key: '',
     end_key: JSON.stringify(maximumEmissionEndDate),
   });
 
@@ -390,10 +392,10 @@ const countPurgedTasks = async (roles) => {
 };
 
 const countPurgedTargets = async (roles) => {
-  const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
-
-  const getBatch = () => db.medic.query('medic/tasks_in_terminal_state', {
-    end_key: JSON.stringify(maximumEmissionEndDate),
+  const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
+  const getBatch = () => db.medic.query('allDocs', {
+    start_key: 'target~',
+    end_key: `target~${lastAllowedReportingIntervalTag}~`,
   });
 
   const getIdsToPurge = (rolesHashes, rows) => {
