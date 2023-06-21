@@ -330,7 +330,8 @@ const countPurgedContacts = async (roles, purgeFn) => {
   const subjectIds = [];
   const rolesHashes = Object.keys(roles);
 
-  const result = await db.medic.query('medic-client/contacts_by_type', { include_docs: true });
+  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
+  const result = await db.queryMedic('medic-client/contacts_by_type', { include_docs: true });
   result.rows.forEach(row => assignContactToGroups(row, groups, subjectIds));
 
   await getRecordsForContacts(groups, subjectIds);
@@ -343,8 +344,9 @@ const countPurgedContacts = async (roles, purgeFn) => {
 };
 const countPurgedUnallocatedRecords = async (roles, purgeFn) => {
   const permissionSettings = config.get('permissions');
-  const getBatch = () =>  db.medic.query('medic/docs_by_replication_key', {
-    key: '_unassigned',
+  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
+  const getBatch = () =>  db.queryMedic('medic/docs_by_replication_key', {
+    key: JSON.stringify('_unassigned'),
     include_docs: true,
   });
   const getIdsToPurge = (rolesHashes, rows) => {
@@ -372,8 +374,9 @@ const countPurgedUnallocatedRecords = async (roles, purgeFn) => {
 const countPurgedTasks = async (roles) => {
   const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
 
-  const getBatch = () => db.medic.query('medic/tasks_in_terminal_state', {
-    start_key: '',
+  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
+  const getBatch = () => db.queryMedic('medic/tasks_in_terminal_state', {
+    start_key: JSON.stringify(''),
     end_key: JSON.stringify(maximumEmissionEndDate),
   });
 
@@ -393,9 +396,10 @@ const countPurgedTasks = async (roles) => {
 
 const countPurgedTargets = async (roles) => {
   const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
-  const getBatch = () => db.medic.query('allDocs', {
-    start_key: 'target~',
-    end_key: `target~${lastAllowedReportingIntervalTag}~`,
+  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
+  const getBatch = () => db.queryMedic('allDocs', {
+    start_key: JSON.stringify('target~'),
+    end_key: JSON.stringify(`target~${lastAllowedReportingIntervalTag}~`),
   });
 
   const getIdsToPurge = (rolesHashes, rows) => {
