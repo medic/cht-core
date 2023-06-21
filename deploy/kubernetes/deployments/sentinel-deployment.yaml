@@ -24,7 +24,7 @@ spec:
                 secretKeyRef:
                   name: cht-couchdb-credentials
                   key: COUCH_URL
-          image: public.ecr.aws/s5s3h4s7/cht-sentinel:4.1.1-4.1.1
+          image: public.ecr.aws/medic/cht-sentinel:4.1.1-4.1.1
           name: sentinel
           resources: {}
       restartPolicy: Always

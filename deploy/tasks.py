@@ -2,6 +2,8 @@ from invoke import task
 import os
 import subprocess
 import yaml
+import requests
+import json
 
 @task
 def prepare(c, f):
@@ -20,7 +22,11 @@ def load_values(c, f):
         print("No values file provided. Please specify a values file using -f <file>")
         exit(1)
     with open(f, 'r') as stream:
-        values = yaml.safe_load(stream)
+        try:
+            values = yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+            exit(1)
     return values
 
 @task
@@ -66,17 +72,30 @@ def create_secret(c, namespace):
         print("Secret api-tls-secret already exists.")
 
 @task
-def helm_install_or_upgrade(c, f, namespace, values):
+def get_image_tag(c, chtversion):
+    response = requests.get(f'https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:{chtversion}')
+    response.raise_for_status()
+    data = response.json()
+
+    for tag in data['tags']:
+        if tag['container_name'] == 'cht-api':
+            image_tag = tag['image'].split(':')[-1]
+            return image_tag
+
+    raise Exception('cht image tag not found')
+
+@task
+def helm_install_or_upgrade(c, f, namespace, values, image_tag):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     chart_filename = "cht-chart-4.x.tgz"
     project_name = values.get('project_name', '')
     release_exists = subprocess.run(["helm", "list", "-n", namespace], capture_output=True, text=True).stdout
     if project_name in release_exists:
         print("Release exists. Performing upgrade.")
-        subprocess.run(["helm", "upgrade", "--install", project_name, os.path.join(script_dir, "helm", chart_filename), "--namespace", namespace, "--values", f], check=True)
+        subprocess.run(["helm", "upgrade", "--install", project_name, os.path.join(script_dir, "helm", chart_filename), "--namespace", namespace, "--values", f, "--set", f"cht_imag_tag={image_tag}"], check=True)
     else:
         print("Release does not exist. Performing install.")
-        subprocess.run(["helm", "install", project_name, os.path.join(script_dir, "helm", chart_filename), "--namespace", namespace, "--values", f], check=True)
+        subprocess.run(["helm", "install", project_name, os.path.join(script_dir, "helm", chart_filename), "--namespace", namespace, "--values", f, "--set", f"cht_imag_tag={image_tag}"], check=True)
 
 @task
 def install(c, f):
@@ -87,4 +106,5 @@ def install(c, f):
     if values.get('environment', '') == 'local':
         obtain_certificate_and_key(c)
         create_secret(c, namespace)
-    helm_install_or_upgrade(c, f, namespace, values)
+    image_tag = get_image_tag(c, values.get('chtversion', ''))
+    helm_install_or_upgrade(c, f, namespace, values, image_tag)

@@ -50,7 +50,7 @@ spec:
                   key: COUCHDB_UUID
             - name: SVC_NAME
               value: couchdb-1.{{ .Values.namespace }}.svc.cluster.local
-          image: public.ecr.aws/s5s3h4s7/cht-couchdb:{{ .Values.chtversion }}-{{ .Values.chtversion }}
+          image: public.ecr.aws/medic/cht-couchdb:{{ .Values.cht_image_tag }}
           name: cht-couchdb-1
           ports:
             - containerPort: 5984
