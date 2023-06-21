@@ -1,5 +1,6 @@
 const moment = require('moment');
 const sumBy = require('lodash/sumBy');
+const later = require('later');
 const serverSidePurgeUtils = require('@medic/purging-utils');
 const chtScriptApi = require('@medic/cht-script-api');
 const tombstoneUtils = require('@medic/tombstone-utils');
@@ -388,12 +389,50 @@ const countPurgedTasks = async (roles) => {
   return await simulatePurge(getBatch, getIdsToPurge, roles);
 };
 
-const dryRun = async (purgeFnString) => {
-  // TODO: dry run current config and compare numbers
-  // const purgeConfig = config.get('purge');
-  // const currentPurgeFn = purgeConfig && purgeConfig.fn;
+const countPurgedTargets = async (roles) => {
+  const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
 
-  const purgeFn = parsePurgeFn(purgeFnString);
+  const getBatch = () => db.medic.query('medic/tasks_in_terminal_state', {
+    end_key: JSON.stringify(maximumEmissionEndDate),
+  });
+
+  const getIdsToPurge = (rolesHashes, rows) => {
+    const toPurge = {};
+    rows.forEach(row => {
+      rolesHashes.forEach(hash => {
+        toPurge[hash] = toPurge[hash] || {};
+        toPurge[hash][row.id] = row.id;
+      });
+    });
+    return toPurge;
+  };
+
+  return await simulatePurge(getBatch, getIdsToPurge, roles);
+};
+
+const getSchedule = config => {
+  if (!config) {
+    return;
+  }
+  if (config.text_expression) {
+    // text expression takes precedence over cron
+    return later.parse.text(config.text_expression);
+  }
+  if (config.cron) {
+    return later.parse.cron(config.cron);
+  }
+};
+
+const getNextRun = config => {
+  const schedule = getSchedule(config);
+  if (!schedule) {
+    return;
+  }
+  return later.schedule(schedule).next().toISOString();
+};
+
+const dryRun = async (appSettingsPurge) => {
+  const purgeFn = parsePurgeFn(appSettingsPurge.fn);
   if (!purgeFn) {
     throw new Error('Purging: No purge function configured.');
   }
@@ -402,21 +441,16 @@ const dryRun = async (purgeFnString) => {
   await initPurgeDbs(roles);
 
   const contacts = await countPurgedContacts(roles, purgeFn);
-  console.log("contacts", contacts);
   const unallocatedRecords = await countPurgedUnallocatedRecords(roles, purgeFn);
-  console.log("unallocatedRecords", unallocatedRecords);
   const tasks = await countPurgedTasks(roles);
-  console.log("tasks", tasks);
-  // const targets = await countPurgedTargets(roles);
-  // console.log("targets", targets);
+  const targets = await countPurgedTargets(roles);
 
-  const results = [contacts, unallocatedRecords, tasks];
+  const results = [contacts, unallocatedRecords, tasks, targets];
   const wontChangeCount = sumBy(results, 'wontChangeCount');
   const willPurgeCount = sumBy(results, 'willPurgeCount');
   const willUnpurgeCount = sumBy(results, 'willUnpurgeCount');
 
-  // TODO: parse cron like in `scheduling.js`
-  const nextRun = new Date().toISOString();
+  const nextRun = getNextRun(appSettingsPurge);
 
   return { wontChangeCount, willPurgeCount, willUnpurgeCount, nextRun };
 };

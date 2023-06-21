@@ -4,8 +4,8 @@ const auth = require('../auth');
 
 module.exports = {
   dryRun: (req, res) => {
-    const purgeFn = req.body.fn;
-    if (!purgeFn) {
+    const appSettingsPurge = req.body;
+    if (!appSettingsPurge) {
       res.status(400);
       return res.json({
         error: 'bad_request',
@@ -14,7 +14,7 @@ module.exports = {
     }
 
     return auth.check(req, ['can_edit', 'can_configure'])
-      .then(() => purgingConfig.dryRun(purgeFn))
+      .then(() => purgingConfig.dryRun(appSettingsPurge))
       .then(({ wontChangeCount, willPurgeCount, willUnpurgeCount, nextRun }) => {
         return res.json({
           next_run: nextRun,
