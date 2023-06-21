@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const constants = require('@constants');
 const rpn = require('request-promise-native');
-const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
+//const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const os = require('os');
@@ -918,6 +918,7 @@ module.exports = {
   setupUserDoc,
   request: request,
 
+  /*
   reporter: new htmlScreenshotReporter({
     reportTitle: 'e2e Test Report',
     inlineImages: true,
@@ -933,7 +934,7 @@ module.exports = {
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, '_');
     },
-  }),
+  }),*/
 
   specReporter: new specReporter({
     spec: {
