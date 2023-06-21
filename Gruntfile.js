@@ -226,7 +226,6 @@ module.exports = function(grunt) {
               `cd ${service}`,
               `npm ci --production`,
               `npm dedupe`,
-              `rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch`,
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
             ].join(' && ')
@@ -282,9 +281,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          // removing pouchdb-fetch/node-fetch forces PouchDb to use a newer version node-fetch
-          // https://github.com/medic/cht-core/issues/8173
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
