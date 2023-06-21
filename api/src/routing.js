@@ -158,6 +158,7 @@ app.use(
           BUILDS_DB,
           'maps.googleapis.com', // used for enketo geopoint widget
           'www.google-analytics.com',
+          'app.posthog.com',
         ],
         childSrc:  [`'self'`],
         formAction: [`'self'`],
@@ -183,6 +184,9 @@ app.use(
           `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
           `www.googletagmanager.com`,
           `'sha256-/RtAEt8HF5I5SY0Msaa2ElNo86mSiEN9brp2Td2gCIc='`,
+          `'sha256-kURz7DI4eYCMPFBsHueeIubV4BzKqHMiCOWVEfr/hU4='`,
+          'https://plausible.latinpandalab.com/js/script.js',
+          'app.posthog.com',
         ],
         styleSrc: [
           `'self'`,
