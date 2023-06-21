@@ -30,7 +30,7 @@ spec:
                   key: COUCH_URL
             - name: UPGRADE_SERVICE_URL
               value: http://upgrade-service.{{ .Values.namespace }}.svc.cluster.local:5008
-          image: public.ecr.aws/s5s3h4s7/cht-api:{{ .Values.chtversion }}-{{ .Values.chtversion }}
+          image: public.ecr.aws/medic/cht-api:{{ .Values.cht_image_tag }}
           name: cht-api
           ports:
             - containerPort: 5988
