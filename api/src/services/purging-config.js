@@ -1,3 +1,5 @@
+const moment = require('moment');
+const sumBy = require('lodash/sumBy');
 const serverSidePurgeUtils = require('@medic/purging-utils');
 const chtScriptApi = require('@medic/cht-script-api');
 const tombstoneUtils = require('@medic/tombstone-utils');
@@ -7,6 +9,7 @@ const logger = require('../logger');
 const config = require('../config');
 
 const purgeDbs = {};
+const TASK_EXPIRATION_PERIOD = 60; // days
 const VIEW_LIMIT = 100 * 1000;
 
 const parsePurgeFn = (purgeFnString) => {
@@ -364,6 +367,26 @@ const countPurgedUnallocatedRecords = async (roles, purgeFn) => {
 
   return await simulatePurge(getBatch, getIdsToPurge, roles);
 };
+const countPurgedTasks = async (roles) => {
+  const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
+
+  const getBatch = () => db.medic.query('medic/tasks_in_terminal_state', {
+    end_key: JSON.stringify(maximumEmissionEndDate),
+  });
+
+  const getIdsToPurge = (rolesHashes, rows) => {
+    const toPurge = {};
+    rows.forEach(row => {
+      rolesHashes.forEach(hash => {
+        toPurge[hash] = toPurge[hash] || {};
+        toPurge[hash][row.id] = row.id;
+      });
+    });
+    return toPurge;
+  };
+
+  return await simulatePurge(getBatch, getIdsToPurge, roles);
+};
 
 const dryRun = async (purgeFnString) => {
   // TODO: dry run current config and compare numbers
@@ -382,11 +405,15 @@ const dryRun = async (purgeFnString) => {
   console.log("contacts", contacts);
   const unallocatedRecords = await countPurgedUnallocatedRecords(roles, purgeFn);
   console.log("unallocatedRecords", unallocatedRecords);
+  const tasks = await countPurgedTasks(roles);
+  console.log("tasks", tasks);
+  // const targets = await countPurgedTargets(roles);
+  // console.log("targets", targets);
 
-  // TODO: maybe breakdown unallocatedRecords/contacts/reports/tasks/...
-  const wontChangeCount = contacts.wontChangeCount + unallocatedRecords.wontChangeCount;
-  const willPurgeCount = contacts.willPurgeCount + unallocatedRecords.willPurgeCount;
-  const willUnpurgeCount = contacts.willUnpurgeCount + unallocatedRecords.willUnpurgeCount;
+  const results = [contacts, unallocatedRecords, tasks];
+  const wontChangeCount = sumBy(results, 'wontChangeCount');
+  const willPurgeCount = sumBy(results, 'willPurgeCount');
+  const willUnpurgeCount = sumBy(results, 'willUnpurgeCount');
 
   // TODO: parse cron like in `scheduling.js`
   const nextRun = new Date().toISOString();
