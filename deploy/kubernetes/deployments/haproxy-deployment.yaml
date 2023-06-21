@@ -38,7 +38,7 @@ spec:
               value: "5984"
             - name: HEALTHCHECK_ADDR
               value: healthcheck.cht-dev-namespace.svc.cluster.local
-          image: public.ecr.aws/s5s3h4s7/cht-haproxy:4.1.1-4.1.1
+          image: public.ecr.aws/medic/cht-haproxy:4.1.1-4.1.1
           name: haproxy
           ports:
             - containerPort: 5984

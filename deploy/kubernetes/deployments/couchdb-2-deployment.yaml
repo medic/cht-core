@@ -52,7 +52,7 @@ spec:
                   key: COUCHDB_UUID
             - name: SVC_NAME
               value: couchdb-2.cht-dev-namespace.svc.cluster.local
-          image: public.ecr.aws/s5s3h4s7/cht-couchdb:4.1.1-4.1.1
+          image: public.ecr.aws/medic/cht-couchdb:4.1.1-4.1.1
           name: couchdb-2
           ports:
             - containerPort: 5984

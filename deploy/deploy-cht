@@ -15,13 +15,19 @@ fi
 # Check if Invoke is installed
 if ! python3 -c "import invoke" &> /dev/null ; then
     echo "Invoke is not installed. Installing it..."
-    pip3 install invoke
+    pip3 install invoke --quiet
 fi
 
 # Check if PyYAML is installed
 if ! python3 -c "import yaml" &> /dev/null ; then
     echo "PyYAML is not installed. Installing it..."
-    pip3 install PyYAML
+    pip3 install PyYAML --quiet
+fi
+
+# Check if requests is installed
+if ! python3 -c "import requests" &> /dev/null ; then
+    echo "Requests is not installed. Installing it..."
+    pip3 install requests --quiet
 fi
 
 # Validate that -f argument is provided
