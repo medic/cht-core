@@ -5,7 +5,6 @@ const path = require('path');
 
 const {
   BUILD_NUMBER,
-  //CI,
   INTERNAL_CONTRIBUTOR,
 } = process.env;
 
@@ -27,10 +26,6 @@ module.exports = function(grunt) {
 
   require('jit-grunt')(grunt, {
     ngtemplates: 'grunt-angular-templates',
-    /*
-    ***** REMOVE - PROTRACTOR
-    protractor: 'grunt-protractor-runner',
-    * */
   });
   require('time-grunt')(grunt);
 
@@ -290,22 +285,6 @@ module.exports = function(grunt) {
           .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch && cd ..`)
           .join(' && '),
       },
-      /*
-        'start-webdriver': {
-        cmd:
-          'mkdir -p tests/logs && ' +
-          './node_modules/.bin/webdriver-manager update && ' +
-          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
-          'until nc -z localhost 4444; do sleep 1; done',
-      },
-
-      ***** REMOVE - PROTRACTOR
-      'start-webdriver-ci': {
-        cmd:
-          'tests/scripts/start_webdriver.sh'
-      },
-
-       */
       'check-env-vars':
         'if [ -z $COUCH_URL ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
@@ -544,46 +523,6 @@ module.exports = function(grunt) {
         browsers: ['Chrome_Headless'],
       },
     },
-    /*
-    ***** REMOVE - PROTRACTOR
-    protractor: {
-      'e2e-web-tests': {
-        options: {
-          configFile: 'tests/conf.js',
-          args: {
-            suite: 'web',
-          }
-        }
-      },
-      'e2e-mobile-tests': {
-        options: {
-          configFile: 'tests/conf.js',
-          args: {
-            suite: 'mobile',
-            capabilities: {
-              chromeOptions: {
-                'args': ['headless', 'disable-gpu', 'ignore-certificate-errors'],
-                mobileEmulation: { 'deviceName': 'Nexus 5' }
-              }
-            }
-          }
-        }
-      },
-      'e2e-tests-debug': {
-        options: {
-          configFile: 'tests/conf.js',
-          args: {
-            suite: 'web'
-          },
-          capabilities: {
-            chromeOptions: {
-              args: ['window-size=1024,768', 'ignore-certificate-errors']
-            }
-          }
-        }
-      }
-    },
-     */
     ngtemplates: {
       adminApp: {
         cwd: 'admin/src',
@@ -738,44 +677,9 @@ module.exports = function(grunt) {
     'exec:build-images',
   ]);
 
-  /*
-  ***** REMOVE PROTRACTOR
-  grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
-    CI ? 'exec:start-webdriver-ci' : 'exec:start-webdriver',
-  ]);
-   */
-
-  // Test tasks
-  /*grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
-    'start-webdriver',
-    'e2e-env-setup'
-  ]);*/
-
   grunt.registerTask('e2e-env-setup', 'Deploy app for testing', [
     'build-service-images',
   ]);
-
-  /*
-  ***** REMOVE - PROTRACTOR
-  grunt.registerTask('e2e-web', 'Deploy app for testing and run e2e tests', [
-    'e2e-deploy',
-    'protractor:e2e-web-tests',
-  ]);
-  grunt.registerTask('e2e-mobile', 'Deploy app for testing and run e2e tests', [
-    'e2e-deploy',
-    'protractor:e2e-mobile-tests',
-  ]);
-  grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
-    'e2e-deploy',
-    'protractor:e2e-web-tests',
-  ]);
-  grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
-    'e2e-deploy',
-    'protractor:e2e-tests-debug',
-    'exec:clean-test-database',
-  ]);
-
-   */
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
     'e2e-env-setup',
@@ -838,19 +742,6 @@ module.exports = function(grunt) {
     'exec:mocha-integration-api',
     'unit',
   ]);
-
-  /*
-  ***** REMOVE - PROTRACTOR
-  grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'protractor:e2e-web-tests',
-    //'protractor:e2e-mobile-tests',
-  ]);
-  grunt.registerTask('ci-e2e-mobile', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'protractor:e2e-mobile-tests',
-  ]);
-   */
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
     'exec:e2e-integration',

@@ -3,7 +3,6 @@
 const _ = require('lodash');
 const constants = require('@constants');
 const rpn = require('request-promise-native');
-//const htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 const specReporter = require('jasmine-spec-reporter').SpecReporter;
 const fs = require('fs');
 const os = require('os');
@@ -917,24 +916,6 @@ module.exports = {
   medicLogsDb: medicLogs,
   setupUserDoc,
   request: request,
-
-  /*
-  reporter: new htmlScreenshotReporter({
-    reportTitle: 'e2e Test Report',
-    inlineImages: true,
-    showConfiguration: true,
-    captureOnlyFailedSpecs: true,
-    reportOnlyFailedSpecs: false,
-    showQuickLinks: true,
-    dest: `tests/results/`,
-    filename: 'report.html',
-    pathBuilder: function (currentSpec) {
-      return currentSpec.fullName
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, '_');
-    },
-  }),*/
 
   specReporter: new specReporter({
     spec: {
