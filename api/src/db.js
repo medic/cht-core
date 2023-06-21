@@ -71,6 +71,19 @@ if (UNIT_TEST_ENV) {
   module.exports.medicLogs = new PouchDB(`${environment.couchUrl}-logs`, { fetch });
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
   module.exports.users = new PouchDB(getDbUrl('/_users'));
+  module.exports.queryMedic = (viewPath, queryParams, body) => {
+    const [ddoc, view] = viewPath.split('/');
+    const url = ddoc === 'allDocs' ?
+      `${environment.couchUrl}/_all_docs` :
+      `${environment.couchUrl}/_design/${ddoc}/_view/${view}`;
+    const requestFn = body ? rpn.post : rpn.get;
+    return requestFn({
+      url,
+      qs: queryParams,
+      json: true,
+      body,
+    });
+  };
 
   // Get the DB with the given name
   module.exports.get = name => new PouchDB(getDbUrl(name));
