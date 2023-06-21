@@ -64,6 +64,7 @@ describe('Login page funcionality tests', () => {
       expect(warning).to.equal('Are you sure you want to log out?');
     });
   });
+
   describe('Log in', () => {
     const wrongUsername = 'fakeuser';
     const wrongPassword = 'fakepass';
@@ -149,5 +150,23 @@ describe('Login page funcionality tests', () => {
       expect(await loginPage.getErrorMessage()).to.equal(incorrectCredentialsText);
     });
 
+    it('should hide and reveal password value, and login with a revealed password', async () => {
+      await loginPage.setPasswordValue('pass-123');
+      let revealedPassword = await loginPage.togglePassword();
+      expect(revealedPassword.type).to.equal('text');
+      expect(revealedPassword.value).to.equal('pass-123');
+
+      await loginPage.setPasswordValue('pass-456');
+      const hiddenPassword = await loginPage.togglePassword();
+      expect(hiddenPassword.type).to.equal('password');
+      expect(hiddenPassword.value).to.equal('pass-456');
+
+      revealedPassword = await loginPage.togglePassword();
+      expect(revealedPassword.type).to.equal('text');
+      expect(revealedPassword.value).to.equal('pass-456');
+
+      await loginPage.login(auth);
+      await (await commonPage.messagesTab()).waitForDisplayed();
+    });
   });
 });
