@@ -1,6 +1,4 @@
 const _ = require('lodash');
-const { expect } = require('chai');
-
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -954,7 +952,7 @@ describe('Muting', () => {
       await formsUtils.selectHealthCenter(HEALTH_CENTER.name);
       await formsUtils.fillPatientName('new patient');
 
-      await formsUtils.submit( );
+      await genericForm.submitForm();
       await commonPage.waitForLoaders();
 
       const mutingReport = await getLastSubmittedReport();

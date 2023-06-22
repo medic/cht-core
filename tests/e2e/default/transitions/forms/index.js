@@ -60,7 +60,7 @@ const getMuteNewClinicForm = () => ({
 });
 
 
-module.exports.uploadForms = async () => {
+const uploadForms = async () => {
   // uploading one by one to not have to handle bulk docs errors and have it fail directly if one upload fails
   await utils.saveDoc(getMuteClinicForm());
   await utils.saveDoc(getMutePersonForm());
@@ -69,22 +69,7 @@ module.exports.uploadForms = async () => {
   await utils.saveDoc(getMuteNewClinicForm());
 };
 
-module.exports.openForm = async (formId) => {
-  const addButton = await $('.detail-actions .actions .dropdown-toggle .fa-plus');
-  await addButton.waitForClickable({ timeout: 10000 });
-  await addButton.click();
-  //await contactPage.openFormWithWarning('death_report');
-  const form = await $(`#relevant-contacts-form li[id="form:${formId}"] a`);
-  await form.click();
-};
-
-module.exports.submit = async () => {
-  const submitButton = await $('.btn.submit.btn-primary');
-  await submitButton.waitForClickable();
-  await submitButton.click();
-};
-
-module.exports.selectHealthCenter = async name => {
+const selectHealthCenter = async name => {
   const select = await $('.selection');
   await select.click();
   const search = await $('.select2-search__field');
@@ -93,7 +78,14 @@ module.exports.selectHealthCenter = async name => {
   await (await $('.name')).click();
 };
 
-module.exports.fillPatientName = async name => {
+const fillPatientName = async name => {
   const patientName = await $('[name="/mute_new_clinic/new_person/name"]');
   await patientName.setValue(name);
 };
+
+module.exports = {
+  uploadForms,
+  selectHealthCenter,  
+  fillPatientName,
+};
+
