@@ -55,6 +55,6 @@
     "xmlbuilder": "^15.1.1"
   },
   "overrides": {
-    "node-fetch": ">=$node-fetch"
+    "node-fetch": "$node-fetch"
   }
 }
