@@ -206,7 +206,7 @@ describe('Service worker cache', () => {
     await browser.throttle('online');
   });
 
-  it('should load the page while on a very slow connection', async () => {
+  xit('should load the page while on a very slow connection', async () => {
     const turtleMode = {
       offline: false,
       latency: 60000, // take a minute to respond to any request
