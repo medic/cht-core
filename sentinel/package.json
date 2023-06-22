@@ -32,6 +32,6 @@
     "winston": "^3.8.2"
   },
   "overrides": {
-    "node-fetch": "$node-fetch"
+    "node-fetch": ">=$node-fetch"
   }
 }
