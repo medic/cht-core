@@ -157,9 +157,7 @@ app.use(
           `'self'`,
           BUILDS_DB,
           'maps.googleapis.com', // used for enketo geopoint widget
-          'www.google-analytics.com',
-          'app.posthog.com',
-          'plausible.latinpandalab.com',
+          'https://app.posthog.com',
         ],
         childSrc:  [`'self'`],
         formAction: [`'self'`],
@@ -183,13 +181,8 @@ app.use(
           // https://github.com/medic/cht-core/issues/6988
           `'unsafe-hashes'`,
           `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
-          `www.googletagmanager.com`,
-          `'sha256-/RtAEt8HF5I5SY0Msaa2ElNo86mSiEN9brp2Td2gCIc='`,
-          'app.posthog.com',
-          'plausible.latinpandalab.com',
-          'https://plausible.latinpandalab.com/js/script.js',
-          'https://plausible.latinpandalab.com/api/event',
           `'sha256-kURz7DI4eYCMPFBsHueeIubV4BzKqHMiCOWVEfr/hU4='`,
+          `https://app.posthog.com`,
         ],
         styleSrc: [
           `'self'`,
