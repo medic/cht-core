@@ -13,7 +13,6 @@ import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
-import { HttpClient } from '@angular/common/http';
 import { ReplicationService } from '@mm-services/replication.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];

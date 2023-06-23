@@ -3,8 +3,6 @@ import { lastValueFrom } from 'rxjs';
 import { DbService } from './db.service';
 import { HttpClient } from '@angular/common/http';
 
-const BATCH_SIZE = 100;
-
 @Injectable({
   providedIn: 'root'
 })
@@ -15,22 +13,21 @@ export class ReplicationService {
   ) {
   }
 
-  async replicateFrom() {
-    try {
-      const remoteDocIdsRevs = await this.getRemoteDocs();
-      const localDocs = await this.dbService.get().allDocs();
+  private readonly BATCH_SIZE=100;
 
-      const localIdRevMap = Object.assign({}, ...localDocs.rows.map(row => ({ [row.id]: row.value?.rev })));
-      const remoteIdRevMap = Object.assign({}, ...remoteDocIdsRevs.map(({ id, rev }) => ({ [id]: rev })));
+  async replicateFrom():Promise<{ read_docs: number }> {
+    const remoteDocIdsRevs = await this.getRemoteDocs();
+    const localDocs = await this.dbService.get().allDocs();
 
-      await this.getMissingDocs(localIdRevMap, remoteDocIdsRevs);
-      await this.getDeletesAndPurges(localIdRevMap, remoteIdRevMap);
-    } catch (err) {
-      return err;
-    }
+    const localIdRevMap = Object.assign({}, ...localDocs.rows.map(row => ({ [row.id]: row.value?.rev })));
+    const remoteIdRevMap = Object.assign({}, ...remoteDocIdsRevs.map(({ id, rev }) => ({ [id]: rev })));
+
+    const nbrDownloaded = await this.getMissingDocs(localIdRevMap, remoteDocIdsRevs);
+    const nbrDeleted = await this.getDeletesAndPurges(localIdRevMap, remoteIdRevMap);
+    return { read_docs: nbrDeleted + nbrDownloaded };
   }
 
-  private async getRemoteDocs() {
+  private async getRemoteDocs():Promise<{ id; rev }[]> {
     const getIdsReq = this.http.get<{ doc_ids_revs: { id; rev }[]}>(
       '/api/v1/replication/get-ids',
       { responseType: 'json' }
@@ -39,34 +36,41 @@ export class ReplicationService {
     return response.doc_ids_revs;
   }
 
-  private async getMissingDocs(localIdRevMap, remoteDocIdsRevs) {
+  private async getMissingDocs(localIdRevMap, remoteDocIdsRevs):Promise<number> {
     const docIdRevsToDownload = remoteDocIdsRevs
       .filter(({ id, rev }) => !localIdRevMap[id] || localIdRevMap[id] !== rev);
+    const nbrDocs = docIdRevsToDownload.length;
 
-    do {
-      const batch = docIdRevsToDownload.splice(0, BATCH_SIZE);
+    while (docIdRevsToDownload.length) {
+      const batch = docIdRevsToDownload.splice(0, this.BATCH_SIZE);
       await this.downloadDocsBatch(batch);
-    } while (docIdRevsToDownload.length > 0);
-  }
-
-  private async getDeletesAndPurges(localIdRevMap, remoteIdRevMap) {
-    const missingRemoteIds = Object.keys(localIdRevMap).filter(id => !remoteIdRevMap[id]);
-
-    const getDeleteListReq =  this.http.post<{ doc_ids: []}>(
-      '/api/v1/replication/get-deletes',
-      { doc_ids: missingRemoteIds },
-      { responseType: 'json' }
-    );
-    const localIdsToDelete = (await lastValueFrom(getDeleteListReq)).doc_ids;
-    const deleteDocs = localIdsToDelete.map(id => ({ _id: id, _rev: localIdRevMap[id], _deleted: true, purged: true }));
-    await this.dbService.get().bulkDocs(deleteDocs);
-  }
-
-  private async downloadDocsBatch (batch) {
-    if (!batch.length) {
-      return;
     }
 
+    return nbrDocs;
+  }
+
+  private async getDeletesAndPurges(localIdRevMap, remoteIdRevMap):Promise<number> {
+    const missingRemoteIds = Object.keys(localIdRevMap).filter(id => !remoteIdRevMap[id]);
+    let nbrDeletes = 0;
+
+    while (missingRemoteIds.length) {
+      const batch = missingRemoteIds.splice(0, this.BATCH_SIZE);
+      const getDeleteListReq =  this.http.post<{ doc_ids: []}>(
+        '/api/v1/replication/get-deletes',
+        { doc_ids: batch },
+        { responseType: 'json' }
+      );
+      const localIdsToDelete = (await lastValueFrom(getDeleteListReq)).doc_ids;
+      const deleteDocs = localIdsToDelete.map(id =>
+        ({ _id: id, _rev: localIdRevMap[id], _deleted: true, purged: true })
+      );
+      await this.dbService.get().bulkDocs(deleteDocs);
+      nbrDeletes += deleteDocs.length;
+    }
+    return nbrDeletes;
+  }
+
+  private async downloadDocsBatch(batch):Promise<void> {
     const res = await this.dbService.get({ remote: true }).bulkGet({ docs: batch, attachments: true });
     const docs = res.results
       .map(result => result.docs && result.docs[0] && result.docs[0].ok)

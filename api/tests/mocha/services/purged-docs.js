@@ -101,11 +101,11 @@ describe('Purged Docs service', () => {
 
   describe('getPurgedIds', () => {
     describe('getCacheKey', () => {
-      it('should return key depending on all params', () => {
+      it('should return unique hash depending on all params', () => {
         const getCacheKey = service.__get__('getCacheKey');
-        const hash1 = getCacheKey({ roles: [1, 2, 3], name: 'marc' });
-        const hash2 = getCacheKey({ roles: [ 1, 2 ], name: 'craig' });
-        const hash3 = getCacheKey({ roles: [ 1, 2, 3 ], name: 'gareth' });
+        const hash1 = getCacheKey({ roles: [ 1, 2, 3 ] }, [1, 2, 3]);
+        const hash2 = getCacheKey({ roles: [ 1, 2 ] }, [1, 2, 3]);
+        const hash3 = getCacheKey({ roles: [ 1, 2, 3 ] }, [1, 2, 3, 4]);
 
         chai.expect(hash1).not.to.equal(hash2);
         chai.expect(hash1).not.to.equal(hash3);
