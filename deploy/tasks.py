@@ -52,6 +52,8 @@ metadata:
         with open(os.path.join(script_dir, "helm", "namespace.yaml"), 'w') as manifest_file:
             manifest_file.write(namespace_manifest)
         subprocess.run(["kubectl", "apply", "-f", os.path.join(script_dir, "helm", "namespace.yaml")], check=True)
+        # Delete the namespace file after creation
+        os.remove(os.path.join(script_dir, "helm", "namespace.yaml"))
     else:
         print(f"Namespace {namespace} already exists.")
 

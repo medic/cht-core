@@ -10,7 +10,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.couchdb.single_node_storageSize }}
+      storage: {{ .Values.couchdb.couchdb_node_storage_size }}
   storageClassName: ebs-gp2
 status: {}
 {{- end }}
