@@ -51,9 +51,7 @@ Use this command when you want to check the logs of a specific deployment. This 
 
 Example usage: 
     
-    ```bash
     ./view-logs cht-dev-namespace cht-couchdb-1
-    ```
 
 ## list-deployments <namespace>
     
@@ -61,9 +59,7 @@ Use this command to list all the deployments in a specific namespace. This is us
 
 Example usage: 
     
-    ```bash 
     ./list-deployments cht-dev-namespace
-    ```
 
 ## list-all-resources <namespace>
     
@@ -71,9 +67,7 @@ This command provides a comprehensive view of all resources in a specific namesp
 
 Example usage: 
     
-    ```bash
     ./list-all-resources cht-dev-namespace
-    ```
 
 ## describe-deployment <namespace> <deployment>
     
@@ -81,8 +75,6 @@ Use this command to get a detailed description of a specific deployment. This co
 
 Example usage: 
     
-    ```bash
     ./describe-deployment cht-dev-namespace cht-couchdb-1
-    ```
 
 Keep in mind that you will need to replace cht-dev-namespace and cht-couchdb-1 with your specific namespace and deployment names.
