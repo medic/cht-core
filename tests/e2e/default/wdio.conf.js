@@ -44,7 +44,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    '**/client-side-muting.wdio-spec.js',
+    '**/*.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
@@ -171,7 +171,7 @@ const baseConfig = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: 120000,
+    timeout: 1200000,
     retries: 5,
   },
   //

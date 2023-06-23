@@ -15,18 +15,52 @@ describe('Muting', () => {
   const places = placeFactory.generateHierarchy();
   const district = places.get('district_hospital');
   const healthCenter = places.get('health_center');
-  const clinic1 = places.get('clinic');
-  const clinic2 = Object.assign({}, clinic1, { name: 'clinic_2', _id: 'another_clinic' });
-  const onlineUser = userFactory.build({ username: 'online', place: healthCenter._id, roles: [ 'program_officer' ] });
-  const offlineUser = userFactory.build({ username: 'offline', place: healthCenter._id, roles: [ 'chw' ] });
+
   const contact1 = personFactory.build({ 
-    name: 'contact1', parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+    name: 'contact1', parent: { _id: healthCenter._id, parent: district._id } });
+  const clinic1 = Object.assign({}, 
+    places.get('clinic'),
+    { name:'Clinic One', _id: 'clinic_1', contact: { _id: contact1._id }});
+
+  const clinic2 = Object.assign({}, 
+    places.get('clinic'),
+    { name:'Clinic Two', _id: 'clinic_2', contact: { _id: contact1._id }});
+
+  const onlineUser = userFactory.build({
+    username: 'online',
+    place: healthCenter._id,
+    roles: [ 'program_officer' ],
+    contact: {
+      _id: 'fixture:user:online',
+      name: 'Offline'
+    } });
+
+  const offlineUser = userFactory.build({ 
+    username: 'offline_user', 
+    place: healthCenter._id,
+    roles: [ 'chw' ],
+    contact: {
+      _id: 'fixture:user:offline',
+      name: 'Offline'
+    }});
+
   const patient1 = personFactory.build({ 
-    name: 'patient1', parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+    name: 'patient one', 
+    parent: { _id: clinic1._id, parent: { _id: healthCenter._id, parent: { _id: district._id } }}, 
+    patient_id: 'patient_1'
+  });
+
   const patient2 = personFactory.build({ 
-    name: 'patient2', parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+    name: 'patient two', 
+    parent: { _id: clinic2._id, parent: { _id: healthCenter._id, parent: { _id: district._id } } },
+    patient_id: 'patient_2',
+  });
+
   const patient3 = personFactory.build({ 
-    name: 'patient3', parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+    name: 'patient three', 
+    parent: { _id: clinic1._id, parent: { _id: healthCenter._id, parent: { _id: district._id } } },
+    patient_id: 'patient_3',
+  });
   
   const contacts = [
     contact1,
