@@ -47,9 +47,9 @@ During the course of using or managing your CHT installation, you may encounter 
 
 ## view-logs <namespace> <deployment>
     
-    Use this command when you want to check the logs of a specific deployment. This could be useful when you have identified a specific service or component that is not behaving correctly, and you want to inspect its runtime logs for error messages or other diagnostic information.
+Use this command when you want to check the logs of a specific deployment. This could be useful when you have identified a specific service or component that is not behaving correctly, and you want to inspect its runtime logs for error messages or other diagnostic information.
 
-    Example usage: 
+Example usage: 
     
     ```bash
     ./view-logs cht-dev-namespace cht-couchdb-1
@@ -57,9 +57,9 @@ During the course of using or managing your CHT installation, you may encounter 
 
 ## list-deployments <namespace>
     
-    Use this command to list all the deployments in a specific namespace. This is useful when you want to see what deployments are running and check their status.
+Use this command to list all the deployments in a specific namespace. This is useful when you want to see what deployments are running and check their status.
 
-    Example usage: 
+Example usage: 
     
     ```bash 
     ./list-deployments cht-dev-namespace
@@ -67,19 +67,19 @@ During the course of using or managing your CHT installation, you may encounter 
 
 ## list-all-resources <namespace>
     
-    This command provides a comprehensive view of all resources in a specific namespace, including services, pods, deployments etc. Use this when you want to get an overview of everything that's running in a particular namespace.
+This command provides a comprehensive view of all resources in a specific namespace, including services, pods, deployments etc. Use this when you want to get an overview of everything that's running in a particular namespace.
 
-    Example usage: 
+Example usage: 
     
-    ```bash 
+    ```bash
     ./list-all-resources cht-dev-namespace
     ```
 
 ## describe-deployment <namespace> <deployment>
     
-    Use this command to get a detailed description of a specific deployment. This could be useful when you want to inspect the configuration, status and events related to a specific deployment.
+Use this command to get a detailed description of a specific deployment. This could be useful when you want to inspect the configuration, status and events related to a specific deployment.
 
-    Example usage: 
+Example usage: 
     
     ```bash
     ./describe-deployment cht-dev-namespace cht-couchdb-1
