@@ -122,7 +122,7 @@ describe('ongoing replication', () => {
     await utils.addTranslations('rnd', {});
     await waitForServiceWorker.promise;
 
-    await commonPage.sync();
+    await commonPage.sync(true);
     const [rnd] = await browserUtils.getDocs(['messages-rnd']);
     expect(rnd).to.include({
       type: 'translations',
@@ -132,17 +132,29 @@ describe('ongoing replication', () => {
     rnd.updated = 'yeaaaa';
     await utils.saveDoc(rnd);
 
-    await commonPage.sync();
+    await commonPage.sync(true);
     const [updatedRnd] = await browserUtils.getDocs(['messages-rnd']);
     expect(updatedRnd.updated).to.equal(rnd.updated);
   });
 
   it('should download settings updates', async () => {
-
+    await utils.updateSettings({ test: true }, 'api');
+    await commonPage.sync(true);
+    const [settings] = await browserUtils.getDocs(['settings']);
+    expect(settings.settings.test).to.equal(true);
+    await utils.revertSettings(true);
+    await commonPage.sync(true);
   });
 
   it('should handle deletes', async () => {
+    const docIdsToDelete = [ 'form:dummy', ...data.ids(userAllowedDocs.reports), 'messages-rnd'];
+    await utils.deleteDocs(docIdsToDelete);
 
+    await commonPage.sync();
+    const localDocsPostSync = await browserUtils.getDocs();
+    const localDocIds = data.ids(localDocsPostSync);
+
+    expect(_.intersection(localDocIds, docIdsToDelete)).to.deep.equal([]);
   });
 });
 
