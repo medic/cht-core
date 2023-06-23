@@ -78,3 +78,11 @@ Example usage:
     ./describe-deployment cht-dev-namespace cht-couchdb-1
 
 Keep in mind that you will need to replace cht-dev-namespace and cht-couchdb-1 with your specific namespace and deployment names.
+
+## Known Issue
+
+Race condition may happen during deployment or sometimes after the upgrade-service has upgraded instances when you click on upgrade via the UI. The fix is scripted right now in the deploy-race-condition-fix script. Run the following:
+    
+    ./deploy-race-condition-fix
+
+This restarts API and the upgrade service and redeploys the services for both.
