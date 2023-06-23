@@ -5,69 +5,29 @@ const loginPage = require('@page-objects/default/login/login.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const formsUtils = require('./forms');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
 
 /* global window */
 
 describe('Muting', () => {
-  const password = 'Sup3rSecret!';
-  const DISTRICT = {
-    _id: 'DISTRICT',
-    type: 'district_hospital',
-    name: 'DISTRICT'
-  };
-
-  const HEALTH_CENTER = {
-    _id: 'HEALTH_CENTER',
-    type: 'health_center',
-    name: 'Health Center',
-    parent: { _id: DISTRICT._id },
-  };
-
-  const contact1 = {
-    _id: 'contact1',
-    name: 'contact1',
-    type: 'person',
-    parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } },
-  };
-  const clinic1 = {
-    _id: 'clinic1',
-    name: 'clinic one',
-    type: 'clinic',
-    place_id: 'clinic_1',
-    parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } },
-    contact: { _id: 'contact1' },
-  };
-  const clinic2 = {
-    _id: 'clinic2',
-    name: 'clinic two',
-    type: 'clinic',
-    place_id: 'clinic_2',
-    parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } },
-    contact: { _id: 'contact1' },
-  };
-
-  const patient1 = {
-    _id: 'patient1',
-    name: 'patient one',
-    type: 'person',
-    patient_id: 'patient_1',
-    parent: { _id: 'clinic1', parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } } },
-  };
-  const patient2 = {
-    _id: 'patient2',
-    name: 'patient two',
-    type: 'person',
-    patient_id: 'patient_2',
-    parent: { _id: 'clinic2', parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } } },
-  };
-  const patient3 = {
-    _id: 'patient3',
-    name: 'patient three',
-    type: 'person',
-    patient_id: 'patient_3',
-    parent: { _id: 'clinic1', parent: { _id: HEALTH_CENTER._id, parent: { _id: DISTRICT._id } } },
-  };
-
+  const places = placeFactory.generateHierarchy();
+  const district = places.get('district_hospital');
+  const healthCenter = places.get('health_center');
+  const clinic1 = places.get('clinic');
+  const clinic2 = Object.assign({}, clinic1, { name: 'clinic_2', _id: 'another_clinic' });
+  const onlineUser = userFactory.build({ username: 'online', place: healthCenter._id, roles: [ 'program_officer' ] });
+  const offlineUser = userFactory.build({ username: 'offline', place: healthCenter._id, roles: [ 'chw' ] });
+  const contact1 = personFactory.build({ 
+    name: 'contact1', parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+  const patient1 = personFactory.build({ 
+    name: 'patient1', parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+  const patient2 = personFactory.build({ 
+    name: 'patient2', parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+  const patient3 = personFactory.build({ 
+    name: 'patient3', parent: { _id: healthCenter._id, parent: healthCenter.parent } });
+  
   const contacts = [
     contact1,
     clinic1,
@@ -76,31 +36,6 @@ describe('Muting', () => {
     patient2,
     patient3,
   ];
-
-  const offlineUser = {
-    username: 'offline_user',
-    password: password,
-    place: 'HEALTH_CENTER',
-    contact: {
-      _id: 'fixture:user:offline',
-      name: 'Offline'
-    },
-    roles: ['chw'],
-    known: true,
-  };
-
-  
-  const onlineUser = {
-    username: 'online',
-    password: password,
-    place: 'HEALTH_CENTER',
-    contact: {
-      _id: 'fixture:user:online',
-      name: 'Offline'
-    },
-    roles: ['program_officer'],
-    known: true,
-  };
 
   const settings = {
     transitions: { muting: true },
@@ -204,7 +139,7 @@ describe('Muting', () => {
   };
 
   before(async () => {
-    await utils.saveDocs([DISTRICT, HEALTH_CENTER]);
+    await utils.saveDocs([district, healthCenter]);
     await formsUtils.uploadForms();
   });
 
@@ -221,7 +156,7 @@ describe('Muting', () => {
     });
 
     afterEach(async () => {
-      await utils.revertDb([DISTRICT._id, HEALTH_CENTER._id, /^form:/], true);
+      await utils.revertDb([district._id, healthCenter._id, /^form:/], true);
     });
 
     it('should not process client-side when muting as an online user', async () => {
@@ -947,9 +882,9 @@ describe('Muting', () => {
       await utils.stopSentinel();
       await updateSettings(settings);
 
-      await commonPage.goToPeople(HEALTH_CENTER._id);
+      await commonPage.goToPeople(healthCenter._id);
       await commonPage.openFastActionReport('mute_new_clinic');
-      await formsUtils.selectHealthCenter(HEALTH_CENTER.name);
+      await formsUtils.selectHealthCenter(healthCenter.name);
       await formsUtils.fillPatientName('new patient');
 
       await genericForm.submitForm();

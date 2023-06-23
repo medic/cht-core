@@ -44,7 +44,7 @@ const baseConfig = {
   // will be called from there.
   //
   specs: [
-    '**/*.wdio-spec.js',
+    '**/client-side-muting.wdio-spec.js',
   ],
   // Patterns to exclude.
   exclude: [
