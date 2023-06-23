@@ -1400,6 +1400,7 @@ module.exports = {
   makeTempDir,
   SW_SUCCESSFUL_REGEX: /Service worker generated successfully/,
   updatePermissions,
+  formDocProcessing,
 
   ONE_YEAR_IN_S,
 };
