@@ -1,17 +1,16 @@
 project_name: <your-project-name>
 namespace: "cht-dev-namespace"
 chtversion: 4.1.1
-# cht_image_tag - This is filled in automatically by the deploy script. Don't uncomment this line.
+#cht_image_tag: 4.1.1-4.1.1 #- This is filled in automatically by the deploy script. Don't uncomment this line.
 couchdb:
   password: <password-value>
   secret: <secret-value>
   user: <user-name>
   uuid: <uuid-value>
   clusteredCouch_enabled: true
-  node1_storageSize: 100Mi
-  node2_storageSize: 100Mi
-  node3_storageSize: 100Mi
-  single_node_storageSize: 100Mi  #For when clusteredCouch is disabled
+  couchdb_node_storage_size: 100Mi
+clusteredCouch:
+  noOfCouchDBNodes: 3
 toleration:   # This is for the couchdb pods. Don't change this unless you know what you're doing.
   key: "dev-couchdb-only"
   operator: "Equal"
