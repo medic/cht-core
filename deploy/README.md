@@ -45,36 +45,44 @@ If the deployments are not created as expected, check the logs for any errors. I
 
 During the course of using or managing your CHT installation, you may encounter situations where things are not working as expected. These scripts provide a means to inspect the status of your installation and gather information about its configuration and behavior. Here's when to use which:
 
-    `./view-logs <namespace> <deployment>`
+## view-logs <namespace> <deployment>
     
     Use this command when you want to check the logs of a specific deployment. This could be useful when you have identified a specific service or component that is not behaving correctly, and you want to inspect its runtime logs for error messages or other diagnostic information.
 
     Example usage: 
     
-    `./view-logs cht-dev-namespace cht-couchdb-1`
+    ```bash
+    ./view-logs cht-dev-namespace cht-couchdb-1
+    ```
 
-    `./list-deployments <namespace>`
+## list-deployments <namespace>
     
     Use this command to list all the deployments in a specific namespace. This is useful when you want to see what deployments are running and check their status.
 
     Example usage: 
     
-    `./list-deployments cht-dev-namespace`
+    ```bash 
+    ./list-deployments cht-dev-namespace
+    ```
 
-    `./list-all-resources <namespace>`
+## list-all-resources <namespace>
     
     This command provides a comprehensive view of all resources in a specific namespace, including services, pods, deployments etc. Use this when you want to get an overview of everything that's running in a particular namespace.
 
     Example usage: 
     
-    `./list-all-resources cht-dev-namespace`
+    ```bash 
+    ./list-all-resources cht-dev-namespace
+    ```
 
-    `./describe-deployment <namespace> <deployment>`
+## describe-deployment <namespace> <deployment>
     
     Use this command to get a detailed description of a specific deployment. This could be useful when you want to inspect the configuration, status and events related to a specific deployment.
 
     Example usage: 
     
-    `./describe-deployment cht-dev-namespace cht-couchdb-1`
+    ```bash
+    ./describe-deployment cht-dev-namespace cht-couchdb-1
+    ```
 
 Keep in mind that you will need to replace cht-dev-namespace and cht-couchdb-1 with your specific namespace and deployment names.
