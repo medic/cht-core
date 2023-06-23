@@ -271,35 +271,26 @@ const deleteAll = (except) => {
     });
 };
 
-const refreshToGetNewSettings = () => {
+const refreshToGetNewSettings = async () => {
   // wait for the updates to replicate
-  const dialog = element(by.css('#update-available .submit:not(.disabled)'));
-  return browser
-    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
-    .then(() => dialog.click())
-    .catch(() => {
+  const dialog = $('#update-available .submit:not(.disabled)');
+  //await dialog.waitForClickable();
+  return browser.waitUntil(await dialog.waitForClickable(), 10000)
+    .then(async () => await dialog.click())
+    .catch(async () => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      return dialog.isPresent().then((isPresent) => {
-        return isPresent && dialog.click();
+      return await dialog.isDisplayed().then(async (isPresent) => {
+        return isPresent && await dialog.click();
       });
     })
-    .then(() => {
-      return browser.wait(
-        protractor.ExpectedConditions.elementToBeClickable(
-          element(by.id('contacts-tab'))
-        ),
+    .then(async () => {
+      const contactsTab = $('#contacts-tab');
+      return browser.waitUntil(await contactsTab.waitForClickable(),
         10000,
         'Second refresh to get settings'
       );
     });
-};
-
-const closeReloadModal = () => {
-  const dialog = element(by.css('#update-available .btn.cancel:not(.disabled)'));
-  return browser
-    .wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
-    .then(() => dialog.click());
 };
 
 const setUserContactDoc = (attempt=0) => {
@@ -791,21 +782,6 @@ const stopService = async (service) => {
   await dockerComposeCmd('stop', '-t', 0, service);
 };
 
-const protractorLogin = async (browser, timeout = 20) => {
-  await browser.driver.get(module.exports.getLoginUrl());
-  await browser.driver.findElement(by.name('user')).sendKeys(constants.USERNAME);
-  await browser.driver.findElement(by.name('password')).sendKeys(constants.PASSWORD);
-  await browser.driver.findElement(by.id('login')).click();
-  // Login takes some time, so wait until it's done.
-  const bootstrappedCheck = () =>
-    element(by.css('.app-root.bootstrapped')).isPresent();
-  return browser.driver.wait(
-    bootstrappedCheck,
-    timeout * 1000,
-    `Login should be complete within ${timeout} seconds`
-  );
-};
-
 const setupUser = () => {
   return module.exports
     .setupUserDoc()
@@ -1169,18 +1145,6 @@ module.exports = {
         }
       });
   },
-  /**
-   * Cleans up DB after each test. Works with the given callback
-   * and also returns a promise - pick one!
-   */
-  afterEach: () => revertDb(),
-
-  //check for the update modal before
-  beforeEach: async () => {
-    if (await element(by.css('#update-available')).isPresent()) {
-      await $('body').sendKeys(protractor.Key.ENTER);
-    }
-  },
 
   /**
    * Reverts the db's settings and documents
@@ -1309,7 +1273,6 @@ module.exports = {
     });
   },
   refreshToGetNewSettings: refreshToGetNewSettings,
-  closeReloadModal: closeReloadModal,
 
   waitForDocRev: waitForDocRev,
 
@@ -1374,7 +1337,6 @@ module.exports = {
   prepServices: prepServices,
 
   setupUser: setupUser,
-  protractorLogin: protractorLogin,
 
   saveBrowserLogs: saveBrowserLogs,
   tearDownServices: stopServices,
