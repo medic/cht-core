@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Unmute clinic</h:title>
+    <model>
+      <instance>
+        <unmute_clinic delimiter="#" id="unmute_clinic" prefix="J1!unmute_clinic!" version="2016-12-21">
+          <inputs>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <name/>
+              <parent>
+                <contact>
+                  <name/>
+                </contact>
+              </parent>
+            </contact>
+          </inputs>
+          <place_id/>
+          <place_name/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </unmute_clinic>
+      </instance>
+      <instance id="contact-summary"/>
+      <bind nodeset="/unmute_clinic/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/unmute_clinic/inputs/source" type="string"/>
+      <bind nodeset="/unmute_clinic/inputs/source_id" type="string"/>
+      <bind nodeset="/unmute_clinic/inputs/contact/_id" type="db:clinic"/>
+      <bind nodeset="/unmute_clinic/inputs/contact/name" type="string"/>
+      <bind nodeset="/unmute_clinic/inputs/contact/parent/contact/name" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/unmute_clinic/place_id" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/unmute_clinic/place_name" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/unmute_clinic/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/unmute_clinic/inputs">
+      <label>Clinic</label>
+      <input appearance="hidden" ref="/unmute_clinic/inputs/source">
+        <label>Source</label>
+      </input>
+      <input appearance="hidden" ref="/unmute_clinic/inputs/source_id">
+        <label>Source ID</label>
+      </input>
+      <group ref="/unmute_clinic/inputs/contact">
+        <input appearance="db-object" ref="/unmute_clinic/inputs/contact/_id">
+          <label>What is the name of the Clinic?</label>
+          <hint>Select a place from list</hint>
+        </input>
+        <input appearance="hidden" ref="/unmute_clinic/inputs/contact/name">
+          <label>Name</label>
+        </input>
+      </group>
+    </group>
+  </h:body>
+</h:html>
