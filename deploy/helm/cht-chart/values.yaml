@@ -27,3 +27,8 @@ environment: "local"  # "local" or "remote"
 
 local:
   diskPath: "/var/lib/couchdb"
+
+remote:
+  existingEBS: "true"
+  existingEBSVolumeID: "vol-0123456789abcdefg"
+  existingEBSVolumeSize: "100Gi"
