@@ -1,0 +1,17 @@
+{{- if and (eq .Values.environment "remote") (eq .Values.remote.existingEBS "true") }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: couchdb-pv
+spec:
+  capacity:
+    storage: {{ .Values.remote.existingEBSVolumeSize }}
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ebs-gp2
+  awsElasticBlockStore:
+    volumeID: "{{ .Values.remote.existingEBSVolumeID }}"
+    fsType: ext4
+{{- end }}

@@ -12,5 +12,8 @@ spec:
     requests:
       storage: {{ .Values.couchdb.couchdb_node_storage_size }}
   storageClassName: ebs-gp2
+  {{- if eq .Values.remote.existingEBS "true" }}
+  volumeName: couchdb-pv
+  {{- end }}
 status: {}
 {{- end }}
