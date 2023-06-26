@@ -6,7 +6,7 @@ const db = require('../../../src/db');
 const config = require('../../../src/config');
 const service = require('../../../src/services/purging-config');
 
-describe.only('Purging Config service', () => {
+describe('Purging Config service', () => {
   const queryMedic = sinon.stub(db, 'queryMedic');
   const medicQuery = sinon.stub(db.medic, 'query');
   const medicAllDocs = sinon.stub(db.medic, 'allDocs');
@@ -116,7 +116,8 @@ describe.only('Purging Config service', () => {
       {
         // eslint-disable-next-line max-len
         id: 'task~org.couchdb.user:supervisor~5e896367-3284-49c9-bd6b-46fe5adf9f97~pregnancy-home-visit-week40~anc.pregnancy_home_visit.known_lmp~1675784875760',
-        key: moment().subtract(61, 'days').format('YYYY-MM-DD'), // 60 days = TASK_EXPIRATION_PERIOD
+        // 60 days = TASK_EXPIRATION_PERIOD
+        key: moment().subtract(61, 'days').format('YYYY-MM-DD'),
         value: null
       }
     ];
@@ -128,7 +129,14 @@ describe.only('Purging Config service', () => {
       .resolves({ rows: tasks });
 
     // targets
-    const targets = [];
+    const targets = [
+      {
+        id: 'target-1',
+        // 6 months = TARGET_EXPIRATION_PERIOD
+        key: `target~${moment().subtract(7, 'months').format('YYYY-MM')}~`,
+        value: null,
+      },
+    ];
     queryMedic
       .withArgs('allDocs', {
         start_key: JSON.stringify('target~'),
