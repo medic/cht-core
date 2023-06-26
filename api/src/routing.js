@@ -182,6 +182,7 @@ app.use(
           `'unsafe-hashes'`,
           `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
           `'sha256-kURz7DI4eYCMPFBsHueeIubV4BzKqHMiCOWVEfr/hU4='`,
+          `'sha256-UEi5iiH1tjrY7FT8YTnn0mUCJ2wwY7LrHVt/vTbxtXA='`,
           `https://medicmobile.matomo.cloud`,
         ],
         styleSrc: [
