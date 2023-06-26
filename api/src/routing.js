@@ -157,7 +157,7 @@ app.use(
           `'self'`,
           BUILDS_DB,
           'maps.googleapis.com', // used for enketo geopoint widget
-          'https://app.posthog.com',
+          'https://medicmobile.matomo.cloud',
         ],
         childSrc:  [`'self'`],
         formAction: [`'self'`],
@@ -182,7 +182,7 @@ app.use(
           `'unsafe-hashes'`,
           `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
           `'sha256-kURz7DI4eYCMPFBsHueeIubV4BzKqHMiCOWVEfr/hU4='`,
-          `https://app.posthog.com`,
+          `https://medicmobile.matomo.cloud`,
         ],
         styleSrc: [
           `'self'`,
