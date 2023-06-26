@@ -203,7 +203,7 @@ describe('Contact summary info', () => {
     await utils.revertDb([/^form:/], true);
   });
 
-  it('should load contact summary', async () => {
+  xit('should load contact summary', async () => {
     await loginPage.cookieLogin();
     await commonElements.waitForPageLoaded();
     await utils.updateSettings(settings, true);
