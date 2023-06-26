@@ -10,6 +10,7 @@ const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 const semver = require('semver');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
 
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
@@ -1107,7 +1108,7 @@ module.exports = {
       await waitForSettingsUpdateLogs(ignoreReload);
     await updateSettings(updates);
     if (!ignoreReload) {
-      return await refreshToGetNewSettings();
+      return await commonElements.closeReloadModal(true);
     }
     return watcher && await watcher.promise;
   },
