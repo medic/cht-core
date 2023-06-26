@@ -112,11 +112,30 @@ describe.only('Purging Config service', () => {
       .resolves({ rows: unallocatedRecords });
 
     // tasks
-    const tasks = [];
+    const tasks = [
+      {
+        // eslint-disable-next-line max-len
+        id: 'task~org.couchdb.user:supervisor~5e896367-3284-49c9-bd6b-46fe5adf9f97~pregnancy-facility-visit-reminder~anc.facility_reminder~1681116440032',
+        key: '2023-02-16',
+        value: null
+      },
+      {
+        // eslint-disable-next-line max-len
+        id: 'task~org.couchdb.user:supervisor~5e896367-3284-49c9-bd6b-46fe5adf9f97~pregnancy-home-visit-week38~anc.pregnancy_home_visit.known_lmp~1675784875760',
+        key: '2023-03-01',
+        value: null
+      },
+      {
+        // eslint-disable-next-line max-len
+        id: 'task~org.couchdb.user:supervisor~5e896367-3284-49c9-bd6b-46fe5adf9f97~pregnancy-home-visit-week40~anc.pregnancy_home_visit.known_lmp~1675784875760',
+        key: '2023-03-15',
+        value: null
+      }
+    ];
     queryMedic
       .withArgs('medic/tasks_in_terminal_state', {
         start_key: JSON.stringify(''),
-        end_key: sinon.match(/^\d{4}-\d{2}-\d{2}$/),
+        end_key: sinon.match(/^"\d{4}-\d{2}-\d{2}"$/),
       })
       .resolves({ rows: tasks });
 
@@ -148,7 +167,7 @@ describe.only('Purging Config service', () => {
 
       const { wontChangeCount, willPurgeCount, willUnpurgeCount, nextRun } = await service.dryRun(appSettingsPurge);
       chai.expect(wontChangeCount).to.equal(2);
-      chai.expect(willPurgeCount).to.equal(4);
+      chai.expect(willPurgeCount).to.equal(10);
       chai.expect(willUnpurgeCount).to.equal(0);
       const expectedNextRun = moment().utc().isoWeekday(6).hours(22).minutes(0).seconds(0).milliseconds(0);
       chai.expect(nextRun).to.equal(expectedNextRun.toISOString());
