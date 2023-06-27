@@ -60,6 +60,9 @@ const uuid = require('uuid');
 const compression = require('compression');
 const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
+const dbDocHandler = require('./controllers/db-doc');
+const extensionLibs = require('./controllers/extension-libs');
+const initialReplication = require('./controllers/initial-replication');
 const app = express.Router({ strict: true });
 const MAX_REQUEST_SIZE = '32mb';
 
@@ -250,6 +253,8 @@ app.all('/+admin(/*)?', authorization.handleAuthErrors, authorization.offlineUse
 
 app.use(express.static(environment.staticPath));
 app.use(express.static(environment.webappPath));
+app.get('/extension-libs', extensionLibs.list);
+app.get('/extension-libs/:name', extensionLibs.get);
 app.get(routePrefix + 'login', login.get);
 app.get(routePrefix + 'login/identity', login.getIdentity);
 app.postJson(routePrefix + 'login', login.post);
@@ -598,7 +603,6 @@ app.post(
 
 // filter db-doc and attachment requests for offline users
 // these are audited endpoints: online and allowed offline requests will pass through to the audit route
-const dbDocHandler = require('./controllers/db-doc');
 const docPath = routePrefix + ':docId/{0,}';
 const attachmentPath = routePrefix + ':docId/+:attachmentId*';
 const ddocPath = routePrefix + '_design/+:ddocId*';
@@ -654,6 +658,12 @@ app.all(
   jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
+app.get(
+  '/api/v1/initial-replication/get-ids',
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  initialReplication.getDocIds,
 );
 
 const metaPathPrefix = `/${environment.db}-user-*-meta/`;

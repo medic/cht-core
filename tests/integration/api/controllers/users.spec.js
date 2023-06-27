@@ -1,11 +1,11 @@
-const constants = require('../../../constants');
+const constants = require('@constants');
 const https = require('https');
-const utils = require('../../../utils');
+const utils = require('@utils');
 const uuid = require('uuid').v4;
 const querystring = require('querystring');
 const chai = require('chai');
 chai.use(require('chai-shallow-deep-equal'));
-const sentinelUtils = require('../../../utils/sentinel');
+const sentinelUtils = require('@utils/sentinel');
 
 const getUserId = n => `org.couchdb.user:${n}`;
 
@@ -1045,8 +1045,6 @@ describe('Users API', () => {
           contact: { id: user.contact._id },
         })));
 
-        await utils.delayPromise(1000);
-
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
           const extraProps = { facility_id: user.place._id, name: user.username, roles: user.roles };
@@ -1156,8 +1154,6 @@ describe('Users API', () => {
           });
           chai.expect(responseUser.token_login).to.have.keys('expiration_date');
         });
-
-        await utils.delayPromise(1000);
 
         for (const user of users) {
           let [userInDb, userSettings] = await Promise.all([getUser(user), getUserSettings(user)]);
@@ -1335,7 +1331,6 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
-          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1414,7 +1409,6 @@ describe('Users API', () => {
 
             return expectSendableSms(loginTokenDoc);
           })
-          .then(() => utils.delayPromise(1000))
           .then(() => expectPasswordLoginToFail(user))
           .then(() => expectTokenLoginToSucceed(tokenUrl))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))
@@ -1450,7 +1444,6 @@ describe('Users API', () => {
           })
           .then(response => {
             chai.expect(response.token_login).to.be.undefined;
-            return utils.delayPromise(1000);
           })
           .then(() => expectPasswordLoginToFail(user))
           .then(() => Promise.all([ getUser(user), getUserSettings(user) ]))

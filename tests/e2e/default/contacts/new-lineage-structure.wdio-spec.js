@@ -1,9 +1,9 @@
 const chai = require('chai');
 
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const sentinelUtils = require('../../../utils/sentinel');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const sentinelUtils = require('@utils/sentinel');
 
 const centerName = 'Franklin';
 const centerContact = 'Center Contact';
@@ -17,6 +17,7 @@ describe('Create new lineage structure', () => {
     await loginPage.cookieLogin();
     await commonPage.hideSnackbar();
     await commonPage.goToPeople();
+    await commonPage.waitForPageLoaded();
   });
 
   afterEach(async () => {
@@ -25,10 +26,11 @@ describe('Create new lineage structure', () => {
     // todo remove this when/after fixing https://github.com/medic/cht-core/issues/7250
     await sentinelUtils.waitForSentinel();
     await commonPage.goToPeople();
+    await commonPage.waitForPageLoaded();
   });
 
   it('Create new health center', async () => {
-    await contactPage.addPlace({ placeName: centerName, contactName: centerContact });
+    await contactPage.addPlace({ placeName: centerName, contactName: centerContact }, false);
     await sentinelUtils.waitForSentinel(); // prevent stale element references
     chai.expect(await contactPage.getPrimaryContactName()).to.equal(centerContact);
   });

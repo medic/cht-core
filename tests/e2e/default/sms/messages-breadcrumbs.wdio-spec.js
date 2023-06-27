@@ -1,10 +1,10 @@
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const messagesPage = require('../../../page-objects/default/sms/messages.wdio.page');
+const utils = require('@utils');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
 
 describe('Message tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
@@ -64,15 +64,12 @@ describe('Message tab breadcrumbs', () => {
     await loginPage.login(onlineUser);
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
-    await messagesPage.sendMessageToPhone('Contact', patient.phone);
+    await messagesPage.sendMessage('Contact', patient.phone, patient.name);
 
-    await messagesPage.waitForMessagesInLHS();
-    const message = await messagesPage.messageByIndex(1);
-    const messagesLineages =  await (await messagesPage.listMessageLineage(message)).getText();
-
+    const { lineage} = await messagesPage.getMessageInListDetails(patient._id);
     const expectedLineage = clinic.name.concat(health_center.name, district_hospital.name);
 
-    expect(messagesLineages).to.equal(expectedLineage);
+    expect(lineage).to.equal(expectedLineage);
   });
 
 
@@ -81,13 +78,10 @@ describe('Message tab breadcrumbs', () => {
     await commonElements.waitForPageLoaded();
     await commonElements.goToMessages();
 
-    await messagesPage.waitForMessagesInLHS();
-    const message = await messagesPage.messageByIndex(1);
-    const messagesLineages =  await (await messagesPage.listMessageLineage(message)).getText();
-
+    const { lineage} = await messagesPage.getMessageInListDetails(patient._id);
     const expectedLineage = clinic.name;
 
-    expect(messagesLineages).to.equal(expectedLineage);
+    expect(lineage).to.equal(expectedLineage);
   });
 
 });

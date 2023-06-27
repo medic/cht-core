@@ -25,6 +25,7 @@ describe('Users Controller', () => {
     sinon.stub(roles, 'hasOnlineRole');
     sinon.stub(auth, 'hasAllPermissions');
     sinon.stub(serverUtils, 'error');
+    sinon.stub(db.medic, 'info').resolves({ update_seq: 123 });
   });
   afterEach(() => sinon.restore());
 

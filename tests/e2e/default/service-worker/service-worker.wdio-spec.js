@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 const URL = require('url');
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 /* global caches fetch Response navigator */
 
@@ -95,7 +95,6 @@ describe('Service worker cache', () => {
     await utils.saveDoc(district);
     await utils.createUsers([chw]);
     await login();
-    await commonPage.closeTour();
   });
 
   beforeEach(async () => {
@@ -109,6 +108,7 @@ describe('Service worker cache', () => {
     expect(cacheDetails.urls.sort()).to.have.members([
       '/',
       '/audio/alert.mp3',
+      '/extension-libs',
       '/fontawesome-webfont.woff2',
       '/fonts/NotoSans-Bold.ttf',
       '/fonts/NotoSans-Regular.ttf',
@@ -121,7 +121,6 @@ describe('Service worker cache', () => {
       '/img/icon-pregnant-selected.svg',
       '/img/icon-pregnant.svg',
       '/img/layers.png',
-      '/img/setup-wizard-demo.png',
       '/login/lib-bowser.js',
       '/login/script.js',
       '/login/style.css',
@@ -166,8 +165,10 @@ describe('Service worker cache', () => {
   });
 
   it('adding new languages triggers login page refresh', async () => {
+    const languageCode = 'ro';
+    await utils.enableLanguage(languageCode);
     const waitForLogs = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
-    await utils.addTranslations('ro', {
+    await utils.addTranslations(languageCode, {
       'User Name': 'Utilizator',
       'Password': 'Parola',
       'login': 'Autentificare',
@@ -177,11 +178,13 @@ describe('Service worker cache', () => {
     await commonPage.sync(true);
     await commonPage.logout();
 
-    await loginPage.changeLanguage('ro', 'Utilizator');
+    await loginPage.changeLanguage(languageCode, 'Utilizator');
 
     expect(await (await loginPage.labelForUser()).getText()).to.equal('Utilizator');
     expect(await (await loginPage.loginButton()).getText()).to.equal('Autentificare');
     expect(await (await loginPage.labelForPassword()).getText()).to.equal('Parola');
+
+    await utils.revertSettings(true);
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {

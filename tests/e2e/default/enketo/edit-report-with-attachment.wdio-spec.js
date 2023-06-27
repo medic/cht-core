@@ -1,12 +1,12 @@
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const uuid = require('uuid').v4;
-const common = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const utils = require('../../../utils');
-const userData = require('../../../page-objects/default/users/user.data');
+const common = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const utils = require('@utils');
+const userData = require('@page-objects/default/users/user.data');
 const fs = require('fs');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
 const oneTextForm = fs.readFileSync(`${__dirname}/forms/one-text-form.xml`, 'utf8');
 
 const instanceID = uuid();

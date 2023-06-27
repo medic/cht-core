@@ -1,13 +1,13 @@
 const moment = require('moment');
 
-const messagesPage = require('../../../page-objects/default/sms/messages.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const fileDownloadUtils = require('../../../utils/file-download');
-const utils = require('../../../utils');
+const messagesPage = require('@page-objects/default/sms/messages.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const fileDownloadUtils = require('@utils/file-download');
+const utils = require('@utils');
 
 describe('Export Messages', () => {
   const places = placeFactory.generateHierarchy();
@@ -29,9 +29,7 @@ describe('Export Messages', () => {
   });
 
   it('Should download export file', async () => {
-    await messagesPage.sendMessageToPhone('It is working!', patient.phone);
-    await messagesPage.waitForMessagesInLHS();
-
+    await messagesPage.sendMessage('It is working!', patient.phone, patient.name);
     await messagesPage.exportMessages();
 
     const files = await fileDownloadUtils.waitForDownload(`messages-${today.format('YYYYMMDD')}`);

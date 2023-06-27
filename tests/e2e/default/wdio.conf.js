@@ -1,13 +1,17 @@
+require('../../aliases');
+const path = require('path');
 const allure = require('allure-commandline');
 const fs = require('fs');
-const path = require('path');
+
 const chai = require('chai');
 chai.use(require('chai-exclude'));
+chai.use(require('chai-as-promised'));
 
-const constants = require('../../constants');
-const utils = require('../../utils');
-const fileDownloadUtils = require('../../utils/file-download');
-const browserUtils = require('../../utils/browser');
+const constants = require('@constants');
+const utils = require('@utils');
+const fileDownloadUtils = require('@utils/file-download');
+const chtDbUtils = require('@utils/cht-db');
+const browserLogsUtils = require('@utils/browser-logs');
 
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
@@ -231,30 +235,7 @@ const baseConfig = {
    */
   before: async function () {
     global.expect = chai.expect;
-    await browser.url('/');
-    await browser.cdp('Log', 'enable');
-    await browser.cdp('Runtime', 'enable');
-    // dedupe the messages to work around to known issue: https://github.com/webdriverio/webdriverio/issues/6347
-    let lastMessage = '';
-    browser.on('Runtime.consoleAPICalled', (data) => {
-      if (data && logLevels.indexOf(data.type) >= 0) {
-        const logEntry = `[${data.type}] Console Api Event: ${JSON.stringify(data.args)}\n`;
-        if (logEntry !== lastMessage) {
-          fs.appendFileSync(browserLogPath, logEntry);
-          lastMessage = logEntry;
-        }
-      }
-    });
-    browser.on('Log.entryAdded', (params) => {
-      if(params && params.entry) {
-        const entry = params.entry;
-        const logEntry = `[${entry.level}]: ${entry.source} ${entry.text} url: ${entry.url} at ${entry.timestamp}\n`;
-        if (logEntry !== lastMessage) {
-          fs.appendFileSync(browserLogPath, logEntry);
-          lastMessage = logEntry;
-        }
-      }
-    });
+    await browserLogsUtils.saveBrowserLogs(logLevels, browserLogPath);
   },
   /**
    * Runs before a WebdriverIO command gets executed.
@@ -294,10 +275,10 @@ const baseConfig = {
    * Function to be executed after a test (in Mocha/Jasmine).
    */
   afterTest: async (test, context, { passed }) => {
-    const feedBackDocs = await browserUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
+    const feedBackDocs = await chtDbUtils.feedBackDocs(`${test.parent} ${test.title}`, existingFeedBackDocIds);
     existingFeedBackDocIds.push(feedBackDocs);
-    if(feedBackDocs){
-      if(passed){
+    if (feedBackDocs) {
+      if (passed) {
         context.test.callback(new Error('Feedback docs were generated during the test.'));
       }
       passed = false;

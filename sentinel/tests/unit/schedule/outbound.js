@@ -319,8 +319,8 @@ describe('outbound schedule', () => {
   describe('single push', () => {
     let mapDocumentToPayload;
     let sentinelPut;
-    let sentinelGet;
     let send;
+    let infodocSaveCompletedTasks;
 
     const restores = [];
 
@@ -334,10 +334,11 @@ describe('outbound schedule', () => {
       restores.push(outbound.__set__('mapDocumentToPayload', mapDocumentToPayload));
 
       send = sinon.stub();
-      restores.push(outbound.__set__('outbound', { send: send }));
+      infodocSaveCompletedTasks = sinon.stub();
 
+      restores.push(outbound.__set__('outbound', { send: send }));
+      restores.push(outbound.__set__('infodocLib', { saveCompletedTasks: infodocSaveCompletedTasks }));
       sentinelPut = sinon.stub(db.sentinel, 'put');
-      sentinelGet = sinon.stub(db.sentinel, 'get');
     });
 
     afterEach(() => restores.forEach(restore => restore()));
@@ -372,7 +373,7 @@ describe('outbound schedule', () => {
           assert.equal(task._deleted, true);
           assert.equal(task._rev, '1-abc');
           assert.equal(send.callCount, 1);
-          assert.equal(sentinelPut.callCount, 2);
+          assert.equal(infodocSaveCompletedTasks.callCount, 1);
         });
     });
 
@@ -397,8 +398,7 @@ describe('outbound schedule', () => {
       return outbound.__get__('singlePush')(task, doc, config, 'test-config-1')
         .then(() => {
           assert.equal(task.queue.length, 1);
-          assert.equal(sentinelGet.callCount, 0);
-          assert.equal(sentinelPut.callCount, 0);
+          assert.equal(infodocSaveCompletedTasks.callCount, 0);
         });
     });
 

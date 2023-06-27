@@ -1,17 +1,17 @@
 const moment = require('moment');
-const utils = require('../../../utils');
-const gatewayApiUtils = require('../../../gateway-api.utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const userFactory = require('../../../factories/cht/users/users');
-const contactPage = require('../../../page-objects/standard/contacts/contacts.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const pregnancyForm = require('../../../page-objects/standard/enketo/pregnancy.wdio.page');
-const pregnancyVisitForm = require('../../../page-objects/standard/enketo/pregnancy-visit.wdio.page');
-const deliveryForm = require('../../../page-objects/standard/enketo/delivery.wdio.page');
+const utils = require('@utils');
+const gatewayApiUtils = require('@utils/gateway-api');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
+const contactPage = require('@page-objects/standard/contacts/contacts.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page');
+const pregnancyVisitForm = require('@page-objects/standard/enketo/pregnancy-visit.wdio.page');
+const deliveryForm = require('@page-objects/standard/enketo/delivery.wdio.page');
 
 describe('Delivery', () => {
   const places = placeFactory.generateHierarchy();
@@ -66,7 +66,7 @@ describe('Delivery', () => {
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
     await commonPage.waitForPageLoaded();
     const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
-    await contactPage.contactPageDefault.createNewAction('Delivery');
+    await commonPage.openFastActionReport('delivery');
 
     const pregnancyOutcome = await deliveryForm.selectPregnancyOutcome();
     const locationDelivery = await deliveryForm.selectDeliveryLocation();
@@ -101,7 +101,7 @@ describe('Delivery', () => {
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect((await reportsPage.getTaskDetails(1, 1)).state).to.contain('scheduled');
   });
 
   it('Delivery - Woman2 - SMS D form', async () => {
@@ -134,7 +134,7 @@ describe('Delivery', () => {
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect((await reportsPage.getTaskDetails(1, 1)).state).to.contain('scheduled');
   });
 
   it('Verify the targets page', async () => {

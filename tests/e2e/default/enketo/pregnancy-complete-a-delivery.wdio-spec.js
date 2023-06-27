@@ -1,15 +1,15 @@
 const fs = require('fs');
 const moment = require('moment');
 const expect = require('chai').expect;
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const reportPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const deliveryForm = require('../../../page-objects/default/enketo/delivery.wdio.page');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const reportPage = require('@page-objects/default/reports/reports.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const deliveryForm = require('@page-objects/default/enketo/delivery.wdio.page');
 
 const DEFAULT_LOCALE = 'en';
 const BABYS_NAME = 'Benja';
@@ -92,12 +92,11 @@ describe('Contact Delivery Form', () => {
     await utils.createUsers([chw]);
     await sentinelUtils.waitForSentinel();
     await loginPage.login({ username: chw.username, password: chw.password, locale: DEFAULT_LOCALE });
-    await commonPage.closeTour();
     await commonPage.goToPeople('fixture:woman', true);
   });
 
   it('Complete a delivery: Process a delivery with a live child and facility birth.', async () => {
-    await contactPage.createNewAction('Delivery');
+    await commonPage.openFastActionReport('delivery');
     await deliveryForm.selectDeliveryConditionWomanOutcome('alive_well');
     await genericForm.nextPage();
     await deliveryForm.selectDeliveryPosnatalDangerSignsFever(NO);
@@ -136,8 +135,9 @@ describe('Contact Delivery Form', () => {
     await deliveryForm.submitForm();
     await contactPage.openReport();
     await (await reportPage.reportBodyDetails()).waitForDisplayed();
-    expect((await reportPage.getReportSubject())).to.equal(MOTHERS_NAME);
-    expect((await reportPage.getReportType())).to.equal(formDocument.title);
+    const { patientName, reportName } = await reportPage.getOpenReportInfo();
+    expect(patientName).to.equal(MOTHERS_NAME);
+    expect(reportName).to.equal(formDocument.title);
   });
 
   it('The past pregnancy card should show', async () => {

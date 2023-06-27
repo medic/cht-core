@@ -6,6 +6,7 @@ should();
 const service = require('../../../src/services/settings');
 const db = require('../../../src/db');
 const environment = require('../../../src/environment');
+// eslint-disable-next-line node/no-missing-require
 const defaults = require('../../../build/default-docs/settings.doc.json');
 const config = require('../../../src/config');
 

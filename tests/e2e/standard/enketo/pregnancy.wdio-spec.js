@@ -1,16 +1,16 @@
 const moment = require('moment');
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const gatewayApiUtils = require('../../../gateway-api.utils');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const contactPage = require('../../../page-objects/standard/contacts/contacts.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const pregnancyForm = require('../../../page-objects/standard/enketo/pregnancy.wdio.page');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const gatewayApiUtils = require('@utils/gateway-api');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const contactPage = require('@page-objects/standard/contacts/contacts.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const pregnancyForm = require('@page-objects/standard/enketo/pregnancy.wdio.page');
 
 describe('New pregnancy', () => {
   const places = placeFactory.generateHierarchy();
@@ -51,7 +51,7 @@ describe('New pregnancy', () => {
     await commonPage.goToPeople(healthCenter._id);
     await contactPage.contactPageDefault.selectLHSRowByText(pregnantWoman1);
     const medicIDW1 = await contactPage.contactPageDefault.getContactMedicID();
-    await contactPage.contactPageDefault.createNewAction('New Pregnancy');
+    await commonPage.openFastActionReport('pregnancy');
 
     await pregnancyForm.selectKnowLMP();
     await pregnancyForm.selectAproxLMP(pregnancyForm.APROX_LMP.b7To8Months);
@@ -90,7 +90,7 @@ describe('New pregnancy', () => {
     await reportsPage.openSelectedReport(firstReport);
     await commonPage.waitForPageLoaded();
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect((await reportsPage.getTaskDetails(1, 1)).state).to.contain('scheduled');
   });
 
   it('Submit new pregnancy - Woman2 - SMS P form', async () => {
@@ -121,7 +121,7 @@ describe('New pregnancy', () => {
     expect(firstReportInfo.heading).to.equal('Woman2');
     expect(firstReportInfo.form).to.equal('New Pregnancy (SMS)');
     expect(await (await reportsPage.reportTasks()).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.getTaskState(1, 1)).getText()).to.contain('scheduled');
+    expect((await reportsPage.getTaskDetails(1, 1)).state).to.contain('scheduled');
   });
 
   it('Verify the targets page', async () => {

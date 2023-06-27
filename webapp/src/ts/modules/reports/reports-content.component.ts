@@ -13,6 +13,9 @@ import { MessageStateService } from '@mm-services/message-state.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
+import { DbService } from '@mm-services/db.service';
 
 @Component({
   templateUrl: './reports-content.component.html'
@@ -27,13 +30,16 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   selectMode;
   validChecks;
   summaries;
+  fastActionList: FastAction[];
 
   constructor(
     private changesService:ChangesService,
     private store:Store,
+    private dbService: DbService,
     private route:ActivatedRoute,
     private router:Router,
     private searchFiltersService:SearchFiltersService,
+    private fastActionButtonService:FastActionButtonService,
     private messageStateService:MessageStateService,
     private responsiveService:ResponsiveService,
     private modalService:ModalService,
@@ -50,7 +56,6 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       if (params.id) {
         this.reportsActions.selectReportToOpen(this.route.snapshot.params.id);
         this.globalActions.clearNavigation();
-        $('.tooltip').remove();
         return;
       }
       this.globalActions.unsetComponents();
@@ -81,6 +86,11 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       this.validChecks = this.selectedReports.map(item => item.summary?.valid || !item.formatted?.errors?.length);
     });
     this.subscription.add(reportsSubscription);
+
+    const selectedReportSubscription = this.store
+      .select(Selectors.getSelectedReportDoc)
+      .subscribe(selectedReportDoc => this.updateFastActions(selectedReportDoc));
+    this.subscription.add(selectedReportSubscription);
 
     const contextSubscription = combineLatest(
       this.store.select(Selectors.getForms),
@@ -183,6 +193,34 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
         localContext.loading = false;
         console.error('Error setting message state', err);
       });
+  }
+
+  private getReportContact(contactId: string) {
+    return this.dbService
+      .get()
+      .get(contactId)
+      .catch(error => {
+        // Log the error but continue anyway.
+        console.error('Error fetching contact for fast action button', error);
+      });
+  }
+
+  private async updateFastActions(selectedReportDoc) {
+    if (this.selectMode || !selectedReportDoc) {
+      return;
+    }
+
+    this.fastActionList = await this.fastActionButtonService.getReportRightSideActions({
+      reportContentType: selectedReportDoc.content_type,
+      communicationContext: {
+        sendTo: await this.getReportContact(selectedReportDoc.contact._id),
+        callbackOpenSendMessage: (sendTo) => {
+          this.modalService
+            .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
+            .catch(() => {});
+        },
+      },
+    });
   }
 
   mute(report, group, localContext) {

@@ -1,11 +1,11 @@
-const commonElements = require('../../../page-objects/default/common/common.wdio.page.js');
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const genericReportFactory = require('../../../factories/cht/reports/generic-report');
-const sentinelUtils = require('../../../utils/sentinel');
+const commonElements = require('@page-objects/default/common/common.wdio.page.js');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const genericReportFactory = require('@factories/cht/reports/generic-report');
+const sentinelUtils = require('@utils/sentinel');
 
 const PURGE_BATCH_SIZE = 100;
 
@@ -34,7 +34,7 @@ const patient = personFactory.build({
   parent: { _id: 'health_center', parent: { _id: 'district' } },
 });
 const user = userFactory.build({ username: 'offlineuser-purge', place: 'health_center' });
-
+const user2 = userFactory.build({ username: 'offlineuser-purge2', place: 'health_center' });
 const purgeFn = (userCtx, contact, reports) => {
   return reports.filter(r => r.form === 'purge').map(r => r._id);
 };
@@ -43,15 +43,22 @@ const purgeHomeVisitFn = (userCtx, contact, reports) => {
   return reports.filter(r => r.form === 'home_visit').map(r => r._id);
 };
 
+const purgeUsingChtApitFn = (userCtx, contact, reports, messages, chtScript, settings) => {
+  if (chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
+    return reports.filter(r => r.form === 'purge').map(r => r._id);
+  }
+  return reports.map(r => r._id);
+};
+
 const reportsToPurge = Array
   .from({ length: 50 })
-  .map(() => genericReportFactory.build({ form: 'purge' }, { patient, submitter: contact }));
+  .map(() => genericReportFactory.report().build({ form: 'purge' }, { patient, submitter: contact }));
 const homeVisits = Array
   .from({ length: 125 })
-  .map(() => genericReportFactory.build({ form: 'home_visit' }, { patient, submitter: contact }));
+  .map(() => genericReportFactory.report().build({ form: 'home_visit' }, { patient, submitter: contact }));
 const pregnancies = Array
   .from({ length: 125 })
-  .map(() => genericReportFactory.build({ form: 'pregnancy' }, { patient, submitter: contact }));
+  .map(() => genericReportFactory.report().build({ form: 'pregnancy' }, { patient, submitter: contact }));
 
 const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
@@ -90,11 +97,16 @@ const parsePurgingLogEntries = (logEntries) => {
   const re = /^REQ .* GET (\/purging[a-z/]*)/;
   return logEntries.map(entry => {
     const match = entry.match(re);
-    return match && match[1];
+    return match?.[1];
   });
 };
 
 describe('purge', () => {
+  afterEach(async () => {
+    await utils.deleteUsers([user, user2]);
+    await utils.revertDb([/^form:/], true);
+  });
+
   it('purging runs on sync and startup', async () => {
     let purgeLog;
 
@@ -148,5 +160,33 @@ describe('purge', () => {
     expect(purgeLog.history[1].count).to.equal(PURGE_BATCH_SIZE);
     expect(purgeLog.history[2].count).to.equal(0);
     expect(purgeLog.to_purge.length).to.equal(0); // queue is empty
+  });
+
+  it('purging runs when using chtScriptApi', async () => {
+
+    await updateSettings(purgeUsingChtApitFn); // settings should be at the beginning of the changes feed
+
+    await utils.saveDocs([district, healthCenter, contact, patient]);
+    await utils.createUsers([user2]);
+    await utils.saveDocs(reportsToPurge);
+    await utils.saveDocs(homeVisits);
+    await utils.saveDocs(pregnancies);
+    await sentinelUtils.waitForSentinel();
+
+    await runPurging();
+
+    await loginPage.login({ username: user2.username, password: user2.password, loadPage: true });
+
+    const purgingRequestsPromise = await utils.collectApiLogs(/REQ.*purging/);
+    await commonElements.sync();
+    const purgingRequests = parsePurgingLogEntries(await purgingRequestsPromise());
+    expect(purgingRequests).to.deep.equal([
+      '/purging/changes',
+      '/purging/checkpoint',
+    ]);
+
+    const allReports = await getAllReports();
+    expect(allReports.length).to.equal(homeVisits.length + pregnancies.length);
+    expect(allReports.some(report => report.form === 'purge')).to.equal(false);
   });
 });

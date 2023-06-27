@@ -3,7 +3,6 @@
 @import '../../node_modules/font-awesome/less/font-awesome';
 @import (inline) '../../node_modules/select2/dist/css/select2.css';
 @import (inline) '../../node_modules/bootstrap-daterangepicker/daterangepicker.css';
-@import (inline) './bootstrap-tour.css';
 
 @import 'variables';
 @import 'font';
@@ -19,6 +18,7 @@
 @import 'privacy-policies';
 @import 'sidebar-filter';
 @import 'about';
+@import 'tooltip';
 
 .container-fluid {
   overflow: hidden;
@@ -493,7 +493,7 @@ body {
   background-color: @background-color;
 }
 
-.reports .inbox-items {
+.reports .inbox-items, .contacts .inbox-items, .messages .inbox-items {
   overflow-y: hidden;
   overflow-x: hidden;
   height: 100%;
@@ -1087,50 +1087,8 @@ a.fa:hover {
   max-width: 300px;
 }
 
-.tour-select {
-  z-index: 2000;
-  .tour-option {
-    width: 100px;
-    margin: 10px;
-    padding: 0.5em 0;
-    .button-text;
-    .button-label {
-      white-space: normal;
-    }
-  }
-  .modal-body {
-    text-align: center;
-  }
-  .fa {
-    font-size: 20px;
-  }
-  .tour-option-messages {
-    background-color: @messages-color;
-  }
-  .tour-option-tasks {
-    background-color: @tasks-color;
-  }
-  .tour-option-reports {
-    background-color: @reports-color;
-  }
-  .tour-option-contacts {
-    background-color: @contacts-color;
-  }
-  .tour-option-analytics {
-    background-color: @analytics-color;
-  }
-  .tour-option-admin {
-    background-color: @admin-color;
-  }
-}
-
 .daterangepicker.dropdown-menu {
   z-index: 1050;
-}
-
-.screenshot {
-  text-align: center;
-  margin-top: 10px;
 }
 
 .horizontal-options {
@@ -1158,71 +1116,6 @@ a.fa:hover {
   .selected .rectangle {
     background-color: @ok-color;
     color: #ffffff;
-  }
-}
-
-.guided-setup {
-  .panel-group .panel-body {
-    text-align: center;
-  }
-  .horizontal-options {
-    .icon {
-      background-size: contain;
-      background-repeat: no-repeat;
-      padding-top: 100px;
-    }
-    .contact-pregnant {
-      background-image: url('/img/icon-pregnant.svg');
-      &.selected {
-        background-image: url('/img/icon-pregnant-selected.svg');
-      }
-    }
-    .contact-chw {
-      background-image: url('/img/icon-chw.svg');
-      &.selected {
-        background-image: url('/img/icon-chw-selected.svg');
-      }
-    }
-    .contact-nurse {
-      background-image: url('/img/icon-nurse.svg');
-      &.selected {
-        background-image: url('/img/icon-nurse-selected.svg');
-      }
-    }
-  }
-  .primary-contact-content .horizontal-options a {
-    width: 100px;
-    vertical-align: top;
-    .circle {
-      height: 100px;
-      width: 100px;
-    }
-  }
-  .registration-form-content .horizontal-options a {
-    width: 150px;
-    vertical-align: top;
-    .circle {
-      height: 20px;
-      width: 20px;
-      font-size: @font-size-base;
-      .fa {
-        visibility: hidden;
-        margin: 0px;
-      }
-    }
-    .description {
-      display: inline-block;
-    }
-    &.selected .fa {
-      visibility: visible;
-    }
-  }
-  .modem-setup-content {
-    label {
-      margin-top: 10px;
-      margin-bottom: 0;
-      display: block;
-    }
   }
 }
 
@@ -1390,6 +1283,43 @@ mm-search-bar {
   }
 }
 
+.verify-report-options-wrapper {
+  .verify-report-options-body {
+    display: flex;
+    padding: 10px 0;
+    justify-content: space-around;
+    button {
+      height: 70px;
+      min-width: 130px;
+    }
+  }
+
+  .verify-icon {
+    display: block;
+    svg {
+      width: 24px;
+      height: 24px;
+      path {
+        fill: @inactive-color;
+      }
+    }
+  }
+
+  .invalid-option.active-option {
+    color: @report-review-error-color;
+    svg path {
+      fill: @report-review-error-color;
+    }
+  }
+
+  .valid-option.active-option {
+    color: @report-review-verified-color;
+    svg path {
+      fill: @report-review-verified-color;
+    }
+  }
+}
+
 .filters.tab-bar .inner {
   display: flex;
   justify-content: flex-end;
@@ -1402,6 +1332,87 @@ mm-search-bar {
   }
 }
 
+.fast-action-trigger {
+  z-index: 3;
+  &.embed-fast-action {
+    background: @button-background-inverse-color;
+    box-shadow: 0px -3px 3px @shadow-color;
+    padding: 10px 20px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    .fast-action-flat-button {
+      width: 100%;
+    }
+  }
+
+  &:not(.embed-fast-action) {
+    position: absolute;
+    top: 60px;
+    right: 5px;
+    .fast-action-fab-button .mat-icon.fa:before {
+      color: @mat-invert-icon-color;
+    }
+  }
+}
+
+.fast-action-body {
+  display: block;
+  max-height: 70vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  .mdc-list-item.mdc-list-item--with-one-line {
+    height: 60px;
+    &:not(:last-child) {
+      border-bottom: 1px solid @separator-color;
+    }
+  }
+
+  .fast-action-item {
+    display: flex;
+    justify-content: flex-start;
+    text-decoration: none;
+    color: @mat-font-color;
+    .fast-action-item-icon {
+      margin-right: 20px;
+
+      mat-icon,
+      .fast-action-resource-icon img,
+      .fast-action-resource-icon svg {
+        height: 30px;
+        width: 30px;
+        vertical-align: middle;
+      }
+
+      mat-icon {
+        margin-top: 3px;
+      }
+
+      mat-icon:before {
+        color: @mm-mat-primary;
+        font-size: @font-extra-extra-large;
+      }
+
+      .fast-action-resource-icon {
+        line-height: 60px;
+      }
+    }
+
+    .fast-action-item-label {
+      margin: 0;
+      font-size: @font-medium;
+      align-self: center;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      white-space: normal;
+    }
+  }
+}
+
 @media (max-width: @content-width) {
   mm-search-bar {
     padding: 4px 8px;
@@ -1409,6 +1420,13 @@ mm-search-bar {
 }
 
 @media (max-width: @media-mobile) {
+  .fast-action-trigger:not(.embed-fast-action) {
+    position: fixed;
+    bottom: 17px;
+    right: 18px;
+    top: auto;
+  }
+
   .more-options-menu-container {
     padding: 0 5px;
   }
@@ -1614,6 +1632,18 @@ mm-search-bar {
     left: 100%;
   }
 
+  .app-root:not(.show-content) {
+    .more-options-menu-container {
+      display: none;
+    }
+
+    .right-pane {
+      .fast-action-trigger {
+        display: none;
+      }
+    }
+  }
+
   .app-root.show-content {
     .header,
     mm-multiselect-bar,
@@ -1625,6 +1655,9 @@ mm-search-bar {
     }
     .left-pane {
       left: -100%;
+      .fast-action-trigger:not(.embed-fast-action) {
+        display: none;
+      }
     }
     .right-pane {
       left: 0;

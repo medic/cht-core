@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const moment = require('moment');
-const utils = require('../../../utils');
+const utils = require('@utils');
 
 describe('Import Records', () => {
 

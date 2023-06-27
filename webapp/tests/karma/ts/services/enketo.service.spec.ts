@@ -28,6 +28,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { GlobalActions } from '@mm-actions/global';
 import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
+import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 
 describe('Enketo service', () => {
@@ -69,10 +70,13 @@ describe('Enketo service', () => {
   let LineageModelGenerator;
   let transitionsService;
   let translateService;
+  let xmlFormsService;
   let xmlFormGet;
   let xmlFormGetWithAttachment;
   let zScoreService;
   let zScoreUtil;
+  let chtScriptApiService;
+  let chtScriptApi;
   let globalActions;
   let trainingCardsService;
   let consoleErrorMock;
@@ -116,6 +120,11 @@ describe('Enketo service', () => {
     LineageModelGenerator = { contact: sinon.stub() };
     xmlFormGet = sinon.stub().resolves({ _id: 'abc' });
     xmlFormGetWithAttachment = sinon.stub().resolves({ doc: { _id: 'abc', xml: '<form/>' } });
+    xmlFormsService = {
+      get: xmlFormGet,
+      getDocAndFormAttachment: xmlFormGetWithAttachment,
+      canAccessForm: sinon.stub(),
+    };
     window.EnketoForm = EnketoForm;
     window.URL.createObjectURL = createObjectURL;
     EnketoForm.returns(form);
@@ -126,6 +135,8 @@ describe('Enketo service', () => {
     };
     zScoreUtil = sinon.stub();
     zScoreService = { getScoreUtil: sinon.stub().resolves(zScoreUtil) };
+    chtScriptApi = sinon.stub();
+    chtScriptApiService = { getApi: sinon.stub().resolves(chtScriptApi) };
     globalActions = { setSnackbarContent: sinon.stub(GlobalActions.prototype, 'setSnackbarContent') };
     setLastChangedDoc = sinon.stub(ServicesActions.prototype, 'setLastChangedDoc');
     trainingCardsService = {
@@ -157,22 +168,15 @@ describe('Enketo service', () => {
         { provide: TranslateFromService, useValue: { get: TranslateFrom } },
         { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
         { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
-        {
-          provide: XmlFormsService,
-          useValue: {
-            get: xmlFormGet,
-            getDocAndFormAttachment: xmlFormGetWithAttachment
-          }
-        },
+        { provide: XmlFormsService, useValue: xmlFormsService },
         { provide: ZScoreService, useValue: zScoreService },
+        { provide: CHTScriptApiService, useValue: chtScriptApiService },
         { provide: TransitionsService, useValue: transitionsService },
         { provide: TranslateService, useValue: translateService },
         { provide: TrainingCardsService, useValue: trainingCardsService },
         { provide: FeedbackService, useValue: feedbackService },
       ],
     });
-
-    service = TestBed.inject(EnketoService);
 
     Language.resolves('en');
     TranslateFrom.returns('translated');
@@ -188,19 +192,20 @@ describe('Enketo service', () => {
     it('should init zscore and xpath extensions', async () => {
       sinon.stub(medicXpathExtensions, 'init');
 
-      sinon.resetHistory();
+      service = TestBed.inject(EnketoService);
       await service.init();
 
       expect(zScoreService.getScoreUtil.callCount).to.equal(1);
+      expect(chtScriptApiService.getApi.callCount).to.equal(1);
       expect(medicXpathExtensions.init.callCount).to.equal(1);
-      expect(medicXpathExtensions.init.args[0]).to.deep.equal([zScoreUtil, toBik_text, moment]);
+      expect(medicXpathExtensions.init.args[0]).to.deep.equal([zScoreUtil, toBik_text, moment, chtScriptApi]);
     });
 
     it('should catch errors', async () => {
       sinon.stub(medicXpathExtensions, 'init');
       zScoreService.getScoreUtil.rejects({ omg: 'error' });
 
-      sinon.resetHistory();
+      service = TestBed.inject(EnketoService);
       await service.init();
 
       expect(zScoreService.getScoreUtil.callCount).to.equal(1);
@@ -209,6 +214,10 @@ describe('Enketo service', () => {
   });
 
   describe('render', () => {
+
+    beforeEach(() => {
+      service = TestBed.inject(EnketoService);
+    });
 
     it('renders error when user does not have associated contact', () => {
       UserContact.resolves();
@@ -224,34 +233,56 @@ describe('Enketo service', () => {
         });
     });
 
-    it('return error when form initialisation fails', () => {
-      UserContact.resolves({ contact_id: '123' });
+    it('return error when form initialisation fails', fakeAsync(async () => {
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL);
+        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
+      UserContact.resolves({ contact_id: '123-user-contact' });
+      xmlFormsService.canAccessForm.resolves(true);
+
+      ContactSummary.resolves({ context: { pregnant: false } });
+      Search.resolves([{ _id: 'some_report' }]);
+      LineageModelGenerator.contact.resolves({ lineage: [{ _id: 'some_parent' }] });
+      const instanceData = { contact: { _id: '123-patient-contact'} };
+
       EnketoPrepopulationData.resolves('<xml></xml>');
       const expectedErrorTitle = `Failed during the form "myform" rendering : `;
-      const expectedErrorDetail = ['nope', 'still nope'];
+      const expectedErrorDetail = [ 'nope', 'still nope' ];
       const expectedErrorMessage = expectedErrorTitle + JSON.stringify(expectedErrorDetail);
       enketoInit.returns(expectedErrorDetail);
-      return service
-        .render($('<div></div>'), mockEnketoDoc('myform'))
-        .then(() => {
-          expect.fail('Should throw error');
-        })
-        .catch(actual => {
-          expect(enketoInit.callCount).to.equal(1);
-          expect(actual.message).to.equal(expectedErrorMessage);
-          expect(consoleErrorMock.callCount).to.equal(1);
-          expect(consoleErrorMock.args[0][0]).to.equal(expectedErrorTitle);
-          expect(feedbackService.submit.callCount).to.equal(1);
-          expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorMessage);
-        });
-    });
+
+      try {
+        await service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData);
+        flush();
+        expect.fail('Should throw error');
+      } catch(error) {
+        expect(UserContact.calledOnce).to.be.true;
+        expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
+        expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
+          {
+            _attachments: { xml: { something: true } },
+            _id: 'form:myform',
+            internalId: 'myform',
+          },
+          { contact_id: '123-user-contact' },
+          { doc: { _id: '123-patient-contact' }, contactSummary: { pregnant: false } },
+        ]);
+        expect(enketoInit.callCount).to.equal(1);
+        expect(error.message).to.equal(expectedErrorMessage);
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0][0]).to.equal(expectedErrorTitle);
+        expect(feedbackService.submit.callCount).to.equal(1);
+        expect(feedbackService.submit.args[0][0]).to.equal(expectedErrorMessage);
+      }
+    }));
 
     it('return form when everything works', () => {
       expect(form.editStatus).to.be.undefined;
       UserContact.resolves({ contact_id: '123' });
+      xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
@@ -276,6 +307,7 @@ describe('Enketo service', () => {
 
     it('replaces img src with obj urls', async () => {
       UserContact.resolves({ contact_id: '123' });
+      xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
         .onSecondCall().resolves(VISIT_MODEL)
@@ -300,6 +332,7 @@ describe('Enketo service', () => {
 
     it('leaves img wrapped and hides loader if failed to load', () => {
       UserContact.resolves({ contact_id: '123' });
+      xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
         .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
         .onSecondCall().resolves(VISIT_MODEL)
@@ -327,6 +360,7 @@ describe('Enketo service', () => {
     it('passes users language to Enketo', () => {
       const data = '<data><patient_id>123</patient_id></data>';
       UserContact.resolves({ contact_id: '123' });
+      xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
@@ -346,6 +380,7 @@ describe('Enketo service', () => {
     it('passes xml instance data through to Enketo', () => {
       const data = '<data><patient_id>123</patient_id></data>';
       UserContact.resolves({ contact_id: '123' });
+      xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
@@ -368,6 +403,7 @@ describe('Enketo service', () => {
         contact_id: '123',
         facility_id: '789'
       });
+      xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
@@ -396,6 +432,7 @@ describe('Enketo service', () => {
         contact_id: '123',
         facility_id: '789'
       });
+      xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
@@ -445,6 +482,7 @@ describe('Enketo service', () => {
         contact_id: '123',
         facility_id: '789'
       });
+      xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL_WITH_CONTACT_SUMMARY);
@@ -491,6 +529,7 @@ describe('Enketo service', () => {
         contact_id: '123',
         facility_id: '789'
       });
+      xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
@@ -522,6 +561,7 @@ describe('Enketo service', () => {
         contact_id: '123',
         facility_id: '789'
       });
+      xmlFormsService.canAccessForm.resolves(true);
       enketoInit.returns([]);
       FileReader.utf8
         .onFirstCall().resolves('<div>my form</div>')
@@ -553,6 +593,7 @@ describe('Enketo service', () => {
       FileReader.utf8.resolves('<some-blob name="xml"/>');
       EnketoPrepopulationData.resolves('<xml></xml>');
       UserContact.resolves({ contact_id: '123' });
+      xmlFormsService.canAccessForm.resolves(true);
       dbGetAttachment
         .onFirstCall().resolves('<div>first form</div>')
         .onSecondCall().resolves(VISIT_MODEL);
@@ -588,9 +629,44 @@ describe('Enketo service', () => {
       expect(dbGetAttachment.args[0]).to.have.members([ 'form:secondForm', 'form.html' ]);
       expect(dbGetAttachment.args[1]).to.have.members([ 'form:secondForm', 'model.xml' ]);
     });
+
+    it('should throw exception when user does not have access to form', fakeAsync(async () => {
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves(VISIT_MODEL);
+      UserContact.resolves({ contact_id: '123-user-contact' });
+      xmlFormsService.canAccessForm.resolves(false);
+      ContactSummary.resolves({ context: { pregnant: false } });
+
+      try {
+        await service.render($('<div></div>'), mockEnketoDoc('myform'));
+        flush();
+        expect.fail('Should throw error');
+      } catch(error) {
+        expect(UserContact.calledOnce).to.be.true;
+        expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
+        expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
+          {
+            _attachments: { xml: { something: true } },
+            _id: 'form:myform',
+            internalId: 'myform',
+          },
+          { contact_id: '123-user-contact' },
+          { doc: undefined, contactSummary: undefined },
+        ]);
+        expect(enketoInit.notCalled).to.be.true;
+        expect(error).to.deep.equal({ translationKey: 'error.loading.form.no_authorized' });
+        expect(consoleErrorMock.notCalled).to.be.true;
+        expect(feedbackService.submit.notCalled).to.be.true;
+      }
+    }));
   });
 
   describe('save', () => {
+
+    beforeEach(() => {
+      service = TestBed.inject(EnketoService);
+    });
 
     it('rejects on invalid form', () => {
       const inputRelevant = { dataset: { relevant: 'true' } };
@@ -1896,6 +1972,8 @@ describe('Enketo service', () => {
         };
 
         it('should translate titleKey when provided', async () => {
+          UserContact.resolves({ contact_id: '123-user-contact' });
+          xmlFormsService.canAccessForm.resolves(true);
           await service.renderContactForm({
             selector: $('<div></div>'),
             formDoc,
@@ -1910,6 +1988,8 @@ describe('Enketo service', () => {
         });
 
         it('should fallback to translate document title when the titleKey is not available', async () => {
+          UserContact.resolves({ contact_id: '123-user-contact' });
+          xmlFormsService.canAccessForm.resolves(true);
           await service.renderContactForm({
             selector: $('<div></div>'),
             formDoc,
@@ -1954,6 +2034,8 @@ describe('Enketo service', () => {
     });
 
     beforeEach(() => {
+      service = TestBed.inject(EnketoService);
+
       $form = $(`<div></div>`);
       $form
         .append($nextBtn)

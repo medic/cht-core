@@ -12,10 +12,11 @@ import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { TourService } from '@mm-services/tour.service';
 import { NavigationService } from '@mm-services/navigation.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { AuthService } from '@mm-services/auth.service';
+import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 
 describe('Messages Component', () => {
   let component: MessagesComponent;
@@ -25,6 +26,7 @@ describe('Messages Component', () => {
   let exportService;
   let modalService;
   let userContactService;
+  let fastActionButtonService;
   let authService;
 
   const userContactGrandparent = { _id: 'grandparent' };
@@ -47,10 +49,11 @@ describe('Messages Component', () => {
     userContactService = {
       get: sinon.stub().resolves(userContactDoc),
     };
-    authService = { online: sinon.stub().returns(false) };
-    const tourServiceMock = {
-      startIfNeeded: () => {}
+    fastActionButtonService = {
+      getMessageActions: sinon.stub(),
+      getButtonTypeForContentList: sinon.stub(),
     };
+    authService = { online: sinon.stub().returns(false) };
     const mockedSelectors = [
       { selector: 'getSelectedConversation', value: {} },
       { selector: 'getLoadingContent', value: false },
@@ -75,10 +78,10 @@ describe('Messages Component', () => {
           { provide: SettingsService, useValue: {} }, // Needed because of ngx-translate provider's constructor.
           { provide: exportService, useValue: {} },
           { provide: ModalService, useValue: modalService },
-          { provide: TourService, useValue: tourServiceMock },
           { provide: NavigationService, useValue: {} },
           { provide: UserContactService, useValue: userContactService },
           { provide: AuthService, useValue: authService },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
         ]
       })
       .compileComponents()
@@ -106,7 +109,7 @@ describe('Messages Component', () => {
 
     expect(spyUpdateConversations.callCount).to.equal(1);
     expect(changesService.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(2);
+    expect(spySubscriptionsAdd.callCount).to.equal(3);
   });
 
   it('listTrackBy() should return unique identifier', () => {
@@ -126,6 +129,24 @@ describe('Messages Component', () => {
     component.ngOnDestroy();
 
     expect(spySubscriptionsUnsubscribe.callCount).to.equal(1);
+  });
+
+  it('should update fast actions', async () => {
+    sinon.resetHistory();
+    modalService.show.resolves();
+    messageContactService.getList.resolves([
+      { key: 'a', message: { inAllMessages: true } },
+      { key: 'c', message: { inAllMessages: true } },
+    ]);
+
+    await component.updateConversations();
+
+    expect(fastActionButtonService.getMessageActions.calledOnce).to.be.true;
+
+    const params = fastActionButtonService.getMessageActions.args[0][0];
+    params.callbackOpenSendMessage();
+    expect(modalService.show.calledOnce).to.be.true;
+    expect(modalService.show.args[0][0]).to.equal(SendMessageComponent);
   });
 
   describe('updateConversations()', () => {

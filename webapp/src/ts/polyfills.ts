@@ -87,12 +87,10 @@ declare global {
     CHTCore: any;
     angular: any;
     EnketoForm:any;
-    Tour: any;
   }
   interface JQuery {
     daterangepicker(options?: any, callback?: Function) : any;
     select2(event?:any, options?:any):any;
-    tooltip(options:any):any;
   }
   interface Node {
     _couchId: any;
