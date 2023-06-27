@@ -1,8 +1,12 @@
 <div class="row filters"></div>
 
 <div class="inner">
-  <div class="col-sm-12 page help">
+  <div *ngIf="translationsLoaded" class="col-sm-12 page help">
     <h3>{{error.title | translate}}</h3>
     <p>{{error.description | translate}}</p>
+  </div>
+  <div *ngIf="!translationsLoaded" class="col-sm-12 page help">
+    <h3>Error</h3>
+    <p>Error loading. Check your internet connection and try again or check with an administrator.</p>
   </div>
 </div>

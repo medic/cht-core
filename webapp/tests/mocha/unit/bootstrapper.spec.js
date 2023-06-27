@@ -396,26 +396,4 @@ describe('bootstrapper', () => {
     assert.equal(purger.purgeMeta.callCount, 1);
     assert.deepEqual(purger.purgeMeta.args[0], [localMetaDb]);
   });
-
-  it('should set an error if api is not accessible for sure', async () => {
-    setUserCtxCookie({ name: 'jimbo', roles: [ '_admin' ] });
-    sinon.stub(uiStatus, 'setUiError');
-    sinon.stub(utils,  'checkApiAccessible').resolves(false);
-    assert.equal(utils.checkApiAccessible.callCount, 0);
-    assert.equal(uiStatus.setUiError.callCount, 0);
-    await bootstrapper(pouchDbOptions);
-    assert.equal(utils.checkApiAccessible.callCount, 1);
-    assert.equal(uiStatus.setUiError.callCount, 1);
-  });
-
-  it('should not set an error if api is accessible', async () => {
-    setUserCtxCookie({ name: 'jimbo', roles: [ '_admin' ] });
-    sinon.stub(uiStatus, 'setUiError').callsFake(() => {});
-    sinon.stub(utils,  'checkApiAccessible').resolves(true);
-    assert.equal(utils.checkApiAccessible.callCount, 0);
-    assert.equal(uiStatus.setUiError.callCount, 0);
-    await bootstrapper(pouchDbOptions);
-    assert.equal(utils.checkApiAccessible.callCount, 1);
-    assert.equal(uiStatus.setUiError.callCount, 0);
-  });
 });

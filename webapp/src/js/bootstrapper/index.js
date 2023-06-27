@@ -96,18 +96,7 @@
     }
 
     if (hasFullDataAccess(userCtx)) {
-      return utils.checkApiAccessible()
-        .then((apiAccessible) => {
-          if (apiAccessible) {
-            return Promise.resolve();
-          }
-          throw new Error('API not accessible');
-        }).catch((err) => {
-          uiStatus.setUiError();
-          console.error(err);
-        }).finally(() => {
-          return Promise.resolve();
-        });
+      return Promise.resolve();
     }
 
     uiStatus.setLocale(userCtx);
