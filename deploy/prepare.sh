@@ -40,4 +40,16 @@ if [ "$1" = "local" ]; then
 	else
 		echo "K3d cluster 'k3s-default' already exists. Skipping creation."
 	fi
+
+	# Check if nginx ingress controller is installed
+	if ! kubectl get pods -n ingress-nginx ; then
+		echo "nginx ingress controller not found. Installing..."
+		kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.0.0/deploy/static/provider/cloud/deploy.yaml
+
+		# Wait for the ingress-nginx controller to be ready
+		echo "Waiting for nginx ingress controller to be ready..."
+		kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=120s
+	else
+		echo "nginx ingress controller already exists. Skipping installation."
+	fi
 fi
