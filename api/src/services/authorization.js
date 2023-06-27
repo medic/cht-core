@@ -480,7 +480,7 @@ const getDocsByReplicationKey = (authorizationContext) => {
 
     results.rows.forEach(row => {
       const { key: subject, value: { submitter } = {} } = row;
-      const priv = replicationKey?.value?.private; // private is a reserved word
+      const priv = row?.value?.private; // private is a reserved word
       const allowedSubmitter = () => sortedIncludes(sortedSubjects, submitter);
       if (isSensitive(authorizationContext.userCtx, subject, submitter, priv, allowedSubmitter)) {
         return;
