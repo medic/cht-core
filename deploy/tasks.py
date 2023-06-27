@@ -3,7 +3,7 @@ import os
 import subprocess
 import yaml
 import requests
-import json
+import re
 
 @task
 def prepare(c, f):
@@ -86,6 +86,23 @@ def get_image_tag(c, chtversion):
 
     raise Exception('cht image tag not found')
 
+def setup_etc_hosts(c, values):
+    # Check if the environment is 'local'
+    if values.get('environment', '') == 'local':
+        host = values.get('ingress', {}).get('host', '')
+        proc = subprocess.Popen(['sudo', 'cat', '/etc/hosts'], stdout=subprocess.PIPE)
+        lines = [line.decode('utf-8') for line in proc.stdout.readlines()]
+
+        # Regular expression for a host entry line
+        host_re = re.compile(r'^127\.0\.0\.1\s+' + re.escape(host) + r'(\s|$)')
+
+        # Check if the host line exists and points to 127.0.0.1
+        if not any(host_re.match(line) for line in lines):
+            command = ['sudo', 'bash', '-c', f'echo "127.0.0.1 {host}" >> /etc/hosts']
+            subprocess.run(command)
+    else:
+        print("Environment is not local, skipping hosts setup.")
+
 @task
 def helm_install_or_upgrade(c, f, namespace, values, image_tag):
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -108,5 +125,6 @@ def install(c, f):
     if values.get('environment', '') == 'local':
         obtain_certificate_and_key(c)
         create_secret(c, namespace)
+        setup_etc_hosts(c, values)
     image_tag = get_image_tag(c, values.get('chtversion', ''))
     helm_install_or_upgrade(c, f, namespace, values, image_tag)
