@@ -275,7 +275,6 @@ const deleteAll = (except) => {
 const refreshToGetNewSettings = async () => {
   // wait for the updates to replicate
   const dialog = $('#update-available .submit:not(.disabled)');
-  //await dialog.waitForClickable();
   return browser.waitUntil(await dialog.waitForClickable(), 10000)
     .then(async () => await dialog.click())
     .catch(async () => {
