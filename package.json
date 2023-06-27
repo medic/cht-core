@@ -120,7 +120,7 @@
     "medic-conf": "^3.2.1",
     "mocha": "^10.2.0",
     "module-alias": "^2.2.2",
-    "moment": "^2.29.1",
+    "moment": "^2.29.4",
     "moment-locales-webpack-plugin": "^1.2.0",
     "mustache": "^4.2.0",
     "nodemon": "^2.0.20",
@@ -144,6 +144,12 @@
     "uuid": "^8.3.2",
     "webpack-bundle-analyzer": "^4.7.0",
     "zone.js": "^0.11.8"
+  },
+  "overrides": {
+    "minimist": ">=1.2.6",
+    "nools": {
+      "uglify-js": ">=2.6.0"
+    }
   },
   "bundlesize": [
     {
