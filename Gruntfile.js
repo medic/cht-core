@@ -606,7 +606,6 @@ module.exports = function(grunt) {
     'copy-static-files-to-api',
     'exec:uglify-api',
     'cssmin:api',
-    'env:version',
     'exec:build-service-images',
     'exec:build-images',
   ]);
