@@ -18,8 +18,11 @@ kubectl -n $NAMESPACE delete svc api upgrade-service
 kubectl rollout restart deploy/upgrade-service -n $NAMESPACE
 kubectl rollout restart deploy/cht-api -n $NAMESPACE
 
-kubectl apply -f ./upgrade-service-yaml.yaml
+# Sleep for 5 seconds to allow the pods to restart
+echo "Waiting for pods to restart"
+sleep 5
 
+kubectl apply -f ./upgrade-service-yaml.yaml
 kubectl apply -f ./api-yaml.yaml
 
 rm ./upgrade-service-yaml.yaml
