@@ -157,8 +157,7 @@ app.use(
           `'self'`,
           BUILDS_DB,
           'maps.googleapis.com', // used for enketo geopoint widget
-          'https://medicmobile.matomo.cloud',
-          'http://cdn.matomo.cloud',
+          'http://matomo-care-teams.dev.medicmobile.org',
         ],
         childSrc:  [`'self'`],
         formAction: [`'self'`],
@@ -184,9 +183,8 @@ app.use(
           `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
           `'sha256-kURz7DI4eYCMPFBsHueeIubV4BzKqHMiCOWVEfr/hU4='`,
           `'sha256-UEi5iiH1tjrY7FT8YTnn0mUCJ2wwY7LrHVt/vTbxtXA='`,
-          `'sha256-wdUleBg0lE0MQtIG1uMfBbc6lHgh2nMQi986PVPkxAI='`,
-          'https://medicmobile.matomo.cloud',
-          'http://cdn.matomo.cloud',
+          `'sha256-JXsbMjjd16Yr4DVPY52ZFAGB80jWj/3CGIpJCN5TkqE='`,
+          'http://matomo-care-teams.dev.medicmobile.org',
         ],
         styleSrc: [
           `'self'`,
