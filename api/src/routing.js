@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
+const apiMetrics = require('prometheus-api-metrics');
 const environment = require('./environment');
 const config = require('./config');
 const db = require('./db');
@@ -129,6 +130,10 @@ if (process.argv.slice(2).includes('--allow-cors')) {
     next();
   });
 }
+
+app.use(apiMetrics({
+  metricsPath: '/api_prometheus_metrics',
+}));
 
 app.use((req, res, next) => {
   req.id = uuid.v4();
