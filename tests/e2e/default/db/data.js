@@ -22,7 +22,7 @@ const getReportContext = (patient, submitter) => {
   return context;
 };
 
-const createData = ({ healthCenter, user, nbrClinics, nbrPersons }) => {
+const createData = ({ healthCenter, user, nbrClinics=10, nbrPersons=10 }) => {
   const clinics = Array
     .from({ length: nbrClinics })
     .map((_, idx) => placeFactory.place().build({

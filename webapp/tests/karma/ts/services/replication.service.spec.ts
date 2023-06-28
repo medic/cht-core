@@ -114,6 +114,7 @@ describe('ContactTypes service', () => {
           { id: 'd5', rev: 1 },
         ],
         attachments: true,
+        revs: true,
       }]]);
       expect(localDb.bulkDocs.args).to.deep.equal([[
         [
@@ -175,18 +176,21 @@ describe('ContactTypes service', () => {
             .from({ length: 100 })
             .map((_, idx) => ({ id: `d${idx}`, rev: 1 })),
           attachments: true,
+          revs: true,
         }],
         [{
           docs: Array
             .from({ length: 100 })
             .map((_, idx) => ({ id: `d${idx + 100}`, rev: 1 })),
           attachments: true,
+          revs: true,
         }],
         [{
           docs: Array
             .from({ length: 50 })
             .map((_, idx) => ({ id: `d${idx + 200}`, rev: 1 })),
           attachments: true,
+          revs: true,
         }]
       ]);
 

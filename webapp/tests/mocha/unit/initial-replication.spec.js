@@ -216,6 +216,7 @@ describe('Initial replication', () => {
           { id: 'five', rev: 1 },
         ],
         attachments: true,
+        revs: true,
       }]]);
       expect(localDb.bulkDocs.args).to.deep.equal([[
         [
@@ -299,6 +300,7 @@ describe('Initial replication', () => {
           { id: 'two', rev: 1 },
         ],
         attachments: true,
+        revs: true,
       }]]);
       expect(localDb.bulkDocs.args).to.deep.equal([[
         [
@@ -450,6 +452,7 @@ describe('Initial replication', () => {
           { id: 'five', rev: 1 },
         ],
         attachments: true,
+        revs: true,
       }]]);
       expect(localDb.bulkDocs.args).to.deep.equal([[
         [
@@ -565,6 +568,7 @@ describe('Initial replication', () => {
           { id: 'five', rev: 1 },
         ],
         attachments: true,
+        revs: true,
       }]]);
       expect(localDb.bulkDocs.args).to.deep.equal([[
         [

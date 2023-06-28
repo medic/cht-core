@@ -28,7 +28,7 @@ describe('ongoing replication', () => {
     await utils.createUsers([userAllowedDocs.user]);
 
     await sentinelUtils.waitForSentinel();
-    await utils.stopSentinel();
+    // await utils.stopSentinel();
 
     await saveData(userAllowedDocs);
     await saveData(userDeniedDocs);
@@ -38,7 +38,7 @@ describe('ongoing replication', () => {
 
   after(async () => {
     await sentinelUtils.skipToSeq();
-    await utils.startSentinel();
+    // await utils.startSentinel();
   });
 
   it('should download new documents ', async () => {
@@ -118,7 +118,7 @@ describe('ongoing replication', () => {
   });
 
   it('should download new languages and language updates', async () => {
-    const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
+    let waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.addTranslations('rnd', {});
     await waitForServiceWorker.promise;
 
@@ -130,31 +130,47 @@ describe('ongoing replication', () => {
       _id: 'messages-rnd'
     });
     rnd.updated = 'yeaaaa';
+    waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     await utils.saveDoc(rnd);
+    await waitForServiceWorker.promise;
 
     await commonPage.sync(true);
     const [updatedRnd] = await browserUtils.getDocs(['messages-rnd']);
     expect(updatedRnd.updated).to.equal(rnd.updated);
   });
 
-  it('should download settings updates', async () => {
-    await utils.updateSettings({ test: true }, 'api');
-    await commonPage.sync(true);
-    const [settings] = await browserUtils.getDocs(['settings']);
-    expect(settings.settings.test).to.equal(true);
-    await utils.revertSettings(true);
-    await commonPage.sync(true);
-  });
-
   it('should handle deletes', async () => {
-    const docIdsToDelete = [ 'form:dummy', ...data.ids(userAllowedDocs.reports), 'messages-rnd'];
+    await commonPage.sync();
+    await browser.throttle('offline');
+    const docIdsToDelete = [
+      'form:dummy',
+      ...data.ids(userAllowedDocs.reports),
+      ...data.ids(additionalAllowed.reports).slice(0, 10),
+      'messages-rnd'
+    ];
     await utils.deleteDocs(docIdsToDelete);
+    await sentinelUtils.waitForSentinel();
 
+    await browser.throttle('online');
     await commonPage.sync();
     const localDocsPostSync = await browserUtils.getDocs();
     const localDocIds = data.ids(localDocsPostSync);
 
     expect(_.intersection(localDocIds, docIdsToDelete)).to.deep.equal([]);
+  });
+
+  it('should download settings updates', async () => {
+    await browser.throttle('offline');
+    await utils.updateSettings({ test: true }, 'api');
+    await browser.throttle('online');
+    await commonPage.sync(true);
+    const [settings] = await browserUtils.getDocs(['settings']);
+    expect(settings.settings.test).to.equal(true);
+
+    await browser.throttle('offline');
+    await utils.revertSettings(true);
+    await browser.throttle('online');
+    await commonPage.sync(true);
   });
 });
 

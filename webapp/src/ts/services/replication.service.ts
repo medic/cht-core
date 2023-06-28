@@ -71,7 +71,7 @@ export class ReplicationService {
   }
 
   private async downloadDocsBatch(batch):Promise<void> {
-    const res = await this.dbService.get({ remote: true }).bulkGet({ docs: batch, attachments: true });
+    const res = await this.dbService.get({ remote: true }).bulkGet({ docs: batch, attachments: true, revs: true });
     const docs = res.results
       .map(result => result.docs && result.docs[0] && result.docs[0].ok)
       .filter(doc => doc);

@@ -79,7 +79,7 @@ const getDocsBatch = async (remoteDb, localDb) => {
     return;
   }
 
-  const res = await remoteDb.bulkGet({ docs: batch, attachments: true });
+  const res = await remoteDb.bulkGet({ docs: batch, attachments: true, revs: true });
   const docs = res.results
     .map(result => result.docs && result.docs[0] && result.docs[0].ok)
     .filter(doc => doc);
