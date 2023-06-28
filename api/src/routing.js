@@ -133,6 +133,13 @@ if (process.argv.slice(2).includes('--allow-cors')) {
 
 app.use(apiMetrics({
   metricsPath: '/api_prometheus_metrics',
+  durationBuckets: [0.5, 1, 10, 30, 60, 300, 600],
+  // additionalLabels: ['username'],
+  // extractAdditionalLabelValuesFn: (req, res) => {
+  //   return {
+  //     username: req.headers['X-Medic-User'],
+  //   };
+  // },
 }));
 
 app.use((req, res, next) => {
