@@ -7,6 +7,7 @@ const taskUtils = require('@medic/task-utils');
 const registrationUtils = require('@medic/registration-utils');
 const messageUtils = require('@medic/message-utils');
 const logger = require('./logger');
+const later = require('later');
 
 /*
  * Get desired locale
@@ -228,6 +229,14 @@ module.exports = {
   getSubjectIds: contact => registrationUtils.getSubjectIds(contact),
 
   isXFormReport: doc => doc && doc.type === 'data_record' && doc.content_type === 'xml',
+
+  isWithinTimeFrame: (cron, frame = 0) => {
+    const currentTime = Date.now();
+    const dueTime = later.schedule(later.parse.cron(cron)).next().getTime();
+    const upperBoundDueTime = dueTime + frame;
+    const lowerBoundDueTime = dueTime - frame;
+    return currentTime >= lowerBoundDueTime && currentTime <= upperBoundDueTime;
+  },
 
   // given a report, returns whether it should be accepted as a valid form submission
   // a report is accepted if

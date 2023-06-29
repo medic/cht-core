@@ -293,4 +293,18 @@ describe('utils util', () => {
       utils.getLocale(docs[5]).should.deep.equal('en');
     });
   });
+
+  describe('isWithinTimeFrame', () => {
+    it('200', () => {
+
+    });
+
+    it('400', () => {
+
+    });
+
+    it('500', () => {
+
+    });
+  });
 });

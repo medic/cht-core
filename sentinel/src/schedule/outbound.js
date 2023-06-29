@@ -4,10 +4,12 @@ const logger = require('../lib/logger');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const outbound = require('@medic/outbound')(logger);
 const infodocLib = require('@medic/infodoc');
+const transitionsLib = require('../config').getTransitionsLib();
 infodocLib.initLib(db.medic, db.sentinel);
 
 const CONFIGURED_PUSHES = 'outbound';
 const BATCH_SIZE = 1000;
+const FIVE_MINUTES = 60 * 1000 * 5;
 
 //
 // Loads all queued tasks and splits them into valid tasks we can work on, and invalid tasks that
@@ -203,11 +205,19 @@ const batch = (configuredPushes, startKey) => {
 // Coordinates the attempted pushing of documents that need it
 const execute = () => {
   const configuredPushes = configService.get(CONFIGURED_PUSHES) || {};
-  if (!Object.keys(configuredPushes).length) {
+  const dueConfiguredPushes = {};
+
+  for (const [key, config] of Object.entries(configuredPushes)) {
+    if (!config.cron || transitionsLib.isWithinTimeFrame(config.cron, FIVE_MINUTES)) {
+      dueConfiguredPushes[key] = config;
+    }
+  }
+
+  if (!Object.keys(dueConfiguredPushes).length) {
     return Promise.resolve();
   }
 
-  return batch(configuredPushes);
+  return batch(dueConfiguredPushes);
 };
 
 module.exports = {
