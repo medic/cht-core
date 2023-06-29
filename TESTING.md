@@ -40,14 +40,15 @@ We use [Github Actions](https://github.com/medic/cht-core/actions) which runs `g
 
 ### WebdriverIO GitHub Actions Run
 
-The main difference now is that `grunt ci-webdriver` is executed now instead of `ci-e2e`. This executes the Webdriver IO tests.
+`grunt ci-webdriver` is executed to run the Webdriver IO tests.
 
 ## Tips to write automated tests
 
 Please read the [style guide for automated tests](tests/AUTOMATE_TEST_GUIDE.md) which provides editorial guidelines for anyone creating new automated test cases for CHT-Core.
 
 ## Debugging
-Documented here are two ways to run individual tests and have your IDE break on the specific test.
+
+Here are two ways to run individual tests and have your IDE break on the specific test.
 
 When debugging it can be helpful to disable the headless browser mode so that you can see the browser window as the tests run. To do this, remove `--headless` from the [tests/e2e/default/wdio.conf.js](tests/e2e/default/wdio.conf.js).
 
