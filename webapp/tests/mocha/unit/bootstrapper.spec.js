@@ -11,7 +11,6 @@ const bootstrapper = rewire('../../../src/js/bootstrapper');
 const purger = require('../../../src/js/bootstrapper/purger');
 const utils = require('../../../src/js/bootstrapper/utils');
 const initialReplication = require('../../../src/js/bootstrapper/initial-replication');
-const uiStatus = require('../../../src/js/bootstrapper/ui-status');
 
 let originalDocument;
 let originalWindow;
