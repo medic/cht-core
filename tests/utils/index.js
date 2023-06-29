@@ -280,10 +280,10 @@ const getDoc = (id, rev, parameters = '') => {
 
 const getDocs = (ids, fullResponse = false) => {
   return requestOnTestDb({
-      path: `/_all_docs?include_docs=true`,
-      method: 'POST',
-      body: { keys: ids || [] },
-    })
+    path: `/_all_docs?include_docs=true`,
+    method: 'POST',
+    body: { keys: ids || [] },
+  })
     .then(response => {
       return fullResponse ? response : response.rows.map(row => row.doc);
     });
@@ -366,9 +366,9 @@ const deleteAllDocs = (except) => {
 
   // Get, filter and delete documents
   return requestOnTestDb({
-      path: '/_all_docs?include_docs=true',
-      method: 'GET',
-    })
+    path: '/_all_docs?include_docs=true',
+    method: 'GET',
+  })
     .then(({ rows }) =>
       rows
         .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
@@ -393,11 +393,11 @@ const deleteAllDocs = (except) => {
           method: 'POST',
           body: { docs: toDelete },
         })
-        .then(response => {
-          if (e2eDebug) {
-            console.log(`Deleted docs: ${JSON.stringify(response)}`);
-          }
-        }),
+          .then(response => {
+            if (e2eDebug) {
+              console.log(`Deleted docs: ${JSON.stringify(response)}`);
+            }
+          }),
         sentinelDb.allDocs({ keys: infoIds })
           .then(results => {
             const deletes = results.rows
@@ -410,10 +410,10 @@ const deleteAllDocs = (except) => {
 
             return sentinelDb.bulkDocs(deletes);
           }).then(response => {
-          if (e2eDebug) {
-            console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
-          }
-        })
+            if (e2eDebug) {
+              console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
+            }
+          })
       ]);
     });
 };
@@ -515,13 +515,13 @@ const revertSettings = async ignoreRefresh => {
 
 const seedTestData = (userContactDoc, documents) => {
   return saveDocs(documents)
-  .then(() => getDoc(constants.USER_CONTACT_ID))
-  .then(existingContactDoc => {
-    if (userContactDoc) {
-      Object.assign(existingContactDoc, userContactDoc);
-      return saveDoc(existingContactDoc);
-    }
-  });
+    .then(() => getDoc(constants.USER_CONTACT_ID))
+    .then(existingContactDoc => {
+      if (userContactDoc) {
+        Object.assign(existingContactDoc, userContactDoc);
+        return saveDoc(existingContactDoc);
+      }
+    });
 };
 
 const revertTranslations = async () => {
@@ -585,7 +585,7 @@ const setUserContactDoc = (attempt=0) => {
  */
 const revertDb = async (except, ignoreRefresh) => {
   const watcher = ignoreRefresh && await waitForSettingsUpdateLogs();
-  const needsRefresh = await revertCustomSettings()
+  const needsRefresh = await revertCustomSettings();
   await deleteAllDocs(except);
   await revertTranslations();
   await deleteLocalDocs();
@@ -706,7 +706,7 @@ const getUserSettings = ({ contactId, name }) => {
       const contactIdMatches = !contactId || doc.contact_id === contactId;
       return nameMatches && contactIdMatches;
     }));
-}
+};
 
 const apiRetry = () => {
   return new Promise(resolve => {
@@ -1035,6 +1035,12 @@ const tearDownServices = async (removeOrphans) => {
   await saveLogs();
 };
 
+const killSpawnedProcess = (proc) => {
+  proc.stdout.destroy();
+  proc.stderr.destroy();
+  proc.kill('SIGINT');
+};
+
 /**
  * Watches a docker log until at least one line matches one of the given regular expressions.
  * Watch expires after 10 seconds.
@@ -1056,12 +1062,6 @@ const waitForDockerLogs = (container, ...regex) => {
   const proc = spawn('docker', params.split(' '), { stdio: ['ignore', 'pipe', 'pipe'] });
   let receivedFirstLine;
   const firstLineReceivedPromise = new Promise(resolve => receivedFirstLine = resolve);
-
-  const killSpawnedProcess = (proc) => {
-    proc.stdout.destroy();
-    proc.stderr.destroy();
-    proc.kill('SIGINT');
-  };
 
   const promise = new Promise((resolve, reject) => {
     timeout = setTimeout(() => {
@@ -1142,7 +1142,8 @@ const collectLogs = (container, ...regex) => {
   });
 
   const collect = () => {
-    killSpawnedProcess(proc);
+    //killSpawnedProcess(proc);
+
 
     if (errors.length) {
       return Promise.reject({ message: 'CollectLogs errored', errors, logs });
