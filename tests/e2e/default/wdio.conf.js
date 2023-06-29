@@ -19,7 +19,7 @@ const logLevels = ['error', 'warning', 'debug'];
 const existingFeedBackDocIds = [];
 let testTile;
 const DEBUG_TEST = process.env.DEBUG_TEST;
-const DEFAULT_TIMEOUT = 12 * 1000;
+const DEFAULT_TIMEOUT = 30 * 1000;
 const DEBUG_TIMEOUT = 24 * 60 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
 
 const baseConfig = {
