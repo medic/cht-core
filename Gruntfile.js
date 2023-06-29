@@ -139,6 +139,7 @@ module.exports = function(grunt) {
       'cleancss-api':
         './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css && ' +
         'mv api/build/static/login/style.min.css api/build/static/login/style.css',
+      'karma-admin': 'node ./scripts/ci/run-karma.js',
 
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
@@ -429,13 +430,6 @@ module.exports = function(grunt) {
         tasks: ['copy:api-resources'],
       }
     },
-    karma: {
-      admin: {
-        configFile: './admin/tests/karma-unit.conf.js',
-        singleRun: true,
-        browsers: ['Chrome_Headless'],
-      },
-    },
     protractor: {
       'e2e-web-tests': {
         options: {
@@ -634,7 +628,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit-admin', 'Build and run admin unit tests', [
-    'karma:admin',
+    'exec:karma-admin',
   ]);
 
   grunt.registerTask('unit-webapp-continuous', 'Run webapp unit test in a loop, without reinstalling dependencies.', [
