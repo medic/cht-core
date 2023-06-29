@@ -134,11 +134,11 @@ module.exports = function(grunt) {
         '-r "./admin/node_modules/lodash/core:lodash/core" ' +
         'admin/src/js/main.js > api/build/static/admin/js/main.js',
       'cleancss-admin':
-        './node_modules/clean-css-cli/bin/cleancss api/build/static/admin/css/main.css > api/build/static/admin/css/main.min.css ' +
+        './node_modules/clean-css-cli/bin/cleancss api/build/static/admin/css/main.css > api/build/static/admin/css/main.min.css && ' +
         'mv api/build/static/admin/css/main.min.css api/build/static/admin/css/main.css',
       'cleancss-api':
-        './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css ' +
-        'mv api/build/static/login/main.min.css api/build/static/login/main.css',
+        './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css && ' +
+        'mv api/build/static/login/style.min.css api/build/static/login/style.css',
 
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
