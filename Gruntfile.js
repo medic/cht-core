@@ -26,47 +26,6 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
-    // this probably needs a script - can't find an config file option
-    browserify: {
-      options: {
-        browserifyOptions: {
-          debug: true,
-        },
-      },
-      admin: {
-        src: 'admin/src/js/main.js',
-        dest: 'api/build/static/admin/js/main.js',
-        options: {
-          transform: ['browserify-ngannotate'],
-          alias: {
-            'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
-            'google-libphonenumber': './admin/node_modules/google-libphonenumber',
-            'gsm': './admin/node_modules/gsm',
-            'object-path': './admin/node_modules/object-path',
-            'bikram-sambat': './admin/node_modules/bikram-sambat',
-            'lodash/core': './admin/node_modules/lodash/core',
-          },
-        },
-      },
-    },
-    cssmin: {
-      admin: {
-        options: {
-          keepSpecialComments: 0,
-        },
-        files: {
-          'api/build/static/admin/css/main.css': 'api/build/static/admin/css/main.css',
-        },
-      },
-      api: {
-        options: {
-          keepSpecialComments: 0,
-        },
-        files: {
-          'api/build/static/login/style.css': 'api/build/static/login/style.css',
-        },
-      }
-    },
     copy: {
       ddocs: {
         expand: true,
@@ -164,6 +123,23 @@ module.exports = function(grunt) {
       'jsdoc-api': './node_modules/jsdoc/jsdoc.js -d jsdocs/api -R api/README.md api/src/**/*.js',
       'jsdoc-shared-libs': './node_modules/jsdoc/jsdoc.js -d jsdocs/shared-libs shared-libs/**/src/**/*.js',
       'less': './node_modules/less/bin/lessc admin/src/css/main.less api/build/static/admin/css/main.css',
+      'browserify-admin': 'node ./node_modules/browserify/bin/cmd.js ' +
+        '--debug ' +
+        '-t browserify-ngannotate ' +
+        '-r "./admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat:angular-translate-interpolation-messageformat" ' +
+        '-r "./admin/node_modules/google-libphonenumber:google-libphonenumber" ' +
+        '-r "./admin/node_modules/gsm:gsm" ' +
+        '-r "./admin/node_modules/object-path:object-path" ' +
+        '-r "./admin/node_modules/bikram-sambat:bikram-sambat" ' +
+        '-r "./admin/node_modules/lodash/core:lodash/core" ' +
+        'admin/src/js/main.js > api/build/static/admin/js/main.js',
+      'cleancss-admin':
+        './node_modules/clean-css-cli/bin/cleancss api/build/static/admin/css/main.css > api/build/static/admin/css/main.min.css && ' +
+        'mv api/build/static/admin/css/main.min.css api/build/static/admin/css/main.css',
+      'cleancss-api':
+        './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css && ' +
+        'mv api/build/static/login/style.min.css api/build/static/login/style.css',
+      'karma-admin': 'node ./scripts/ci/run-karma.js',
 
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
@@ -416,7 +392,7 @@ module.exports = function(grunt) {
       },
       'admin-js': {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
-        tasks: ['browserify:admin'],
+        tasks: ['exec:browserify-admin'],
       },
       'admin-index': {
         files: ['admin/src/templates/index.html'],
@@ -453,13 +429,6 @@ module.exports = function(grunt) {
         files: ['api/src/public/**/*'],
         tasks: ['copy:api-resources'],
       }
-    },
-    karma: {
-      admin: {
-        configFile: './admin/tests/karma-unit.conf.js',
-        singleRun: true,
-        browsers: ['Chrome_Headless'],
-      },
     },
     protractor: {
       'e2e-web-tests': {
@@ -597,7 +566,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-admin', 'Build the admin app', [
     'ngtemplates:adminApp',
-    'browserify:admin',
+    'exec:browserify-admin',
     'exec:less',
     'minify-admin',
   ]);
@@ -605,7 +574,7 @@ module.exports = function(grunt) {
   grunt.registerTask('build-service-images', 'Build api and sentinel images', [
     'copy-static-files-to-api',
     'exec:uglify-api',
-    'cssmin:api',
+    'exec:cleancss-api',
     'exec:build-service-images',
     'exec:build-images',
   ]);
@@ -659,7 +628,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit-admin', 'Build and run admin unit tests', [
-    'karma:admin',
+    'exec:karma-admin',
   ]);
 
   grunt.registerTask('unit-webapp-continuous', 'Run webapp unit test in a loop, without reinstalling dependencies.', [
@@ -693,7 +662,7 @@ module.exports = function(grunt) {
   grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
     'exec:uglify-admin',
     'exec:optimize-js',
-    'cssmin:admin',
+    'exec:cleancss-admin',
   ]);
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
