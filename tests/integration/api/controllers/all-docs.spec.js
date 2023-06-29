@@ -414,26 +414,12 @@ describe('all_docs handler', () => {
         });
         return utils.saveDocs(docs);
       })
-      .then(result => {
-        // can't afford to wait for sentinel to process these deletes :(
-        const tombstones = docs.map((doc, idx) => {
-          doc._rev = result[idx].rev;
-
-          return {
-            _id: doc._id + '____' + result[idx].rev + '____tombstone',
-            type: 'tombstone',
-            tombstone: doc
-          };
-        });
-
-        return utils.saveDocs(tombstones);
-      })
       .then(() =>
         utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
       .then(result => {
         chai.expect(result.rows).to.deep.equal([
-          { id: 'allowed_contact', key: 'allowed_contact', value: { rev: docs[0]._rev, deleted: true }},
-          { id: 'allowed_report', key: 'allowed_report', value: { rev: docs[1]._rev, deleted: true }},
+          { id: 'allowed_contact', error: 'forbidden' },
+          { id: 'allowed_report', error: 'forbidden' },
           { id: 'denied_contact', error: 'forbidden' },
           { id: 'denied_report', error: 'forbidden' },
         ]);

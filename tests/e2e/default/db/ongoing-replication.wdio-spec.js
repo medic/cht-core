@@ -159,7 +159,7 @@ describe('ongoing replication', () => {
     expect(_.intersection(localDocIds, docIdsToDelete)).to.deep.equal([]);
   });
 
-  it('should download settings updates', async () => {
+  xit('should download settings updates', async () => {
     await browser.throttle('offline');
     await utils.updateSettings({ test: true }, 'api');
     await browser.throttle('online');

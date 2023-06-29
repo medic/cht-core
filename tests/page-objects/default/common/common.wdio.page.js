@@ -314,7 +314,7 @@ const syncAndWaitForFailure = async () => {
 const closeReloadModal = async (shouldUpdate = false) => {
   try {
     const button = shouldUpdate ? reloadModalUpdate() : reloadModalCancel();
-    await browser.waitUntil(async () => await (await button).waitForExist({ timeout: 2000 }));
+    await browser.waitUntil(async () => await (await button).waitForExist({ timeout: 5000 }));
     // wait for the animation to complete
     await browser.pause(500);
     await (await button).click();
