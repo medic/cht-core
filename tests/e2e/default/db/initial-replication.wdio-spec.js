@@ -1,7 +1,7 @@
 const _ = require('lodash');
 
 const utils = require('@utils');
-const browserUtils = require('@utils/browser');
+const chtDbUtils = require('@utils/cht-db');
 const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -49,12 +49,12 @@ const getForms = async () => {
 };
 
 const validateReplication = async () => {
-  const localAllDocsPreSync = await browserUtils.getDocs();
+  const localAllDocsPreSync = await chtDbUtils.getDocs();
   const docIdsPreSync = data.ids(localAllDocsPreSync);
 
   await commonPage.sync(false, 7000);
 
-  const localAllDocs = await browserUtils.getDocs();
+  const localAllDocs = await chtDbUtils.getDocs();
   const localDocIds = data.ids(localAllDocs);
 
   // no additional docs to download
@@ -72,7 +72,7 @@ const validateReplication = async () => {
   expect(localDocIds).to.include.members(requiredDocs);
   expect(localDocIds).to.include.members(translationIds);
 
-  const localForms = await browserUtils.getDocs(formIds);
+  const localForms = await chtDbUtils.getDocs(formIds);
   const expectedAttachments = ['model.xml', 'form.html', 'xml'];
   localForms.forEach(form => {
     const attachments = form._attachments;
@@ -94,7 +94,7 @@ const validateReplication = async () => {
   );
   expect(replicatedDeniedDocs).to.deep.equal([]);
 
-  const initalReplicationLog = await browserUtils.getDoc(LOCAL_LOG);
+  const initalReplicationLog = await chtDbUtils.getDoc(LOCAL_LOG);
   expect(initalReplicationLog.complete).to.equal(true);
 };
 
@@ -147,7 +147,7 @@ describe('initial-replication', () => {
     await browser.throttle('online');
 
     // it should not restart initial replication if the local doc is missing on refresh
-    await browserUtils.deleteDoc(LOCAL_LOG);
+    await chtDbUtils.deleteDoc(LOCAL_LOG);
     await refreshAndWaitForAngular();
 
     // it should support reloading the page while offline

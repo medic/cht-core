@@ -1,5 +1,6 @@
 const sinon = require('sinon');
-const { expect } = require('chai');
+const chai = require('chai').use(require('chai-as-promised'));
+const expect = chai.expect;
 
 const db = require('../../../src/db');
 const authorization = require('../../../src/services/authorization');

@@ -1,24 +1,24 @@
-# Brac Config Data Generator Script (first draft)
+# Real World Data Generator Script (first draft)
 
 ## Introduction
 
-This script is to generate Brac config test data.
+This script is to generate real world test data.
 
 Initially it only creates places, persons, users and reports (pregnancy, assessment and assessment follow up). Taking into account hierarchies.
 
-It also creates `../replicate-brac-docs/config.json` file to be used by the second phase script `add-docs-to-remote.js`
+It also creates `../replicate-real-world-docs/config.json` file to be used by the second phase script `add-docs-to-remote.js`
 
-Relevant factories exist in `test/factories/brac`.
+Relevant factories exist in `tests/factories/real-world`.
 
 ## Requirements
 
 - NodeJS
-- a target medic instance with brac config loaded
+- a target medic instance with a real world config loaded
 
 ## Steps to execute it
 1. Clone cht-core repo.
 2. Run npm ci in cht-core root directory.
-3. Go to `/tests/scalability/generate_brac_data` and execute the script with command `node generate-brac-data.js [thread-name] [data-directory-path] [medic-instance]`.
+3. Go to `tests/scalability/generate-real-world-data/` and execute the script with command `node generate-real-world-data.js [thread-name] [data-directory-path] [medic-instance]`.
 4. Data is generated in the `[data-directory-path]` passed as parameter in step 3. The structure is as follows:
 ```
 .

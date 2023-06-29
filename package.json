@@ -11,7 +11,9 @@
     "node": ">=16.12.0",
     "npm": ">=8.3.1"
   },
-  "workspaces": ["./shared-libs/*"],
+  "workspaces": [
+    "./shared-libs/*"
+  ],
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration && grunt e2e",
     "webdriver": "webdriver-manager update && webdriver-manager start",
@@ -68,6 +70,7 @@
     "chai-exclude": "^2.1.0",
     "chai-shallow-deep-equal": "^1.4.6",
     "cht-conf": "^3.15.2",
+    "couchdb-compile": "^1.11.2",
     "csv-writer": "^1.6.0",
     "deep-equal-in-any-order": "^1.1.15",
     "doctoc": "^2.2.1",
@@ -90,22 +93,16 @@
     "grunt-browserify": "^6.0.0",
     "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-cssmin": "^4.0.0",
-    "grunt-contrib-less": "^3.0.0",
-    "grunt-contrib-uglify-es": "^3.3.0",
     "grunt-contrib-watch": "https://github.com/scdf/grunt-contrib-watch#v1.0.0-fix_dirs_firing",
-    "grunt-couch": "^1.5.3",
-    "grunt-env": "^1.0.1",
     "grunt-exec": "^3.0.0",
-    "grunt-jsdoc": "^2.4.1",
     "grunt-karma": "^4.0.2",
-    "grunt-mocha-test": "^0.13.3",
-    "grunt-notify": "^0.4.5",
-    "grunt-optimize-js": "^0.6.0",
     "grunt-protractor-runner": "^5.0.0",
     "grunt-sass": "^3.1.0",
     "grunt-text-replace": "^0.4.0",
+    "husky": "^8.0.0",
     "jasmine-spec-reporter": "^7.0.0",
     "jit-grunt": "^0.10.0",
+    "jsdoc": "^4.0.2",
     "jsverify": "^0.8.4",
     "karma": "^6.4.1",
     "karma-chrome-launcher": "^3.1.1",
@@ -115,15 +112,17 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-spec-reporter": "0.0.32",
+    "less": "^4.1.3",
     "lodash": "4.17.19",
     "loose-envify": "^1.4.0",
     "medic-conf": "^3.2.1",
     "mocha": "^10.2.0",
     "module-alias": "^2.2.2",
-    "moment": "^2.29.1",
+    "moment": "^2.29.4",
     "moment-locales-webpack-plugin": "^1.2.0",
     "mustache": "^4.2.0",
     "nodemon": "^2.0.20",
+    "optimize-js": "^1.0.3",
     "postcss": "^8.4.20",
     "pouchdb-adapter-http": "^7.3.1",
     "pouchdb-adapter-memory": "^7.3.1",
@@ -142,10 +141,16 @@
     "tail": "^2.2.4",
     "time-grunt": "^2.0.0",
     "typescript": "4.8",
+    "uglify-js": "^3.17.4",
     "uuid": "^8.3.2",
     "webpack-bundle-analyzer": "^4.7.0",
-    "zone.js": "^0.11.8",
-    "husky": "^8.0.0"
+    "zone.js": "^0.11.8"
+  },
+  "overrides": {
+    "minimist": ">=1.2.6",
+    "nools": {
+      "uglify-js": ">=2.6.0"
+    }
   },
   "bundlesize": [
     {

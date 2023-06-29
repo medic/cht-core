@@ -13,6 +13,9 @@ let clock;
 const FLAG_ID = '_local/initial-replication';
 
 describe('Initial replication', () => {
+
+  global.window = {};
+
   afterEach(() => {
     sinon.restore();
     clock && clock.restore();

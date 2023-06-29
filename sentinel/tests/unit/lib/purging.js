@@ -23,7 +23,7 @@ describe('ServerSidePurge', () => {
 
   afterEach(() => {
     sinon.restore();
-    clock && clock.restore();
+    clock?.restore();
   });
 
   describe('getPurgeFn', () => {

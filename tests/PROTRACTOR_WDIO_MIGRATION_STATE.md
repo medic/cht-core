@@ -30,7 +30,7 @@
 |e2e/protractor/contact-summary.js	| Done | Bede/Lorena | [#8054](https://github.com/medic/cht-core/pull/8054) |	|
 |e2e/protractor/create-meta-db.js	|Done	|Bede	|[#7408](https://github.com/medic/cht-core/pull/7408)	|	|
 |e2e/protractorinfodocs.js	|Done	| Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|
-|e2e/protractor/rapidpro.spec.js	|	|	|	|	|
+|e2e/protractor/rapidpro.spec.js    | Done | Tatiana | [8267](https://github.com/medic/cht-core/pull/8267) |  |
 |e2e/protractor/registration-by-sms.js	| Done | Bede/Tatiana | [#8146](https://github.com/medic/cht-core/pull/8146) |	|
 |e2e/protractor/report-date-filter.js	|Done	|Bede	|[#7429](https://github.com/medic/cht-core/pull/7429)	|	|
 |e2e/protractor/reports-subject.js	| Done | Bede/Tatiana | [#8163](https://github.com/medic/cht-core/pull/8163 |	|
@@ -40,8 +40,8 @@
 |e2e/protractor/target-aggregates.spec.js	| Done | Bede/Lorena | [#8059](https://github.com/medic/cht-core/pull/8059) |	|
 |e2e/protractor/cht/pregnancy.spec.js	|Done	|Tatiana	|[#7844](https://github.com/medic/cht-core/pull/7844)	|	|
 |mobile/common/common.specs.js	|Done	|Lorena	|	[#8255](https://github.com/medic/cht-core/pull/8255)|	|
-|mobile/content-security-policy.specs.js	|	|	|	|	|
+|mobile/content-security-policy.specs.js	|Done	|Lorena	|	|	|
 |mobile/docs-by-replication-key-view.js	|Done	|Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|
-|mobile/login/login.specs.js	|	|	|	|	|
+|mobile/login/login.specs.js	|	Done	|Lorena	|[#8276](https://github.com/medic/cht-core/pull/8276)	|	|
 |mobile/medic-collect.specs.js	| Done	|Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|
 |mobile/service-worker.specs.js	|Done	|Bede	|[#7318](https://github.com/medic/cht-core/pull/7318)	|	|

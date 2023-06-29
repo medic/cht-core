@@ -2,7 +2,7 @@ const Factory = require('rosie').Factory;
 const uuid = require('uuid');
 const Faker = require('@faker-js/faker');
 const chpProfile = require('./chp-profile');
-const groupOtherWomanPregnancy = require('./brac-group-other-woman-pregnancy');
+const groupOtherWomanPregnancy = require('./group-other-woman-pregnancy');
 const moment = require('moment');
 const approxDateOfBirthMethod = 'approx';
 const phoneNumberFormat = '+256414######';
@@ -36,7 +36,7 @@ const getAgeInYears = (subtype) => {
   return Faker.faker.datatype.number({ min: 6, max: 80 });
 };
 
-const bracPerson = () => {
+const person = () => {
   return new Factory()
     .sequence('_id', uuid.v4)
     .option('subtype', 'manager')
@@ -164,17 +164,17 @@ const bracPerson = () => {
 
 };
 
-const generateBracPerson = (parent, subtype) => {
+const generatePerson = (parent, subtype) => {
   if (subtype === 'other') {
     subtype = Faker.faker.helpers.arrayElement([memberChild, memberEligibleWoman, null]);
   }
-  return bracPerson().build({ parent }, { subtype });
+  return person().build({ parent }, { subtype });
 };
 
 module.exports = {
   shouldGenerateSurvey,
   shouldGeneratePregnancySurvey,
   shouldGenerateAssessmentSurvey,
-  generateBracPerson,
-  bracPerson
+  generatePerson,
+  person
 };
