@@ -16,7 +16,6 @@
   ],
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration",
-    "webdriver": "webdriver-manager update && webdriver-manager start",
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js",
     "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js",
     "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default-mobile/wdio.conf.js",
