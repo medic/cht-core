@@ -26,29 +26,6 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
-    // this probably needs a script - can't find an config file option
-    browserify: {
-      options: {
-        browserifyOptions: {
-          debug: true,
-        },
-      },
-      admin: {
-        src: 'admin/src/js/main.js',
-        dest: 'api/build/static/admin/js/main.js',
-        options: {
-          transform: ['browserify-ngannotate'],
-          alias: {
-            'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
-            'google-libphonenumber': './admin/node_modules/google-libphonenumber',
-            'gsm': './admin/node_modules/gsm',
-            'object-path': './admin/node_modules/object-path',
-            'bikram-sambat': './admin/node_modules/bikram-sambat',
-            'lodash/core': './admin/node_modules/lodash/core',
-          },
-        },
-      },
-    },
     cssmin: {
       admin: {
         options: {
@@ -164,6 +141,16 @@ module.exports = function(grunt) {
       'jsdoc-api': './node_modules/jsdoc/jsdoc.js -d jsdocs/api -R api/README.md api/src/**/*.js',
       'jsdoc-shared-libs': './node_modules/jsdoc/jsdoc.js -d jsdocs/shared-libs shared-libs/**/src/**/*.js',
       'less': './node_modules/less/bin/lessc admin/src/css/main.less api/build/static/admin/css/main.css',
+      'browserify-admin': 'node ./node_modules/browserify/bin/cmd.js ' +
+        '--debug ' +
+        '-t browserify-ngannotate ' +
+        '-r "./admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat:angular-translate-interpolation-messageformat" ' +
+        '-r "./admin/node_modules/google-libphonenumber:google-libphonenumber" ' +
+        '-r "./admin/node_modules/gsm:gsm" ' +
+        '-r "./admin/node_modules/object-path:object-path" ' +
+        '-r "./admin/node_modules/bikram-sambat:bikram-sambat" ' +
+        '-r "./admin/node_modules/lodash/core:lodash/core" ' +
+        'admin/src/js/main.js > api/build/static/admin/js/main.js',
 
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
@@ -416,7 +403,7 @@ module.exports = function(grunt) {
       },
       'admin-js': {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
-        tasks: ['browserify:admin'],
+        tasks: ['exec:browserify-admin'],
       },
       'admin-index': {
         files: ['admin/src/templates/index.html'],
@@ -597,7 +584,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-admin', 'Build the admin app', [
     'ngtemplates:adminApp',
-    'browserify:admin',
+    'exec:browserify-admin',
     'exec:less',
     'minify-admin',
   ]);
