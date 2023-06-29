@@ -212,7 +212,7 @@ const getAge = doc => {
   if (!doc || !doc.fields) {
     return '';
   }
-  return doc.fields.age;
+  return doc.fields.patient_age;
 };
 
 const setAge = doc => {
@@ -231,6 +231,8 @@ const getRegistrationConfig = (config, formCode) => {
 
 const triggers = {
   add_patient: (options) => {
+    debugger;
+    console.log(options);
     // if we already have a patient id then return
     if (options.doc.patient_id) {
       return;
@@ -255,6 +257,8 @@ const triggers = {
     return triggers.add_patient(options);
   },
   add_phone_number: (options) => {
+    debugger;
+    console.log("add_phone_number" + options);
     return setPhoneNumber(options.doc);
   },
   add_age: (options) => {
@@ -544,6 +548,14 @@ const addPatient = (options) => {
         // include the DOB if it was generated on report
         if (doc.birth_date) {
           patient.date_of_birth = doc.birth_date;
+        }
+
+        if (doc.phone_number) {
+          patient.phoneNumber = doc.phone_number;
+        }
+
+        if (doc.age) {
+          patient.age = doc.age;
         }
 
         // assign patient in doc with full parent doc - to be used in messages
