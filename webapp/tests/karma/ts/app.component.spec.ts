@@ -1,5 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Router, ActivationEnd } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -48,6 +49,7 @@ describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
   let store;
   let clock;
+  let router;
 
   // Services
   let dbSyncService;
@@ -143,6 +145,8 @@ describe('AppComponent', () => {
     translateLocaleService = { reloadLang: sinon.stub() };
     transitionsService = { init: sinon.stub() };
 
+    router = { navigate: sinon.stub(), events: of(ActivationEnd) };
+
     globalActions = {
       updateReplicationStatus: sinon.stub(GlobalActions.prototype, 'updateReplicationStatus'),
       setPrivacyPolicyAccepted: sinon.stub(GlobalActions.prototype, 'setPrivacyPolicyAccepted'),
@@ -208,6 +212,7 @@ describe('AppComponent', () => {
           { provide: CHTScriptApiService, useValue: chtScriptApiService },
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
           { provide: TrainingCardsService, useValue: trainingCardsService },
+          { provide: Router, useValue: router  },
         ]
       })
       .compileComponents();
@@ -622,6 +627,21 @@ describe('AppComponent', () => {
       ]);
       expect(analyticsModulesService.get.callCount).to.equal(1);
       expect(analyticsActions.setAnalyticsModules.callCount).to.equal(0);
+    }));
+
+    it('should redirect to the error page when there is an exception', fakeAsync(async () => {
+      chtScriptApiService.isInitialized.throws({ error: 'some error'});
+
+      await getComponent();
+      tick();
+
+      expect(consoleErrorStub.callCount).to.equal(1);
+      expect(consoleErrorStub.args[0]).to.deep.equal([
+        'Error during initialisation',
+        { error: 'some error' }
+      ]);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([[ '/error', '418' ]]);
     }));
   });
 });
