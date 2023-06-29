@@ -333,7 +333,7 @@ const deleteDocs = ids => {
  *                                wish to keep the document
  * @return     {Promise}  completion promise
  */
-const deleteAllDocs = (except) => {
+const deleteAllDocs = (except = []) => {
   except = Array.isArray(except) ? except : [];
   // Generate a list of functions to filter documents over
   const ignorables = except.concat(
