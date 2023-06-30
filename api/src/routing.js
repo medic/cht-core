@@ -9,6 +9,7 @@ const config = require('./config');
 const db = require('./db');
 const path = require('path');
 const auth = require('./auth');
+const prometheusMiddleware = require('prometheus-api-metrics');
 const logger = require('./logger');
 const isClientHuman = require('./is-client-human');
 const target = 'http://' + environment.host + ':' + environment.port;
@@ -111,6 +112,12 @@ app.deleteJson = (path, callback) => handleJsonRequest('delete', path, callback)
 app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, callback);
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
+
+app.use(prometheusMiddleware({
+  metricsPath: '/api_prometheus_metrics',
+  // based on one-month analysed period of production traffic - each durationBuckets captures ~5% of traffic
+  durationBuckets: [0.5, 1, 5, 10, 17, 23, 30, 40, 50, 70, 100, 150, 200, 275, 350, 550, 1100, 2200, 4200, 10000],
+}));
 
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
