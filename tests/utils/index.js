@@ -798,7 +798,7 @@ const deepFreeze = (obj) => {
   Object
     .keys(obj)
     .filter(prop => typeof obj[prop] === 'object' && !Object.isFrozen(obj[prop]))
-    .forEach(prop => this.deepFreeze(obj[prop]));
+    .forEach(prop => deepFreeze(obj[prop]));
   return Object.freeze(obj);
 };
 
