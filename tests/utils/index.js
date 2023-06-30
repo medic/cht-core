@@ -1216,6 +1216,7 @@ module.exports = {
   sentinelDb,
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
+  makeTempDir,
   hostURL,
   parseCookieResponse,
   setupUserDoc,
