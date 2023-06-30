@@ -92,7 +92,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   reportForms;
   unreadCount = {};
   useOldActionBar = false;
-  showContent = false;
+  initalisationComplete = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -280,10 +280,10 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses())
+      .then(() => this.initalisationComplete = true)
       .catch(err => {
         console.error('Error during initialisation', err);
-        this.showContent = true;
-        this.router.navigate(['/error', '418' ]);
+        this.router.navigate(['/error', '503' ]);
       });
 
     this.watchBrandingChanges();
@@ -569,7 +569,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(({ privacyPolicy, accepted }: any = {}) => {
         this.globalActions.setPrivacyPolicyAccepted(accepted);
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
-        this.showContent = true;
       })
       .catch(err => console.error('Failed to load privacy policy', err));
   }

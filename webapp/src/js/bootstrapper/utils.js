@@ -40,24 +40,11 @@ const fetchJSON = async (path) => {
   throw jsonResponse;
 };
 
-const checkApiAccessible = async () => {
-  const baseUrl = getBaseUrl();
-  const options = {
-    credentials: 'same-origin',
-  };
-  const response = await fetch(`${baseUrl}/api/info`, options);
-  if (response.ok) {
-    return true;
-  }
-  return false;
-};
-
 module.exports = {
   // Store a piece of feedback to be later sent as a feedback document when (if)
   // the application boots, via the Feedback service.
   setOptions,
   feedback,
   getBaseUrl,
-  fetchJSON,
-  checkApiAccessible
+  fetchJSON
 };

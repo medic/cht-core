@@ -11,9 +11,9 @@ const errors = {
     title: 'error.404.title',
     description: 'error.404.description'
   },
-  418: {
-    title: 'error.418.description',
-    description: 'error.418.description'
+  503: {
+    title: 'error.503.description',
+    description: 'error.503.description'
   },
 };
 

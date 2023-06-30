@@ -53,38 +53,4 @@ describe('utils', () => {
       }
     });
   });
-
-  describe('checkApiAccessible', () => {
-    it('should return true when successful', async () => {
-      const response = {
-        ok: true,
-      };
-      const fetch = sinon.stub().resolves(response);
-      utils.__set__('fetch', fetch);
-
-      const result = await utils.checkApiAccessible();
-
-      expect(result).to.equal(true);
-      expect(fetch.args).to.deep.equal([[
-        'http://localhost:5984/api/info',
-        { credentials: 'same-origin' },
-      ]]);
-    });
-
-    it('should return false when failed', async () => {
-      const response = {
-        ok: false,
-      };
-      const fetch = sinon.stub().resolves(response);
-      utils.__set__('fetch', fetch);
-
-      const result = await utils.checkApiAccessible();
-
-      expect(result).to.equal(false);
-      expect(fetch.args).to.deep.equal([[
-        'http://localhost:5984/api/info',
-        { credentials: 'same-origin' },
-      ]]);
-    });
-  });
 });
