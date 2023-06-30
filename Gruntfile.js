@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
 
-const fs = require('fs');
 const path = require('path');
 
 const {
@@ -16,12 +15,6 @@ const buildVersions = require('./scripts/build/versions');
 
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 
-const getSharedLibDirs = () => {
-  return fs
-    .readdirSync('shared-libs')
-    .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
-};
-
 module.exports = function(grunt) {
   'use strict';
 
@@ -33,63 +26,6 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
-    // this probably needs a script - can't find an config file option
-    browserify: {
-      options: {
-        browserifyOptions: {
-          debug: true,
-        },
-      },
-      admin: {
-        src: 'admin/src/js/main.js',
-        dest: 'api/build/static/admin/js/main.js',
-        options: {
-          transform: ['browserify-ngannotate'],
-          alias: {
-            'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
-            'google-libphonenumber': './admin/node_modules/google-libphonenumber',
-            'gsm': './admin/node_modules/gsm',
-            'object-path': './admin/node_modules/object-path',
-            'bikram-sambat': './admin/node_modules/bikram-sambat',
-            'lodash/core': './admin/node_modules/lodash/core',
-          },
-        },
-      },
-    },
-    env: {
-      'version': {
-        options: {
-          add: {
-            VERSION: buildVersions.getVersion(),
-          },
-        },
-      }
-    },
-    less: {
-      admin: {
-        files: {
-          'api/build/static/admin/css/main.css': 'admin/src/css/main.less',
-        },
-      },
-    },
-    cssmin: {
-      admin: {
-        options: {
-          keepSpecialComments: 0,
-        },
-        files: {
-          'api/build/static/admin/css/main.css': 'api/build/static/admin/css/main.css',
-        },
-      },
-      api: {
-        options: {
-          keepSpecialComments: 0,
-        },
-        files: {
-          'api/build/static/login/style.css': 'api/build/static/login/style.css',
-        },
-      }
-    },
     copy: {
       ddocs: {
         expand: true,
@@ -177,47 +113,37 @@ module.exports = function(grunt) {
       'mocha-unit-api': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "api/tests/mocha/**/*.js"',
       'mocha-unit-sentinel': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "sentinel/tests/**/*.js"',
       'mocha-integration-api': './node_modules/mocha/bin/_mocha "api/tests/integration/**/*.js" -t 10000',
+      'optimize-js':
+        './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/main.js > api/build/static/admin/js/main.op.js && ' +
+        './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/templates.js > api/build/static/admin/js/templates.op.js && ' +
+        'mv api/build/static/admin/js/main.op.js api/build/static/admin/js/main.js && ' +
+        'mv api/build/static/admin/js/templates.op.js api/build/static/admin/js/templates.js',
+      'jsdoc-admin': './node_modules/jsdoc/jsdoc.js -d jsdocs/admin -c node_modules/angular-jsdoc/common/conf.json -t node_modules/angular-jsdoc/angular-template admin/src/js/**/*.js',
+      'jsdoc-sentinel': './node_modules/jsdoc/jsdoc.js -d jsdocs/sentinel sentinel/src/**/*.js',
+      'jsdoc-api': './node_modules/jsdoc/jsdoc.js -d jsdocs/api -R api/README.md api/src/**/*.js',
+      'jsdoc-shared-libs': './node_modules/jsdoc/jsdoc.js -d jsdocs/shared-libs shared-libs/**/src/**/*.js',
+      'less': './node_modules/less/bin/lessc admin/src/css/main.less api/build/static/admin/css/main.css',
+      'browserify-admin': 'node ./node_modules/browserify/bin/cmd.js ' +
+        '--debug ' +
+        '-t browserify-ngannotate ' +
+        '-r "./admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat:angular-translate-interpolation-messageformat" ' +
+        '-r "./admin/node_modules/google-libphonenumber:google-libphonenumber" ' +
+        '-r "./admin/node_modules/gsm:gsm" ' +
+        '-r "./admin/node_modules/object-path:object-path" ' +
+        '-r "./admin/node_modules/bikram-sambat:bikram-sambat" ' +
+        '-r "./admin/node_modules/lodash/core:lodash/core" ' +
+        'admin/src/js/main.js > api/build/static/admin/js/main.js',
+      'cleancss-admin':
+        './node_modules/clean-css-cli/bin/cleancss api/build/static/admin/css/main.css > api/build/static/admin/css/main.min.css && ' +
+        'mv api/build/static/admin/css/main.min.css api/build/static/admin/css/main.css',
+      'cleancss-api':
+        './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css && ' +
+        'mv api/build/static/login/style.min.css api/build/static/login/style.css',
+      'karma-admin': 'node ./scripts/ci/run-karma.js',
 
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
-      'eslint': {
-        cmd: () => {
-          const paths = [
-            'Gruntfile.js',
-            'admin/**/*.js',
-            'api/**/*.js',
-            'ddocs/**/*.js',
-            'sentinel/**/*.js',
-            'shared-libs/**/*.js',
-            'tests/**/*.js',
-            'webapp/src/**/*.js',
-            'webapp/src/**/*.ts',
-            'webapp/tests/**/*.js',
-            'webapp/tests/**/*.ts',
-            'config/**/*.js',
-            'scripts/**/*.js',
-            'webapp/src/ts/**/*.component.html',
-          ];
-          const ignore = [
-            'webapp/src/ts/providers/xpath-element-path.provider.ts',
-            'api/src/public/login/lib-bowser.js',
-            'api/extracted-resources/**/*',
-            'api/build/**/*',
-            '**/node_modules/**',
-            'build/**',
-            '**/pupil/**',
-            'api/src/enketo-transformer/**',
-            'tests/scalability/report*/**',
-            'tests/scalability/jmeter/**'
-          ];
-
-          return [ESLINT_COMMAND]
-            .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
-            .concat(paths.map(glob => `"${glob}"`))
-            .join(' ');
-        },
-        stdio: 'inherit', // enable colors!
-      },
+      'eslint': ESLINT_COMMAND + ' .',
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
       'build-service-images': {
         cmd: () => buildVersions.SERVICES
@@ -226,7 +152,6 @@ module.exports = function(grunt) {
               `cd ${service}`,
               `npm ci --production`,
               `npm dedupe`,
-              `rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch`,
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
             ].join(' && ')
@@ -282,9 +207,7 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': {
         cmd: ['webapp', 'api', 'sentinel', 'admin']
-          // removing pouchdb-fetch/node-fetch forces PouchDb to use a newer version node-fetch
-          // https://github.com/medic/cht-core/issues/8173
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && rm -rf ./node_modules/pouchdb-fetch/node_modules/node-fetch && cd ..`)
+          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
           .join(' && '),
       },
       'start-webdriver': {
@@ -465,36 +388,24 @@ module.exports = function(grunt) {
       },
       'admin-css': {
         files: ['admin/src/css/**/*'],
-        tasks: [
-          'less:admin',
-          'notify:deployed',
-        ],
+        tasks: ['exec:less'],
       },
       'admin-js': {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
-        tasks: [
-          'browserify:admin',
-          'notify:deployed',
-        ],
+        tasks: ['exec:browserify-admin'],
       },
       'admin-index': {
         files: ['admin/src/templates/index.html'],
-        tasks: [
-          'copy:admin-static',
-          'notify:deployed',
-        ],
+        tasks: ['copy:admin-static'],
       },
       'admin-templates': {
         files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
-        tasks: [
-          'ngtemplates:adminApp',
-          'notify:deployed',
-        ],
+        tasks: ['ngtemplates:adminApp'],
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
         files: ['api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js'],
-        tasks: ['update-service-worker', 'notify:deployed'],
+        tasks: ['update-service-worker'],
       },
       'primary-ddoc': {
         files: ['ddocs/medic-db/**/*'],
@@ -503,7 +414,6 @@ module.exports = function(grunt) {
           'set-ddocs-version',
           'exec:compile-ddocs-primary',
           'copy:api-ddocs',
-          'notify:deployed',
         ],
       },
       'secondary-ddocs': {
@@ -513,28 +423,12 @@ module.exports = function(grunt) {
           'set-ddocs-version',
           'exec:compile-ddocs-secondary',
           'copy:api-ddocs',
-          'notify:deployed',
         ],
       },
       'api-public-files': {
         files: ['api/src/public/**/*'],
         tasks: ['copy:api-resources'],
       }
-    },
-    notify: {
-      deployed: {
-        options: {
-          title: 'Medic',
-          message: 'Deployed successfully',
-        },
-      },
-    },
-    karma: {
-      admin: {
-        configFile: './admin/tests/karma-unit.conf.js',
-        singleRun: true,
-        browsers: ['Chrome_Headless'],
-      },
     },
     protractor: {
       'e2e-web-tests': {
@@ -607,46 +501,6 @@ module.exports = function(grunt) {
         extDot: 'last',
       },
     },
-    'optimize-js': {
-      'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
-      'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js',
-    },
-    jsdoc: {
-      admin: {
-        src: [
-          'admin/src/js/**/*.js'
-        ],
-        options: {
-          destination: 'jsdocs/admin',
-          configure: 'node_modules/angular-jsdoc/common/conf.json',
-          template: 'node_modules/angular-jsdoc/angular-template'
-        }
-      },
-      api: {
-        src: [
-          'api/src/**/*.js',
-          '!api/extracted-resources/**',
-        ],
-        options: {
-          destination: 'jsdocs/api',
-          readme: 'api/README.md'
-        }
-      },
-      sentinel: {
-        src: [
-          'sentinel/src/**/*.js'
-        ],
-        options: {
-          destination: 'jsdocs/sentinel'
-        }
-      },
-      'shared-libs': {
-        src: getSharedLibDirs().map(lib => path.resolve(__dirname, 'shared-libs', lib, 'src') + '/**/*.js'),
-        options: {
-          destination: 'jsdocs/shared-libs'
-        }
-      },
-    },
   });
 
   // Build tasks
@@ -685,7 +539,6 @@ module.exports = function(grunt) {
     'build-config',
     'copy-static-files-to-api',
     'copy:api-ddocs',
-    'notify:deployed',
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
@@ -713,16 +566,15 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build-admin', 'Build the admin app', [
     'ngtemplates:adminApp',
-    'browserify:admin',
-    'less:admin',
+    'exec:browserify-admin',
+    'exec:less',
     'minify-admin',
   ]);
 
   grunt.registerTask('build-service-images', 'Build api and sentinel images', [
     'copy-static-files-to-api',
     'exec:uglify-api',
-    'cssmin:api',
-    'env:version',
+    'exec:cleancss-api',
     'exec:build-service-images',
     'exec:build-images',
   ]);
@@ -776,7 +628,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit-admin', 'Build and run admin unit tests', [
-    'karma:admin',
+    'exec:karma-admin',
   ]);
 
   grunt.registerTask('unit-webapp-continuous', 'Run webapp unit test in a loop, without reinstalling dependencies.', [
@@ -809,8 +661,8 @@ module.exports = function(grunt) {
   // CI tasks
   grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
     'exec:uglify-admin',
-    'optimize-js',
-    'cssmin:admin',
+    'exec:optimize-js',
+    'exec:cleancss-admin',
   ]);
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
@@ -916,6 +768,9 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-documentation', 'Build documentation using jsdoc', [
-    'jsdoc'
+    'exec:jsdoc-admin',
+    'exec:jsdoc-api',
+    'exec:jsdoc-sentinel',
+    'exec:jsdoc-shared-libs',
   ]);
 };

@@ -3,6 +3,22 @@
   "parserOptions": {
     "ecmaVersion": 6
   },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/node_modules_backup/**",
+    "**/pupil/**",
+    "allure-report/**",
+    "allure-report-bak/**",
+    "api/build/**/*",
+    "api/extracted-resources/**/*",
+    "api/src/enketo-transformer/**",
+    "api/src/public/login/lib-bowser.js",
+    "build/**",
+    "jsdocs/**",
+    "tests/scalability/report*/**",
+    "tests/scalability/jmeter/**",
+    "webapp/src/ts/providers/xpath-element-path.provider.ts"
+  ],
   "plugins": ["promise", "node"],
   "rules": {
     "array-bracket-newline": ["error", "consistent"],
