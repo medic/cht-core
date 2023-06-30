@@ -184,7 +184,7 @@ app.use(
           `'sha256-kURz7DI4eYCMPFBsHueeIubV4BzKqHMiCOWVEfr/hU4='`,
           `'sha256-UEi5iiH1tjrY7FT8YTnn0mUCJ2wwY7LrHVt/vTbxtXA='`,
           `'sha256-JXsbMjjd16Yr4DVPY52ZFAGB80jWj/3CGIpJCN5TkqE='`,
-          `'sha256-XQXE5xUNLXBGyN9NPdalj1fWKyKiOEyQEwafARUMbyY='`,
+          `'sha256-PMJiIIDhCG0cUpK2Pa2vthPGmzx/g5gNh/iKG737RD8='`,
           'http://matomo-care-teams.dev.medicmobile.org',
         ],
         styleSrc: [
