@@ -3,7 +3,6 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
-const apiMetrics = require('prometheus-api-metrics');
 const environment = require('./environment');
 const config = require('./config');
 const db = require('./db');
@@ -115,8 +114,12 @@ app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
 app.use(prometheusMiddleware({
   metricsPath: '/api_prometheus_metrics',
-  // based on one-month analysed period of production traffic - each durationBuckets captures ~5% of traffic
-  durationBuckets: [0.5, 1, 5, 10, 17, 23, 30, 40, 50, 70, 100, 150, 200, 275, 350, 550, 1100, 2200, 4200, 10000],
+  // based on one-month analysed period of production traffic
+  // each durationBuckets captures ~5% of traffic unless otherwise indicated
+  durationBuckets: [
+    0.5, 1, 2, /* first 5% */
+    4, 7, 9, 13, 18, 27, 41, 60, 94, 161, 276, 473, 771, 1181, 1713, 2359, 3009, 4887, 31000
+  ],
 }));
 
 // When testing random stuff in-browser, it can be useful to access the database
@@ -137,17 +140,6 @@ if (process.argv.slice(2).includes('--allow-cors')) {
     next();
   });
 }
-
-app.use(apiMetrics({
-  metricsPath: '/api_prometheus_metrics',
-  durationBuckets: [0.5, 1, 10, 30, 60, 300, 600],
-  // additionalLabels: ['username'],
-  // extractAdditionalLabelValuesFn: (req, res) => {
-  //   return {
-  //     username: req.headers['X-Medic-User'],
-  //   };
-  // },
-}));
 
 app.use((req, res, next) => {
   req.id = uuid.v4();
