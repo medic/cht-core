@@ -262,7 +262,6 @@ describe('all_docs handler', () => {
       { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' }
     ];
     const keys = docs.map(doc => doc._id);
-    const allowed = ['1', '3', '4'];
 
     return utils
       .saveDocs(docs)

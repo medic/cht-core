@@ -148,7 +148,6 @@ describe('All Docs service', () => {
     });
 
     it('filters request without keys', () => {
-      const docIds = ['a', 'b', 'c', 'd'];
       const allDocsResponse = { rows: [{_id: 'a'}, {_id: 'b'}, {_id: 'c'}, {_id: 'd'}] };
       db.medic.allDocs.withArgs({ keys: defaultDocs }).resolves(allDocsResponse);
 
