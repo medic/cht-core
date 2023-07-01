@@ -1,14 +1,9 @@
 const serverUtils = require('../server-utils');
 const db = require('../db');
+const authorization = require('../services/authorization');
 
 const processRequest = async (req, res) => {
-  const docIds = [
-    'service-worker-meta',
-    '_design/medic-client',
-    'settings'
-  ];
-
-  const changes = await db.medic.changes({ doc_ids: docIds });
+  const changes = await db.medic.changes({ doc_ids: authorization.getDefaultDocs(req?.userCtx) });
   res.json(changes);
 };
 

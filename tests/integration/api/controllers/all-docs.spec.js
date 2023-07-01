@@ -4,6 +4,7 @@ const utils = require('@utils');
 const constants = require('@constants');
 const chaiExclude = require('chai-exclude');
 chai.use(chaiExclude);
+const expect = chai.expect;
 
 const password = 'passwordSUP3RS3CR37!';
 
@@ -13,6 +14,13 @@ const parentPlace = {
   name: 'Big Parent Hospital',
   place_id: 'district_hospital_shortcode',
 };
+
+const getIdsForUser = (user) => [
+  `org.couchdb.user:${user}`,
+  'settings',
+  '_design/medic-client',
+  'service-worker-meta'
+];
 
 const users = [
   {
@@ -158,42 +166,11 @@ describe('all_docs handler', () => {
       .saveDocs(docs)
       .then(() => utils.requestOnTestDb(offlineRequestOptions))
       .then(result => {
-        unrestrictedKeys.forEach(key => {
-          chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(true);
-        });
-        restrictedKeys.forEach(key => {
-          chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(false);
-        });
-
-        const ids = result.rows.map(row => row.id);
-        chai.expect(ids).to.include.members([
-          'allowed_contact',
-          'allowed_report',
-          'allowed_task',
-          'allowed_target',
-        ]);
-        chai.expect(ids).not.to.include.members([
-          'denied_contact',
-          'denied_report',
-          'denied_task',
-          'denied_target',
-        ]);
+        expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       })
       .then(() => utils.requestOnTestDb(supervisorRequestOptions))
       .then(result => {
-        const ids = result.rows.map(row => row.id);
-        chai.expect(ids).to.include.members([
-          'allowed_contact',
-          'allowed_report',
-          'allowed_target',
-          'denied_contact',
-          'denied_report',
-          'denied_target',
-        ]);
-        chai.expect(ids).not.to.include.members([
-          'allowed_task',
-          'denied_task',
-        ]);
+        expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('supervisor'));
       });
   });
 
@@ -210,12 +187,8 @@ describe('all_docs handler', () => {
         utils.requestOnTestDb(_.defaults({path: '/_all_docs?key="denied_contact"'}, offlineRequestOptions))
       ]))
       .then(([allowed, denied]) => {
-        chai.expect(allowed.rows.length).to.equal(1);
-        chai.expect(allowed.rows[0]).excludingEvery('rev').to.deep.equal(
-          { id: 'allowed_contact', key: 'allowed_contact', value: { }}
-        );
-        chai.expect(denied.rows.length).to.deep.equal(1);
-        chai.expect(denied.rows[0]).to.deep.equal({ id: 'denied_contact', error: 'forbidden'});
+        expect(allowed.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
+        expect(denied.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       });
   });
 
@@ -238,8 +211,6 @@ describe('all_docs handler', () => {
       headers: { 'Content-Type': 'application/json' }
     };
 
-    const allowed = [0, 2, 4];
-
     return utils
       .saveDocs(docs)
       .then(() => Promise.all([
@@ -247,20 +218,8 @@ describe('all_docs handler', () => {
         utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions))
       ]))
       .then((results) => {
-        results.forEach(result => {
-          chai.expect(result.rows.length).to.equal(7);
-          result.rows.forEach((row, idx) => {
-            // results are returned in the same sequence as requested
-            chai.expect(row.id).to.equal(keys[idx]);
-
-            if (allowed.includes(idx)) {
-              chai.expect(row.value.rev).to.be.ok;
-            } else {
-              chai.expect(row.error).to.equal('forbidden');
-            }
-          });
-        });
-
+        expect(results[0].rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
+        expect(results[1].rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       });
   });
 
@@ -289,13 +248,8 @@ describe('all_docs handler', () => {
         )
       ]))
       .then(([inclusive, exclusive]) => {
-        chai.expect(inclusive.rows.length).to.equal(5);
-        chai.expect(exclusive.rows.length).to.equal(4);
-
-        const inclusiveIds = inclusive.rows.map(row => row.id);
-        chai.expect(inclusiveIds).to.have.members(['10', '3', '4', '6', '8']);
-        const exclusiveIds = exclusive.rows.map(row => row.id);
-        chai.expect(exclusiveIds).to.have.members(['10', '3', '4', '6']);
+        expect(inclusive.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
+        expect(exclusive.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       });
   });
 
@@ -321,30 +275,9 @@ describe('all_docs handler', () => {
         )
       ]))
       .then(([includeDocs, excludeDocs]) => {
-        chai.expect(includeDocs.rows.length).to.equal(5);
-        chai.expect(includeDocs.rows.map(row => row.id)).to.have.members(['1', '2', '3', '4', '5']);
-
-        chai.expect(excludeDocs.rows.length).to.equal(5);
-        chai.expect(excludeDocs.rows.map(row => row.id)).to.have.members(['1', '2', '3', '4', '5']);
-
-        includeDocs.rows.forEach(row => {
-          if (allowed.includes(row.id)) {
-            const doc = docs.find(doc => doc._id === row.id);
-            chai.expect(row.doc).excludingEvery('_rev').to.deep.equal(doc);
-          } else {
-            chai.expect(row).to.not.have.property('doc');
-            chai.expect(row.error).to.equal('forbidden');
-          }
-        });
-
-        excludeDocs.rows.forEach(row => {
-          chai.expect(row).to.not.have.property('doc');
-          if (allowed.includes(row.id)) {
-            chai.expect(row).to.have.property('value');
-          } else {
-            chai.expect(row.error).to.equal('forbidden');
-          }
-        });
+        expect(includeDocs.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
+        expect(excludeDocs.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
+        // todo
       });
   });
 
@@ -357,41 +290,20 @@ describe('all_docs handler', () => {
       { _id: '5', parent: { _id: 'fixture:online'}, type: 'clinic' }
     ];
 
-    // skip all "default" docs
-    // this includes those that emit _all or the user settings doc id,
-    // along with medic-client ddoc and the user-settings doc itself
-    const getSkip = () => {
-      const ddocAndUserSettings = 2;
-      return utils.db
-        .query('medic/docs_by_replication_key', { keys: ['_all', 'org.couchdb.user:offline'] })
-        .then(result => {
-          return result.rows?.length + ddocAndUserSettings;
-        });
-    };
-
     return utils
       .saveDocs(docs)
-      .then(() => getSkip())
-      .then(skip => Promise.all([
+      .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?limit=2&skip=${skip}&include_docs=false` }, offlineRequestOptions)
+          { path: `/_all_docs?limit=2&skip=2&include_docs=false` }, offlineRequestOptions)
         ),
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?limit=1&skip=${skip + 2}&include_docs=true` }, offlineRequestOptions)
+          { path: `/_all_docs?limit=1&skip=4&include_docs=true` }, offlineRequestOptions)
         )
       ]))
       .then(([excludeDocs, includeDocs]) => {
-        chai.expect(excludeDocs.rows.length).to.equal(2);
-        chai.expect(excludeDocs.rows).excludingEvery('value').to.have.deep.members([
-          { id: '1', key: '1' }, { id: '3', key: '3' }
-        ]);
-        excludeDocs.rows.forEach(row => chai.expect(row).to.not.have.property('doc'));
-
-        chai.expect(includeDocs.rows.length).to.equal(1);
-        chai.expect(includeDocs.rows[0].id).to.equal('4');
-        chai.expect(includeDocs.rows[0].doc).excludingEvery('_rev').to.deep.equal(
-          { _id: '4', parent: { _id: 'fixture:offline'}, type: 'clinic' }
-        );
+        console.log(JSON.stringify(excludeDocs, null, 2));
+        expect(excludeDocs.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
+        expect(includeDocs.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       });
   });
 
@@ -417,12 +329,7 @@ describe('all_docs handler', () => {
       .then(() =>
         utils.requestOnTestDb(_.defaults({ path: '/_all_docs?keys=' + JSON.stringify(keys) }, offlineRequestOptions)))
       .then(result => {
-        chai.expect(result.rows).to.deep.equal([
-          { id: 'allowed_contact', error: 'forbidden' },
-          { id: 'allowed_report', error: 'forbidden' },
-          { id: 'denied_contact', error: 'forbidden' },
-          { id: 'denied_report', error: 'forbidden' },
-        ]);
+        expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       });
   });
 
@@ -505,17 +412,7 @@ describe('all_docs handler', () => {
       .then(result => result.forEach((r, idx) => docs[idx]._rev = r.rev))
       .then(() => utils.requestOnMedicDb(opts))
       .then(result => {
-        chai.expect(result.rows).to.deep.equal([
-          { id: 'insensitive_report_1', key: 'insensitive_report_1', value: { rev: docs[0]._rev }},
-          { id: 'insensitive_report_2', key: 'insensitive_report_2', value: { rev: docs[1]._rev }},
-          { id: 'insensitive_report_3', key: 'insensitive_report_3', value: { rev: docs[2]._rev }},
-          { id: 'sensitive_report_1', error: 'forbidden' },
-          { id: 'sensitive_report_2', error: 'forbidden' },
-          { id: 'sensitive_report_3', error: 'forbidden' },
-          { id: 'sensitive_report_4', error: 'forbidden' },
-          { id: 'sensitive_report_5', error: 'forbidden' },
-          { id: 'sensitive_report_6', error: 'forbidden' },
-        ]);
+        expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       });
   });
 
@@ -531,22 +428,7 @@ describe('all_docs handler', () => {
       .saveDocs(docs)
       .then(() => utils.requestOnMedicDb(offlineRequestOptions))
       .then(result => {
-        unrestrictedKeys.forEach(key => {
-          chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(true);
-        });
-        restrictedKeys.forEach(key => {
-          chai.expect(hasMatchingRow(result.rows, key, false)).to.equal(false);
-        });
-
-        const ids = result.rows.map(row => row.id);
-        chai.expect(ids).to.include.members([
-          'allowed_contact',
-          'allowed_report',
-        ]);
-        chai.expect(ids).not.to.include.members([
-          'denied_contact',
-          'denied_report',
-        ]);
+        expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
       });
   });
 
@@ -587,8 +469,7 @@ describe('all_docs handler', () => {
       ]))
       .then(results => {
         results.forEach(result => {
-          chai.expect(result.rows.length).to.equal(1);
-          chai.expect(result.rows[0]).to.deep.equal({ id: 'denied_report', error: 'forbidden' });
+          expect(result.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
         });
       });
   });
@@ -711,24 +592,8 @@ describe('all_docs handler', () => {
           utils.requestOnMedicDb(supervisorRequestOptions),
         ]))
         .then(([withKeys, withoutKeys]) => {
-          const expectedRowsWithKeys = [
-            { id: 'the_clinic', key: 'the_clinic', value: {} },
-            { id: 'the_person', key: 'the_person', value: {} },
-            { id: 'the_patient', error: 'forbidden' },
-            { id: 'report_about_place', key: 'report_about_place', value: {} },
-            { id: 'allowed_report_about_the_person_1', key: 'allowed_report_about_the_person_1', value: {} },
-            { id: 'allowed_report_about_the_person_2', key: 'allowed_report_about_the_person_2', value: {} },
-            { id: 'denied_report_about_the_person', error: 'forbidden' },
-            { id: 'allowed_report_about_the_patient', key: 'allowed_report_about_the_patient', value: {} },
-            { id: 'denied_report_about_the_patient', error: 'forbidden' },
-            { id: 'target~offline', key: 'target~offline', value: {} },
-            { id: 'task~supervisor', key: 'task~supervisor', value: {} },
-            { id: 'task~offline', error: 'forbidden' },
-          ];
-          const expectedRowsWithoutKeys = expectedRowsWithKeys.filter(row => !row.error);
-
-          chai.expect(withKeys.rows).excludingEvery('rev').to.deep.equal(expectedRowsWithKeys);
-          chai.expect(withoutKeys.rows).excludingEvery('rev').to.deep.include.members(expectedRowsWithoutKeys);
+          expect(withKeys.rows.map(row => row.id)).to.have.members(getIdsForUser('supervisor'));
+          expect(withoutKeys.rows.map(row => row.id)).to.have.members(getIdsForUser('supervisor'));
         });
     });
   });

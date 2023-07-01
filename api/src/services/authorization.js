@@ -8,11 +8,17 @@ const registrationUtils = require('@medic/registration-utils');
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
 const MEDIC_CLIENT_DDOC = '_design/medic-client';
+const DEFAULT_DDOCS = [
+  MEDIC_CLIENT_DDOC,
+  'service-worker-meta',
+  'settings',
+];
 
 // fake view map, to store whether doc is a medic.user-settings doc
 const couchDbUser = doc => doc.type === 'user-settings';
 
 const getUserSettingsId = username => `org.couchdb.user:${username}`;
+const getDefaultDocs = (userCtx) => [ ...DEFAULT_DDOCS, getUserSettingsId(userCtx?.name)];
 
 const getDepth = (userCtx) => {
   const depth = {
@@ -493,7 +499,9 @@ const getViewResults = (doc) => {
 };
 
 module.exports = {
+  DEFAULT_DDOCS,
   updateContext,
+  getDefaultDocs,
   allowedDoc: allowedDoc,
   getViewResults: getViewResults,
   getAuthorizationContext: getAuthorizationContext,

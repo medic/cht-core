@@ -13,7 +13,9 @@ describe('Changes controller', () => {
     sinon.restore();
   });
   beforeEach(() => {
-    req = {  };
+    req = {
+      userCtx: { name: 'user' }
+    };
     res = {
       type: sinon.stub(),
       json: sinon.stub(),
@@ -25,19 +27,22 @@ describe('Changes controller', () => {
       changes: [
         { id: 'service-worker-meta' },
         { id: '_design/medic-client', },
+        { id: 'org.couchdb.user:user', },
         { id: 'settings' },
       ],
     });
     await controller.request(req, res);
     expect(db.medic.changes.args).to.deep.equal([[{ doc_ids: [
-      'service-worker-meta',
       '_design/medic-client',
-      'settings'
+      'service-worker-meta',
+      'settings',
+      'org.couchdb.user:user',
     ] }]]);
     expect(res.json.args).to.deep.equal([[{
       changes: [
         { id: 'service-worker-meta' },
         { id: '_design/medic-client', },
+        { id: 'org.couchdb.user:user', },
         { id: 'settings' },
       ],
     }]]);
