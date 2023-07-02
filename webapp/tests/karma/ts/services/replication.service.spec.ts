@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { ReplicationService } from '@mm-services/replication.service';
 import { DbService } from '@mm-services/db.service';
 import { of, throwError } from 'rxjs';
+import { RulesEngineService } from '@mm-services/rules-engine.service';
 
 
 describe('ContactTypes service', () => {
@@ -14,6 +15,7 @@ describe('ContactTypes service', () => {
   let remoteDb;
   let dbService;
   let http;
+  let rulesEngineService;
 
   beforeEach(() => {
     http = {
@@ -27,6 +29,7 @@ describe('ContactTypes service', () => {
     remoteDb = {
       bulkGet: sinon.stub(),
     };
+    rulesEngineService = { monitorExternalChanges: sinon.stub() };
 
     dbService = sinon.stub();
     dbService.withArgs().returns(localDb);
@@ -36,6 +39,7 @@ describe('ContactTypes service', () => {
       providers: [
         { provide: DbService, useValue: { get: dbService } },
         { provide: HttpClient, useValue: http },
+        { provide: RulesEngineService, useValue: rulesEngineService },
       ]
     });
 
@@ -116,14 +120,13 @@ describe('ContactTypes service', () => {
         attachments: true,
         revs: true,
       }]]);
-      expect(localDb.bulkDocs.args).to.deep.equal([[
-        [
-          { _id: 'd3', _rev: 2, f: 1 },
-          { _id: 'd4', _rev: 1, f: 1 },
-          { _id: 'd5', _rev: 1, f: 1 },
-        ],
-        { new_edits: false },
-      ]]);
+      const updatedDocs = [
+        { _id: 'd3', _rev: 2, f: 1 },
+        { _id: 'd4', _rev: 1, f: 1 },
+        { _id: 'd5', _rev: 1, f: 1 },
+      ];
+      expect(localDb.bulkDocs.args).to.deep.equal([[ updatedDocs, { new_edits: false } ]]);
+      expect(rulesEngineService.monitorExternalChanges.args).to.deep.equal([[{ docs: updatedDocs }]]);
     });
 
     it('should download multiple batches of missing docs', async () => {
@@ -194,25 +197,21 @@ describe('ContactTypes service', () => {
         }]
       ]);
 
+      const docBatches = [
+        Array.from({ length: 100 }).map((_, idx) => ({ _id: `d${idx}`, _rev: 1, f: 1 })),
+        Array.from({ length: 100 }).map((_, idx) => ({ _id: `d${idx + 100}`, _rev: 1, f: 1 })),
+        Array.from({ length: 50 }).map((_, idx) => ({ _id: `d${idx + 200}`, _rev: 1, f: 1 }))
+      ];
+
       expect(localDb.bulkDocs.args).to.deep.equal([
-        [
-          Array
-            .from({ length: 100 })
-            .map((_, idx) => ({ _id: `d${idx}`, _rev: 1, f: 1 })),
-          { new_edits: false },
-        ],
-        [
-          Array
-            .from({ length: 100 })
-            .map((_, idx) => ({ _id: `d${idx + 100}`, _rev: 1, f: 1 })),
-          { new_edits: false },
-        ],
-        [
-          Array
-            .from({ length: 50 })
-            .map((_, idx) => ({ _id: `d${idx + 200}`, _rev: 1, f: 1 })),
-          { new_edits: false },
-        ]
+        [ docBatches[0], { new_edits: false } ],
+        [ docBatches[1], { new_edits: false } ],
+        [ docBatches[2], { new_edits: false } ],
+      ]);
+      expect(rulesEngineService.monitorExternalChanges.args).to.deep.equal([
+        [{ docs: docBatches[0] }],
+        [{ docs: docBatches[1] }],
+        [{ docs: docBatches[2] }],
       ]);
     });
 

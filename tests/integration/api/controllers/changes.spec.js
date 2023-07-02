@@ -144,6 +144,8 @@ const parentPlace = {
   name: 'Big Parent Hostpital'
 };
 
+const bobUserId = 'org.couchdb.user:bob';
+
 const createSomeContacts = (nbr, parent) => {
   const docs = [];
   parent = typeof parent === 'string' ? { _id: parent } : parent;
@@ -197,7 +199,7 @@ describe('changes handler', () => {
         .requestOnTestDb({
           path: '/_changes?since=0&filter=_doc_ids&heartbeat=10000',
           method: 'POST',
-          body: { doc_ids: ['org.couchdb.user:bob'] },
+          body: { doc_ids: [bobUserId] },
         })
         .then(result => {
           expect(result.results).to.be.ok;
@@ -229,9 +231,9 @@ describe('changes handler', () => {
       await getCurrentSeq();
     });
 
-    it('should only service-worker, design doc and settings updates', async () => {
+    it('should only return service-worker, design doc and settings updates', async () => {
       const changes = await requestChanges('bob');
-      assertChangeIds(changes, ...changesIDs);
+      assertChangeIds(changes, ...changesIDs, bobUserId);
     });
 
     it('should not return other changed documents', async () => {
@@ -242,7 +244,7 @@ describe('changes handler', () => {
       await utils.saveDocs(deniedDocs);
 
       const changes = await requestChanges('bob');
-      assertChangeIds(changes, ...changesIDs);
+      assertChangeIds(changes, ...changesIDs, bobUserId);
     });
 
     it('should only return static docs when specific docs are requested', async () => {
@@ -253,7 +255,7 @@ describe('changes handler', () => {
       await utils.saveDocs(deniedDocs);
 
       const changes = await requestChanges('bob', { filter: '_doc_ids', doc_ids: getIds(allowedDocs) });
-      assertChangeIds(changes, ...changesIDs);
+      assertChangeIds(changes, ...changesIDs, bobUserId);
     });
 
     it('should only return static docs when since param is used', async () => {
@@ -264,7 +266,7 @@ describe('changes handler', () => {
       await utils.saveDocs(deniedDocs);
 
       const changes = await requestChanges('bob', { since: currentSeq });
-      assertChangeIds(changes, ...changesIDs);
+      assertChangeIds(changes, ...changesIDs, bobUserId);
     });
 
 
@@ -272,7 +274,7 @@ describe('changes handler', () => {
       return utils
         .requestOnMedicDb({ path: '/_changes', auth: { username: 'bob', password } })
         .then(results => {
-          return assertChangeIds(results, ...changesIDs);
+          return assertChangeIds(results, ...changesIDs, bobUserId);
         });
     });
 
@@ -312,7 +314,7 @@ describe('changes handler', () => {
         .then(results => {
           results.forEach(result => {
             if (result.results) {
-              return assertChangeIds(result, ...changesIDs);
+              return assertChangeIds(result, ...changesIDs, bobUserId);
             }
             expect(result.responseBody.error).to.equal('forbidden');
           });

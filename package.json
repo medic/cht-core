@@ -20,6 +20,7 @@
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js",
     "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js",
     "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default-mobile/wdio.conf.js",
+    "e2e-integration-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup &&mocha --config tests/integration/.mocharc.js ",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
     "wdio": "wdio run ./tests/e2e/default/wdio.conf.js",
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",

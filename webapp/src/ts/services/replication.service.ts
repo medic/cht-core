@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 import { DbService } from './db.service';
 import { HttpClient } from '@angular/common/http';
+import { RulesEngineService } from '@mm-services/rules-engine.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,7 @@ export class ReplicationService {
   constructor(
     private dbService:DbService,
     private http:HttpClient,
+    private rulesEngineService:RulesEngineService,
   ) {
   }
 
@@ -76,5 +78,6 @@ export class ReplicationService {
       .map(result => result.docs && result.docs[0] && result.docs[0].ok)
       .filter(doc => doc);
     await this.dbService.get().bulkDocs(docs, { new_edits: false });
+    this.rulesEngineService.monitorExternalChanges({ docs });
   }
 }

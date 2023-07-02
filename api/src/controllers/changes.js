@@ -8,8 +8,11 @@ const processRequest = async (req, res) => {
 };
 
 const request = (req, res) => {
-  res.type('json');
-  return processRequest(req, res).catch(err => serverUtils.error(err, req, res));
+  try {
+    return processRequest(req, res);
+  } catch (err) {
+    return serverUtils.error(err, req, res);
+  }
 };
 
 module.exports = {
