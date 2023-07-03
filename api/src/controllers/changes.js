@@ -7,9 +7,9 @@ const processRequest = async (req, res) => {
   res.json(changes);
 };
 
-const request = (req, res) => {
+const request = async (req, res) => {
   try {
-    return processRequest(req, res);
+    return await processRequest(req, res);
   } catch (err) {
     return serverUtils.error(err, req, res);
   }

@@ -49,10 +49,11 @@ describe('Changes controller', () => {
   });
 
   it('should fail on error', async () => {
-    sinon.stub(db.medic, 'changes').rejects({ oh: 'no' });
+    const err =  new Error('oh no');
+    sinon.stub(db.medic, 'changes').rejects(err);
     sinon.stub(serverUtils, 'error');
 
     await controller.request(req, res);
-    expect(serverUtils.error.args).to.deep.equal([[{ oh: 'no' }, req, res]]);
+    expect(serverUtils.error.args).to.deep.equal([[err, req, res]]);
   });
 });
