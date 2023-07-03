@@ -161,7 +161,8 @@ app.use(
         connectSrc: [
           `'self'`,
           environment.buildsUrl + '/',
-          'maps.googleapis.com' // used for enketo geopoint widget
+          'maps.googleapis.com', // used for enketo geopoint widget
+          'http://matomo-care-teams.dev.medicmobile.org',
         ],
         childSrc:  [`'self'`],
         formAction: [`'self'`],
@@ -185,6 +186,8 @@ app.use(
           // https://github.com/medic/cht-core/issues/6988
           `'unsafe-hashes'`,
           `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
+          `'sha256-PMJiIIDhCG0cUpK2Pa2vthPGmzx/g5gNh/iKG737RD8='`, // Matomo's
+          'http://matomo-care-teams.dev.medicmobile.org',
         ],
         styleSrc: [
           `'self'`,
