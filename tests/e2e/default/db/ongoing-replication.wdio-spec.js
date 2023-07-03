@@ -1,7 +1,7 @@
 const _ = require('lodash');
 
 const utils = require('@utils');
-const browserUtils = require('@utils/browser');
+const chtDbUtils = require('@utils/cht-db');
 const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
@@ -42,7 +42,7 @@ describe('ongoing replication', () => {
   });
 
   it('should download new documents ', async () => {
-    const localAllDocsPreSync = await browserUtils.getDocs();
+    const localAllDocsPreSync = await chtDbUtils.getDocs();
     const localDocIdsPreSync = data.ids(localAllDocsPreSync);
 
     expect(localDocIdsPreSync).to.include.members(data.ids(userAllowedDocs.clinics));
@@ -64,7 +64,7 @@ describe('ongoing replication', () => {
     await browser.throttle('online');
     await commonPage.sync(false, 30000);
 
-    const localDocsPostSync = await browserUtils.getDocs();
+    const localDocsPostSync = await chtDbUtils.getDocs();
     const localDocIds = data.ids(localDocsPostSync);
 
     expect(localDocIds).to.include.members(data.ids(userAllowedDocs.clinics));
@@ -93,7 +93,7 @@ describe('ongoing replication', () => {
     await browser.throttle('online');
     await commonPage.sync();
 
-    const localDocs = await browserUtils.getDocs(data.ids(userAllowedDocs.reports));
+    const localDocs = await chtDbUtils.getDocs(data.ids(userAllowedDocs.reports));
     expect(localDocs.every(doc => doc.updated === 'yes')).to.equal(true);
   });
 
@@ -105,7 +105,7 @@ describe('ongoing replication', () => {
     await waitForForms.promise();
 
     await commonPage.sync();
-    const [form] = await browserUtils.getDocs([formId]);
+    const [form] = await chtDbUtils.getDocs([formId]);
     expect(form._attachments).to.have.keys('xml', 'form.html', 'model.xml');
 
     form.updated = true;
@@ -113,7 +113,7 @@ describe('ongoing replication', () => {
 
     await commonPage.sync();
 
-    const [updatedForm] = await browserUtils.getDocs([formId]);
+    const [updatedForm] = await chtDbUtils.getDocs([formId]);
     expect(updatedForm.updated).to.equal(form.updated);
   });
 
@@ -123,7 +123,7 @@ describe('ongoing replication', () => {
     await waitForServiceWorker.promise;
 
     await commonPage.sync(true);
-    const [rnd] = await browserUtils.getDocs(['messages-rnd']);
+    const [rnd] = await chtDbUtils.getDocs(['messages-rnd']);
     expect(rnd).to.include({
       type: 'translations',
       code: 'rnd',
@@ -135,7 +135,7 @@ describe('ongoing replication', () => {
     await waitForServiceWorker.promise;
 
     await commonPage.sync(true);
-    const [updatedRnd] = await browserUtils.getDocs(['messages-rnd']);
+    const [updatedRnd] = await chtDbUtils.getDocs(['messages-rnd']);
     expect(updatedRnd.updated).to.equal(rnd.updated);
   });
 
@@ -153,7 +153,7 @@ describe('ongoing replication', () => {
 
     await browser.throttle('online');
     await commonPage.sync();
-    const localDocsPostSync = await browserUtils.getDocs();
+    const localDocsPostSync = await chtDbUtils.getDocs();
     const localDocIds = data.ids(localDocsPostSync);
 
     expect(_.intersection(localDocIds, docIdsToDelete)).to.deep.equal([]);
@@ -164,7 +164,7 @@ describe('ongoing replication', () => {
     await utils.updateSettings({ test: true }, 'api');
     await browser.throttle('online');
     await commonPage.sync(true);
-    const [settings] = await browserUtils.getDocs(['settings']);
+    const [settings] = await chtDbUtils.getDocs(['settings']);
     expect(settings.settings.test).to.equal(true);
 
     await browser.throttle('offline');
