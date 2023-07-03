@@ -40,6 +40,7 @@ import { TransitionsService } from '@mm-services/transitions.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
+import { MatomoAnalyticsService } from '@mm-services/matomo-analytics.service';
 import { Selectors } from '@mm-selectors/index';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 
@@ -77,6 +78,7 @@ describe('AppComponent', () => {
   let transitionsService;
   let chtScriptApiService;
   let analyticsModulesService;
+  let matomoAnalyticsService;
   let trainingCardsService;
   // End Services
 
@@ -158,6 +160,7 @@ describe('AppComponent', () => {
     };
     telemetryService = { record: sinon.stub() };
     trainingCardsService = { initTrainingCards: sinon.stub() };
+    matomoAnalyticsService = { init: sinon.stub() };
     consoleErrorStub = sinon.stub(console, 'error');
 
     const mockedSelectors = [
@@ -207,6 +210,7 @@ describe('AppComponent', () => {
           { provide: TransitionsService, useValue: transitionsService },
           { provide: CHTScriptApiService, useValue: chtScriptApiService },
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
+          { provide: MatomoAnalyticsService, useValue: matomoAnalyticsService },
           { provide: TrainingCardsService, useValue: trainingCardsService },
         ]
       })
@@ -242,6 +246,8 @@ describe('AppComponent', () => {
     expect(rulesEngineService.isEnabled.callCount).to.equal(1);
     // init CHTScriptApiService
     expect(chtScriptApiService.isInitialized.callCount).to.equal(1);
+    // init Matomo usage analytics
+    expect(matomoAnalyticsService.init.callCount).to.equal(1);
     // init unread count
     expect(unreadRecordsService.init.callCount).to.equal(1);
     expect(unreadRecordsService.init.args[0][0]).to.be.a('Function');
