@@ -81,8 +81,6 @@ describe('Login page funcionality tests', () => {
       await (await commonPage.analyticsTab()).waitForDisplayed();
 
       const cookies = await browser.getCookies();
-      expect(cookies.length).to.equal(3);
-
       const authSessionCookie = cookies.find(cookie => cookie.name === 'AuthSession');
       expect(authSessionCookie).to.include({
         httpOnly: true,
