@@ -391,6 +391,13 @@ const getContactListLoadingStatus = async () => {
   return await (await contactListLoadingStatus()).getText();
 };
 
+const getDisplayedContactsNames = async () => {
+  const contacts = [];
+  for (const row of await contentRows()) {
+    contacts.push(await row.getText());
+  }
+  return contacts;
+};
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -450,4 +457,5 @@ module.exports = {
   getPregnancyLabel,
   getVisitLabel,
   getNumberOfReports,
+  getDisplayedContactsNames,
 };
