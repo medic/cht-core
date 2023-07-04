@@ -6,7 +6,7 @@ const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-const data = require('./data');
+const dataFactory = require('@factories/cht/generate');
 
 const LOCAL_LOG = '_local/initial-replication';
 
@@ -15,8 +15,8 @@ const getServerDocs = async (docIds) => {
   return result.rows;
 };
 
-const userAllowedDocs = data.createHierarchy({ name: 'base', user: true });
-const userDeniedDocs = data.createHierarchy({ name: 'other' });
+const userAllowedDocs = dataFactory.createHierarchy({ name: 'base', user: true });
+const userDeniedDocs = dataFactory.createHierarchy({ name: 'other' });
 
 const requiredDocs = [
   '_design/medic-client',
@@ -50,12 +50,12 @@ const getForms = async () => {
 
 const validateReplication = async () => {
   const localAllDocsPreSync = await chtDbUtils.getDocs();
-  const docIdsPreSync = data.ids(localAllDocsPreSync);
+  const docIdsPreSync = dataFactory.ids(localAllDocsPreSync);
 
   await commonPage.sync(false, 7000);
 
   const localAllDocs = await chtDbUtils.getDocs();
-  const localDocIds = data.ids(localAllDocs);
+  const localDocIds = dataFactory.ids(localAllDocs);
 
   // no additional docs to download
   expect(docIdsPreSync).to.have.members(localDocIds);
@@ -67,7 +67,7 @@ const validateReplication = async () => {
 
   const translationIds = await getTranslationIds();
   const forms = await getForms();
-  const formIds = data.ids(forms);
+  const formIds = dataFactory.ids(forms);
 
   expect(localDocIds).to.include.members(requiredDocs);
   expect(localDocIds).to.include.members(translationIds);
@@ -84,13 +84,13 @@ const validateReplication = async () => {
     );
   });
 
-  expect(localDocIds).to.include.members(data.ids(userAllowedDocs.clinics));
-  expect(localDocIds).to.include.members(data.ids(userAllowedDocs.persons));
-  expect(localDocIds).to.include.members(data.ids(userAllowedDocs.reports));
+  expect(localDocIds).to.include.members(dataFactory.ids(userAllowedDocs.clinics));
+  expect(localDocIds).to.include.members(dataFactory.ids(userAllowedDocs.persons));
+  expect(localDocIds).to.include.members(dataFactory.ids(userAllowedDocs.reports));
 
   const replicatedDeniedDocs = _.intersection(
     localDocIds,
-    data.ids([...userDeniedDocs.clinics, ...userDeniedDocs.persons, ...userDeniedDocs.reports])
+    dataFactory.ids([...userDeniedDocs.clinics, ...userDeniedDocs.persons, ...userDeniedDocs.reports])
   );
   expect(replicatedDeniedDocs).to.deep.equal([]);
 

@@ -3,8 +3,20 @@ const utils = require('@utils');
 const { BRANCH, TAG } = process.env;
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const upgradePage = require('@page-objects/upgrade/upgrade.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
+const dataFactory = require('@factories/cht/generate');
+const common = require('@page-objects/default/common/common.wdio.page');
+
+const docs = dataFactory.createHierarchy({
+  name: 'offlineupgrade',
+  user: true,
+  nbrClinics: 1,
+  nbrPersons: 1,
+});
+
 
 const getDdocs = async () => {
   const result = await utils.requestOnMedicDb({
@@ -21,7 +33,17 @@ const getDdocs = async () => {
 
 describe('Performing an upgrade', () => {
   before(async () => {
-    await loginPage.cookieLogin({ username: constants.USERNAME, password: constants.PASSWORD, createUser: false });
+    await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
+    await utils.createUsers([docs.user]);
+
+    await loginPage.login(docs.user);
+    await commonPage.logout();
+
+    await loginPage.cookieLogin({
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
+      createUser: false
+    });
   });
 
   it('should upgrade to current branch', async () => {
@@ -53,5 +75,12 @@ describe('Performing an upgrade', () => {
     expect(staged.length).to.equal(0);
 
     ddocs.forEach(ddoc => expect(ddoc.version).to.equal(currentBuild));
+
+    await adminPage.logout();
+    await loginPage.login(docs.user);
+    await commonPage.closeReloadModal(true);
+
+    await common.goToAboutPage();
+    expect(await upgradePage.getCurrentVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
   });
 });
