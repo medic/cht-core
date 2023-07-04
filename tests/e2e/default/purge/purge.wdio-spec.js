@@ -52,13 +52,13 @@ const purgeUsingChtApitFn = (userCtx, contact, reports, messages, chtScript, set
 
 const reportsToPurge = Array
   .from({ length: 50 })
-  .map(() => genericReportFactory.build({ form: 'purge' }, { patient, submitter: contact }));
+  .map(() => genericReportFactory.report().build({ form: 'purge' }, { patient, submitter: contact }));
 const homeVisits = Array
   .from({ length: 125 })
-  .map(() => genericReportFactory.build({ form: 'home_visit' }, { patient, submitter: contact }));
+  .map(() => genericReportFactory.report().build({ form: 'home_visit' }, { patient, submitter: contact }));
 const pregnancies = Array
   .from({ length: 125 })
-  .map(() => genericReportFactory.build({ form: 'pregnancy' }, { patient, submitter: contact }));
+  .map(() => genericReportFactory.report().build({ form: 'pregnancy' }, { patient, submitter: contact }));
 
 const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 

@@ -1,11 +1,9 @@
 const Factory = require('rosie').Factory;
 const Faker = require('@faker-js/faker');
-const fpFlow = require('./brac-fp-flow');
+const fpFlow = require('./fp-flow');
 const moment = require('moment');
 /**
- * BRAC International is a leading nonprofit organisation with a mission to empower people and
- * communities in situations of poverty, illiteracy, disease, and social injustice.
- * brac-group-other-woman-pregnancy Factory generates Javascript object that represent a survey to
+ * group-other-woman-pregnancy Factory generates Javascript object that represent a survey to
  * determine if the created women is pregnant.
  * Terminology:
  * o_lmp: Last menstrual cycle date is known (true or false)

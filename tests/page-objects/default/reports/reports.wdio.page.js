@@ -136,6 +136,7 @@ const getListReportInfo = async (listElement) => {
     form: await getElementText(listElement.$('.content .summary')),
     lineage: await getElementText(listElement.$('.content .detail')),
     reported_date: await getElementText(listElement.$('.content .heading .date')),
+    dataId: await listElement.getAttribute('data-record-id'),
   };
 };
 

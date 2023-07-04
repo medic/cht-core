@@ -9,7 +9,7 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="working_dir" elementType="Argument">
             <stringProp name="Argument.name">working_dir</stringProp>
-            <stringProp name="Argument.value">/Users/marialorenarodriguezviruel/medic-workspace/cht-core/tests/scalability/replicate-brac-docs</stringProp>
+            <stringProp name="Argument.value">/Users/marialorenarodriguezviruel/medic-workspace/cht-core/tests/scalability/replicate-real-world-docs</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="node_binary" elementType="Argument">

@@ -11,6 +11,7 @@ const path = require('path');
 const { execSync, spawn } = require('child_process');
 const mustache = require('mustache');
 const semver = require('semver');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
 
 process.env.COUCHDB_USER = constants.USERNAME;
 process.env.COUCHDB_PASSWORD = constants.PASSWORD;
@@ -845,6 +846,20 @@ const dockerGateway = () => {
   }
 };
 
+const dockerPlatformName = () => {
+  try {
+    return JSON.parse(execSync(`docker version --format '{{json .Server.Platform.Name}}'`));
+  } catch (error) {
+    console.log('docker version failed. NOTE this error is not relevant if running outside of docker');
+    console.log(error.message);
+  }
+  return null;
+};
+
+const isDockerDesktop = () => {
+  return (dockerPlatformName() || '').includes('Docker Desktop');
+};
+
 const getDockerVersion = () => {
   try {
     const response = execSync('docker-compose -v').toString();
@@ -856,10 +871,22 @@ const getDockerVersion = () => {
   }
 };
 
-const hostURL = (port = 80) => {
+const getHostRoot = () => {
+  if (isDockerDesktop()) {
+    // Docker Desktop networking requires a special host name for connecting to host machine.
+    // https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
+    return 'host.docker.internal';
+  }
   const gateway = dockerGateway();
-  const host = gateway && gateway[0] && gateway[0].Gateway ? gateway[0].Gateway : 'localhost';
-  const url = new URL(`http://${host}`);
+  if (gateway && gateway[0] && gateway[0].Gateway) {
+    return gateway[0].Gateway;
+  }
+
+  return 'localhost';
+};
+
+const hostURL = (port = 80) => {
+  const url = new URL(`http://${getHostRoot()}`);
   url.port = port;
   return url.href;
 };
@@ -1127,7 +1154,7 @@ module.exports = {
       await waitForSettingsUpdateLogs(ignoreReload);
     await updateSettings(updates);
     if (!ignoreReload) {
-      return await refreshToGetNewSettings();
+      return await commonElements.closeReloadModal(true);
     }
     return watcher && await watcher.promise;
   },

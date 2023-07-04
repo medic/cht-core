@@ -38,7 +38,7 @@ const patient = personFactory.build({
 });
 
 const reports = [
-  reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact })
+  reportFactory.report().build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact })
 ];
 
 describe('- permissions disabled', async () => {

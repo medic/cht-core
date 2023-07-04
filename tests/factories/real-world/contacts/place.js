@@ -3,7 +3,7 @@ const uuid = require('uuid');
 const Faker = require('@faker-js/faker');
 const householdSurveyFactory = require('../reports/create-family-household-survey');
 
-const bracPlace = () => {
+const place = () => {
   return new Factory()
     .sequence('_id', uuid.v4)
     .attr('parent', '')
@@ -29,8 +29,8 @@ const bracPlace = () => {
     });
 };
 
-const generateBracPlace = (name, type, parent) => {
-  return bracPlace().build({
+const generatePlace = (name, type, parent) => {
+  return place().build({
     name: name,
     type: type,
     parent: parent
@@ -38,6 +38,6 @@ const generateBracPlace = (name, type, parent) => {
 };
 
 module.exports = {
-  generateBracPlace,
-  bracPlace
+  generatePlace,
+  place
 };

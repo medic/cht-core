@@ -4,6 +4,7 @@ const commonPage = require('../common/common.wdio.page');
 const loginButton = () => $('#login');
 const userField = () => $('#user');
 const passwordField = () => $('#password');
+const passwordToggleButton = () => $('#password-toggle');
 const labelForUser = () => $('label[for="user"]');
 const labelForPassword = () => $('label[for="password"]');
 const errorMessageField = () => $('p.error.incorrect');
@@ -15,8 +16,8 @@ const getErrorMessage = async () => {
 };
 
 const login = async ({ username, password, createUser = false, locale, loadPage = true, privacyPolicy, adminApp }) => {
+  await setPasswordValue(password);
   await (await userField()).setValue(username);
-  await (await passwordField()).setValue(password);
   await changeLocale(locale);
   await (await loginButton()).click();
 
@@ -107,6 +108,22 @@ const getToLoginLinkText = async () => {
   return await message.getText();
 };
 
+const togglePassword = async () => {
+  await (await passwordField()).waitForDisplayed();
+  await (await passwordToggleButton()).waitForClickable();
+  await (await passwordToggleButton()).click();
+
+  return {
+    type: await (await passwordField()).getAttribute('type'),
+    value: await (await passwordField()).getValue(),
+  };
+};
+
+const setPasswordValue = async (password) => {
+  await (await passwordField()).waitForDisplayed();
+  await (await passwordField()).setValue(password);
+};
+
 module.exports = {
   login,
   cookieLogin,
@@ -120,4 +137,6 @@ module.exports = {
   getToLoginLinkText,
   getCurrentLanguage,
   getErrorMessage,
+  togglePassword,
+  setPasswordValue,
 };
