@@ -207,7 +207,7 @@ describe('Initial replication', () => {
 
       await initialReplication.replicate(remoteDb, localDb);
 
-      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/initial-replication/get-ids']]);
+      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/replication/get-ids']]);
       expect(localDb.allDocs.args).to.deep.equal([[]]);
 
       expect(remoteDb.bulkGet.args).to.deep.equal([[{
@@ -294,7 +294,7 @@ describe('Initial replication', () => {
 
       await initialReplication.replicate(remoteDb, localDb);
 
-      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/initial-replication/get-ids']]);
+      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/replication/get-ids']]);
       expect(localDb.allDocs.args).to.deep.equal([[]]);
 
       expect(remoteDb.bulkGet.args).to.deep.equal([[{
@@ -367,7 +367,7 @@ describe('Initial replication', () => {
 
       await initialReplication.replicate(remoteDb, localDb);
 
-      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/initial-replication/get-ids']]);
+      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/replication/get-ids']]);
       expect(localDb.allDocs.args).to.deep.equal([[]]);
 
       expect(remoteDb.bulkGet.callCount).to.equal(7);
@@ -660,7 +660,7 @@ describe('Initial replication', () => {
 
       await initialReplication.replicate(remoteDb, localDb);
 
-      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/initial-replication/get-ids']]);
+      expect(utils.fetchJSON.args).to.deep.equal([['/api/v1/replication/get-ids']]);
       expect(displayTooManyDocsWarning.args).to.deep.equal([[pollResponse]]);
       expect(localDb.put.args).to.deep.equal([
         [{

@@ -23,12 +23,10 @@ const saveData = async (hierarchy) => {
 
 describe('ongoing replication', () => {
   before(async () => {
-    // we're creating ~2000 docs
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
 
     await sentinelUtils.waitForSentinel();
-    // await utils.stopSentinel();
 
     await saveData(userAllowedDocs);
     await saveData(userDeniedDocs);
@@ -38,7 +36,6 @@ describe('ongoing replication', () => {
 
   after(async () => {
     await sentinelUtils.skipToSeq();
-    // await utils.startSentinel();
   });
 
   it('should download new documents ', async () => {
@@ -142,6 +139,7 @@ describe('ongoing replication', () => {
   it('should handle deletes', async () => {
     await commonPage.sync();
     await browser.throttle('offline');
+    const waitForServiceWorker = await utils.waitForApiLogs(utils.SW_SUCCESSFUL_REGEX);
     const docIdsToDelete = [
       'form:dummy',
       ...data.ids(userAllowedDocs.reports),
@@ -150,16 +148,17 @@ describe('ongoing replication', () => {
     ];
     await utils.deleteDocs(docIdsToDelete);
     await sentinelUtils.waitForSentinel();
+    await waitForServiceWorker.promise;
 
     await browser.throttle('online');
-    await commonPage.sync();
+    await commonPage.sync(true);
     const localDocsPostSync = await chtDbUtils.getDocs();
     const localDocIds = data.ids(localDocsPostSync);
 
     expect(_.intersection(localDocIds, docIdsToDelete)).to.deep.equal([]);
   });
 
-  xit('should download settings updates', async () => {
+  it('should download settings updates', async () => {
     await browser.throttle('offline');
     await utils.updateSettings({ test: true }, 'api');
     await browser.throttle('online');
@@ -171,6 +170,54 @@ describe('ongoing replication', () => {
     await utils.revertSettings(true);
     await browser.throttle('online');
     await commonPage.sync(true);
+  });
+
+  it('should handle conflicts', async () => {
+    const docs = data.createData({
+      healthCenter: userAllowedDocs.healthCenter,
+      user: userAllowedDocs.user,
+      nbrPersons: 1,
+      nbrClinics: 1,
+    });
+    await chtDbUtils.createDocs([...docs.clinics, ...docs.persons, ...docs.reports]);
+
+    await commonPage.sync();
+
+    const docId = docs.persons[0]._id;
+    //create conflict
+    await browser.throttle('offline');
+    await chtDbUtils.updateDoc(docId, { local_update : 1 });
+    await chtDbUtils.updateDoc(docId, { local_update : 2 });
+    let serverDoc = await utils.getDoc(docId);
+    serverDoc.remote_update = 1;
+    await utils.saveDoc(serverDoc);
+
+    await browser.throttle('online');
+    await commonPage.sync();
+
+    let localDoc = await chtDbUtils.getDoc(docId);
+    // only get winning revs from server
+    expect(localDoc._conflicts).to.be.undefined;
+    expect(localDoc.local_update).to.equal(2);
+
+    await browser.throttle('offline');
+    await chtDbUtils.updateDoc(docId, { local_update : 3 });
+    serverDoc = await utils.getDoc(docId);
+    serverDoc.remote_update = 2;
+    await utils.saveDoc(serverDoc);
+
+    serverDoc = await utils.getDoc(docId);
+    serverDoc.remote_update = 3;
+    await utils.saveDoc(serverDoc);
+
+    await browser.throttle('online');
+    await commonPage.sync();
+
+    localDoc = await chtDbUtils.getDoc(docId);
+    // only get winning revs from server
+    expect(localDoc._conflicts.length).to.equal(1);
+    expect(localDoc.local_update).to.equal(2);
+    expect(localDoc.remote_update).to.equal(3);
   });
 });
 

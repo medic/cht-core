@@ -54,7 +54,7 @@ const getMissingDocIdsRevsPairs = async (localDb, remoteDocIdsRevs) => {
 };
 
 const getDownloadList = async (localDb = true) => {
-  const response = await utils.fetchJSON('/api/v1/initial-replication/get-ids');
+  const response = await utils.fetchJSON('/api/v1/replication/get-ids');
 
   docIdsRevs = await getMissingDocIdsRevsPairs(localDb, response.doc_ids_revs);
   remoteDocCount = response.doc_ids_revs.length;

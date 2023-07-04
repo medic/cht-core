@@ -280,8 +280,7 @@ const findContactsByReplicationKeys = (replicationKeys) => {
   }
 
   replicationKeys = _.uniq(replicationKeys);
-  const keys = [];
-  replicationKeys.forEach(id => keys.push(['shortcode', id]));
+  const keys = replicationKeys.map(id => ['shortcode', id]);
 
   return db.medic
     .query('medic-client/contacts_by_reference', { keys })

@@ -2,7 +2,6 @@ const db = require('../../../src/db');
 const sinon = require('sinon');
 const config = require('../../../src/config');
 const auth = require('../../../src/auth');
-const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
 const rewire = require('rewire');
 const service = rewire('../../../src/services/authorization');
@@ -28,7 +27,6 @@ describe('Authorization service', () => {
   afterEach(() => sinon.restore());
 
   beforeEach(() => {
-    sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
     sinon.stub(config, 'get');
     sinon.stub(auth, 'hasAllPermissions');
     sinon.stub(viewMapUtils, 'getViewMapFn').returns(sinon.stub());
@@ -299,7 +297,6 @@ describe('Authorization service', () => {
           { id: 'r2', key: 'parent', value: {} },
         ]});
 
-      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone'));
       return service
         .getAllowedDocIds({
           subjectIds,
@@ -409,7 +406,6 @@ describe('Authorization service', () => {
 
     it('should exclude tasks if param is passed', () => {
       const subjectIds = ['contact', 'parent', 'place'];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
       db.medic.query
         .withArgs('medic/docs_by_replication_key')
         .resolves({ rows:
@@ -636,7 +632,6 @@ describe('Authorization service', () => {
         { id: 'r3', key: 'contact', value: {} },
         { id: 'r2', key: 'parent', value: {} },
       ];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone'));
       const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
       result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user', 'r1', 'r2', 'r3']);
     });
@@ -657,7 +652,6 @@ describe('Authorization service', () => {
     });
 
     it('should exclude tasks if param is passed', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
       const docsByRepKey = [
         { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
         { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
@@ -1694,7 +1688,6 @@ describe('Authorization service', () => {
       db.medic.query.resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs');
 
-      // no tombstones
       db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.any })).resolves({ rows: [] });
       db.medic.allDocs
         .withArgs(sinon.match({ keys: sinon.match.array }))
@@ -2512,7 +2505,6 @@ describe('Authorization service', () => {
       db.medic.query.resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs');
 
-      // no tombstones
       db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.any })).resolves({ rows: [] });
       db.medic.allDocs
         .withArgs(sinon.match({ keys: sinon.match.array }))
