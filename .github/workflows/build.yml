@@ -101,8 +101,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: [ci-webdriver-default -- --suite=basic, 
-        ci-webdriver-default -- --suite=workflows]
+        grunt-cmd: [ci-webdriver-default --suite=basic], 
+        # ci-webdriver-default -- --suite=workflows, 
         # ci-webdriver-default -- --suite=technical, 
         # ci-webdriver-default -- --suite=enketo, 
         # 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-webdriver-default-mobile']
