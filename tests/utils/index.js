@@ -364,11 +364,12 @@ const deleteAllDocs = (except) => {
   ignoreFns.push(doc => ignoreStrings.includes(doc._id));
   ignoreFns.push(doc => ignoreRegex.find(r => doc._id.match(r)));
 
-  // Get, filter and delete documents
-  return requestOnTestDb({
-    path: '/_all_docs?include_docs=true',
-    method: 'GET',
-  })
+  // Accessing function using module.exports because it's stub in webapp/tests/mocha/unit/testingtests/e2e/utils.spec.js
+  return module.exports
+    .requestOnTestDb({
+      path: '/_all_docs?include_docs=true',
+      method: 'GET',
+    })
     .then(({ rows }) =>
       rows
         .filter(({ doc }) => doc && !ignoreFns.find(fn => fn(doc)))
@@ -388,17 +389,19 @@ const deleteAllDocs = (except) => {
       }
       const infoIds = ids.map(id => `${id}-info`);
       return Promise.all([
-        requestOnTestDb({
-          path: '/_bulk_docs',
-          method: 'POST',
-          body: { docs: toDelete },
-        })
+        module.exports
+          .requestOnTestDb({
+            path: '/_bulk_docs',
+            method: 'POST',
+            body: { docs: toDelete },
+          })
           .then(response => {
             if (e2eDebug) {
               console.log(`Deleted docs: ${JSON.stringify(response)}`);
             }
           }),
-        sentinelDb.allDocs({ keys: infoIds })
+        module.exports.sentinelDb
+          .allDocs({ keys: infoIds })
           .then(results => {
             const deletes = results.rows
               .filter(row => row.value) // Not already deleted
@@ -407,8 +410,9 @@ const deleteAllDocs = (except) => {
                 _rev: value.rev,
                 _deleted: true
               }));
-
-            return sentinelDb.bulkDocs(deletes);
+            // Accessing property using module.exports because
+            // it's stub in webapp/tests/mocha/unit/testingtests/e2e/utils.spec.js
+            return module.exports.sentinelDb.bulkDocs(deletes);
           }).then(response => {
             if (e2eDebug) {
               console.log(`Deleted sentinel docs: ${JSON.stringify(response)}`);
@@ -794,7 +798,7 @@ const deepFreeze = (obj) => {
   Object
     .keys(obj)
     .filter(prop => typeof obj[prop] === 'object' && !Object.isFrozen(obj[prop]))
-    .forEach(prop => this.deepFreeze(obj[prop]));
+    .forEach(prop => deepFreeze(obj[prop]));
   return Object.freeze(obj);
 };
 
@@ -1212,6 +1216,7 @@ module.exports = {
   sentinelDb,
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
+  makeTempDir,
   hostURL,
   parseCookieResponse,
   setupUserDoc,
