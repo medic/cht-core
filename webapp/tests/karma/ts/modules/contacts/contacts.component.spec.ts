@@ -28,6 +28,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
 import { NavigationService } from '@mm-services/navigation.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { MatomoAnalyticsService } from '@mm-services/matomo-analytics.service';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -48,6 +49,7 @@ describe('Contacts component', () => {
   let exportService;
   let xmlFormsService;
   let fastActionButtonService;
+  let matomoAnalyticsService;
   let globalActions;
   let district;
 
@@ -94,7 +96,7 @@ describe('Contacts component', () => {
       getContactLeftSideActions: sinon.stub(),
       getButtonTypeForContentList: sinon.stub(),
     };
-
+    matomoAnalyticsService = { trackEvent: sinon.stub() };
     contactListContains = sinon.stub();
     const selectedContact =  {
       type: { person: true },
@@ -141,6 +143,7 @@ describe('Contacts component', () => {
           { provide: ExportService, useValue: exportService },
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: MatomoAnalyticsService, useValue: matomoAnalyticsService },
           { provide: NavigationService, useValue: {} },
         ]
       })
@@ -768,6 +771,7 @@ describe('Contacts component', () => {
       });
       expect(component.sortDirection).to.equal('last_visited_date');
       expect(component.defaultSortDirection).to.equal('last_visited_date');
+      expect(matomoAnalyticsService.trackEvent.callCount).to.equal(1);
       expect(searchService.search.callCount).to.equal(1);
       expect(searchService.search.args[0]).to.deep.equal(
         [

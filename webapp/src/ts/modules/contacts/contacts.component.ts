@@ -345,7 +345,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     let searchFilters = this.defaultFilters;
     if (this.filters.search) {
       searchFilters = this.filters;
-      console.warn('!!!!-searchFilters.search', searchFilters.search);
       this.matomoAnalyticsService.trackEvent('contacts', 'search', 'term', searchFilters.search);
     }
 
