@@ -1,8 +1,8 @@
-const utils = require('@utils');
-const placeFactory = require('@factories/cht/contacts/place');
-const login = require('@page-objects/default/login/login.wdio.page');
-const commonPage = require('@page-objects/default/common/common.wdio.page');
-const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const utils = require('../../../utils');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
+const placeFactory = require('../../../factories/cht/contacts/place');
 
 const PAGE_SIZE = 50;
 describe('Infinite scrolling', () => {
@@ -15,7 +15,7 @@ describe('Infinite scrolling', () => {
         type: type,
       }));
     await utils.saveDocs(districtHospitals);
-    await login.cookieLogin({ createUser: false });
+    await loginPage.cookieLogin({ createUser: false });
   });
 
   it('should load multiple pages of contacts', async () => {

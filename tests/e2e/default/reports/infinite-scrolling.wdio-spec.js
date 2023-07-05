@@ -1,8 +1,8 @@
-const utils = require('@utils');
-const login = require('@page-objects/default/login/login.wdio.page');
-const commonPage = require('@page-objects/default/common/common.wdio.page');
-const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
-const smsPregancy = require('@factories/cht/reports/sms-pregnancy');
+const utils = require('../../../utils');
+const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
+const smsPregancy = require('../../../factories/cht/reports/sms-pregnancy');
 
 const PAGE_SIZE = 50;
 describe('Infinite scrolling', () => {
@@ -11,7 +11,7 @@ describe('Infinite scrolling', () => {
       .from({ length: 200 })
       .map(() => smsPregancy.pregnancy().build());
     await utils.saveDocs(reports);
-    await login.cookieLogin({ createUser: false });
+    await loginPage.cookieLogin({ createUser: false });
   });
 
   it('should load multiple pages of reports', async () => {
