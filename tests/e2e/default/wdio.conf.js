@@ -58,42 +58,26 @@ const baseConfig = {
       './more-options-menu/**/*.wdio-spec.js',
       './users/**/*.wdio-spec.js'
     ],
-    analytics: [
+    workflows: [
       './analytics/**/*.wdio-spec.js',
-    ],
-    contacts: [
       './contacts/**/*.wdio-spec.js',
+      './reports/**/*.wdio-spec.js',
+      './targets/**/*.wdio-spec.js',
+      './tasks/**/*.wdio-spec.js',
+      './sms/**/*.wdio-spec.js',
     ],
-    db: [
+    technical:[
       './db/**/*.wdio-spec.js',
+      './purge/**/*.wdio-spec.js',
+      './pwa/**/*.wdio-spec.js',
+      './service-worker/**/*.wdio-spec.js',
+      './transitions/**/*.wdio-spec.js',
     ],
+
     enketo: [
       './enketo/**/*.wdio-spec.js',
     ],
-    purge: [
-      './purge/**/*.wdio-spec.js',
-    ],
-    pwa: [
-      './pwa/**/*.wdio-spec.js',
-    ],
-    reports: [
-      './reports/**/*.wdio-spec.js',
-    ],
-    service_worker: [
-      './service-worker/**/*.wdio-spec.js',
-    ],
-    sms: [
-      './purge/**/*.wdio-spec.js',
-    ],
-    targets: [
-      './targets/**/*.wdio-spec.js',
-    ],
-    tasks: [
-      './tasks/**/*.wdio-spec.js',
-    ],
-    transitions: [
-      './transitions/**/*.wdio-spec.js',
-    ],
+    
   },
   // Patterns to exclude.
   exclude: [
