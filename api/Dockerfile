@@ -1,3 +1,8 @@
+FROM node:16 AS build-stage
+WORKDIR /build
+COPY package.json package-lock.json ./
+RUN npm install 
+
 FROM alpine:3.15 AS base_build
 
 RUN apk add --update --no-cache \
@@ -14,7 +19,7 @@ WORKDIR /service
 
 COPY package.json package-lock.json ./
 COPY shared-libs ./shared-libs
-COPY node_modules/@medic ./node_modules/@medic
+COPY --from=build-stage /build/node_modules/@medic ./node_modules/@medic
 COPY api ./api
 
 ENV NODE_PATH=/service/api/node_modules
