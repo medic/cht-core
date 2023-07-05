@@ -73,5 +73,6 @@ describe('Telemetry', () => {
       'metadata.user': user.username,
       'metadata.versions.app': clientDdoc.build_info.version,
     });
+    expect(clientDdoc.build_info.version).to.include(clientDdoc.build_info.base_version);
   });
 });
