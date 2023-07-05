@@ -92,7 +92,7 @@ show_help_existing_stop_and_destroy() {
     echo "    ./cht-docker-compose.sh ENV-FILE.env init"
     echo ""
     echo "recreate server with an existing ENV-FILE.env"
-    echo "    ./cht-docker-compose.sh ENV-FILE.env init"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env recreate"
     echo ""
     echo "https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/"
 }
