@@ -394,6 +394,13 @@ const isMenuOptionVisible = async (action, item) => {
   return await (await optionSelector(action, item)).isDisplayed();
 };
 
+const loadNextInfiniteScrollPage = async () => {
+  await browser.execute(() => {
+    $('.items-container .content-row:last-child').get(0).scrollIntoView();
+  });
+  await waitForLoaderToDisappear(await $('.left-pane'));
+};
+
 module.exports = {
   openMoreOptionsMenu,
   closeFastActionList,
@@ -453,4 +460,5 @@ module.exports = {
   refresh,
   syncAndWaitForFailure,
   waitForAngularLoaded,
+  loadNextInfiniteScrollPage,
 };
