@@ -186,6 +186,7 @@ if [[ -n "${2-}" && -n $projectName ]]; then
  	"init")
 		echo "initiating project \"${projectName}\"..."
 		init_env_file
+  		exit 0
 		;;
 	"recreate")
 		echo "initiating project \"${projectName}\"..."
