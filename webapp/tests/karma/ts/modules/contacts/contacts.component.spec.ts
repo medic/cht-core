@@ -624,7 +624,6 @@ describe('Contacts component', () => {
       expect(component.sortDirection).to.equal('alpha');
       expect(component.defaultSortDirection).to.equal('alpha');
       expect(userSettingsService.get.callCount).to.equal(1);
-      expect(matomoAnalyticsService.trackEvent.notCalled).to.be.true;
       expect(searchService.search.callCount).to.equal(1);
       expect(searchService.search.args[0]).to.deep.equal(
         [
@@ -745,6 +744,7 @@ describe('Contacts component', () => {
       component.sortDirection = 'somethingElse';
       component.sort();
       expect(component.sortDirection).to.equal('something');
+      expect(matomoAnalyticsService.trackEvent.calledOnce).to.be.true;
     }));
 
     it('saves uhc default sorting', fakeAsync(() => {
@@ -772,7 +772,6 @@ describe('Contacts component', () => {
       });
       expect(component.sortDirection).to.equal('last_visited_date');
       expect(component.defaultSortDirection).to.equal('last_visited_date');
-      expect(matomoAnalyticsService.trackEvent.calledOnce).to.be.true;
       expect(searchService.search.calledOnce).to.be.true;
       expect(searchService.search.args[0]).to.deep.equal(
         [
@@ -790,6 +789,7 @@ describe('Contacts component', () => {
       component.sortDirection = 'somethingElse';
       component.sort();
       expect(component.sortDirection).to.equal('last_visited_date');
+      expect(matomoAnalyticsService.trackEvent.calledOnce).to.be.true;
     }));
 
     it('changes listener filters relevant last visited reports when feature is enabled', fakeAsync(() => {

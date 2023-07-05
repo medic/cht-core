@@ -4,12 +4,7 @@ import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { findIndex as _findIndex } from 'lodash-es';
 
-import {
-  MatomoAnalyticsService,
-  matomoEventCategories,
-  matomoEventActions,
-  matomoEventNames,
-} from '@mm-services/matomo-analytics.service';
+import { MatomoAnalyticsService, EventCategories, EventActions } from '@mm-services/matomo-analytics.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ChangesService } from '@mm-services/changes.service';
 import { ServicesActions } from '@mm-actions/services';
@@ -350,12 +345,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     let searchFilters = this.defaultFilters;
     if (this.filters.search) {
       searchFilters = this.filters;
-      this.matomoAnalyticsService.trackEvent(
-        matomoEventCategories.CONTACTS,
-        matomoEventActions.SEARCH,
-        matomoEventNames.TERM,
-        searchFilters.search,
-      );
     }
 
     const extensions:any = {};
@@ -365,12 +354,6 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     if (this.isSortedByLastVisited()) {
       extensions.sortByLastVisitedDate = true;
-      this.matomoAnalyticsService.trackEvent(
-        matomoEventCategories.CONTACTS,
-        matomoEventActions.SORT,
-        matomoEventNames.UHC_LAST_VISITED,
-        true,
-      );
     }
 
     let docIds;
@@ -429,6 +412,10 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.contactsActions.clearSelection();
     }
 
+    if (this.filters.search) {
+      this.matomoAnalyticsService.trackEvent(EventCategories.CONTACTS, EventActions.SEARCH, this.filters.search);
+    }
+
     this.loading = true;
     return this.query();
   }
@@ -436,6 +423,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   sort(sortDirection?) {
     this.sortDirection = sortDirection ? sortDirection : this.defaultSortDirection;
     this.query();
+    this.matomoAnalyticsService.trackEvent(EventCategories.CONTACTS, EventActions.SORT, this.sortDirection);
   }
 
   listTrackBy(index, contact) {

@@ -93,30 +93,22 @@ export class MatomoAnalyticsService {
       });
   }
 
-  async trackEvent(category, action, name, value) {
+  async trackEvent(category, action, name) {
     if (!(await this.canTrack()) || !this.window) {
       return;
     }
 
-    this.window._paq.push(['trackEvent', category, action, name, value]);
+    this.window._paq.push(['trackEvent', category, action, name]);
   }
 }
 
-export const matomoEventCategories = {
+export const EventCategories = {
   CONTACTS: 'contacts',
   REPORTS: 'reports',
 };
 
-export const matomoEventActions = {
+export const EventActions = {
   SORT: 'sort',
   SEARCH: 'search',
   LOAD: 'load',
-};
-
-export const matomoEventNames = {
-  TERM: 'term',
-  UHC_LAST_VISITED: 'byLastVisitedDate',
-  LOAD: 'load',
-  CONTACT_TYPE: 'contactType',
-  FORM: 'form',
 };
