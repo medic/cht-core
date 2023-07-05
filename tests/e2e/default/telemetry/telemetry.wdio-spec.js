@@ -6,6 +6,7 @@ const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
 const { faker: Faker } = require('@faker-js/faker');
 const userFactory = require('@factories/cht/users/users');
+const { BRANCH, TAG } = process.env;
 
 const setupUser = () => {
   const places = placeFactory.generateHierarchy();
@@ -73,6 +74,7 @@ describe('Telemetry', () => {
       'metadata.user': user.username,
       'metadata.versions.app': clientDdoc.build_info.version,
     });
-    expect(clientDdoc.build_info.version).to.include(clientDdoc.build_info.base_version);
+    const ciBuild = TAG || BRANCH;
+    expect(clientDdoc.build_info.version).to.include(ciBuild || clientDdoc.build_info.base_version);
   });
 });
