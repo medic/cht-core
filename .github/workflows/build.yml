@@ -101,7 +101,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
+        suites: ['basic', 'analytics', 'contacts', 'db', 'enketo', 'purge', 'pwa', 'reports', 'service_worker', 'sms', 'targets', 'tasks', 'transitions']
+        grunt-cmd: [`ci-webdriver-default --suite=${{matrix.suites}}`, 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-webdriver-default-mobile']
 
     steps:
     - name: Login to Docker Hub

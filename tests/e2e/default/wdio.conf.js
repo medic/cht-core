@@ -44,9 +44,57 @@ const baseConfig = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  specs: [
-    '**/*.wdio-spec.js',
-  ],
+  // specs: [
+  //   '**/*.wdio-spec.js',
+  // ],
+  suites: {
+    basic: [
+      './about/**/*.wdio-spec.js',
+      './admin/**/*.wdio-spec.js',
+      './login/**/*.wdio-spec.js',
+      './navigation/**/*.wdio-spec.js',
+      './privacy-policy/**/*.wdio-spec.js',
+      './translations/**/*.wdio-spec.js',
+      './more-options-menu/**/*.wdio-spec.js',
+      './users/**/*.wdio-spec.js'
+    ],
+    analytics: [
+      './analytics/**/*.wdio-spec.js',
+    ],
+    contacts: [
+      './contacts/**/*.wdio-spec.js',
+    ],
+    db: [
+      './db/**/*.wdio-spec.js',
+    ],
+    enketo: [
+      './enketo/**/*.wdio-spec.js',
+    ],
+    purge: [
+      './purge/**/*.wdio-spec.js',
+    ],
+    pwa: [
+      './pwa/**/*.wdio-spec.js',
+    ],
+    reports: [
+      './reports/**/*.wdio-spec.js',
+    ],
+    service_worker: [
+      './service-worker/**/*.wdio-spec.js',
+    ],
+    sms: [
+      './purge/**/*.wdio-spec.js',
+    ],
+    targets: [
+      './targets/**/*.wdio-spec.js',
+    ],
+    tasks: [
+      './tasks/**/*.wdio-spec.js',
+    ],
+    transitions: [
+      './transitions/**/*.wdio-spec.js',
+    ],
+  },
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'

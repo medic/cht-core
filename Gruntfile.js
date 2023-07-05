@@ -244,7 +244,7 @@ module.exports = function(grunt) {
       },
       'wdio-run-default': {
         cmd: [
-          'npm run wdio'
+          'npm run wdio -- --suite=' + grunt.option('suite')
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
