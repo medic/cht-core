@@ -88,9 +88,15 @@ show_help_existing_stop_and_destroy() {
     echo "Stop and destroy all project data:"
     echo "    ./cht-docker-compose.sh ENV-FILE.env destroy"
     echo ""
-    echo "https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/"
+    echo "Init an an ENV-FILE.env to allow customisation before server creation"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env init"
     echo ""
+    echo "recreate server with an existing ENV-FILE.env"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env init"
+    echo ""
+    echo "https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/"
 }
+
 
 get_lan_ip() {
   # init empty lan address
@@ -177,7 +183,11 @@ fi
 if [[ -n "${2-}" && -n $projectName ]]; then
 	containerIds=$(docker ps --all --filter "name=${projectName}" --quiet)
 	case $2 in
-	"init")
+ 	"init")
+		echo "initiating project \"${projectName}\"..."
+		init_env_file
+		;;
+	"recreate")
 		echo "initiating project \"${projectName}\"..."
 		create_compose_files
 		;;
