@@ -1145,9 +1145,6 @@ const collectLogs = (container, ...regex) => {
   });
 
   const collect = () => {
-    //killSpawnedProcess(proc);
-
-
     if (errors.length) {
       return Promise.reject({ message: 'CollectLogs errored', errors, logs });
     }
