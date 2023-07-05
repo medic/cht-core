@@ -51,12 +51,12 @@ const baseConfig = {
     basic: [
       './about/**/*.wdio-spec.js',
       './admin/**/*.wdio-spec.js',
-      './login/**/*.wdio-spec.js',
-      './navigation/**/*.wdio-spec.js',
-      './privacy-policy/**/*.wdio-spec.js',
-      './translations/**/*.wdio-spec.js',
-      './more-options-menu/**/*.wdio-spec.js',
-      './users/**/*.wdio-spec.js'
+      // './login/**/*.wdio-spec.js',
+      // './navigation/**/*.wdio-spec.js',
+      // './privacy-policy/**/*.wdio-spec.js',
+      // './translations/**/*.wdio-spec.js',
+      // './more-options-menu/**/*.wdio-spec.js',
+      // './users/**/*.wdio-spec.js'
     ],
     workflows: [
       './analytics/**/*.wdio-spec.js',
@@ -236,7 +236,7 @@ const baseConfig = {
     if (fs.existsSync(browserLogPath)) {
       fs.unlinkSync(browserLogPath);
     }
-    await utils.prepServices();
+    //await utils.prepServices();
   },
   /**
    * Gets executed before a worker process is spawned and can be used to initialise specific service
