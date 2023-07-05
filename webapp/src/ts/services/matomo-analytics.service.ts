@@ -4,6 +4,11 @@ import { DOCUMENT } from '@angular/common';
 import { Subject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
+import { SessionService } from '@mm-services/session.service';
+import { AuthService } from '@mm-services/auth.service';
+
+export const CAN_TRACK_USAGE_ANALYTICS = 'can_track_usage_analytics';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -20,24 +25,16 @@ export class MatomoAnalyticsService {
 
   constructor(
     private router: Router,
-    private readonly activatedRoute: ActivatedRoute,
+    private activatedRoute: ActivatedRoute,
+    private sessionService: SessionService,
+    private authService: AuthService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.window = this.document.defaultView;
   }
 
-  private loadScript() {
-    const head = this.document.getElementsByTagName('head')[0];
-    const script = this.document.createElement('script');
-    script.type = 'text/javascript';
-    script.async = true;
-    script.src = `${this.MATOMO_SERVER_URL}/${this.MATOMO_SCRIP_FILE}`;
-    script.onload = () => this.isScriptReady.next(true);
-    head.appendChild(script);
-  }
-
-  init() {
-    if (!this.window) {
+  async init() {
+    if (!(await this.canTrack()) || !this.window) {
       return;
     }
 
@@ -54,11 +51,25 @@ export class MatomoAnalyticsService {
     this.loadScript();
   }
 
-  stopTracking() { // TODO: Do we need this?
+  private async canTrack() {
+    return !this.sessionService.isDbAdmin() && await this.authService.has(CAN_TRACK_USAGE_ANALYTICS);
+  }
+
+  private loadScript() {
+    const head = this.document.getElementsByTagName('head')[0];
+    const script = this.document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
+    script.src = `${this.MATOMO_SERVER_URL}/${this.MATOMO_SCRIP_FILE}`;
+    script.onload = () => this.isScriptReady.next(true);
+    head.appendChild(script);
+  }
+
+  private stopTracking() { // TODO: Do we need this?
     this.trackingSubscription?.unsubscribe();
   }
 
-  startTracking() {
+  private startTracking() {
     this.trackingSubscription = this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -80,5 +91,13 @@ export class MatomoAnalyticsService {
         this.window._paq.push(['trackPageView']); // Set last
         this.window._paq.push(['enableLinkTracking']); // Also, set last
       });
+  }
+
+  async trackEvent(category, action, name, value) {
+    if (!(await this.canTrack()) || !this.window) {
+      return;
+    }
+
+    this.window._paq.push(['trackEvent', category, action, name, value]);
   }
 }

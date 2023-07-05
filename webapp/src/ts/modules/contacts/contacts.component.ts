@@ -21,6 +21,7 @@ import { RelativeDateService } from '@mm-services/relative-date.service';
 import { ScrollLoaderProvider } from '@mm-providers/scroll-loader.provider';
 import { ExportService } from '@mm-services/export.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
+import { MatomoAnalyticsService } from '@mm-services/matomo-analytics.service';
 import { TranslateService } from '@mm-services/translate.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
@@ -78,6 +79,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     private relativeDateService: RelativeDateService,
     private router: Router,
     private exportService: ExportService,
+    private matomoAnalyticsService: MatomoAnalyticsService,
     private xmlFormsService: XmlFormsService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -343,6 +345,8 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     let searchFilters = this.defaultFilters;
     if (this.filters.search) {
       searchFilters = this.filters;
+      console.warn('!!!!-searchFilters.search', searchFilters.search);
+      this.matomoAnalyticsService.trackEvent('contacts', 'search', 'term', searchFilters.search);
     }
 
     const extensions:any = {};
@@ -352,6 +356,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     if (this.isSortedByLastVisited()) {
       extensions.sortByLastVisitedDate = true;
+      this.matomoAnalyticsService.trackEvent('contacts', 'sort', 'byLastVisitedDate', true);
     }
 
     let docIds;
