@@ -101,3 +101,22 @@ export class MatomoAnalyticsService {
     this.window._paq.push(['trackEvent', category, action, name, value]);
   }
 }
+
+export const matomoEventCategories = {
+  CONTACTS: 'contacts',
+  REPORTS: 'reports',
+};
+
+export const matomoEventActions = {
+  SORT: 'sort',
+  SEARCH: 'search',
+  LOAD: 'load',
+};
+
+export const matomoEventNames = {
+  TERM: 'term',
+  UHC_LAST_VISITED: 'byLastVisitedDate',
+  LOAD: 'load',
+  CONTACT_TYPE: 'contactType',
+  FORM: 'form',
+};

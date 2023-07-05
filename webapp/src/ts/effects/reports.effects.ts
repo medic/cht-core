@@ -5,6 +5,12 @@ import { of } from 'rxjs';
 import { exhaustMap, filter, withLatestFrom, concatMap, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
+import {
+  MatomoAnalyticsService,
+  matomoEventActions,
+  matomoEventCategories,
+  matomoEventNames,
+} from '@mm-services/matomo-analytics.service';
 import { Actions as ReportActionList, ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportViewModelGeneratorService } from '@mm-services/report-view-model-generator.service';
@@ -36,6 +42,7 @@ export class ReportsEffects {
     private searchService:SearchService,
     private modalService:ModalService,
     private translateService:TranslateService,
+    private matomoAnalyticsService:MatomoAnalyticsService,
     private authService:AuthService,
   ) {
     this.reportActions = new ReportsActions(store);
@@ -74,7 +81,15 @@ export class ReportsEffects {
         }
         return of(this.reportViewModelGeneratorService
           .get(reportId)
-          .then(report => this.reportActions.openReportContent(report))
+          .then(report => {
+            this.reportActions.openReportContent(report);
+            this.matomoAnalyticsService.trackEvent(
+              matomoEventCategories.REPORTS,
+              matomoEventActions.LOAD,
+              matomoEventNames.FORM,
+              report.doc?.form,
+            );
+          })
           .catch(error => {
             console.error('Error selecting report to open', error);
             this.globalActions.unsetSelected();

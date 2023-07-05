@@ -16,6 +16,7 @@ import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 import { TargetAggregatesService } from '@mm-services/target-aggregates.service';
 import { ContactsEffects } from '@mm-effects/contacts.effects';
+import { MatomoAnalyticsService } from '@mm-services/matomo-analytics.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 
 describe('Contacts effects', () => {
@@ -27,6 +28,7 @@ describe('Contacts effects', () => {
   let store;
   let targetAggregateService;
   let tasksForContactService;
+  let matomoAnalyticsService;
   let routeSnapshotService;
 
   beforeEach(async() => {
@@ -45,6 +47,7 @@ describe('Contacts effects', () => {
     translateService = { instant: sinon.stub().returnsArg(0) };
     contactSummaryService = { get: sinon.stub().resolves({ cards: [], fields: [] }) };
     targetAggregateService = { getCurrentTargetDoc: sinon.stub().resolves() };
+    matomoAnalyticsService = { trackEvent: sinon.stub() };
     tasksForContactService = { get: sinon.stub().resolves([]) };
 
     TestBed.configureTestingModule({
@@ -59,6 +62,7 @@ describe('Contacts effects', () => {
         { provide: ContactSummaryService, useValue: contactSummaryService },
         { provide: TargetAggregatesService, useValue: targetAggregateService },
         { provide: TasksForContactService, useValue: tasksForContactService },
+        { provide: MatomoAnalyticsService, useValue: matomoAnalyticsService },
         { provide: RouteSnapshotService, useValue: routeSnapshotService },
       ]
     });
@@ -164,6 +168,7 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
+      expect(matomoAnalyticsService.trackEvent.calledOnce).to.be.true;
     });
 
     it('should load the contact when silent', async () => {
@@ -186,6 +191,7 @@ describe('Contacts effects', () => {
       expect(settingSelected.args[0]).to.deep.equal([]);
       expect(setContactIdToLoadStub.calledOnce).to.be.true;
       expect(setContactIdToLoadStub.args[0][0]).to.equal('contactid');
+      expect(matomoAnalyticsService.trackEvent.calledOnce).to.be.true;
     });
 
     it('should handle missing contacts', fakeAsync(() => {
@@ -207,6 +213,7 @@ describe('Contacts effects', () => {
       expect(contactViewModelGeneratorService.loadReports.callCount).to.equal(0);
       expect(targetAggregateService.getCurrentTargetDoc.callCount).to.equal(0);
       expect(contactSummaryService.get.callCount).to.equal(0);
+      expect(matomoAnalyticsService.trackEvent.notCalled).to.be.true;
     }));
 
     describe('loading children', () => {

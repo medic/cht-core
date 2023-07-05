@@ -4,6 +4,12 @@ import { Store, select } from '@ngrx/store';
 import { combineLatest, of } from 'rxjs';
 import { exhaustMap, withLatestFrom } from 'rxjs/operators';
 
+import {
+  MatomoAnalyticsService,
+  matomoEventActions,
+  matomoEventCategories,
+  matomoEventNames,
+} from '@mm-services/matomo-analytics.service';
 import { Actions as ContactActionList, ContactsActions } from '@mm-actions/contacts';
 import { ContactViewModelGeneratorService } from '@mm-services/contact-view-model-generator.service';
 import { GlobalActions } from '@mm-actions/global';
@@ -30,6 +36,7 @@ export class ContactsEffects {
     private tasksForContactService: TasksForContactService,
     private targetAggregateService: TargetAggregatesService,
     private translateService: TranslateService,
+    private matomoAnalyticsService: MatomoAnalyticsService,
     private routeSnapshotService: RouteSnapshotService,
   ) {
     this.contactsActions = new ContactsActions(store);
@@ -107,6 +114,12 @@ export class ContactsEffects {
           .then(() => {
             this.globalActions.settingSelected();
             this.contactsActions.setSelectedContact(model);
+            this.matomoAnalyticsService.trackEvent(
+              matomoEventCategories.CONTACTS,
+              matomoEventActions.LOAD,
+              matomoEventNames.CONTACT_TYPE,
+              model.doc?.type,
+            );
           });
       });
   }
