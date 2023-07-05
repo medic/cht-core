@@ -671,7 +671,6 @@ const getCreatedUsers = async () => {
  * @param {Boolean} meta - if true, creates meta db-s as well, default false
  * @return {Promise}
  * */
-
 const createUsers = async (users, meta = false) => {
   const createUserOpts = {
     path: '/api/v1/users',
