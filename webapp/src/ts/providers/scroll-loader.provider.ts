@@ -8,7 +8,7 @@ export class ScrollLoaderProvider {
     private ngZone:NgZone,
   ) { }
 
-  init(callback, selector='.inbox-items') {
+  init(callback, selector='.inbox-items .items-container') {
     const _check = (event) => {
       const element = event.target;
       if (element.scrollHeight - element.scrollTop - 10 < element.clientHeight) {
