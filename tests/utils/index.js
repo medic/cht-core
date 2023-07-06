@@ -1268,6 +1268,4 @@ module.exports = {
   apiLogTestEnd,
   updateContainerNames,
   updatePermissions,
-
-  ONE_YEAR_IN_S,
 };
