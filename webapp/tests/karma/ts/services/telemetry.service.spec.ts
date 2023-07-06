@@ -181,7 +181,7 @@ describe('TelemetryService', () => {
         .withArgs('_design/medic-client')
         .resolves({
           _id: '_design/medic-client',
-          deploy_info: { version: '3.0.0' }
+          build_info: { version: '3.0.0' }
         });
       medicDb.query.resolves({
         rows: [
@@ -384,7 +384,7 @@ describe('TelemetryService', () => {
       metaDb.put.onSecondCall().resolves();
       medicDb.get.withArgs('_design/medic-client').resolves({
         _id: '_design/medic-client',
-        deploy_info: {
+        build_info: {
           version: '3.0.0'
         }
       });
