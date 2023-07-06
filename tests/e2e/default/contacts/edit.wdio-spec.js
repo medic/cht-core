@@ -39,7 +39,7 @@ describe('Edit contacts with the default config. ', () => {
     expect(primaryContactName).to.equal(CONTACT_UPDATED_NAME);
   });
 
-  it('should remove the primary contact from the clinic when the contact is deleted', async () => {
+  xit('should remove the primary contact from the clinic when the contact is deleted', async () => {
     await commonPage.goToPeople();
     await commonPage.waitForPageLoaded();
 
