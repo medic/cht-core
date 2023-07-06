@@ -47,7 +47,7 @@ const getApiUrl = (pathname = '') => {
   return apiUrl.toString();
 };
 
-const releaseName = TAG || BRANCH || 'local-development';
+const releaseName = TAG || BRANCH || `${packageJson.version}-local-development`;
 
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
