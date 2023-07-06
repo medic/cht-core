@@ -105,6 +105,7 @@ export class MatomoAnalyticsService {
 export const EventCategories = {
   CONTACTS: 'contacts',
   REPORTS: 'reports',
+  TASKS: 'tasks'
 };
 
 export const EventActions = {
