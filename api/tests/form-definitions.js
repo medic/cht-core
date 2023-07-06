@@ -792,69 +792,37 @@ exports.forms = {
       }
     }
   },
-  YYYR: {
-    meta: {
-      code: 'YYYR',
-      label: 'Test date parts in BS calendar without bsMonth, bsDay'
-    },
-    fields: {
-      patient_id: {
-        labels: {
-          long: 'Patient ID',
-          tiny: 'ID'
-        },
-        type: 'string',
-        required: true
-      },
-      lmp_year: {
-        labels: {
-          short: 'Year',
-          tiny: 'Y'
-        },
-        type: 'bsYear',
-        required: true
-      },
-      lmp_date: {
-        labels: {
-          short: 'LMP Date',
-          tiny: 'LMP'
-        },
-        type: 'bsAggreDate',
-        required: true
-      }
-    }
-  },
-  "NP": {
-    "meta": {
-      "code": "NP",
-      "translation_key": "forms.np.title",
-      "label": {
-        "en": "New Person with phone_number Registration"
+  'NP': {
+    'meta': {
+      'code': 'NP',
+      'translation_key': 'forms.np.title',
+      'label': {
+        'en': 'New Person with phone_number Registration'
       }
     },
-    "fields": {
-      "phone_number": {
-        "labels": {
-          "tiny": {
-            "en": "phone number"
+    'fields': {
+      'phone_number': {
+        'labels': {
+          'tiny': {
+            'en': 'phone number'
           },
-          "description": {
-            "en": "phone number"
+          'description': {
+            'en': 'phone number'
           },
-          "short": {
-            "en": "phone number"
+          'short': {
+            'en': 'phone number'
           }
         },
-        "position": 2,
-        "type": "phone_number",
-        "length": [
+        'position': 2,
+        'type': 'phone_number',
+        'length': [
           9,
           16
         ],
-        "required": true
+        'required': true
       }
     },
-    "public_form": false,
-    "use_sentinel": true
+    'public_form': false,
+    'use_sentinel': true
   },
 };

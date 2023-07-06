@@ -195,12 +195,10 @@ const getPhoneNumber = doc => {
 
 const setPhoneNumber = doc => {
   const phoneNumber = getPhoneNumber(doc);
-  console.log(doc);
   // By default for a valid phone number SmsParser itself adds a country code if not provided
   // So if country code is not present in phone_number throw error
   const validPhone = phoneNumberParser.validate(config.getAll(), phoneNumber);
   if (!validPhone) {
-    console.log(`${doc.phoneNumber} submitted by ${doc.from} is not a valid phone number`);
     throw new Error(
       `${doc.phoneNumber} submitted by ${doc.from} is not a valid phone number`
     );
@@ -234,8 +232,6 @@ const getRegistrationConfig = (config, formCode) => {
 
 const triggers = {
   add_patient: (options) => {
-    debugger;
-    console.log(options);
     // if we already have a patient id then return
     if (options.doc.patient_id) {
       return;
@@ -260,8 +256,6 @@ const triggers = {
     return triggers.add_patient(options);
   },
   add_phone_number: (options) => {
-    debugger;
-    console.log("add_phone_number" + options);
     return setPhoneNumber(options.doc);
   },
   add_age: (options) => {

@@ -116,7 +116,7 @@ describe('sms parser', () => {
       phone_validation: 'full'
     });
     const data = smsparser.parse(def, doc);
-    chai.expect(data.phone_number).to.equal("+977 984-1161718");
+    chai.expect(data.phone_number).to.equal('+977 984-1161718');
   });
 
   it('accepts correct phone number without extension', () => {
@@ -127,7 +127,7 @@ describe('sms parser', () => {
       phone_validation: 'full'
     });
     const data = smsparser.parse(def, doc);
-    chai.expect(data.phone_number).to.equal("+977 984-1161718");
+    chai.expect(data.phone_number).to.equal('+977 984-1161718');
   });
 
   it('returns null if phone number is invalid for the region', () => {

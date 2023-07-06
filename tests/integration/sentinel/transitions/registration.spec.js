@@ -209,7 +209,6 @@ describe('registration', () => {
       patientNameAndInvalidPhone
     ];
     const docIds = getIds(docs);
-    let newPatientId;
 
     return utils
       .updateSettings(settings, 'sentinel')
@@ -222,7 +221,6 @@ describe('registration', () => {
         });
       }).then(() => utils.getDocs(docIds))
       .then(updated => {
-        console.log(updated);
         chai.expect(updated[0].fields.phone_number).to.equal(patient_phone);
         chai.expect(updated[0].patient_id).equal(undefined);
       })
