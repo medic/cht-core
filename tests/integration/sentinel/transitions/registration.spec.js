@@ -97,8 +97,8 @@ describe('registration', () => {
   after(() => utils.revertDb([], true));
   afterEach(() => utils.revertDb(getIds(contacts), true));
 
-  it.only('should add valid phone to patient doc', () => {
-    let patient_phone = '+9779841123123';
+  it('should add valid phone to patient doc', () => {
+    const patient_phone = '+9779841123123';
     const settings = {
       transitions: { registration: true },
       registrations: [{
@@ -146,7 +146,6 @@ describe('registration', () => {
       patientNameAndPhone
     ];
     const docIds = getIds(docs);
-    let newPatientId;
 
     return utils
       .updateSettings(settings, 'sentinel')
@@ -157,11 +156,11 @@ describe('registration', () => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
-      })
+      });
   });
 
-  it.only('should not create patient from report doc when provided invalid phone', () => {
-    let patient_phone = '+9779666666666';
+  it('should not create patient from report doc when provided invalid phone', () => {
+    const patient_phone = '+9779666666666';
     const settings = {
       transitions: { registration: true },
       registrations: [{
@@ -229,8 +228,8 @@ describe('registration', () => {
       });
   });
 
-  it.only('should fail transition on invalid phone', () => {
-    let patient_phone = '+9779666666666';
+  it('should fail transition on invalid phone', () => {
+    const patient_phone = '+9779666666666';
     const settings = {
       transitions: { registration: true },
       registrations: [{
@@ -278,7 +277,6 @@ describe('registration', () => {
       patientNameAndInvalidPhone
     ];
     const docIds = getIds(docs);
-    let newPatientId;
 
     return utils
       .updateSettings(settings, 'sentinel')
@@ -289,10 +287,10 @@ describe('registration', () => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.not.include({ 'transitions.registration.ok': false });
         });
-      })
+      });
   });
 
-  it('should be skipped when transition is disabled', () => {
+  it(' be skipped when transition is disabled', () => {
     const settings = {
       transitions: { registration: false },
       registrations: [{

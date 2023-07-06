@@ -202,23 +202,9 @@ const setPhoneNumber = doc => {
     throw new Error(
       `${doc.phoneNumber} submitted by ${doc.from} is not a valid phone number`
     );
-
-  }
-  else {
+  } else {
     doc.phone_number = phoneNumber;
   }
-};
-
-const getAge = doc => {
-  if (!doc || !doc.fields) {
-    return '';
-  }
-  return doc.fields.patient_age;
-};
-
-const setAge = doc => {
-  const age = getAge(doc);
-  doc.age = age;
 };
 
 const getConfig = () => config.get('registrations');
@@ -549,10 +535,6 @@ const addPatient = (options) => {
 
         if (doc.phone_number) {
           patient.phone_number = doc.phone_number;
-        }
-
-        if (doc.age) {
-          patient.age = doc.age;
         }
 
         // assign patient in doc with full parent doc - to be used in messages

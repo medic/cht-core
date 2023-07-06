@@ -66,11 +66,6 @@ module.exports = {
       doc.patient_id = patientId;
     });
   },
-  isPhoneUnique: (phone) => {
-    return db.medic
-      .query('medic-client/contacts_by_reference', { key: ['shortcode', id] })
-      .then(results => !(results && results.rows && results.rows.length));
-  },
   getUniqueId: () => idGenerator.next().value,
 
   hasRun: (doc, transition) => {

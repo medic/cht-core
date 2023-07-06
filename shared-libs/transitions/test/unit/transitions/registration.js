@@ -2800,7 +2800,9 @@ describe('registration', () => {
         transitionUtils.addRegistrationNotFoundError.callCount.should.equal(1);
         transitionUtils.addRegistrationNotFoundError.args[0].should.deep.equal([doc, registrationConfig]);
         contactTypeUtils.isPlace.callCount.should.equal(1);
-        contactTypeUtils.isPlace.args[0].should.deep.equal([{}, { _id: 'person', patient_id: '56987', type: 'person' }]);
+        contactTypeUtils.isPlace.args[0].should.deep.equal(
+          [{}, { _id: 'person', patient_id: '56987', type: 'person' }]
+        );
       });
     });
 
