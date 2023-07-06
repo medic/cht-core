@@ -104,13 +104,13 @@ jobs:
         grunt-cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-webdriver-default-mobile']
         #suite: [basic, enketo]
         include:
-          - grunt-cmd: ci-webdriver-basic
+          - grunt-cmd: ci-webdriver-default
             suite: --suite=basic
-          - grunt-cmd: ci-webdriver-enketo
+          - grunt-cmd: ci-webdriver-default
             suite: --suite=enketo
-          - grunt-cmd: ci-webdriver-technical
+          - grunt-cmd: ci-webdriver-default
             suite: --suite=technical
-          - grunt-cmd: ci-webdriver-workflows
+          - grunt-cmd: ci-webdriver-default
             suite: --suite=workflows
 
     steps:
@@ -169,7 +169,7 @@ jobs:
     - name: Copy allure history
       run: |
         mkdir -p allure-results/history
-        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report/history allure-results | true
+        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/${{ matrix.suite ||'all' }}/allure-report/history allure-results | true
     - name: Run tests
       run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }} ${{ matrix.suite || '' }}"
     - name: Fetch allure history
@@ -182,8 +182,8 @@ jobs:
     - name: Copy new allure history
       if: always()
       run: |
-        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/history
-        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report | true
+        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/${{ matrix.suite ||'all' }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}//${{ matrix.suite || 'all' }}allure-report | true
     - name: Upload allure report history
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       uses: actions-js/push@master
@@ -202,8 +202,8 @@ jobs:
     - name: Copy new report
       if: always()
       run: |
-        mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}
-        cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }} | true
+        mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}/${{ matrix.suite || 'all'}}
+        cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }}/${{ matrix.suite || 'all'}} | true
     - name: Upload allure report
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       uses: actions-js/push@master
