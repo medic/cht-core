@@ -93,7 +93,7 @@ jobs:
 
   tests:
     # needs: build
-    name: ${{ matrix.grunt-cmd }}
+    name: ${{ matrix.grunt-cmd }}${{ matrix.suite ||'' }}
     runs-on: ubuntu-22.04
     env:
       NODE: 16.x
@@ -169,7 +169,7 @@ jobs:
     - name: Copy allure history
       run: |
         mkdir -p allure-results/history
-        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/${{ matrix.suite ||'all' }}/allure-report/history allure-results | true
+        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}${{ matrix.suite ||'all' }}/allure-report/history allure-results | true
     - name: Run tests
       run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }} ${{ matrix.suite || '' }}"
     - name: Fetch allure history
@@ -182,8 +182,8 @@ jobs:
     - name: Copy new allure history
       if: always()
       run: |
-        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/${{ matrix.suite ||'all' }}/history
-        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}//${{ matrix.suite || 'all' }}allure-report | true
+        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}${{ matrix.suite ||'all' }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}${{ matrix.suite || 'all' }}allure-report | true
     - name: Upload allure report history
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       uses: actions-js/push@master
@@ -202,8 +202,8 @@ jobs:
     - name: Copy new report
       if: always()
       run: |
-        mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}/${{ matrix.suite || 'all'}}
-        cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }}/${{ matrix.suite || 'all'}} | true
+        mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}${{ matrix.suite || 'all'}}
+        cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }}${{ matrix.suite || 'all'}} | true
     - name: Upload allure report
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       uses: actions-js/push@master
@@ -215,7 +215,7 @@ jobs:
     - name: Archive Results
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.grunt-cmd }}
+        name: ${{ matrix.grunt-cmd }}${{ matrix.suite || ''}}
         path: |
           allure-results
           allure-report
