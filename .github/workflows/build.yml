@@ -101,11 +101,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: [ci-webdriver-default --suite=basic]
-        # ci-webdriver-default -- --suite=workflows, 
-        # ci-webdriver-default -- --suite=technical, 
-        # ci-webdriver-default -- --suite=enketo, 
-        # 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-webdriver-default-mobile']
+        grunt-cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-webdriver-default-mobile']
+        #suite: [basic, enketo]
+        include:
+          - grunt-cmd: ci-webdriver-basic
+            suite: --suite=basic
+          - grunt-cmd: ci-webdriver-enketo
+            suite: --suite=enketo
+          - grunt-cmd: ci-webdriver-technical
+            suite: --suite=technical
+          - grunt-cmd: ci-webdriver-workflows
+            suite: --suite=workflows
 
     steps:
     - name: Login to Docker Hub
@@ -165,7 +171,7 @@ jobs:
         mkdir -p allure-results/history
         cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report/history allure-results | true
     - name: Run tests
-      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
+      run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }} ${{ matrix.suite || '' }}"
     - name: Fetch allure history
       if: always()
       uses: actions/checkout@v3
