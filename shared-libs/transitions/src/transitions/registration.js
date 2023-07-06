@@ -551,7 +551,7 @@ const addPatient = (options) => {
         }
 
         if (doc.phone_number) {
-          patient.phoneNumber = doc.phone_number;
+          patient.phone_number = doc.phone_number;
         }
 
         if (doc.age) {

@@ -97,71 +97,670 @@ describe('registration', () => {
   after(() => utils.revertDb([], true));
   afterEach(() => utils.revertDb(getIds(contacts), true));
 
+  // [['+918750660880', '+91 87506 60880'],
+  // ['+255712262987', '+255 712 262 987']].forEach(phoneNumerWithParsed => {
+  //   it.only('yuvraj ko test with phone', () => {
+  //     const settings = {
+  //       transitions: { registration: true },
+  //       registrations: [{
+  //         form: 'FORM-A',
+  //         events: [{
+  //           name: "on_create",
+  //           trigger: "add_phone_number",
+  //           params: "phone_number",
+  //           bool_expr: "doc.fields.phone_number"
+  //         },
+  //         {
+  //           name: 'on_create',
+  //           trigger: 'add_patient',
+  //           params: '',
+  //           bool_expr: ''
+  //         }],
+  //         messages: [{
+  //           recipient: 'reporting_unit',
+  //           event_type: 'report_accepted',
+  //           message: [{
+  //             locale: 'en',
+  //             content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
+  //           }],
+  //         }],
+  //       }],
+  //       forms: { 'FORM-A': {} }
+  //     };
 
-  [['+918750660880', '+91 87506 60880'],
-  ['+255712262987', '+255 712 262 987']].forEach(phoneNumerWithParsed => {
-    console.log(phoneNumerWithParsed[0]);
-    it('should create new person with phone number if correct number is supplied', () => {
-      console.log("Phone" + phoneNumerWithParsed[0]);
-      const settings = {
-        transitions: { registration: true },
-        registrations: [{
-          form: 'FORM',
-          events: [{
-            name: 'on_create',
-            trigger: 'add_phone_number',
-            params: '',
-            bool_expr: ''
-          }],
-          messages: [],
+  //     const patientWithPhone = { // has just the `patient_name` field, and should create this person
+  //       _id: uuid(),
+  //       type: 'data_record',
+  //       form: 'FORM-A',
+  //       from: '+444999',
+  //       fields: {
+  //         patient_name: 'Minerva',
+  //         phone_number: phoneNumerWithParsed[0]
+  //       },
+  //       reported_date: moment().valueOf(),
+  //       contact: {
+  //         _id: 'person',
+  //         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+  //       }
+  //     };
+
+  //     const docs = [
+  //       patientWithPhone
+  //     ];
+  //     const docIds = getIds(docs);
+  //     let newPatientId;
+
+  //     return utils
+  //       .updateSettings(settings, 'sentinel')
+  //       .then(() => utils.saveDocs(docs))
+  //       .then(() => sentinelUtils.waitForSentinel(docIds))
+  //       .then(() => sentinelUtils.getInfoDocs(docIds))
+  //       .then(infos => {
+  //         infos.forEach(info => {
+  //           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
+  //         });
+  //       })
+  //       .then(() => utils.getDocs(docIds))
+  //       .then(updated => {
+  //         console.log(updated);
+  //         chai.expect(updated[0].fields.phone_number).to.equal(phoneNumerWithParsed[1]);
+  //         chai.expect(updated[0].patient_id).not.to.equal(undefined);
+  //         chai.expect(updated[0].tasks).to.have.lengthOf(1);
+  //         chai.expect(updated[0].tasks[0].messages[0]).to.include({
+  //           to: '+444999',
+  //           message: `Patient Minerva (${updated[0].patient_id}) added to Clinic`
+  //         });
+
+  //         newPatientId = updated[0].patient_id;
+
+  //         return getContactsByReference([newPatientId, 'venus']);
+  //       })
+  //       .then(patients => {
+  //         chai.expect(patients.rows[0].doc).to.deep.include({
+  //           patient_id: newPatientId,
+  //           phone_number: phoneNumerWithParsed[1],
+  //           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+  //           name: 'Minerva',
+  //           type: 'person',
+  //           created_by: 'person',
+  //           source_id: patientWithPhone._id,
+  //         });
+  //       });
+  //   });
+  // });
+
+  it.only('should add valid phone to patient doc', () => {
+    let patient_phone = '+9779841123123';
+    const settings = {
+      transitions: { registration: true },
+      registrations: [{
+        form: 'FORM-A',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_phone_number',
+          params: 'phone_number',
+          bool_expr: 'doc.fields.phone_number'
+        }, {
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '',
+          bool_expr: ''
         }],
-        forms: { FORM: {} }
-      };
+        messages: [{
+          recipient: 'reporting_unit',
+          event_type: 'report_accepted',
+          message: [{
+            locale: 'en',
+            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
+          }],
+        }],
+      }],
+      forms: { 'FORM-A': {} }
+    };
 
-      const formWithPhone = {
-        _id: uuid(),
-        type: 'data_record',
-        form: 'FORM',
-        from: '+444999',
-        fields: {
-          patient_id: 'patient',
-          phone_Number: phoneNumerWithParsed[0]
-        },
-        reported_date: moment().valueOf(),
-        contact: {
-          _id: 'person',
-          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
-        }
-      };
+    const patientNameAndPhone = { // has just the `patient_name` field, and should create this person
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+9779841212345',
+      fields: {
+        patient_name: 'Minerva',
+        phone_number: patient_phone
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
 
-      const docs = [formWithPhone];
-      const docIds = getIds(docs);
+    const docs = [
+      patientNameAndPhone
+    ];
+    const docIds = getIds(docs);
+    let newPatientId;
 
-      return utils
-        .updateSettings(settings, 'sentinel')
-        .then(() => {
-          utils.saveDocs(docs)
-          console.log(docs);
-        })
-        .then(() => {
-          sentinelUtils.waitForSentinel(docIds)
-          console.log(docIds);
-        })
-        .then(() => {
-          sentinelUtils.getInfoDocs(docIds)
-        })
-        .then(infos => {
-          infos.forEach(info => {
-            chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
-          });
-        })
-        .then(() => utils.getDocs(docIds))
-        .then(updated => {
-          chai.expect(updated[0].phoneNumber).to.not.be.null;
-          chai.expect(updated[0].phoneNumber).to.equal(phoneNumerWithParsed[1]);
+    return utils
+      .updateSettings(settings, 'sentinel')
+      .then(utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
+      .then(infos => {
+        infos.forEach(info => {
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
         });
-    })
+      })
+      .then(() => utils.getDocs(docIds))
+      .then(updated => {
+        console.log(updated);
+        chai.expect(updated[0].fields.phone_number).to.equal(patient_phone);
+        chai.expect(updated[0].patient_id).not.to.equal(undefined);
+        chai.expect(updated[0].tasks).to.have.lengthOf(1);
+        chai.expect(updated[0].tasks[0].messages[0]).to.include({
+          to: '+9779841212345',
+          message: `Patient Minerva (${updated[0].patient_id}) added to Clinic`
+        });
+
+        newPatientId = updated[0].patient_id;
+
+        return getContactsByReference([newPatientId, 'venus']);
+      })
+      .then(patients => {
+        console.log(patients);
+        chai.expect(patients.rows[0].doc).to.deep.include({
+          patient_id: newPatientId,
+          phone_number: patient_phone,
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+          name: 'Minerva',
+          type: 'person',
+          created_by: 'person',
+          source_id: patientNameAndPhone._id,
+        });
+      });
   });
+
+  it.only('should error out on invalid phone', () => {
+    let patient_phone = '+9779666666666';
+    const settings = {
+      transitions: { registration: true },
+      registrations: [{
+        form: 'FORM-A',
+        events: [{
+          name: 'on_create',
+          trigger: 'add_phone_number',
+          params: 'phone_number',
+          bool_expr: 'doc.fields.phone_number'
+        }, {
+          name: 'on_create',
+          trigger: 'add_patient',
+          params: '',
+          bool_expr: ''
+        }],
+        messages: [{
+          recipient: 'reporting_unit',
+          event_type: 'report_accepted',
+          message: [{
+            locale: 'en',
+            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
+          }],
+        }],
+      }],
+      forms: { 'FORM-A': {} }
+    };
+
+    const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
+      _id: uuid(),
+      type: 'data_record',
+      form: 'FORM-A',
+      from: '+9779841212345',
+      fields: {
+        patient_name: 'Minerva',
+        phone_number: patient_phone
+      },
+      reported_date: moment().valueOf(),
+      contact: {
+        _id: 'person',
+        parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      }
+    };
+
+    const docs = [
+      patientNameAndInvalidPhone
+    ];
+    const docIds = getIds(docs);
+    let newPatientId;
+
+    return utils
+      .updateSettings(settings, 'sentinel')
+      .then(utils.saveDocs(docs))
+      .then(() => sentinelUtils.waitForSentinel(docIds))
+      .then(() => sentinelUtils.getInfoDocs(docIds))
+      .then(infos => {
+        infos.forEach(info => {
+          chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
+        });
+      })
+      .then(() => utils.getDocs(docIds))
+      .then(updated => {
+        console.log(updated);
+        chai.expect(updated[0].fields.phone_number).to.equal(undefined);
+        chai.expect(updated[0].patient_id).not.to.equal(undefined);
+        chai.expect(updated[0].errors).to.be.ok;
+        chai.expect(updated[0].errors).to.have.lengthOf(1);
+
+        newPatientId = updated[0].patient_id;
+
+        return getContactsByReference([newPatientId, 'venus']);
+      })
+      .then(patients => {
+        console.log(patients);
+        chai.expect(patients.rows[0].doc).to.deep.include({
+          patient_id: newPatientId,
+          parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+          name: 'Minerva',
+          type: 'person',
+          created_by: 'person',
+          source_id: patientNameAndInvalidPhone._id,
+        });
+      });
+  });
+
+  // it.only('should error valid phone to patient doc', () => {
+  //   let patient_phone = '+9779841123123';
+  //   const settings = {
+  //     transitions: { registration: true },
+  //     registrations: [{
+  //       form: 'FORM-A',
+  //       events: [{
+  //         name: 'on_create',
+  //         trigger: 'add_phone_number',
+  //         params: 'phone_number',
+  //         bool_expr: 'doc.fields.phone_number'
+  //       }, {
+  //         name: 'on_create',
+  //         trigger: 'add_patient',
+  //         params: '',
+  //         bool_expr: ''
+  //       }],
+  //       messages: [{
+  //         recipient: 'reporting_unit',
+  //         event_type: 'report_accepted',
+  //         message: [{
+  //           locale: 'en',
+  //           content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
+  //         }],
+  //       }],
+  //     }],
+  //     forms: { 'FORM-A': {} }
+  //   };
+
+  //   const patientNameAndPhone = { // has just the `patient_name` field, and should create this person
+  //     _id: uuid(),
+  //     type: 'data_record',
+  //     form: 'FORM-A',
+  //     from: '+9779841212345',
+  //     fields: {
+  //       patient_name: 'Minerva',
+  //       phone_number: patient_phone
+  //     },
+  //     reported_date: moment().valueOf(),
+  //     contact: {
+  //       _id: 'person',
+  //       parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+  //     }
+  //   };
+
+  //   const docs = [
+  //     patientNameAndPhone
+  //   ];
+  //   const docIds = getIds(docs);
+  //   let newPatientId;
+
+  //   return utils
+  //     .updateSettings(settings, 'sentinel')
+  //     .then(utils.saveDocs(docs))
+  //     .then(() => sentinelUtils.waitForSentinel(docIds))
+  //     .then(() => sentinelUtils.getInfoDocs(docIds))
+  //     .then(infos => {
+  //       infos.forEach(info => {
+  //         chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
+  //       });
+  //     })
+  //     .then(() => utils.getDocs(docIds))
+  //     .then(updated => {
+  //       console.log(updated);
+  //       chai.expect(updated[0].fields.phone_number).to.equal(patient_phone);
+  //       chai.expect(updated[0].patient_id).not.to.equal(undefined);
+  //       chai.expect(updated[0].tasks).to.have.lengthOf(1);
+  //       chai.expect(updated[0].tasks[0].messages[0]).to.include({
+  //         to: '+9779841212345',
+  //         message: `Patient Minerva (${updated[0].patient_id}) added to Clinic`
+  //       });
+
+  //       newPatientId = updated[0].patient_id;
+
+  //       return getContactsByReference([newPatientId, 'venus']);
+  //     })
+  //     .then(patients => {
+  //       console.log(patients);
+  //       chai.expect(patients.rows[0].doc).to.deep.include({
+  //         patient_id: newPatientId,
+  //         phone_number: patient_phone,
+  //         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
+  //         name: 'Minerva',
+  //         type: 'person',
+  //         created_by: 'person',
+  //         source_id: patientNameAndPhone._id,
+  //       });
+  //     });
+  // });
+
+
+  // [['+918750660880', '+91 87506 60880'],
+  // ['+255712262987', '+255 712 262 987']].forEach(phoneNumerWithParsed => {
+  //   console.log(phoneNumerWithParsed[0]);
+  //   it.only('should create new person with phone number if correct number is supplied', () => {
+  //     console.log("Phone" + phoneNumerWithParsed[0]);
+  //     const settings = {
+  //       transitions: { registration: true },
+  //       registrations: [
+  //         {
+  //           "form": "NP",
+  //           "events": [
+  //             {
+  //               "name": "on_create",
+  //               "trigger": "add_phone_number",
+  //               "params": "phone_number",
+  //               "bool_expr": "doc.fields.phone_number"
+  //             },
+  //             {
+  //               "name": "on_create",
+  //               "trigger": "add_patient",
+  //               "params": "",
+  //               "bool_expr": ""
+  //             },
+  //             {
+  //               "name": "on_create",
+  //               "trigger": "add_age",
+  //               "params": "patient_age",
+  //               "bool_expr": "doc.fields.age"
+  //             }
+  //           ],
+  //           "validations": {
+  //             "join_responses": false,
+  //             "list": [
+  //               {
+  //                 "property": "patient_age",
+  //                 "rule": "(integer && min(0) && max(125))",
+  //                 "translation_key": "",
+  //                 "message": [
+  //                   {
+  //                     "content": "The registration format for {{patient_name}} is incorrect, please ensure that age is a number between 0 and 125.",
+  //                     "locale": "en"
+  //                   }
+  //                 ]
+  //               },
+  //               {
+  //                 "property": "patient_name",
+  //                 "rule": "(string && lenMin(1) && lenMax(30))",
+  //                 "translation_key": "",
+  //                 "message": [
+  //                   {
+  //                     "content": "The registration format for {{patient_name}} is incorrect, please ensure that name length is between 2 and 42.",
+  //                     "locale": "en"
+  //                   }
+  //                 ]
+  //               },
+  //               {
+  //                 "property": "phone_number",
+  //                 "rule": "unique('form', 'phone_number')",
+  //                 "translation_key": "",
+  //                 "message": [
+  //                   {
+  //                     "content": "The registration format for {{patient_name}} is incorrect, please ensure that phone number is not already registered",
+  //                     "locale": "en"
+  //                   }
+  //                 ]
+  //               }
+  //             ]
+  //           },
+  //           "messages": [
+  //             {
+  //               "translation_key": "",
+  //               "message": [
+  //                 {
+  //                   "content": "Thankyou{{contact.name}}, for registering {{patient_name}} with ID: ({{patient_id}})",
+  //                   "locale": ""
+  //                 }
+  //               ],
+  //               "recipient": ""
+  //             }
+  //           ]
+  //         }],
+  //       "forms": {
+  //         "NP": {
+  //           "meta": {
+  //             "code": "NP",
+  //             "translation_key": "forms.np.title",
+  //             "label": {
+  //               "en": "New Person with phone_number Registration"
+  //             }
+  //           },
+  //           "fields": {
+  //             "patient_age": {
+  //               "labels": {
+  //                 "tiny": {
+  //                   "en": "Person Age"
+  //                 },
+  //                 "short": {
+  //                   "en": "Person Age"
+  //                 }
+  //               },
+  //               "position": 0,
+  //               "type": "integer",
+  //               "length": [
+  //                 1,
+  //                 3
+  //               ],
+  //               "range": [
+  //                 0,
+  //                 125
+  //               ],
+  //               "required": true
+  //             },
+  //             "patient_name": {
+  //               "labels": {
+  //                 "tiny": {
+  //                   "en": "patient_name"
+  //                 },
+  //                 "description": {
+  //                   "en": "Patient name"
+  //                 },
+  //                 "short": {
+  //                   "en": "Patient name"
+  //                 }
+  //               },
+  //               "position": 1,
+  //               "type": "string",
+  //               "length": [
+  //                 3,
+  //                 30
+  //               ],
+  //               "required": true
+  //             },
+  //             "phone_number": {
+  //               "labels": {
+  //                 "tiny": {
+  //                   "en": "phone number"
+  //                 },
+  //                 "description": {
+  //                   "en": "phone number"
+  //                 },
+  //                 "short": {
+  //                   "en": "phone number"
+  //                 }
+  //               },
+  //               "position": 2,
+  //               "type": "phone_number",
+  //               "required": true
+  //             }
+  //           },
+  //           "public_form": false,
+  //           "use_sentinel": true
+  //         },
+  //         "forms": {
+  //           "NP": {
+  //             "meta": {
+  //               "code": "NP",
+  //               "translation_key": "forms.np.title",
+  //               "label": {
+  //                 "en": "New Person with phone_number Registration"
+  //               }
+  //             },
+  //             "fields": {
+  //               "patient_age": {
+  //                 "labels": {
+  //                   "tiny": {
+  //                     "en": "Person Age"
+  //                   },
+  //                   "short": {
+  //                     "en": "Person Age"
+  //                   }
+  //                 },
+  //                 "position": 0,
+  //                 "type": "integer",
+  //                 "length": [
+  //                   1,
+  //                   3
+  //                 ],
+  //                 "range": [
+  //                   0,
+  //                   125
+  //                 ],
+  //                 "required": true
+  //               },
+  //               "patient_name": {
+  //                 "labels": {
+  //                   "tiny": {
+  //                     "en": "patient_name"
+  //                   },
+  //                   "description": {
+  //                     "en": "Patient name"
+  //                   },
+  //                   "short": {
+  //                     "en": "Patient name"
+  //                   }
+  //                 },
+  //                 "position": 1,
+  //                 "type": "string",
+  //                 "length": [
+  //                   3,
+  //                   30
+  //                 ],
+  //                 "required": true
+  //               },
+  //               "phone_number": {
+  //                 "labels": {
+  //                   "tiny": {
+  //                     "en": "phone number"
+  //                   },
+  //                   "description": {
+  //                     "en": "phone number"
+  //                   },
+  //                   "short": {
+  //                     "en": "phone number"
+  //                   }
+  //                 },
+  //                 "position": 2,
+  //                 "type": "phone_number",
+  //                 "required": true
+  //               }
+  //             },
+  //             "public_form": false,
+  //             "use_sentinel": true
+  //           },
+  //         }
+  //       }
+  //     }
+
+  //     // const settings = {
+  //     //   transitions: { registration: true },
+  //     //   registrations: [{
+  //     //     form: 'FORM',
+  //     //     events: [],
+  //     //     messages: [{
+  //     //       recipient: 'reporting_unit',
+  //     //       event_type: 'report_accepted',
+  //     //       message: [{
+  //     //         locale: 'en',
+  //     //         content: 'Report accepted'
+  //     //       }],
+  //     //     }]
+  //     //   }],
+  //     //   forms: { FORM: {} }
+  //     // };
+
+  //     // const settings = {
+  //     //   transitions: { registration: true },
+  //     //   registrations: [{
+  //     //     form: 'FORM',
+  //     //     events: [{
+  //     //       name: 'on_create',
+  //     //       trigger: 'add_phone_number',
+  //     //       params: '',
+  //     //       bool_expr: ''
+  //     //     }],
+  //     //     messages: [],
+  //     //   }],
+  //     //   forms: { FORM: {} }
+  //     // };
+
+  //     const formWithPhone = {
+  //       _id: uuid(),
+  //       type: 'data_record',
+  //       form: 'NP',
+  //       from: '+444999',
+  //       fields: {
+  //         patient_id: 'patient',
+  //         patient_age: 20,
+  //         phone_number: phoneNumerWithParsed[0]
+  //       },
+  //       reported_date: moment().valueOf(),
+  //       contact: {
+  //         _id: 'person',
+  //         parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+  //       }
+  //     };
+
+  //     const docs = [formWithPhone];
+  //     const docIds = getIds(docs);
+
+  //     return utils
+  //       .updateSettings(settings, 'sentinel')
+  //       .then(() => {
+  //         utils.saveDocs(docs)
+  //         console.log("printing docs");
+  //         console.log(docs);
+  //       })
+  //       .then(() => {
+  //         sentinelUtils.waitForSentinel(docIds)
+  //         console.log(docIds);
+  //       })
+  //       .then(() => {
+  //         sentinelUtils.getInfoDocs(docIds)
+  //       })
+  //       .then(infos => {
+  //         infos.forEach(info => {
+  //           chai.expect(info).to.deep.nested.include({ 'transitions.registration.ok': true });
+  //         });
+  //       })
+  //       .then(() => utils.getDocs(docIds))
+  //       .then(updated => {
+  //         chai.expect(updated[0].phoneNumber).to.not.be.null;
+  //         chai.expect(updated[0].phoneNumber).to.equal(phoneNumerWithParsed[1]);
+  //       });
+  //   })
+  // });
 
   it('should be skipped when transition is disabled', () => {
     const settings = {
