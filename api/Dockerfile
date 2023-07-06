@@ -21,6 +21,7 @@ COPY package.json package-lock.json ./
 COPY shared-libs ./shared-libs
 COPY --from=build-stage /build/node_modules/@medic ./node_modules/@medic
 COPY api ./api
+RUN cd api && npm install
 
 ENV NODE_PATH=/service/api/node_modules
 
