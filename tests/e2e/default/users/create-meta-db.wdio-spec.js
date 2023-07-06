@@ -28,6 +28,7 @@ describe('Create user meta db : ', () => {
     await commonElements.logout();
     await loginPage.login({ username, password });
     await commonElements.waitForPageLoaded();
+    await commonElements.goToReports();
 
     const doc = { _id: uuid() };
     await utils.requestOnTestMetaDb(_.defaults({ method: 'POST', body: doc }, options));
