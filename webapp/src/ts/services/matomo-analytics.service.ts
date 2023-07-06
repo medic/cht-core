@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
-import { Subject, Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
 import { SessionService } from '@mm-services/session.service';
 import { AuthService } from '@mm-services/auth.service';
+import { SettingsService } from '@mm-services/settings.service';
 
 export const CAN_TRACK_USAGE_ANALYTICS = 'can_track_usage_analytics';
 
@@ -15,19 +16,18 @@ export const CAN_TRACK_USAGE_ANALYTICS = 'can_track_usage_analytics';
 export class MatomoAnalyticsService {
   private window: any;
   private previousPageUrl: string;
-  private trackingSubscription: Subscription;
   private isScriptReady = new Subject<boolean>();
+  private matomoServer: string;
 
-  private MATOMO_SERVER_URL = 'https://matomo-care-teams.dev.medicmobile.org';
   private MATOMO_SCRIP_FILE = 'matomo.js';
   private MATOMO_TRACKER = 'matomo.php';
-  private MATOMO_SITE_ID = '1';
 
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private sessionService: SessionService,
     private authService: AuthService,
+    private settingsService: SettingsService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.window = this.document.defaultView;
@@ -42,13 +42,30 @@ export class MatomoAnalyticsService {
       this.window._paq = [];
     }
 
-    this.window._paq.push(['trackPageView']); // TODO: extract to enum or something
-    this.window._paq.push(['enableLinkTracking']);
-    this.window._paq.push(['setTrackerUrl', `${this.MATOMO_SERVER_URL}/${this.MATOMO_TRACKER}`]);
-    this.window._paq.push(['setSiteId', this.MATOMO_SITE_ID]);
+    const isConfigOkay = await this.setMatomoConfig();
+    if (!isConfigOkay) {
+      return;
+    }
 
-    this.isScriptReady.subscribe(isReady => isReady && this.startTracking());
     this.loadScript();
+  }
+
+  private async setMatomoConfig() {
+    const settings = await this.settingsService.get();
+    const siteId = settings?.usage_analytics?.webapp?.matomo_site_id;
+    this.matomoServer = settings?.usage_analytics?.webapp?.matomo_server;
+
+    if (!this.matomoServer || !siteId) {
+      console.warn(`Matomo Analytics :: Missing configuration. Server URL: ${this.matomoServer} - Site ID: ${siteId}`);
+      return false;
+    }
+
+    this.window._paq.push([MatomoConfig.TRACK_PAGE_VIEW]);
+    this.window._paq.push([MatomoConfig.ENABLE_LINK_TRACKING]);
+    this.window._paq.push([MatomoConfig.SET_TRACKER_URL, `${this.matomoServer}/${this.MATOMO_TRACKER}`]);
+    this.window._paq.push([MatomoConfig.SET_SITE_ID, siteId]);
+
+    return true;
   }
 
   private async canTrack() {
@@ -58,19 +75,19 @@ export class MatomoAnalyticsService {
   private loadScript() {
     const head = this.document.getElementsByTagName('head')[0];
     const script = this.document.createElement('script');
+
     script.type = 'text/javascript';
     script.async = true;
-    script.src = `${this.MATOMO_SERVER_URL}/${this.MATOMO_SCRIP_FILE}`;
+    script.src = `${this.matomoServer}/${this.MATOMO_SCRIP_FILE}`;
+
+    this.isScriptReady.subscribe(isReady => isReady && this.startTracking());
     script.onload = () => this.isScriptReady.next(true);
+
     head.appendChild(script);
   }
 
-  private stopTracking() { // TODO: Do we need this?
-    this.trackingSubscription?.unsubscribe();
-  }
-
   private startTracking() {
-    this.trackingSubscription = this.router.events
+    this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         let currentRoute = this.activatedRoute.root;
@@ -79,17 +96,18 @@ export class MatomoAnalyticsService {
         }
 
         if (this.previousPageUrl) {
-          this.window._paq.push(['setReferrerUrl', this.previousPageUrl]);  // TODO: extract to enum or something
+          this.window._paq.push([MatomoConfig.SET_REFERENCE_URL, this.previousPageUrl]);
         }
 
         if (currentRoute.snapshot?.title) {
-          this.window._paq.push(['setDocumentTitle', currentRoute.snapshot?.title]);
+          this.window._paq.push([MatomoConfig.SET_DOCUMENT_TITLE, currentRoute.snapshot?.title]);
         }
 
-        this.window._paq.push(['setCustomUrl', window.location.href]);
+        this.window._paq.push([MatomoConfig.SET_CUSTOM_URL, window.location.href]);
         this.previousPageUrl = window.location.href;
-        this.window._paq.push(['trackPageView']); // Set last
-        this.window._paq.push(['enableLinkTracking']); // Also, set last
+
+        this.window._paq.push([MatomoConfig.TRACK_PAGE_VIEW]); // Set last
+        this.window._paq.push([MatomoConfig.ENABLE_LINK_TRACKING]); // Also, set last
       });
   }
 
@@ -98,9 +116,15 @@ export class MatomoAnalyticsService {
       return;
     }
 
-    this.window._paq.push(['trackEvent', category, action, name]);
+    this.window._paq.push([MatomoConfig.TRACK_EVENT, category, action, name]);
   }
 }
+
+export const EventActions = {
+  LOAD: 'load',
+  SEARCH: 'search',
+  SORT: 'sort',
+};
 
 export const EventCategories = {
   CONTACTS: 'contacts',
@@ -108,8 +132,13 @@ export const EventCategories = {
   TASKS: 'tasks'
 };
 
-export const EventActions = {
-  SORT: 'sort',
-  SEARCH: 'search',
-  LOAD: 'load',
+export const MatomoConfig = {
+  ENABLE_LINK_TRACKING: 'enableLinkTracking',
+  SET_CUSTOM_URL: 'setCustomUrl',
+  SET_DOCUMENT_TITLE: 'setDocumentTitle',
+  SET_REFERENCE_URL: 'setReferrerUrl',
+  SET_SITE_ID: 'setSiteId',
+  SET_TRACKER_URL: 'setTrackerUrl',
+  TRACK_EVENT: 'trackEvent',
+  TRACK_PAGE_VIEW: 'trackPageView',
 };

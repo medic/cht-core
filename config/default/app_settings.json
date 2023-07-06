@@ -439,6 +439,12 @@
       "replace_user"
     ]
   },
+  "usage_analytics": {
+    "webapp": {
+      "matomo_server": "https://matomo-care-teams.dev.medicmobile.org",
+      "matomo_site_id": "1"
+    }
+  },
   "transitions": {
     "accept_patient_reports": false,
     "conditional_alerts": false,
