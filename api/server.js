@@ -54,7 +54,7 @@ process
   const server = app.listen(apiPort, () => {
     logger.info('API listening on port ' + apiPort);
   });
-  server.setTimeout(0);
+  server.setTimeout(216000000 /* 1hour */);
 
   const checkInstall = require('./src/services/setup/check-install');
   const configWatcher = require('./src/services/config-watcher');
