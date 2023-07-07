@@ -2,7 +2,6 @@ const _ = require('lodash');
 const bodyParser = require('body-parser');
 const express = require('express');
 const morgan = require('morgan');
-const helmet = require('helmet');
 const environment = require('./environment');
 const config = require('./config');
 const db = require('./db');
@@ -44,6 +43,7 @@ const purgedDocsController = require('./controllers/purged-docs');
 const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
+const contentSecurityPolicy = require('./middleware/content-security-policy.js');
 const replicationLimitLogController = require('./controllers/replication-limit-log');
 const connectedUserLog = require('./middleware/connected-user-log').log;
 const getLocale = require('./middleware/locale').getLocale;
@@ -149,55 +149,7 @@ app.use(
   )
 );
 
-app.use(
-  helmet({
-    // runs with a bunch of defaults: https://github.com/helmetjs/helmet
-    hpkp: false, // explicitly block dangerous header
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: [`'none'`],
-        fontSrc: [`'self'`],
-        manifestSrc: [`'self'`],
-        connectSrc: [
-          `'self'`,
-          environment.buildsUrl + '/',
-          'maps.googleapis.com', // used for enketo geopoint widget
-          'matomo-care-teams.dev.medicmobile.org',
-        ],
-        childSrc:  [`'self'`],
-        formAction: [`'self'`],
-        imgSrc: [
-          `'self'`,
-          'data:', // unsafe
-          'blob:',
-          '*.openstreetmap.org', // used for enketo geopoint widget
-        ],
-        mediaSrc: [
-          `'self'`,
-          'blob:',
-        ],
-        scriptSrc: [
-          `'self'`,
-          // Explicitly allow the telemetry script setting startupTimes
-          `'sha256-B5cfIVb4/wnv2ixHP03bHeMXZDszDL610YG5wdDq/Tc='`,
-          // AngularJS and several dependencies require this
-          `'unsafe-eval'`,
-          // Allow Enketo onsubmit form attribute
-          // https://github.com/medic/cht-core/issues/6988
-          `'unsafe-hashes'`,
-          `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
-          `'sha256-PMJiIIDhCG0cUpK2Pa2vthPGmzx/g5gNh/iKG737RD8='`, // Matomo's
-          'matomo-care-teams.dev.medicmobile.org',
-        ],
-        styleSrc: [
-          `'self'`,
-          `'unsafe-inline'` // angular-ui-bootstrap
-        ],
-      },
-      browserSniff: false,
-    },
-  })
-);
+app.use(contentSecurityPolicy.getPolicy);
 
 // requires `req` header `Accept-Encoding` to be `gzip` or `deflate`
 // requires `res` `Content-Type` to be compressible (see https://github.com/jshttp/mime-db/blob/master/db.json)
