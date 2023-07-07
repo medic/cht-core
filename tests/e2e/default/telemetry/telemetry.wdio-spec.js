@@ -5,7 +5,7 @@ const loginPage = require('../../../page-objects/default/login/login.wdio.page')
 const placeFactory = require('../../../factories/cht/contacts/place');
 const personFactory = require('../../../factories/cht/contacts/person');
 const { faker: Faker } = require('@faker-js/faker');
-const userFactory = require('../../../actories/cht/users/users');
+const userFactory = require('../../../factories/cht/users/users');
 const { BRANCH, TAG } = process.env;
 
 const setupUser = () => {
