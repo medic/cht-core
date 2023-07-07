@@ -4,14 +4,14 @@ const environment = require('../environment');
 const settingsService = require('../services/settings');
 const serverUtils = require('../server-utils');
 
-const getConnectSrc = (matomoConfig) => {
+const getConnectSrc = (webappAnalyticsConfig) => {
   const rules = [
     `'self'`,
     environment.buildsUrl + '/',
     'maps.googleapis.com', // Used for enketo geopoint widget
   ];
 
-  matomoConfig && rules.push(matomoConfig.matomo_server_no_protocol);
+  webappAnalyticsConfig && rules.push(webappAnalyticsConfig.matomo_server_no_protocol);
   return rules;
 };
 
@@ -24,7 +24,7 @@ const getImageSrc = () => {
   ];
 };
 
-const getScriptSrc = (matomoConfig) => {
+const getScriptSrc = (webappAnalyticsConfig) => {
   const rules = [
     `'self'`,
     // Explicitly allow the telemetry script setting startupTimes
@@ -37,9 +37,9 @@ const getScriptSrc = (matomoConfig) => {
     `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
   ];
 
-  if (matomoConfig) {
-    rules.push(`'${matomoConfig.matomo_sha}'`);
-    rules.push(matomoConfig.matomo_server_no_protocol);
+  if (webappAnalyticsConfig) {
+    rules.push(`'${webappAnalyticsConfig.matomo_sha}'`);
+    rules.push(webappAnalyticsConfig.matomo_server_no_protocol);
   }
 
   return rules;
@@ -59,20 +59,24 @@ const getMediaSrc = () => {
   ];
 };
 
-const getMatomoConfig = async () => {
+const getWebappUsageAnalyticsConfig = async () => {
   const settings = await settingsService.get();
-  const matomoConfig = settings?.usage_analytics?.webapp;
+  const config = settings?.usage_analytics?.webapp;
+
+  if (!config) {
+    return;
+  }
 
   return {
-    ...matomoConfig,
+    ...config,
     // Fixes CSP error on soft-reload
-    matomo_server_no_protocol: matomoConfig.matomo_server.replace(/^http(s?):\/\//i, ''),
+    matomo_server_no_protocol: config.matomo_server.replace(/^http(s?):\/\//i, ''),
   };
 };
 
 const getPolicy = async (req, res, next) => {
   try {
-    const matomoConfig = await getMatomoConfig();
+    const webappAnalyticsConfig = await getWebappUsageAnalyticsConfig();
 
     helmet({
       // Runs with a bunch of defaults: https://github.com/helmetjs/helmet
@@ -82,12 +86,12 @@ const getPolicy = async (req, res, next) => {
           defaultSrc: [ `'none'` ],
           fontSrc: [ `'self'` ],
           manifestSrc: [ `'self'` ],
-          connectSrc: getConnectSrc(matomoConfig),
+          connectSrc: getConnectSrc(webappAnalyticsConfig),
           childSrc: [ `'self'` ],
           formAction: [ `'self'` ],
           imgSrc: getImageSrc(),
           mediaSrc: getMediaSrc(),
-          scriptSrc: getScriptSrc(matomoConfig),
+          scriptSrc: getScriptSrc(webappAnalyticsConfig),
           styleSrc: getStyleSrc(),
         },
         browserSniff: false,
