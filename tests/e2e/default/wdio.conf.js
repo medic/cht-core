@@ -54,12 +54,12 @@ const baseConfig = {
     basic: [
       './about/**/*.wdio-spec.js',
       './admin/**/*.wdio-spec.js',
-      // './login/**/*.wdio-spec.js',
-      // './navigation/**/*.wdio-spec.js',
-      // './privacy-policy/**/*.wdio-spec.js',
-      // './translations/**/*.wdio-spec.js',
-      // './more-options-menu/**/*.wdio-spec.js',
-      // './users/**/*.wdio-spec.js'
+      './login/**/*.wdio-spec.js',
+      './navigation/**/*.wdio-spec.js',
+      './privacy-policy/**/*.wdio-spec.js',
+      './translations/**/*.wdio-spec.js',
+      './more-options-menu/**/*.wdio-spec.js',
+      './users/**/*.wdio-spec.js'
     ],
     workflows: [
       './analytics/**/*.wdio-spec.js',

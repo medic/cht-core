@@ -101,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-webdriver-default-mobile']
+        grunt-cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
         suite: [all]
         include:
           - grunt-cmd: ci-webdriver-default
