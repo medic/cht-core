@@ -48,6 +48,9 @@ const baseConfig = {
   //   '**/*.wdio-spec.js',
   // ],
   suites: {
+    all: [
+      '**/*.wdio-spec.js',
+    ],
     basic: [
       './about/**/*.wdio-spec.js',
       './admin/**/*.wdio-spec.js',
