@@ -1,5 +1,3 @@
-const helmet = require('helmet');
-
 const environment = require('../environment');
 const settingsService = require('../services/settings');
 const serverUtils = require('../server-utils');
@@ -59,9 +57,9 @@ const getMediaSrc = () => {
   ];
 };
 
-const getWebappUsageAnalyticsConfig = async () => {
+const getUsageAnalyticsConfig = async () => {
   const settings = await settingsService.get();
-  const config = settings?.usage_analytics?.webapp;
+  const config = settings?.usage_analytics;
 
   if (!config) {
     return;
@@ -74,11 +72,11 @@ const getWebappUsageAnalyticsConfig = async () => {
   };
 };
 
-const getPolicy = async (req, res, next) => {
+const get = async (req, res) => {
   try {
-    const webappAnalyticsConfig = await getWebappUsageAnalyticsConfig();
+    const webappAnalyticsConfig = await getUsageAnalyticsConfig();
 
-    helmet({
+    return {
       // Runs with a bunch of defaults: https://github.com/helmetjs/helmet
       hpkp: false, // Explicitly block dangerous header
       contentSecurityPolicy: {
@@ -96,13 +94,13 @@ const getPolicy = async (req, res, next) => {
         },
         browserSniff: false,
       },
-    })(req, res, next);
+    };
 
   } catch (error) {
-    serverUtils.error(error, req, res, true);
+    serverUtils.error(error, req, res);
   }
 };
 
 module.exports = {
-  getPolicy,
+  get,
 };

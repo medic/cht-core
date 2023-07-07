@@ -52,8 +52,8 @@ export class MatomoAnalyticsService {
 
   private async setMatomoConfig() {
     const settings = await this.settingsService.get();
-    const siteId = settings?.usage_analytics?.webapp?.matomo_site_id;
-    this.matomoServer = settings?.usage_analytics?.webapp?.matomo_server;
+    const siteId = settings?.usage_analytics?.matomo_site_id;
+    this.matomoServer = settings?.usage_analytics?.matomo_server;
 
     if (!this.matomoServer || !siteId) {
       console.warn(`Matomo Analytics :: Missing configuration. Server URL: ${this.matomoServer} - Site ID: ${siteId}`);

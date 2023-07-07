@@ -2,6 +2,7 @@ const _ = require('lodash');
 const bodyParser = require('body-parser');
 const express = require('express');
 const morgan = require('morgan');
+const helmet = require('helmet');
 const environment = require('./environment');
 const config = require('./config');
 const db = require('./db');
@@ -149,7 +150,11 @@ app.use(
   )
 );
 
-app.use(contentSecurityPolicy.getPolicy);
+app.use((req, res, next) => {
+  contentSecurityPolicy
+    .get(req, res)
+    .then(policy => helmet(policy)(req, res, next));
+});
 
 // requires `req` header `Accept-Encoding` to be `gzip` or `deflate`
 // requires `res` `Content-Type` to be compressible (see https://github.com/jshttp/mime-db/blob/master/db.json)
