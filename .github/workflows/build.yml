@@ -92,7 +92,7 @@ jobs:
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
 
   tests:
-    # needs: build
+    needs: build
     name: ${{ matrix.grunt-cmd }}_${{ matrix.suite ||'' }}
     runs-on: ubuntu-22.04
     env:
