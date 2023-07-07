@@ -5,7 +5,7 @@ chai.use(require('chai-exclude'));
 
 // Override specific properties from wdio base config
 exports.config = Object.assign(wdioBaseConfig.config, {
-  suite: {
+  suites: {
     all: [
       '**/*.wdio-spec.js',
       [
