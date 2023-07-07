@@ -105,13 +105,13 @@ jobs:
         #suite: [basic, enketo]
         include:
           - grunt-cmd: ci-webdriver-default
-            suite: --suite=basic
+            suite: basic
           - grunt-cmd: ci-webdriver-default
-            suite: --suite=enketo
+            suite: enketo
           - grunt-cmd: ci-webdriver-default
-            suite: --suite=technical
+            suite: technical
           - grunt-cmd: ci-webdriver-default
-            suite: --suite=workflows
+            suite: workflows
 
     steps:
     - name: Login to Docker Hub
@@ -169,9 +169,13 @@ jobs:
     - name: Copy allure history
       run: |
         mkdir -p allure-results/history
-        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}${{ matrix.suite ||'all' }}/allure-report/history allure-results | true
-    - name: Run tests
-      run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }} ${{ matrix.suite || '' }}"
+        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}_${{ matrix.suite ||'all' }}/allure-report/history allure-results | true
+    - name: Run tests default tests
+      run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }}" --suite=${{ matrix.suite}}
+      if: ${{ matrix.suite}}
+    - name: Run other tests
+      run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }}"
+      if: ${{ !matrix.suite}}
     - name: Fetch allure history
       if: always()
       uses: actions/checkout@v3
