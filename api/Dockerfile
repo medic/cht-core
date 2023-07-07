@@ -1,7 +1,8 @@
 FROM node:16 AS build-stage
 WORKDIR /build
-COPY package.json package-lock.json ./
-RUN npm install 
+COPY ./* ./
+RUN npm install grunt
+RUN grunt install-dependencies
 
 FROM alpine:3.15 AS base_build
 
@@ -17,13 +18,10 @@ RUN apk add --update --no-cache \
 
 WORKDIR /service
 
-COPY package.json package-lock.json ./
-COPY shared-libs ./shared-libs
+COPY --from=build-stage package.json package-lock.json ./
+COPY --from=build-stage shared-libs ./shared-libs
 COPY --from=build-stage /build/node_modules/@medic ./node_modules/@medic
-COPY api ./api
-WORKDIR /service/api
-RUN npm install 
-WORKDIR /service
+COPY --from=build-stageapi ./api
 
 
 ENV NODE_PATH=/service/api/node_modules
