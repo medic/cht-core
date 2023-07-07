@@ -63,7 +63,7 @@ export class MatomoAnalyticsService {
     this.window._paq.push([MatomoConfig.TRACK_PAGE_VIEW]);
     this.window._paq.push([MatomoConfig.ENABLE_LINK_TRACKING]);
     this.window._paq.push([MatomoConfig.SET_TRACKER_URL, `${this.matomoServer}/${this.MATOMO_TRACKER}`]);
-    this.window._paq.push([MatomoConfig.SET_SITE_ID, siteId]);
+    this.window._paq.push([MatomoConfig.SET_SITE_ID, siteId.toString()]);
 
     return true;
   }
