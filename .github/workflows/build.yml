@@ -93,7 +93,7 @@ jobs:
 
   tests:
     # needs: build
-    name: ${{ matrix.grunt-cmd }}${{ matrix.suite ||'' }}
+    name: ${{ matrix.grunt-cmd }}_${{ matrix.suite ||'' }}
     runs-on: ubuntu-22.04
     env:
       NODE: 16.x
@@ -172,10 +172,10 @@ jobs:
         cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}_${{ matrix.suite ||'all' }}/allure-report/history allure-results | true
     - name: Run tests default tests
       run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }}" --suite=${{ matrix.suite}}
-      if: ${{ matrix.suite}}
-    - name: Run other tests
-      run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }}"
-      if: ${{ !matrix.suite}}
+    #   if: ${{ matrix.suite}}
+    # - name: Run other tests
+    #   run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }}"
+    #   if: ${{ !matrix.suite}}
     - name: Fetch allure history
       if: always()
       uses: actions/checkout@v3
