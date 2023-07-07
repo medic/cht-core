@@ -295,15 +295,15 @@ describe('utils util', () => {
   });
 
   describe('isWithinTimeFrame', () => {
-    it('200', () => {
+    it('should return true for the valid time', () => {
 
     });
 
-    it('400', () => {
+    it('shouldn\'t return true for invalid time', () => {
 
     });
 
-    it('500', () => {
+    it('shouldn\'t accept invalid inputs', () => {
 
     });
   });
