@@ -117,8 +117,11 @@ app.use(prometheusMiddleware({
   // based on one-month analysed period of production traffic
   // each durationBuckets captures ~5% of traffic unless otherwise indicated
   durationBuckets: [
-    0.5, 1, 2, /* fastest 5% */
-    4, 7, 9, 13, 18, 27, 41, 60, 94, 161, 276, 473, 771, 1181, 1713, 2359, 3009, 4887, 31000
+    0.004, 0.007, 0.013, 0.027, 0.05,
+    0.1, 0.25, 0.5, 1, 2,
+    3, 5, 7.5, 10, 25,
+    45, 90, 180, 360, 600,
+    1200, 1800, 3600
   ],
 }));
 
