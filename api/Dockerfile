@@ -3,7 +3,7 @@ WORKDIR /build
 COPY ./* ./
 RUN npm install -g grunt-cli
 RUN npm install grunt && npm install
-RUN grunt install-dependencies
+RUN npm run build-dev
 
 FROM alpine:3.15 AS base_build
 
