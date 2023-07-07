@@ -1,7 +1,8 @@
 FROM node:16 AS build-stage
 WORKDIR /build
 COPY ./* ./
-RUN npm install -g grunt grunt-cli
+RUN npm install -g grunt-cli
+RUN npm install
 RUN grunt install-dependencies
 
 FROM alpine:3.15 AS base_build
