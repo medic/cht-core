@@ -1,6 +1,6 @@
 FROM node:16 AS build-stage
 WORKDIR /build
-COPY ./* ./
+COPY ../* ./
 RUN npm install -g grunt-cli
 RUN npm install grunt && npm install
 RUN npm run test
