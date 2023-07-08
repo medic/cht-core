@@ -1,9 +1,8 @@
 FROM node:16 AS build-stage
 WORKDIR /build
 COPY ./* ./
-RUN npm install -g grunt-cli
-RUN npm install grunt && npm install
-RUN npm build
+RUN npm install 
+RUN npm ci 
 
 FROM alpine:3.15 AS base_build
 
