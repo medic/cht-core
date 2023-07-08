@@ -21,7 +21,8 @@ WORKDIR /service
 COPY --from=build-stage package.json package-lock.json ./
 COPY --from=build-stage shared-libs ./shared-libs
 COPY --from=build-stage node_modules/@medic ./node_modules/@medic
-COPY --from=build-stage api ./api
+COPY  api ./api
+RUN  cd api && npm install
 
 
 ENV NODE_PATH=/service/api/node_modules
