@@ -1,4 +1,7 @@
-const wdioBaseConfig = require('../default/wdio.conf');
+require('../../aliases');
+const constants = require('@constants');
+constants.DB_NAME = 'medic';
+
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -8,9 +11,8 @@ chai.use(require('chai-exclude'));
 const rpn = require('request-promise-native');
 
 const utils = require('@utils');
-const constants = require('@constants');
+const wdioBaseConfig = require('../default/wdio.conf');
 
-constants.DB_NAME = 'medic';
 const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;
 const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
 
