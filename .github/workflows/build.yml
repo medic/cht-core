@@ -109,6 +109,8 @@ jobs:
           - grunt-cmd: ci-webdriver-default
             suite: enketo
           - grunt-cmd: ci-webdriver-default
+            suite: passive
+          - grunt-cmd: ci-webdriver-default
             suite: technical
           - grunt-cmd: ci-webdriver-default
             suite: workflows
