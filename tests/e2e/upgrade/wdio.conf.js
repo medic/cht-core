@@ -118,13 +118,11 @@ const servicesStartTimeout = () => {
 
 // Override specific properties from wdio base config
 const upgradeConfig = Object.assign(wdioBaseConfig.config, {
-  suites: {
-    all:
+  specs: 
    [
      'upgrade.wdio-spec.js',
      '*.wdio-spec.js'
    ],
-  },
   exclude: [],
 
   onPrepare: async () => {
