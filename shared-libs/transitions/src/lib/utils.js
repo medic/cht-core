@@ -230,12 +230,33 @@ module.exports = {
 
   isXFormReport: doc => doc && doc.type === 'data_record' && doc.content_type === 'xml',
 
-  isWithinTimeFrame: (cron, frame = 0) => {
+  /**
+   * Validates if a cron expression is valid and is active within an offset timeframe at the current time.
+   * @param {string} exp cron expression without seconds "* * * * *"
+   * @param {number} frame timeframe at which the cron expression should still be valid
+   * @returns true if valid and within timeframe
+   */
+  isWithinTimeFrame: (exp, frame = 0) => {
+    if (!this.isValidCronExpression(exp)) {
+      throw new Error(`isWithinTimeFrame: Invalid cron expression "${exp}"`);
+    }
+    
     const currentTime = Date.now();
-    const dueTime = later.schedule(later.parse.cron(cron)).next().getTime();
+    const dueTime = later.schedule(later.parse.cron(exp)).next().getTime();
     const upperBoundDueTime = dueTime + frame;
     const lowerBoundDueTime = dueTime - frame;
     return currentTime >= lowerBoundDueTime && currentTime <= upperBoundDueTime;
+  },
+
+  /**
+   * Validates a cron expression without seconds
+   * @param {string} exp cron expression
+   * @returns true for valid cron expression
+   */
+  isValidCronExpression: (exp) => {
+    // eslint-disable-next-line max-len
+    const cronReg = /^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/([0-6]))$/;
+    return cronReg.test(exp);
   },
 
   // given a report, returns whether it should be accepted as a valid form submission

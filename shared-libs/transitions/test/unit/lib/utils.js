@@ -295,16 +295,40 @@ describe('utils util', () => {
   });
 
   describe('isWithinTimeFrame', () => {
+    const cron = '';
+    const TIME_FRAME = '';
+
     it('should return true for the valid time', () => {
-
+      // update date
+      utils.isWithinTimeFrame(cron).should.be.true;
+      utils.isWithinTimeFrame(cron, TIME_FRAME).should.be.true;
     });
 
-    it('shouldn\'t return true for invalid time', () => {
-
+    it('should return false for invalid time', () => {
+      // update date
+      utils.isWithinTimeFrame(cron).should.be.false;
+      utils.isWithinTimeFrame(cron, TIME_FRAME).should.be.false;
     });
 
-    it('shouldn\'t accept invalid inputs', () => {
+    it('should always be true for bad cron expression', () => {
+      const BAD_CRON_EXPRESSION = 'BAD_CRON_EXPRESSION';
+      
+      utils.isWithinTimeFrame(BAD_CRON_EXPRESSION).should.be.true;
+      utils.isWithinTimeFrame(BAD_CRON_EXPRESSION, TIME_FRAME).should.true;
+    });
+  });
+  
+  describe('isValidCronExpression', () => {
+    it('should return true for valid cron expressions', () => {
+      utils.isValidCronExpression('* * * * *').should.be.true;
+      utils.isValidCronExpression('* * * * *').should.be.true;
+      utils.isValidCronExpression('* * * * *').should.be.true;
+    });
 
+    it('should return false for invalid cron expressions', () => {
+      utils.isValidCronExpression('BAD_CRON_EXPRESSION').should.be.false;
+      utils.isValidCronExpression('* * * * * * *').should.be.false;
+      utils.isValidCronExpression('* 8008347 8- 90').should.be.false;
     });
   });
 });

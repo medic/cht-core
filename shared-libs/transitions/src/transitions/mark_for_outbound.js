@@ -27,7 +27,6 @@ const relevantTo = (doc) => {
     .map(key => [pushes[key], key]);
 };
 
-const isValidCron = () => false;
 
 const markForOutbound = (change) => {
   // We're working out the relevant tasks to perform here and not in the exported filter function,
@@ -40,8 +39,8 @@ const markForOutbound = (change) => {
   const failedKeys = [];
 
   for (const [config, configKey] of relevantConfigs) {
-    if (config.cron && !isValidCron(config.cron)) {
-      logger.error(``);
+    if (config.cron && !utils.isValidCronExpression(config.cron)) {
+      logger.error(`Outbound Push failed: Invalid cron expression "${config.cron}" on outbound '${configKey}' config`);
       continue;
     }
 
