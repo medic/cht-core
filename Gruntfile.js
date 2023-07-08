@@ -250,13 +250,13 @@ module.exports = function(grunt) {
       },
       'wdio-run-standard': {
         cmd: [
-          'npm run standard-wdio'
+          'npm run standard-wdio -- --suite=' + grunt.option('suite')
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
       'wdio-run-default-mobile': {
         cmd: [
-          'npm run default-wdio-mobile'
+          'npm run default-wdio-mobile -- --suite=' + grunt.option('suite')
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
