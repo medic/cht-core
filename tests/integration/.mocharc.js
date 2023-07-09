@@ -6,8 +6,6 @@ chai.use(chaiExclude);
 chai.use(chaiAsPromised);
 global.expect = chai.expect;
 
-global.expect = chai.expect;
-
 module.exports = {
   allowUncaught: false,
   color: true,
