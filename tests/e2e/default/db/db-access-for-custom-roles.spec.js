@@ -1,11 +1,13 @@
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const utils = require('../../../utils');
-const browserDbUtils = require('../../../utils/browser');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
 const uuid = require('uuid').v4;
-const personFactory = require('../../../factories/cht/contacts/person');
-const place = require('../../../factories/cht/contacts/place');
-const places = place.generateHierarchy();
+
+const utils = require('@utils');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const browserDbUtils = require('@utils/cht-db');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const personFactory = require('@factories/cht/contacts/person');
+const placeFactory = require('@factories/cht/contacts/place');
+
+const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
 
 const contact = personFactory.build(
@@ -56,7 +58,7 @@ describe('Database access for new roles', () => {
       fields: { patient_id: contact._id, },
     };
     await browserDbUtils.createDoc(report);
-    await commonElements.sync();
+    await commonPage.sync();
 
     await utils.get(report._id);
   });
@@ -70,7 +72,7 @@ describe('Database access for new roles', () => {
       fields: { patient_id: contact._id, },
     };
     await utils.saveDoc(report);
-    await commonElements.sync();
+    await commonPage.sync();
     await browserDbUtils.getDoc(report._id);
   });
 });

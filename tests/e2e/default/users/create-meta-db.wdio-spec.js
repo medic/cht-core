@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const utils = require('@utils');
 const usersPage = require('@page-objects/default/users/user.wdio.page');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const uuid = require('uuid').v4;
 
@@ -24,11 +24,11 @@ describe('Create user meta db : ', () => {
     await usersPage.openAddUserDialog();
     await usersPage.inputAddUserFields(username, fullName, 'program_officer', '', '', password);
     await usersPage.saveUser();
-    await commonElements.goToMessages();
-    await commonElements.logout();
+    await commonPage.goToMessages();
+    await commonPage.logout();
     await loginPage.login({ username, password });
-    await commonElements.waitForPageLoaded();
-    await commonElements.goToReports();
+    await commonPage.waitForPageLoaded();
+    await commonPage.goToReports();
 
     const doc = { _id: uuid() };
     await utils.requestOnTestMetaDb(_.defaults({ method: 'POST', body: doc }, options));
