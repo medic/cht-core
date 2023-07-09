@@ -70,7 +70,7 @@ describe('Telemetry', () => {
     expect(telemetryEntry.doc).to.deep.nested.include({
       'metadata.year': moment().year(),
       'metadata.month': moment().month() + 1,
-      'metadata.day': moment().day() + 1,
+      'metadata.day': moment().date() - 1,
       'metadata.user': user.username,
       'metadata.versions.app': clientDdoc.build_info.version,
     });
