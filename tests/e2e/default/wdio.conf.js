@@ -44,9 +44,7 @@ const baseConfig = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  // specs: [
-  //   '**/*.wdio-spec.js',
-  // ],
+  
   suites: {
     all: [
       '**/*.wdio-spec.js',
