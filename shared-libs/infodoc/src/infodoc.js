@@ -181,7 +181,6 @@ const saveProperty = async (id, infodoc, property, defaultValue = {}) => {
   }
 };
 
-
 const bulkUpdate = infoDocs => {
   if (!infoDocs || !infoDocs.length) {
     return Promise.resolve();

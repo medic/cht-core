@@ -50,7 +50,7 @@ describe('cht-conf actions tests', () => {
 
   it('should upload branding', async () => {
     const branding = await utils.getDoc('branding').catch(error => {
-      if(error){
+      if (error) {
         console.err(error);
       }
     });

@@ -147,6 +147,7 @@ const listen = () => {
   db.medic
     .changes({ live: true, since: 'now', return_docs: false })
     .on('change', change => {
+
       if (tombstoneUtils.isTombstoneId(change.id)) {
         return Promise.resolve();
       }

@@ -1,4 +1,4 @@
-FROM haproxy:2.7
+FROM haproxy:2.6
 
 USER root
 RUN apt-get update && apt-get install luarocks gettext jq curl -y
