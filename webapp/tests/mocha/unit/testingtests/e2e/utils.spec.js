@@ -4,7 +4,7 @@ const sinon = require('sinon');
 
 const utils = require('../../../../../../tests/utils');
 
-describe('Protractor utils', () => {
+describe('Test utils', () => {
 
   afterEach(() => {
     sinon.restore();

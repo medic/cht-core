@@ -8,7 +8,6 @@ const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 const constants = require('@constants');
 const version = require('../../../scripts/build/versions');
 const dataFactory = require('@factories/cht/generate');
-const common = require('@page-objects/default/common/common.wdio.page');
 
 const docs = dataFactory.createHierarchy({
   name: 'offlineupgrade',
@@ -31,6 +30,21 @@ const getDdocs = async () => {
   return result.rows.map(row => row.doc);
 };
 
+const getUpgradeLogs = async () => {
+  const logs = await utils.logsDb.allDocs({
+    startkey: 'upgrade_log',
+    endkey: 'upgrade_log\ufff0',
+    include_docs: true,
+  });
+  return logs.rows.map(row => row.doc);
+};
+
+const deleteUpgradeLogs = async () => {
+  const logs = await getUpgradeLogs();
+  logs.forEach(log => log._deleted = true);
+  await utils.logsDb.bulkDocs(logs);
+};
+
 describe('Performing an upgrade', () => {
   before(async () => {
     await utils.saveDocs([...docs.places, ...docs.clinics, ...docs.persons, ...docs.reports]);
@@ -43,6 +57,15 @@ describe('Performing an upgrade', () => {
       username: constants.USERNAME,
       password: constants.PASSWORD,
       createUser: false
+    });
+  });
+
+  it('should have an upgrade_log after installing', async () => {
+    const logs = await getUpgradeLogs();
+    expect(logs.length).to.equal(1);
+    expect(logs[0]).to.include({
+      action: 'install',
+      state: 'finalized',
     });
   });
 
@@ -76,11 +99,29 @@ describe('Performing an upgrade', () => {
 
     ddocs.forEach(ddoc => expect(ddoc.version).to.equal(currentBuild));
 
+    const logs = await getUpgradeLogs();
+    expect(logs.length).to.equal(2);
+    expect(logs[1]).to.include({
+      action: 'upgrade',
+      state: 'finalized',
+    });
+
     await adminPage.logout();
     await loginPage.login(docs.user);
     await commonPage.closeReloadModal(true);
 
-    await common.goToAboutPage();
+    await commonPage.goToAboutPage();
     expect(await upgradePage.getCurrentVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
+  });
+
+  it('should display upgrade page even without upgrade logs', async () => {
+    await deleteUpgradeLogs();
+
+    await upgradePage.goToUpgradePage();
+
+    const currentVersion = await upgradePage.getCurrentVersion();
+    expect(version.getVersion(true)).to.include(currentVersion);
+    expect((await getUpgradeLogs()).length).to.equal(0);
+    await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true });
   });
 });
