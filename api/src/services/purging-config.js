@@ -359,27 +359,7 @@ const simulatePurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
     .then((changesCounts) => ({ changesCounts, pagination: { nextKey, nextKeyDocId, nextBatch } }));
 };
 
-/*
-const countPurgedContacts_direct = async (roles, purgeFn) => {
-  const groups = {};
-  const subjectIds = [];
-  const rolesHashes = Object.keys(roles);
-
-  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
-  const result = await db.queryMedic('medic-client/contacts_by_type', { include_docs: true });
-  result.rows.forEach(row => assignContactToGroups(row, groups, subjectIds));
-
-  await getRecordsForContacts(groups, subjectIds);
-
-  const docIds = getIdsFromGroups(groups);
-  const alreadyPurged = await getAlreadyPurgedDocs(rolesHashes, docIds);
-
-  const toPurge = getDocsToPurge(purgeFn, groups, roles);
-  return getPurgingChangesCounts(rolesHashes, docIds, alreadyPurged, toPurge);
-};
-*/
-
-const simulateContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '') => {
+const batchedContactsPurge = (roles, purgeFn, act, startKey, startKeyDocId) => {
   let nextKeyDocId;
   let nextKey;
   let nextBatch = false;
@@ -424,11 +404,9 @@ const simulateContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = ''
     })
     .then(alreadyPurged => {
       const toPurge = getDocsToPurge(purgeFn, groups, roles);
-      // return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
-      return getPurgingChangesCounts(rolesHashes, docIds, alreadyPurged, toPurge);
+      return act(rolesHashes, docIds, alreadyPurged, toPurge);
     })
-    .then((changesCounts) => ({
-      changesCounts,
+    .then(() => ({
       pagination: { nextKey, nextKeyDocId, nextBatch },
     }))
     .catch(err => {
@@ -454,41 +432,33 @@ const simulateContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = ''
       throw err;
     });
 };
-/*const queryPurgedContacts = async (roles, purgeFn, act) => {
+const queryPurgedContacts = async (roles, purgeFn, act) => {
   let startKey = '';
   let startKeyDocId = '';
   let nextBatch = true;
 
   do {
-    const result = await batchedContactsPurge(roles, purgeFn, startKey, startKeyDocId);
-    const { pagination } = await act(roles, purgeFn, startKey, startKeyDocId);
+    const { pagination } = await batchedContactsPurge(roles, purgeFn, act, startKey, startKeyDocId);
     startKey = pagination.nextKey;
     startKeyDocId = pagination.nextKeyDocId;
     nextBatch = pagination.nextBatch;
   } while (nextBatch);
-};*/
-const countPurgedContacts_batch = async (roles, purgeFn) => {
-  let startKey = '';
-  let startKeyDocId = '';
-  let nextBatch = true;
+};
+const countPurgedContacts = async (roles, purgeFn) => {
   let wontChangeCount = 0;
   let willPurgeCount = 0;
   let willUnpurgeCount = 0;
 
-  do {
-    const { changesCounts, pagination } = await simulateContactsPurge(roles, purgeFn, startKey, startKeyDocId);
-    startKey = pagination.nextKey;
-    startKeyDocId = pagination.nextKeyDocId;
-    nextBatch = pagination.nextBatch;
+  const act = async (rolesHashes, ids, alreadyPurged, toPurge) => {
+    const changesCounts = getPurgingChangesCounts(rolesHashes, ids, alreadyPurged, toPurge);
     wontChangeCount += changesCounts.wontChangeCount;
     willPurgeCount += changesCounts.willPurgeCount;
     willUnpurgeCount += changesCounts.willUnpurgeCount;
-  } while (nextBatch);
+  };
+  await queryPurgedContacts(roles, purgeFn, act);
 
   return { wontChangeCount, willPurgeCount, willUnpurgeCount };
 };
-
-const countPurgedContacts = countPurgedContacts_batch;
 
 const queryPurgedUnallocatedRecords = async (roles, purgeFn, act) => {
   let startKeyDocId = '';
@@ -701,7 +671,6 @@ const dryRun = async (appSettingsPurge) => {
   const targets = await countPurgedTargets(roles);
 
   const results = [contacts, unallocatedRecords, tasks, targets];
-  console.log("results", results);
   const wontChangeCount = sumBy(results, 'wontChangeCount');
   const willPurgeCount = sumBy(results, 'willPurgeCount');
   const willUnpurgeCount = sumBy(results, 'willUnpurgeCount');
