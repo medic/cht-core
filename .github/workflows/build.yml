@@ -173,7 +173,7 @@ jobs:
         mkdir -p allure-results/history
         cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}_${{ matrix.suite}}/allure-report/history allure-results | true
     - name: Run tests ${{ matrix.grunt-cmd }}_${{ matrix.suite}}
-      run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }} --suite=${{ matrix.suite}}"
+      run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }}" --suite=${{ matrix.suite}}
     
     - name: Fetch allure history
       if: always()
