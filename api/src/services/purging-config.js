@@ -358,6 +358,22 @@ const simulatePurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
     })
     .then((changesCounts) => ({ changesCounts, pagination: { nextKey, nextKeyDocId, nextBatch } }));
 };
+const count = async (queryFn, ...queryArgs) => {
+  let wontChangeCount = 0;
+  let willPurgeCount = 0;
+  let willUnpurgeCount = 0;
+
+  const act = async (getBatch, getIdsToPurge, roles, startKeyDocId) => {
+    const { changesCounts, pagination } = await simulatePurge(getBatch, getIdsToPurge, roles, startKeyDocId);
+    wontChangeCount += changesCounts.wontChangeCount;
+    willPurgeCount += changesCounts.willPurgeCount;
+    willUnpurgeCount += changesCounts.willUnpurgeCount;
+    return { pagination };
+  };
+  await queryFn(act, ...queryArgs);
+
+  return { wontChangeCount, willPurgeCount, willUnpurgeCount };
+};
 
 const batchedContactsPurge = (roles, purgeFn, act, startKey, startKeyDocId) => {
   let nextKeyDocId;
@@ -432,7 +448,7 @@ const batchedContactsPurge = (roles, purgeFn, act, startKey, startKeyDocId) => {
       throw err;
     });
 };
-const queryPurgedContacts = async (roles, purgeFn, act) => {
+const queryPurgedContacts = async (act, roles, purgeFn) => {
   let startKey = '';
   let startKeyDocId = '';
   let nextBatch = true;
@@ -455,12 +471,12 @@ const countPurgedContacts = async (roles, purgeFn) => {
     willPurgeCount += changesCounts.willPurgeCount;
     willUnpurgeCount += changesCounts.willUnpurgeCount;
   };
-  await queryPurgedContacts(roles, purgeFn, act);
+  await queryPurgedContacts(act, roles, purgeFn);
 
   return { wontChangeCount, willPurgeCount, willUnpurgeCount };
 };
 
-const queryPurgedUnallocatedRecords = async (roles, purgeFn, act) => {
+const queryPurgedUnallocatedRecords = async (act, roles, purgeFn) => {
   let startKeyDocId = '';
   let nextBatch;
 
@@ -500,24 +516,9 @@ const queryPurgedUnallocatedRecords = async (roles, purgeFn, act) => {
     nextBatch = pagination.nextBatch;
   } while (nextBatch);
 };
-const countPurgedUnallocatedRecords = async (roles, purgeFn) => {
-  let wontChangeCount = 0;
-  let willPurgeCount = 0;
-  let willUnpurgeCount = 0;
+const countPurgedUnallocatedRecords = async (roles, purgeFn) => count(queryPurgedUnallocatedRecords, roles, purgeFn);
 
-  const act = async (getBatch, getIdsToPurge, roles, startKeyDocId) => {
-    const { changesCounts, pagination } = await simulatePurge(getBatch, getIdsToPurge, roles, startKeyDocId);
-    wontChangeCount += changesCounts.wontChangeCount;
-    willPurgeCount += changesCounts.willPurgeCount;
-    willUnpurgeCount += changesCounts.willUnpurgeCount;
-    return { pagination };
-  };
-  await queryPurgedUnallocatedRecords(roles, purgeFn, act);
-
-  return { wontChangeCount, willPurgeCount, willUnpurgeCount };
-};
-
-const queryPurgedTasks = async (roles, act) => {
+const queryPurgedTasks = async (act, roles) => {
   const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
   let startKeyDocId = '';
   let startKey = '';
@@ -550,24 +551,9 @@ const queryPurgedTasks = async (roles, act) => {
     nextBatch = pagination.nextBatch;
   } while (nextBatch);
 };
-const countPurgedTasks = async (roles) => {
-  let wontChangeCount = 0;
-  let willPurgeCount = 0;
-  let willUnpurgeCount = 0;
+const countPurgedTasks = async (roles) => count(queryPurgedTasks, roles);
 
-  const act = async (getBatch, getIdsToPurge, roles, startKeyDocId) => {
-    const { changesCounts, pagination } = await simulatePurge(getBatch, getIdsToPurge, roles, startKeyDocId);
-    wontChangeCount += changesCounts.wontChangeCount;
-    willPurgeCount += changesCounts.willPurgeCount;
-    willUnpurgeCount += changesCounts.willUnpurgeCount;
-    return { pagination };
-  };
-  await queryPurgedTasks(roles, act);
-
-  return { wontChangeCount, willPurgeCount, willUnpurgeCount };
-};
-
-const queryPurgedTargets = async (roles, act) => {
+const queryPurgedTargets = async (act, roles) => {
   let startKeyDocId = 'target~';
   let startKey = JSON.stringify(startKeyDocId);
   let nextBatch;
@@ -599,41 +585,7 @@ const queryPurgedTargets = async (roles, act) => {
     nextBatch = pagination.nextBatch;
   } while (nextBatch);
 };
-const countPurgedTargets = async (roles) => {
-  let wontChangeCount = 0;
-  let willPurgeCount = 0;
-  let willUnpurgeCount = 0;
-
-  const act = async (getBatch, getIdsToPurge, roles, startKeyDocId) => {
-    const { changesCounts, pagination } = await simulatePurge(getBatch, getIdsToPurge, roles, startKeyDocId);
-    wontChangeCount += changesCounts.wontChangeCount;
-    willPurgeCount += changesCounts.willPurgeCount;
-    willUnpurgeCount += changesCounts.willUnpurgeCount;
-    return { pagination };
-  };
-  await queryPurgedTargets(roles, act);
-
-  return { wontChangeCount, willPurgeCount, willUnpurgeCount };
-};
-
-/*
-const count = async (roles, queryFn) => {
-  let wontChangeCount = 0;
-  let willPurgeCount = 0;
-  let willUnpurgeCount = 0;
-
-  const act = async (getBatch, getIdsToPurge, roles, startKeyDocId) => {
-    const { changesCounts, pagination } = await simulatePurge(getBatch, getIdsToPurge, roles, startKeyDocId);
-    wontChangeCount += changesCounts.wontChangeCount;
-    willPurgeCount += changesCounts.willPurgeCount;
-    willUnpurgeCount += changesCounts.willUnpurgeCount;
-    return { pagination };
-  };
-  await queryFn(roles, act);
-
-  return { wontChangeCount, willPurgeCount, willUnpurgeCount };
-};
- */
+const countPurgedTargets = async (roles) => count(queryPurgedTargets, roles);
 
 const getSchedule = config => {
   if (!config) {
