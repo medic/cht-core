@@ -1,16 +1,17 @@
-project_name: <your-project-name>
-namespace: "cht-dev-namespace"
+project_name: cht-local-test
+namespace: "cht-dev"
 chtversion: 4.1.1
-#cht_image_tag: 4.1.1-4.1.1 #- This is filled in automatically by the deploy script. Don't uncomment this line.
+# cht_image_tag - This is filled in automatically by the deploy script. Don't uncomment this line.
 couchdb:
-  password: <password-value>
-  secret: <secret-value>
-  user: <user-name>
-  uuid: <uuid-value>
+  password: password
+  secret: secret
+  user: cht
+  uuid: 001afe14-b673-4881-bd53-d48a02e7abb1
   clusteredCouch_enabled: true
-  couchdb_node_storage_size: 100Mi
-clusteredCouch:
-  noOfCouchDBNodes: 3
+  node1_storageSize: 100Mi
+  node2_storageSize: 100Mi
+  node3_storageSize: 100Mi
+  single_node_storageSize: 100Mi  #For when clusteredCouch is disabled
 toleration:   # This is for the couchdb pods. Don't change this unless you know what you're doing.
   key: "dev-couchdb-only"
   operator: "Equal"
@@ -20,15 +21,10 @@ ingress:
   annotations:
     groupname: "dev-cht-alb"
     tags: "Environment=dev,Team=QA"
-    certificate: "arn:aws:iam::<account-id>:server-certificate/2023-wildcard-dev-medicmobile-org-chain"
+    certificate: "arn:aws:iam::medic:server-certificate/2023-wildcard-dev-medicmobile-org-chain"
   host: "gamma-cht.dev.medicmobile.org"
 
 environment: "local"  # "local" or "remote"
 
 local:
   diskPath: "/var/lib/couchdb"
-
-remote:
-  existingEBS: "true"
-  existingEBSVolumeID: "vol-0123456789abcdefg"
-  existingEBSVolumeSize: "100Gi"
