@@ -12,7 +12,6 @@ const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
 const chtDbUtils = require('@utils/cht-db');
 const browserLogsUtils = require('@utils/browser-logs');
-
 const ALLURE_OUTPUT = 'allure-results';
 const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
 const logLevels = ['error', 'warning', 'debug'];
