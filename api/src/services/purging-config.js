@@ -427,17 +427,28 @@ const simulateContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = ''
       // return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
       return getPurgingChangesCounts(rolesHashes, docIds, alreadyPurged, toPurge);
     })
-    .then((changesCounts) => ({ changesCounts, pagination: { nextKey, nextKeyDocId, nextBatch } }))
+    .then((changesCounts) => ({
+      changesCounts,
+      pagination: { nextKey, nextKeyDocId, nextBatch },
+    }))
     .catch(err => {
       if (err && err.code === MAX_BATCH_SIZE_REACHED) {
         if (contactsBatchSize > 1) {
           decreaseBatchSize();
           logger.warn(`Purging: Too many reports to purge. Decreasing contacts batch size to ${contactsBatchSize}`);
-          return { nextKey: startKey, nextKeyDocId: startKeyDocId, nextBatch };
+          return {
+            pagination: {
+              nextKey: startKey,
+              nextKeyDocId: startKeyDocId,
+              nextBatch,
+            },
+          };
         }
 
         logger.warn(`Purging: Too many reports to purge. Skipping contacts ${err.contactIds.join(', ')}.`);
-        return { nextKey, nextKeyDocId, nextBatch };
+        return {
+          pagination: { nextKey, nextKeyDocId, nextBatch },
+        };
       }
 
       throw err;
