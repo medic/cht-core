@@ -79,12 +79,12 @@ const getParser = (exports.getParser = (def, doc) => {
   const match = msg.match(MUVUKU_REGEX);
   if (match && match[1]) {
     switch (match[1].toUpperCase()) {
-      case '1':
-        return mpParser.parse;
-      case 'J1':
-        return javarosaParser.parse;
-      default:
-        return;
+    case '1':
+      return mpParser.parse;
+    case 'J1':
+      return javarosaParser.parse;
+    default:
+      return;
     }
   }
   msg = stripFormCode(code, msg);
@@ -298,15 +298,15 @@ exports.parse = (def, doc) => {
     let bsDay = 1;
     for (const k of Object.keys(def.fields)) {
       switch (def.fields[k].type) {
-        case 'bsYear':
-          bsYear = msgData[k];
-          break;
-        case 'bsMonth':
-          bsMonth = msgData[k];
-          break;
-        case 'bsDay':
-          bsDay = msgData[k];
-          break;
+      case 'bsYear':
+        bsYear = msgData[k];
+        break;
+      case 'bsMonth':
+        bsMonth = msgData[k];
+        break;
+      case 'bsDay':
+        bsDay = msgData[k];
+        break;
       }
     }
 

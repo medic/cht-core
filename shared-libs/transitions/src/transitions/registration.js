@@ -244,9 +244,6 @@ const triggers = {
   add_phone_number: (options) => {
     return setPhoneNumber(options.doc);
   },
-  add_age: (options) => {
-    return setAge(options.doc);
-  },
   add_expected_date: (options) => {
     return setExpectedBirthDate(options.doc);
   },
