@@ -90,6 +90,72 @@ describe('Content Security Policy middleware', () => {
     expect(serverUtils.error.notCalled).to.be.true;
   });
 
+  it('should create content security policy correctly when mising matomo_sha', async () => {
+    settingsService.get.resolves({ usage_analytics: { matomo_server: 'https://matomo.medic.org' } });
+
+    const policy = await middleware.get({}, {});
+
+    expect(policy).to.deep.equal({
+      hpkp: false,
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: [ `'none'` ],
+          fontSrc: [ `'self'` ],
+          manifestSrc: [ `'self'` ],
+          connectSrc: [ `'self'`, environment.buildsUrl + '/', 'maps.googleapis.com', 'matomo.medic.org' ],
+          childSrc: [ `'self'` ],
+          formAction: [ `'self'` ],
+          imgSrc: [ `'self'`, 'data:', 'blob:', '*.openstreetmap.org' ],
+          mediaSrc: [ `'self'`, 'blob:' ],
+          scriptSrc: [
+            `'self'`,
+            `'sha256-B5cfIVb4/wnv2ixHP03bHeMXZDszDL610YG5wdDq/Tc='`,
+            `'unsafe-eval'`,
+            `'unsafe-hashes'`,
+            `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
+          ],
+          styleSrc: [ `'self'`, `'unsafe-inline'` ],
+        },
+        browserSniff: false,
+      },
+    });
+    expect(settingsService.get.calledOnce).to.be.true;
+    expect(serverUtils.error.notCalled).to.be.true;
+  });
+
+  it('should create content security policy correctly when mising matomo_server', async () => {
+    settingsService.get.resolves({ usage_analytics: { matomo_sha: 'sha256-PMJiIIDh' } });
+
+    const policy = await middleware.get({}, {});
+
+    expect(policy).to.deep.equal({
+      hpkp: false,
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: [ `'none'` ],
+          fontSrc: [ `'self'` ],
+          manifestSrc: [ `'self'` ],
+          connectSrc: [ `'self'`, environment.buildsUrl + '/', 'maps.googleapis.com' ],
+          childSrc: [ `'self'` ],
+          formAction: [ `'self'` ],
+          imgSrc: [ `'self'`, 'data:', 'blob:', '*.openstreetmap.org' ],
+          mediaSrc: [ `'self'`, 'blob:' ],
+          scriptSrc: [
+            `'self'`,
+            `'sha256-B5cfIVb4/wnv2ixHP03bHeMXZDszDL610YG5wdDq/Tc='`,
+            `'unsafe-eval'`,
+            `'unsafe-hashes'`,
+            `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
+          ],
+          styleSrc: [ `'self'`, `'unsafe-inline'` ],
+        },
+        browserSniff: false,
+      },
+    });
+    expect(settingsService.get.calledOnce).to.be.true;
+    expect(serverUtils.error.notCalled).to.be.true;
+  });
+
   it('should handle exceptions', async () => {
     settingsService.get.rejects({ some: 'error' });
 

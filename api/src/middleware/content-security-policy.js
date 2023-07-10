@@ -9,7 +9,10 @@ const getConnectSrc = (webappAnalyticsConfig) => {
     'maps.googleapis.com', // Used for enketo geopoint widget
   ];
 
-  webappAnalyticsConfig && rules.push(webappAnalyticsConfig.matomo_server_no_protocol);
+  if (webappAnalyticsConfig?.matomo_server_no_protocol) {
+    rules.push(webappAnalyticsConfig.matomo_server_no_protocol);
+  }
+
   return rules;
 };
 
@@ -35,7 +38,7 @@ const getScriptSrc = (webappAnalyticsConfig) => {
     `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
   ];
 
-  if (webappAnalyticsConfig) {
+  if (webappAnalyticsConfig?.matomo_sha && webappAnalyticsConfig?.matomo_server_no_protocol) {
     rules.push(`'${webappAnalyticsConfig.matomo_sha}'`);
     rules.push(webappAnalyticsConfig.matomo_server_no_protocol);
   }
@@ -68,7 +71,7 @@ const getUsageAnalyticsConfig = async () => {
   return {
     ...config,
     // Fixes CSP error on soft-reload
-    matomo_server_no_protocol: config.matomo_server.replace(/^http(s?):\/\//i, ''),
+    matomo_server_no_protocol: config.matomo_server?.replace(/^http(s?):\/\//i, ''),
   };
 };
 
