@@ -12,8 +12,19 @@ const config = require('../config');
 const purgeDbs = {};
 const TASK_EXPIRATION_PERIOD = 60; // days
 const TARGET_EXPIRATION_PERIOD = 6; // months
+const MAX_CONTACT_BATCH_SIZE = 1000;
 const VIEW_LIMIT = 100 * 1000;
+const MAX_BATCH_SIZE = 20 * 1000;
+const MIN_BATCH_SIZE = 5 * 1000;
+const MAX_BATCH_SIZE_REACHED = 'max_size_reached';
+let contactsBatchSize = MAX_CONTACT_BATCH_SIZE;
 
+const decreaseBatchSize = () => {
+  contactsBatchSize = Math.floor(contactsBatchSize / 2);
+};
+const increaseBatchSize = () => {
+  contactsBatchSize = Math.min(MAX_CONTACT_BATCH_SIZE, contactsBatchSize * 2);
+};
 const parsePurgeFn = (purgeFnString) => {
   let purgeFn;
   try {
@@ -188,7 +199,18 @@ const getRecordsForContacts = async (groups, subjectIds) => {
     requestNext = result.rows.length === VIEW_LIMIT;
 
     relevantRows.push(...result.rows.filter(row => isRelevantRecordEmission(row, groups)));
+    if (relevantRows.length >= MAX_BATCH_SIZE) {
+      return Promise.reject({
+        code: MAX_BATCH_SIZE_REACHED,
+        contactIds: Object.keys(groups),
+        message: `Purging skipped. Too many records for contacts: ${Object.keys(groups).join(', ')}`,
+      });
+    }
   } while (requestNext);
+
+  if (relevantRows.length < MIN_BATCH_SIZE) {
+    increaseBatchSize();
+  }
 
   logger.info(`Found ${relevantRows.length} records`);
   if (!relevantRows.length) {
@@ -306,7 +328,10 @@ const getPurgingChangesCounts = (rolesHashes, ids, alreadyPurged, toPurge) => {
     willUnpurgeCount,
   };
 };
-const simulatePurge = (getBatch, getIdsToPurge, roles) => {
+const simulatePurge = (getBatch, getIdsToPurge, roles, startKeyDocId) => {
+  let nextKey = false;
+  let nextKeyDocId = false;
+  let nextBatch = false;
   const rows = [];
   const docIds = [];
   const rolesHashes = Object.keys(roles);
@@ -314,6 +339,13 @@ const simulatePurge = (getBatch, getIdsToPurge, roles) => {
   return getBatch()
     .then(result => {
       result.rows.forEach(row => {
+        if (row.id === startKeyDocId) {
+          return;
+        }
+
+        nextKeyDocId = row.id;
+        nextKey = nextKeyDocId.key;
+        nextBatch = true;
         docIds.push(row.id);
         rows.push(row);
       });
@@ -323,9 +355,12 @@ const simulatePurge = (getBatch, getIdsToPurge, roles) => {
     .then(alreadyPurged => {
       const toPurge = getIdsToPurge(rolesHashes, rows);
       return getPurgingChangesCounts(rolesHashes, docIds, alreadyPurged, toPurge);
-    });
+    })
+    .then((changesCounts) => ({ changesCounts, pagination: { nextKey, nextKeyDocId, nextBatch } }));
 };
-const countPurgedContacts = async (roles, purgeFn) => {
+
+/*
+const countPurgedContacts_direct = async (roles, purgeFn) => {
   const groups = {};
   const subjectIds = [];
   const rolesHashes = Object.keys(roles);
@@ -342,13 +377,121 @@ const countPurgedContacts = async (roles, purgeFn) => {
   const toPurge = getDocsToPurge(purgeFn, groups, roles);
   return getPurgingChangesCounts(rolesHashes, docIds, alreadyPurged, toPurge);
 };
-const countPurgedUnallocatedRecords = async (roles, purgeFn) => {
-  const permissionSettings = config.get('permissions');
-  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
-  const getBatch = () =>  db.queryMedic('medic/docs_by_replication_key', {
-    key: JSON.stringify('_unassigned'),
+*/
+
+const simulateContactsPurge = (roles, purgeFn, startKey = '', startKeyDocId = '') => {
+  let nextKeyDocId;
+  let nextKey;
+  let nextBatch = false;
+  const groups = {};
+  const subjectIds = [];
+  const rolesHashes = Object.keys(roles);
+  let docIds;
+
+  logger.info(
+    `Purging: Starting contacts batch: key "${startKey}", doc id "${startKeyDocId}", batch size ${contactsBatchSize}`
+  );
+
+  // every request with `startKeyDocId` will include the startKeyDocId document as the 1st result.
+  // this document was already processed and it's skipped. when batch size goes down to 1 and we have a start doc id,
+  // it's required that we increase the limit to at least 2, in order to get one new contact to process.
+  const limit = startKeyDocId !== '' ? contactsBatchSize + 1 : contactsBatchSize;
+  const queryString = {
+    limit: limit,
+    start_key: JSON.stringify(startKey),
+    startkey_docid: startKeyDocId,
     include_docs: true,
+  };
+
+  // using `db.queryMedic` library because PouchDB doesn't support `startkey_docid` in view queries
+  // using `startkey_docid` because using `skip` is *very* slow
+  return db
+    .queryMedic('medic-client/contacts_by_type', queryString)
+    .then(result => {
+      result.rows.forEach(row => {
+        if (row.id === startKeyDocId) {
+          return;
+        }
+        nextBatch = true;
+        ({ id: nextKeyDocId, key: nextKey } = row);
+        assignContactToGroups(row, groups, subjectIds);
+      });
+    })
+    .then(() => getRecordsForContacts(groups, subjectIds))
+    .then(() => {
+      docIds = getIdsFromGroups(groups);
+      return getAlreadyPurgedDocs(rolesHashes, docIds);
+    })
+    .then(alreadyPurged => {
+      const toPurge = getDocsToPurge(purgeFn, groups, roles);
+      // return updatePurgedDocs(rolesHashes, docIds, alreadyPurged, toPurge);
+      return getPurgingChangesCounts(rolesHashes, docIds, alreadyPurged, toPurge);
+    })
+    .then((changesCounts) => ({ changesCounts, pagination: { nextKey, nextKeyDocId, nextBatch } }))
+    .catch(err => {
+      if (err && err.code === MAX_BATCH_SIZE_REACHED) {
+        if (contactsBatchSize > 1) {
+          decreaseBatchSize();
+          logger.warn(`Purging: Too many reports to purge. Decreasing contacts batch size to ${contactsBatchSize}`);
+          return { nextKey: startKey, nextKeyDocId: startKeyDocId, nextBatch };
+        }
+
+        logger.warn(`Purging: Too many reports to purge. Skipping contacts ${err.contactIds.join(', ')}.`);
+        return { nextKey, nextKeyDocId, nextBatch };
+      }
+
+      throw err;
+    });
+};
+/*const queryPurgedContacts = async (roles, purgeFn, act) => {
+  let startKey = '';
+  let startKeyDocId = '';
+  let nextBatch = true;
+
+  do {
+    const result = await batchedContactsPurge(roles, purgeFn, startKey, startKeyDocId);
+    const { pagination } = await act(roles, purgeFn, startKey, startKeyDocId);
+    startKey = pagination.nextKey;
+    startKeyDocId = pagination.nextKeyDocId;
+    nextBatch = pagination.nextBatch;
+  } while (nextBatch);
+};*/
+const countPurgedContacts_batch = async (roles, purgeFn) => {
+  let startKey = '';
+  let startKeyDocId = '';
+  let nextBatch = true;
+  let wontChangeCount = 0;
+  let willPurgeCount = 0;
+  let willUnpurgeCount = 0;
+
+  do {
+    const { changesCounts, pagination } = await simulateContactsPurge(roles, purgeFn, startKey, startKeyDocId);
+    startKey = pagination.nextKey;
+    startKeyDocId = pagination.nextKeyDocId;
+    nextBatch = pagination.nextBatch;
+    wontChangeCount += changesCounts.wontChangeCount;
+    willPurgeCount += changesCounts.willPurgeCount;
+    willUnpurgeCount += changesCounts.willUnpurgeCount;
+  } while (nextBatch);
+
+  return { wontChangeCount, willPurgeCount, willUnpurgeCount };
+};
+
+const countPurgedContacts = countPurgedContacts_batch;
+
+const queryPurgedUnallocatedRecords = async (roles, purgeFn, act) => {
+  let startKeyDocId = '';
+  let nextBatch;
+
+  // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
+  const getBatch = () => db.queryMedic('medic/docs_by_replication_key', {
+    limit: MAX_BATCH_SIZE,
+    key: JSON.stringify('_unassigned'),
+    startkey_docid: startKeyDocId,
+    include_docs: true
   });
+  const permissionSettings = config.get('permissions');
+
   const getIdsToPurge = (rolesHashes, rows) => {
     const toPurge = {};
     rows.forEach(row => {
@@ -369,15 +512,42 @@ const countPurgedUnallocatedRecords = async (roles, purgeFn) => {
     return toPurge;
   };
 
-  return await simulatePurge(getBatch, getIdsToPurge, roles);
+  do {
+    logger.info(`Purging: Starting "unallocated reports" purge batch with id "${startKeyDocId}"`);
+    const { pagination } = await act(getBatch, getIdsToPurge, roles, startKeyDocId);
+    startKeyDocId = pagination.nextKeyDocId;
+    nextBatch = pagination.nextBatch;
+  } while (nextBatch);
 };
-const countPurgedTasks = async (roles) => {
+const countPurgedUnallocatedRecords = async (roles, purgeFn) => {
+  let wontChangeCount = 0;
+  let willPurgeCount = 0;
+  let willUnpurgeCount = 0;
+
+  const act = async (getBatch, getIdsToPurge, roles, startKeyDocId) => {
+    const { changesCounts, pagination } = await simulatePurge(getBatch, getIdsToPurge, roles, startKeyDocId);
+    wontChangeCount += changesCounts.wontChangeCount;
+    willPurgeCount += changesCounts.willPurgeCount;
+    willUnpurgeCount += changesCounts.willUnpurgeCount;
+    return { pagination };
+  };
+  await queryPurgedUnallocatedRecords(roles, purgeFn, act);
+
+  return { wontChangeCount, willPurgeCount, willUnpurgeCount };
+};
+
+const queryPurgedTasks = async (roles, act) => {
   const maximumEmissionEndDate = moment().subtract(TASK_EXPIRATION_PERIOD, 'days').format('YYYY-MM-DD');
+  let startKeyDocId = '';
+  let startKey = '';
+  let nextBatch;
 
   // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
   const getBatch = () => db.queryMedic('medic/tasks_in_terminal_state', {
-    start_key: JSON.stringify(''),
+    limit: MAX_BATCH_SIZE,
     end_key: JSON.stringify(maximumEmissionEndDate),
+    start_key: JSON.stringify(startKey),
+    startkey_docid: startKeyDocId,
   });
 
   const getIdsToPurge = (rolesHashes, rows) => {
@@ -391,14 +561,41 @@ const countPurgedTasks = async (roles) => {
     return toPurge;
   };
 
-  return await simulatePurge(getBatch, getIdsToPurge, roles);
+  do {
+    logger.info(`Purging: Starting "tasks" purge batch with id "${startKeyDocId}"`);
+    const { pagination } = await act(getBatch, getIdsToPurge, roles, startKeyDocId, startKey);
+    startKey = pagination.nextKey;
+    startKeyDocId = pagination.nextKeyDocId;
+    nextBatch = pagination.nextBatch;
+  } while (nextBatch);
+};
+const countPurgedTasks = async (roles) => {
+  let wontChangeCount = 0;
+  let willPurgeCount = 0;
+  let willUnpurgeCount = 0;
+
+  const act = async (getBatch, getIdsToPurge, roles, startKeyDocId) => {
+    const { changesCounts, pagination } = await simulatePurge(getBatch, getIdsToPurge, roles, startKeyDocId);
+    wontChangeCount += changesCounts.wontChangeCount;
+    willPurgeCount += changesCounts.willPurgeCount;
+    willUnpurgeCount += changesCounts.willUnpurgeCount;
+    return { pagination };
+  };
+  await queryPurgedTasks(roles, act);
+
+  return { wontChangeCount, willPurgeCount, willUnpurgeCount };
 };
 
-const countPurgedTargets = async (roles) => {
+const queryPurgedTargets = async (roles, act) => {
+  let startKeyDocId = 'target~';
+  let startKey = JSON.stringify(startKeyDocId);
+  let nextBatch;
+
   const lastAllowedReportingIntervalTag = moment().subtract(TARGET_EXPIRATION_PERIOD, 'months').format('YYYY-MM');
   // using `db.queryMedic` because PouchDB doesn't support `start_key_doc_id`
   const getBatch = () => db.queryMedic('allDocs', {
-    start_key: JSON.stringify('target~'),
+    limit: MAX_BATCH_SIZE,
+    start_key: JSON.stringify(startKeyDocId),
     end_key: JSON.stringify(`target~${lastAllowedReportingIntervalTag}~`),
   });
 
@@ -413,8 +610,49 @@ const countPurgedTargets = async (roles) => {
     return toPurge;
   };
 
-  return await simulatePurge(getBatch, getIdsToPurge, roles);
+  do {
+    logger.info(`Purging: Starting "targets" purge batch with id "${startKeyDocId}"`);
+    const { pagination } = await act(getBatch, getIdsToPurge, roles, startKeyDocId, startKey);
+    startKey = pagination.nextKey;
+    startKeyDocId = pagination.nextKeyDocId;
+    nextBatch = pagination.nextBatch;
+  } while (nextBatch);
 };
+const countPurgedTargets = async (roles) => {
+  let wontChangeCount = 0;
+  let willPurgeCount = 0;
+  let willUnpurgeCount = 0;
+
+  const act = async (getBatch, getIdsToPurge, roles, startKeyDocId) => {
+    const { changesCounts, pagination } = await simulatePurge(getBatch, getIdsToPurge, roles, startKeyDocId);
+    wontChangeCount += changesCounts.wontChangeCount;
+    willPurgeCount += changesCounts.willPurgeCount;
+    willUnpurgeCount += changesCounts.willUnpurgeCount;
+    return { pagination };
+  };
+  await queryPurgedTargets(roles, act);
+
+  return { wontChangeCount, willPurgeCount, willUnpurgeCount };
+};
+
+/*
+const count = async (roles, queryFn) => {
+  let wontChangeCount = 0;
+  let willPurgeCount = 0;
+  let willUnpurgeCount = 0;
+
+  const act = async (getBatch, getIdsToPurge, roles, startKeyDocId) => {
+    const { changesCounts, pagination } = await simulatePurge(getBatch, getIdsToPurge, roles, startKeyDocId);
+    wontChangeCount += changesCounts.wontChangeCount;
+    willPurgeCount += changesCounts.willPurgeCount;
+    willUnpurgeCount += changesCounts.willUnpurgeCount;
+    return { pagination };
+  };
+  await queryFn(roles, act);
+
+  return { wontChangeCount, willPurgeCount, willUnpurgeCount };
+};
+ */
 
 const getSchedule = config => {
   if (!config) {
@@ -452,6 +690,7 @@ const dryRun = async (appSettingsPurge) => {
   const targets = await countPurgedTargets(roles);
 
   const results = [contacts, unallocatedRecords, tasks, targets];
+  console.log("results", results);
   const wontChangeCount = sumBy(results, 'wontChangeCount');
   const willPurgeCount = sumBy(results, 'willPurgeCount');
   const willUnpurgeCount = sumBy(results, 'willUnpurgeCount');
