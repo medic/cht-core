@@ -1,8 +1,10 @@
 require('../../../../../../tests/aliases');
 const assert = require('chai').assert;
 const sinon = require('sinon');
+const glob = require('glob');
 
 const utils = require('../../../../../../tests/utils');
+const config = require('../../../../../../tests/e2e/default/wdio.conf');
 
 describe('Test utils', () => {
 
@@ -130,6 +132,27 @@ describe('Test utils', () => {
           assert.equal(deleteOptions.path, '/_bulk_docs');
           assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, type: 'tombstone', _rev: 1}]});
         });
+    });
+  });
+  
+  it('Check that all test specs belong to a test suites', () => {
+    const suites = config.config.suites;
+    const testFolders = [];
+    for (const [, value] of Object.entries(suites)) {
+      value.forEach(path => testFolders.push(path.split('/')[1]));
+    }
+    const getDirectories =   (src, callback) => {
+      glob(src, callback);
+    };
+    //get all spec files in tests/e2e/default
+    getDirectories('../../../../../../tests/e2e/default/**/*.wdio-spec.js', (err, res)  => {
+      if (err) {
+        console.log('Error', err);
+      } else {
+        res.forEach( spec => {
+          assert(testFolders.includes(spec.split('/')[3]), spec + ' does not belong to a folder' );
+        }); 
+      }
     });
   });
 });

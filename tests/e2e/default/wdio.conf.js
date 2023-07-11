@@ -45,9 +45,6 @@ const baseConfig = {
   //
   
   suites: {
-    all: [
-      '**/*.wdio-spec.js',
-    ],
     basic: [
       './admin/**/*.wdio-spec.js',
       './login/**/*.wdio-spec.js',
@@ -74,6 +71,7 @@ const baseConfig = {
       './pwa/**/*.wdio-spec.js',
       './service-worker/**/*.wdio-spec.js',
       './transitions/**/*.wdio-spec.js',
+      './telemetry/**/*.wdio-spec.js'
     ],
 
     enketo: [
