@@ -36,14 +36,14 @@ module.exports = {
   PASSWORD,
   SUITES: {
     all: ['**/*.wdio-spec.js'],
-    basic: [
+    core: [
       './admin/**/*.wdio-spec.js',
       './login/**/*.wdio-spec.js',
       './translations/**/*.wdio-spec.js',
       './more-options-menu/**/*.wdio-spec.js',
       './users/**/*.wdio-spec.js'
     ],
-    passive: [
+    highLevel: [
       './about/**/*.wdio-spec.js',
       './navigation/**/*.wdio-spec.js',
       './privacy-policy/**/*.wdio-spec.js',
@@ -56,7 +56,7 @@ module.exports = {
       './tasks/**/*.wdio-spec.js',
       './sms/**/*.wdio-spec.js',
     ],
-    technical:[
+    lowLevel:[
       './db/**/*.wdio-spec.js',
       './purge/**/*.wdio-spec.js',
       './pwa/**/*.wdio-spec.js',
@@ -67,7 +67,6 @@ module.exports = {
 
     enketo: [
       './enketo/**/*.wdio-spec.js',
-    ],
-    
+    ],    
   },
 };
