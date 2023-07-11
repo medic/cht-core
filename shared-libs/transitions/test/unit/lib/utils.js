@@ -295,40 +295,86 @@ describe('utils util', () => {
   });
 
   describe('isWithinTimeFrame', () => {
-    const cron = '';
-    const TIME_FRAME = '';
+    const cron = '5 * * * *';
+    const TIME_FRAME = 4 * 60 * 1000;
 
     it('should return true for the valid time', () => {
-      // update date
+      const currentDateInMs = new Date('2023-07-11T03:05:00+0000').getTime();
+      sinon.stub(Date, 'now').returns(currentDateInMs);
+
       utils.isWithinTimeFrame(cron).should.be.true;
+
+      const offset = 3 * 60 * 1000;
+      const currentDateInMsPlusOffset = currentDateInMs + offset;
+
+      sinon.stub(Date, 'now').returns(currentDateInMsPlusOffset);
+      utils.isWithinTimeFrame(cron, TIME_FRAME).should.be.true;
+
+      const currentDateInMsMinuOffset = currentDateInMs - offset;
+
+      sinon.stub(Date, 'now').returns(currentDateInMsMinuOffset);
       utils.isWithinTimeFrame(cron, TIME_FRAME).should.be.true;
     });
 
     it('should return false for invalid time', () => {
-      // update date
+      const currentDateInMs = new Date('2023-07-11T03:00:00+0000').getTime();
+      sinon.stub(Date, 'now').returns(currentDateInMs);
+
       utils.isWithinTimeFrame(cron).should.be.false;
+
+      const offset = 3 * 60 * 60;
+      const currentDateInMsPlusOffset = currentDateInMs + offset;
+
+      sinon.stub(Date, 'now').returns(currentDateInMsPlusOffset);
+      utils.isWithinTimeFrame(cron, TIME_FRAME).should.be.false;
+
+      const currentDateInMsMinuOffset = currentDateInMs - offset;
+
+      sinon.stub(Date, 'now').returns(currentDateInMsMinuOffset);
       utils.isWithinTimeFrame(cron, TIME_FRAME).should.be.false;
     });
 
-    it('should always be true for bad cron expression', () => {
+    it('should throw an error for bad cron expression', () => {
       const BAD_CRON_EXPRESSION = 'BAD_CRON_EXPRESSION';
-      
-      utils.isWithinTimeFrame(BAD_CRON_EXPRESSION).should.be.true;
-      utils.isWithinTimeFrame(BAD_CRON_EXPRESSION, TIME_FRAME).should.true;
+      const EXPECTED_ERROR = '`isWithinTimeFrame: Invalid cron expression "${BAD_CRON_EXPRESSION}"`';
+    
+      utils.isWithinTimeFrame(BAD_CRON_EXPRESSION).should.throw(EXPECTED_ERROR);
+      utils.isWithinTimeFrame(BAD_CRON_EXPRESSION, TIME_FRAME).should.throw(EXPECTED_ERROR);
     });
   });
   
   describe('isValidCronExpression', () => {
     it('should return true for valid cron expressions', () => {
-      utils.isValidCronExpression('* * * * *').should.be.true;
-      utils.isValidCronExpression('* * * * *').should.be.true;
-      utils.isValidCronExpression('* * * * *').should.be.true;
+      const VALID_EXPRESSIONS = [
+        '*/5 * * * *',
+        '0 */8 * * *',
+        '1,5 * * * *',
+        '1-5 * * * *',
+        '0 2 * * *',
+        '0 1 * * 1,2',
+        '0 0 * * 1',
+        '0 0 1 * *',
+        '0 0 */5 * *',
+        '* * * * *',
+        '* * 3 * *',
+        '* * * 10 *',
+        '* * * * 1',
+      ];
+
+      VALID_EXPRESSIONS
+        .forEach(cron => utils.isValidCronExpression(cron).should.be.true);
     });
 
     it('should return false for invalid cron expressions', () => {
-      utils.isValidCronExpression('BAD_CRON_EXPRESSION').should.be.false;
-      utils.isValidCronExpression('* * * * * * *').should.be.false;
-      utils.isValidCronExpression('* 8008347 8- 90').should.be.false;
+      const INVALID_EXPRESSIONS = [
+        'BAD_CRON_EXPRESSION',
+        '* * * * * * *',
+        '* 807 8- 90',
+        '* * * *',
+      ];
+
+      INVALID_EXPRESSIONS
+        .forEach(cron => utils.isValidCronExpression(cron).should.be.false);
     });
   });
 });
