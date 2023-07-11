@@ -748,7 +748,7 @@ describe('outbound schedule', () => {
       });
     });
 
-    it('should only process queued tasks with due "cron" or nonexistent "cron" field', () => {
+    it('should only process queued tasks with due "cron" or non-existent "cron" field', () => {
       const VALID_CRON = 'outbound-with-due-cron';
       const INVALID_CRON = 'outbound-with-undue-cron';
       const WITHOUT_CRON = 'outbound-without-cron';
