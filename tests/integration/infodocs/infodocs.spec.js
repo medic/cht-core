@@ -10,7 +10,7 @@ const sentinelUtils = require('@utils/sentinel');
 // process.
 //
 /* eslint-disable no-console */
-const delayedInfoDocsOf = ids => sentinelUtils.waitForSentinel().then(() => sentinelUtils.getInfoDocs(ids));
+const delayedInfoDocsOf = ids => sentinelUtils.waitForSentinel(ids).then(() => sentinelUtils.getInfoDocs(ids));
 
 describe('infodocs', () => {
   afterEach(() => utils.revertDb([], true));

@@ -117,7 +117,7 @@ describe('Sentinel queue drain', () => {
           expect(tombstone.tombstone).to.have.property('type', 'data_record');
         });
       });
-  }).timeout(400 * 1000);
+  }).timeout(300 * 1000);
 
   it('queue should work after restarting haproxy', async () => {
     await utils.stopHaproxy(); // this will also crash Sentinel and API
