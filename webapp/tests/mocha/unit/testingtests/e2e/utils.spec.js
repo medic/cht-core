@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const glob = require('glob');
 
 const utils = require('../../../../../../tests/utils');
-const suites = require('../../../../../../tests/constants');
+const constants = require('../../../../../../tests/constants');
 
 describe('Test utils', () => {
 
@@ -137,7 +137,7 @@ describe('Test utils', () => {
   
   it('Check that all test specs belong to a test suites', () => {
     const testFolders = [];
-    for (const [, value] of Object.entries(suites)) {
+    for (const [, value] of Object.entries(constants.SUITES)) {
       value.forEach(path => testFolders.push(path.split('/')[1]));
     }
     const getDirectories =   (src, callback) => {
