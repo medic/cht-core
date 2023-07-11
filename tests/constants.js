@@ -35,6 +35,7 @@ module.exports = {
   USERNAME,
   PASSWORD,
   SUITES: {
+    all: ['**/*.wdio-spec.js'],
     basic: [
       './admin/**/*.wdio-spec.js',
       './login/**/*.wdio-spec.js',
