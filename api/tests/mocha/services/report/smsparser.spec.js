@@ -155,8 +155,8 @@ describe('sms parser', () => {
   //India , Kenya, Tanzania Phone is accepted as contact info in Nepal region.
   //Just incase we make cross region/borders tool
   [['+918750660880', '+91 87506 60880'],
-  ['+254773087889', '+254 773 087889'],
-  ['+255712262987', '+255 712 262 987']].forEach(phoneNumerWithParsed => {
+    ['+254773087889', '+254 773 087889'],
+    ['+255712262987', '+255 712 262 987']].forEach(phoneNumerWithParsed => {
     it('returns parsed number if valid phone of another the region', () => {
       const doc = { message: phoneNumerWithParsed[0] };
       const def = definitions.forms.NP;
