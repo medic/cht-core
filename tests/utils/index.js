@@ -1072,7 +1072,7 @@ const waitForDockerLogs = (container, ...regex) => {
       console.log('Found logs', logs, 'watched for', ...regex);
       reject(new Error('Timed out looking for details in logs.'));
       killSpawnedProcess(proc);
-    }, 6000);
+    }, 10000);
 
     const checkOutput = (data) => {
       if (!firstLine) {
