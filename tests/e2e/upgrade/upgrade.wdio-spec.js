@@ -112,9 +112,16 @@ describe('Performing an upgrade', () => {
 
     await commonPage.goToAboutPage();
     expect(await upgradePage.getCurrentVersion()).to.include(TAG ? TAG : `${BRANCH} (`);
+    await commonPage.logout();
   });
 
   it('should display upgrade page even without upgrade logs', async () => {
+    await loginPage.cookieLogin({
+      username: constants.USERNAME,
+      password: constants.PASSWORD,
+      createUser: false
+    });
+
     await deleteUpgradeLogs();
 
     await upgradePage.goToUpgradePage();
