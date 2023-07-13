@@ -18,7 +18,6 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
-import { MatomoAnalyticsService } from '@mm-services/matomo-analytics.service';
 
 describe('TasksContentComponent', () => {
   let tasks;
@@ -32,7 +31,6 @@ describe('TasksContentComponent', () => {
   let geolocationService;
   let enketoService;
   let router;
-  let matomoAnalyticsService;
   let tasksForContactService;
 
   let compileComponent;
@@ -48,7 +46,6 @@ describe('TasksContentComponent', () => {
     geolocationService = { init: sinon.stub() };
     enketoService = { render, unload: sinon.stub(), save: sinon.stub() };
     router = { navigate: sinon.stub() };
-    matomoAnalyticsService = { trackEvent: sinon.stub() };
     tasksForContactService = { getLeafPlaceAncestor: sinon.stub().resolves() };
 
     const mockedSelectors = [
@@ -73,7 +70,6 @@ describe('TasksContentComponent', () => {
         { provide: TelemetryService, useValue: { record: sinon.stub() }},
         { provide: GeolocationService, useValue: geolocationService },
         { provide: Router, useValue: router },
-        { provide: MatomoAnalyticsService, useValue: matomoAnalyticsService },
         { provide: TasksForContactService, useValue: tasksForContactService },
       ],
     });
@@ -210,7 +206,6 @@ describe('TasksContentComponent', () => {
     expect(get.calledOnce).to.be.true;
     expect(get.args).to.deep.eq([['contact']]);
     expect(render.notCalled).to.be.true;
-    expect(matomoAnalyticsService.trackEvent.calledOnce).to.be.true;
     expect(setSelectedTask.calledOnce).to.be.true;
     expect(setSelectedTask.args[0]).to.deep.equal([
       {

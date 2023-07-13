@@ -26,6 +26,7 @@
           <div *ngIf="summaries[$index]?.subject?.type" class="subject">
             <a class="name" *ngIf="summaries[$index]?.subject._id"
               [routerLink]="['/contacts', summaries[$index].subject._id]"
+              [state]="{ matomoType: summaries[$index].subject.doc?.type }"
               [innerHTML]="(summaries[$index].subject.type === 'name' && summaries[$index].subject.value) || summaries[$index].subject.name || ('report.subject.unknown' | translate)">
             </a>
             <span class="name" *ngIf="!summaries[$index]?.subject._id"

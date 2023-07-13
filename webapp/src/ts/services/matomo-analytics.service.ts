@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, NgZone } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { Subject } from 'rxjs';
@@ -19,8 +19,10 @@ export class MatomoAnalyticsService {
   private isScriptReady = new Subject<boolean>();
   private matomoServer: string;
 
+  private MATOMO_VERSION = '4.14.2';
   private MATOMO_SCRIP_FILE = 'matomo.js';
   private MATOMO_TRACKER = 'matomo.php';
+  private UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
 
   constructor(
     private router: Router,
@@ -28,6 +30,7 @@ export class MatomoAnalyticsService {
     private sessionService: SessionService,
     private authService: AuthService,
     private settingsService: SettingsService,
+    private ngZone: NgZone,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.window = this.document.defaultView;
@@ -60,10 +63,12 @@ export class MatomoAnalyticsService {
       return false;
     }
 
-    this.window._paq.push([MatomoConfig.TRACK_PAGE_VIEW]);
-    this.window._paq.push([MatomoConfig.ENABLE_LINK_TRACKING]);
-    this.window._paq.push([MatomoConfig.SET_TRACKER_URL, `${this.matomoServer}/${this.MATOMO_TRACKER}`]);
-    this.window._paq.push([MatomoConfig.SET_SITE_ID, siteId.toString()]);
+    this.window._paq.push([ MatomoConfig.DISABLE_CAPTURE_KEYSTROKES ]);
+    this.window._paq.push([ MatomoConfig.MATCH_TRACKER_URL ]);
+    this.window._paq.push([ MatomoConfig.TRACK_PAGE_VIEW ]);
+    this.window._paq.push([ MatomoConfig.ENABLE_LINK_TRACKING ]);
+    this.window._paq.push([ MatomoConfig.SET_TRACKER_URL, `${this.matomoServer}/${this.MATOMO_TRACKER}` ]);
+    this.window._paq.push([ MatomoConfig.SET_SITE_ID, siteId.toString() ]);
 
     return true;
   }
@@ -87,49 +92,66 @@ export class MatomoAnalyticsService {
   }
 
   private startTracking() {
+    console.info(`Usage analytics tracking started. Supporting Matomo version ${this.MATOMO_VERSION}.`);
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
-        let currentRoute = this.activatedRoute.root;
-        while (currentRoute?.firstChild) {
-          currentRoute = currentRoute.firstChild;
-        }
-
-        if (this.previousPageUrl) {
-          this.window._paq.push([MatomoConfig.SET_REFERENCE_URL, this.previousPageUrl]);
-        }
-
-        if (currentRoute.snapshot?.title) {
-          this.window._paq.push([MatomoConfig.SET_DOCUMENT_TITLE, currentRoute.snapshot?.title]);
-        }
-
-        this.window._paq.push([MatomoConfig.SET_CUSTOM_URL, window.location.href]);
-        this.previousPageUrl = window.location.href;
-
-        this.window._paq.push([MatomoConfig.TRACK_PAGE_VIEW]); // Set last
-        this.window._paq.push([MatomoConfig.ENABLE_LINK_TRACKING]); // Also, set last
+        this.ngZone.runOutsideAngular(() => this.trackNavigation());
       });
   }
 
-  async trackEvent(category, action, name) {
+  private trackNavigation() {
+    let currentRoute = this.activatedRoute.root;
+    while (currentRoute?.firstChild) {
+      currentRoute = currentRoute.firstChild;
+    }
+
+    if (currentRoute.snapshot?.title) {
+      this.window._paq.push([ MatomoConfig.SET_DOCUMENT_TITLE, currentRoute.snapshot?.title ]);
+    }
+
+    if (this.previousPageUrl) {
+      this.window._paq.push([ MatomoConfig.SET_REFERENCE_URL, this.previousPageUrl ]);
+    }
+
+    const currentUrl = this.replaceUuid(window.location.href);
+    this.window._paq.push([ MatomoConfig.SET_CUSTOM_URL, currentUrl ]);
+    this.previousPageUrl = currentUrl;
+
+    this.window._paq.push([ MatomoConfig.TRACK_PAGE_VIEW ]); // Set last
+    this.window._paq.push([ MatomoConfig.ENABLE_LINK_TRACKING ]); // Also, set last
+  }
+
+  private replaceUuid(url) {
+    if (!this.UUID_REGEX.test(url)) {
+      return url;
+    }
+
+    const newURL = url.replace(this.UUID_REGEX, 'UUID');
+    const navigation = this.router.getCurrentNavigation();
+    const matomoType = navigation?.extras?.state?.matomoType;
+
+    return matomoType ? `${newURL}~${matomoType}` : newURL;
+  }
+
+  async trackEvent(category, action, name?) {
     if (!(await this.canTrack()) || !this.window) {
       return;
     }
 
-    this.window._paq.push([MatomoConfig.TRACK_EVENT, category, action, name]);
+    const event = [ MatomoConfig.TRACK_EVENT, category, action ];
+    name && event.push(name);
+    this.ngZone.runOutsideAngular(() => this.window._paq.push(event));
   }
 }
 
 export const EventActions = {
-  LOAD: 'load',
   SEARCH: 'search',
   SORT: 'sort',
 };
 
 export const EventCategories = {
   CONTACTS: 'contacts',
-  REPORTS: 'reports',
-  TASKS: 'tasks'
 };
 
 export const MatomoConfig = {
@@ -141,4 +163,6 @@ export const MatomoConfig = {
   SET_TRACKER_URL: 'setTrackerUrl',
   TRACK_EVENT: 'trackEvent',
   TRACK_PAGE_VIEW: 'trackPageView',
+  DISABLE_CAPTURE_KEYSTROKES: 'HeatmapSessionRecording::disableCaptureKeystrokes',
+  MATCH_TRACKER_URL: 'HeatmapSessionRecording::matchTrackerUrl',
 };

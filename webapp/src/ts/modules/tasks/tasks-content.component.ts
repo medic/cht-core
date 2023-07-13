@@ -13,7 +13,6 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { DbService } from '@mm-services/db.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { EventActions, EventCategories, MatomoAnalyticsService } from '@mm-services/matomo-analytics.service';
 import { TasksForContactService } from '@mm-services/tasks-for-contact.service';
 
 @Component({
@@ -32,7 +31,6 @@ export class TasksContentComponent implements OnInit, OnDestroy {
     private dbService:DbService,
     private router:Router,
     private tasksForContactService:TasksForContactService,
-    private matomoAnalyticsService:MatomoAnalyticsService,
   ) {
     this.globalActions = new GlobalActions(store);
     this.tasksActions = new TasksActions(store);
@@ -153,7 +151,6 @@ export class TasksContentComponent implements OnInit, OnDestroy {
         this.tasksActions.setSelectedTask(hydratedTask);
         this.globalActions.setTitle(hydratedTask?.title);
         this.globalActions.setShowContent(true);
-        this.matomoAnalyticsService.trackEvent(EventCategories.TASKS, EventActions.LOAD, hydratedTask?._id);
 
         if (this.hasOneActionAndNoFields(hydratedTask)) {
           return this.performAction(hydratedTask.actions[0], true);

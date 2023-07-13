@@ -306,7 +306,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         const snackBarTranslationKey = this.routeSnapshot.params.reportId ? 'report.updated' : 'report.created';
         this.globalActions.setSnackbarContent(this.translateService.instant(snackBarTranslationKey));
         this.globalActions.setEnketoEditedStatus(false);
-        this.router.navigate(['/reports', docs[0]._id]);
+        const report = docs[0];
+        this.router.navigate(['/reports', report._id], { state: { matomoType: report.form } });
 
         this.telemetryData.postSave = Date.now();
         this.telemetryService.record(

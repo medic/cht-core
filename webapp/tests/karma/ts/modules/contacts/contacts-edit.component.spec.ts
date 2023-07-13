@@ -626,7 +626,10 @@ describe('ContactsEdit component', () => {
       expect(contactSaveService.save.callCount).to.equal(1);
       expect(contactSaveService.save.args[0]).to.deep.equal([ form, null, 'clinic', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'new_clinic_id']]);
+      expect(router.navigate.args[0]).to.deep.equal([
+        ['/contacts', 'new_clinic_id'],
+        { state: { matomoType: 'clinic' } },
+      ]);
     });
 
     it('when editing existent contact of hardcoded type', async () => {
@@ -661,7 +664,10 @@ describe('ContactsEdit component', () => {
       expect(contactSaveService.save.callCount).to.equal(1);
       expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_person', 'person', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_person']]);
+      expect(router.navigate.args[0]).to.deep.equal([
+        ['/contacts', 'the_person'],
+        { state: { matomoType: 'person' } },
+      ]);
     });
 
     it('when editing existent contact of configurable type', async () => {
@@ -696,7 +702,10 @@ describe('ContactsEdit component', () => {
       expect(contactSaveService.save.callCount).to.equal(1);
       expect(contactSaveService.save.args[0]).to.deep.equal([ form, 'the_patient', 'patient', undefined ]);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'the_patient']]);
+      expect(router.navigate.args[0]).to.deep.equal([
+        ['/contacts', 'the_patient'],
+        { state: { matomoType: 'patient' } },
+      ]);
     });
   });
 });

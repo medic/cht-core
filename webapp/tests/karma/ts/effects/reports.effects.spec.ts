@@ -23,7 +23,6 @@ import { SearchService } from '@mm-services/search.service';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
 import { AuthService } from '@mm-services/auth.service';
-import { MatomoAnalyticsService } from '@mm-services/matomo-analytics.service';
 import { ServicesActions } from '@mm-actions/services';
 
 describe('Reports effects', () => {
@@ -37,7 +36,6 @@ describe('Reports effects', () => {
   let searchService;
   let store;
   let authService;
-  let matomoAnalyticsService;
   let translateService;
 
   beforeEach(waitForAsync(() => {
@@ -58,7 +56,6 @@ describe('Reports effects', () => {
     router = { navigate: sinon.stub() };
     searchService = { search: sinon.stub() };
     authService = { has: sinon.stub() };
-    matomoAnalyticsService = { trackEvent: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
 
     TestBed.configureTestingModule({
@@ -80,7 +77,6 @@ describe('Reports effects', () => {
         { provide: Router, useValue: router },
         { provide: SearchService, useValue: searchService },
         { provide: AuthService, useValue: authService },
-        { provide: MatomoAnalyticsService, useValue: matomoAnalyticsService },
         { provide: TranslateService, useValue: translateService },
       ],
     });
@@ -245,7 +241,6 @@ describe('Reports effects', () => {
       effects.selectReportToOpen.subscribe();
 
       expect(reportViewModelGeneratorService.get.notCalled).to.be.true;
-      expect(matomoAnalyticsService.trackEvent.notCalled).to.be.true;
     }));
 
     it('should load report when silent', fakeAsync(() => {
@@ -264,7 +259,6 @@ describe('Reports effects', () => {
       expect(openReportContentStub.calledOnce).to.be.true;
       expect(openReportContentStub.args[0]).to.deep.equal([{ _id: 'reportID', doc: { _id: 'reportID' } }]);
       expect(unsetSelectedStub.notCalled).to.be.true;
-      expect(matomoAnalyticsService.trackEvent.calledOnce).to.be.true;
     }));
 
     it('should load report when not silent', fakeAsync(() => {
@@ -284,7 +278,6 @@ describe('Reports effects', () => {
       expect(openReportContentStub.calledOnce).to.be.true;
       expect(openReportContentStub.args[0]).to.deep.equal([{ _id: 'reportID', doc: { _id: 'reportID' } }]);
       expect(unsetSelectedStub.notCalled).to.be.true;
-      expect(matomoAnalyticsService.trackEvent.calledOnce).to.be.true;
     }));
 
     it('should set report when a new report is selected while still loading an initial report', fakeAsync(() => {

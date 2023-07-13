@@ -293,7 +293,7 @@ describe('Reports Add Component', () => {
       const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       const setEnketoEditedStatus = sinon.stub(GlobalActions.prototype, 'setEnketoEditedStatus');
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
-      enketoService.save.resolves([{ _id: 'new_report' }]);
+      enketoService.save.resolves([{ _id: 'new_report', form: 'rendered_form' }]);
 
       component.save();
       expect(setEnketoSavingStatus.callCount).to.equal(1);
@@ -316,7 +316,10 @@ describe('Reports Add Component', () => {
       expect(setEnketoEditedStatus.callCount).to.equal(1);
       expect(setEnketoEditedStatus.args[0]).to.deep.equal([false]);
       expect(router.navigate.callCount).to.equal(1);
-      expect(router.navigate.args[0]).to.deep.equal([['/reports', 'new_report']]);
+      expect(router.navigate.args[0]).to.deep.equal([
+        ['/reports', 'new_report'],
+        { state: { matomoType: 'rendered_form' } },
+      ]);
       expect(setEnketoError.callCount).to.equal(0);
     }));
 

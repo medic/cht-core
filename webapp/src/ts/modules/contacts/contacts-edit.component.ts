@@ -300,7 +300,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
               .get(docId ? 'contact.updated' : 'contact.created')
               .then(snackBarContent => this.globalActions.setSnackbarContent(snackBarContent));
 
-            this.router.navigate(['/contacts', result.docId]);
+            this.router.navigate(['/contacts', result.docId], { state: { matomoType: this.enketoContact.type } });
           })
           .catch((err) => {
             console.error('Error submitting form data', err);

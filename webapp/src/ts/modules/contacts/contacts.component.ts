@@ -413,7 +413,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (this.filters.search) {
-      this.matomoAnalyticsService.trackEvent(EventCategories.CONTACTS, EventActions.SEARCH, this.filters.search);
+      this.matomoAnalyticsService.trackEvent(EventCategories.CONTACTS, EventActions.SEARCH);
     }
 
     this.loading = true;
