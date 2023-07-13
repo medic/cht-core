@@ -1,5 +1,5 @@
 import { Inject, Injectable, NgZone } from '@angular/core';
-import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -14,6 +14,7 @@ export const CAN_TRACK_USAGE_ANALYTICS = 'can_track_usage_analytics';
   providedIn: 'root'
 })
 export class MatomoAnalyticsService {
+
   private window: any;
   private previousPageUrl: string;
   private isScriptReady = new Subject<boolean>();
@@ -26,7 +27,6 @@ export class MatomoAnalyticsService {
 
   constructor(
     private router: Router,
-    private activatedRoute: ActivatedRoute,
     private sessionService: SessionService,
     private authService: AuthService,
     private settingsService: SettingsService,
@@ -101,13 +101,9 @@ export class MatomoAnalyticsService {
   }
 
   private trackNavigation() {
-    let currentRoute = this.activatedRoute.root;
-    while (currentRoute?.firstChild) {
-      currentRoute = currentRoute.firstChild;
-    }
-
-    if (currentRoute.snapshot?.title) {
-      this.window._paq.push([ MatomoConfig.SET_DOCUMENT_TITLE, currentRoute.snapshot?.title ]);
+    const module = this.getModuleFromCurrentUrl();
+    if (module) {
+      this.window._paq.push([ MatomoConfig.SET_DOCUMENT_TITLE, module ]);
     }
 
     if (this.previousPageUrl) {
@@ -132,6 +128,11 @@ export class MatomoAnalyticsService {
     const matomoType = navigation?.extras?.state?.matomoType;
 
     return matomoType ? `${newURL}~${matomoType}` : newURL;
+  }
+
+  private getModuleFromCurrentUrl() {
+    const parts = window.location.hash?.split('/');
+    return parts?.length >= 2 ? parts[1] : undefined;
   }
 
   async trackEvent(category, action, name?) {
