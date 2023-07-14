@@ -1,5 +1,6 @@
 const moment = require('moment');
 const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const userFactory = require('@factories/cht/users/users');
@@ -41,7 +42,9 @@ describe('Submit a death report', () => {
 
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
-    await commonPage.sync(true);
+    await commonPage.sync();
+    await sentinelUtils.waitForSentinel();
+    await commonPage.sync();
 
     expect(await contactPage.getContactDeceasedStatus()).to.equal('Deceased');
     expect(await (await contactPage.deathCard()).isDisplayed()).to.be.true;

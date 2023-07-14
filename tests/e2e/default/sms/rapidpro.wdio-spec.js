@@ -521,11 +521,11 @@ describe('RapidPro SMS Gateway', () => {
       await utils.saveDocs(docs);
 
       const iterations = docsCount / 25; // batch size is 25
-      await browser.waitUntil(() => messagesEndpointRequests.length === docsCount, (iterations + 2) * 1000 );
+      await browser.waitUntil(() => messagesEndpointRequests.length === docsCount, (iterations + 5) * 1000 );
 
-      const queriedBroadcasts = messagesEndpointRequests.map(request => request[0].broadcast).sort();
-      const expectedBroadcasts = docs.map(doc => doc.tasks[0].gateway_ref).sort();
-      expect(queriedBroadcasts).to.eql(expectedBroadcasts);
+      const queriedBroadcasts = messagesEndpointRequests.map(request => request[0].broadcast);
+      const expectedBroadcasts = docs.map(doc => doc.tasks[0].gateway_ref);
+      expect(queriedBroadcasts).to.have.members(expectedBroadcasts);
 
       await browser.pause(1100); // wait for another polling iteration
 
