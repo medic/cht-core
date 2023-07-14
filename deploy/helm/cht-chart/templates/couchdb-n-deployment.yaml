@@ -78,10 +78,18 @@ spec:
         volumeMounts:
         - mountPath: /opt/couchdb/data
           name: local-volume
+          subPath: data
+        - mountPath: /opt/couchdb/etc/local.d
+          name: local-volume
+          subPath: local.d
         {{- else }}
         volumeMounts:
         - mountPath: /opt/couchdb/data
           name: couchdb-{{ $nodeNumber }}-claim0
+          subPath: data
+        - mountPath: /opt/couchdb/etc/local.d
+          name: couchdb-{{ $nodeNumber }}-claim0
+          subPath: local.d
         {{- end }}
       restartPolicy: Always
       {{- if eq $root.Values.environment "local" }}
