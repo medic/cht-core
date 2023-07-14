@@ -4,6 +4,7 @@ import subprocess
 import yaml
 import requests
 import re
+import json
 
 @task
 def prepare(c, f):
@@ -104,6 +105,28 @@ def setup_etc_hosts(c, values):
         print("Environment is not local, skipping hosts setup.")
 
 @task
+def add_route53_entry(c, f):
+    values = load_values(c, f)
+    host = values.get('ingress', {}).get('host', '')
+    load_balancer = values.get('ingress', {}).get('load_balancer', '')
+    hosted_zone_id = values.get('ingress', {}).get('hostedZoneId', '')
+
+    if host and load_balancer and hosted_zone_id:
+        # Check if the record already exists
+        check_cmd = f"aws route53 list-resource-record-sets --hosted-zone-id {hosted_zone_id}"
+        result = subprocess.run(check_cmd, shell=True, capture_output=True, text=True)
+        records = json.loads(result.stdout)["ResourceRecordSets"]
+
+        record_exists = any(record["Name"] == host and record["Type"] == "CNAME" for record in records)
+        if not record_exists:
+            # Add the record
+            add_cmd = f"aws route53 change-resource-record-sets --hosted-zone-id {hosted_zone_id} --change-batch '{{\"Changes\": [{{\"Action\": \"CREATE\", \"ResourceRecordSet\": {{\"Name\": \"{host}\", \"Type\": \"CNAME\", \"TTL\": 300, \"ResourceRecords\": [{{\"Value\": \"{load_balancer}\"}}]}}}}]}}'"
+            subprocess.run(add_cmd, shell=True)
+            print(f"Route53 entry added for {host}")
+        else:
+            print(f"Route53 entry for {host} already exists")
+
+@task
 def helm_install_or_upgrade(c, f, namespace, values, image_tag):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     chart_filename = "cht-chart-4.x.tgz"
@@ -128,3 +151,4 @@ def install(c, f):
         setup_etc_hosts(c, values)
     image_tag = get_image_tag(c, values.get('chtversion', ''))
     helm_install_or_upgrade(c, f, namespace, values, image_tag)
+    add_route53_entry(c, f)
