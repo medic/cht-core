@@ -16,13 +16,13 @@ describe('Muting', () => {
   const district = places.get('district_hospital');
   const healthCenter = places.get('health_center');
 
-  const contact1 = personFactory.build({ 
+  const contact1 = personFactory.build({
     name: 'contact1', parent: { _id: healthCenter._id, parent: district._id } });
-  const clinic1 = Object.assign({}, 
+  const clinic1 = Object.assign({},
     places.get('clinic'),
     { name:'Clinic One', _id: 'clinic_1', contact: { _id: contact1._id }});
 
-  const clinic2 = Object.assign({}, 
+  const clinic2 = Object.assign({},
     places.get('clinic'),
     { name:'Clinic Two', _id: 'clinic_2', contact: { _id: contact1._id }});
 
@@ -35,8 +35,8 @@ describe('Muting', () => {
       name: 'Offline'
     } });
 
-  const offlineUser = userFactory.build({ 
-    username: 'offline_user', 
+  const offlineUser = userFactory.build({
+    username: 'offline_user',
     place: healthCenter._id,
     roles: [ 'chw' ],
     contact: {
@@ -44,24 +44,24 @@ describe('Muting', () => {
       name: 'Offline'
     }});
 
-  const patient1 = personFactory.build({ 
-    name: 'patient one', 
-    parent: { _id: clinic1._id, parent: { _id: healthCenter._id, parent: { _id: district._id } }}, 
+  const patient1 = personFactory.build({
+    name: 'patient one',
+    parent: { _id: clinic1._id, parent: { _id: healthCenter._id, parent: { _id: district._id } }},
     patient_id: 'patient_1'
   });
 
-  const patient2 = personFactory.build({ 
-    name: 'patient two', 
+  const patient2 = personFactory.build({
+    name: 'patient two',
     parent: { _id: clinic2._id, parent: { _id: healthCenter._id, parent: { _id: district._id } } },
     patient_id: 'patient_2',
   });
 
-  const patient3 = personFactory.build({ 
-    name: 'patient three', 
+  const patient3 = personFactory.build({
+    name: 'patient three',
     parent: { _id: clinic1._id, parent: { _id: healthCenter._id, parent: { _id: district._id } } },
     patient_id: 'patient_3',
   });
-  
+
   const contacts = [
     contact1,
     clinic1,
@@ -117,7 +117,7 @@ describe('Muting', () => {
     await commonPage.openFastActionReport(form);
     await genericForm.submitForm();
     await commonPage.waitForLoaders();
-    
+
     if (sync) {
       const lastSubmittedReport = await getLastSubmittedReport();
       await ensureSync(lastSubmittedReport);
@@ -197,7 +197,7 @@ describe('Muting', () => {
       await loginPage.login({username:onlineUser.username, password: onlineUser.password});
       await utils.stopSentinel();
       await utils.updateSettings(settings);
-      
+
       await muteClinic(clinic1);
       await commonPage.waitForLoaders();
       expectUnmutedNoHistory(await utils.getDoc(clinic1._id));
@@ -216,14 +216,7 @@ describe('Muting', () => {
       await setBrowserOffline();
       await utils.updateSettings(settings);
       await setBrowserOnline();
-      try {
-        await commonPage.sync();
-      } catch (err) {
-        // sometimes sync happens by itself, on timeout
-        console.error('Error when trying to sync', err);
-        await commonPage.closeReloadModal(true);
-        await commonPage.sync();
-      }
+      await commonPage.sync(true);
     };
 
     const unmuteContacts = () => {
@@ -253,7 +246,7 @@ describe('Muting', () => {
     before(async () => {
       await utils.saveDocs(contacts);
       await utils.createUsers([offlineUser]);
-      await loginPage.login({username:offlineUser.username, password: offlineUser.password});      
+      await loginPage.login({username:offlineUser.username, password: offlineUser.password});
     });
 
     after(async () => {
