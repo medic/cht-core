@@ -13,6 +13,7 @@ const date = require('../date');
 const phoneNumberParser = require('@medic/phone-number');
 
 const contactTypesUtils = require('@medic/contact-types-utils');
+const { sassFalse } = require('sass');
 
 const NAME = 'registration';
 const PARENT_NOT_FOUND = 'parent_not_found';
@@ -198,20 +199,26 @@ const setPhoneNumber = doc => {
   // By default for a valid phone number SmsParser itself adds a country code if not provided
   // So if country code is not present in phone_number throw error
   const app_settings = config.getAll();
+  app_settings.allow_duplicate_phone = false;
   const validPhone = phoneNumberParser.validate(app_settings, phoneNumber);
   if (!validPhone) {
     throw new Error(
-      `${doc.phoneNumber} submitted by ${doc.from} is not a valid phone number`
+      `${phoneNumber} submitted by ${doc.from} is not a valid phone number`
     );
-  } else {
-    if (app_settings.allow_duplicate_phone && utils.isPhoneUnique(phoneNumber)) {
-      doc.phone_number = phoneNumber;  
-    }
-    else{
+  }
+  if(app_settings.allow_duplicate_phone){
+    doc.phone_number = phoneNumber;
+  }
+  else {
+    transitionUtils.isPhoneUnique(phoneNumber).then(isUnique => {
+      if (isUnique) {
+        doc.phone_number = phoneNumber;
+        return;
+      }
       throw new Error(
-        `${doc.phoneNumber} submitted by ${doc.from} is already registered`
+        `${phoneNumber} submitted by ${doc.from} is already registered`
       );
-    }
+    });
   }
 };
 
