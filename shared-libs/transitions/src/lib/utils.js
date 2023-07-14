@@ -128,6 +128,18 @@ const getContact = (shortCodeId, includeDocs) => {
   });
 };
 
+/**
+* Validates a cron expression without seconds
+* @param {string} exp cron expression
+* @returns true for valid cron expression
+*/
+const isValidCronExpression = (exp) => {
+  // eslint-disable-next-line max-len
+  const cronReg = /^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/([0-6]))$/;
+  return cronReg.test(exp);
+};
+
+
 module.exports = {
   getLocale: getLocale,
   addError: addError,
@@ -237,15 +249,14 @@ module.exports = {
    * @returns true if valid and within timeframe
    */
   isWithinTimeFrame: (exp, frame = 0) => {
-    if (!this.isValidCronExpression(exp)) {
+    if (!isValidCronExpression(exp)) {
       throw new Error(`isWithinTimeFrame: Invalid cron expression "${exp}"`);
     }
     
     const currentTime = Date.now();
     const dueTime = later.schedule(later.parse.cron(exp)).next().getTime();
-    const upperBoundDueTime = dueTime + frame;
     const lowerBoundDueTime = dueTime - frame;
-    return currentTime >= lowerBoundDueTime && currentTime <= upperBoundDueTime;
+    return currentTime >= lowerBoundDueTime;
   },
 
   /**
@@ -253,11 +264,7 @@ module.exports = {
    * @param {string} exp cron expression
    * @returns true for valid cron expression
    */
-  isValidCronExpression: (exp) => {
-    // eslint-disable-next-line max-len
-    const cronReg = /^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/([0-6]))$/;
-    return cronReg.test(exp);
-  },
+  isValidCronExpression: isValidCronExpression,
 
   // given a report, returns whether it should be accepted as a valid form submission
   // a report is accepted if

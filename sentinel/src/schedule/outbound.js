@@ -4,8 +4,10 @@ const logger = require('../lib/logger');
 const lineage = require('@medic/lineage')(Promise, db.medic);
 const outbound = require('@medic/outbound')(logger);
 const infodocLib = require('@medic/infodoc');
-const transitionsLib = require('../config').getTransitionsLib();
 infodocLib.initLib(db.medic, db.sentinel);
+configService.initTransitionLib();
+
+const transitionsLib = configService.getTransitionsLib();
 
 const CONFIGURED_PUSHES = 'outbound';
 const BATCH_SIZE = 1000;

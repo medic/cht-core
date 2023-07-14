@@ -536,7 +536,6 @@ describe('outbound schedule', () => {
     let removeInvalidTasks;
     let attachInfoDocs;
     let restores;
-    let batch;
 
     beforeEach(() => {
       restores = [];
@@ -553,12 +552,11 @@ describe('outbound schedule', () => {
 
       attachInfoDocs = sinon.stub();
       restores.push(outbound.__set__('attachInfoDocs', attachInfoDocs));
-
-      batch = sinon.stub();
-      restores.push(outbound.__set__('batch', batch));
     });
 
-    afterEach(() => restores.forEach(restore => restore()));
+    afterEach(() => {
+      restores.forEach(restore => restore());
+    });
 
     it('should coordinate finding all queues to process and working through them one by one', () => {
       const config = {
@@ -749,6 +747,9 @@ describe('outbound schedule', () => {
     });
 
     it('should only process queued tasks with due "cron" or non-existent "cron" field', () => {
+      const batch = sinon.stub();
+      restores.push(outbound.__set__('batch', batch));
+
       const VALID_CRON = 'outbound-with-due-cron';
       const INVALID_CRON = 'outbound-with-undue-cron';
       const WITHOUT_CRON = 'outbound-without-cron';
@@ -768,20 +769,15 @@ describe('outbound schedule', () => {
       configGet.returns(configs);
       batch.resolvesArg(0);
 
-      const currentDateInMs = new Date('2023-07-11T03:05:00+0000').getTime();
-      const dateNowStub = sinon.stub(Date, 'now').returns(currentDateInMs);
-
+      sinon.useFakeTimers(new Date('2023-07-11T03:05:00+0000').getTime());
 
       return outbound.execute().then((dueConfigs) => {
         assert.equal(configGet.callCount, 1);
         assert.equal(batch.callCount, 1);
-        assert.equal(Object.keys(dueConfigs), 2);
-
-        assert.equal(dueConfigs[VALID_CRON], configs[VALID_CRON]);
-        assert.equal(dueConfigs[WITHOUT_CRON], configs[WITHOUT_CRON]);
+        assert.equal(Object.keys(dueConfigs).length, 2);
+        assert.deepEqual(dueConfigs[VALID_CRON], configs[VALID_CRON]);
+        assert.deepEqual(dueConfigs[WITHOUT_CRON], configs[WITHOUT_CRON]);
         assert.isUndefined(dueConfigs[INVALID_CRON]);
-
-        dateNowStub.restore();
       });
     });
   });
