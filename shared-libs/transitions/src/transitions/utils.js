@@ -61,6 +61,11 @@ module.exports = {
       .query('medic-client/contacts_by_reference', { key: ['shortcode', id] })
       .then(results => !(results && results.rows && results.rows.length));
   },
+  isPhoneUnique: (phoneNumber) => {
+    return db.medic
+      .query('medic-client/contacts_by_phone', { key: phoneNumber })
+      .then(results => !(results && results.rows && results.rows.length));
+  },
   addUniqueId: (doc) => {
     return idGenerator.next().value.then(patientId => {
       doc.patient_id = patientId;

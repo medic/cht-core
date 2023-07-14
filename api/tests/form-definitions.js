@@ -792,37 +792,74 @@ exports.forms = {
       }
     }
   },
-  'NP': {
-    'meta': {
-      'code': 'NP',
-      'translation_key': 'forms.np.title',
-      'label': {
-        'en': 'New Person with phone_number Registration'
+  "NP": {
+    "meta": {
+      "code": "NP",
+      "translation_key": "forms.np.title",
+      "label": {
+        "en": "New Person with phone_number Registration"
       }
     },
-    'fields': {
-      'phone_number': {
-        'labels': {
-          'tiny': {
-            'en': 'phone number'
+    "fields": {
+      "patient_age": {
+        "labels": {
+          "tiny": {
+            "en": "Person Age"
           },
-          'description': {
-            'en': 'phone number'
-          },
-          'short': {
-            'en': 'phone number'
+          "short": {
+            "en": "Person Age"
           }
         },
-        'position': 2,
-        'type': 'phone_number',
-        'length': [
-          9,
-          16
+        "position": 0,
+        "type": "integer",
+        "length": [
+          1,
+          3
         ],
-        'required': true
+        "range": [
+          0,
+          125
+        ],
+        "required": true
+      },
+      "phone_number": {
+        "labels": {
+          "tiny": {
+            "en": "phone number"
+          },
+          "description": {
+            "en": "phone number"
+          },
+          "short": {
+            "en": "phone number"
+          }
+        },
+        "position": 1,
+        "type": "phone_number",
+        "required": true
+      },
+      "patient_name": {
+        "labels": {
+          "tiny": {
+            "en": "patient_name"
+          },
+          "description": {
+            "en": "Patient name"
+          },
+          "short": {
+            "en": "Patient name"
+          }
+        },
+        "position": 2,
+        "type": "string",
+        "length": [
+          3,
+          30
+        ],
+        "required": true
       }
     },
-    'public_form': false,
-    'use_sentinel': true
-  },
+    "public_form": false,
+    "use_sentinel": true
+  }
 };

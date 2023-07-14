@@ -197,13 +197,21 @@ const setPhoneNumber = doc => {
   const phoneNumber = getPhoneNumber(doc);
   // By default for a valid phone number SmsParser itself adds a country code if not provided
   // So if country code is not present in phone_number throw error
-  const validPhone = phoneNumberParser.validate(config.getAll(), phoneNumber);
+  const app_settings = config.getAll();
+  const validPhone = phoneNumberParser.validate(app_settings, phoneNumber);
   if (!validPhone) {
     throw new Error(
       `${doc.phoneNumber} submitted by ${doc.from} is not a valid phone number`
     );
   } else {
-    doc.phone_number = phoneNumber;
+    if (app_settings.allow_duplicate_phone && utils.isPhoneUnique(phoneNumber)) {
+      doc.phone_number = phoneNumber;  
+    }
+    else{
+      throw new Error(
+        `${doc.phoneNumber} submitted by ${doc.from} is already registered`
+      );
+    }
   }
 };
 
