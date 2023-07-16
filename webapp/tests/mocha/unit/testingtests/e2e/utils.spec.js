@@ -144,7 +144,7 @@ describe('Test utils', () => {
       glob(src, callback);
     };
     //get all spec files in tests/e2e/default
-    getDirectories('../../../../../../tests/e2e/default/**/*.wdio-spec.js', (err, res)  => {
+    return getDirectories(path.join(__dirname, '../../../../../../tests/e2e/default/**/*.wdio-spec.js'))
       if (err) {
         console.log('Error', err);
       } else {
