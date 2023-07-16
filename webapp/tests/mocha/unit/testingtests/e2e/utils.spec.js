@@ -2,6 +2,7 @@ require('../../../../../../tests/aliases');
 const assert = require('chai').assert;
 const sinon = require('sinon');
 const glob = require('glob');
+const path = require('path');
 
 const utils = require('../../../../../../tests/utils');
 const constants = require('../../../../../../tests/constants');
@@ -140,19 +141,15 @@ describe('Test utils', () => {
     for (const [, value] of Object.entries(constants.SUITES)) {
       value.forEach(path => testFolders.push(path.split('/')[1]));
     }
-const getDirectories = (src) =>
+    testFolders.shift(); //remove 'all' suites
+    const getDirectories = (src) => 
       new Promise((resolve, reject) => glob(src, (err, res) => err ? reject(err) : resolve(res)));
-      glob(src, callback);
-    };
-    //get all spec files in tests/e2e/default
     return getDirectories(path.join(__dirname, '../../../../../../tests/e2e/default/**/*.wdio-spec.js'))
-      if (err) {
-        console.log('Error', err);
-      } else {
+      .then(res => {
         res.forEach( spec => {
-          assert(testFolders.includes(spec.split('/')[3]), spec + ' does not belong to a folder' );
-        }); 
-      }
-    });
-  });
+          //assert that file belongs to a folder in 'default' directory
+          assert(testFolders.includes(spec.split('default/')[1].split('/')[0]), spec + ' does not belong to a folder' );
+        });
+      });
+  });  
 });

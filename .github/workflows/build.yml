@@ -109,8 +109,6 @@ jobs:
           - grunt-cmd: ci-webdriver-default
             suite: enketo
           - grunt-cmd: ci-webdriver-default
-            suite: highLevel
-          - grunt-cmd: ci-webdriver-default
             suite: lowLevel
           - grunt-cmd: ci-webdriver-default
             suite: workflows

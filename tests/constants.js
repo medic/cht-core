@@ -41,9 +41,7 @@ module.exports = {
       './login/**/*.wdio-spec.js',
       './translations/**/*.wdio-spec.js',
       './more-options-menu/**/*.wdio-spec.js',
-      './users/**/*.wdio-spec.js'
-    ],
-    highLevel: [
+      './users/**/*.wdio-spec.js',
       './about/**/*.wdio-spec.js',
       './navigation/**/*.wdio-spec.js',
       './privacy-policy/**/*.wdio-spec.js',
