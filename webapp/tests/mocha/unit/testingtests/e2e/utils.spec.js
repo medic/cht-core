@@ -140,7 +140,8 @@ describe('Test utils', () => {
     for (const [, value] of Object.entries(constants.SUITES)) {
       value.forEach(path => testFolders.push(path.split('/')[1]));
     }
-    const getDirectories =   (src, callback) => {
+const getDirectories = (src) =>
+      new Promise((resolve, reject) => glob(src, (err, res) => err ? reject(err) : resolve(res)));
       glob(src, callback);
     };
     //get all spec files in tests/e2e/default
