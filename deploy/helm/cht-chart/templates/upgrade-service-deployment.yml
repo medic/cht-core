@@ -22,7 +22,7 @@ spec:
       restartPolicy: Always
       serviceAccountName: cht-upgrade-service-user
       containers:
-      - image: medicmobile/upgrade-service:0.30
+      - image: medicmobile/upgrade-service:0.31
         name: upgrade-service
         resources: {}
         env:
@@ -34,5 +34,7 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.labels['cht.service']
+          - name: UPGRADE_SERVICE_PORT
+            value: '5008'
         ports:
           - containerPort: 5008
