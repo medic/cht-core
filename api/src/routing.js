@@ -113,9 +113,8 @@ app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
 app.use(prometheusMiddleware({
-  metricsPath: '/api/v1/prometheus_metrics',
+  metricsPath: '/api/v1/express-metrics',
   // based on one-month analysed period of production traffic
-  // each durationBuckets captures ~5% of traffic unless otherwise indicated
   durationBuckets: [
     0.004, 0.007, 0.013, 0.027, 0.05,
     0.1, 0.25, 0.5, 1, 2,
