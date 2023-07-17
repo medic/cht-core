@@ -41,7 +41,8 @@ if (UNIT_TEST_ENV) {
     'allDbs',
     'activeTasks',
     'saveDocs',
-    'createVault'
+    'createVault',
+    'addRoleToSecurity',
   ];
 
   const notStubbed = (first, second) => {
@@ -163,4 +164,37 @@ if (UNIT_TEST_ENV) {
 
     throw new Error(`Error while saving docs: ${errors.join(', ')}`);
   };
+
+  const DEFAULT_SECURITY_STRUCTURE = {
+    names: [],
+    roles: [],
+  };
+
+  module.exports.addRoleToSecurity = async (dbname, role, addAsAdmin) => {
+    if (!dbname || !role) {
+      return;
+    }
+
+    const securityUrl = new URL(environment.serverUrl);
+    securityUrl.pathname = `${dbname}/_security`;
+
+    const securityObject = await rpn.get({ url: securityUrl.toString(), json: true });
+    const property = addAsAdmin ? 'admins' : 'members';
+    if (!securityObject[property]) {
+      securityObject[property] = DEFAULT_SECURITY_STRUCTURE;
+    }
+
+    if (!securityObject[property].roles) {
+      throw new Error('Invalid database security %o', securityObject);
+    }
+
+    if (securityObject[property].roles.includes(role)) {
+      return;
+    }
+
+    logger.info(`Adding "${role}" role to ${dbname} ${property}`);
+    securityObject[property].roles.push(role);
+    await rpn.put({ url: securityUrl.toString(), json: true, body: securityObject });
+  };
+
 }

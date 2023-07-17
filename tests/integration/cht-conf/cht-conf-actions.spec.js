@@ -50,8 +50,8 @@ describe('cht-conf actions tests', () => {
 
   it('should upload branding', async () => {
     const branding = await utils.getDoc('branding').catch(error => {
-      if(error){
-        console.log(error);
+      if (error) {
+        console.err(error);
       }
     });
     expect(branding.title).to.equal('Medic');

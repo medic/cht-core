@@ -35,7 +35,7 @@ setSecret() {
     COUCHDB_SECRET=$(cat /proc/sys/kernel/random/uuid)
   fi
   # Set secret only if not already present
-  if [ -z $(grep -Pzor "\[couch_httpd_auth\]\nsecret =" /opt/couchdb/etc/local.d/*.ini)]; then
+  if [ -z "$(grep -Pzor "\[couch_httpd_auth\]\nsecret =" /opt/couchdb/etc/local.d/*.ini)" ]; then
     printf "\n[couch_httpd_auth]\nsecret = %s\n" "$COUCHDB_SECRET" >> $CLUSTER_CREDENTIALS
   fi
 }
@@ -45,7 +45,7 @@ setUuid() {
     COUCHDB_UUID=$(cat /proc/sys/kernel/random/uuid)
   fi
   # Set uuid only if not already present
-  if [ -z $(grep -Pzor "\[couchdb\]\nuuid =" /opt/couchdb/etc/local.d/*.ini)]; then
+  if [ -z "$(grep -Pzor "\[couchdb\]\nuuid =" /opt/couchdb/etc/local.d/*.ini)" ]; then
     printf "\n[couchdb]\nuuid = %s\n" "$COUCHDB_UUID" >> $CLUSTER_CREDENTIALS
   fi
 }
@@ -94,7 +94,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     fi
 
     if [ "$COUCHDB_LOG_LEVEL" ]; then
-        if ! grep -Pzoqr "\[log\]\nlevel =" /opt/couchdb/etc/local.d/*.ini; then
+        if ! grep -Pzor "\[log\]\nlevel =" /opt/couchdb/etc/local.d/*.ini; then
             printf "\n[log]\nlevel = %s\n" "$COUCHDB_LOG_LEVEL" >> $CLUSTER_CREDENTIALS
         fi
     fi

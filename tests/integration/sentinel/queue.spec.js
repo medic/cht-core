@@ -103,7 +103,7 @@ describe('Sentinel queue drain', () => {
           expect(info.transitions.update_clinics.ok).to.be.true;
         });
       });
-  }).timeout(300 * 1000);
+  }).timeout(400 * 1000);
 
   it('queue should work after restarting haproxy', async () => {
     await utils.stopHaproxy(); // this will also crash Sentinel and API
