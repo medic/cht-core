@@ -5,7 +5,7 @@ const glob = require('glob');
 const path = require('path');
 
 const utils = require('../../../../../../tests/utils');
-const constants = require('../../../../../../tests/constants');
+const wdiUtils = require('../../../../../../tests/utils/wdio-utils');
 
 describe('Test utils', () => {
 
@@ -138,10 +138,10 @@ describe('Test utils', () => {
   
   it('Check that all test specs belong to a test suites', () => {
     const testFolders = [];
-    for (const [, value] of Object.entries(constants.SUITES)) {
+    for (const [, value] of Object.entries(wdiUtils.suites)) {
       value.forEach(path => testFolders.push(path.split('/')[1]));
     }
-    testFolders.shift(); //remove 'all' suites
+    
     const getDirectories = (src) => 
       new Promise((resolve, reject) => glob(src, (err, res) => err ? reject(err) : resolve(res)));
     return getDirectories(path.join(__dirname, '../../../../../../tests/e2e/default/**/*.wdio-spec.js'))

@@ -6,8 +6,8 @@ const fs = require('fs');
 const chai = require('chai');
 chai.use(require('chai-exclude'));
 chai.use(require('chai-as-promised'));
-
 const constants = require('@constants');
+const wdiUtils = require('@utils/wdio-utils');
 const utils = require('@utils');
 const fileDownloadUtils = require('@utils/file-download');
 const chtDbUtils = require('@utils/cht-db');
@@ -44,7 +44,10 @@ const baseConfig = {
   // will be called from there.
   //
   
-  suites: constants.SUITES,
+  suites: {
+    all: ['**/*.wdio-spec.js'],
+    ...wdiUtils.suites,
+  },
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
