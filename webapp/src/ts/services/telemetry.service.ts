@@ -124,7 +124,7 @@ export class TelemetryService {
       ])
       .then(([ddoc, formResults, settingsResults]) => {
         const date = this.getFirstAggregatedDate();
-        const version = (ddoc.deploy_info && ddoc.deploy_info.version) || 'unknown';
+        const version = ddoc?.build_info?.version || 'unknown';
         const forms = formResults.rows.reduce((keyToVersion, row) => {
           keyToVersion[row.doc.internalId] = row.doc._rev;
 
