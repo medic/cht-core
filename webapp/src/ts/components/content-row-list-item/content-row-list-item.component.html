@@ -8,7 +8,7 @@
     [class.overdue]="overdue"
     class="content-row"
 >
-  <a [routerLink]="route" [state]="{ tab: tab, id: id, matomoType: matomoType }">
+  <a [routerLink]="route" [state]="{ tab: tab, id: id, usageAnalyticsValue: usageAnalyticsValue }">
     <div><input type="checkbox" [checked]="selected"></div>
     <div *ngIf="icon" class="icon" [innerHTML]="icon | resourceIcon"></div>
     <div class="content">

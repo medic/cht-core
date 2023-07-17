@@ -25,7 +25,7 @@
                 <mm-content-row *ngIf="child.deceased"
                   [id]="child.doc._id"
                   [route]="['/', 'contacts', child.id]"
-                  [matomoType]="child.doc.type"
+                  [usageAnalyticsValue]="child.doc.type"
                   [heading]="child.doc.name"
                   [dob]="child.doc.date_of_birth"
                   [dod]="child.doc.date_of_death"

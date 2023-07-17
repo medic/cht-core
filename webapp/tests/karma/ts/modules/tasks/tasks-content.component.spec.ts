@@ -203,10 +203,10 @@ describe('TasksContentComponent', () => {
 
     await compileComponent();
 
-    expect(get.calledOnce).to.be.true;
+    expect(get.callCount).to.eq(1);
     expect(get.args).to.deep.eq([['contact']]);
-    expect(render.notCalled).to.be.true;
-    expect(setSelectedTask.calledOnce).to.be.true;
+    expect(render.callCount).to.eq(0);
+    expect(setSelectedTask.callCount).to.equal(1);
     expect(setSelectedTask.args[0]).to.deep.equal([
       {
         _id: '123',

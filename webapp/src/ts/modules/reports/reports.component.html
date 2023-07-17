@@ -51,7 +51,7 @@
             (click)="selectReportRow(report)"
             class="content-row">
             <input type="checkbox" (click)="selectReport(report)" [checked]="selectMode && report.selected">
-            <a [routerLink]="['/reports', report._id]" [state]="{ matomoType: report.form }">
+            <a [routerLink]="['/reports', report._id]" [state]="{ usageAnalyticsValue: report.form }">
               <div *ngIf="report.icon" class="icon" [innerHTML]="report.icon | resourceIcon"></div>
               <div class="content">
                 <div class="heading">

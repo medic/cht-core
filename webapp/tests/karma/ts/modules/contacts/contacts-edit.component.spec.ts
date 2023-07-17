@@ -628,7 +628,7 @@ describe('ContactsEdit component', () => {
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([
         ['/contacts', 'new_clinic_id'],
-        { state: { matomoType: 'clinic' } },
+        { state: { usageAnalyticsValue: 'clinic' } },
       ]);
     });
 
@@ -666,7 +666,7 @@ describe('ContactsEdit component', () => {
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([
         ['/contacts', 'the_person'],
-        { state: { matomoType: 'person' } },
+        { state: { usageAnalyticsValue: 'person' } },
       ]);
     });
 
@@ -704,7 +704,7 @@ describe('ContactsEdit component', () => {
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([
         ['/contacts', 'the_patient'],
-        { state: { matomoType: 'patient' } },
+        { state: { usageAnalyticsValue: 'patient' } },
       ]);
     });
   });

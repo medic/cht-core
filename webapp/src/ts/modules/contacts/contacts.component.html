@@ -36,7 +36,7 @@
               [class.overdue]="contact.overdue"
               class="content-row"
           >
-            <a [routerLink]="['/', 'contacts', contact._id]" [state]="{ matomoType: contact.type }">
+            <a [routerLink]="['/', 'contacts', contact._id]" [state]="{ usageAnalyticsValue: contact.type }">
               <div *ngIf="contact.icon" class="icon" [innerHTML]="contact.icon | resourceIcon"></div>
               <div class="content">
                 <div class="heading">

@@ -52,9 +52,9 @@ describe('Content Security Policy middleware', () => {
   it('should create content security policy correctly when usage analytics configured', async () => {
     settingsService.get.resolves({
       usage_analytics: {
-        matomo_server: 'https://matomo.medic.org',
-        matomo_site_id: '1',
-        matomo_sha: 'sha256-PMJiIIDh',
+        server_url: 'https://analytics.medic.org',
+        site_id: '1',
+        site_sha: 'sha256-PMJiIIDh',
       },
     });
 
@@ -67,7 +67,7 @@ describe('Content Security Policy middleware', () => {
           defaultSrc: [ `'none'` ],
           fontSrc: [ `'self'` ],
           manifestSrc: [ `'self'` ],
-          connectSrc: [ `'self'`, environment.buildsUrl + '/', 'maps.googleapis.com', 'matomo.medic.org' ],
+          connectSrc: [ `'self'`, environment.buildsUrl + '/', 'maps.googleapis.com', 'analytics.medic.org' ],
           childSrc: [ `'self'` ],
           formAction: [ `'self'` ],
           imgSrc: [ `'self'`, 'data:', 'blob:', '*.openstreetmap.org' ],
@@ -79,7 +79,7 @@ describe('Content Security Policy middleware', () => {
             `'unsafe-hashes'`,
             `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
             `'sha256-PMJiIIDh'`,
-            'matomo.medic.org',
+            'analytics.medic.org',
           ],
           styleSrc: [ `'self'`, `'unsafe-inline'` ],
         },
@@ -90,8 +90,8 @@ describe('Content Security Policy middleware', () => {
     expect(serverUtils.error.notCalled).to.be.true;
   });
 
-  it('should create content security policy correctly when mising matomo_sha', async () => {
-    settingsService.get.resolves({ usage_analytics: { matomo_server: 'https://matomo.medic.org' } });
+  it('should create content security policy correctly when missing site_sha', async () => {
+    settingsService.get.resolves({ usage_analytics: { server_url: 'https://usage-analytics.medic.org' } });
 
     const policy = await middleware.get({}, {});
 
@@ -102,7 +102,7 @@ describe('Content Security Policy middleware', () => {
           defaultSrc: [ `'none'` ],
           fontSrc: [ `'self'` ],
           manifestSrc: [ `'self'` ],
-          connectSrc: [ `'self'`, environment.buildsUrl + '/', 'maps.googleapis.com', 'matomo.medic.org' ],
+          connectSrc: [ `'self'`, environment.buildsUrl + '/', 'maps.googleapis.com', 'usage-analytics.medic.org' ],
           childSrc: [ `'self'` ],
           formAction: [ `'self'` ],
           imgSrc: [ `'self'`, 'data:', 'blob:', '*.openstreetmap.org' ],
@@ -123,8 +123,8 @@ describe('Content Security Policy middleware', () => {
     expect(serverUtils.error.notCalled).to.be.true;
   });
 
-  it('should create content security policy correctly when mising matomo_server', async () => {
-    settingsService.get.resolves({ usage_analytics: { matomo_sha: 'sha256-PMJiIIDh' } });
+  it('should create content security policy correctly when missing server_url', async () => {
+    settingsService.get.resolves({ usage_analytics: { site_sha: 'sha256-PMJiIIDh' } });
 
     const policy = await middleware.get({}, {});
 

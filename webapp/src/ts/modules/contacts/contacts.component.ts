@@ -4,7 +4,7 @@ import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { findIndex as _findIndex } from 'lodash-es';
 
-import { MatomoAnalyticsService, EventCategories, EventActions } from '@mm-services/matomo-analytics.service';
+import { UsageAnalyticsService, EventCategories, EventActions } from '@mm-services/usage-analytics.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ChangesService } from '@mm-services/changes.service';
 import { ServicesActions } from '@mm-actions/services';
@@ -79,7 +79,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     private relativeDateService: RelativeDateService,
     private router: Router,
     private exportService: ExportService,
-    private matomoAnalyticsService: MatomoAnalyticsService,
+    private usageAnalyticsService: UsageAnalyticsService,
     private xmlFormsService: XmlFormsService,
   ) {
     this.globalActions = new GlobalActions(store);
@@ -413,7 +413,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (this.filters.search) {
-      this.matomoAnalyticsService.trackEvent(EventCategories.CONTACTS, EventActions.SEARCH);
+      this.usageAnalyticsService.trackEvent(EventCategories.CONTACTS, EventActions.SEARCH);
     }
 
     this.loading = true;
@@ -423,7 +423,7 @@ export class ContactsComponent implements OnInit, AfterViewInit, OnDestroy {
   sort(sortDirection?) {
     this.sortDirection = sortDirection ? sortDirection : this.defaultSortDirection;
     this.query();
-    this.matomoAnalyticsService.trackEvent(EventCategories.CONTACTS, EventActions.SORT, this.sortDirection);
+    this.usageAnalyticsService.trackEvent(EventCategories.CONTACTS, EventActions.SORT, this.sortDirection);
   }
 
   listTrackBy(index, contact) {

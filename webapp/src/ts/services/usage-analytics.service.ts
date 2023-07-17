@@ -13,16 +13,16 @@ export const CAN_TRACK_USAGE_ANALYTICS = 'can_track_usage_analytics';
 @Injectable({
   providedIn: 'root'
 })
-export class MatomoAnalyticsService {
+export class UsageAnalyticsService {
 
   private window: any;
   private previousPageUrl: string;
   private isScriptReady = new Subject<boolean>();
-  private matomoServer: string;
+  private analyticsServer: string;
 
-  private MATOMO_VERSION = '4.14.2';
-  private MATOMO_SCRIP_FILE = 'matomo.js';
-  private MATOMO_TRACKER = 'matomo.php';
+  private THIRD_PARTY_SCRIPT_VERSION = '4.14.2';
+  private THIRD_PARTY_SCRIPT_FILE = 'matomo.js';
+  private THIRD_PARTY_TRACKER_FILE = 'matomo.php';
   private UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
 
   constructor(
@@ -45,7 +45,7 @@ export class MatomoAnalyticsService {
       this.window._paq = [];
     }
 
-    const isConfigOkay = await this.setMatomoConfig();
+    const isConfigOkay = await this.setConfig();
     if (!isConfigOkay) {
       return;
     }
@@ -53,13 +53,13 @@ export class MatomoAnalyticsService {
     this.loadScript();
   }
 
-  private async setMatomoConfig() {
-    const settings = await this.settingsService.get();
-    const siteId = settings?.usage_analytics?.matomo_site_id;
-    this.matomoServer = settings?.usage_analytics?.matomo_server;
+  private async setConfig() {
+    const settings = await this.settingsService.get().catch(() => null);
+    const siteId = settings?.usage_analytics?.site_id;
+    this.analyticsServer = settings?.usage_analytics?.server_url;
 
-    if (!this.matomoServer || !siteId) {
-      console.warn(`Matomo Analytics :: Missing configuration. Server URL: ${this.matomoServer} - Site ID: ${siteId}`);
+    if (!this.analyticsServer || !siteId) {
+      console.warn(`Usage Analytics :: Missing configuration. Server URL: ${this.analyticsServer} Site ID: ${siteId}`);
       return false;
     }
 
@@ -67,7 +67,7 @@ export class MatomoAnalyticsService {
     this.window._paq.push([ MatomoConfig.MATCH_TRACKER_URL ]);
     this.window._paq.push([ MatomoConfig.TRACK_PAGE_VIEW ]);
     this.window._paq.push([ MatomoConfig.ENABLE_LINK_TRACKING ]);
-    this.window._paq.push([ MatomoConfig.SET_TRACKER_URL, `${this.matomoServer}/${this.MATOMO_TRACKER}` ]);
+    this.window._paq.push([ MatomoConfig.SET_TRACKER_URL, `${this.analyticsServer}/${this.THIRD_PARTY_TRACKER_FILE}` ]);
     this.window._paq.push([ MatomoConfig.SET_SITE_ID, siteId.toString() ]);
 
     return true;
@@ -83,7 +83,7 @@ export class MatomoAnalyticsService {
 
     script.type = 'text/javascript';
     script.async = true;
-    script.src = `${this.matomoServer}/${this.MATOMO_SCRIP_FILE}`;
+    script.src = `${this.analyticsServer}/${this.THIRD_PARTY_SCRIPT_FILE}`;
 
     this.isScriptReady.subscribe(isReady => isReady && this.startTracking());
     script.onload = () => this.isScriptReady.next(true);
@@ -92,7 +92,9 @@ export class MatomoAnalyticsService {
   }
 
   private startTracking() {
-    console.info(`Usage analytics tracking started. Supporting Matomo version ${this.MATOMO_VERSION}.`);
+    console.info('Usage analytics tracking started. Support compatible with ' +
+      this.THIRD_PARTY_SCRIPT_FILE + ' version ' + this.THIRD_PARTY_SCRIPT_VERSION);
+
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -110,7 +112,7 @@ export class MatomoAnalyticsService {
       this.window._paq.push([ MatomoConfig.SET_REFERENCE_URL, this.previousPageUrl ]);
     }
 
-    const currentUrl = this.replaceUuid(window.location.href);
+    const currentUrl = this.replaceUuid(this.window.location.href);
     this.window._paq.push([ MatomoConfig.SET_CUSTOM_URL, currentUrl ]);
     this.previousPageUrl = currentUrl;
 
@@ -125,13 +127,13 @@ export class MatomoAnalyticsService {
 
     const newURL = url.replace(this.UUID_REGEX, 'UUID');
     const navigation = this.router.getCurrentNavigation();
-    const matomoType = navigation?.extras?.state?.matomoType;
+    const usageAnalyticsValue = navigation?.extras?.state?.usageAnalyticsValue;
 
-    return matomoType ? `${newURL}~${matomoType}` : newURL;
+    return usageAnalyticsValue ? `${newURL}~${usageAnalyticsValue}` : newURL;
   }
 
   private getModuleFromCurrentUrl() {
-    const parts = window.location.hash?.split('/');
+    const parts = this.window.location.hash?.split('/');
     return parts?.length >= 2 ? parts[1] : undefined;
   }
 

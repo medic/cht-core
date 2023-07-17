@@ -318,7 +318,7 @@ describe('Reports Add Component', () => {
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([
         ['/reports', 'new_report'],
-        { state: { matomoType: 'rendered_form' } },
+        { state: { usageAnalyticsValue: 'rendered_form' } },
       ]);
       expect(setEnketoError.callCount).to.equal(0);
     }));

@@ -44,7 +44,7 @@ import { TranslateService } from '@mm-services/translate.service';
 import { AnalyticsModulesService } from '@mm-services/analytics-modules.service';
 import { AnalyticsActions } from '@mm-actions/analytics';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { MatomoAnalyticsService } from '@mm-services/matomo-analytics.service';
+import { UsageAnalyticsService } from '@mm-services/usage-analytics.service';
 import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filters.component';
 import { OLD_ACTION_BAR_PERMISSION } from '@mm-components/actionbar/actionbar.component';
 
@@ -129,10 +129,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     private chtScriptApiService: CHTScriptApiService,
     private analyticsModulesService: AnalyticsModulesService,
     private trainingCardsService: TrainingCardsService,
-    private matomoAnalyticsService: MatomoAnalyticsService,
+    private usageAnalyticsService: UsageAnalyticsService,
     private matIconRegistry: MatIconRegistry,
   ) {
-    this.matomoAnalyticsService.init();
+    this.usageAnalyticsService.init();
     this.globalActions = new GlobalActions(store);
     this.analyticsActions = new AnalyticsActions(store);
 

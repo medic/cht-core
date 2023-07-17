@@ -28,7 +28,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { GlobalActions } from '@mm-actions/global';
 import { NavigationService } from '@mm-services/navigation.service';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
-import { MatomoAnalyticsService } from '@mm-services/matomo-analytics.service';
+import { UsageAnalyticsService } from '@mm-services/usage-analytics.service';
 
 describe('Contacts component', () => {
   let searchResults;
@@ -49,7 +49,7 @@ describe('Contacts component', () => {
   let exportService;
   let xmlFormsService;
   let fastActionButtonService;
-  let matomoAnalyticsService;
+  let usageAnalyticsService;
   let globalActions;
   let district;
 
@@ -96,7 +96,7 @@ describe('Contacts component', () => {
       getContactLeftSideActions: sinon.stub(),
       getButtonTypeForContentList: sinon.stub(),
     };
-    matomoAnalyticsService = { trackEvent: sinon.stub() };
+    usageAnalyticsService = { trackEvent: sinon.stub() };
     contactListContains = sinon.stub();
     const selectedContact =  {
       type: { person: true },
@@ -143,7 +143,7 @@ describe('Contacts component', () => {
           { provide: ExportService, useValue: exportService },
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
-          { provide: MatomoAnalyticsService, useValue: matomoAnalyticsService },
+          { provide: UsageAnalyticsService, useValue: usageAnalyticsService },
           { provide: NavigationService, useValue: {} },
         ]
       })
@@ -744,7 +744,7 @@ describe('Contacts component', () => {
       component.sortDirection = 'somethingElse';
       component.sort();
       expect(component.sortDirection).to.equal('something');
-      expect(matomoAnalyticsService.trackEvent.calledOnce).to.be.true;
+      expect(usageAnalyticsService.trackEvent.calledOnce).to.be.true;
     }));
 
     it('saves uhc default sorting', fakeAsync(() => {
@@ -789,7 +789,7 @@ describe('Contacts component', () => {
       component.sortDirection = 'somethingElse';
       component.sort();
       expect(component.sortDirection).to.equal('last_visited_date');
-      expect(matomoAnalyticsService.trackEvent.calledOnce).to.be.true;
+      expect(usageAnalyticsService.trackEvent.calledOnce).to.be.true;
     }));
 
     it('changes listener filters relevant last visited reports when feature is enabled', fakeAsync(() => {

@@ -307,7 +307,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         this.globalActions.setSnackbarContent(this.translateService.instant(snackBarTranslationKey));
         this.globalActions.setEnketoEditedStatus(false);
         const report = docs[0];
-        this.router.navigate(['/reports', report._id], { state: { matomoType: report.form } });
+        this.router.navigate(['/reports', report._id], { state: { usageAnalyticsValue: report.form } });
 
         this.telemetryData.postSave = Date.now();
         this.telemetryService.record(
