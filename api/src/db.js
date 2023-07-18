@@ -184,7 +184,6 @@ if (UNIT_TEST_ENV) {
     if (!securityObject[property]) {
       securityObject[property] = getDefaultSecurityStructure();
     }
-    console.log(securityObject);
 
     if (!securityObject[property].roles || !Array.isArray(securityObject[property].roles)) {
       securityObject[property].roles = [];
