@@ -68,7 +68,7 @@ module.exports = function(grunt) {
         'mv api/build/static/login/style.min.css api/build/static/login/style.css',
       'karma-admin': 'node ./scripts/ci/run-karma.js',
       'copy-ddocs': 'mkdir build/ddocs && cp -r ddocs/* build/ddocs/',
-      'copy-api-ddocs': 'cp build/ddocs/*.json api/build/ddocs/',
+      'copy-api-ddocs': 'mkdir api/build && mkdir api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/',
       'copy-webapp-static':
         'cp -r webapp/src/audio api/build/static/webapp/ && ' +
         'cp -r webapp/src/fonts api/build/static/webapp/ && ' +
