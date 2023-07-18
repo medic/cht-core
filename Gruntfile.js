@@ -77,7 +77,8 @@ module.exports = function(grunt) {
       'copy-api-bowser': 'cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js',
       'copy-admin-static':
         'cp admin/src/templates/index.html api/build/static/admin/ && ' +
-        'cp admin/node_modules/font-awesome/fonts/* api/build/static/admin/fonts/ && ' +
+        'mkdir api/build/static/admin/fonts/ && ' +
+        'cp admin/node_modules/font-awesome/fonts api/build/static/admin/fonts/ && ' +
         'cp webapp/src/fonts/* api/build/static/admin/fonts/',
       'copy-libraries-to-patch':
         'cp -r webapp/node_modules/bootstrap-daterangepicker/ webapp/node_modules_backup/ && ' +
