@@ -78,7 +78,7 @@ module.exports = function(grunt) {
       'copy-admin-static':
         'cp admin/src/templates/index.html api/build/static/admin/ && ' +
         'mkdir api/build/static/admin/fonts/ && ' +
-        'cp admin/node_modules/font-awesome/fonts api/build/static/admin/fonts/ && ' +
+        'cp admin/node_modules/font-awesome/fonts/* api/build/static/admin/fonts/ && ' +
         'cp webapp/src/fonts/* api/build/static/admin/fonts/',
       'copy-libraries-to-patch':
         'cp -r webapp/node_modules/bootstrap-daterangepicker/ webapp/node_modules_backup/ && ' +
