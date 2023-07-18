@@ -254,9 +254,13 @@ module.exports = {
     }
     
     const currentTime = Date.now();
-    const dueTime = later.schedule(later.parse.cron(exp)).next().getTime();
-    const lowerBoundDueTime = dueTime - frame;
-    return currentTime >= lowerBoundDueTime;
+    const parsedCron = later.parse.cron(exp);
+    const nextDueTime = later.schedule(parsedCron).next().getTime();
+    const prevDueTime = later.schedule(parsedCron).prev().getTime();
+
+    const lowerBoundDueTime = nextDueTime - frame;
+    const upperBoundDueTime = prevDueTime + frame;
+    return currentTime >= lowerBoundDueTime || currentTime <= upperBoundDueTime;
   },
 
   /**

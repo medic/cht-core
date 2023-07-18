@@ -304,8 +304,12 @@ describe('utils util', () => {
 
       const offset = 3 * 60 * 1000;
       const currentDateInMsMinusOffset = Date.now() - offset;
+      const currentDateInMsPlusOffset = Date.now() + offset;
 
       sinon.useFakeTimers(currentDateInMsMinusOffset);
+      utils.isWithinTimeFrame(cron, TIME_FRAME).should.be.true;
+
+      sinon.useFakeTimers(currentDateInMsPlusOffset);
       utils.isWithinTimeFrame(cron, TIME_FRAME).should.be.true;
     });
 
@@ -315,8 +319,12 @@ describe('utils util', () => {
 
       const offset = 3 * 60 * 60;
       const currentDateInMsMinusOffset = Date.now() - offset;
+      const currentDateInMsPlusOffset = Date.now() + offset;
 
       sinon.useFakeTimers(currentDateInMsMinusOffset);
+      utils.isWithinTimeFrame(cron, TIME_FRAME).should.be.false;
+
+      sinon.useFakeTimers(currentDateInMsPlusOffset);
       utils.isWithinTimeFrame(cron, TIME_FRAME).should.be.false;
     });
 
