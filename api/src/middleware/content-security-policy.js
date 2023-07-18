@@ -38,10 +38,8 @@ const getScriptSrc = (webappAnalyticsConfig) => {
     `'sha256-2rvfFrggTCtyF5WOiTri1gDS8Boibj4Njn0e+VCBmDI='`,
   ];
 
-  if (webappAnalyticsConfig?.site_sha && webappAnalyticsConfig?.server_no_protocol) {
-    rules.push(`'${webappAnalyticsConfig.site_sha}'`);
-    rules.push(webappAnalyticsConfig.server_no_protocol);
-  }
+  webappAnalyticsConfig?.site_sha && rules.push(`'${webappAnalyticsConfig.site_sha}'`);
+  webappAnalyticsConfig?.server_no_protocol && rules.push(webappAnalyticsConfig.server_no_protocol);
 
   return rules;
 };
