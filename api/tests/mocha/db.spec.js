@@ -3,6 +3,7 @@ require('chai').use(require('chai-as-promised'));
 const { expect } = require('chai');
 const rewire = require('rewire');
 const rpn = require('request-promise-native');
+process.env.UNIT_TEST_ENV = 1;
 
 let db;
 let unitTestEnv;
@@ -211,7 +212,7 @@ describe('db', () => {
       sinon.stub(rpn, 'get').resolves({ admins: { roles: ['role1'] }, members: { roles: ['role2'] } });
       sinon.stub(rpn, 'put').resolves();
 
-      await db.addRoleToSecurity('dbname', 'rolename');
+      await db.addRoleAsMember('dbname', 'rolename');
 
       expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pass@couchdb:5984/dbname/_security', json: true } ]]);
       expect(rpn.put.args).to.deep.equal([[
@@ -231,7 +232,7 @@ describe('db', () => {
       sinon.stub(rpn, 'get').resolves({ admins: { roles: ['role1'] }, members: { roles: ['role2'] } });
       sinon.stub(rpn, 'put').resolves();
 
-      await db.addRoleToSecurity('dbname', 'rolename', true);
+      await db.addRoleAsAdmin('dbname', 'rolename');
 
       expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pass@couchdb:5984/dbname/_security', json: true } ]]);
       expect(rpn.put.args).to.deep.equal([[
@@ -251,7 +252,7 @@ describe('db', () => {
       sinon.stub(rpn, 'get').resolves({ admins: { roles: ['role1'] }, members: { roles: ['role2'] } });
       sinon.stub(rpn, 'put').resolves();
 
-      await db.addRoleToSecurity('dbname', 'role2');
+      await db.addRoleAsMember('dbname', 'role2');
 
       expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pass@couchdb:5984/dbname/_security', json: true } ]]);
       expect(rpn.put.called).to.equal(false);
@@ -262,7 +263,7 @@ describe('db', () => {
       sinon.stub(rpn, 'get').resolves({ admins: { roles: ['role1'] }, members: { roles: ['role2'] } });
       sinon.stub(rpn, 'put').resolves();
 
-      await db.addRoleToSecurity('dbname', 'role1', true);
+      await db.addRoleAsAdmin('dbname', 'role1');
 
       expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pass@couchdb:5984/dbname/_security', json: true } ]]);
       expect(rpn.put.called).to.equal(false);
@@ -273,7 +274,7 @@ describe('db', () => {
       sinon.stub(rpn, 'get').resolves({ admins: { roles: ['role1'] } });
       sinon.stub(rpn, 'put').resolves();
 
-      await db.addRoleToSecurity('dbname', 'rolename');
+      await db.addRoleAsMember('dbname', 'rolename');
 
       expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pass@couchdb:5984/dbname/_security', json: true } ]]);
       expect(rpn.put.args).to.deep.equal([[
@@ -288,12 +289,39 @@ describe('db', () => {
       ]]);
     });
 
+    it('should not mutate default roles', async () => {
+      sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
+      sinon.stub(rpn, 'get').callsFake(() => ({ members: {} }));
+      sinon.stub(rpn, 'put').resolves();
+
+      await db.addRoleAsMember('dbname1', 'rolename1');
+      await db.addRoleAsMember('dbname2', 'rolename2');
+
+      expect(rpn.put.args).to.deep.equal([[
+        {
+          url: 'http://admin:pass@couchdb:5984/dbname1/_security',
+          json: true,
+          body: {
+            members: { roles: ['rolename1'] },
+          }
+        }
+      ], [
+        {
+          url: 'http://admin:pass@couchdb:5984/dbname2/_security',
+          json: true,
+          body: {
+            members: { roles: ['rolename2'] },
+          }
+        }
+      ]]);
+    });
+
     it('should set admins security property if not existing', async () => {
       sinon.stub(env, 'serverUrl').get(() => 'http://admin:pwd@host:6984');
       sinon.stub(rpn, 'get').resolves({ members: { roles: ['role2'] } });
       sinon.stub(rpn, 'put').resolves();
 
-      await db.addRoleToSecurity('name', 'arole', true);
+      await db.addRoleAsAdmin('name', 'arole');
 
       expect(rpn.get.args).to.deep.equal([[ { url: 'http://admin:pwd@host:6984/name/_security', json: true } ]]);
       expect(rpn.put.args).to.deep.equal([[
@@ -312,7 +340,7 @@ describe('db', () => {
       sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
       sinon.stub(rpn, 'get').rejects(new Error('not_found'));
 
-      await expect(db.addRoleToSecurity('data', 'attr')).to.be.rejectedWith(Error, 'not_found');
+      await expect(db.addRoleAsMember('data', 'attr')).to.be.rejectedWith(Error, 'not_found');
     });
 
     it('should throw put security errors', async () => {
@@ -320,19 +348,32 @@ describe('db', () => {
       sinon.stub(rpn, 'get').resolves({ members: { roles: ['role2'] } });
       sinon.stub(rpn, 'put').rejects(new Error('forbidden or something'));
 
-      await expect(db.addRoleToSecurity('data', 'attr')).to.be.rejectedWith(Error, 'forbidden or something');
+      await expect(db.addRoleAsMember('data', 'attr')).to.be.rejectedWith(Error, 'forbidden or something');
     });
 
-    it('should throw error when security is invalid', async () => {
+    it('should set default security when security is invalid', async () => {
       sinon.stub(env, 'serverUrl').get(() => 'http://admin:pass@couchdb:5984');
-      sinon.stub(rpn, 'get').resolves({ members: 'this is actually a string' });
+      sinon.stub(rpn, 'get').resolves({ members: false });
+      sinon.stub(rpn, 'put').resolves();
 
-      await expect(db.addRoleToSecurity('data', 'attr')).to.be.rejectedWith(Error, 'Invalid database security');
+      await db.addRoleAsMember('data', 'attr');
+      expect(rpn.put.args).to.deep.equal([[
+        {
+          url: 'http://admin:pass@couchdb:5984/data/_security',
+          json: true,
+          body: {
+            members: { roles: ['attr'], names: [], },
+          }
+        }
+      ]]);
+
     });
 
-    it('should skip when missing dbname or role', async () => {
-      await db.addRoleToSecurity('', 'arole');
-      await db.addRoleToSecurity('dbanme', );
+    it('should throw when missing dbname or role', async () => {
+      await expect(db.addRoleAsMember('', 'arole'))
+        .to.be.rejectedWith(Error, `Cannot add security: invalid db name  or role arole`);
+      await expect(db.addRoleAsMember('dbanme', ''))
+        .to.be.rejectedWith(Error, `Cannot add security: invalid db name dbanme or role`);
     });
   });
 });
