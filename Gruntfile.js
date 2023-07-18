@@ -24,77 +24,6 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
-    copy: {
-      ddocs: {
-        expand: true,
-        cwd: 'ddocs/',
-        src: '**/*',
-        dest: 'build/ddocs/',
-      },
-      'api-ddocs': {
-        expand: true,
-        cwd: 'build/ddocs/',
-        src: '*.json',
-        dest: 'api/build/ddocs/',
-      },
-      'webapp-static': {
-        expand: true,
-        cwd: 'webapp/src/',
-        src: [
-          'audio/**/*',
-          'fonts/**/*',
-          'img/**/*',
-        ],
-        dest: 'api/build/static/webapp/',
-      },
-      'api-resources': {
-        expand: true,
-        cwd: 'api/src/public/',
-        src: '**/*',
-        dest: 'api/build/static/',
-      },
-      'built-resources': {
-        expand: true,
-        cwd: 'build/static',
-        src: '**/*',
-        dest: 'api/build/static/',
-      },
-      'api-bowser': {
-        src: 'api/node_modules/bowser/bundled.js',
-        dest: 'api/src/public/login/lib-bowser.js',
-      },
-      'admin-static': {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: 'admin/src/templates/index.html',
-            dest: 'api/build/static/admin',
-          },
-          {
-            expand: true,
-            flatten: true,
-            src: [
-              'admin/node_modules/font-awesome/fonts/*',
-              'webapp/src/fonts/**/*'
-            ],
-            dest: 'api/build/static/admin/fonts/',
-          },
-        ],
-      },
-      'libraries-to-patch': {
-        expand: true,
-        cwd: 'webapp/node_modules',
-        src: [
-          'bootstrap-daterangepicker/**',
-          'enketo-core/**',
-          'font-awesome/**',
-          'messageformat/**',
-          'moment/**'
-        ],
-        dest: 'webapp/node_modules_backup',
-      },
-    },
     exec: {
       'compile-ddocs-primary': 'node ./scripts/build/ddoc-compile.js primary',
       'compile-ddocs-staging': 'node ./scripts/build/ddoc-compile.js staging',
@@ -138,6 +67,24 @@ module.exports = function(grunt) {
         './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css && ' +
         'mv api/build/static/login/style.min.css api/build/static/login/style.css',
       'karma-admin': 'node ./scripts/ci/run-karma.js',
+      'copy-ddocs': 'mkdir build/ddocs && cp -r ddocs/* build/ddocs/',
+      'copy-api-ddocs': 'cp build/ddocs/*.json api/build/ddocs/',
+      'copy-webapp-static':
+        'cp -r webapp/src/audio api/build/static/webapp/ && ' +
+        'cp -r webapp/src/fonts api/build/static/webapp/ && ' +
+        'cp -r webapp/src/img api/build/static/webapp/',
+      'copy-api-resources': 'cp -r api/src/public/* api/build/static/',
+      'copy-api-bowser': 'cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js',
+      'copy-admin-static':
+        'cp admin/src/templates/index.html api/build/static/admin/ && ' +
+        'cp admin/node_modules/font-awesome/fonts/* api/build/static/admin/fonts/ && ' +
+        'cp webapp/src/fonts/* api/build/static/admin/fonts/',
+      'copy-libraries-to-patch':
+        'cp -r webapp/node_modules/bootstrap-daterangepicker/ webapp/node_modules_backup/ && ' +
+        'cp -r webapp/node_modules/enketo-core/ webapp/node_modules_backup/ && ' +
+        'cp -r webapp/node_modules/font-awesome/ webapp/node_modules_backup/ && ' +
+        'cp -r webapp/node_modules/messageformat/ webapp/node_modules_backup/ && ' +
+        'cp -r webapp/node_modules/moment/ webapp/node_modules_backup/',
 
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
@@ -383,7 +330,7 @@ module.exports = function(grunt) {
       },
       'admin-index': {
         files: ['admin/src/templates/index.html'],
-        tasks: ['copy:admin-static'],
+        tasks: ['exec:copy-admin-static'],
       },
       'admin-templates': {
         files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
@@ -397,24 +344,24 @@ module.exports = function(grunt) {
       'primary-ddoc': {
         files: ['ddocs/medic-db/**/*'],
         tasks: [
-          'copy:ddocs',
+          'exec:copy-ddocs',
           'set-ddocs-version',
           'exec:compile-ddocs-primary',
-          'copy:api-ddocs',
+          'exec:copy-api-ddocs',
         ],
       },
       'secondary-ddocs': {
         files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
         tasks: [
-          'copy:ddocs',
+          'exec:copy-ddocs',
           'set-ddocs-version',
           'exec:compile-ddocs-secondary',
-          'copy:api-ddocs',
+          'exec:copy-api-ddocs',
         ],
       },
       'api-public-files': {
         files: ['api/src/public/**/*'],
-        tasks: ['copy:api-resources'],
+        tasks: ['exec:copy-api-resources'],
       }
     },
     ngtemplates: {
@@ -457,7 +404,7 @@ module.exports = function(grunt) {
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
     'exec:undo-patches',
     'exec:npm-ci-modules',
-    'copy:libraries-to-patch',
+    'exec:copy-libraries-to-patch',
     'exec:apply-patches',
   ]);
 
@@ -488,26 +435,25 @@ module.exports = function(grunt) {
     'build-admin',
     'build-config',
     'copy-static-files-to-api',
-    'copy:api-ddocs',
+    'exec:copy-api-ddocs',
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
-    'copy:api-bowser',
-    'copy:api-resources',
-    'copy:built-resources',
-    'copy:webapp-static',
-    'copy:admin-static',
+    'exec:copy-api-bowser',
+    'exec:copy-api-resources',
+    'exec:copy-webapp-static',
+    'exec:copy-admin-static',
   ]);
 
   grunt.registerTask('set-build-info', buildUtils.setBuildInfo);
 
   grunt.registerTask('build-ddocs', 'Builds the ddocs', [
-    'copy:ddocs',
+    'exec:copy-ddocs',
     'set-ddocs-version',
     'set-build-info',
     'exec:compile-ddocs-primary',
     'exec:compile-ddocs-secondary',
-    'copy:api-ddocs',
+    'exec:copy-api-ddocs',
   ]);
 
   grunt.registerTask('build-config', 'Build default configuration', [
@@ -634,7 +580,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
-    'copy:api-bowser',
+    'exec:copy-api-bowser',
     'exec:api-dev',
   ]);
 
