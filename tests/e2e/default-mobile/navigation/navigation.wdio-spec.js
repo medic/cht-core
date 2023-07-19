@@ -1,4 +1,3 @@
-const { expect } = require('chai');
 const utils = require('@utils');
 
 const commonPage = require('@page-objects/default/common/common.wdio.page');
@@ -38,7 +37,6 @@ describe('Navigation', () => {
     patientDocs = await utils.saveDocs([ patient ]);
     await utils.createUsers([ offlineUser ]);
     await loginPage.login(offlineUser);
-    await commonPage.waitForPageLoaded();
   });
 
   it('should load reports list when navigating from a report that was opened from a contact page', async () => {
@@ -52,7 +50,6 @@ describe('Navigation', () => {
     expect(report.patientName).to.equal('Mary Smith');
     await reportsPage.closeReport();
 
-    await commonPage.goToReports();
     const list = await reportsPage.reportsPageDefault.allReports();
     expect(list.length).to.equal(3);
   });
@@ -67,7 +64,6 @@ describe('Navigation', () => {
     expect(report.patientName).to.equal('Mary Smith');
     await reportsPage.closeReport();
 
-    await commonPage.goToReports();
     const list = await reportsPage.reportsPageDefault.allReports();
     expect(list.length).to.equal(3);
   });
