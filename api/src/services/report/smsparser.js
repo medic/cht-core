@@ -212,7 +212,7 @@ const fieldParsers = {
     return parseNum(stripInvisibleCharacters(raw));
   },
   phone_number: (raw) => {
-    const formattedAndValidatedPhone = phoneNumberParser.format(config.getAll(), raw);
+    const formattedAndValidatedPhone = phoneNumberParser.normalize(config.getAll(), raw);
     if (formattedAndValidatedPhone) {
       return formattedAndValidatedPhone;
     } else {

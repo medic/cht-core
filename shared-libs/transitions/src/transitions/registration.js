@@ -199,7 +199,8 @@ const setPhoneNumber = doc => {
   // By default for a valid phone number SmsParser itself adds a country code if not provided
   // So if country code is not present in phone_number throw error
   const app_settings = config.getAll();
-  app_settings.allow_duplicate_phone = false;
+  // check if duplicate phones are allowed and 
+  //based upon that register the patient or throw error.
   const validPhone = phoneNumberParser.validate(app_settings, phoneNumber);
   if (!validPhone) {
     throw new Error(
