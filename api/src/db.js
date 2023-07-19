@@ -42,7 +42,8 @@ if (UNIT_TEST_ENV) {
     'activeTasks',
     'saveDocs',
     'createVault',
-    'addRoleToSecurity',
+    'addRoleAsAdmin',
+    'addRoleAsMember',
   ];
 
   const notStubbed = (first, second) => {

@@ -228,7 +228,7 @@ describe('Configuration', () => {
       it('reloads settings settings doc is updated', () => {
         settingsService.update.resolves();
         settingsService.get.resolves({ settings: 'yes' });
-        sinon.stub(db, 'addRoleToSecurity');
+        sinon.stub(db, 'addRoleAsMember');
         sinon.stub(config, 'get').withArgs('roles').returns({ chw: {} });
         sinon.stub(environment, 'db').get(() => 'medicdb');
 
@@ -238,14 +238,14 @@ describe('Configuration', () => {
           chai.expect(config.set.callCount).to.equal(1);
           chai.expect(config.set.args[0]).to.deep.equal([{ settings: 'yes' }]);
           chai.expect(config.get.withArgs('roles').callCount).to.equal(1);
-          chai.expect(db.addRoleToSecurity.args).to.deep.equal([['medicdb', 'chw', false]]);
+          chai.expect(db.addRoleAsMember.args).to.deep.equal([['medicdb', 'chw']]);
         });
       });
 
       it('should add all configured user roles to the main database', () => {
         settingsService.update.resolves();
         settingsService.get.resolves({ settings: 'yes' });
-        sinon.stub(db, 'addRoleToSecurity');
+        sinon.stub(db, 'addRoleAsMember');
         sinon.stub(config, 'get')
           .withArgs('roles')
           .returns({
@@ -262,11 +262,11 @@ describe('Configuration', () => {
           chai.expect(config.set.callCount).to.equal(1);
           chai.expect(config.set.args[0]).to.deep.equal([{ settings: 'yes' }]);
           chai.expect(config.get.withArgs('roles').callCount).to.equal(1);
-          chai.expect(db.addRoleToSecurity.args).to.deep.equal([
-            ['medicdb', 'chw1', false],
-            ['medicdb', 'chw2', false],
-            ['medicdb', 'chw3', false],
-            ['medicdb', 'chw4', false],
+          chai.expect(db.addRoleAsMember.args).to.deep.equal([
+            ['medicdb', 'chw1'],
+            ['medicdb', 'chw2'],
+            ['medicdb', 'chw3'],
+            ['medicdb', 'chw4'],
           ]);
         });
       });

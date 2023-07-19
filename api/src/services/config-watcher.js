@@ -189,7 +189,7 @@ const addUserRolesToDb = async () => {
   }
 
   for (const role of Object.keys(roles)) {
-    await db.addRoleToSecurity(environment.db, role, false);
+    await db.addRoleAsMember(environment.db, role);
   }
 };
 
