@@ -1,4 +1,4 @@
-require('../../aliases');
+require('../aliases');
 const path = require('path');
 const allure = require('allure-commandline');
 const fs = require('fs');

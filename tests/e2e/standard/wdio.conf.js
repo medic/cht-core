@@ -1,4 +1,4 @@
-const wdioBaseConfig = require('../default/wdio.conf');
+const wdioBaseConfig = require('../wdio.conf');
 const utils = require('@utils');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);

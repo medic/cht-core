@@ -1,4 +1,4 @@
-const SUITES = {
+const suites = {
   core: [
     './admin/**/*.wdio-spec.js',
     './login/**/*.wdio-spec.js',
@@ -25,14 +25,10 @@ const SUITES = {
     './transitions/**/*.wdio-spec.js',
     './telemetry/**/*.wdio-spec.js'
   ],
-
+  
   enketo: [
     './enketo/**/*.wdio-spec.js',
   ]};
-
-module.exports = {
-  suites: SUITES,
-};
-
-
-
+  
+module.exports = suites;
+  
