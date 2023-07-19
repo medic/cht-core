@@ -86,6 +86,7 @@ module.exports = function(grunt) {
         'cp -r webapp/node_modules/font-awesome/ webapp/node_modules_backup/ && ' +
         'cp -r webapp/node_modules/messageformat/ webapp/node_modules_backup/ && ' +
         'cp -r webapp/node_modules/moment/ webapp/node_modules_backup/',
+      'enketo-css': 'node node_modules/sass/sass.js webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map',
 
       // Running this via exec instead of inside the grunt process makes eslint
       // run ~4x faster. For some reason. Maybe cpu core related.
@@ -383,22 +384,7 @@ module.exports = function(grunt) {
           },
         },
       },
-    },
-    sass: {
-      options: {
-        implementation: require('sass'),
-      },
-      compile: {
-        cwd: 'webapp/src/css/',
-        src: 'enketo/enketo.scss',
-        dest: 'api/build/static/webapp',
-        ext: '.less',
-        expand: true,
-        outputStyle: 'expanded',
-        flatten: true,
-        extDot: 'last',
-      },
-    },
+    }
   });
 
   // Build tasks
@@ -415,7 +401,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-enketo-css', 'Build Enketo css', [
-    'sass',
+    'exec:enketo-css',
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
