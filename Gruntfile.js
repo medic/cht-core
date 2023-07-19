@@ -17,10 +17,8 @@ const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 module.exports = function(grunt) {
   'use strict';
 
-  require('jit-grunt')(grunt, {
-    ngtemplates: 'grunt-angular-templates',
-  });
-  require('time-grunt')(grunt);
+  grunt.loadNpmTasks('grunt-exec');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Project configuration
   grunt.initConfig({
@@ -31,9 +29,7 @@ module.exports = function(grunt) {
       'uglify-api':
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/script.js -o api/build/static/login/script.js && ' +
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js',
-      'uglify-admin':
-        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && ' +
-        'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js',
+      'uglify-admin': 'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js',
       'push-ddoc-to-staging': 'node ./scripts/build/push-ddoc-to-staging.js',
       'clean-build-dir': 'rm -rf build && mkdir build',
       'mocha-unit-webapp': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "webapp/tests/mocha/**/*.spec.js"',
@@ -42,15 +38,14 @@ module.exports = function(grunt) {
       'mocha-integration-api': './node_modules/mocha/bin/_mocha "api/tests/integration/**/*.js" -t 10000',
       'optimize-js':
         './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/main.js > api/build/static/admin/js/main.op.js && ' +
-        './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/templates.js > api/build/static/admin/js/templates.op.js && ' +
-        'mv api/build/static/admin/js/main.op.js api/build/static/admin/js/main.js && ' +
-        'mv api/build/static/admin/js/templates.op.js api/build/static/admin/js/templates.js',
+        'mv api/build/static/admin/js/main.op.js api/build/static/admin/js/main.js',
       'jsdoc-admin': './node_modules/jsdoc/jsdoc.js -d jsdocs/admin -c node_modules/angular-jsdoc/common/conf.json -t node_modules/angular-jsdoc/angular-template admin/src/js/**/*.js',
       'jsdoc-sentinel': './node_modules/jsdoc/jsdoc.js -d jsdocs/sentinel sentinel/src/**/*.js',
       'jsdoc-api': './node_modules/jsdoc/jsdoc.js -d jsdocs/api -R api/README.md api/src/**/*.js',
       'jsdoc-shared-libs': './node_modules/jsdoc/jsdoc.js -d jsdocs/shared-libs shared-libs/**/src/**/*.js',
       'less': './node_modules/less/bin/lessc admin/src/css/main.less api/build/static/admin/css/main.css',
-      'browserify-admin': 'node ./node_modules/browserify/bin/cmd.js ' +
+      'browserify-admin': 'mkdir -p api/build/static/admin/js/ && ' +
+        'node ./node_modules/browserify/bin/cmd.js ' +
         '--debug ' +
         '-t browserify-ngannotate ' +
         '-r "./admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat:angular-translate-interpolation-messageformat" ' +
@@ -67,8 +62,8 @@ module.exports = function(grunt) {
         './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css && ' +
         'mv api/build/static/login/style.min.css api/build/static/login/style.css',
       'karma-admin': 'node ./scripts/ci/run-karma.js',
-      'copy-ddocs': 'mkdir build/ddocs && cp -r ddocs/* build/ddocs/',
-      'copy-api-ddocs': 'mkdir api/build && mkdir api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/',
+      'copy-ddocs': 'mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/',
+      'copy-api-ddocs': 'mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/',
       'copy-webapp-static':
         'cp -r webapp/src/audio api/build/static/webapp/ && ' +
         'cp -r webapp/src/fonts api/build/static/webapp/ && ' +
@@ -77,7 +72,8 @@ module.exports = function(grunt) {
       'copy-api-bowser': 'cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js',
       'copy-admin-static':
         'cp admin/src/templates/index.html api/build/static/admin/ && ' +
-        'mkdir api/build/static/admin/fonts/ && ' +
+        'cp -r admin/src/templates api/build/static/admin/ && ' +
+        'mkdir -p api/build/static/admin/fonts/ && ' +
         'cp admin/node_modules/font-awesome/fonts/* api/build/static/admin/fonts/ && ' +
         'cp webapp/src/fonts/* api/build/static/admin/fonts/',
       'copy-libraries-to-patch':
@@ -87,9 +83,6 @@ module.exports = function(grunt) {
         'cp -r webapp/node_modules/messageformat/ webapp/node_modules_backup/ && ' +
         'cp -r webapp/node_modules/moment/ webapp/node_modules_backup/',
       'enketo-css': 'node node_modules/sass/sass.js webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map',
-
-      // Running this via exec instead of inside the grunt process makes eslint
-      // run ~4x faster. For some reason. Maybe cpu core related.
       'eslint': ESLINT_COMMAND + ' .',
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
       'build-service-images': {
@@ -330,13 +323,9 @@ module.exports = function(grunt) {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: ['exec:browserify-admin'],
       },
-      'admin-index': {
-        files: ['admin/src/templates/index.html'],
-        tasks: ['exec:copy-admin-static'],
-      },
       'admin-templates': {
-        files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
-        tasks: ['ngtemplates:adminApp'],
+        files: ['admin/src/templates/**/*'],
+        tasks: ['exec:copy-admin-static'],
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
@@ -365,25 +354,6 @@ module.exports = function(grunt) {
         files: ['api/src/public/**/*'],
         tasks: ['exec:copy-api-resources'],
       }
-    },
-    ngtemplates: {
-      adminApp: {
-        cwd: 'admin/src',
-        src: ['templates/**/*.html', '!templates/index.html'],
-        dest: 'api/build/static/admin/js/templates.js',
-        options: {
-          htmlmin: {
-            collapseBooleanAttributes: true,
-            collapseWhitespace: true,
-            removeAttributeQuotes: true,
-            removeComments: true,
-            removeEmptyAttributes: true,
-            removeRedundantAttributes: true,
-            removeScriptTypeAttributes: true,
-            removeStyleLinkTypeAttributes: true,
-          },
-        },
-      },
     }
   });
 
@@ -448,7 +418,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
-    'ngtemplates:adminApp',
     'exec:browserify-admin',
     'exec:less',
     'minify-admin',
