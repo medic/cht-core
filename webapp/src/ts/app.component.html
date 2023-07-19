@@ -1,5 +1,5 @@
 <div class="app-root {{currentTab}}"
-     [class.bootstrapped]="initalisationComplete"
+     [class.bootstrapped]="initialisationComplete"
      [class.select-mode]="selectMode"
      [class.sidebar-filter-active]="isSidebarFilterOpen">
   <div class="bootstrap-layer">
@@ -14,7 +14,7 @@
 
   <mm-actionbar *ngIf="useOldActionBar" [reportForms]="reportForms"></mm-actionbar>
 
-  <div class="container-fluid" *ngIf="initalisationComplete">
+  <div class="container-fluid" *ngIf="initialisationComplete">
     <mm-header
       [adminUrl]="adminUrl"
       [canLogOut]="canLogOut"

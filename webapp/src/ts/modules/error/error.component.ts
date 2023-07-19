@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { Subscription, timer } from 'rxjs';
+import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
 
 const errors = {
@@ -16,18 +19,49 @@ const errors = {
     description: 'error.503.description'
   },
 };
+const timeoutDuration = 5000; // 5 seconds
 
 @Component({
   templateUrl: './error.component.html'
 })
-export class ErrorComponent implements OnInit {
+export class ErrorComponent implements OnInit, OnDestroy {
   error;
-  translationsLoaded;
+  translationsLoaded = false;
+  timeoutElapsed = false;
+  subscriptions: Subscription = new Subscription();
 
-  constructor(private route: ActivatedRoute, private translateService:TranslateService,) {}
+  constructor(
+    private route: ActivatedRoute,
+    private translateService: TranslateService,
+    private store: Store,
+  ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.error = errors[this.route.snapshot.params.code] || errors['404'];
     this.translationsLoaded = this.translateService.instant('error.403.description') !== 'error.403.description';
+
+    const subscription = this.store
+      .select(Selectors.getTranslationsLoaded)
+      .subscribe(isLoaded => {
+        if (isLoaded) {
+          this.timeoutElapsed = false;
+        } else {
+          this.startTimeout();
+        }
+        this.translationsLoaded = !!isLoaded;
+      });
+
+    this.subscriptions.add(subscription);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  private startTimeout(): void {
+    const timeoutTimer = timer(timeoutDuration).subscribe(() => {
+      this.timeoutElapsed = true;
+    });
+    this.subscriptions.add(timeoutTimer);
   }
 }
