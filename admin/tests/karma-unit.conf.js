@@ -16,10 +16,11 @@ module.exports = function(config) {
       }
     },
     preprocessors: {
-      'src/**/*.html': ['ng-html2js']
+      'src/templates/*.html': ['ng-html2js']
     },
     ngHtml2JsPreprocessor: {
-      moduleName: 'templates'
+      moduleName: 'templates',
+      stripPrefix: 'src/',
     },
     files: [
       // used to query html
@@ -29,7 +30,6 @@ module.exports = function(config) {
 
       // application code
       '../api/build/static/admin/js/main.js',
-      '../api/build/static/admin/js/templates.js',
 
       // test-specific code
       '../node_modules/chai/chai.js',
