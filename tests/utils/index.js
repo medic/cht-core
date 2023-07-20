@@ -48,6 +48,7 @@ const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
+const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const db1Data = makeTempDir('ci-dbdata');
@@ -1210,6 +1211,8 @@ const updatePermissions = async (roles, addPermissions, removePermissions = []) 
 module.exports = {
   db,
   sentinelDb,
+  logsDb,
+
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
   makeTempDir,

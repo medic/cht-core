@@ -19,9 +19,33 @@ const getDdocs = async () => {
   return result.rows.map(row => row.doc);
 };
 
+const getUpgradeLogs = async () => {
+  const logs = await utils.logsDb.allDocs({
+    startkey: 'upgrade_log',
+    endkey: 'upgrade_log\ufff0',
+    include_docs: true,
+  });
+  return logs.rows.map(row => row.doc);
+};
+
+const deleteUpgradeLogs = async () => {
+  const logs = await getUpgradeLogs();
+  logs.forEach(log => log._deleted = true);
+  await utils.logsDb.bulkDocs(logs);
+};
+
 describe('Performing an upgrade', () => {
   before(async () => {
     await loginPage.cookieLogin({ username: constants.USERNAME, password: constants.PASSWORD, createUser: false });
+  });
+
+  it('should have an upgrade_log after installing', async () => {
+    const logs = await getUpgradeLogs();
+    expect(logs.length).to.equal(1);
+    expect(logs[0]).to.include({
+      action: 'install',
+      state: 'finalized',
+    });
   });
 
   it('should upgrade to current branch', async () => {
@@ -53,5 +77,23 @@ describe('Performing an upgrade', () => {
     expect(staged.length).to.equal(0);
 
     ddocs.forEach(ddoc => expect(ddoc.version).to.equal(currentBuild));
+
+    const logs = await getUpgradeLogs();
+    expect(logs.length).to.equal(2);
+    expect(logs[1]).to.include({
+      action: 'upgrade',
+      state: 'finalized',
+    });
+  });
+
+  it('should display upgrade page even without upgrade logs', async () => {
+    await deleteUpgradeLogs();
+
+    await upgradePage.goToUpgradePage();
+
+    const currentVersion = await upgradePage.getCurrentVersion();
+    expect(version.getVersion(true)).to.include(currentVersion);
+    expect((await getUpgradeLogs()).length).to.equal(0);
+    await (await upgradePage.deploymentInProgress()).waitForDisplayed({ reverse: true });
   });
 });
