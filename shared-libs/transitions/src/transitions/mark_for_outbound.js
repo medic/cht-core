@@ -22,6 +22,8 @@ const relevantTo = (doc) => {
   return Object.keys(pushes)
     .filter(key => {
       const conf = pushes[key];
+      // eslint-disable-next-line no-console
+      console.log('SAMUEL: ', conf.relevant_to, JSON.stringify(doc), JSON.stringify(conf));
       return conf.relevant_to && vm.runInNewContext(conf.relevant_to, {doc});
     })
     .map(key => [pushes[key], key]);
