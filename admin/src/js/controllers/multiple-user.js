@@ -19,10 +19,20 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
   $scope.processTotal = '';
   const USER_LOG_DOC_ID = 'bulk-user-upload-';
 
-  $scope.onCancel = function () {
+  $scope.onCancel = () => {
     $scope.clearScreen();
     $uibModalInstance.dismiss();
   };
+
+  $uibModalInstance.rendered.then(() => {
+    angular.element(() => {
+      $('#users-upload .uploader').on('change', upload);
+      $('#users-upload .choose').on('click', (e) => {
+        e.preventDefault();
+        $('#users-upload .uploader').click();
+      });
+    });
+  });
 
   const getLogsByType = (docPrefix) => {
     return DB({ logsDB: true })
@@ -138,13 +148,4 @@ angular.module('controllers').controller('MultipleUserCtrl', function(
     $scope.uploadedData = files[0];
     $scope.showDisplayUploadConfirm();
   };
-
-  angular.element(function () {
-    $('#users-upload .uploader').on('change', upload);
-    $('#users-upload .choose').on('click', function(e) {
-      e.preventDefault();
-      $('#users-upload .uploader').click();
-    });
-  });
-}
-);
+});
