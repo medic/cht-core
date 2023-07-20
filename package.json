@@ -26,8 +26,7 @@
     "default-wdio-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && grunt build-service-images && grunt create-local-docker-compose-files",
     "prepare": "husky install",
-    "postinstall": "cd webapp && ng cache clean && cd ..",
-    "dev-install": "npm ci && npm run postinstall"
+    "postinstall": "cd webapp && ng cache clean && cd .."
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^15.0.0",
