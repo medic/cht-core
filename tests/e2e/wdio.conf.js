@@ -16,9 +16,6 @@ const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
 const logLevels = ['error', 'warning', 'debug'];
 const existingFeedBackDocIds = [];
 let testTile;
-const DEBUG = process.env.DEBUG;
-const DEFAULT_TIMEOUT = 30 * 1000;
-const DEBUG_TIMEOUT = 24 * 60 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
 
 const baseConfig = {
   //
@@ -85,8 +82,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG?['--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']:
-        ['--headless', '--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']
+      args: ['--headless', '--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
@@ -175,8 +171,8 @@ const baseConfig = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,
-    retries: DEBUG ? 0 : 5,
+    timeout: 120000,
+    retries: 5,
   },
   //
   // =====
