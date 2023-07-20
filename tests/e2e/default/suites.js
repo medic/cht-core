@@ -17,13 +17,15 @@ const SUITES = {
     './tasks/**/*.wdio-spec.js',
     './sms/**/*.wdio-spec.js',
   ],
-  lowLevel:[
+  data:[
     './db/**/*.wdio-spec.js',
     './purge/**/*.wdio-spec.js',
+    './telemetry/**/*.wdio-spec.js'
+  ],
+  lowLevel:[
     './pwa/**/*.wdio-spec.js',
     './service-worker/**/*.wdio-spec.js',
-    './transitions/**/*.wdio-spec.js',
-    './telemetry/**/*.wdio-spec.js'
+    './transitions/**/*.wdio-spec.js'
   ],
   
   enketo: [
