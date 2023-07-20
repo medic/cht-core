@@ -16,7 +16,8 @@ describe('MultipleUserCtrl controller', () => {
     allDocs = sinon.stub().resolves();
     Settings = sinon.stub().resolves();
     uibModalInstance = {
-      dismiss: sinon.stub()
+      dismiss: sinon.stub(),
+      rendered: { then: sinon.stub() }
     };
     CreateUser = {
       createMultipleUsers: sinon.stub().resolves()
