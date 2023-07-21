@@ -59,6 +59,7 @@ module.exports = function(grunt) {
         '-r "./admin/node_modules/bikram-sambat:bikram-sambat" ' +
         '-r "./admin/node_modules/lodash/core:lodash/core" ' +
         'admin/src/js/main.js > api/build/static/admin/js/main.js',
+      'compile-admin-templates': 'node ./scripts/build/build-angularjs-template-cache.js',
       'cleancss-admin':
         './node_modules/clean-css-cli/bin/cleancss api/build/static/admin/css/main.css > api/build/static/admin/css/main.min.css && ' +
         'mv api/build/static/admin/css/main.min.css api/build/static/admin/css/main.css',
@@ -76,7 +77,6 @@ module.exports = function(grunt) {
       'copy-api-bowser': 'cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js',
       'copy-admin-static':
         'cp admin/src/templates/index.html api/build/static/admin/ && ' +
-        'node ./scripts/build/build-angularjs-template-cache.js && ' +
         'mkdir -p api/build/static/admin/fonts/ && ' +
         'cp admin/node_modules/font-awesome/fonts/* api/build/static/admin/fonts/ && ' +
         'cp webapp/src/fonts/* api/build/static/admin/fonts/',
@@ -329,7 +329,7 @@ module.exports = function(grunt) {
       },
       'admin-templates': {
         files: ['admin/src/templates/**/*'],
-        tasks: ['exec:copy-admin-static'],
+        tasks: ['exec:compile-admin-templates'],
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
@@ -422,6 +422,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
+    'exec:compile-admin-templates',
     'exec:browserify-admin',
     'exec:less',
     'minify-admin',
