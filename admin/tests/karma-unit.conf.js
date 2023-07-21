@@ -30,6 +30,7 @@ module.exports = function(config) {
 
       // application code
       '../api/build/static/admin/js/main.js',
+      '../api/build/static/admin/js/templates.js',
 
       // test-specific code
       '../node_modules/chai/chai.js',
