@@ -59,7 +59,9 @@ module.exports = function(grunt) {
         '-r "./admin/node_modules/bikram-sambat:bikram-sambat" ' +
         '-r "./admin/node_modules/lodash/core:lodash/core" ' +
         'admin/src/js/main.js > api/build/static/admin/js/main.js',
-      'compile-admin-templates': 'node ./scripts/build/build-angularjs-template-cache.js',
+      'compile-admin-templates':
+        'mkdir -p api/build/static/admin/js/ && ' +
+        'node ./scripts/build/build-angularjs-template-cache.js',
       'cleancss-admin':
         './node_modules/clean-css-cli/bin/cleancss api/build/static/admin/css/main.css > api/build/static/admin/css/main.min.css && ' +
         'mv api/build/static/admin/css/main.min.css api/build/static/admin/css/main.css',
