@@ -445,4 +445,28 @@ describe('Reports Content Component', () => {
       expect(fastActionButtonService.getReportRightSideActions.notCalled).to.be.true;
     }));
   });
+
+  describe('search', () => {
+    it('should not search when select mode is true', fakeAsync(() => {
+      store.overrideSelector(Selectors.getSelectMode, true);
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.search('case_id:abc-1234');
+
+      expect(component.selectMode).to.be.true;
+      expect(searchFiltersService.freetextSearch.notCalled).to.be.true;
+    }));
+
+    it('should search if select mode is false', fakeAsync(() => {
+      store.overrideSelector(Selectors.getSelectMode, false);
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.search('case_id:abc-1234');
+
+      expect(component.selectMode).to.be.false;
+      expect(searchFiltersService.freetextSearch.calledOnce).to.be.true;
+    }));
+  });
 });

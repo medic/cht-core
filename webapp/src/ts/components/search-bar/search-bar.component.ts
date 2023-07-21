@@ -1,16 +1,26 @@
-import { Component, EventEmitter, Input, OnDestroy, AfterContentInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  AfterContentInit,
+  AfterViewInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { FreetextFilterComponent } from '@mm-components/filters/freetext-filter/freetext-filter.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
+import { SearchFiltersService } from '@mm-services/search-filters.service';
 
 @Component({
   selector: 'mm-search-bar',
   templateUrl: './search-bar.component.html'
 })
-export class SearchBarComponent implements AfterContentInit, OnDestroy {
+export class SearchBarComponent implements AfterContentInit, AfterViewInit, OnDestroy {
   @Input() disabled;
   @Input() showFilter;
   @Input() showSort;
@@ -31,10 +41,15 @@ export class SearchBarComponent implements AfterContentInit, OnDestroy {
   constructor(
     private store: Store,
     private responsiveService: ResponsiveService,
+    private searchFiltersService: SearchFiltersService,
   ) { }
 
   ngAfterContentInit() {
     this.subscribeToStore();
+  }
+
+  ngAfterViewInit() {
+    this.searchFiltersService.init(this.freetextFilter);
   }
 
   private subscribeToStore() {

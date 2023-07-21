@@ -172,6 +172,9 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   search(query) {
+    if (this.selectMode) {
+      return;
+    }
     this.searchFiltersService.freetextSearch(query);
   }
 
