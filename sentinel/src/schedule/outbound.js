@@ -10,7 +10,7 @@ const transitionsLib = configService.getTransitionsLib();
 
 const CONFIGURED_PUSHES = 'outbound';
 const BATCH_SIZE = 1000;
-const TIME_FRAME_DURATION = 60 * 1000 * 5;
+const TIME_FRAME_DURATION = 5 * 60 * 1000; // 5 minutes
 
 //
 // Loads all queued tasks and splits them into valid tasks we can work on, and invalid tasks that
