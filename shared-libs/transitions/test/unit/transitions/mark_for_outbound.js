@@ -15,6 +15,7 @@ describe('mark for outbound', () => {
     let mockOutbound;
     let mockLogger;
     let change;
+    let clock;
 
     beforeEach(() => {
       change = {
@@ -51,7 +52,10 @@ describe('mark for outbound', () => {
       restores.push(markForOutbound.__set__('logger', mockLogger));
     });
 
-    afterEach(() => restores.forEach(restore => restore()));
+    afterEach(() => {
+      restores.forEach(restore => restore());
+      clock?.restore();
+    });
 
     it('pushes docs with valid cron and relevant document and queue non due cron', () => {
       const config = {
@@ -107,7 +111,7 @@ describe('mark for outbound', () => {
       mockOutbound.send.rejects();
       mockDb.sentinel.get.rejects({ status: 404 });
 
-      sinon.useFakeTimers(new Date('2023-07-11T03:05:00+0000').getTime());
+      clock = sinon.useFakeTimers(new Date('2023-07-11T03:05:00+0000').getTime());
 
       return markForOutbound
         .onMatch(change)

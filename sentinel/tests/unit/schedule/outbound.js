@@ -536,6 +536,7 @@ describe('outbound schedule', () => {
     let removeInvalidTasks;
     let attachInfoDocs;
     let restores;
+    let clock;
 
     beforeEach(() => {
       restores = [];
@@ -558,6 +559,7 @@ describe('outbound schedule', () => {
 
     afterEach(() => {
       restores.forEach(restore => restore());
+      clock?.restore();
     });
 
     it('should coordinate finding all queues to process and working through them one by one', () => {
@@ -771,7 +773,7 @@ describe('outbound schedule', () => {
       configGet.returns(configs);
       batch.resolvesArg(0);
 
-      sinon.useFakeTimers(new Date('2023-07-11T03:05:00+0000').getTime());
+      clock = sinon.useFakeTimers(new Date('2023-07-11T03:05:00+0000').getTime());
 
       return outbound.execute().then((dueConfigs) => {
         assert.equal(configGet.callCount, 1);
