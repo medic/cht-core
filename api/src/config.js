@@ -10,7 +10,7 @@ const getMessage = (value, locale) => {
   const _findTranslation = (value, locale) => {
     if (value.translations) {
       const translation = _.find(value.translations, { locale: locale });
-      return translation && translation.content;
+      return translation?.content;
     } else {
       // fallback to old translation definition to support
       // backwards compatibility with existing forms
@@ -75,13 +75,13 @@ module.exports = {
       ctx = locale;
       locale = null;
     }
-    locale = locale || (settings && settings.locale) || 'en';
+    locale = locale || settings?.locale || 'en';
     if (_.isObject(key)) {
       return getMessage(key, locale) || key;
     }
     const value =
-      (translationCache[locale] && translationCache[locale][key]) ||
-      (translationCache.en && translationCache.en[key]) ||
+      translationCache[locale]?.[key] ||
+      translationCache.en?.[key] ||
       key;
     // lodash templates will return ReferenceError if all variables in
     // template are not defined.

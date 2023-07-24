@@ -28,6 +28,7 @@ describe('Hamburger Menu tests', async () => {
       modelCancelButtonText: 'Cancel',
       modelSubmitButtonText: 'Submit'
     });
+    await commonPage.closeReportBug();
   });
 
   it('should open Configuration app', async () => {

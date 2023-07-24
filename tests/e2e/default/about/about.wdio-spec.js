@@ -31,6 +31,7 @@ describe('About page', async () => {
 
     await utils.saveDoc(partnersDoc);
     await commonPage.goToAboutPage();
+    await (await aboutPage.partners()).waitForDisplayed();
 
     const image1 = await aboutPage.getPartnerImage('image1');
     expect(image1).to.equal(`data:image/png;base64,${partnerData[0].data}`);

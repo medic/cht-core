@@ -365,7 +365,7 @@ describe('all_docs handler', () => {
       return utils.db
         .query('medic/docs_by_replication_key', { keys: ['_all', 'org.couchdb.user:offline'] })
         .then(result => {
-          return result.rows && result.rows.length + ddocAndUserSettings;
+          return result.rows?.length + ddocAndUserSettings;
         });
     };
 

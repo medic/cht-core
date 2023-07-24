@@ -33,7 +33,7 @@ const startMockApp = () => {
 };
 
 const stopMockApp = () => {
-  server && server.close();
+  server?.close();
   workingEndpointRequests = [];
   brokenEndpointRequests = [];
 };

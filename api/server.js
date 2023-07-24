@@ -38,7 +38,7 @@ process
     await configWatcher.loadTranslations();
     logger.info('Translations loaded successfully');
   } catch (err) {
-    logger.error('Fatal error initialising medic-api');
+    logger.error('Fatal error initialising API');
     logger.error('%o', err);
     process.exit(1);
   }
@@ -52,7 +52,7 @@ process
   router = setupRouter.router;
 
   const server = app.listen(apiPort, () => {
-    logger.info('Medic API listening on port ' + apiPort);
+    logger.info('API listening on port ' + apiPort);
   });
   server.setTimeout(0);
 
@@ -96,7 +96,7 @@ process
     logger.info('xforms updated successfully');
 
   } catch (err) {
-    logger.error('Fatal error initialising medic-api');
+    logger.error('Fatal error initialising API');
     logger.error('%o', err);
     process.exit(1);
   }
