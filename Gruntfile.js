@@ -17,84 +17,11 @@ const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 module.exports = function(grunt) {
   'use strict';
 
-  require('jit-grunt')(grunt, {
-    ngtemplates: 'grunt-angular-templates',
-  });
-  require('time-grunt')(grunt);
+  grunt.loadNpmTasks('grunt-exec');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Project configuration
   grunt.initConfig({
-    copy: {
-      ddocs: {
-        expand: true,
-        cwd: 'ddocs/',
-        src: '**/*',
-        dest: 'build/ddocs/',
-      },
-      'api-ddocs': {
-        expand: true,
-        cwd: 'build/ddocs/',
-        src: '*.json',
-        dest: 'api/build/ddocs/',
-      },
-      'webapp-static': {
-        expand: true,
-        cwd: 'webapp/src/',
-        src: [
-          'audio/**/*',
-          'fonts/**/*',
-          'img/**/*',
-        ],
-        dest: 'api/build/static/webapp/',
-      },
-      'api-resources': {
-        expand: true,
-        cwd: 'api/src/public/',
-        src: '**/*',
-        dest: 'api/build/static/',
-      },
-      'built-resources': {
-        expand: true,
-        cwd: 'build/static',
-        src: '**/*',
-        dest: 'api/build/static/',
-      },
-      'api-bowser': {
-        src: 'api/node_modules/bowser/bundled.js',
-        dest: 'api/src/public/login/lib-bowser.js',
-      },
-      'admin-static': {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: 'admin/src/templates/index.html',
-            dest: 'api/build/static/admin',
-          },
-          {
-            expand: true,
-            flatten: true,
-            src: [
-              'admin/node_modules/font-awesome/fonts/*',
-              'webapp/src/fonts/**/*'
-            ],
-            dest: 'api/build/static/admin/fonts/',
-          },
-        ],
-      },
-      'libraries-to-patch': {
-        expand: true,
-        cwd: 'webapp/node_modules',
-        src: [
-          'bootstrap-daterangepicker/**',
-          'enketo-core/**',
-          'font-awesome/**',
-          'messageformat/**',
-          'moment/**'
-        ],
-        dest: 'webapp/node_modules_backup',
-      },
-    },
     exec: {
       'compile-ddocs-primary': 'node ./scripts/build/ddoc-compile.js primary',
       'compile-ddocs-staging': 'node ./scripts/build/ddoc-compile.js staging',
@@ -121,7 +48,8 @@ module.exports = function(grunt) {
       'jsdoc-api': './node_modules/jsdoc/jsdoc.js -d jsdocs/api -R api/README.md api/src/**/*.js',
       'jsdoc-shared-libs': './node_modules/jsdoc/jsdoc.js -d jsdocs/shared-libs shared-libs/**/src/**/*.js',
       'less': './node_modules/less/bin/lessc admin/src/css/main.less api/build/static/admin/css/main.css',
-      'browserify-admin': 'node ./node_modules/browserify/bin/cmd.js ' +
+      'browserify-admin': 'mkdir -p api/build/static/admin/js/ && ' +
+        'node ./node_modules/browserify/bin/cmd.js ' +
         '--debug ' +
         '-t browserify-ngannotate ' +
         '-r "./admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat:angular-translate-interpolation-messageformat" ' +
@@ -131,6 +59,9 @@ module.exports = function(grunt) {
         '-r "./admin/node_modules/bikram-sambat:bikram-sambat" ' +
         '-r "./admin/node_modules/lodash/core:lodash/core" ' +
         'admin/src/js/main.js > api/build/static/admin/js/main.js',
+      'compile-admin-templates':
+        'mkdir -p api/build/static/admin/js/ && ' +
+        'node ./scripts/build/build-angularjs-template-cache.js',
       'cleancss-admin':
         './node_modules/clean-css-cli/bin/cleancss api/build/static/admin/css/main.css > api/build/static/admin/css/main.min.css && ' +
         'mv api/build/static/admin/css/main.min.css api/build/static/admin/css/main.css',
@@ -138,9 +69,26 @@ module.exports = function(grunt) {
         './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css && ' +
         'mv api/build/static/login/style.min.css api/build/static/login/style.css',
       'karma-admin': 'node ./scripts/ci/run-karma.js',
-
-      // Running this via exec instead of inside the grunt process makes eslint
-      // run ~4x faster. For some reason. Maybe cpu core related.
+      'copy-ddocs': 'mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/',
+      'copy-api-ddocs': 'mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/',
+      'copy-webapp-static':
+        'cp -r webapp/src/audio api/build/static/webapp/ && ' +
+        'cp -r webapp/src/fonts api/build/static/webapp/ && ' +
+        'cp -r webapp/src/img api/build/static/webapp/',
+      'copy-api-resources': 'cp -r api/src/public/* api/build/static/',
+      'copy-api-bowser': 'cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js',
+      'copy-admin-static':
+        'cp admin/src/templates/index.html api/build/static/admin/ && ' +
+        'mkdir -p api/build/static/admin/fonts/ && ' +
+        'cp admin/node_modules/font-awesome/fonts/* api/build/static/admin/fonts/ && ' +
+        'cp webapp/src/fonts/* api/build/static/admin/fonts/',
+      'copy-libraries-to-patch':
+        'cp -r webapp/node_modules/bootstrap-daterangepicker/ webapp/node_modules_backup/ && ' +
+        'cp -r webapp/node_modules/enketo-core/ webapp/node_modules_backup/ && ' +
+        'cp -r webapp/node_modules/font-awesome/ webapp/node_modules_backup/ && ' +
+        'cp -r webapp/node_modules/messageformat/ webapp/node_modules_backup/ && ' +
+        'cp -r webapp/node_modules/moment/ webapp/node_modules_backup/',
+      'enketo-css': 'node node_modules/sass/sass.js webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map',
       'eslint': ESLINT_COMMAND + ' .',
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
       'build-service-images': {
@@ -381,13 +329,9 @@ module.exports = function(grunt) {
         files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
         tasks: ['exec:browserify-admin'],
       },
-      'admin-index': {
-        files: ['admin/src/templates/index.html'],
-        tasks: ['copy:admin-static'],
-      },
       'admin-templates': {
-        files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
-        tasks: ['ngtemplates:adminApp'],
+        files: ['admin/src/templates/**/*'],
+        tasks: ['exec:compile-admin-templates'],
       },
       'webapp-js': {
         // instead of watching the source files, watch the build folder and upload on rebuild
@@ -397,67 +341,33 @@ module.exports = function(grunt) {
       'primary-ddoc': {
         files: ['ddocs/medic-db/**/*'],
         tasks: [
-          'copy:ddocs',
+          'exec:copy-ddocs',
           'set-ddocs-version',
           'exec:compile-ddocs-primary',
-          'copy:api-ddocs',
+          'exec:copy-api-ddocs',
         ],
       },
       'secondary-ddocs': {
         files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
         tasks: [
-          'copy:ddocs',
+          'exec:copy-ddocs',
           'set-ddocs-version',
           'exec:compile-ddocs-secondary',
-          'copy:api-ddocs',
+          'exec:copy-api-ddocs',
         ],
       },
       'api-public-files': {
         files: ['api/src/public/**/*'],
-        tasks: ['copy:api-resources'],
+        tasks: ['exec:copy-api-resources'],
       }
-    },
-    ngtemplates: {
-      adminApp: {
-        cwd: 'admin/src',
-        src: ['templates/**/*.html', '!templates/index.html'],
-        dest: 'api/build/static/admin/js/templates.js',
-        options: {
-          htmlmin: {
-            collapseBooleanAttributes: true,
-            collapseWhitespace: true,
-            removeAttributeQuotes: true,
-            removeComments: true,
-            removeEmptyAttributes: true,
-            removeRedundantAttributes: true,
-            removeScriptTypeAttributes: true,
-            removeStyleLinkTypeAttributes: true,
-          },
-        },
-      },
-    },
-    sass: {
-      options: {
-        implementation: require('sass'),
-      },
-      compile: {
-        cwd: 'webapp/src/css/',
-        src: 'enketo/enketo.scss',
-        dest: 'api/build/static/webapp',
-        ext: '.less',
-        expand: true,
-        outputStyle: 'expanded',
-        flatten: true,
-        extDot: 'last',
-      },
-    },
+    }
   });
 
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
     'exec:undo-patches',
     'exec:npm-ci-modules',
-    'copy:libraries-to-patch',
+    'exec:copy-libraries-to-patch',
     'exec:apply-patches',
   ]);
 
@@ -467,7 +377,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-enketo-css', 'Build Enketo css', [
-    'sass',
+    'exec:enketo-css',
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
@@ -488,26 +398,25 @@ module.exports = function(grunt) {
     'build-admin',
     'build-config',
     'copy-static-files-to-api',
-    'copy:api-ddocs',
+    'exec:copy-api-ddocs',
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
-    'copy:api-bowser',
-    'copy:api-resources',
-    'copy:built-resources',
-    'copy:webapp-static',
-    'copy:admin-static',
+    'exec:copy-api-bowser',
+    'exec:copy-api-resources',
+    'exec:copy-webapp-static',
+    'exec:copy-admin-static',
   ]);
 
   grunt.registerTask('set-build-info', buildUtils.setBuildInfo);
 
   grunt.registerTask('build-ddocs', 'Builds the ddocs', [
-    'copy:ddocs',
+    'exec:copy-ddocs',
     'set-ddocs-version',
     'set-build-info',
     'exec:compile-ddocs-primary',
     'exec:compile-ddocs-secondary',
-    'copy:api-ddocs',
+    'exec:copy-api-ddocs',
   ]);
 
   grunt.registerTask('build-config', 'Build default configuration', [
@@ -515,7 +424,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
-    'ngtemplates:adminApp',
+    'exec:compile-admin-templates',
     'exec:browserify-admin',
     'exec:less',
     'minify-admin',
@@ -634,7 +543,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
-    'copy:api-bowser',
+    'exec:copy-api-bowser',
     'exec:api-dev',
   ]);
 
