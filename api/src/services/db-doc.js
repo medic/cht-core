@@ -74,9 +74,7 @@ module.exports = {
           .getScopedAuthorizationContext(userCtx, [ stored, requested ])
           .then(authorizationContext => {
             // user must be allowed to see existent document
-            if (stored &&
-                !authorization.allowedDoc(stored.doc._id, authorizationContext, stored.viewResults) &&
-                !authorization.isDeleteStub(stored.doc)) {
+            if (stored && !authorization.allowedDoc(stored.doc._id, authorizationContext, stored.viewResults)) {
               return false;
             }
 
@@ -111,8 +109,7 @@ module.exports = {
                 return false;
               }
 
-              return authorization.allowedDoc(storedDoc.doc._id, authorizationContext, storedDoc.viewResults) ||
-                     authorization.isDeleteStub(storedDoc.doc);
+              return authorization.allowedDoc(storedDoc.doc._id, authorizationContext, storedDoc.viewResults);
             })
             // return the expected response format [{ ok: <doc_json> }]
             .map(storedDoc => ({ ok: storedDoc.doc }));
