@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Subscription, timer } from 'rxjs';
+
 import { Selectors } from '@mm-selectors/index';
 import { TranslateService } from '@mm-services/translate.service';
 
@@ -46,6 +47,7 @@ export class ErrorComponent implements OnInit, OnDestroy {
         if (isLoaded) {
           this.timeoutElapsed = false;
         } else {
+          // Translations are not yet loaded, start timeout to give more time before displaying the default message
           this.startTimeout();
         }
         this.translationsLoaded = !!isLoaded;
