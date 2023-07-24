@@ -35,6 +35,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   flattenedFacilities = [];
   displayedFacilities = [];
 
+  private loadingFacilities;
   private totalFacilitiesDisplayed = 0;
   private listHasScroll = false;
   private togglingFacilities = false;
@@ -66,7 +67,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
 
   ngAfterViewInit() {
     if (this.inline) {
-      this.loadFacilities();
+      this.loadingFacilities = this.loadFacilities();
     }
   }
 
@@ -138,6 +139,15 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
         this.listHasScroll = true;
       }
     }
+  }
+
+  async setDefault(facilityId?) {
+    if (!facilityId) {
+      return;
+    }
+    await this.loadingFacilities;
+    const facility = this.flattenedFacilities.find(facility => facility.doc?._id === facilityId);
+    this.select(null, facility, this.inlineFilter, true);
   }
 
   private sortHierarchyAndAddFacilityLabels(hierarchy) {

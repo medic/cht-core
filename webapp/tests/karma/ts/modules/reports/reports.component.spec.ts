@@ -33,6 +33,7 @@ import { ModalService } from '@mm-modals/mm-modal/mm-modal';
 import { GlobalActions } from '@mm-actions/global';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { FeedbackService } from '@mm-services/feedback.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 
 describe('Reports Component', () => {
@@ -50,6 +51,7 @@ describe('Reports Component', () => {
   let userContactService;
   let fastActionButtonService;
   let xmlFormsService;
+  let feedbackService;
   let store;
   let route;
   let router;
@@ -103,6 +105,7 @@ describe('Reports Component', () => {
       getButtonTypeForContentList: sinon.stub(),
     };
     xmlFormsService = { subscribe: sinon.stub() };
+    feedbackService = { submit: sinon.stub() };
     route = { snapshot: { queryParams: { query:'' } } };
     router = {
       navigate: sinon.stub(),
@@ -149,6 +152,7 @@ describe('Reports Component', () => {
           { provide: ActivatedRoute, useValue: route },
           { provide: Router, useValue: router },
           { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: FeedbackService, useValue: feedbackService },
           { provide: XmlFormsService, useValue: xmlFormsService },
         ]
       })
@@ -171,10 +175,11 @@ describe('Reports Component', () => {
     expect(component.isSidebarFilterOpen).to.be.false;
   });
 
-  it('should watch for changes, set selected reports, search and set search filter', async () => {
+  it('should watch for changes, set selected reports, search and not default filters', async () => {
     changesService.subscribe.resetHistory();
     searchService.search.resetHistory();
     authService.has.resetHistory();
+    const setDefaultFacilityFilterSpy = sinon.spy(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
 
     const spySubscriptionsAdd = sinon.spy(component.subscription, 'add');
 
@@ -183,12 +188,24 @@ describe('Reports Component', () => {
 
     expect(component.isSidebarFilterOpen).to.be.false;
     expect(component.selectModeAvailable).to.be.false;
-    expect(authService.has.calledTwice).to.be.true;
+    expect(authService.has.calledThrice).to.be.true;
     expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
     expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
+    expect(authService.has.args[2][0]).to.equal('can_default_facility_filter');
+    expect(setDefaultFacilityFilterSpy.notCalled).to.be.true;
     expect(searchService.search.calledOnce).to.be.true;
     expect(changesService.subscribe.calledOnce).to.be.true;
     expect(spySubscriptionsAdd.callCount).to.equal(4);
+  });
+
+  it('should submit a feedback doc when an error was thrown by UserContactService', async () => {
+    userContactService.get.resetHistory();
+    userContactService.get.rejects(new Error('some error'));
+
+    await component.ngAfterViewInit();
+
+    expect(feedbackService.submit.calledOnce).to.be.true;
+    expect(feedbackService.submit.args[0]).to.have.members([ 'some error' ]);
   });
 
   it('listTrackBy() should return unique identifier', () => {
@@ -251,6 +268,63 @@ describe('Reports Component', () => {
     ]);
   });
 
+  describe('search', () => {
+    it('should set default facility report', async () => {
+      searchService.search.resetHistory();
+      authService.has.resetHistory();
+      authService.has.withArgs('can_default_facility_filter').resolves(true);
+      authService.online.returns(true);
+      const setDefaultFacilityFilter = sinon.spy(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+
+      component.ngOnInit();
+      await component.ngAfterViewInit();
+
+      expect(setDefaultFacilityFilter.calledOnce).to.be.true;
+      expect(setDefaultFacilityFilter.args[0][0]).to.deep.equal({ facility: 'parent' });
+      expect(authService.has.calledThrice).to.be.true;
+      expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
+      expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
+      expect(authService.has.args[2][0]).to.equal('can_default_facility_filter');
+      expect(searchService.search.notCalled).to.be.true;
+    });
+
+    it('should not set default facility report when it is offline user', async () => {
+      searchService.search.resetHistory();
+      authService.has.resetHistory();
+      authService.has.withArgs('can_default_facility_filter').resolves(true);
+      authService.online.returns(false);
+      const setDefaultFacilityFilter = sinon.spy(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+
+      component.ngOnInit();
+      await component.ngAfterViewInit();
+
+      expect(setDefaultFacilityFilter.notCalled).to.be.true;
+      expect(authService.has.calledTwice).to.be.true;
+      expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
+      expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
+      expect(searchService.search.calledOnce).to.be.true;
+    });
+
+    it('should not set default facility report when user does not have parent place', async () => {
+      userContactService.get.resolves({ _id: 'user-123' });
+      searchService.search.resetHistory();
+      authService.has.resetHistory();
+      authService.has.withArgs('can_default_facility_filter').resolves(true);
+      authService.online.returns(true);
+      const setDefaultFacilityFilter = sinon.spy(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+
+      component.ngOnInit();
+      await component.ngAfterViewInit();
+
+      expect(setDefaultFacilityFilter.notCalled).to.be.true;
+      expect(authService.has.calledThrice).to.be.true;
+      expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
+      expect(authService.has.args[1][0]).to.equal('can_view_old_filter_and_search');
+      expect(authService.has.args[2][0]).to.equal('can_default_facility_filter');
+      expect(searchService.search.calledOnce).to.be.true;
+    });
+  });
+
   describe('selectAllReports', () => {
     it('should select all when not all reports have been selected yet', async () => {
       const setLoadingContentStub = sinon.stub(GlobalActions.prototype, 'setLoadingContent');
@@ -269,7 +343,6 @@ describe('Reports Component', () => {
       store.refreshState();
       sinon.resetHistory();
       component.selectMode = true;
-      component.currentLevel = Promise.resolve();
 
       await component.selectAllReports();
 
@@ -727,7 +800,6 @@ describe('Reports Component', () => {
           summary: undefined,
           expanded: false,
           unread: true,
-
         },
       ];
 

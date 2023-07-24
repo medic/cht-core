@@ -106,6 +106,10 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
     this.dateFilterError = error || '';
   }
 
+  setDefaultFacilityFilter(filters) {
+    this.facilityFilter?.setDefault(filters.facility);
+  }
+
   ngOnDestroy() {
     this.globalActions.clearSidebarFilter();
     this.globalActions.clearFilters();
