@@ -552,6 +552,8 @@ describe('outbound schedule', () => {
 
       attachInfoDocs = sinon.stub();
       restores.push(outbound.__set__('attachInfoDocs', attachInfoDocs));
+
+      config.initTransitionLib();
     });
 
     afterEach(() => {

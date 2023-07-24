@@ -5,13 +5,12 @@ const lineage = require('@medic/lineage')(Promise, db.medic);
 const outbound = require('@medic/outbound')(logger);
 const infodocLib = require('@medic/infodoc');
 infodocLib.initLib(db.medic, db.sentinel);
-configService.initTransitionLib();
 
 const transitionsLib = configService.getTransitionsLib();
 
 const CONFIGURED_PUSHES = 'outbound';
 const BATCH_SIZE = 1000;
-const FIVE_MINUTES = 60 * 1000 * 5;
+const TIME_FRAME_DURATION = 60 * 1000 * 5;
 
 //
 // Loads all queued tasks and splits them into valid tasks we can work on, and invalid tasks that
@@ -210,7 +209,7 @@ const execute = () => {
   const dueConfiguredPushes = {};
 
   for (const [key, config] of Object.entries(configuredPushes)) {
-    if (!config.cron || transitionsLib.isWithinTimeFrame(config.cron, FIVE_MINUTES)) {
+    if (!config.cron || transitionsLib.isWithinTimeFrame(config.cron, TIME_FRAME_DURATION)) {
       dueConfiguredPushes[key] = config;
     }
   }

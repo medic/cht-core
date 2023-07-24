@@ -14,7 +14,7 @@ const logger = require('../lib/logger');
 const outbound = require('@medic/outbound')(logger);
 const NAME = 'mark_for_outbound';
 const CONFIGURED_PUSHES = 'outbound';
-const FIVE_MINUTES = 50 * 60 * 1000;
+const TIME_FRAME_DURATION = 50 * 60 * 1000;
 
 const relevantTo = (doc) => {
   const pushes = config.get(CONFIGURED_PUSHES) || {};
@@ -44,7 +44,7 @@ const markForOutbound = (change) => {
       continue;
     }
 
-    if (config.cron && !utils.isWithinTimeFrame(config.cron, FIVE_MINUTES)) {
+    if (config.cron && !utils.isWithinTimeFrame(config.cron, TIME_FRAME_DURATION)) {
       failedKeys.push(configKey);
       continue;
     }
