@@ -8,6 +8,7 @@ const registrationUtils = require('@medic/registration-utils');
 const messageUtils = require('@medic/message-utils');
 const logger = require('./logger');
 const later = require('later');
+const cron = require('cron-validator');
 
 /*
  * Get desired locale
@@ -128,17 +129,12 @@ const getContact = (shortCodeId, includeDocs) => {
   });
 };
 
-/**
-* Validates a cron expression without seconds
-* @param {string} exp cron expression
-* @returns true for valid cron expression
-*/
-const isValidCronExpression = (exp) => {
-  // eslint-disable-next-line max-len
-  const cronReg = /^(\*|([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])|\*\/([0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9])) (\*|([0-9]|1[0-9]|2[0-3])|\*\/([0-9]|1[0-9]|2[0-3])) (\*|([1-9]|1[0-9]|2[0-9]|3[0-1])|\*\/([1-9]|1[0-9]|2[0-9]|3[0-1])) (\*|([1-9]|1[0-2])|\*\/([1-9]|1[0-2])) (\*|([0-6])|\*\/([0-6]))$/;
-  return cronReg.test(exp);
-};
+const isWithinTimeBound = (currentTime, dueTime, frame) => {
+  const lowerBoundDueTime = dueTime - frame;
+  const upperBoundDueTime = dueTime + frame;
 
+  return currentTime >= lowerBoundDueTime && currentTime <= upperBoundDueTime;
+};
 
 module.exports = {
   getLocale: getLocale,
@@ -249,7 +245,7 @@ module.exports = {
    * @returns true if valid and within timeframe
    */
   isWithinTimeFrame: (exp, frame = 0) => {
-    if (!isValidCronExpression(exp)) {
+    if (!cron.isValidCron(exp)) {
       throw new Error(`isWithinTimeFrame: Invalid cron expression "${exp}"`);
     }
     
@@ -258,17 +254,11 @@ module.exports = {
     const nextDueTime = later.schedule(parsedCron).next().getTime();
     const prevDueTime = later.schedule(parsedCron).prev().getTime();
 
-    const lowerBoundDueTime = nextDueTime - frame;
-    const upperBoundDueTime = prevDueTime + frame;
-    return currentTime >= lowerBoundDueTime || currentTime <= upperBoundDueTime;
+    return isWithinTimeBound(currentTime, nextDueTime, frame) 
+        || isWithinTimeBound(currentTime, prevDueTime, frame);
   },
 
-  /**
-   * Validates a cron expression without seconds
-   * @param {string} exp cron expression
-   * @returns true for valid cron expression
-   */
-  isValidCronExpression: isValidCronExpression,
+  isValidCronExpression: cron.isValidCron,
 
   // given a report, returns whether it should be accepted as a valid form submission
   // a report is accepted if
