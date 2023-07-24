@@ -163,9 +163,9 @@ module.exports = {
         })
         .then(result => !result);
     },
-    isPhoneUnique: (phoneNumber) => {
+    uniquePhone: (doc,validation) => {
       return db.medic
-        .query('medic-client/contacts_by_phone', { key: phoneNumber })
+        .query('medic-client/contacts_by_phone',  { key: doc.phone_number })
         .then(results => !(results && results.rows && results.rows.length));
     },
     uniqueWithin: (doc, validation) => {
