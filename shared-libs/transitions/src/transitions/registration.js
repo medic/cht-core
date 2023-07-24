@@ -194,33 +194,34 @@ const getPhoneNumber = doc => {
   return doc.fields.phone_number;
 };
 
-const setPhoneNumber = doc => {
+const setPhoneNumber = options => {
+  const doc = options.doc;
   const phoneNumber = getPhoneNumber(doc);
   // By default for a valid phone number SmsParser itself adds a country code if not provided
   // So if country code is not present in phone_number throw error
   const app_settings = config.getAll();
-  // check if duplicate phones are allowed and 
+  const allow_duplicate_phone = app_settings.forms[doc.form].fields.phone_number.flags.allow_duplicate
+  //check if duplicate phones are allowed and 
   //based upon that register the patient or throw error.
   const validPhone = phoneNumberParser.validate(app_settings, phoneNumber);
+  app_settings.registrations.find(obj => obj.form === doc.form)
   if (!validPhone) {
-    throw new Error(
-      `${phoneNumber} submitted by ${doc.from} is not a valid phone number`
-    );
+    transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_unique');
+    return;
   }
-  if(app_settings.allow_duplicate_phone){
+  if (allow_duplicate_phone) {
     doc.phone_number = phoneNumber;
   }
   else {
     transitionUtils.isPhoneUnique(phoneNumber).then(isUnique => {
       if (isUnique) {
         doc.phone_number = phoneNumber;
+      } else {
+        transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_unique');
         return;
       }
-      throw new Error(
-        `${phoneNumber} submitted by ${doc.from} is already registered`
-      );
     });
-  }
+  };
 };
 
 const getConfig = () => config.get('registrations');
@@ -258,7 +259,7 @@ const triggers = {
     return triggers.add_patient(options);
   },
   add_phone_number: (options) => {
-    return setPhoneNumber(options.doc);
+    return setPhoneNumber(options);
   },
   add_expected_date: (options) => {
     return setExpectedBirthDate(options.doc);
@@ -547,7 +548,7 @@ const addPatient = (options) => {
         }
 
         if (doc.phone_number) {
-          patient.phone_number = doc.phone_number;
+          patient.phone = doc.phone_number;
         }
 
         // assign patient in doc with full parent doc - to be used in messages

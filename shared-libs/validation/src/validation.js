@@ -163,6 +163,11 @@ module.exports = {
         })
         .then(result => !result);
     },
+    isPhoneUnique: (phoneNumber) => {
+      return db.medic
+        .query('medic-client/contacts_by_phone', { key: phoneNumber })
+        .then(results => !(results && results.rows && results.rows.length));
+    },
     uniqueWithin: (doc, validation) => {
       const fields = [...validation.funcArgs];
       const duration = _parseDuration(fields.pop());
