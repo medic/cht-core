@@ -141,12 +141,12 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     }
   }
 
-  async setDefault(facilityId?) {
-    if (!facilityId) {
-      return;
-    }
+  async setDefault(facilityId) {
     await this.loadingFacilities;
     const facility = this.flattenedFacilities.find(facility => facility.doc?._id === facilityId);
+    if (!facility) {
+      return;
+    }
     this.select(null, facility, this.inlineFilter, true);
   }
 

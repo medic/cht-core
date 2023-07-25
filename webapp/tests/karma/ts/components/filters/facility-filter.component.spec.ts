@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync, fakeAsync, flush } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -415,5 +415,68 @@ describe('Facility Filter Component', () => {
     expect(spySearch.notCalled).to.be.true;
     expect(inlineFilterClearSpy.notCalled).to.be.true;
     expect(inlineFilterToggleSpy.notCalled).to.be.true;
+  });
+
+  describe('setDefault', () => {
+    it('should set default value to filter', fakeAsync(async () => {
+      const facilities = [
+        {
+          _id: '1',
+          doc: {  _id: '1', name: 'not_first', },
+          children: [
+            {
+              _id: '1-1',
+              doc: { _id: '1-1', name: 'some_child' },
+              children: [
+                { _id: '1-1-1', doc: { _id: '1-1-1', name: 'seven' } },
+                { _id: '1-1-2', doc: { _id: '1-1-2', name: 'five' } },
+              ]
+            }
+          ]
+        },
+        { _id: '2', doc: { name: 'first' } },
+      ];
+      placeHierarchyService.get.resolves(facilities);
+      const searchSpy = sinon.spy(component.search, 'emit');
+      const setFilterStub = sinon.stub(GlobalActions.prototype, 'setFilter');
+
+      await component.loadFacilities();
+      component.setDefault('1-1');
+      flush();
+
+      expect(searchSpy.calledOnce).to.be.true;
+      expect(setFilterStub.calledOnce).to.be.true;
+      expect(setFilterStub.args[0][0]).to.deep.equal({ facilities: { selected: [ '1-1', '1-1-2', '1-1-1' ] } });
+    }));
+
+    it('should not default value to filter when facility not found', fakeAsync(async () => {
+      const facilities = [
+        {
+          _id: '1',
+          doc: { name: 'not_first', },
+          children: [
+            {
+              _id: '1-1',
+              doc: { name: 'some_child' },
+              children: [
+                { _id: '1-1-1', doc: { name: 'seven' } },
+                { _id: '1-1-2', doc: { name: 'five' } },
+              ]
+            }
+          ]
+        },
+        { _id: '2', doc: { name: 'first' } },
+      ];
+      placeHierarchyService.get.resolves(facilities);
+      const searchSpy = sinon.spy(component.search, 'emit');
+      const setFilterStub = sinon.stub(GlobalActions.prototype, 'setFilter');
+
+      await component.loadFacilities();
+      component.setDefault('3-1');
+      flush();
+
+      expect(setFilterStub.notCalled).to.be.true;
+      expect(searchSpy.notCalled).to.be.true;
+    }));
   });
 });
