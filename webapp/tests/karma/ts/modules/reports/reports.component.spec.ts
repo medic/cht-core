@@ -268,7 +268,7 @@ describe('Reports Component', () => {
     ]);
   });
 
-  describe('search', () => {
+  describe('doInitialSearch', () => {
     it('should set default facility report', async () => {
       searchService.search.resetHistory();
       authService.has.resetHistory();

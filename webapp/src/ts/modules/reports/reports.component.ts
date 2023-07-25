@@ -109,7 +109,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.userParentPlace = await this.getUserParentPlace();
     await this.checkPermissions();
     this.subscribeSidebarFilter();
-    this.search();
+    this.doInitialSearch();
   }
 
   ngOnDestroy() {
@@ -336,13 +336,17 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       .catch(error => this.feedbackService.submit(error.message));
   }
 
-  search(force = false) {
+  private doInitialSearch() {
     if (this.canDefaultFilter && this.userParentPlace?._id) {
       // The facility filter will trigger the search.
       this.reportsSidebarFilter.setDefaultFacilityFilter({ facility: this.userParentPlace._id });
       return;
     }
 
+    this.search();
+  }
+
+  search(force = false) {
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
     if ((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
