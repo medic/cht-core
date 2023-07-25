@@ -200,28 +200,12 @@ const setPhoneNumber = options => {
   // By default for a valid phone number SmsParser itself adds a country code if not provided
   // So if country code is not present in phone_number throw error
   const app_settings = config.getAll();
-  const allow_duplicate_phone = app_settings.forms[doc.form].fields.phone_number.flags.allow_duplicate
-  //check if duplicate phones are allowed and 
-  //based upon that register the patient or throw error.
   const validPhone = phoneNumberParser.validate(app_settings, phoneNumber);
-  app_settings.registrations.find(obj => obj.form === doc.form)
   if (!validPhone) {
     transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_unique');
     return;
   }
-  if (allow_duplicate_phone) {
-    doc.phone_number = phoneNumber;
-  }
-  else {
-    transitionUtils.isPhoneUnique(phoneNumber).then(isUnique => {
-      if (isUnique) {
-        doc.phone_number = phoneNumber;
-      } else {
-        transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_unique');
-        return;
-      }
-    });
-  };
+  doc.phone_number = phoneNumber;
 };
 
 const getConfig = () => config.get('registrations');

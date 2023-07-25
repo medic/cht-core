@@ -165,7 +165,7 @@ module.exports = {
     },
     uniquePhone: (doc,validation) => {
       return db.medic
-        .query('medic-client/contacts_by_phone',  { key: doc.phone_number })
+        .query('medic-client/contacts_by_phone',  { key: doc[validation.field] })
         .then(results => !(results && results.rows && results.rows.length));
     },
     uniqueWithin: (doc, validation) => {
