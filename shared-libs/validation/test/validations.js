@@ -248,6 +248,60 @@ describe('validations', () => {
     });
   });
 
+  it.only('should fail uniquePhone if doc is found in db', () => {
+    clock = sinon.useFakeTimers();
+    sinon.stub(db.medic, 'query').resolves({
+      rows: [
+        { 
+          id: 'original',
+          phone: '+9779841111111'
+       }],
+    });
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'uniquePhone("phone_number")',
+        message: [
+          {
+            content: 'Duplicate phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'duplicate',
+      xyz: '+9779841111111',
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 1);
+    });
+  });
+
+  it.only('should pass uniquePhone if doc is not found in db', () => {
+    clock = sinon.useFakeTimers();
+    sinon.stub(db.medic, 'query').resolves({undefined});
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'uniquePhone("phone_number")',
+        message: [
+          {
+            content: 'Duplicate phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'duplicate',
+      xyz: '+9779841111111',
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
   it('pass uniqueWithin validation on old doc', () => {
     clock = sinon.useFakeTimers();
     sinon.stub(db.medic, 'query').resolves({
