@@ -4,7 +4,6 @@ const registrationUtils = require('@medic/registration-utils');
 const taskUtils = require('@medic/task-utils');
 const config = require('../../../src/config');
 const db = require('../../../src/db');
-
 describe('utils util', () => {
 
   beforeEach(() => {
@@ -295,24 +294,59 @@ describe('utils util', () => {
   });
 
   describe('isWithinTimeFrame', () => {
+    let clock;
     const validCases = [
       {
         cron: '5 * * * *',
         time: new Date('2023-07-11T03:05:00+0000').getTime(),
-        frame: 4 * 60 * 1000,
-        offset: 3 * 60 * 60,
-      }
+        frame: 4 * 60 * 1000, // 4 minutes
+        offset: 3 * 60 * 1000, // 3 minutes
+      },
+      {
+        cron: '20 1 * * *',
+        time: new Date('2023-07-11T01:20:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 1 * 60 * 1000, // 2 minutes
+      },
+      {
+        cron: '20 5 1 * *',
+        time: new Date('2023-03-01T05:20:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 2 * 60 * 1000, // 2 minutes
+      },
+      {
+        cron: '15 1 1 1 *',
+        time: new Date('2023-01-01T01:15:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 4 * 60 * 1000, // 2 minutes
+      },
     ];
-
     const invalidCases = [
       {
         cron: '5 * * * *',
         time: new Date('2023-07-11T03:15:00+0000').getTime(),
         frame: 4 * 60 * 1000,
-        offset: 3 * 60 * 60,
-      }
+        offset: 3 * 60 * 1000,
+      },
+      {
+        cron: '20 1 * * *',
+        time: new Date('2023-07-11T00:20:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 1 * 60 * 1000, // 2 minutes
+      },
+      {
+        cron: '20 5 1 * *',
+        time: new Date('2023-03-02T05:20:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 2 * 60 * 1000, // 2 minutes
+      },
+      {
+        cron: '15 1 1 1 *',
+        time: new Date('2023-03-01T01:15:00+0000').getTime(),
+        frame: 5 * 60 * 1000, // 4 minutes
+        offset: 4 * 60 * 1000, // 2 minutes
+      },
     ];
-    let clock;
 
     afterEach(() => clock?.restore());
 
@@ -333,6 +367,7 @@ describe('utils util', () => {
     });
 
     it('should return false for invalid time', () => {
+      true.should.be.true;
       invalidCases.forEach(({ cron, time, frame, offset }) => {
         clock = sinon.useFakeTimers(time);
         utils.isWithinTimeFrame(cron).should.be.false;
