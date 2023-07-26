@@ -109,7 +109,7 @@ jobs:
           - grunt-cmd: ci-webdriver-default
             suite: data
           - grunt-cmd: ci-webdriver-default
-            suite: data
+            suite: enketo
           - grunt-cmd: ci-webdriver-default
             suite: lowLevel
           - grunt-cmd: ci-webdriver-default
