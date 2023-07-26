@@ -92,6 +92,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   reportForms;
   unreadCount = {};
   useOldActionBar = false;
+  initialisationComplete = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -278,7 +279,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check(true))
-      .then(() => this.startRecurringProcesses());
+      .then(() => this.startRecurringProcesses())
+      .then(() => this.initialisationComplete = true)
+      .catch(err => {
+        this.initialisationComplete = true;
+        console.error('Error during initialisation', err);
+        this.router.navigate(['/error', '503' ]);
+      });
 
     this.watchBrandingChanges();
     this.watchDDocChanges();
