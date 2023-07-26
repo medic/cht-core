@@ -1,0 +1,54 @@
+diff --git a/node_modules/moment/locale/hi.js b/node_modules/moment/locale/hi.js
+index f5bfc4d..4307352 100644
+--- a/node_modules/moment/locale/hi.js
++++ b/node_modules/moment/locale/hi.js
+@@ -11,31 +11,7 @@
+ 
+     //! moment.js locale configuration
+ 
+-    var symbolMap = {
+-            1: '१',
+-            2: '२',
+-            3: '३',
+-            4: '४',
+-            5: '५',
+-            6: '६',
+-            7: '७',
+-            8: '८',
+-            9: '९',
+-            0: '०',
+-        },
+-        numberMap = {
+-            '१': '1',
+-            '२': '2',
+-            '३': '3',
+-            '४': '4',
+-            '५': '5',
+-            '६': '6',
+-            '७': '7',
+-            '८': '8',
+-            '९': '9',
+-            '०': '0',
+-        },
+-        monthsParse = [
++    var monthsParse = [
+             /^जन/i,
+             /^फ़र|फर/i,
+             /^मार्च/i,
+@@ -125,14 +101,10 @@
+             yy: '%d वर्ष',
+         },
+         preparse: function (string) {
+-            return string.replace(/[१२३४५६७८९०]/g, function (match) {
+-                return numberMap[match];
+-            });
++            return string;
+         },
+         postformat: function (string) {
+-            return string.replace(/\d/g, function (match) {
+-                return symbolMap[match];
+-            });
++            return string;
+         },
+         // Hindi notation for meridiems are quite fuzzy in practice. While there exists
+         // a rigid notion of a 'Pahar' it is not used as rigidly in modern Hindi.

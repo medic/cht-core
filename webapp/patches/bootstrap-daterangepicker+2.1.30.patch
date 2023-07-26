@@ -1,0 +1,14 @@
+diff --git a/node_modules/bootstrap-daterangepicker/daterangepicker.js b/node_modules/bootstrap-daterangepicker/daterangepicker.js
+index 4f82993..80e5c10 100644
+--- a/node_modules/bootstrap-daterangepicker/daterangepicker.js
++++ b/node_modules/bootstrap-daterangepicker/daterangepicker.js
+@@ -1299,6 +1299,9 @@
+ 
+         clickDate: function(e) {
+ 
++            // MONKEY PATCH BY GRUNT: Needed for the mobile version.
++            this.element.trigger('mm.dateSelected.daterangepicker', this);
++
+             if (!$(e.target).hasClass('available')) return;
+ 
+             var title = $(e.target).attr('data-title');

@@ -80,12 +80,6 @@ module.exports = function(grunt) {
         'mkdir -p api/build/static/admin/fonts/ && ' +
         'cp admin/node_modules/font-awesome/fonts/* api/build/static/admin/fonts/ && ' +
         'cp webapp/src/fonts/* api/build/static/admin/fonts/',
-      'copy-libraries-to-patch':
-        'cp -r webapp/node_modules/bootstrap-daterangepicker/ webapp/node_modules_backup/ && ' +
-        'cp -r webapp/node_modules/enketo-core/ webapp/node_modules_backup/ && ' +
-        'cp -r webapp/node_modules/font-awesome/ webapp/node_modules_backup/ && ' +
-        'cp -r webapp/node_modules/messageformat/ webapp/node_modules_backup/ && ' +
-        'cp -r webapp/node_modules/moment/ webapp/node_modules_backup/',
       'enketo-css': 'node node_modules/sass/sass.js webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map',
       'eslint': ESLINT_COMMAND + ' .',
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
@@ -160,27 +154,6 @@ module.exports = function(grunt) {
         'echo "Missing required env var.  Check that all are set: ' +
         'COUCH_URL" && exit 1; fi',
       'check-version': `node scripts/ci/check-versions.js`,
-      'undo-patches': {
-        cmd: function() {
-          const modulesToPatch = [
-            'bootstrap-daterangepicker',
-            'enketo-core',
-            'font-awesome',
-            'moment',
-          ];
-          return modulesToPatch.map(module => {
-            const backupPath = `webapp/node_modules_backup/${module}`;
-            const modulePath = `webapp/node_modules/${module}`;
-            return `
-              [ -d ${backupPath} ] &&
-              rm -rf ${modulePath} &&
-              mv ${backupPath} ${modulePath} &&
-              echo "Module restored: ${module}" ||
-              echo "No restore required for: ${module}"
-            `;
-          }).join(' && ');
-        },
-      },
       'test-config-standard': {
         cmd: [
           'cd config/standard',
@@ -218,39 +191,6 @@ module.exports = function(grunt) {
       'shared-lib-unit': {
         cmd: 'UNIT_TEST_ENV=1 npm test --workspaces --if-present',
         stdio: 'inherit', // enable colors!
-      },
-      // To monkey patch a library...
-      // 1. copy the file you want to change
-      // 2. make the changes
-      // 3. run `diff -c original modified > webapp/patches/my-patch.patch`
-      // 4. update grunt targets: "apply-patches", "undo-patches", and "libraries-to-patch"
-      'apply-patches': {
-        cmd: function() {
-          const patches = [
-            // patch the daterangepicker for responsiveness
-            // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
-            'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < webapp/patches/bootstrap-daterangepicker.patch',
-
-            // patch font-awesome to remove version attributes
-            // https://github.com/FortAwesome/Font-Awesome/issues/3286
-            'patch webapp/node_modules/font-awesome/less/path.less < webapp/patches/font-awesome-remove-version-attribute.patch',
-
-            // patch moment.js to use western arabic (european) numerals in Hindi
-            'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
-
-            // patch enketo to always mark the /inputs group as relevant
-            'patch webapp/node_modules/enketo-core/src/js/form.js < webapp/patches/enketo-inputs-always-relevant_form.patch',
-            'patch webapp/node_modules/enketo-core/src/js/relevant.js < webapp/patches/enketo-inputs-always-relevant_relevant.patch',
-
-            // patch enketo to fix repeat name collision bug - this should be removed when upgrading to a new version of enketo-core
-            // https://github.com/enketo/enketo-core/issues/815
-            'patch webapp/node_modules/enketo-core/src/js/calculate.js < webapp/patches/enketo-repeat-name-collision.patch',
-
-            // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
-            'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
-          ];
-          return patches.join(' && ');
-        },
       },
       audit: { cmd: 'node ./scripts/audit-all.js' },
       'audit-allowed-list': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
@@ -314,10 +254,7 @@ module.exports = function(grunt) {
 
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
-    'exec:undo-patches',
     'exec:npm-ci-modules',
-    'exec:copy-libraries-to-patch',
-    'exec:apply-patches',
   ]);
 
   grunt.registerTask('build-webapp', 'Build webapp resources', [
