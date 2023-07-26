@@ -97,8 +97,8 @@ describe('registration', () => {
   after(() => utils.revertDb([], true));
   afterEach(() => utils.revertDb(getIds(contacts), true));
 
-  it.only('should add valid phone to patient doc', () => {
-    let patient_phone = '+9779841123123';
+  it('should add valid phone to patient doc', () => {
+    const patient_phone = '+9779841123123';
     const settings = {
       transitions: { registration: true },
       registrations: [{

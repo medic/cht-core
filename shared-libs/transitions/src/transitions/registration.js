@@ -13,7 +13,6 @@ const date = require('../date');
 const phoneNumberParser = require('@medic/phone-number');
 
 const contactTypesUtils = require('@medic/contact-types-utils');
-const { sassFalse } = require('sass');
 
 const NAME = 'registration';
 const PARENT_NOT_FOUND = 'parent_not_found';
