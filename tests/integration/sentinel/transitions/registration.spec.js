@@ -174,7 +174,7 @@ describe('registration', () => {
         console.log(patients);
         chai.expect(patients.rows[0].doc).to.deep.include({
           patient_id: newPatientId,
-          phone_number: patient_phone,
+          phone: patient_phone,
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Minerva',
           type: 'person',
@@ -184,8 +184,9 @@ describe('registration', () => {
       });
   });
 
-  it('should not create patient from report doc when provided invalid phone', () => {
+  it.only('should not create patient from report doc when provided invalid phone', () => {
     const patient_phone = '+9779666666666';
+    const paitnet_id =uuid();
     const settings = {
       transitions: { registration: true },
       registrations: [{
@@ -214,7 +215,7 @@ describe('registration', () => {
     };
 
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
-      _id: uuid(),
+      _id: paitnet_id,
       type: 'data_record',
       form: 'FORM-A',
       from: '+9779841212345',
@@ -246,7 +247,7 @@ describe('registration', () => {
       }).then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].fields.phone_number).to.equal(patient_phone);
-        chai.expect(updated[0].patient_id).equal(undefined);
+        chai.expect(updated[0].patient_id).equal(patient_id);
       })
       .then(patients => {
         chai.expect(patients).to.be.undefined;

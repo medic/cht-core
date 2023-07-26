@@ -201,7 +201,7 @@ const setPhoneNumber = options => {
   const app_settings = config.getAll();
   const validPhone = phoneNumberParser.validate(app_settings, phoneNumber);
   if (!validPhone) {
-    transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_unique');
+    transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_valid');
     return;
   }
   doc.phone_number = phoneNumber;
