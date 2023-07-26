@@ -24,7 +24,6 @@ module.exports = function(grunt) {
     exec: {
       'compile-ddocs-primary': 'node ./scripts/build/ddoc-compile.js primary',
       'compile-ddocs-staging': 'node ./scripts/build/ddoc-compile.js staging',
-      'compile-ddocs-secondary': 'node ./scripts/build/ddoc-compile.js secondary',
       'uglify-api':
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/script.js -o api/build/static/login/script.js && ' +
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js',
@@ -365,7 +364,6 @@ module.exports = function(grunt) {
     'set-ddocs-version',
     'set-build-info',
     'exec:compile-ddocs-primary',
-    'exec:compile-ddocs-secondary',
     'exec:copy-api-ddocs',
   ]);
 
