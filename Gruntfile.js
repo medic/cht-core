@@ -18,7 +18,6 @@ module.exports = function(grunt) {
   'use strict';
 
   grunt.loadNpmTasks('grunt-exec');
-  grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Project configuration
   grunt.initConfig({
@@ -91,6 +90,7 @@ module.exports = function(grunt) {
       'enketo-css': 'node node_modules/sass/sass.js webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map',
       'eslint': ESLINT_COMMAND + ' .',
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
+      'watch': 'node ./scripts/build/watch.js',
       'build-service-images': {
         cmd: () => buildVersions.SERVICES
           .map(service =>
@@ -310,56 +310,6 @@ module.exports = function(grunt) {
       'e2e-integration': {
         cmd: 'npm run e2e-integration'
       }
-    },
-    watch: {
-      options: {
-        interval: 1000,
-      },
-      'config-files': {
-        files: ['Gruntfile.js', 'package.json'],
-        options: {
-          reload: true,
-        },
-      },
-      'admin-css': {
-        files: ['admin/src/css/**/*'],
-        tasks: ['exec:less'],
-      },
-      'admin-js': {
-        files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
-        tasks: ['exec:browserify-admin'],
-      },
-      'admin-templates': {
-        files: ['admin/src/templates/**/*'],
-        tasks: ['exec:compile-admin-templates'],
-      },
-      'webapp-js': {
-        // instead of watching the source files, watch the build folder and upload on rebuild
-        files: ['api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js'],
-        tasks: ['update-service-worker'],
-      },
-      'primary-ddoc': {
-        files: ['ddocs/medic-db/**/*'],
-        tasks: [
-          'exec:copy-ddocs',
-          'set-ddocs-version',
-          'exec:compile-ddocs-primary',
-          'exec:copy-api-ddocs',
-        ],
-      },
-      'secondary-ddocs': {
-        files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
-        tasks: [
-          'exec:copy-ddocs',
-          'set-ddocs-version',
-          'exec:compile-ddocs-secondary',
-          'exec:copy-api-ddocs',
-        ],
-      },
-      'api-public-files': {
-        files: ['api/src/public/**/*'],
-        tasks: ['exec:copy-api-resources'],
-      }
     }
   });
 
@@ -539,7 +489,7 @@ module.exports = function(grunt) {
   grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build-dev',
     'exec:watch-webapp',
-    'watch',
+    'exec:watch',
   ]);
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
