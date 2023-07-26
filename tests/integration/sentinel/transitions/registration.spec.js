@@ -184,7 +184,7 @@ describe('registration', () => {
       });
   });
 
-  it.only('should not create patient from report doc when provided invalid phone', () => {
+  it('should not create patient from report doc when provided invalid phone', () => {
     const patient_phone = '+9779666666666';
     const paitnet_id =uuid();
     const settings = {
