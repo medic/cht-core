@@ -98,40 +98,40 @@ describe('sms parser', () => {
   });
 
   it('accepts form with phone_number type', () => {
-    const doc = { message: '1234' };
+    const doc = { message: 'NP 20 9841202020' };
     const def = definitions.forms.NP;
     sinon.stub(config, 'getAll').returns({
       default_country_code: 977,
       phone_validation: 'full'
     });
     const data = smsparser.parse(def, doc);
-    chai.expect(data.phone_number).to.equal(null);
+    chai.expect(data.phone_number).to.equal('+9779841202020');
   });
 
   it('accepts phone number with extension', () => {
-    const doc = { message: '+9779841161718' };
+    const doc = { message: 'NP 20 +9779841202020' };
     const def = definitions.forms.NP;
     sinon.stub(config, 'getAll').returns({
       default_country_code: 977,
       phone_validation: 'full'
     });
     const data = smsparser.parse(def, doc);
-    chai.expect(data.phone_number).to.equal('+977 984-1161718');
+    chai.expect(data.phone_number).to.equal('+9779841202020');
   });
 
   it('accepts correct phone number without extension', () => {
-    const doc = { message: '9841161718' };
+    const doc = { message: 'NP 20 9841202020' };
     const def = definitions.forms.NP;
     sinon.stub(config, 'getAll').returns({
       default_country_code: 977,
       phone_validation: 'full'
     });
     const data = smsparser.parse(def, doc);
-    chai.expect(data.phone_number).to.equal('+977 984-1161718');
+    chai.expect(data.phone_number).to.equal('+9779841202020');
   });
 
   it('returns null if phone number is invalid for the region', () => {
-    const doc = { message: '+97712312' };
+    const doc = { message: 'NP 20 +97712312 Prajwol' };
     const def = definitions.forms.NP;
     sinon.stub(config, 'getAll').returns({
       default_country_code: 977,
@@ -142,7 +142,7 @@ describe('sms parser', () => {
   });
 
   it('returns null if phone number is invalid for default region', () => {
-    const doc = { message: '8750660880' };
+    const doc = { message: 'NP 20 8750660880 Prajwol' };
     const def = definitions.forms.NP;
     sinon.stub(config, 'getAll').returns({
       default_country_code: 977,
@@ -154,9 +154,9 @@ describe('sms parser', () => {
 
   //India , Kenya, Tanzania Phone is accepted as contact info in Nepal region.
   //Just incase we make cross region/borders tool
-  [['+918750660880', '+91 87506 60880'],
-    ['+254773087889', '+254 773 087889'],
-    ['+255712262987', '+255 712 262 987']].forEach(phoneNumerWithParsed => {
+  [['NP 20 +918750660880 Prajwol', '+918750660880'],
+    ['NP 20 +254773087889 Prajwol', '+254773087889'],
+    ['NP 20 +255712262987 Prajwol', '+255712262987']].forEach(phoneNumerWithParsed => {
     it('returns parsed number if valid phone of another the region', () => {
       const doc = { message: phoneNumerWithParsed[0] };
       const def = definitions.forms.NP;
