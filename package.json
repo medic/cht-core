@@ -26,7 +26,8 @@
     "standard-wdio": "wdio run ./tests/e2e/standard/wdio.conf.js",
     "default-wdio-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && grunt build-service-images && grunt create-local-docker-compose-files",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "postinstall": "cd webapp && ng cache clean && cd .."
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^15.0.0",
@@ -91,15 +92,10 @@
     "faker": "^5.5.3",
     "flat": "^5.0.2",
     "grunt": "^1.5.3",
-    "grunt-angular-templates": "^1.2.0",
-    "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-watch": "https://github.com/scdf/grunt-contrib-watch#v1.0.0-fix_dirs_firing",
     "grunt-exec": "^3.0.0",
-    "grunt-sass": "^3.1.0",
-    "grunt-text-replace": "^0.4.0",
     "husky": "^8.0.0",
     "jasmine-spec-reporter": "^7.0.0",
-    "jit-grunt": "^0.10.0",
     "jsdoc": "^4.0.2",
     "jsverify": "^0.8.4",
     "karma": "^6.4.1",
@@ -135,7 +131,6 @@
     "semver": "^7.3.8",
     "sinon": "^11.1.2",
     "tail": "^2.2.4",
-    "time-grunt": "^2.0.0",
     "typescript": "4.8",
     "uglify-js": "^3.17.4",
     "uuid": "^8.3.2",

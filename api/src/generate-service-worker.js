@@ -93,6 +93,7 @@ const writeServiceWorkerFile = async () => {
       path.join(webappDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
       path.join(webappDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
       path.join(staticDirectoryPath, 'login', '*.{css,js}'),
+      path.join(staticDirectoryPath, 'login', 'images', '*.svg'),
     ],
     dynamicUrlToDependencies: {
       '/': [path.join(webappDirectoryPath, 'index.html')], // Webapp's entry point
