@@ -284,7 +284,7 @@ module.exports = function(grunt) {
     'build-admin',
     'build-config',
     'copy-static-files-to-api',
-    'exec:copy-api-ddocs',
+    'exec:copy-api-ddocs', // probably not needed - we do this in "build-ddocs" anyway
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
