@@ -1,12 +1,9 @@
 const db = require('../db');
 const environment = require('../environment');
 const purgingUtils = require('@medic/purging-utils');
-const cacheService = require('./cache');
-const crypto = require('crypto');
 const logger = require('../logger');
 const _ = require('lodash');
 
-const CACHE_NAME = 'purged-docs';
 const DB_NOT_FOUND_ERROR = new Error('not_found');
 const getPurgeDb = (roles) => {
   const hash = purgingUtils.getRoleHash(roles);
@@ -26,16 +23,11 @@ const catchDbNotFoundError = (err, purgeDb) => {
   }
 };
 
-const getCacheKey = ({ roles }, docIds) => {
-  const hash = crypto
-    .createHash('md5')
-    .update(JSON.stringify(docIds), 'utf8')
-    .digest('hex');
+const getCacheDocId = ({ username }) => `purged-docs-${username}`;
 
-  return `purged-${JSON.stringify(roles)}-${hash}`;
+const clearCache = async () => {
+  await db.wipeCacheDb();
 };
-
-const clearCache = () => cacheService.instance(CACHE_NAME).flushAll();
 
 const getPurgedIdsFromChanges = result => {
   const purgedIds = [];
@@ -51,40 +43,66 @@ const getPurgedIdsFromChanges = result => {
   return purgedIds;
 };
 
-const getPurgedIds = (userCtx, docIds, useCache = true) => {
+const getCachedIds = async (cacheDocId) => {
+  try {
+    const cachedDoc = await db.cache.get(cacheDocId);
+    return cachedDoc.doc_ids;
+  } catch (err) {
+    if (err.status === 404) {
+      return;
+    }
+    throw err;
+  }
+};
+
+const setCachedIds = async (cacheDocId, ids) => {
+  ids.sort();
+  let cachedDoc = { _id: cacheDocId, doc_ids: ids };
+  try {
+    cachedDoc = await db.cache.get(cacheDocId);
+    cachedDoc.doc_ids = ids;
+  } catch (err) {
+    if (err.status !== 404) {
+      throw err;
+    }
+  }
+
+  return await db.cache.put(cachedDoc);
+};
+
+const getPurgedIds = async (userCtx, docIds, useCache = true) => {
   let purgeIds = [];
-  let cache;
-  let cacheKey;
+  const cacheDocId = getCacheDocId(userCtx);
   if (!docIds?.length || !userCtx.roles?.length) {
     return Promise.resolve(purgeIds);
   }
 
   if (useCache) {
-    cache = cacheService.instance(CACHE_NAME);
-    cacheKey = getCacheKey(userCtx, docIds);
-    const cached = cache.get(cacheKey);
-    if (cached) {
-      cache.ttl(cacheKey);
-      return Promise.resolve(cached);
+    const cachedIds = await getCachedIds(cacheDocId);
+    if (cachedIds) {
+      return Promise.resolve(cachedIds);
     }
   }
 
   const ids = docIds.map(purgingUtils.getPurgedId);
   let purgeDb;
-  // requesting _changes instead of _all_docs because it's roughly twice faster
-  return getPurgeDb(userCtx.roles)
-    .then(tempDb => purgeDb = tempDb)
-    .then(() => purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length }))
-    .then(result => {
-      purgeIds = getPurgedIdsFromChanges(result);
-      cache?.set(cacheKey, purgeIds);
-      db.close(purgeDb);
-    })
-    .catch(err => catchDbNotFoundError(err, purgeDb))
-    .then(() => purgeIds);
+
+  try {
+    purgeDb = await getPurgeDb(userCtx.roles);
+    // requesting _changes instead of _all_docs because it's roughly twice faster
+    const changesResult = await purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length });
+    purgeIds = getPurgedIdsFromChanges(changesResult);
+    useCache && await setCachedIds(cacheDocId, purgeIds);
+    db.close(purgeDb);
+  } catch (err) {
+    catchDbNotFoundError(err, purgeDb);
+  }
+
+  return purgeIds;
 };
 
 const getUnPurgedIds = (userCtx, docIds) => {
+  docIds.sort();
   return getPurgedIds(userCtx, docIds).then(purgedIds => _.difference(docIds, purgedIds));
 };
 

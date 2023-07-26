@@ -204,4 +204,31 @@ describe('db', () => {
       expect(db.close.args).to.deep.equal([[dbObject]]);
     });
   });
+
+  describe('wipeCacheDb', () => {
+    it('should destroy cache db and recreate it', async () => {
+      const dbObject = {};
+      const pouch = sinon.stub().returns(dbObject);
+      db.__set__('PouchDB', pouch);
+      const destroy = sinon.stub(db.cache, 'destroy').resolves();
+
+      await db.wipeCacheDb();
+      expect(destroy.callCount).to.equal(1);
+      expect(pouch.callCount).to.equal(1);
+      expect(pouch.args[0][0]).to.equal('http://admin:pass@couch:5984/medic-cache');
+    });
+
+    it('should throw destroy errors', async () => {
+      const dbObject = {};
+      const pouch = sinon.stub().returns(dbObject);
+      db.__set__('PouchDB', pouch);
+      sinon.stub(db.cache, 'destroy').rejects({ error: 'omg' });
+
+      try {
+        await db.wipeCacheDb();
+      } catch (err) {
+        expect(err).to.deep.equal({ error: 'omg' });
+      }
+    });
+  });
 });
