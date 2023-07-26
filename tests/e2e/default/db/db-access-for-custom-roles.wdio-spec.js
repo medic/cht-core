@@ -24,18 +24,22 @@ const newRole = 'new_chw';
 
 const addRole = async (role = newRole) => {
   const settings = await utils.getSettings();
-  settings.roles[role] = { ...settings.roles.chw };
+  settings.roles[role] = { name: newRole, offline: true };
+  Object.values(settings.permissions).forEach(roles => {
+    if (roles.includes('chw')) {
+      roles.push(newRole);
+    }
+  });
   await utils.updateSettings(settings, true);
 };
 
 const username = uuid();
 const user = {
-  _id: `org.couchdb.user:${username}`,
-  type: 'user',
+  username: username,
   password: uuid(),
-  facility_id: clinic._id,
-  contact_id: contact._id,
-  roles: [ newRole ]
+  place: clinic._id,
+  contact: contact._id,
+  roles: [newRole]
 };
 
 describe('Database access for new roles', () => {
@@ -60,7 +64,7 @@ describe('Database access for new roles', () => {
     await browserDbUtils.createDoc(report);
     await commonPage.sync();
 
-    await utils.get(report._id);
+    await utils.getDoc(report._id);
   });
 
   it('should be able to sync documents down', async () => {
