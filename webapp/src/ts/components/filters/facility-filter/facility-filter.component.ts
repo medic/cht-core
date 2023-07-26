@@ -144,10 +144,14 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   async setDefault(facilityId) {
     await this.loadingFacilities;
     const facility = this.flattenedFacilities.find(facility => facility.doc?._id === facilityId);
-    if (!facility) {
+
+    if (facility) {
+      this.select(null, facility, this.inlineFilter, true);
       return;
     }
-    this.select(null, facility, this.inlineFilter, true);
+
+    // Should avoid dead-ends and apply empty filter.
+    this.applyFilter();
   }
 
   private sortHierarchyAndAddFacilityLabels(hierarchy) {
@@ -169,7 +173,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     return _sortBy(hierarchy, iteratee => iteratee.doc?.name);
   }
 
-  applyFilter(facilities) {
+  applyFilter(facilities=[]) {
     if (this.disabled || this.togglingFacilities) {
       return;
     }

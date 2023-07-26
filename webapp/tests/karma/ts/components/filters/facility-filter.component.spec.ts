@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync, fakeAsync, flush } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -418,7 +418,7 @@ describe('Facility Filter Component', () => {
   });
 
   describe('setDefault', () => {
-    it('should set default value to filter', fakeAsync(async () => {
+    it('should set default value to filter when facility found', async () => {
       const facilities = [
         {
           _id: '1',
@@ -441,15 +441,14 @@ describe('Facility Filter Component', () => {
       const setFilterStub = sinon.stub(GlobalActions.prototype, 'setFilter');
 
       await component.loadFacilities();
-      component.setDefault('1-1');
-      flush();
+      await component.setDefault('1-1');
 
       expect(searchSpy.calledOnce).to.be.true;
       expect(setFilterStub.calledOnce).to.be.true;
       expect(setFilterStub.args[0][0]).to.deep.equal({ facilities: { selected: [ '1-1', '1-1-2', '1-1-1' ] } });
-    }));
+    });
 
-    it('should not default value to filter when facility not found', fakeAsync(async () => {
+    it('should not default value to filter when facility not found', async () => {
       const facilities = [
         {
           _id: '1',
@@ -472,11 +471,11 @@ describe('Facility Filter Component', () => {
       const setFilterStub = sinon.stub(GlobalActions.prototype, 'setFilter');
 
       await component.loadFacilities();
-      component.setDefault('3-1');
-      flush();
+      await component.setDefault('3-1');
 
-      expect(setFilterStub.notCalled).to.be.true;
-      expect(searchSpy.notCalled).to.be.true;
-    }));
+      expect(searchSpy.calledOnce).to.be.true;
+      expect(setFilterStub.calledOnce).to.be.true;
+      expect(setFilterStub.args[0][0]).to.deep.equal({ facilities: undefined });
+    });
   });
 });

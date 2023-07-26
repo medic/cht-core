@@ -274,7 +274,7 @@ describe('Reports Component', () => {
       authService.has.resetHistory();
       authService.has.withArgs('can_default_facility_filter').resolves(true);
       authService.online.returns(true);
-      const setDefaultFacilityFilter = sinon.spy(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+      const setDefaultFacilityFilter = sinon.stub(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
 
       component.ngOnInit();
       await component.ngAfterViewInit();
@@ -293,7 +293,7 @@ describe('Reports Component', () => {
       authService.has.resetHistory();
       authService.has.withArgs('can_default_facility_filter').resolves(true);
       authService.online.returns(false);
-      const setDefaultFacilityFilter = sinon.spy(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+      const setDefaultFacilityFilter = sinon.stub(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
 
       component.ngOnInit();
       await component.ngAfterViewInit();
@@ -305,13 +305,30 @@ describe('Reports Component', () => {
       expect(searchService.search.calledOnce).to.be.true;
     });
 
+    it('should not set default facility report when it is admin user', async () => {
+      searchService.search.resetHistory();
+      authService.has.resetHistory();
+      sessionService.isDbAdmin.returns(true);
+      authService.has.withArgs('can_default_facility_filter').resolves(true);
+      authService.online.returns(true);
+      const setDefaultFacilityFilter = sinon.stub(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+
+      component.ngOnInit();
+      await component.ngAfterViewInit();
+
+      expect(setDefaultFacilityFilter.notCalled).to.be.true;
+      expect(authService.has.calledOnce).to.be.true;
+      expect(authService.has.args[0][0]).to.have.members([ 'can_edit', 'can_bulk_delete_reports' ]);
+      expect(searchService.search.calledOnce).to.be.true;
+    });
+
     it('should not set default facility report when user does not have parent place', async () => {
       userContactService.get.resolves({ _id: 'user-123' });
       searchService.search.resetHistory();
       authService.has.resetHistory();
       authService.has.withArgs('can_default_facility_filter').resolves(true);
       authService.online.returns(true);
-      const setDefaultFacilityFilter = sinon.spy(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
+      const setDefaultFacilityFilter = sinon.stub(ReportsSidebarFilterComponent.prototype, 'setDefaultFacilityFilter');
 
       component.ngOnInit();
       await component.ngAfterViewInit();

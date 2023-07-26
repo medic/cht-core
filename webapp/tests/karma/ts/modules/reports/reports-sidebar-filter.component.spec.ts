@@ -214,19 +214,14 @@ describe('Reports Sidebar Filter Component', () => {
     expect(statusClearSpy.notCalled).to.be.true;
   });
 
-  it('should set a default value to the facility filter', () => {
+  it('should set default the facility filter', () => {
     const setDefaultSpy = sinon.spy(component.facilityFilter, 'setDefault');
 
     component.setDefaultFacilityFilter({ facility: 'facility-1' });
-
     expect(setDefaultSpy.calledOnce).to.be.true;
-  });
 
-  it('should not set a default value to the facility filter if value not provided', () => {
-    const setDefaultSpy = sinon.spy(component.facilityFilter, 'setDefault');
-
-    component.setDefaultFacilityFilter({ facility: null });
-
-    expect(setDefaultSpy.calledOnce).to.be.false;
+    sinon.resetHistory();
+    component.setDefaultFacilityFilter(null);
+    expect(setDefaultSpy.calledOnce).to.be.true;
   });
 });

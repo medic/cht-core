@@ -107,10 +107,7 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   }
 
   setDefaultFacilityFilter(filters) {
-    if (!filters?.facility) {
-      return;
-    }
-    this.facilityFilter?.setDefault(filters.facility);
+    this.facilityFilter?.setDefault(filters?.facility);
   }
 
   ngOnDestroy() {
