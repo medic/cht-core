@@ -1,9 +1,15 @@
 diff --git a/node_modules/font-awesome/less/path.less b/node_modules/font-awesome/less/path.less
-index 835be41..e8ea9a0 100644
+index 835be41..dab7b92 100644
 --- a/node_modules/font-awesome/less/path.less
 +++ b/node_modules/font-awesome/less/path.less
-@@ -3,12 +3,12 @@
+@@ -1,14 +1,18 @@
+ /* FONT PATH
+  * -------------------------- */
  
++// CHT-CORE PATCH
++// patch font-awesome to remove version attributes
++// https://github.com/FortAwesome/Font-Awesome/issues/3286
++
  @font-face {
    font-family: 'FontAwesome';
 -  src: url('@{fa-font-path}/fontawesome-webfont.eot?v=@{fa-version}');

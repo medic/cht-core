@@ -1,8 +1,8 @@
 diff --git a/node_modules/messageformat/lib/plurals.js b/node_modules/messageformat/lib/plurals.js
-index f3433a2..ec70b91 100644
+index f3433a2..2e8e9f8 100644
 --- a/node_modules/messageformat/lib/plurals.js
 +++ b/node_modules/messageformat/lib/plurals.js
-@@ -38,15 +38,21 @@ function wrapPluralFunc(lc, pf, pluralKeyChecks) {
+@@ -38,15 +38,24 @@ function wrapPluralFunc(lc, pf, pluralKeyChecks) {
    return fn;
  }
  
@@ -16,6 +16,9 @@ index f3433a2..ec70b91 100644
  }) {
 -  for (let lc = String(locale); lc; lc = lc.replace(/[-_]?[^-_]*$/, '')) {
 +  let lc;
++
++  // CHT-CORE PATCH
++  // add a default plural function for languages not yet supported by make-plural #5705
 +  for (lc = String(locale); lc; lc = lc.replace(/[-_]?[^-_]*$/, '')) {
      const pf = _plurals.default[lc];
      if (pf) return wrapPluralFunc(lc, pf, pluralKeyChecks);

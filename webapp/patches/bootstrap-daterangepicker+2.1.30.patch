@@ -1,12 +1,15 @@
 diff --git a/node_modules/bootstrap-daterangepicker/daterangepicker.js b/node_modules/bootstrap-daterangepicker/daterangepicker.js
-index 4f82993..80e5c10 100644
+index 4f82993..237eaf9 100644
 --- a/node_modules/bootstrap-daterangepicker/daterangepicker.js
 +++ b/node_modules/bootstrap-daterangepicker/daterangepicker.js
-@@ -1299,6 +1299,9 @@
+@@ -1299,6 +1299,12 @@
  
          clickDate: function(e) {
  
-+            // MONKEY PATCH BY GRUNT: Needed for the mobile version.
++            // CHT-CORE PATCH
++            // Needed for the mobile version.
++            // patch the daterangepicker for responsiveness
++            // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
 +            this.element.trigger('mm.dateSelected.daterangepicker', this);
 +
              if (!$(e.target).hasClass('available')) return;
