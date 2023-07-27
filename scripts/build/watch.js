@@ -4,6 +4,7 @@ const rootdir = __dirname + '/../../';
 
 const watchers = [];
 
+const DEBOUNCE = 10; // 10 ms
 const GAZE_OPTIONS = {
   interval: 1000 // how often the target should be polled in milliseconds
 };
@@ -47,11 +48,19 @@ const configs = [
   },
 ];
 
+// debounce to make sure the task isn't run multiple times
+const debounceCache = {};
+
 const run = (task) => {
-  const child = spawn('grunt', [ task ], { cwd: rootdir });
-  child.stdout.on('data', data => console.log(data.toString()));
-  child.stderr.on('data', data => console.error(data.toString()));
-  child.on('error', err => console.error(err));
+  if (debounceCache[task]) {
+    clearTimeout(debounceCache[task]);
+  }
+  debounceCache[task] = setTimeout(() => {
+    const child = spawn('grunt', [ task ], { cwd: rootdir });
+    child.stdout.on('data', data => console.log(data.toString()));
+    child.stderr.on('data', data => console.error(data.toString()));
+    child.on('error', err => console.error(err));
+  }, DEBOUNCE);
 };
 
 const startWatchers = () => {
