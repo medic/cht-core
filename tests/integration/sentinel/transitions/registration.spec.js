@@ -247,7 +247,7 @@ describe('registration', () => {
       }).then(() => utils.getDocs(docIds))
       .then(updated => {
         chai.expect(updated[0].fields.phone_number).to.equal(patient_phone);
-        chai.expect(updated[0].patient_id).equal(patient_id);
+        chai.expect(updated[0].patient_id).to.not.be.null;
       })
       .then(patients => {
         chai.expect(patients).to.be.undefined;

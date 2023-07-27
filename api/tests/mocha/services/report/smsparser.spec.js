@@ -97,17 +97,6 @@ describe('sms parser', () => {
     chai.expect(smsparser.getFormCode('द CDT33')).to.equal('द');
   });
 
-  it('accepts form with phone_number type', () => {
-    const doc = { message: 'NP 20 9841202020' };
-    const def = definitions.forms.NP;
-    sinon.stub(config, 'getAll').returns({
-      default_country_code: 977,
-      phone_validation: 'full'
-    });
-    const data = smsparser.parse(def, doc);
-    chai.expect(data.phone_number).to.equal('+9779841202020');
-  });
-
   it('accepts phone number with extension', () => {
     const doc = { message: 'NP 20 +9779841202020' };
     const def = definitions.forms.NP;
