@@ -329,11 +329,13 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.scrollLoaderProvider.init(scrollCallback);
   }
 
-  private getUserParentPlace() {
-    return this.userContactService
-      .get()
-      .then(userContact => userContact?.parent)
-      .catch(error => this.feedbackService.submit(error.message));
+  private async getUserParentPlace() {
+    try {
+      const userContact = await this.userContactService.get();
+      return userContact?.parent;
+    } catch (error) {
+      this.feedbackService.submit(error.message);
+    }
   }
 
   private doInitialSearch() {
