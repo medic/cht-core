@@ -316,7 +316,7 @@ describe('registration', () => {
       });
   });
 
-  it(' be skipped when transition is disabled', () => {
+  it('should be skipped when transition is disabled', () => {
     const settings = {
       transitions: { registration: false },
       registrations: [{
