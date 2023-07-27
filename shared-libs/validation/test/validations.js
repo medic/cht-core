@@ -248,7 +248,7 @@ describe('validations', () => {
     });
   });
 
-  it.only('should fail uniquePhone if doc is found in db', () => {
+  it('should fail uniquePhone if phone is found in db', () => {
     clock = sinon.useFakeTimers();
     sinon.stub(db.medic, 'query').resolves({
       rows: [
@@ -279,7 +279,7 @@ describe('validations', () => {
     });
   });
 
-  it.only('should pass uniquePhone if doc is not found in db', () => {
+  it('should pass uniquePhone if phone is not found in db', () => {
     clock = sinon.useFakeTimers();
     sinon.stub(db.medic, 'query').resolves({ undefined });
     const validations = [

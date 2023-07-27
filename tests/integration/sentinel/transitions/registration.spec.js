@@ -186,7 +186,7 @@ describe('registration', () => {
 
   it('should not create patient from report doc when provided invalid phone', () => {
     const patient_phone = '+9779666666666';
-    const paitnet_id =uuid();
+    const patient_id =uuid();
     const settings = {
       transitions: { registration: true },
       registrations: [{
@@ -215,7 +215,7 @@ describe('registration', () => {
     };
 
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
-      _id: paitnet_id,
+      _id: patient_id,
       type: 'data_record',
       form: 'FORM-A',
       from: '+9779841212345',
