@@ -1,3 +1,6 @@
+const EventEmitter = require('events');
+const configUpdatesEvents = new EventEmitter();
+
 const db = require('../db');
 const logger = require('../logger');
 const translationUtils = require('@medic/translation-utils');
@@ -89,7 +92,10 @@ const handleSettingsChange = () => {
       process.exit(1);
     })
     .then(() => initTransitionLib())
-    .then(() => logger.debug('Settings updated'));
+    .then(() => {
+      configUpdatesEvents.emit('updated');
+      logger.debug('Settings updated');
+    });
 };
 
 const handleTranslationsChange = () => {
@@ -100,7 +106,7 @@ const handleTranslationsChange = () => {
 };
 
 const handleFormChange = (change) => {
-  logger.info('Detected form change for', change.id);
+  logger.info('Detected form change for %s', change.id);
   if (change.deleted) {
     return Promise.resolve();
   }
@@ -179,9 +185,14 @@ const listen = () => {
     });
 };
 
+const watch = (callback) => {
+  configUpdatesEvents.on('updated', callback);
+};
+
 module.exports = {
   load,
   listen,
   updateServiceWorker,
   loadTranslations,
+  watch,
 };

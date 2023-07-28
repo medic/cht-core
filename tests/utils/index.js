@@ -48,6 +48,7 @@ const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
+const usersDb = new PouchDB(`${constants.BASE_URL}/_users`, { auth });
 const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
@@ -1033,7 +1034,7 @@ const saveLogs = async () => {
 
 const tearDownServices = async (removeOrphans) => {
   if (removeOrphans) {
-    return dockerComposeCmd('down', '--remove-orphans', '--volumes');
+    return dockerComposeCmd('down', ' -t=0', '--remove-orphans', '--volumes');
   }
   await saveLogs();
 };
@@ -1211,6 +1212,7 @@ module.exports = {
   db,
   sentinelDb,
   logsDb,
+  usersDb,
 
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,

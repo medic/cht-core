@@ -35,6 +35,7 @@ if (UNIT_TEST_ENV) {
     'viewCleanup',
     'info',
     'destroy',
+    'remove',
   ];
   const GLOBAL_FUNCTIONS_TO_STUB = [
     'get',

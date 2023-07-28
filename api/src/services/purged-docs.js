@@ -2,9 +2,12 @@ const db = require('../db');
 const environment = require('../environment');
 const purgingUtils = require('@medic/purging-utils');
 const logger = require('../logger');
+const config = require('../config');
+const configWatcher = require('./config-watcher');
 const _ = require('lodash');
 
 const DB_NOT_FOUND_ERROR = new Error('not_found');
+const USER_DOC_PREFIX = 'org.couchdb.user:';
 const getPurgeDb = (roles) => {
   const hash = purgingUtils.getRoleHash(roles);
   const dbName = purgingUtils.getPurgeDbName(environment.db, hash);
@@ -23,9 +26,28 @@ const catchDbNotFoundError = (err, purgeDb) => {
   }
 };
 
-const getCacheDocId = ({ username }) => `purged-docs-${username}`;
+const catchDocNotFoundError = (err) => {
+  if (err?.status === 404) {
+    return;
+  }
+  throw err;
+};
 
-const clearCache = async () => {
+const getCacheDocId = ({ name }) => `purged-docs-${name}`;
+
+const clearCache = async (name) => {
+  if (name) {
+    const cacheDocId = getCacheDocId({ name });
+    try {
+      logger.debug('Wiping purged docs cache for user %s', name);
+      const cachedDoc = await getPurgeCacheDoc(cacheDocId);
+      cachedDoc && await db.cache.remove(cachedDoc);
+      return;
+    } catch (err) {
+      return catchDocNotFoundError(err);
+    }
+  }
+  logger.info('Wiping purged docs cache');
   await db.wipeCacheDb();
 };
 
@@ -43,31 +65,25 @@ const getPurgedIdsFromChanges = result => {
   return purgedIds;
 };
 
-const getCachedIds = async (cacheDocId) => {
+const getPurgeCacheDoc = async (cacheDocId) => {
   try {
-    const cachedDoc = await db.cache.get(cacheDocId);
-    return cachedDoc.doc_ids;
+    return await db.cache.get(cacheDocId);
   } catch (err) {
-    if (err.status === 404) {
-      return;
-    }
-    throw err;
+    catchDocNotFoundError(err);
   }
+};
+
+const getCachedIds = async (cacheDocId) => {
+  const cachedDoc = await getPurgeCacheDoc(cacheDocId);
+  return cachedDoc?.doc_ids;
 };
 
 const setCachedIds = async (cacheDocId, ids) => {
   ids.sort();
-  let cachedDoc = { _id: cacheDocId, doc_ids: ids };
-  try {
-    cachedDoc = await db.cache.get(cacheDocId);
-    cachedDoc.doc_ids = ids;
-  } catch (err) {
-    if (err.status !== 404) {
-      throw err;
-    }
-  }
+  const cachedDoc = await getPurgeCacheDoc(cacheDocId) || { _id: cacheDocId };
+  cachedDoc.doc_ids = ids;
+  await db.cache.put(cachedDoc);
 
-  return await db.cache.put(cachedDoc);
 };
 
 const getPurgedIds = async (userCtx, docIds, useCache = true) => {
@@ -106,7 +122,14 @@ const getUnPurgedIds = (userCtx, docIds) => {
   return getPurgedIds(userCtx, docIds).then(purgedIds => _.difference(docIds, purgedIds));
 };
 
-const listen = (seq = 'now') => {
+const listen = () => {
+  watchSentinel();
+  watchUsers();
+  watchMedic();
+  watchSettings();
+};
+
+const watchSentinel = (seq = 'now') => {
   db.sentinel
     .changes({ live: true, since: seq })
     .on('change', change => {
@@ -117,8 +140,50 @@ const listen = (seq = 'now') => {
     })
     .on('error', err => {
       logger.error('Error watching sentinel changes, restarting: %o', err);
-      listen(seq);
+      watchSentinel(seq);
     });
+};
+
+const watchUsers = (seq = 'now') => {
+  db.users
+    .changes({ live: true, since: seq })
+    .on('change', ({ id }) => {
+      if (id.startsWith(USER_DOC_PREFIX)) {
+        const name = id.replace(USER_DOC_PREFIX, '');
+        clearCache(name);
+      }
+    })
+    .on('error', err => {
+      logger.error('Error watching users changes, restarting: %o', err);
+      watchUsers(seq);
+    });
+};
+
+const watchMedic = (seq = 'now') => {
+  db.medic
+    .changes({ live: true, since: seq })
+    .on('change', ({ id }) => {
+      if (id.startsWith(USER_DOC_PREFIX)) {
+        const name = id.replace(USER_DOC_PREFIX, '');
+        return clearCache(name);
+      }
+    })
+    .on('error', err => {
+      logger.error('Error watching users changes, restarting: %o', err);
+      watchUsers(seq);
+    });
+};
+
+const watchSettings = () => {
+  const key = 'district_admins_access_unallocated_messages';
+  let district_admins_access_unallocated_messages = config.get(key);
+  configWatcher.watch(() => {
+    const newConfigValue = config.get(key);
+    if (newConfigValue !== district_admins_access_unallocated_messages) {
+      district_admins_access_unallocated_messages = newConfigValue;
+      clearCache();
+    }
+  });
 };
 
 if (!process.env.UNIT_TEST_ENV) {
