@@ -47,7 +47,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   tasksTimeWindowWeeks;
   userSettings;
   private settings;
-  private childTypesBySelectedContact = [];
+  private childTypesBySelectedContact: Record<string, any>[] = [];
   private filters;
   canDeleteContact = false; // this disables the "Delete" button until children load
   fastActionList: FastAction[];
@@ -274,7 +274,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     });
   }
 
-  private addPermissionToContactType(allowedChildTypes = []) {
+  private addPermissionToContactType(allowedChildTypes: Record<string, any>[] = []) {
     return allowedChildTypes.map(childType => ({
       ...childType,
       permission: childType.type?.person ? 'can_create_people' : 'can_create_places',
@@ -401,9 +401,9 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.subscription.add(this.subscriptionSelectedContactForms);
   }
 
-  private filterAllowedChildType(forms, childTypes) {
+  private filterAllowedChildType(forms, childTypes: Record<string, any>[]) {
     if (!childTypes) {
-      return;
+      return [];
     }
 
     return childTypes
@@ -413,7 +413,12 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   private getModelsFromChildTypes(childTypes) {
     const grouped = _groupBy(childTypes, type => type.person ? 'persons' : 'places');
-    const models = [];
+    const models: {
+      menu_key: string;
+      menu_icon: string;
+      permission: string;
+      types: any[];
+    }[] = [];
 
     if (grouped.places) {
       models.push({

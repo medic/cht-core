@@ -187,7 +187,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.globalActions.updateReplicationStatus({
       disabled: false,
       lastTrigger: undefined,
-      lastSuccessTo: parseInt(window.localStorage.getItem('medic-last-replicated-date')),
+      lastSuccessTo: parseInt(window.localStorage.getItem('medic-last-replicated-date') ?? ''),
     });
 
     // Set this first because if there are any bugs in configuration

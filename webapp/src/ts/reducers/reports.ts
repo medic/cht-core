@@ -5,10 +5,10 @@ import { Actions as GlobalActions } from '@mm-actions/global';
 import { UniqueSortedList } from '@mm-reducers/utils';
 
 const initialState = {
-  reports: [],
+  reports: [] as any[],
   reportsById: new Map(),
-  selectedReport: undefined,
-  selectedReports: [],
+  selectedReport: undefined as any,
+  selectedReports: [] as any[],
   verifyingReport: false,
   filters: {},
 };
@@ -23,7 +23,7 @@ const setSelected = (state, report) => ({
 });
 
 const updateReports = (state, newReports) => {
-  const reports = [ ...state.reports ];
+  const reports = [...state.reports];
   const reportsById = new Map(state.reportsById);
 
   const list = new UniqueSortedList(reports, reportsById, 'reported_date');
@@ -37,7 +37,7 @@ const updateReports = (state, newReports) => {
 };
 
 const removeReport = (state, report) => {
-  const reports = [ ...state.reports ];
+  const reports = [...state.reports];
   const reportsById = new Map(state.reportsById);
 
   const list = new UniqueSortedList(reports, reportsById, 'reported_date');
@@ -55,7 +55,7 @@ const _reportsReducer = createReducer(
   on(Actions.addSelectedReport, (state, { payload: { report } }) => {
     return {
       ...state,
-      selectedReports: [ ...state.selectedReports, report ],
+      selectedReports: [...state.selectedReports, report],
     };
   }),
 

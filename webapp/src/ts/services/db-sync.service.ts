@@ -87,7 +87,7 @@ export class DBSyncService {
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
-  private readonly intervalPromises = {
+  private readonly intervalPromises: { sync?: any; meta?: any} = {
     sync: undefined,
     meta: undefined,
   };

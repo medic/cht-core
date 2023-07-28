@@ -255,7 +255,7 @@ export class RulesEngineService implements OnDestroy {
     });
     this.subscriptions.add(dirtyContactsSubscription);
 
-    const userLineage = [];
+    const userLineage: any[] = [];
     for (
       let current = rulesEngineContext.userContactDoc;
       !!current && userLineage.length < this.MAX_LINEAGE_DEPTH;
@@ -311,7 +311,7 @@ export class RulesEngineService implements OnDestroy {
     return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
   }
 
-  private translateTaskDocs(taskDocs = []) {
+  private translateTaskDocs(taskDocs: { emission?: any }[] = []) {
     taskDocs.forEach(taskDoc => {
       const { emission } = taskDoc;
 

@@ -35,6 +35,6 @@ export class UserLoginService {
 
     console.debug('UserLogin', url, username);
 
-    return this.http.post(url, data || {}, {headers}).toPromise();
+    return this.http.post(url, data || {}, {headers}).toPromise() as Promise<Object>;
   }
 }

@@ -43,7 +43,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   enketoStatus;
   private enketoEdited;
   loadingContent;
-  selectedTask = null;
+  selectedTask: any = null;
   form;
   loadingForm;
   contentError;

@@ -25,7 +25,7 @@ export class EditMessageGroupComponent extends MmModalAbstract
 
   private shouldInitDatePickers = false;
   private settingsPromise;
-  private datePickers = [];
+  private datePickers: any[] = [];
 
   ngOnInit() {
     this.settingsPromise = this.settingsService.get();

@@ -12,7 +12,7 @@ import { LocationService } from '@mm-services/location.service';
   providedIn: 'root'
 })
 export class SessionService {
-  userCtxCookieValue = null
+  userCtxCookieValue: any = null
   httpOptions = { headers: new HttpHeaders({ Accept:  'application/json' }) };
 
   constructor(
@@ -96,8 +96,8 @@ export class SessionService {
           this.logout();
           return;
         }
-        if (_.difference(userCtx.roles, value.userCtx.roles).length ||
-          _.difference(value.userCtx.roles, userCtx.roles).length) {
+        if (_.difference(userCtx.roles, value!!.userCtx.roles).length ||
+          _.difference(value!!.userCtx.roles, userCtx.roles).length) {
           return this.refreshUserCtx().then(() => true);
         }
       })

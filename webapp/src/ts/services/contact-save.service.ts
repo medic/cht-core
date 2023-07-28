@@ -30,7 +30,7 @@ export class ContactSaveService {
   }
 
   private generateFailureMessage(bulkDocsResult) {
-    return _reduce(bulkDocsResult, (msg, result) => {
+    return _reduce(bulkDocsResult, (msg: any, result) => {
       let newMsg = msg;
       if (!result.ok) {
         if (!newMsg) {
@@ -80,7 +80,7 @@ export class ContactSaveService {
 
   // Prepares document to be bulk-saved at a later time, and for it to be
   // referenced by _id by other docs if required.
-  private prepare(doc) {
+  private prepare(doc): Record<string, any> {
     if (!doc._id) {
       doc._id = uuidV4();
     }
@@ -149,7 +149,7 @@ export class ContactSaveService {
       throw new Error('doc passed must already be prepared with an _id');
     }
 
-    const preparedSiblings = [];
+    const preparedSiblings: Record<string, any>[] = [];
     let promiseChain = Promise.resolve();
 
     this.CONTACT_FIELD_NAMES.forEach(fieldName => {

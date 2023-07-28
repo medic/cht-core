@@ -24,7 +24,7 @@ export class EditReportComponent extends MmModalAbstract implements AfterViewIni
   ) {
     super(bsModalRef);
     bsModalRef.onHidden
-      .pipe(take(1)) // so we don't need to unsubscribe
+      ?.pipe(take(1)) // so we don't need to unsubscribe
       // close the select2 popup
       .subscribe(() => this.getSelectElement().select2('close'));
   }

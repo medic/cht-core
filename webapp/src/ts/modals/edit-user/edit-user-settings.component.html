@@ -37,7 +37,7 @@
 
     <div class="form-group">
       <label for="language">{{'Language' | translate}}</label>
-      <select id="language" class="form-control" [(ngModel)]="editUserModel.language.code" name="language">
+      <select id="language" class="form-control" [ngModel]="editUserModel.language?.code" (ngModelChange)="editUserModel.language?.code" name="language">
         <option [value]="locale.code" *ngFor="let locale of enabledLocales; trackBy: listTrackBy">
           {{locale.name}}
         </option>

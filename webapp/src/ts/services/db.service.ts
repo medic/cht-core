@@ -113,7 +113,7 @@ export class DbService {
   }
 
   private getDbName(remote, meta, usersMeta) {
-    const parts = [];
+    const parts: string[] = [];
     if (remote) {
       parts.push(this.locationService.url);
     } else {

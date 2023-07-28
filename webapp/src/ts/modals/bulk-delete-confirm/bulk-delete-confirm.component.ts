@@ -26,7 +26,7 @@ export class BulkDeleteConfirmComponent extends MmModalAbstract {
   ) {
     super(bsModalRef);
     bsModalRef.onHidden
-      .pipe(take(1)) // so we don't need to unsubscribe
+      ?.pipe(take(1)) // so we don't need to unsubscribe
       .subscribe(() => this.deleteComplete && window.location.reload());
   }
 

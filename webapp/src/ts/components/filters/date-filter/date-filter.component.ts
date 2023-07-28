@@ -93,7 +93,7 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
       if (this.isRange) {
         return;
       }
-      let date = this.isStartDate ? this.dateRange.from : this.dateRange.to;
+      let date: moment.Moment | undefined = this.isStartDate ? this.dateRange.from : this.dateRange.to;
       if (!date) {
         date = moment();
       }

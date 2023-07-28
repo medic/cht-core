@@ -149,7 +149,7 @@ export class EnketoTranslationService {
   }
 
   reportRecordToJs(record, formXml?) {
-    const root = $.parseXML(record).firstChild;
+    const root = $.parseXML(record).firstChild!!;
     if (!formXml) {
       return this.nodesToJs(root.childNodes);
     }
@@ -169,7 +169,7 @@ export class EnketoTranslationService {
    *   see: contacts-edit.component.ts:saveRepeated
    */
   contactRecordToJs(record) {
-    const root = $.parseXML(record).firstChild;
+    const root = $.parseXML(record).firstChild!!;
     const result:any = {
       doc: null,
       siblings: {},
