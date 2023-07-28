@@ -246,7 +246,7 @@ module.exports = {
    */
   isWithinTimeFrame: (exp, frame = 0) => {
     if (!cron.isValidCron(exp)) {
-      throw new Error(`isWithinTimeFrame: Invalid cron expression "${exp}"`);
+      throw new Error(`Invalid cron expression "${exp}"`);
     }
     
     const currentTime = Date.now();
