@@ -47,6 +47,22 @@ const createDoc = async (doc) => {
   return result;
 };
 
+const createDocs = async (docs) => {
+  const { err, result } = await browser.executeAsync((docs, callback) => {
+    const db = window.CHTCore.DB.get();
+    return db
+      .bulkDocs(docs)
+      .then(result => callback({ result }))
+      .catch(err => callback({ err }));
+  }, docs);
+
+  if (err) {
+    throw err;
+  }
+
+  return result;
+};
+
 const executeAsync = async (fn, ...args) => {
   // https://w3c.github.io/webdriver/#dfn-execute-async-script doesn't accept functions as params
   const fnString = fn.toString();
@@ -120,4 +136,5 @@ module.exports = {
   getDocs,
   deleteDoc,
   info,
+  createDocs,
 };

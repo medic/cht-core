@@ -56,6 +56,7 @@ const getLatestUpgradeLog = async () => {
   const now = new Date().getTime();
   const results = await db.medicLogs.allDocs({
     startkey: `${UPGRADE_LOG_NAME}:${now}:`,
+    endkey: `${UPGRADE_LOG_NAME}:0:`,
     descending: true,
     limit: 1,
     include_docs: true

@@ -74,9 +74,7 @@ const changeQueue = async.queue((change, callback) => {
     );
   }
   if (change.deleted) {
-    return tombstoneUtils.processChange(Promise, db.medic, change, logger)
-      .then(() => updateMetadata(change, callback))
-      .catch(callback);
+    return updateMetadata(change, callback);
   }
 
   transitionsLib.processChange(change, err => {

@@ -92,6 +92,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   reportForms;
   unreadCount = {};
   useOldActionBar = false;
+  initialisationComplete = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -278,7 +279,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check(true))
-      .then(() => this.startRecurringProcesses());
+      .then(() => this.startRecurringProcesses())
+      .then(() => this.initialisationComplete = true)
+      .catch(err => {
+        this.initialisationComplete = true;
+        console.error('Error during initialisation', err);
+        this.router.navigate(['/error', '503' ]);
+      });
 
     this.watchBrandingChanges();
     this.watchDDocChanges();
@@ -404,7 +411,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       callback: () => {
         if (!this.dbSyncService.isSyncInProgress()) {
           this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.required });
-          this.dbSyncService.sync();
+          this.dbSyncService.sync(false, true);
         }
       },
     });
@@ -624,17 +631,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     if (window.startupTimes.replication) {
       this.telemetryService.record('boot_time:2_1:to_replication', window.startupTimes.replication);
-    }
-
-    if (window.startupTimes.purgingFailed) {
-      this.feedbackService.submit(`Error when purging on device startup: ${window.startupTimes.purgingFailed}`);
-      this.telemetryService.record('boot_time:purging_failed');
-    } else {
-      // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
-      this.telemetryService.record(`boot_time:purging:${window.startupTimes.purging}`);
-    }
-    if (window.startupTimes.purge) {
-      this.telemetryService.record('boot_time:2_2:to_purge', window.startupTimes.purge);
     }
 
     if (window.startupTimes.purgingMetaFailed) {

@@ -50,6 +50,10 @@ const setBuildInfo = () => {
   const databases = fs.readdirSync(ddocsBuildPath);
   databases.forEach(database => {
     const dbPath = path.resolve(ddocsBuildPath, database);
+    const stat = fs.statSync(dbPath);
+    if (!stat.isDirectory()) {
+      return;
+    }
     const ddocs = fs.readdirSync(dbPath);
     ddocs.forEach(ddoc => {
       copyBuildInfo(path.join(ddocsBuildPath, database, ddoc, 'build_info'));

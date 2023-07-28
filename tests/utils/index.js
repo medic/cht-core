@@ -48,6 +48,7 @@ const COMPOSE_FILES = ['cht-core', 'cht-couchdb-cluster'];
 const PERMANENT_TYPES = ['translations', 'translations-backup', 'user-settings', 'info'];
 const db = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}`, { auth });
 const sentinelDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-sentinel`, { auth });
+const logsDb = new PouchDB(`${constants.BASE_URL}/${constants.DB_NAME}-logs`, { auth });
 
 const makeTempDir = (prefix) => fs.mkdtempSync(path.join(path.join(os.tmpdir(), prefix || 'ci-')));
 const db1Data = makeTempDir('ci-dbdata');
@@ -378,7 +379,6 @@ const deleteAllDocs = (except) => {
             _id: doc._id,
             _rev: doc._rev,
             _deleted: true,
-            type: 'tombstone' // circumvent tombstones being created when DB is cleaned up
           };
         })
     )
@@ -1159,12 +1159,16 @@ const collectSentinelLogs = (...regex) => collectLogs('sentinel', ...regex);
 
 const collectApiLogs = (...regex) => collectLogs('api', ...regex);
 
+const normalizeTestName = name => name.replace(/\s/g, '_');
+
 const apiLogTestStart = (name) => {
-  return requestOnTestDb(`/?start=${name.replace(/\s/g, '_')}`);
+  return requestOnTestDb(`/?start=${normalizeTestName(name)}`)
+    .catch(() => console.warn('Error logging test start - ignoring'));
 };
 
 const apiLogTestEnd = (name) => {
-  return requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
+  return requestOnTestDb(`/?end=${normalizeTestName(name)}`)
+    .catch(() => console.warn('Error logging test end - ignoring'));
 };
 
 const getDockerVersion = () => {
@@ -1210,6 +1214,8 @@ const updatePermissions = async (roles, addPermissions, removePermissions = []) 
 module.exports = {
   db,
   sentinelDb,
+  logsDb,
+
   SW_SUCCESSFUL_REGEX,
   ONE_YEAR_IN_S,
   makeTempDir,
@@ -1268,4 +1274,5 @@ module.exports = {
   apiLogTestEnd,
   updateContainerNames,
   updatePermissions,
+  formDocProcessing,
 };
