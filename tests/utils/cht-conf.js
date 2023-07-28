@@ -93,7 +93,7 @@ const compileAndUploadAppForms = async (formsDir) => {
 
   const configForms = path.join(dir, 'forms', 'app');
   fs.readdirSync(formsDir).forEach(file => {
-    fs.copyFileSync(path.join(formsDir, file), path.join(configForms, file));
+    fs.copyFileSync(path.resolve(formsDir, file), path.resolve(configForms, file));
   });
 
   await runCommand('convert-app-forms', dir);
