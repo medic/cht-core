@@ -1,0 +1,13 @@
+{
+  "context": {
+    "person": false,
+    "place": false
+  },
+  "icon": "household",
+  "title": [
+    {
+      "locale": "en",
+      "content": "Dummy"
+    }
+  ]
+}

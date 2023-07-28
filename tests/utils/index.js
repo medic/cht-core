@@ -379,7 +379,6 @@ const deleteAllDocs = (except) => {
             _id: doc._id,
             _rev: doc._rev,
             _deleted: true,
-            type: 'tombstone' // circumvent tombstones being created when DB is cleaned up
           };
         })
     )
@@ -1275,4 +1274,5 @@ module.exports = {
   apiLogTestEnd,
   updateContainerNames,
   updatePermissions,
+  formDocProcessing,
 };
