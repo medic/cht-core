@@ -23,7 +23,7 @@ echo installing node
 apt-get install nodejs npm -y
 
 echo "Changing config to match url arg"
-node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$MEDIC_URL/medic'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});"
+node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$MEDIC_URL'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});"
 echo "npm install for jmeter suite"
 npm install
 
