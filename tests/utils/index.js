@@ -379,7 +379,6 @@ const deleteAllDocs = (except) => {
             _id: doc._id,
             _rev: doc._rev,
             _deleted: true,
-            type: 'tombstone' // circumvent tombstones being created when DB is cleaned up
           };
         })
     )
@@ -1160,12 +1159,16 @@ const collectSentinelLogs = (...regex) => collectLogs('sentinel', ...regex);
 
 const collectApiLogs = (...regex) => collectLogs('api', ...regex);
 
+const normalizeTestName = name => name.replace(/\s/g, '_');
+
 const apiLogTestStart = (name) => {
-  return requestOnTestDb(`/?start=${name.replace(/\s/g, '_')}`);
+  return requestOnTestDb(`/?start=${normalizeTestName(name)}`)
+    .catch(() => console.warn('Error logging test start - ignoring'));
 };
 
 const apiLogTestEnd = (name) => {
-  return requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
+  return requestOnTestDb(`/?end=${normalizeTestName(name)}`)
+    .catch(() => console.warn('Error logging test end - ignoring'));
 };
 
 const getDockerVersion = () => {
@@ -1271,4 +1274,5 @@ module.exports = {
   apiLogTestEnd,
   updateContainerNames,
   updatePermissions,
+  formDocProcessing,
 };

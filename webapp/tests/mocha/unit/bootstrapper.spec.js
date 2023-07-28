@@ -134,7 +134,6 @@ describe('bootstrapper', () => {
 
     localId.resolves('some-randomn-uuid');
     sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
     sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
 
     await bootstrapper(pouchDbOptions);
@@ -149,7 +148,6 @@ describe('bootstrapper', () => {
       }
     });
     assert.equal(utils.setOptions.callCount, 1);
-    assert.equal(purger.purgeMain.callCount, 1);
     assert.equal(purger.purgeMeta.callCount, 1);
   });
 
@@ -159,7 +157,6 @@ describe('bootstrapper', () => {
     sinon.stub(initialReplication, 'isReplicationNeeded').resolves(false);
     localId.resolves('some-randomn-uuid');
     sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
     sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
 
     await bootstrapper(pouchDbOptions);
@@ -173,7 +170,6 @@ describe('bootstrapper', () => {
     sinon.stub(initialReplication, 'isReplicationNeeded').resolves(false);
 
     sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
     sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
 
     await bootstrapper(pouchDbOptions);
@@ -198,7 +194,6 @@ describe('bootstrapper', () => {
     sinon.stub(initialReplication, 'replicate').resolves();
 
     sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
     sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
 
     localId.resolves('some random string');
@@ -260,7 +255,6 @@ describe('bootstrapper', () => {
   it('returns error if initial replication is still needed', async () => {
     setUserCtxCookie({ name: 'jim' });
     sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
     sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
 
     sinon.stub(initialReplication, 'isReplicationNeeded').resolves(true);
@@ -284,94 +278,15 @@ describe('bootstrapper', () => {
     await expect(bootstrapper(pouchDbOptions)).to.be.rejectedWith(Error, 'redundant');
   });
 
-  it('should not run purge after skipping initial replication and not needed', async () => {
-    setUserCtxCookie({ name: 'jim' });
-
-    sinon.stub(initialReplication, 'isReplicationNeeded').resolves(false);
-    localId.resolves('some-randomn-uuid');
-    sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
-    sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
-
-    await bootstrapper(pouchDbOptions);
-
-    assert.equal(utils.setOptions.callCount, 1);
-    assert.deepEqual(utils.setOptions.args[0], [pouchDbOptions]);
-    assert.equal(purger.purgeMain.callCount, 1);
-  });
-
-  it('should run purge after initial replication', async () => {
-    setUserCtxCookie({ name: 'jim' });
-
-    sinon.stub(initialReplication, 'isReplicationNeeded').resolves(true).onCall(1).resolves(false);
-    sinon.stub(initialReplication, 'replicate').resolves();
-    sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
-    sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
-
-    localId.resolves('some random string');
-
-    await bootstrapper(pouchDbOptions);
-
-    expect(initialReplication.isReplicationNeeded.callCount).to.equal(2);
-    expect(initialReplication.replicate.callCount).to.equal(1);
-    assert.equal(purger.purgeMain.callCount, 1);
-
-    assert.equal(localClose.callCount, 1);
-    assert.equal(remoteClose.callCount, 1);
-  });
-
-  it('should run purge after skipping initial replication', async () => {
-    setUserCtxCookie({ name: 'jim' });
-
-    sinon.stub(initialReplication, 'isReplicationNeeded').resolves(false);
-    localId.resolves('some-randomn-uuid');
-    sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
-    sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
-
-    await bootstrapper(pouchDbOptions);
-
-    assert.equal(utils.setOptions.callCount, 1);
-    assert.deepEqual(utils.setOptions.args[0], [pouchDbOptions]);
-    assert.equal(purger.purgeMain.callCount, 1);
-  });
-
-  it('should catch purge errors', async () => {
-    setUserCtxCookie( { name: 'jim' });
-
-    sinon.stub(initialReplication, 'isReplicationNeeded').resolves(false);
-    localId.resolves('some-randomn-uuid');
-    sinon.stub(utils, 'setOptions');
-
-    const purgeErr = sinon.stub();
-    purgeErr.callsFake(() => {
-      const promise = Promise.reject('Im an error');
-      promise.on = purgeErr;
-      return promise;
-    });
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeErr });
-    sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
-
-    await bootstrapper(pouchDbOptions);
-
-    assert.equal(utils.setOptions.callCount, 1);
-    assert.deepEqual(utils.setOptions.args[0], [pouchDbOptions]);
-    assert.equal(purger.purgeMain.callCount, 1);
-    assert.equal(purger.purgeMeta.callCount, 1);
-  });
-
   it('should run meta purge on startup', async () => {
     setUserCtxCookie({ name: 'jim' });
     sinon.stub(initialReplication, 'isReplicationNeeded').resolves(false);
     localId.resolves('some-randomn-uuid');
     sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
     sinon.stub(purger, 'purgeMeta').returns({ on: purgeOn });
 
     await bootstrapper(pouchDbOptions);
 
-    assert.equal(purger.purgeMain.callCount, 1);
     assert.equal(purger.purgeMeta.callCount, 1);
   });
 
@@ -380,7 +295,6 @@ describe('bootstrapper', () => {
     sinon.stub(initialReplication, 'isReplicationNeeded').resolves(false);
     localId.resolves('some-randomn-uuid');
     sinon.stub(utils, 'setOptions');
-    sinon.stub(purger, 'purgeMain').returns({ on: purgeOn });
 
     const purgeErr = sinon.stub();
     purgeErr.callsFake(() => {
