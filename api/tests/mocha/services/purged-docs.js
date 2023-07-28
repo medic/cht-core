@@ -102,7 +102,12 @@ describe('Purged Docs service', () => {
       chai.expect(db.cache.get.callCount).to.equal(0);
       chai.expect(db.cache.remove.callCount).to.equal(0);
 
-      await onChangeCallback({ id: 'org.couchdb.user:rnduser', changes: [{ rev: '2-something' }], deleted: true, seq: 3 });
+      await onChangeCallback({
+        id: 'org.couchdb.user:rnduser',
+        changes: [{ rev: '2-something' }],
+        deleted: true,
+        seq: 3,
+      });
       chai.expect(db.cache.get.callCount).to.equal(1);
       chai.expect(db.cache.remove.callCount).to.equal(1);
       chai.expect(db.cache.remove.args[0]).to.deep.equal([{ _id: 'purged-docs-rnduser' }]);
