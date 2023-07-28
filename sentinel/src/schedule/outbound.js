@@ -204,7 +204,7 @@ const batch = (configuredPushes, startKey) => {
 };
 
 // Coordinates the attempted pushing of documents that need it
-const execute = () => {
+const execute = async () => {
   const configuredPushes = configService.get(CONFIGURED_PUSHES) || {};
   const dueConfiguredPushes = {};
 
