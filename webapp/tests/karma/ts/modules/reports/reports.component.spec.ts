@@ -206,6 +206,7 @@ describe('Reports Component', () => {
 
     expect(feedbackService.submit.calledOnce).to.be.true;
     expect(feedbackService.submit.args[0]).to.have.members([ 'some error' ]);
+    expect(userContactService.get.calledOnce).to.be.true;
   });
 
   it('listTrackBy() should return unique identifier', () => {
@@ -760,6 +761,77 @@ describe('Reports Component', () => {
       updateReportsListStub = sinon.stub(ReportsActions.prototype, 'updateReportsList');
       searchService.search.resolves(reports);
     });
+
+    it('should not change the reports lineage if UserContactService throws error', fakeAsync(async () => {
+      sinon.resetHistory();
+      authService.online.returns(true);
+      userContactService.get.rejects(new Error('some error'));
+      const expectedReports = [
+        {
+          _id: '88b0dfff-4a82-4202-abea-d0cabe5aa9bd',
+          lineage: [ 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          expanded: false,
+          unread: true,
+        },
+        {
+          _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
+          lineage:  [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          expanded: false,
+          unread: true,
+        },
+        {
+          _id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899',
+          lineage: [ 'Chattanooga Village' ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          expanded: false,
+          unread: true,
+        },
+        {
+          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
+          lineage: [ 'CHW Bettys Area' ],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          expanded: false,
+          unread: true,
+        },
+        {
+          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba357229',
+          lineage: [],
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          expanded: false,
+          unread: true,
+        },
+        {
+          _id: 'ee21ea15-1ebb-4d6d-95ea-7073ba965525',
+          lineage: undefined,
+          heading: 'report.subject.unknown',
+          icon: undefined,
+          summary: undefined,
+          expanded: false,
+          unread: true,
+        },
+      ];
+
+      component.ngOnInit();
+      await component.ngAfterViewInit();
+      flush();
+
+      expect(updateReportsListStub.calledOnce).to.be.true;
+      expect(updateReportsListStub.args[0]).to.deep.equal([ expectedReports ]);
+      expect(userContactService.get.calledOnce).to.be.true;
+      expect(authService.online.calledOnce).to.be.true;
+    }));
 
     it('should not change the reports lineage if user is online only', fakeAsync(() => {
       authService.online.returns(true);
