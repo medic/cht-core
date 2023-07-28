@@ -135,7 +135,7 @@ const watchSentinel = (seq = 'now') => {
     .on('change', change => {
       seq = change.seq;
       if (change.id.startsWith('purgelog:') && change.changes[0].rev.startsWith('1-')) {
-        clearCache();
+        return clearCache();
       }
     })
     .on('error', err => {
@@ -150,7 +150,7 @@ const watchUsers = (seq = 'now') => {
     .on('change', ({ id }) => {
       if (id.startsWith(USER_DOC_PREFIX)) {
         const name = id.replace(USER_DOC_PREFIX, '');
-        clearCache(name);
+        return clearCache(name);
       }
     })
     .on('error', err => {

@@ -82,7 +82,7 @@ describe('Purged Docs service', () => {
       chai.expect(db.cache.remove.callCount).to.equal(0);
     });
 
-    it('should process medic changes correctly', () => {
+    it('should process medic changes correctly', async () => {
       const listen = service.__get__('listen');
       let onChangeCallback;
       recursiveOnMedic.withArgs('change').callsFake((e, callback) => {
@@ -93,30 +93,34 @@ describe('Purged Docs service', () => {
       });
       listen();
       chai.expect(onChangeCallback).to.be.a('function');
+      sinon.stub(db.cache, 'get').callsFake(id => ({ _id: id }));
 
-      onChangeCallback({ id: 'random', seq: 1 });
+      await onChangeCallback({ id: 'random', seq: 1 });
       chai.expect(db.wipeCacheDb.callCount).to.equal(0);
 
-      onChangeCallback({ id: 'random-other', seq: 2 });
+      await onChangeCallback({ id: 'random-other', seq: 2 });
+      chai.expect(db.cache.get.callCount).to.equal(0);
       chai.expect(db.cache.remove.callCount).to.equal(0);
 
-      onChangeCallback({ id: 'org.couchdb.user:rnduser', changes: [{ rev: '2-something' }], deleted: true, seq: 3 });
+      await onChangeCallback({ id: 'org.couchdb.user:rnduser', changes: [{ rev: '2-something' }], deleted: true, seq: 3 });
+      chai.expect(db.cache.get.callCount).to.equal(1);
       chai.expect(db.cache.remove.callCount).to.equal(1);
-      chai.expect(db.cache.remove.args[0]).to.deep.equal(['purged-docs-rnduser']);
+      chai.expect(db.cache.remove.args[0]).to.deep.equal([{ _id: 'purged-docs-rnduser' }]);
 
-      onChangeCallback({ id: 'org.couchdb.user:some-other-user', changes: [{ rev: '1-something' }], seq: 4 });
+      await onChangeCallback({ id: 'org.couchdb.user:some-other-user', changes: [{ rev: '1-something' }], seq: 4 });
+      chai.expect(db.cache.get.callCount).to.equal(2);
       chai.expect(db.cache.remove.callCount).to.equal(2);
-      chai.expect(db.cache.remove.args[1]).to.deep.equal(['purged-docs-some-other-user']);
+      chai.expect(db.cache.remove.args[1]).to.deep.equal([{ _id: 'purged-docs-some-other-user' }]);
 
       chai.expect(db.wipeCacheDb.callCount).to.equal(0);
 
-      db.cache.remove.rejects({ status: 404 });
-      onChangeCallback({ id: 'org.couchdb.user:whatever', changes: [{ rev: '1-something' }], seq: 4 });
-      chai.expect(db.cache.remove.callCount).to.equal(3);
-      chai.expect(db.cache.remove.args[2]).to.deep.equal(['purged-docs-whatever']);
+      db.cache.get.rejects({ status: 404 });
+      await onChangeCallback({ id: 'org.couchdb.user:whatever', changes: [{ rev: '1-something' }], seq: 4 });
+      chai.expect(db.cache.get.callCount).to.equal(3);
+      chai.expect(db.cache.remove.callCount).to.equal(2);
     });
 
-    it('should process users changes correctly', () => {
+    it('should process users changes correctly', async () => {
       const listen = service.__get__('listen');
       let onChangeCallback;
       recursiveOnUsers.withArgs('change').callsFake((e, callback) => {
@@ -125,22 +129,28 @@ describe('Purged Docs service', () => {
         promise.on = recursiveOnUsers;
         return promise;
       });
+      sinon.stub(db.cache, 'get').callsFake(id => ({ _id: id }));
       listen();
       chai.expect(onChangeCallback).to.be.a('function');
 
-      onChangeCallback({ id: 'random', seq: 1 });
+      await onChangeCallback({ id: 'random', seq: 1 });
       chai.expect(db.wipeCacheDb.callCount).to.equal(0);
 
-      onChangeCallback({ id: 'random-other', seq: 2 });
+      await onChangeCallback({ id: 'random-other', seq: 2 });
       chai.expect(db.cache.remove.callCount).to.equal(0);
 
-      onChangeCallback({ id: 'org.couchdb.user:rnduser', changes: [{ rev: '2-something' }], deleted: true, seq: 3 });
+      await onChangeCallback({
+        id: 'org.couchdb.user:rnduser',
+        changes: [{ rev: '2-something' }],
+        deleted: true,
+        seq: 3,
+      });
       chai.expect(db.cache.remove.callCount).to.equal(1);
-      chai.expect(db.cache.remove.args[0]).to.deep.equal(['purged-docs-rnduser']);
+      chai.expect(db.cache.remove.args[0]).to.deep.equal([{ _id: 'purged-docs-rnduser' }]);
 
-      onChangeCallback({ id: 'org.couchdb.user:some-other-user', changes: [{ rev: '1-something' }], seq: 4 });
+      await onChangeCallback({ id: 'org.couchdb.user:some-other-user', changes: [{ rev: '1-something' }], seq: 4 });
       chai.expect(db.cache.remove.callCount).to.equal(2);
-      chai.expect(db.cache.remove.args[1]).to.deep.equal(['purged-docs-some-other-user']);
+      chai.expect(db.cache.remove.args[1]).to.deep.equal([{ _id: 'purged-docs-some-other-user' }]);
 
       chai.expect(db.wipeCacheDb.callCount).to.equal(0);
     });
