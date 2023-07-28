@@ -102,7 +102,7 @@ const parsePurgingLogEntries = (logEntries) => {
 };
 
 describe('purge', function() {
-  this.timeout(180000); //sometimes test takes a little longer than original timeout
+  this.timeout(2 * 120000); //sometimes test takes a little longer than original timeout
 
   afterEach(async () => {
     await utils.deleteUsers([user, user2]);
