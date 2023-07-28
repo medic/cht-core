@@ -7,16 +7,13 @@ const getSubDirs = async (base) => {
   return dirs.map(dir => `${base}/${dir}`);
 };
 
-const compilePrimary = async () => {
-  const dirs = await getSubDirs('build/ddocs/medic-db');
-  await compile(dirs, 'build/ddocs/medic.json');
-};
-
 const compileStaging = async () => {
   await compile([ 'build/staging' ], 'build/staging.json');
 };
 
-const compileSecondary = async () => {
+const compilePrimary = async () => {
+  const dirs = await getSubDirs('build/ddocs/medic-db');
+  await compile(dirs, 'build/ddocs/medic.json');
   await compile([ 'build/ddocs/sentinel-db/sentinel' ], 'build/ddocs/sentinel.json');
   await compile([ 'build/ddocs/users-meta-db/users-meta' ], 'build/ddocs/users-meta.json');
   await compile([ 'build/ddocs/logs-db/logs' ], 'build/ddocs/logs.json');
@@ -25,7 +22,6 @@ const compileSecondary = async () => {
 const commands = {
   'primary': compilePrimary,
   'staging': compileStaging,
-  'secondary': compileSecondary,
 };
 
 const getCommand = () => {
