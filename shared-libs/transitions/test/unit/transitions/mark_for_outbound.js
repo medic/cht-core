@@ -82,8 +82,8 @@ describe('mark for outbound', () => {
         .then(() => {
           assert.equal(mockOutbound.send.callCount, 1);
           assert.equal(mockDb.sentinel.put.callCount, 1);
-          assert.equal(mockDb.sentinel.get.callCount, 0);
-          assert.equal(mockLogger.error.callCount, 1);
+          assert.equal(mockDb.sentinel.get.callCount, 1);
+          assert.equal(mockLogger.info.callCount, 1);
 
           assert.deepEqual(mockOutbound.send.args[0][0], config['test-push-1']);
           assert.deepEqual(mockOutbound.send.args[0][1], 'test-push-1');

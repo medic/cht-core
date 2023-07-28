@@ -385,10 +385,9 @@ describe('utils util', () => {
 
     it('should throw an error for bad cron expression', () => {
       const BAD_CRON_EXPRESSION = 'BAD_CRON_EXPRESSION';
-      const EXPECTED_ERROR = `isWithinTimeFrame: Invalid cron expression "${BAD_CRON_EXPRESSION}"`;
-    
-      expect(() => utils.isWithinTimeFrame(BAD_CRON_EXPRESSION)).to.throw(EXPECTED_ERROR);
-      expect(() => utils.isWithinTimeFrame(BAD_CRON_EXPRESSION, 60000)).to.throw(EXPECTED_ERROR);
+      
+      expect(utils.isWithinTimeFrame(BAD_CRON_EXPRESSION)).to.be.false;
+      expect(utils.isWithinTimeFrame(BAD_CRON_EXPRESSION, 60000)).to.be.false;
     });
   });
 });

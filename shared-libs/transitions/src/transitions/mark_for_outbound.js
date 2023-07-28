@@ -39,11 +39,6 @@ const markForOutbound = (change) => {
   const failedKeys = [];
 
   for (const [config, configKey] of relevantConfigs) {
-    if (config.cron && !utils.isValidCronExpression(config.cron)) {
-      logger.error(`Outbound Push failed: Invalid cron expression "${config.cron}" on outbound '${configKey}' config`);
-      continue;
-    }
-
     if (config.cron && !utils.isWithinTimeFrame(config.cron, TIME_FRAME_DURATION)) {
       failedKeys.push(configKey);
       continue;

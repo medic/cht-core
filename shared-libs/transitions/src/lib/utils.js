@@ -1,14 +1,14 @@
 const _ = require('lodash');
 const vm = require('vm');
-const db = require('../db');
+const cron = require('cron-validator');
 const moment = require('moment');
-const config = require('../config');
+const later = require('later');
 const taskUtils = require('@medic/task-utils');
 const registrationUtils = require('@medic/registration-utils');
 const messageUtils = require('@medic/message-utils');
+const db = require('../db');
+const config = require('../config');
 const logger = require('./logger');
-const later = require('later');
-const cron = require('cron-validator');
 
 /*
  * Get desired locale
@@ -246,7 +246,8 @@ module.exports = {
    */
   isWithinTimeFrame: (exp, frame = 0) => {
     if (!cron.isValidCron(exp)) {
-      throw new Error(`Invalid cron expression "${exp}"`);
+      logger.error(`Outbound push failed: invalid cron expression "${exp}"`);
+      return false;
     }
     
     const currentTime = Date.now();
@@ -257,8 +258,6 @@ module.exports = {
     return isWithinTimeBound(currentTime, nextDueTime, frame) 
         || isWithinTimeBound(currentTime, prevDueTime, frame);
   },
-
-  isValidCronExpression: cron.isValidCron,
 
   // given a report, returns whether it should be accepted as a valid form submission
   // a report is accepted if
