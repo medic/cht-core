@@ -315,7 +315,7 @@ describe('Facility Filter Component', () => {
         { _id: 'child2' },
       ]
     };
-    component.inlineFilter.selected.add(facility.children[0].children[0]);
+    component.inlineFilter.selected.add(facility.children[0].children!![0]);
     component.inlineFilter.selected.add(facility.children[1]);
 
     component.select(null, facility, component.inlineFilter);

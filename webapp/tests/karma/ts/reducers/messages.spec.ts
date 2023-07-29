@@ -11,7 +11,7 @@ describe('Messages Reducer', () => {
     state = {
       error: false,
       conversations: [],
-      selected: null,
+      selected: undefined,
     };
   });
 
@@ -20,8 +20,7 @@ describe('Messages Reducer', () => {
     const action = Actions.setConversations(data);
     const expectedState = {
       conversations: [{id: '124'}, {id: '567'}],
-      error: false,
-      selected: null
+      error: false
     };
 
     const result = messagesReducer(undefined, action);
@@ -33,8 +32,7 @@ describe('Messages Reducer', () => {
     const action = { type: 'UNKNOWN' };
     const expectedState = {
       conversations: [],
-      error: false,
-      selected: null
+      error: false
     };
 
     const result = messagesReducer(state, action);
@@ -47,8 +45,7 @@ describe('Messages Reducer', () => {
     const action = Actions.setConversations(data);
     const expectedState = {
       conversations: [{id: '567', date: 444}, {id: '124', date: 111}],
-      error: false,
-      selected: null
+      error: false
     };
 
     const result = messagesReducer(state, action);
@@ -76,8 +73,7 @@ describe('Messages Reducer', () => {
     const action = Actions.setMessagesError(data);
     const expectedState = {
       conversations: [],
-      error: true,
-      selected: null
+      error: true
     };
 
     const result = messagesReducer(state, action);
@@ -104,8 +100,7 @@ describe('Messages Reducer', () => {
     const action = GlobalActions.clearSelected();
     const expectedState = {
       conversations: [],
-      error: false,
-      selected: null
+      error: false
     };
     state.selected = {id: '124', date: 111};
 

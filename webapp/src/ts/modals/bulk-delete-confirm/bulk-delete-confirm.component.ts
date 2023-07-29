@@ -17,7 +17,7 @@ export class BulkDeleteConfirmComponent extends MmModalAbstract {
   totalDocsDeleted = 0;
   deleteComplete = false;
 
-  model = { docs: [], type: '' }; // assigned by bsModule
+  model = { docs: [] as any[], type: '' }; // assigned by bsModule
 
   constructor(
     bsModalRef: BsModalRef,

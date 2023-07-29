@@ -146,7 +146,7 @@ describe('MessagesContentComponent', () => {
       const updateSelectedConversationSpy = sinon.spy(MessagesActions.prototype, 'updateSelectedConversation');
 
       return component
-        .selectContact(id, type)
+        .selectContact(id, type)!!
         .then(() => {
           expect(lineageModelGeneratorService.contact.callCount).to.equal(1);
           expect(lineageModelGeneratorService.contact.getCall(0).args[0]).to.equal(id);

@@ -24,8 +24,8 @@ export class DateFilterComponent implements OnInit, OnDestroy, AbstractFilter, A
   inputLabel;
   error: string;
   dateRange = {
-    from: undefined,
-    to: undefined,
+    from: undefined as any,
+    to: undefined as any,
   };
 
   @Input() disabled;

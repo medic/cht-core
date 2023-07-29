@@ -105,7 +105,7 @@ describe('UnreadRecordsService', () => {
     }));
 
     it('should call the callback if a change happens', fakeAsync(() => {
-      const results = [];
+      const results: any[] = [];
       dbInstance.query.onCall(0).resolves({
         rows: [
           { key: 'report', value: 13 },
@@ -140,7 +140,7 @@ describe('UnreadRecordsService', () => {
     }));
 
     it('should update the count if the meta db is updated', fakeAsync(() => {
-      const results = [];
+      const results: any[] = [];
       dbInstance.query.onCall(0).resolves({
         rows: [
           { key: 'report', value: 13 },
@@ -176,7 +176,7 @@ describe('UnreadRecordsService', () => {
 
   describe('meta db cleanup', () => {
     it('should not delete if admin', fakeAsync(() => {
-      const errors = [];
+      const errors: any[] = [];
       dbInstance.query.onCall(0).resolves({
         rows: [
           { key: 'report', value: 13 },
@@ -224,8 +224,8 @@ describe('UnreadRecordsService', () => {
     }));
 
     it('should delete the read doc when a deletion happens', fakeAsync(() => {
-      const results = [];
-      const errors = [];
+      const results: any[] = [];
+      const errors: any[] = [];
       dbInstance.query.onCall(0).resolves({
         rows: [
           { key: 'report', value: 13 },

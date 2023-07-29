@@ -496,7 +496,7 @@ describe('Contacts component', () => {
 
     it('when paginating, does not modify the skip when it finds homeplace on subsequent pages #4085', fakeAsync(() => {
       const mockResults = (count, startAt = 0) => {
-        const result = [];
+        const result: { _id: string }[] = [];
         for (let i = startAt; i < startAt + count; i++) {
           result.push({ _id: `search-result${i}` });
         }
@@ -1101,7 +1101,7 @@ describe('Contacts component', () => {
       describe('uhc visits disabled', () => {
         describe('alpha default sorting', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
-            const searchResults = [];
+            const searchResults: { _id: string }[] = [];
             Array.apply(null, Array(5)).forEach((k, i) =>
               searchResults.push({ _id: i })
             );
@@ -1140,7 +1140,7 @@ describe('Contacts component', () => {
           it(
             'does require refreshing when sorting is `last_visited_date` and visit report is received',
             fakeAsync(() => {
-              const searchResults = [];
+              const searchResults: { _id: string }[] = [];
               Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);

@@ -8,7 +8,7 @@ describe('Target Aggregates Reducer', () => {
 
   beforeEach(() => {
     state = {
-      selected: null,
+      selected: undefined,
       targetAggregates: [],
       error: false,
       targetAggregatesLoaded: false,
@@ -20,8 +20,7 @@ describe('Target Aggregates Reducer', () => {
     const action = Actions.setTargetAggregates(data);
     const expectedState = {
       targetAggregates: [{id: '124'}, {id: '567'}],
-      error: false,
-      selected: null
+      error: false
     };
 
     const result = targetAggregatesReducer(undefined, action);
@@ -33,8 +32,7 @@ describe('Target Aggregates Reducer', () => {
     const action = {type: 'UNKNOWN'};
     const expectedState = {
       targetAggregates: [],
-      error: false,
-      selected: null
+      error: false
     };
 
     const result = targetAggregatesReducer(state, action);
@@ -47,8 +45,7 @@ describe('Target Aggregates Reducer', () => {
     const action = Actions.setTargetAggregates(data);
     const expectedState = {
       targetAggregates: [{id: '124'}, {id: '567'}],
-      error: false,
-      selected: null
+      error: false
     };
 
     const result = targetAggregatesReducer(state, action);
@@ -73,7 +70,7 @@ describe('Target Aggregates Reducer', () => {
 
   it('should set selected property to item in targetAggregates', () => {
     state = {
-      selected: null,
+      selected: undefined,
       targetAggregates: [{id: '124'}, {id: '567'}],
       error: false,
       targetAggregatesLoaded: false,
@@ -116,8 +113,7 @@ describe('Target Aggregates Reducer', () => {
     const action = Actions.setTargetAggregatesError(data);
     const expectedState = {
       targetAggregates: [],
-      error: true,
-      selected: null
+      error: true
     };
 
     const result = targetAggregatesReducer(state, action);

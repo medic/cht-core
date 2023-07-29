@@ -122,7 +122,7 @@ export class SearchService {
       });
   }
 
-  search(type, filters, options:any = {}, extensions:any = {}, docIds = undefined) {
+  search(type, filters, options:any = {}, extensions:any = {}, docIds: any[] | undefined = undefined) {
     return this.ngZone.runOutsideAngular(() => this._search(type, filters, options, extensions, docIds));
   }
 

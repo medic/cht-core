@@ -29,7 +29,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   fastActionList: FastAction[];
   loading = true;
   loadingContent = false;
-  conversations: { selected: boolean }[] = [];
+  conversations: Record<string, any>[] = [];
   error = false;
   currentLevel;
 
