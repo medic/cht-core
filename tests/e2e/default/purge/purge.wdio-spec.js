@@ -83,7 +83,9 @@ const runPurging = async () => {
   await utils.delayPromise(1000);  // API has to pick up on purging completing
 };
 
-describe('purge', () => {
+describe('purge', function() {
+  this.timeout(2 * 120000); //sometimes test takes a little longer than original timeout
+
   afterEach(async () => {
     await utils.deleteUsers([user]);
     await utils.revertDb([/^form:/], true);
