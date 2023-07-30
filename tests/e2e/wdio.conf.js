@@ -19,6 +19,7 @@ let testTile;
 const DEBUG = process.env.DEBUG_TEST;
 const DEFAULT_TIMEOUT = 12 * 1000;
 const DEBUG_TIMEOUT = 24 * 60 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
+const CHROME_OPTIONS = ['--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']; 
 
 const baseConfig = {
   //
@@ -85,8 +86,7 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG ? ['--headless', '--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors'] : 
-        ['--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']
+      args: DEBUG ? CHROME_OPTIONS : CHROME_OPTIONS.unshift('--headless')
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
