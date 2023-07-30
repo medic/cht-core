@@ -26,6 +26,7 @@ describe('ongoing replication', () => {
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
 
+    await sentinelUtils.skipToSeq();
     await sentinelUtils.waitForSentinel();
 
     await saveData(userAllowedDocs);
@@ -36,6 +37,7 @@ describe('ongoing replication', () => {
 
   after(async () => {
     await sentinelUtils.skipToSeq();
+    await sentinelUtils.waitForSentinel();
   });
 
   it('should download new documents ', async () => {
