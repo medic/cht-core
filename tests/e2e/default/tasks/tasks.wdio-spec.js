@@ -1,5 +1,5 @@
 const path = require('path');
-const chtConfUtils = require('../../../cht-conf-utils');
+const chtConfUtils = require('../../../../tests/utils/cht-conf');
 const utils = require('../../../utils');
 const sentinelUtils = require('../../../utils/sentinel');
 const loginPage = require('../../../page-objects/default/login/login.wdio.page');
