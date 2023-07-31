@@ -4,7 +4,7 @@ const uuid = require('uuid').v4;
 const moment = require('moment');
 const chai = require('chai');
 const defaultSettings = utils.getDefaultSettings();
-const testForm = require('./test-forms');
+const testForm = require('./test-stubs');
 
 const contacts = [
   {
