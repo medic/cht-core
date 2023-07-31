@@ -23,7 +23,6 @@ const saveData = async (hierarchy) => {
 
 describe('ongoing replication', () => {
   before(async () => {
-    await sentinelUtils.skipToSeq();
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
 
@@ -37,7 +36,6 @@ describe('ongoing replication', () => {
 
   after(async () => {
     await sentinelUtils.skipToSeq();
-    await sentinelUtils.waitForSentinel();
   });
 
   it('should download new documents ', async () => {
