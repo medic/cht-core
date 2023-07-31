@@ -4,7 +4,7 @@ const logger = require('./src/logger');
 const express = require('express');
 const morgan = require('morgan');
 const moment = require('moment');
-morgan.token('date', () => moment().format('YYYY-MM-DD HH:mm:ss'));
+morgan.token('date', () => moment().format(logger.DATE_FORMAT));
 const apiPort = process.env.API_PORT || 5988;
 
 let router;

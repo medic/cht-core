@@ -1,5 +1,6 @@
 const { createLogger, format, transports } = require('winston');
 const env = process.env.NODE_ENV || 'development';
+const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSS';
 
 const cleanUpErrorsFromSymbolProperties = (info) => {
   if (!info) {
@@ -67,9 +68,7 @@ const logger = createLogger({
           return info;
         })(),
         format.colorize(),
-        format.timestamp({
-          format: 'YYYY-MM-DD HH:mm:ss',
-        }),
+        format.timestamp({ format: DATE_FORMAT }),
         format.printf(info => `${info.timestamp} ${info.level}: ${info.message} ${info.stack ? info.stack : ''}`)
       ),
     }),
@@ -77,3 +76,4 @@ const logger = createLogger({
 });
 
 module.exports = logger;
+module.exports.DATE_FORMAT = DATE_FORMAT;
