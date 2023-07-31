@@ -146,7 +146,7 @@ describe('sms parser', () => {
   [['NP 20 +918750660880 Prajwol', '+918750660880'],
     ['NP 20 +254773087889 Prajwol', '+254773087889'],
     ['NP 20 +255712262987 Prajwol', '+255712262987']].forEach(phoneNumerWithParsed => {
-    it('returns parsed number if valid phone of another the region', () => {
+    it(`returns parsed number if valid phone of another the region: ${phoneNumerWithParsed[0]}`, () => {
       const doc = { message: phoneNumerWithParsed[0] };
       const def = definitions.forms.NP;
       sinon.stub(config, 'getAll').returns({
