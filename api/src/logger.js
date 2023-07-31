@@ -67,7 +67,6 @@ const logger = createLogger({
           info.level = info.level.toUpperCase();
           return info;
         })(),
-        format.colorize(),
         format.timestamp({ format: DATE_FORMAT }),
         format.printf(info => `${info.timestamp} ${info.level}: ${info.message} ${info.stack ? info.stack : ''}`)
       ),
