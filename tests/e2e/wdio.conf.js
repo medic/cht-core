@@ -16,10 +16,9 @@ const browserLogPath = path.join('tests', 'logs', 'browser.console.log');
 const logLevels = ['error', 'warning', 'debug'];
 const existingFeedBackDocIds = [];
 let testTile;
-const DEBUG = process.env.DEBUG_TEST;
+const DEBUG = process.env.DEBUG;
 const DEFAULT_TIMEOUT = 12 * 1000;
 const DEBUG_TIMEOUT = 24 * 60 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
-const CHROME_OPTIONS = ['--disable-gpu', '--deny-permission-prompts', '--ignore-certificate-errors']; 
 
 const baseConfig = {
   //
@@ -86,7 +85,8 @@ const baseConfig = {
     browserName: 'chrome',
     acceptInsecureCerts: true,
     'goog:chromeOptions': {
-      args: DEBUG ? CHROME_OPTIONS : CHROME_OPTIONS.unshift('--headless')
+      args: DEBUG ? ['disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']: 
+        ['headless', 'disable-gpu', 'deny-permission-prompts', 'ignore-certificate-errors']
     }
 
     // If outputDir is provided WebdriverIO can capture driver session logs
