@@ -4,6 +4,7 @@ const uuid = require('uuid').v4;
 const moment = require('moment');
 const chai = require('chai');
 const defaultSettings = utils.getDefaultSettings();
+const testForm = require('./test-forms');
 
 const contacts = [
   {
@@ -99,32 +100,6 @@ describe('registration', () => {
 
   it('should add valid phone to patient doc', () => {
     const patient_phone = '+9779841123123';
-    const settings = {
-      transitions: { registration: true },
-      registrations: [{
-        form: 'FORM-A',
-        events: [{
-          name: 'on_create',
-          trigger: 'add_phone_number',
-          params: 'phone_number',
-          bool_expr: 'doc.fields.phone_number'
-        }, {
-          name: 'on_create',
-          trigger: 'add_patient',
-          params: '',
-          bool_expr: ''
-        }],
-        messages: [{
-          recipient: 'reporting_unit',
-          event_type: 'report_accepted',
-          message: [{
-            locale: 'en',
-            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
-          }],
-        }],
-      }],
-      forms: { 'FORM-A': {} }
-    };
     const patientNameAndPhone = { // has just the `patient_name`and phone so should create this person
       _id: uuid(),
       type: 'data_record',
@@ -146,7 +121,7 @@ describe('registration', () => {
     const docIds = getIds(docs);
     let newPatientId;
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(testForm.forms.NP, 'sentinel')
       .then(utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
@@ -171,7 +146,6 @@ describe('registration', () => {
         return getContactsByReference([newPatientId, 'venus']);
       })
       .then(patients => {
-        console.log(patients);
         chai.expect(patients.rows[0].doc).to.deep.include({
           patient_id: newPatientId,
           phone: patient_phone,
@@ -187,32 +161,6 @@ describe('registration', () => {
   it('should not create patient from report doc when provided invalid phone', () => {
     const patient_phone = '+9779666666666';
     const patient_id =uuid();
-    const settings = {
-      transitions: { registration: true },
-      registrations: [{
-        form: 'FORM-A',
-        events: [{
-          name: 'on_create',
-          trigger: 'add_phone_number',
-          params: 'phone_number',
-          bool_expr: 'doc.fields.phone_number'
-        }, {
-          name: 'on_create',
-          trigger: 'add_patient',
-          params: '',
-          bool_expr: ''
-        }],
-        messages: [{
-          recipient: 'reporting_unit',
-          event_type: 'report_accepted',
-          message: [{
-            locale: 'en',
-            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
-          }],
-        }],
-      }],
-      forms: { 'FORM-A': {} }
-    };
 
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
       _id: patient_id,
@@ -236,7 +184,7 @@ describe('registration', () => {
     const docIds = getIds(docs);
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(testForm.forms.NP, 'sentinel')
       .then(utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
@@ -256,33 +204,6 @@ describe('registration', () => {
 
   it('should fail transition on invalid phone', () => {
     const patient_phone = '+9779666666666';
-    const settings = {
-      transitions: { registration: true },
-      registrations: [{
-        form: 'FORM-A',
-        events: [{
-          name: 'on_create',
-          trigger: 'add_phone_number',
-          params: 'phone_number',
-          bool_expr: 'doc.fields.phone_number'
-        }, {
-          name: 'on_create',
-          trigger: 'add_patient',
-          params: '',
-          bool_expr: ''
-        }],
-        messages: [{
-          recipient: 'reporting_unit',
-          event_type: 'report_accepted',
-          message: [{
-            locale: 'en',
-            content: 'Patient {{patient_name}} ({{patient_id}}) added to {{clinic.name}}'
-          }],
-        }],
-      }],
-      forms: { 'FORM-A': {} }
-    };
-
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
       _id: uuid(),
       type: 'data_record',
@@ -305,7 +226,7 @@ describe('registration', () => {
     const docIds = getIds(docs);
 
     return utils
-      .updateSettings(settings, 'sentinel')
+      .updateSettings(testForm.forms.NP, 'sentinel')
       .then(utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))

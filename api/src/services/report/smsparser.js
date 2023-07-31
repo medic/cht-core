@@ -216,7 +216,7 @@ const fieldParsers = {
     if (formattedAndValidatedPhone) {
       return formattedAndValidatedPhone;
     } else {
-      logger.error(`The provided phone number ${raw} is invalid`);
+      logger.warn(`The provided phone number ${raw} is invalid`);
       return null;
     }
   }
