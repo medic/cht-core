@@ -6,8 +6,8 @@ const REPORTS_LIST_ID = '#reports-list';
 const SELECT_ALL_CHECKBOX = `${REPORTS_LIST_ID} .select-all input[type="checkbox"]`;
 const REPORT_BODY_DETAILS_SELECTOR = '#reports-content .report-body .details';
 const reportBodyDetails = () => $(REPORT_BODY_DETAILS_SELECTOR);
-const reportTasks = () =>  $(`${REPORT_BODY_DETAILS_SELECTOR} .scheduled-tasks`);
-const reportTargetFilter = () =>  $(`${REPORT_BODY_DETAILS_SELECTOR} [test-id="field-target-filter"]`);
+const reportTasks = () => $(`${REPORT_BODY_DETAILS_SELECTOR} .scheduled-tasks`);
+const reportCaseIdFilter = () => $(`${REPORT_BODY_DETAILS_SELECTOR} [test-id*=".case_id"]`);
 const REPORT_BODY = '#reports-content .report-body';
 const reportBody = () => $(REPORT_BODY);
 const noReportSelectedLabel = () => $('.empty-selection');
@@ -317,8 +317,8 @@ const getReportDetailFieldValueByLabel = async (label) => {
 
 const clickOnCaseId = async () => {
   await reportBodyDetails().waitForDisplayed();
-  await reportTargetFilter().waitForClickable();
-  await reportTargetFilter().click();
+  await reportCaseIdFilter().waitForClickable();
+  await reportCaseIdFilter().click();
 };
 
 const getRawReportContent = async () => {

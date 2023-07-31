@@ -40,34 +40,37 @@ describe('Reports Search', async () => {
   });
 
   it('should return results matching the search term and then return all data when clearing search', async () => {
+    const [ sittuSMSPregnancy, potuSMSPregnancy, sittuPregnancy, potuPregnancy ] = reportDocs;
     await commonPage.goToReports();
     // Asserting first load reports
-    expect((await reportsPage.reportsListDetails()).length).to.equal(4);
+    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
 
     await searchPage.performSearch('sittu');
     await commonPage.waitForLoaders();
     expect((await reportsPage.reportsListDetails()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(reportDocs[0].id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(reportDocs[2].id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(sittuSMSPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
 
     await searchPage.clearSearch();
-    expect((await reportsPage.reportsListDetails()).length).to.equal(4);
-    expect(await (await reportsPage.reportByUUID(reportDocs[0].id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(reportDocs[1].id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(reportDocs[2].id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(reportDocs[3].id)).isDisplayed()).to.be.true;
+    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
+    expect(await (await reportsPage.reportByUUID(sittuSMSPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(potuSMSPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(potuPregnancy.id)).isDisplayed()).to.be.true;
   });
 
   it('should return results when searching by case_id', async () => {
+    const sittuPregnancy = reportDocs[2];
+    const potuPregnancy = reportDocs[3];
     await commonPage.goToReports();
-    await reportsPage.openReport(reportDocs[2].id);
     // Asserting first load reports
-    expect((await reportsPage.reportsListDetails()).length).to.equal(4);
+    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
 
+    await reportsPage.openReport(sittuPregnancy.id);
     await reportsPage.clickOnCaseId();
     await commonPage.waitForLoaders();
     expect((await reportsPage.reportsListDetails()).length).to.equal(2);
-    expect(await (await reportsPage.reportByUUID(reportDocs[2].id)).isDisplayed()).to.be.true;
-    expect(await (await reportsPage.reportByUUID(reportDocs[3].id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(potuPregnancy.id)).isDisplayed()).to.be.true;
   });
 });
