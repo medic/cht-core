@@ -419,7 +419,8 @@ const deleteAllDocs = (except) => {
             }
           })
       ]);
-    });
+    })
+    .then(() => require('@utils/sentinel').skipToSeq());
 };
 
 // Update both ddocs, to avoid instability in tests.
