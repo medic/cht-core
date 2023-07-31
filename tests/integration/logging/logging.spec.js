@@ -13,7 +13,7 @@ const validLog = (line, before, after) => {
 describe('logging', () => {
   it('logs should include formatted date in API and Sentinel', async () => {
     const before = moment.utc();
-    await utils.delayPromise(500); // dates are not exact
+    await utils.delayPromise(1000); // dates are not exact
 
     const collectApiLogs = await utils.collectApiLogs(/.*/);
     const collectSentinelLogs = await utils.collectApiLogs(/.*/);
@@ -23,7 +23,7 @@ describe('logging', () => {
     const apiLogs = (await collectApiLogs()).filter(log => log.length);
     const sentinelLogs = (await collectSentinelLogs()).filter(log => log.length);
 
-    await utils.delayPromise(500); // dates are not exact
+    await utils.delayPromise(1000); // dates are not exact
     const after = moment.utc();
 
     expect(apiLogs.length).to.be.greaterThan(0);
