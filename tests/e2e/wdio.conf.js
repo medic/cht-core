@@ -17,8 +17,8 @@ const logLevels = ['error', 'warning', 'debug'];
 const existingFeedBackDocIds = [];
 let testTile;
 const DEBUG = process.env.DEBUG;
-const DEFAULT_TIMEOUT = 12 * 1000;
-const DEBUG_TIMEOUT = 24 * 60 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
+const DEFAULT_TIMEOUT = 2 * 60 * 1000;
+const DEBUG_TIMEOUT = 10 * 60 * 1000; //timeout in debug mode, allows more interaction with browser after test
 
 const baseConfig = {
   //
@@ -47,7 +47,7 @@ const baseConfig = {
   //
   
   suites: {
-    all: ['**/*.wdio-spec.js']
+    all: ['**/.wdio-spec.js']
   },
   // Patterns to exclude.
   exclude: [
@@ -175,7 +175,7 @@ const baseConfig = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: DEBUG ? DEFAULT_TIMEOUT : DEBUG_TIMEOUT,
+    timeout: DEBUG ? DEBUG_TIMEOUT : DEFAULT_TIMEOUT,
     retries: DEBUG ? 0 : 5,
   },
   //
