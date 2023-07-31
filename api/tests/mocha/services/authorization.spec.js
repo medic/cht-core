@@ -2,7 +2,6 @@ const db = require('../../../src/db');
 const sinon = require('sinon');
 const config = require('../../../src/config');
 const auth = require('../../../src/auth');
-const tombstoneUtils = require('@medic/tombstone-utils');
 const viewMapUtils = require('@medic/view-map-utils');
 const rewire = require('rewire');
 const service = rewire('../../../src/services/authorization');
@@ -28,8 +27,6 @@ describe('Authorization service', () => {
   afterEach(() => sinon.restore());
 
   beforeEach(() => {
-    sinon.stub(tombstoneUtils, 'extractStub').callsFake(t => ({ id: t.replace('tombstone', 'deleted')}));
-    sinon.stub(tombstoneUtils, 'isTombstoneId').returns(false);
     sinon.stub(config, 'get');
     sinon.stub(auth, 'hasAllPermissions');
     sinon.stub(viewMapUtils, 'getViewMapFn').returns(sinon.stub());
@@ -126,39 +123,6 @@ describe('Authorization service', () => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0][0].should.equal('medic/contacts_by_depth');
           db.medic.query.args[0][1].should.deep.equal({ keys: [[ 'facilityId' ]] });
-        });
-    });
-
-    it('extracts original docId from tombstone ID, pushes ids and values to subject list', () => {
-      auth.hasAllPermissions.returns(false);
-      config.get.returns(false);
-      service.__get__('getDepth').returns({ contactDepth: -1, reportDepth: -1 });
-      tombstoneUtils.isTombstoneId.withArgs('tombstone-1').returns(true);
-      tombstoneUtils.isTombstoneId.withArgs('tombstone-2').returns(true);
-      tombstoneUtils.isTombstoneId.withArgs('tombstone-3').returns(true);
-
-      db.medic.query.withArgs('medic/contacts_by_depth').resolves({
-        rows: [
-          { id: 1, key: 'key', value: 's1' },
-          { id: 2, key: 'key', value: 's2' },
-          { id: 'tombstone-1', key: 'key', value: 's3' },
-          { id: 'tombstone-2', key: 'key', value: 's4' },
-          { id: 'tombstone-3', key: 'key', value: 's5' }
-        ]
-      });
-
-      return service
-        .getAuthorizationContext({ facility_id: 'facilityId', name: 'username' })
-        .then(result => {
-          tombstoneUtils.extractStub.callCount.should.equal(3);
-          tombstoneUtils.extractStub.args.should.deep.equal([
-            ['tombstone-1'], ['tombstone-2'], ['tombstone-3']
-          ]);
-          result.subjectIds.should.have.members([
-            1, 2, 'deleted-1', 'deleted-2', 'deleted-3', '_all',
-            's1', 's2', 's3', 's4', 's5',
-            'org.couchdb.user:username',
-          ]);
         });
     });
 
@@ -320,36 +284,6 @@ describe('Authorization service', () => {
         });
     });
 
-    it('should skip tombstones of documents that were re-added', () => {
-      const subjectIds = ['subject'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows: [
-          { id: 'r1', key: 'subject', value: {} },
-          { id: 'r1_tombstone', key: 'subject', value: {} }, // skipped cause r1 winning is not deleted
-          { id: 'r2', key: 'subject', value: {} },
-          { id: 'r2_tombstone', key: 'subject', value: {} },  // skipped cause r2 winning is not deleted
-          { id: 'r3_tombstone', key: 'subject', value: {} },
-          { id: 'r4_tombstone', key: 'subject', value: {} },
-        ]});
-
-      tombstoneUtils.isTombstoneId.callsFake(id => id.endsWith('tombstone'));
-      tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('_tombstone', '') }));
-
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' }
-        })
-        .then(result => {
-          result.should.deep.equal([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'r2',
-            'r3_tombstone', 'r4_tombstone'
-          ]);
-        });
-    });
-
     it('should not return duplicates', () => {
       const subjectIds = ['subject', 'contact', 'parent'];
       db.medic.query
@@ -363,7 +297,6 @@ describe('Authorization service', () => {
           { id: 'r2', key: 'parent', value: {} },
         ]});
 
-      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone'));
       return service
         .getAllowedDocIds({
           subjectIds,
@@ -471,73 +404,8 @@ describe('Authorization service', () => {
         });
     });
 
-    it('should include tombstones and tasks if no options are passed', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'r3', key: 'contact', value: { type: 'person' } },
-              { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-            ]
-        });
-
-      return service
-        .getAllowedDocIds({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: 'parent', contact_id: 'contact' },
-          subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-        })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'task1', 'ts-r2', 'ts-task3', 'r3', 'task2', 'ts-r5',
-          ]);
-        });
-    });
-
-    it('should exclude tombstones if param is passed', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'r3', key: 'contact', value: { type: 'person' } },
-              { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-            ]
-        });
-
-      const ctx = {
-        subjectIds,
-        userCtx: { name: 'user', facility_id: 'parent', contact_id: 'contact' },
-        subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-      };
-
-      return service
-        .getAllowedDocIds(ctx, { includeTombstones: false })
-        .then(result => {
-          result.should.have.members([
-            '_design/medic-client', 'org.couchdb.user:user',
-            'r1', 'task1', 'r3', 'task2',
-          ]);
-        });
-    });
-
     it('should exclude tasks if param is passed', () => {
       const subjectIds = ['contact', 'parent', 'place'];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
       db.medic.query
         .withArgs('medic/docs_by_replication_key')
         .resolves({ rows:
@@ -565,36 +433,6 @@ describe('Authorization service', () => {
             '_design/medic-client', 'org.couchdb.user:user',
             'r1', 'ts-r2', 'r3', 'ts-r5',
           ]);
-        });
-    });
-
-    it('should exclude tasks and tombstones if param is passed', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'r3', key: 'contact', value: { type: 'person' } },
-              { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-              { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-            ]
-        });
-
-      const ctx = {
-        subjectIds,
-        userCtx: { name: 'user', facility_id: 'parent', contact_id: 'contact' },
-        subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-      };
-
-      return service
-        .getAllowedDocIds(ctx, { includeTasks: false, includeTombstones: false })
-        .then(result => {
-          result.should.have.members([ '_design/medic-client', 'org.couchdb.user:user', 'r1', 'r3' ]);
         });
     });
   });
@@ -775,44 +613,6 @@ describe('Authorization service', () => {
           ]);
         });
     });
-
-    it('should include all tombstones', () => {
-      const subjectIds = ['contact', 'parent', 'place'];
-      db.medic.query
-        .withArgs('medic/docs_by_replication_key')
-        .resolves({ rows:
-            [
-              { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'r1', key: 'parent', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'r2', key: 'parent', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'r3', key: 'contact', value: { submitter: 'contact', type: 'data_record' } },
-              { id: 'r4', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-              { id: 'r5', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-            ]
-        });
-
-      tombstoneUtils.isTombstoneId.returns(true);
-
-      return service
-        .getDocsByReplicationKey({
-          subjectIds,
-          userCtx: { name: 'user', facility_id: 'parent', contact_id: 'contact' },
-          subjectsDepth: { 'parent': 0, 'contact': 1, 'place': 1 },
-        })
-        .then(result => {
-          tombstoneUtils.isTombstoneId.callCount.should.equal(7);
-          result.should.have.deep.members([
-            { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-            { id: 'r1', key: 'parent', value: { submitter: 'p', type: 'data_record' } },
-            { id: 'r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-            { id: 'r2', key: 'parent', value: { submitter: 'contact', type: 'data_record' } },
-            { id: 'r3', key: 'contact', value: { submitter: 'contact', type: 'data_record' } },
-            { id: 'r4', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-            { id: 'r5', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-          ]);
-        });
-    });
   });
 
   describe('filterAllowedDocIds', () => {
@@ -820,26 +620,6 @@ describe('Authorization service', () => {
       const authCtx = { userCtx: { name: 'joe' } };
       service.filterAllowedDocIds(authCtx, []).should.deep.equal([
         '_design/medic-client', 'org.couchdb.user:joe'
-      ]);
-    });
-
-    it('should skip tombstones of documents that were re-added', () => {
-      const docsByReplicationKey = [
-        { id: 'r1', key: 'subject', value: {} },
-        { id: 'r1_tombstone', key: 'subject', value: {} }, // skipped cause r1 winning is not deleted
-        { id: 'r2', key: 'subject', value: {} },
-        { id: 'r2_tombstone', key: 'subject', value: {} },  // skipped cause r2 winning is not deleted
-        { id: 'r3_tombstone', key: 'subject', value: {} },
-        { id: 'r4_tombstone', key: 'subject', value: {} },
-      ];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.endsWith('tombstone'));
-      tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('_tombstone', '') }));
-
-      const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
-      result.should.deep.equal([
-        '_design/medic-client', 'org.couchdb.user:user',
-        'r1', 'r2',
-        'r3_tombstone', 'r4_tombstone'
       ]);
     });
 
@@ -852,52 +632,26 @@ describe('Authorization service', () => {
         { id: 'r3', key: 'contact', value: {} },
         { id: 'r2', key: 'parent', value: {} },
       ];
-      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone'));
       const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
       result.should.deep.equal(['_design/medic-client', 'org.couchdb.user:user', 'r1', 'r2', 'r3']);
     });
 
-    it('should include tombstones and tasks if no options are passed', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
+    it('should include tasks if no options are passed', () => {
       const docsByReplicationKey = [
         { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
         { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-        { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
         { id: 'r3', key: 'contact', value: { type: 'person' } },
         { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
       ];
 
       const result = service.filterAllowedDocIds({ userCtx: { name: 'user' } }, docsByReplicationKey);
       result.should.have.members([
         '_design/medic-client', 'org.couchdb.user:user',
-        'r1', 'task1', 'ts-r2', 'ts-task3', 'r3', 'task2', 'ts-r5',
-      ]);
-    });
-
-    it('should exclude tombstones if param is passed', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
-      const docsByReplicationKey = [
-        { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-        { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-        { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'r3', key: 'contact', value: { type: 'person' } },
-        { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-      ];
-
-      const ctx = { userCtx: { name: 'user' }};
-      const result = service.filterAllowedDocIds(ctx, docsByReplicationKey, { includeTombstones: false });
-      result.should.have.members([
-        '_design/medic-client', 'org.couchdb.user:user',
-        'r1', 'task1', 'r3', 'task2',
+        'r1', 'task1', 'r3', 'task2'
       ]);
     });
 
     it('should exclude tasks if param is passed', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
       const docsByRepKey = [
         { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
         { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
@@ -914,23 +668,6 @@ describe('Authorization service', () => {
         '_design/medic-client', 'org.couchdb.user:user',
         'r1', 'ts-r2', 'r3', 'ts-r5',
       ]);
-    });
-
-    it('should exclude tasks and tombstones if param is passed', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.startsWith('ts-'));
-      const docsByRepKey = [
-        { id: 'r1', key: 'place', value: { submitter: 'p', type: 'data_record' } },
-        { id: 'task1', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r2', key: 'place', value: { submitter: 'contact', type: 'data_record' } },
-        { id: 'ts-task3', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'r3', key: 'contact', value: { type: 'person' } },
-        { id: 'task2', key: 'org.couchdb.user:user', value: { type: 'task' } },
-        { id: 'ts-r5', key: 'place', value: { type: 'clinic' } },
-      ];
-
-      const ctx = { userCtx: { name: 'user' } };
-      const result = service.filterAllowedDocIds(ctx, docsByRepKey, { includeTasks: false, includeTombstones: false });
-      result.should.have.members([ '_design/medic-client', 'org.couchdb.user:user', 'r1', 'r3' ]);
     });
   });
 
@@ -1592,41 +1329,6 @@ describe('Authorization service', () => {
         });
       });
     });
-
-    describe('isAuthChange', () => {
-      it('returns true if doc is own user Settings doc, false otherwise', () => {
-        const userCtx = { name: 'user', facility_id: 'facility_id', contact_id: 'contact_id' };
-
-        service.isAuthChange('org.couchdb.user:user', userCtx, { couchDbUser: true }).should.equal(true);
-        service.isAuthChange('org.couchdb.user:otheruser', userCtx, { couchDbUser: true }).should.equal(false);
-        service.isAuthChange('org.couchdb.user:user', userCtx, { couchDbUser: false }).should.equal(false);
-        service.isAuthChange('org.couchdb.user:user', userCtx, {}).should.equal(false);
-        service.isAuthChange('org.couchdb.user:user', userCtx, { some: 'thing' }).should.equal(false);
-        service.isAuthChange('org.couchdb.user:user', userCtx, { couchDbUser: undefined }).should.equal(false);
-        service.isAuthChange('someid', userCtx, { couchDbUser: 'aaaa'}).should.equal(false);
-      });
-    });
-  });
-
-  describe('excludeTombstoneIds', () => {
-    it('excludes tombstone IDS', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone') !== -1);
-      service.excludeTombstoneIds(['1', '2', 'tombstone-a', 'b-tombstone', '3', '5'])
-        .should.deep.equal(['1', '2', '3', '5']);
-      tombstoneUtils.isTombstoneId.callCount.should.equal(6);
-    });
-  });
-
-  describe('convertTombstoneIds', () => {
-    it('converts tombstone ids to their corresponding doc ids', () => {
-      tombstoneUtils.isTombstoneId.callsFake(id => id.indexOf('tombstone') !== -1);
-      tombstoneUtils.extractStub.callsFake(id => ({ id: id.replace('tombstone', '') }));
-
-      service.convertTombstoneIds(['1', '2', 'tombstone-a', 'b-tombstone', '3', '5'])
-        .should.deep.equal(['1', '2', '-a', 'b-', '3', '5']);
-      tombstoneUtils.isTombstoneId.callCount.should.equal(6);
-      tombstoneUtils.extractStub.callCount.should.equal(2);
-    });
   });
 
   describe('filterAllowedDocs', () => {
@@ -1986,7 +1688,6 @@ describe('Authorization service', () => {
       db.medic.query.resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs');
 
-      // no tombstones
       db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.any })).resolves({ rows: [] });
       db.medic.allDocs
         .withArgs(sinon.match({ keys: sinon.match.array }))
@@ -2041,19 +1742,15 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-              ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
-              ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
-              ['shortcode', 'c3'], ['tombstone-shortcode', 'c3'],
-              ['shortcode', 'c4'], ['tombstone-shortcode', 'c4'],
-              ['shortcode', 'c5'], ['tombstone-shortcode', 'c5'],
+              ['shortcode', 'c1'],
+              ['shortcode', 'c2'],
+              ['shortcode', 'c3'],
+              ['shortcode', 'c4'],
+              ['shortcode', 'c5'],
             ] }
           ]);
-          db.medic.allDocs.callCount.should.equal(6);
+          db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0].should.deep.equal([{ keys: ['c1', 'c2', 'c3', 'c4', 'c5'], include_docs: true }]);
-          ['c1', 'c2', 'c3', 'c4', 'c5'].forEach((id, idx) => {
-            db.medic.allDocs.args[idx + 1]
-              .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-          });
 
           contactsByDepth.callCount.should.equal(5);
           contactsByDepth.args.should.deep.equal([ [c1], [c2], [c3], [c4], [c5]]);
@@ -2212,24 +1909,20 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-              ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
-              ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
-              ['shortcode', 'patient2'], ['tombstone-shortcode', 'patient2'],
-              ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
-              ['shortcode', 'patient3doc'], ['tombstone-shortcode', 'patient3doc'],
-              ['shortcode', 'patient4doc'], ['tombstone-shortcode', 'patient4doc'],
-              ['shortcode', 'c3'], ['tombstone-shortcode', 'c3'],
+              ['shortcode', 'patient1'],
+              ['shortcode', 'c1'],
+              ['shortcode', 'patient2'],
+              ['shortcode', 'c2'],
+              ['shortcode', 'patient3doc'],
+              ['shortcode', 'patient4doc'],
+              ['shortcode', 'c3'],
             ]}
           ]);
-          db.medic.allDocs.callCount.should.equal(8);
+          db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0].should.deep.equal([{
             keys: ['patient1doc', 'c1', 'patient2doc', 'c2', 'patient3doc', 'patient4doc', 'c3'],
             include_docs: true
           }]);
-          [ 'patient1doc', 'c1', 'patient2doc', 'c2', 'patient3doc', 'patient4doc', 'c3'].forEach((id, idx) => {
-            db.medic.allDocs.args[idx + 1]
-              .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-          });
 
           contactsByDepth.callCount.should.equal(7);
           docsByReplicationKey.callCount.should.equal(7);
@@ -2352,25 +2045,21 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-              ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
-              ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
-              ['shortcode', 'p1'], ['tombstone-shortcode', 'p1'],
-              ['shortcode', 'facility_id'], ['tombstone-shortcode', 'facility_id'],
-              ['shortcode', 'patient2'], ['tombstone-shortcode', 'patient2'],
-              ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
-              ['shortcode', 'p2'], ['tombstone-shortcode', 'p2'],
-              ['shortcode', 'p3'], ['tombstone-shortcode', 'p3'],
+              ['shortcode', 'patient1'],
+              ['shortcode', 'c1'],
+              ['shortcode', 'p1'],
+              ['shortcode', 'facility_id'],
+              ['shortcode', 'patient2'],
+              ['shortcode', 'c2'],
+              ['shortcode', 'p2'],
+              ['shortcode', 'p3'],
             ]}
           ]);
-          db.medic.allDocs.callCount.should.equal(9);
+          db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0].should.deep.equal([{
             keys: ['patient1doc', 'c1', 'p1', 'facility_id', 'patient2doc', 'c2', 'p2', 'p3'],
             include_docs: true
           }]);
-          ['patient1doc', 'c1', 'p1', 'facility_id', 'patient2doc', 'c2', 'p2', 'p3'].forEach((id, idx) => {
-            db.medic.allDocs.args[idx + 1]
-              .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-          });
 
           contactsByDepth.callCount.should.equal(8);
           docsByReplicationKey.callCount.should.equal(8);
@@ -2497,19 +2186,15 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-              ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
-              ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
-              ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
-              ['shortcode', 'patient2'], ['tombstone-shortcode', 'patient2'],
+              ['shortcode', 'c1'],
+              ['shortcode', 'c2'],
+              ['shortcode', 'patient1'],
+              ['shortcode', 'patient2'],
             ]}
           ]);
-          db.medic.allDocs.callCount.should.equal(5);
+          db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0]
             .should.deep.equal([{ keys: ['c1', 'c2', 'patient1doc', 'patient2doc'], include_docs: true }]);
-          ['c1', 'c2', 'patient1doc', 'patient2doc'].forEach((id, idx) => {
-            db.medic.allDocs.args[idx + 1]
-              .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-          });
 
           contactsByDepth.callCount.should.equal(4);
           docsByReplicationKey.callCount.should.equal(4);
@@ -2634,19 +2319,15 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-              ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
-              ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
+              ['shortcode', 'patient1'],
+              ['shortcode', 'c1'],
             ]}
           ]);
-          db.medic.allDocs.callCount.should.equal(3);
+          db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0].should.deep.equal([{
             keys: ['patient1doc', 'c1'],
             include_docs: true
           }]);
-          ['patient1doc', 'c1'].forEach((id, idx) => {
-            db.medic.allDocs.args[idx + 1]
-              .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-          });
 
           contactsByDepth.callCount.should.equal(2);
           docsByReplicationKey.callCount.should.equal(2);
@@ -2753,21 +2434,17 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-              ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
-              ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
-              ['shortcode', 'p1'], ['tombstone-shortcode', 'p1'],
-              ['shortcode', 'facility_id'], ['tombstone-shortcode', 'facility_id'],
+              ['shortcode', 'patient1'],
+              ['shortcode', 'c1'],
+              ['shortcode', 'p1'],
+              ['shortcode', 'facility_id'],
             ]}
           ]);
-          db.medic.allDocs.callCount.should.equal(5);
+          db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0].should.deep.equal([{
             keys: ['patient1doc', 'c1', 'p1', 'facility_id'],
             include_docs: true
           }]);
-          ['patient1doc', 'c1', 'p1', 'facility_id'].forEach((id, idx) => {
-            db.medic.allDocs.args[idx + 1]
-              .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-          });
 
           contactsByDepth.callCount.should.equal(4);
           docsByReplicationKey.callCount.should.equal(4);
@@ -2828,7 +2505,6 @@ describe('Authorization service', () => {
       db.medic.query.resolves({ rows: [] });
       sinon.stub(db.medic, 'allDocs');
 
-      // no tombstones
       db.medic.allDocs.withArgs(sinon.match({ start_key: sinon.match.any })).resolves({ rows: [] });
       db.medic.allDocs
         .withArgs(sinon.match({ keys: sinon.match.array }))
@@ -2865,16 +2541,12 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-              ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
-              ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
+              ['shortcode', 'c1'],
+              ['shortcode', 'c2'],
             ] }
           ]);
-          db.medic.allDocs.callCount.should.equal(3);
+          db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0].should.deep.equal([{ keys: ['c1', 'c2'], include_docs: true }]);
-          ['c1', 'c2'].forEach((id, idx) => {
-            db.medic.allDocs.args[idx + 1]
-              .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-          });
 
           contactsByDepth.callCount.should.equal(2);
           contactsByDepth.args.should.deep.equal([ [c1], [c2] ]);
@@ -2888,659 +2560,6 @@ describe('Authorization service', () => {
             '123456': 2,
           });
         });
-    });
-
-    describe('should return correct subject ids when dealing with tombstones', () => {
-      it('deleted contacts', () => {
-        const docObjs = [
-          { // allowed with shortcode
-            doc: {
-              _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } },
-              patient_id: 'contact1', _deleted: true
-            },
-            viewResults: {
-              contactsByDepth: [
-                { key: ['c1'], value: 'contact1' },
-                { key: ['p1'], value: 'contact1' },
-                { key: ['facility_id'], value: 'contact1' },
-              ],
-              replicationKeys: [{ key: 'c1', value: {  }}]
-            },
-          },
-          { // allowed without shortcode
-            doc: { _id: 'c2', type: 'clinic', parent: { _id: 'p2', parent: { _id: 'facility_id' } }, _deleted: true },
-            viewResults: {
-              contactsByDepth: [
-                { key: ['c2'], value: undefined },
-                { key: ['p1'], value: undefined },
-                { key: ['facility_id'], value: undefined },
-              ],
-              replicationKeys: [{ key: 'c2', value: {  }}]
-            },
-          },
-          { // denied with shortcode
-            doc: {
-              _id: 'c3', type: 'person',
-              parent: { _id: 'p4', parent: { _id: 'p3' } }, patient_id: 'contact3', _deleted: true
-            },
-            viewResults: {
-              contactsByDepth: [
-                { key: ['c3'], value: 'contact3' },
-                { key: ['p2'], value: 'contact3' },
-                { key: ['p3'], value: 'contact3' },
-              ],
-              replicationKeys: [{ key: 'c3', value: {  }}]
-            },
-          },
-          { // denied without shortcode
-            doc: { _id: 'c4', type: 'person', parent: { _id: 'p5', parent: { _id: 'p3' } }, _deleted: true },
-            viewResults: {
-              contactsByDepth: [
-                { key: ['c4'], value: undefined },
-                { key: ['p2'], value: undefined },
-                { key: ['p3'], value: undefined },
-              ],
-              replicationKeys: [{ key: 'c4', value: {  }}]
-            },
-          },
-          { // not deleted allowed
-            doc: { _id: 'c5', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } }, },
-            viewResults: {
-              contactsByDepth: [
-                { key: ['c5'], value: undefined },
-                { key: ['p1'], value: undefined },
-                { key: ['facility_id'], value: undefined },
-              ],
-              replicationKeys: [{ key: 'c5', value: {  }}]
-            },
-          },
-        ];
-
-        db.medic.query.resolves({ rows: [] });
-
-        sinon.stub(db.medic, 'allDocs');
-        db.medic.allDocs
-          .withArgs(sinon.match({ start_key: 'c1____' }))
-          .resolves({ rows: [
-            {
-              id: 'c1____rev____tombstone', doc: { _id: 'c1____rev____tombstone', type: 'tombstone',
-                tombstone: { _id: 'c1', type: 'person', parent: { _id: 'p1',
-                  parent: { _id: 'facility_id' } }, patient_id: 'contact1' } }
-            },
-          ]});
-        db.medic.allDocs
-          .withArgs(sinon.match({ start_key: 'c2____' }))
-          .resolves({ rows: [
-            // we might get more than one tombstone per doc. that's ok.
-            // every one of these tombstones emit in `contacts_by_depth`
-            {
-              id: 'c2____rev____tombstone', doc: { _id: 'c2____rev____tombstone', type: 'tombstone',
-                tombstone: { _id: 'c2', type: 'clinic', parent: { _id: 'p2',
-                  parent: { _id: 'facility_id' } } } }
-            },
-            {
-              id: 'c2____rev2____tombstone', doc: { _id: 'c2____rev2____tombstone', type: 'tombstone',
-                tombstone: { _id: 'c2', _rev: 'rev2', type: 'clinic',
-                  parent: { _id: 'p2', parent: { _id: 'facility_id' } } } }
-            },
-          ]});
-        db.medic.allDocs
-          .withArgs(sinon.match({ start_key: 'c3____' }))
-          .resolves({ rows: [
-            {
-              id: 'c3____rev____tombstone', doc: { _id: 'c3____rev____tombstone', type: 'tombstone',
-                tombstone: { _id: 'c3', _rev: 'rev', type: 'person',
-                  parent: { _id: 'p4', parent: { _id: 'p3' } }, patient_id: 'contact3' } }
-            },
-            {
-              id: 'c3____rev2____tombstone', doc: { _id: 'c3____rev2____tombstone', type: 'tombstone',
-                tombstone: { _id: 'c3', _rev: 'rev2', type: 'person',
-                  parent: { _id: 'p4', parent: { _id: 'p3' } }, patient_id: 'contact3' } }
-            },
-          ]});
-        db.medic.allDocs
-          .withArgs(sinon.match({ start_key: 'c4____' }))
-          .resolves({ rows: [
-            {
-              id: 'c4____rev____tombstone', doc: { _id: 'c4____rev____tombstone', type: 'tombstone',
-                tombstone: { _id: 'c4', type: 'person', parent: { _id: 'p5', parent: { _id: 'p3' } } } }
-            },
-          ]});
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'c5____' })).resolves({ rows: []});
-        db.medic.allDocs
-          .withArgs(sinon.match({ keys: sinon.match.array }))
-          .resolves({ rows: [
-            { id: 'c1', key: 'c1', value: { deleted: true } },
-            { id: 'c2', key: 'c2', error: 'not_found' },
-            { id: 'c3', key: 'c3', value: { deleted: true } },
-            { id: 'c4', key: 'c4', value: { deleted: true } },
-            {
-              id: 'c5', key: 'c4',
-              doc: { _id: 'c5', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } }, }
-            },
-          ]});
-
-        const contactsByDepth = sinon.stub();
-        contactsByDepth.withArgs(sinon.match({ _id: 'c1____rev____tombstone' })).returns([
-          { key: ['c1'], value: 'contact1' },
-          { key: ['p1'], value: 'contact1' },
-          { key: ['facility_id'], value: 'contact1' },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'c2____rev____tombstone' })).returns([
-          { key: ['c2'], value: undefined },
-          { key: ['p1'], value: undefined },
-          { key: ['facility_id'], value: undefined },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'c2____rev2____tombstone' })).returns([
-          { key: ['c2'], value: undefined },
-          { key: ['p1'], value: undefined },
-          { key: ['facility_id'], value: undefined },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'c3____rev____tombstone' })).returns([
-          { key: ['c3'], value: 'contact3' },
-          { key: ['p2'], value: 'contact3' },
-          { key: ['p3'], value: 'contact3' },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'c3____rev2____tombstone' })).returns([
-          { key: ['c3'], value: 'contact3' },
-          { key: ['p2'], value: 'contact3' },
-          { key: ['p3'], value: 'contact3' },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'c4____rev____tombstone' })).returns([
-          { key: ['c4'], value: undefined },
-          { key: ['p2'], value: undefined },
-          { key: ['p3'], value: undefined },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'c5' })).returns([
-          { key: ['c5'], value: undefined },
-          { key: ['p1'], value: undefined },
-          { key: ['facility_id'], value: undefined },
-        ]);
-
-        const docsByReplicationKey = sinon.stub();
-        docsByReplicationKey
-          .withArgs(sinon.match({ _id: 'c1____rev____tombstone' }))
-          .returns([{ key: 'c1', value: {}}]);
-        docsByReplicationKey
-          .withArgs(sinon.match({ _id: 'c2____rev____tombstone' }))
-          .returns([{ key: 'c2', value: {}}]);
-        docsByReplicationKey
-          .withArgs(sinon.match({ _id: 'c2____rev2____tombstone' }))
-          .returns([{ key: 'c2', value: {}}]);
-        docsByReplicationKey
-          .withArgs(sinon.match({ _id: 'c3____rev____tombstone' }))
-          .returns([{ key: 'c3', value: {}}]);
-        docsByReplicationKey
-          .withArgs(sinon.match({ _id: 'c3____rev2____tombstone' }))
-          .returns([{ key: 'c3', value: {}}]);
-        docsByReplicationKey
-          .withArgs(sinon.match({ _id: 'c4____rev____tombstone' }))
-          .returns([{ key: 'c4', value: {}}]);
-        docsByReplicationKey
-          .withArgs(sinon.match({ _id: 'c5' }))
-          .returns([{ key: 'c5', value: {  }}]);
-
-        viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
-        viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
-
-        tombstoneUtils.isTombstoneId.callsFake(id => id.endsWith('tombstone'));
-
-        return service
-          .getScopedAuthorizationContext(userCtx, docObjs)
-          .then(result => {
-            db.medic.query.callCount.should.equal(1);
-            db.medic.query.args[0].should.deep.equal([
-              'medic-client/contacts_by_reference',
-              { keys: [
-                ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
-                ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
-                ['shortcode', 'c3'], ['tombstone-shortcode', 'c3'],
-                ['shortcode', 'c4'], ['tombstone-shortcode', 'c4'],
-                ['shortcode', 'c5'], ['tombstone-shortcode', 'c5'],
-              ]}
-            ]);
-            db.medic.allDocs.callCount.should.equal(6);
-            db.medic.allDocs.args[0].should.deep.equal([{ keys: ['c1', 'c2', 'c3', 'c4', 'c5'], include_docs: true }]);
-            ['c1', 'c2', 'c3', 'c4', 'c5'].forEach((id, idx) => {
-              db.medic.allDocs.args[idx + 1]
-                .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-            });
-
-            contactsByDepth.callCount.should.equal(7);
-            docsByReplicationKey.callCount.should.equal(7);
-
-            result.subjectIds.should.have.members(['c5', 'c1', 'contact1', 'c2', '_all', 'org.couchdb.user:user']);
-          });
-      });
-
-      it('reports about deleted contacts submitted by deleted submitters', () => {
-        const docObjs = [
-          { // allowed
-            doc: {
-              _id: 'r1', type: 'data_record',
-              contact: { _id: 'c1', parent: { _id: 'p1', parent: { _id: 'facility_id' } } },
-              fields: { patient_id: 'patient1' }
-            },
-            viewResults: {
-              contactsByDepth: [],
-              replicationKeys: [{ key: 'patient1', value: {  submitter: 'c1'  }}]
-            }
-          },
-          { // denied
-            doc: {
-              _id: 'r2', type: 'data_record',
-              contact: { _id: 'c2', parent: { _id: 'p2', parent: { _id: 'p3' } } }, fields: { patient_id: 'patient2' }
-            },
-            viewResults: {
-              contactsByDepth: [],
-              replicationKeys: [{ key: 'patient2', value: {  submitter: 'c2'  }}]
-            }
-          },
-          { // allowed
-            doc: {
-              _id: 'r3', type: 'data_record',
-              contact: { _id: 'c2', parent: { _id: 'p2', parent: { _id: 'p3' } } }, fields: { patient_id: 'patient1' }
-            },
-            viewResults: {
-              contactsByDepth: [],
-              replicationKeys: [{ key: 'patient1', value: {  submitter: 'c2'  }}]
-            }
-          },
-          { // allowed
-            doc: {
-              _id: 'r4', contact: { _id: 'c1', parent: { _id: 'p1', parent: { _id: 'facility_id' } } },
-              fields: { patient_uuid: 'patient3doc' }
-            },
-            viewResults: {
-              contactsByDepth: [],
-              replicationKeys: [{ key: 'patient3doc', value: {  submitter: 'c1'  }}]
-            }
-          },
-          { // denied
-            doc: {
-              _id: 'r5', type: 'data_record', contact: { _id: 'c3', parent: { _id: 'p2', parent: { _id: 'p3' } } },
-              fields: { patient_uuid: 'patient4doc' }
-            },
-            viewResults: {
-              contactsByDepth: [],
-              replicationKeys: [{ key: 'patient4doc', value: {  submitter: 'c3'  }}]
-            }
-          },
-          { // allowed
-            doc: {
-              _id: 'r6', type: 'data_record', contact: { _id: 'c3', parent: { _id: 'p2', parent: { _id: 'p3' } } },
-              fields: { patient_id: 'patient5' }
-            },
-            viewResults: {
-              contactsByDepth: [],
-              replicationKeys: [{ key: 'patient5', value: {  submitter: 'c3'  }}]
-            }
-          },
-        ];
-
-        db.medic.query.resolves({ rows: [
-          { id: 'patient1doc____rev____tombstone', key: ['tombstone-shortcode', 'patient1'] },
-          { id: 'patient1doc____rev2____tombstone', key: ['tombstone-shortcode', 'patient1'] },
-          { id: 'patient2doc____rev____tombstone', key: ['tombstone-shortcode', 'patient2'] },
-          { id: 'patient5doc', key: ['shortcode', 'patient5'] },
-        ] });
-        sinon.stub(db.medic, 'allDocs');
-
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'c1____' })).resolves({ rows: [
-          {
-            id: 'c1____rev____tombstone', doc: { _id: 'c1____rev____tombstone',
-              tombstone: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } }
-          },
-        ] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'c2____' })).resolves({ rows: [] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'c3____' })).resolves({ rows: [
-          {
-            id: 'c3____rev____tombstone', doc: { _id: 'c3____rev____tombstone',
-              tombstone: { _id: 'c3', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } } } }
-          },
-        ] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'patient3doc____' })).resolves({ rows: [
-          {
-            id: 'patient3doc____rev____tombstone', doc: { _id: 'patient3doc____rev____tombstone',
-              tombstone: { _id: 'patient3doc', type: 'person', parent: { _id: 'facility_id' } } }
-          },
-          {
-            id: 'patient3doc____rev2____tombstone', doc: { _id: 'patient3doc____rev2____tombstone',
-              tombstone: { _id: 'patient3doc', _rev: 'rev2', type: 'person', parent: { _id: 'facility_id' } } }
-          },
-        ] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'patient4doc____' })).resolves({ rows: [
-          {
-            id: 'patient4doc____rev____tombstone', doc: { _id: 'patient4doc____rev____tombstone',
-              tombstone: { _id: 'patient4doc', type: 'person', parent: { _id: 'p3' } } }
-          },
-        ] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'patient5doc____' })).resolves({ rows: [] });
-        db.medic.allDocs
-          .withArgs(sinon.match({ keys: sinon.match.array }))
-          .resolves({ rows: [
-            {
-              id: 'patient1doc____rev____tombstone', doc: { _id: 'patient1doc____rev____tombstone',
-                tombstone: { _id: 'patient1doc', type: 'person', patient_id: 'patient1',
-                  parent: { _id: 'p1', parent: { _id: 'facility_id' } } } }
-            },
-            {
-              id: 'patient1doc____rev2____tombstone', doc: { _id: 'patient1doc____rev2____tombstone',
-                tombstone: { _id: 'patient1doc', type: 'person', patient_id: 'patient1',
-                  parent: { _id: 'p1', parent: { _id: 'facility_id' } } } }
-            },
-            {
-              id: 'c1', key: 'c1', error: 'deleted'
-            },
-            {
-              id: 'patient2doc____rev____tombstone', doc: { _id: 'patient2doc____rev____tombstone',
-                tombstone: { _id: 'patient2doc', type: 'person', patient_id: 'patient2',
-                  parent: { _id: 'p2', parent: { _id: 'p3' } } } }
-            },
-            {
-              id: 'c2', doc: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } } }
-            },
-            {
-              id: 'patient3doc', error: 'not_found', reason: 'deleted'
-            },
-            {
-              id: 'patient4doc', value: { deleted: true }
-            },
-            {
-              id: 'c3', value: { deleted: true }
-            },
-            {
-              id: 'patient5doc', doc: { _id: 'patient5doc', type: 'person', parent: { _id: 'p3' } }
-            },
-          ]});
-
-        const contactsByDepth = sinon.stub();
-        contactsByDepth.withArgs(sinon.match({ _id: 'c1____rev____tombstone' }))
-          .returns([{ key: ['c1'], value: null }, { key: ['p1'], value: null }, { key: ['facility_id'], value: null }]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'c2' }))
-          .returns([{ key: ['c2'], value: null }, { key: ['p2'], value: null }, { key: ['p3'], value: null }]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'c3____rev____tombstone' }))
-          .returns([{ key: ['c3'], value: null }, { key: ['p2'], value: null }, { key: ['p3'], value: null }]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc____rev____tombstone' })).returns([
-          { key: ['patient1doc'], value: 'patient1' },
-          { key: ['p1'], value: 'patient1' },
-          { key: ['facility_id'], value: 'patient1' },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc____rev2____tombstone' })).returns([
-          { key: ['patient1doc'], value: 'patient1' },
-          { key: ['p1'], value: 'patient1' },
-          { key: ['facility_id'], value: 'patient1' },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc____rev____tombstone' })).returns([
-          { key: ['patient2doc'], value: 'patient1' },
-          { key: ['p2'], value: 'patient2' },
-          { key: ['p3'], value: 'patient2' },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'patient3doc____rev____tombstone' }))
-          .returns([{ key: ['patient3doc'], value: null }, { key: ['facility_id'], value: null }]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'patient3doc____rev2____tombstone' }))
-          .returns([{ key: ['patient3doc'], value: null }, { key: ['facility_id'], value: null }]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'patient4doc____rev____tombstone' }))
-          .returns([{ key: ['patient4doc'], value: null }, { key: ['p3'], value: null }]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'patient5doc' })).returns([
-          { key: ['patient5doc'], value: null },
-          { key: ['p1'], value: null },
-          { key: ['facility_id'], value: null },
-        ]);
-        const docsByReplicationKey = sinon.stub();
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'c1____rev____tombstone' }))
-          .returns([{ key: 'c1', value: {  }}]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'c2' }))
-          .returns([{ key: 'c2', value: {  }}]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'c3____rev____tombstone' }))
-          .returns([{ key: 'c3', value: {  }}]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'patient1doc____rev____tombstone' }))
-          .returns([{ key: 'patient1doc', value: {  }}]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'patient1doc____rev2____tombstone' }))
-          .returns([{ key: 'patient1doc', value: {  }}]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'patient2doc____rev____tombstone' }))
-          .returns([{ key: 'patient2doc', value: {  }}]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'patient3doc____rev____tombstone' }))
-          .returns([{ key: 'patient3doc', value: {  }}]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'patient3doc____rev2____tombstone' }))
-          .returns([{ key: 'patient3doc', value: {  }}]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'patient4doc____rev____tombstone' }))
-          .returns([{ key: 'patient4doc', value: {  }}]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'patient5doc' }))
-          .returns([{ key: 'patient5doc', value: {  }}]);
-
-        viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth')
-          .returns(contactsByDepth);
-        viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key')
-          .returns(docsByReplicationKey);
-
-        tombstoneUtils.isTombstoneId.callsFake(id => id.endsWith('tombstone'));
-
-        return service
-          .getScopedAuthorizationContext(userCtx, docObjs)
-          .then(result => {
-            db.medic.query.callCount.should.equal(1);
-            db.medic.query.args[0].should.deep.equal([
-              'medic-client/contacts_by_reference',
-              { keys: [
-                ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
-                ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
-                ['shortcode', 'patient2'], ['tombstone-shortcode', 'patient2'],
-                ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
-                ['shortcode', 'patient3doc'], ['tombstone-shortcode', 'patient3doc'],
-                ['shortcode', 'patient4doc'], ['tombstone-shortcode', 'patient4doc'],
-                ['shortcode', 'c3'], ['tombstone-shortcode', 'c3'],
-                ['shortcode', 'patient5'], ['tombstone-shortcode', 'patient5'],
-              ]}
-            ]);
-            db.medic.allDocs.callCount.should.equal(7);
-            db.medic.allDocs.args[0].should.deep.equal([{
-              include_docs: true,
-              keys: [
-                'patient1doc____rev____tombstone',
-                'patient1doc____rev2____tombstone',
-                'c1',
-                'patient2doc____rev____tombstone',
-                'c2',
-                'patient3doc',
-                'patient4doc',
-                'c3',
-                'patient5doc',
-              ]
-            }]);
-            [ 'c1', 'c2', 'patient3doc', 'patient4doc', 'c3', 'patient5doc'].forEach((id, idx) => {
-              db.medic.allDocs.args[idx + 1]
-                .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-            });
-
-            contactsByDepth.callCount.should.equal(10);
-            docsByReplicationKey.callCount.should.equal(10);
-
-            result.subjectIds.should.have.members([
-              'patient1doc', 'patient1', 'patient5doc', 'c1', 'patient3doc', '_all', 'org.couchdb.user:user'
-            ]);
-          });
-      });
-
-      it('reports about deleted contacts submitted by deleted submitters with needs_signoff', () => {
-        const docObjs = [
-          { // allowed
-            doc: {
-              _id: 'r1', type: 'data_record',
-              contact: { _id: 'c1', parent: { _id: 'p1', parent: { _id: 'facility_id' } } },
-              fields: { patient_id: 'patient1', needs_signoff: true }
-            },
-            viewResults: {
-              contactsByDepth: [],
-              replicationKeys: [
-                { key: 'patient1', value: { submitter: 'c1' }}, { key: 'c1', value: {  submitter: 'c1'  }},
-                { key: 'p1', value: {  submitter: 'c1'  }}, { key: 'facility_id', value: {  submitter: 'c1'  }}
-              ]
-            }
-          },
-          { // denied
-            doc: {
-              _id: 'r2', type: 'data_record',
-              contact: { _id: 'c2', parent: { _id: 'p2', parent: { _id: 'p3' } } },
-              fields: { patient_uuid: 'patient2', needs_signoff: true }
-            },
-            viewResults: {
-              contactsByDepth: [],
-              replicationKeys: [
-                { key: 'patient2', value: {  submitter: 'c2'  }}, { key: 'c2', value: {  submitter: 'c2'  }},
-                { key: 'p2', value: {  submitter: 'c2'  }}, { key: 'p3', value: {  submitter: 'c2'  }}
-              ]
-            }
-          },
-        ];
-
-        db.medic.query.resolves({ rows: [
-          { id: 'patient1doc____rev____tombstone', key: ['tombstone-shortcode', 'patient1'] },
-          { id: 'patient2doc', key: ['shortcode', 'patient2'] },
-        ] });
-        sinon.stub(db.medic, 'allDocs');
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'patient2doc____' })).resolves({ rows: [] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'c1____' })).resolves({ rows: [
-          {
-            id: 'c1____rev____tombstone', doc: { _id: 'c1____rev____tombstone',
-              tombstone: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } }
-          },
-          {
-            id: 'c1____rev2____tombstone', doc: { _id: 'c1____rev2____tombstone',
-              tombstone: { _id: 'c1', type: 'person', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } }
-          },
-        ] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'c2____' })).resolves({ rows: [
-          {
-            id: 'c2____rev____tombstone', doc: { _id: 'c2____rev____tombstone',
-              tombstone: { _id: 'c2', type: 'person', parent: { _id: 'p2', parent: { _id: 'p3' } } } }
-          },
-        ] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'p1____' })).resolves({ rows: [] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'facility_id____' })).resolves({ rows: [] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'p2____' })).resolves({ rows: [
-          {
-            id: 'p2____rev____tombstone', doc: { _id: 'p2____rev____tombstone',
-              tombstone: { _id: 'p2', type: 'clinic', parent: { _id: 'p3' } } }
-          },
-        ] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'p3____' })).resolves({ rows: [] });
-
-        db.medic.allDocs
-          .withArgs(sinon.match({ keys: sinon.match.array }))
-          .resolves({ rows: [
-            { id: 'c1', value: { deleted: true } },
-            {
-              id: 'patient1doc____rev____tombstone',
-              doc: { _id: 'patient1doc____rev____tombstone', tombstone: { _id: 'patient1doc', type: 'person',
-                patient_id: 'patient1', parent: { _id: 'p1', parent: { _id: 'facility_id' } } } }
-            },
-            { id: 'c2', error: 'not_found' },
-            {
-              id: 'patient2doc',
-              doc: { _id: 'patient2doc', type: 'person', patient_id: 'patient2',
-                parent: { _id: 'p2', parent: { _id: 'p3' } } }
-            },
-            { id: 'p1', doc: { _id: 'p1', type: 'clinic', parent: { _id: 'facility_id' } } },
-            { id: 'facility_id', doc: { _id: 'facility_id', type: 'district_hospital' } },
-            { id: 'p2', error: 'not_found' },
-            { id: 'p3', doc: { _id: 'p3', type: 'district_hospital' } },
-          ]});
-
-        const contactsByDepth = sinon.stub();
-        contactsByDepth.withArgs(sinon.match({ _id: 'c1____rev____tombstone' })).returns([
-          { key: ['c1'], value: null }, { key: ['p1'], value: null }, { key: ['facility_id'], value: null },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'c1____rev2____tombstone' })).returns([
-          { key: ['c1'], value: null }, { key: ['p1'], value: null }, { key: ['facility_id'], value: null },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'patient1doc____rev____tombstone' })).returns([
-          { key: ['patient1doc'], value: 'patient1' },
-          { key: ['p1'], value: 'patient1' },
-          { key: ['facility_id'], value: 'patient1' },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'c2____rev____tombstone' })).returns([
-          { key: ['c2'], value: null }, { key: ['p2'], value: null }, { key: ['p3'], value: null },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'patient2doc' })).returns([
-          { key: ['patient2doc'], value: 'patient2' },
-          { key: ['p2'], value: 'patient2' },
-          { key: ['p3'], value: 'patient2' },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'p1' })).returns([
-          { key: ['p1'], value: null }, { key: ['facility_id'], value: null },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'facility_id' })).returns([{ key: ['facility_id'], value: null }]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'p2____rev____tombstone' })).returns([
-          { key: ['p2'], value: null }, { key: ['p3'], value: null },
-        ]);
-        contactsByDepth.withArgs(sinon.match({ _id: 'p3' })).returns([{ key: ['p3'], value: null }]);
-
-        const docsByReplicationKey = sinon.stub();
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'c1____rev____tombstone' })).returns([
-          { key: 'c1', value: { type: 'contact' }},
-        ]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'c1____rev2____tombstone' })).returns([
-          { key: 'c1', value: { type: 'contact' }},
-        ]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'patient1doc____rev____tombstone' })).returns([
-          { key: 'patient1doc', value: { type: 'contact' }},
-        ]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'c2____rev____tombstone' })).returns([
-          { key: 'c2', value: { type: 'contact' }},
-        ]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'patient2doc' })).returns([
-          { key: 'patient2doc', value: { type: 'contact' }},
-        ]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'p1' })).returns([{ key: 'p1', value: { type: 'contact' }}]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'facility_id' })).returns([
-          { key: 'facility_id', value: { type: 'contact' }},
-        ]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'p2____rev____tombstone' })).returns([
-          { key: 'p2', value: { type: 'contact' }},
-        ]);
-        docsByReplicationKey.withArgs(sinon.match({ _id: 'p3' })).returns([{ key: 'p3', value: { type: 'contact' }}]);
-
-        viewMapUtils.getViewMapFn.withArgs('medic', 'contacts_by_depth').returns(contactsByDepth);
-        viewMapUtils.getViewMapFn.withArgs('medic', 'docs_by_replication_key').returns(docsByReplicationKey);
-
-        tombstoneUtils.isTombstoneId.callsFake(id => id.endsWith('tombstone'));
-
-        return service
-          .getScopedAuthorizationContext(userCtx, docObjs)
-          .then(result => {
-            db.medic.query.callCount.should.equal(1);
-            db.medic.query.args[0].should.deep.equal([
-              'medic-client/contacts_by_reference',
-              { keys: [
-                ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
-                ['shortcode', 'c1'], ['tombstone-shortcode', 'c1'],
-                ['shortcode', 'p1'], ['tombstone-shortcode', 'p1'],
-                ['shortcode', 'facility_id'], ['tombstone-shortcode', 'facility_id'],
-                ['shortcode', 'patient2'], ['tombstone-shortcode', 'patient2'],
-                ['shortcode', 'c2'], ['tombstone-shortcode', 'c2'],
-                ['shortcode', 'p2'], ['tombstone-shortcode', 'p2'],
-                ['shortcode', 'p3'], ['tombstone-shortcode', 'p3'],
-              ]}
-            ]);
-            db.medic.allDocs.callCount.should.equal(8);
-            db.medic.allDocs.args[0].should.deep.equal([{
-              keys: ['patient1doc____rev____tombstone', 'c1', 'p1', 'facility_id', 'patient2doc', 'c2', 'p2', 'p3'],
-              include_docs: true
-            }]);
-            ['c1', 'p1', 'facility_id', 'patient2doc', 'c2', 'p2', 'p3'].forEach((id, idx) => {
-              db.medic.allDocs.args[idx + 1]
-                .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-            });
-
-            contactsByDepth.callCount.should.equal(9);
-            docsByReplicationKey.callCount.should.equal(9);
-
-            result.subjectIds.should.have.members([
-              'patient1doc', 'patient1', 'p1', 'facility_id', 'c1', '_all', 'org.couchdb.user:user'
-            ]);
-          });
-      });
     });
 
     describe('getReplicationKeys', () => {
@@ -3599,15 +2618,11 @@ describe('Authorization service', () => {
           db.medic.query.args[0].should.deep.equal([
             'medic-client/contacts_by_reference',
             { keys: [
-              ['shortcode', 'a'], ['tombstone-shortcode', 'a'], ['shortcode', 'b'], ['tombstone-shortcode', 'b']
+              ['shortcode', 'a'], ['shortcode', 'b'],
             ] }
           ]);
-          db.medic.allDocs.callCount.should.equal(3);
+          db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0].should.deep.equal([{ keys: ['a', 'b'], include_docs: true }]);
-          ['a', 'b'].forEach((id, idx) => {
-            db.medic.allDocs.args[idx + 1]
-              .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-          });
         });
       });
 
@@ -3634,97 +2649,18 @@ describe('Authorization service', () => {
           db.medic.query.callCount.should.equal(1);
           db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_reference', {
             keys: [
-              ['shortcode', 'contact1'], ['tombstone-shortcode', 'contact1'],
-              ['shortcode', 'patient_1'], ['tombstone-shortcode', 'patient_1'],
-              ['shortcode', 'contact2'], ['tombstone-shortcode', 'contact2'],
-              ['shortcode', 'patient_2'], ['tombstone-shortcode', 'patient_2'],
-              ['shortcode', 'patient_3'], ['tombstone-shortcode', 'patient_3'],
+              ['shortcode', 'contact1'],
+              ['shortcode', 'patient_1'],
+              ['shortcode', 'contact2'],
+              ['shortcode', 'patient_2'],
+              ['shortcode', 'patient_3'],
             ]
           }]);
-          db.medic.allDocs.callCount.should.equal(6);
+          db.medic.allDocs.callCount.should.equal(1);
           db.medic.allDocs.args[0].should.deep.equal([{
             keys: ['contact1', 'person1', 'contact2', 'person2', 'patient_3'],
             include_docs: true,
           }]);
-          ['contact1', 'person1', 'contact2', 'person2', 'patient_3'].forEach((id, idx) => {
-            db.medic.allDocs.args[idx + 1]
-              .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-          });
-        });
-      });
-
-      it('should request tombstones with and without shortcodes', () => {
-        db.medic.query.resolves({ rows: [
-          { id: 'person1', key: ['shortcode', 'patient1'] },
-          { id: 'person2____rev____tombstone', key: ['tombstone-shortcode', 'patient2'] },
-          { id: 'person3____rev____tombstone', key: ['tombstone-shortcode', 'patient3'] },
-        ] });
-        sinon.stub(db.medic, 'allDocs');
-        db.medic.allDocs.withArgs(sinon.match({ keys: sinon.match.array })).resolves({ rows: [
-          { id: 'contact1', key: 'contact1', doc: { _id: 'contact1' } },
-          { id: 'person1', key: 'person1', doc: { _id: 'person1' } },
-          { id: 'contact2', key: 'contact2', value: { deleted: true } },
-          {
-            id: 'person2____rev____tombstone', key: 'person2____rev____tombstone',
-            doc: { _id: 'person2____rev____tombstone', tombstone: { _id: 'person2' } }
-          },
-          {
-            id: 'person3____rev____tombstone', key: 'person3____rev____tombstone',
-            doc: { _id: 'person3____rev____tombstone', tombstone: { _id: 'person3' } }
-          },
-          { id: 'contact3', key: 'contact3', value: { deleted: true } },
-        ] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'contact1____' })).resolves({ rows: [] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'person1____' })).resolves({ rows: [] });
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'contact2____' })).resolves({ rows: [
-          {
-            id: 'contact2____rev____tombstone', key: 'contact2____rev____tombstone',
-            doc: { _id: 'contact2____rev____tombstone', tombstone: { _id: 'contact2' } }
-          }
-        ]});
-        db.medic.allDocs.withArgs(sinon.match({ start_key: 'contact3____' })).resolves({ rows: [
-          {
-            id: 'contact3____rev____tombstone', key: 'contact3____rev____tombstone',
-            doc: { _id: 'contact3____rev____tombstone', tombstone: { _id: 'contact3' } }
-          }
-        ]});
-        tombstoneUtils.isTombstoneId.callsFake(id => id.endsWith('tombstone'));
-
-        return findContactsByReplicationKeys(
-          ['contact1', 'patient1', 'contact2', 'patient2', 'patient3', 'contact3']
-        ).then(result => {
-          result.should.deep.equal([
-            { _id: 'contact1' },
-            { _id: 'person1' },
-            { _id: 'person2____rev____tombstone', tombstone: { _id: 'person2' } },
-            { _id: 'person3____rev____tombstone', tombstone: { _id: 'person3' } },
-            { _id: 'contact2____rev____tombstone', tombstone: { _id: 'contact2' } },
-            { _id: 'contact3____rev____tombstone', tombstone: { _id: 'contact3' } },
-          ]);
-
-          db.medic.query.callCount.should.equal(1);
-          db.medic.query.args[0].should.deep.equal(['medic-client/contacts_by_reference', {
-            keys: [
-              ['shortcode', 'contact1'], ['tombstone-shortcode', 'contact1'],
-              ['shortcode', 'patient1'], ['tombstone-shortcode', 'patient1'],
-              ['shortcode', 'contact2'], ['tombstone-shortcode', 'contact2'],
-              ['shortcode', 'patient2'], ['tombstone-shortcode', 'patient2'],
-              ['shortcode', 'patient3'], ['tombstone-shortcode', 'patient3'],
-              ['shortcode', 'contact3'], ['tombstone-shortcode', 'contact3'],
-            ]
-          }]);
-          db.medic.allDocs.callCount.should.equal(5);
-          db.medic.allDocs.args[0].should.deep.equal([{
-            keys: [
-              'contact1', 'person1', 'contact2', 'person2____rev____tombstone',
-              'person3____rev____tombstone', 'contact3'
-            ],
-            include_docs: true,
-          }]);
-          ['contact1', 'person1', 'contact2', 'contact3'].forEach((id, idx) => {
-            db.medic.allDocs.args[idx + 1]
-              .should.deep.equal([{ start_key: `${id}____`, end_key: `${id}____\ufff0`, include_docs: true }]);
-          });
         });
       });
     });

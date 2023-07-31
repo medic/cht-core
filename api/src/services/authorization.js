@@ -3,17 +3,22 @@ const auth = require('../auth');
 const _ = require('lodash');
 const config = require('../config');
 const viewMapUtils = require('@medic/view-map-utils');
-const tombstoneUtils = require('@medic/tombstone-utils');
 const registrationUtils = require('@medic/registration-utils');
 
 const ALL_KEY = '_all'; // key in the docs_by_replication_key view for records everyone can access
 const UNASSIGNED_KEY = '_unassigned'; // key in the docs_by_replication_key view for unassigned records
 const MEDIC_CLIENT_DDOC = '_design/medic-client';
+const DEFAULT_DDOCS = [
+  MEDIC_CLIENT_DDOC,
+  'service-worker-meta',
+  'settings',
+];
 
 // fake view map, to store whether doc is a medic.user-settings doc
 const couchDbUser = doc => doc.type === 'user-settings';
 
 const getUserSettingsId = username => `org.couchdb.user:${username}`;
+const getDefaultDocs = (userCtx) => [ ...DEFAULT_DDOCS, getUserSettingsId(userCtx?.name)];
 
 const getDepth = (userCtx) => {
   const depth = {
@@ -217,11 +222,7 @@ const getContextObject = (userCtx) => {
 const getContactSubjects = (row) => {
   const subjects = [];
 
-  if (tombstoneUtils.isTombstoneId(row.id)) {
-    subjects.push(tombstoneUtils.extractStub(row.id).id);
-  } else {
-    subjects.push(row.id);
-  }
+  subjects.push(row.id);
 
   if (row.value) {
     subjects.push(row.value);
@@ -269,22 +270,6 @@ const getReplicationKeys = (viewResults) => {
   return replicationKeys;
 };
 
-const getAllTombstones = (ids) => {
-  // collect all tombstones for the selected contacts
-  const tombstonePromises = ids
-    .filter(id => !tombstoneUtils.isTombstoneId(id))
-    .map(id => {
-      const opts = {
-        include_docs: true,
-        start_key: tombstoneUtils.getTombstonePrefix(id),
-        end_key: `${tombstoneUtils.getTombstonePrefix(id)}\ufff0`,
-      };
-      return db.medic.allDocs(opts);
-    });
-
-  return tombstonePromises;
-};
-
 // replication keys are either contact shortcodes (`patient_id` or `place_id`) or doc ids
 // returns a list of corresponding contact docs
 const findContactsByReplicationKeys = (replicationKeys) => {
@@ -295,8 +280,7 @@ const findContactsByReplicationKeys = (replicationKeys) => {
   }
 
   replicationKeys = _.uniq(replicationKeys);
-  const keys = [];
-  replicationKeys.forEach(id => keys.push(['shortcode', id], ['tombstone-shortcode', id]));
+  const keys = replicationKeys.map(id => ['shortcode', id]);
 
   return db.medic
     .query('medic-client/contacts_by_reference', { keys })
@@ -312,22 +296,9 @@ const findContactsByReplicationKeys = (replicationKeys) => {
       });
       docIds = _.uniq(docIds);
 
-      return Promise.all([
-        db.medic.allDocs({ keys: docIds, include_docs: true }),
-        ...getAllTombstones(docIds),
-      ]);
+      return db.medic.allDocs({ keys: docIds, include_docs: true });
     })
-    .then(results => {
-      const contacts = results.reduce((acc, result) => {
-        if (!result || !result.rows || !result.rows.length) {
-          return acc;
-        }
-
-        acc.push(...result.rows.map(row => row.doc).filter(doc => doc));
-        return acc;
-      }, []);
-      return contacts;
-    });
+    .then(results => results.rows.map(row => row.doc).filter(doc => doc));
 };
 
 const getContactShortcode = (viewResults) => viewResults &&
@@ -486,11 +457,6 @@ const getDocsByReplicationKey = (authorizationContext) => {
         return;
       }
 
-      if (tombstoneUtils.isTombstoneId(row.id)) {
-        docsByReplicationKey.push(row);
-        return;
-      }
-
       if (isAllowedDepth(authorizationContext, viewResultsById[row.id])) {
         docsByReplicationKey.push(row);
       }
@@ -500,9 +466,8 @@ const getDocsByReplicationKey = (authorizationContext) => {
   });
 };
 
-const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTombstones = true, includeTasks = true } = {}) => {
+const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTasks = true } = {}) => {
   const validatedIds = [MEDIC_CLIENT_DDOC, getUserSettingsId(authCtx.userCtx.name)];
-  const tombstoneIds = [];
 
   if (!docsByReplicationKey || !docsByReplicationKey.length) {
     return validatedIds;
@@ -512,41 +477,17 @@ const filterAllowedDocIds = (authCtx, docsByReplicationKey, { includeTombstones 
     if (isTaskDoc(row) && !includeTasks) {
       return;
     }
-
-    if (tombstoneUtils.isTombstoneId(row.id)) {
-      return includeTombstones && tombstoneIds.push(row.id);
-    }
-
     validatedIds.push(row.id);
   });
-
-  if (tombstoneIds.length) {
-    // only include tombstones if the winning rev of the document is deleted
-    // if a doc appears in the view results, it means that the winning rev is not deleted
-    const sortedValidatedIds = prepareForSortedSearch(validatedIds);
-    tombstoneIds.forEach(tombstoneId => {
-      const docId = tombstoneUtils.extractStub(tombstoneId).id;
-      if (!sortedIncludes(sortedValidatedIds, docId)) {
-        validatedIds.push(tombstoneId);
-      }
-    });
-  }
 
   return _.uniq(validatedIds);
 };
 
-const getAllowedDocIds = (authorizationContext, { includeTombstones = true, includeTasks = true } = {}) => {
+const getAllowedDocIds = (authorizationContext, { includeTasks = true } = {}) => {
   return getDocsByReplicationKey(authorizationContext).then(docsByReplicationKey => {
-    return filterAllowedDocIds(authorizationContext, docsByReplicationKey, { includeTombstones, includeTasks });
+    return filterAllowedDocIds(authorizationContext, docsByReplicationKey, { includeTasks });
   });
 };
-
-const excludeTombstoneIds = (docIds) => {
-  return docIds.filter(docId => !tombstoneUtils.isTombstoneId(docId));
-};
-
-const convertTombstoneId = docId => tombstoneUtils.isTombstoneId(docId) ? tombstoneUtils.extractStub(docId).id : docId;
-const convertTombstoneIds = docIds => docIds.map(convertTombstoneId);
 
 const getViewResults = (doc) => {
   return {
@@ -556,25 +497,17 @@ const getViewResults = (doc) => {
   };
 };
 
-const isAuthChange = (docId, userCtx, { couchDbUser }) => {
-  return docId === 'org.couchdb.user:' + userCtx.name && !!couchDbUser;
-};
-
 module.exports = {
-  isAuthChange: isAuthChange,
+  DEFAULT_DDOCS,
+  updateContext,
+  getDefaultDocs,
   allowedDoc: allowedDoc,
   getViewResults: getViewResults,
   getAuthorizationContext: getAuthorizationContext,
   getAllowedDocIds: getAllowedDocIds,
   getDocsByReplicationKey: getDocsByReplicationKey,
   filterAllowedDocIds: filterAllowedDocIds,
-  excludeTombstoneIds: excludeTombstoneIds,
-  convertTombstoneIds: convertTombstoneIds,
   alwaysAllowCreate: alwaysAllowCreate,
-  updateContext: updateContext,
   filterAllowedDocs: filterAllowedDocs,
-  isDeleteStub: tombstoneUtils._isDeleteStub,
-  generateTombstoneId: tombstoneUtils.generateTombstoneId,
-  convertTombstoneId: convertTombstoneId,
   getScopedAuthorizationContext: getScopedAuthorizationContext,
 };

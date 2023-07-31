@@ -193,38 +193,11 @@ const filterAllowedDocs = (authorizationContext, docs) => {
 
 const getExistentDocs = docs => {
   const docIds = docs.map(doc => doc._id).filter(id => id);
-  const existentDocs = {};
 
   return db.medic
     .allDocs({ keys: docIds, include_docs: true })
-    .then(result => {
-      const tombstoneIds = [];
-      result.rows.forEach(row => {
-        if (row.doc) {
-          return existentDocs[row.id] = row.doc;
-        }
-
-        if (row.value && row.value.deleted) {
-          tombstoneIds.push(authorization.generateTombstoneId(row.id, row.value.rev));
-        }
-      });
-
-      if (!tombstoneIds.length) {
-        return { rows: [] };
-      }
-
-      // get all tombstone docs to check if user is allowed to edit the deleted docs
-      return db.medic.allDocs({ keys: tombstoneIds, include_docs: true });
-    })
-    .then(result => {
-      result.rows.forEach(row => {
-        if (row.doc) {
-          existentDocs[authorization.convertTombstoneId(row.id)] = row.doc;
-        }
-      });
-
-      return existentDocs;
-    });
+    .then(result =>
+      Object.assign({}, ...result.rows.filter(row => row.doc).map(row => ({ [row.id]: row.doc }))));
 };
 
 // Filters the list of request docs to the ones that satisfy the following conditions:
