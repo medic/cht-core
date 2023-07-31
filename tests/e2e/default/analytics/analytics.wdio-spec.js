@@ -40,9 +40,9 @@ const updateSettings = async (settings) => {
   await browser.refresh();
 };
 
-const compileTargets = async () => {
+const compileTargets = async (targetFileName = 'targets-config.js') => {
   await chtConfUtils.initializeConfigDir();
-  const targetFilePath = path.join(__dirname, 'targets-config.js');
+  const targetFilePath = path.join(__dirname, `config/${targetFileName}`);
 
   return chtConfUtils.compileNoolsConfig({ targets: targetFilePath });
 };
@@ -105,5 +105,19 @@ describe('Targets', () => {
     expect(await emptySelection.getText()).to.equal(
       'Targets are disabled for admin users. If you need to see targets, login as a normal user.'
     );
+  });
+  
+  it('Should show error message for bad config', async () => {
+    const settings = await compileTargets('targets-error-config.js');
+    await updateSettings(settings);
+    await analyticsPage.goToTargets();
+
+    const { errorMessage, url, username, errorStack } = await analyticsPage.getErrorLog();
+
+    expect(username).to.equal(chw.username);
+    expect(url).to.equal('localhost');
+    expect(errorMessage).to.equal('Error fetching targets');
+    expect(await (await errorStack.isDisplayed())).to.be.true;
+
   });
 });
