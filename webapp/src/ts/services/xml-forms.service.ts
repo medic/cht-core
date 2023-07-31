@@ -152,7 +152,7 @@ export class XmlFormsService {
   }
 
   private checkFormExpression(form, doc, user, contactSummary) {
-    if (!form.context.expression) {
+    if (!form.context?.expression) {
       return true;
     }
 
@@ -170,7 +170,7 @@ export class XmlFormsService {
   }
 
   private checkFormPermissions(form) {
-    if (!form.context.permission) {
+    if (!form.context?.permission) {
       return true;
     }
 
@@ -236,8 +236,15 @@ export class XmlFormsService {
 
     return this
       .filterContactTypes(form.context, options.doc)
-      .then(valid => valid && this.checkFormPermissions(form))
-      .then(valid => valid && this.checkFormExpression(form, options.doc, user, options.contactSummary));
+      .then(valid => valid && this.canAccessForm(form, user, options));
+  }
+
+  async canAccessForm(form, userContact, options?) {
+    if (!await this.checkFormPermissions(form)) {
+      return false;
+    }
+
+    return await this.checkFormExpression(form, options?.doc, userContact, options?.contactSummary);
   }
 
   private notify(error, forms?) {

@@ -8,21 +8,6 @@
     "npm": ">=8.3.1"
   },
   "dependencies": {
-    "@medic/contact-types-utils": "file:../shared-libs/contact-types-utils",
-    "@medic/infodoc": "file:../shared-libs/infodoc",
-    "@medic/lineage": "file:../shared-libs/lineage",
-    "@medic/message-utils": "file:../shared-libs/message-utils",
-    "@medic/outbound": "file:../shared-libs/outbound",
-    "@medic/phone-number": "file:../shared-libs/phone-number",
-    "@medic/purging-utils": "file:../shared-libs/purging-utils",
-    "@medic/registration-utils": "file:../shared-libs/registration-utils",
-    "@medic/server-checks": "file:../shared-libs/server-checks",
-    "@medic/settings": "file:../shared-libs/settings",
-    "@medic/task-utils": "file:../shared-libs/task-utils",
-    "@medic/tombstone-utils": "file:../shared-libs/tombstone-utils",
-    "@medic/transitions": "file:../shared-libs/transitions",
-    "@medic/translation-utils": "file:../shared-libs/translation-utils",
-    "@medic/validation": "file:../shared-libs/validation",
     "async": "^3.2.4",
     "bikram-sambat": "^1.7.0",
     "bikram-sambat-bootstrap": "^1.5.0",
@@ -33,6 +18,7 @@
     "lodash": "4.17.19",
     "moment": "^2.29.1",
     "mustache": "^4.2.0",
+    "node-fetch": "^2.6.9",
     "object-path": "^0.11.8",
     "pouchdb-adapter-http": "^7.3.1",
     "pouchdb-core": "^7.3.1",
@@ -40,8 +26,12 @@
     "pouchdb-replication": "^7.3.1",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
+    "simple-password-tester": "^1.0.0",
     "url-join": "^4.0.1",
     "uuid": "^8.3.2",
     "winston": "^3.8.2"
+  },
+  "overrides": {
+    "node-fetch": "$node-fetch"
   }
 }

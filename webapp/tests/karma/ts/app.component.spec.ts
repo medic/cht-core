@@ -1,5 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Router, ActivationEnd } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import sinon from 'sinon';
 import { expect } from 'chai';
@@ -24,8 +25,6 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
-import { StartupModalsService } from '@mm-services/startup-modals.service';
-import { TourService } from '@mm-services/tour.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
@@ -50,6 +49,7 @@ describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
   let store;
   let clock;
+  let router;
 
   // Services
   let dbSyncService;
@@ -63,14 +63,12 @@ describe('AppComponent', () => {
   let jsonFormsService;
   let countMessageService;
   let privacyPoliciesService;
-  let tourService;
   let checkDateService;
   let rulesEngineService;
   let recurringProcessManagerService;
   let formatDateService;
   let feedbackService;
   let wealthQuintilesWatcherService;
-  let startupModalsService;
   let unreadRecordsService;
   let setLanguageService;
   let translateService;
@@ -109,12 +107,10 @@ describe('AppComponent', () => {
     jsonFormsService = { get: sinon.stub().resolves([]) };
     languageService = { get: sinon.stub().resolves({}) };
     rulesEngineService = { isEnabled: sinon.stub().resolves(true) };
-    tourService = { endCurrent: sinon.stub() };
     resourceIconsService = { getAppTitle: sinon.stub().resolves() };
     privacyPoliciesService = { hasAccepted: sinon.stub().resolves() };
     formatDateService = { init: sinon.stub() };
     wealthQuintilesWatcherService = { start: sinon.stub() };
-    startupModalsService = { showStartupModals: sinon.stub() };
     unreadRecordsService = { init: sinon.stub() };
     setLanguageService = { set: sinon.stub() };
     translateService = { instant: sinon.stub().returnsArg(0) };
@@ -148,6 +144,8 @@ describe('AppComponent', () => {
     };
     translateLocaleService = { reloadLang: sinon.stub() };
     transitionsService = { init: sinon.stub() };
+
+    router = { navigate: sinon.stub(), events: of(ActivationEnd) };
 
     globalActions = {
       updateReplicationStatus: sinon.stub(GlobalActions.prototype, 'updateReplicationStatus'),
@@ -202,8 +200,6 @@ describe('AppComponent', () => {
           { provide: CountMessageService, useValue: countMessageService },
           { provide: PrivacyPoliciesService, useValue: privacyPoliciesService },
           { provide: RouteSnapshotService, useValue: {} },
-          { provide: StartupModalsService, useValue: startupModalsService },
-          { provide: TourService, useValue: tourService },
           { provide: CheckDateService, useValue: checkDateService },
           { provide: UnreadRecordsService, useValue: unreadRecordsService },
           { provide: RulesEngineService, useValue: rulesEngineService },
@@ -216,6 +212,7 @@ describe('AppComponent', () => {
           { provide: CHTScriptApiService, useValue: chtScriptApiService },
           { provide: AnalyticsModulesService, useValue: analyticsModulesService },
           { provide: TrainingCardsService, useValue: trainingCardsService },
+          { provide: Router, useValue: router  },
         ]
       })
       .compileComponents();
@@ -348,7 +345,6 @@ describe('AppComponent', () => {
     expect(globalActions.setPrivacyPolicyAccepted.args[0]).to.have.members([false]);
     expect(globalActions.setShowPrivacyPolicy.callCount).to.equal(1);
     expect(globalActions.setShowPrivacyPolicy.args[0]).to.have.members(['The policy...']);
-    expect(startupModalsService.showStartupModals.callCount).to.equal(0);
 
     privacyPoliciesService.hasAccepted.resolves({ privacyPolicy: undefined, accepted: false });
     await getComponent();
@@ -358,7 +354,6 @@ describe('AppComponent', () => {
     expect(globalActions.setPrivacyPolicyAccepted.getCall(1).args).to.have.members([false]);
     expect(globalActions.setShowPrivacyPolicy.callCount).to.equal(2);
     expect(globalActions.setShowPrivacyPolicy.getCall(1).args).to.have.members([undefined]);
-    expect(startupModalsService.showStartupModals.callCount).to.equal(1);
   });
 
   it('should start the UpdateReadDocsCount recurring process for online users', async () => {
@@ -632,6 +627,21 @@ describe('AppComponent', () => {
       ]);
       expect(analyticsModulesService.get.callCount).to.equal(1);
       expect(analyticsActions.setAnalyticsModules.callCount).to.equal(0);
+    }));
+
+    it('should redirect to the error page when there is an exception', fakeAsync(async () => {
+      chtScriptApiService.isInitialized.throws({ error: 'some error'});
+
+      await getComponent();
+      tick();
+
+      expect(consoleErrorStub.callCount).to.equal(1);
+      expect(consoleErrorStub.args[0]).to.deep.equal([
+        'Error during initialisation',
+        { error: 'some error' }
+      ]);
+      expect(router.navigate.callCount).to.equal(1);
+      expect(router.navigate.args[0]).to.deep.equal([[ '/error', '503' ]]);
     }));
   });
 });

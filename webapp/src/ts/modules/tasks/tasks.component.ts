@@ -11,7 +11,6 @@ import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { TasksActions } from '@mm-actions/tasks';
 import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { TourService } from '@mm-services/tour.service';
 import { GlobalActions } from '@mm-actions/global';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { UserContactService } from '@mm-services/user-contact.service';
@@ -27,7 +26,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     private contactTypesService: ContactTypesService,
     private rulesEngineService: RulesEngineService,
     private telemetryService: TelemetryService,
-    private tourService: TourService,
     private route: ActivatedRoute,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private userContactService: UserContactService,
@@ -53,20 +51,23 @@ export class TasksComponent implements OnInit, OnDestroy {
   private debouncedReload;
 
   private subscribeToStore() {
-    const reduxSubscription = combineLatest(
+    const assignment$ = this.store
+      .select(Selectors.getTasksLoaded)
+      .subscribe(tasksLoaded => this.tasksLoaded = tasksLoaded);
+    this.subscription.add(assignment$);
+
+    const taskList$ = combineLatest([
       this.store.select(Selectors.getTasksList),
-      this.store.select(Selectors.getTasksLoaded),
       this.store.select(Selectors.getSelectedTask),
-    ).subscribe(([
-      tasksList,
-      tasksLoaded,
+    ]).subscribe(([
+      tasksList = [],
       selectedTask,
     ]) => {
-      this.tasksList = tasksList;
-      this.tasksLoaded = tasksLoaded;
       this.selectedTask = selectedTask;
+      // Make new reference because the one from store is read-only. Fixes: ExpressionChangedAfterItHasBeenCheckedError
+      this.tasksList = tasksList.map(task => ({ ...task, selected: task._id === this.selectedTask?._id }));
     });
-    this.subscription.add(reduxSubscription);
+    this.subscription.add(taskList$);
   }
 
   private subscribeToChanges() {
@@ -106,8 +107,6 @@ export class TasksComponent implements OnInit, OnDestroy {
     this.currentLevel = this.sessionService.isOnlineOnly() ? Promise.resolve() : this.getCurrentLineageLevel();
 
     this.refreshTasks();
-
-    this.tourService.startIfNeeded(this.route.snapshot);
   }
 
   ngOnDestroy() {

@@ -1,12 +1,12 @@
-const commonElements = require('../../../page-objects/default/common/common.wdio.page.js');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page.js');
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonElements = require('@page-objects/default/common/common.wdio.page.js');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page.js');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const reportFactory = require('../../../factories/cht/reports/generic-report');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const reportFactory = require('@factories/cht/reports/generic-report');
 
 const updateSettings = async (settings) => {
   await utils.revertSettings(true);
@@ -32,10 +32,13 @@ describe('Contact details page', () => {
     const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
     const user = userFactory.build({ username: 'offlineuser', roles: [role] });
     const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
-    const report = reportFactory.build(
-      { form: 'pregnancy_danger_sign' },
-      { patient, submitter: user.contact, fields: { t_danger_signs_referral_follow_up: 'yes' },
-      });
+    const report = reportFactory
+      .report()
+      .build(
+        { form: 'pregnancy_danger_sign' },
+        { patient, submitter: user.contact, fields: { t_danger_signs_referral_follow_up: 'yes' },
+        }
+      );
 
     const updatePermissions = async (role, addPermissions, removePermissions = []) => {
       const settings = await utils.getSettings();

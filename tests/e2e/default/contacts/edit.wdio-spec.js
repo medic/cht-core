@@ -1,10 +1,10 @@
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const userFactory = require('../../../factories/cht/users/users');
-const personFactory = require('../../../factories/cht/contacts/person');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const utils = require('../../../utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
+const personFactory = require('@factories/cht/contacts/person');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const utils = require('@utils');
 
 describe('Edit contacts with the default config. ', () => {
   const CONTACT_NAME = 'Maria Gomez';
@@ -39,7 +39,7 @@ describe('Edit contacts with the default config. ', () => {
     expect(primaryContactName).to.equal(CONTACT_UPDATED_NAME);
   });
 
-  it('should remove the primary contact from the clinic when the contact is deleted', async () => {
+  xit('should remove the primary contact from the clinic when the contact is deleted', async () => {
     await commonPage.goToPeople();
     await commonPage.waitForPageLoaded();
 

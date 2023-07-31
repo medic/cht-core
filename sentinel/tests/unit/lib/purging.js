@@ -1,5 +1,6 @@
 const chai = require('chai');
 chai.use(require('deep-equal-in-any-order'));
+chai.use(require('chai-shallow-deep-equal'));
 chai.use(require('chai-exclude'));
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -7,10 +8,10 @@ const moment = require('moment');
 const { performance } = require('perf_hooks');
 
 const registrationUtils = require('@medic/registration-utils');
-const tombstoneUtils = require('@medic/tombstone-utils');
 const config = require('../../../src/config');
 const purgingUtils = require('@medic/purging-utils');
 const db = require('../../../src/db');
+const chtScriptApi = require('@medic/cht-script-api');
 
 let service;
 let clock;
@@ -22,7 +23,7 @@ describe('ServerSidePurge', () => {
 
   afterEach(() => {
     sinon.restore();
-    clock && clock.restore();
+    clock?.restore();
   });
 
   describe('getPurgeFn', () => {
@@ -784,52 +785,6 @@ describe('ServerSidePurge', () => {
       });
     });
 
-    it('should set correct start_key and startkey_docid when last result is a tombstone', () => {
-      sinon.stub(db, 'queryMedic');
-      db.queryMedic.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'district', doc: { _id: 'first', place_id: 'firsts' } },
-        { id: 'f1', key: 'district', doc: { _id: 'f1', place_id: 's1' } },
-        { id: 'f2', key: 'health_center', doc: { _id: 'f2', place_id: 's3' } },
-        { id: 'f3-tombstone', key: 'health_center',
-          doc: { _id: 'f3-tombstone', tombstone: { _id: 'f3', place_id: 's3' } } },
-      ]});
-
-      db.queryMedic.onCall(1).resolves({ rows: [
-        { id: 'f3-tombstone', key: 'health_center',
-          doc: { _id: 'f3-tombstone', tombstone: { _id: 'f3', place_id: 's3' } } },
-        { id: 'f4-tombstone', key: 'clinic', doc: { _id: 'f4-tombstone', tombstone: { _id: 'f4', place_id: 's4' } } },
-        { id: 'f5', key: 'person', doc: { _id: 'f5', patient_id: 's5' } },
-      ]});
-
-      db.queryMedic.onCall(2).resolves({ rows: [
-        { id: 'f5', key: 'person', doc: { _id: 'f5', patient_id: 's5' } },
-        { id: 'f6-tombstone', key: 'person', doc: { _id: 'f6-tombstone', tombstone: { _id: 'f6', patient_id: 's6' } } },
-        { id: 'f7', key: 'person', doc: { _id: 'f7', patient_id: 's7' } },
-        { id: 'f8-tombstone', key: 'person', doc: { _id: 'f8-tombstone', tombstone: { _id: 'f8', patient_id: 's8' } } },
-      ]});
-
-      db.queryMedic.onCall(3).resolves({ rows: [
-        { id: 'f8-tombstone', key: 'person', doc: { _id: 'f8-tombstone', tombstone: { _id: 'f8', patient_id: 's8' } } },
-      ]});
-
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
-      sinon.stub(tombstoneUtils, 'extractStub').callsFake(id => ({ id: id.replace('-tombstone', '') }));
-
-      sinon.stub(db.medic, 'query').resolves({ rows: [] });
-      const purgeDbChanges = sinon.stub().resolves({ results: [] });
-      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
-
-      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
-        chai.expect(db.queryMedic.callCount).to.equal(4);
-        chai.expect(db.queryMedic.args).to.deep.equal([
-          getContactsByTypeArgs({ limit: 1000, id: '', key: '' }),
-          getContactsByTypeArgs({ limit: 1001, id: 'f3-tombstone', key: 'health_center' }),
-          getContactsByTypeArgs({ limit: 1001, id: 'f5', key: 'person' }),
-          getContactsByTypeArgs({ limit: 1001, id: 'f8-tombstone', key: 'person' }),
-        ]);
-      });
-    });
-
     it('should get docs_by_replication_key using the retrieved contacts and purge docs', () => {
       sinon.stub(db, 'queryMedic');
       db.queryMedic.onCall(0).resolves({ rows: [
@@ -843,7 +798,6 @@ describe('ServerSidePurge', () => {
         { id: 'f4', key: 'clinic', doc: { _id: 'f4', place_id: 's4' }},
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
@@ -912,21 +866,27 @@ describe('ServerSidePurge', () => {
           seq_interval: 12
         }]);
 
+        // mock chtScriptApi
+
+
         chai.expect(purgeFn.callCount).to.equal(8);
-        chai.expect(purgeFn.args[0]).to.deep.equal([
+        chai.expect(purgeFn.args[0]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
-          []
+          [],
         ]);
-        chai.expect(purgeFn.args[1]).to.deep.equal([
+        // expect the fifth argument to be an object with the expected functions
+        chai.expect(purgeFn.args[0][4]).to.have.keys('v1');
+
+        chai.expect(purgeFn.args[1]).to.shallowDeepEqual([
           { roles:roles.b },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
-        chai.expect(purgeFn.args[2]).to.deep.equal([
+        chai.expect(purgeFn.args[2]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [
@@ -938,7 +898,7 @@ describe('ServerSidePurge', () => {
             { _id: 'f1-m2', type: 'data_record', sms_message: 'b' }
           ]
         ]);
-        chai.expect(purgeFn.args[3]).to.deep.equal([
+        chai.expect(purgeFn.args[3]).to.shallowDeepEqual([
           { roles:roles.b },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [
@@ -951,7 +911,7 @@ describe('ServerSidePurge', () => {
           ]
         ]);
 
-        chai.expect(purgeFn.args[4]).to.deep.equalInAnyOrder([
+        chai.expect(purgeFn.args[4]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f2', type: 'person' },
           [
@@ -960,7 +920,7 @@ describe('ServerSidePurge', () => {
           ],
           []
         ]);
-        chai.expect(purgeFn.args[5]).to.deep.equalInAnyOrder([
+        chai.expect(purgeFn.args[5]).to.shallowDeepEqual([
           { roles:roles.b },
           { _id: 'f2', type: 'person' },
           [
@@ -970,7 +930,7 @@ describe('ServerSidePurge', () => {
           []
         ]);
 
-        chai.expect(purgeFn.args[6]).to.deep.equalInAnyOrder([
+        chai.expect(purgeFn.args[6]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f4', type: 'clinic', place_id: 's4' },
           [],
@@ -979,7 +939,7 @@ describe('ServerSidePurge', () => {
             { _id: 'f4-m2', type: 'data_record', sms_message: 'b' }
           ]
         ]);
-        chai.expect(purgeFn.args[7]).to.deep.equalInAnyOrder([
+        chai.expect(purgeFn.args[7]).to.shallowDeepEqual([
           { roles:roles.b },
           { _id: 'f4', type: 'clinic', place_id: 's4' },
           [],
@@ -988,136 +948,7 @@ describe('ServerSidePurge', () => {
             { _id: 'f4-m2', type: 'data_record', sms_message: 'b' }
           ]
         ]);
-      });
-    });
 
-    it('should correctly group messages and reports for tombstones and tombstoned reports', () => {
-      sinon.stub(db, 'queryMedic');
-      db.queryMedic.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'district_hospital', doc: { _id: 'first', type: 'district_hospital' } },
-        { id: 'f1-tombstone', key: 'clinic',
-          doc: { _id: 'f1-tombstone', tombstone: { _id: 'f1', type: 'clinic', place_id: 's1'  } } },
-        { id: 'f2-tombstone', key: 'person',
-          doc: { _id: 'f2-tombstone', tombstone: { _id: 'f2', type: 'person' } } },
-        { id: 'f3', key: 'health_center', doc: { _id: 'f3', type: 'health_center' } },
-        { id: 'f4-tombstone', key: 'person',
-          doc: { _id: 'f4-tombstone', tombstone: { _id: 'f4', type: 'person', patient_id: 's4' } } },
-      ]});
-
-      db.queryMedic.onCall(1).resolves({ rows: [
-        { id: 'f4-tombstone', key: 'person',
-          doc: { _id: 'f4-tombstone', tombstone: { _id: 'f4', type: 'person', patient_id: 's4' } } },
-      ]});
-
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
-      sinon.stub(tombstoneUtils, 'extractStub').callsFake(id => ({ id: id.replace('-tombstone', '') }));
-      sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
-
-      const purgeDbChanges = sinon.stub().resolves({ results: [] });
-      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
-
-      sinon.stub(db.medic, 'query');
-      db.medic.query.onCall(0).resolves({ rows: [
-        { id: 'first', key: 'first', value: { type: 'district_hospital' }},
-        { id: 'f1-tombstone', key: 'f1', value: { type: 'clinic' } },
-        { id: 'f1-r1', key: 's1', value: { type: 'data_record', subject: 's1' } },
-        { id: 'f1-m1', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
-        { id: 'f1-r2', key: 's1', value: { type: 'data_record', subject: 's1' } },
-        { id: 'f1-m2', key: 'f1', value: { type: 'data_record', subject: 'f1' } },
-        { id: 'f2-tombstone', key: 'f2', value: { type: 'clinic' } },
-        { id: 'f2-r1', key: 'f2', value: { type: 'data_record', subject: 'f2' } },
-        { id: 'f2-r2', key: 'f2', value: { type: 'data_record',  subject: 'f2' } },
-        { id: 'f3', key: 'f3', value: { type: 'health_center' }},
-        { id: 'f3-m1-tombstone', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
-        { id: 'f3-r1-tombstone', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
-        { id: 'f3-m2', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
-        { id: 'f3-r2', key: 'f3', value: { type: 'data_record', subject: 'f3' } },
-        { id: 'f4-tombstone', key: 'f4', value: { type: 'person' }},
-      ] });
-
-      sinon.stub(db.medic, 'allDocs').onCall(0).resolves({ rows: [
-        { id: 'f1-r1', doc: { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' } },
-        { id: 'f1-m1', doc: { _id: 'f1-m1', type: 'data_record', sms_message: 'a' } },
-        { id: 'f1-r2', doc: { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' } },
-        { id: 'f1-m2', doc: { _id: 'f1-m2', type: 'data_record', sms_message: 'b' } },
-        { id: 'f2-r1', doc: { _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' } },
-        { id: 'f2-r2', doc: { _id: 'f2-r2', type: 'data_record', sms_message: 'b' } },
-        { id: 'f3-m2', doc: { _id: 'f3-m2', type: 'data_record', sms_message: 'b' } },
-        { id: 'f3-r2', doc: { _id: 'f3-r2', type: 'data_record', sms_message: 'b' } },
-      ] });
-
-      return service.__get__('purgeContacts')(roles, purgeFn).then(() => {
-        chai.expect(db.queryMedic.callCount).to.equal(2);
-        chai.expect(db.medic.query.callCount).to.equal(1);
-        chai.expect(db.medic.query.args[0]).to.deep.equalInAnyOrder([
-          'medic/docs_by_replication_key',
-          { keys: ['first', 'f1', 's1', 'f2', 'f3', 'f4', 's4'], limit: 100000, skip: 0 },
-        ]);
-        chai.expect(db.medic.allDocs.callCount).to.equal(1);
-        chai.expect(db.medic.allDocs.args[0]).to.deep.equal([{
-          include_docs: true,
-          keys: ['f1-r1', 'f1-m1', 'f1-r2', 'f1-m2', 'f2-r1', 'f2-r2', 'f3-m2', 'f3-r2'],
-        }]);
-        chai.expect(purgeDbChanges.callCount).to.equal(2);
-        chai.expect(purgeDbChanges.args[0]).to.deep.equalInAnyOrder([{
-          doc_ids: [
-            'purged:first',
-            'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
-            'purged:f2-r2', 'purged:f2-r1',
-            'purged:f3', 'purged:f3-m2', 'purged:f3-r2'
-          ],
-          batch_size: 11,
-          seq_interval: 10
-        }]);
-
-        chai.expect(purgeDbChanges.args[1]).to.deep.equalInAnyOrder([{
-          doc_ids: [
-            'purged:first',
-            'purged:f1-m1', 'purged:f1-m2', 'purged:f1-r1', 'purged:f1-r2',
-            'purged:f2-r2', 'purged:f2-r1',
-            'purged:f3', 'purged:f3-m2', 'purged:f3-r2'
-          ],
-          batch_size: 11,
-          seq_interval: 10
-        }]);
-
-        chai.expect(purgeFn.callCount).to.equal(8);
-        chai.expect(purgeFn.args[0]).to.deep.equal([
-          { roles: roles.a },
-          { _id: 'first', type: 'district_hospital' },
-          [],
-          []
-        ]);
-
-        chai.expect(purgeFn.args[2]).to.deep.equal([
-          { roles: roles.a },
-          { _deleted: true },
-          [
-            { _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' },
-            { _id: 'f1-r2', type: 'data_record', form: 'b', patient_id: 's1' }
-          ],
-          [
-            { _id: 'f1-m1', type: 'data_record', sms_message: 'a' },
-            { _id: 'f1-m2', type: 'data_record', sms_message: 'b' }
-          ]
-        ]);
-
-        chai.expect(purgeFn.args[4]).to.deep.equal([
-          { roles: roles.a },
-          { _deleted: true },
-          [{ _id: 'f2-r1', type: 'data_record', form: 'a', patient_id: 'f2' }],
-          [{ _id: 'f2-r2', type: 'data_record', sms_message: 'b' }]
-        ]);
-
-        chai.expect(purgeFn.args[6]).to.deep.equal([
-          { roles: roles.a },
-          { _id: 'f3', type: 'health_center' },
-          [],
-          [
-            { _id: 'f3-m2', type: 'data_record', sms_message: 'b' },
-            { _id: 'f3-r2', type: 'data_record', sms_message: 'b' }
-          ]
-        ]);
       });
     });
 
@@ -1133,7 +964,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person', patient_id: 's2' } },
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id || doc.place_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
@@ -1184,35 +1014,35 @@ describe('ServerSidePurge', () => {
         }]);
 
         chai.expect(purgeFn.callCount).to.equal(10);
-        chai.expect(purgeFn.args[0]).to.deep.equal([
+        chai.expect(purgeFn.args[0]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
-        chai.expect(purgeFn.args[2]).to.deep.equal([
+        chai.expect(purgeFn.args[2]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a', contact: { _id: 'f1' } }]
         ]);
 
-        chai.expect(purgeFn.args[4]).to.deep.equal([
+        chai.expect(purgeFn.args[4]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f2', type: 'person', patient_id: 's2' },
           [{ _id: 'f2-r3', type: 'data_record', form: 'a', patient_id: 's2' }],
           [{ _id: 'f2-m1', type: 'data_record', contact: { _id: 'f2' } }]
         ]);
 
-        chai.expect(purgeFn.args[6]).to.deep.equal([
+        chai.expect(purgeFn.args[6]).to.shallowDeepEqual([
           { roles: roles.a },
           {},
           [{ _id: 'f2-r1', type: 'data_record', form: 'a', contact: { _id: 'f2' } }],
           []
         ]);
 
-        chai.expect(purgeFn.args[8]).to.deep.equal([
+        chai.expect(purgeFn.args[8]).to.shallowDeepEqual([
           { roles: roles.a },
           {},
           [{ _id: 'f2-r2', type: 'data_record', form: 'b', contact: { _id: 'f2' } }],
@@ -1233,7 +1063,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2', key: 'person', doc: { _id: 'f2', type: 'person' } },
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       const purgeDbChanges = sinon.stub().resolves({ results: [] });
@@ -1286,28 +1115,28 @@ describe('ServerSidePurge', () => {
         }]);
 
         chai.expect(purgeFn.callCount).to.equal(8);
-        chai.expect(purgeFn.args[0]).to.deep.equal([
+        chai.expect(purgeFn.args[0]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
-        chai.expect(purgeFn.args[2]).to.deep.equal([
+        chai.expect(purgeFn.args[2]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1', needs_signoff: true }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
         ]);
 
-        chai.expect(purgeFn.args[4]).to.deep.equal([
+        chai.expect(purgeFn.args[4]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f2', type: 'person' },
           [],
           []
         ]);
 
-        chai.expect(purgeFn.args[6]).to.deep.equal([
+        chai.expect(purgeFn.args[6]).to.shallowDeepEqual([
           { roles: roles.a },
           {},
           [{ _id: 'f2-r3', type: 'data_record', form: 'a', needs_signoff: true, contact: { _id: 'f2' } }],
@@ -1328,7 +1157,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2', value: null },
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       sinon.stub(db.medic, 'query');
@@ -1436,7 +1264,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2', key: 'clinic', doc: { _id: 'f2', type: 'clinic' } },
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       sinon.stub(db.medic, 'query');
@@ -1483,21 +1310,21 @@ describe('ServerSidePurge', () => {
         }]);
 
         chai.expect(purgeFn.callCount).to.equal(6);
-        chai.expect(purgeFn.args[0]).to.deep.equal([
+        chai.expect(purgeFn.args[0]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
-        chai.expect(purgeFn.args[2]).to.deep.equal([
+        chai.expect(purgeFn.args[2]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
         ]);
 
-        chai.expect(purgeFn.args[4]).to.deep.equal([
+        chai.expect(purgeFn.args[4]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f2', type: 'clinic' },
           [],
@@ -1523,7 +1350,6 @@ describe('ServerSidePurge', () => {
         { id: 'f2', key: 'clinic', doc: { _id: 'f2', type: 'clinic' } },
       ]});
 
-      sinon.stub(tombstoneUtils, 'isTombstoneId').callsFake(id => id.includes('tombstone'));
       sinon.stub(registrationUtils, 'getSubjectId').callsFake(doc => doc.patient_id);
 
       sinon.stub(db.medic, 'query');
@@ -1618,21 +1444,21 @@ describe('ServerSidePurge', () => {
         }]);
 
         chai.expect(purgeFn.callCount).to.equal(6);
-        chai.expect(purgeFn.args[0]).to.deep.equal([
+        chai.expect(purgeFn.args[0]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'first', type: 'district_hospital' },
           [],
           []
         ]);
 
-        chai.expect(purgeFn.args[2]).to.deep.equal([
+        chai.expect(purgeFn.args[2]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f1', type: 'clinic', place_id: 's1' },
           [{ _id: 'f1-r1', type: 'data_record', form: 'a', patient_id: 's1' }],
           [{ _id: 'f1-m1', type: 'data_record', sms_message: 'a' }]
         ]);
 
-        chai.expect(purgeFn.args[4]).to.deep.equal([
+        chai.expect(purgeFn.args[4]).to.shallowDeepEqual([
           { roles: roles.a },
           { _id: 'f2', type: 'person' },
           [],
@@ -1817,15 +1643,15 @@ describe('ServerSidePurge', () => {
       return service.__get__('purgeUnallocatedRecords')(roles, purgeFn).then(() => {
         chai.expect(db.queryMedic.callCount).to.equal(2);
         chai.expect(purgeFn.callCount).to.equal(12);
-        chai.expect(purgeFn.args[0]).to.deep.equal([{ roles: roles.a }, {}, [{ _id: 'r1', form: 'a' }], []]);
-        chai.expect(purgeFn.args[1]).to.deep.equal([{ roles:roles.b }, {}, [{ _id: 'r1', form: 'a' }], []]);
-        chai.expect(purgeFn.args[2]).to.deep.equal([{ roles: roles.a }, {}, [{ _id: 'r2', form: 'a' }], []]);
-        chai.expect(purgeFn.args[3]).to.deep.equal([{ roles:roles.b }, {}, [{ _id: 'r2', form: 'a' }], []]);
-        chai.expect(purgeFn.args[4]).to.deep.equal([{ roles: roles.a }, {}, [], [{ _id: 'r3' }]]);
-        chai.expect(purgeFn.args[5]).to.deep.equal([{ roles:roles.b }, {}, [], [{ _id: 'r3' }]]);
-        chai.expect(purgeFn.args[6]).to.deep.equal([{ roles: roles.a }, {}, [{ _id: 'r4', form: 'a' }], []]);
-        chai.expect(purgeFn.args[8]).to.deep.equal([{ roles: roles.a }, {}, [], [{ _id: 'r5' }]]);
-        chai.expect(purgeFn.args[10]).to.deep.equal([{ roles: roles.a }, {}, [{ _id: 'r6', form: 'a' }], []]);
+        chai.expect(purgeFn.args[0]).to.shallowDeepEqual([{ roles: roles.a }, {}, [{ _id: 'r1', form: 'a' }], []]);
+        chai.expect(purgeFn.args[1]).to.shallowDeepEqual([{ roles:roles.b }, {}, [{ _id: 'r1', form: 'a' }], []]);
+        chai.expect(purgeFn.args[2]).to.shallowDeepEqual([{ roles: roles.a }, {}, [{ _id: 'r2', form: 'a' }], []]);
+        chai.expect(purgeFn.args[3]).to.shallowDeepEqual([{ roles:roles.b }, {}, [{ _id: 'r2', form: 'a' }], []]);
+        chai.expect(purgeFn.args[4]).to.shallowDeepEqual([{ roles: roles.a }, {}, [], [{ _id: 'r3' }]]);
+        chai.expect(purgeFn.args[5]).to.shallowDeepEqual([{ roles:roles.b }, {}, [], [{ _id: 'r3' }]]);
+        chai.expect(purgeFn.args[6]).to.shallowDeepEqual([{ roles: roles.a }, {}, [{ _id: 'r4', form: 'a' }], []]);
+        chai.expect(purgeFn.args[8]).to.shallowDeepEqual([{ roles: roles.a }, {}, [], [{ _id: 'r5' }]]);
+        chai.expect(purgeFn.args[10]).to.shallowDeepEqual([{ roles: roles.a }, {}, [{ _id: 'r6', form: 'a' }], []]);
       });
     });
 
@@ -2663,5 +2489,86 @@ describe('ServerSidePurge', () => {
         chai.expect(db.sentinel.put.callCount).to.equal(1);
       });
     });
+
+    it('purgeFn should pass cht script api and permission settings', () => {
+      const roles = { 'a': [1, 2, 3], 'b': [4, 5, 6] };
+      sinon.stub(db, 'queryMedic');
+      sinon.stub(config, 'get').returns({ can_export_messages: [ 'a' ]});
+      db.queryMedic.onCall(0).resolves({ rows: [
+        { id: 'r1', doc: { _id: 'r1', form: 'a' } },
+        { id: 'r2', doc: { _id: 'r2', form: 'a' } },
+        { id: 'r3', doc: { _id: 'r3' } },
+        { id: 'r4', doc: { _id: 'r4', form: 'a' } },
+        { id: 'r5', doc: { _id: 'r5' } },
+        { id: 'r6', doc: { _id: 'r6', form: 'a' } },
+      ]});
+
+      db.queryMedic.onCall(1).resolves({ rows: [
+        { id: 'r6', doc: { _id: 'r6' } },
+      ]});
+
+      sinon.stub(db, 'get').returns({ changes: sinon.stub().resolves({ results: [] }) });
+
+      return service.__get__('purgeUnallocatedRecords')(roles, purgeFn).then(() => {
+        chai.expect(db.queryMedic.callCount).to.equal(2);
+        chai.expect(purgeFn.callCount).to.equal(12);
+        chai.expect(typeof(purgeFn.args[0][4].v1.hasPermissions)).to.equal('function');
+        chai.expect(typeof(purgeFn.args[0][4].v1.hasAnyPermission)).to.equal('function');
+        chai.expect(purgeFn.args[0][5]).to.deep.equal({ can_export_messages: [ 'a' ] });
+      });
+    });
+
+    it('should be possible to use hasPermissions from cht script api in purge function', () => {
+      const roles = { 'chw': [1, 2, 3], 'chw_supervisor': [4, 5, 6] };
+      const purgeFunction = (userCtx, contact, reports, messages, chtScript, settings) => {
+        if(chtScript.v1.hasPermissions('can_export_messages', userCtx.roles, settings)) {
+          return [ 'purge 1', 'purge 2' ];
+        }
+      };
+      sinon.stub(db, 'queryMedic').resolves(
+        { rows: [{ id: 'first', key: 'district_hospital', doc: { _id: 'first' } }]}
+      );
+      sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'first', doc: { _id: 'first' } }] });
+      const purgeDbChanges = sinon.stub().resolves({ results: [] });
+      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+      sinon.stub(config, 'get').returns({ can_export_messages: [ 1 ]});
+      sinon.stub(chtScriptApi.v1, 'hasPermissions');
+
+      return service.__get__('batchedContactsPurge')(roles, purgeFunction).then(() => {
+        chai.expect(chtScriptApi.v1.hasPermissions.args[0]).to.deep.equal(
+          [ 'can_export_messages', [ 1, 2, 3 ], { can_export_messages: [ 1 ] } ]
+        );
+        chai.expect(chtScriptApi.v1.hasPermissions.args[1]).to.deep.equal(
+          [ 'can_export_messages', [ 4, 5, 6 ], { can_export_messages: [ 1 ] } ]
+        );
+      });
+    });
+
+    it('should be possible to use hasAnyPermission from cht script api in purge function', () => {
+      const roles = { 'chw': [1, 2, 3], 'chw_supervisor': [4, 5, 6] };
+      const purgeFunction = (userCtx, contact, reports, messages, chtScript, settings) => {
+        if(chtScript.v1.hasAnyPermission(['can_export_messages', 'can_edit'], userCtx.roles, settings)) {
+          return [ 'purge 1', 'purge 2' ];
+        }
+      };
+      sinon.stub(db, 'queryMedic').resolves(
+        { rows: [{ id: 'first', key: 'district_hospital', doc: { _id: 'first' } }]}
+      );
+      sinon.stub(db.medic, 'query').resolves({ rows: [{ id: 'first', doc: { _id: 'first' } }] });
+      const purgeDbChanges = sinon.stub().resolves({ results: [] });
+      sinon.stub(db, 'get').returns({ changes: purgeDbChanges, bulkDocs: sinon.stub() });
+      sinon.stub(config, 'get').returns({ can_export_messages: [ 1 ]});
+      sinon.stub(chtScriptApi.v1, 'hasAnyPermission');
+
+      return service.__get__('batchedContactsPurge')(roles, purgeFunction).then(() => {
+        chai.expect(chtScriptApi.v1.hasAnyPermission.args[0]).to.deep.equal(
+          [ ['can_export_messages', 'can_edit'], [ 1, 2, 3 ], { can_export_messages: [ 1 ] } ]
+        );
+        chai.expect(chtScriptApi.v1.hasAnyPermission.args[1]).to.deep.equal(
+          [ ['can_export_messages', 'can_edit'], [ 4, 5, 6 ], { can_export_messages: [ 1 ] } ]
+        );
+      });
+    });
+
   });
 });

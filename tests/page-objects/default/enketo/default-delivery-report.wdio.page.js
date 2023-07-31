@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const fs = require('fs');
 const moment = require('moment');
 const genericForm = require('./generic-form.wdio.page');

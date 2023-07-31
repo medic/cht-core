@@ -1,10 +1,10 @@
-const commonElements = require('../../../page-objects/default/common/common.wdio.page.js');
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const privacyPage = require('../../../page-objects/default/privacy-policy/privacy-policy.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const privacyPolicyFactory = require('../../../factories/cht/settings/privacy-policy');
-const placeFactory = require('../../../factories/cht/contacts/place');
+const commonElements = require('@page-objects/default/common/common.wdio.page.js');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const privacyPage = require('@page-objects/default/privacy-policy/privacy-policy.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const privacyPolicyFactory = require('@factories/cht/settings/privacy-policy');
+const placeFactory = require('@factories/cht/contacts/place');
 const privacyPolicy = privacyPolicyFactory.privacyPolicy().build();
 
 describe('Privacy policy', () => {
@@ -102,7 +102,7 @@ describe('Privacy policy', () => {
 
   describe('conflicts', () => {
     let passed = false;
-    
+
     const conflictUser = userFactory.build({
       username: 'newoffline',
       known: false
@@ -128,7 +128,6 @@ describe('Privacy policy', () => {
     it('should not fail due to document conflict for new offline user', async () => {
       await privacyPage.waitForPolicy(await privacyPage.privacyWrapper(), englishTexts);
       await privacyPage.acceptPrivacyPolicy();
-      await commonElements.closeTour();
       await commonElements.sync();
       expect(await (await commonElements.messagesTab()).isDisplayed()).to.be.true;
       passed = true;

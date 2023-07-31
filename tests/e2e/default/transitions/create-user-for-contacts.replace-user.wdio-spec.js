@@ -1,18 +1,18 @@
 const fs = require('fs');
-const utils = require('../../../utils');
-const browserUtils = require('../../../utils/browser');
-const sentinelUtils = require('../../../utils/sentinel');
-const messagesUtils = require('../../../utils/messages');
-const personFactory = require('../../../factories/cht/contacts/person');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const userFactory = require('../../../factories/cht/users/users');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const contactsPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const replaceUserForm = require('../../../page-objects/default/enketo/replace-user.wdio.page');
-const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('../../../constants');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const chtDbUtils = require('@utils/cht-db');
+const messagesUtils = require('@utils/messages');
+const personFactory = require('@factories/cht/contacts/person');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const contactsPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const replaceUserForm = require('@page-objects/default/enketo/replace-user.wdio.page');
+const { BASE_URL, DEFAULT_USER_CONTACT_DOC } = require('@constants');
 
 const USER_CONTACT = utils.deepFreeze(personFactory.build({ role: 'chw' }));
 
@@ -226,22 +226,22 @@ describe('Create user for contacts', () => {
         const basicReportId1 = await submitBasicForm();
 
         // Replace user report created
-        const replaceUserReport = await browserUtils.getDoc(reportId);
+        const replaceUserReport = await chtDbUtils.getDoc(reportId);
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId } = replaceUserReport.fields;
         // Basic form reports re-parented
-        const basicReports = await browserUtils.getDocs([basicReportId0, basicReportId1]);
+        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1]);
         basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
         // Existing report not re-parented
-        const existingBasicReport = await browserUtils.getDoc(existingBasicReportId);
+        const existingBasicReport = await chtDbUtils.getDoc(existingBasicReportId);
         expect(existingBasicReport.contact._id).to.equal(originalContactId);
         // Original contact updated to PENDING
-        const originalContact = await browserUtils.getDoc(originalContactId);
+        const originalContact = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId, 'PENDING');
-        const newContact = await browserUtils.getDoc(replacementContactId);
+        const newContact = await chtDbUtils.getDoc(replacementContactId);
         assertNewContact(newContact, ORIGINAL_USER, originalContact);
         // Set as primary contact
-        const district = await browserUtils.getDoc(DISTRICT._id);
+        const district = await chtDbUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId);
 
         await browser.throttle('online');
@@ -275,7 +275,6 @@ describe('Create user for contacts', () => {
         expect(cookie.value).to.include(newUserSettings.name);
 
         // Can still login as the original user (with the manually updated password)
-        await commonPage.closeTour();
         await commonPage.logout();
         await loginPage.login({ ...ORIGINAL_USER, password: DISABLED_USER_PASSWORD });
         await commonPage.waitForPageLoaded();
@@ -407,19 +406,19 @@ describe('Create user for contacts', () => {
         const basicReportId1 = await submitBasicForm();
 
         // Replace user report created
-        const replaceUserReport = await browserUtils.getDoc(reportId);
+        const replaceUserReport = await chtDbUtils.getDoc(reportId);
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId0 } = replaceUserReport.fields;
         // Basic form reports re-parented
-        const basicReports = await browserUtils.getDocs([basicReportId0, basicReportId1]);
+        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1]);
         basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId0));
         // Original contact updated to PENDING
-        let originalContact = await browserUtils.getDoc(originalContactId);
+        let originalContact = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId0, 'PENDING');
-        const newContact = await browserUtils.getDoc(replacementContactId0);
+        const newContact = await chtDbUtils.getDoc(replacementContactId0);
         assertNewContact(newContact, ORIGINAL_USER, originalContact);
         // Set as primary contact
-        let district = await browserUtils.getDoc(DISTRICT._id);
+        let district = await chtDbUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId0);
 
         // Submit another replace user form
@@ -434,19 +433,19 @@ describe('Create user for contacts', () => {
         const basicReportId2 = await submitBasicForm();
         const basicReportId3 = await submitBasicForm();
 
-        const replaceUserReport1 = await browserUtils.getDoc(reportId1);
+        const replaceUserReport1 = await chtDbUtils.getDoc(reportId1);
         const { replacement_contact_id: replacementContactId1 } = replaceUserReport1.fields;
         assertReplaceUserReport(replaceUserReport, originalContactId);
         // Basic form reports re-parented
-        const basicReports1 = await browserUtils.getDocs([basicReportId2, basicReportId3]);
+        const basicReports1 = await chtDbUtils.getDocs([basicReportId2, basicReportId3]);
         basicReports1.forEach((report) => expect(report.contact._id).to.equal(replacementContactId1));
         // Original contact updated to have new replacement contact id
-        originalContact = await browserUtils.getDoc(originalContactId);
+        originalContact = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId1, 'PENDING');
-        const newContact1 = await browserUtils.getDoc(replacementContactId1);
+        const newContact1 = await chtDbUtils.getDoc(replacementContactId1);
         assertNewContact(newContact1, ORIGINAL_USER, originalContact);
         // Set as primary contact
-        district = await browserUtils.getDoc(DISTRICT._id);
+        district = await chtDbUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId1);
 
         await browser.throttle('online');
@@ -546,7 +545,6 @@ describe('Create user for contacts', () => {
         const [otherUserSettings] = await utils.getUserSettings({ name: otherUser.username });
         expect(otherUserSettings.contact_id).to.equal(ORIGINAL_USER.contact._id);
         // Can still log in as other user
-        await commonPage.closeTour();
         await commonPage.logout();
         await loginPage.login(otherUser);
         await commonPage.waitForPageLoaded();
@@ -578,23 +576,23 @@ describe('Create user for contacts', () => {
         const reportId = await reportsPage.getLastSubmittedReportId();
 
         // Replace user report created
-        const replaceUserReport = await browserUtils.getDoc(reportId);
+        const replaceUserReport = await chtDbUtils.getDoc(reportId);
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const replacementContactId = replaceUserReport.fields.replacement_contact_id;
         // Original contact updated to PENDING
-        let originalContact = await browserUtils.getDoc(originalContactId);
+        let originalContact = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId, 'PENDING');
-        const newContact = await browserUtils.getDoc(replacementContactId);
+        const newContact = await chtDbUtils.getDoc(replacementContactId);
         assertNewContact(newContact, ORIGINAL_USER, originalContact);
         // Set as primary contact
-        const district = await browserUtils.getDoc(DISTRICT._id);
+        const district = await chtDbUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId);
 
         // Submit several forms to be re-parented
         const basicReportId0 = await submitBasicForm();
         const basicReportId1 = await submitBasicForm();
         // Basic form reports re-parented
-        const basicReports = await browserUtils.getDocs([basicReportId0, basicReportId1]);
+        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1]);
         basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
 
         // Logout before syncing
@@ -646,7 +644,6 @@ describe('Create user for contacts', () => {
         await commonPage.waitForPageLoaded();
         const [cookie] = await browser.getCookies('userCtx');
         expect(cookie.value).to.include(newUserSettings.name);
-        await commonPage.closeTour();
         await commonPage.logout();
 
         // Log back in as original user and sync
@@ -656,7 +653,7 @@ describe('Create user for contacts', () => {
         await commonPage.goToPeople(originalContactId);
 
         // Local version of contact should be updated and have conflict
-        const localOriginalContact = await waitForConflicts(() => browserUtils.getDoc(originalContactId));
+        const localOriginalContact = await waitForConflicts(() => chtDbUtils.getDoc(originalContactId));
         originalContact = await waitForConflicts(() => utils.getDoc(originalContactId, null, '?conflicts=true'));
         expect(localOriginalContact).to.deep.equal(originalContact);
         // Other user replace data exists on the contact
@@ -728,23 +725,23 @@ describe('Create user for contacts', () => {
         const basicReportId1 = await submitBasicForm();
 
         // Replace user report created
-        const replaceUserReport = await browserUtils.getDoc(reportId);
+        const replaceUserReport = await chtDbUtils.getDoc(reportId);
         assertReplaceUserReport(replaceUserReport, originalContactId);
         const { replacement_contact_id: replacementContactId } = replaceUserReport.fields;
         // Basic form reports re-parented
-        const basicReports = await browserUtils.getDocs([basicReportId0, basicReportId1]);
+        const basicReports = await chtDbUtils.getDocs([basicReportId0, basicReportId1]);
         basicReports.forEach((report) => expect(report.contact._id).to.equal(replacementContactId));
         // Original contact updated to PENDING
-        const originalContact = await browserUtils.getDoc(originalContactId);
+        const originalContact = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(originalContact, ORIGINAL_USER.username, replacementContactId, 'PENDING');
-        const newContact = await browserUtils.getDoc(replacementContactId);
+        const newContact = await chtDbUtils.getDoc(replacementContactId);
         assertNewContact(newContact, ORIGINAL_USER, originalContact);
         // Set as primary contact
-        const district = await browserUtils.getDoc(DISTRICT._id);
+        const district = await chtDbUtils.getDoc(DISTRICT._id);
         expect(district.contact._id).to.equal(replacementContactId);
 
         // Remove phone number from contact to force the transition to fail
-        await browserUtils.updateDoc(newContact._id, { ...newContact, phone: undefined }, true);
+        await chtDbUtils.updateDoc(newContact._id, { ...newContact, phone: undefined }, true);
 
         await browser.throttle('online');
         await commonPage.syncAndNotWaitForSuccess();
@@ -778,12 +775,12 @@ describe('Create user for contacts', () => {
         await loginPage.login(ORIGINAL_USER);
         await commonPage.waitForPageLoaded();
         await browser.throttle('offline');
-        const finalOriginalContactLocal = await browserUtils.getDoc(originalContactId);
+        const finalOriginalContactLocal = await chtDbUtils.getDoc(originalContactId);
         assertOriginalContactUpdated(finalOriginalContactLocal, ORIGINAL_USER.username, replacementContactId, 'ERROR');
         await commonPage.goToReports();
         const basicReportId2 = await submitBasicForm();
         const basicReportId3 = await submitBasicForm();
-        const subsequentBasicReports = await browserUtils.getDocs([basicReportId2, basicReportId3]);
+        const subsequentBasicReports = await chtDbUtils.getDocs([basicReportId2, basicReportId3]);
         subsequentBasicReports.forEach((report) => expect(report.contact._id).to.equal(originalContactId));
       });
     });

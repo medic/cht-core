@@ -26,8 +26,6 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { CountMessageService } from '@mm-services/count-message.service';
 import { PrivacyPoliciesService } from '@mm-services/privacy-policies.service';
 import { LanguageService, SetLanguageService } from '@mm-services/language.service';
-import { StartupModalsService } from '@mm-services/startup-modals.service';
-import { TourService } from '@mm-services/tour.service';
 import { UnreadRecordsService } from '@mm-services/unread-records.service';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { RecurringProcessManagerService } from '@mm-services/recurring-process-manager.service';
@@ -94,6 +92,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   reportForms;
   unreadCount = {};
   useOldActionBar = false;
+  initialisationComplete = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -117,8 +116,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     private countMessageService:CountMessageService,
     private privacyPoliciesService:PrivacyPoliciesService,
     private routeSnapshotService:RouteSnapshotService,
-    private startupModalsService:StartupModalsService,
-    private tourService:TourService,
     private checkDateService:CheckDateService,
     private unreadRecordsService:UnreadRecordsService,
     private rulesEngineService:RulesEngineService,
@@ -178,7 +175,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       if (event instanceof ActivationEnd) {
         const tab = getTab(event.snapshot);
         if (tab !== this.currentTab) {
-          this.tourService.endCurrent();
           this.globalActions.setCurrentTab(tab);
         }
         const data = this.routeSnapshotService.get()?.data;
@@ -283,7 +279,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check(true))
-      .then(() => this.startRecurringProcesses());
+      .then(() => this.startRecurringProcesses())
+      .then(() => this.initialisationComplete = true)
+      .catch(err => {
+        this.initialisationComplete = true;
+        console.error('Error during initialisation', err);
+        this.router.navigate(['/error', '503' ]);
+      });
 
     this.watchBrandingChanges();
     this.watchDDocChanges();
@@ -295,7 +297,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupAndroidVersion();
     this.requestPersistentStorage();
     this.startWealthQuintiles();
-    this.enableTooltips();
     this.initAnalyticsModules();
   }
 
@@ -410,7 +411,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       callback: () => {
         if (!this.dbSyncService.isSyncInProgress()) {
           this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.required });
-          this.dbSyncService.sync();
+          this.dbSyncService.sync(false, true);
         }
       },
     });
@@ -569,18 +570,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       .then(({ privacyPolicy, accepted }: any = {}) => {
         this.globalActions.setPrivacyPolicyAccepted(accepted);
         this.globalActions.setShowPrivacyPolicy(privacyPolicy);
-        return { privacyPolicy, accepted };
       })
-      .catch(err => console.error('Failed to load privacy policy', err))
-      .then(({ privacyPolicy, accepted }: any = {}) => {
-        if (!privacyPolicy || accepted) {
-          // If there is no privacy policy or the user already
-          // accepted the policy show the startup modals,
-          // otherwise the modals will start from the privacy
-          // policy component after the user accepts the terms
-          this.startupModalsService.showStartupModals();
-        }
-      });
+      .catch(err => console.error('Failed to load privacy policy', err));
   }
 
   private initUnreadCount() {
@@ -631,35 +622,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // enables tooltips that are visible on mobile devices
-  private enableTooltips() {
-    // running this code in NgZone will end up triggering app-wide change detection on every
-    // mouseover and mouseout event over every element on the page!
-    this.ngZone.runOutsideAngular(() => {
-      $('body').on('mouseenter', '.relative-date, .autoreply', (event) => {
-        const element = $(event.currentTarget);
-        if (element.data('tooltipLoaded') !== true) {
-          element
-            .data('tooltipLoaded', true)
-            .tooltip({
-              placement: 'bottom',
-              trigger: 'manual',
-              container: element.closest('.inbox-items, .item-content, .page'),
-            })
-            .tooltip('show');
-        }
-      });
-      $('body').on('mouseleave', '.relative-date, .autoreply', (event) => {
-        const element = $(event.currentTarget);
-        if (element.data('tooltipLoaded') === true) {
-          element
-            .data('tooltipLoaded', false)
-            .tooltip('hide');
-        }
-      });
-    });
-  }
-
   private recordStartupTelemetry() {
     window.startupTimes.angularBootstrapped = performance.now();
     this.telemetryService.record(
@@ -669,17 +631,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     if (window.startupTimes.replication) {
       this.telemetryService.record('boot_time:2_1:to_replication', window.startupTimes.replication);
-    }
-
-    if (window.startupTimes.purgingFailed) {
-      this.feedbackService.submit(`Error when purging on device startup: ${window.startupTimes.purgingFailed}`);
-      this.telemetryService.record('boot_time:purging_failed');
-    } else {
-      // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
-      this.telemetryService.record(`boot_time:purging:${window.startupTimes.purging}`);
-    }
-    if (window.startupTimes.purge) {
-      this.telemetryService.record('boot_time:2_2:to_purge', window.startupTimes.purge);
     }
 
     if (window.startupTimes.purgingMetaFailed) {

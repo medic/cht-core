@@ -33,6 +33,11 @@ const getErrorLog = async () => {
   const url = await userDetails[1].getText();
   return { errorMessage, url, username, errorStack };
 };
+const EMPTY_SELECTION = '.content-pane .item-content.empty-selection';
+
+const emptySelectionError = () => $(`${EMPTY_SELECTION}.selection-error`);
+
+const emptySelectionNoError = () => $(`${EMPTY_SELECTION}:not(.selection-error)`);
 
 const getTargetInfo = async (targetElement) => {
   const target = {
@@ -72,5 +77,8 @@ module.exports = {
   noSelectedTarget,
   goToTargets,
   getTargets,
-  getErrorLog
+  getErrorLog,
+  emptySelectionError,
+  emptySelectionNoError,
 };
+

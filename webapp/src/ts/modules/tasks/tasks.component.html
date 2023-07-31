@@ -11,7 +11,7 @@
       <ul *ngIf="!errorStack && hasTasks">
         <li *ngFor="let task of tasksList; trackBy: listTrackBy"
             [attr.data-record-id]="task._id"
-            [class.selected] = "task._id === selectedTask?._id"
+            [class.selected] = "task.selected"
             [class.overdue]="task.overdue"
             class="content-row"
         >

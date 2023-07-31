@@ -9,7 +9,6 @@ import { AnalyticsComponent } from '@mm-modules/analytics/analytics.component';
 import { AnalyticsFilterComponent } from '@mm-components/filters/analytics-filter/analytics-filter.component';
 import { GlobalActions } from '@mm-actions/global';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
-import { TourService } from '@mm-services/tour.service';
 import { Selectors } from '@mm-selectors/index';
 import { NavigationService } from '@mm-services/navigation.service';
 
@@ -17,7 +16,6 @@ describe('AnalyticsComponent', () => {
   let component: AnalyticsComponent;
   let fixture: ComponentFixture<AnalyticsComponent>;
   let globalActions;
-  let tourService;
   let store;
 
   beforeEach(waitForAsync(() => {
@@ -27,7 +25,6 @@ describe('AnalyticsComponent', () => {
     globalActions = {
       unsetSelected: sinon.stub(GlobalActions.prototype, 'unsetSelected')
     };
-    tourService = { startIfNeeded: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -42,7 +39,6 @@ describe('AnalyticsComponent', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockSelectors }),
-          { provide: TourService, useValue: tourService },
           { provide: NavigationService, useValue: {} },
         ]
       })
@@ -64,7 +60,6 @@ describe('AnalyticsComponent', () => {
     expect(component).to.exist;
     expect(component.analyticsModules).to.be.empty;
     expect(globalActions.unsetSelected.callCount).to.equal(1);
-    expect(tourService.startIfNeeded.callCount).to.equal(1);
   });
 
   it('should set analytics module when store emits', () => {

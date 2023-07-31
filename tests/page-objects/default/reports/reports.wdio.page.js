@@ -1,6 +1,6 @@
 const commonElements = require('../common/common.wdio.page');
 const searchElements = require('../search/search.wdio.page');
-const utils = require('../../../utils');
+const utils = require('@utils');
 
 const REPORTS_LIST_ID = '#reports-list';
 const SELECT_ALL_CHECKBOX = `${REPORTS_LIST_ID} .select-all input[type="checkbox"]`;
@@ -136,6 +136,7 @@ const getListReportInfo = async (listElement) => {
     form: await getElementText(listElement.$('.content .summary')),
     lineage: await getElementText(listElement.$('.content .detail')),
     reported_date: await getElementText(listElement.$('.content .heading .date')),
+    dataId: await listElement.getAttribute('data-record-id'),
   };
 };
 

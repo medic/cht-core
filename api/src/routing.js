@@ -40,7 +40,6 @@ const deprecation = require('./middleware/deprecation');
 const hydration = require('./controllers/hydration');
 const contactsByPhone = require('./controllers/contacts-by-phone');
 const createUserDb = require('./controllers/create-user-db');
-const purgedDocsController = require('./controllers/purged-docs');
 const privacyPolicyController = require('./controllers/privacy-policy');
 const couchConfigController = require('./controllers/couch-config');
 const faviconController = require('./controllers/favicon');
@@ -62,6 +61,7 @@ const cookie = require('./services/cookie');
 const deployInfo = require('./services/deploy-info');
 const dbDocHandler = require('./controllers/db-doc');
 const extensionLibs = require('./controllers/extension-libs');
+const replication = require('./controllers/replication');
 const app = express.Router({ strict: true });
 const MAX_REQUEST_SIZE = '32mb';
 
@@ -501,25 +501,6 @@ app.putJson('/api/v1/settings', settings.put);
 
 app.get('/api/couch-config-attachments', couchConfigController.getAttachments);
 
-app.get(
-  '/purging',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  purgedDocsController.info
-);
-app.get(
-  '/purging/changes',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  purgedDocsController.getPurgedDocs
-);
-app.get(
-  '/purging/checkpoint',
-  authorization.handleAuthErrors,
-  authorization.onlineUserPassThrough,
-  purgedDocsController.checkpoint
-);
-
 app.put(
   '/api/v1/credentials/:key',
   authorization.handleAuthErrors,
@@ -657,6 +638,25 @@ app.all(
   jsonQueryParser,
   dbDocHandler.request,
   authorization.setAuthorized // adds the `authorized` flag to the `req` object, so it passes the firewall
+);
+app.get(
+  '/api/v1/initial-replication/get-ids',
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  replication.getDocIds,
+);
+app.get(
+  '/api/v1/replication/get-ids',
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  replication.getDocIds,
+);
+app.post(
+  '/api/v1/replication/get-deletes',
+  jsonParser,
+  authorization.handleAuthErrors,
+  authorization.onlineUserPassThrough,
+  replication.getDocIdsToDelete,
 );
 
 const metaPathPrefix = `/${environment.db}-user-*-meta/`;

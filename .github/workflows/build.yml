@@ -53,7 +53,7 @@ jobs:
       run: ./scripts/ci/couch-start
     - name: Create logs directory
       run: mkdir tests/logs
-    - run: npm ci --legacy-peer-deps
+    - run: npm ci
     - name: Grunt Install
       run: npm install -g grunt-cli
     - name: Grunt CI-Compile
@@ -87,13 +87,13 @@ jobs:
         node-version: 16.x
     - name: Grunt Install
       run: npm install -g grunt-cli
-    - run: npm ci --legacy-peer-deps
+    - run: npm ci
     - name: Run Tests
       run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
 
   tests:
     needs: build
-    name: ${{ matrix.grunt-cmd }}
+    name: ${{ matrix.grunt-cmd }}-${{ matrix.suite ||'' }}
     runs-on: ubuntu-22.04
     env:
       NODE: 16.x
@@ -101,7 +101,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-default', 'ci-webdriver-standard', 'ci-e2e-integration', 'ci-e2e', 'ci-e2e-mobile', 'ci-webdriver-default-mobile']
+        grunt-cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
+        suite: [all]
+        include:
+          - grunt-cmd: ci-webdriver-default
+            suite: core
+          - grunt-cmd: ci-webdriver-default
+            suite: data
+          - grunt-cmd: ci-webdriver-default
+            suite: enketo
+          - grunt-cmd: ci-webdriver-default
+            suite: lowLevel
+          - grunt-cmd: ci-webdriver-default
+            suite: workflows
 
     steps:
     - name: Login to Docker Hub
@@ -149,7 +161,7 @@ jobs:
       run:  python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
     - name: Install cht-conf
       run:  npm install -g cht-conf
-    - run: npm ci --legacy-peer-deps
+    - run: npm ci
     - name: Fetch allure history
       uses: actions/checkout@v3
       with:
@@ -159,9 +171,10 @@ jobs:
     - name: Copy allure history
       run: |
         mkdir -p allure-results/history
-        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report/history allure-results | true
-    - name: Run tests
-      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
+        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}-${{ matrix.suite}}/allure-report/history allure-results | true
+    - name: Run tests ${{ matrix.grunt-cmd }}-${{ matrix.suite}}
+      run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }}" --suite=${{ matrix.suite}}
+    
     - name: Fetch allure history
       if: always()
       uses: actions/checkout@v3
@@ -172,8 +185,8 @@ jobs:
     - name: Copy new allure history
       if: always()
       run: |
-        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/history
-        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}/allure-report | true
+        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}-${{ matrix.suite }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}-${{ matrix.suite }}allure-report | true
     - name: Upload allure report history
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       uses: actions-js/push@master
@@ -192,8 +205,8 @@ jobs:
     - name: Copy new report
       if: always()
       run: |
-        mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}
-        cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }} | true
+        mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}-${{ matrix.suite }}
+        cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }}-${{ matrix.suite }} | true
     - name: Upload allure report
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       uses: actions-js/push@master
@@ -205,7 +218,7 @@ jobs:
     - name: Archive Results
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.grunt-cmd }}
+        name: ${{ matrix.grunt-cmd }}-${{ matrix.suite || ''}}
         path: |
           allure-results
           allure-report
@@ -214,7 +227,7 @@ jobs:
       if: ${{ failure() }}
 
   publish:
-    needs: [tests,config-tests]
+    needs: [tests, config-tests]
     name: Publish branch build
     runs-on: ubuntu-22.04
     if: ${{ github.event_name != 'pull_request' }}
@@ -256,7 +269,7 @@ jobs:
     - name: Publish
       run: |
         cd scripts/ci
-        npm ci --legacy-peer-deps
+        npm ci
         node ./publish.js
         node ./tag-docker-images.js
 
@@ -284,7 +297,7 @@ jobs:
       - name: Set ENV
         run: |
           echo "BUILDS_SERVER=$STAGING_SERVER" >> $GITHUB_ENV
-      - run: npm ci --legacy-peer-deps
+      - run: npm ci
       - name: Create logs directory
         run: mkdir tests/logs
       - name: Upgrade

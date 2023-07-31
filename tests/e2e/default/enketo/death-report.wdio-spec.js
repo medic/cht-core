@@ -1,15 +1,16 @@
 const moment = require('moment');
-const utils = require('../../../utils');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const deathReportForm = require('../../../page-objects/default/enketo/death-report.page');
+const utils = require('@utils');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const deathReportForm = require('@page-objects/default/enketo/death-report.page');
+const sentinelUtils = require('@utils/sentinel');
 
 describe('Submit a death report', () => {
   const places = placeFactory.generateHierarchy();
@@ -40,9 +41,10 @@ describe('Submit a death report', () => {
     expect(summaryDetails.deathInformation).to.equal(deathNote);
 
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await commonPage.sync(true);
-    
+    await commonPage.sync();
+    await sentinelUtils.waitForSentinel();
+    await commonPage.sync();
+
     expect(await contactPage.getContactDeceasedStatus()).to.equal('Deceased');
     expect(await (await contactPage.deathCard()).isDisplayed()).to.be.true;
 

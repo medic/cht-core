@@ -1,11 +1,11 @@
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default-mobile/reports/reports.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const reportFactory = require('../../../factories/cht/reports/generic-report');
-const personFactory = require('../../../factories/cht/contacts/person');
+const utils = require('@utils');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default-mobile/reports/reports.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const reportFactory = require('@factories/cht/reports/generic-report');
+const personFactory = require('@factories/cht/contacts/person');
 
 describe('Bulk delete reports', () => {
   const places = placeFactory.generateHierarchy();
@@ -13,18 +13,24 @@ describe('Bulk delete reports', () => {
   const offlineUser = userFactory.build({ username: 'offline_chw_bulk_delete', place: healthCenter._id });
   const patient = personFactory.build({ parent: { _id: healthCenter._id } });
   const reports = [
-    reportFactory.build(
-      { form: 'P' },
-      { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' }}
-    ),
-    reportFactory.build(
-      { form: 'P' },
-      { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' }}
-    ),
-    reportFactory.build(
-      { form: 'V' },
-      { patient, submitter: offlineUser.contact, fields: { ok: 'Yes!' }}
-    ),
+    reportFactory
+      .report()
+      .build(
+        { form: 'P' },
+        { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 3, 2022' }}
+      ),
+    reportFactory
+      .report()
+      .build(
+        { form: 'P' },
+        { patient, submitter: offlineUser.contact, fields: { lmp_date: 'Feb 16, 2022' }}
+      ),
+    reportFactory
+      .report()
+      .build(
+        { form: 'V' },
+        { patient, submitter: offlineUser.contact, fields: { ok: 'Yes!' }}
+      ),
   ];
 
   const savedUuids = [];

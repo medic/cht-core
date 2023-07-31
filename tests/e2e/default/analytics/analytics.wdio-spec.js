@@ -1,12 +1,12 @@
 const path = require('path');
 const expect = require('chai').expect;
 
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const chtConfUtils = require('../../../cht-conf-utils');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const chtConfUtils = require('@utils/cht-conf');
 
 const contacts = [
   {
@@ -54,7 +54,6 @@ describe('Targets', () => {
     await sentinelUtils.waitForSentinel();
 
     await loginPage.login({ username: chw.username, password: chw.password });
-    await commonPage.closeTour();
     await (await commonPage.analyticsTab()).waitForDisplayed();
   });
 

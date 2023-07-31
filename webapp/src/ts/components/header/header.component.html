@@ -67,7 +67,7 @@
               <i class="fa fa-fw" [ngClass]="replicationStatus.current?.icon"></i>
               <span>{{replicationStatus.current.key | translate}}</span>
             </a>
-            <a class="no-click" *ngIf="replicationStatus.lastSuccessTo">
+            <a class="no-click last-sync" *ngIf="replicationStatus.lastSuccessTo">
               <span>{{'sync.last_success' | translate}}</span>
               <span [innerHTML]="replicationStatus.lastSuccessTo | relativeDate"></span>
             </a>
@@ -75,18 +75,6 @@
 
           <li role="separator" class="divider" *ngIf="!replicationStatus.disabled"></li>
 
-          <li role="presentation" mmAuth="can_configure">
-            <a role="menuitem" tabindex="-1" (click)="openGuidedSetup()">
-              <i class="fa fa-fw fa-list-ol"></i>
-              <span>{{'Easy Setup Wizard' | translate}}</span>
-            </a>
-          </li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" (click)="openTourSelect()" *ngIf="tours.length">
-              <i class="fa fa-fw fa-graduation-cap"></i>
-              <span>{{'Guided Tour' | translate}}</span>
-            </a>
-          </li>
           <li role="presentation">
             <a routerLink="about" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-question"></i>
