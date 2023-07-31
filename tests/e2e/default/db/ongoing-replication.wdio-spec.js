@@ -23,6 +23,7 @@ const saveData = async (hierarchy) => {
 
 describe('ongoing replication', () => {
   before(async () => {
+    await sentinelUtils.skipToSeq();
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
 
