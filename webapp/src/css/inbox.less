@@ -872,6 +872,10 @@ a.fa:hover {
         border-top: 1px solid @separator-color;
         padding: 10px 30px 10px 20px;
         margin: 0;
+        .disabled a {
+          color: @inactive-color;
+          cursor: not-allowed;
+        }
         &.indent-1 {
           padding-left: 30px;
         }
