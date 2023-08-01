@@ -114,6 +114,7 @@ app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
 app.use(prometheusMiddleware({
   metricsPath: '/api/v1/express-metrics',
+  metricsPrefix: 'cht_api',
   // based on one-month analysed period of production traffic
   durationBuckets: [
     0.004, 0.007, 0.013, 0.027, 0.05,
