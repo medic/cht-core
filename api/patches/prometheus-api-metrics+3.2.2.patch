@@ -1,0 +1,36 @@
+diff --git a/node_modules/prometheus-api-metrics/src/express-middleware.js b/node_modules/prometheus-api-metrics/src/express-middleware.js
+index a1ef3d4..b1231ba 100644
+--- a/node_modules/prometheus-api-metrics/src/express-middleware.js
++++ b/node_modules/prometheus-api-metrics/src/express-middleware.js
+@@ -57,6 +57,10 @@ class ExpressMiddleware {
+                 route = route ? route + req.route.path : req.route.path;
+             }
+ 
++            if (route === '*') {
++                return route;
++            }
++
+             if (!route || route === '' || typeof route !== 'string') {
+                 route = req.originalUrl.split('?')[0];
+             } else {
+@@ -73,19 +77,12 @@ class ExpressMiddleware {
+             }
+         }
+ 
+-        // nest.js - build request url pattern if exists
+-        if (typeof req.params === 'object') {
+-            Object.keys(req.params).forEach((paramName) => {
+-                route = route.replace(req.params[paramName], ':' + paramName);
+-            });
+-        }
+-
+         // this condition will evaluate to true only in
+         // express framework and no route was found for the request. if we log this metrics
+         // we'll risk in a memory leak since the route is not a pattern but a hardcoded string.
+         if (!route || route === '') {
+             // if (!req.route && res && res.statusCode === 404) {
+-            route = 'N/A';
++            route = 'Static Content';
+         }
+ 
+         return route;
