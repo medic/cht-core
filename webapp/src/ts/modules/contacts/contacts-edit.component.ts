@@ -181,7 +181,7 @@ export class ContactsEditComponent implements OnInit, OnDestroy, AfterViewInit {
   private getFormInstanceData() {
     const type = this.contactTypesService.getTypeId(this.contact);
     if (!type) {
-      return {};
+      return null;
     }
 
     return { [type]: this.contact };

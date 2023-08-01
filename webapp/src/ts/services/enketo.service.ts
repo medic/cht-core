@@ -607,7 +607,6 @@ export class EnketoService {
       }
       return $('<temproot>').append($(xml).clone()).html();
     };
-
     const dbDocTags: string[] = [];
     $record
       .find('[db-doc]')
@@ -898,7 +897,7 @@ interface XmlFormContext {
     hasContactSummary: boolean;
   };
   wrapper: JQuery;
-  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
+  instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
   titleKey?: string;
   isFormInModal?: boolean;
   contactSummary: Record<string, any>;
@@ -907,7 +906,7 @@ interface XmlFormContext {
 export interface EnketoFormContext {
   selector: string;
   formDoc: Record<string, any>;
-  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
+  instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;
