@@ -1,8 +1,11 @@
 require('../../../../../../tests/aliases');
 const assert = require('chai').assert;
 const sinon = require('sinon');
+const glob = require('glob');
+const path = require('path');
 
 const utils = require('../../../../../../tests/utils');
+const { suites } = require('../../../../../../tests/e2e/default/suites');
 
 describe('Test utils', () => {
 
@@ -132,4 +135,21 @@ describe('Test utils', () => {
         });
     });
   });
+  
+  it('Check that all test specs belong to a test suites', async () => {
+    const pathToDefaultTesting = path.resolve(__dirname, '../../../../../../tests/e2e/default');
+    const suiteSpecs = [];
+    const getDirectories = (src) =>
+      new Promise((resolve, reject) => glob(src, (err, res) => err ? reject(err) : resolve(res)));
+
+    for (const relativePaths of Object.values(suites)) {
+      for (const relativePath of relativePaths) {
+        const resolvedPath = path.resolve(pathToDefaultTesting, relativePath);
+        suiteSpecs.push(...await getDirectories(resolvedPath));
+      }
+    }
+
+    const allSpecs = await getDirectories(path.join(pathToDefaultTesting, '/**/*.wdio-spec.js'));
+    assert.sameMembers(allSpecs, suiteSpecs);
+  }); 
 });
