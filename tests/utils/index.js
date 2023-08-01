@@ -759,7 +759,7 @@ const dockerComposeCmd = (...params) => {
 };
 
 const stopService = async (service) => {
-  await dockerComposeCmd('stop', '-t', 0, service);
+  await dockerComposeCmd('stop', '-t=0', service);
 };
 
 const stopSentinel = () => stopService('sentinel');
