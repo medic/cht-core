@@ -1033,7 +1033,7 @@ const saveLogs = async () => {
 
 const tearDownServices = async (removeOrphans) => {
   if (removeOrphans) {
-    return dockerComposeCmd('down', '-t=0', '--remove-orphans', '--volumes');
+    return dockerComposeCmd('down', '--remove-orphans', '--volumes');
   }
   await saveLogs();
 };
