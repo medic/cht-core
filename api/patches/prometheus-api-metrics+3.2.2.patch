@@ -1,11 +1,13 @@
 diff --git a/node_modules/prometheus-api-metrics/src/express-middleware.js b/node_modules/prometheus-api-metrics/src/express-middleware.js
-index a1ef3d4..b1231ba 100644
+index a1ef3d4..ad94252 100644
 --- a/node_modules/prometheus-api-metrics/src/express-middleware.js
 +++ b/node_modules/prometheus-api-metrics/src/express-middleware.js
-@@ -57,6 +57,10 @@ class ExpressMiddleware {
+@@ -57,6 +57,12 @@ class ExpressMiddleware {
                  route = route ? route + req.route.path : req.route.path;
              }
  
++            // CHT-CORE PATCH
++            // https://github.com/PayU/prometheus-api-metrics/issues/112
 +            if (route === '*') {
 +                return route;
 +            }
@@ -13,10 +15,12 @@ index a1ef3d4..b1231ba 100644
              if (!route || route === '' || typeof route !== 'string') {
                  route = req.originalUrl.split('?')[0];
              } else {
-@@ -73,19 +77,12 @@ class ExpressMiddleware {
+@@ -73,19 +79,15 @@ class ExpressMiddleware {
              }
          }
- 
+         
++        // CHT-CORE PATCH
++        // https://github.com/PayU/prometheus-api-metrics/issues/114
 -        // nest.js - build request url pattern if exists
 -        if (typeof req.params === 'object') {
 -            Object.keys(req.params).forEach((paramName) => {
