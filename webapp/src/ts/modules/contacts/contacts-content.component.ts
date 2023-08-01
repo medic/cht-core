@@ -403,7 +403,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
 
   private filterAllowedChildType(forms, childTypes: Record<string, any>[]) {
     if (!childTypes) {
-      return [];
+      return;
     }
 
     return childTypes
