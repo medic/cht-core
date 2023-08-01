@@ -22,7 +22,7 @@ export class DeleteDocConfirmComponent extends MmModalAbstract implements OnInit
 
   subscriptions: Subscription = new Subscription();
   lineageLib;
-  model: {doc: any} = { doc: null }; // Automatically assigned by BsModalRef
+  model = { doc: null as any }; // Automatically assigned by BsModalRef
 
   constructor(
     private store: Store,
