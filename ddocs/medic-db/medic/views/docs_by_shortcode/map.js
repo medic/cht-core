@@ -1,8 +1,4 @@
 function(doc) {
-  // emit tombstones so we don't reuse shortcodes
-  if (doc.type === 'tombstone' && doc.tombstone) {
-    doc = doc.tombstone;
-  }
   if (doc.place_id) {
     emit(doc.place_id);
   }

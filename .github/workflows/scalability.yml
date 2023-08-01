@@ -1,6 +1,7 @@
 name: Scalability Workflow
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "*-beta.*"

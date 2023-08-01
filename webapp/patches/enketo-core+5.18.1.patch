@@ -1,0 +1,49 @@
+diff --git a/node_modules/enketo-core/src/js/calculate.js b/node_modules/enketo-core/src/js/calculate.js
+index 09f2e5a..c7f6ae5 100644
+--- a/node_modules/enketo-core/src/js/calculate.js
++++ b/node_modules/enketo-core/src/js/calculate.js
+@@ -58,7 +58,13 @@ export default {
+                      * and the dependent node is inside the same repeat, we can prevent the expensive index determination
+                      */
+                     const dataNodeName = ( name.lastIndexOf( '/' ) !== -1 ) ? name.substring( name.lastIndexOf( '/' ) + 1 ) : name;
+-                    const dataNode = this.form.model.node( updated.repeatPath, updated.repeatIndex ).getElement().querySelector( dataNodeName );
++                    
++                    // CHT-CORE PATCH
++                    // patch enketo to fix repeat name collision bug
++                    // this should be removed when upgrading to a new version of enketo-core
++                    // https://github.com/enketo/enketo-core/issues/815
++                    const childNodeList = this.form.model.node( updated.repeatPath, updated.repeatIndex ).getElement().querySelectorAll( dataNodeName );
++                    const dataNode = Array.from( childNodeList ).filter( node => dataNodes.includes( node ) )[0];
+                     props.index = dataNodes.indexOf( dataNode );
+                     this._updateCalc( control, props, emptyNonRelevant );
+                 } else if ( control.type === 'hidden' ) {
+diff --git a/node_modules/enketo-core/src/js/form.js b/node_modules/enketo-core/src/js/form.js
+index 399d5b0..54e525e 100644
+--- a/node_modules/enketo-core/src/js/form.js
++++ b/node_modules/enketo-core/src/js/form.js
+@@ -662,6 +662,10 @@ Form.prototype.getDataStrWithoutIrrelevantNodes = function() {
+         const path = that.input.getName( node );
+         let target;
+ 
++        // CHT-CORE PATCH
++        // /inputs is ALWAYS relevant #4875
++        if(/\/inputs$/.test(path)) return;
++
+         /*
+          * Copied from relevant.js:
+          *
+diff --git a/node_modules/enketo-core/src/js/relevant.js b/node_modules/enketo-core/src/js/relevant.js
+index 971d9ce..2623f7d 100644
+--- a/node_modules/enketo-core/src/js/relevant.js
++++ b/node_modules/enketo-core/src/js/relevant.js
+@@ -216,7 +216,9 @@ export default {
+ 
+         if ( neverEnabled || this.selfRelevant( branchNode ) || forceClearNonRelevant ) {
+             changed = true;
+-            if ( forceClearNonRelevant ) {
++            // CHT PATCH
++            // /inputs is ALWAYS relevant #4875
++            if ( forceClearNonRelevant && !path.endsWith('/inputs') ) {
+                 this.clear( branchNode, path );
+             }
+ 
