@@ -406,7 +406,7 @@ describe('bulk-get handler', () => {
       });
   });
 
-  it('returns bodies of couchDB delete stubs', () => {
+  it('does not return bodies of couchDB delete stubs', () => {
     const docs = [
       { _id: 'a1', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 1' },
       { _id: 'a2', type: 'clinic', parent: { _id: 'fixture:offline' }, name: 'Allowed Contact 2' },
@@ -430,20 +430,7 @@ describe('bulk-get handler', () => {
         return utils.requestOnTestDb(offlineRequestOptions);
       })
       .then(result => {
-        chai.expect(result.results).to.deep.equal([
-          {
-            id: 'a1',
-            docs: [{ ok: { _id: 'a1', _rev: docs[0]._rev, _deleted: true }}],
-          },
-          {
-            id: 'a2',
-            docs: [{ ok: { _id: 'a2', _rev: docs[1]._rev, _deleted: true }}],
-          },
-          {
-            id: 'a3',
-            docs: [{ ok: { _id: 'a3', _rev: docs[2]._rev, _deleted: true }}],
-          }
-        ]);
+        chai.expect(result.results).to.deep.equal([]);
       });
   });
 

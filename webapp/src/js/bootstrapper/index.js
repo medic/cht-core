@@ -134,18 +134,6 @@
         }
       })
       .then(() => {
-        const purgeStarted = performance.now();
-        return purger
-          .purgeMain(localDb, userCtx)
-          .on('start', () => setUiStatus('PURGE_INIT'))
-          .on('progress', progress => setUiStatus('PURGE_INFO', { count: progress.purged }))
-          .on('done', () => window.startupTimes.purge = performance.now() - purgeStarted)
-          .catch(err => {
-            console.error('Error attempting to purge main db - continuing', err);
-            window.startupTimes.purgingFailed = err.message;
-          });
-      })
-      .then(() => {
         const purgeMetaStarted = performance.now();
         return purger
           .purgeMeta(localMetaDb)

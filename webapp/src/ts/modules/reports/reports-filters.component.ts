@@ -48,11 +48,11 @@ export class ReportsFiltersComponent implements AfterViewInit, OnDestroy {
     this.searchFiltersService.init(this.freetextFilter);
   }
 
-  applyFilters(force?) {
+  applyFilters() {
     if (this.disabled) {
       return;
     }
-    this.search.emit(force);
+    this.search.emit();
   }
 
   resetFilters() {

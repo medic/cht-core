@@ -287,10 +287,7 @@ describe('docs_by_replication_key', () => {
         path: '/_design/medic/_view/docs_by_replication_key?keys=' + JSON.stringify(keys),
         method: 'GET',
       })
-      .then(response => {
-        console.log('Got changes', response);
-        return response.rows.map(doc => doc.id);
-      })
+      .then(response => response.rows.map(doc => doc.id))
       .catch(err => console.log('Error requesting changes', err));
   };
 
@@ -319,95 +316,95 @@ describe('docs_by_replication_key', () => {
   });
 
   it('should always return forms', () => {
-    expect(docByPlaceIds).to.have.include('form:doc_by_place_test_form');
+    expect(docByPlaceIds).to.include('form:doc_by_place_test_form');
   });
 
-  it('should always return form deletes', () => {
-    expect(docByPlaceIds).to.have.include('form:some_deleted_form____tombstone');
+  it('should never return form deletes', () => {
+    expect(docByPlaceIds).to.not.include('form:some_deleted_form____tombstone');
   });
 
   describe('Documents associated with the person id', () => {
     it('should return clinics if a recursive parent is the user', () => {
-      expect(docByPlaceIds).to.have.include('report_about_patient');
-      expect(docByPlaceIds).to.have.include('report_about_patient_deleted____tombstone');
+      expect(docByPlaceIds).to.include('report_about_patient');
+      expect(docByPlaceIds).to.not.include('report_about_patient_deleted____tombstone');
     });
 
     it('should return district_hospitals if the recursive parent is the user', () => {
-      expect(docByPlaceIds).to.have.include('report_about_patient_2');
-      expect(docByPlaceIds).to.have.include('report_about_patient_2_deleted____tombstone');
+      expect(docByPlaceIds).to.include('report_about_patient_2');
+      expect(docByPlaceIds).to.not.include('report_about_patient_2_deleted____tombstone');
     });
 
     it('should return health_centers if the recursive parent is the user', () => {
-      expect(docByPlaceIds).to.have.include('report_about_place');
+      expect(docByPlaceIds).to.include('report_about_place');
     });
 
     it('should check the contact of the first message of the first task in kujua messages', () => {
-      expect(docByPlaceIds).to.have.include('test_kujua_message');
+      expect(docByPlaceIds).to.include('test_kujua_message');
       expect(docByPlaceIds).to.not.have.include('test_not_assigned_kujua_message');
     });
 
     it('should check the contact of data records', () => {
-      expect(docByPlaceIds).to.have.include('report_with_contact');
-      expect(docByPlaceIds).to.not.have.include('test_data_record_wrong_user');
+      expect(docByPlaceIds).to.include('report_with_contact');
+      expect(docByPlaceIds).to.not.include('test_data_record_wrong_user');
 
-      expect(docByPlaceIds).to.have.include('report_with_contact_deleted____tombstone');
-      expect(docByPlaceIds).to.not.have.include('test_data_record_wrong_user_deleted____tombstone');
+      expect(docByPlaceIds).to.not.include('report_with_contact_deleted____tombstone');
+      expect(docByPlaceIds).to.not.include('test_data_record_wrong_user_deleted____tombstone');
     });
 
     it('should fall back to contact id when unknown patient', () => {
-      expect(docByPlaceIds).to.have.include('report_with_unknown_patient_id');
+      expect(docByPlaceIds).to.include('report_with_unknown_patient_id');
     });
 
     it('should check for patient_uuid', () => {
-      expect(docByPlaceIds).to.have.include('report_with_patient_uuid');
-      expect(docByPlaceIds).to.not.have.include('report_with_patient_uuid_other_patient');
+      expect(docByPlaceIds).to.include('report_with_patient_uuid');
+      expect(docByPlaceIds).to.not.include('report_with_patient_uuid_other_patient');
     });
 
     it('should fall back to contact id when invalid patient', () => {
-      expect(docByPlaceIds).to.have.include('report_with_invalid_patient_id');
+      expect(docByPlaceIds).to.include('report_with_invalid_patient_id');
     });
 
     it('should return data_records with needs_signoff from same branch', () => {
-      expect(docByPlaceIds).to.have.include('needs_signoff_within_branch');
-      expect(docByPlaceIds).to.not.have.include('needs_signoff_within_branch_falsy');
-      expect(docByPlaceIds).to.not.have.include('needs_signoff_outside_branch');
+      expect(docByPlaceIds).to.include('needs_signoff_within_branch');
+      expect(docByPlaceIds).to.not.include('needs_signoff_within_branch_falsy');
+      expect(docByPlaceIds).to.not.include('needs_signoff_outside_branch');
     });
 
     it('should return target docs', () => {
-      expect(docByPlaceIds).to.have.include('target_created_by_user');
-      expect(docByPlaceIds).to.not.have.include('target_created_by_other_user');
+      expect(docByPlaceIds).to.include('target_created_by_user');
+      expect(docByPlaceIds).to.not.include('target_created_by_other_user');
     });
   });
 
   describe('Documents associated with user id', () => {
     it('should return task docs', () => {
-      expect(docByPlaceIds).to.have.include('task_created_by_user');
-      expect(docByPlaceIds).to.not.have.include('task_created_by_other_user');
+      expect(docByPlaceIds).to.include('task_created_by_user');
+      expect(docByPlaceIds).to.not.include('task_created_by_other_user');
     });
   });
 
   describe('Documents that only pass when unassigned == true', () => {
     it('should pass when no tasks', () => {
-      expect(docByPlaceIds_unassigned).to.have.include('test_kujua_message_no_tasks');
-      expect(docByPlaceIds).to.not.have.include('test_kujua_message_no_tasks');
+      expect(docByPlaceIds_unassigned).to.include('test_kujua_message_no_tasks');
+      expect(docByPlaceIds).to.not.include('test_kujua_message_no_tasks');
 
-      expect(docByPlaceIds_unassigned).to.have.include('test_kujua_message_no_tasks_deleted____tombstone');
-      expect(docByPlaceIds).to.not.have.include('test_kujua_message_no_tasks_deleted____tombstone');
+      expect(docByPlaceIds_unassigned).to.not.include('test_kujua_message_no_tasks_deleted____tombstone');
+      expect(docByPlaceIds).to.not.include('test_kujua_message_no_tasks_deleted____tombstone');
     });
 
     it('should pass when empty tasks', () => {
-      expect(docByPlaceIds_unassigned).to.have.include('test_kujua_message_empty_tasks');
-      expect(docByPlaceIds).to.not.have.include('test_kujua_message_empty_tasks');
+      expect(docByPlaceIds_unassigned).to.include('test_kujua_message_empty_tasks');
+      expect(docByPlaceIds).to.not.include('test_kujua_message_empty_tasks');
     });
 
     it('should pass when no contact', () => {
-      expect(docByPlaceIds_unassigned).to.have.include('test_kujua_message_no_contact');
-      expect(docByPlaceIds).to.not.have.include('test_kujua_message_no_contact');
+      expect(docByPlaceIds_unassigned).to.include('test_kujua_message_no_contact');
+      expect(docByPlaceIds).to.not.include('test_kujua_message_no_contact');
     });
 
     it('should pass when no contact (incoming)', () => {
-      expect(docByPlaceIds_unassigned).to.have.include('test_kujua_message_incoming_no_contact');
-      expect(docByPlaceIds).to.not.have.include('test_kujua_message_incoming_no_contact');
+      expect(docByPlaceIds_unassigned).to.include('test_kujua_message_incoming_no_contact');
+      expect(docByPlaceIds).to.not.include('test_kujua_message_incoming_no_contact');
     });
   });
 });
