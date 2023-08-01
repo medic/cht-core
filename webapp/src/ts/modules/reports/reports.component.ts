@@ -265,7 +265,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private query(opts) {
+  private query(opts?) {
     const options = Object.assign({ limit: PAGE_SIZE, hydrateContactNames: true }, opts);
     if (options.limit < PAGE_SIZE) {
       options.limit = PAGE_SIZE;
@@ -348,20 +348,16 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.search();
   }
 
-  search(force = false) {
+  search() {
     // clears report selection for any text search or filter selection
     // does not clear selection when someone is editing a form
     if ((this.filters.search || Object.keys(this.filters).length > 1) && !this.enketoEdited) {
       this.router.navigate(['reports']);
       this.reportsActions.clearSelection();
     }
-    if (!force && this.responsiveService.isMobile() && this.showContent) {
-      // leave content shown
-      return;
-    }
-    this.loading = true;
 
-    return this.query(force);
+    this.loading = true;
+    return this.query();
   }
 
   listTrackBy(index, report) {
