@@ -1,8 +1,8 @@
 const { expect } = require('chai');
 const URL = require('url');
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 
 /* global caches fetch Response navigator */
 
@@ -124,6 +124,8 @@ describe('Service worker cache', () => {
       '/login/lib-bowser.js',
       '/login/script.js',
       '/login/style.css',
+      '/login/images/hide-password.svg',
+      '/login/images/show-password.svg',
       '/main.js',
       '/manifest.json',
       '/medic/_design/medic/_rewrite/',

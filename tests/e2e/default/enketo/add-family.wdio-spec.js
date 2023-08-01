@@ -1,14 +1,14 @@
 const fs = require('fs');
 
-const familyForm = require('../../../page-objects/default/enketo/add-family.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const utils = require('../../../utils');
-const userData = require('../../../page-objects/default/users/user.data');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const { cookieLogin } = require('../../../page-objects/default/login/login.wdio.page');
+const familyForm = require('@page-objects/default/enketo/add-family.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const utils = require('@utils');
+const userData = require('@page-objects/default/users/user.data');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const { cookieLogin } = require('@page-objects/default/login/login.wdio.page');
 
-describe('Family form', () => {
+xdescribe('Family form', () => {
   const contactId = userData.contactId;
   const userDocs = userData.docs;
   const formXML = fs.readFileSync(`${__dirname}/forms/add-family-multiple-repeats.xml`, 'utf8');

@@ -1,6 +1,6 @@
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const messagesUtils = require('../../../utils/messages');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const messagesUtils = require('@utils/messages');
 const { assert } = require('chai');
 
 const CLINIC = utils.deepFreeze({

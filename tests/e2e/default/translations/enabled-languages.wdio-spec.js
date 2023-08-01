@@ -1,6 +1,6 @@
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const adminPage = require('../../../page-objects/default/admin/admin.wdio.page');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const adminPage = require('@page-objects/default/admin/admin.wdio.page');
 
 describe('Enabling/disabling languages', () => {
   before(async () => {
@@ -21,11 +21,8 @@ describe('Enabling/disabling languages', () => {
       ],
     };
     await utils.updateSettings(settings, true);
-    await browser.refresh();
-  });
-
-  after(async () => {
-    await utils.revertSettings(true);
+    await browser.reloadSession();
+    await browser.url('/');
   });
 
   it('should disable a language and enable another', async () => {

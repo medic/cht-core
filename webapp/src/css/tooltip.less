@@ -1,0 +1,43 @@
+@import 'variables';
+
+@media (pointer: coarse), (hover: none) {
+  /**
+   * Makes native “title” accessible from mobile devices if the element has tabindex=“0"
+   * since it makes the element focusable.
+   */
+  [title] {
+    position: relative;
+    display: inline-flex;
+    justify-content: left;
+  }
+
+  [title]:focus::before {
+    content: attr(title);
+    font-size: @font-extra-small;
+    line-height: @font-small;
+    color: @tooltip-text;
+    background-color: @tooltip-background;
+    border-radius: @radius-size-small;
+    width: max-content;
+    padding: 5px 8px;
+    position: absolute;
+    top: -28px;
+    right: -10px;
+    z-index: 1;
+  }
+
+  :not(mm-content-row) > .content-row:first-child,
+  mm-content-row:first-child .content-row:first-child {
+    [title]:focus:first-child::before {
+      top: 28px;
+    }
+  }
+
+  .item-summary .relative-date:focus {
+    min-width: 140px;
+  }
+
+  .sync-status .last-sync:focus-within {
+    overflow: visible;
+  }
+}

@@ -1,6 +1,6 @@
-const utils = require('../../utils');
+const utils = require('@utils');
 const request = require('request');
-const constants = require('../../constants');
+const constants = require('@constants');
 const _ = require('lodash');
 
 describe('server', () => {
@@ -186,6 +186,7 @@ describe('server', () => {
       await utils.stopHaproxy(); // this will also crash API
       await utils.startHaproxy();
       await utils.listenForApi();
+      await utils.delayPromise(1000);
 
       const forms = await utils.db.allDocs({
         start_key: 'form:',
@@ -208,6 +209,7 @@ describe('server', () => {
       await utils.stopApi();
       await utils.startHaproxy();
       await utils.startApi();
+      await utils.delayPromise(1000);
 
       await utils.request('/');
 
@@ -217,6 +219,7 @@ describe('server', () => {
       await utils.startHaproxy();
 
       await utils.listenForApi();
+      await utils.delayPromise(1000);
     });
   });
 });

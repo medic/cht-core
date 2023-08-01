@@ -1,13 +1,13 @@
 const uuid = require('uuid').v4;
-const commonPage = require('../../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../../page-objects/default/login/login.wdio.page');
-const reportPage = require('../../../../page-objects/default/reports/reports.wdio.page');
-const placeFactory = require('../../../../factories/cht/contacts/place');
-const reportFactory = require('../../../../factories/cht/reports/generic-report');
-const personFactory = require('../../../../factories/cht/contacts/person');
-const userFactory = require('../../../../factories/cht/users/users');
-const utils = require('../../../../utils');
-const sms = require('../../../../utils/sms');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const reportPage = require('@page-objects/default/reports/reports.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
+const reportFactory = require('@factories/cht/reports/generic-report');
+const personFactory = require('@factories/cht/contacts/person');
+const userFactory = require('@factories/cht/users/users');
+const utils = require('@utils');
+const sms = require('@utils/sms');
 
 const places = placeFactory.generateHierarchy();
 const clinic = places.get('clinic');
@@ -37,16 +37,18 @@ const patient = personFactory.build({
   parent: { _id: clinic._id, parent: { _id: health_center._id, parent: { _id: district_hospital._id }}}
 });
 
-const xmlReport = reportFactory.build({ form: 'home_visit', content_type: 'xml' }, { patient, submitter: contact });
-const smsReport = reportFactory.build(
-  {
-    form: 'P',
-    patient_id: patient._id,
-  },
-  {
-    patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id},
-  },
-);
+const xmlReport = reportFactory
+  .report()
+  .build(
+    { form: 'home_visit', content_type: 'xml' },
+    { patient, submitter: contact }
+  );
+const smsReport = reportFactory
+  .report()
+  .build(
+    { form: 'P', patient_id: patient._id, },
+    { patient, submitter: contact, fields: { lmp_date: 'Dec 3, 2022', patient_id: patient._id}, },
+  );
 
 describe('Online User', async () => {
 

@@ -1,5 +1,5 @@
-const utils = require('../../utils');
-const sentinelUtils = require('../../utils/sentinel');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 
 const NBR_DOCS = 300;
@@ -84,8 +84,6 @@ describe('Sentinel queue drain', () => {
       ids.push(id);
     }
 
-    let tombstonesIds;
-
     return utils
       .updateSettings(settings, 'sentinel')
       .then(() => utils.saveDocs(docs))
@@ -103,18 +101,6 @@ describe('Sentinel queue drain', () => {
         infos.forEach(info => {
           expect(info.transitions.default_responses.ok).to.be.true;
           expect(info.transitions.update_clinics.ok).to.be.true;
-        });
-      })
-      .then(() => utils.deleteDocs(ids))
-      .then(results => {
-        tombstonesIds = results.map(result => result.id + '____' + result.rev + '____' + 'tombstone');
-      })
-      .then(() => sentinelUtils.waitForSentinel(ids))
-      .then(() => utils.getDocs(tombstonesIds))
-      .then(tombstones => {
-        tombstones.forEach(tombstone => {
-          expect(tombstone.type).to.equal('tombstone');
-          expect(tombstone.tombstone).to.have.property('type', 'data_record');
         });
       });
   }).timeout(300 * 1000);

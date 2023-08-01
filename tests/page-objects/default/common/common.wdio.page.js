@@ -18,6 +18,7 @@ const taskTab = () => $('#tasks-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
+const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
@@ -32,6 +33,23 @@ const inactiveSnackbar = () => $('#snackbar:not(.active)');
 const snackbar = () => $('#snackbar.active .snackbar-message');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
+
+//Hamburguer menu
+//User settings
+const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user';
+const UPDATE_PASSWORD = '.user .configuration.page i.fa-key';
+const EDIT_PROFILE = '.user .configuration.page i.fa-user';
+// Feedback or Report bug
+const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
+const FEEDBACK = '#feedback';
+const feedbackTitle = () => $(`${FEEDBACK} .modal-header > h2`);
+const feedbackCancelButton = () => $(`${FEEDBACK} .btn.cancel`);
+const feedbackSubmitButton = () => $(`${FEEDBACK} .btn-primary`);
+//About menu
+const ABOUT_MENU = '#header-dropdown i.fa-question';
+const RELOAD_BUTTON = '.about.page .btn-primary';
+//Configuration App
+const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
@@ -79,7 +97,7 @@ const clickFastActionFlat = async ({ actionId, waitForList }) => {
   }
 };
 
-const openFastActionReport = async (formId, rightSideAction=true) => {
+const openFastActionReport = async (formId, rightSideAction = true) => {
   await waitForPageLoaded();
   if (rightSideAction) {
     await clickFastActionFAB({ actionId: formId });
@@ -250,7 +268,7 @@ const waitForLoaders = async () => {
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
-const waitForAngularLoaded = async (timeout = 30000) => {
+const waitForAngularLoaded = async (timeout = 40000) => {
   await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
 };
 
@@ -270,7 +288,7 @@ const syncAndNotWaitForSuccess = async () => {
   await (await syncButton()).click();
 };
 
-const syncAndWaitForSuccess = async (timeout=20000) => {
+const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
@@ -278,8 +296,14 @@ const syncAndWaitForSuccess = async (timeout=20000) => {
 };
 
 const sync = async (expectReload, timeout) => {
-  await syncAndWaitForSuccess(timeout);
+  let closedModal = false;
   if (expectReload) {
+    // it's possible that sync already happened organically, and we already have the reload modal
+    closedModal = await closeReloadModal(false, 0);
+  }
+
+  await syncAndWaitForSuccess(timeout);
+  if (expectReload && !closedModal) {
     await closeReloadModal();
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
@@ -293,38 +317,47 @@ const syncAndWaitForFailure = async () => {
   await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
 };
 
-const closeReloadModal = async (shouldUpdate = false) => {
+const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
     const button = shouldUpdate ? reloadModalUpdate() : reloadModalCancel();
-    await browser.waitUntil(async () => await (await button).waitForExist({ timeout: 2000 }));
+    await browser.waitUntil(async () => await (await button).waitForExist({ timeout }));
     // wait for the animation to complete
     await browser.pause(500);
     await (await button).click();
     await browser.pause(500);
+    return true;
   } catch (err) {
     console.error('Reload modal not showed up');
+    return false;
   }
 };
 
 const openReportBugAndFetchProperties = async () => {
-  await (await $('i.fa-bug')).click();
-  await (await $('#feedback')).waitForDisplayed();
+  await (await $(FEEDBACK_MENU)).waitForClickable();
+  await (await $(FEEDBACK_MENU)).click();
+  await (await $(FEEDBACK)).waitForDisplayed();
   return {
-    modalHeader: await (await $('#feedback .modal-header > h2')).getText(),
-    modelCancelButtonText: await (await $('#feedback .btn.cancel')).getText(),
-    modelSubmitButtonText: await (await $('#feedback .btn-primary')).getText()
+    modalHeader: await (await feedbackTitle()).getText(),
+    modelCancelButtonText: await (await feedbackCancelButton()).getText(),
+    modelSubmitButtonText: await (await feedbackSubmitButton()).getText()
   };
 };
 
-const openAboutMenu = async () => {
-  await (await $('i.fa-question')).click();
-  await (await $('.btn-primary=Reload')).waitForDisplayed();
+const isReportBugOpen = async () => {
+  return await (await feedbackTitle()).isExisting();
 };
 
-const openUserSettingsAndFetchProperties = async () => {
-  await (await $('=User settings')).click();
-  await (await $('=Update password')).waitForDisplayed();
-  await (await $('=Edit user profile')).waitForDisplayed();
+const closeReportBug = async () => {
+  if (await isReportBugOpen()) {
+    await (await feedbackCancelButton()).waitForClickable();
+    await (await feedbackCancelButton()).click();
+  }
+};
+
+const openAboutMenu = async () => {
+  await (await $(ABOUT_MENU)).waitForClickable();
+  await (await $(ABOUT_MENU)).click();
+  await (await $(RELOAD_BUTTON)).waitForDisplayed();
 };
 
 const openUserSettings = async () => {
@@ -332,13 +365,25 @@ const openUserSettings = async () => {
   await (await userSettingsMenuOption()).click();
 };
 
+const openUserSettingsAndFetchProperties = async () => {
+  await (await $(USER_SETTINGS)).waitForClickable();
+  await (await $(USER_SETTINGS)).click();
+  await (await $(UPDATE_PASSWORD)).waitForDisplayed();
+  await (await $(EDIT_PROFILE)).waitForDisplayed();
+};
+
 const openAppManagement = async () => {
-  await (await $('i.fa-cog')).click();
+  await (await $(CONFIGURATION_APP_MENU)).waitForClickable();
+  await (await $(CONFIGURATION_APP_MENU)).click();
   await (await $('.navbar-brand')).waitForDisplayed();
 };
 
 const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
+};
+
+const getAllButtonLabelsNames = async () => {
+  return await getTextForElements(getAllButtonLabels);
 };
 
 //more options menu
@@ -350,6 +395,13 @@ const isMenuOptionEnabled = async (action, item) => {
 
 const isMenuOptionVisible = async (action, item) => {
   return await (await optionSelector(action, item)).isDisplayed();
+};
+
+const loadNextInfiniteScrollPage = async () => {
+  await browser.execute(() => {
+    $('.items-container .content-row:last-child').get(0).scrollIntoView();
+  });
+  await waitForLoaderToDisappear(await $('.left-pane'));
 };
 
 module.exports = {
@@ -408,4 +460,7 @@ module.exports = {
   refresh,
   syncAndWaitForFailure,
   waitForAngularLoaded,
+  closeReportBug,
+  getAllButtonLabelsNames,
+  loadNextInfiniteScrollPage,
 };

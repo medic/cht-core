@@ -1,5 +1,5 @@
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
 
 describe('Hamburger Menu tests', async () => {
   before(async () => {
@@ -28,6 +28,7 @@ describe('Hamburger Menu tests', async () => {
       modelCancelButtonText: 'Cancel',
       modelSubmitButtonText: 'Submit'
     });
+    await commonPage.closeReportBug();
   });
 
   it('should open Configuration app', async () => {

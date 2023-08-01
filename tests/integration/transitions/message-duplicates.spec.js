@@ -1,6 +1,6 @@
 const chai = require('chai');
 const uuid = require('uuid').v4;
-const utils = require('../../utils');
+const utils = require('@utils');
 const apiUtils = require('./utils');
 
 const settings = {

@@ -1,8 +1,8 @@
 const _ = require('lodash');
 const chai = require('chai');
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const constants = require('../../../constants');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
+const constants = require('@constants');
 const uuid = require('uuid').v4;
 
 const password = 'passwordSUP3RS3CR37!';
@@ -588,24 +588,24 @@ describe('db-doc handler', () => {
           reportForPatient(patientUuid, username, fields, false, patientsToDelete);
 
         const reportScenarios = [
-          { doc: generateReport(patientWithShortcode, null, ['patient_id']), allowed: true },
-          { doc: generateReport(patientWithShortcode, null, ['patient_uuid']), allowed: true },
-          { doc: generateReport(patientWithShortcode, null, ['patient_uuid', 'patient_id']), allowed: true },
-          { doc: generateReport(patientWithoutShortcode, null, ['patient_uuid']), allowed: true },
-          { doc: generateReport(patientWithShortcode, submittersToDelete[0], ['patient_id']), allowed: true },
-          { doc: generateReport(patientWithShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
+          { doc: generateReport(patientWithShortcode, null, ['patient_id']), allowed: false },
+          { doc: generateReport(patientWithShortcode, null, ['patient_uuid']), allowed: false },
+          { doc: generateReport(patientWithShortcode, null, ['patient_uuid', 'patient_id']), allowed: false },
+          { doc: generateReport(patientWithoutShortcode, null, ['patient_uuid']), allowed: false },
+          { doc: generateReport(patientWithShortcode, submittersToDelete[0], ['patient_id']), allowed: false },
+          { doc: generateReport(patientWithShortcode, submittersToDelete[0], ['patient_uuid']), allowed: false },
           {
             doc: generateReport(patientWithShortcode, submittersToDelete[0], ['patient_uuid', 'patient_id']),
-            allowed: true
+            allowed: false
           },
-          { doc: generateReport(patientWithoutShortcode, submittersToDelete[0], ['patient_uuid']), allowed: true },
-          { doc: generateReport(patientWithShortcode, submittersToDelete[1], ['patient_id']), allowed: true },
-          { doc: generateReport(patientWithShortcode, submittersToDelete[1], ['patient_uuid']), allowed: true },
+          { doc: generateReport(patientWithoutShortcode, submittersToDelete[0], ['patient_uuid']), allowed: false },
+          { doc: generateReport(patientWithShortcode, submittersToDelete[1], ['patient_id']), allowed: false },
+          { doc: generateReport(patientWithShortcode, submittersToDelete[1], ['patient_uuid']), allowed: false },
           {
             doc: generateReport(patientWithShortcode, submittersToDelete[1], ['patient_uuid', 'patient_id']),
-            allowed: true
+            allowed: false
           },
-          { doc: generateReport(patientWithoutShortcode, submittersToDelete[1], ['patient_uuid']), allowed: true },
+          { doc: generateReport(patientWithoutShortcode, submittersToDelete[1], ['patient_uuid']), allowed: false },
 
           { doc: generateReport(onlinePatientWithShortcode, null, ['patient_id']), allowed: false },
           { doc: generateReport(onlinePatientWithShortcode, null, ['patient_uuid']), allowed: false },
@@ -683,7 +683,6 @@ describe('db-doc handler', () => {
               if (reportScenarios[idx].allowed) {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc, idx);
               } else {
-                console.log(idx);
                 chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'}, idx);
               }
             });
@@ -788,6 +787,7 @@ describe('db-doc handler', () => {
               if (reportScenarios[idx].allowed) {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc);
               } else {
+                console.log(idx, result);
                 chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
               }
             });
@@ -813,7 +813,7 @@ describe('db-doc handler', () => {
               if (reportScenarios[idx].allowed) {
                 chai.expect(result).to.deep.include(reportScenarios[idx].doc);
               } else {
-                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
+                chai.expect(result).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'}, idx);
               }
             });
           })
@@ -850,50 +850,6 @@ describe('db-doc handler', () => {
             });
           });
       });
-    });
-
-    it('GET delete stubs', () => {
-      offlineRequestOptions.method = 'GET';
-
-      const docs = [
-        {
-          _id: 'a1',
-          type: 'clinic',
-          parent: { _id: 'fixture:offline' },
-          name: 'Allowed Contact 1',
-        },
-        {
-          _id: 'd1',
-          type: 'clinic',
-          parent: { _id: 'fixture:online' },
-          name: 'Denied Contact 1',
-        },
-      ];
-
-      return utils
-        .saveDocs(docs)
-        .then(result => Promise.all(docs.map((doc, key) => utils.requestOnTestDb(
-          { method: 'DELETE', path: `/${doc._id}?rev=${result[key].rev}`, }
-        ))))
-        .then(results => {
-          results.forEach((result, key) => (docs[key]._rev = result.rev));
-          return Promise.all(docs.map(doc => utils.requestOnTestDb(
-            _.defaults({ path: `/${doc._id}?rev=${doc._rev}` }, offlineRequestOptions)
-          )));
-        })
-        .then(results => {
-          chai.expect(results.length).to.equal(2);
-          chai.expect(results[0]).to.deep.equal({
-            _id: 'a1',
-            _rev: docs[0]._rev,
-            _deleted: true,
-          });
-          chai.expect(results[1]).to.deep.equal({
-            _id: 'd1',
-            _rev: docs[1]._rev,
-            _deleted: true,
-          });
-        });
     });
 
     it('GET with open_revs', () => {
@@ -972,29 +928,19 @@ describe('db-doc handler', () => {
           )
         )
         .then(results => {
-          chai.expect(results[0].length).to.equal(3);
+          chai.expect(results[0].length).to.equal(2);
           chai.expect(results[0][0].ok._rev.startsWith('1')).to.equal(true);
           chai.expect(results[0][1].ok._rev.startsWith('2')).to.equal(true);
-          chai.expect(results[0][2].ok._rev.startsWith('4')).to.equal(true);
           chai.expect(
-            results[0].every(result => result.ok._id === 'a1_revs' &&
-              (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))
+            results[0].every(result => result.ok._id === 'a1_revs' && result.ok.parent._id === 'fixture:offline')
           ).to.equal(true);
 
-          chai.expect(results[1].length).to.equal(1);
-          chai.expect(results[1][0].ok._deleted).to.equal(true);
+          chai.expect(results[1].length).to.equal(0);
 
-          chai.expect(results[2].length).to.equal(2);
+          chai.expect(results[2].length).to.equal(1);
           chai.expect(results[2][0].ok._rev.startsWith('3')).to.equal(true);
-          chai.expect(results[2][1].ok._rev.startsWith('4')).to.equal(true);
-          chai.expect(
-            results[2].every(result => result.ok._id === 'd1_revs' &&
-              (result.ok._deleted || result.ok.parent._id === 'fixture:offline'))
-          ).to.equal(true);
-
-          chai.expect(results[3].length).to.equal(1);
-          chai.expect(results[3][0].ok._deleted).to.equal(true);
-
+          chai.expect(results[2][0].ok).to.deep.include({ _id: 'd1_revs', parent: { _id: 'fixture:offline' } });
+          chai.expect(results[3].length).to.equal(0);
           chai.expect(results[4].length).to.equal(0);
           chai.expect(results[5].length).to.equal(0);
         });

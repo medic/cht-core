@@ -16,6 +16,9 @@
     "node": ">=16.12.0",
     "npm": ">=8.3.1"
   },
+  "scripts": {
+    "postinstall": "patch-package"
+  },
   "dependencies": {
     "@angular/animations": "^15.0.4",
     "@angular/cdk": "^15.0.4",
@@ -27,19 +30,6 @@
     "@angular/platform-browser": "^15.0.4",
     "@angular/platform-browser-dynamic": "^15.0.4",
     "@angular/router": "^15.0.4",
-    "@medic/bulk-docs-utils": "file:../shared-libs/bulk-docs-utils",
-    "@medic/calendar-interval": "file:../shared-libs/calendar-interval",
-    "@medic/cht-script-api": "file:../shared-libs/cht-script-api",
-    "@medic/contact-types-utils": "file:../shared-libs/contact-types-utils",
-    "@medic/lineage": "file:../shared-libs/lineage",
-    "@medic/message-utils": "file:../shared-libs/message-utils",
-    "@medic/phone-number": "file:../shared-libs/phone-number",
-    "@medic/registration-utils": "file:../shared-libs/registration-utils",
-    "@medic/rules-engine": "file:../shared-libs/rules-engine",
-    "@medic/search": "file:../shared-libs/search",
-    "@medic/task-utils": "file:../shared-libs/task-utils",
-    "@medic/translation-utils": "file:../shared-libs/translation-utils",
-    "@medic/validation": "file:../shared-libs/validation",
     "@ngrx/effects": "^15.1.0",
     "@ngrx/store": "^15.1.0",
     "@ngx-translate/core": "^14.0.0",
@@ -78,6 +68,9 @@
     "tslib": "^2.4.1",
     "uuid": "^8.3.2",
     "zone.js": "^0.11.8"
+  },
+  "overrides": {
+    "minimist": ">=1.2.6"
   },
   "resolutions": {
     "**/jquery": "3.2.x",

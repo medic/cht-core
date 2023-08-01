@@ -1,13 +1,13 @@
 const moment = require('moment');
 
-const utils = require('../../../utils');
-const commonElements = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const reportFactory = require('../../../factories/cht/reports/generic-report');
+const utils = require('@utils');
+const commonElements = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const reportFactory = require('@factories/cht/reports/generic-report');
 
 describe('Reports tab breadcrumbs', () => {
   const places = placeFactory.generateHierarchy();
@@ -54,18 +54,20 @@ describe('Reports tab breadcrumbs', () => {
 
   const today = moment();
   const reports = [
-    reportFactory.build(
-      {
-        form: 'P',
-        reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf(),
-        patient_id: 'patient1',
-      },
-      {
-        patient,
-        submitter: offlineUser.contact,
-        fields: { lmp_date: 'Feb 3, 2022', patient_id: 'patient1' },
-      },
-    ),
+    reportFactory
+      .report()
+      .build(
+        {
+          form: 'P',
+          reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf(),
+          patient_id: 'patient1',
+        },
+        {
+          patient,
+          submitter: offlineUser.contact,
+          fields: { lmp_date: 'Feb 3, 2022', patient_id: 'patient1' },
+        },
+      ),
   ];
 
   before(async () => {

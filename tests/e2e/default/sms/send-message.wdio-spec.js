@@ -1,10 +1,10 @@
-const utils = require('../../../utils');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const messagesPage = require('../../../page-objects/default/sms/messages.wdio.page');
+const utils = require('@utils');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const messagesPage = require('@page-objects//default/sms/messages.wdio.page');
 
 describe('Send message', () => {
   const rawNumber = '+50683858585';

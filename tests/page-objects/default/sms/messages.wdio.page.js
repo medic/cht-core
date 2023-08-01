@@ -50,6 +50,7 @@ const getMessageContent = async  (index = 1) => {
   return {
     content: await sms.$('p[test-id="sms-content"]').getText(),
     state: await sms.$('.state').getText(),
+    dataId: await sms.getAttribute('data-id'),
   };
 };
 
