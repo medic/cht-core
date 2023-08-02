@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TranslateLoader } from '@ngx-translate/core';
-import { from } from 'rxjs';
+import { from, Observable } from 'rxjs';
 
 import { DbService } from '@mm-services/db.service';
 import * as translationUtils from '@medic/translation-utils';
@@ -13,6 +13,10 @@ export class TranslationLoaderProvider implements TranslateLoader {
   private loadingPromises = {};
 
   getTranslation(locale) {
+    if (!locale) {
+      return undefined as unknown as Observable<any>;
+    }
+
     if (this.loadingPromises[locale]) {
       return from(this.loadingPromises[locale]);
     }
