@@ -84,7 +84,7 @@ const runPurging = async () => {
 };
 
 describe('purge', function() {
-  this.timeout(2 * 120000); //sometimes test takes a little longer than original timeout
+  this.timeout(4 * 60 * 1000); //sometimes test takes a little longer than original 2 minutes timeout
 
   afterEach(async () => {
     await utils.deleteUsers([user]);
