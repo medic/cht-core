@@ -60,6 +60,12 @@ describe('UHCStats Service', () => {
     });
   });
 
+  it('should not return UHC Interval if setting arent provided', () => {
+    const result = service.getUHCInterval(null as any);
+
+    expect(result).to.be.undefined;
+  });
+
   it('should get home visit stats', async () => {
     const contact = { _id: '2b' };
     const range = {
