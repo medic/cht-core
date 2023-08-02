@@ -251,10 +251,11 @@ export class RelativeDatePipe implements PipeTransform {
     const options = {
       FormatDate: this.formatDateService,
       RelativeDate: this.relativeDateService,
-      raw,
+      raw: undefined as boolean | undefined
     };
 
     if (raw) {
+      options.raw = true;
       return getRelativeDate(date, options);
     } else {
       return this.sanitizer.bypassSecurityTrustHtml(getRelativeDate(date, options));
@@ -275,12 +276,12 @@ export class RelativeDayPipe implements PipeTransform {
     private relativeDateService:RelativeDateService,
   ) {}
 
-  transform(date, raw = false) {
+  transform(date, raw?) {
     const options = {
       FormatDate: this.formatDateService,
       RelativeDate: this.relativeDateService,
       withoutTime: true,
-      raw,
+      raw: undefined as boolean | undefined,
     };
 
     if (raw) {
