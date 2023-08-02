@@ -248,7 +248,7 @@ describe('validations', () => {
     });
   });
 
-  it('should fail uniquePhone if phone is found in db', () => {
+  it('unique phone validation should fail if db query for phone returns doc', () => {
     clock = sinon.useFakeTimers();
     sinon.stub(db.medic, 'query').resolves({
       rows: [
@@ -279,7 +279,7 @@ describe('validations', () => {
     });
   });
 
-  it('should pass uniquePhone if phone is not found in db', () => {
+  it('unique phone validation should pass if db query for phone does not return any doc', () => {
     clock = sinon.useFakeTimers();
     sinon.stub(db.medic, 'query').resolves({ undefined });
     const validations = [
@@ -288,14 +288,14 @@ describe('validations', () => {
         rule: 'uniquePhone("phone_number")',
         message: [
           {
-            content: 'Duplicate phone',
+            content: 'unique phone',
             locale: 'en',
           },
         ],
       },
     ];
     const doc = {
-      _id: 'duplicate',
+      _id: 'unique',
       xyz: '+9779841111111',
     };
     return validation.validate(doc, validations).then(errors => {

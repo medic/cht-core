@@ -97,6 +97,20 @@ describe('sms parser', () => {
     chai.expect(smsparser.getFormCode('द CDT33')).to.equal('द');
   });
 
+
+  ['full', 'none', 'partial'].forEach(validationtype => {
+    it('supports all type of phone validation', () => {
+      const doc = { message: 'NP 20 +9779841202020' };
+      const def = definitions.forms.NP;
+      sinon.stub(config, 'getAll').returns({
+        default_country_code: 977,
+        phone_validation: validationtype
+      });
+      const data = smsparser.parse(def, doc);
+      chai.expect(data.phone_number).to.equal('+9779841202020');
+    })
+  });
+
   it('accepts phone number with extension', () => {
     const doc = { message: 'NP 20 +9779841202020' };
     const def = definitions.forms.NP;
@@ -142,10 +156,10 @@ describe('sms parser', () => {
   });
 
   //India , Kenya, Tanzania Phone is accepted as contact info in Nepal region.
-  //Just incase we make cross region/borders tool
+  //Just in case we make cross region/borders tool
   [['NP 20 +918750660880 Prajwol', '+918750660880'],
-    ['NP 20 +254773087889 Prajwol', '+254773087889'],
-    ['NP 20 +255712262987 Prajwol', '+255712262987']].forEach(phoneNumerWithParsed => {
+  ['NP 20 +254773087889 Prajwol', '+254773087889'],
+  ['NP 20 +255712262987 Prajwol', '+255712262987']].forEach(phoneNumerWithParsed => {
     it(`returns parsed number if valid phone of another the region ${phoneNumerWithParsed[1]}`, () => {
       const doc = { message: phoneNumerWithParsed[0] };
       const def = definitions.forms.NP;

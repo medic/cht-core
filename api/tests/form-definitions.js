@@ -792,7 +792,7 @@ exports.forms = {
       }
     }
   },
-  'NP': {
+  NP: {
     'meta': {
       'code': 'NP',
       'translation_key': 'forms.np.title',
@@ -812,14 +812,6 @@ exports.forms = {
         },
         'position': 0,
         'type': 'integer',
-        'length': [
-          1,
-          3
-        ],
-        'range': [
-          0,
-          125
-        ],
         'required': true
       },
       'phone_number': {
@@ -852,10 +844,6 @@ exports.forms = {
         },
         'position': 2,
         'type': 'string',
-        'length': [
-          3,
-          30
-        ],
         'required': true
       }
     },

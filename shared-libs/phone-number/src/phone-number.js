@@ -15,13 +15,13 @@ const _init = function (settings, phone) {
 
   const validPhone = () => {
     if (validationType === 'partial') {
-      //quickly guesses whether a number is a possible phone number by using only the length information,
+      //Quickly guesses whether a number is a possible phone number by using only the length information,
       return instance.isPossibleNumber(parsed);
     }
     if (validationType === 'none') {
       return true;
     }
-    //Does full validation of a phone number for a region using length and prefix information.
+    // Does full validation of a phone number for a region using length and prefix information.
     return instance.isValidNumber(parsed);
   };
 

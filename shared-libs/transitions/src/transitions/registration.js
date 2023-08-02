@@ -196,8 +196,7 @@ const getPhoneNumber = doc => {
 const setPhoneNumber = options => {
   const doc = options.doc;
   const phoneNumber = getPhoneNumber(doc);
-  // By default for a valid phone number SmsParser itself adds a country code if not provided
-  // So if country code is not present in phone_number throw error
+  //sms parser already validate the phone this is a just in case check if by any chance it has become invalid.
   const appSettings = config.getAll();
   const validPhone = phoneNumberParser.validate(appSettings, phoneNumber);
   if (!validPhone) {
