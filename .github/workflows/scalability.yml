@@ -1,28 +1,34 @@
 name: Scalability Workflow
-# This workflow is triggered on pushes to the repository.
+
 on:
+  workflow_dispatch:
   push:
-    tags: 
+    tags:
       - "*-beta.*"
-      
+
+env:
+  STAGING_SERVER: ${{ secrets.AUTH_MARKET_URL && '_couch/builds_4' || '_couch/builds_external' }}
+  MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
+  INTERNAL_CONTRIBUTOR: ${{ secrets.SCALABILITY_ARN && 'true' }}
+  SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
+  TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
+  BRANCH: ${{ github.head_ref || github.ref_name }}
+  BUILD_NUMBER: ${{ github.run_id }}
+
 jobs:
   build:
     name: Set up Medic on EC2 and Execute Jmeter on another EC2
     runs-on: ubuntu-22.04
     steps:
-      - name: Set TAG_NAME var
-        run: echo "TAG_NAME=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-access-key-id: ${{ secrets.SCALABILITY_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SCALABILITY_SECRET_ACCESS_KEY }}
           aws-region: ca-central-1
-      - name: Start EC2 and Medics
-        run: cd tests/scalability && ./start_ec2_medic.sh $TAG_NAME
-      - name: Execute Jmeter
-        env: 
-          SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
-        run: cd tests/scalability && ./start_jmeter_ec2.sh 
+      - name: Start EC2 and CHT
+        if: ${{ env.INTERNAL_CONTRIBUTOR }}
+        run: cd tests/scalability && ./start-ec2-cht.sh $TAG

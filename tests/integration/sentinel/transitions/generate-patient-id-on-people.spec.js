@@ -1,6 +1,6 @@
 const chai = require('chai');
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
+const utils = require('@utils');
+const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
 const { expect } = require('chai');
 

@@ -1,10 +1,10 @@
-const utils = require('../../../utils');
-const userData = require('../../../page-objects/default/users/user.data');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const pregnancyVisitForm = require('../../../page-objects/default/enketo/pregnancy-visit.wdio.page');
+const utils = require('@utils');
+const userData = require('@page-objects/default/users/user.data');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const pregnancyVisitForm = require('@page-objects/default/enketo/pregnancy-visit.wdio.page');
 
 describe('Pregnancy Visit', () => {
   before(async () => {
@@ -15,7 +15,7 @@ describe('Pregnancy Visit', () => {
   });
 
   it('Submit and validate Pregnancy Visit form and keeps the report minified', async () => {
-    await reportsPage.openForm('Pregnancy Visit');
+    await commonPage.openFastActionReport('pregnancy-visit', false);
     await pregnancyVisitForm.selectPatient(userData.userContactDoc.name);
     await genericForm.nextPage();
     const selectedDangerSigns = await pregnancyVisitForm.selectAllDangerSigns();
@@ -36,10 +36,10 @@ describe('Pregnancy Visit', () => {
     expect(firstReport.lineage).to.equal(userData.docs[0].name);
 
     //report details
-    expect(await (await reportsPage.submitterName()).getText())
-      .to.equal(`Submitted by ${userData.userContactDoc.name} `);
-    expect(await (await reportsPage.submitterPhone()).getText()).to.equal(userData.userContactDoc.phone);
-    expect(await (await reportsPage.submitterPlace()).getText()).to.equal(userData.docs[0].name);
+    const openReportInfo = await reportsPage.getOpenReportInfo();
+    expect(openReportInfo.senderName).to.equal(`Submitted by ${userData.userContactDoc.name} `);
+    expect(openReportInfo.senderPhone).to.equal(userData.userContactDoc.phone);
+    expect(openReportInfo.lineage).to.equal(userData.docs[0].name);
     expect(await (await reportsPage.selectedCaseId()).getText()).to.match(/^\d{5}$/);
   });
 });

@@ -1,4 +1,4 @@
-const utils = require('../../../utils');
+const utils = require('@utils');
 const fs = require('fs');
 const moment = require('moment');
 const genericForm = require('./generic-form.wdio.page');
@@ -26,13 +26,13 @@ const getYNValue = (boolean) => boolean ? 'yes' : 'no';
 
 const selectRadioButtonByValue = async value => {
   const radioElement = await $(`[value=${value}]`);
-  await radioElement.waitForDisplayed();
+  await radioElement.waitForClickable();
   await radioElement.click();
 };
 
 const selectRadioButtonByNameAndValue = async (name, value) => {
   const radioElement = await $(`[name="${name}"][value="${value}"]`);
-  await radioElement.waitForDisplayed();
+  await radioElement.waitForClickable();
   await radioElement.click();
 };
 
@@ -161,7 +161,7 @@ const getAliveBabyUUID = async (index) => {
 };
 
 module.exports = {
-  formTitle: docs[0].title,
+  formInternalId: docs[0].internalId,
   configureForm: (userContactDoc) => {
     return utils.seedTestData(userContactDoc, docs);
   },

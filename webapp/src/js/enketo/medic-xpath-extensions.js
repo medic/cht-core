@@ -9,6 +9,7 @@ const XPR = {
 let zscoreUtil;
 let toBikramSambat;
 let moment;
+let chtScriptApi;
 
 const isObject = (value) => {
   const type = typeof value;
@@ -146,10 +147,11 @@ const addDate = function (date, years, months, days, hours, minutes) {
 module.exports = {
   getTimezoneOffsetAsTime: getTimezoneOffsetAsTime,
   toISOLocalString: toISOLocalString,
-  init: function(_zscoreUtil, _toBikramSambat, _moment) {
+  init: function(_zscoreUtil, _toBikramSambat, _moment, _chtScriptApi) {
     zscoreUtil = _zscoreUtil;
     toBikramSambat = _toBikramSambat;
     moment = _moment;
+    chtScriptApi = _chtScriptApi;
   },
   func: {
     'add-date': addDate,
@@ -176,6 +178,16 @@ module.exports = {
       const months = d2Moment.diff(d1Moment, 'months');
       return XPR.number(months);
     },
+    'cht:extension-lib': function() {
+      const args = Array.from(arguments);
+      const firstArg = args.shift();
+      const libId = firstArg && firstArg.v;
+      const lib = libId && chtScriptApi.v1.getExtensionLib(libId);
+      if (!lib) {
+        throw new Error(`Form configuration error: no extension-lib with ID "${libId}" found`);
+      }
+      return lib.apply(null, args);
+    }
   },
   process: {
     toExternalResult: function(r) {

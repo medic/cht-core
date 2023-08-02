@@ -1,0 +1,48 @@
+<section
+  class="fast-action-trigger"
+  *ngIf="!useOldActionBar && !selectMode && fastActions?.length"
+  [class.embed-fast-action]="config?.button?.type === buttonTypeFlat"
+  [attr.test-id]="getFastExecutableAction() ? 'one-action-no-menu' : 'multiple-actions-menu'">
+
+  <button
+    mat-fab
+    color="primary"
+    class="fast-action-fab-button"
+    *ngIf="config?.button?.type !== buttonTypeFlat"
+    (click)="open()">
+    <mat-icon [fontIcon]="getTriggerButtonIcon()" color="white"></mat-icon>
+  </button>
+
+  <button
+    mat-flat-button
+    color="primary"
+    class="fast-action-flat-button"
+    *ngIf="config?.button?.type === buttonTypeFlat"
+    (click)="open()">
+    {{ (getActionLabel() || config?.button?.label) | translate }}
+  </button>
+
+</section>
+
+<ng-template #contentWrapper>
+  <section class="fast-action-content-wrapper">
+
+    <mm-panel-header [headerTitle]="config?.title || 'fast_action_button.title'" (onClose)="closeAll()"></mm-panel-header>
+
+    <mat-list class="fast-action-body">
+      <mat-list-item *ngFor="let action of fastActions; trackBy: trackById">
+        <a
+          class="fast-action-item"
+          [attr.test-id]="action.id"
+          (click)="executeAction(action)">
+          <div class="fast-action-item-icon" *ngIf="action.icon?.name">
+            <mat-icon *ngIf="action.icon.type === iconTypeFontAwesome" [fontIcon]="action.icon.name"></mat-icon>
+            <span *ngIf="action.icon.type === iconTypeResource" [innerHTML]="action.icon.name | resourceIcon" class="fast-action-resource-icon"></span>
+          </div>
+          <p class="fast-action-item-label">{{ action.label || (action.labelKey | translate) }}</p>
+        </a>
+      </mat-list-item>
+    </mat-list>
+
+  </section>
+</ng-template>

@@ -21,25 +21,11 @@ const stagingAttachmentsPath = path.resolve(stagingPath, '_attachments');
 const localBuildPath = path.resolve(__dirname, '..', '..', 'local-build');
 const ddocsBuildPath = path.resolve(buildPath, 'ddocs');
 
-const getCouchConfig = () => {
-  if (!COUCH_URL) {
-    throw 'Required environment variable COUCH_URL is undefined. (eg. http://your:pass@localhost:5984/medic)';
-  }
-  const parsedUrl = new URL(COUCH_URL);
-  if (!parsedUrl.username || !parsedUrl.password) {
-    throw 'COUCH_URL must contain admin authentication information';
-  }
-
-  return {
-    username: parsedUrl.username,
-    password: parsedUrl.password,
-    dbName: parsedUrl.pathname.substring(1),
-    withPath: path => `${parsedUrl.protocol}//${parsedUrl.username}:${parsedUrl.password}@${parsedUrl.host}/${path}`,
-    withPathNoAuth: path => `${parsedUrl.protocol}//${parsedUrl.host}/${path}`,
-  };
-};
-
 const getApiUrl = (pathname = '') => {
+  if (!COUCH_URL) {
+    throw new Error('Required environment variable COUCH_URL is undefined. (eg. http://your:pass@localhost:5984/medic)');
+  }
+
   const apiUrl = new URL(COUCH_URL);
   apiUrl.port = API_PORT || DEFAULT_API_PORT;
   apiUrl.pathname = pathname;
@@ -47,7 +33,7 @@ const getApiUrl = (pathname = '') => {
   return apiUrl.toString();
 };
 
-const releaseName = TAG || BRANCH || 'local-development';
+const releaseName = TAG || BRANCH || `${packageJson.version}-local-development`;
 
 const setBuildInfo = () => {
   const buildInfoPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'build_info');
@@ -64,6 +50,10 @@ const setBuildInfo = () => {
   const databases = fs.readdirSync(ddocsBuildPath);
   databases.forEach(database => {
     const dbPath = path.resolve(ddocsBuildPath, database);
+    const stat = fs.statSync(dbPath);
+    if (!stat.isDirectory()) {
+      return;
+    }
     const ddocs = fs.readdirSync(dbPath);
     ddocs.forEach(ddoc => {
       copyBuildInfo(path.join(ddocsBuildPath, database, ddoc, 'build_info'));
@@ -199,7 +189,6 @@ const setDdocsVersion = () => {
 
 module.exports = {
   setDdocsVersion,
-  getCouchConfig,
   setBuildInfo,
   createStagingDoc,
   populateStagingDoc,

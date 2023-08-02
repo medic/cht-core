@@ -1,15 +1,15 @@
-const utils = require('../../../utils');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const userFactory = require('../../../factories/cht/users/users');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const personFactory = require('../../../factories/cht/contacts/person');
-const contactPage = require('../../../page-objects/default/contacts/contacts.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const deathReportForm = require('../../../page-objects/default/enketo/death-report.page');
-const undoDeathReportForm = require('../../../page-objects/default/enketo/undo-death-report.page');
+const utils = require('@utils');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
+const contactPage = require('@page-objects/default/contacts/contacts.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const deathReportForm = require('@page-objects/default/enketo/death-report.page');
+const undoDeathReportForm = require('@page-objects/default/enketo/undo-death-report.page');
 
 describe('Submit an undo death report', () => {
   const places = placeFactory.generateHierarchy();
@@ -23,13 +23,13 @@ describe('Submit an undo death report', () => {
     await loginPage.login(offlineUser);
 
     await commonPage.goToPeople(person._id);
-    await contactPage.createNewAction('Death report');
+    await commonPage.openFastActionReport('death_report');
     await deathReportForm.submitDeathReport();
     await commonPage.sync(true);
   });
 
   it('Should submit an undo death report', async () => {
-    await contactPage.createNewAction('Undo death report');
+    await commonPage.openFastActionReport('undo_death_report');
     await undoDeathReportForm.setConfirmUndoDeathOption();
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();

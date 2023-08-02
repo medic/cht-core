@@ -6,10 +6,6 @@
 @import "icon";
 @import "modal";
 
-.tooltip .tooltip-inner {
-  text-align: left;
-}
-
 a {
   cursor: pointer;
 }
@@ -89,39 +85,6 @@ a {
 .popover .popover-title {
   background-color: @background-color;
 }
-.popover.tour {
-  border-color: #000000;
-  border-width: 2px;
-  padding: 0;
-  .popover-title {
-    font-weight: bold;
-  }
-  &.right > .arrow {
-    border-right-color: #000000;
-    &::after {
-      left: 2px;
-    }
-  }
-  &.left > .arrow {
-    border-left-color: #000000;
-    &::after {
-      right: 2px;
-    }
-  }
-  &.bottom > .arrow {
-    border-bottom-color: #000000;
-    &::after {
-      border-bottom-color: @background-color;
-      top: 2px;
-    }
-  }
-  &.top > .arrow {
-    border-top-color: #000000;
-    &::after {
-      bottom: 2px;
-    }
-  }
-}
 
 .item-summary {
   padding: 10px;
@@ -136,10 +99,11 @@ a {
   .detail {
     overflow: auto;
     .status {
-      float: right;
-      text-align: right;
-      clear: right;
+      display: inline-block;
       margin-left: 10px;
+      svg {
+        vertical-align: middle;
+      }
     }
     .time .full-date {
       color: @label-color;

@@ -3,6 +3,6 @@
   <mm-facility-filter class="filter" (search)="applyFilters()" [disabled]="disabled"></mm-facility-filter>
   <mm-date-filter class="filter" (search)="applyFilters()" [disabled]="disabled" fieldId="date-filter" [isRange]="true"></mm-date-filter>
   <mm-status-filter class="filter" (search)="applyFilters()" [disabled]="disabled"></mm-status-filter>
-  <mm-freetext-filter class="filter" (search)="applyFilters($event)" [disabled]="disabled" [mobileDropdown]="true"></mm-freetext-filter>
+  <mm-freetext-filter class="filter" (search)="applyFilters()" [disabled]="disabled" [mobileDropdown]="true"></mm-freetext-filter>
   <reset-filters (resetFilters)="resetFilters()" [disabled]="disabled"></reset-filters>
 </div>

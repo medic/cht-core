@@ -21,9 +21,21 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
     'use strict';
     'ngInject';
 
-    const createLocaleModel = function(doc, totalTranslations) {
+    const hasEnabledLanguages = languages => {
+      return languages && Array.isArray(languages) && languages.length > 0;
+    };
+
+    const isLocaleEnabled = (doc, languages) => {
+      if (hasEnabledLanguages(languages)) {
+        return languages.some(translation => translation.enabled !== false && translation.locale === doc.code);
+      }
+      return doc.enabled;
+    };
+
+    const createLocaleModel = function(doc, totalTranslations, languages) {
       const result = {
-        doc: doc
+        doc: doc,
+        enabled: isLocaleEnabled(doc, languages),
       };
 
       const content = ExportProperties(doc);
@@ -39,10 +51,30 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       return result;
     };
 
-    const setLanguageStatus = function(doc, enabled) {
+    const updateLanguageSettings = (languages, doc, enabled) => {
+      let language = languages.find(language => language.locale === doc.code);
+      if (!language) {
+        language = { locale: doc.code };
+        languages.push(language);
+      }
+      language.enabled = enabled;
+      return UpdateSettings({ languages });
+    };
+
+    const updateLanguageDoc = (doc, enabled) => {
       doc.enabled = enabled;
-      DB().put(doc).catch(function(err) {
-        $log.error('Error updating settings', err);
+      return DB().put(doc);
+    };
+
+    const setLanguageStatus = function(doc, enabled) {
+      return Settings().then(settings => {
+        if (hasEnabledLanguages(settings.languages)) {
+          return updateLanguageSettings(settings.languages, doc, enabled);
+        }
+
+        return updateLanguageDoc(doc, enabled);
+      }).catch(err => {
+        $log.error('Error updating translation doc', err);
       });
     };
 
@@ -66,10 +98,8 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
         }),
         Settings()
       ])
-        .then(function(results) {
-          const rows = results[0].rows;
-          const settings = results[1];
-          const totalTranslations = countTotalTranslations(rows);
+        .then(([translations, settings]) => {
+          const totalTranslations = countTotalTranslations(translations.rows);
           $scope.loading = false;
           $scope.languagesModel = {
             totalTranslations: totalTranslations,
@@ -77,7 +107,9 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
               locale: settings.locale,
               outgoing: settings.locale_outgoing
             },
-            locales: rows.map(row => createLocaleModel(row.doc, totalTranslations))
+            locales: translations.rows.map(
+              row => createLocaleModel(row.doc, totalTranslations, settings.languages)
+            )
           };
         })
         .catch(function(err) {
@@ -88,7 +120,7 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
 
     const changeListener = Changes({
       key: 'update-languages',
-      filter: change => TranslationLoader.test(change.id),
+      filter: change => TranslationLoader.test(change.id) || change.id === 'settings',
       callback: () => getLanguages()
     });
 
@@ -102,10 +134,10 @@ angular.module('controllers').controller('DisplayLanguagesCtrl',
       });
     };
     $scope.disableLanguage = function(doc) {
-      setLanguageStatus(doc, false);
+      return setLanguageStatus(doc, false);
     };
     $scope.enableLanguage = function(doc) {
-      setLanguageStatus(doc, true);
+      return setLanguageStatus(doc, true);
     };
     $scope.prepareImport = function(doc) {
       Modal({

@@ -13,6 +13,8 @@
     class="report-wrap"
     *ngIf="selectMode || (!loadingContent && selectedReports?.length && selectedReports[0]?.doc?.form !== undefined)">
 
+    <mm-fast-action-button [fastActions]="fastActionList"></mm-fast-action-button>
+
     <div *ngFor="let selection of selectedReports; trackBy: trackByFn; let $index = index;" class="body report-body">
 
       <div class="item-summary" (click)="toggleExpand(selection)">
@@ -21,15 +23,6 @@
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="status" *ngIf="!validChecks[$index] || summaries[$index]?.verified !== undefined">
-            <span *ngIf="validChecks[$index] && summaries[$index]?.verified" class="verification-badge verified">
-              <report-verify-valid-icon></report-verify-valid-icon>
-            </span>
-            <span *ngIf="!(validChecks[$index] && summaries[$index]?.verified)" class="verification-badge error">
-              <report-verify-invalid-icon></report-verify-invalid-icon>
-            </span>
-          </div>
-
           <div *ngIf="summaries[$index]?.subject?.type" class="subject">
             <a class="name" *ngIf="summaries[$index]?.subject._id"
               [routerLink]="['/contacts', summaries[$index].subject._id]"
@@ -40,7 +33,17 @@
             </span>
           </div>
           <mm-sender *ngIf="!summaries[$index]?.subject?.type" [message]="selection" [hideLineage]="true"></mm-sender>
-          <div test-id="form-title">{{summaries[$index] | title:forms}}</div>
+          <div test-id="form-title">
+            <span>{{ summaries[$index] | title:forms }}</span>
+            <div class="status" *ngIf="!validChecks[$index] || summaries[$index]?.verified !== undefined">
+              <span *ngIf="validChecks[$index] && summaries[$index]?.verified" class="verification-badge verified">
+                <report-verify-valid-icon></report-verify-valid-icon>
+              </span>
+              <span *ngIf="!(validChecks[$index] && summaries[$index]?.verified)" class="verification-badge error">
+                <report-verify-invalid-icon></report-verify-invalid-icon>
+              </span>
+            </div>
+          </div>
           <div class="position small-font"
             *ngIf="summaries[$index]?.subject?.lineage || selection.lineage || selection.contact?.parent || selection.place || (!selection.form && selection.name)"
             [innerHTML]="summaries[$index]?.subject?.lineage || selection.lineage || selection.contact?.parent || selection.place | lineage">
@@ -64,14 +67,15 @@
               <label>
                 <span *ngIf="selection.formatted.content_type === 'xml'">{{field.label | translate}}</span>
                 <span *ngIf="selection.formatted.content_type !== 'xml'">{{field.label}}</span>
-                <span class="fa fa-cogs" *ngIf="field.generated"
-                  title="{{'Generated report field' | translate }}"></span>
+                <span class="fa fa-cogs" *ngIf="field.generated" title="{{'Generated report field' | translate }}"></span>
               </label>
               <p *ngIf="!field.imagePath">
-                <span *ngIf="field.target && field.target.filter"><a
-                    (click)="search(field.target.filter)">{{field.value}}</a></span>
-                <span *ngIf="field.target && field.target.url"><a
-                    [routerLink]="field.target.url">{{field.value}}</a></span>
+                <span *ngIf="field?.target?.filter" [attr.test-id]="field?.label" [class.disabled]="selectMode">
+                  <a (click)="search(field.target.filter)">{{field.value}}</a>
+                </span>
+                <span *ngIf="field?.target?.url">
+                  <a [routerLink]="field.target.url">{{field.value}}</a>
+                </span>
                 <span *ngIf="!field.target">{{field.value}}</span>
               </p>
               <report-image *ngIf="field.imagePath" [report]="selection.formatted?._id" [path]="field.imagePath">

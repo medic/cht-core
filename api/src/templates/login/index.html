@@ -19,7 +19,13 @@
         <label for="user" translate="User Name"></label>
         <input id="user" name="user" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"/>
         <label for="password" translate="Password"></label>
-        <input id="password" name="password" type="password"/>
+        <div id="password-container" class="hidden-password">
+          <input id="password" name="password" type="password"/>
+          <div id="password-toggle">
+            <img class="show-password-icon" src="/login/images/show-password.svg" translate-title="login.show_password">
+            <img class="hide-password-icon" src="/login/images/hide-password.svg" translate-title="login.hide_password">
+          </div>
+        </div>
         <p class="error offline" translate="online.action.message"></p>
         <p class="error incorrect" translate="login.incorrect"></p>
         <p class="error unknown" translate="login.error"></p>

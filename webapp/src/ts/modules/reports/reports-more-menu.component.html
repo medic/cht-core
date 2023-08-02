@@ -8,13 +8,42 @@
       <mat-icon fontIcon="fa-arrow-down"></mat-icon>
       <span>{{ 'Export' | translate }}</span>
     </button>
+
+    <button
+      mat-menu-item
+      test-id="review-report"
+      *ngIf="displayVerifyReportOption()"
+      (click)="openVerifyReportOptions()"
+      [disabled]="processingReportVerification || verifyingReport">
+      <mat-icon fontIcon="fa-check"></mat-icon>
+      <span>{{ 'reports.verify' | translate }}</span>
+    </button>
+
     <a mat-menu-item test-id="edit-reports" *ngIf="displayEditOption()" [routerLink]="['/reports', 'edit', selectedReportDoc?._id]">
       <mat-icon fontIcon="fa-pencil"></mat-icon>
       <span>{{ 'Edit' | translate }}</span>
     </a>
+
     <button mat-menu-item test-id="delete-reports" *ngIf="displayDeleteOption()" (click)="deleteReport()">
       <mat-icon fontIcon="fa-trash"></mat-icon>
       <span>{{ 'Delete' | translate }}</span>
     </button>
   </mat-menu>
 </section>
+
+<ng-template #verifyReportWrapper>
+  <section class="verify-report-options-wrapper">
+    <mm-panel-header headerTitle="reports.verify" (onClose)="closeVerifyReportComponents()"></mm-panel-header>
+    <div class="verify-report-options-body">
+      <button mat-flat-button class="invalid-option" [class.active-option]="selectedReportDoc?.verified === false" (click)="isReportCorrect(false)">
+        <report-verify-invalid-icon class="verify-icon"></report-verify-invalid-icon>
+        <span>{{ 'reports.verify.invalid' | translate }}</span>
+      </button>
+
+      <button mat-flat-button class="valid-option" [class.active-option]="selectedReportDoc?.verified" (click)="isReportCorrect(true)">
+        <report-verify-valid-icon class="verify-icon"></report-verify-valid-icon>
+        <span>{{ 'reports.verify.valid' | translate }}</span>
+      </button>
+    </div>
+  </section>
+</ng-template>

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, flush, TestBed, waitForAsync } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -21,7 +21,9 @@ import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
 import { ResourceIconPipe } from '@mm-pipes/resource-icon.pipe';
 import { TitlePipe } from '@mm-pipes/message.pipe';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
-
+import { FastActionButtonService } from '@mm-services/fast-action-button.service';
+import { DbService } from '@mm-services/db.service';
+import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 
 describe('Reports Content Component', () => {
   let component: ReportsContentComponent;
@@ -33,10 +35,14 @@ describe('Reports Content Component', () => {
   let messageStateService;
   let router;
   let responsiveService;
+  let fastActionButtonService;
+  let medicDb;
+  let dbService;
   let modalService;
 
   beforeEach(waitForAsync(() => {
     const mockedSelectors = [
+      { selector: Selectors.getSelectedReportDoc, value: undefined },
       { selector: Selectors.getSelectedReports, value: [] },
       { selector: Selectors.getForms, value: [] },
       { selector: Selectors.getLoadingContent, value: false },
@@ -48,6 +54,9 @@ describe('Reports Content Component', () => {
     router = { navigate: sinon.stub() };
     messageStateService = { any: sinon.stub(), set: sinon.stub().resolves() };
     responsiveService = { isMobile: sinon.stub() };
+    fastActionButtonService = { getReportRightSideActions: sinon.stub() };
+    medicDb = { get: sinon.stub().resolves() };
+    dbService = { get: sinon.stub().returns(medicDb) };
     modalService = { show: sinon.stub().resolves() };
 
     return TestBed
@@ -74,6 +83,8 @@ describe('Reports Content Component', () => {
           { provide: ResponsiveService, useValue: responsiveService },
           { provide: ModalService, useValue: modalService },
           { provide: ResourceIconPipe, useValue: { transform: sinon.stub() } },
+          { provide: FastActionButtonService, useValue: fastActionButtonService },
+          { provide: DbService, useValue: dbService },
         ]
       })
       .compileComponents()
@@ -104,7 +115,7 @@ describe('Reports Content Component', () => {
 
     expect(changesService.subscribe.callCount).to.equal(1);
     expect(activatedRoute.params.subscribe.callCount).to.equal(1);
-    expect(spySubscriptionsAdd.callCount).to.equal(4);
+    expect(spySubscriptionsAdd.callCount).to.equal(5);
   });
 
   describe('Route subscription', () => {
@@ -386,4 +397,76 @@ describe('Reports Content Component', () => {
     });
   });
 
+  describe('updateFastActions()', () => {
+    it('should update fast actions when report is selected', fakeAsync(() => {
+      const contact = { _id: 'person-1' };
+      const contactWithPhone = { _id: 'person-1', phone: '+621345678902' };
+      medicDb.get.resolves(contactWithPhone);
+      store.overrideSelector(Selectors.getSelectedReportDoc, { content_type: 'xml', contact });
+      store.refreshState();
+      fixture.detectChanges();
+
+      flush();
+
+      expect(fastActionButtonService.getReportRightSideActions.calledOnce).to.be.true;
+      const params = fastActionButtonService.getReportRightSideActions.args[0][0];
+      expect(params.reportContentType).to.equal('xml');
+      expect(params.communicationContext.sendTo).to.deep.equal(contactWithPhone);
+
+      params.communicationContext.callbackOpenSendMessage(contactWithPhone);
+      expect(modalService.show.calledOnce).to.be.true;
+      expect(modalService.show.args[0]).to.have.deep.members([
+        SendMessageComponent,
+        { initialState: { fields: { to: contactWithPhone } } },
+      ]);
+    }));
+
+    it('should not update fast actions', fakeAsync(() => {
+      store.overrideSelector(Selectors.getSelectMode, true);
+      store.refreshState();
+      fixture.detectChanges();
+
+      expect(component.selectMode).to.be.true;
+
+      store.overrideSelector(Selectors.getSelectedReportDoc, { content_type: 'xml', contact: {} });
+      store.refreshState();
+      fixture.detectChanges();
+
+      flush();
+
+      expect(fastActionButtonService.getReportRightSideActions.notCalled).to.be.true;
+
+      store.overrideSelector(Selectors.getSelectedReportDoc, undefined);
+      store.refreshState();
+      fixture.detectChanges();
+
+      flush();
+
+      expect(fastActionButtonService.getReportRightSideActions.notCalled).to.be.true;
+    }));
+  });
+
+  describe('search', () => {
+    it('should not search when select mode is true', fakeAsync(() => {
+      store.overrideSelector(Selectors.getSelectMode, true);
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.search('case_id:abc-1234');
+
+      expect(component.selectMode).to.be.true;
+      expect(searchFiltersService.freetextSearch.notCalled).to.be.true;
+    }));
+
+    it('should search if select mode is false', fakeAsync(() => {
+      store.overrideSelector(Selectors.getSelectMode, false);
+      store.refreshState();
+      fixture.detectChanges();
+
+      component.search('case_id:abc-1234');
+
+      expect(component.selectMode).to.be.false;
+      expect(searchFiltersService.freetextSearch.calledOnce).to.be.true;
+    }));
+  });
 });

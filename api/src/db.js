@@ -32,6 +32,7 @@ if (UNIT_TEST_ENV) {
     'close',
     'compact',
     'viewCleanup',
+    'info',
   ];
   const GLOBAL_FUNCTIONS_TO_STUB = [
     'get',
@@ -136,7 +137,7 @@ if (UNIT_TEST_ENV) {
   };
 
   /**
-   * @param {Database} database
+   * @param {Database} db
    * @param {Array<DesignDocument>} docs
    * @return {[{ id: string, rev: string }]}
    */

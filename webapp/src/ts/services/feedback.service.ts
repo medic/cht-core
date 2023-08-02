@@ -32,12 +32,13 @@ export class FeedbackService {
   private logIdx = 0;
   private readonly LEVELS = ['error', 'warn', 'log', 'info'];
   private readonly LOG_LENGTH = 20;
-  private readonly logs = new Array(this.LOG_LENGTH);
+  private readonly logCircularBuffer = new Array(this.LOG_LENGTH);
 
-  // Flips and reverses log into a clean latest first array for logging out
+  // converts the logCircularBuffer into an ordered array of log events
   private getLog() {
-    // [oldest + newest] -> reversed -> filter empty
-    return (this.logs.slice(this.logIdx, this.LOG_LENGTH).concat(this.logs.slice(0, this.logIdx)))
+    const olderLogEvents = this.logCircularBuffer.slice(this.logIdx, this.LOG_LENGTH);
+    const newerLogEvents = this.logCircularBuffer.slice(0, this.logIdx);
+    return [...olderLogEvents, ...newerLogEvents]
       .reverse()
       .filter(i => !!i);
   }
@@ -76,10 +77,11 @@ export class FeedbackService {
         const logEvent = {
           level,
           arguments: JSON.stringify(args, getCircularReplacer()).substring(0, 1000),
+          time: new Date().toISOString(),
         };
 
-        // push the error onto the stack
-        this.logs[this.logIdx++] = logEvent;
+        // push the log event onto the circular buffer
+        this.logCircularBuffer[this.logIdx++] = logEvent;
         if (this.logIdx === this.LOG_LENGTH) {
           this.logIdx = 0;
         }

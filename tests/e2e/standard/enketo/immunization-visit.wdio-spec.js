@@ -1,14 +1,14 @@
-const utils = require('../../../utils');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const commonPage = require('../../../page-objects/default/common/common.wdio.page');
-const contactPage = require('../../../page-objects/standard/contacts/contacts.wdio.page');
-const reportsPage = require('../../../page-objects/default/reports/reports.wdio.page');
-const analyticsPage = require('../../../page-objects/default/analytics/analytics.wdio.page');
-const genericForm = require('../../../page-objects/default/enketo/generic-form.wdio.page');
-const placeFactory = require('../../../factories/cht/contacts/place');
-const userFactory = require('../../../factories/cht/users/users');
-const gatewayApiUtils = require('../../../gateway-api.utils');
-const immVisitForm = require('../../../page-objects/standard/enketo/immunization-visit.wdio.page');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const contactPage = require('@page-objects/standard/contacts/contacts.wdio.page');
+const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
+const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const placeFactory = require('@factories/cht/contacts/place');
+const userFactory = require('@factories/cht/users/users');
+const gatewayApiUtils = require('@utils/gateway-api');
+const immVisitForm = require('@page-objects/standard/enketo/immunization-visit.wdio.page');
 
 describe('Immunization Visit', () => {
   const places = placeFactory.generateHierarchy();
@@ -51,7 +51,7 @@ describe('Immunization Visit', () => {
     await commonPage.goToPeople();
     await contactPage.contactPageDefault.selectLHSRowByText(babyName);
     babyMedicID = await contactPage.contactPageDefault.getContactMedicID();
-    await contactPage.contactPageDefault.createNewAction('Immunization Visit');
+    await commonPage.openFastActionReport('immunization_visit');
 
     await immVisitForm.selectAllVaccines();
     await genericForm.nextPage();

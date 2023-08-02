@@ -1,4 +1,13 @@
 const hamburgerMenu = () => $('#header-dropdown-link');
+const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
+const FAST_ACTION_TRIGGER = '.fast-action-trigger';
+const fastActionFAB = () => $(`${FAST_ACTION_TRIGGER} .fast-action-fab-button`);
+const fastActionFlat = () => $(`${FAST_ACTION_TRIGGER} .fast-action-flat-button`);
+const multipleActions = () => $(`${FAST_ACTION_TRIGGER}[test-id="multiple-actions-menu"]`);
+const FAST_ACTION_LIST_CONTAINER = '.fast-action-content-wrapper';
+const fastActionListContainer = () => $(FAST_ACTION_LIST_CONTAINER);
+const fastActionListCloseButton = () => $(`${FAST_ACTION_LIST_CONTAINER} .panel-header .panel-header-close`);
+const fastActionById = (id) => $(`${FAST_ACTION_LIST_CONTAINER} .fast-action-item[test-id="${id}"]`);
 const moreOptionsMenu = () => $('.more-options-menu-container>.mat-mdc-menu-trigger');
 const hamburgerMenuItemSelector = '#header-dropdown li';
 const logoutButton = () => $(`${hamburgerMenuItemSelector} .fa-power-off`);
@@ -9,21 +18,38 @@ const taskTab = () => $('#tasks-tab');
 const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
+const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
+const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
+const reloadModalUpdate = () => $('#update-available [test-id="Update"]');
 const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
 const jsonError = async () => (await $('pre')).getText();
 
 //languages
-const languagePreferenceHeading = () => $('#language-preference-heading');
-const selectedPreferenceHeading = () => $('#language-preference-heading > h4:nth-child(1) > span:nth-child(3)');
-const messagesLanguage = () => $('.locale a.selected span');
-const defaultLanguage = () => $('.locale-outgoing a.selected span');
 const activeSnackbar = () => $('#snackbar.active');
 const inactiveSnackbar = () => $('#snackbar:not(.active)');
+const snackbar = () => $('#snackbar.active .snackbar-message');
 const snackbarMessage = async () => (await $('#snackbar.active .snackbar-message')).getText();
 const snackbarAction = () => $('#snackbar.active .snackbar-action');
+
+//Hamburguer menu
+//User settings
+const USER_SETTINGS = '#header-dropdown a[routerlink="user"] i.fa-user';
+const UPDATE_PASSWORD = '.user .configuration.page i.fa-key';
+const EDIT_PROFILE = '.user .configuration.page i.fa-user';
+// Feedback or Report bug
+const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
+const FEEDBACK = '#feedback';
+const feedbackTitle = () => $(`${FEEDBACK} .modal-header > h2`);
+const feedbackCancelButton = () => $(`${FEEDBACK} .btn.cancel`);
+const feedbackSubmitButton = () => $(`${FEEDBACK} .btn-primary`);
+//About menu
+const ABOUT_MENU = '#header-dropdown i.fa-question';
+const RELOAD_BUTTON = '.about.page .btn-primary';
+//Configuration App
+const CONFIGURATION_APP_MENU = '#header-dropdown i.fa-cog';
 
 const isHamburgerMenuOpen = async () => {
   return await (await $('.header .dropdown.open #header-dropdown-link')).isExisting();
@@ -32,6 +58,72 @@ const isHamburgerMenuOpen = async () => {
 const openMoreOptionsMenu = async () => {
   await (await moreOptionsMenu()).waitForClickable();
   await (await moreOptionsMenu()).click();
+};
+
+const waitForSnackbarToClose = async () => {
+  if (await (await snackbar()).isExisting()) {
+    await (await snackbar()).waitForDisplayed({ reverse: true });
+  }
+};
+
+const clickFastActionById = async (id) => {
+  // Wait for the Angular Material's animation to complete.
+  await browser.pause(500);
+  await (await fastActionListContainer()).waitForDisplayed();
+  await (await fastActionById(id)).scrollIntoView();
+  await (await fastActionById(id)).waitForClickable();
+  await (await fastActionById(id)).click();
+};
+
+const clickFastActionFAB = async ({ actionId, waitForList }) => {
+  await closeHamburgerMenu();
+  await (await fastActionFAB()).waitForDisplayed();
+  await (await fastActionFAB()).waitForClickable();
+  waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
+  await (await fastActionFAB()).click();
+  if (waitForList) {
+    await clickFastActionById(actionId);
+  }
+};
+
+const clickFastActionFlat = async ({ actionId, waitForList }) => {
+  await waitForSnackbarToClose();
+  await (await fastActionFlat()).waitForDisplayed();
+  await (await fastActionFlat()).waitForClickable();
+  waitForList = waitForList === undefined ? await (await multipleActions()).isExisting() : waitForList;
+  await (await fastActionFlat()).click();
+  if (waitForList) {
+    await clickFastActionById(actionId);
+  }
+};
+
+const openFastActionReport = async (formId, rightSideAction = true) => {
+  await waitForPageLoaded();
+  if (rightSideAction) {
+    await clickFastActionFAB({ actionId: formId });
+  } else {
+    await clickFastActionFlat({ actionId: formId });
+  }
+  await waitForPageLoaded();
+  await (await $('#form-title')).waitForDisplayed();
+};
+
+const getFastActionFABTextById = async (actionId) => {
+  await clickFastActionFAB({ actionId, waitForList: false });
+  await (await fastActionListContainer()).waitForDisplayed();
+  return await (await fastActionById(actionId)).getText();
+};
+
+const getFastActionFlatText = async () => {
+  await waitForSnackbarToClose();
+  await (await fastActionFlat()).waitForDisplayed();
+  return await (await fastActionFlat()).getText();
+};
+
+const closeFastActionList = async () => {
+  await (await fastActionListContainer()).waitForDisplayed();
+  await (await fastActionListCloseButton()).waitForClickable();
+  await (await fastActionListCloseButton()).click();
 };
 
 const isMessagesListPresent = () => {
@@ -64,6 +156,14 @@ const isElementByIdPresent = async (elementId) => {
 
 const openHamburgerMenu = async () => {
   if (!(await isHamburgerMenuOpen())) {
+    await (await hamburgerMenu()).waitForClickable();
+    await (await hamburgerMenu()).click();
+  }
+};
+
+const closeHamburgerMenu = async () => {
+  if (await isHamburgerMenuOpen()) {
+    await (await hamburgerMenu()).waitForClickable();
     await (await hamburgerMenu()).click();
   }
 };
@@ -85,6 +185,11 @@ const getLogoutMessage = async () => {
   const body = await modal.body();
   await body.waitForDisplayed();
   return body.getText();
+};
+
+const refresh = async () => {
+  await browser.refresh();
+  await waitForPageLoaded();
 };
 
 const goToBase = async () => {
@@ -126,20 +231,6 @@ const goToAboutPage = async () => {
   await waitForLoaders();
 };
 
-const closeTour = async () => {
-  const closeButton = await $('#tour-select a.btn.cancel');
-  try {
-    await closeButton.waitForDisplayed();
-    await closeButton.click();
-    // wait for the request to the server to execute
-    // is there a way to leverage wdio to achieve this???
-    await browser.pause(500);
-  } catch (err) {
-    // there might not be a tour, show a warning
-    console.warn('Tour modal has not appeared after 2 seconds');
-  }
-};
-
 const waitForLoaderToDisappear = async (element) => {
   const loaderSelector = '.loader';
   const loader = await (element ? element.$(loaderSelector) : $(loaderSelector));
@@ -177,10 +268,14 @@ const waitForLoaders = async () => {
   }, { timeoutMsg: 'Waiting for Loading spinners to hide timed out.' });
 };
 
+const waitForAngularLoaded = async (timeout = 40000) => {
+  await (await $('#header-dropdown-link')).waitForDisplayed({ timeout });
+};
+
 const waitForPageLoaded = async () => {
   // if we immediately check for app loaders, we might bypass the initial page load (the bootstrap loader)
   // so waiting for the main page to load.
-  await (await $('#header-dropdown-link')).waitForDisplayed();
+  await waitForAngularLoaded();
   // ideally we would somehow target all loaders that we expect (like LHS + RHS loaders), but not all pages
   // get all loaders.
   do {
@@ -193,91 +288,102 @@ const syncAndNotWaitForSuccess = async () => {
   await (await syncButton()).click();
 };
 
-const syncAndWaitForSuccess = async () => {
+const syncAndWaitForSuccess = async (timeout = 20000) => {
   await openHamburgerMenu();
   await (await syncButton()).click();
   await openHamburgerMenu();
-  await (await syncSuccess()).waitForDisplayed({ timeout: 20000 });
+  await (await syncSuccess()).waitForDisplayed({ timeout });
 };
 
-const sync = async (expectReload) => {
-  await syncAndWaitForSuccess();
+const sync = async (expectReload, timeout) => {
+  let closedModal = false;
   if (expectReload) {
+    // it's possible that sync already happened organically, and we already have the reload modal
+    closedModal = await closeReloadModal(false, 0);
+  }
+
+  await syncAndWaitForSuccess(timeout);
+  if (expectReload && !closedModal) {
     await closeReloadModal();
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
-  await syncAndWaitForSuccess();
+  await syncAndWaitForSuccess(timeout);
 };
 
-const syncWithoutWaitForSuccess = async () => {
+const syncAndWaitForFailure = async () => {
   await openHamburgerMenu();
   await (await syncButton()).click();
+  await openHamburgerMenu();
+  await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
 };
 
-const closeReloadModal = async () => {
+const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
-    await browser.waitUntil(async () => await (await reloadModalCancel()).waitForExist({ timeout: 2000 }));
+    const button = shouldUpdate ? reloadModalUpdate() : reloadModalCancel();
+    await browser.waitUntil(async () => await (await button).waitForExist({ timeout }));
     // wait for the animation to complete
     await browser.pause(500);
-    await (await reloadModalCancel()).click();
+    await (await button).click();
     await browser.pause(500);
+    return true;
   } catch (err) {
     console.error('Reload modal not showed up');
+    return false;
   }
 };
 
 const openReportBugAndFetchProperties = async () => {
-  await (await $('i.fa-bug')).click();
-  await (await $('#feedback')).waitForDisplayed();
+  await (await $(FEEDBACK_MENU)).waitForClickable();
+  await (await $(FEEDBACK_MENU)).click();
+  await (await $(FEEDBACK)).waitForDisplayed();
   return {
-    modalHeader: await (await $('#feedback .modal-header > h2')).getText(),
-    modelCancelButtonText: await (await $('#feedback .btn.cancel')).getText(),
-    modelSubmitButtonText: await (await $('#feedback .btn-primary')).getText()
+    modalHeader: await (await feedbackTitle()).getText(),
+    modelCancelButtonText: await (await feedbackCancelButton()).getText(),
+    modelSubmitButtonText: await (await feedbackSubmitButton()).getText()
   };
+};
+
+const isReportBugOpen = async () => {
+  return await (await feedbackTitle()).isExisting();
+};
+
+const closeReportBug = async () => {
+  if (await isReportBugOpen()) {
+    await (await feedbackCancelButton()).waitForClickable();
+    await (await feedbackCancelButton()).click();
+  }
 };
 
 const openAboutMenu = async () => {
-  await (await $('i.fa-question')).click();
-  await (await $('.btn-primary=Reload')).waitForDisplayed();
+  await (await $(ABOUT_MENU)).waitForClickable();
+  await (await $(ABOUT_MENU)).click();
+  await (await $(RELOAD_BUTTON)).waitForDisplayed();
 };
 
-const openConfigurationWizardAndFetchProperties = async () => {
-  await (await $('i.fa-list-ol')).click();
-  await (await $('#guided-setup')).waitForDisplayed();
-
-  return {
-    modelTitle: await (await $('#guided-setup .modal-header > h2')).getText(),
-    defaultCountryCode: await (await $('#select2-default-country-code-setup-container')).getText(),
-    modelFinishButtonText: await (await $('#guided-setup .modal-footer>a:nth-of-type(2)')).getText()
-  };
+const openUserSettings = async () => {
+  await (await userSettingsMenuOption()).waitForClickable();
+  await (await userSettingsMenuOption()).click();
 };
 
 const openUserSettingsAndFetchProperties = async () => {
-  await (await $('=User settings')).click();
-  await (await $('=Update password')).waitForDisplayed();
-  await (await $('=Edit user profile')).waitForDisplayed();
+  await (await $(USER_SETTINGS)).waitForClickable();
+  await (await $(USER_SETTINGS)).click();
+  await (await $(UPDATE_PASSWORD)).waitForDisplayed();
+  await (await $(EDIT_PROFILE)).waitForDisplayed();
 };
 
 const openAppManagement = async () => {
-  await (await $('i.fa-cog')).click();
+  await (await $(CONFIGURATION_APP_MENU)).waitForClickable();
+  await (await $(CONFIGURATION_APP_MENU)).click();
   await (await $('.navbar-brand')).waitForDisplayed();
-};
-
-const getDefaultLanguages = async () => {
-  await (await hamburgerMenu()).click();
-  await openConfigurationWizardAndFetchProperties();
-  await (await languagePreferenceHeading()).click();
-  const messagesLang = async () => await (await messagesLanguage()).getText();
-  await browser.waitUntil(async () => await messagesLang() !== '');
-
-  const headingText = await (await selectedPreferenceHeading()).getText();
-  const defaultLang = await (await defaultLanguage()).getText();
-
-  return [headingText, await messagesLang(), defaultLang];
 };
 
 const getTextForElements = async (elements) => {
   return Promise.all((await elements()).map(filter => filter.getText()));
+};
+
+const getAllButtonLabelsNames = async () => {
+  return await getTextForElements(getAllButtonLabels);
 };
 
 //more options menu
@@ -291,8 +397,21 @@ const isMenuOptionVisible = async (action, item) => {
   return await (await optionSelector(action, item)).isDisplayed();
 };
 
+const loadNextInfiniteScrollPage = async () => {
+  await browser.execute(() => {
+    $('.items-container .content-row:last-child').get(0).scrollIntoView();
+  });
+  await waitForLoaderToDisappear(await $('.left-pane'));
+};
+
 module.exports = {
   openMoreOptionsMenu,
+  closeFastActionList,
+  clickFastActionFAB,
+  clickFastActionFlat,
+  openFastActionReport,
+  getFastActionFABTextById,
+  getFastActionFlatText,
   logout,
   logoutButton,
   getLogoutMessage,
@@ -304,7 +423,6 @@ module.exports = {
   getMessagesButtonLabel,
   getTasksButtonLabel,
   goToBase,
-  closeTour,
   hideSnackbar,
   waitForLoaders,
   sync,
@@ -318,12 +436,12 @@ module.exports = {
   isTasksListPresent,
   isPeopleListPresent,
   isReportsListPresent,
-  openConfigurationWizardAndFetchProperties,
   isTargetMenuItemPresent,
   isTargetAggregatesMenuItemPresent,
   openHamburgerMenu,
   openAboutMenu,
   openUserSettingsAndFetchProperties,
+  openUserSettings,
   openReportBugAndFetchProperties,
   openAppManagement,
   waitForLoaderToDisappear,
@@ -333,12 +451,16 @@ module.exports = {
   inactiveSnackbar,
   snackbarMessage,
   snackbarAction,
-  getDefaultLanguages,
   getTextForElements,
   toggleActionbar,
   jsonError,
   isMenuOptionEnabled,
   isMenuOptionVisible,
   moreOptionsMenu,
-  syncWithoutWaitForSuccess,
+  refresh,
+  syncAndWaitForFailure,
+  waitForAngularLoaded,
+  closeReportBug,
+  getAllButtonLabelsNames,
+  loadNextInfiniteScrollPage,
 };

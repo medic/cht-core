@@ -227,6 +227,7 @@ export class RulesEngineService implements OnDestroy {
       enableTargets: rulesEngineContext.enableTargets,
       contact: rulesEngineContext.userContactDoc,
       user: rulesEngineContext.userSettingsDoc,
+      rulesAreDeclarative: !!rulesEngineContext.settingsDoc?.tasks?.isDeclarative,
       monthStartDate: this.uhcSettingsService.getMonthStartDate(rulesEngineContext.settingsDoc),
       chtScriptApi: rulesEngineContext.chtScriptApi
     };

@@ -301,8 +301,7 @@ describe('feed', () => {
       });
     });
 
-    it('processes deleted changes through TombstoneUtils to create tombstones', done => {
-      sinon.stub(tombstoneUtils, 'processChange').resolves();
+    it('skips deleted changes ', done => {
       sinon.stub(metadata, 'setTransitionSeq').resolves();
       sinon.stub(db, 'allDbs').resolves([]);
 
@@ -310,40 +309,9 @@ describe('feed', () => {
 
       feed._changeQueue.drain(() => {
         return Promise.resolve().then(() => {
-          assert.equal(tombstoneUtils.processChange.callCount, 1);
-          assert.deepEqual(tombstoneUtils.processChange.args[0][2], {
-            id: 'somechange',
-            seq: 55,
-            deleted: true,
-          });
-          return Promise.resolve().then(() => {
-            assert.equal(metadata.setTransitionSeq.callCount, 1);
-            assert.equal(metadata.setTransitionSeq.args[0][0], 55);
-            done();
-          });
-        });
-      });
-    });
-
-    it('does not advance metadata document if creating tombstone fails', done => {
-      sinon.stub(tombstoneUtils, 'processChange').rejects();
-      sinon.stub(metadata, 'setTransitionSeq').resolves();
-      sinon.stub(db, 'allDbs').resolves([]);
-
-      feed._enqueue({ id: 'somechange', seq: 55, deleted: true });
-
-      feed._changeQueue.drain(() => {
-        return Promise.resolve().then(() => {
-          assert.equal(tombstoneUtils.processChange.callCount, 1);
-          assert.deepEqual(tombstoneUtils.processChange.args[0][2], {
-            id: 'somechange',
-            seq: 55,
-            deleted: true,
-          });
-          return Promise.resolve().then(() => {
-            assert.equal(metadata.setTransitionSeq.callCount, 0);
-            done();
-          });
+          assert.equal(metadata.setTransitionSeq.callCount, 1);
+          assert.equal(metadata.setTransitionSeq.args[0][0], 55);
+          done();
         });
       });
     });

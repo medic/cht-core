@@ -23,7 +23,6 @@ describe('db-doc service', () => {
     sinon.stub(authorization, 'alwaysAllowCreate');
     sinon.stub(authorization, 'getScopedAuthorizationContext').resolves({ userCtx, subjectIds: [] });
     sinon.stub(authorization, 'getViewResults').callsFake(doc => ({ view: doc }));
-    sinon.stub(authorization, 'isDeleteStub').returns(false);
     sinon.stub(db.medic, 'get').resolves({});
   });
 
@@ -316,7 +315,6 @@ describe('db-doc service', () => {
             result.should.equal(false);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: []}, { view: doc} ]);
-            authorization.isDeleteStub.callCount.should.equal(1);
             authorization.alwaysAllowCreate.callCount.should.equal(0);
             authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
               userCtx,
@@ -340,7 +338,6 @@ describe('db-doc service', () => {
             ]);
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal([ 'id', { userCtx, subjectIds: [] }, { view: doc } ]);
-            authorization.isDeleteStub.callCount.should.equal(1);
           });
       });
 
@@ -354,23 +351,6 @@ describe('db-doc service', () => {
           .then(result => {
             authorization.allowedDoc.callCount.should.equal(1);
             authorization.allowedDoc.args[0].should.deep.equal(['id', { userCtx, subjectIds: ['id'] }, { view: doc }]);
-            authorization.isDeleteStub.callCount.should.equal(0);
-            result.should.deep.equal(doc);
-          });
-      });
-
-      it('returns db-doc for delete stubs', () => {
-        doc = { _id: 'id', _deleted: true };
-        db.medic.get.resolves(doc);
-        authorization.allowedDoc.returns(false);
-        authorization.isDeleteStub.returns(true);
-
-        return service
-          .filterOfflineRequest(userCtx, params, method, query, body)
-          .then(result => {
-            authorization.allowedDoc.callCount.should.equal(1);
-            authorization.isDeleteStub.callCount.should.equal(1);
-            authorization.isDeleteStub.args[0].should.deep.equal([doc]);
             result.should.deep.equal(doc);
           });
       });
@@ -437,20 +417,6 @@ describe('db-doc service', () => {
               userCtx,
               [{ doc: doc, viewResults: { view: doc } }, undefined ]
             ]);
-          });
-      });
-
-      it('returns true for delete stubs', () => {
-        db.medic.get.resolves(doc);
-        authorization.allowedDoc.returns(false);
-        authorization.isDeleteStub.returns(true);
-
-        return service
-          .filterOfflineRequest(userCtx, params, method, query, body)
-          .then(result => {
-            authorization.allowedDoc.callCount.should.equal(1);
-            authorization.isDeleteStub.callCount.should.equal(1);
-            result.should.equal(true);
           });
       });
     });
@@ -654,35 +620,6 @@ describe('db-doc service', () => {
             result.should.equal(false);
           });
       });
-
-      it('returns true for overwriting delete stubs with allowed docs', () => {
-        db.medic.get.resolves(doc);
-        authorization.allowedDoc.onCall(0).returns(false);
-        authorization.allowedDoc.onCall(1).returns(true);
-        authorization.isDeleteStub.returns(true);
-
-        return service
-          .filterOfflineRequest(userCtx, params, method, query, body)
-          .then(result => {
-            authorization.allowedDoc.callCount.should.equal(2);
-            authorization.isDeleteStub.callCount.should.equal(1);
-            result.should.equal(true);
-          });
-      });
-
-      it('returns true for overwriting delete stubs with not docs', () => {
-        db.medic.get.resolves(doc);
-        authorization.allowedDoc.returns(false);
-        authorization.isDeleteStub.returns(true);
-
-        return service
-          .filterOfflineRequest(userCtx, params, method, query, body)
-          .then(result => {
-            authorization.allowedDoc.callCount.should.equal(2);
-            authorization.isDeleteStub.callCount.should.equal(1);
-            result.should.equal(false);
-          });
-      });
     });
 
     describe('attachments', () => {
@@ -799,13 +736,12 @@ describe('db-doc service', () => {
         { error: { _id: 'id', _rev: 7 } }
       ]);
 
-      authorization.getViewResults.callsFake(doc => doc && doc._rev);
+      authorization.getViewResults.callsFake(doc => doc?._rev);
       authorization.allowedDoc.withArgs('id', sinon.match.any, 1).returns(true);
       authorization.allowedDoc.withArgs('id', sinon.match.any, 2).returns(false);
       authorization.allowedDoc.withArgs('id', sinon.match.any, 4).returns(false);
       authorization.allowedDoc.withArgs('id', sinon.match.any, 5).returns(true);
       authorization.allowedDoc.withArgs('id', sinon.match.any, 6).returns(false);
-      authorization.isDeleteStub.withArgs(sinon.match({ _deleted: true })).returns(true);
       authorization.getScopedAuthorizationContext.resolves({ userCtx, subjectIds: [ 1, 5 ] });
 
       return service
@@ -814,12 +750,10 @@ describe('db-doc service', () => {
           result.should.deep.equal([
             { ok: { _id: 'id', _rev: 1 } },
             { ok: { _id: 'id', _rev: 5 } },
-            { ok: { _id: 'id', _rev: 6, _deleted: true } }
           ]);
 
           authorization.getViewResults.callCount.should.equal(5);
           authorization.allowedDoc.callCount.should.equal(5);
-          authorization.isDeleteStub.callCount.should.equal(3);
           authorization.getScopedAuthorizationContext.callCount.should.equal(1);
           authorization.getScopedAuthorizationContext.args[0].should.deep.equal([
             userCtx,
