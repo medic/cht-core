@@ -14,7 +14,7 @@ const logger = require('../lib/logger');
 const outbound = require('@medic/outbound')(logger);
 const NAME = 'mark_for_outbound';
 const CONFIGURED_PUSHES = 'outbound';
-const TIME_FRAME_DURATION = 50 * 60 * 1000;
+const TIME_FRAME_DURATION = 5 * 60 * 1000;
 
 const relevantTo = (doc) => {
   const pushes = config.get(CONFIGURED_PUSHES) || {};
