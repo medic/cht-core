@@ -31,8 +31,6 @@ describe('ongoing replication', () => {
 
     await saveData(userAllowedDocs);
     await saveData(userDeniedDocs);
-
-    await loginPage.login(userAllowedDocs.user);
   });
 
   after(async () => {
@@ -40,6 +38,8 @@ describe('ongoing replication', () => {
   });
 
   it('should download new documents ', async () => {
+    await loginPage.login(userAllowedDocs.user);
+
     const localAllDocsPreSync = await chtDbUtils.getDocs();
     const localDocIdsPreSync = dataFactory.ids(localAllDocsPreSync);
 
