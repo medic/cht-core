@@ -3,14 +3,14 @@ import { createReducer, on } from '@ngrx/store';
 import { Actions } from '@mm-actions/target-aggregates';
 
 export interface TargetAggregatesState {
-  selected?: object;
+  selected: object | null;
   targetAggregates: object[];
   targetAggregatesLoaded: boolean;
   error: boolean;
 }
 
 const initialState: TargetAggregatesState = {
-  selected: undefined,
+  selected: null,
   targetAggregates: [],
   targetAggregatesLoaded: false,
   error: false,

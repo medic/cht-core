@@ -607,6 +607,7 @@ export class EnketoService {
       }
       return $('<temproot>').append($(xml).clone()).html();
     };
+
     const dbDocTags: string[] = [];
     $record
       .find('[db-doc]')

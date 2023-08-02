@@ -60,7 +60,10 @@ export class UHCStatsService {
     return this.canViewUHCStats;
   }
 
-  getUHCInterval(visitCountSettings: VisitCountSettings): DateRange {
+  getUHCInterval(visitCountSettings: VisitCountSettings): DateRange | undefined {
+    if (!visitCountSettings) {
+      return;
+    }
     return CalendarInterval.getCurrent(visitCountSettings.monthStartDate);
   }
 

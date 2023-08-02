@@ -61,7 +61,7 @@ export class TelemetryService {
    * when we call this method for the first time and after every aggregation.
    */
   private getFirstAggregatedDate() {
-    let date = parseInt(window.localStorage.getItem(this.FIRST_AGGREGATED_DATE_KEY) ?? '');
+    let date = parseInt(window.localStorage.getItem(this.FIRST_AGGREGATED_DATE_KEY)!!);
 
     if (!date) {
       date = Date.now();
