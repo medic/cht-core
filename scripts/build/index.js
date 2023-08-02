@@ -1,8 +1,10 @@
-const packageJson = require('../../package.json');
-const path = require('path');
 const fs = require('fs');
+const spawn = require('child_process').spawn;
+const path = require('path');
 const rpn = require('request-promise-native');
 const mustache = require('mustache');
+
+const packageJson = require('../../package.json');
 const versions = require('./versions');
 
 const {
@@ -14,6 +16,7 @@ const {
   ECR_PUBLIC_REPO,
 } = process.env;
 const DEFAULT_API_PORT = 5988;
+const MODULES = ['webapp', 'api', 'sentinel', 'admin'];
 
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
@@ -186,12 +189,32 @@ const setDdocsVersion = () => {
   });
 };
 
+const exec = async (command, args, options) => {
+  options.stdio = 'inherit';
+  const ci = spawn(command, args, options);
+  await new Promise((resolve, reject) => {
+    ci.on('close', (code) => {
+      if (code === 0) {
+        return resolve();
+      }
+      return reject(`${command} exited with ${code}`);
+    }); 
+  });
+};
+
+const npmCiModules = async () => {
+  for (const cwd of MODULES) {
+    console.log(`\n\nRunning "npm ci" on ${cwd}\n\n`);
+    await exec('npm', ['ci'], { cwd });
+  }
+};
 
 module.exports = {
-  setDdocsVersion,
-  setBuildInfo,
   createStagingDoc,
-  populateStagingDoc,
-  updateServiceWorker,
   localDockerComposeFiles,
+  npmCiModules,
+  populateStagingDoc,
+  setBuildInfo,
+  setDdocsVersion,
+  updateServiceWorker,
 };

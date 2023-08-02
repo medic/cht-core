@@ -135,62 +135,40 @@ module.exports = function(grunt) {
                       grep -Ev '^\\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
-      bundlesize: {
-        cmd: 'node ./node_modules/bundlesize/index.js',
-      },
-      'npm-ci-api': {
-        cmd: `cd api && npm ci`,
-      },
-      'npm-ci-modules': {
-        cmd: ['webapp', 'api', 'sentinel', 'admin']
-          .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
-          .join(' && '),
-      },
+      bundlesize: 'node ./node_modules/bundlesize/index.js',
+      'npm-ci-api': 'cd api && npm ci',
+      'npm-ci-modules': 'node scripts/build/cli npmCiModules',
       'check-env-vars':
         'if [ -z $COUCH_URL ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
         'COUCH_URL" && exit 1; fi',
       'check-version': `node scripts/ci/check-versions.js`,
       'test-config-standard': {
-        cmd: [
-          'cd config/standard',
-          'npm ci',
-          'npm run ci'
-        ].join(' && '),
+        cmd: 'cd config/standard && npm ci && npm run ci',
         stdio: 'inherit', // enable colors!
       },
       'wdio-run-default': {
-        cmd: [
-          'npm run wdio -- --suite=' + grunt.option('suite')
-        ].join(' && '),
+        cmd: 'npm run wdio -- --suite=' + grunt.option('suite'),
         stdio: 'inherit', // enable colors!
       },
       'wdio-run-standard': {
-        cmd: [
-          'npm run standard-wdio -- --suite=' + grunt.option('suite')
-        ].join(' && '),
+        cmd: 'npm run standard-wdio -- --suite=' + grunt.option('suite'),
         stdio: 'inherit', // enable colors!
       },
       'wdio-run-default-mobile': {
-        cmd: [
-          'npm run default-wdio-mobile -- --suite=' + grunt.option('suite')
-        ].join(' && '),
+        cmd: 'npm run default-wdio-mobile -- --suite=' + grunt.option('suite'),
         stdio: 'inherit', // enable colors!
       },
       'test-config-default': {
-        cmd: [
-          'cd config/default',
-          'npm ci',
-          'npm run test'
-        ].join(' && '),
+        cmd: 'cd config/default && npm ci && npm run test',
         stdio: 'inherit', // enable colors!
       },
       'shared-lib-unit': {
         cmd: 'UNIT_TEST_ENV=1 npm test --workspaces --if-present',
         stdio: 'inherit', // enable colors!
       },
-      audit: { cmd: 'node ./scripts/audit-all.js' },
-      'audit-allowed-list': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
+      audit: 'node ./scripts/audit-all.js',
+      'audit-allowed-list': 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code',
       'build-config': {
         cmd: () => {
           const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
@@ -243,9 +221,7 @@ module.exports = function(grunt) {
         stdio: 'inherit', // enable colors!
       },
       //using npm run, as 'grunt-mocha-test' has issues with the integration with newer versions of mocha.
-      'e2e-integration': {
-        cmd: 'npm run e2e-integration'
-      }
+      'e2e-integration': 'npm run e2e-integration'
     }
   });
 
