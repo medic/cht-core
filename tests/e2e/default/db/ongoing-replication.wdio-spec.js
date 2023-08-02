@@ -21,7 +21,7 @@ const saveData = async (hierarchy) => {
   await utils.saveDocs(hierarchy.reports);
 };
 
-describe('ongoing replication', () => {
+describe('ongoing replication', function() {
   this.timeout(4 * 60 * 1000); //sometimes test takes a little longer than original 2 minutes timeout
   before(async () => {
     await sentinelUtils.skipToSeq();

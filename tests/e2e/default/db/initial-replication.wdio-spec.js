@@ -104,7 +104,6 @@ const refreshAndWaitForAngular = async () => {
 };
 
 describe('initial-replication', () => {
-  this.timeout(4 * 60 * 1000); //sometimes test takes a little longer than original 2 minutes timeout
   before(async () => {
     // we're creating ~2000 docs
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
