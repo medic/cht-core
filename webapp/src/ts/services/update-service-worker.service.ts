@@ -37,7 +37,7 @@ export class UpdateServiceWorkerService {
         }
 
         registration.onupdatefound = () => {
-          const installingWorker = registration.installing!!;
+          const installingWorker = registration.installing!;
           installingWorker.onstatechange = () => {
             switch (installingWorker.state) {
             case 'activated':

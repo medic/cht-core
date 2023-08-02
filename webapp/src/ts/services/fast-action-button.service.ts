@@ -155,7 +155,7 @@ export class FastActionButtonService {
 
   getReportRightSideActions(context: ReportActionsContext): Promise<FastAction[]> {
     const actions = [
-      this.getSendMessageAction(context.communicationContext!!, { isPhoneRequired: true, useMailtoInMobile: true }),
+      this.getSendMessageAction(context.communicationContext!, { isPhoneRequired: true, useMailtoInMobile: true }),
       this.getUpdateFacilityAction(context.reportContentType),
     ];
 
@@ -176,8 +176,8 @@ export class FastActionButtonService {
 
   getContactRightSideActions(context: ContactActionsContext): Promise<FastAction[]> {
     const actions = [
-      this.getPhoneAction(context.communicationContext!!),
-      this.getSendMessageAction(context.communicationContext!!, { isPhoneRequired: true, useMailtoInMobile: true }),
+      this.getPhoneAction(context.communicationContext!),
+      this.getSendMessageAction(context.communicationContext!, { isPhoneRequired: true, useMailtoInMobile: true }),
       ...this.getContactFormActions(context.parentFacilityId, context.childContactTypes),
       ...this.getReportFormActions(context.xmlReportForms, context.callbackContactReportModal),
     ];

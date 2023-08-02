@@ -64,6 +64,7 @@ export class UHCStatsService {
     if (!visitCountSettings) {
       return;
     }
+
     return CalendarInterval.getCurrent(visitCountSettings.monthStartDate);
   }
 
@@ -86,13 +87,13 @@ export class UHCStatsService {
     }
 
     const lastVisitedDate = await this.getLastVisitedDate(contact._id);
-    const dateRange = this.getUHCInterval(visitCountSettings)!!;
+    const dateRange = this.getUHCInterval(visitCountSettings)!;
     const visits = lastVisitedDate >= dateRange?.start ? await this.getVisitsInDateRange(dateRange, contact._id) : [];
 
     return {
       lastVisitedDate: lastVisitedDate,
       count: visits.length,
-      countGoal: visitCountSettings.visitCountGoal!!
+      countGoal: visitCountSettings.visitCountGoal!
     };
   }
 }

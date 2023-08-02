@@ -287,7 +287,7 @@ export class EnketoService {
     const { doc, instanceData, titleKey, wrapper, isFormInModal, contactSummary } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
-    formContainer.html(doc.html.get(0)!!);
+    formContainer.html(doc.html.get(0)!);
 
     return this
       .getEnketoForm(wrapper, doc, instanceData, contactSummary)

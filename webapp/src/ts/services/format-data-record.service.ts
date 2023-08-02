@@ -449,7 +449,7 @@ export class FormatDataRecordService {
         anyValue.translations[0] &&
         anyValue.translations[0].content) ||
       // 5) Look for the first value
-      value[_.first(_.keys(value))!!];
+      value[_.first(_.keys(value))!];
 
     if (test) {
       result = '-' + result + '-';

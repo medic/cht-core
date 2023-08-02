@@ -100,7 +100,7 @@ describe('EditUserSettingsComponent', () => {
   });
 
   it('editUserSettings() should not trigger any error', fakeAsync(async () => {
-    component.editUserModel.language!!.code = 'en';
+    component.editUserModel.language!.code = 'en';
     component.editUserModel.fullname = 'Sir Admin';
     component.editUserModel.phone = '11 123 4567';
 

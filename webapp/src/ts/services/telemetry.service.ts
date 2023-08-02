@@ -48,7 +48,7 @@ export class TelemetryService {
 
     if (!uniqueDeviceId) {
       uniqueDeviceId = uuidv4();
-      window.localStorage.setItem(this.DEVICE_ID_KEY, uniqueDeviceId!!);
+      window.localStorage.setItem(this.DEVICE_ID_KEY, uniqueDeviceId!);
     }
 
     return uniqueDeviceId;
@@ -61,7 +61,7 @@ export class TelemetryService {
    * when we call this method for the first time and after every aggregation.
    */
   private getFirstAggregatedDate() {
-    let date = parseInt(window.localStorage.getItem(this.FIRST_AGGREGATED_DATE_KEY)!!);
+    let date = parseInt(window.localStorage.getItem(this.FIRST_AGGREGATED_DATE_KEY)!);
 
     if (!date) {
       date = Date.now();
