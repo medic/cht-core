@@ -138,13 +138,14 @@ app.use(getLocale);
 morgan.token('id', req => req.id);
 
 app.use(
-  morgan('REQ :id :remote-addr :remote-user :method :url HTTP/:http-version', {
+  morgan(':date REQ: :id :remote-addr :remote-user :method :url HTTP/:http-version', {
     immediate: true,
   })
 );
 app.use(
   morgan(
-    'RES :id :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length] :response-time ms'
+    ':date RES: :id :remote-addr :remote-user :method :url HTTP/:http-version :status ' +
+    ':res[content-length] :response-time ms'
   )
 );
 
