@@ -3,8 +3,6 @@ const moment = require('moment');
 
 const validLog = (line, before, after) => {
   const [date, action] = line.split(/\s/);
-  console.log(date, before.toISOString(), after.toISOString());
-
   expect(moment.utc(date, 'YYYY-MM-DDTHH:mm:ss.SSS', true).isValid()).to.equal(true);
   expect(moment.utc(date).isBetween(before, after)).to.be.true;
   expect(action).to.be.oneOf(['REQ:', 'RES:', 'DEBUG:', 'INFO:', 'ERROR:', 'WARN:']);
@@ -12,8 +10,7 @@ const validLog = (line, before, after) => {
 
 describe('logging', () => {
   it('logs should include formatted date in API and Sentinel', async () => {
-    const before = moment.utc();
-    await utils.delayPromise(1000); // dates are not exact
+    const before = moment.utc().subtract(5, 'second');
 
     const collectApiLogs = await utils.collectApiLogs(/.*/);
     const collectSentinelLogs = await utils.collectApiLogs(/.*/);
@@ -23,8 +20,7 @@ describe('logging', () => {
     const apiLogs = (await collectApiLogs()).filter(log => log.length);
     const sentinelLogs = (await collectSentinelLogs()).filter(log => log.length);
 
-    await utils.delayPromise(1000); // dates are not exact
-    const after = moment.utc();
+    const after = moment.utc().subtract(5, 'second');
 
     expect(apiLogs.length).to.be.greaterThan(0);
     apiLogs.forEach(log => validLog(log, before, after));

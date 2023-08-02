@@ -1,6 +1,10 @@
 const { createLogger, format, transports } = require('winston');
 const env = process.env.NODE_ENV || 'development';
+const morgan = require('morgan');
+const moment = require('moment');
 const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSS';
+morgan.token('date', () => moment().format(DATE_FORMAT));
+
 
 const cleanUpErrorsFromSymbolProperties = (info) => {
   if (!info) {
@@ -75,4 +79,3 @@ const logger = createLogger({
 });
 
 module.exports = logger;
-module.exports.DATE_FORMAT = DATE_FORMAT;
