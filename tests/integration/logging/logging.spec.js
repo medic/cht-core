@@ -20,7 +20,7 @@ describe('logging', () => {
     const apiLogs = (await collectApiLogs()).filter(log => log.length);
     const sentinelLogs = (await collectSentinelLogs()).filter(log => log.length);
 
-    const after = moment.utc().subtract(5, 'second');
+    const after = moment.utc().add(5, 'second');
 
     expect(apiLogs.length).to.be.greaterThan(0);
     apiLogs.forEach(log => validLog(log, before, after));
