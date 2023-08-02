@@ -1,114 +1,76 @@
+const utils = require('@utils');
+
 const searchPage = require('@page-objects/default/search/search.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
-const utils = require('@utils');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
-const moment = require('moment');
+
 const placeFactory = require('@factories/cht/contacts/place');
 const personFactory = require('@factories/cht/contacts/person');
-const places = placeFactory.generateHierarchy();
+const pregnancyFactory = require('@factories/cht/reports/pregnancy');
+const smsPregnancyFactory = require('@factories/cht/reports/sms-pregnancy');
 
-//Add two more health_center
-const sittuHospital = placeFactory.place().build({
-  name: 'Sittu Hospital',
-  type: 'district_hospital',
-  parent: {
-    _id: '',
-    parent: {
-      _id: ''
-    }
-  }
-});
+describe('Reports Search', async () => {
+  const sittuHospital = placeFactory.place().build({ name: 'Sittu Hospital', type: 'district_hospital' });
+  const potuHospital = placeFactory.place().build({ name: 'Potu Hospital', type: 'district_hospital' });
 
-const potuHospital = placeFactory.place().build({
-  name: 'Potu Hospital',
-  type: 'district_hospital',
-  parent: {
-    _id: '',
-    parent: {
-      _id: ''
-    }
-  }
-});
-
-const sittuPerson = personFactory.build(
-  {
+  const sittuPerson = personFactory.build({
     name: 'Sittu',
     patient_id: 'sittu-patient',
-    parent: {
-      _id: sittuHospital._id,
-      parent: sittuHospital.parent
-    }
+    parent: { _id: sittuHospital._id, parent: sittuHospital.parent },
   });
-const potuPerson = personFactory.build(
-  {
+  const potuPerson = personFactory.build({
     name: 'Potu',
     patient_id: 'potu-patient',
-    parent: {
-      _id: potuHospital._id,
-      parent: potuHospital.parent
-    }
+    parent: { _id: potuHospital._id, parent: potuHospital.parent },
   });
 
-const PHONE_NO = '1234340002';
+  const reports = [
+    smsPregnancyFactory.pregnancy().build({ fields: { patient_id: sittuPerson.patient_id } }),
+    smsPregnancyFactory.pregnancy().build({ fields: { patient_id: potuPerson.patient_id } }),
+    pregnancyFactory.build({ fields: { patient_id: sittuPerson.patient_id, case_id: 'case-12' } }),
+    pregnancyFactory.build({ fields: { patient_id: potuPerson.patient_id, case_id: 'case-12' } }),
+  ];
+  let reportDocs;
 
-const REPORT1 = {
-  _id: 'REF_REF_V1',
-  form: 'RR',
-  type: 'data_record',
-  from: PHONE_NO,
-  fields: {
-    patient_id: sittuPerson.patient_id
-  },
-  sms_message: {
-    message_id: 23,
-    from: PHONE_NO,
-    message: `1!RR!${sittuPerson.patient_id}`,
-    form: 'RR',
-    locale: 'en'
-  },
-  reported_date: moment().subtract(10, 'minutes').valueOf()
-};
-
-const REPORT2 = {
-  _id: 'REF_REF_V2',
-  form: 'RR',
-  type: 'data_record',
-  from: PHONE_NO,
-  fields: {
-    patient_id: potuPerson.patient_id
-  },
-  sms_message: {
-    message_id: 23,
-    from: PHONE_NO,
-    message: `1!RR!${potuPerson.patient_id}`,
-    form: 'RR',
-    locale: 'en'
-  },
-  reported_date: moment().subtract(10, 'minutes').valueOf()
-};
-
-const docs = [...places.values(), sittuHospital, sittuPerson, potuHospital, potuPerson, REPORT1, REPORT2];
-
-describe('Test Reports Search Functionality', async () => {
   before(async () => {
-    await utils.saveDocs(docs);
+    await utils.saveDocs([ sittuHospital, sittuPerson, potuHospital, potuPerson ]);
+    reportDocs = await utils.saveDocs(reports);
     await loginPage.cookieLogin();
-    await commonPage.goToReports();
   });
 
-  it('search by NON empty string should display results with contains match and then clears', async () => {
-    // Waiting for initial load
-    await reportsPage.getAllReportsText();
+  it('should return results matching the search term and then return all data when clearing search', async () => {
+    const [ sittuSMSPregnancy, potuSMSPregnancy, sittuPregnancy, potuPregnancy ] = reportDocs;
+    await commonPage.goToReports();
+    // Asserting first load reports
+    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
 
-    // Searching by keyword
     await searchPage.performSearch('sittu');
-    let allLHSContacts = await reportsPage.getAllReportsText();
-    expect(allLHSContacts.sort()).to.deep.equal([sittuPerson.name]);
+    await commonPage.waitForLoaders();
+    expect((await reportsPage.reportsListDetails()).length).to.equal(2);
+    expect(await (await reportsPage.reportByUUID(sittuSMSPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
 
-    // Clearing
     await searchPage.clearSearch();
-    allLHSContacts = await reportsPage.getAllReportsText();
-    expect(allLHSContacts.sort()).to.deep.equal([potuPerson.name, sittuPerson.name]);
+    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
+    expect(await (await reportsPage.reportByUUID(sittuSMSPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(potuSMSPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(potuPregnancy.id)).isDisplayed()).to.be.true;
+  });
+
+  it('should return results when searching by case_id', async () => {
+    const sittuPregnancy = reportDocs[2];
+    const potuPregnancy = reportDocs[3];
+    await commonPage.goToReports();
+    // Asserting first load reports
+    expect((await reportsPage.reportsListDetails()).length).to.equal(reportDocs.length);
+
+    await reportsPage.openReport(sittuPregnancy.id);
+    await reportsPage.clickOnCaseId();
+    await commonPage.waitForLoaders();
+    expect((await reportsPage.reportsListDetails()).length).to.equal(2);
+    expect(await (await reportsPage.reportByUUID(sittuPregnancy.id)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(potuPregnancy.id)).isDisplayed()).to.be.true;
   });
 });
