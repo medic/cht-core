@@ -18,7 +18,10 @@ const getInfo = (db) => utils.request({ path: `/${db}` });
 const getUpdateSeq = (info) => parseInt(info.update_seq.split('-')[0]);
 
 describe('monitoring', () => {
-  beforeEach(() => sentinelUtils.waitForSentinel());
+  beforeEach(async () => {
+    await sentinelUtils.skipToSeq();
+    await sentinelUtils.waitForSentinel();
+  });
   afterEach(() => utils.revertDb([], true));
 
   describe('v1', () => {
