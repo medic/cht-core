@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TranslateLoader } from '@ngx-translate/core';
-import { from, Observable } from 'rxjs';
+import { from } from 'rxjs';
 
 import { DbService } from '@mm-services/db.service';
 import * as translationUtils from '@medic/translation-utils';
