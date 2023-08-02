@@ -14,7 +14,7 @@ export class TranslationLoaderProvider implements TranslateLoader {
 
   getTranslation(locale) {
     if (!locale) {
-      return undefined as unknown as Observable<any>;
+      return undefined as any;
     }
 
     if (this.loadingPromises[locale]) {
