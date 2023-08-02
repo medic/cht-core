@@ -47,7 +47,7 @@ const baseConfig = {
   //
   
   suites: {
-    all: ['**/.wdio-spec.js']
+    all: ['**/*.wdio-spec.js']
   },
   // Patterns to exclude.
   exclude: [
