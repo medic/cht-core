@@ -1,4 +1,5 @@
 const db = require('../db');
+const dbWatcher = require('./db-watcher');
 const environment = require('../environment');
 const purgingUtils = require('@medic/purging-utils');
 const logger = require('../logger');
@@ -27,28 +28,27 @@ const catchDbNotFoundError = (err, purgeDb) => {
 };
 
 const catchDocNotFoundError = (err) => {
-  if (err?.status === 404) {
-    return;
+  if (err?.status !== 404) {
+    throw err;
   }
-  throw err;
 };
 
-const getCacheDocId = ({ name }) => `purged-docs-${name}`;
+const getCacheDocId = (username) => `purged-docs-${username}`;
 
-const clearCache = async (name) => {
-  if (name) {
-    const cacheDocId = getCacheDocId({ name });
-    try {
-      logger.debug('Wiping purged docs cache for user %s', name);
-      const cachedDoc = await getPurgeCacheDoc(cacheDocId);
-      cachedDoc && await db.cache.remove(cachedDoc);
-      return;
-    } catch (err) {
-      return catchDocNotFoundError(err);
-    }
+const clearCache = async (username) => {
+  if (!username) {
+    logger.info('Wiping purged docs cache');
+    return await db.wipeCacheDb();
   }
-  logger.info('Wiping purged docs cache');
-  await db.wipeCacheDb();
+
+  const cacheDocId = getCacheDocId(username);
+  try {
+    const cacheDoc = await getPurgeCacheDoc(cacheDocId);
+    logger.debug('Wiping purged docs cache for user %s', username);
+    cacheDoc && await db.cache.remove(cacheDoc);
+  } catch (err) {
+    catchDocNotFoundError(err);
+  }
 };
 
 const getPurgedIdsFromChanges = result => {
@@ -83,12 +83,11 @@ const setCachedIds = async (cacheDocId, ids) => {
   const cachedDoc = await getPurgeCacheDoc(cacheDocId) || { _id: cacheDocId };
   cachedDoc.doc_ids = ids;
   await db.cache.put(cachedDoc);
-
 };
 
 const getPurgedIds = async (userCtx, docIds, useCache = true) => {
   let purgeIds = [];
-  const cacheDocId = getCacheDocId(userCtx);
+  const cacheDocId = getCacheDocId(userCtx.name);
   if (!docIds?.length || !userCtx.roles?.length) {
     return Promise.resolve(purgeIds);
   }
@@ -129,49 +128,30 @@ const listen = () => {
   watchSettings();
 };
 
-const watchSentinel = (seq = 'now') => {
-  db.sentinel
-    .changes({ live: true, since: seq })
-    .on('change', change => {
-      seq = change.seq;
-      if (change.id.startsWith('purgelog:') && change.changes[0].rev.startsWith('1-')) {
-        return clearCache();
-      }
-    })
-    .on('error', err => {
-      logger.error('Error watching sentinel changes, restarting: %o', err);
-      watchSentinel(seq);
-    });
+const watchSentinel = () => {
+  dbWatcher.sentinel(change => {
+    if (change.id.startsWith('purgelog:') && change.changes[0].rev.startsWith('1-')) {
+      return clearCache();
+    }
+  });
 };
 
-const watchUsers = (seq = 'now') => {
-  db.users
-    .changes({ live: true, since: seq })
-    .on('change', ({ id }) => {
-      if (id.startsWith(USER_DOC_PREFIX)) {
-        const name = id.replace(USER_DOC_PREFIX, '');
-        return clearCache(name);
-      }
-    })
-    .on('error', err => {
-      logger.error('Error watching users changes, restarting: %o', err);
-      watchUsers(seq);
-    });
+const watchUsers = () => {
+  dbWatcher.users(({ id }) => {
+    if (id.startsWith(USER_DOC_PREFIX)) {
+      const name = id.replace(USER_DOC_PREFIX, '');
+      return clearCache(name);
+    }
+  });
 };
 
-const watchMedic = (seq = 'now') => {
-  db.medic
-    .changes({ live: true, since: seq })
-    .on('change', ({ id }) => {
-      if (id.startsWith(USER_DOC_PREFIX)) {
-        const name = id.replace(USER_DOC_PREFIX, '');
-        return clearCache(name);
-      }
-    })
-    .on('error', err => {
-      logger.error('Error watching users changes, restarting: %o', err);
-      watchUsers(seq);
-    });
+const watchMedic = () => {
+  dbWatcher.medic(({ id }) => {
+    if (id.startsWith(USER_DOC_PREFIX)) {
+      const name = id.replace(USER_DOC_PREFIX, '');
+      return clearCache(name);
+    }
+  });
 };
 
 const watchSettings = () => {
@@ -187,6 +167,7 @@ const watchSettings = () => {
 };
 
 if (!process.env.UNIT_TEST_ENV) {
+  clearCache();
   listen();
 }
 

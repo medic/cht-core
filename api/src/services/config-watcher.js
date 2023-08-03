@@ -2,6 +2,7 @@ const EventEmitter = require('events');
 const configUpdatesEvents = new EventEmitter();
 
 const db = require('../db');
+const dbWatcher = require('./db-watcher');
 const logger = require('../logger');
 const translationUtils = require('@medic/translation-utils');
 const tombstoneUtils = require('@medic/tombstone-utils');
@@ -147,42 +148,35 @@ const load = () => {
 };
 
 const listen = () => {
-  db.medic
-    .changes({ live: true, since: 'now', return_docs: false })
-    .on('change', change => {
+  dbWatcher.medic(change => {
+    if (tombstoneUtils.isTombstoneId(change.id)) {
+      return Promise.resolve();
+    }
 
-      if (tombstoneUtils.isTombstoneId(change.id)) {
-        return Promise.resolve();
-      }
+    if (change.id === MEDIC_DDOC_ID) {
+      return handleDdocChange();
+    }
 
-      if (change.id === MEDIC_DDOC_ID) {
-        return handleDdocChange();
-      }
+    if (change.id === settingsService.SETTINGS_DOC_ID) {
+      return handleSettingsChange();
+    }
 
-      if (change.id === settingsService.SETTINGS_DOC_ID) {
-        return handleSettingsChange();
-      }
+    if (change.id.startsWith('messages-')) {
+      return handleTranslationsChange();
+    }
 
-      if (change.id.startsWith('messages-')) {
-        return handleTranslationsChange();
-      }
+    if (change.id.startsWith('form:')) {
+      return handleFormChange(change);
+    }
 
-      if (change.id.startsWith('form:')) {
-        return handleFormChange(change);
-      }
+    if (change.id === 'branding') {
+      return handleBrandingChanges();
+    }
 
-      if (change.id === 'branding') {
-        return handleBrandingChanges();
-      }
-
-      if (extensionLibs.isLibChange(change)) {
-        return handleLibsChanges();
-      }
-    })
-    .on('error', err => {
-      logger.error('Error watching changes, restarting: %o', err);
-      process.exit(1);
-    });
+    if (extensionLibs.isLibChange(change)) {
+      return handleLibsChanges();
+    }
+  });
 };
 
 const watch = (callback) => {

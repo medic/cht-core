@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const rewire = require('rewire');
 
 const db = require('../../../src/db');
+const dbWatcher = require('../../../src/services/db-watcher');
 const environment = require('../../../src/environment');
 const purgingUtils = require('@medic/purging-utils');
 const config = require('../../../src/config');
@@ -10,31 +11,15 @@ const configWatcher = require('../../../src/services/config-watcher');
 const _ = require('lodash');
 
 let service;
-let recursiveOnSentinel;
-let recursiveOnMedic;
-let recursiveOnUsers;
-
-const genRecursiveOn = () => {
-  const recursiveOn = sinon.stub();
-  recursiveOn.callsFake(() => {
-    const promise = sinon.stub().resolves();
-    promise.on = recursiveOn;
-    return promise;
-  });
-  return recursiveOn;
-};
 
 describe('Purged Docs service', () => {
   beforeEach(() => {
-    recursiveOnSentinel = genRecursiveOn();
-    recursiveOnMedic = genRecursiveOn();
-    recursiveOnUsers = genRecursiveOn();
-    sinon.stub(db.sentinel, 'changes').returns({ on: recursiveOnSentinel });
-    sinon.stub(db.medic, 'changes').returns({ on: recursiveOnMedic });
-    sinon.stub(db.users, 'changes').returns({ on: recursiveOnUsers });
     sinon.stub(db, 'wipeCacheDb').resolves();
     sinon.stub(db.cache, 'remove').resolves();
     sinon.stub(configWatcher, 'watch');
+    sinon.stub(dbWatcher, 'medic');
+    sinon.stub(dbWatcher, 'sentinel');
+    sinon.stub(dbWatcher, 'users');
     service = rewire('../../../src/services/purged-docs');
   });
 
@@ -46,25 +31,16 @@ describe('Purged Docs service', () => {
     it('should listen to sentinel, medic and users changes once', () => {
       const listen = service.__get__('listen');
       listen();
-      chai.expect(db.sentinel.changes.callCount).to.equal(1);
-      chai.expect(db.sentinel.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
-      chai.expect(db.medic.changes.callCount).to.equal(1);
-      chai.expect(db.medic.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
-      chai.expect(db.users.changes.callCount).to.equal(1);
-      chai.expect(db.users.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
+      chai.expect(dbWatcher.medic.callCount).to.equal(1);
+      chai.expect(dbWatcher.sentinel.callCount).to.equal(1);
+      chai.expect(dbWatcher.users.callCount).to.equal(1);
       chai.expect(configWatcher.watch.callCount).to.equal(1);
     });
 
     it('should process sentinel changes correctly', () => {
       const listen = service.__get__('listen');
-      let onChangeCallback;
-      recursiveOnSentinel.withArgs('change').callsFake((e, callback) => {
-        onChangeCallback = callback;
-        const promise = sinon.stub().resolves();
-        promise.on = recursiveOnSentinel;
-        return promise;
-      });
       listen();
+      const onChangeCallback = dbWatcher.sentinel.args[0][0];
       chai.expect(onChangeCallback).to.be.a('function');
 
       onChangeCallback({ id: 'random-info', seq: 1 });
@@ -84,14 +60,9 @@ describe('Purged Docs service', () => {
 
     it('should process medic changes correctly', async () => {
       const listen = service.__get__('listen');
-      let onChangeCallback;
-      recursiveOnMedic.withArgs('change').callsFake((e, callback) => {
-        onChangeCallback = callback;
-        const promise = sinon.stub().resolves();
-        promise.on = recursiveOnMedic;
-        return promise;
-      });
       listen();
+      const onChangeCallback = dbWatcher.medic.args[0][0];
+
       chai.expect(onChangeCallback).to.be.a('function');
       sinon.stub(db.cache, 'get').callsFake(id => ({ _id: id }));
 
@@ -127,15 +98,9 @@ describe('Purged Docs service', () => {
 
     it('should process users changes correctly', async () => {
       const listen = service.__get__('listen');
-      let onChangeCallback;
-      recursiveOnUsers.withArgs('change').callsFake((e, callback) => {
-        onChangeCallback = callback;
-        const promise = sinon.stub().resolves();
-        promise.on = recursiveOnUsers;
-        return promise;
-      });
       sinon.stub(db.cache, 'get').callsFake(id => ({ _id: id }));
       listen();
+      const onChangeCallback = dbWatcher.users.args[0][0];
       chai.expect(onChangeCallback).to.be.a('function');
 
       await onChangeCallback({ id: 'random', seq: 1 });
@@ -189,36 +154,6 @@ describe('Purged Docs service', () => {
       chai.expect(config.get.callCount).to.equal(5);
       chai.expect(db.wipeCacheDb.callCount).to.equal(2);
     });
-
-    it('should restart sentinel listener on error', () => {
-      const listen = service.__get__('listen');
-      let onChangeCallback;
-      let onErrorCallback;
-
-      recursiveOnSentinel.withArgs('change').callsFake((e, callback) => {
-        onChangeCallback = callback;
-        const promise = sinon.stub().resolves();
-        promise.on = recursiveOnSentinel;
-        return promise;
-      });
-      recursiveOnSentinel.withArgs('error').callsFake((e, callback) => {
-        onErrorCallback = callback;
-        const promise = sinon.stub().resolves();
-        promise.on = recursiveOnSentinel;
-        return promise;
-      });
-
-      listen();
-      chai.expect(db.sentinel.changes.callCount).to.equal(1);
-      chai.expect(db.sentinel.changes.args[0]).to.deep.equal([{ live: true, since: 'now' }]);
-      onErrorCallback();
-      chai.expect(db.sentinel.changes.callCount).to.equal(2);
-      chai.expect(db.sentinel.changes.args[1]).to.deep.equal([{ live: true, since: 'now' }]);
-      onChangeCallback({ id: 'some-info', changes: [{ rev: '1-post' }], seq: 6 });
-      onErrorCallback();
-      chai.expect(db.sentinel.changes.callCount).to.equal(3);
-      chai.expect(db.sentinel.changes.args[2]).to.deep.equal([{ live: true, since: 6 }]);
-    });
   });
 
   describe('getPurgedIds', () => {
@@ -226,9 +161,9 @@ describe('Purged Docs service', () => {
       it('should return id based on user name', () => {
 
         const getCacheDocId = service.__get__('getCacheDocId');
-        const doc1 = getCacheDocId({ name: 'test' });
-        const doc2 = getCacheDocId({ name: 'mike' });
-        const doc3 = getCacheDocId({ name: 'john' });
+        const doc1 = getCacheDocId('test');
+        const doc2 = getCacheDocId('mike');
+        const doc3 = getCacheDocId('john');
 
         chai.expect(doc1).to.equal('purged-docs-test');
         chai.expect(doc2).to.equal('purged-docs-mike');
