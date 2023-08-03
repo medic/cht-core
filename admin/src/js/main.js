@@ -75,7 +75,6 @@ require('./directives/pagination');
 require('./directives/relative-date');
 require('./directives/release');
 
-// directives we borrow from webapp
 angular.module('inboxDirectives', []);
 require('./directives/auth');
 
@@ -83,7 +82,6 @@ angular.module('filters', ['ngSanitize']);
 require('./filters/translate-from');
 require('./filters/build-version');
 
-// filters we borrow from webapp
 angular.module('inboxFilters', []);
 require('./filters/resource-icon');
 
@@ -97,7 +95,6 @@ require('./services/message-queue');
 require('./services/properties');
 require('./services/version');
 
-// services we borrow from webapp
 angular.module('inboxServices', []);
 require('./services/add-attachment');
 require('./services/auth');
@@ -123,7 +120,6 @@ require('./services/lineage-model-generator');
 require('./services/location');
 require('./services/modal');
 require('./services/moment-locale-data');
-require('./services/privacy-policies');
 require('./services/privacy-policies');
 require('./services/resource-icons');
 require('./services/search');

@@ -1,7 +1,7 @@
 const moment = require('moment');
 
 const utils = require('@utils');
-const commonElements = require('@page-objects/default/common/common.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const userFactory = require('@factories/cht/users/users');
@@ -10,11 +10,27 @@ const personFactory = require('@factories/cht/contacts/person');
 const reportFactory = require('@factories/cht/reports/generic-report');
 
 describe('Reports Sidebar Filter', () => {
-  let savedReports;
-  const parent = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
-  const user = userFactory.build();
-  const patient = personFactory.build({ parent: { _id: user.place._id, parent: { _id: parent._id } } });
+  const places = placeFactory.generateHierarchy();
 
+  const districtHospital = places.get('district_hospital');
+  const districtHospitalContact = personFactory.build({ parent: districtHospital });
+  const districtHospitalUser = userFactory.build({
+    username: 'user_filter_district_hospital',
+    place: districtHospital._id,
+    roles: [ 'chw' ],
+    contact: districtHospitalContact,
+  });
+
+  const healthCenter = places.get('health_center');
+  const healthCenterContact = personFactory.build({ parent: healthCenter });
+  const healthCenterUser = userFactory.build({
+    username: 'user_filter_health_center',
+    place: healthCenter._id,
+    roles: [ 'program_officer' ],
+    contact: healthCenterContact,
+  });
+
+  const patient = personFactory.build({ parent: healthCenterUser });
   const today = moment();
   const reports = [
     reportFactory
@@ -24,7 +40,7 @@ describe('Reports Sidebar Filter', () => {
           form: 'P',
           reported_date: moment([today.year(), today.month(), 1, 23, 30]).subtract(4, 'month').valueOf()
         },
-        { patient, submitter: user.contact, fields: { lmp_date: 'Feb 3, 2022' }}
+        { patient, submitter: healthCenterContact, fields: { lmp_date: 'Feb 3, 2022' }}
       ),
     reportFactory
       .report()
@@ -33,7 +49,7 @@ describe('Reports Sidebar Filter', () => {
           form: 'P',
           reported_date: moment([today.year(), today.month(), 12, 10, 30]).subtract(1, 'month').valueOf()
         },
-        { patient, submitter: user.contact, fields: { lmp_date: 'Feb 16, 2022' }}
+        { patient, submitter: districtHospitalContact, fields: { lmp_date: 'Feb 16, 2022' }}
       ),
     reportFactory
       .report()
@@ -42,7 +58,7 @@ describe('Reports Sidebar Filter', () => {
           form: 'V',
           reported_date: moment([today.year(), today.month(), 15, 0, 30]).subtract(5, 'month').valueOf()
         },
-        { patient, submitter: user.contact, fields: { ok: 'Yes!' }}
+        { patient, submitter: healthCenterContact, fields: { ok: 'Yes!' }}
       ),
     reportFactory
       .report()
@@ -51,35 +67,63 @@ describe('Reports Sidebar Filter', () => {
           form: 'V',
           reported_date: moment([today.year(), today.month(), 16, 9, 10]).subtract(1, 'month').valueOf()
         },
-        { patient, submitter: user.contact, fields: { ok: 'Yes!' }}
+        { patient, submitter: districtHospitalContact, fields: { ok: 'Yes!' }}
       ),
   ];
+  let savedReports;
 
-  beforeEach(async () => {
-    const results = await utils.saveDocs([ parent, patient, ...reports ]);
-    results.splice(0, 2); // Keeping only reports
-    savedReports = results.map(result => result.id);
+  before(async () => {
+    await utils.saveDocs([ ...places.values(), patient ]);
+    savedReports = (await utils.saveDocs(reports)).map(result => result.id);
+    await utils.createUsers([ districtHospitalUser, healthCenterUser ]);
+  });
 
-    await utils.createUsers([ user ]);
-    await loginPage.login(user);
-    await commonElements.waitForPageLoaded();
-    await commonElements.goToReports();
+  afterEach(async () => {
+    await commonPage.logout();
+    await utils.revertSettings(true);
   });
 
   it('should filter by date', async () => {
-    await (await reportsPage.firstReport()).waitForDisplayed();
-    await reportsPage.openSidebarFilter();
+    const pregnancyDistrictHospital = savedReports[1];
+    const visitDistrictHospital = savedReports[3];
 
+    await loginPage.login(districtHospitalUser);
+    await commonPage.waitForPageLoaded();
+
+    await commonPage.goToReports();
+    await (await reportsPage.firstReport()).waitForDisplayed();
+    expect((await reportsPage.allReports()).length).to.equal(savedReports.length);
+    
+    await reportsPage.openSidebarFilter();
     await reportsPage.openSidebarFilterDateAccordion();
     await reportsPage.setSidebarFilterFromDate();
     await reportsPage.setSidebarFilterToDate();
+    await commonPage.waitForPageLoaded();
 
-    await commonElements.waitForPageLoaded();
-    const allReports = await reportsPage.allReports();
+    expect((await reportsPage.allReports()).length).to.equal(2);
+    expect(await (await reportsPage.reportByUUID(pregnancyDistrictHospital)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(visitDistrictHospital)).isDisplayed()).to.be.true;
+  });
 
-    expect(allReports.length).to.equal(2);
-    expect(await (await reportsPage.reportsByUUID(savedReports[1])).length).to.equal(1);
-    expect(await (await reportsPage.reportsByUUID(savedReports[3])).length).to.equal(1);
+  it('should filter by user associated place when the permission to default filter is enabled', async () => {
+    const pregnancyHealthCenter = savedReports[0];
+    const visitHealthCenter = savedReports[2];
+
+    await loginPage.login(healthCenterUser);
+    await commonPage.waitForPageLoaded();
+
+    const settings = await utils.getSettings();
+    const newSettings = {
+      permissions: { ...settings.permissions, can_default_facility_filter: [ 'program_officer' ] },
+    };
+    await utils.updateSettings(newSettings);
+
+    await commonPage.goToReports();
+    await (await reportsPage.firstReport()).waitForDisplayed();
+
+    expect((await reportsPage.allReports()).length).to.equal(2);
+    expect(await (await reportsPage.reportByUUID(pregnancyHealthCenter)).isDisplayed()).to.be.true;
+    expect(await (await reportsPage.reportByUUID(visitHealthCenter)).isDisplayed()).to.be.true;
   });
 });
 

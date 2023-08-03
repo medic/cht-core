@@ -253,15 +253,17 @@ describe('Users Controller', () => {
           chai.expect(authorization.filterAllowedDocIds.args[0]).to.deep.equal([
             authContext,
             { docs: 'by replication key'},
-            { includeTombstones: false }
           ]);
           chai.expect(authorization.filterAllowedDocIds.args[1]).to.deep.equal([
             authContext,
             { docs: 'by replication key'},
-            { includeTombstones: false, includeTasks: false },
+            { includeTasks: false },
           ]);
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
-          chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['some_role'], docIds]);
+          chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([
+            { ...authContext.userCtx, contact_id: undefined },
+            docIds,
+          ]);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 9, warn_docs: 7, warn: false, limit: 10000 }]);
 
@@ -309,12 +311,11 @@ describe('Users Controller', () => {
           chai.expect(authorization.filterAllowedDocIds.args[0]).to.deep.equal([
             authContext,
             { docs: 'by replication key'},
-            { includeTombstones: false },
           ]);
           chai.expect(authorization.filterAllowedDocIds.args[1]).to.deep.equal([
             authContext,
             { docs: 'by replication key'},
-            { includeTombstones: false, includeTasks: false },
+            { includeTasks: false },
           ]);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{ total_docs: 9, warn_docs: 7, warn: false, limit: 10000 }]);
@@ -444,7 +445,10 @@ describe('Users Controller', () => {
             contact_id: undefined,
           }]);
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
-          chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['role1', 'role2'], docIds]);
+          chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([
+            { ...authContext.userCtx, contact_id: undefined },
+            docIds,
+          ]);
           chai.expect(res.json.callCount).to.equal(1);
           chai.expect(res.json.args[0]).to.deep.equal([{
             total_docs: 1000,
@@ -547,15 +551,14 @@ describe('Users Controller', () => {
           chai.expect(authorization.filterAllowedDocIds.args[0]).to.deep.equal([
             authContext,
             { docs: 'by replication key' },
-            { includeTombstones: false }
           ]);
           chai.expect(authorization.filterAllowedDocIds.args[1]).to.deep.equal([
             authContext,
             { docs: 'by replication key' },
-            { includeTombstones: false, includeTasks: false }
+            { includeTasks: false }
           ]);
           chai.expect(purgedDocs.getUnPurgedIds.callCount).to.equal(1);
-          chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([['offline'], docIds]);
+          chai.expect(purgedDocs.getUnPurgedIds.args[0]).to.deep.equal([userCtx, docIds]);
         });
       });
 

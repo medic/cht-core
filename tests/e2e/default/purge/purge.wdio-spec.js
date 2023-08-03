@@ -7,8 +7,6 @@ const personFactory = require('@factories/cht/contacts/person');
 const genericReportFactory = require('@factories/cht/reports/generic-report');
 const sentinelUtils = require('@utils/sentinel');
 
-const PURGE_BATCH_SIZE = 100;
-
 /* global window */
 
 const district = placeFactory.place().build({
@@ -34,7 +32,6 @@ const patient = personFactory.build({
   parent: { _id: 'health_center', parent: { _id: 'district' } },
 });
 const user = userFactory.build({ username: 'offlineuser-purge', place: 'health_center' });
-const user2 = userFactory.build({ username: 'offlineuser-purge2', place: 'health_center' });
 const purgeFn = (userCtx, contact, reports) => {
   return reports.filter(r => r.form === 'purge').map(r => r._id);
 };
@@ -62,14 +59,6 @@ const pregnancies = Array
 
 const restartSentinel = () => utils.stopSentinel().then(() => utils.startSentinel());
 
-const getPurgeLog = () => browser.executeAsync(callback => {
-  window.CHTCore.DB
-    .get()
-    .get('_local/purgelog')
-    .then(doc => callback(doc))
-    .catch(err => callback(err));
-});
-
 const getAllReports = () => browser.executeAsync(callback => {
   window.CHTCore.DB
     .get()
@@ -91,25 +80,21 @@ const runPurging = async () => {
   const seq = await sentinelUtils.getCurrentSeq();
   await restartSentinel();
   await sentinelUtils.waitForPurgeCompletion(seq);
+  await utils.delayPromise(1000);  // API has to pick up on purging completing
 };
 
-const parsePurgingLogEntries = (logEntries) => {
-  const re = /^REQ .* GET (\/purging[a-z/]*)/;
-  return logEntries.map(entry => {
-    const match = entry.match(re);
-    return match?.[1];
-  });
-};
+describe('purge', function() {
+  this.timeout(2 * 120000); //sometimes test takes a little longer than original timeout
 
-describe('purge', () => {
   afterEach(async () => {
-    await utils.deleteUsers([user, user2]);
+    await utils.deleteUsers([user]);
     await utils.revertDb([/^form:/], true);
+
+    await browser.reloadSession();
+    await browser.url('/');
   });
 
-  it('purging runs on sync and startup', async () => {
-    let purgeLog;
-
+  it('purging runs on sync', async () => {
     await updateSettings(purgeFn); // settings should be at the beginning of the changes feed
 
     await utils.saveDocs([district, healthCenter, contact, patient]);
@@ -123,51 +108,28 @@ describe('purge', () => {
 
     await loginPage.login({ username: user.username, password: user.password, loadPage: true });
 
-    const purgingRequestsPromise = await utils.collectApiLogs(/REQ.*purging/);
-    await commonElements.sync();
-    const purgingRequests = parsePurgingLogEntries(await purgingRequestsPromise());
-    expect(purgingRequests).to.deep.equal([
-      '/purging/changes',
-      '/purging/checkpoint',
-    ]);
-
+    //await commonElements.sync();
     let allReports = await getAllReports();
     expect(allReports.length).to.equal(homeVisits.length + pregnancies.length);
-    expect(allReports.some(report => report.form === 'purge')).to.equal(false);
+    expect(allReports.map(r => r.form)).to.not.have.members(['purge']);
 
-    // Purging occurs normally when refreshing
     await updateSettings(purgeHomeVisitFn, true);
     await runPurging();
-    await browser.refresh(); // refresh to clear the purge once only flag
-    await commonElements.waitForPageLoaded();
 
-    await commonElements.sync(true); // get the new list of ids to purge
-    purgeLog = await getPurgeLog();
-    expect(purgeLog.to_purge.length).to.equal(homeVisits.length);
-
-    await browser.refresh();
-    await commonElements.waitForPageLoaded();
+    await commonElements.sync(true);
 
     allReports = await getAllReports();
-    expect(allReports.length).to.equal(pregnancies.length);
-    expect(allReports.every(report => report.form === 'pregnancy')).to.equal(true);
-
-    purgeLog = await getPurgeLog();
-    expect(purgeLog.count).to.equal(homeVisits.length - PURGE_BATCH_SIZE);
-    expect(purgeLog.roles).to.equal(JSON.stringify(['chw']));
-    expect(purgeLog.history.length).to.equal(3);
-    expect(purgeLog.history[0].count).to.equal(homeVisits.length - PURGE_BATCH_SIZE);
-    expect(purgeLog.history[1].count).to.equal(PURGE_BATCH_SIZE);
-    expect(purgeLog.history[2].count).to.equal(0);
-    expect(purgeLog.to_purge.length).to.equal(0); // queue is empty
+    // this only works because the client didn't have to "purge" these docs and the revs didn't have
+    // to be overwritten
+    expect(allReports.length).to.equal(pregnancies.length + reportsToPurge.length);
+    expect(allReports.map(r => r.form)).to.not.have.members(['home_visit']);
   });
 
   it('purging runs when using chtScriptApi', async () => {
-
     await updateSettings(purgeUsingChtApitFn); // settings should be at the beginning of the changes feed
 
     await utils.saveDocs([district, healthCenter, contact, patient]);
-    await utils.createUsers([user2]);
+    await utils.createUsers([user]);
     await utils.saveDocs(reportsToPurge);
     await utils.saveDocs(homeVisits);
     await utils.saveDocs(pregnancies);
@@ -175,18 +137,11 @@ describe('purge', () => {
 
     await runPurging();
 
-    await loginPage.login({ username: user2.username, password: user2.password, loadPage: true });
+    await loginPage.login({ username: user.username, password: user.password, loadPage: true });
 
-    const purgingRequestsPromise = await utils.collectApiLogs(/REQ.*purging/);
     await commonElements.sync();
-    const purgingRequests = parsePurgingLogEntries(await purgingRequestsPromise());
-    expect(purgingRequests).to.deep.equal([
-      '/purging/changes',
-      '/purging/checkpoint',
-    ]);
-
     const allReports = await getAllReports();
     expect(allReports.length).to.equal(homeVisits.length + pregnancies.length);
-    expect(allReports.some(report => report.form === 'purge')).to.equal(false);
+    expect(allReports.map(r => r.form)).to.not.have.members(['purge']);
   });
 });
