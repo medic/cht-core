@@ -23,22 +23,23 @@ const saveData = async (hierarchy) => {
 
 describe('ongoing replication', () => {
   before(async () => {
+    await sentinelUtils.skipToSeq();
+
     await utils.saveDocs([...userAllowedDocs.places, ...userDeniedDocs.places]);
     await utils.createUsers([userAllowedDocs.user]);
 
-    await sentinelUtils.waitForSentinel();
-
     await saveData(userAllowedDocs);
     await saveData(userDeniedDocs);
-
-    await loginPage.login(userAllowedDocs.user);
   });
 
   after(async () => {
     await sentinelUtils.skipToSeq();
+    await sentinelUtils.waitForSentinel();
   });
 
   it('should download new documents ', async () => {
+    await loginPage.login(userAllowedDocs.user);
+
     const localAllDocsPreSync = await chtDbUtils.getDocs();
     const localDocIdsPreSync = dataFactory.ids(localAllDocsPreSync);
 
