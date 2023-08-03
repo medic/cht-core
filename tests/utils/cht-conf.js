@@ -17,44 +17,23 @@ const runCommand = async (action, dirPath) => {
 
 const getDirPath = () => path.join(__dirname, 'config-temp');
 
-// todo: When no longer supporting Node.js -v.12, replace with: fs.rmdirSync(outputPath, { recursive: true });
-const removeDirectoryRecursive = (dirPath) => {
-  if (!fs.existsSync(dirPath)) {
-    return;
-  }
-
-  const files = fs.readdirSync(dirPath) || [];
-
-  files.forEach(fileName => {
-    const filePath = path.join(dirPath, fileName);
-
-    if (fs.statSync(filePath).isDirectory()) {
-      removeDirectoryRecursive(filePath);
-    } else {
-      fs.unlinkSync(filePath);
-    }
-  });
-
-  fs.rmdirSync(dirPath);
-};
-
-const createDirectory = (dir) => {
+const createDirectory = async (dir) => {
   if (fs.existsSync(dir)) {
-    removeDirectoryRecursive(dir);
+    await fs.promises.rm(dir, { recursive: true });
   }
-  fs.mkdirSync(dir);
+  await fs.promises.mkdir(dir);
 };
 
 const initializeConfigDir = async () => {
   const dir = getDirPath();
 
-  createDirectory(dir);
+  await createDirectory(dir);
   await runCommand('initialise-project-layout', dir);
   // project eslint needs to be root, as cht-core eslint rules fail for the "default" layout
   const eslintPath = path.join(dir, '.eslintrc');
-  const eslintRules = JSON.parse(fs.readFileSync(eslintPath, 'utf-8'));
+  const eslintRules = JSON.parse(await fs.promises.readFile(eslintPath, 'utf-8'));
   eslintRules.root = true;
-  fs.writeFileSync(eslintPath, JSON.stringify(eslintRules));
+  await fs.promises.writeFile(eslintPath, JSON.stringify(eslintRules));
 };
 
 const compileNoolsConfig = async ({ tasks, targets, contactSummary }) => {
@@ -92,9 +71,13 @@ const compileAndUploadAppForms = async (formsDir) => {
   }
 
   const configForms = path.join(dir, 'forms', 'app');
-  fs.readdirSync(formsDir).forEach(file => {
-    fs.copyFileSync(path.join(formsDir, file), path.join(configForms, file));
-  });
+  if (!fs.existsSync(configForms)) {
+    await fs.promises.mkdir(configForms, { recursive: true });
+  }
+
+  for (const file of await fs.promises.readdir(formsDir)) {
+    await fs.promises.copyFile(path.resolve(formsDir, file), path.resolve(configForms, file));
+  }
 
   await runCommand('convert-app-forms', dir);
   await runCommand('upload-app-forms', dir);

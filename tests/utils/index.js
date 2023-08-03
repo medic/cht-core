@@ -379,7 +379,6 @@ const deleteAllDocs = (except) => {
             _id: doc._id,
             _rev: doc._rev,
             _deleted: true,
-            type: 'tombstone' // circumvent tombstones being created when DB is cleaned up
           };
         })
     )
@@ -420,7 +419,8 @@ const deleteAllDocs = (except) => {
             }
           })
       ]);
-    });
+    })
+    .then(() => require('@utils/sentinel').skipToSeq());
 };
 
 // Update both ddocs, to avoid instability in tests.
@@ -759,7 +759,7 @@ const dockerComposeCmd = (...params) => {
 };
 
 const stopService = async (service) => {
-  await dockerComposeCmd('stop', '-t', 0, service);
+  await dockerComposeCmd('stop', '-t', '0', service);
 };
 
 const stopSentinel = () => stopService('sentinel');
@@ -1034,7 +1034,7 @@ const saveLogs = async () => {
 
 const tearDownServices = async (removeOrphans) => {
   if (removeOrphans) {
-    return dockerComposeCmd('down', '--remove-orphans', '--volumes');
+    return dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
   }
   await saveLogs();
 };
@@ -1160,12 +1160,16 @@ const collectSentinelLogs = (...regex) => collectLogs('sentinel', ...regex);
 
 const collectApiLogs = (...regex) => collectLogs('api', ...regex);
 
+const normalizeTestName = name => name.replace(/\s/g, '_');
+
 const apiLogTestStart = (name) => {
-  return requestOnTestDb(`/?start=${name.replace(/\s/g, '_')}`);
+  return requestOnTestDb(`/?start=${normalizeTestName(name)}`)
+    .catch(() => console.warn('Error logging test start - ignoring'));
 };
 
 const apiLogTestEnd = (name) => {
-  return requestOnTestDb(`/?end=${name.replace(/\s/g, '_')}`);
+  return requestOnTestDb(`/?end=${normalizeTestName(name)}`)
+    .catch(() => console.warn('Error logging test end - ignoring'));
 };
 
 const getDockerVersion = () => {
@@ -1271,4 +1275,5 @@ module.exports = {
   apiLogTestEnd,
   updateContainerNames,
   updatePermissions,
+  formDocProcessing,
 };

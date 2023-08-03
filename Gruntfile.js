@@ -17,88 +17,13 @@ const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 module.exports = function(grunt) {
   'use strict';
 
-  require('jit-grunt')(grunt, {
-    ngtemplates: 'grunt-angular-templates',
-  });
-  require('time-grunt')(grunt);
+  grunt.loadNpmTasks('grunt-exec');
 
   // Project configuration
   grunt.initConfig({
-    copy: {
-      ddocs: {
-        expand: true,
-        cwd: 'ddocs/',
-        src: '**/*',
-        dest: 'build/ddocs/',
-      },
-      'api-ddocs': {
-        expand: true,
-        cwd: 'build/ddocs/',
-        src: '*.json',
-        dest: 'api/build/ddocs/',
-      },
-      'webapp-static': {
-        expand: true,
-        cwd: 'webapp/src/',
-        src: [
-          'audio/**/*',
-          'fonts/**/*',
-          'img/**/*',
-        ],
-        dest: 'api/build/static/webapp/',
-      },
-      'api-resources': {
-        expand: true,
-        cwd: 'api/src/public/',
-        src: '**/*',
-        dest: 'api/build/static/',
-      },
-      'built-resources': {
-        expand: true,
-        cwd: 'build/static',
-        src: '**/*',
-        dest: 'api/build/static/',
-      },
-      'api-bowser': {
-        src: 'api/node_modules/bowser/bundled.js',
-        dest: 'api/src/public/login/lib-bowser.js',
-      },
-      'admin-static': {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: 'admin/src/templates/index.html',
-            dest: 'api/build/static/admin',
-          },
-          {
-            expand: true,
-            flatten: true,
-            src: [
-              'admin/node_modules/font-awesome/fonts/*',
-              'webapp/src/fonts/**/*'
-            ],
-            dest: 'api/build/static/admin/fonts/',
-          },
-        ],
-      },
-      'libraries-to-patch': {
-        expand: true,
-        cwd: 'webapp/node_modules',
-        src: [
-          'bootstrap-daterangepicker/**',
-          'enketo-core/**',
-          'font-awesome/**',
-          'messageformat/**',
-          'moment/**'
-        ],
-        dest: 'webapp/node_modules_backup',
-      },
-    },
     exec: {
       'compile-ddocs-primary': 'node ./scripts/build/ddoc-compile.js primary',
       'compile-ddocs-staging': 'node ./scripts/build/ddoc-compile.js staging',
-      'compile-ddocs-secondary': 'node ./scripts/build/ddoc-compile.js secondary',
       'uglify-api':
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/script.js -o api/build/static/login/script.js && ' +
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js',
@@ -121,7 +46,8 @@ module.exports = function(grunt) {
       'jsdoc-api': './node_modules/jsdoc/jsdoc.js -d jsdocs/api -R api/README.md api/src/**/*.js',
       'jsdoc-shared-libs': './node_modules/jsdoc/jsdoc.js -d jsdocs/shared-libs shared-libs/**/src/**/*.js',
       'less': './node_modules/less/bin/lessc admin/src/css/main.less api/build/static/admin/css/main.css',
-      'browserify-admin': 'node ./node_modules/browserify/bin/cmd.js ' +
+      'browserify-admin': 'mkdir -p api/build/static/admin/js/ && ' +
+        'node ./node_modules/browserify/bin/cmd.js ' +
         '--debug ' +
         '-t browserify-ngannotate ' +
         '-r "./admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat:angular-translate-interpolation-messageformat" ' +
@@ -131,6 +57,9 @@ module.exports = function(grunt) {
         '-r "./admin/node_modules/bikram-sambat:bikram-sambat" ' +
         '-r "./admin/node_modules/lodash/core:lodash/core" ' +
         'admin/src/js/main.js > api/build/static/admin/js/main.js',
+      'compile-admin-templates':
+        'mkdir -p api/build/static/admin/js/ && ' +
+        'node ./scripts/build/build-angularjs-template-cache.js',
       'cleancss-admin':
         './node_modules/clean-css-cli/bin/cleancss api/build/static/admin/css/main.css > api/build/static/admin/css/main.min.css && ' +
         'mv api/build/static/admin/css/main.min.css api/build/static/admin/css/main.css',
@@ -138,11 +67,23 @@ module.exports = function(grunt) {
         './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css && ' +
         'mv api/build/static/login/style.min.css api/build/static/login/style.css',
       'karma-admin': 'node ./scripts/ci/run-karma.js',
-
-      // Running this via exec instead of inside the grunt process makes eslint
-      // run ~4x faster. For some reason. Maybe cpu core related.
+      'copy-ddocs': 'mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/',
+      'copy-api-ddocs': 'mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/',
+      'copy-webapp-static':
+        'cp -r webapp/src/audio api/build/static/webapp/ && ' +
+        'cp -r webapp/src/fonts api/build/static/webapp/ && ' +
+        'cp -r webapp/src/img api/build/static/webapp/',
+      'copy-api-resources': 'cp -r api/src/public/* api/build/static/',
+      'copy-api-bowser': 'cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js',
+      'copy-admin-static':
+        'cp admin/src/templates/index.html api/build/static/admin/ && ' +
+        'mkdir -p api/build/static/admin/fonts/ && ' +
+        'cp admin/node_modules/font-awesome/fonts/* api/build/static/admin/fonts/ && ' +
+        'cp webapp/src/fonts/* api/build/static/admin/fonts/',
+      'enketo-css': 'node node_modules/sass/sass.js webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map',
       'eslint': ESLINT_COMMAND + ' .',
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
+      'watch': 'node ./scripts/build/watch.js',
       'build-service-images': {
         cmd: () => buildVersions.SERVICES
           .map(service =>
@@ -213,27 +154,6 @@ module.exports = function(grunt) {
         'echo "Missing required env var.  Check that all are set: ' +
         'COUCH_URL" && exit 1; fi',
       'check-version': `node scripts/ci/check-versions.js`,
-      'undo-patches': {
-        cmd: function() {
-          const modulesToPatch = [
-            'bootstrap-daterangepicker',
-            'enketo-core',
-            'font-awesome',
-            'moment',
-          ];
-          return modulesToPatch.map(module => {
-            const backupPath = `webapp/node_modules_backup/${module}`;
-            const modulePath = `webapp/node_modules/${module}`;
-            return `
-              [ -d ${backupPath} ] &&
-              rm -rf ${modulePath} &&
-              mv ${backupPath} ${modulePath} &&
-              echo "Module restored: ${module}" ||
-              echo "No restore required for: ${module}"
-            `;
-          }).join(' && ');
-        },
-      },
       'test-config-standard': {
         cmd: [
           'cd config/standard',
@@ -244,19 +164,19 @@ module.exports = function(grunt) {
       },
       'wdio-run-default': {
         cmd: [
-          'npm run wdio'
+          'npm run wdio -- --suite=' + grunt.option('suite')
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
       'wdio-run-standard': {
         cmd: [
-          'npm run standard-wdio'
+          'npm run standard-wdio -- --suite=' + grunt.option('suite')
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
       'wdio-run-default-mobile': {
         cmd: [
-          'npm run default-wdio-mobile'
+          'npm run default-wdio-mobile -- --suite=' + grunt.option('suite')
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
@@ -271,39 +191,6 @@ module.exports = function(grunt) {
       'shared-lib-unit': {
         cmd: 'UNIT_TEST_ENV=1 npm test --workspaces --if-present',
         stdio: 'inherit', // enable colors!
-      },
-      // To monkey patch a library...
-      // 1. copy the file you want to change
-      // 2. make the changes
-      // 3. run `diff -c original modified > webapp/patches/my-patch.patch`
-      // 4. update grunt targets: "apply-patches", "undo-patches", and "libraries-to-patch"
-      'apply-patches': {
-        cmd: function() {
-          const patches = [
-            // patch the daterangepicker for responsiveness
-            // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
-            'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < webapp/patches/bootstrap-daterangepicker.patch',
-
-            // patch font-awesome to remove version attributes
-            // https://github.com/FortAwesome/Font-Awesome/issues/3286
-            'patch webapp/node_modules/font-awesome/less/path.less < webapp/patches/font-awesome-remove-version-attribute.patch',
-
-            // patch moment.js to use western arabic (european) numerals in Hindi
-            'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
-
-            // patch enketo to always mark the /inputs group as relevant
-            'patch webapp/node_modules/enketo-core/src/js/form.js < webapp/patches/enketo-inputs-always-relevant_form.patch',
-            'patch webapp/node_modules/enketo-core/src/js/relevant.js < webapp/patches/enketo-inputs-always-relevant_relevant.patch',
-
-            // patch enketo to fix repeat name collision bug - this should be removed when upgrading to a new version of enketo-core
-            // https://github.com/enketo/enketo-core/issues/815
-            'patch webapp/node_modules/enketo-core/src/js/calculate.js < webapp/patches/enketo-repeat-name-collision.patch',
-
-            // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
-            'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
-          ];
-          return patches.join(' && ');
-        },
       },
       audit: { cmd: 'node ./scripts/audit-all.js' },
       'audit-allowed-list': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
@@ -362,103 +249,12 @@ module.exports = function(grunt) {
       'e2e-integration': {
         cmd: 'npm run e2e-integration'
       }
-    },
-    watch: {
-      options: {
-        interval: 1000,
-      },
-      'config-files': {
-        files: ['Gruntfile.js', 'package.json'],
-        options: {
-          reload: true,
-        },
-      },
-      'admin-css': {
-        files: ['admin/src/css/**/*'],
-        tasks: ['exec:less'],
-      },
-      'admin-js': {
-        files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
-        tasks: ['exec:browserify-admin'],
-      },
-      'admin-index': {
-        files: ['admin/src/templates/index.html'],
-        tasks: ['copy:admin-static'],
-      },
-      'admin-templates': {
-        files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
-        tasks: ['ngtemplates:adminApp'],
-      },
-      'webapp-js': {
-        // instead of watching the source files, watch the build folder and upload on rebuild
-        files: ['api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js'],
-        tasks: ['update-service-worker'],
-      },
-      'primary-ddoc': {
-        files: ['ddocs/medic-db/**/*'],
-        tasks: [
-          'copy:ddocs',
-          'set-ddocs-version',
-          'exec:compile-ddocs-primary',
-          'copy:api-ddocs',
-        ],
-      },
-      'secondary-ddocs': {
-        files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
-        tasks: [
-          'copy:ddocs',
-          'set-ddocs-version',
-          'exec:compile-ddocs-secondary',
-          'copy:api-ddocs',
-        ],
-      },
-      'api-public-files': {
-        files: ['api/src/public/**/*'],
-        tasks: ['copy:api-resources'],
-      }
-    },
-    ngtemplates: {
-      adminApp: {
-        cwd: 'admin/src',
-        src: ['templates/**/*.html', '!templates/index.html'],
-        dest: 'api/build/static/admin/js/templates.js',
-        options: {
-          htmlmin: {
-            collapseBooleanAttributes: true,
-            collapseWhitespace: true,
-            removeAttributeQuotes: true,
-            removeComments: true,
-            removeEmptyAttributes: true,
-            removeRedundantAttributes: true,
-            removeScriptTypeAttributes: true,
-            removeStyleLinkTypeAttributes: true,
-          },
-        },
-      },
-    },
-    sass: {
-      options: {
-        implementation: require('sass'),
-      },
-      compile: {
-        cwd: 'webapp/src/css/',
-        src: 'enketo/enketo.scss',
-        dest: 'api/build/static/webapp',
-        ext: '.less',
-        expand: true,
-        outputStyle: 'expanded',
-        flatten: true,
-        extDot: 'last',
-      },
-    },
+    }
   });
 
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
-    'exec:undo-patches',
     'exec:npm-ci-modules',
-    'copy:libraries-to-patch',
-    'exec:apply-patches',
   ]);
 
   grunt.registerTask('build-webapp', 'Build webapp resources', [
@@ -467,7 +263,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-enketo-css', 'Build Enketo css', [
-    'sass',
+    'exec:enketo-css',
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
@@ -488,26 +284,24 @@ module.exports = function(grunt) {
     'build-admin',
     'build-config',
     'copy-static-files-to-api',
-    'copy:api-ddocs',
+    'exec:copy-api-ddocs', // probably not needed - we do this in "build-ddocs" anyway
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
-    'copy:api-bowser',
-    'copy:api-resources',
-    'copy:built-resources',
-    'copy:webapp-static',
-    'copy:admin-static',
+    'exec:copy-api-bowser',
+    'exec:copy-api-resources',
+    'exec:copy-webapp-static',
+    'exec:copy-admin-static',
   ]);
 
   grunt.registerTask('set-build-info', buildUtils.setBuildInfo);
 
   grunt.registerTask('build-ddocs', 'Builds the ddocs', [
-    'copy:ddocs',
+    'exec:copy-ddocs',
     'set-ddocs-version',
     'set-build-info',
     'exec:compile-ddocs-primary',
-    'exec:compile-ddocs-secondary',
-    'copy:api-ddocs',
+    'exec:copy-api-ddocs',
   ]);
 
   grunt.registerTask('build-config', 'Build default configuration', [
@@ -515,7 +309,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
-    'ngtemplates:adminApp',
+    'exec:compile-admin-templates',
     'exec:browserify-admin',
     'exec:less',
     'minify-admin',
@@ -630,11 +424,11 @@ module.exports = function(grunt) {
   grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build-dev',
     'exec:watch-webapp',
-    'watch',
+    'exec:watch',
   ]);
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
-    'copy:api-bowser',
+    'exec:copy-api-bowser',
     'exec:api-dev',
   ]);
 

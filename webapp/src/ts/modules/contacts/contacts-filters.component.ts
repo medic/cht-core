@@ -27,8 +27,8 @@ export class ContactsFiltersComponent {
   @ViewChild(FreetextFilterComponent)
   freetextFilter:FreetextFilterComponent;
 
-  applyFilters(force?) {
-    this.search.emit(force);
+  applyFilters() {
+    this.search.emit();
   }
 
   resetFilters() {
