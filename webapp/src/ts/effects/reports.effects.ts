@@ -13,7 +13,7 @@ import { MarkReadService } from '@mm-services/mark-read.service';
 import { DbService } from '@mm-services/db.service';
 import { SearchService } from '@mm-services/search.service';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { EditReportComponent } from '@mm-modals/edit-report/edit-report.component';
 import { VerifyReportComponent } from '@mm-modals/verify-report/verify-report.component';
 import { ServicesActions } from '@mm-actions/services';
@@ -196,12 +196,7 @@ export class ReportsEffects {
         model.verified = doc.verified;
         model.type = doc.content_type;
         model.verifyingReport = verifyingReport;
-        const openSendMessageModal = (modalService:ModalService, sendTo) => {
-          modalService
-            .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
-            .catch(() => {});
-        };
-        model.openSendMessageModal = openSendMessageModal.bind({}, this.modalService);
+        model.openSendMessageModal = sendTo => this.modalService.show(SendMessageComponent, { data: { to: sendTo } });
 
         if (!doc.contact?._id) {
           return this.globalActions.setRightActionBar(model);

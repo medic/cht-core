@@ -1,6 +1,7 @@
 <mm-modal
-  [status]="status"
   id="send-message"
+  [processing]="processing"
+  [error]="errors.submit"
   [titleKey]="'Send Message'"
   [submitKey]="'Send'"
   [submittingKey]="'Sending'"
@@ -16,7 +17,7 @@
       <textarea name="message"
         class="form-control"
         [placeholder]="'tasks.0.messages.0.message' | translate"
-        [(ngModel)]="fields.message">
+        [(ngModel)]="messageInput">
       </textarea>
       <span class="help-block" *ngIf="errors.message">{{ errors.message }}</span>
       <!-- Count is done by CountMessageService -->

@@ -80,14 +80,13 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   }
 
   async open() {
-    this.closeAll();
-
     const fastExecutableAction = this.getFastExecutableAction();
     if (fastExecutableAction) {
       this.executeAction(fastExecutableAction);
       return;
     }
 
+    this.closeAll();
     if (this.responsiveService.isMobile()) {
       this.matBottomSheet.open(this.contentWrapper);
       return;
@@ -106,8 +105,8 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   }
 
   executeAction(action: FastAction) {
-    action.execute();
     this.closeAll();
+    action.execute();
   }
 
   getTriggerButtonIcon() {

@@ -14,8 +14,10 @@ import { take } from 'rxjs/operators';
   templateUrl: './mm-modal.component.html'
 })
 // eslint-disable-next-line @angular-eslint/component-class-suffix
-export class MmModal {
-  @Input() status;
+export class MmModal { // TODO: update name to fit standard and remove "mm", maybe ModalLayoutComponent
+  @Input() status; // TODO remove
+  @Input() processing;
+  @Input() error;
   @Attribute('id') id;
   @Input() titleKey;
   @Input() submitKey;
@@ -29,8 +31,7 @@ export class MmModal {
   @Input() hideCloseButton;
 
 
-  constructor() {
-  }
+  constructor() { }
 
   @HostListener('window:keydown.enter') onEnterHandler() {
     this.onSubmit.emit();
