@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './analytics-filter.component.html'
 })
 export class AnalyticsFilterComponent implements AfterContentInit, AfterContentChecked, OnDestroy {
-  @Input() analyticsModules = [];
+  @Input() analyticsModules: any[] = [];
   activeModule;
   subscriptions: Subscription = new Subscription();
 

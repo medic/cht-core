@@ -303,7 +303,7 @@ export class ContactViewModelGeneratorService {
   }
 
   private getReports(contactDocs) {
-    const subjectIds = [];
+    const subjectIds: any[] = [];
     contactDocs.forEach((doc) => {
       subjectIds.push(registrationUtils.getSubjectIds(doc));
     });

@@ -34,7 +34,7 @@ export class ChangesService {
     }
   };
 
-  private watches = [];
+  private watches: any[] = [];
 
   private lastChangedDoc;
   private servicesActions;

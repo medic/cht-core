@@ -251,7 +251,7 @@ export class RelativeDatePipe implements PipeTransform {
     const options = {
       FormatDate: this.formatDateService,
       RelativeDate: this.relativeDateService,
-      raw: undefined,
+      raw: undefined as boolean | undefined
     };
 
     if (raw) {
@@ -281,7 +281,7 @@ export class RelativeDayPipe implements PipeTransform {
       FormatDate: this.formatDateService,
       RelativeDate: this.relativeDateService,
       withoutTime: true,
-      raw: undefined,
+      raw: undefined as boolean | undefined,
     };
 
     if (raw) {
@@ -392,7 +392,7 @@ export class WeeksPregnantPipe implements PipeTransform {
     if (!weeks || !weeks.number) {
       return '';
     }
-    const classes = [];
+    const classes: string[] = [];
     if (weeks.number >= 37) {
       classes.push('upcoming-edd');
     }

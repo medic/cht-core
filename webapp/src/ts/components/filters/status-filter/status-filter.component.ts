@@ -54,7 +54,7 @@ export class StatusFilterComponent implements AbstractFilter {
   }
 
   private getVerifiedStatus(statuses) {
-    const verified = [];
+    const verified: (boolean | undefined)[] = [];
     if (statuses.includes('unverified')) {
       verified.push(undefined);
     }

@@ -6,7 +6,12 @@ import {ChangesService} from '@mm-services/changes.service';
   providedIn: 'root'
 })
 export class CacheService {
-  private caches = [];
+  private caches: {
+    docs: any;
+    pending: boolean;
+    invalidate: any;
+    callbacks: any[];
+  }[] = [];
 
   constructor(private changesService:ChangesService) {
     this.changesService.subscribe({
@@ -39,7 +44,7 @@ export class CacheService {
       docs: null,
       pending: false,
       invalidate: options.invalidate,
-      callbacks: []
+      callbacks: [] as any[]
     };
 
     this.caches.push(cache);
