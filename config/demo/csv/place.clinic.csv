@@ -1,0 +1,4 @@
+reference_id:excluded,parent:place WHERE reference_id=COL_VAL,is_name_generated,name,contact:person WHERE reference_id=COL_VAL,reported_date:timestamp
+hh_1,area_1,false,Adriana Akiyama Household,person_71,1544031155715
+hh_2,area_2,false,Becky Backlund Household,person_81,1544031155715
+hh_3,area_3,false,Chelsea Crane Household,person_91,1544031155715
