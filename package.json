@@ -15,12 +15,13 @@
     "./shared-libs/*"
   ],
   "scripts": {
-    "test": "grunt eslint && grunt unit && grunt test-api-integration",
-    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js",
-    "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js",
-    "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default-mobile/wdio.conf.js",
+    "test": "npm run lint && grunt unit && grunt test-api-integration",
+    "lint": "eslint --color --cache . && ./scripts/build/blank-link-check.sh",
+    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js --suite=all",
+    "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js --suite=all",
+    "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default-mobile/wdio.conf.js --suite=all",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
-    "e2e-integration-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup &&mocha --config tests/integration/.mocharc.js ",
+    "e2e-integration-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && mocha --config tests/integration/.mocharc.js ",
     "wdio": "wdio run ./tests/e2e/default/wdio.conf.js",
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
     "standard-wdio": "wdio run ./tests/e2e/standard/wdio.conf.js",
@@ -66,7 +67,6 @@
     "bikram-sambat": "^1.7.0",
     "browserify": "^17.0.0",
     "browserify-ngannotate": "^2.0.0",
-    "bundlesize": "^0.18.1",
     "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
     "chai-exclude": "^2.1.0",
@@ -143,27 +143,5 @@
     "nools": {
       "uglify-js": ">=2.6.0"
     }
-  },
-  "bundlesize": [
-    {
-      "path": "./api/build/static/webapp/main.js",
-      "maxSize": "950 kB"
-    },
-    {
-      "path": "./api/build/static/webapp/polyfills.js",
-      "maxSize": "20 kB"
-    },
-    {
-      "path": "./api/build/static/webapp/runtime.js",
-      "maxSize": "1 kB"
-    },
-    {
-      "path": "./api/build/static/webapp/scripts.js",
-      "maxSize": "55 kB"
-    },
-    {
-      "path": "./api/build/static/webapp/styles.css",
-      "maxSize": "70 kB"
-    }
-  ]
+  }
 }

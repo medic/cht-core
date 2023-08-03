@@ -81,9 +81,7 @@ module.exports = function(grunt) {
         'cp admin/node_modules/font-awesome/fonts/* api/build/static/admin/fonts/ && ' +
         'cp webapp/src/fonts/* api/build/static/admin/fonts/',
       'enketo-css': 'node node_modules/sass/sass.js webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map',
-      'eslint': ESLINT_COMMAND + ' .',
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
-      'watch': 'node ./scripts/build/watch.js',
       'build-service-images': {
         cmd: () => buildVersions.SERVICES
           .map(service =>
@@ -135,7 +133,6 @@ module.exports = function(grunt) {
                       grep -Ev '^\\s*//' &&
                   echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
       },
-      bundlesize: 'node ./node_modules/bundlesize/index.js',
       'npm-ci-api': 'cd api && npm ci',
       'npm-ci-modules': 'node scripts/build/cli npmCiModules',
       'check-env-vars':
@@ -178,74 +175,49 @@ module.exports = function(grunt) {
           return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
         }
       },
-      'build-webapp': {
-        cmd: () => {
-          const configuration = DEV ? 'development' : 'production';
-          return [
-            `cd webapp`,
-            `../node_modules/.bin/ng build --configuration=${configuration} --progress=${DEV ? 'true' : 'false'}`,
-            `../node_modules/.bin/ngc`,
-            'cd ../',
-          ].join(' && ');
-        },
-        stdio: 'inherit', // enable colors!
-      },
-      'watch-webapp': {
-        cmd: () => {
-          const configuration = DEV ? 'development' : 'production';
-          return `
-            cd webapp && ../node_modules/.bin/ng build --configuration=${configuration} --watch=true &
-            cd ../
-          `;
-        },
-        stdio: 'inherit', // enable colors!
-      },
-      'unit-webapp': {
-        cmd: () => {
-          return [
-            'cd webapp',
-            `UNIT_TEST_ENV=1 ../node_modules/.bin/ng test webapp --watch=false --progress=${DEV ? 'true' : 'false'}`,
-            'cd ../',
-          ].join(' && ');
-        },
-        stdio: 'inherit', // enable colors!
-      },
-      'unit-webapp-continuous': {
-        cmd: () => {
-          return [
-            'cd webapp',
-            'UNIT_TEST_ENV=1 ../node_modules/.bin/ng test webapp --watch=true --progress=true',
-            'cd ../',
-          ].join(' && ');
-        },
-        stdio: 'inherit', // enable colors!
-      },
+      // 'build-webapp': {
+      //   cmd: () => {
+      //     return [
+      //       `cd webapp`,
+      //       `../node_modules/.bin/ng build --configuration=${BUILD_NUMBER ? 'production' : 'development'}`,
+      //       `../node_modules/.bin/ngc`,
+      //       'cd ../',
+      //     ].join(' && ');
+      //   },
+      //   stdio: 'inherit', // enable colors!
+      // },
+      // 'watch-webapp': {
+      //   cmd: () => {
+      //     return `
+      //       cd webapp && ../node_modules/.bin/ng build --configuration=${BUILD_NUMBER ? 'production' : 'development'} --watch=true &
+      //       cd ../
+      //     `;
+      //   },
+      //   stdio: 'inherit', // enable colors!
+      // },
+
       //using npm run, as 'grunt-mocha-test' has issues with the integration with newer versions of mocha.
-      'e2e-integration': 'npm run e2e-integration'
+      'e2e-integration': 'npm run e2e-integration',
+
+
+      // CONVERTED TO PACKAGE.JSON
+      'npm-run-lint': 'npm run lint',
+      'build-webapp': 'cd webapp && npm run build -- --configuration=production && npm run compile',
+      'build-webapp-dev': 'cd webapp && npm run build -- --configuration=development && npm run compile',
+      'watch-webapp': 'cd webapp && npm run build -- --configuration=development --watch=true & node ./scripts/build/watch.js',
+      'unit-webapp': 'cd webapp && npm run unit -- --watch=false',
+      'unit-webapp-continuous': 'cd webapp && npm run unit -- --watch=true',
     }
   });
 
   // Build tasks
-  grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
-    'exec:npm-ci-modules',
-  ]);
-
-  grunt.registerTask('build-webapp', 'Build webapp resources', [
-    'build-enketo-css',
-    'exec:build-webapp',
-  ]);
-
-  grunt.registerTask('build-enketo-css', 'Build Enketo css', [
-    'exec:enketo-css',
-  ]);
-
   grunt.registerTask('build', 'Build the static resources', [
     'exec:clean-build-dir',
     'build-ddocs',
-    'build-webapp',
-    //'exec:bundlesize', // bundlesize only checks webapp build files
+    'exec:enketo-css',
+    'exec:build-webapp',
     'build-admin',
-    'build-config',
+    'exec:build-config',
     'create-staging-doc',
     'populate-staging-doc',
   ]);
@@ -253,11 +225,11 @@ module.exports = function(grunt) {
   grunt.registerTask('build-dev', 'Build the static resources', [
     'exec:clean-build-dir',
     'build-ddocs',
-    'build-webapp',
+    'exec:enketo-css',
+    'exec:build-webapp-dev',
     'build-admin',
-    'build-config',
+    'exec:build-config',
     'copy-static-files-to-api',
-    'exec:copy-api-ddocs', // probably not needed - we do this in "build-ddocs" anyway
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
@@ -275,10 +247,6 @@ module.exports = function(grunt) {
     'set-build-info',
     'exec:compile-ddocs-primary',
     'exec:copy-api-ddocs',
-  ]);
-
-  grunt.registerTask('build-config', 'Build default configuration', [
-    'exec:build-config',
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
@@ -307,7 +275,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit-webapp', 'Run webapp unit test after installing dependencies.', [
-    'install-dependencies',
+    'exec:npm-ci-modules',
     'exec:unit-webapp'
   ]);
 
@@ -355,8 +323,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
     'exec:check-version',
-    'install-dependencies',
-    'static-analysis',
+    'exec:npm-ci-modules',
+    'exec:npm-run-lint',
     'build',
     'exec:mocha-integration-api',
     'unit',
@@ -380,33 +348,20 @@ module.exports = function(grunt) {
   ]);
 
   // Dev tasks
-  grunt.registerTask('dev-webapp', 'Build and deploy the webapp for dev', [
-    'install-dependencies',
-    'dev-webapp-no-dependencies',
-  ]);
-
-  grunt.registerTask('static-analysis', 'Static analysis checks', [
-    'exec:blank-link-check',
-    'eslint',
-  ]);
-
-  grunt.registerTask('eslint', 'Runs eslint', [
-    'exec:eslint'
-  ]);
-
-  grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
-    'build-dev',
+  grunt.registerTask('dev-webapp', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
+    'exec:npm-ci-modules',
+    'exec:clean-build-dir',
+    'build-ddocs',
+    'exec:enketo-css',
+    'build-admin',
+    'exec:build-config',
+    'copy-static-files-to-api',
     'exec:watch-webapp',
-    'exec:watch',
   ]);
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
     'exec:copy-api-bowser',
     'exec:api-dev',
-  ]);
-
-  grunt.registerTask('secure-couchdb', 'Basic developer setup for CouchDB', [
-    'exec:setup-admin',
   ]);
 
   grunt.registerTask('dev-sentinel', 'Run sentinel and watch for file changes', [
