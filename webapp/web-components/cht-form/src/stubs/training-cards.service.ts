@@ -6,6 +6,7 @@ import { AppModule } from '../app.module';
 })
 export class TrainingCardsService {
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public isTrainingCardForm(formInternalId): boolean {
     throw new Error('Method not implemented.');
   }

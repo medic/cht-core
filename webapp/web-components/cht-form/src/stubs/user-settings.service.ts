@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { AppModule } from '../app.module';
-// import { DbService as BaseDbService } from '../../../../src/ts/services/db.service';
 
 @Injectable({
   providedIn: AppModule
@@ -10,6 +9,7 @@ export class UserSettingsService {
     throw new Error('Method not implemented.');
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   put(doc): Promise<Object> {
     throw new Error('Method not implemented.');
   }

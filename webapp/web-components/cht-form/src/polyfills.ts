@@ -17,7 +17,7 @@
 /***************************************************************************************************
  * Load `$localize` onto the global scope - used if i18n tags appear in Angular templates.
  */
-import '@angular/localize/init';
+// import '@angular/localize/init';
 
 /***************************************************************************************************
  * BROWSER POLYFILLS
@@ -66,32 +66,32 @@ import 'zone.js';
  * APPLICATION IMPORTS
  */
 
-(window as any).global = window;
-declare global {
-  interface Window {
-    // startupTimes: any;
-    PouchDB: any;
-    // $: any;
-    // jQuery: any;
-    bootstrapFeedback: any;
-    medicmobile_android: any;
-    CHTCore: any;
-    // angular: any;
-    EnketoForm:any;
-    // Tour: any;
-  }
-  // interface JQuery {
-  //   daterangepicker(options?: any, callback?: Function) : any;
-  //   select2(event?:any, options?:any):any;
-  //   tooltip(options:any):any;
-  // }
-  interface Node {
-    _couchId: any;
-  }
-}
-
-// (window as any).process = {
-//   env: { DEBUG: undefined },
-//   browser: true,
-//   nextTick: require('next-tick')
-// };
+// (window as any).global = window;
+// declare global {
+//   interface Window {
+//     // startupTimes: any;
+//     PouchDB: any;
+//     // $: any;
+//     // jQuery: any;
+//     bootstrapFeedback: any;
+//     medicmobile_android: any;
+//     CHTCore: any;
+//     // angular: any;
+//     EnketoForm:any;
+//     // Tour: any;
+//   }
+//   // interface JQuery {
+//   //   daterangepicker(options?: any, callback?: Function) : any;
+//   //   select2(event?:any, options?:any):any;
+//   //   tooltip(options:any):any;
+//   // }
+//   interface Node {
+//     _couchId: any;
+//   }
+// }
+//
+// // (window as any).process = {
+// //   env: { DEBUG: undefined },
+// //   browser: true,
+// //   nextTick: require('next-tick')
+// // };
