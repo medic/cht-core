@@ -68,4 +68,17 @@ describe('db watcher', () => {
     onChange(change);
     expect(subscriptionCallback.args).to.deep.equal([[change]]);
   });
+
+  it('should terminate process on error', () => {
+    sinon.stub(process, 'exit');
+    dbWatcher.__get__('listen')();
+    expect(process.exit.callCount).to.equal(0);
+
+    db.medic.changes.on.args[1][1]();
+    expect(process.exit.args).to.deep.equal([[1]]);
+    db.sentinel.changes.on.args[1][1]();
+    expect(process.exit.args).to.deep.equal([[1], [1]]);
+    db.users.changes.on.args[1][1]();
+    expect(process.exit.args).to.deep.equal([[1], [1], [1]]);
+  });
 });

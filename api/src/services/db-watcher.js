@@ -12,7 +12,6 @@ const watchMedicChanges = () => {
   db.medic
     .changes(OPTS)
     .on('change', (change) => {
-      console.log('emit change');
       medicEmitter.emit('change', change);
     })
     .on('error', (err) => {
