@@ -15,7 +15,7 @@ const _init = function (settings, phone) {
 
   const validPhone = () => {
     if (validationType === 'partial') {
-      //Quickly guesses whether a number is a possible phone number by using only the length information,
+      // Quickly guesses whether a number is a possible phone number by using only the length information,
       return instance.isPossibleNumber(parsed);
     }
     if (validationType === 'none') {

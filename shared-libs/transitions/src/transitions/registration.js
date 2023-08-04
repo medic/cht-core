@@ -196,7 +196,7 @@ const getPhoneNumber = doc => {
 const setPhoneNumber = options => {
   const doc = options.doc;
   const phoneNumber = getPhoneNumber(doc);
-  //sms parser already validate the phone this is a just in case check if by any chance it has become invalid.
+  // Sms parser already validate the phone this is a just in case check if by any chance it has become invalid.
   const appSettings = config.getAll();
   const validPhone = phoneNumberParser.validate(appSettings, phoneNumber);
   if (!validPhone) {

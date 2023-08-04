@@ -793,61 +793,16 @@ exports.forms = {
     }
   },
   NP: {
-    'meta': {
-      'code': 'NP',
-      'translation_key': 'forms.np.title',
-      'label': {
-        'en': 'New Person with phone_number Registration'
-      }
+    meta: {
+      code: 'NP'
     },
-    'fields': {
-      'patient_age': {
-        'labels': {
-          'tiny': {
-            'en': 'Person Age'
-          },
-          'short': {
-            'en': 'Person Age'
-          }
-        },
-        'position': 0,
-        'type': 'integer',
-        'required': true
+    fields: {
+      patient_age: {
+        type: 'integer'
       },
-      'phone_number': {
-        'labels': {
-          'tiny': {
-            'en': 'phone number'
-          },
-          'description': {
-            'en': 'phone number'
-          },
-          'short': {
-            'en': 'phone number'
-          }
-        },
-        'position': 1,
-        'type': 'phone_number',
-        'required': true
-      },
-      'patient_name': {
-        'labels': {
-          'tiny': {
-            'en': 'patient_name'
-          },
-          'description': {
-            'en': 'Patient name'
-          },
-          'short': {
-            'en': 'Patient name'
-          }
-        },
-        'position': 2,
-        'type': 'string',
-        'required': true
+      phone_number: {
+        type: 'phone_number'
       }
-    },
-    'public_form': false,
-    'use_sentinel': true
+    }
   }
 };
