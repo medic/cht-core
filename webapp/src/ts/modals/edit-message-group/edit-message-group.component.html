@@ -1,15 +1,16 @@
 <mm-modal
-  [status]="status"
   id="edit-message-group"
+  [processing]="processing"
+  [error]="error"
   [titleKey]="'Edit'"
   [submitKey]="'save'"
   [submittingKey]="'saving'"
-  (onCancel)="cancel()"
+  (onCancel)="close()"
   (onSubmit)="submit()"
 >
   <form action="" method="POST">
 
-    <fieldset *ngFor="let task of model.group.rows; index as index" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'">
+    <fieldset *ngFor="let task of group.rows; index as index" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'">
       <ng-container *ngIf="!task.deleted">
         <div class="form-group">
           <label>

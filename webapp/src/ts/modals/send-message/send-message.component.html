@@ -5,7 +5,7 @@
   [titleKey]="'Send Message'"
   [submitKey]="'Send'"
   [submittingKey]="'Sending'"
-  (onCancel)="cancel()"
+  (onCancel)="close()"
   (onSubmit)="submit()">
   <form action="" method="POST" class="message-form">
     <div class="form-group" [ngClass]="{ 'has-error': errors.phone }">

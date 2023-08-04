@@ -24,9 +24,6 @@ export class EditReportComponent implements AfterViewInit {
     @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
   ) {
     this.report = this.matDialogData?.report;
-    this.matDialogRef
-      .afterClosed()
-      .subscribe(() => this.getSelectElement().select2('close')); // Close the select2 popup
   }
 
   private getSelectElement() {
@@ -34,6 +31,10 @@ export class EditReportComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.matDialogRef
+      .afterClosed()
+      .subscribe(() => this.getSelectElement().select2('close')); // Close the select2 popup
+
     return this.contactTypesService
       .getPersonTypes()
       .then(types => {
@@ -47,7 +48,7 @@ export class EditReportComponent implements AfterViewInit {
       .catch(err => console.error('Error initialising select2', err));
   }
 
-  cancel() {
+  close() {
     this.matDialogRef.close();
   }
 
@@ -68,14 +69,14 @@ export class EditReportComponent implements AfterViewInit {
 
     if (facilityId === this.report?.from) {
       // Still showing the default phone number because there is no attached contact so no save required
-      this.matDialogRef.close();
+      this.close();
       return;
     }
 
     this.processing = true;
     return this.updateFacilityService
       .update(docId, facilityId)
-      .then(() => this.matDialogRef.close())
+      .then(() => this.close())
       .catch(error => {
         this.error = 'Error updating facility';
         console.error(this.error, error);

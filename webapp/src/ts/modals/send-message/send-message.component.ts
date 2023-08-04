@@ -188,7 +188,7 @@ export class SendMessageComponent implements AfterViewInit {
       });
   }
 
-  cancel() {
+  close() {
     this.matDialogRef.close();
   }
 
@@ -209,7 +209,7 @@ export class SendMessageComponent implements AfterViewInit {
             if (!this.errors.message && !this.errors.phone) {
               return this.sendMessageService
                 .send(recipients, message)
-                .then(() => this.matDialogRef.close());
+                .then(() => this.close());
             }
           });
       })

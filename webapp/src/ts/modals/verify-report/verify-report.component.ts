@@ -14,7 +14,7 @@ export class VerifyReportComponent {
     private matDialogRef: MatDialogRef<VerifyReportComponent>,
     @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, boolean>,
   ) {
-    this.proposedVerificationState = this.matDialogData.proposedVerificationState;
+    this.proposedVerificationState = this.matDialogData?.proposedVerificationState;
   }
 
   close(result) {
