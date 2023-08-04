@@ -16,6 +16,7 @@ import { TranslateService } from '@mm-services/translate.service';
 })
 export class SendMessageComponent implements AfterViewInit {
   static id = 'send-message-modal';
+
   messageInput;
   processing = false;
   errors: Record<string, any> = {

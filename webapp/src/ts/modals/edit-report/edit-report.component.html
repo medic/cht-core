@@ -1,12 +1,12 @@
 <mm-modal
-  [status]="status"
   id="edit-report"
+  [processing]="processing"
+  [error]="error"
   [titleKey]="'Update Facility'"
   [submitKey]="'Submit'"
   [submittingKey]="'Submitting'"
   (onCancel)="cancel()"
-  (onSubmit)="submit()"
->
+  (onSubmit)="submit()">
   <form>
     <fieldset>
       <div class="control-group">

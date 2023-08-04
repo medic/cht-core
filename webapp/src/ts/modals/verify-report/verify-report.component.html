@@ -1,11 +1,9 @@
 <mm-modal
-  [status]="status"
   [danger]="true"
   [titleKey]="'Confirm'"
   [submitKey]="'yes'"
   [cancelKey]="'no'"
-  (onCancel)="cancel()"
-  (onSubmit)="close()"
->
-  <p translate [translateParams]="{ proposedVerificationState: model?.proposedVerificationState }">confirm.verification</p>
+  (onCancel)="close(false)"
+  (onSubmit)="close(true)">
+  <p translate [translateParams]="{ proposedVerificationState: proposedVerificationState }">confirm.verification</p>
 </mm-modal>

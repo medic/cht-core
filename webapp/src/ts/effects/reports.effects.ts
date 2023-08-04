@@ -217,9 +217,7 @@ export class ReportsEffects {
       ofType(ReportActionList.launchEditFacilityDialog),
       withLatestFrom(this.store.select(Selectors.getSelectedReport)),
       tap(([, selectedReport]) => {
-        this.modalService
-          .show(EditReportComponent, { initialState: { model: { report: selectedReport?.doc } } })
-          .catch(() => {});
+        this.modalService.show(EditReportComponent, { data: { report: selectedReport?.doc } });
       }),
     );
   }, { dispatch: false });
@@ -245,24 +243,24 @@ export class ReportsEffects {
           const verificationTranslationKey = verified ? 'reports.verify.valid' : 'reports.verify.invalid';
           const proposedVerificationState = this.translateService.instant(verificationTranslationKey);
           return this.modalService
-            .show(VerifyReportComponent, { initialState: { model: { proposedVerificationState } } })
-            .then(() => true)
-            .catch(() => false);
+            .show(VerifyReportComponent, { data: { proposedVerificationState } })
+            .afterClosed()
+            .toPromise();
         };
 
         const shouldReportBeVerified = canUserEdit => {
-          // verify if user verifications are allowed
+          // Verify if user verifications are allowed
           if (canUserEdit) {
             return true;
           }
 
-          // don't verify if user can't edit and this is an edit
+          // Don't verify if user can't edit and this is an edit
           const docHasExistingResult = selectedReport?.doc?.verified !== undefined;
           if (docHasExistingResult) {
             return false;
           }
 
-          // verify if this is not an edit and the user accepts  prompt
+          // Verify if this is not an edit and the user accepts prompt
           return promptUserToConfirmVerification();
         };
 

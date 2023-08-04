@@ -1,32 +1,32 @@
-import { Component, AfterViewInit } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { Component, AfterViewInit, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
 import { UpdateFacilityService } from '@mm-services/update-facility.service';
-import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'edit-report',
   templateUrl: './edit-report.component.html'
 })
-export class EditReportComponent extends MmModalAbstract implements AfterViewInit {
+export class EditReportComponent implements AfterViewInit {
   static id = 'edit-report-modal';
 
-  model:any = { report: {} };
+  report;
+  error;
+  processing = false;
 
   constructor(
-    bsModalRef: BsModalRef,
     private contactTypesService:ContactTypesService,
     private select2SearchService:Select2SearchService,
     private updateFacilityService:UpdateFacilityService,
+    private matDialogRef: MatDialogRef<EditReportComponent>,
+    @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
   ) {
-    super(bsModalRef);
-    bsModalRef.onHidden
-      .pipe(take(1)) // so we don't need to unsubscribe
-      // close the select2 popup
-      .subscribe(() => this.getSelectElement().select2('close'));
+    this.report = this.matDialogData?.report;
+    this.matDialogRef
+      .afterClosed()
+      .subscribe(() => this.getSelectElement().select2('close')); // Close the select2 popup
   }
 
   private getSelectElement() {
@@ -40,42 +40,46 @@ export class EditReportComponent extends MmModalAbstract implements AfterViewIni
         types = types.map(type => type.id);
         const options = {
           allowNew: false,
-          initialValue: this.model?.report?.contact?._id || this.model?.report?.from,
+          initialValue: this.report?.contact?._id || this.report?.from,
         };
         return this.select2SearchService.init(this.getSelectElement(), types, options);
       })
       .catch(err => console.error('Error initialising select2', err));
   }
 
+  cancel() {
+    this.matDialogRef.close();
+  }
+
   submit() {
-    const docId = this.model?.report?._id;
+    const docId = this.report?._id;
     const facilityId = this.getSelectElement().val();
     if (!docId) {
-      this.setError(new Error('Validation error'), 'Error updating facility');
+      this.error = 'Error updating facility';
+      console.error(this.error, new Error('Validation error'));
       return;
     }
 
     if (!facilityId) {
-      this.setError(new Error('Validation error'), 'Please select a facility');
+      this.error = 'Please select a facility';
+      console.error(this.error, new Error('Validation error'));
       return;
     }
 
-    if (facilityId === this.model?.report?.from) {
-      // Still showing the default phone number because there is no attached
-      // contact so no save required
-      this.close();
+    if (facilityId === this.report?.from) {
+      // Still showing the default phone number because there is no attached contact so no save required
+      this.matDialogRef.close();
       return;
     }
 
-    this.setProcessing();
+    this.processing = true;
     return this.updateFacilityService
       .update(docId, facilityId)
-      .then(() => {
-        this.setFinished();
-        this.close();
+      .then(() => this.matDialogRef.close())
+      .catch(error => {
+        this.error = 'Error updating facility';
+        console.error(this.error, error);
       })
-      .catch((err) => {
-        this.setError(err, 'Error updating facility');
-      });
+      .finally(() => this.processing = false);
   }
 }
