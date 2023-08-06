@@ -528,7 +528,8 @@ export class AppComponent implements OnInit, AfterViewInit {
                 title: translateTitle(xForm.translation_key, xForm.title),
               }))
               .sort((a, b) => a.title - b.title);
-          });
+          }
+        );
 
         // Get forms for training cards and display the cards if necessary
         this.trainingCardsService.initTrainingCards();

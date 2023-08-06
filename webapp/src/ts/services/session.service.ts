@@ -19,8 +19,8 @@ export class SessionService {
     private cookieService: CookieService,
     private http: HttpClient,
     @Inject(DOCUMENT) private document: Document,
-    private location: LocationService) {
-  }
+    private location: LocationService
+  ) {}
 
   navigateToLogin() {
     console.warn('User must reauthenticate');

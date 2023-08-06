@@ -188,8 +188,9 @@ describe('View indexer service', () => {
 
       viewIndexer.__set__('continueIndexing', true);
       const nextTick = () => new Promise(r => setTimeout(r));
-      const timeoutFn = () => new Promise((resolve, reject) =>
-        setTimeout(() => reject({ error: { code: 'ESOCKETTIMEDOUT' } }))
+      const timeoutFn = () => new Promise(
+        (resolve, reject) =>
+          setTimeout(() => reject({ error: { code: 'ESOCKETTIMEDOUT' } }))
       ); // sinon stubs that resolve actually act like they would be synchronous
       sinon.stub(rpn, 'get').callsFake(timeoutFn);
 

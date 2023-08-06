@@ -127,17 +127,20 @@ describe('Export Data V2.0', () => {
     it('GET Filters by date', () => {
       const from = Date.UTC(2018, 1, 2, 12);
       const to = Date.UTC(2018, 1, 3, 12);
-      return utils.request(`/api/v2/export/reports?` +
-        `filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`,
-      {notJson: true}
-      ).then(result => {
-        const rows = getRows(result);
-        const expected = [
-          '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong', // eslint-disable-line max-len
-          '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,'
-        ];
-        expectRows(expected, rows);
-      });
+      return utils
+        .request(
+          `/api/v2/export/reports?` +
+          `filters%5Bsearch%5D=&filters%5Bdate%5D%5Bfrom%5D=${from}&filters%5Bdate%5D%5Bto%5D=${to}`,
+          { notJson: true }
+        )
+        .then(result => {
+          const rows = getRows(result);
+          const expected = [
+            '_id,form,patient_id,reported_date,from,contact.name,contact.parent.name,contact.parent.parent.name,contact.parent.parent.parent.name,bar,baz,foo,smang.smong', // eslint-disable-line max-len
+            '"export-data-2-test-doc-3","b","abc125",1517616000000,,,,,,,"bazVal",,'
+          ];
+          expectRows(expected, rows);
+        });
     });
 
     describe('POST filters by verified', () => {

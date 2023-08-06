@@ -18,7 +18,8 @@ const person = personFactory.build(
       _id: districtHospital._id,
       parent: districtHospital.parent
     }
-  });
+  }
+);
 
 const docs = [...places.values(), person];
 

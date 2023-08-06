@@ -52,7 +52,8 @@ describe('Bulk Get service', () => {
         authorization.getAuthorizationContext.callCount.should.equal(1);
         db.medic.bulkGet.callCount.should.equal(1);
         db.medic.bulkGet.args[0][0].should.deep.equal(
-          { docs: docs, revs: 'yes', attachments: 'no', some: 'param' });
+          { docs: docs, revs: 'yes', attachments: 'no', some: 'param' }
+        );
       });
     });
 
@@ -95,7 +96,8 @@ describe('Bulk Get service', () => {
 
           db.medic.bulkGet.callCount.should.equal(1);
           db.medic.bulkGet.args[0][0].should.deep.equal(
-            { docs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }, { id: 'g' }]});
+            { docs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }, { id: 'e' }, { id: 'f' }, { id: 'g' }]}
+          );
 
           result.should.deep.equal({
             results: [

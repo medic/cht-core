@@ -1135,7 +1135,8 @@ describe('reminders', () => {
           );
           assert.equal(lineage.hydrateDocs.callCount, 4);
         });
-      });
+      }
+    );
 
     it('should throw bulk save errors and stop execution', () => {
       sinon.stub(config, 'getAll')

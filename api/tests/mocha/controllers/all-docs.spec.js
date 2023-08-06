@@ -32,14 +32,16 @@ describe('All Docs controller', () => {
     it('returns error when request query `keys` is not an array', () => {
       testReq.query.keys = { some: 'thing' };
       controller._invalidRequest(testReq).should.deep.equal(
-        { error: 'bad_request', reason: '`keys` parameter must be an array.' });
+        { error: 'bad_request', reason: '`keys` parameter must be an array.' }
+      );
     });
 
     it('returns error when request body `keys` is not an array array', () => {
       testReq.body = { keys: 'something' };
       testReq.method = 'POST';
       controller._invalidRequest(testReq).should.deep.equal(
-        { error: 'bad_request', reason: '`keys` body member must be an array.' });
+        { error: 'bad_request', reason: '`keys` body member must be an array.' }
+      );
     });
 
     it('returns false otherwise', () => {

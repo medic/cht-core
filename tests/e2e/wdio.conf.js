@@ -345,7 +345,8 @@ const baseConfig = {
     return new Promise((resolve, reject) => {
       const generationTimeout = setTimeout(
         () => reject(timeoutError),
-        60 * 1000);
+        60 * 1000
+      );
 
       generation.on('exit', (exitCode) => {
         clearTimeout(generationTimeout);

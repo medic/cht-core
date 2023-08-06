@@ -75,9 +75,7 @@ module.exports = {
           .then(results =>
             results.rows[0] &&
           results.rows[0].doc &&
-          results.rows[0].doc.fields
-          ))
-      ).then(allFields => {
+          results.rows[0].doc.fields))).then(allFields => {
         // Filter on identity as you can select forms that have no reports
         const fieldColumns = uniqueColumns(allFields.filter(field => field));
 

@@ -60,7 +60,8 @@ describe('/sms', function() {
                 expect(
                   states
                     .map(s => s.states)
-                    .every(stateHistory => stateHistory.length === 1))
+                    .every(stateHistory => stateHistory.length === 1)
+                )
                   .toBe(true);
               });
           });

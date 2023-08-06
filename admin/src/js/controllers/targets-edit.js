@@ -168,5 +168,4 @@ angular.module('controllers').controller('TargetsEditCtrl',
         });
     };
 
-  }
-);
+  });

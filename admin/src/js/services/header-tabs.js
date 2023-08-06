@@ -64,5 +64,4 @@ angular.module('inboxServices').factory('HeaderTabs',
 
       return tabs;
     };
-  }
-);
+  });

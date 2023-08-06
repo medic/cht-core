@@ -60,8 +60,7 @@
         createSingleUser,
         createMultipleUsers
       };
-    }
-  );
+    });
   
 }()
 );

@@ -295,7 +295,8 @@ describe('replication', () => {
               { role:'analytics', depth:2 },
             ]
           },
-          true);
+          true
+        );
         await utils.saveDocs(docs);
         const response = await requestDocs('chw');
         assertDocIds(response, ...chwIds, 'depth_clinic', 'depth_person');
