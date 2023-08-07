@@ -19,7 +19,7 @@ import { CookieService } from 'ngx-cookie-service';
 })
 export class DebugService {
   private readonly cookieName = 'medic-webapp-debug';
-  private isDebugEnabled = null;
+  private isDebugEnabled = null as boolean | null;
 
   constructor(private cookieService: CookieService) {
     this.isDebugEnabled = !!this.cookieService.get(this.cookieName);

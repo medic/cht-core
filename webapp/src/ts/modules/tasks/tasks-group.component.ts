@@ -30,7 +30,7 @@ export class TasksGroupComponent implements OnInit, OnDestroy {
   private taskGroupContact;
   private telemetryRecorded;
 
-  tasks = [];
+  tasks: any[] = [];
   loadingContent;
   contentError;
   errorTranslationKey = 'tasks.group.error';

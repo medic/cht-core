@@ -12,7 +12,7 @@ import { SessionService } from '@mm-services/session.service';
 })
 export class TestingComponent implements OnInit {
   amountFeedbackDocs:any = 5000;
-  debugEnabled = false;
+  debugEnabled: boolean | null = false;
   purging = false;
   generatingFeedback = false;
   wiping = false;

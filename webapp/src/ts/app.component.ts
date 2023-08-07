@@ -187,7 +187,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.globalActions.updateReplicationStatus({
       disabled: false,
       lastTrigger: undefined,
-      lastSuccessTo: parseInt(window.localStorage.getItem('medic-last-replicated-date')),
+      lastSuccessTo: parseInt(window.localStorage.getItem('medic-last-replicated-date')!),
     });
 
     // Set this first because if there are any bugs in configuration
@@ -588,7 +588,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     return this.rulesEngineService
       .isEnabled()
       .then(isEnabled => console.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
-      .catch(err => console.error('RuleEngine failed to initialize', err));
+      .catch(err => {
+        const errorMessage = 'RuleEngine failed to initialize';
+        console.error(errorMessage, err);
+        this.feedbackService.submit(errorMessage);
+      });
   }
 
   private startRecurringProcesses() {

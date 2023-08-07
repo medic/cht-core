@@ -32,13 +32,12 @@ const setupUser = () => {
   };
 };
 
-const setOldTelemetryDate = async (user) => {
-  const yesterday = moment().subtract(1, 'day').valueOf();
+const setOldTelemetryDate = async (user, date) => {
   const telemetryDateStorageKey = `medic-${user.username}-telemetry-date`;
   await browser.execute((telemetryDateStorageKey, yesterday) => {
     // eslint-disable-next-line no-undef
     window.localStorage.setItem(telemetryDateStorageKey, yesterday);
-  }, telemetryDateStorageKey, yesterday);
+  }, telemetryDateStorageKey, date.valueOf());
 };
 
 describe('Telemetry', () => {
@@ -53,9 +52,11 @@ describe('Telemetry', () => {
   });
 
   it('should record telemetry', async () => {
+    const yesterday = moment().subtract(1, 'day');
+
     await commonPage.goToReports();
     await commonPage.goToPeople();
-    await setOldTelemetryDate(user);
+    await setOldTelemetryDate(user, yesterday);
 
     // generate telemetry aggregate
     await commonPage.goToReports();
@@ -68,9 +69,9 @@ describe('Telemetry', () => {
 
     const telemetryEntry = metaDocs.rows.find(row => row.id.startsWith('telemetry'));
     expect(telemetryEntry.doc).to.deep.nested.include({
-      'metadata.year': moment().year(),
-      'metadata.month': moment().month() + 1,
-      'metadata.day': moment().date() - 1, // we "rolled" back time to yesterday
+      'metadata.year': yesterday.year(),
+      'metadata.month': yesterday.month() + 1,
+      'metadata.day': yesterday.date(),
       'metadata.user': user.username,
       'metadata.versions.app': clientDdoc.build_info.version,
     });

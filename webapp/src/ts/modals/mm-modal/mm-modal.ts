@@ -61,7 +61,7 @@ export class MmModalAbstract {
     });
 
     bsModalRef.onHide
-      .pipe(take(1)) // so we don't need to unsubscribe
+      ?.pipe(take(1)) // so we don't need to unsubscribe
       .subscribe(() => !this.resolved && this.cancel());
   }
 
@@ -143,7 +143,7 @@ export class ModalService {
 
     this.modalRefs[modalId] = bsModalRef;
     bsModalRef.onHidden
-      .pipe(take(1)) // so we don't need to unsubscribe
+      ?.pipe(take(1)) // so we don't need to unsubscribe
       .subscribe(() => delete this.modalRefs[modalId]);
 
     return this.getModalClosePromise(bsModalRef);

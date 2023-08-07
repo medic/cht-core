@@ -120,7 +120,7 @@ export class HeaderTabsService {
   }
 }
 
-interface HeaderTab {
+export interface HeaderTab {
   name: string;
   route: string;
   defaultIcon: string;

@@ -269,7 +269,7 @@ describe('date pipes rendering', () => {
   let formatDate;
   let translate;
 
-  const override = async(template, { task=undefined, date=undefined }={}) => {
+  const override = async(template, { task, date }: { task?; date? } = {}) => {
     TestBed.overrideTemplate(TestComponent, template);
     fixture = TestBed.createComponent(TestComponent);
     fixture.componentInstance.date = date;

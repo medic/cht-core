@@ -311,7 +311,7 @@ export class MutingTransition extends Transition {
 
   private buildLineageFromContext(contact, context) {
     let parent = contact.parent;
-    const lineage = [];
+    const lineage: any[] = [];
     while (parent && parent._id) {
       lineage.push(context.hydratedDocs[parent._id]);
       parent = parent.parent;

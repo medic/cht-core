@@ -8,6 +8,7 @@ const config = require('./config');
 const db = require('./db');
 const path = require('path');
 const auth = require('./auth');
+const prometheusMiddleware = require('prometheus-api-metrics');
 const logger = require('./logger');
 const isClientHuman = require('./is-client-human');
 const target = 'http://' + environment.host + ':' + environment.port;
@@ -110,6 +111,19 @@ app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, cal
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
 
+app.use(prometheusMiddleware({
+  metricsPath: '/api/v1/express-metrics',
+  metricsPrefix: 'cht_api',
+  // based on one-month analysed period of production traffic
+  durationBuckets: [
+    0.004, 0.007, 0.013, 0.025, 0.05,
+    0.1, 0.25, 0.5, 1, 2,
+    3, 5, 7.5, 10, 25,
+    45, 90, 180, 360, 600,
+    1200, 1800, 3600
+  ],
+}));
+
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
 // --allow-cors commandline switch will enable this from within a web browser.
@@ -138,13 +152,14 @@ app.use(getLocale);
 morgan.token('id', req => req.id);
 
 app.use(
-  morgan('REQ :id :remote-addr :remote-user :method :url HTTP/:http-version', {
+  morgan(':date REQ: :id :remote-addr :remote-user :method :url HTTP/:http-version', {
     immediate: true,
   })
 );
 app.use(
   morgan(
-    'RES :id :remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length] :response-time ms'
+    ':date RES: :id :remote-addr :remote-user :method :url HTTP/:http-version :status ' +
+    ':res[content-length] :response-time ms'
   )
 );
 
