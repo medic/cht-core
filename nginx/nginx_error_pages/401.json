@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "401 Authorization Required",
+  "server": "nginx"
+}

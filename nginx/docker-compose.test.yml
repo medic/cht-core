@@ -4,35 +4,25 @@ services:
         container_name: cht-nginx
         build:
             context: .
-            target: ${BUILD_TARGET:-test_nginx}
         ports:
-            - 80:80
-            - 443:443
+            - 127.0.0.1:1080:80
+            - 127.0.0.1:1443:443
+        environment:
+            API_HOST: cht-api
+            API_PORT: 5988
+            CERTIFICATE_MODE: SELF_SIGNED
         volumes:
             - cht-ssl:/root/.acme.sh/
             - ./tests/tests.bats:/app/tests.bats
         depends_on:
             - cht-api
-            - haproxy
         networks:
             - cht-net
 
     cht-api:
-        image: mockserver/mockserver
+        image: mockserver/mockserver:5.15.0
         container_name: cht-api-mock
         command: -serverPort 5988
-        environment:
-            MOCKSERVER_PROPERTY_FILE: /config/mockserver.properties
-            MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
-        volumes:
-        - ./mock-config:/config
-        networks:
-            - cht-net
-
-    haproxy:
-        image: mockserver/mockserver
-        container_name: haproxy-mock
-        command: -serverPort 5984
         environment:
             MOCKSERVER_PROPERTY_FILE: /config/mockserver.properties
             MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json

@@ -1,18 +1,26 @@
 [
-    {
-      "httpRequest": {
-        "path": "/"
-      },
-      "httpResponse": {
-        "body": "Hello from CHT api mock"
-      }
+  {
+    "httpRequest": {
+      "path": "/"
     },
-    {
-      "httpRequest": {
-        "path": "/somepath"
-      },
-      "httpResponse": {
-        "body": "Test"
-      }
+    "httpResponse": {
+      "body": "Hello from CHT api mock"
     }
-  ]
+  },
+  {
+    "httpRequest": {
+      "path": "/somepath"
+    },
+    "httpResponse": {
+      "body": "Test"
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/error/drop"
+    },
+    "httpError": {
+      "dropConnection": true
+    }
+  }
+]
