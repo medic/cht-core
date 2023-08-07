@@ -35,7 +35,7 @@ module.exports = function(grunt) {
       'mocha-unit-webapp': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "webapp/tests/mocha/**/*.spec.js"',
       'mocha-unit-api': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "api/tests/mocha/**/*.js"',
       'mocha-unit-sentinel': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "sentinel/tests/**/*.js"',
-      'mocha-integration-api': './node_modules/mocha/bin/_mocha "api/tests/integration/**/*.js" -t 10000',
+      'mocha-integration-api': 'COUCH_URL=http://admin:pass@localhost:5984/medic ./node_modules/mocha/bin/_mocha "api/tests/integration/**/*.js" -t 10000',
       'optimize-js':
         './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/main.js > api/build/static/admin/js/main.op.js && ' +
         './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/templates.js > api/build/static/admin/js/templates.op.js && ' +
