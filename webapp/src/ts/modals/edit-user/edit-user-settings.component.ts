@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { MatDialogRef } from '@angular/material/dialog';
 
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { LanguagesService } from '@mm-services/languages.service';
 import { SetLanguageService, LanguageService } from '@mm-services/language.service';
@@ -10,7 +9,7 @@ import { SetLanguageService, LanguageService } from '@mm-services/language.servi
   selector: 'update-password',
   templateUrl: './edit-user-settings.component.html'
 })
-export class EditUserSettingsComponent extends MmModalAbstract implements OnInit {
+export class EditUserSettingsComponent implements OnInit {
 
   @Input() editUserModel: {
     id?;
@@ -24,18 +23,17 @@ export class EditUserSettingsComponent extends MmModalAbstract implements OnInit
   };
 
   static id = 'edit-user-settings-modal';
-  errors: any = {};
+  processing = false;
+  error;
   enabledLocales: any = [];
 
   constructor(
-    bsModalRef: BsModalRef,
     private userSettingsService: UserSettingsService,
     private languageService: LanguageService,
     private languagesService: LanguagesService,
     private setLanguageService: SetLanguageService,
-  ) {
-    super(bsModalRef);
-  }
+    private matDialogRef: MatDialogRef<EditUserSettingsComponent>,
+  ) { }
 
   async ngOnInit(): Promise<void> {
     try {
@@ -66,8 +64,7 @@ export class EditUserSettingsComponent extends MmModalAbstract implements OnInit
   }
 
   async editUserSettings(): Promise<void> {
-    this.setProcessing();
-    this.errors = {};
+    this.processing = true;
 
     try {
       const updates:any = await this.changedUpdates(this.editUserModel);
@@ -83,11 +80,17 @@ export class EditUserSettingsComponent extends MmModalAbstract implements OnInit
       if (updates.language) {
         await this.setLanguageService.set(updates.language);
       }
-      this.setFinished();
+      this.processing = false;
       this.close();
-    } catch (e) {
-      this.setError(e, 'Error updating user');
+    } catch (error) {
+      this.processing = false;
+      this.error = 'Error updating user';
+      console.error(this.error, error);
     }
+  }
+
+  close() {
+    this.matDialogRef.close();
   }
 
   listTrackBy(index, locale) {

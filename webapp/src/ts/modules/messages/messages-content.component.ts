@@ -7,7 +7,7 @@ import {
   OnInit
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { combineLatest, Subscription } from 'rxjs';
+import { combineLatest, Subscription, take } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { minBy as _minBy } from 'lodash-es';
 
@@ -353,6 +353,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     this.modalService
       .show(SendMessageComponent, { data })
       .afterClosed()
+      .pipe(take(1))
       .subscribe(() => $('#message-footer textarea').focus());
     this.send.message = '';
   }

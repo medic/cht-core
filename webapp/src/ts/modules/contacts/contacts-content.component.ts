@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { ActivatedRoute, Router } from '@angular/router';
 import { combineLatest, Subscription } from 'rxjs';
-import { first } from 'rxjs/operators';
+import { first, take } from 'rxjs/operators';
 import * as moment from 'moment';
 import { groupBy as _groupBy } from 'lodash-es';
 
@@ -444,6 +444,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
     this.modalService
       .show(ContactsMutedComponent)
       .afterClosed()
+      .pipe(take(1))
       .subscribe(navigate => {
         if (navigate) {
           this.router.navigate(['/contacts', this.selectedContact?._id, 'report', form.code]);

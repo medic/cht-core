@@ -1,5 +1,6 @@
 import { Component, AfterViewInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { take } from 'rxjs/operators';
 
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { Select2SearchService } from '@mm-services/select2-search.service';
@@ -33,6 +34,7 @@ export class EditReportComponent implements AfterViewInit {
   ngAfterViewInit() {
     this.matDialogRef
       .afterClosed()
+      .pipe(take(1))
       .subscribe(() => this.getSelectElement().select2('close')); // Close the select2 popup
 
     return this.contactTypesService

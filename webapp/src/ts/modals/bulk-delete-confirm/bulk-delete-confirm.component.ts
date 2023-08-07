@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { take } from 'rxjs/operators';
 
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
@@ -32,6 +33,7 @@ export class BulkDeleteConfirmComponent implements AfterViewInit {
   ngAfterViewInit() {
     this.matDialogRef
       .afterClosed()
+      .pipe(take(1))
       .subscribe(() => this.deleteComplete && window.location.reload());
   }
 

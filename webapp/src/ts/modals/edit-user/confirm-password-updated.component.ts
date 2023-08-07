@@ -1,21 +1,26 @@
-import { Component } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
+import { Component, AfterViewInit } from '@angular/core';
+import { take } from 'rxjs/operators';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'confirm-password-updated-modal',
   templateUrl: './confirm-password-updated.component.html'
 })
-export class ConfirmPasswordUpdatedComponent extends MmModalAbstract {
+export class ConfirmPasswordUpdatedComponent implements AfterViewInit {
   static id = 'confirm-password-updated-modal';
 
   constructor(
-    bsModalRef: BsModalRef,
-  ) {
-    super(bsModalRef);
+    private matDialogRef: MatDialogRef<ConfirmPasswordUpdatedComponent>,
+  ) { }
+
+  ngAfterViewInit() {
+    this.matDialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe(() =>  window.location.reload());
   }
 
-  submit() {
-    window.location.reload();
+  close() {
+    this.matDialogRef.close();
   }
 }
