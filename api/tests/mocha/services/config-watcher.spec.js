@@ -30,6 +30,7 @@ describe('Configuration', () => {
     sinon.spy(config, 'setTransitionsLib');
     sinon.stub(fs, 'watch');
     sinon.stub(translations, 'getTranslationDocs');
+    sinon.stub(dbWatcher, 'listen');
   });
 
   afterEach(() => {

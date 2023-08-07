@@ -60,11 +60,8 @@ const listen = () => {
   watchUsersChanges();
 };
 
-if (!process.env.UNIT_TEST_ENV) {
-  listen();
-}
-
 module.exports = {
+  listen,
   medic: subscribeToMedic,
   sentinel: subscribeToSentinel,
   users: subscribeToUsers,

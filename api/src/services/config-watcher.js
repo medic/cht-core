@@ -148,6 +148,7 @@ const load = () => {
 };
 
 const listen = () => {
+  dbWatcher.listen();
   dbWatcher.medic(change => {
     if (tombstoneUtils.isTombstoneId(change.id)) {
       return Promise.resolve();
