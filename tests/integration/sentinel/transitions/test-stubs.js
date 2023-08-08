@@ -5,11 +5,6 @@ exports.forms = {
       form: 'FORM-A',
       events: [{
         name: 'on_create',
-        trigger: 'add_phone_number',
-        params: 'phone_number',
-        bool_expr: 'doc.fields.phone_number'
-      }, {
-        name: 'on_create',
         trigger: 'add_patient',
         params: '',
         bool_expr: ''
@@ -23,7 +18,53 @@ exports.forms = {
         }],
       }],
     }],
-    forms: { 'FORM-A': {} }
+    forms: {
+      'FORM-A': {
+        fields: {
+          phone_number: {
+            labels: {
+              tiny: {
+                en: 'phone number'
+              },
+              description: {
+                en: 'phone number'
+              },
+              short: {
+                en: 'phone number'
+              }
+            },
+            position: 0,
+            flags: {
+              allow_duplicate: false
+            },
+            type: 'phone_number',
+            required: true
+          },
+          patient_name: {
+            labels: {
+              tiny: {
+                en: 'patient_name'
+              },
+              description: {
+                en: 'Patient name'
+              },
+              short: {
+                'en': 'Patient name'
+              }
+            },
+            position: 1,
+            type: 'string',
+            length: [
+              3,
+              30
+            ],
+            required: true
+          }
+        },
+        public_form: false,
+        use_sentinel: true
+      }
+    }
   }
 };
 
