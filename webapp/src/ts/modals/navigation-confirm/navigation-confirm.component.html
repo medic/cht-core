@@ -1,11 +1,10 @@
 <mm-modal
-  [status]="status"
   [danger]="true"
   [titleKey]="'Confirm'"
   [submitKey]="'yes'"
   [cancelKey]="'no'"
-  (onCancel)="cancel()"
-  (onSubmit)="submit()"
+  (onCancel)="close(false)"
+  (onSubmit)="close(true)"
 >
   <p>{{ (messageTranslationKey || 'confirm.destructive.navigation.forms') | translate }}</p>
 </mm-modal>

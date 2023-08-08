@@ -3,7 +3,7 @@
   [titleKey]="'SESSION_EXPIRED_TITLE' | bootstrapTranslate"
   [submitKey]="'LOGIN' | bootstrapTranslate"
   [cancelKey]="false"
-  (onCancel)="cancel()"
+  (onCancel)="close()"
   (onSubmit)="submit()"
 >
   <p>{{'SESSION_EXPIRED_DESCRIPTION' | bootstrapTranslate}}</p>

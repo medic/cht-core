@@ -1,33 +1,29 @@
-import { Component } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { Component, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
-import { MmModalAbstract } from '../mm-modal/mm-modal';
 import { TelemetryService } from '@mm-services/telemetry.service';
 
 @Component({
   selector: 'navigation-confirm-modal',
   templateUrl: './navigation-confirm.component.html'
 })
-export class NavigationConfirmComponent extends MmModalAbstract {
+export class NavigationConfirmComponent {
   static id = 'navigation-confirm-modal';
   messageTranslationKey;
   telemetryEntry;
 
   constructor(
-    bsModalRef: BsModalRef,
     private telemetryService:TelemetryService,
+    private matDialogRef: MatDialogRef<NavigationConfirmComponent>,
+    @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
   ) {
-    super(bsModalRef);
+    this.messageTranslationKey = this.matDialogData.messageTranslationKey;
+    this.telemetryEntry = this.matDialogData.telemetryEntry;
   }
 
-  submit() {
-    this.recordTelemetry(true);
-    this.close();
-  }
-
-  cancel() {
-    this.recordTelemetry(false);
-    super.cancel();
+  close(confirm) {
+    this.recordTelemetry(confirm);
+    this.matDialogRef.close(confirm);
   }
 
   private recordTelemetry(confirm) {

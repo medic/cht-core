@@ -6,7 +6,8 @@
   [submitKey]="'Send'"
   [submittingKey]="'Sending'"
   (onCancel)="close()"
-  (onSubmit)="submit()">
+  (onSubmit)="submit()"
+>
   <form action="" method="POST" class="message-form">
     <div class="form-group" [ngClass]="{ 'has-error': errors.phone }">
       <select class="form-control" id="send-message-phone" name="phone" autocomplete="off" multiple="multiple"></select>

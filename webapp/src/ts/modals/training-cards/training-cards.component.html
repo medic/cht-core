@@ -1,10 +1,11 @@
 <mm-modal
+  id="training-cards-modal"
   class="enketo-modal content-pane"
-  id="id"
   [titleKey]="modalTitleKey | translate"
   (onCancel)="confirmExit(true)"
   [hideFooter]="hideModalFooter"
-  [hideCloseButton]="showConfirmExit">
+  [hideCloseButton]="showConfirmExit"
+>
 
   <div class="item-content empty-selection" *ngIf="loadingContent">
     <div><div class="loader"></div></div>

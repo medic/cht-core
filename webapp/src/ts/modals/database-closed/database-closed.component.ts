@@ -1,22 +1,21 @@
 import { Component } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
-
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'database-closed',
   templateUrl: './database-closed.component.html'
 })
-export class DatabaseClosedComponent extends MmModalAbstract {
+export class DatabaseClosedComponent {
   static id = 'database-closed-modal';
 
-  constructor(bsModalRef: BsModalRef) {
-    super(bsModalRef);
+  constructor(private matDialogRef: MatDialogRef<DatabaseClosedComponent>) { }
+
+  close() {
+    this.matDialogRef.close();
   }
 
   submit() {
     this.close();
     window.location.reload();
   }
-
 }

@@ -1,16 +1,17 @@
 <mm-modal
-  [status]="status"
   id="feedback"
+  [processing]="processing"
+  [error]="errors.submit"
   [titleKey]="'Report Bug'"
   [submitKey]="'Submit'"
   [submittingKey]="'Submitting'"
-  (onCancel)="cancel()"
+  (onCancel)="close()"
   (onSubmit)="submit()"
 >
   <form action="" method="POST">
-    <div class="form-group" [class.has-error]="error.message">
-      <textarea [(ngModel)]="model.message" class="form-control" name="message" placeholder="{{'Bug description' | translate}}"></textarea>
-      <span class="help-block" *ngIf="error.message">{{error.message}}</span>
+    <div class="form-group" [class.has-error]="errors.message">
+      <textarea [(ngModel)]="model.message" class="form-control" name="message" placeholder="{{ 'Bug description' | translate }}"></textarea>
+      <span class="help-block" *ngIf="errors.message">{{ errors.message }}</span>
     </div>
   </form>
 </mm-modal>

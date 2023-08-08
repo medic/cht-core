@@ -1,20 +1,25 @@
-import { MmModalAbstract } from '../mm-modal/mm-modal';
-
-import { Component, Input } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { Component, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 @Component({
   selector: 'check-date',
   templateUrl: './check-date.component.html'
 })
-export class CheckDateComponent extends MmModalAbstract {
+export class CheckDateComponent {
+  static id = 'check-date-modal';
 
-  @Input() reportedLocalDate;
-  @Input() expectedLocalDate;
+  reportedLocalDate;
+  expectedLocalDate;
 
   constructor(
-    bsModalRef: BsModalRef,
+    private matDialogRef: MatDialogRef<CheckDateComponent>,
+    @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
   ) {
-    super(bsModalRef);
+    this.reportedLocalDate = this.matDialogData.reportedLocalDate;
+    this.expectedLocalDate = this.matDialogData.expectedLocalDate;
+  }
+
+  close() {
+    this.matDialogRef.close();
   }
 }
