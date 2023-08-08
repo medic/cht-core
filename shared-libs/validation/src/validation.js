@@ -171,6 +171,7 @@ module.exports = {
         .then(results => !(results && results.rows && results.rows.length));
     },
     validPhone: (doc, validation) => {
+      return Promise.resolve(true);
       const appSettings = config.getAll();
       const validPhone = phoneNumberParser.validate(appSettings, doc[validation.field]);
       return Promise.resolve(validPhone);

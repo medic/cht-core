@@ -41,6 +41,20 @@ const getNameField = (params, prefix) => {
   return defaultNameField;
 };
 
+const getPatientPhoneField = (settings,currentForm) => {
+  // Get the current form for which we are running transition form
+  formDef = settings.forms[currentForm];
+  
+  // Get the phone field i.e.the field with type phone_number in the form
+  const  phoneField = (Object.keys(formDef.fields).filter(key => formDef.fields[key].type === 'phone_number'))
+
+  // Return the phone field
+  if(phoneField && phoneField[0]){
+    return phoneField[0];
+  }
+} 
+
+
 const parseParams = params => {
   if (!params) {
     return {};
@@ -191,19 +205,6 @@ const getPhoneNumber = doc => {
     return '';
   }
   return doc.fields.phone_number;
-};
-
-const setPhoneNumber = options => {
-  const doc = options.doc;
-  const phoneNumber = getPhoneNumber(doc);
-  // Sms parser already validate the phone this is a just in case check if by any chance it has become invalid.
-  const appSettings = config.getAll();
-  const validPhone = phoneNumberParser.validate(appSettings, phoneNumber);
-  if (!validPhone) {
-    transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_valid');
-    return;
-  }
-  doc.phone_number = phoneNumber;
 };
 
 const getConfig = () => config.get('registrations');
@@ -485,6 +486,7 @@ const addPatient = (options) => {
   const doc = options.doc;
   const patientShortcode = options.doc.patient_id;
   const patientNameField = getPatientNameField(options.params);
+  const patientPhoneField = getPatientPhoneField(config.getAll(),doc.form);
 
   // create a new patient with this patient_id
   const patient = {
@@ -500,6 +502,8 @@ const addPatient = (options) => {
   } else {
     patient.type = 'person';
   }
+
+ 
 
   return utils
     .getContactUuid(patientShortcode)
@@ -529,8 +533,12 @@ const addPatient = (options) => {
           patient.date_of_birth = doc.birth_date;
         }
 
-        if (doc.phone_number) {
-          patient.phone = doc.phone_number;
+        if (patientPhoneField && doc.fields[patientPhoneField]) {
+          if (!phoneNumberParser.validate(config.getAll(), (doc.fields[patientPhoneField]))) {
+            transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_valid');
+            return;
+          }
+          patient.phone = doc.fields[patientPhoneField];
         }
 
         // assign patient in doc with full parent doc - to be used in messages
