@@ -18,5 +18,4 @@ angular.module('inboxServices').factory('UpdateSettings',
           $cacheFactory.get('$http').remove('/api/v1/settings');
         });
     };
-  }
-);
+  });

@@ -206,7 +206,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         }));
 
         this.fastActionList = await this.fastActionButtonService.getReportLeftSideActions({ xmlReportForms });
-      });
+      }
+    );
   }
 
   private watchReportList() {

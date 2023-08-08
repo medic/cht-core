@@ -171,7 +171,8 @@ module.exports = {
                 patient: patient,
                 placeRegistrations: placeRegistrations,
                 place: place,
-              });
+              }
+            );
           }
           const state = messages.isOutgoingAllowed(doc.from) ? allowedState : 'denied';
           utils.setTaskState(task, state);

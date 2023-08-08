@@ -42,7 +42,8 @@ module.exports = new Factory()
   .attr('g_education', () => {
     const gEducation = {
       education_level: Faker.faker.helpers.arrayElement(
-        ['basic', 'below_primary', 'primary_7', 'o_level', 'a_level', 'tertiary', 'diploma', 'degree']),
+        ['basic', 'below_primary', 'primary_7', 'o_level', 'a_level', 'tertiary', 'diploma', 'degree']
+      ),
       institution: Faker.faker.name.firstName(),
       completion_year: moment().subtract(Faker.faker.datatype.number({ min: 1, max: 10 }, 'year')).format('YYYY-MM-DD')
     };
@@ -62,12 +63,14 @@ module.exports = new Factory()
     const gOtherDetails = {
       incentives: Faker.faker.helpers.uniqueArray(
         ['bicycle', 'financial', 'mentorship', 'motorbike', 'phone', 'training', 'uniform', 'other'],
-        Faker.faker.datatype.number({ min: 1, max: 8 })),
+        Faker.faker.datatype.number({ min: 1, max: 8 })
+      ),
       other_incentives: Faker.faker.lorem.word(),
       chp_services: Faker.faker.helpers.uniqueArray(
         ['disaster_risk', 'family_reproductive_health', 'first_aid', 'health_commodities', 'health_promotion',
           'hygiene', 'pmtct', 'prevention_communicable', 'prevention_non_communicable', 'vital_stat'],
-        Faker.faker.datatype.number({ min: 1, max: 10 }))
+        Faker.faker.datatype.number({ min: 1, max: 10 })
+      )
     };
     return gOtherDetails;
   });

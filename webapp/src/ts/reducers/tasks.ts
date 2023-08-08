@@ -4,13 +4,13 @@ import { Actions } from '@mm-actions/tasks';
 import { Actions as GlobalActions } from '@mm-actions/global';
 
 const initialState = {
-  tasksList: [],
+  tasksList: [] as any[],
   selected: null,
   loaded: false,
   taskGroup: {
     lastSubmittedTask: null,
     contact: null,
-    loadingContact: null,
+    loadingContact: null as any,
   },
 };
 

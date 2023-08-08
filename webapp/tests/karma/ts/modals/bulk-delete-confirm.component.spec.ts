@@ -75,7 +75,10 @@ describe('BulkDeleteConfirmComponent', () => {
 
   describe('submit', () => {
     it('should handle missing data', async() => {
-      component.model = undefined;
+      component.model = {
+        docs: [],
+        type: '',
+      };
       await component.submit();
       expect(component.totalDocsSelected).to.equal(0);
       expect(deleteDocsService.delete.callCount).to.equal(1);

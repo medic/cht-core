@@ -71,7 +71,7 @@ export class EnketoService {
   private servicesActions: ServicesActions;
   private readonly HTML_ATTACHMENT_NAME = 'form.html';
   private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
-  private readonly objUrls = [];
+  private readonly objUrls: string[] = [];
   private inited;
 
   private currentForm;
@@ -287,7 +287,7 @@ export class EnketoService {
     const { doc, instanceData, titleKey, wrapper, isFormInModal, contactSummary } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
-    formContainer.html(doc.html.get(0));
+    formContainer.html(doc.html.get(0)!);
 
     return this
       .getEnketoForm(wrapper, doc, instanceData, contactSummary)
@@ -608,11 +608,11 @@ export class EnketoService {
       return $('<temproot>').append($(xml).clone()).html();
     };
 
-    const dbDocTags = [];
+    const dbDocTags: string[] = [];
     $record
       .find('[db-doc]')
       .filter((idx, element) => {
-        return $(element).attr('db-doc').toLowerCase() === 'true';
+        return $(element).attr('db-doc')?.toLowerCase() === 'true';
       })
       .each((idx, element) => {
         mapOrAssignId(element);
@@ -898,8 +898,8 @@ interface XmlFormContext {
     hasContactSummary: boolean;
   };
   wrapper: JQuery;
-  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
-  titleKey: string;
+  instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
+  titleKey?: string;
   isFormInModal?: boolean;
   contactSummary: Record<string, any>;
 }
@@ -907,7 +907,7 @@ interface XmlFormContext {
 export interface EnketoFormContext {
   selector: string;
   formDoc: Record<string, any>;
-  instanceData: string|Record<string, any>; // String for report forms, Record<> for contact forms.
+  instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
   editedListener: () => void;
   valuechangeListener: () => void;
   titleKey?: string;

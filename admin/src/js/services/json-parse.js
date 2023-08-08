@@ -12,5 +12,4 @@ angular.module('inboxServices').factory('JsonParse',
         return $q.reject(e);
       }
     };
-  }
-);
+  });

@@ -8,6 +8,7 @@ const config = require('./config');
 const db = require('./db');
 const path = require('path');
 const auth = require('./auth');
+const prometheusMiddleware = require('prometheus-api-metrics');
 const logger = require('./logger');
 const isClientHuman = require('./is-client-human');
 const target = 'http://' + environment.host + ':' + environment.port;
@@ -109,6 +110,19 @@ app.deleteJson = (path, callback) => handleJsonRequest('delete', path, callback)
 app.postJsonOrCsv = (path, callback) => handleJsonOrCsvRequest('post', path, callback);
 app.postJson = (path, callback) => handleJsonRequest('post', path, callback);
 app.putJson = (path, callback) => handleJsonRequest('put', path, callback);
+
+app.use(prometheusMiddleware({
+  metricsPath: '/api/v1/express-metrics',
+  metricsPrefix: 'cht_api',
+  // based on one-month analysed period of production traffic
+  durationBuckets: [
+    0.004, 0.007, 0.013, 0.025, 0.05,
+    0.1, 0.25, 0.5, 1, 2,
+    3, 5, 7.5, 10, 25,
+    45, 90, 180, 360, 600,
+    1200, 1800, 3600
+  ],
+}));
 
 // When testing random stuff in-browser, it can be useful to access the database
 // from different domains (e.g. localhost:5988 vs localhost:8080).  Adding the
@@ -277,8 +291,7 @@ const ONLINE_ONLY_ENDPOINTS = [
 
 // block offline users from accessing some unaudited CouchDB endpoints
 ONLINE_ONLY_ENDPOINTS.forEach(url =>
-  app.all(routePrefix + url, authorization.handleAuthErrors, authorization.offlineUserFirewall)
-);
+  app.all(routePrefix + url, authorization.handleAuthErrors, authorization.offlineUserFirewall));
 
 // allow anyone to access their session
 app.all('/_session', connectedUserLog, function(req, res) {

@@ -17,7 +17,7 @@ export class PlaceHierarchyService {
   }
 
   private getIdLineage(place) {
-    const path = [];
+    const path: any[] = [];
     while(place && place._id) {
       path.splice(0, 0, place._id);
       place = place.parent;
@@ -76,7 +76,7 @@ export class PlaceHierarchyService {
         return this.contactTypesService
           .getPlaceTypes()
           .then(types => {
-            const ids = [];
+            const ids: any[] = [];
             types.forEach(type => {
               if (type.parents) {
                 ids.push(...type.parents);

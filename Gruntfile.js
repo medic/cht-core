@@ -93,8 +93,7 @@ module.exports = function(grunt) {
               `npm dedupe`,
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
-            ].join(' && ')
-          )
+            ].join(' && '))
           .join(' && '),
       },
       'build-images': {
@@ -104,8 +103,7 @@ module.exports = function(grunt) {
               `cd ${service}`,
               `docker build -f ./Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
               'cd ../',
-            ].join(' && ')
-          )
+            ].join(' && '))
           .join(' && '),
       },
       'save-service-images': {
@@ -114,8 +112,7 @@ module.exports = function(grunt) {
             [
               `mkdir -p images`,
               `docker save ${buildVersions.getImageTag(service)} > images/${service}.tar`,
-            ].join(' && ')
-          )
+            ].join(' && '))
           .join(' && '),
       },
       'push-service-images': {
