@@ -17,7 +17,6 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { DbService } from '@mm-services/db.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 
@@ -34,12 +33,11 @@ interface DebounceActive {
 })
 export class RulesEngineCoreFactoryService {
   constructor(
-    private dbService: DbService,
-    private feedbackService: FeedbackService
+    private dbService: DbService
   ) {}
 
   get() {
-    return RulesEngineCore(this.dbService.get(), this.feedbackService);
+    return RulesEngineCore(this.dbService.get());
   }
 }
 
