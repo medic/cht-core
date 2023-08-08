@@ -217,7 +217,7 @@ const fieldParsers = {
       return formattedAndValidatedPhone;
     } else {
       logger.warn(`The provided phone number ${raw} is invalid`);
-      return null;
+      return raw;
     }
   }
 };
