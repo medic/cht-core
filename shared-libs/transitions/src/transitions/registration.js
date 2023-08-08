@@ -41,18 +41,18 @@ const getNameField = (params, prefix) => {
   return defaultNameField;
 };
 
-const getPatientPhoneField = (settings,currentForm) => {
+const getPatientPhoneField = (settings, currentForm) => {
   // Get the current form for which we are running transition form
-  formDef = settings.forms[currentForm];
-  
+  const formDef = settings.forms[currentForm];
+
   // Get the phone field i.e.the field with type phone_number in the form
-  const  phoneField = (Object.keys(formDef.fields).filter(key => formDef.fields[key].type === 'phone_number'))
+  const phoneField = (Object.keys(formDef.fields).filter(key => formDef.fields[key].type === 'phone_number'));
 
   // Return the phone field
-  if(phoneField && phoneField[0]){
+  if (phoneField && phoneField[0]) {
     return phoneField[0];
   }
-} 
+};
 
 
 const parseParams = params => {
@@ -200,13 +200,6 @@ const setBirthDate = doc => {
   }
 };
 
-const getPhoneNumber = doc => {
-  if (!doc || !doc.fields) {
-    return '';
-  }
-  return doc.fields.phone_number;
-};
-
 const getConfig = () => config.get('registrations');
 
 /*
@@ -240,9 +233,6 @@ const triggers = {
     // Deprecated name for add_patient
     logger.warn('Use of add_patient_id trigger. This is deprecated in favour of add_patient.');
     return triggers.add_patient(options);
-  },
-  add_phone_number: (options) => {
-    return setPhoneNumber(options);
   },
   add_expected_date: (options) => {
     return setExpectedBirthDate(options.doc);
@@ -486,7 +476,7 @@ const addPatient = (options) => {
   const doc = options.doc;
   const patientShortcode = options.doc.patient_id;
   const patientNameField = getPatientNameField(options.params);
-  const patientPhoneField = getPatientPhoneField(config.getAll(),doc.form);
+  const patientPhoneField = getPatientPhoneField(config.getAll(), doc.form);
 
   // create a new patient with this patient_id
   const patient = {
@@ -503,7 +493,7 @@ const addPatient = (options) => {
     patient.type = 'person';
   }
 
- 
+
 
   return utils
     .getContactUuid(patientShortcode)
