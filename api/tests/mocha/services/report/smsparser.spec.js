@@ -133,7 +133,9 @@ describe('sms parser', () => {
     chai.expect(data.phone_number).to.equal('+9779841202020');
   });
 
-  it('returns null if phone number is invalid for the region', () => {
+  it('returns the exact invalid number if phone number is invalid for the region', () => {
+    // Looks counter intuitive but validation needs to be done agian in transition so it can
+    // act against the valid or invalid result. Warning is logged just in case.
     const doc = { message: 'NP 20 +97712312' };
     const def = definitions.forms.NP;
     sinon.stub(config, 'getAll').returns({
@@ -141,18 +143,18 @@ describe('sms parser', () => {
       phone_validation: 'full'
     });
     const data = smsparser.parse(def, doc);
-    chai.expect(data.phone_number).to.equal(null);
+    chai.expect(data.phone_number).to.equal('+97712312');
   });
 
-  it('returns null if phone number is invalid for default region', () => {
-    const doc = { message: 'NP 20 8750660880' };
+  it('should add extension to given number if not provided', () => {
+    const doc = { message: 'NP 20 9841202020' };
     const def = definitions.forms.NP;
     sinon.stub(config, 'getAll').returns({
       default_country_code: 977,
       phone_validation: 'full'
     });
     const data = smsparser.parse(def, doc);
-    chai.expect(data.phone_number).to.equal(null);
+    chai.expect(data.phone_number).to.equal('+9779841202020');
   });
 
   //India , Kenya, Tanzania Phone is accepted as contact info in Nepal region.
