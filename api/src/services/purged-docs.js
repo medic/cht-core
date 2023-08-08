@@ -5,6 +5,7 @@ const purgingUtils = require('@medic/purging-utils');
 const logger = require('../logger');
 const config = require('../config');
 const configWatcher = require('./config-watcher');
+const purgedDocsCache = require('./purged-docs-cache');
 const _ = require('lodash');
 
 const DB_NOT_FOUND_ERROR = new Error('not_found');
@@ -38,14 +39,14 @@ const getCacheDocId = (username) => `purged-docs-${username}`;
 const clearCache = async (username) => {
   if (!username) {
     logger.info('Wiping purged docs cache');
-    return await db.wipeCacheDb();
+    return await purgedDocsCache.wipe();
   }
 
   const cacheDocId = getCacheDocId(username);
   try {
     const cacheDoc = await getPurgeCacheDoc(cacheDocId);
     logger.debug('Wiping purged docs cache for user %s', username);
-    cacheDoc && await db.cache.remove(cacheDoc);
+    cacheDoc && await (await purgedDocsCache.get()).remove(cacheDoc);
   } catch (err) {
     catchDocNotFoundError(err);
   }
@@ -67,7 +68,7 @@ const getPurgedIdsFromChanges = result => {
 
 const getPurgeCacheDoc = async (cacheDocId) => {
   try {
-    return await db.cache.get(cacheDocId);
+    return await (await purgedDocsCache.get()).get(cacheDocId);
   } catch (err) {
     catchDocNotFoundError(err);
   }
@@ -82,7 +83,13 @@ const setCachedIds = async (cacheDocId, ids) => {
   ids.sort();
   const cachedDoc = await getPurgeCacheDoc(cacheDocId) || { _id: cacheDocId };
   cachedDoc.doc_ids = ids;
-  await db.cache.put(cachedDoc);
+  try {
+    await (await purgedDocsCache.get()).put(cachedDoc);
+  } catch (err) {
+    if (err?.status !== 409) {
+      throw err;
+    }
+  }
 };
 
 const getPurgedIds = async (userCtx, docIds, useCache = true) => {

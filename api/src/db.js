@@ -85,7 +85,6 @@ if (UNIT_TEST_ENV) {
   module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
   module.exports.createVault = () => module.exports.vault.info();
   module.exports.users = new PouchDB(getDbUrl('/_users'), { fetch });
-  module.exports.cache = new PouchDB(`${environment.couchUrl}-cache`, { fetch });
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
@@ -100,11 +99,6 @@ if (UNIT_TEST_ENV) {
     } catch (err) {
       logger.error('Error when closing db: %o', err);
     }
-  };
-
-  module.exports.wipeCacheDb = async () => {
-    await module.exports.cache.destroy();
-    module.exports.cache = new PouchDB(`${environment.couchUrl}-cache`, { fetch });
   };
 
   // Resolves with the PouchDB object if the DB with the given name exists
