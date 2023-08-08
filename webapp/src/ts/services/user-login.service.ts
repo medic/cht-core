@@ -9,10 +9,11 @@ export class UserLoginService {
 
   constructor(
     private http: HttpClient,
-    private location: LocationService) { }
+    private location: LocationService
+  ) { }
 
   /**
-   * Calls back-end Login service. 
+   * Calls back-end Login service.
    *
    * @param {String} username username of the user to be logged in.
    * @param {String} password password of the user.

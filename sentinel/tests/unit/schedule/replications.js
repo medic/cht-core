@@ -413,8 +413,7 @@ describe('replications', () => {
         // presume all docs are already replicated
         const replicatedIds = ['telemetry-1', 'feedback-1', 'feedback-2'];
         target.changes.callsFake(({ doc_ids }) => (
-          Promise.resolve({ results: doc_ids.filter(id => replicatedIds.includes(id)).map(id => ({ id })) }))
-        );
+          Promise.resolve({ results: doc_ids.filter(id => replicatedIds.includes(id)).map(id => ({ id })) })));
         sinon.stub(rpn, 'post').resolves();
 
         return replications.replicateDbs(['source'], 'target').then(() => {

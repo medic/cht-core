@@ -125,7 +125,8 @@ describe('/sms', function() {
 
           .then(() => api.postStatuses(
             { id:'abc-123', status:'SENT' },
-            { id:'abc-123', status:'DELIVERED' }))
+            { id:'abc-123', status:'DELIVERED' }
+          ))
           .then(assert.response({ messages:[] }))
 
           .then(() => assert.messageStates({ id:'abc-123', states:['sent', 'delivered'] }));
@@ -172,7 +173,8 @@ describe('/sms', function() {
 
         .then(() => api.postStatuses(
           { id:'abc-123', status:'SENT' },
-          { id:'def-456', status:'DELIVERED' }))
+          { id:'def-456', status:'DELIVERED' }
+        ))
         .then(assert.response({ messages:[] }))
         .then(() => assert.messageStates({ id:'abc-123', states:['sent'] }));
     });

@@ -635,7 +635,8 @@ module.exports = {
               throw new Error(
                 `Configuration error. Expecting params to be a string, comma separated list, ` +
                 `or an array for ${registration.form}.${event.trigger}: '${event.params}'
-              `);
+              `
+              );
             }
           }
 

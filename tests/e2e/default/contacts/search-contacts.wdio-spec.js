@@ -37,7 +37,8 @@ const sittuPerson = personFactory.build(
       _id: sittuHospital._id,
       parent: sittuHospital.parent
     }
-  });
+  }
+);
 const potuPerson = personFactory.build(
   {
     name: 'Potu',
@@ -45,7 +46,8 @@ const potuPerson = personFactory.build(
       _id: sittuHospital._id,
       parent: sittuHospital.parent
     }
-  });
+  }
+);
 
 const docs = [...places.values(), sittuHospital, sittuPerson, potuHospital, potuPerson];
 

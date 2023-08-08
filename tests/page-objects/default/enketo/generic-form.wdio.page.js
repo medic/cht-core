@@ -40,8 +40,7 @@ const selectContact = async (inputName, contactName) => {
   await contact.waitForDisplayed();
   await contact.click();
   await browser.waitUntil(async () =>
-    (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase())
-  );
+    (await (await select2Selection()).getText()).toLowerCase().endsWith(contactName.toLowerCase()));
 };
 const editForm = async () => {
   await commonPage.openMoreOptionsMenu();

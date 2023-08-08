@@ -291,8 +291,7 @@ const ONLINE_ONLY_ENDPOINTS = [
 
 // block offline users from accessing some unaudited CouchDB endpoints
 ONLINE_ONLY_ENDPOINTS.forEach(url =>
-  app.all(routePrefix + url, authorization.handleAuthErrors, authorization.offlineUserFirewall)
-);
+  app.all(routePrefix + url, authorization.handleAuthErrors, authorization.offlineUserFirewall));
 
 // allow anyone to access their session
 app.all('/_session', connectedUserLog, function(req, res) {

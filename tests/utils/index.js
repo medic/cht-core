@@ -380,8 +380,7 @@ const deleteAllDocs = (except) => {
             _rev: doc._rev,
             _deleted: true,
           };
-        })
-    )
+        }))
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
       if (e2eDebug) {
