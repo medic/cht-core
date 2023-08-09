@@ -1,8 +1,12 @@
 require('../../../../../../tests/aliases');
 const assert = require('chai').assert;
 const sinon = require('sinon');
+const glob = require('glob');
+const path = require('path');
 
 const utils = require('../../../../../../tests/utils');
+const sentinelUtils = require('../../../../../../tests/utils/sentinel');
+const { suites } = require('../../../../../../tests/e2e/default/suites');
 
 describe('Test utils', () => {
 
@@ -13,6 +17,7 @@ describe('Test utils', () => {
   describe('deleteAllDocs', () => {
     it('Deletes all docs and infodocs except some core ones', () => {
       const request = sinon.stub(utils, 'requestOnTestDb');
+      sinon.stub(sentinelUtils, 'skipToSeq');
       request.onFirstCall().resolves({rows: [
         {id: '_design/cats', doc: {_id: '_design/cats'}},
         {id: 'service-worker-meta', doc: {_id: 'service-worker-meta'}},
@@ -50,6 +55,7 @@ describe('Test utils', () => {
     });
     it('Supports extra strings as exceptions', () => {
       const request = sinon.stub(utils, 'requestOnTestDb');
+      sinon.stub(sentinelUtils, 'skipToSeq');
       request.onFirstCall().resolves({rows: [
         {id: 'ME', doc: {_id: 'ME', _rev: 1}},
         {id: 'YOU', doc: {_id: 'YOU'}}
@@ -78,6 +84,7 @@ describe('Test utils', () => {
     });
     it('Supports extra regex as exceptions', () => {
       const request = sinon.stub(utils, 'requestOnTestDb');
+      sinon.stub(sentinelUtils, 'skipToSeq');
       request.onFirstCall().resolves({rows: [
         {id: 'ME', doc: {_id: 'ME', _rev: 1}},
         {id: 'YOU', doc: {_id: 'YOU'}}
@@ -105,6 +112,7 @@ describe('Test utils', () => {
     });
     it('Supports extra functions as exceptions', () => {
       const request = sinon.stub(utils, 'requestOnTestDb');
+      sinon.stub(sentinelUtils, 'skipToSeq');
       request.onFirstCall().resolves({rows: [
         {id: 'ME', doc: {_id: 'ME', _rev: 1}},
         {id: 'YOU', doc: {_id: 'YOU'}}
@@ -131,5 +139,23 @@ describe('Test utils', () => {
           assert.deepEqual(deleteOptions.body, {docs: [{_id: 'ME', _deleted: true, _rev: 1}]});
         });
     });
+  });
+
+  it('Check that all test specs belong to a test suites', async () => {
+    const pathToDefaultTesting = path.resolve(__dirname, '../../../../../../tests/e2e/default');
+    sinon.stub(sentinelUtils, 'skipToSeq');
+    const suiteSpecs = [];
+    const getDirectories = (src) =>
+      new Promise((resolve, reject) => glob(src, (err, res) => err ? reject(err) : resolve(res)));
+
+    for (const relativePaths of Object.values(suites)) {
+      for (const relativePath of relativePaths) {
+        const resolvedPath = path.resolve(pathToDefaultTesting, relativePath);
+        suiteSpecs.push(...await getDirectories(resolvedPath));
+      }
+    }
+
+    const allSpecs = await getDirectories(path.join(pathToDefaultTesting, '/**/*.wdio-spec.js'));
+    assert.sameMembers(allSpecs, suiteSpecs);
   });
 });

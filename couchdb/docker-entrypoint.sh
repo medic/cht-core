@@ -35,7 +35,7 @@ setSecret() {
     COUCHDB_SECRET=$(cat /proc/sys/kernel/random/uuid)
   fi
   # Set secret only if not already present
-  if [ -z "$(grep -Pzor "\[couch_httpd_auth\]\nsecret =" /opt/couchdb/etc/local.d/*.ini)" ]; then
+  if [ -z $(grep -Pzor "\[couch_httpd_auth\]\nsecret =" $CLUSTER_CREDENTIALS) ]; then
     printf "\n[couch_httpd_auth]\nsecret = %s\n" "$COUCHDB_SECRET" >> $CLUSTER_CREDENTIALS
   fi
 }
@@ -45,7 +45,7 @@ setUuid() {
     COUCHDB_UUID=$(cat /proc/sys/kernel/random/uuid)
   fi
   # Set uuid only if not already present
-  if [ -z "$(grep -Pzor "\[couchdb\]\nuuid =" /opt/couchdb/etc/local.d/*.ini)" ]; then
+  if [ -z $(grep -Pzor "\[couchdb\]\nuuid =" $CLUSTER_CREDENTIALS) ]; then
     printf "\n[couchdb]\nuuid = %s\n" "$COUCHDB_UUID" >> $CLUSTER_CREDENTIALS
   fi
 }
@@ -80,7 +80,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
 
     if [ "$COUCHDB_USER" ] && [ "$COUCHDB_PASSWORD" ] && [ -z "$COUCHDB_SYNC_ADMINS_NODE" ]; then
         # Create admin only if not already present
-        if ! grep -Pzoqr "\[admins\]\n$COUCHDB_USER =" /opt/couchdb/etc/local.d/*.ini; then
+        if ! grep -Pzoqr "\[admins\]\n$COUCHDB_USER =" $CLUSTER_CREDENTIALS; then
             printf "\n[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_PASSWORD" >> $CLUSTER_CREDENTIALS
         fi
     fi
@@ -94,8 +94,10 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
     fi
 
     if [ "$COUCHDB_LOG_LEVEL" ]; then
-        if ! grep -Pzor "\[log\]\nlevel =" /opt/couchdb/etc/local.d/*.ini; then
+        if ! grep -Pzoqr "\[log\]\nlevel =" $CLUSTER_CREDENTIALS; then
             printf "\n[log]\nlevel = %s\n" "$COUCHDB_LOG_LEVEL" >> $CLUSTER_CREDENTIALS
+        else
+            sed -i "s/level = .*/level = $COUCHDB_LOG_LEVEL/g" $CLUSTER_CREDENTIALS
         fi
     fi
 
@@ -110,7 +112,7 @@ if [ "$1" = '/opt/couchdb/bin/couchdb' ]; then
         /bin/bash /opt/couchdb/etc/set-up-cluster.sh check_if_couchdb_is_ready http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984
         COUCHDB_HASHED_PASSWORD=`curl http://$COUCHDB_USER:$COUCHDB_PASSWORD@$COUCHDB_SYNC_ADMINS_NODE:5984/_node/couchdb@$COUCHDB_SYNC_ADMINS_NODE/_config/admins/$COUCHDB_USER | sed "s/^\([\"]\)\(.*\)\1\$/\2/g"`
 
-        if ! grep -Pzoqr "$COUCHDB_USER = $COUCHDB_HASHED_PASSWORD" /opt/couchdb/etc/local.d/*.ini; then
+        if ! grep -Pzoqr "$COUCHDB_USER = $COUCHDB_HASHED_PASSWORD" $CLUSTER_CREDENTIALS; then
             printf "[admins]\n%s = %s\n" "$COUCHDB_USER" "$COUCHDB_HASHED_PASSWORD" >> $CLUSTER_CREDENTIALS
         fi
 

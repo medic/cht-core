@@ -30,5 +30,4 @@ angular.module('controllers').controller('DeleteDocConfirm',
       $uibModalInstance.dismiss();
     };
 
-  }
-);
+  });

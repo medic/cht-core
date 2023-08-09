@@ -125,5 +125,4 @@ angular.module('inboxServices').factory('GetSummaries',
       }
       return getLocal(ids);
     };
-  }
-);
+  });

@@ -17,7 +17,6 @@ import { ContactTypesService } from '@mm-services/contact-types.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { DbService } from '@mm-services/db.service';
 import { CalendarIntervalService } from '@mm-services/calendar-interval.service';
-import { FeedbackService } from '@mm-services/feedback.service';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TranslateService } from '@mm-services/translate.service';
 
@@ -34,12 +33,11 @@ interface DebounceActive {
 })
 export class RulesEngineCoreFactoryService {
   constructor(
-    private dbService: DbService,
-    private feedbackService: FeedbackService
+    private dbService: DbService
   ) {}
 
   get() {
-    return RulesEngineCore(this.dbService.get(), this.feedbackService);
+    return RulesEngineCore(this.dbService.get());
   }
 }
 
@@ -255,7 +253,7 @@ export class RulesEngineService implements OnDestroy {
     });
     this.subscriptions.add(dirtyContactsSubscription);
 
-    const userLineage = [];
+    const userLineage: any[] = [];
     for (
       let current = rulesEngineContext.userContactDoc;
       !!current && userLineage.length < this.MAX_LINEAGE_DEPTH;
@@ -311,7 +309,7 @@ export class RulesEngineService implements OnDestroy {
     return this.rulesEngineCore.updateEmissionsFor(_uniq(contactsWithUpdatedTasks));
   }
 
-  private translateTaskDocs(taskDocs = []) {
+  private translateTaskDocs(taskDocs: { emission?: any }[] = []) {
     taskDocs.forEach(taskDoc => {
       const { emission } = taskDoc;
 

@@ -26,5 +26,4 @@ angular.module('controllers').controller('DeleteUserCtrl',
         });
     };
 
-  }
-);
+  });

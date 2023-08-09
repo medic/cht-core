@@ -17,8 +17,7 @@ const generateUser = (name, roles, facility) => {
     name: name,
     roles: roles,
     facility_id: facility,
-  }
-  );
+  });
 };
 
 module.exports = {

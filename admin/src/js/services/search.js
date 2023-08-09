@@ -18,8 +18,7 @@ const Search = require('@medic/search');
       return function() {
         return Search($q, DB());
       };
-    }
-  );
+    });
 
   angular.module('inboxServices').factory('Search',
     function(
@@ -194,6 +193,5 @@ const Search = require('@medic/search');
             throw err;
           });
       };
-    }
-  );
+    });
 }());

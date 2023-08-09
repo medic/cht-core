@@ -112,7 +112,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+1234',
-        'thanks Julie');
+        'thanks Julie'
+      );
 
       /*
        * Also checks that recipient using doc property value is resolved
@@ -121,7 +122,8 @@ describe('functional schedules', () => {
       testMessage(
         getScheduledMessage(doc, 0),
         '+1234',
-        'Mustaches.  Overrated or underrated?');
+        'Mustaches.  Overrated or underrated?'
+      );
 
     });
   });
@@ -176,7 +178,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+1234',
-        'thanks Julie');
+        'thanks Julie'
+      );
 
       // check that message generation is deferred until later
       assert.equal(doc.scheduled_tasks.length, 1);
@@ -244,7 +247,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+1234',
-        'thanks Julie');
+        'thanks Julie'
+      );
 
       /*
        * Also checks that recipient using doc property value is resolved
@@ -253,7 +257,8 @@ describe('functional schedules', () => {
       testMessage(
         getScheduledMessage(doc, 0),
         '+1234',
-        'Mustaches.  Overrated or underrated?');
+        'Mustaches.  Overrated or underrated?'
+      );
     });
   });
 
@@ -289,7 +294,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+5551596',
-        'Thanks');
+        'Thanks'
+      );
     });
   });
 
@@ -405,7 +411,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+1234',
-        'thanks for registering barry');
+        'thanks for registering barry'
+      );
 
       /*
        * Also checks that recipient using doc property value is resolved
@@ -414,7 +421,8 @@ describe('functional schedules', () => {
       testMessage(
         getScheduledMessage(doc, 0),
         '+1234',
-        'Remember to visit barry');
+        'Remember to visit barry'
+      );
 
       assert.equal(utils.getRegistrations.callCount, 4);
 
@@ -483,7 +491,8 @@ describe('functional schedules', () => {
       testMessage(
         getMessage(doc, 0),
         '+1234',
-        'thanks Julie');
+        'thanks Julie'
+      );
     });
   });
 

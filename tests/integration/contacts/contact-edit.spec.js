@@ -11,7 +11,8 @@ describe('Editing contacts ', () => {
         _id: district._id,
         parent: district.parent
       }
-    });
+    }
+  );
 
   const secondContact = personFactory.build(
     {
@@ -19,7 +20,8 @@ describe('Editing contacts ', () => {
         _id: district._id,
         parent: district.parent
       }
-    });
+    }
+  );
   district.contact = originalContact;
 
   before(() => utils.saveDocs([district, originalContact, secondContact]));

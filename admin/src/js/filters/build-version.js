@@ -13,5 +13,4 @@ angular.module('filters').filter('buildVersion',
         }
       }
     };
-  }
-);
+  });

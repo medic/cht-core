@@ -11,7 +11,7 @@ chai.use(require('chai-exclude'));
 const rpn = require('request-promise-native');
 
 const utils = require('@utils');
-const wdioBaseConfig = require('../default/wdio.conf');
+const wdioBaseConfig = require('../wdio.conf');
 
 const { MARKET_URL_READ, STAGING_SERVER, HAPROXY_PORT } = process.env;
 const CHT_COMPOSE_PROJECT_NAME = 'cht-upgrade';
@@ -118,10 +118,11 @@ const servicesStartTimeout = () => {
 
 // Override specific properties from wdio base config
 const upgradeConfig = Object.assign(wdioBaseConfig.config, {
-  specs: [
-    'upgrade.wdio-spec.js',
-    '*.wdio-spec.js'
-  ],
+  specs: 
+   [
+     'upgrade.wdio-spec.js',
+     '*.wdio-spec.js'
+   ],
   exclude: [],
 
   onPrepare: async () => {

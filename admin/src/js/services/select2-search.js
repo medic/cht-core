@@ -199,5 +199,4 @@ angular.module('inboxServices').factory('Select2Search',
       initSelect2(selectEl);
       return resolveInitialValue(selectEl, initialValue);
     };
-  }
-);
+  });
