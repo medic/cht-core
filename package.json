@@ -120,7 +120,6 @@
     "moment-locales-webpack-plugin": "^1.2.0",
     "mustache": "^4.2.0",
     "nodemon": "^2.0.20",
-    "optimize-js": "^1.0.3",
     "patch-package": "^7.0.2",
     "postcss": "^8.4.20",
     "pouchdb-adapter-http": "^7.3.1",

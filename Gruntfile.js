@@ -32,11 +32,6 @@ module.exports = function(grunt) {
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js',
       'push-ddoc-to-staging': 'node ./scripts/build/push-ddoc-to-staging.js',
       'clean-build-dir': 'rm -rf build && mkdir build',
-      'optimize-js':
-        './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/main.js > api/build/static/admin/js/main.op.js && ' +
-        './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/templates.js > api/build/static/admin/js/templates.op.js && ' +
-        'mv api/build/static/admin/js/main.op.js api/build/static/admin/js/main.js && ' +
-        'mv api/build/static/admin/js/templates.op.js api/build/static/admin/js/templates.js',
       'jsdoc-admin': './node_modules/jsdoc/jsdoc.js -d jsdocs/admin -c node_modules/angular-jsdoc/common/conf.json -t node_modules/angular-jsdoc/angular-template admin/src/js/**/*.js',
       'jsdoc-sentinel': './node_modules/jsdoc/jsdoc.js -d jsdocs/sentinel sentinel/src/**/*.js',
       'jsdoc-api': './node_modules/jsdoc/jsdoc.js -d jsdocs/api -R api/README.md api/src/**/*.js',
@@ -284,7 +279,6 @@ module.exports = function(grunt) {
   // CI tasks
   grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
     'exec:uglify-admin',
-    'exec:optimize-js',
     'exec:cleancss-admin',
   ]);
 
