@@ -13,7 +13,7 @@ export class NavigationConfirmComponent {
   telemetryEntry;
 
   constructor(
-    private telemetryService:TelemetryService,
+    private telemetryService: TelemetryService,
     private matDialogRef: MatDialogRef<NavigationConfirmComponent>,
     @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
   ) {

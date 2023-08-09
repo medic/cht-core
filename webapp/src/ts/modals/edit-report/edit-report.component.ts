@@ -12,6 +12,8 @@ import { UpdateFacilityService } from '@mm-services/update-facility.service';
 })
 export class EditReportComponent implements AfterViewInit {
   static id = 'edit-report-modal';
+  private ERROR_UPDATING_FACILITY = 'Error updating facility';
+  private ERROR_VALIDATION = 'Validation error';
 
   report;
   error;
@@ -54,18 +56,21 @@ export class EditReportComponent implements AfterViewInit {
     this.matDialogRef.close();
   }
 
+  private setError(message, error) {
+    this.error = message;
+    console.error(this.error, error);
+  }
+
   submit() {
     const docId = this.report?._id;
     const facilityId = this.getSelectElement().val();
     if (!docId) {
-      this.error = 'Error updating facility';
-      console.error(this.error, new Error('Validation error'));
+      this.setError(this.ERROR_UPDATING_FACILITY, new Error(this.ERROR_VALIDATION));
       return;
     }
 
     if (!facilityId) {
-      this.error = 'Please select a facility';
-      console.error(this.error, new Error('Validation error'));
+      this.setError('Please select a facility', new Error(this.ERROR_VALIDATION));
       return;
     }
 
@@ -79,10 +84,7 @@ export class EditReportComponent implements AfterViewInit {
     return this.updateFacilityService
       .update(docId, facilityId)
       .then(() => this.close())
-      .catch(error => {
-        this.error = 'Error updating facility';
-        console.error(this.error, error);
-      })
+      .catch(error => this.setError(this.ERROR_UPDATING_FACILITY, error))
       .finally(() => this.processing = false);
   }
 }

@@ -249,18 +249,18 @@ export class ReportsEffects {
         };
 
         const shouldReportBeVerified = canUserEdit => {
-          // Verify if user verifications are allowed
+          // verify if user verifications are allowed
           if (canUserEdit) {
             return true;
           }
 
-          // Don't verify if user can't edit and this is an edit
+          // don't verify if user can't edit and this is an edit
           const docHasExistingResult = selectedReport?.doc?.verified !== undefined;
           if (docHasExistingResult) {
             return false;
           }
 
-          // Verify if this is not an edit and the user accepts prompt
+          // verify if this is not an edit and the user accepts  prompt
           return promptUserToConfirmVerification();
         };
 

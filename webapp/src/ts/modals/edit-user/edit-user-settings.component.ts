@@ -69,24 +69,20 @@ export class EditUserSettingsComponent implements OnInit {
     try {
       const updates:any = await this.changedUpdates(this.editUserModel);
       const userSettings = await this.userSettingsService.get();
-      let hasUpdates = false;
-      Object.keys(updates).forEach(key => {
-        hasUpdates = true;
-        userSettings[key] = updates[key];
-      });
+      const hasUpdates = !!Object.keys(updates).length;
       if (hasUpdates) {
-        await this.userSettingsService.put(userSettings);
+        await this.userSettingsService.put({ ...userSettings, ...updates });
       }
       if (updates.language) {
         await this.setLanguageService.set(updates.language);
       }
-      this.processing = false;
       this.close();
     } catch (error) {
-      this.processing = false;
       this.error = 'Error updating user';
       console.error(this.error, error);
     }
+
+    this.processing = false;
   }
 
   close() {
