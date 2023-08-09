@@ -12,7 +12,7 @@ const get = async () => {
     return purgeDb;
   }
 
-  purgeDb = db.get(`${environment.couchUrl}-purged-cache`);
+  purgeDb = db.get(`${environment.db}-purged-cache`);
   return purgeDb;
 };
 

@@ -8,13 +8,12 @@ const environment = require('../../../src/environment');
 
 let purgedDocsCache;
 let purgedDbObj;
-const COUCH_URL = 'http://admin:pass@127.0.0.1:5984/medic';
 
 describe('Purged docs cache', () => {
   beforeEach(() => {
     purgedDbObj = { destroy: sinon.stub().resolves() };
     sinon.stub(db, 'get').returns(purgedDbObj);
-    sinon.stub(environment, 'couchUrl').value(COUCH_URL);
+    sinon.stub(environment, 'db').value('medic');
     purgedDocsCache = rewire('../../../src/services/purged-docs-cache');
   });
 
@@ -61,7 +60,7 @@ describe('Purged docs cache', () => {
     it('should get db when not set', async () => {
       const result = await purgedDocsCache.get();
       expect(result).to.equal(purgedDbObj);
-      expect(db.get.args).to.deep.equal([[`${COUCH_URL}-purged-cache`]]);
+      expect(db.get.args).to.deep.equal([[`medic-purged-cache`]]);
     });
 
     it('should get existent db on subsequent calls', async () => {
@@ -70,7 +69,7 @@ describe('Purged docs cache', () => {
       expect(await purgedDocsCache.get()).to.equal(purgedDbObj);
       expect(await purgedDocsCache.get()).to.equal(purgedDbObj);
 
-      expect(db.get.args).to.deep.equal([[`${COUCH_URL}-purged-cache`]]);
+      expect(db.get.args).to.deep.equal([[`medic-purged-cache`]]);
     });
 
     it('should wait for wipe before getting the db', async () => {
@@ -86,7 +85,7 @@ describe('Purged docs cache', () => {
       expect(await p2).to.equal(purgedDbObj);
       expect(await p3).to.equal(purgedDbObj);
 
-      expect(db.get.args).to.deep.equal([[`${COUCH_URL}-purged-cache`]]);
+      expect(db.get.args).to.deep.equal([[`medic-purged-cache`]]);
     });
   });
 });

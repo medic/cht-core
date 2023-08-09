@@ -84,7 +84,7 @@ if (UNIT_TEST_ENV) {
   module.exports.sentinel = new PouchDB(`${environment.couchUrl}-sentinel`, { fetch });
   module.exports.vault = new PouchDB(`${environment.couchUrl}-vault`, { fetch });
   module.exports.createVault = () => module.exports.vault.info();
-  module.exports.users = new PouchDB(getDbUrl('/_users'), { fetch });
+  module.exports.users = new PouchDB(getDbUrl('_users'), { fetch });
   module.exports.builds = new PouchDB(environment.buildsUrl);
 
   // Get the DB with the given name
