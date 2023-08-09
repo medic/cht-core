@@ -48,11 +48,12 @@ describe('Error log component', () => {
   }));
 
   it('should initialize data on ngAfterViewInit', fakeAsync(() => {
-    sessionService.userCtx.returns('session info');
+    const mockUserCtx = { name: 'test_user' };
+    sessionService.userCtx.returns(mockUserCtx);
 
     component.ngAfterViewInit();
 
-    expect(component.userCtx).to.eql('session info');
+    expect(component.userCtx).to.eql(mockUserCtx);
     expect(component.url).to.exist;
     expect(component.currentDate).to.eql(Date.now());
   }));

@@ -40,9 +40,9 @@ const updateSettings = async (settings) => {
   await browser.refresh();
 };
 
-const compileTargets = async (targetFileName = 'targets-config.js') => {
+const compileTargets = async (targetsFileName = 'targets-config.js') => {
   await chtConfUtils.initializeConfigDir();
-  const targetFilePath = path.join(__dirname, `config/${targetFileName}`);
+  const targetFilePath = path.join(__dirname, `config/${targetsFileName}`);
 
   return chtConfUtils.compileNoolsConfig({ targets: targetFilePath });
 };

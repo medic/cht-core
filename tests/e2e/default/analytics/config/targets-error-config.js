@@ -5,6 +5,6 @@ module.exports = [
     type: 'count',
     goal: 0,
     appliesTo: 'contacts',
-    appliesIf: (c) => !c.foo.muted
+    appliesIf: (c) => !!c.foo.muted
   },
 ];
