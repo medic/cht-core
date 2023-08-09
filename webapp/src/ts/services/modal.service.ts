@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ComponentType } from '@angular/cdk/overlay'
+import { ComponentType } from '@angular/cdk/overlay';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 @Injectable({
