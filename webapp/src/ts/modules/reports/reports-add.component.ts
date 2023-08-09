@@ -218,7 +218,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
         this.telemetryService.record(
           `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-          this.telemetryData.postRender - this.telemetryData.preRender);
+          this.telemetryData.postRender - this.telemetryData.preRender
+        );
       })
       .catch((err) => {
         this.setError(err);
@@ -291,7 +292,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     this.telemetryData.preSave = Date.now();
     this.telemetryService.record(
       `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender);
+      this.telemetryData.preSave - this.telemetryData.postRender
+    );
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
@@ -311,7 +313,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         this.telemetryData.postSave = Date.now();
         this.telemetryService.record(
           `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:save`,
-          this.telemetryData.postSave - this.telemetryData.preSave);
+          this.telemetryData.postSave - this.telemetryData.preSave
+        );
       })
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);

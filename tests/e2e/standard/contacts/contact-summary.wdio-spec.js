@@ -126,7 +126,8 @@ describe('Contact summary info', () => {
       },
       roles: ['district_admin'],
       known: false,
-    });
+    }
+  );
   const patientAlice = personFactory.build({ name: 'Alice Alison', phone: '+447765902001' });
   const patientDavid = personFactory.build({ name: 'David Davidson', phone: '+447765902002', parent: placeBobClinic });
   const davidVisit = reportFactory

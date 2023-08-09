@@ -60,7 +60,8 @@ describe('Send message', () => {
     await messagesPage.sendMessage(
       smsMsg(healthCenter.name),
       healthCenter.name,
-      `${healthCenter.name} - all  contacts`);
+      `${healthCenter.name} - all  contacts`
+    );
 
     const messages = await messagesPage.messagesListLeftPanel();
     expect(messages.length).to.equal(2);

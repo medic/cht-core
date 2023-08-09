@@ -8,6 +8,8 @@ import { DateFilterComponent } from '@mm-components/filters/date-filter/date-fil
 import { StatusFilterComponent } from '@mm-components/filters/status-filter/status-filter.component';
 import { TelemetryService } from '@mm-services/telemetry.service';
 
+type FilterComponent = FormTypeFilterComponent | FacilityFilterComponent | DateFilterComponent | StatusFilterComponent;
+
 @Component({
   selector: 'mm-reports-sidebar-filter',
   templateUrl: './reports-sidebar-filter.component.html'
@@ -32,7 +34,7 @@ export class ReportsSidebarFilterComponent implements AfterViewInit, OnDestroy {
   statusFilter: StatusFilterComponent;
 
   private globalActions;
-  private filters = [];
+  private filters: FilterComponent[] = [];
   isResettingFilters = false;
   isOpen = false;
   filterCount:any = { };

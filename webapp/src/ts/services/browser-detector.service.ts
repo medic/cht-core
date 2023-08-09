@@ -48,6 +48,6 @@ export class BrowserDetectorService {
       return false;
     }
 
-    return this.androidAppVersion.startsWith('v1.');
+    return this.androidAppVersion?.startsWith('v1.');
   }
 }

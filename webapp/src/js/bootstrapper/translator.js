@@ -58,7 +58,7 @@ const TRANSLATIONS = {
     LOGIN: 'Ingia',
   },
   ne: {
-    FETCH_INFO: ({ count, total }) => eurodigit.to_non_euro.devanagari(`डकुमेन्ट लोड हुँदै  (${count} मध्ये ${total} डकुमेन्ट)…`), // eslint-disable-line max-len
+    FETCH_INFO: ({ count, total }) => eurodigit.to_non_euro.devanagari(`${total} मध्ये ${count} डकुमेन्ट लोड हुँदै  …`), // eslint-disable-line max-len
     LOAD_APP: 'एप लोड गर्दै…',
     PURGE_INIT: 'डाटा जाँच गर्दै…',
     PURGE_INFO: ({ count }) => eurodigit.to_non_euro.devanagari(`${count} वटा डकुमेन्ट सफा गरीयो…`),

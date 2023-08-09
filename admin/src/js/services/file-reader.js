@@ -25,5 +25,4 @@ angular.module('inboxServices').service('FileReader',
       base64: readerThat('readAsDataURL'),
       utf8: readerThat('readAsText'),
     };
-  }
-);
+  });

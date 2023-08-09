@@ -12,7 +12,8 @@
     "npm": ">=8.3.1"
   },
   "scripts": {
-    "toc": "doctoc --github --maxlevel 2 README.md"
+    "toc": "doctoc --github --maxlevel 2 README.md",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "async": "^3.2.1",
@@ -42,6 +43,7 @@
     "pouchdb-core": "^7.3.1",
     "pouchdb-find": "^7.3.1",
     "pouchdb-mapreduce": "^7.3.1",
+    "prometheus-api-metrics": "^3.2.2",
     "properties": "^1.2.1",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",

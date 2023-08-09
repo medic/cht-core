@@ -60,6 +60,8 @@ describe('Feedback service', () => {
       document: mockDocument
     });
 
+    // JSON.stringify(new Error('foo')) yields {} by default
+    mockConsole.log(new Error('msg'));
     mockConsole.log('Trying to save');
     mockConsole.info('Saving in process');
     mockConsole.warn('Saving taking a while');
@@ -78,7 +80,7 @@ describe('Feedback service', () => {
     expect(submittedDoc.meta.time).to.equal('1970-01-01T00:00:00.000Z');
     expect(submittedDoc.meta.source).to.equal('automatic');
 
-    expect(submittedDoc.log.length).to.equal(4);
+    expect(submittedDoc.log.length).to.equal(5);
     expect(submittedDoc.log[0].level).to.equal('error');
     expect(submittedDoc.log[0].arguments).to.equal('["Failed to save","404"]');
     expect(submittedDoc.log[1].level).to.equal('warn');
@@ -87,6 +89,8 @@ describe('Feedback service', () => {
     expect(submittedDoc.log[2].arguments).to.equal('["Saving in process"]');
     expect(submittedDoc.log[3].level).to.equal('log');
     expect(submittedDoc.log[3].arguments).to.equal('["Trying to save"]');
+    expect(submittedDoc.log[4].level).to.equal('log');
+    expect(submittedDoc.log[4].arguments).to.include('msg');
   });
 
   it('should log history restricted to 20 lines', async () => {
@@ -155,8 +159,6 @@ describe('Feedback service', () => {
     expect(submittedDoc.meta.source).to.equal('manual');
     expect(submittedDoc.meta.language).to.equal('en');
     expect(submittedDoc.meta.deviceId).to.exist;
-
   });
-
 
 });

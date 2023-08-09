@@ -127,7 +127,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
             this.deselect(change.id);
             return;
           }
-          this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
+          this.router.navigate([this.route.snapshot.parent?.routeConfig?.path]);
           return;
         }
 
@@ -172,6 +172,9 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   search(query) {
+    if (this.selectMode) {
+      return;
+    }
     this.searchFiltersService.freetextSearch(query);
   }
 

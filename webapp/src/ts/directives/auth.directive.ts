@@ -55,7 +55,7 @@ export class AuthDirective implements OnChanges {
     };
 
     const staticChecks = () => {
-      const promises = [];
+      const promises: Promise<boolean>[] = [];
       if (this.mmAuth) {
         promises.push(this.authService.has(this.mmAuth.split(',')));
       }

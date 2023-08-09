@@ -32,7 +32,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
   private isOnlineOnly;
   inlineFilter: InlineFilter;
   facilities = [];
-  flattenedFacilities = [];
+  flattenedFacilities: any[] = [];
   displayedFacilities = [];
 
   private loadingFacilities;
@@ -173,7 +173,7 @@ export class FacilityFilterComponent implements OnInit, AfterViewInit, AbstractF
     return _sortBy(hierarchy, iteratee => iteratee.doc?.name);
   }
 
-  applyFilter(facilities=[]) {
+  applyFilter(facilities: any[] = []) {
     if (this.disabled || this.togglingFacilities) {
       return;
     }

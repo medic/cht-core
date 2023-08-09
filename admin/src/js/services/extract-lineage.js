@@ -18,5 +18,4 @@ angular.module('inboxServices').factory('ExtractLineage',
       }
       return result;
     };
-  }
-);
+  });
