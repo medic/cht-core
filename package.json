@@ -17,6 +17,7 @@
   "scripts": {
     "test": "npm run lint && grunt unit && grunt test-api-integration",
     "lint": "eslint --color --cache . && ./scripts/build/blank-link-check.sh",
+    "lint-service-worker": "eslint --color --cache -c ./.eslintrc build/service-worker.js",
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js --suite=all",
     "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js --suite=all",
     "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default-mobile/wdio.conf.js --suite=all",
@@ -32,7 +33,18 @@
     "mocha-unit-webapp": "UNIT_TEST_ENV=1 mocha 'webapp/tests/mocha/**/*.spec.js'",
     "mocha-unit-api": "UNIT_TEST_ENV=1 mocha 'api/tests/mocha/**/*.spec.js'",
     "mocha-unit-sentinel": "UNIT_TEST_ENV=1 mocha 'sentinel/tests/**/*.spec.js'",
-    "mocha-integration-api": "mocha 'api/tests/integration/**/*.js' -t 10000"
+    "mocha-integration-api": "mocha 'api/tests/integration/**/*.js' -t 10000",
+    "jsdoc-admin": "jsdoc -d jsdocs/admin -c node_modules/angular-jsdoc/common/conf.json -t node_modules/angular-jsdoc/angular-template admin/src/js/**/*.js",
+    "jsdoc-sentinel": "jsdoc -d jsdocs/sentinel sentinel/src/**/*.js",
+    "jsdoc-api": "jsdoc -d jsdocs/api -R api/README.md api/src/**/*.js",
+    "jsdoc-shared-libs": "jsdoc -d jsdocs/shared-libs shared-libs/**/src/**/*.js",
+    "dev-api": "TZ=UTC nodemon --inspect=0.0.0.0:9229 --ignore 'api/build/static' --ignore 'api/build/public' --watch api --watch 'shared-libs/**/src/**' api/server.js -- --allow-cors",
+    "dev-sentinel": "TZ=UTC nodemon --inspect=0.0.0.0:9228 --watch sentinel --watch 'shared-libs/**/src/**' sentinel/server.js",
+    "css-enketo": "sass webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map",
+    "css-admin": "lessc admin/src/css/main.less api/build/static/admin/css/main.css",
+    "browserify-admin": "mkdir -p api/build/static/admin/js/ && browserify --debug -t browserify-ngannotate -r './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat:angular-translate-interpolation-messageformat' -r './admin/node_modules/google-libphonenumber:google-libphonenumber' -r './admin/node_modules/gsm:gsm' -r './admin/node_modules/object-path:object-path' -r './admin/node_modules/bikram-sambat:bikram-sambat' -r './admin/node_modules/lodash/core:lodash/core' admin/src/js/main.js > api/build/static/admin/js/main.js",
+    "uglify-api": "uglify-js api/build/static/login/script.js -o api/build/static/login/script.js && uglify-js api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js",
+    "uglify-admin": "uglify-js api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && uglify-js api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^15.0.0",
