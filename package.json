@@ -49,9 +49,7 @@
     "test-config-default": "cd config/default && npm ci && npm run test",
     "shared-lib-unit": "UNIT_TEST_ENV=1 npm test --workspaces --if-present",
     "cleancss-admin": "cleancss api/build/static/admin/css/main.css > out.css && mv out.css api/build/static/admin/css/main.css",
-    "cleancss-api": "cleancss api/build/static/login/style.css > out.css && mv out.css api/build/static/login/style.css",
-
-
+    "cleancss-api": "cleancss api/build/static/login/style.css > out.css && mv out.css api/build/static/login/style.css"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^15.0.0",
