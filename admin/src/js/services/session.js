@@ -134,7 +134,6 @@ const _ = require('lodash/core');
         }
       };
 
-    }
-  );
+    });
 
 }());

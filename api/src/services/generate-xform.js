@@ -75,7 +75,8 @@ const convertDynamicUrls = (original) => original.replace(
   /<a[^>]+href="([^"]*---output[^"]*)"[^>]*>(.*?)<\/a>/gm,
   '<a href="#" target="_blank" rel="noopener" class="dynamic-url">' +
   '$2<span class="url hidden">$1</span>' +
-  '</a>');
+  '</a>'
+);
 
 const convertEmbeddedHtml = (original) => original
   .replace(/&lt;\s*(\/)?\s*([\s\S]*?)\s*&gt;/gm, '<$1$2>')

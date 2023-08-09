@@ -28,7 +28,7 @@ export class EditMessageGroupComponent implements AfterViewInit, OnInit, AfterVi
 
   private shouldInitDatePickers = false;
   private settingsPromise;
-  private datePickers = [];
+  private datePickers: any[] = [];
 
   ngOnInit() {
     this.settingsPromise = this.settingsService.get();

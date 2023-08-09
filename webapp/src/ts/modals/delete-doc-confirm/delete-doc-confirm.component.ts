@@ -20,7 +20,7 @@ export class DeleteDocConfirmComponent implements OnInit, OnDestroy {
   private selectMode;
 
   processing = false;
-  doc = null;
+  doc = null as any;
   subscriptions: Subscription = new Subscription();
   lineageLib;
   error;

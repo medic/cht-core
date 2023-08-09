@@ -88,5 +88,4 @@ angular.module('controllers').controller('SmsFormsCtrl',
 
     loadForms();
 
-  }
-);
+  });

@@ -171,7 +171,7 @@ describe('FastActionButtonComponent', () => {
     const actionThree: FastAction = {
       id: 'action-3',
       label: 'action number three',
-      icon: { name: null, type: IconType.FONT_AWESOME },
+      icon: { name: '', type: IconType.FONT_AWESOME },
       canDisplay: sinon.stub(),
       execute: sinon.stub(),
     };

@@ -175,7 +175,7 @@ class ASTCompiler {
     const ast = this.cAst;
     const stmts = this.cStmts;
     const v = this.createVar();
-    const s = [];
+    const s: any[] = [];
     for (const item of ast.expressions) {
       s.push(this.build(item));
     }
@@ -187,7 +187,7 @@ class ASTCompiler {
     const ast = this.cAst;
     const stmts = this.cStmts;
     const v = this.createVar();
-    const _values = [];
+    const _values: any[] = [];
     for (const _value of ast.values) {
       _values.push(this.build(_value));
     }
@@ -258,7 +258,7 @@ class ASTCompiler {
     const stmts = this.cStmts;
     const condition = this.build(ast.condition);
     const v = this.createVar();
-    const _s1 = [];
+    const _s1: string[] = [];
     const _s2 = [];
     const _s3 = [];
     const trueExp = this.build(ast.trueExp, _s2);
@@ -281,7 +281,7 @@ class ASTCompiler {
   processMethod() {
     const ast = this.cAst;
     const stmts = this.cStmts;
-    const _args = [];
+    const _args: any[] = [];
 
     for (const arg of ast.args) {
       _args.push(this.build(arg));
@@ -299,8 +299,8 @@ class ASTCompiler {
     const ast = this.cAst;
     const stmts = this.cStmts;
     const t = this.createVar();
-    const _args = [];
-    const _s1 = [];
+    const _args: any[] = [];
+    const _s1: string[] = [];
     const _s2 = [];
     const exp = this.build(ast.exp);
     for (const arg of ast.args) {
@@ -440,7 +440,7 @@ export class ParseProvider {
       fn = astCompiler.compile();
       boundFn = fn;
       if (fn.usedPipes.length) {
-        const pipeArgs = [];
+        const pipeArgs: any[] = [];
         let hasPurePipe = false;
         for (const [pipeName] of fn.usedPipes) {
           const pipeInfo = this.pipesService.meta(pipeName);

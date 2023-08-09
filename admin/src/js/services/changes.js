@@ -153,5 +153,4 @@ angular.module('inboxServices').factory('Changes',
     };
 
     return service;
-  }
-);
+  });

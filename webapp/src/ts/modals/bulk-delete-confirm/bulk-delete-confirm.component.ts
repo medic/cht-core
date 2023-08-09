@@ -17,7 +17,7 @@ export class BulkDeleteConfirmComponent implements AfterViewInit {
   deleteComplete = false;
   processing = false;
   error;
-  docs = [];
+  docs = [] as any[];
   type;
 
   constructor(

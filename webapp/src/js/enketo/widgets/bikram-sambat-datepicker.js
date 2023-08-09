@@ -42,7 +42,8 @@ class Bikramsambatdatepicker extends Widget {
           bikram_sambat_bs.setDate_greg_text(
             $parent.children( '.bikram-sambat-input-group' ),
             $realDateInput,
-            initialVal );
+            initialVal 
+          );
         }
       });
   }

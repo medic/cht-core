@@ -17,7 +17,7 @@ export class EditUserSettingsComponent implements OnInit {
     username?;
     email?;
     phone?;
-    language?: { code? };
+    language: { code? };
   } = {
     language: {}
   };

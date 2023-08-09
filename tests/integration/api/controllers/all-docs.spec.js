@@ -113,8 +113,7 @@ describe('all_docs handler', () => {
   after(() =>
     utils
       .revertDb([], true)
-      .then(() => utils.deleteUsers(users))
-  );
+      .then(() => utils.deleteUsers(users)));
 
   afterEach(() => utils.revertDb(DOCS_TO_KEEP, true));
   beforeEach(() => {
@@ -241,11 +240,11 @@ describe('all_docs handler', () => {
       .saveDocs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(
-          { path: '/_all_docs?start_key="10"&end_key="8"' }, offlineRequestOptions)
-        ),
+          { path: '/_all_docs?start_key="10"&end_key="8"' }, offlineRequestOptions
+        )),
         utils.requestOnTestDb(_.defaults(
-          { path: '/_all_docs?startkey="10"&endkey="8"&inclusive_end=false'}, offlineRequestOptions)
-        )
+          { path: '/_all_docs?startkey="10"&endkey="8"&inclusive_end=false'}, offlineRequestOptions
+        ))
       ]))
       .then(([inclusive, exclusive]) => {
         expect(inclusive.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
@@ -267,11 +266,11 @@ describe('all_docs handler', () => {
       .saveDocs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=true` }, offlineRequestOptions)
-        ),
+          { path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=true` }, offlineRequestOptions
+        )),
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=false` }, offlineRequestOptions)
-        )
+          { path: `/_all_docs?keys=${JSON.stringify(keys)}&include_docs=false` }, offlineRequestOptions
+        ))
       ]))
       .then(([includeDocs, excludeDocs]) => {
         expect(includeDocs.rows.map(row => row.id)).to.have.members(getIdsForUser('offline'));
@@ -293,11 +292,11 @@ describe('all_docs handler', () => {
       .saveDocs(docs)
       .then(() => Promise.all([
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?limit=2&skip=2&include_docs=false` }, offlineRequestOptions)
-        ),
+          { path: `/_all_docs?limit=2&skip=2&include_docs=false` }, offlineRequestOptions
+        )),
         utils.requestOnTestDb(_.defaults(
-          { path: `/_all_docs?limit=1&skip=4&include_docs=true` }, offlineRequestOptions)
-        )
+          { path: `/_all_docs?limit=1&skip=4&include_docs=true` }, offlineRequestOptions
+        ))
       ]))
       .then(([excludeDocs, includeDocs]) => {
         console.log(JSON.stringify(excludeDocs, null, 2));
@@ -440,8 +439,8 @@ describe('all_docs handler', () => {
         utils.requestOnTestDb(_.defaults({ path: '/_all_docs?key="denied_report"' }, offlineRequestOptions)),
         utils.requestOnTestDb(_.defaults({ path: '///_all_docs//?key="denied_report"' }, offlineRequestOptions)),
         utils.request(_.defaults(
-          { path: `//${constants.DB_NAME}//_all_docs?key="denied_report"` }, offlineRequestOptions)
-        ),
+          { path: `//${constants.DB_NAME}//_all_docs?key="denied_report"` }, offlineRequestOptions
+        )),
         utils
           .requestOnTestDb(_.defaults({ path: '/_all_docs/something?key="denied_report"' }, offlineRequestOptions))
           .catch(err => err),
@@ -450,8 +449,8 @@ describe('all_docs handler', () => {
           .catch(err => err),
         utils
           .request(_.defaults(
-            { path: `//${constants.DB_NAME}//_all_docs/something?key="denied_report"` }, offlineRequestOptions)
-          )
+            { path: `//${constants.DB_NAME}//_all_docs/something?key="denied_report"` }, offlineRequestOptions
+          ))
           .catch(err => err),
         utils.requestOnMedicDb(_.defaults({ path: '/_all_docs?key="denied_report"' }, offlineRequestOptions)),
         utils.requestOnMedicDb(_.defaults({ path: '///_all_docs//?key="denied_report"' }, offlineRequestOptions)),
