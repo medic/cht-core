@@ -41,22 +41,15 @@ const getNameField = (params, prefix) => {
   return defaultNameField;
 };
 
-const getPatientPhoneField = (settings, currentForm) => {
-  // Get the current form for which we are running transition form
-  if(settings && currentForm && settings.forms) {
-    const formDef = settings.forms[currentForm];
-
-    if (formDef && formDef.fields) { 
-      // Get the phone field i.e.the field with type phone_number in the form
-      const phoneField = (Object.keys(formDef.fields).filter(key => formDef.fields[key].type === 'phone_number'));
-      // Return the phone field
-      if (phoneField && phoneField[0]) {
-        return phoneField[0];
-      }
-    }  
+const getPatientPhoneField = (currentForm) => {
+  const formDefinition = utils.getForm(currentForm);
+  if (!formDefinition) {
+    return;
   }
+  
+  const phoneField = Object.keys(formDef.fields).find(key => formDef.fields[key].type === 'phone_number');
+  return phoneField; 
 };
-
 
 const parseParams = params => {
   if (!params) {
