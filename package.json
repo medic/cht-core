@@ -21,12 +21,12 @@
     "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js --suite=all",
     "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js --suite=all",
     "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default-mobile/wdio.conf.js --suite=all",
-    "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
+    "ci-e2e-integration": "mocha --config tests/integration/.mocharc.js && npm run lint-service-worker",
     "e2e-integration-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && mocha --config tests/integration/.mocharc.js ",
-    "wdio": "wdio run ./tests/e2e/default/wdio.conf.js",
+    "ci-webdriver-default": "wdio run ./tests/e2e/default/wdio.conf.js",
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
-    "standard-wdio": "wdio run ./tests/e2e/standard/wdio.conf.js",
-    "default-wdio-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
+    "ci-webdriver-standard": "wdio run ./tests/e2e/standard/wdio.conf.js",
+    "ci-webdriver-default-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && grunt build-service-images && grunt create-local-docker-compose-files",
     "prepare": "husky install",
     "postinstall": "cd webapp && ng cache clean && cd ..",
@@ -44,7 +44,14 @@
     "css-admin": "lessc admin/src/css/main.less api/build/static/admin/css/main.css",
     "browserify-admin": "mkdir -p api/build/static/admin/js/ && browserify --debug -t browserify-ngannotate -r './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat:angular-translate-interpolation-messageformat' -r './admin/node_modules/google-libphonenumber:google-libphonenumber' -r './admin/node_modules/gsm:gsm' -r './admin/node_modules/object-path:object-path' -r './admin/node_modules/bikram-sambat:bikram-sambat' -r './admin/node_modules/lodash/core:lodash/core' admin/src/js/main.js > api/build/static/admin/js/main.js",
     "uglify-api": "uglifyjs api/build/static/login/script.js -o api/build/static/login/script.js && uglifyjs api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js",
-    "uglify-admin": "uglifyjs api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js"
+    "uglify-admin": "uglifyjs api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js",
+    "test-config-standard": "cd config/standard && npm ci && npm run ci",
+    "test-config-default": "cd config/default && npm ci && npm run test",
+    "shared-lib-unit": "UNIT_TEST_ENV=1 npm test --workspaces --if-present",
+    "cleancss-admin": "cleancss api/build/static/admin/css/main.css > out.css && mv out.css api/build/static/admin/css/main.css",
+    "cleancss-api": "cleancss api/build/static/login/style.css > out.css && mv out.css api/build/static/login/style.css",
+
+
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^15.0.0",

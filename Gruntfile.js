@@ -28,12 +28,7 @@ module.exports = function(grunt) {
       'compile-admin-templates':
         'mkdir -p api/build/static/admin/js/ && ' +
         'node ./scripts/build/build-angularjs-template-cache.js',
-      'cleancss-admin':
-        './node_modules/clean-css-cli/bin/cleancss api/build/static/admin/css/main.css > api/build/static/admin/css/main.min.css && ' +
-        'mv api/build/static/admin/css/main.min.css api/build/static/admin/css/main.css',
-      'cleancss-api':
-        './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css && ' +
-        'mv api/build/static/login/style.min.css api/build/static/login/style.css',
+
       'karma-admin': 'node ./scripts/ci/run-karma.js',
       'copy-ddocs': 'mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/',
       'copy-api-ddocs': 'mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/',
@@ -81,30 +76,6 @@ module.exports = function(grunt) {
       },
       'npm-ci-modules': 'node scripts/build/cli npmCiModules',
       'check-version': `node scripts/ci/check-versions.js`,
-      'test-config-standard': {
-        cmd: 'cd config/standard && npm ci && npm run ci',
-        stdio: 'inherit', // enable colors!
-      },
-      'wdio-run-default': {
-        cmd: 'npm run wdio -- --suite=' + grunt.option('suite'),
-        stdio: 'inherit', // enable colors!
-      },
-      'wdio-run-standard': {
-        cmd: 'npm run standard-wdio -- --suite=' + grunt.option('suite'),
-        stdio: 'inherit', // enable colors!
-      },
-      'wdio-run-default-mobile': {
-        cmd: 'npm run default-wdio-mobile -- --suite=' + grunt.option('suite'),
-        stdio: 'inherit', // enable colors!
-      },
-      'test-config-default': {
-        cmd: 'cd config/default && npm ci && npm run test',
-        stdio: 'inherit', // enable colors!
-      },
-      'shared-lib-unit': {
-        cmd: 'UNIT_TEST_ENV=1 npm test --workspaces --if-present',
-        stdio: 'inherit', // enable colors!
-      },
       'build-config': {
         cmd: () => {
           const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
@@ -115,8 +86,7 @@ module.exports = function(grunt) {
         }
       },
 
-      //using npm run, as 'grunt-mocha-test' has issues with the integration with newer versions of mocha.
-      'e2e-integration': 'npm run e2e-integration',
+
 
 
       // CONVERTED TO PACKAGE.JSON
@@ -143,6 +113,11 @@ module.exports = function(grunt) {
       'browserify-admin': 'npm run browserify-admin',
       'uglify-api': 'npm run uglify-api',
       'uglify-admin': 'npm run uglify-admin',
+      'test-config-standard': 'npm run test-config-standard',
+      'test-config-default': 'npm run test-config-default',
+      'shared-lib-unit': 'npm run shared-lib-unit',
+      'cleancss-admin': 'npm run cleancss-admin',
+      'cleancss-api': 'npm run cleancss-api',
     }
   });
 
@@ -204,12 +179,6 @@ module.exports = function(grunt) {
     'build-service-images',
   ]);
 
-  grunt.registerTask('e2e-integration', 'Deploy app for testing', [
-    'e2e-env-setup',
-    'exec:e2e-integration',
-    'exec:eslint-sw'
-  ]);
-
   grunt.registerTask('unit-webapp', 'Run webapp unit test after installing dependencies.', [
     'exec:npm-ci-modules',
     'exec:unit-webapp'
@@ -262,23 +231,6 @@ module.exports = function(grunt) {
     'build',
     'exec:mocha-integration-api',
     'unit',
-  ]);
-
-  grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
-    'exec:e2e-integration',
-    'exec:eslint-sw',
-  ]);
-
-  grunt.registerTask('ci-webdriver-default', 'Run e2e tests using webdriverIO for default config', [
-    'exec:wdio-run-default'
-  ]);
-
-  grunt.registerTask('ci-webdriver-standard', 'Run e2e tests using webdriverIO for standard config', [
-    'exec:wdio-run-standard'
-  ]);
-
-  grunt.registerTask('ci-webdriver-default-mobile', 'Run e2e tests using webdriverIO for default config in mobile screen', [
-    'exec:wdio-run-default-mobile'
   ]);
 
   // Dev tasks
