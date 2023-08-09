@@ -93,7 +93,7 @@ jobs:
 
   tests:
     needs: build
-    name: ${{ matrix.grunt-cmd }}-${{ matrix.suite ||'' }}
+    name: ${{ matrix.grunt-cmd }}-${{ matrix.suite || '' }}
     runs-on: ubuntu-22.04
     env:
       NODE: 16.x

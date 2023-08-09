@@ -28,7 +28,11 @@
     "default-wdio-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && grunt build-service-images && grunt create-local-docker-compose-files",
     "prepare": "husky install",
-    "postinstall": "cd webapp && ng cache clean && cd .."
+    "postinstall": "cd webapp && ng cache clean && cd ..",
+    "mocha-unit-webapp": "UNIT_TEST_ENV=1 mocha 'webapp/tests/mocha/**/*.spec.js'",
+    "mocha-unit-api": "UNIT_TEST_ENV=1 mocha 'api/tests/mocha/**/*.spec.js'",
+    "mocha-unit-sentinel": "UNIT_TEST_ENV=1 mocha 'sentinel/tests/**/*.spec.js'",
+    "mocha-integration-api": "mocha 'api/tests/integration/**/*.js' -t 10000"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^15.0.0",

@@ -32,10 +32,6 @@ module.exports = function(grunt) {
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js',
       'push-ddoc-to-staging': 'node ./scripts/build/push-ddoc-to-staging.js',
       'clean-build-dir': 'rm -rf build && mkdir build',
-      'mocha-unit-webapp': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "webapp/tests/mocha/**/*.spec.js"',
-      'mocha-unit-api': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "api/tests/mocha/**/*.js"',
-      'mocha-unit-sentinel': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "sentinel/tests/**/*.js"',
-      'mocha-integration-api': './node_modules/mocha/bin/_mocha "api/tests/integration/**/*.js" -t 10000',
       'optimize-js':
         './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/main.js > api/build/static/admin/js/main.op.js && ' +
         './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/templates.js > api/build/static/admin/js/templates.op.js && ' +
@@ -126,19 +122,8 @@ module.exports = function(grunt) {
         cmd:
           'TZ=UTC ./node_modules/.bin/nodemon --inspect=0.0.0.0:9228 --watch sentinel --watch "shared-libs/**/src/**" sentinel/server.js',
       },
-      'blank-link-check': {
-        cmd: `echo "Checking for dangerous _blank links..." &&
-               ! (git grep -E  'target\\\\?="_blank"' -- webapp/src admin/src |
-                      grep -Ev 'target\\\\?="_blank" rel\\\\?="noopener noreferrer"' |
-                      grep -Ev '^\\s*//' &&
-                  echo 'ERROR: Links found with target="_blank" but no rel="noopener noreferrer" set.  Please add required rel attribute.')`,
-      },
-      'npm-ci-api': 'cd api && npm ci',
+
       'npm-ci-modules': 'node scripts/build/cli npmCiModules',
-      'check-env-vars':
-        'if [ -z $COUCH_URL ]; then ' +
-        'echo "Missing required env var.  Check that all are set: ' +
-        'COUCH_URL" && exit 1; fi',
       'check-version': `node scripts/ci/check-versions.js`,
       'test-config-standard': {
         cmd: 'cd config/standard && npm ci && npm run ci',
@@ -164,8 +149,6 @@ module.exports = function(grunt) {
         cmd: 'UNIT_TEST_ENV=1 npm test --workspaces --if-present',
         stdio: 'inherit', // enable colors!
       },
-      audit: 'node ./scripts/audit-all.js',
-      'audit-allowed-list': 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code',
       'build-config': {
         cmd: () => {
           const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
@@ -175,38 +158,23 @@ module.exports = function(grunt) {
           return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
         }
       },
-      // 'build-webapp': {
-      //   cmd: () => {
-      //     return [
-      //       `cd webapp`,
-      //       `../node_modules/.bin/ng build --configuration=${BUILD_NUMBER ? 'production' : 'development'}`,
-      //       `../node_modules/.bin/ngc`,
-      //       'cd ../',
-      //     ].join(' && ');
-      //   },
-      //   stdio: 'inherit', // enable colors!
-      // },
-      // 'watch-webapp': {
-      //   cmd: () => {
-      //     return `
-      //       cd webapp && ../node_modules/.bin/ng build --configuration=${BUILD_NUMBER ? 'production' : 'development'} --watch=true &
-      //       cd ../
-      //     `;
-      //   },
-      //   stdio: 'inherit', // enable colors!
-      // },
 
       //using npm run, as 'grunt-mocha-test' has issues with the integration with newer versions of mocha.
       'e2e-integration': 'npm run e2e-integration',
 
 
       // CONVERTED TO PACKAGE.JSON
+      'npm-ci-api': 'cd api && npm ci',
       'npm-run-lint': 'npm run lint',
       'build-webapp': 'cd webapp && npm run build -- --configuration=production && npm run compile',
       'build-webapp-dev': 'cd webapp && npm run build -- --configuration=development && npm run compile',
       'watch-webapp': 'cd webapp && npm run build -- --configuration=development --watch=true & node ./scripts/build/watch.js',
       'unit-webapp': 'cd webapp && npm run unit -- --watch=false',
       'unit-webapp-continuous': 'cd webapp && npm run unit -- --watch=true',
+      'mocha-unit-webapp': 'npm run mocha-unit-webapp',
+      'mocha-unit-api': 'npm run mocha-unit-api',
+      'mocha-unit-sentinel': 'npm run mocha-unit-sentinel',
+      'mocha-integration-api': 'npm run mocha-integration-api',
     }
   });
 
@@ -292,7 +260,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('test-api-integration', 'Integration tests for api', [
-    'exec:check-env-vars',
     'exec:npm-ci-api',
     'exec:mocha-integration-api',
   ]);
