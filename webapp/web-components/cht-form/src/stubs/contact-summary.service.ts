@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { AppModule } from '../app.module';
 
 @Injectable({
-  providedIn: AppModule
+  providedIn: 'root'
 })
 export class ContactSummaryService {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { AppModule } from '../app.module';
 
 @Injectable({
-  providedIn: AppModule
+  providedIn: 'root'
 })
 export class FeedbackService {
   init () {

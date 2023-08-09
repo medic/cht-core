@@ -7,6 +7,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, Injector } from '@angular/core';
 import { createCustomElement } from '@angular/elements';
 import { AppComponent } from './app.component';
+import { StoreModule } from '@ngrx/store';
+import { reducers } from '../../../src/ts/reducers';
 
 @NgModule({
   declarations: [AppComponent],
@@ -23,6 +25,7 @@ import { AppComponent } from './app.component';
         useClass: TranslateMessageFormatCompilerProvider,
       },
     }),
+    StoreModule.forRoot(reducers, { metaReducers: [] }),
   ],
   providers: [],
   entryComponents: [AppComponent]

@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { AppModule } from '../app.module';
 
 @Injectable({
-  providedIn: AppModule
+  providedIn: 'root'
 })
 export class CHTScriptApiService {
   isInitialized(): any {
@@ -10,7 +9,8 @@ export class CHTScriptApiService {
   }
 
   async getApi(): Promise<any> {
-    throw new Error('Method not implemented.');
+    return Promise
+      .resolve()
+      .then(() => ({}));
   }
-
 }

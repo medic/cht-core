@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-// import { EnketoService} from '@mm-services/enketo.service';
+import { EnketoService} from '@mm-services/enketo.service';
 
 @Component({
   selector: 'cht-form',
@@ -7,13 +7,13 @@ import { Component, Input } from '@angular/core';
 })
 export class AppComponent {
   @Input() thankyouMessage = 'Thanks!';
-  constructor() { }
 
-  // constructor(
-  //   private _enketoService: EnketoService,
-  // ) {
-  //
-  // }
+  constructor(
+    private _enketoService: EnketoService,
+  ) {
+    console.log('jkuester ' + this._enketoService.getCurrentForm());
+
+  }
   //
   //
   // // string: (optional) modal element id

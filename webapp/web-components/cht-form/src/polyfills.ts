@@ -66,29 +66,29 @@ import 'zone.js';
  * APPLICATION IMPORTS
  */
 
-// (window as any).global = window;
-// declare global {
-//   interface Window {
-//     // startupTimes: any;
-//     PouchDB: any;
-//     // $: any;
-//     // jQuery: any;
-//     bootstrapFeedback: any;
-//     medicmobile_android: any;
-//     CHTCore: any;
-//     // angular: any;
-//     EnketoForm:any;
-//     // Tour: any;
-//   }
-//   // interface JQuery {
-//   //   daterangepicker(options?: any, callback?: Function) : any;
-//   //   select2(event?:any, options?:any):any;
-//   //   tooltip(options:any):any;
-//   // }
-//   interface Node {
-//     _couchId: any;
-//   }
-// }
+(window as any).global = window;
+declare global {
+  interface Window {
+    // startupTimes: any;
+    // PouchDB: any;
+    // $: any;
+    // jQuery: any;
+    // bootstrapFeedback: any;
+    medicmobile_android: any;
+    CHTCore: any;
+    // angular: any;
+    EnketoForm:any;
+    // Tour: any;
+  }
+  // interface JQuery {
+  //   daterangepicker(options?: any, callback?: Function) : any;
+  //   select2(event?:any, options?:any):any;
+  //   tooltip(options:any):any;
+  // }
+  interface Node {
+    _couchId: any;
+  }
+}
 //
 // // (window as any).process = {
 // //   env: { DEBUG: undefined },
