@@ -3,16 +3,15 @@
   [processing]="processing"
   [error]="error"
   [danger]="true"
-  [titleKey]="deleteComplete ? 'bulkdelete.complete.title' : 'bulkdelete.confirm.title'"
-  [submitKey]="deleteComplete ? 'bulkdelete.complete.action' : 'bulkdelete.confirm.action'"
+  [titleKey]="'bulkdelete.confirm.title'"
+  [submitKey]="'bulkdelete.confirm.action'"
   [submittingKey]="'Deleting'"
-  [cancelKey]="deleteComplete ? false : 'Cancel'"
+  [cancelKey]="'Cancel'"
   (onCancel)="close()"
   (onSubmit)="submit()"
 >
-  <p *ngIf="!deleteComplete && !processing && docs.length === 1">{{'confirm.delete' | translate}}</p>
-  <p *ngIf="!deleteComplete && !processing && docs.length !== 1" translate [translateParams]="{ number: docs.length }">confirm.delete.plural</p>
-  <p *ngIf="deleteComplete">{{'bulkdelete.complete' | translate}}</p>
-  <p *ngIf="processing">{{'confirm.delete.progress' | translate}}</p>
+  <p *ngIf="!processing && docs.length === 1">{{ 'confirm.delete' | translate }}</p>
+  <p *ngIf="!processing && docs.length !== 1" translate [translateParams]="{ number: docs.length }">confirm.delete.plural</p>
+  <p *ngIf="processing">{{ 'confirm.delete.progress' | translate }}</p>
   <p *ngIf="processing" translate [translateParams]="{ totalDeleted: totalDocsDeleted, totalSelected: totalDocsSelected }">confirm.delete.totals</p>
 </mm-modal>

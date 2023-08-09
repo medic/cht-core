@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import * as passwordTester from 'simple-password-tester';
 import { MatDialogRef } from '@angular/material/dialog';
+import { Store } from '@ngrx/store';
 
-import { ModalService } from '@mm-services/modal.service';
+import { GlobalActions } from '@mm-actions/global';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 import { UpdatePasswordService } from '@mm-services/update-password.service';
 import { UserLoginService } from '@mm-services/user-login.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 
 const PASSWORD_MINIMUM_LENGTH = 8;
 const PASSWORD_MINIMUM_SCORE = 50;
@@ -18,6 +18,8 @@ const PASSWORD_MINIMUM_SCORE = 50;
 })
 export class UpdatePasswordComponent {
   static id = 'update-password-modal';
+  private globalActions: GlobalActions;
+
   processing = false;
   errors: any;
   editUserModel: {
@@ -28,13 +30,15 @@ export class UpdatePasswordComponent {
   } = {};
 
   constructor(
+    private store: Store,
     private userSettingsService: UserSettingsService,
     private updatePasswordService: UpdatePasswordService,
     private userLoginService: UserLoginService,
-    private translateService:TranslateService,
-    private modalService: ModalService,
+    private translateService: TranslateService,
     private matDialogRef: MatDialogRef<UpdatePasswordComponent>,
-  ) { }
+  ) {
+    this.globalActions = new GlobalActions(this.store);
+  }
 
   async updatePassword() {
     this.errors = {};
@@ -53,7 +57,8 @@ export class UpdatePasswordComponent {
       } catch(err) {
         if (err.status === 302) {
           this.close();
-          this.modalService.show(ConfirmPasswordUpdatedComponent);
+          const snackText = await this.translateService.get('password.updated');
+          this.globalActions.setSnackbarContent(snackText);
         } else {
           window.location.reload();
         }

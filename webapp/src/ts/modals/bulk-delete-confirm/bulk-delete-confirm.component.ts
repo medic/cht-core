@@ -1,6 +1,5 @@
-import { AfterViewInit, Component, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { take } from 'rxjs/operators';
 
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
@@ -9,12 +8,11 @@ import { TelemetryService } from '@mm-services/telemetry.service';
   selector: 'bulk-delete-confirm',
   templateUrl: './bulk-delete-confirm.component.html'
 })
-export class BulkDeleteConfirmComponent implements AfterViewInit {
+export class BulkDeleteConfirmComponent {
   static id = 'bulk-delete-confirm-modal';
 
   totalDocsSelected = 0;
   totalDocsDeleted = 0;
-  deleteComplete = false;
   processing = false;
   error;
   docs = [] as any[];
@@ -30,13 +28,6 @@ export class BulkDeleteConfirmComponent implements AfterViewInit {
     this.type = this.matDialogData.type;
   }
 
-  ngAfterViewInit() {
-    this.matDialogRef
-      .afterClosed()
-      .pipe(take(1))
-      .subscribe(() => this.deleteComplete && window.location.reload());
-  }
-
   private updateTotalDocsDeleted(totalDocsDeleted) {
     this.totalDocsDeleted = totalDocsDeleted;
   }
@@ -45,25 +36,21 @@ export class BulkDeleteConfirmComponent implements AfterViewInit {
     this.matDialogRef.close();
   }
 
-  submit() {
-    if (this.deleteComplete) {
-      return window.location.reload();
-    }
-
-    const docs = this.docs;
-    this.totalDocsSelected = docs.length;
+  async submit() {
+    this.totalDocsSelected = this.docs.length;
     this.totalDocsDeleted = 0;
     this.processing = true;
-    return this.deleteDocsService
-      .delete(docs, { progress: this.updateTotalDocsDeleted.bind(this) })
-      .then(() => {
-        this.deleteComplete = true;
-        this.telemetryService.record(`bulk_delete:${this.type}`, this.totalDocsSelected);
-      })
-      .catch(error => {
-        this.error = 'Error deleting document';
-        console.error(this.error, error);
-      })
-      .finally(() => this.processing = false);
+
+    try {
+      await this.deleteDocsService.delete(this.docs, { progress: this.updateTotalDocsDeleted.bind(this) });
+      this.processing = false;
+    } catch (error) {
+      this.error = 'Error deleting document';
+      console.error(this.error, error);
+      return;
+    }
+
+    this.telemetryService.record(`bulk_delete:${this.type}`, this.totalDocsSelected);
+    window.location.reload();
   }
 }

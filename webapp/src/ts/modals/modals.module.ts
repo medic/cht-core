@@ -13,7 +13,6 @@ import { FeedbackComponent } from '@mm-modals/feedback/feedback.component';
 import { SendMessageComponent } from '@mm-modals/send-message/send-message.component';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { UpdatePasswordComponent } from '@mm-modals/edit-user/update-password.component';
-import { ConfirmPasswordUpdatedComponent } from '@mm-modals/edit-user/confirm-password-updated.component';
 import { EditUserSettingsComponent } from '@mm-modals/edit-user/edit-user-settings.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
@@ -36,7 +35,6 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     SendMessageComponent,
     DeleteDocConfirmComponent,
     UpdatePasswordComponent,
-    ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
     TrainingCardsComponent,
@@ -62,7 +60,6 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     LogoutConfirmComponent,
     FeedbackComponent,
     UpdatePasswordComponent,
-    ConfirmPasswordUpdatedComponent,
     EditUserSettingsComponent,
     NavigationConfirmComponent,
     TrainingCardsComponent,
