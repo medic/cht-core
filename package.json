@@ -43,8 +43,8 @@
     "css-enketo": "sass webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map",
     "css-admin": "lessc admin/src/css/main.less api/build/static/admin/css/main.css",
     "browserify-admin": "mkdir -p api/build/static/admin/js/ && browserify --debug -t browserify-ngannotate -r './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat:angular-translate-interpolation-messageformat' -r './admin/node_modules/google-libphonenumber:google-libphonenumber' -r './admin/node_modules/gsm:gsm' -r './admin/node_modules/object-path:object-path' -r './admin/node_modules/bikram-sambat:bikram-sambat' -r './admin/node_modules/lodash/core:lodash/core' admin/src/js/main.js > api/build/static/admin/js/main.js",
-    "uglify-api": "uglify-js api/build/static/login/script.js -o api/build/static/login/script.js && uglify-js api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js",
-    "uglify-admin": "uglify-js api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && uglify-js api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js"
+    "uglify-api": "uglifyjs api/build/static/login/script.js -o api/build/static/login/script.js && uglifyjs api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js",
+    "uglify-admin": "uglifyjs api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^15.0.0",
