@@ -8,7 +8,6 @@ const errorLogSelector = `${taskListSelector} error-log`;
 const tasksList = () => $(taskListSelector);
 
 const getErrorLog = async () => {
-  await browser.url('/#/tasks');
   await $(errorLogSelector).waitForDisplayed();
 
   const errorMessage = await (await $('.error-details span')).getText();

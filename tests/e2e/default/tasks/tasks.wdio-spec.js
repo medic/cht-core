@@ -1,9 +1,8 @@
 const path = require('path');
 const chtConfUtils = require('@utils/cht-conf');
-const utils = require('../../../utils');
-const sentinelUtils = require('../../../utils/sentinel');
-const loginPage = require('../../../page-objects/default/login/login.wdio.page');
-const tasksPage = require('../../../page-objects/default/tasks/tasks.wdio.page');
+const utils = require('@utils');
+const loginPage = require('@page-objects/default/login/login.wdio.page');
+const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
 const { expect } = require('chai');
 
 const places = [
@@ -23,7 +22,7 @@ const places = [
     reported_date: new Date().getTime(),
   },
 ];
-  
+
 const clinics = [
   {
     _id: 'fixture:scientists',
@@ -34,18 +33,18 @@ const clinics = [
     reported_date: new Date().getTime(),
   }
 ];
-  
+
 const people = [
   {
     _id: 'fixture:einstein',
     name: 'Albert Einstenin',
     type: 'person',
     patient_id: 'einstein',
-    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' }}},
+    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
     reported_date: new Date().getTime(),
   }
 ];
-  
+
 const chw = {
   username: 'bob',
   password: 'medic.123',
@@ -55,20 +54,22 @@ const chw = {
   known: true,
 };
 
-describe('Task list error', () => {
+const updateSettings = async (settings) => {
+  await utils.updateSettings(settings, 'api');
+  await browser.refresh();
+};
 
+const compileTasks = async (tasksFileName) => {
+  await chtConfUtils.initializeConfigDir();
+  const tasksFilePath = path.join(__dirname, `config/${tasksFileName}`);
+  return await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
+};
+
+describe('Task list', () => {
   before(async () => {
     await utils.saveDocs([...places, ...clinics, ...people]);
     await utils.createUsers([chw]);
-    await sentinelUtils.waitForSentinel();
-    
-    await chtConfUtils.initializeConfigDir();
-    
-    const tasksFilePath = path.join(__dirname, 'config/tasks-error-config.js');
-    const { tasks } = await chtConfUtils.compileNoolsConfig({ tasks: tasksFilePath });
-    await utils.updateSettings({ tasks }, 'api');
-
-    await loginPage.login({ username: chw.username, password: chw.password, loadPage: true });
+    await loginPage.login(chw);
   });
 
   after(async () => {
@@ -76,11 +77,22 @@ describe('Task list error', () => {
     await browser.refresh();
   });
 
+  afterEach(async () => {
+    await utils.revertSettings(true);
+  });
+
   it('Should show error message for bad config', async () => {
+    const settings = await compileTasks('tasks-error-config.js');
+    await updateSettings(settings);
+    await browser.url('/#/tasks');
+
     const { errorMessage, url, username, errorStack } = await tasksPage.getErrorLog();
+
     expect(username).to.equal(chw.username);
     expect(url).to.equal('localhost');
     expect(errorMessage).to.equal('Error fetching tasks');
     expect(await (await errorStack.isDisplayed())).to.be.true;
+    expect(await (await errorStack.getText())).to
+      .include('TypeError: Cannot read properties of undefined (reading \'name\')');
   });
 });

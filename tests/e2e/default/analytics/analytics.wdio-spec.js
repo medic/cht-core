@@ -31,7 +31,7 @@ const chw = {
   password: 'medic.123',
   place: 'fixture:center',
   contact: { _id: 'fixture:user:bob', name: 'Bob' },
-  roles: [ 'chw' ],
+  roles: ['chw'],
 };
 
 const updateSettings = async (settings) => {
@@ -50,7 +50,7 @@ const compileTargets = async (targetFileName = 'targets-config.js') => {
 describe('Targets', () => {
   before(async () => {
     await utils.saveDocs(contacts);
-    await utils.createUsers([ chw ]);
+    await utils.createUsers([chw]);
     await sentinelUtils.waitForSentinel();
 
     await loginPage.login({ username: chw.username, password: chw.password });
@@ -105,8 +105,8 @@ describe('Targets', () => {
       'Targets are disabled for admin users. If you need to see targets, login as a normal user.'
     );
   });
-  
-  it('Should show error message for bad config', async () => {
+
+  it('should show error message for bad config', async () => {
     const settings = await compileTargets('targets-error-config.js');
     await updateSettings(settings);
     await analyticsPage.goToTargets();
@@ -117,6 +117,7 @@ describe('Targets', () => {
     expect(url).to.equal('localhost');
     expect(errorMessage).to.equal('Error fetching targets');
     expect(await (await errorStack.isDisplayed())).to.be.true;
-
+    expect(await (await errorStack.getText())).to
+      .include('TypeError: Cannot read properties of undefined (reading \'muted\')');
   });
 });
