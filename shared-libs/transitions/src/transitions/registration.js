@@ -47,7 +47,7 @@ const getPatientPhoneField = (currentForm) => {
     return;
   }
   
-  const phoneField = Object.keys(formDef.fields).find(key => formDef.fields[key].type === 'phone_number');
+  const phoneField = Object.keys(formDefinition.fields).find(key => formDefinition.fields[key].type === 'phone_number');
   return phoneField; 
 };
 
@@ -472,7 +472,7 @@ const addPatient = (options) => {
   const doc = options.doc;
   const patientShortcode = options.doc.patient_id;
   const patientNameField = getPatientNameField(options.params);
-  const patientPhoneField = getPatientPhoneField(config.getAll(), doc.form);
+  const patientPhoneField = getPatientPhoneField(doc.form);
 
   // create a new patient with this patient_id
   const patient = {

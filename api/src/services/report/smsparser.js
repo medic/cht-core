@@ -215,14 +215,13 @@ const fieldParsers = {
     const formattedAndValidatedPhone = phoneNumberParser.normalize(config.getAll(), raw);
     if (formattedAndValidatedPhone) {
       return formattedAndValidatedPhone;
-    } else {
-      logger.warn(`The provided phone number ${raw} is invalid`);
-      
-      // Returning raw here becuase what to do with invalid phone 
-      // is defined in transitions so error will be thrown there if required. 
-      // Warning is logged just in case.
-      return raw;
-    }
+    } 
+    logger.warn(`The provided phone number ${raw} is invalid`);
+    
+    // Returning raw here becuase what to do with invalid phone 
+    // is defined in transitions so error will be thrown there if required. 
+    // Warning is logged just in case.
+    return raw;    
   }
 };
 

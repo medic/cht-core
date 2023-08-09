@@ -132,7 +132,6 @@ describe('registration', () => {
       })
       .then(() => utils.getDocs(docIds))
       .then(updated => {
-        console.log(updated);
         chai.expect(updated[0].fields.phone_number).to.equal(patient_phone);
         chai.expect(updated[0].patient_id).not.to.equal(undefined);
         chai.expect(updated[0].tasks).to.have.lengthOf(1);
@@ -159,7 +158,7 @@ describe('registration', () => {
   });
 
   it('should not create patient from report doc when provided invalid phone', () => {
-    const patient_phone = '+9779666666666';
+    const patient_phone = '+97796666';
     const patient_id =uuid();
 
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
@@ -196,14 +195,16 @@ describe('registration', () => {
       .then(updated => {
         chai.expect(updated[0].fields.phone_number).to.equal(patient_phone);
         chai.expect(updated[0].patient_id).to.not.be.null;
+        const newPatientId = updated[0].patient_id;
+        return getContactsByReference([newPatientId, 'venus']);
       })
       .then(patients => {
-        chai.expect(patients).to.be.undefined;
+        chai.expect(patients[0]).to.be.undefined;
       });
   });
 
   it('should fail transition on invalid phone', () => {
-    const patient_phone = '+9779666666666';
+    const patient_phone = '+97796666';
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
       _id: uuid(),
       type: 'data_record',
@@ -234,6 +235,10 @@ describe('registration', () => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.not.include({ 'transitions.registration.ok': false });
         });
+      })
+      .then(() => utils.getDocs(docIds))
+      .then(updated => {
+        chai.expect(updated.patient_id).to.be.undefined;
       });
   });
 

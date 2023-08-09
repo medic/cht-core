@@ -249,7 +249,6 @@ describe('validations', () => {
   });
 
   it('unique phone validation should fail if db query for phone returns doc', () => {
-    clock = sinon.useFakeTimers();
     sinon.stub(db.medic, 'query').resolves({
       rows: [
         {
@@ -280,7 +279,6 @@ describe('validations', () => {
   });
 
   it('unique phone validation should pass if db query for phone does not return any doc', () => {
-    clock = sinon.useFakeTimers();
     sinon.stub(db.medic, 'query').resolves({ undefined });
     const validations = [
       {
