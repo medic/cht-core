@@ -71,8 +71,8 @@ declare global {
   interface Window {
     // startupTimes: any;
     // PouchDB: any;
-    // $: any;
-    // jQuery: any;
+    $: any;
+    jQuery: any;
     // bootstrapFeedback: any;
     medicmobile_android: any;
     CHTCore: any;

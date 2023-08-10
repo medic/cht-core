@@ -140,15 +140,14 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
             "outputPath": "dist/cht-form",
             "index": "web-components/cht-form/src/index.html",
             "main": "web-components/cht-form/src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": "web-components/cht-form/src/polyfills.ts",
             "tsConfig": "web-components/cht-form/tsconfig.app.json",
+            "aot": true,
             "inlineStyleLanguage": "less",
             "assets": [
               "web-components/cht-form/src/assets"
@@ -156,52 +155,59 @@
             "styles": [
               "web-components/cht-form/src/styles.less"
             ],
-            "scripts": []
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/css"
+              ]
+            },
+            "scripts": [],
+
+            "customWebpackConfig": {
+              "path": "./custom-webpack.config.js"
+            }
           },
           "configurations": {
+            "development": {
+              "deleteOutputPath": false,
+              "outputHashing": "none",
+              "sourceMap": true,
+              "namedChunks": true,
+              "extractLicenses": false,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "optimization": false
+            },
             "production": {
+              "deleteOutputPath": true,
+              "optimization": {
+                "fonts": true,
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                }
+              },
+              "outputHashing": "none",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
                 }
-              ],
-              "outputHashing": "all"
-            },
-            "development": {
-              "buildOptimizer": false,
-              "optimization": false,
-              "vendorChunk": true,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true
+              ]
             }
           },
           "defaultConfiguration": "production"
-        },
-        "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "configurations": {
-            "production": {
-              "browserTarget": "cht-form:build:production"
-            },
-            "development": {
-              "browserTarget": "cht-form:build:development"
-            }
-          },
-          "defaultConfiguration": "development"
-        },
-        "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": {
-            "browserTarget": "cht-form:build"
-          }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",

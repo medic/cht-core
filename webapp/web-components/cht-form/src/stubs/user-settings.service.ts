@@ -4,8 +4,11 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class UserSettingsService {
-  get(): Promise<Object> {
-    throw new Error('Method not implemented.');
+  async get(): Promise<Object> {
+    console.log('UserSettingsService.get()');
+    return {
+      contact_id: 'user_contact_id'
+    };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -5,7 +5,8 @@ import { Injectable } from '@angular/core';
 })
 export class LanguageService {
   async get(): Promise<any> {
-    throw new Error('Method not implemented.');
+    console.log('LanguageService.get()');
+    return 'en';
   }
 
   useDevanagariScript(): boolean {

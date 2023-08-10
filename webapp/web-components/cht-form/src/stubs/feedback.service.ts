@@ -10,7 +10,8 @@ export class FeedbackService {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   submit (info, isManual?): Promise<any> {
-    throw new Error('Method not implemented.');
+    console.log(`FeedbackService.submit(${JSON.stringify(info)}, ${isManual})`);
+    return Promise.resolve();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

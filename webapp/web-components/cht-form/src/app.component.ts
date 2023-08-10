@@ -1,11 +1,12 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, Output } from '@angular/core';
 import { EnketoService} from '@mm-services/enketo.service';
+import undoDeathForm from './undo_death_report.json';
 
 @Component({
   selector: 'cht-form',
   templateUrl: './app.component.html',
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   // string: (optional) modal element id
   @Input() formId;
   // string: (optional) data to include in the data-editing attribute
@@ -22,8 +23,24 @@ export class AppComponent {
   constructor(
     private _enketoService: EnketoService,
   ) {
-    console.log('jkuester ' + this._enketoService.getCurrentForm());
+    console.log('jkuester constructed');
 
+  }
+
+  ngAfterViewInit() {
+    console.log('jkuester ngAfterViewInit');
+    this.renderForm();
+  }
+
+  private async renderForm() {
+
+    // This is the form document (form:undo_death_report)
+    const form = undoDeathForm;
+    const reportContent = null;
+    const editedListener = () => {};
+    const valueChangeListener = () => {};
+
+    await this._enketoService.render('#report-form', form, reportContent, editedListener, valueChangeListener);
   }
   //
   //

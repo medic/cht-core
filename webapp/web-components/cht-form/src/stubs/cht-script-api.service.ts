@@ -9,8 +9,7 @@ export class CHTScriptApiService {
   }
 
   async getApi(): Promise<any> {
-    return Promise
-      .resolve()
-      .then(() => ({}));
+    console.log('CHTScriptApiService.getApi()');
+    return {};
   }
 }

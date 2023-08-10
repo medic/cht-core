@@ -4,7 +4,8 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class ZScoreService {
-  getScoreUtil() {
+  async getScoreUtil() {
+    console.log('ZScoreService.getScoreUtil()');
     return {};
   }
 }

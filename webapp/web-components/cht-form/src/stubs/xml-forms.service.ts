@@ -6,7 +6,8 @@ import { Injectable } from '@angular/core';
 export class XmlFormsService {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async canAccessForm(form, userContact, options?): Promise<any> {
-    throw new Error('Method not implemented.');
+    console.log(`XmlFormsService.canAccessForm(${form}, ${userContact}, ${options})`);
+    return true;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
