@@ -42,7 +42,8 @@ if (UNIT_TEST_ENV) {
     'activeTasks',
     'saveDocs',
     'createVault',
-    'addRoleToSecurity',
+    'addRoleAsAdmin',
+    'addRoleAsMember',
   ];
 
   const notStubbed = (first, second) => {
@@ -165,14 +166,14 @@ if (UNIT_TEST_ENV) {
     throw new Error(`Error while saving docs: ${errors.join(', ')}`);
   };
 
-  const DEFAULT_SECURITY_STRUCTURE = {
+  const getDefaultSecurityStructure = () => ({
     names: [],
     roles: [],
-  };
+  });
 
-  module.exports.addRoleToSecurity = async (dbname, role, addAsAdmin) => {
+  const addRoleToSecurity = async (dbname, role, addAsAdmin) => {
     if (!dbname || !role) {
-      return;
+      throw new Error(`Cannot add security: invalid db name ${dbname} or role ${role}`);
     }
 
     const securityUrl = new URL(environment.serverUrl);
@@ -180,12 +181,13 @@ if (UNIT_TEST_ENV) {
 
     const securityObject = await rpn.get({ url: securityUrl.toString(), json: true });
     const property = addAsAdmin ? 'admins' : 'members';
+
     if (!securityObject[property]) {
-      securityObject[property] = DEFAULT_SECURITY_STRUCTURE;
+      securityObject[property] = getDefaultSecurityStructure();
     }
 
-    if (!securityObject[property].roles) {
-      throw new Error('Invalid database security %o', securityObject);
+    if (!securityObject[property].roles || !Array.isArray(securityObject[property].roles)) {
+      securityObject[property].roles = [];
     }
 
     if (securityObject[property].roles.includes(role)) {
@@ -197,4 +199,6 @@ if (UNIT_TEST_ENV) {
     await rpn.put({ url: securityUrl.toString(), json: true, body: securityObject });
   };
 
+  module.exports.addRoleAsAdmin = (dbname, role) => addRoleToSecurity(dbname, role, true);
+  module.exports.addRoleAsMember = (dbname, role) => addRoleToSecurity(dbname, role, false);
 }
