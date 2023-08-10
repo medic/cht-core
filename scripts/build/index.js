@@ -189,7 +189,7 @@ const setDdocsVersion = () => {
   });
 };
 
-const exec = async (command, args, options) => {
+const exec = async (command, args, options=({})) => {
   options.stdio = 'inherit';
   const ci = spawn(command, args, options);
   await new Promise((resolve, reject) => {
@@ -209,6 +209,40 @@ const npmCiModules = async () => {
   }
 };
 
+const buildServiceImages = async () => {
+  for (const service of versions.SERVICES) {
+    console.log(`\n\nBuilding docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('npm', ['ci', '--production'], { cwd: service });
+    await exec('npm', ['dedupe'], { cwd: service });
+    await exec('docker', ['build', '-f', `./${service}/Dockerfile`, '--tag', tag, '.']);
+  }
+};
+
+const buildImages = async () => {
+  for (const service of versions.INFRASTRUCTURE) {
+    console.log(`\n\nBuilding docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('docker', ['build', '-f', `./Dockerfile`, '--tag', tag, '.'], { cwd: service });
+  }
+};
+
+const saveServiceImages = async () => {
+  for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
+    console.log(`\n\nSaving docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('docker', ['save', tag, '-o', `images/${service}.tar`]);
+  }
+};
+
+const pushServiceImages = async () => {
+  for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
+    console.log(`\n\nPushing docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('docker', ['push', tag]);
+  }
+};
+
 module.exports = {
   createStagingDoc,
   localDockerComposeFiles,
@@ -217,4 +251,8 @@ module.exports = {
   setBuildInfo,
   setDdocsVersion,
   updateServiceWorker,
+  buildServiceImages,
+  buildImages,
+  saveServiceImages,
+  pushServiceImages
 };

@@ -1,7 +1,5 @@
 /* eslint-disable max-len */
 
-const path = require('path');
-
 const {
   BUILD_NUMBER,
   INTERNAL_CONTRIBUTOR,
@@ -10,7 +8,6 @@ const {
 const DEV = !BUILD_NUMBER;
 
 const buildUtils = require('./scripts/build');
-const buildVersions = require('./scripts/build/versions');
 
 module.exports = function(grunt) {
   'use strict';
@@ -37,57 +34,12 @@ module.exports = function(grunt) {
       'copy-api-bowser': 'cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js',
       'copy-admin-static': 'cp -r admin/src/templates/index.html admin/node_modules/font-awesome/fonts webapp/src/fonts api/build/static/admin',
 
-
-      'build-service-images': {
-        cmd: () => buildVersions.SERVICES
-          .map(service =>
-            [
-              `cd ${service}`,
-              `npm ci --production`,
-              `npm dedupe`,
-              `cd ../`,
-              `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
-            ].join(' && '))
-          .join(' && '),
-      },
-      'build-images': {
-        cmd: () => buildVersions.INFRASTRUCTURE
-          .map(service =>
-            [
-              `cd ${service}`,
-              `docker build -f ./Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
-              'cd ../',
-            ].join(' && '))
-          .join(' && '),
-      },
-      'save-service-images': {
-        cmd: () => [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]
-          .map(service =>
-            [
-              `mkdir -p images`,
-              `docker save ${buildVersions.getImageTag(service)} > images/${service}.tar`,
-            ].join(' && '))
-          .join(' && '),
-      },
-      'push-service-images': {
-        cmd: () => [...buildVersions.SERVICES, ...buildVersions.INFRASTRUCTURE]
-          .map(service => `docker push ${buildVersions.getImageTag(service)}`)
-          .join(' && '),
-      },
       'npm-ci-modules': 'node scripts/build/cli npmCiModules',
-      'check-version': `node scripts/ci/check-versions.js`,
-      'build-config': {
-        cmd: () => {
-          const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
-          const configPath = path.resolve('./config/default');
-          const buildPath = path.resolve('./api/build/default-docs');
-          const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
-          return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
-        }
-      },
-
-
-
+      'check-version': 'node scripts/ci/check-versions.js',
+      'build-service-images': 'node scripts/build/cli buildServiceImages',
+      'build-images': 'node scripts/build/cli buildImages',
+      'save-service-images': 'mkdir -p images && node scripts/build/cli saveServiceImages',
+      'push-service-images': 'node scripts/build/cli pushServiceImages',
 
       // CONVERTED TO PACKAGE.JSON
       'npm-ci-api': 'cd api && npm ci',
@@ -118,6 +70,7 @@ module.exports = function(grunt) {
       'shared-lib-unit': 'npm run shared-lib-unit',
       'cleancss-admin': 'npm run cleancss-admin',
       'cleancss-api': 'npm run cleancss-api',
+      'build-config': 'npm run build-config'
     }
   });
 
