@@ -297,6 +297,7 @@ describe('docs_by_replication_key', () => {
     console.log(`Pushing ${alldocs.length} documents for testing`);
     return await utils
       .saveDocs(alldocs)
+      .then(() => utils.delayPromise(100))
       .then(() => {
         const keys = [ '_all', 'testuser', 'testplace', 'testpatient', 'testuserplace', 'org.couchdb.user:username' ];
         return getChanges(keys);
@@ -305,10 +306,7 @@ describe('docs_by_replication_key', () => {
         docByPlaceIds = docs;
         return getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient', 'testuserplace' ]);
       })
-      .then((docs) => docByPlaceIds_unassigned = docs)
-      .catch(err => {
-        throw err;
-      });
+      .then((docs) => docByPlaceIds_unassigned = docs);
   }, 5 * 60 * 1000);
 
   it('should not return the ddoc', () => {
