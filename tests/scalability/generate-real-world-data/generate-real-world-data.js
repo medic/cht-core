@@ -28,7 +28,8 @@ const jsonDirectory = dataConfig.json_directory;
 const preconditionDataDirectory = path.join(
   dataDirectory,
   dataConfig.precondition_data_directory,
-  dataConfig.json_directory);
+  dataConfig.json_directory
+);
 const mainDataDirectory = path.join(dataDirectory, dataConfig.main_script_data_directory);
 const usersDirectory = path.join(dataDirectory, dataConfig.precondition_data_directory);
 const dataExtension = dataConfig.json_data_extension;
@@ -124,7 +125,8 @@ const generateUser = async (type, placeId, userName, person, isPrimaryContact) =
   const personUser = realWorldUserFactory.generateUser(
     userName,
     roles,
-    placeId);
+    placeId
+  );
   await createDataDoc(preconditionDataDirectory, personUser._id, personUser);
   const user = {
     username: userName,
@@ -154,7 +156,8 @@ const generateReports = async (parentPlace, place, person, isMainData) => {
     const assesmentSurvey = realWorldSurvey.generateSurvey('assesment', parentPlace, place, person);
     await createDataDoc(reportsDirectory, assesmentSurvey._id, assesmentSurvey);
     const assesmentFollowUpSurvey = realWorldSurvey.generateSurvey(
-      'assesment_follow_up', parentPlace, place, person);
+      'assesment_follow_up', parentPlace, place, person
+    );
     await createDataDoc(reportsDirectory, assesmentFollowUpSurvey._id, assesmentFollowUpSurvey);
   }
 };
@@ -181,7 +184,8 @@ const generateHierarchy = async (type, placeName, parentPlace, numberOfPersons) 
         place._id,
         person.short_name.toLowerCase() + placeName + 'user' + i,
         person,
-        isPrimaryContact);
+        isPrimaryContact
+      );
     }
     if (realWorldPersonFactory.shouldGenerateSurvey(person)) {
       await generateReports(parentPlace, place, person, (i % 2 !== 0));
@@ -202,14 +206,16 @@ const generateData = async () => {
       'district_hospital',
       districtHospitalName + 'districthospital' + dh,
       null,
-      numberOfManagersPerDistrictHospital);
+      numberOfManagersPerDistrictHospital
+    );
     for (let hc = 0; hc < numberOfHealthCentersPerDistrictHospital; hc++) {
       const healthCenterName = districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc;
       const healthCenter = await generateHierarchy(
         'health_center',
         healthCenterName,
         districtHospital,
-        numberOfChwPerHealthCenter);
+        numberOfChwPerHealthCenter
+      );
 
       for (let c = 0; c < numberOfClinicsPerHealthCenter; c++) {
         const clinicName = districtHospitalName + 'districthospital' + dh + 'healthcenter' + hc + 'clinic' + c;
@@ -217,7 +223,8 @@ const generateData = async () => {
           'clinic',
           clinicName,
           healthCenter,
-          numberOfFamilyMembers);
+          numberOfFamilyMembers
+        );
       }
     }
   }
@@ -236,7 +243,8 @@ const generateData = async () => {
     'config',
     config2,
     '.json',
-    ['data_directory', 'url', 'users', 'name', 'pass', 'contact']);
+    ['data_directory', 'url', 'users', 'name', 'pass', 'contact']
+  );
 };
 
 generateData();

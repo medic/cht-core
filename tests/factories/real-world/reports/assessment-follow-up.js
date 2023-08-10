@@ -60,7 +60,8 @@ module.exports = new Factory()
       const groupDangerSigns = {
         danger_signs: Faker.faker.helpers.uniqueArray(
           ['convulsions', 'unable_to_feed', 'vomits_everything', 'very_sleepy', 'chest_indrawing'],
-          Faker.faker.datatype.number({ min: 1, max: 5 }))
+          Faker.faker.datatype.number({ min: 1, max: 5 })
+        )
       };
       return groupDangerSigns;
     }
@@ -72,7 +73,8 @@ module.exports = new Factory()
         if (!groupDangerSigns || !groupDangerSigns.danger_signs) {
           const groupImproved = {
             g_patient_treatment_outcome: Faker.faker.helpers.arrayElement(
-              ['cured', 'still_recovering', 'bad_medicine_reaction', 'not_improving', 'died'])
+              ['cured', 'still_recovering', 'bad_medicine_reaction', 'not_improving', 'died']
+            )
           };
           return groupImproved;
         }

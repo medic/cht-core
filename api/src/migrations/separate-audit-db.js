@@ -86,7 +86,8 @@ module.exports = {
         function(cb) {
           return cb(null, lastLength > 0);
         },
-        closeCallback);
+        closeCallback
+      );
     });
   })
 };

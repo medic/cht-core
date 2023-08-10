@@ -193,7 +193,8 @@ module.exports = new Factory()
         const groupDangerSigns = {
           danger_signs: Faker.faker.helpers.uniqueArray(
             ['convulsions', 'unable_to_feed', 'vomits_everything', 'very_sleepy', 'chest_indrawing'],
-            Faker.faker.datatype.number({ min: 1, max: 5 }))
+            Faker.faker.datatype.number({ min: 1, max: 5 })
+          )
         };
         return groupDangerSigns;
       }
@@ -219,7 +220,8 @@ module.exports = new Factory()
           if (groupImmLess2mo.imm_current_2mo === YES) {
             groupImmLess2mo.imm_given_2mo = Faker.faker.helpers.uniqueArray(
               ['bcg', 'polio_0', 'polio_1', 'dpt_hib1', 'pcv_1', 'rota_1'],
-              Faker.faker.datatype.number({ min: 1, max: 6 }));
+              Faker.faker.datatype.number({ min: 1, max: 6 })
+            );
           }
           groupImm.group_imm_less_2mo = groupImmLess2mo;
         }
@@ -235,7 +237,8 @@ module.exports = new Factory()
           if (groupImm2mo9mo.imm_current_9mo === YES) {
             groupImm2mo9mo.imm_given_9mo = Faker.faker.helpers.uniqueArray(
               ['dpt_hib2', 'pcv_2', 'rota_2', 'dpt_hib3', 'pcv_3', 'rota_3'],
-              Faker.faker.datatype.number({ min: 1, max: 6 }));
+              Faker.faker.datatype.number({ min: 1, max: 6 })
+            );
           }
           groupImm.group_imm_less_2mo = groupImm2mo9mo;
         }
@@ -334,7 +337,8 @@ module.exports = new Factory()
           if (patientAgeInMonths >= 6 && patientAgeInMonths < 12) {
             groupNutritionAssessment.group_food_eaten = {
               times_eaten: Faker.faker.helpers.arrayElement(
-                ['0', '1', '2', '3', '4', '5', '6', 'gt_6']),
+                ['0', '1', '2', '3', '4', '5', '6', 'gt_6']
+              ),
               food_eaten: []
             };
             if (Faker.faker.datatype.boolean()) {
@@ -344,7 +348,8 @@ module.exports = new Factory()
                 groupNutritionAssessment.group_food_eaten.food_eaten.push(...foodEaten);
               } else {
                 groupNutritionAssessment.group_food_eaten.food_eaten.push(...Faker.faker.helpers.uniqueArray(
-                  FOOD_EATEN, Faker.faker.datatype.number({ min: 1, max: 3 })));
+                  FOOD_EATEN, Faker.faker.datatype.number({ min: 1, max: 3 })
+                ));
               }
             } else {
               groupNutritionAssessment.group_food_eaten.food_eaten.push(NONE);

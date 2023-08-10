@@ -35,7 +35,8 @@ describe('ids', () => {
 
   it('ids are "always" the length they should be', () => {
     assert(
-      jsc.checkForall(jsc.integer(5, 13), i => ids._generate(i).length === i));
+      jsc.checkForall(jsc.integer(5, 13), i => ids._generate(i).length === i)
+    );
   });
 
   it('id generator returns ids not already used in the DB', () => {

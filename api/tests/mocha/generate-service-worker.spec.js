@@ -73,6 +73,7 @@ describe('generate service worker', () => {
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Bold.ttf',
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Regular.ttf',
             '/absolute/path/to/build/static/login/*.{css,js}',
+            '/absolute/path/to/build/static/login/images/*.svg',
             '/extension-libs',
             '/extension-libs/bar.js',
           ],
@@ -197,6 +198,7 @@ describe('generate service worker', () => {
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Bold.ttf',
             '/absolute/path/to/build/static/webapp/fonts/NotoSans-Regular.ttf',
             '/absolute/path/to/build/static/login/*.{css,js}',
+            '/absolute/path/to/build/static/login/images/*.svg',
             '/extension-libs',
           ],
           dynamicUrlToDependencies: {

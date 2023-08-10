@@ -1,11 +1,9 @@
 /* eslint-disable max-len */
 
-const fs = require('fs');
 const path = require('path');
 
 const {
   BUILD_NUMBER,
-  CI,
   INTERNAL_CONTRIBUTOR,
 } = process.env;
 
@@ -16,155 +14,16 @@ const buildVersions = require('./scripts/build/versions');
 
 const ESLINT_COMMAND = './node_modules/.bin/eslint --color --cache';
 
-const getSharedLibDirs = () => {
-  return fs
-    .readdirSync('shared-libs')
-    .filter(file => fs.lstatSync(`shared-libs/${file}`).isDirectory());
-};
-
 module.exports = function(grunt) {
   'use strict';
 
-  require('jit-grunt')(grunt, {
-    ngtemplates: 'grunt-angular-templates',
-    protractor: 'grunt-protractor-runner',
-  });
-  require('time-grunt')(grunt);
+  grunt.loadNpmTasks('grunt-exec');
 
   // Project configuration
   grunt.initConfig({
-    // this probably needs a script - can't find an config file option
-    browserify: {
-      options: {
-        browserifyOptions: {
-          debug: true,
-        },
-      },
-      admin: {
-        src: 'admin/src/js/main.js',
-        dest: 'api/build/static/admin/js/main.js',
-        options: {
-          transform: ['browserify-ngannotate'],
-          alias: {
-            'angular-translate-interpolation-messageformat': './admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
-            'google-libphonenumber': './admin/node_modules/google-libphonenumber',
-            'gsm': './admin/node_modules/gsm',
-            'object-path': './admin/node_modules/object-path',
-            'bikram-sambat': './admin/node_modules/bikram-sambat',
-            'lodash/core': './admin/node_modules/lodash/core',
-          },
-        },
-      },
-    },
-    env: {
-      'version': {
-        options: {
-          add: {
-            VERSION: buildVersions.getVersion(),
-          },
-        },
-      }
-    },
-    less: {
-      admin: {
-        files: {
-          'api/build/static/admin/css/main.css': 'admin/src/css/main.less',
-        },
-      },
-    },
-    cssmin: {
-      admin: {
-        options: {
-          keepSpecialComments: 0,
-        },
-        files: {
-          'api/build/static/admin/css/main.css': 'api/build/static/admin/css/main.css',
-        },
-      },
-      api: {
-        options: {
-          keepSpecialComments: 0,
-        },
-        files: {
-          'api/build/static/login/style.css': 'api/build/static/login/style.css',
-        },
-      }
-    },
-    copy: {
-      ddocs: {
-        expand: true,
-        cwd: 'ddocs/',
-        src: '**/*',
-        dest: 'build/ddocs/',
-      },
-      'api-ddocs': {
-        expand: true,
-        cwd: 'build/ddocs/',
-        src: '*.json',
-        dest: 'api/build/ddocs/',
-      },
-      'webapp-static': {
-        expand: true,
-        cwd: 'webapp/src/',
-        src: [
-          'audio/**/*',
-          'fonts/**/*',
-          'img/**/*',
-        ],
-        dest: 'api/build/static/webapp/',
-      },
-      'api-resources': {
-        expand: true,
-        cwd: 'api/src/public/',
-        src: '**/*',
-        dest: 'api/build/static/',
-      },
-      'built-resources': {
-        expand: true,
-        cwd: 'build/static',
-        src: '**/*',
-        dest: 'api/build/static/',
-      },
-      'api-bowser': {
-        src: 'api/node_modules/bowser/bundled.js',
-        dest: 'api/src/public/login/lib-bowser.js',
-      },
-      'admin-static': {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: 'admin/src/templates/index.html',
-            dest: 'api/build/static/admin',
-          },
-          {
-            expand: true,
-            flatten: true,
-            src: [
-              'admin/node_modules/font-awesome/fonts/*',
-              'webapp/src/fonts/**/*'
-            ],
-            dest: 'api/build/static/admin/fonts/',
-          },
-        ],
-      },
-      'libraries-to-patch': {
-        expand: true,
-        cwd: 'webapp/node_modules',
-        src: [
-          'bootstrap-daterangepicker/**',
-          'enketo-core/**',
-          'font-awesome/**',
-          'messageformat/**',
-          'moment/**'
-        ],
-        dest: 'webapp/node_modules_backup',
-      },
-    },
     exec: {
       'compile-ddocs-primary': 'node ./scripts/build/ddoc-compile.js primary',
       'compile-ddocs-staging': 'node ./scripts/build/ddoc-compile.js staging',
-      'compile-ddocs-secondary': 'node ./scripts/build/ddoc-compile.js secondary',
       'uglify-api':
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/script.js -o api/build/static/login/script.js && ' +
         'node ./node_modules/uglify-js/bin/uglifyjs api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js',
@@ -177,48 +36,54 @@ module.exports = function(grunt) {
       'mocha-unit-api': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "api/tests/mocha/**/*.js"',
       'mocha-unit-sentinel': 'UNIT_TEST_ENV=1 ./node_modules/mocha/bin/_mocha "sentinel/tests/**/*.js"',
       'mocha-integration-api': './node_modules/mocha/bin/_mocha "api/tests/integration/**/*.js" -t 10000',
-
-      // Running this via exec instead of inside the grunt process makes eslint
-      // run ~4x faster. For some reason. Maybe cpu core related.
-      'eslint': {
-        cmd: () => {
-          const paths = [
-            'Gruntfile.js',
-            'admin/**/*.js',
-            'api/**/*.js',
-            'ddocs/**/*.js',
-            'sentinel/**/*.js',
-            'shared-libs/**/*.js',
-            'tests/**/*.js',
-            'webapp/src/**/*.js',
-            'webapp/src/**/*.ts',
-            'webapp/tests/**/*.js',
-            'webapp/tests/**/*.ts',
-            'config/**/*.js',
-            'scripts/**/*.js',
-            'webapp/src/ts/**/*.component.html',
-          ];
-          const ignore = [
-            'webapp/src/ts/providers/xpath-element-path.provider.ts',
-            'api/src/public/login/lib-bowser.js',
-            'api/extracted-resources/**/*',
-            'api/build/**/*',
-            '**/node_modules/**',
-            'build/**',
-            '**/pupil/**',
-            'api/src/enketo-transformer/**',
-            'tests/scalability/report*/**',
-            'tests/scalability/jmeter/**'
-          ];
-
-          return [ESLINT_COMMAND]
-            .concat(ignore.map(glob => `--ignore-pattern "${glob}"`))
-            .concat(paths.map(glob => `"${glob}"`))
-            .join(' ');
-        },
-        stdio: 'inherit', // enable colors!
-      },
+      'optimize-js':
+        './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/main.js > api/build/static/admin/js/main.op.js && ' +
+        './node_modules/optimize-js/lib/bin.js api/build/static/admin/js/templates.js > api/build/static/admin/js/templates.op.js && ' +
+        'mv api/build/static/admin/js/main.op.js api/build/static/admin/js/main.js && ' +
+        'mv api/build/static/admin/js/templates.op.js api/build/static/admin/js/templates.js',
+      'jsdoc-admin': './node_modules/jsdoc/jsdoc.js -d jsdocs/admin -c node_modules/angular-jsdoc/common/conf.json -t node_modules/angular-jsdoc/angular-template admin/src/js/**/*.js',
+      'jsdoc-sentinel': './node_modules/jsdoc/jsdoc.js -d jsdocs/sentinel sentinel/src/**/*.js',
+      'jsdoc-api': './node_modules/jsdoc/jsdoc.js -d jsdocs/api -R api/README.md api/src/**/*.js',
+      'jsdoc-shared-libs': './node_modules/jsdoc/jsdoc.js -d jsdocs/shared-libs shared-libs/**/src/**/*.js',
+      'less': './node_modules/less/bin/lessc admin/src/css/main.less api/build/static/admin/css/main.css',
+      'browserify-admin': 'mkdir -p api/build/static/admin/js/ && ' +
+        'node ./node_modules/browserify/bin/cmd.js ' +
+        '--debug ' +
+        '-t browserify-ngannotate ' +
+        '-r "./admin/node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat:angular-translate-interpolation-messageformat" ' +
+        '-r "./admin/node_modules/google-libphonenumber:google-libphonenumber" ' +
+        '-r "./admin/node_modules/gsm:gsm" ' +
+        '-r "./admin/node_modules/object-path:object-path" ' +
+        '-r "./admin/node_modules/bikram-sambat:bikram-sambat" ' +
+        '-r "./admin/node_modules/lodash/core:lodash/core" ' +
+        'admin/src/js/main.js > api/build/static/admin/js/main.js',
+      'compile-admin-templates':
+        'mkdir -p api/build/static/admin/js/ && ' +
+        'node ./scripts/build/build-angularjs-template-cache.js',
+      'cleancss-admin':
+        './node_modules/clean-css-cli/bin/cleancss api/build/static/admin/css/main.css > api/build/static/admin/css/main.min.css && ' +
+        'mv api/build/static/admin/css/main.min.css api/build/static/admin/css/main.css',
+      'cleancss-api':
+        './node_modules/clean-css-cli/bin/cleancss api/build/static/login/style.css > api/build/static/login/style.min.css && ' +
+        'mv api/build/static/login/style.min.css api/build/static/login/style.css',
+      'karma-admin': 'node ./scripts/ci/run-karma.js',
+      'copy-ddocs': 'mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/',
+      'copy-api-ddocs': 'mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/',
+      'copy-webapp-static':
+        'cp -r webapp/src/audio api/build/static/webapp/ && ' +
+        'cp -r webapp/src/fonts api/build/static/webapp/ && ' +
+        'cp -r webapp/src/img api/build/static/webapp/',
+      'copy-api-resources': 'cp -r api/src/public/* api/build/static/',
+      'copy-api-bowser': 'cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js',
+      'copy-admin-static':
+        'cp admin/src/templates/index.html api/build/static/admin/ && ' +
+        'mkdir -p api/build/static/admin/fonts/ && ' +
+        'cp admin/node_modules/font-awesome/fonts/* api/build/static/admin/fonts/ && ' +
+        'cp webapp/src/fonts/* api/build/static/admin/fonts/',
+      'enketo-css': 'node node_modules/sass/sass.js webapp/src/css/enketo/enketo.scss api/build/static/webapp/enketo.less --no-source-map',
+      'eslint': ESLINT_COMMAND + ' .',
       'eslint-sw': `${ESLINT_COMMAND} -c ./.eslintrc build/service-worker.js`,
+      'watch': 'node ./scripts/build/watch.js',
       'build-service-images': {
         cmd: () => buildVersions.SERVICES
           .map(service =>
@@ -228,8 +93,7 @@ module.exports = function(grunt) {
               `npm dedupe`,
               `cd ../`,
               `docker build -f ./${service}/Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
-            ].join(' && ')
-          )
+            ].join(' && '))
           .join(' && '),
       },
       'build-images': {
@@ -239,8 +103,7 @@ module.exports = function(grunt) {
               `cd ${service}`,
               `docker build -f ./Dockerfile --tag ${buildVersions.getImageTag(service)} .`,
               'cd ../',
-            ].join(' && ')
-          )
+            ].join(' && '))
           .join(' && '),
       },
       'save-service-images': {
@@ -249,8 +112,7 @@ module.exports = function(grunt) {
             [
               `mkdir -p images`,
               `docker save ${buildVersions.getImageTag(service)} > images/${service}.tar`,
-            ].join(' && ')
-          )
+            ].join(' && '))
           .join(' && '),
       },
       'push-service-images': {
@@ -284,43 +146,11 @@ module.exports = function(grunt) {
           .map(dir => `echo "[${dir}]" && cd ${dir} && npm ci && cd ..`)
           .join(' && '),
       },
-      'start-webdriver': {
-        cmd:
-          'mkdir -p tests/logs && ' +
-          './node_modules/.bin/webdriver-manager update && ' +
-          './node_modules/.bin/webdriver-manager start > tests/logs/webdriver.log & ' +
-          'until nc -z localhost 4444; do sleep 1; done',
-      },
-      'start-webdriver-ci': {
-        cmd:
-          'tests/scripts/start_webdriver.sh'
-      },
       'check-env-vars':
         'if [ -z $COUCH_URL ]; then ' +
         'echo "Missing required env var.  Check that all are set: ' +
         'COUCH_URL" && exit 1; fi',
       'check-version': `node scripts/ci/check-versions.js`,
-      'undo-patches': {
-        cmd: function() {
-          const modulesToPatch = [
-            'bootstrap-daterangepicker',
-            'enketo-core',
-            'font-awesome',
-            'moment',
-          ];
-          return modulesToPatch.map(module => {
-            const backupPath = `webapp/node_modules_backup/${module}`;
-            const modulePath = `webapp/node_modules/${module}`;
-            return `
-              [ -d ${backupPath} ] &&
-              rm -rf ${modulePath} &&
-              mv ${backupPath} ${modulePath} &&
-              echo "Module restored: ${module}" ||
-              echo "No restore required for: ${module}"
-            `;
-          }).join(' && ');
-        },
-      },
       'test-config-standard': {
         cmd: [
           'cd config/standard',
@@ -331,19 +161,19 @@ module.exports = function(grunt) {
       },
       'wdio-run-default': {
         cmd: [
-          'npm run wdio'
+          'npm run wdio -- --suite=' + grunt.option('suite')
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
       'wdio-run-standard': {
         cmd: [
-          'npm run standard-wdio'
+          'npm run standard-wdio -- --suite=' + grunt.option('suite')
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
       'wdio-run-default-mobile': {
         cmd: [
-          'npm run default-wdio-mobile'
+          'npm run default-wdio-mobile -- --suite=' + grunt.option('suite')
         ].join(' && '),
         stdio: 'inherit', // enable colors!
       },
@@ -358,39 +188,6 @@ module.exports = function(grunt) {
       'shared-lib-unit': {
         cmd: 'UNIT_TEST_ENV=1 npm test --workspaces --if-present',
         stdio: 'inherit', // enable colors!
-      },
-      // To monkey patch a library...
-      // 1. copy the file you want to change
-      // 2. make the changes
-      // 3. run `diff -c original modified > webapp/patches/my-patch.patch`
-      // 4. update grunt targets: "apply-patches", "undo-patches", and "libraries-to-patch"
-      'apply-patches': {
-        cmd: function() {
-          const patches = [
-            // patch the daterangepicker for responsiveness
-            // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
-            'patch webapp/node_modules/bootstrap-daterangepicker/daterangepicker.js < webapp/patches/bootstrap-daterangepicker.patch',
-
-            // patch font-awesome to remove version attributes
-            // https://github.com/FortAwesome/Font-Awesome/issues/3286
-            'patch webapp/node_modules/font-awesome/less/path.less < webapp/patches/font-awesome-remove-version-attribute.patch',
-
-            // patch moment.js to use western arabic (european) numerals in Hindi
-            'patch webapp/node_modules/moment/locale/hi.js < webapp/patches/moment-hindi-use-euro-numerals.patch',
-
-            // patch enketo to always mark the /inputs group as relevant
-            'patch webapp/node_modules/enketo-core/src/js/form.js < webapp/patches/enketo-inputs-always-relevant_form.patch',
-            'patch webapp/node_modules/enketo-core/src/js/relevant.js < webapp/patches/enketo-inputs-always-relevant_relevant.patch',
-
-            // patch enketo to fix repeat name collision bug - this should be removed when upgrading to a new version of enketo-core
-            // https://github.com/enketo/enketo-core/issues/815
-            'patch webapp/node_modules/enketo-core/src/js/calculate.js < webapp/patches/enketo-repeat-name-collision.patch',
-
-            // patch messageformat to add a default plural function for languages not yet supported by make-plural #5705
-            'patch webapp/node_modules/messageformat/lib/plurals.js < webapp/patches/messageformat-default-plurals.patch',
-          ];
-          return patches.join(' && ');
-        },
       },
       audit: { cmd: 'node ./scripts/audit-all.js' },
       'audit-allowed-list': { cmd: 'git diff $(cat .auditignore | git hash-object -w --stdin) $(node ./scripts/audit-all.js | git hash-object -w --stdin) --word-diff --exit-code' },
@@ -449,209 +246,12 @@ module.exports = function(grunt) {
       'e2e-integration': {
         cmd: 'npm run e2e-integration'
       }
-    },
-    watch: {
-      options: {
-        interval: 1000,
-      },
-      'config-files': {
-        files: ['Gruntfile.js', 'package.json'],
-        options: {
-          reload: true,
-        },
-      },
-      'admin-css': {
-        files: ['admin/src/css/**/*'],
-        tasks: [
-          'less:admin',
-          'notify:deployed',
-        ],
-      },
-      'admin-js': {
-        files: ['admin/src/js/**/*', 'shared-libs/*/src/**/*'],
-        tasks: [
-          'browserify:admin',
-          'notify:deployed',
-        ],
-      },
-      'admin-index': {
-        files: ['admin/src/templates/index.html'],
-        tasks: [
-          'copy:admin-static',
-          'notify:deployed',
-        ],
-      },
-      'admin-templates': {
-        files: ['admin/src/templates/**/*', '!admin/src/templates/index.html'],
-        tasks: [
-          'ngtemplates:adminApp',
-          'notify:deployed',
-        ],
-      },
-      'webapp-js': {
-        // instead of watching the source files, watch the build folder and upload on rebuild
-        files: ['api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js'],
-        tasks: ['update-service-worker', 'notify:deployed'],
-      },
-      'primary-ddoc': {
-        files: ['ddocs/medic-db/**/*'],
-        tasks: [
-          'copy:ddocs',
-          'set-ddocs-version',
-          'exec:compile-ddocs-primary',
-          'copy:api-ddocs',
-          'notify:deployed',
-        ],
-      },
-      'secondary-ddocs': {
-        files: ['ddocs/*-db/**/*', '!ddocs/medic-db/**/*'],
-        tasks: [
-          'copy:ddocs',
-          'set-ddocs-version',
-          'exec:compile-ddocs-secondary',
-          'copy:api-ddocs',
-          'notify:deployed',
-        ],
-      },
-      'api-public-files': {
-        files: ['api/src/public/**/*'],
-        tasks: ['copy:api-resources'],
-      }
-    },
-    notify: {
-      deployed: {
-        options: {
-          title: 'Medic',
-          message: 'Deployed successfully',
-        },
-      },
-    },
-    karma: {
-      admin: {
-        configFile: './admin/tests/karma-unit.conf.js',
-        singleRun: true,
-        browsers: ['Chrome_Headless'],
-      },
-    },
-    protractor: {
-      'e2e-web-tests': {
-        options: {
-          configFile: 'tests/conf.js',
-          args: {
-            suite: 'web',
-          }
-        }
-      },
-      'e2e-mobile-tests': {
-        options: {
-          configFile: 'tests/conf.js',
-          args: {
-            suite: 'mobile',
-            capabilities: {
-              chromeOptions: {
-                'args': ['headless', 'disable-gpu', 'ignore-certificate-errors'],
-                mobileEmulation: { 'deviceName': 'Nexus 5' }
-              }
-            }
-          }
-        }
-      },
-      'e2e-tests-debug': {
-        options: {
-          configFile: 'tests/conf.js',
-          args: {
-            suite: 'web'
-          },
-          capabilities: {
-            chromeOptions: {
-              args: ['window-size=1024,768', 'ignore-certificate-errors']
-            }
-          }
-        }
-      }
-    },
-    ngtemplates: {
-      adminApp: {
-        cwd: 'admin/src',
-        src: ['templates/**/*.html', '!templates/index.html'],
-        dest: 'api/build/static/admin/js/templates.js',
-        options: {
-          htmlmin: {
-            collapseBooleanAttributes: true,
-            collapseWhitespace: true,
-            removeAttributeQuotes: true,
-            removeComments: true,
-            removeEmptyAttributes: true,
-            removeRedundantAttributes: true,
-            removeScriptTypeAttributes: true,
-            removeStyleLinkTypeAttributes: true,
-          },
-        },
-      },
-    },
-    sass: {
-      options: {
-        implementation: require('sass'),
-      },
-      compile: {
-        cwd: 'webapp/src/css/',
-        src: 'enketo/enketo.scss',
-        dest: 'api/build/static/webapp',
-        ext: '.less',
-        expand: true,
-        outputStyle: 'expanded',
-        flatten: true,
-        extDot: 'last',
-      },
-    },
-    'optimize-js': {
-      'api/build/static/admin/js/main.js': 'api/build/static/admin/js/main.js',
-      'api/build/static/admin/js/templates.js': 'api/build/static/admin/js/templates.js',
-    },
-    jsdoc: {
-      admin: {
-        src: [
-          'admin/src/js/**/*.js'
-        ],
-        options: {
-          destination: 'jsdocs/admin',
-          configure: 'node_modules/angular-jsdoc/common/conf.json',
-          template: 'node_modules/angular-jsdoc/angular-template'
-        }
-      },
-      api: {
-        src: [
-          'api/src/**/*.js',
-          '!api/extracted-resources/**',
-        ],
-        options: {
-          destination: 'jsdocs/api',
-          readme: 'api/README.md'
-        }
-      },
-      sentinel: {
-        src: [
-          'sentinel/src/**/*.js'
-        ],
-        options: {
-          destination: 'jsdocs/sentinel'
-        }
-      },
-      'shared-libs': {
-        src: getSharedLibDirs().map(lib => path.resolve(__dirname, 'shared-libs', lib, 'src') + '/**/*.js'),
-        options: {
-          destination: 'jsdocs/shared-libs'
-        }
-      },
-    },
+    }
   });
 
   // Build tasks
   grunt.registerTask('install-dependencies', 'Update and patch dependencies', [
-    'exec:undo-patches',
     'exec:npm-ci-modules',
-    'copy:libraries-to-patch',
-    'exec:apply-patches',
   ]);
 
   grunt.registerTask('build-webapp', 'Build webapp resources', [
@@ -660,7 +260,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-enketo-css', 'Build Enketo css', [
-    'sass',
+    'exec:enketo-css',
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
@@ -681,27 +281,24 @@ module.exports = function(grunt) {
     'build-admin',
     'build-config',
     'copy-static-files-to-api',
-    'copy:api-ddocs',
-    'notify:deployed',
+    'exec:copy-api-ddocs', // probably not needed - we do this in "build-ddocs" anyway
   ]);
 
   grunt.registerTask('copy-static-files-to-api', 'Copy build files and static files to api', [
-    'copy:api-bowser',
-    'copy:api-resources',
-    'copy:built-resources',
-    'copy:webapp-static',
-    'copy:admin-static',
+    'exec:copy-api-bowser',
+    'exec:copy-api-resources',
+    'exec:copy-webapp-static',
+    'exec:copy-admin-static',
   ]);
 
   grunt.registerTask('set-build-info', buildUtils.setBuildInfo);
 
   grunt.registerTask('build-ddocs', 'Builds the ddocs', [
-    'copy:ddocs',
+    'exec:copy-ddocs',
     'set-ddocs-version',
     'set-build-info',
     'exec:compile-ddocs-primary',
-    'exec:compile-ddocs-secondary',
-    'copy:api-ddocs',
+    'exec:copy-api-ddocs',
   ]);
 
   grunt.registerTask('build-config', 'Build default configuration', [
@@ -709,52 +306,22 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-admin', 'Build the admin app', [
-    'ngtemplates:adminApp',
-    'browserify:admin',
-    'less:admin',
+    'exec:compile-admin-templates',
+    'exec:browserify-admin',
+    'exec:less',
     'minify-admin',
   ]);
 
   grunt.registerTask('build-service-images', 'Build api and sentinel images', [
     'copy-static-files-to-api',
     'exec:uglify-api',
-    'cssmin:api',
-    'env:version',
+    'exec:cleancss-api',
     'exec:build-service-images',
     'exec:build-images',
   ]);
 
-  grunt.registerTask('start-webdriver', 'Starts Protractor Webdriver', [
-    CI ? 'exec:start-webdriver-ci' : 'exec:start-webdriver',
-  ]);
-
-  // Test tasks
-  grunt.registerTask('e2e-deploy', 'Deploy app for testing', [
-    'start-webdriver',
-    'e2e-env-setup'
-  ]);
-
   grunt.registerTask('e2e-env-setup', 'Deploy app for testing', [
     'build-service-images',
-  ]);
-
-  grunt.registerTask('e2e-web', 'Deploy app for testing and run e2e tests', [
-    'e2e-deploy',
-    'protractor:e2e-web-tests',
-  ]);
-  grunt.registerTask('e2e-mobile', 'Deploy app for testing and run e2e tests', [
-    'e2e-deploy',
-    'protractor:e2e-mobile-tests',
-  ]);
-  grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
-    'e2e-deploy',
-    'protractor:e2e-web-tests',
-  ]);
-
-  grunt.registerTask('e2e-debug', 'Deploy app for testing and run e2e tests in a visible Chrome window', [
-    'e2e-deploy',
-    'protractor:e2e-tests-debug',
-    'exec:clean-test-database',
   ]);
 
   grunt.registerTask('e2e-integration', 'Deploy app for testing', [
@@ -773,7 +340,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('unit-admin', 'Build and run admin unit tests', [
-    'karma:admin',
+    'exec:karma-admin',
   ]);
 
   grunt.registerTask('unit-webapp-continuous', 'Run webapp unit test in a loop, without reinstalling dependencies.', [
@@ -806,8 +373,8 @@ module.exports = function(grunt) {
   // CI tasks
   grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
     'exec:uglify-admin',
-    'optimize-js',
-    'cssmin:admin',
+    'exec:optimize-js',
+    'exec:cleancss-admin',
   ]);
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
@@ -817,16 +384,6 @@ module.exports = function(grunt) {
     'build',
     'exec:mocha-integration-api',
     'unit',
-  ]);
-
-  grunt.registerTask('ci-e2e', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'protractor:e2e-web-tests',
-    //'protractor:e2e-mobile-tests',
-  ]);
-  grunt.registerTask('ci-e2e-mobile', 'Run e2e tests for CI', [
-    'start-webdriver',
-    'protractor:e2e-mobile-tests',
   ]);
 
   grunt.registerTask('ci-e2e-integration', 'Run e2e tests for CI', [
@@ -864,11 +421,11 @@ module.exports = function(grunt) {
   grunt.registerTask('dev-webapp-no-dependencies', 'Build and deploy the webapp for dev, without reinstalling dependencies.', [
     'build-dev',
     'exec:watch-webapp',
-    'watch',
+    'exec:watch',
   ]);
 
   grunt.registerTask('dev-api', 'Run api and watch for file changes', [
-    'copy:api-bowser',
+    'exec:copy-api-bowser',
     'exec:api-dev',
   ]);
 
@@ -913,6 +470,9 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build-documentation', 'Build documentation using jsdoc', [
-    'jsdoc'
+    'exec:jsdoc-admin',
+    'exec:jsdoc-api',
+    'exec:jsdoc-sentinel',
+    'exec:jsdoc-shared-libs',
   ]);
 };

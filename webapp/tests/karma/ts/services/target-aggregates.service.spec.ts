@@ -340,7 +340,7 @@ describe('TargetAggregatesService', () => {
       const genContact = (id) => ({ _id: id, name: randomString() });
       // at least one place will be discarded
       const places = Array.from({ length: 265 }).map((a, i) => i && genPlace(i) || oneDifferentPlace);
-      const contacts = [];
+      const contacts: { _id: any; name: string }[] = [];
       getDataRecordsService.get.withArgs(sinon.match.array).callsFake(contactIds => {
         const responseContacts = contactIds.map(genContact);
         contacts.push(...responseContacts);

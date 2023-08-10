@@ -4,7 +4,7 @@ import { combineLatest, Subscription } from 'rxjs';
 
 import { Selectors } from '@mm-selectors/index';
 import { SettingsService } from '@mm-services/settings.service';
-import { HeaderTabsService } from '@mm-services/header-tabs.service';
+import { HeaderTab, HeaderTabsService } from '@mm-services/header-tabs.service';
 import { AuthService } from '@mm-services/auth.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ModalService } from '@mm-modals/mm-modal/mm-modal';
@@ -26,7 +26,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   replicationStatus;
   currentTab;
   unreadCount = {};
-  permittedTabs = [];
+  permittedTabs: HeaderTab[] = [];
 
   private globalActions;
 

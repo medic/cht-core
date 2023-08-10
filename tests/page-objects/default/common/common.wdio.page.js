@@ -296,8 +296,14 @@ const syncAndWaitForSuccess = async (timeout = 20000) => {
 };
 
 const sync = async (expectReload, timeout) => {
-  await syncAndWaitForSuccess(timeout);
+  let closedModal = false;
   if (expectReload) {
+    // it's possible that sync already happened organically, and we already have the reload modal
+    closedModal = await closeReloadModal(false, 0);
+  }
+
+  await syncAndWaitForSuccess(timeout);
+  if (expectReload && !closedModal) {
     await closeReloadModal();
   }
   // sync status sometimes lies when multiple changes are fired in quick succession
@@ -311,16 +317,18 @@ const syncAndWaitForFailure = async () => {
   await (await syncRequired()).waitForDisplayed({ timeout: 20000 });
 };
 
-const closeReloadModal = async (shouldUpdate = false) => {
+const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
     const button = shouldUpdate ? reloadModalUpdate() : reloadModalCancel();
-    await browser.waitUntil(async () => await (await button).waitForExist({ timeout: 2000 }));
+    await browser.waitUntil(async () => await (await button).waitForExist({ timeout }));
     // wait for the animation to complete
     await browser.pause(500);
     await (await button).click();
     await browser.pause(500);
+    return true;
   } catch (err) {
     console.error('Reload modal not showed up');
+    return false;
   }
 };
 
@@ -389,6 +397,13 @@ const isMenuOptionVisible = async (action, item) => {
   return await (await optionSelector(action, item)).isDisplayed();
 };
 
+const loadNextInfiniteScrollPage = async () => {
+  await browser.execute(() => {
+    $('.items-container .content-row:last-child').get(0).scrollIntoView();
+  });
+  await waitForLoaderToDisappear(await $('.left-pane'));
+};
+
 module.exports = {
   openMoreOptionsMenu,
   closeFastActionList,
@@ -447,4 +462,5 @@ module.exports = {
   waitForAngularLoaded,
   closeReportBug,
   getAllButtonLabelsNames,
+  loadNextInfiniteScrollPage,
 };

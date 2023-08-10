@@ -29,7 +29,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
   fastActionList: FastAction[];
   loading = true;
   loadingContent = false;
-  conversations = [];
+  conversations: Record<string, any>[] = [];
   error = false;
   currentLevel;
 
@@ -95,7 +95,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     this.subscriptions.add(conversations$);
   }
 
-  private displayFirstConversation(conversations = []) {
+  private displayFirstConversation(conversations: Record<string, any>[] = []) {
     if (this.responsiveService.isMobile()) {
       return;
     }
@@ -162,7 +162,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
       .catch(() => {});
   }
 
-  private setConversations(conversations = [], {merge = false} = {}) {
+  private setConversations(conversations: Record<string, any>[] = [], {merge = false} = {}) {
     if (merge) {
       this.removeDeleted(this.conversations, conversations);
       this.mergeUpdated(this.conversations, conversations);
@@ -194,7 +194,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
       });
   }
 
-  private removeDeleted(currentConversations = [], updatedConversations = []) {
+  private removeDeleted(
+    currentConversations: Record<string, any>[] = [],
+    updatedConversations: Record<string, any>[] = []
+  ) {
     for (let i = currentConversations.length - 1; i >= 0; i--) {
       if (!updatedConversations.some(changed => currentConversations[i].key === changed.key)) {
         currentConversations.splice(i, 1);
@@ -202,7 +205,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private mergeUpdated(currentConversations = [], updatedConversations = []) {
+  private mergeUpdated(
+    currentConversations: Record<string, any>[] = [],
+    updatedConversations: Record<string, any>[] = []
+  ) {
     updatedConversations.forEach(updated => {
       const match = _find(currentConversations, existing => existing.key === updated.key);
 

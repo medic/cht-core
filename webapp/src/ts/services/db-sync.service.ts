@@ -7,13 +7,13 @@ import * as purger from '../../js/bootstrapper/purger';
 import { RulesEngineService } from '@mm-services/rules-engine.service';
 import { DbSyncRetryService } from '@mm-services/db-sync-retry.service';
 import { DbService } from '@mm-services/db.service';
-import { PurgeService } from '@mm-services/purge.service';
 import { AuthService } from '@mm-services/auth.service';
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { GlobalActions } from '@mm-actions/global';
 import { TranslateService } from '@mm-services/translate.service';
 import { MigrationsService } from '@mm-services/migrations.service';
+import { ReplicationService } from '@mm-services/replication.service';
 
 const READ_ONLY_TYPES = ['form', 'translations'];
 const READ_ONLY_IDS = ['resources', 'branding', 'service-worker-meta', 'zscore-charts', 'settings', 'partners'];
@@ -22,6 +22,7 @@ const LAST_REPLICATED_SEQ_KEY = 'medic-last-replicated-seq';
 const LAST_REPLICATED_DATE_KEY = 'medic-last-replicated-date';
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const META_SYNC_INTERVAL = 30 * 60 * 1000; // 30 minutes
+const BATCH_SIZE = 100;
 
 const readOnlyFilter = function(doc) {
   // Never replicate "purged" documents upwards
@@ -76,37 +77,17 @@ export class DBSyncService {
     private telemetryService:TelemetryService,
     private store:Store,
     private translateService:TranslateService,
-    private purgeService:PurgeService,
     private migrationsService:MigrationsService,
+    private replicationService:ReplicationService,
   ) {
     this.globalActions = new GlobalActions(store);
   }
-
-  private readonly DIRECTIONS = [
-    {
-      name: 'to',
-      options: {
-        filter: readOnlyFilter,
-      },
-      allowed: () => this.authService.has('can_edit'),
-      onDenied: (err?) => this.dbSyncRetryService.retryForbiddenFailure(err),
-    },
-    {
-      name: 'from',
-      options: {
-        heartbeat: 10000, // 10 seconds
-        timeout: 1000 * 60 * 10, // 10 minutes
-      },
-      allowed: () => Promise.resolve(true),
-      onChange: (replicationResult?) => this.rulesEngineService.monitorExternalChanges(replicationResult),
-    }
-  ];
 
   private globalActions: GlobalActions;
   private inProgressSync;
   private knownOnlineState = window.navigator.onLine;
   private syncIsRecent = false; // true when a replication has succeeded within one interval
-  private readonly intervalPromises = {
+  private readonly intervalPromises: { sync?: any; meta?: any} = {
     sync: undefined,
     meta: undefined,
   };
@@ -117,59 +98,79 @@ export class DBSyncService {
     return !this.sessionService.isOnlineOnly();
   }
 
-  private replicate(direction, { batchSize=100 }={}) {
+  private replicateToRetry({ batchSize=BATCH_SIZE }={}) {
     const telemetryEntry = new DbSyncTelemetry(
       this.telemetryService,
       'medic',
-      direction.name,
+      'to',
       this.getLastReplicationDate(),
     );
 
+    const options = {
+      filter: readOnlyFilter,
+      batch_size: batchSize
+    };
+
     const remote = this.dbService.get({ remote: true });
-    const options = Object.assign({}, direction.options, { batch_size: batchSize });
     return this.dbService.get()
-      .replicate[direction.name](remote, options)
-      .on('change', replicationResult => {
-        if (direction.onChange) {
-          direction.onChange(replicationResult);
-        }
-      })
+      .replicate
+      .to(remote, options)
       .on('denied', (err) => {
-        console.error(`Denied replicating ${direction.name} remote server`, err);
-        if (direction.onDenied) {
-          direction.onDenied(err);
-        }
+        console.error(`Denied replicating to remote server`, err);
+        this.dbSyncRetryService.retryForbiddenFailure(err);
         telemetryEntry.recordDenied();
       })
       .on('error', (err) => {
-        console.error(`Error replicating ${direction.name} remote server`, err);
+        console.error(`Error replicating to remote server`, err);
         telemetryEntry.recordFailure(err, this.knownOnlineState);
       })
       .then(info => {
-        console.debug(`Replication ${direction.name} successful`, info);
+        console.debug(`Replication to successful`, info);
         telemetryEntry.recordSuccess(info);
       })
       .catch(err => {
-        if (err.code === 413 && direction.name === 'to' && batchSize > 1) {
+        if (err.code === 413 && batchSize > 1) {
           batchSize = Math.floor(batchSize / 2);
           console.warn('Error attempting to replicate too much data to the server. ' +
             `Trying again with batch size of ${batchSize}`);
-          return this.replicate(direction, { batchSize });
+          return this.replicateToRetry({ batchSize });
         }
-        console.error(`Error replicating ${direction.name} remote server`, err);
-        return direction.name;
+        console.error(`Error replicating to remote server`, err);
+        throw err;
       });
   }
 
-  private replicateIfAllowed(direction) {
-    return direction.allowed().then(allowed => {
-      if (!allowed) {
-        // not authorized to replicate - that's ok, skip silently
-        return;
-      }
-      return this.replicate(direction);
-    });
+  private async replicateTo() {
+    if (!await this.authService.has('can_edit')) {
+      // not authorized to replicate - that's ok, skip silently
+      return;
+    }
+
+    try {
+      await this.replicateToRetry();
+    } catch (err) {
+      return err;
+    }
   }
+
+  private async replicateFrom() {
+    const telemetryEntry = new DbSyncTelemetry(
+      this.telemetryService,
+      'medic',
+      'from',
+      this.getLastReplicationDate(),
+    );
+
+    try {
+      const result = await this.replicationService.replicateFrom();
+      telemetryEntry.recordSuccess(result);
+    } catch (err) {
+      telemetryEntry.recordFailure(err, this.knownOnlineState);
+      console.error(`Error replicating from remote server`, err);
+      return err;
+    }
+  }
+
 
   private getCurrentSeq() {
     return this.dbService.get().info().then(info => info.update_seq + '');
@@ -183,58 +184,56 @@ export class DBSyncService {
     return window.localStorage.getItem(LAST_REPLICATED_DATE_KEY);
   }
 
-  private syncMedic(force?) {
+  private async syncMedic(force?, quick?) {
     if (!this.knownOnlineState && !force) {
       return Promise.resolve();
     }
 
-    this.checkDateService.check();
+    await this.checkDateService.check();
 
-    if (!this.inProgressSync) {
-      this.inProgressSync = Promise
-        .all(this.DIRECTIONS.map(direction => this.replicateIfAllowed(direction)))
-        .then(errs => {
-          return this.getCurrentSeq().then(currentSeq => {
-            errs = errs.filter(err => err);
-            let syncState: SyncState = { to: SyncStatus.Success, from: SyncStatus.Success };
-            if (!errs.length) {
-              // no errors
-              this.syncIsRecent = true;
-              window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
-
-            } else if (currentSeq === this.getLastReplicatedSeq()) {
-              // no changes to send, but may have some to receive
-              syncState = { state: SyncStatus.Unknown };
-            } else {
-              // definitely need to sync something
-              errs.forEach((directionName: 'to' | 'from') => {
-                syncState[directionName] = SyncStatus.Required;
-              });
-            }
-            if (syncState.to === SyncStatus.Success) {
-              window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
-            }
-            return syncState;
-          });
-        })
-        .then(syncState => {
-          return this.purgeService.updateDocsToPurge()
-            .catch(err => console.warn('Error updating to purge list', err))
-            .then(() => syncState);
-        })
-        .then(syncState => {
-          if (force) {
-            this.displayUserFeedback(syncState);
-          }
-          this.sendUpdate(syncState);
-        })
-        .finally(() => {
-          this.inProgressSync = undefined;
-        });
+    if (this.inProgressSync) {
+      this.sendUpdate({ state: SyncStatus.InProgress });
+      return this.inProgressSync;
     }
 
-    this.sendUpdate({ state: SyncStatus.InProgress });
-    return this.inProgressSync;
+    try {
+      this.sendUpdate({ state: SyncStatus.InProgress });
+      this.inProgressSync = true;
+
+      const replicationErrors = { to: null, from: null };
+      replicationErrors.to = await this.replicateTo();
+
+      if (force || !quick) {
+        replicationErrors.from = await this.replicateFrom();
+      }
+
+      const currentSeq = await this.getCurrentSeq();
+      let syncState: SyncState = { to: SyncStatus.Success, from: SyncStatus.Success };
+
+      if (!replicationErrors.to && !replicationErrors.from) {
+        this.syncIsRecent = true;
+        window.localStorage.setItem(LAST_REPLICATED_SEQ_KEY, currentSeq);
+      } else if (currentSeq === this.getLastReplicatedSeq()) {
+        // no changes to send, but may have some to receive
+        syncState = { state: SyncStatus.Unknown };
+      } else {
+        // definitely need to sync something
+        Object.keys(replicationErrors).forEach((directionName: 'to' | 'from') => {
+          syncState[directionName] = SyncStatus.Required;
+        });
+      }
+
+      if (syncState.to === SyncStatus.Success) {
+        window.localStorage.setItem(LAST_REPLICATED_DATE_KEY, Date.now() + '');
+      }
+
+      if (force) {
+        this.displayUserFeedback(syncState);
+      }
+      this.sendUpdate(syncState);
+    } finally {
+      this.inProgressSync = undefined;
+    }
   }
 
   private syncMeta() {
@@ -335,7 +334,7 @@ export class DBSyncService {
   *
   * @returns Promise which resolves when both directions of the replication complete.
   */
-  async sync(force?) {
+  async sync(force?, quick?) {
     if (!this.isEnabled()) {
       this.sendUpdate({ state: SyncStatus.Disabled });
       return Promise.resolve();
@@ -354,7 +353,7 @@ export class DBSyncService {
     }
 
     this.resetSyncInterval();
-    return this.syncMedic(force);
+    return this.syncMedic(force, quick);
   }
 }
 

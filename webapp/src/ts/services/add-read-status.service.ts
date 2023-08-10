@@ -8,14 +8,14 @@ import { DbService } from '@mm-services/db.service';
 export class AddReadStatusService {
   constructor(private dbService: DbService) { }
 
-  private getKeys(type, models = []) {
+  private getKeys(type, models: Record<string, any>[] = []) {
     return models.map(model => {
       const id = model.id || model._id;
       return [ 'read', type, id ].join(':');
     });
   }
 
-  private addRead(type, models = []) {
+  private addRead(type, models: Record<string, any>[] = []): Promise<Record<string, any>[]> {
     if (!models.length) {
       return Promise.resolve(models);
     }

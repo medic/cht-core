@@ -48,7 +48,7 @@ describe('ContactViewModelGenerator service', () => {
     });
   };
 
-  const stubDbQueryChildren = (parentId, docs = []) => {
+  const stubDbQueryChildren = (parentId, docs: any[] = []) => {
     docs = docs.map(doc => {
       return { doc: doc, id: doc._id };
     });
