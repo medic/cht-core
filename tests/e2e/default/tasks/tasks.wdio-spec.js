@@ -3,56 +3,10 @@ const chtConfUtils = require('@utils/cht-conf');
 const utils = require('@utils');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const tasksPage = require('@page-objects/default/tasks/tasks.wdio.page');
-const { expect } = require('chai');
-
-const places = [
-  {
-    _id: 'fixture:district',
-    type: 'district_hospital',
-    name: 'District',
-    place_id: 'district',
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:center',
-    type: 'health_center',
-    name: 'Health Center',
-    parent: { _id: 'fixture:district' },
-    place_id: 'health_center',
-    reported_date: new Date().getTime(),
-  },
-];
-
-const clinics = [
-  {
-    _id: 'fixture:scientists',
-    type: 'clinic',
-    name: 'Scientists',
-    parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } },
-    place_id: 'scientists',
-    reported_date: new Date().getTime(),
-  }
-];
-
-const people = [
-  {
-    _id: 'fixture:einstein',
-    name: 'Albert Einstenin',
-    type: 'person',
-    patient_id: 'einstein',
-    parent: { _id: 'fixture:scientists', parent: { _id: 'fixture:center', parent: { _id: 'fixture:district' } } },
-    reported_date: new Date().getTime(),
-  }
-];
-
-const chw = {
-  username: 'bob',
-  password: 'medic.123',
-  place: 'fixture:center',
-  contact: { _id: 'fixture:user:bob', name: 'Bob' },
-  roles: ['chw'],
-  known: true,
-};
+const commonPage = require('@page-objects/default/common/common.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
 
 const updateSettings = async (settings) => {
   await utils.updateSettings(settings, 'api');
@@ -66,9 +20,34 @@ const compileTasks = async (tasksFileName) => {
 };
 
 describe('Task list', () => {
+  const places = placeFactory.generateHierarchy();
+  const clinic = places.get('clinic');
+  const healthCenter = places.get('health_center');
+
+  const contact = {
+    _id: 'fixture:user:user1',
+    name: 'CHW',
+    phone: '+12068881234',
+    type: 'person',
+    place: healthCenter._id,
+    parent: {
+      _id: healthCenter._id,
+      parent: healthCenter.parent
+    },
+  };
+  const chw = userFactory.build({
+    isOffline: true,
+    place: healthCenter._id,
+    contact: contact._id,
+  });
+  const owl = personFactory.build({
+    name: 'Owl',
+    parent: { _id: clinic._id, parent: clinic.parent }
+  });
+
   before(async () => {
-    await utils.saveDocs([...places, ...clinics, ...people]);
-    await utils.createUsers([chw]);
+    await utils.saveDocs([ ...places.values(), contact, owl ]);
+    await utils.createUsers([ chw ]);
     await loginPage.login(chw);
   });
 
@@ -84,7 +63,7 @@ describe('Task list', () => {
   it('Should show error message for bad config', async () => {
     const settings = await compileTasks('tasks-error-config.js');
     await updateSettings(settings);
-    await browser.url('/#/tasks');
+    await commonPage.goToTasks();
 
     const { errorMessage, url, username, errorStack } = await tasksPage.getErrorLog();
 

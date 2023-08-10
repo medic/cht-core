@@ -1,38 +1,14 @@
 const path = require('path');
-const expect = require('chai').expect;
 
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const loginPage = require('@page-objects/default/login/login.wdio.page');
 const commonPage = require('@page-objects/default/common/common.wdio.page');
+const userFactory = require('@factories/cht/users/users');
+const placeFactory = require('@factories/cht/contacts/place');
+const personFactory = require('@factories/cht/contacts/person');
 const chtConfUtils = require('@utils/cht-conf');
-
-const contacts = [
-  {
-    _id: 'fixture:district',
-    type: 'district_hospital',
-    name: 'District',
-    place_id: 'district',
-    reported_date: new Date().getTime(),
-  },
-  {
-    _id: 'fixture:center',
-    type: 'health_center',
-    name: 'Health Center',
-    parent: { _id: 'fixture:district' },
-    place_id: 'health_center',
-    reported_date: new Date().getTime(),
-  },
-];
-
-const chw = {
-  username: 'bob',
-  password: 'medic.123',
-  place: 'fixture:center',
-  contact: { _id: 'fixture:user:bob', name: 'Bob' },
-  roles: ['chw'],
-};
 
 const updateSettings = async (settings) => {
   await utils.updateSettings(settings, 'api');
@@ -48,12 +24,29 @@ const compileTargets = async (targetsFileName = 'targets-config.js') => {
 };
 
 describe('Targets', () => {
+  const places = placeFactory.generateHierarchy();
+  const healthCenter = places.get('health_center');
+  const clinic = places.get('clinic');
+  
+  const contact = personFactory.build({
+    name: 'CHW',
+    phone: '+50683333333',
+    parent: { _id: healthCenter._id, parent: healthCenter.parent }
+  });
+  const owl = personFactory.build({
+    name: 'Owl',
+    phone: '+50683444444',
+    parent: { _id: clinic._id, parent: clinic.parent }
+  });
+
+  const chw = userFactory.build({ place: healthCenter._id, roles: ['chw'], contact });
+
   before(async () => {
-    await utils.saveDocs(contacts);
+    await utils.saveDocs([...places.values(), owl]);
     await utils.createUsers([chw]);
     await sentinelUtils.waitForSentinel();
 
-    await loginPage.login({ username: chw.username, password: chw.password });
+    await loginPage.login(chw);
     await (await commonPage.analyticsTab()).waitForDisplayed();
   });
 
