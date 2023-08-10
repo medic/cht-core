@@ -92,7 +92,7 @@ export class GeolocationService {
       this.GEO_OPTIONS
     );
     this.timeout = setTimeout(() => {
-      this.failure({ code: -1, message: 'Geolocation timeout exceeded' });
+      this.failure({ code: -2, message: 'Geolocation timeout exceeded' });
     }, this.GEO_OPTIONS.timeout + 1);
   }
 
