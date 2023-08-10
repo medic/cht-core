@@ -235,7 +235,7 @@ describe('registration', () => {
         infos.forEach(info => {
           chai.expect(info).to.deep.nested.not.include({ 'transitions.registration.ok': false });
         });
-      })
+      });
   });
 
   it('should be skipped when transition is disabled', () => {

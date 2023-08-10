@@ -112,6 +112,25 @@ describe('registration', () => {
       sinon.stub(utils, 'getForm').returns(formDef);
       (typeof transition.getPatientPhoneField(form)).should.equal('undefined');
     });
+
+    it('should return field by type not by name', () => {
+      const form = 'ph';
+      const formDef = {
+        fields: {
+          patient_name: {
+            type: 'string'
+          },
+          phone_number: {
+            type: 'not_phone_number_type'
+          },
+          custom_name: {
+            type: 'phone_number'
+          }
+        }
+      };
+      sinon.stub(utils, 'getForm').returns(formDef);
+      transition.getPatientPhoneField(form).should.equal('custom_name');
+    });
   });
 
   describe('addPatient', () => {
