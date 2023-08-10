@@ -180,7 +180,7 @@ const fieldParsers = {
       logger.warn(`Option not available for ${raw} in list.`);
     } else if (key === 'patient_id' || key === 'place_id') {
       // special handling for string IDs which must be [0-9]
-      return stripInvisibleCharacters(raw);
+      return stripInvisibleCharacters(standardiseDigits(raw));
     }
     return raw;
   },
@@ -209,6 +209,15 @@ const fieldParsers = {
   month: (raw) => {
     // keep months integers, not their list value.
     return parseNum(stripInvisibleCharacters(raw));
+  },
+  bsYear: (raw) => {
+    return standardiseDigits(raw);
+  },
+  bsMonth: (raw) => {
+    return standardiseDigits(raw);
+  },
+  bsDay: (raw) => {
+    return standardiseDigits(raw);
   }
 };
 
@@ -281,20 +290,20 @@ exports.parse = (def, doc) => {
     }
   }
 
-  if(aggregateBSDateField) {
+  if (aggregateBSDateField) {
     let bsYear;
     let bsMonth = 1;
     let bsDay = 1;
     for (const k of Object.keys(def.fields)) {
       switch (def.fields[k].type) {
       case 'bsYear':
-        bsYear = msgData[k];
+        bsYear = standardiseDigits(msgData[k]);
         break;
       case 'bsMonth':
-        bsMonth = msgData[k];
+        bsMonth = standardiseDigits(msgData[k]);
         break;
       case 'bsDay':
-        bsDay = msgData[k];
+        bsDay = standardiseDigits(msgData[k]);
         break;
       }
     }
