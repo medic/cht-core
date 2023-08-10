@@ -1,16 +1,12 @@
 const EventEmitter = require('events');
-const medicEmitter = new EventEmitter();
-const sentinelEmitter = new EventEmitter();
-const usersEmitter = new EventEmitter();
-
 const db = require('../db');
 const logger = require('../logger');
 
 const OPTS = { live: true, since: 'now', return_docs: false };
 const databases = [
-  { dbObject: db.medic, emitter: medicEmitter, name: 'medic' },
-  { dbObject: db.sentinel, emitter: sentinelEmitter, name: 'sentinel' },
-  { dbObject: db.users, emitter: usersEmitter, name: 'users' },
+  { dbObject: db.medic, emitter: new EventEmitter(), name: 'medic' },
+  { dbObject: db.sentinel, emitter: new EventEmitter(), name: 'sentinel' },
+  { dbObject: db.users, emitter: new EventEmitter(), name: 'users' },
 ];
 
 const watchChanges = ({ dbObject, emitter, name }) => {

@@ -2,7 +2,6 @@ const db = require('../db');
 const dbWatcher = require('./db-watcher');
 const environment = require('../environment');
 const purgingUtils = require('@medic/purging-utils');
-const logger = require('../logger');
 const config = require('../config');
 const configWatcher = require('./config-watcher');
 const purgedDocsCache = require('./purged-docs-cache');
@@ -27,31 +26,6 @@ const catchDbNotFoundError = (err, purgeDb) => {
     throw err;
   }
 };
-
-const catchDocNotFoundError = (err) => {
-  if (err?.status !== 404) {
-    throw err;
-  }
-};
-
-const getCacheDocId = (username) => `purged-docs-${username}`;
-
-const clearCache = async (username) => {
-  if (!username) {
-    logger.info('Wiping purged docs cache');
-    return await purgedDocsCache.wipe();
-  }
-
-  const cacheDocId = getCacheDocId(username);
-  try {
-    const cacheDoc = await getPurgeCacheDoc(cacheDocId);
-    logger.debug('Wiping purged docs cache for user %s', username);
-    cacheDoc && await (await purgedDocsCache.get()).remove(cacheDoc);
-  } catch (err) {
-    catchDocNotFoundError(err);
-  }
-};
-
 const getPurgedIdsFromChanges = result => {
   const purgedIds = [];
   if (!result || !result.results) {
@@ -66,41 +40,14 @@ const getPurgedIdsFromChanges = result => {
   return purgedIds;
 };
 
-const getPurgeCacheDoc = async (cacheDocId) => {
-  try {
-    return await (await purgedDocsCache.get()).get(cacheDocId);
-  } catch (err) {
-    catchDocNotFoundError(err);
-  }
-};
-
-const getCachedIds = async (cacheDocId) => {
-  const cachedDoc = await getPurgeCacheDoc(cacheDocId);
-  return cachedDoc?.doc_ids;
-};
-
-const setCachedIds = async (cacheDocId, ids) => {
-  ids.sort();
-  const cachedDoc = await getPurgeCacheDoc(cacheDocId) || { _id: cacheDocId };
-  cachedDoc.doc_ids = ids;
-  try {
-    await (await purgedDocsCache.get()).put(cachedDoc);
-  } catch (err) {
-    if (err?.status !== 409) {
-      throw err;
-    }
-  }
-};
-
 const getPurgedIds = async (userCtx, docIds, useCache = true) => {
   let purgeIds = [];
-  const cacheDocId = getCacheDocId(userCtx.name);
   if (!docIds?.length || !userCtx.roles?.length) {
     return Promise.resolve(purgeIds);
   }
 
   if (useCache) {
-    const cachedIds = await getCachedIds(cacheDocId);
+    const cachedIds = await purgedDocsCache.get(userCtx.name);
     if (cachedIds) {
       return Promise.resolve(cachedIds);
     }
@@ -114,7 +61,7 @@ const getPurgedIds = async (userCtx, docIds, useCache = true) => {
     // requesting _changes instead of _all_docs because it's roughly twice faster
     const changesResult = await purgeDb.changes({ doc_ids: ids, batch_size: ids.length + 1, seq_interval: ids.length });
     purgeIds = getPurgedIdsFromChanges(changesResult);
-    useCache && await setCachedIds(cacheDocId, purgeIds);
+    useCache && await purgedDocsCache.set(userCtx.name, purgeIds);
     db.close(purgeDb);
   } catch (err) {
     catchDbNotFoundError(err, purgeDb);
@@ -138,7 +85,7 @@ const listen = () => {
 const watchSentinel = () => {
   dbWatcher.sentinel(change => {
     if (change.id.startsWith('purgelog:') && change.changes[0].rev.startsWith('1-')) {
-      return clearCache();
+      return purgedDocsCache.wipe();
     }
   });
 };
@@ -147,7 +94,7 @@ const watchUsers = () => {
   dbWatcher.users(({ id }) => {
     if (id.startsWith(USER_DOC_PREFIX)) {
       const name = id.replace(USER_DOC_PREFIX, '');
-      return clearCache(name);
+      return purgedDocsCache.clear(name);
     }
   });
 };
@@ -156,7 +103,7 @@ const watchMedic = () => {
   dbWatcher.medic(({ id }) => {
     if (id.startsWith(USER_DOC_PREFIX)) {
       const name = id.replace(USER_DOC_PREFIX, '');
-      return clearCache(name);
+      return purgedDocsCache.clear(name);
     }
   });
 };
@@ -168,13 +115,13 @@ const watchSettings = () => {
     const newConfigValue = config.get(key);
     if (newConfigValue !== district_admins_access_unallocated_messages) {
       district_admins_access_unallocated_messages = newConfigValue;
-      clearCache();
+      purgedDocsCache.wipe();
     }
   });
 };
 
 if (!process.env.UNIT_TEST_ENV) {
-  clearCache();
+  purgedDocsCache.wipe();
   listen();
 }
 
