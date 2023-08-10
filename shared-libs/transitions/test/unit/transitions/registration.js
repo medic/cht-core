@@ -65,6 +65,55 @@ describe('registration', () => {
     });
   });
 
+  describe('getPatientPhoneField', () => {
+    beforeEach(() => {
+      transition.getPatientPhoneField = transition.__get__('getPatientPhoneField');
+    });
+
+    it('should return field name if form has field', () => {
+      const form = 'ph';
+      const formDef = {
+        fields: {
+          patient_name: {
+            type: 'string'
+          },
+          phone_number: {
+            type: 'phone_number'
+          }
+        }
+      };
+      sinon.stub(utils, 'getForm').returns(formDef);
+      transition.getPatientPhoneField(form).should.equal('phone_number');
+    });
+
+    it('should return undefined if form does not have phone_number field', () => {
+      const form = 'ph';
+      const formDef = {
+        fields: {
+          patient_name: {
+            type: 'string'
+          }
+        }
+      };
+      sinon.stub(utils, 'getForm').returns(formDef);
+      (typeof transition.getPatientPhoneField(form)).should.equal('undefined');
+    });
+
+    it('should return undefined if form is not found', () => {
+      const form = 'ph';
+      sinon.stub(utils, 'getForm').returns(undefined);
+      (typeof transition.getPatientPhoneField(form)).should.equal('undefined');
+    });
+
+    it('should return undefined if form has no fields', () => {
+      const form = 'ph';
+      const formDef = {
+      };
+      sinon.stub(utils, 'getForm').returns(formDef);
+      (typeof transition.getPatientPhoneField(form)).should.equal('undefined');
+    });
+  });
+
   describe('addPatient', () => {
     it('trigger creates a new patient', () => {
       const patientName = 'jack';
@@ -127,7 +176,7 @@ describe('registration', () => {
       });
     });
 
-    it('add_patient trigger only creates a new patient with phone if form has phone field and phone is valid', () => {
+    it('should only create a new patient with phone if form has phone field and phone is valid', () => {
       // Form with phone field
       const formDef = {
         fields: {
@@ -205,7 +254,7 @@ describe('registration', () => {
       });
     });
 
-    it('add_patient trigger should not create patient if form has phone field and phone is invalid', () => {
+    it('should not create patient if form has phone field and phone is invalid', () => {
       // Form with phone field
       const formDef = {
         fields: {
@@ -219,7 +268,7 @@ describe('registration', () => {
       };
       // Stubbing that phone is invalid
       sinon.stub(phoneNumberParser, 'validate').returns(false);
-      
+
       const patientName = 'jack';
       const submitterId = 'abc';
       const parentId = 'papa';
@@ -271,7 +320,7 @@ describe('registration', () => {
       });
     });
 
-    it('add_patient trigger doesnot add patient phone if form does not have phone field', () => {
+    it('should not add patient phone if form does not have phone field', () => {
       // Form without phone field
       const formDef = {
         fields: {

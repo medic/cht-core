@@ -43,18 +43,13 @@ const getNameField = (params, prefix) => {
 
 const getPatientPhoneField = (currentForm) => {
   const formDef = utils.getForm(currentForm);
-  if (!formDef) {
+  if (!formDef?.fields) {
     return;
   }
-
-  if (formDef && formDef.fields) {
-    // Get the phone field i.e.the field with type phone_number in the form
-    const phoneField = (Object.keys(formDef.fields).filter(key => formDef.fields[key].type === 'phone_number'));
-    // Return the phone field
-    if (phoneField && phoneField[0]) {
-      return phoneField[0];
-    }
-  }   
+  
+  return Object
+    .keys(formDef.fields)
+    .find(key => formDef.fields[key].type === 'phone_number'); 
 };
 
 const parseParams = params => {
@@ -526,7 +521,8 @@ const addPatient = (options) => {
         }
 
         if (patientPhoneField && doc.fields[patientPhoneField]) {
-          if (!phoneNumberParser.validate(config.getAll(), (doc.fields[patientPhoneField]))) {
+          const patientPhone = doc.fields[patientPhoneField];
+          if (!phoneNumberParser.validate(config.getAll(), patientPhone)) {
             transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_valid');
             return;
           }

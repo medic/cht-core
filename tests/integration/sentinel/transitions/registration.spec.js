@@ -99,7 +99,7 @@ describe('registration', () => {
   afterEach(() => utils.revertDb(getIds(contacts), true));
 
   it('should add valid phone to patient doc', () => {
-    const patient_phone = '+9779841123123';
+    const patientPhone = '+9779841123123';
     const patientNameAndPhone = { // has just the `patient_name`and phone so should create this person
       _id: uuid(),
       type: 'data_record',
@@ -107,7 +107,7 @@ describe('registration', () => {
       from: '+9779841212345',
       fields: {
         patient_name: 'Minerva',
-        phone_number: patient_phone
+        phone_number: patientPhone
       },
       reported_date: moment().valueOf(),
       contact: {
@@ -122,7 +122,7 @@ describe('registration', () => {
     let newPatientId;
     return utils
       .updateSettings(testForm.forms.NP, 'sentinel')
-      .then(utils.saveDocs(docs))
+      .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
@@ -132,7 +132,7 @@ describe('registration', () => {
       })
       .then(() => utils.getDocs(docIds))
       .then(updated => {
-        chai.expect(updated[0].fields.phone_number).to.equal(patient_phone);
+        chai.expect(updated[0].fields.phone_number).to.equal(patientPhone);
         chai.expect(updated[0].patient_id).not.to.equal(undefined);
         chai.expect(updated[0].tasks).to.have.lengthOf(1);
         chai.expect(updated[0].tasks[0].messages[0]).to.include({
@@ -147,7 +147,7 @@ describe('registration', () => {
       .then(patients => {
         chai.expect(patients.rows[0].doc).to.deep.include({
           patient_id: newPatientId,
-          phone: patient_phone,
+          phone: patientPhone,
           parent: { _id: 'clinic', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } },
           name: 'Minerva',
           type: 'person',
@@ -158,7 +158,7 @@ describe('registration', () => {
   });
 
   it('should not create patient from report doc when provided invalid phone', () => {
-    const patient_phone = '+97796666';
+    const patientPhone = '+97796666';
     const patient_id =uuid();
 
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
@@ -168,7 +168,7 @@ describe('registration', () => {
       from: '+9779841212345',
       fields: {
         patient_name: 'Minerva',
-        phone_number: patient_phone
+        phone_number: patientPhone
       },
       reported_date: moment().valueOf(),
       contact: {
@@ -184,7 +184,7 @@ describe('registration', () => {
 
     return utils
       .updateSettings(testForm.forms.NP, 'sentinel')
-      .then(utils.saveDocs(docs))
+      .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
@@ -193,18 +193,18 @@ describe('registration', () => {
         });
       }).then(() => utils.getDocs(docIds))
       .then(updated => {
-        chai.expect(updated[0].fields.phone_number).to.equal(patient_phone);
+        chai.expect(updated[0].fields.phone_number).to.equal(patientPhone);
         chai.expect(updated[0].patient_id).to.not.be.null;
         const newPatientId = updated[0].patient_id;
         return getContactsByReference([newPatientId, 'venus']);
       })
       .then(patients => {
-        chai.expect(patients[0]).to.be.undefined;
+        chai.expect(patients.rows.length).to.equal(0);
       });
   });
 
   it('should fail transition on invalid phone', () => {
-    const patient_phone = '+97796666';
+    const patientPhone = '+97796666';
     const patientNameAndInvalidPhone = { // has just the `patient_name` field, and should create this person
       _id: uuid(),
       type: 'data_record',
@@ -212,7 +212,7 @@ describe('registration', () => {
       from: '+9779841212345',
       fields: {
         patient_name: 'Minerva',
-        phone_number: patient_phone
+        phone_number: patientPhone
       },
       reported_date: moment().valueOf(),
       contact: {
@@ -228,7 +228,7 @@ describe('registration', () => {
 
     return utils
       .updateSettings(testForm.forms.NP, 'sentinel')
-      .then(utils.saveDocs(docs))
+      .then(() => utils.saveDocs(docs))
       .then(() => sentinelUtils.waitForSentinel(docIds))
       .then(() => sentinelUtils.getInfoDocs(docIds))
       .then(infos => {
@@ -236,10 +236,6 @@ describe('registration', () => {
           chai.expect(info).to.deep.nested.not.include({ 'transitions.registration.ok': false });
         });
       })
-      .then(() => utils.getDocs(docIds))
-      .then(updated => {
-        chai.expect(updated.patient_id).to.be.undefined;
-      });
   });
 
   it('should be skipped when transition is disabled', () => {
