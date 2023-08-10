@@ -80,8 +80,7 @@ const validateReplication = async () => {
 
     expect(Object.keys(attachments)).to.have.members(expectedAttachments, `${form._id} has incorrect attachments`);
     expectedAttachments.forEach(attName =>
-      expect(attachments[attName].data).to.deep.equal(serverForm.doc._attachments[attName].data)
-    );
+      expect(attachments[attName].data).to.deep.equal(serverForm.doc._attachments[attName].data));
   });
 
   expect(localDocIds).to.include.members(dataFactory.ids(userAllowedDocs.clinics));

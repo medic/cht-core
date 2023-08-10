@@ -70,7 +70,7 @@ describe('UpdateServiceWorker service', () => {
     tick();
 
     expect(registration.update.callCount).to.equal(1);
-    expect(registration.onupdatefound).to.equal(undefined);
+    expect(registration.onupdatefound).to.equal(null);
     expect(callback.callCount).to.equal(1);
     expect(globalActions.setSnackbarContent.callCount).to.equal(1);
   }));
@@ -105,7 +105,7 @@ describe('UpdateServiceWorker service', () => {
     tick();
 
     expect(registration.update.callCount).to.equal(2);
-    expect(registration.onupdatefound).to.equal(undefined);
+    expect(registration.onupdatefound).to.equal(null);
     expect(callback.callCount).to.equal(1);
   }));
 
@@ -141,7 +141,7 @@ describe('UpdateServiceWorker service', () => {
     tick();
 
     expect(registration.update.callCount).to.equal(4);
-    expect(registration.onupdatefound).to.equal(undefined);
+    expect(registration.onupdatefound).to.equal(null);
     expect(callback.callCount).to.equal(1);
   }));
 });

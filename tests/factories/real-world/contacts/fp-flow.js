@@ -16,7 +16,8 @@ const generateFpMethods = () => {
   if (methods[0] === CONDOMS) {
     methods.push(...Faker.faker.helpers.uniqueArray(
       BIRTH_CONTROL,
-      Faker.faker.datatype.number({ min: 0, max: 1 })));
+      Faker.faker.datatype.number({ min: 0, max: 1 })
+    ));
   }
   return methods.join(' ');
 };

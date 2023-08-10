@@ -8,8 +8,7 @@ angular.module('inboxFilters').filter('resourceIcon',
     return (name, placeholder = '') => {
       return $sce.trustAsHtml(ResourceIcons.getImg(name, 'resources', placeholder));
     };
-  }
-);
+  });
 
 angular.module('inboxFilters').filter('headerLogo',
   function(
@@ -21,8 +20,7 @@ angular.module('inboxFilters').filter('headerLogo',
     return function(name) {
       return $sce.trustAsHtml(ResourceIcons.getImg(name, 'branding'));
     };
-  }
-);
+  });
 
 angular.module('inboxFilters').filter('partnerImage',
   function(
@@ -34,5 +32,4 @@ angular.module('inboxFilters').filter('partnerImage',
     return name => {
       return $sce.trustAsHtml(ResourceIcons.getImg(name, 'partners'));
     };
-  }
-);
+  });

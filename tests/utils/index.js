@@ -380,8 +380,7 @@ const deleteAllDocs = (except) => {
             _rev: doc._rev,
             _deleted: true,
           };
-        })
-    )
+        }))
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
       if (e2eDebug) {
@@ -419,7 +418,8 @@ const deleteAllDocs = (except) => {
             }
           })
       ]);
-    });
+    })
+    .then(() => require('@utils/sentinel').skipToSeq());
 };
 
 // Update both ddocs, to avoid instability in tests.
@@ -758,7 +758,7 @@ const dockerComposeCmd = (...params) => {
 };
 
 const stopService = async (service) => {
-  await dockerComposeCmd('stop', '-t', 0, service);
+  await dockerComposeCmd('stop', '-t', '0', service);
 };
 
 const stopSentinel = () => stopService('sentinel');
@@ -1033,7 +1033,7 @@ const saveLogs = async () => {
 
 const tearDownServices = async (removeOrphans) => {
   if (removeOrphans) {
-    return dockerComposeCmd('down', '--remove-orphans', '--volumes');
+    return dockerComposeCmd('down', '-t', '0', '--remove-orphans', '--volumes');
   }
   await saveLogs();
 };

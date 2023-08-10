@@ -68,5 +68,4 @@ angular.module('controllers').controller('AuthorizationPermissionsCtrl',
           $scope.submitting = false;
         });
     };
-  }
-);
+  });

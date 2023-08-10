@@ -9,10 +9,11 @@ export class UserLoginService {
 
   constructor(
     private http: HttpClient,
-    private location: LocationService) { }
+    private location: LocationService
+  ) { }
 
   /**
-   * Calls back-end Login service. 
+   * Calls back-end Login service.
    *
    * @param {String} username username of the user to be logged in.
    * @param {String} password password of the user.
@@ -35,6 +36,6 @@ export class UserLoginService {
 
     console.debug('UserLogin', url, username);
 
-    return this.http.post(url, data || {}, {headers}).toPromise();
+    return this.http.post(url, data || {}, {headers}).toPromise() as Promise<Object>;
   }
 }

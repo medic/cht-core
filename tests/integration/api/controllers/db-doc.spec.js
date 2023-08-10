@@ -288,8 +288,7 @@ describe('db-doc handler', () => {
             body: 'my attachment content',
             headers: { 'Content-Type': 'text/plain' },
             json: false
-          })
-        )
+          }))
         .then(() => {
           onlineRequestOptions.path = '/with_attachments/att_name';
           onlineRequestOptions.json = false;
@@ -490,8 +489,8 @@ describe('db-doc handler', () => {
           reportScenarios.map(scenario =>
             utils
               .requestOnTestDb(_.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions))
-              .catch(err => err)))
-        )
+              .catch(err => err))
+        ))
         .then(results => {
           results.forEach((result, idx) => {
             if (reportScenarios[idx].allowed) {
@@ -925,8 +924,7 @@ describe('db-doc handler', () => {
                 ];
               })
             )
-          )
-        )
+          ))
         .then(results => {
           chai.expect(results[0].length).to.equal(2);
           chai.expect(results[0][0].ok._rev.startsWith('1')).to.equal(true);
@@ -1253,8 +1251,7 @@ describe('db-doc handler', () => {
         .then(() => Promise.all(docs.map(doc =>
           utils
             .requestOnTestDb(_.defaults({ path: `/${doc._id}` }, offlineRequestOptions))
-            .catch(err => err)
-        )))
+            .catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {
             const originalDoc = docs[idx];
@@ -1606,10 +1603,8 @@ describe('db-doc handler', () => {
               utils.requestOnTestDb({
                 method: 'DELETE',
                 path: `/${doc._id}?rev=${results[idx].rev}`,
-              })
-            )
-          )
-        )
+              }))
+          ))
         .then(results => {
           results.forEach((result, idx) => (docs[idx]._rev = result.rev));
 
@@ -1862,8 +1857,7 @@ describe('db-doc handler', () => {
             utils.requestOnTestDb(Object.assign({ path: `/allowed_del?rev=${results[0].rev}` }, offlineRequestOptions)),
             utils.requestOnTestDb(Object.assign({ path: `/denied_del?rev=${results[1].rev}` }, offlineRequestOptions))
               .catch(err => err),
-          ])
-        )
+          ]))
         .then(results => {
           chai.expect(results[0]).to.deep.include({ id: 'allowed_del', ok: true });
           chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
@@ -1920,8 +1914,7 @@ describe('db-doc handler', () => {
                 json: false,
               });
             })
-          )
-        )
+          ))
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
@@ -2052,8 +2045,7 @@ describe('db-doc handler', () => {
                 json: false,
               });
             })
-          )
-        )
+          ))
         .then(results => {
           results.forEach(result => revs[result.id].push(result.rev));
           return Promise.all([
@@ -2063,8 +2055,8 @@ describe('db-doc handler', () => {
             )),
             utils.requestOnTestDb(Object.assign(
               { path: `/allowed_attach_1/att_name/1/2/3/etc?rev=${results[0].rev}`, json: false },
-              offlineRequestOptions)
-            ),
+              offlineRequestOptions
+            )),
             utils.requestOnTestDb(Object.assign(
               { path: '/denied_attach_1/att_name/1/2/3/etc' }, offlineRequestOptions
             )).catch(err => err),
@@ -2152,8 +2144,8 @@ describe('db-doc handler', () => {
               .requestOnTestDb(Object.assign(
                 { path: `/${result.id}/new_attachment?rev=${result.rev}` }, offlineRequestOptions
               ))
-              .catch(err => err)))
-        )
+              .catch(err => err))
+        ))
         .then(results => {
           chai.expect(results[0]).to.deep.include({ ok: true,  id: 'a_with_attachments' });
           chai.expect(results[1]).to.deep.nested.include({ statusCode: 403, 'responseBody.error': 'forbidden'});
@@ -2245,8 +2237,7 @@ describe('db-doc handler', () => {
             updates.map(doc =>
               utils
                 .requestOnTestDb(Object.assign({ path: `/${doc._id}`, body: doc }, offlineRequestOptions))
-                .catch(err => err)
-            )
+                .catch(err => err))
           );
         })
         .then(results => {
@@ -2269,8 +2260,7 @@ describe('db-doc handler', () => {
             body: 'my attachment content',
             headers: { 'Content-Type': 'text/plain' },
             json: false,
-          })
-        )
+          }))
         .then(() => {
           onlineRequestOptions.path = '/with_attachments/att_name';
           onlineRequestOptions.json = false;
@@ -2340,8 +2330,7 @@ describe('db-doc handler', () => {
           utils
             .request(_.defaults({ path: `//medic//denied_report/something` }, offlineRequestOptions))
             .catch(err => err),
-        ])
-      )
+        ]))
       .then(results => {
         chai.expect(results.every(result => result.statusCode === 403 || result.statusCode === 404)).to.equal(true);
       });

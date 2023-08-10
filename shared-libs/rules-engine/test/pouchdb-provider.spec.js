@@ -254,8 +254,7 @@ describe('pouchdb provider', () => {
       .to.deep.eq(['patient']));
     it('uuid and patient_id',
       async () => expect(await pouchdbProvider(db).contactsBySubjectId(['patient', 'patient_id']))
-        .to.deep.eq(['patient', 'patient']) // dupes don't matter here
-    );
+        .to.deep.eq(['patient', 'patient'])); // dupes don't matter here
   });
 
   describe('rulesStateStore', () => {
