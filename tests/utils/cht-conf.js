@@ -50,7 +50,7 @@ const compileNoolsConfig = async ({ tasks, targets, contactSummary }) => {
   }
 
   await runCommand('compile-app-settings', dir);
-  const appSettings = require(path.join(dir, 'app_settings.json'));
+  const appSettings = JSON.parse(fs.readFileSync(path.join(dir, 'app_settings.json'), 'utf-8'));
 
   const compiledConfig = {};
   if (tasks || targets) {
