@@ -1,0 +1,24 @@
+initial replication failed Error
+    at generateErrorFromResponse (/home/diana/projects/medic/tests/scalability/node_modules/pouchdb/lib/index.js:694:18)
+    at /home/diana/projects/medic/tests/scalability/node_modules/pouchdb/lib/index.js:6816:19
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5) {
+  code: 403,
+  error: 'forbidden',
+  details: 'Offline users are not allowed access to this endpoint',
+  status: 403,
+  name: 'forbidden',
+  message: 'writeCheckpoint completed with error',
+  docId: '_local/.e_SUpaftNy2mjARMMq7Qw%3D%3D',
+  result: {
+    ok: false,
+    start_time: '2023-07-19T12:15:59.255Z',
+    docs_read: 0,
+    docs_written: 0,
+    doc_write_failures: 0,
+    errors: [],
+    status: 'aborting',
+    end_time: '2023-07-19T12:15:59.391Z',
+    last_seq: 0
+  }
+}

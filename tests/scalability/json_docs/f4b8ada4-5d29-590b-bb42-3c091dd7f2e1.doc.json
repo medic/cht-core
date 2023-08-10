@@ -1,0 +1,82 @@
+{
+  "form": "pregnancy",
+  "type": "data_record",
+  "patient_id": "80966",
+  "content_type": "xml",
+  "reported_date": 1673963143553,
+  "contact": {
+    "type": "person",
+    "patient_id": "80966",
+    "parent": {
+      "type": "clinic",
+      "parent": {
+        "type": "health_center",
+        "parent": {
+          "type": "district_hospital",
+          "parent": "",
+          "is_name_generated": "false",
+          "name": "Pregnancies",
+          "external_id": "",
+          "notes": "",
+          "geolocation": "",
+          "reported_date": 1544031155715,
+          "_id": "fc9928ae-9f48-5d2d-8a0f-222b2389f77f"
+        },
+        "is_name_generated": "FALSE",
+        "name": "HC1",
+        "reported_date": 1544031155715,
+        "_id": "8606a91a-f454-56e3-a089-0b686af3c6b7"
+      },
+      "is_name_generated": "FALSE",
+      "name": "Clinic_6",
+      "reported_date": 1544031155715,
+      "_id": "7ba7f250-d52b-52ee-becd-3495cb5c50e2"
+    },
+    "name": "Person 966",
+    "date_of_birth": "2002-09-19",
+    "phone": "16145553738",
+    "sex": "female",
+    "reported_date": "1530977117000",
+    "_id": "084431b0-9120-54b1-a568-a15aaf6e364e"
+  },
+  "from": "+16143332037",
+  "fields": {
+    "inputs": {
+      "source": "contact",
+      "contact": {
+        "_id": "e3040ffc-0a1e-5b3c-9dcf-f9d23ee16c564",
+        "name": "Person 966",
+        "date_of_birth": "2001-05-28",
+        "sex": "female"
+      }
+    },
+    "patient_age_in_years": "18",
+    "patient_uuid": "e3040ffc-0a1e-5b3c-9dcf-f9d23ee16c564",
+    "patient_name": "Person 966",
+    "chw_sms": "Hi , a pregnancy for Person 2 (46462) has been registered at the facility. You will receive ANC notifications for this patient. Please follow up to identify the patient. Thank you!",
+    "lmp_method": "approx",
+    "lmp_date_8601": "2020-01-01",
+    "lmp_date": "Jan 1, 2020",
+    "edd_8601": "2019-06-13T00:00:00.000Z",
+    "edd": "Oct 7, 2020",
+    "patient_age_at_lmp": "18",
+    "days_since_lmp": "91.75",
+    "weeks_since_lmp": "13.11",
+    "group_lmp": {
+      "g_lmp_method": "approx",
+      "g_lmp_approx": "91",
+      "g_lmp_date_raw": "Thu Sep 06 2018 00:00:00 GMT-0400 (Eastern Daylight Time)",
+      "g_lmp_date_8601": "2020-01-01",
+      "g_lmp_date": "Jan 1, 2020",
+      "g_edd_8601": "2019-06-13T00:00:00.000Z",
+      "g_edd": "Oct 7, 2020"
+    },
+    "group_note": {
+      "default_chw_sms": "default",
+      "default_chw_sms_text": "Hi , a pregnancy for Person 2 (46462) has been registered at the facility. You will receive ANC notifications for this patient. Please follow up to identify the patient. Thank you!",
+      "default_chw_sms_note": "",
+      "is_sms_edited": "yes"
+    }
+  },
+  "_id": "f4b8ada4-5d29-590b-bb42-3c091dd7f2e1"
+}

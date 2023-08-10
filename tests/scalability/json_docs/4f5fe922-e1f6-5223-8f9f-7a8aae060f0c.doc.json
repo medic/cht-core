@@ -1,0 +1,74 @@
+{
+  "form": "delivery",
+  "type": "data_record",
+  "patient_id": "50299",
+  "content_type": "xml",
+  "reported_date": 1681566347553,
+  "contact": {
+    "_id": "9835d113-a7d9-53b7-8f86-4ed4fe769652",
+    "parent": {
+      "_id": "d4767240-52b4-52e8-93ec-658b8f340b499",
+      "parent": {
+        "_id": "e32bce1c-f419-562a-8fd3-f657271dac522",
+        "parent": {
+          "_id": "0c31056a-3a80-54dd-b136-46145d451a544"
+        }
+      }
+    }
+  },
+  "from": "+16143332033",
+  "fields": {
+    "inputs": {
+      "source": "contact",
+      "source_id": "",
+      "contact": {
+        "_id": "9925008f-9c5c-5603-8550-40f609bd61e487",
+        "name": "Person 808",
+        "date_of_birth": "2001-05-24",
+        "sex": "female",
+        "phone": "+16143332034"
+      }
+    },
+    "patient_uuid": "9925008f-9c5c-5603-8550-40f609bd61e487",
+    "patient_name": "Person 808",
+    "chw_name": "",
+    "chw_phone": "",
+    "birth_date": "",
+    "delivery_code": "",
+    "label_delivery_code": "",
+    "pregnancy_outcome": "",
+    "label_pregnancy_outcome": "",
+    "chw_sms": "",
+    "patient_age_in_years": "",
+    "patient_contact_phone": "",
+    "group_delivery_summary": {
+      "g_pregnancy_outcome": "",
+      "g_delivery_code": "",
+      "g_birth_date": "",
+      "display_birth_date": "",
+      "display_delivery_outcome": ""
+    },
+    "group_note": {
+      "default_chw_sms": "",
+      "default_chw_sms_text": "",
+      "default_chw_sms_note": "",
+      "is_sms_edited": "",
+      "g_chw_sms": ""
+    },
+    "group_summary": {
+      "submit": "",
+      "r_summary": "",
+      "r_delivery_location": "",
+      "r_patient_info": "",
+      "r_pregnancy_outcome": "",
+      "r_birth_date": "",
+      "r_followup": "",
+      "r_followup_note1": "",
+      "r_followup_note2": ""
+    },
+    "meta": {
+      "instanceID": ""
+    }
+  },
+  "_id": "4f5fe922-e1f6-5223-8f9f-7a8aae060f0c"
+}

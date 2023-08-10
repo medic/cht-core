@@ -1,0 +1,74 @@
+{
+  "form": "delivery",
+  "type": "data_record",
+  "patient_id": "80594",
+  "content_type": "xml",
+  "reported_date": 1689592794708,
+  "contact": {
+    "_id": "9835d113-a7d9-53b7-8f86-4ed4fe769470",
+    "parent": {
+      "_id": "d4767240-52b4-52e8-93ec-658b8f340b317",
+      "parent": {
+        "_id": "e32bce1c-f419-562a-8fd3-f657271dac340",
+        "parent": {
+          "_id": "0c31056a-3a80-54dd-b136-46145d451a362"
+        }
+      }
+    }
+  },
+  "from": "+16143331851",
+  "fields": {
+    "inputs": {
+      "source": "contact",
+      "source_id": "",
+      "contact": {
+        "_id": "9925008f-9c5c-5603-8550-40f609bd61e305",
+        "name": "Person 594",
+        "date_of_birth": "2000-11-23",
+        "sex": "female",
+        "phone": "+16143331852"
+      }
+    },
+    "patient_uuid": "9925008f-9c5c-5603-8550-40f609bd61e305",
+    "patient_name": "Person 594",
+    "chw_name": "",
+    "chw_phone": "",
+    "birth_date": "2019-10-01",
+    "delivery_code": "f",
+    "label_delivery_code": "Facility",
+    "pregnancy_outcome": "healthy",
+    "label_pregnancy_outcome": "Live Birth",
+    "chw_sms": "Good news, ! Person 2 (2) has delivered at the health facility. We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. Thank you!",
+    "patient_age_in_years": "18",
+    "patient_contact_phone": "",
+    "group_delivery_summary": {
+      "g_pregnancy_outcome": "healthy",
+      "g_delivery_code": "f",
+      "g_birth_date": "2019-10-01",
+      "display_birth_date": "Oct 1, 2019",
+      "display_delivery_outcome": "Live Birth"
+    },
+    "group_note": {
+      "default_chw_sms": "facility_birth",
+      "default_chw_sms_text": "Good news, ! Person 2 (2) has delivered at the health facility. We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. Thank you!",
+      "default_chw_sms_note": "",
+      "is_sms_edited": "yes",
+      "g_chw_sms": ""
+    },
+    "group_summary": {
+      "submit": "",
+      "r_summary": "",
+      "r_delivery_location": "Facility",
+      "r_patient_info": "",
+      "r_pregnancy_outcome": "",
+      "r_birth_date": "",
+      "r_followup": "",
+      "r_followup_note1": "",
+      "r_followup_note2": ""
+    },
+    "meta": {
+      "instanceID": "uuid:bbae788d-dac8-49b9-a889-f98bc1759e378"
+    }
+  },
+  "_id": "2c77ff0b-c56e-5a07-b432-1c5efd4579b0"
+}

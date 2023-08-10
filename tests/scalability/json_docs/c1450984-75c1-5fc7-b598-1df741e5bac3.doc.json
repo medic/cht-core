@@ -1,0 +1,18 @@
+{
+  "type": "health_center",
+  "parent": {
+    "type": "district_hospital",
+    "parent": "",
+    "is_name_generated": "false",
+    "name": "D4",
+    "external_id": "",
+    "notes": "",
+    "geolocation": "",
+    "reported_date": 1544031155715,
+    "_id": "2dbaa76f-11f7-5e04-a6a1-f0555414c592"
+  },
+  "is_name_generated": "FALSE",
+  "name": "HC14",
+  "reported_date": 1544031155715,
+  "_id": "c1450984-75c1-5fc7-b598-1df741e5bac3"
+}

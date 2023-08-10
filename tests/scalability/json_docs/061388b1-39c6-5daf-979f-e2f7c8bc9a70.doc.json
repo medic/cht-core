@@ -1,0 +1,40 @@
+{
+  "form": "child_health_registration",
+  "type": "data_record",
+  "patient_id": "150008",
+  "content_type": "xml",
+  "reported_date": 1679760872241,
+  "contact": {
+    "_id": "9835d113-a7d9-53b7-8f86-4ed4fe769182",
+    "parent": {
+      "_id": "d4767240-52b4-52e8-93ec-658b8f340b29",
+      "parent": {
+        "_id": "e32bce1c-f419-562a-8fd3-f657271dac52",
+        "parent": {
+          "_id": "0c31056a-3a80-54dd-b136-46145d451a74"
+        }
+      }
+    }
+  },
+  "from": "+16143331563",
+  "fields": {
+    "inputs": {
+      "source": "contact",
+      "contact": {
+        "_id": "549cff85-331b-4a9e-91f6-c7908dbae94d",
+        "name": "Child 9",
+        "date_of_birth": "2014-06-18",
+        "sex": "male"
+      }
+    },
+    "group_note": {
+      "default_chw_sms": "default",
+      "default_chw_sms_note": "",
+      "is_sms_edited": "yes"
+    },
+    "meta": {
+      "instanceID": "uuid:315b72e7-21f7-4479-9816-60c3975e4443"
+    }
+  },
+  "_id": "061388b1-39c6-5daf-979f-e2f7c8bc9a70"
+}

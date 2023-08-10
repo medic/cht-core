@@ -17,7 +17,8 @@ const contact = personFactory.build(
       parent: clinic.parent
     },
     phone: '+254712345670'
-  });
+  }
+);
 
 const docs = [...places.values(), contact];
 const newRole = 'new_chw';

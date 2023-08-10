@@ -1,0 +1,99 @@
+{
+  "form": "immunization_visit",
+  "type": "data_record",
+  "patient_id": "150007",
+  "content_type": "xml",
+  "reported_date": 1679072493008,
+  "contact": {
+    "_id": "9835d113-a7d9-53b7-8f86-4ed4fe769181",
+    "parent": {
+      "_id": "d4767240-52b4-52e8-93ec-658b8f340b28",
+      "parent": {
+        "_id": "e32bce1c-f419-562a-8fd3-f657271dac51",
+        "parent": {
+          "_id": "0c31056a-3a80-54dd-b136-46145d451a73"
+        }
+      }
+    }
+  },
+  "from": "+16143331562",
+  "fields": {
+    "inputs": {
+      "source": "contact",
+      "contact": {
+        "_id": "549cff85-331b-4a9e-91f6-c7908dbae94d",
+        "name": "Tommy Smallson",
+        "date_of_birth": "2014-06-17",
+        "sex": "male"
+      }
+    },
+    "patient_age_in_years": "4",
+    "patient_uuid": "549cff85-331b-4a9e-91f6-c7908dbae94d",
+    "patient_name": "Tommy Smallson",
+    "visit_confirmed": "yes",
+    "vaccines_received": {
+      "received_bcg": "no",
+      "received_cholera_1": "yes",
+      "received_cholera_2": "no",
+      "received_cholera_3": "yes",
+      "received_hep_a_1": "no",
+      "received_hep_a_2": "no",
+      "received_hpv_1": "no",
+      "received_hpv_2": "no",
+      "received_hpv_3": "no",
+      "received_flu": "no",
+      "received_jap_enc": "no",
+      "received_meningococcal_1": "no",
+      "received_meningococcal_2": "no",
+      "received_meningococcal_3": "no",
+      "received_meningococcal_4": "no",
+      "received_mmr_1": "no",
+      "received_mmr_2": "no",
+      "received_mmrv_1": "no",
+      "received_mmrv_2": "no",
+      "received_polio_0": "yes",
+      "received_polio_1": "no",
+      "received_polio_2": "no",
+      "received_polio_3": "yes",
+      "received_ipv_1": "no",
+      "received_ipv_2": "no",
+      "received_ipv_3": "no",
+      "received_penta_1": "no",
+      "received_penta_2": "no",
+      "received_penta_3": "no",
+      "received_pneumococcal_1": "no",
+      "received_pneumococcal_2": "no",
+      "received_pneumococcal_3": "no",
+      "received_pneumococcal_4": "no",
+      "received_rotavirus_1": "no",
+      "received_rotavirus_2": "no",
+      "received_rotavirus_3": "no",
+      "received_typhoid_1": "no",
+      "received_typhoid_2": "no",
+      "received_vitamin_a": "yes",
+      "received_yellow_fever": "no"
+    },
+    "group_select_vaccines": {
+      "g_vaccines": "cholera polio vitamin_a"
+    },
+    "group_cholera": {
+      "g_cholera": "CH1 CH10"
+    },
+    "group_polio": {
+      "g_polio": "OPV0 OPV10"
+    },
+    "group_vitamin_a": {
+      "g_vitamin_a": "yes"
+    },
+    "group_note": {
+      "default_chw_sms": "default",
+      "default_chw_sms_note": "",
+      "is_sms_edited": "yes"
+    },
+    "meta": {
+      "instanceID": "uuid:64e94653-c2af-49aa-84e9-650247a035a12"
+    }
+  },
+  "registration_id": "cc980e42-4f0c-4349-bfbf-0a32c8ab178a",
+  "_id": "e44d5aeb-c683-5927-9365-a33ff6027adc"
+}
