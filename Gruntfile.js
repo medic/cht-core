@@ -1,14 +1,5 @@
 /* eslint-disable max-len */
 
-const {
-  BUILD_NUMBER,
-  INTERNAL_CONTRIBUTOR,
-} = process.env;
-
-const DEV = !BUILD_NUMBER;
-
-const buildUtils = require('./scripts/build');
-
 module.exports = function(grunt) {
   'use strict';
 
@@ -31,15 +22,13 @@ module.exports = function(grunt) {
       'copy-api-ddocs': 'mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/',
       'copy-webapp-static': 'cp -r webapp/src/audio webapp/src/fonts webapp/src/img api/build/static/webapp/',
       'copy-api-resources': 'cp -r api/src/public/* api/build/static/',
-      'copy-api-bowser': 'cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js',
       'copy-admin-static': 'cp -r admin/src/templates/index.html admin/node_modules/font-awesome/fonts webapp/src/fonts api/build/static/admin',
 
       'npm-ci-modules': 'node scripts/build/cli npmCiModules',
       'check-version': 'node scripts/ci/check-versions.js',
       'build-service-images': 'node scripts/build/cli buildServiceImages',
       'build-images': 'node scripts/build/cli buildImages',
-      'save-service-images': 'mkdir -p images && node scripts/build/cli saveServiceImages',
-      'push-service-images': 'node scripts/build/cli pushServiceImages',
+      'publish-service-images': 'mkdir -p images && node scripts/build/cli publishServiceImages',
 
       // CONVERTED TO PACKAGE.JSON
       'npm-ci-api': 'cd api && npm ci',
@@ -53,12 +42,7 @@ module.exports = function(grunt) {
       'mocha-unit-api': 'npm run mocha-unit-api',
       'mocha-unit-sentinel': 'npm run mocha-unit-sentinel',
       'mocha-integration-api': 'npm run mocha-integration-api',
-      'jsdoc-admin': 'npm run jsdoc-admin',
-      'jsdoc-sentinel': 'npm run jsdoc-sentinel',
-      'jsdoc-api': 'npm run jsdoc-api',
-      'jsdoc-shared-libs': 'npm run jsdoc-shared-libs',
       'dev-api': 'npm run dev-api',
-      'dev-sentinel': 'npm run dev-sentinel',
       'enketo-css': 'npm run css-enketo',
       'eslint-sw': 'npm run lint-service-worker',
       'less': 'npm run css-admin',
@@ -70,7 +54,14 @@ module.exports = function(grunt) {
       'shared-lib-unit': 'npm run shared-lib-unit',
       'cleancss-admin': 'npm run cleancss-admin',
       'cleancss-api': 'npm run cleancss-api',
-      'build-config': 'npm run build-config'
+      'build-config': 'npm run build-config',
+      'copy-api-bowser': 'npm run copy-api-bowser',
+      'create-staging-doc': 'npm run create-staging-doc',
+      'populate-staging-doc': 'npm run populate-staging-doc',
+      'create-local-docker-compose-files': 'npm run create-local-docker-compose-files',
+      'update-service-worker': 'npm run update-service-worker',
+      'set-ddocs-version': 'npm run set-ddocs-version',
+      'set-build-info': 'npm run set-build-info'
     }
   });
 
@@ -81,9 +72,11 @@ module.exports = function(grunt) {
     'exec:enketo-css',
     'exec:build-webapp',
     'build-admin',
+    'exec:uglify-admin',
+    'exec:cleancss-admin',
     'exec:build-config',
-    'create-staging-doc',
-    'populate-staging-doc',
+    'exec:create-staging-doc',
+    'exec:populate-staging-doc',
   ]);
 
   grunt.registerTask('build-dev', 'Build the static resources', [
@@ -103,12 +96,10 @@ module.exports = function(grunt) {
     'exec:copy-admin-static',
   ]);
 
-  grunt.registerTask('set-build-info', buildUtils.setBuildInfo);
-
   grunt.registerTask('build-ddocs', 'Builds the ddocs', [
     'exec:copy-ddocs',
-    'set-ddocs-version',
-    'set-build-info',
+    'exec:set-ddocs-version',
+    'exec:set-build-info',
     'exec:compile-ddocs-primary',
     'exec:copy-api-ddocs',
   ]);
@@ -117,7 +108,6 @@ module.exports = function(grunt) {
     'exec:compile-admin-templates',
     'exec:browserify-admin',
     'exec:less',
-    'minify-admin',
   ]);
 
   grunt.registerTask('build-service-images', 'Build api and sentinel images', [
@@ -172,10 +162,7 @@ module.exports = function(grunt) {
   ]);
 
   // CI tasks
-  grunt.registerTask('minify-admin', 'Minify Admin JS and CSS', DEV ? [] : [
-    'exec:uglify-admin',
-    'exec:cleancss-admin',
-  ]);
+
 
   grunt.registerTask('ci-compile-github', 'build, lint, unit, integration test', [
     'exec:check-version',
@@ -198,51 +185,10 @@ module.exports = function(grunt) {
     'exec:watch-webapp',
   ]);
 
-  grunt.registerTask('dev-api', 'Run api and watch for file changes', [
-    'exec:copy-api-bowser',
-    'exec:dev-api',
-  ]);
-
-  grunt.registerTask('dev-sentinel', 'Run sentinel and watch for file changes', [
-    'exec:dev-sentinel',
-  ]);
-
-  grunt.registerTask('create-staging-doc', buildUtils.createStagingDoc);
-  grunt.registerTask('populate-staging-doc', buildUtils.populateStagingDoc);
-  grunt.registerTask('create-local-docker-compose-files', buildUtils.localDockerComposeFiles);
-  grunt.registerTask('update-service-worker', function () {
-    const done = this.async();
-    buildUtils.updateServiceWorker().then(done);
-  });
-  grunt.registerTask('set-ddocs-version', buildUtils.setDdocsVersion);
-
-  grunt.registerTask('publish-service-images', 'Publish service images', (() => {
-    if (!BUILD_NUMBER) {
-      return [];
-    }
-
-    if (INTERNAL_CONTRIBUTOR) {
-      return ['exec:push-service-images'];
-    }
-
-    return ['exec:save-service-images'];
-  })());
-
   grunt.registerTask('publish-for-testing', 'Build and publish service images, publish the staging doc to the testing server', [
     'build-service-images',
-    'publish-service-images',
+    'exec:publish-service-images',
     'exec:compile-ddocs-staging',
     'exec:push-ddoc-to-staging',
-  ]);
-
-  grunt.registerTask('default', 'Build and deploy the webapp for dev', [
-    'dev-webapp',
-  ]);
-
-  grunt.registerTask('build-documentation', 'Build documentation using jsdoc', [
-    'exec:jsdoc-admin',
-    'exec:jsdoc-api',
-    'exec:jsdoc-sentinel',
-    'exec:jsdoc-shared-libs',
   ]);
 };

@@ -14,6 +14,7 @@ const {
   BUILD_NUMBER,
   API_PORT,
   ECR_PUBLIC_REPO,
+  INTERNAL_CONTRIBUTOR
 } = process.env;
 const DEFAULT_API_PORT = 5988;
 const MODULES = ['webapp', 'api', 'sentinel', 'admin'];
@@ -243,6 +244,17 @@ const pushServiceImages = async () => {
   }
 };
 
+const publishServiceImages = async () => {
+  if (!BUILD_NUMBER) {
+    return;
+  }
+
+  if (INTERNAL_CONTRIBUTOR) {
+    return await pushServiceImages();
+  }
+  return await saveServiceImages();
+};
+
 module.exports = {
   createStagingDoc,
   localDockerComposeFiles,
@@ -254,5 +266,6 @@ module.exports = {
   buildServiceImages,
   buildImages,
   saveServiceImages,
-  pushServiceImages
+  pushServiceImages,
+  publishServiceImages
 };
