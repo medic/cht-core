@@ -64,9 +64,8 @@ export class EditUserSettingsComponent implements OnInit {
   }
 
   async editUserSettings(): Promise<void> {
-    this.processing = true;
-
     try {
+      this.processing = true;
       const updates:any = await this.changedUpdates(this.editUserModel);
       const userSettings = await this.userSettingsService.get();
       const hasUpdates = !!Object.keys(updates).length;
@@ -80,9 +79,9 @@ export class EditUserSettingsComponent implements OnInit {
     } catch (error) {
       this.error = 'Error updating user';
       console.error(this.error, error);
+    } finally {
+      this.processing = false;
     }
-
-    this.processing = false;
   }
 
   close() {

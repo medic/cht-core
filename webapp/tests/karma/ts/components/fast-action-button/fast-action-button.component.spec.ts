@@ -300,8 +300,8 @@ describe('FastActionButtonComponent', () => {
       component.open();
 
       expect(actionOne.execute.calledOnce).to.be.true;
-      expect(matDialog.closeAll.calledTwice).to.be.true;
-      expect(matBottomSheet.dismiss.calledTwice).to.be.true;
+      expect(matDialog.closeAll.calledOnce).to.be.true;
+      expect(matBottomSheet.dismiss.calledOnce).to.be.true;
       expect(responsiveService.isMobile.notCalled).to.be.true;
       expect(matBottomSheet.open.notCalled).to.be.true;
       expect(matDialog.open.notCalled).to.be.true;

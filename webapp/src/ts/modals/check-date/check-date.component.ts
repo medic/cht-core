@@ -13,7 +13,7 @@ export class CheckDateComponent {
 
   constructor(
     private matDialogRef: MatDialogRef<CheckDateComponent>,
-    @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, any>,
   ) {
     this.reportedLocalDate = this.matDialogData.reportedLocalDate;
     this.expectedLocalDate = this.matDialogData.expectedLocalDate;

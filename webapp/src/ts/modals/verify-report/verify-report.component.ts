@@ -12,7 +12,7 @@ export class VerifyReportComponent {
 
   constructor(
     private matDialogRef: MatDialogRef<VerifyReportComponent>,
-    @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, boolean>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, boolean>,
   ) {
     this.proposedVerificationState = this.matDialogData?.proposedVerificationState;
   }

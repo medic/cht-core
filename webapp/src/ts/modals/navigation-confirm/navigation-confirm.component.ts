@@ -15,7 +15,7 @@ export class NavigationConfirmComponent {
   constructor(
     private telemetryService: TelemetryService,
     private matDialogRef: MatDialogRef<NavigationConfirmComponent>,
-    @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, any>,
   ) {
     this.messageTranslationKey = this.matDialogData.messageTranslationKey;
     this.telemetryEntry = this.matDialogData.telemetryEntry;

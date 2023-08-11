@@ -22,7 +22,7 @@ export class BulkDeleteConfirmComponent {
     private deleteDocsService: DeleteDocsService,
     private telemetryService: TelemetryService,
     private matDialogRef: MatDialogRef<BulkDeleteConfirmComponent>,
-    @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, any>,
   ) {
     this.docs = this.matDialogData.docs || [];
     this.type = this.matDialogData.type;
@@ -36,21 +36,21 @@ export class BulkDeleteConfirmComponent {
     this.matDialogRef.close();
   }
 
-  async submit() {
-    this.totalDocsSelected = this.docs.length;
-    this.totalDocsDeleted = 0;
-    this.processing = true;
-
+  async submit(reload = true) {
     try {
+      this.totalDocsSelected = this.docs.length;
+      this.totalDocsDeleted = 0;
+      this.processing = true;
       await this.deleteDocsService.delete(this.docs, { progress: this.updateTotalDocsDeleted.bind(this) });
-      this.processing = false;
     } catch (error) {
       this.error = 'Error deleting document';
       console.error(this.error, error);
       return;
+    } finally {
+      this.processing = false;
     }
 
     this.telemetryService.record(`bulk_delete:${this.type}`, this.totalDocsSelected);
-    window.location.reload();
+    reload && window.location.reload(); // On testing we don't reload
   }
 }

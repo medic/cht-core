@@ -24,7 +24,7 @@ export class EditReportComponent implements AfterViewInit {
     private select2SearchService:Select2SearchService,
     private updateFacilityService:UpdateFacilityService,
     private matDialogRef: MatDialogRef<EditReportComponent>,
-    @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, any>,
   ) {
     this.report = this.matDialogData?.report;
   }
@@ -47,6 +47,7 @@ export class EditReportComponent implements AfterViewInit {
           allowNew: false,
           initialValue: this.report?.contact?._id || this.report?.from,
         };
+        console.log('holaaa');
         return this.select2SearchService.init(this.getSelectElement(), types, options);
       })
       .catch(err => console.error('Error initialising select2', err));

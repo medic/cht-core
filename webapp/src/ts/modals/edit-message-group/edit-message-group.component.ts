@@ -15,7 +15,7 @@ export class EditMessageGroupComponent implements AfterViewInit, OnInit, AfterVi
     private editGroupService:EditGroupService,
     private settingsService:SettingsService,
     private matDialogRef: MatDialogRef<EditMessageGroupComponent>,
-    @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, any>,
   ) {
     this.group = this.matDialogData?.group;
     this.report = this.matDialogData?.report;

@@ -33,7 +33,7 @@ export class SendMessageComponent implements AfterViewInit {
     private select2SearchService: Select2SearchService,
     private translateService:TranslateService,
     private matDialogRef: MatDialogRef<SendMessageComponent>,
-    @Inject(MAT_DIALOG_DATA) public matDialogData: Message,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Message,
   ) {
     this.messageInput = this.matDialogData?.message;
   }

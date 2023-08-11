@@ -31,7 +31,7 @@ export class DeleteDocConfirmComponent implements OnInit, OnDestroy {
     private dbService: DbService,
     private router: Router,
     private matDialogRef: MatDialogRef<DeleteDocConfirmComponent>,
-    @Inject(MAT_DIALOG_DATA) public matDialogData: Record<string, any>,
+    @Inject(MAT_DIALOG_DATA) private matDialogData: Record<string, any>,
   ) {
     this.globalActions = new GlobalActions(this.store);
     this.lineageLib = LineageFactory(Promise, this.dbService.get());

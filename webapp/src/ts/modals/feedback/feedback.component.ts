@@ -21,7 +21,7 @@ export class FeedbackComponent {
   constructor(
     private feedbackService: FeedbackService,
     private store: Store,
-    private translateService:TranslateService,
+    private translateService: TranslateService,
     private matDialogRef: MatDialogRef<FeedbackComponent>,
   ) {
     this.globalActions = new GlobalActions(store);
