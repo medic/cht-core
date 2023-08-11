@@ -30,6 +30,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
+import { EnketoFormService } from '@mm-services/enketo-form.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -677,11 +678,13 @@ describe('Enketo service', () => {
       sinon.stub($.fn, 'find').returns({ toArray });
       form.validate.resolves(false);
       form.relevant = { update: sinon.stub() };
+      UserContact.resolves({ _id: '123', phone: '555' });
       return service
         .save('V', form)
         .then(() => expect.fail('expected to reject'))
         .catch(actual => {
           expect(actual.message).to.equal('Form is invalid');
+          expect(UserContact.callCount).to.equal(1);
           expect(form.validate.callCount).to.equal(1);
           expect(inputRelevant.dataset.relevant).to.equal('true');
           expect(inputNonRelevant.dataset.relevant).to.equal('false');
@@ -1704,7 +1707,7 @@ describe('Enketo service', () => {
         // @ts-ignore
         const saveDocsStub = sinon.stub(EnketoService.prototype, 'saveDocs');
         // @ts-ignore
-        const xmlToDocsStub = sinon.stub(EnketoService.prototype, 'xmlToDocs').resolves([
+        const xmlToDocsStub = sinon.stub(EnketoFormService.prototype, 'xmlToDocs').resolves([
           { _id: '1a' },
           { _id: '1b', _attachments: {} },
           {
@@ -1952,7 +1955,7 @@ describe('Enketo service', () => {
 
       describe('renderContactForm', () => {
         beforeEach(() => {
-          service.setFormTitle = sinon.stub();
+          service.enketoFormService.setFormTitle = sinon.stub();
           dbGetAttachment.resolves('<form/>');
           translateService.get.callsFake((key) => `translated key ${key}`);
           TranslateFrom.callsFake((sentence) => `translated sentence ${sentence}`);
@@ -1983,8 +1986,9 @@ describe('Enketo service', () => {
             titleKey: 'contact.type.health_center.new',
           });
 
-          expect(service.setFormTitle.callCount).to.be.equal(1);
-          expect(service.setFormTitle.args[0][1]).to.be.equal('translated key contact.type.health_center.new');
+          expect(service.enketoFormService.setFormTitle.callCount).to.be.equal(1);
+          expect(service.enketoFormService.setFormTitle.args[0][1])
+            .to.be.equal('translated key contact.type.health_center.new');
         });
 
         it('should fallback to translate document title when the titleKey is not available', async () => {
@@ -1998,8 +2002,8 @@ describe('Enketo service', () => {
             valuechangeListener: callbackMock,
           });
 
-          expect(service.setFormTitle.callCount).to.be.equal(1);
-          expect(service.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
+          expect(service.enketoFormService.setFormTitle.callCount).to.be.equal(1);
+          expect(service.enketoFormService.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
         });
       });
     });
@@ -2019,7 +2023,7 @@ describe('Enketo service', () => {
       $prevBtn = $('<button class="btn previous-page"></button>');
       originalJQueryFind = $.fn.find;
       setNavigationStub = sinon
-        .stub(EnketoService.prototype, <any>'setNavigation')
+        .stub(EnketoFormService.prototype, <any>'setNavigation')
         .callThrough();
 
       form = {
