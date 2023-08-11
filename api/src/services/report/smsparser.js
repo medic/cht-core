@@ -190,7 +190,7 @@ const fieldParsers = {
     return moment(stripInvisibleCharacters(raw)).valueOf();
   },
   bsDate: (raw) => {
-    const cleaned = stripInvisibleCharacters(raw);
+    const cleaned = stripInvisibleCharacters(standardiseDigits(raw));
     const separator = cleaned[cleaned.search(/[^0-9]/)];//non-numeric character
     const dateParts = cleaned.split(separator);
     return bsToEpoch(...dateParts);
