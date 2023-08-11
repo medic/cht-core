@@ -19,13 +19,11 @@ describe('SendMessageComponent', () => {
   let settingsService;
   let contactTypesService;
   let matDialogRef;
-  let consoleErrorStub;
   let sendMessageService;
   let select2SearchService;
 
   beforeEach(() => {
     matDialogRef = { close: sinon.stub() };
-    consoleErrorStub = sinon.stub(console, 'error');
     sendMessageService = { send: sinon.stub() };
     select2SearchService = { init: sinon.stub().resolves() };
     formatProvider = {};
