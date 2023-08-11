@@ -47,7 +47,6 @@ export class EditReportComponent implements AfterViewInit {
           allowNew: false,
           initialValue: this.report?.contact?._id || this.report?.from,
         };
-        console.log('holaaa');
         return this.select2SearchService.init(this.getSelectElement(), types, options);
       })
       .catch(err => console.error('Error initialising select2', err));
