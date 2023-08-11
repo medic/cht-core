@@ -150,10 +150,14 @@
             "aot": true,
             "inlineStyleLanguage": "less",
             "assets": [
-              "web-components/cht-form/src/assets"
+              {
+                "glob": "*",
+                "input": "src/fonts",
+                "output": "fonts/"
+              }
             ],
             "styles": [
-              "web-components/cht-form/src/styles.less"
+              "src/css/inbox.less"
             ],
             "stylePreprocessorOptions": {
               "includePaths": [

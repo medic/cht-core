@@ -14,8 +14,12 @@
 <div>
   <h1 class="display-4">Helloo, world!</h1>
   <hr class="my-4">
-  <cht-form form-id="report-form"></cht-form>
+  <cht-form id="myform" form-id="report-form"></cht-form>
 <!--  <p><cht-form thankyou-message="You da real MVP"></cht-form></p>-->
 </div>
 </body>
+
+<script>
+  document.getElementById('myform').setAttribute('thankyou-message', 'somevalue');
+</script>
 </html>
