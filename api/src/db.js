@@ -69,6 +69,10 @@ if (UNIT_TEST_ENV) {
   const fetch = (url, opts) => {
     // Adding audit flag (haproxy) Service that made the request initially.
     opts.headers.set('X-Medic-Service', 'api');
+    // this is temporary
+    if (opts.method && opts.method !== 'GET' && !url.includes('_bulk_get')) {
+      url = url.includes('?') ? `${url}&w=3` : `${url}?w=3`;
+    }
     return PouchDB.fetch(url, opts);
   };
 
