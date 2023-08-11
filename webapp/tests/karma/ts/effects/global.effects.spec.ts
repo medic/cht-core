@@ -1,5 +1,5 @@
 import { provideMockActions } from '@ngrx/effects/testing';
-import { TestBed, waitForAsync } from '@angular/core/testing';
+import { TestBed, waitForAsync, fakeAsync, flush } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { Observable, of } from 'rxjs';
 import { expect } from 'chai';
@@ -11,16 +11,15 @@ import { Router } from '@angular/router';
 import { GlobalEffects } from '@mm-effects/global.effects';
 import { Selectors } from '@mm-selectors/index';
 import { Actions as GlobalActionsList } from '@mm-actions/global';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { DeleteDocConfirmComponent } from '@mm-modals/delete-doc-confirm/delete-doc-confirm.component';
 import { NavigationConfirmComponent } from '@mm-modals/navigation-confirm/navigation-confirm.component';
-
-const nextTick = () => new Promise(r => setTimeout(r));
 
 describe('GlobalEffects', () => {
   let effects:GlobalEffects;
   let actions$;
   let modalService;
+  let toPromiseStub;
   let store;
   let router;
   let initialModalState;
@@ -33,15 +32,20 @@ describe('GlobalEffects', () => {
       { selector: Selectors.getNavigation, value: { cancelCallback: undefined } },
     ];
 
+    toPromiseStub = sinon.stub();
     modalService = {
-      show: sinon.stub().resolves(),
+      show: sinon
+        .stub()
+        .returns({
+          afterClosed: () => ({ toPromise: toPromiseStub }),
+        }),
     };
 
     router = {
       navigateByUrl: sinon.stub(),
     };
 
-    initialModalState = { initialState: { messageTranslationKey: undefined, telemetryEntry: undefined } };
+    initialModalState = { messageTranslationKey: undefined, telemetryEntry: undefined };
     cancelCallback = sinon.stub();
 
     TestBed.configureTestingModule({
@@ -76,18 +80,15 @@ describe('GlobalEffects', () => {
         GlobalActionsList.setFilter({}),
       ]);
       effects.deleteDocConfirm$.subscribe();
-      expect(modalService.show.callCount).to.equal(0);
+      expect(modalService.show.notCalled).to.be.true;
     }));
 
     it('should open modal with payload', waitForAsync(() => {
       const doc = { _id: 'some_doc' };
       actions$ = of(GlobalActionsList.deleteDocConfirm(doc));
       effects.deleteDocConfirm$.subscribe();
-      expect(modalService.show.callCount).to.equal(1);
-      expect(modalService.show.args[0]).to.deep.equal([
-        DeleteDocConfirmComponent,
-        { initialState: { model: { doc } } },
-      ]);
+      expect(modalService.show.calledOnce).to.be.true;
+      expect(modalService.show.args[0]).to.deep.equal([ DeleteDocConfirmComponent, { data: { doc } }]);
     }));
   });
 
@@ -114,38 +115,51 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.args[0]).to.deep.equal(['next']);
       }));
 
-      it('when not saving edited and no cancel callback and no route', waitForAsync(async () => {
+      it('when not saving edited and no cancel callback and no route', fakeAsync(() => {
+        toPromiseStub.resolves(true);
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
         actions$ = of(GlobalActionsList.navigationCancel(''));
         effects.navigationCancel.subscribe();
+
         expect(modalService.show.callCount).to.equal(1);
-        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, { data: initialModalState }]);
         expect(router.navigateByUrl.callCount).to.equal(0);
-        await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
+
+        flush();
+
         expect(router.navigateByUrl.callCount).to.equal(0);
       }));
 
-      it('when not saving edited and no cancel callback and route', waitForAsync(async () => {
+      it('when not saving edited and no cancel callback and route', fakeAsync(() => {
+        toPromiseStub.resolves(true);
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
         actions$ = of(GlobalActionsList.navigationCancel('next'));
         effects.navigationCancel.subscribe();
+
         expect(modalService.show.callCount).to.equal(1);
-        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, { data: initialModalState }]);
         expect(router.navigateByUrl.callCount).to.equal(0);
-        await Promise.resolve(); // wait for modalService to resolve: means user clicks to confirm navigation
-        expect(router.navigateByUrl.callCount).to.equal(0);
+
+        flush();
+
+        expect(router.navigateByUrl.calledOnce).to.be.true;
+        expect(router.navigateByUrl.args[0]).to.deep.equal([ 'next' ]);
       }));
 
-      it('when not saving edited and cancel callback but user cancels modal', waitForAsync(async () => {
-        modalService.show.rejects({ means: 'that user cancelled' });
+      it('when not saving edited and cancel callback but user cancels modal', fakeAsync(() => {
+        toPromiseStub.resolves(false);
         store.overrideSelector(Selectors.getNavigation, { cancelCallback });
         store.overrideSelector(Selectors.getEnketoStatus, { form: true, saving: false, edited: true });
         actions$ = of(GlobalActionsList.navigationCancel(''));
+
         effects.navigationCancel.subscribe();
+
         expect(modalService.show.callCount).to.equal(1);
-        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, { data: initialModalState }]);
         expect(router.navigateByUrl.callCount).to.equal(0);
-        await Promise.resolve(); // wait for modalService to reject: means user clicks to cancel navigation
+
+        flush();
+
         expect(router.navigateByUrl.callCount).to.equal(0);
         expect(cancelCallback.callCount).to.equal(0);
       }));
@@ -192,26 +206,26 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.callCount).to.equal(0);
       }));
 
-      it('when navigation is prevented and user cancels modal', waitForAsync(async () => {
+      it('when navigation is prevented and user cancels modal', fakeAsync(() => {
+        toPromiseStub.resolves(false);
         store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
-        modalService.show.rejects();
         actions$ = of(GlobalActionsList.navigationCancel(null));
         effects.navigationCancel.subscribe();
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigateByUrl.callCount).to.equal(0);
 
-        await Promise.resolve(); // wait for modal cancel
+        flush();
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigateByUrl.callCount).to.equal(0);
         expect(modalService.show.callCount).to.equal(1);
-        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, { data: initialModalState }]);
       }));
 
-      it('when navigation is prevented and user confirms modal with route', waitForAsync(async () => {
+      it('when navigation is prevented and user confirms modal with route', fakeAsync(() => {
+        toPromiseStub.resolves(true);
         store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
-        modalService.show.resolves();
         actions$ = of(GlobalActionsList.navigationCancel('path'));
         effects.navigationCancel.subscribe();
 
@@ -219,9 +233,9 @@ describe('GlobalEffects', () => {
         expect(router.navigateByUrl.callCount).to.equal(0);
 
         expect(modalService.show.callCount).to.equal(1);
-        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, { data: initialModalState }]);
 
-        await nextTick(); // wait for modal confirm
+        flush();
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigateByUrl.callCount).to.equal(1);
@@ -229,51 +243,52 @@ describe('GlobalEffects', () => {
 
       }));
 
-      it('when navigation is prevented and user confirms modal without route', waitForAsync(async () => {
+      it('when navigation is prevented and user confirms modal without route', fakeAsync(() => {
+        toPromiseStub.resolves(true);
         store.overrideSelector(Selectors.getNavigation, { cancelCallback, preventNavigation: true });
-        modalService.show.resolves();
         actions$ = of(GlobalActionsList.navigationCancel(null));
         effects.navigationCancel.subscribe();
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigateByUrl.callCount).to.equal(0);
 
-        await nextTick(); // wait for modal confirm
+        flush();
 
         expect(cancelCallback.callCount).to.equal(1);
         expect(router.navigateByUrl.callCount).to.equal(0);
         expect(modalService.show.callCount).to.equal(1);
-        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, initialModalState]);
+        expect(modalService.show.args[0]).to.deep.equal([NavigationConfirmComponent, { data: initialModalState }]);
       }));
 
-      it('should pass message translation key to modal', waitForAsync(async () => {
+      it('should pass message translation key to modal', fakeAsync(() => {
+        toPromiseStub.resolves(false);
         const nav = {
           cancelCallback,
           preventNavigation: true,
           cancelTranslationKey: 'somekey',
         };
         store.overrideSelector(Selectors.getNavigation, nav);
-        modalService.show.rejects();
         actions$ = of(GlobalActionsList.navigationCancel(null));
         effects.navigationCancel.subscribe();
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigateByUrl.callCount).to.equal(0);
 
-        await nextTick();
+        flush();
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigateByUrl.callCount).to.equal(0);
         expect(modalService.show.callCount).to.equal(1);
         expect(modalService.show.args[0][1]).to.deep.equal({
-          initialState: {
+          data: {
             messageTranslationKey: 'somekey',
             telemetryEntry: undefined,
           },
         });
       }));
 
-      it('should pass whether to record telemetry to modal', waitForAsync(async () => {
+      it('should pass whether to record telemetry to modal', fakeAsync(() => {
+        toPromiseStub.resolves(false);
         const nav = {
           cancelCallback,
           preventNavigation: true,
@@ -281,14 +296,13 @@ describe('GlobalEffects', () => {
           recordTelemetry: 'someEntry',
         };
         store.overrideSelector(Selectors.getNavigation, nav);
-        modalService.show.rejects();
         actions$ = of(GlobalActionsList.navigationCancel(null));
         effects.navigationCancel.subscribe();
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigateByUrl.callCount).to.equal(0);
 
-        await Promise.resolve(); // wait for modal confirm
+        flush();
 
         expect(cancelCallback.callCount).to.equal(0);
         expect(router.navigateByUrl.callCount).to.equal(0);
@@ -296,7 +310,7 @@ describe('GlobalEffects', () => {
         expect(modalService.show.args[0]).to.deep.equal([
           NavigationConfirmComponent,
           {
-            initialState: {
+            data: {
               messageTranslationKey: 'somekey',
               telemetryEntry: 'someEntry',
             },
