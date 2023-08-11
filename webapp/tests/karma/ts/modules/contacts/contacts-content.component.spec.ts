@@ -180,6 +180,7 @@ describe('Contacts content component', () => {
       flush();
 
       expect(selectContact.callCount).to.equal(0);
+      expect(!!component.summaryErrorStack).to.be.false;
     }));
   });
 
@@ -194,6 +195,7 @@ describe('Contacts content component', () => {
 
     expect(selectContact.calledOnce).to.be.true;
     expect(selectContact.args[0][0]).to.equal('contact-1234');
+    expect(!!component.summaryErrorStack).to.be.false;
   }));
 
   it(`should not load the user's home place when a search term exists`, fakeAsync(() => {
@@ -204,6 +206,7 @@ describe('Contacts content component', () => {
     flush();
 
     expect(selectContact.notCalled).to.be.true;
+    expect(!!component.summaryErrorStack).to.be.false;
   }));
 
   it(`should load the user's home place when a param id not set and no search term exists`, fakeAsync(() => {
@@ -217,6 +220,7 @@ describe('Contacts content component', () => {
 
     expect(selectContact.callCount).to.equal(1);
     expect(selectContact.args[0][0]).to.equal('homeplace');
+    expect(!!component.summaryErrorStack).to.be.false;
   }));
 
   it('should unset selected contact when a param id not set and no search term exists', fakeAsync(() => {
@@ -229,6 +233,7 @@ describe('Contacts content component', () => {
 
     expect(globalActions.unsetSelected.calledOnce).to.be.true;
     expect(clearSelectionStub.calledOnce).to.be.true;
+    expect(!!component.summaryErrorStack).to.be.false;
   }));
 
   describe('Change feed process', () => {
@@ -260,6 +265,7 @@ describe('Contacts content component', () => {
       expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
       expect(selectContact.callCount).to.equal(1);
       expect(selectContact.args[0][0]).to.equal('load contact');
+      expect(!!component.summaryErrorStack).to.be.false;
     });
 
     it('should redirect to parent when selected contact is deleted', () => {
@@ -278,6 +284,7 @@ describe('Contacts content component', () => {
       expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0]).to.deep.equal([['/contacts', 'parent_id']]);
+      expect(!!component.summaryErrorStack).to.be.false;
     });
 
     it('shoul clear when selected contact is deleted and has no parent', () => {
@@ -290,6 +297,7 @@ describe('Contacts content component', () => {
       changesCallback(change);
       expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
       expect(router.navigate.callCount).to.equal(1);
+      expect(!!component.summaryErrorStack).to.be.false;
     });
 
     it('should update information when relevant contact change is received', () => {
@@ -305,6 +313,7 @@ describe('Contacts content component', () => {
       expect(contactChangeFilterService.matchContact.callCount).to.equal(2);
       expect(contactChangeFilterService.isRelevantContact.callCount).to.equal(1);
       expect(selectContact.callCount).to.equal(1);
+      expect(!!component.summaryErrorStack).to.be.false;
     });
 
     it('should update information when relevant report change is received', () => {
@@ -322,6 +331,7 @@ describe('Contacts content component', () => {
       expect(contactChangeFilterService.isRelevantContact.callCount).to.equal(1);
       expect(contactChangeFilterService.isRelevantReport.callCount).to.equal(1);
       expect(selectContact.callCount).to.equal(1);
+      expect(!!component.summaryErrorStack).to.be.false;
     });
 
     it('does not update information when irrelevant change is received', () => {
@@ -337,6 +347,7 @@ describe('Contacts content component', () => {
       expect(contactChangeFilterService.isRelevantContact.callCount).to.equal(1);
       expect(contactChangeFilterService.isRelevantReport.callCount).to.equal(1);
       expect(selectContact.callCount).to.equal(0);
+      expect(!!component.summaryErrorStack).to.be.false;
     });
   });
 
@@ -444,6 +455,7 @@ describe('Contacts content component', () => {
       expect(globalActions.setRightActionBar.callCount).to.equal(1);
       expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
       expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(false);
+      expect(!!component.summaryErrorStack).to.be.false;
     }));
 
     it('should enable edit when user is not online only and facility is not home place ', fakeAsync(() => {
@@ -468,6 +480,7 @@ describe('Contacts content component', () => {
       expect(globalActions.setRightActionBar.callCount).to.equal(1);
       expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(false);
       expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+      expect(!!component.summaryErrorStack).to.be.false;
     }));
 
     it('should enable delete when selected contact has no children', fakeAsync(() => {
@@ -486,6 +499,7 @@ describe('Contacts content component', () => {
       expect(globalActions.setRightActionBar.callCount).to.equal(1);
       expect(globalActions.setRightActionBar.args[0][0].canDelete).to.equal(true);
       expect(globalActions.setRightActionBar.args[0][0].canEdit).to.equal(true);
+      expect(!!component.summaryErrorStack).to.be.false;
     }));
 
     it('should filter contact types to allowed ones from all contact forms', fakeAsync(() => {
@@ -521,6 +535,7 @@ describe('Contacts content component', () => {
       component.ngOnInit();
       flush();
 
+      expect(!!component.summaryErrorStack).to.be.false;
       expect(xmlFormsService.subscribe.callCount).to.equal(2);
       expect(xmlFormsService.subscribe.args[0][0]).to.equal('SelectedContactChildrenForms');
       expect(xmlFormsService.subscribe.args[0][1]).to.deep.equal({ contactForms: true });
@@ -586,6 +601,7 @@ describe('Contacts content component', () => {
       component.ngOnInit();
       flush();
 
+      expect(!!component.summaryErrorStack).to.be.false;
       expect(xmlFormsService.subscribe.callCount).to.equal(2);
       expect(xmlFormsService.subscribe.args[1][0]).to.equal('SelectedContactReportForms');
       expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
@@ -675,6 +691,7 @@ describe('Contacts content component', () => {
       component.ngOnInit();
       flush();
 
+      expect(!!component.summaryErrorStack).to.be.false;
       expect(xmlFormsService.subscribe.callCount).to.equal(2);
       expect(xmlFormsService.subscribe.args[1][0]).to.equal('SelectedContactReportForms');
       expect(xmlFormsService.subscribe.args[1][1]).to.deep.equal({
@@ -753,6 +770,7 @@ describe('Contacts content component', () => {
 
       xmlFormsService.subscribe.args[0][2](null, forms);
 
+      expect(!!component.summaryErrorStack).to.be.false;
       expect(globalActions.updateRightActionBar.callCount).to.equal(1);
       expect(globalActions.updateRightActionBar.args[0][0]).to.deep.equal({
         relevantForms: [
@@ -812,6 +830,7 @@ describe('Contacts content component', () => {
       component.ngOnInit();
       flush();
 
+      expect(!!component.summaryErrorStack).to.be.false;
       expect(xmlFormsService.subscribe.callCount).to.equal(1);
       expect(xmlFormsService.subscribe.args[0][0]).to.equal('SelectedContactChildrenForms');
     }));

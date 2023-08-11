@@ -42,6 +42,7 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
   selectedContact;
   contactsLoadingSummary;
   forms;
+  summaryErrorStack;
   loadingSelectedContactReports;
   reportsTimeWindowMonths;
   tasksTimeWindowWeeks;
@@ -178,7 +179,10 @@ export class ContactsContentComponent implements OnInit, OnDestroy {
         if (!summary || !this.selectedContact?.doc) {
           return;
         }
-
+        if (summary.errorStack){
+          this.summaryErrorStack = summary.errorStack;
+          return;
+        }
         this.subscribeToSelectedContactXmlForms();
       });
     this.subscription.add(contactSummarySubscription);

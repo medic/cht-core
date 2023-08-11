@@ -107,7 +107,7 @@ export class ContactSummaryService {
     } catch (error) {
       console.error('Configuration error in contact-summary function: ' + error);
       this.feedbackService.submit('Configuration error in contact-summary function: ' + error.message, false);
-      throw new Error('Configuration error');
+      return { errorStack: error.stack };
     }
   }
 }
