@@ -2,6 +2,7 @@ const PouchDB = require('pouchdb-core');
 const logger = require('./logger');
 const environment = require('./environment');
 const rpn = require('request-promise-native');
+const _ = require('lodash');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
@@ -150,7 +151,21 @@ if (UNIT_TEST_ENV) {
       return [];
     }
 
-    const results = await db.bulkDocs(docs);
+    let results;
+    try {
+      results = await db.bulkDocs(docs);
+    } catch (err) {
+      const docsCount = docs.length;
+      if (err.status !== 413 || docsCount === 1) {
+        throw err;
+      }
+
+      const batches = _.chunk(docs, docsCount / 2);
+
+      results = await Promise.all(batches.map(batch => module.exports.saveDocs(db, batch)));
+      results = results.flat();
+    }
+
     const errors = results
       .filter(result => result.error)
       .map(result => `saving ${result.id} failed with ${result.error}`);
