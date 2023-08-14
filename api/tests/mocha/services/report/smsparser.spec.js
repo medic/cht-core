@@ -606,6 +606,26 @@ describe('sms parser', () => {
     });
   });
 
+  it('parse bsDate field in Nepali.', () => {
+    const doc = { message: '12345 २०७०-०१-०१' };
+    const def = definitions.forms.YYYT;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({
+      patient_id: '12345',
+      lmp_date: moment('2013-04-14').valueOf()
+    });
+  });
+
+  it('parse medic id and bsDate field in Mixed.', () => {
+    const doc = { message: '१2345 २०७7-०७-११' };
+    const def = definitions.forms.YYYT;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({
+      patient_id: '12345',
+      lmp_date: moment('2020-10-27').valueOf()
+    });
+  });
+
   it('invalid bsDate field yyyt 2: textforms', () => {
     const doc = { message: '12345 2068-11-32' };
     const def = definitions.forms.YYYT;
