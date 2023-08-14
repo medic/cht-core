@@ -1,5 +1,5 @@
-<mm-modal
-  [danger]="true"
+<mm-modal-layout
+  id="navigation-confirm-modal"
   [titleKey]="'Confirm'"
   [submitKey]="'yes'"
   [cancelKey]="'no'"
@@ -7,4 +7,4 @@
   (onSubmit)="close(true)"
 >
   <p>{{ (messageTranslationKey || 'confirm.destructive.navigation.forms') | translate }}</p>
-</mm-modal>
+</mm-modal-layout>

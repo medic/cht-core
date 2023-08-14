@@ -1,8 +1,7 @@
-<mm-modal
+<mm-modal-layout
   id="bulk-delete-confirm"
   [processing]="processing"
   [error]="error"
-  [danger]="true"
   [titleKey]="'bulkdelete.confirm.title'"
   [submitKey]="'bulkdelete.confirm.action'"
   [submittingKey]="'Deleting'"
@@ -14,4 +13,4 @@
   <p *ngIf="!processing && docs.length !== 1" translate [translateParams]="{ number: docs.length }">confirm.delete.plural</p>
   <p *ngIf="processing">{{ 'confirm.delete.progress' | translate }}</p>
   <p *ngIf="processing" translate [translateParams]="{ totalDeleted: totalDocsDeleted, totalSelected: totalDocsSelected }">confirm.delete.totals</p>
-</mm-modal>
+</mm-modal-layout>

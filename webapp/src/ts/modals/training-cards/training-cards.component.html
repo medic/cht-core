@@ -1,10 +1,9 @@
-<mm-modal
+<mm-modal-layout
   id="training-cards-modal"
-  class="enketo-modal content-pane"
   [titleKey]="modalTitleKey | translate"
   (onCancel)="confirmExit(true)"
   [hideFooter]="hideModalFooter"
-  [hideCloseButton]="showConfirmExit"
+  [hasEnketoForm]="true"
 >
 
   <div class="item-content empty-selection" *ngIf="loadingContent">
@@ -17,9 +16,9 @@
 
   <div class="item-content " *ngIf="showConfirmExit && !loadingContent && !contentError">
     <div>{{ 'training_cards.confirm.exit' | translate }}</div>
-    <div class="btn-space-between">
-      <a class="btn" (click)="confirmExit(false)">{{ 'training_cards.confirm.button.no' | translate }}</a>
-      <a class="btn btn-danger" (click)="quitTraining()">{{ 'training_cards.confirm.button.yes' | translate }}</a>
+    <div class="modal-footer">
+      <a class="modal-btn" (click)="confirmExit(false)">{{ 'training_cards.confirm.button.no' | translate }}</a>
+      <a class="modal-btn" (click)="quitTraining()">{{ 'training_cards.confirm.button.yes' | translate }}</a>
     </div>
   </div>
 
@@ -34,4 +33,4 @@
     </div>
   </div>
 
-</mm-modal>
+</mm-modal-layout>

@@ -1,36 +1,75 @@
-.modal-dialog {
-  .modal-header {
-    h2 {
-      margin: 0;
-    }
-    .close {
-      border: none;
-      background: none;
-      outline: none;
+mm-modal-layout {
+  mm-panel-header {
+    padding: 24px;
+    border: none;
+    .panel-header-title {
+      font-size: @font-extra-extra-large;
+      font-weight: normal;
     }
   }
 
   .modal-body {
     overflow-y: auto;
     min-height: 50px;
-    max-height: 73vh;
+    max-height: 75vh;
+    padding: 0 24px;
     textarea {
       margin: 0;
       width: 100%;
       padding: 5px;
     }
+
+    .datepicker {
+      max-width: 300px;
+    }
+
+    .help-block > label {
+      color: @mat-font-color;
+      font-weight: normal;
+    }
+
+    .has-error .form-control {
+      border-color: @error-color;
+    }
+
+    .modal-footer {
+      padding: 24px 0;
+    }
   }
 
   .modal-footer {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    .note {
-      font-weight: bold;
-      color: @error-color;
+    border: none;
+    padding: 24px;
+  }
+
+  .modal-error,
+  .has-error > .help-block{
+    color: @error-color;
+    width: 100%;
+    text-align: left;
+  }
+
+  .modal-btn,
+  .enketo-modal .form-footer .btn {
+    padding: 12px;
+    font-size: @font-medium;
+    color: @text-link-color;
+    text-decoration: none;
+    border: none;
+    background: none;
+    &.disabled {
+      color: @inactive-color;
+      cursor: not-allowed;
     }
-    .btn.cancel,
-    .left {
-      float: left;
+
+    &:not(.cancel) {
+      margin-left: 8px;
+    }
+
+    &:active,
+    &:focus {
+      outline: none;
+      box-shadow: none;
     }
   }
 
@@ -66,13 +105,28 @@
         }
       }
     }
-    .btn-space-between {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-    }
     .form-no-title #form-title {
       display: none;
+    }
+  }
+}
+
+@media (max-width: @media-mobile) {
+  mm-modal-layout {
+    .enketo {
+      #form-title {
+        display: inherit;
+      }
+
+      .form-footer {
+        .btn.btn-link.cancel {
+          display: inline-block;
+        }
+
+        .previous-page {
+          float: none;
+        }
+      }
     }
   }
 }

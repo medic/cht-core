@@ -1,5 +1,4 @@
-<mm-modal
-  [danger]="true"
+<mm-modal-layout
   [titleKey]="'Confirm'"
   [submitKey]="'yes'"
   [cancelKey]="'no'"
@@ -7,4 +6,4 @@
   (onSubmit)="close(true)"
 >
   <p translate [translateParams]="{ proposedVerificationState: proposedVerificationState }">confirm.verification</p>
-</mm-modal>
+</mm-modal-layout>

@@ -1,8 +1,7 @@
-<mm-modal
+<mm-modal-layout
   id="delete-confirm"
   [processing]="processing"
   [error]="error"
-  [danger]="true"
   [titleKey]="'bulkdelete.confirm.title'"
   [submitKey]="'bulkdelete.confirm.action'"
   [submittingKey]="'Deleting'"
@@ -10,4 +9,4 @@
   (onSubmit)="submit()"
 >
   <p>{{ 'confirm.delete' | translate }}</p>
-</mm-modal>
+</mm-modal-layout>

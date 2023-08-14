@@ -1,0 +1,17 @@
+<div class="modal-layout" role="document" [class.enketo-modal]="hasEnketoForm" [class.content-pane]="hasEnketoForm">
+  <mm-panel-header [headerTitle]="titleKey" (onClose)="cancel()" [hideCloseButton]="true"></mm-panel-header>
+
+  <div class="modal-body"><ng-content></ng-content></div>
+
+  <div class="modal-footer" *ngIf="!hideFooter">
+    <p class="modal-error" *ngIf="error">{{ error | translate }}</p>
+
+    <a class="modal-btn cancel" *ngIf="cancelKey !== false" [class.disabled]="processing" (click)="cancel()">
+      {{ (cancelKey || 'Cancel') | translate }}
+    </a>
+
+    <a class="modal-btn submit" *ngIf="submitKey && !processing" [class.disabled]="processing" (click)="submit()" [attr.test-id]="submitKey">
+      {{ (processing && submittingKey ? submittingKey : submitKey) | translate }}
+    </a>
+  </div>
+</div>

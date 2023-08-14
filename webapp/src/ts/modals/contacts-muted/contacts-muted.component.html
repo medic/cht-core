@@ -1,11 +1,10 @@
-<mm-modal
+<mm-modal-layout
   id="contacts-muted"
-  [danger]="true"
-  titleKey="contact.muted.modal.title"
-  submitKey="yes"
-  cancelKey="no"
+  [titleKey]="'contact.muted.modal.title'"
+  [submitKey]="'yes'"
+  [cancelKey]="'no'"
   (onCancel)="close(false)"
   (onSubmit)="close(true)"
 >
   <p>{{'contact.muted.modal.text' | translate}}</p>
-</mm-modal>
+</mm-modal-layout>

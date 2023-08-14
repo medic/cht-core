@@ -4,7 +4,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { AccordionModule } from 'ngx-bootstrap/accordion';
 
-import { MmModal } from '@mm-modals/mm-modal/mm-modal';
 import { PipesModule } from '@mm-pipes/pipes.module';
 import { ComponentsModule } from '@mm-components/components.module';
 import { ReloadingComponent } from '@mm-modals/reloading/reloading.component';
@@ -28,7 +27,6 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
 
 @NgModule({
   declarations: [
-    MmModal,
     ReloadingComponent,
     LogoutConfirmComponent,
     FeedbackComponent,
