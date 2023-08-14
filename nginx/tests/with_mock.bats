@@ -20,7 +20,7 @@ setup() {
 }
 
 @test "HTTP acme-challenge should not redirect" {
-	run curl -sm5 -I http://localhost:1080/.well-known/acme-challenge/
+	run curl -Ism5 http://localhost:1080/.well-known/acme-challenge/
 	assert_success
  	refute_line --index 0 'HTTP/1.1 301 Moved Permanently'
 	assert_line --partial --index 0 'HTTP/1.1 404 Not Found'
@@ -35,7 +35,7 @@ setup() {
 	assert_success
 	assert_output 'Test'
 
-	run curl -fksm5 -I https://localhost:1443/doesnotexist
+	run curl -Ifksm5 https://localhost:1443/doesnotexist
 	assert_failure
 	assert_line --partial --index 0 'HTTP/1.1 404 Not Found'
 }

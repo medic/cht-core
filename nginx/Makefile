@@ -1,13 +1,10 @@
 COMPOSE_FILE=docker-compose.test.yml
 
-docker_build:
-	docker build --target test_nginx .
-
-start: docker_build
-	env BUILD_TARGET=cht-nginx docker compose -f ${COMPOSE_FILE} up --wait --wait-timeout 15 --build
+start:
+	docker compose -f ${COMPOSE_FILE} up --wait --build
 
 test: start
-	bats tests/compose.bats
+	bats tests/with_mock.bats
 	$(MAKE) stop
 
 stop:

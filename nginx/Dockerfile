@@ -1,5 +1,5 @@
 # base build
-FROM nginx:1.25-alpine as base_nginx
+FROM nginx:1.19.6-alpine as base_nginx
 RUN apk add --update --no-cache \
     curl \
     socat \
@@ -25,8 +25,6 @@ RUN chmod +x /app/bash-shellmock/shellmock
 COPY tests /app/tests
 COPY ssl-install.sh /app/tests/ssl-install.sh
 RUN bats /app/tests/tests.bats
-ENV PATH="${PATH}:/app/"
-ENTRYPOINT [ "/bin/bash", "/usr/bin/bats", "/app/tests/tests.bats" ]
 
 # Final
 FROM base_nginx AS cht-nginx

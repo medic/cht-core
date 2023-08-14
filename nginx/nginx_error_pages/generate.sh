@@ -1,7 +1,10 @@
 #!/bin/bash
 ###########################################################
 #
-# Script to generate static error files for nginx
+# Script to generate static error pages for nginx
+#
+#   To update: change messages below or the respective template file
+#   and rerun this script
 #
 ###########################################################
 set -eu -o pipefail
