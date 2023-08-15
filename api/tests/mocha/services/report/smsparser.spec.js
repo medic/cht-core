@@ -122,6 +122,42 @@ describe('sms parser', () => {
     chai.expect(data.phone_number).to.equal('+9779841202020');
   });
 
+  it('accepts valid phone number in Nepali langauge and saves by converting it to english', () => {
+    const doc = { message: 'NP 20 ९८४१२३२३२३' };
+    const def = definitions.forms.NP;
+    sinon.stub(config, 'getAll').returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+    const data = smsparser.parse(def, doc);
+    chai.expect(data.phone_number).to.equal('+9779841232323');
+  });
+
+  it('accepts valid phone number with extension in Nepali langauge', () => {
+    const doc = { message: 'NP 20 +९७७९८४१२३२३२३' };
+    const def = definitions.forms.NP;
+    sinon.stub(config, 'getAll').returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+    const data = smsparser.parse(def, doc);
+    chai.expect(data.phone_number).to.equal('+9779841232323');
+  });
+
+  it('returns provided Nepali number converted ot english if number is invalid', () => {
+    // Looks counter intuitive but validation needs to be done agian in transition so it can
+    // act against the valid or invalid result. Warning is logged just in case.
+    const doc = { message: 'NP 20 ९८४१२३' };
+    const def = definitions.forms.NP;
+    sinon.stub(config, 'getAll').returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+    const data = smsparser.parse(def, doc);
+    chai.expect(data.phone_number).to.equal('984123');
+  });
+
+
   it('accepts correct phone number without extension', () => {
     const doc = { message: 'NP 20 9841202020' };
     const def = definitions.forms.NP;
