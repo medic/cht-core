@@ -155,14 +155,11 @@ if (UNIT_TEST_ENV) {
     try {
       results = await db.bulkDocs(docs);
     } catch (err) {
-      const docsCount = docs.length;
-      if (err.status !== 413 || docsCount === 1) {
+      if (err.status !== 413 || docs.length === 1) {
         throw err;
       }
 
-      const batches = _.chunk(docs, docsCount / 2);
-
-      results = await Promise.all(batches.map(batch => module.exports.saveDocs(db, batch)));
+      results = await Promise.all(docs.map(doc => db.put(doc)));
       results = results.flat();
     }
 
@@ -173,8 +170,6 @@ if (UNIT_TEST_ENV) {
     if (!errors.length) {
       return results;
     }
-
-    // todo try one by one!
 
     throw new Error(`Error while saving docs: ${errors.join(', ')}`);
   };

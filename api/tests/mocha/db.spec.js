@@ -80,78 +80,31 @@ describe('db', () => {
       }
     });
 
-    it('should retry with half the payload if 413 is thrown', async () => {
-      sinon.stub(db.medic, 'bulkDocs')
-        .rejects({ status: 413 })
-        .onCall(1).resolves(['succ1', 'succ2'])
-        .onCall(2).resolves(['succ3', 'succ4']);
+    it('should retry saving docs individually if 413 is thrown', async () => {
+      sinon.stub(db.medic, 'bulkDocs').rejects({ status: 413 });
+      sinon.stub(db.medic, 'put').resolvesArg(0);
 
       const result = await db.saveDocs(db.medic, [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }]);
-      expect(result).to.deep.equal(['succ1', 'succ2', 'succ3', 'succ4']);
-      expect(db.medic.bulkDocs.args).to.deep.equal([
-        [[{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }]],
-        [[{ _id: 1 }, { _id: 2 }]],
-        [[{ _id: 3 }, { _id: 4 }]],
+      expect(result).to.deep.equal([{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }]);
+      expect(db.medic.bulkDocs.args).to.deep.equal([ [[{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }]] ]);
+      expect(db.medic.put.args).to.deep.equal([
+        [{ _id: 1 }], [{ _id: 2 }], [{ _id: 3 }], [{ _id: 4 }],
       ]);
     });
 
-    it('should keep retrying with half the payload', async () => {
-      sinon.stub(db.medic, 'bulkDocs')
-        .rejects({ status: 413 })
-        .onCall(3).resolves(['succ1'])
-        .onCall(4).resolves(['succ2'])
-        .onCall(5).resolves(['succ3'])
-        .onCall(6).resolves(['succ4']);
-
-      const result = await db.saveDocs(db.medic, [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }]);
-      expect(result).to.deep.equal(['succ1', 'succ2', 'succ3', 'succ4']);
-      expect(db.medic.bulkDocs.args).to.deep.equal([
-        [[{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }]],
-        [[{ _id: 1 }, { _id: 2 }]],
-        [[{ _id: 3 }, { _id: 4 }]],
-        [[{ _id: 1 }]],
-        [[{ _id: 2 }]],
-        [[{ _id: 3 }]],
-        [[{ _id: 4 }]]
-      ]);
-    });
-
-    it('should work with uneven docs counts', async () => {
-      sinon.stub(db.medic, 'bulkDocs')
-        .rejects({ status: 413 })
-        .onCall(3).resolves(['succ1'])
-        .onCall(4).resolves(['succ2'])
-        .onCall(5).resolves(['succ3'])
-        .onCall(6).resolves(['succ4'])
-        .onCall(7).resolves(['succ5']);
-
-      const result = await db.saveDocs(db.medic, [{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }]);
-      expect(result).to.have.members(['succ1', 'succ2', 'succ3', 'succ4', 'succ5']);
-      expect(db.medic.bulkDocs.args).to.deep.equal([
-        [[{ _id: 1 }, { _id: 2 }, { _id: 3 }, { _id: 4 }, { _id: 5 }]],
-        [[{ _id: 1 }, { _id: 2 }]],
-        [[{ _id: 3 }, { _id: 4 }]],
-        [[{ _id: 5 }]],
-        [[{ _id: 1 }]],
-        [[{ _id: 2 }]],
-        [[{ _id: 3 }]],
-        [[{ _id: 4 }]]
-      ]);
-    });
-
-    it('should throw final error when getting a 413 with a single doc', async () => {
+    it('should throw final error when getting an error with a single doc', async () => {
       const docs = [{ _id: 1 }, { _id: 2 }];
       sinon.stub(db.medic, 'bulkDocs').rejects({ status: 413 });
+      sinon.stub(db.medic, 'put').rejects({ status: 'wahtever' });
 
       try {
         await db.saveDocs(db.medic, docs);
         expect.fail('should have thrown');
       } catch (err) {
-        expect(err).to.deep.equal( { status: 413 });
-        expect(db.medic.bulkDocs.args).to.deep.equal([
-          [[{ _id: 1 }, { _id: 2 }]],
-          [[{ _id: 1 }]],
-          [[{ _id: 2 }]],
+        expect(err).to.deep.equal( { status: 'wahtever' });
+        expect(db.medic.bulkDocs.args).to.deep.equal([ [[{ _id: 1 }, { _id: 2 }]] ]);
+        expect(db.medic.put.args).to.deep.equal([
+          [{ _id: 1 }], [{ _id: 2 }],
         ]);
       }
     });
