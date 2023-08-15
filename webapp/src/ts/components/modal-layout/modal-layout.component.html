@@ -6,12 +6,23 @@
   <div class="modal-footer" *ngIf="!hideFooter">
     <p class="modal-error" *ngIf="error">{{ error | translate }}</p>
 
-    <a class="modal-btn cancel" *ngIf="cancelKey !== false" [class.disabled]="processing" (click)="cancel()">
+    <button
+      mat-button
+      color="primary"
+      *ngIf="cancelKey !== false"
+      [class.disabled]="processing"
+      (click)="cancel()">
       {{ (cancelKey || 'Cancel') | translate }}
-    </a>
+    </button>
 
-    <a class="modal-btn submit" *ngIf="submitKey && !processing" [class.disabled]="processing" (click)="submit()" [attr.test-id]="submitKey">
+    <button
+      mat-flat-button
+      color="primary"
+      *ngIf="submitKey && !processing"
+      [class.disabled]="processing"
+      (click)="submit()"
+      [attr.test-id]="submitKey">
       {{ (processing && submittingKey ? submittingKey : submitKey) | translate }}
-    </a>
+    </button>
   </div>
 </div>

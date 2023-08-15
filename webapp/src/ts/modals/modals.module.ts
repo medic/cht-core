@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
 import { AccordionModule } from 'ngx-bootstrap/accordion';
 
 import { PipesModule } from '@mm-pipes/pipes.module';
@@ -50,6 +51,7 @@ import { ContactsMutedComponent } from '@mm-modals/contacts-muted/contacts-muted
     ComponentsModule,
     TranslateModule,
     FormsModule,
+    MatButtonModule,
     AccordionModule,
     PipesModule,
   ],

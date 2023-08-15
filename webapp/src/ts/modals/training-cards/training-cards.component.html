@@ -17,8 +17,8 @@
   <div class="item-content " *ngIf="showConfirmExit && !loadingContent && !contentError">
     <div>{{ 'training_cards.confirm.exit' | translate }}</div>
     <div class="modal-footer">
-      <a class="modal-btn" (click)="confirmExit(false)">{{ 'training_cards.confirm.button.no' | translate }}</a>
-      <a class="modal-btn" (click)="quitTraining()">{{ 'training_cards.confirm.button.yes' | translate }}</a>
+      <button mat-button color="primary" (click)="confirmExit(false)">{{ 'training_cards.confirm.button.no' | translate }}</button>
+      <button mat-flat-button color="primary" (click)="quitTraining()">{{ 'training_cards.confirm.button.yes' | translate }}</button>
     </div>
   </div>
 
