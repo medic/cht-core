@@ -2,7 +2,6 @@ const PouchDB = require('pouchdb-core');
 const logger = require('./logger');
 const environment = require('./environment');
 const rpn = require('request-promise-native');
-const _ = require('lodash');
 PouchDB.plugin(require('pouchdb-adapter-http'));
 PouchDB.plugin(require('pouchdb-find'));
 PouchDB.plugin(require('pouchdb-mapreduce'));
