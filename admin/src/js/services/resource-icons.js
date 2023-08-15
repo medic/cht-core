@@ -131,5 +131,4 @@ angular.module('inboxServices').factory('ResourceIcons',
       },
     };
 
-  }
-);
+  });

@@ -45,6 +45,7 @@ import {
   AnalyticsTargetsDetailsComponent
 } from '@mm-components/analytics-targets-details/analytics-targets-details.component';
 import { MobileDetectionComponent } from '@mm-components/mobile-detection/mobile-detection.component';
+import { ErrorLogComponent } from '@mm-components/error-log/error-log.component';
 import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.component';
 
 @NgModule({
@@ -74,6 +75,7 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     AnalyticsFilterComponent,
     AnalyticsTargetsDetailsComponent,
     MobileDetectionComponent,
+    ErrorLogComponent,
     PanelHeaderComponent,
   ],
   imports: [
@@ -112,6 +114,7 @@ import { PanelHeaderComponent } from '@mm-components/panel-header/panel-header.c
     ActionbarComponent,
     EnketoComponent,
     AnalyticsTargetsProgressComponent,
+    ErrorLogComponent,
     AnalyticsFilterComponent,
     AnalyticsTargetsDetailsComponent,
     PanelHeaderComponent,

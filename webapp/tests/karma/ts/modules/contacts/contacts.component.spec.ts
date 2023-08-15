@@ -496,7 +496,7 @@ describe('Contacts component', () => {
 
     it('when paginating, does not modify the skip when it finds homeplace on subsequent pages #4085', fakeAsync(() => {
       const mockResults = (count, startAt = 0) => {
-        const result = [];
+        const result: { _id: string }[] = [];
         for (let i = startAt; i < startAt + count; i++) {
           result.push({ _id: `search-result${i}` });
         }
@@ -957,8 +957,7 @@ describe('Contacts component', () => {
             fakeAsync(() => {
               searchResults = [];
               Array.apply(null, Array(5)).forEach((k, i) =>
-                searchResults.push({ _id: i })
-              );
+                searchResults.push({ _id: i }));
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
               searchService.search.resetHistory();
@@ -1001,7 +1000,8 @@ describe('Contacts component', () => {
                   ]);
                 }
               });
-            }));
+            })
+          );
         });
 
         describe('last_visited_date default sorting', () => {
@@ -1009,8 +1009,7 @@ describe('Contacts component', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
             searchResults = [];
             Array.apply(null, Array(5)).forEach((k, i) =>
-              searchResults.push({ _id: i })
-            );
+              searchResults.push({ _id: i }));
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(true);
@@ -1051,8 +1050,7 @@ describe('Contacts component', () => {
               });
               searchResults = [];
               Array.apply(null, Array(5)).forEach((k, i) =>
-                searchResults.push({ _id: i })
-              );
+                searchResults.push({ _id: i }));
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
               authService.has.resolves(true);
@@ -1094,17 +1092,17 @@ describe('Contacts component', () => {
                   ]);
                 }
               });
-            }));
+            })
+          );
         });
       });
 
       describe('uhc visits disabled', () => {
         describe('alpha default sorting', () => {
           it('does not require refreshing when sorting is `alpha` and visit report is received', fakeAsync(() => {
-            const searchResults = [];
+            const searchResults: { _id: string }[] = [];
             Array.apply(null, Array(5)).forEach((k, i) =>
-              searchResults.push({ _id: i })
-            );
+              searchResults.push({ _id: i }));
             searchService.search.resolves(searchResults);
             store.overrideSelector(Selectors.getContactsList, searchResults);
             authService.has.resolves(false);
@@ -1140,7 +1138,7 @@ describe('Contacts component', () => {
           it(
             'does require refreshing when sorting is `last_visited_date` and visit report is received',
             fakeAsync(() => {
-              const searchResults = [];
+              const searchResults: { _id: string }[] = [];
               Array.apply(null, Array(5)).forEach((k, i) => searchResults.push({ _id: i }));
               searchService.search.resolves(searchResults);
               store.overrideSelector(Selectors.getContactsList, searchResults);
@@ -1154,26 +1152,29 @@ describe('Contacts component', () => {
               flush();
               const changesCallback = changesService.subscribe.args[1][0].callback;
 
-              return Promise.all([
-                changesCallback({ doc: relevantVisitReport }),
-                changesCallback({ doc: irrelevantReport }),
-                changesCallback({ doc: irrelevantVisitReport }),
-                changesCallback({ doc: deletedVisitReport, deleted: true }),
-                changesCallback({ doc: someContact }),
-              ]).then(() => {
-                expect(searchService.search.callCount).to.equal(6);
+              return Promise
+                .all([
+                  changesCallback({ doc: relevantVisitReport }),
+                  changesCallback({ doc: irrelevantReport }),
+                  changesCallback({ doc: irrelevantVisitReport }),
+                  changesCallback({ doc: deletedVisitReport, deleted: true }),
+                  changesCallback({ doc: someContact }),
+                ])
+                .then(() => {
+                  expect(searchService.search.callCount).to.equal(6);
 
-                for (let i = 1; i < 6; i++) {
-                  expect(searchService.search.args[i]).to.deep.equal([
-                    'contacts',
-                    { types: { selected: ['childType'] } },
-                    { limit: 49, withIds: false, silent: true },
-                    {},
-                    undefined,
-                  ]);
-                }
-              });
-            }));
+                  for (let i = 1; i < 6; i++) {
+                    expect(searchService.search.args[i]).to.deep.equal([
+                      'contacts',
+                      { types: { selected: ['childType'] } },
+                      { limit: 49, withIds: false, silent: true },
+                      {},
+                      undefined,
+                    ]);
+                  }
+                });
+            })
+          );
         });
       });
 

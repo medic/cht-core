@@ -126,5 +126,4 @@ angular.module('controllers').controller('ImagesBrandingCtrl',
           $scope.submitting = false;
         });
     };
-  }
-);
+  });

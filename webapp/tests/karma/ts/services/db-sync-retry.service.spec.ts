@@ -65,7 +65,7 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.rejects({ status: 404 });
 
-      return service.retryForbiddenFailure({ id: 'random' }).then(result => {
+      return service.retryForbiddenFailure({ id: 'random' })!.then(result => {
         expect(medicLocalDb.get.callCount).to.equal(1);
         expect(medicLocalDb.get.args[0]).to.deep.equal(['random', { revs: true }]);
         expect(metaLocalDb.get.callCount).to.equal(1);
@@ -100,7 +100,7 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.rejects({ status: 404 });
 
-      return service.retryForbiddenFailure({ id: 'demo_report' }).then(result => {
+      return service.retryForbiddenFailure({ id: 'demo_report' })!.then(result => {
         expect(medicLocalDb.get.callCount).to.equal(1);
         expect(medicLocalDb.get.args[0]).to.deep.equal(['demo_report', { revs: true }]);
         expect(metaLocalDb.get.callCount).to.equal(1);
@@ -144,7 +144,7 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.resolves(localDoc);
 
-      return service.retryForbiddenFailure({ id: 'uuid' }).then(result => {
+      return service.retryForbiddenFailure({ id: 'uuid' })!.then(result => {
         expect(medicLocalDb.get.callCount).to.equal(1);
         expect(metaLocalDb.get.callCount).to.equal(1);
 
@@ -187,7 +187,7 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.resolves(localDoc);
 
-      return service.retryForbiddenFailure({ id: 'uuid' }).then(result => {
+      return service.retryForbiddenFailure({ id: 'uuid' })!.then(result => {
         expect(medicLocalDb.get.callCount).to.equal(1);
         expect(metaLocalDb.get.callCount).to.equal(1);
         expect(medicLocalDb.put.callCount).to.equal(1);
@@ -229,7 +229,7 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.resolves(localDoc);
 
-      return service.retryForbiddenFailure({ id: 'uuid' }).then(result => {
+      return service.retryForbiddenFailure({ id: 'uuid' })!.then(result => {
         expect(medicLocalDb.get.callCount).to.equal(1);
         expect(metaLocalDb.get.callCount).to.equal(1);
 
@@ -273,7 +273,7 @@ describe('DBSyncRetry service', () => {
       metaLocalDb.get.resolves(localDoc);
       medicLocalDb.put.rejects({ status: 409 });
 
-      return service.retryForbiddenFailure({ id: 'uuid' }).then(result => {
+      return service.retryForbiddenFailure({ id: 'uuid' })!.then(result => {
         expect(medicLocalDb.get.callCount).to.equal(1);
         expect(metaLocalDb.get.callCount).to.equal(1);
 
@@ -308,7 +308,7 @@ describe('DBSyncRetry service', () => {
       medicLocalDb.get.resolves(doc);
       metaLocalDb.get.resolves(localDoc);
 
-      return service.retryForbiddenFailure({ id: 'uuid' }).then(result => {
+      return service.retryForbiddenFailure({ id: 'uuid' })!.then(result => {
         expect(medicLocalDb.get.callCount).to.equal(1);
         expect(metaLocalDb.get.callCount).to.equal(1);
 

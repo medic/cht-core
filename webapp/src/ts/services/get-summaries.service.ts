@@ -18,7 +18,7 @@ export class GetSummariesService {
   private readonly SUBJECT_FIELDS = [ 'patient_id', 'patient_uuid', 'patient_name', 'place_id' ];
 
   private getLineage(contact) {
-    const parts = [];
+    const parts: any[] = [];
     while (contact) {
       if (contact._id) {
         parts.push(contact._id);

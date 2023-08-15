@@ -683,6 +683,26 @@ describe('sms parser', () => {
     });
   });
 
+  it('parse bsDate field in Nepali.', () => {
+    const doc = { message: '12345 २०७०-०१-०१' };
+    const def = definitions.forms.YYYT;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({
+      patient_id: '12345',
+      lmp_date: moment('2013-04-14').valueOf()
+    });
+  });
+
+  it('parse medic id and bsDate field in Mixed.', () => {
+    const doc = { message: '१2345 २०७7-०७-११' };
+    const def = definitions.forms.YYYT;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({
+      patient_id: '12345',
+      lmp_date: moment('2020-10-27').valueOf()
+    });
+  });
+
   it('invalid bsDate field yyyt 2: textforms', () => {
     const doc = { message: '12345 2068-11-32' };
     const def = definitions.forms.YYYT;
@@ -690,13 +710,49 @@ describe('sms parser', () => {
     chai.expect(data).to.deep.equal({ patient_id: '12345', lmp_date: null });
   });
 
+  it('parse patient id in nepali correctly', () => {
+    const doc = {message:'०३१७७'};
+    const def = definitions.forms.YYYT;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({patient_id: '03177'});
+  });
+
+  it('parse patient id in nepali and english correctly', () => {
+    const doc = {message:'०३१77'};
+    const def = definitions.forms.YYYT;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({patient_id: '03177'});
+  });
+
+  it('parse lmp date in nepali correclty', () => {
+    const doc = {message:'०३१77 २०८० १ १'};
+    const def = definitions.forms.YYYS;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({
+      patient_id: '03177',
+      lmp_year: '2080', lmp_month: '1', lmp_day: '1',
+      lmp_date: moment('2023-04-14').valueOf()
+    });
+  });
+
+  it('parse lmp date in nepali and english correclty', () => {
+    const doc = {message:'०३१77 २०70 08 १4'};
+    const def = definitions.forms.YYYS;
+    const data = smsparser.parse(def, doc);
+    chai.expect(data).to.deep.equal({
+      patient_id: '03177',
+      lmp_year: '2070', lmp_month: '08', lmp_day: '14',
+      lmp_date: moment('2013-11-29').valueOf()
+    });
+  });
+
   it('parse BS date parts yyys 2: textforms', () => {
     const doc = { message: '#ID 12345 #Y 2068 #M 11 #D 29' };
     const def = definitions.forms.YYYS;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({
-      patient_id: 12345,
-      lmp_year: 2068, lmp_month: 11, lmp_day: 29,
+      patient_id: '12345',
+      lmp_year: '2068', lmp_month: '11', lmp_day: '29',
       lmp_date: moment('2012-03-12').valueOf()
     });
   });
@@ -1295,7 +1351,7 @@ describe('sms parser', () => {
         }
       }
     };
-    const id = 12345;
+    const id = '12345';
     const doc = { message: 'OFF ID ' + id, locale: 'en' };
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({ patient_id: id });

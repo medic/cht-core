@@ -26,6 +26,6 @@ export class UpdatePasswordService {
       Authorization: 'Basic ' + window.btoa(username + ':' + currentPassword)
     };
     const updates = { password: newPassword };
-    return this.http.post(url, updates, { headers }).toPromise();
+    return this.http.post(url, updates, { headers }).toPromise() as Promise<Object>;
   }
 }

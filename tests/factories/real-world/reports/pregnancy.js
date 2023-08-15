@@ -133,7 +133,8 @@ module.exports = new Factory()
       if (groupAncVisit.anc_visit === 'yes') {
         const ancVisitRepeat = {
           anc_visit_completed: Faker.faker.helpers.arrayElement(
-            ['anc_1', 'anc_2', 'anc_3', 'anc_4', 'anc_5', 'anc_6', 'anc_7', 'anc_8']),
+            ['anc_1', 'anc_2', 'anc_3', 'anc_4', 'anc_5', 'anc_6', 'anc_7', 'anc_8']
+          ),
           g_anc_last_visit: moment().unix(),
           note_warning: '',
           g_anc_last_visit_epoch: null,
@@ -170,7 +171,8 @@ module.exports = new Factory()
       };
       if (Faker.faker.datatype.boolean()) {
         gNutritionScreening.last_food.push(
-          Faker.faker.helpers.uniqueArray(LAST_FOOD, Faker.faker.datatype.number({ min: 1, max: 3 })));
+          Faker.faker.helpers.uniqueArray(LAST_FOOD, Faker.faker.datatype.number({ min: 1, max: 3 }))
+        );
       } else {
         gNutritionScreening.last_food.push(NONE);
       }
@@ -207,11 +209,13 @@ module.exports = new Factory()
         if (firstPregnancy) {
           groupRiskFactors.g_risk_factors.push(Faker.faker.helpers.uniqueArray(
             ['r5', 'r6'],
-            Faker.faker.datatype.number({ min: 0, max: 2 })));
+            Faker.faker.datatype.number({ min: 0, max: 2 })
+          ));
         } else {
           groupRiskFactors.g_risk_factors.push(Faker.faker.helpers.uniqueArray(
             ['r2', 'r3', 'r4', 'r5', 'r6', 'r7'],
-            Faker.faker.datatype.number({ min: 0, max: 6 })));
+            Faker.faker.datatype.number({ min: 0, max: 6 })
+          ));
         }
       }
       return groupRiskFactors;

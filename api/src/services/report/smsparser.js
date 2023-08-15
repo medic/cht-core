@@ -181,7 +181,7 @@ const fieldParsers = {
       logger.warn(`Option not available for ${raw} in list.`);
     } else if (key === 'patient_id' || key === 'place_id') {
       // special handling for string IDs which must be [0-9]
-      return stripInvisibleCharacters(raw);
+      return stripInvisibleCharacters(standardiseDigits(raw));
     }
     return raw;
   },
@@ -191,7 +191,7 @@ const fieldParsers = {
     return moment(stripInvisibleCharacters(raw)).valueOf();
   },
   bsDate: (raw) => {
-    const cleaned = stripInvisibleCharacters(raw);
+    const cleaned = stripInvisibleCharacters(standardiseDigits(raw));
     const separator = cleaned[cleaned.search(/[^0-9]/)];//non-numeric character
     const dateParts = cleaned.split(separator);
     return bsToEpoch(...dateParts);
@@ -222,6 +222,14 @@ const fieldParsers = {
     // is defined in transitions so error will be thrown there if required. 
     // Warning is logged just in case.
     return raw;    
+  bsYear: (raw) => {
+    return standardiseDigits(raw);
+  },
+  bsMonth: (raw) => {
+    return standardiseDigits(raw);
+  },
+  bsDay: (raw) => {
+    return standardiseDigits(raw);
   }
 };
 
@@ -302,13 +310,13 @@ exports.parse = (def, doc) => {
     for (const k of Object.keys(def.fields)) {
       switch (def.fields[k].type) {
       case 'bsYear':
-        bsYear = msgData[k];
+        bsYear = standardiseDigits(msgData[k]);
         break;
       case 'bsMonth':
-        bsMonth = msgData[k];
+        bsMonth = standardiseDigits(msgData[k]);
         break;
       case 'bsDay':
-        bsDay = msgData[k];
+        bsDay = standardiseDigits(msgData[k]);
         break;
       }
     }

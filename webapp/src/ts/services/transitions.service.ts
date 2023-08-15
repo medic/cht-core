@@ -23,7 +23,7 @@ export class TransitionsService {
     this.createUserForContactsTransition,
   ];
 
-  private loadedTransitions = [];
+  private loadedTransitions: (MutingTransition | CreateUserForContactsTransition)[] = [];
 
   private inited;
   private settings;

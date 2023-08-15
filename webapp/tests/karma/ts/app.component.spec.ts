@@ -102,7 +102,7 @@ describe('AppComponent', () => {
     locationService = { path: 'localhost' };
     checkDateService = { check: sinon.stub() };
     countMessageService = { init: sinon.stub() };
-    feedbackService = { init: sinon.stub() };
+    feedbackService = { init: sinon.stub(), submit: sinon.stub().returns({}) };
     xmlFormsService = { subscribe: sinon.stub().returns({ unsubscribe: sinon.stub() }) };
     jsonFormsService = { get: sinon.stub().resolves([]) };
     languageService = { get: sinon.stub().resolves({}) };
@@ -398,6 +398,15 @@ describe('AppComponent', () => {
     expect(modalService.show.callCount).to.equal(1);
     expect(modalService.show.args[0]).to.have.deep.members([DatabaseClosedComponent]);
   }));
+
+  it('handles rulesEngine failure to initialize', async () => {
+    rulesEngineService.isEnabled.rejects({ msg: 'explosion' });
+
+    await getComponent();
+    await component.setupPromise;
+
+    expect(feedbackService.submit.calledOnce).to.be.true;
+  });
 
   describe('Setup DB', () => {
     it('should disable dbsync in replication status', async () => {

@@ -40,7 +40,8 @@ describe('poe', () => {
     post.mockResolvedValueOnce({body: response});
     await poe.upload(importArg);
     expect(readStream).toHaveBeenCalledWith(
-      '/Users/simon/translations/messages-en.properties');
+      '/Users/simon/translations/messages-en.properties'
+    );
     expect(post).toHaveBeenCalledWith(expectedOptions);
     expect(console.log.mock.calls).toEqual([
       ['en'],

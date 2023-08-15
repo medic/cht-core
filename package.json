@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "repository": {
@@ -16,9 +16,9 @@
   ],
   "scripts": {
     "test": "grunt eslint && grunt unit && grunt test-api-integration",
-    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js  --suite=all",
-    "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js  --suite=all",
-    "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default-mobile/wdio.conf.js  --suite=all",
+    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default/wdio.conf.js",
+    "standard-wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/standard/wdio.conf.js",
+    "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup && wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "e2e-integration": "mocha --config tests/integration/.mocharc.js ",
     "e2e-integration-local": "export VERSION=$(node ./scripts/build/get-version.js) && grunt e2e-env-setup &&mocha --config tests/integration/.mocharc.js ",
     "wdio": "wdio run ./tests/e2e/default/wdio.conf.js",
@@ -71,7 +71,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-exclude": "^2.1.0",
     "chai-shallow-deep-equal": "^1.4.6",
-    "cht-conf": "^3.15.2",
+    "cht-conf": "^3.18.3",
     "clean-css-cli": "^5.6.2",
     "couchdb-compile": "^1.11.2",
     "csv-writer": "^1.6.0",

@@ -132,7 +132,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unable to continue execution, check that \'xsltproc\' command is available.');
+          'Unable to continue execution, check that \'xsltproc\' command is available.'
+        );
       }
     });
 
@@ -155,7 +156,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unable to continue execution, check that \'xsltproc\' command is available.');
+          'Unable to continue execution, check that \'xsltproc\' command is available.'
+        );
       }
     });
 
@@ -178,7 +180,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unable to continue execution, check that \'xsltproc\' command is available.');
+          'Unable to continue execution, check that \'xsltproc\' command is available.'
+        );
       }
     });
 
@@ -201,7 +204,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unable to continue execution, check that \'xsltproc\' command is available.');
+          'Unable to continue execution, check that \'xsltproc\' command is available.'
+        );
       }
     });
 
@@ -223,7 +227,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unknown Error: An error occurred when executing \'xsltproc\' command');
+          'Unknown Error: An error occurred when executing \'xsltproc\' command'
+        );
       }
     });
 
@@ -244,7 +249,8 @@ describe('generate-xform service', () => {
         assert.fail('expected error to be thrown');
       } catch (err) {
         expect(err.message).to.equal(
-          'Unknown Error: An error occurred when executing \'xsltproc\' command');
+          'Unknown Error: An error occurred when executing \'xsltproc\' command'
+        );
       }
     });
 

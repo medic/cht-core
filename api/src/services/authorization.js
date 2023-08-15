@@ -79,8 +79,7 @@ const excludeSubjects = (authorizationContext, ...subjectIds) => {
 const getContactDepth = (authorizationContext, contactsByDepth) => {
   const depthEntry = contactsByDepth.find(entry =>
     entry.key.length === 2 &&
-    entry.key[0] === authorizationContext.userCtx.facility_id
-  );
+    entry.key[0] === authorizationContext.userCtx.facility_id);
   return depthEntry && depthEntry.key[1];
 };
 

@@ -152,7 +152,8 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
         this.telemetryService.record(
           `enketo:contacts:${this.telemetryData.form}:add:render`,
-          this.telemetryData.postRender - this.telemetryData.preRender);
+          this.telemetryData.postRender - this.telemetryData.preRender
+        );
       })
       .catch(err => {
         console.error('Error loading form', err);
@@ -222,7 +223,8 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
     this.telemetryData.preSave = Date.now();
     this.telemetryService.record(
       `enketo:contacts:${this.telemetryData.form}:add:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender);
+      this.telemetryData.preSave - this.telemetryData.postRender
+    );
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
@@ -238,7 +240,8 @@ export class ContactsReportComponent implements OnInit, OnDestroy, AfterViewInit
 
         this.telemetryService.record(
           `enketo:contacts:${this.telemetryData.form}:add:save`,
-          this.telemetryData.postSave - this.telemetryData.preSave);
+          this.telemetryData.postSave - this.telemetryData.preSave
+        );
 
         this.router.navigate(['/contacts', this.routeSnapshot.params.id]);
       })

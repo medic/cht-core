@@ -41,8 +41,10 @@ jobs:
 
     - name: Login to Amazon ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        mask-password: 'true'
 
     - uses: actions/checkout@v3
     - name: Use Node.js 16.x
@@ -133,8 +135,10 @@ jobs:
 
     - name: Login to Amazon ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        mask-password: 'true'
 
     - name: Use Node.js 16.x
       uses: actions/setup-node@v3
@@ -250,6 +254,8 @@ jobs:
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
+      with:
+        mask-password: 'true'
 
     - name: Configure AWS credentials Public
       if: ${{ env.INTERNAL_CONTRIBUTOR }}
@@ -264,6 +270,7 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
       with:
         registry-type: public
+        mask-password: 'true'
 
     - uses: actions/checkout@v3
     - name: Publish
@@ -293,6 +300,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
         with:
           registry-type: public
+          mask-password: 'true'
       - uses: actions/checkout@v3
       - name: Set ENV
         run: |

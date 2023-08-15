@@ -77,5 +77,4 @@ angular.module('controllers').controller('ExportDhisCtrl',
 
       Export('dhis', filters, {});
     };
-  }
-);
+  });

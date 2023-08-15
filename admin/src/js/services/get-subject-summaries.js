@@ -174,5 +174,4 @@ angular.module('inboxServices').factory('GetSubjectSummaries',
         })
         .then(validateSubjects);
     };
-  }
-);
+  });

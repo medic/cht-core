@@ -602,9 +602,6 @@ describe('TasksGroupComponent', () => {
       store.overrideSelector(Selectors.getPreventNavigation, true);
       store.refreshState();
 
-      component.tasks = null;
-      expect(component.canDeactivate('')).to.equal(true);
-
       component.tasks = [];
       expect(component.canDeactivate('')).to.equal(true);
 

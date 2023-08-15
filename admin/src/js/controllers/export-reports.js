@@ -11,5 +11,4 @@ angular.module('controllers').controller('ExportReportsCtrl',
       Export('reports', {}, { humanReadable: true });
     };
 
-  }
-);
+  });

@@ -17,7 +17,7 @@ export class BulkDeleteConfirmComponent extends MmModalAbstract {
   totalDocsDeleted = 0;
   deleteComplete = false;
 
-  model = { docs: [], type: '' }; // assigned by bsModule
+  model = { docs: [] as any[], type: '' }; // assigned by bsModule
 
   constructor(
     bsModalRef: BsModalRef,
@@ -26,7 +26,7 @@ export class BulkDeleteConfirmComponent extends MmModalAbstract {
   ) {
     super(bsModalRef);
     bsModalRef.onHidden
-      .pipe(take(1)) // so we don't need to unsubscribe
+      ?.pipe(take(1)) // so we don't need to unsubscribe
       .subscribe(() => this.deleteComplete && window.location.reload());
   }
 

@@ -48,5 +48,4 @@ angular.module('controllers').controller('TargetsCtrl',
         $log.error('Error fetching settings', err);
       });
 
-  }
-);
+  });

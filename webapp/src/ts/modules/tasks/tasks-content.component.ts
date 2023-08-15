@@ -43,7 +43,7 @@ export class TasksContentComponent implements OnInit, OnDestroy {
   enketoStatus;
   private enketoEdited;
   loadingContent;
-  selectedTask = null;
+  selectedTask: any = null;
   form;
   loadingForm;
   contentError;
@@ -282,7 +282,8 @@ export class TasksContentComponent implements OnInit, OnDestroy {
 
           this.telemetryService.record(
             `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-            this.telemetryData.postRender - this.telemetryData.preRender);
+            this.telemetryData.postRender - this.telemetryData.preRender
+          );
         })
         .catch((err) => {
           this.errorTranslationKey = err?.translationKey || 'error.loading.form';
@@ -312,7 +313,8 @@ export class TasksContentComponent implements OnInit, OnDestroy {
 
     this.telemetryService.record(
       `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender);
+      this.telemetryData.preSave - this.telemetryData.postRender
+    );
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
@@ -337,7 +339,8 @@ export class TasksContentComponent implements OnInit, OnDestroy {
 
         this.telemetryService.record(
           `enketo:tasks:${this.telemetryData.form}:${this.telemetryData.action}:save`,
-          this.telemetryData.postSave - this.telemetryData.preSave);
+          this.telemetryData.postSave - this.telemetryData.preSave
+        );
       })
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);

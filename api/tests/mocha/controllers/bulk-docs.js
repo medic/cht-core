@@ -63,12 +63,14 @@ describe('Bulk Docs controller', () => {
 
       it('returns error when body is missing `docs` property', () => {
         controller._invalidRequest({ body: {} }).should.deep.equal(
-          { error: 'bad_request', reason: 'POST body must include `docs` parameter.' });
+          { error: 'bad_request', reason: 'POST body must include `docs` parameter.' }
+        );
       });
 
       it('returns error when `docs` is not an array', () => {
         controller._invalidRequest({ body: { docs: 'alpha' } }).should.deep.equal(
-          { error: 'bad_request', reason: '`docs` parameter must be an array.' });
+          { error: 'bad_request', reason: '`docs` parameter must be an array.' }
+        );
       });
     });
 
