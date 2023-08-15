@@ -136,7 +136,7 @@ describe('ContactSummary service', () => {
     });
   });
 
-  it('does crash when contact summary throws an error', () => {
+  it('contact summary throws an error', () => {
     const consoleErrorMock = sinon.stub(console, 'error');
     const script = `return contact.some.field;`;
     const contact = {};
@@ -148,7 +148,7 @@ describe('ContactSummary service', () => {
         throw new Error('Expected error to be thrown');
       })
       .catch((err) => {
-        expect(err.message).to.equal('Configuration error');
+        expect(err.stack).to.exist;
         expect(consoleErrorMock.callCount).to.equal(1);
         expect(consoleErrorMock.args[0][0].startsWith('Configuration error in contact-summary')).to.be.true;
         expect(feedbackService.submit.callCount).to.equal(1);

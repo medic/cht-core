@@ -61,6 +61,7 @@ const contactInfoName = () => $('h2[test-id="contact-name"]');
 const contactMedicID = () => $('#contact_summary .cell.patient_id > div > p');
 const contactDeceasedStatus = () => $('div[test-id="deceased-title"]');
 const contactMuted = () => $('.heading-content .muted');
+const errorLogSelector = () => $('.item-content error-log');
 
 const PREG_CARD_SELECTOR = 'div[test-id="contact.profile.pregnancy.active"]';
 const pregnancyCard = () => $(PREG_CARD_SELECTOR);
@@ -397,6 +398,19 @@ const getDisplayedContactsNames = async () => {
   }
   return contacts;
 };
+
+const getErrorLog = async () => {
+  await errorLogSelector().waitForDisplayed();
+
+  const errorMessage = await (await $('.error-details span')).getText();
+  const userDetails = await (await $$('.error-details dl dd'));
+  const errorStack = await (await $('pre code'));
+
+  const username = await userDetails[0].getText();
+  const url = await userDetails[1].getText();
+  return { errorMessage, url, username, errorStack };
+};
+
 module.exports = {
   genericForm,
   selectLHSRowByText,
@@ -457,4 +471,5 @@ module.exports = {
   getVisitLabel,
   getNumberOfReports,
   getDisplayedContactsNames,
+  getErrorLog,
 };
