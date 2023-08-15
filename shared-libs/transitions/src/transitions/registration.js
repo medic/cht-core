@@ -526,7 +526,7 @@ const addPatient = (options) => {
             transitionUtils.addRejectionMessage(doc, options.registrationConfig, 'provided_phone_not_valid');
             return;
           }
-          patient.phone = doc.fields[patientPhoneField];
+          patient.phone = patientPhone;
         }
 
         // assign patient in doc with full parent doc - to be used in messages
