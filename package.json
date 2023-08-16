@@ -51,7 +51,7 @@
     "shared-lib-unit": "UNIT_TEST_ENV=1 npm test --workspaces --if-present",
     "cleancss-admin": "cleancss api/build/static/admin/css/main.css > out.css && mv out.css api/build/static/admin/css/main.css",
     "cleancss-api": "cleancss api/build/static/login/style.css > out.css && mv out.css api/build/static/login/style.css",
-    "build-config": "medic-conf --skip-dependency-check --archive --source=config/default --destination=api/build/default-docs upload-app-settings upload-app-forms upload-collect-forms upload-contact-forms upload-resources upload-custom-translations",
+    "build-config": "node ./node_modules/medic-conf/src/bin/medic-conf.js --skip-dependency-check --archive --source=config/default --destination=api/build/default-docs upload-app-settings upload-app-forms upload-collect-forms upload-contact-forms upload-resources upload-custom-translations",
     "copy-api-bowser": "cp api/node_modules/bowser/bundled.js api/src/public/login/lib-bowser.js",
     "create-staging-doc": "node scripts/build/cli createStagingDoc",
     "populate-staging-doc": "node scripts/build/cli populateStagingDoc",

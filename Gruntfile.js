@@ -32,15 +32,15 @@ module.exports = function(grunt) {
       'build-images': 'node scripts/build/cli buildImages',
       'publish-service-images': 'mkdir -p images && node scripts/build/cli publishServiceImages',
 
-      'build-config': {
-        cmd: () => {
-          const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
-          const configPath = path.resolve('./config/default');
-          const buildPath = path.resolve('./api/build/default-docs');
-          const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
-          return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
-        }
-      },
+      // 'build-config': {
+      //   cmd: () => {
+      //     const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
+      //     const configPath = path.resolve('./config/default');
+      //     const buildPath = path.resolve('./api/build/default-docs');
+      //     const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
+      //     return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
+      //   }
+      // },
 
       // CONVERTED TO PACKAGE.JSON
       'npm-ci-api': 'cd api && npm ci',
@@ -66,7 +66,7 @@ module.exports = function(grunt) {
       'shared-lib-unit': 'npm run shared-lib-unit',
       'cleancss-admin': 'npm run cleancss-admin',
       'cleancss-api': 'npm run cleancss-api',
-      // 'build-config': 'npm run build-config',
+      'build-config': 'npm run build-config',
       'copy-api-bowser': 'npm run copy-api-bowser',
       'create-staging-doc': 'npm run create-staging-doc',
       'populate-staging-doc': 'npm run populate-staging-doc',
