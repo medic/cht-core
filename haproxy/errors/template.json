@@ -1,0 +1,5 @@
+{
+  "error": "__MESSAGE__",
+  "reason": "__REASON__",
+  "server": "haproxy"
+}

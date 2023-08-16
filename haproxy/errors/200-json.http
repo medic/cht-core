@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+Content-length: 75
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "200 OK",
+  "reason": "Service ready",
+  "server": "haproxy"
+}

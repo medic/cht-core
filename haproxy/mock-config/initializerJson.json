@@ -1,0 +1,35 @@
+[
+  {
+    "httpRequest": {
+      "path": "/"
+    },
+    "httpResponse": {
+      "body": {
+        "couchdb": "Welcome"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/_membership"
+    },
+    "httpResponse": {
+      "body": {
+        "all_nodes": [
+          "mock-couchdb"
+        ],
+        "cluster_nodes": [
+          "mock-couchdb"
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/error/drop"
+    },
+    "httpError": {
+      "dropConnection": true
+    }
+  }
+]

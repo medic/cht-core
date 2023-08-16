@@ -1,4 +1,4 @@
-name: Nginx test
+name: Test nginx and haproxy
 
 on: [push, pull_request]
 
@@ -16,5 +16,9 @@ jobs:
         sudo apt install -y bats
         (
           cd nginx
+          make test
+        )
+        (
+          cd haproxy
           make test
         )
