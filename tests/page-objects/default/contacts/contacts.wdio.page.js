@@ -52,7 +52,6 @@ const emptySelection = () => $('contacts-content .empty-selection');
 const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-contacts"]');
 const editContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="edit-contacts"]');
 const deleteContactButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="delete-contacts"]');
-const deleteConfirmationModalButton = () => $('.modal-footer a.btn-danger');
 const contactCards = () => $$('.card.children');
 const districtHospitalName = () => $('[name="/data/district_hospital/name"]');
 const childrenCards = () => $$('.right-pane .card.children');
@@ -232,8 +231,7 @@ const deletePerson = async () => {
   await commonPage.openMoreOptionsMenu();
   await (await deleteContactButton()).waitForClickable();
   await (await deleteContactButton()).click();
-  await (await deleteConfirmationModalButton()).waitForClickable();
-  await (await deleteConfirmationModalButton()).click();
+  await modalPage.submit();
 };
 
 const getContactSummaryField = async (fieldName) => {

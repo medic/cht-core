@@ -43,9 +43,6 @@ const EDIT_PROFILE = '.user .configuration.page i.fa-user';
 // Feedback or Report bug
 const FEEDBACK_MENU = '#header-dropdown i.fa-bug';
 const FEEDBACK = '#feedback';
-const feedbackTitle = () => $(`${FEEDBACK} .modal-header > h2`);
-const feedbackCancelButton = () => $(`${FEEDBACK} .btn.cancel`);
-const feedbackSubmitButton = () => $(`${FEEDBACK} .btn-primary`);
 //About menu
 const ABOUT_MENU = '#header-dropdown i.fa-question';
 const RELOAD_BUTTON = '.about.page .btn-primary';
@@ -335,22 +332,16 @@ const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
 const openReportBugAndFetchProperties = async () => {
   await (await $(FEEDBACK_MENU)).waitForClickable();
   await (await $(FEEDBACK_MENU)).click();
-  await (await $(FEEDBACK)).waitForDisplayed();
-  return {
-    modalHeader: await (await feedbackTitle()).getText(),
-    modelCancelButtonText: await (await feedbackCancelButton()).getText(),
-    modelSubmitButtonText: await (await feedbackSubmitButton()).getText()
-  };
+  return await modalPage.getModalDetails();
 };
 
 const isReportBugOpen = async () => {
-  return await (await feedbackTitle()).isExisting();
+  return await (await $(FEEDBACK)).isExisting();
 };
 
 const closeReportBug = async () => {
   if (await isReportBugOpen()) {
-    await (await feedbackCancelButton()).waitForClickable();
-    await (await feedbackCancelButton()).click();
+    await modalPage.cancel();
   }
 };
 
