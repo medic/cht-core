@@ -248,6 +248,59 @@ describe('validations', () => {
     });
   });
 
+  it('unique phone validation should fail if db query for phone returns doc', () => {
+    sinon.stub(db.medic, 'query').resolves({
+      rows: [
+        {
+          id: 'original',
+          phone: '+9779841111111'
+        }
+      ]
+    });
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'uniquePhone("phone_number")',
+        message: [
+          {
+            content: 'Duplicate phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'duplicate',
+      xyz: '+9779841111111',
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 1);
+    });
+  });
+
+  it('unique phone validation should pass if db query for phone does not return any doc', () => {
+    sinon.stub(db.medic, 'query').resolves({ undefined });
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'uniquePhone("phone_number")',
+        message: [
+          {
+            content: 'unique phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'unique',
+      xyz: '+9779841111111',
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
   it('pass uniqueWithin validation on old doc', () => {
     clock = sinon.useFakeTimers();
     sinon.stub(db.medic, 'query').resolves({
@@ -532,7 +585,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 4, days: 1}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 4, days: 1 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -548,9 +601,9 @@ describe('validations', () => {
       },
     ];
     const doc = {
-      _id: 'same',      
+      _id: 'same',
       fields: {
-        lmp_date: moment().subtract({weeks: 4, days: 1}).valueOf()
+        lmp_date: moment().subtract({ weeks: 4, days: 1 }).valueOf()
       },
       reported_date: moment().valueOf()
     };
@@ -568,7 +621,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 4}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 4 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -591,7 +644,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 3, days: 6}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 3, days: 6 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -647,7 +700,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 3, days: 6}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 3, days: 6 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -669,7 +722,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 39, days: 6}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 39, days: 6 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -686,7 +739,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 40}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 40 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {
@@ -709,7 +762,7 @@ describe('validations', () => {
     ];
     const doc = {
       _id: 'same',
-      lmp_date: moment().subtract({weeks: 40, days: 1}).valueOf(),
+      lmp_date: moment().subtract({ weeks: 40, days: 1 }).valueOf(),
       reported_date: moment().valueOf()
     };
     return validation.validate(doc, validations).then(errors => {

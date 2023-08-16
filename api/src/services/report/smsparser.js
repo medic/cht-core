@@ -8,6 +8,7 @@ const textformsParser = require('./textforms-parser');
 const logger = require('../../logger');
 const moment = require('moment');
 const bs = require('bikram-sambat');
+const phoneNumberParser = require('@medic/phone-number');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 // matches invisible characters that can mess up our parsing
@@ -180,7 +181,7 @@ const fieldParsers = {
       logger.warn(`Option not available for ${raw} in list.`);
     } else if (key === 'patient_id' || key === 'place_id') {
       // special handling for string IDs which must be [0-9]
-      return stripInvisibleCharacters(raw);
+      return stripInvisibleCharacters(standardiseDigits(raw));
     }
     return raw;
   },
@@ -190,7 +191,7 @@ const fieldParsers = {
     return moment(stripInvisibleCharacters(raw)).valueOf();
   },
   bsDate: (raw) => {
-    const cleaned = stripInvisibleCharacters(raw);
+    const cleaned = stripInvisibleCharacters(standardiseDigits(raw));
     const separator = cleaned[cleaned.search(/[^0-9]/)];//non-numeric character
     const dateParts = cleaned.split(separator);
     return bsToEpoch(...dateParts);
@@ -209,9 +210,33 @@ const fieldParsers = {
   month: (raw) => {
     // keep months integers, not their list value.
     return parseNum(stripInvisibleCharacters(raw));
+  },
+  phone_number: (raw) => {
+    //standardiseDigits ensures that Nepali digits are also supported.
+    raw = standardiseDigits(raw);
+    const formattedAndValidatedPhone = phoneNumberParser.normalize(config.getAll(), raw);
+    if (formattedAndValidatedPhone) {
+      return formattedAndValidatedPhone;
+    } 
+    logger.warn(`The provided phone number ${raw} is invalid`);
+    
+    // Returning raw here becuase what to do with invalid phone 
+    // is defined in transitions so error will be thrown there if required. 
+    // Warning is logged just in case.
+    return raw;  
+  },
+  bsYear: (raw) => {
+    return standardiseDigits(raw);
+  },
+  bsMonth: (raw) => {
+    return standardiseDigits(raw);
+  },
+  bsDay: (raw) => {
+    return standardiseDigits(raw);
   }
 };
 
+//selects parser by field type and parses and validates the given data.
 exports.parseField = (field, raw, key) => {
   const parser = fieldParsers[field.type];
   if (!parser) {
@@ -281,20 +306,20 @@ exports.parse = (def, doc) => {
     }
   }
 
-  if(aggregateBSDateField) {
+  if (aggregateBSDateField) {
     let bsYear;
     let bsMonth = 1;
     let bsDay = 1;
     for (const k of Object.keys(def.fields)) {
       switch (def.fields[k].type) {
       case 'bsYear':
-        bsYear = msgData[k];
+        bsYear = standardiseDigits(msgData[k]);
         break;
       case 'bsMonth':
-        bsMonth = msgData[k];
+        bsMonth = standardiseDigits(msgData[k]);
         break;
       case 'bsDay':
-        bsDay = msgData[k];
+        bsDay = standardiseDigits(msgData[k]);
         break;
       }
     }
