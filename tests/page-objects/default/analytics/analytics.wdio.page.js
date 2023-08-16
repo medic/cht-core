@@ -20,6 +20,19 @@ const targetNumberPercentCount = (targetElement) => targetElement.$('.body .targ
 
 const targetGoalValue = (targetElement) => targetElement.$('.body .count .goal p');
 
+const errorLog = () => $(`.page error-log`);
+
+const getErrorLog = async () => {
+  await errorLog().waitForDisplayed();
+
+  const errorMessage = await (await $('.error-details span')).getText();
+  const userDetails = await (await $$('.error-details dl dd'));
+  const errorStack = await (await $('pre code'));
+
+  const username = await userDetails[0].getText();
+  const url = await userDetails[1].getText();
+  return { errorMessage, url, username, errorStack };
+};
 const EMPTY_SELECTION = '.content-pane .item-content.empty-selection';
 
 const emptySelectionError = () => $(`${EMPTY_SELECTION}.selection-error`);
@@ -64,6 +77,7 @@ module.exports = {
   noSelectedTarget,
   goToTargets,
   getTargets,
+  getErrorLog,
   emptySelectionError,
   emptySelectionNoError,
 };
