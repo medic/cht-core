@@ -1,7 +1,5 @@
 /* eslint-disable max-len */
 
-// const path = require('path');
-
 module.exports = function(grunt) {
   'use strict';
 
@@ -10,39 +8,26 @@ module.exports = function(grunt) {
   // Project configuration
   grunt.initConfig({
     exec: {
-      'compile-ddocs-primary': 'node ./scripts/build/ddoc-compile.js primary',
-      'compile-ddocs-staging': 'node ./scripts/build/ddoc-compile.js staging',
-
-      'push-ddoc-to-staging': 'node ./scripts/build/push-ddoc-to-staging.js',
-      'clean-build-dir': 'rm -rf build && mkdir build',
-      'compile-admin-templates':
-        'mkdir -p api/build/static/admin/js/ && ' +
-        'node ./scripts/build/build-angularjs-template-cache.js',
-
-      'karma-admin': 'node ./scripts/ci/run-karma.js',
-      'copy-ddocs': 'mkdir -p build/ddocs && cp -r ddocs/* build/ddocs/',
-      'copy-api-ddocs': 'mkdir -p api/build/ddocs && cp build/ddocs/*.json api/build/ddocs/',
-      'copy-webapp-static': 'cp -r webapp/src/audio webapp/src/fonts webapp/src/img api/build/static/webapp/',
-      'copy-api-resources': 'cp -r api/src/public/* api/build/static/',
-      'copy-admin-static': 'cp -r admin/src/templates/index.html admin/node_modules/font-awesome/fonts webapp/src/fonts api/build/static/admin',
-
-      'npm-ci-modules': 'node scripts/build/cli npmCiModules',
-      'check-version': 'node scripts/ci/check-versions.js',
-      'build-service-images': 'node scripts/build/cli buildServiceImages',
-      'build-images': 'node scripts/build/cli buildImages',
-      'publish-service-images': 'mkdir -p images && node scripts/build/cli publishServiceImages',
-
-      // 'build-config': {
-      //   cmd: () => {
-      //     const medicConfPath = path.resolve('./node_modules/medic-conf/src/bin/medic-conf.js');
-      //     const configPath = path.resolve('./config/default');
-      //     const buildPath = path.resolve('./api/build/default-docs');
-      //     const actions = ['upload-app-settings', 'upload-app-forms', 'upload-collect-forms', 'upload-contact-forms', 'upload-resources', 'upload-custom-translations'];
-      //     return `node ${medicConfPath} --skip-dependency-check --archive --source=${configPath} --destination=${buildPath} ${actions.join(' ')}`;
-      //   }
-      // },
-
       // CONVERTED TO PACKAGE.JSON
+      'compile-ddocs-primary': 'npm run compile-ddocs-primary',
+      'compile-ddocs-staging': 'npm run compile-ddocs-staging',
+
+      'push-ddoc-to-staging': 'npm run push-ddoc-to-staging',
+      'clean-build-dir': 'npm run clean-build-dir',
+      'compile-admin-templates': 'npm run compile-admin-templates',
+
+      'karma-admin': 'npm run karma-admin',
+      'copy-ddocs': 'npm run copy-ddocs',
+      'copy-api-ddocs': 'npm run copy-api-ddocs',
+      'copy-webapp-static': 'npm run copy-webapp-static',
+      'copy-api-resources': 'npm run copy-api-resources',
+      'copy-admin-static': 'npm run copy-admin-static',
+
+      'npm-ci-modules': 'npm run npm-ci-modules',
+      'check-version': 'npm run check-version',
+      'build-service-images': 'npm run build-service-images',
+      'build-images': 'npm run build-images',
+      'publish-service-images': 'npm run publish-service-images',
       'npm-ci-api': 'cd api && npm ci',
       'npm-run-lint': 'npm run lint',
       'build-webapp': 'cd webapp && npm run build -- --configuration=production && npm run compile',
