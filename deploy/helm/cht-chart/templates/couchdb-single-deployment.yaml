@@ -53,7 +53,7 @@ spec:
           ports:
             - containerPort: 5984
           resources: {}
-          {{- if eq .Values.environment "local" }}
+          {{- if eq .Values.cluster_type "k3s-k3d" }}
           volumeMounts:
             - mountPath: /opt/couchdb/data
               name: local-volume
@@ -71,7 +71,7 @@ spec:
               subPath: local.d
           {{- end }}
       restartPolicy: Always
-      {{- if eq .Values.environment "local" }}
+      {{- if eq .Values.cluster_type "k3s-k3d" }}
       volumes:
         - name: local-volume
           hostPath:

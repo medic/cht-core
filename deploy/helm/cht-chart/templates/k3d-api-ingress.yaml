@@ -1,4 +1,4 @@
-{{- if eq .Values.environment "local" }}
+{{- if eq .Values.cluster_type "k3s-k3d" }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:

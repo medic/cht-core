@@ -59,18 +59,34 @@ metadata:
         print(f"Namespace {namespace} already exists.")
 
 @task
-def obtain_certificate_and_key(c):
-    print("Obtaining certificate from local-ip.co...")
-    subprocess.run(["curl", "http://local-ip.co/cert/server.pem", "-o", "certificate.crt"], check=True)
-    subprocess.run(["curl", "http://local-ip.co/cert/server.key", "-o", "private.key"], check=True)
+def obtain_certificate_and_key(c, values):
+    print("Obtaining certificate...")
+    if values.get('cert_source', '') == 'specify-file-path':
+        crt_file_path = values.get('certificate_crt_file_path', '')
+        key_file_path = values.get('certificate_key_file_path', '')
+        if crt_file_path and key_file_path:
+            subprocess.run(["cp", crt_file_path, "certificate.crt"], check=True)
+            subprocess.run(["cp", key_file_path, "private.key"], check=True)
+        else:
+            raise Exception("certificate_crt_file_path and certificate_key_file_path must be set in values when cert_source is 'specify-file-path'")
+    elif values.get('cert_source', '') == 'my-ip-co':
+        subprocess.run(["curl", "http://local-ip.co/cert/server.pem", "-o", "certificate.crt"], check=True)
+        subprocess.run(["curl", "http://local-ip.co/cert/server.key", "-o", "private.key"], check=True)
+    elif values.get('cert_source', '') == 'eks-medic':
+        print("Moving on. Certificate provided by the eks cluster.")
+    else:
+        raise Exception("cert_source must be either 'specify-file-path', 'my-ip-co', or 'eks-medic'")
 
 @task
-def create_secret(c, namespace):
+def create_secret(c, namespace, values):
     print("Checking if secret api-tls-secret already exists...")
     secret_exists = subprocess.run(["kubectl", "get", "secret", "api-tls-secret", "-n", namespace], capture_output=True, text=True).returncode
     if secret_exists != 0:
         print("Secret does not exist. Creating Secret from certificate and key...")
+        obtain_certificate_and_key(c, values)  # Ensure the certificate and key are available before creating the secret
         subprocess.run(["kubectl", "-n", namespace, "create", "secret", "tls", "api-tls-secret", "--cert=certificate.crt", "--key=private.key"], check=True)
+        os.remove("certificate.crt")
+        os.remove("private.key")
     else:
         print("Secret api-tls-secret already exists.")
 
@@ -88,8 +104,8 @@ def get_image_tag(c, chtversion):
     raise Exception('cht image tag not found')
 
 def setup_etc_hosts(c, values):
-    # Check if the environment is 'local'
-    if values.get('environment', '') == 'local':
+    # If the cluster_type is k3s-k3d and cert_source is my-ip-co, add the host to /etc/hosts
+    if values.get('cluster_type', '') == 'k3s-k3d' and values.get('cert_source', '') == 'my-ip-co':
         host = values.get('ingress', {}).get('host', '')
         proc = subprocess.Popen(['sudo', 'cat', '/etc/hosts'], stdout=subprocess.PIPE)
         lines = [line.decode('utf-8') for line in proc.stdout.readlines()]
@@ -102,7 +118,7 @@ def setup_etc_hosts(c, values):
             command = ['sudo', 'bash', '-c', f'echo "127.0.0.1 {host}" >> /etc/hosts']
             subprocess.run(command)
     else:
-        print("Environment is not local, skipping hosts setup.")
+        print("Cluster type is not k3s-k3d or ingress choice is not my-ip-co. Skipping /etc/hosts setup.")
 
 @task
 def add_route53_entry(c, f):
@@ -145,9 +161,10 @@ def install(c, f):
     values = load_values(c, f)
     namespace = determine_namespace(c, f, values)
     check_namespace_exists(c, namespace)
+    if values.get('cluster_type', '') == 'k3s-k3d':
+        obtain_certificate_and_key(c, values)
+        create_secret(c, namespace, values)
     if values.get('environment', '') == 'local':
-        obtain_certificate_and_key(c)
-        create_secret(c, namespace)
         setup_etc_hosts(c, values)
     image_tag = get_image_tag(c, values.get('chtversion', ''))
     helm_install_or_upgrade(c, f, namespace, values, image_tag)

@@ -25,12 +25,26 @@ ingress:
   hosted_zone_id: "<the-hosted-zone-id>"
   load_balancer: "dualstack.k8s-devchtalb-3eb0781cbb-694321496.eu-west-2.elb.amazonaws.com"
 
-environment: "local"  # "local" or "remote"
+environment: "remote"  # "local", "remote"
+cluster_type: "eks" # "eks" or "k3s-k3d"
+cert_source: "eks-medic" # "eks-medic" or "specify-file-path" or "my-ip-co"
+certificate_crt_file_path: "/path/to/certificate.crt" # Only required if cert_source is "specify-file-path"
+certificate_key_file_path: "/path/to/certificate.key" # Only required if cert_source is "specify-file-path"
 
 local:
-  diskPath: "/var/lib/couchdb"
+  diskPath-1: "/var/lib/couchdb1"
+  diskPath-2: "/var/lib/couchdb2"
+  diskPath-3: "/var/lib/couchdb3"
+
+# If using clustered couchdb, add the nodes here: node-1: name-of-first-node, node-2: name-of-second-node, etc.
+# Add equal number of nodes as specified in clusteredCouch.noOfCouchDBNodes
+nodes:
+  cht-core-node: "gamma-cht-core" # This is the name of the node where core components will be deployed
+  node-1: "gamma-cht-couchdb-1" # This is the name of the first node where couchdb will be deployed
+  node-2: "gamma-cht-couchdb-2" # This is the name of the second node where couchdb will be deployed
+  node-3: "gamma-cht-couchdb-3" # This is the name of the third node where couchdb will be deployed
 
 remote:
-  existingEBS: "true"
-  existingEBSVolumeID: "vol-0123456789abcdefg"
-  existingEBSVolumeSize: "100Gi"
+  preExistingEBS: "true"
+  preExistingEBSVolumeID: "vol-0123456789abcdefg"
+  preExistingEBSVolumeSize: "100Gi"

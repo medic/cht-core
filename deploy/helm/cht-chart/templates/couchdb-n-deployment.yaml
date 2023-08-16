@@ -25,13 +25,14 @@ spec:
         operator: {{ $root.Values.toleration.operator }}
         value: {{ $root.Values.toleration.value | quote }}
         effect: {{ $root.Values.toleration.effect }}
+      nodeSelector:
+        kubernetes.io/hostname: {{ index $root.Values.nodes (printf "node-%d" $nodeNumber) }}
       containers:
       - name: cht-couchdb-{{ $nodeNumber }}
         image: public.ecr.aws/medic/cht-couchdb:{{ $root.Values.cht_image_tag }}
         ports:
         - containerPort: 5984
         env:
-        #if it's not the first node, we need to set the COUCHDB_SYNC_ADMINS_NODE env var
         {{- if ne $nodeNumber 1 }}
         - name: COUCHDB_SYNC_ADMINS_NODE
           valueFrom:
@@ -65,7 +66,6 @@ spec:
           value: couchdb-{{ $nodeNumber }}.{{ $root.Values.namespace }}.svc.cluster.local
         - name: NODE_COUNT
           value: {{ $root.Values.clusteredCouch.noOfCouchDBNodes | quote }}
-        #if it's the first node, we need to set the CLUSTER_PEER_IPS env var
         {{- if eq $nodeNumber 1 }}
         - name: CLUSTER_PEER_IPS
           valueFrom:
@@ -74,13 +74,13 @@ spec:
               key: CLUSTER_PEER_IPS
         {{- end }}
         resources: {}
-        {{- if eq $root.Values.environment "local" }}
+        {{- if eq $root.Values.cluster_type "k3s-k3d" }}
         volumeMounts:
         - mountPath: /opt/couchdb/data
-          name: local-volume
+          name: local-volume-{{ $nodeNumber }}
           subPath: data
         - mountPath: /opt/couchdb/etc/local.d
-          name: local-volume
+          name: local-volume-{{ $nodeNumber }}
           subPath: local.d
         {{- else }}
         volumeMounts:
@@ -92,11 +92,11 @@ spec:
           subPath: local.d
         {{- end }}
       restartPolicy: Always
-      {{- if eq $root.Values.environment "local" }}
+      {{- if eq $root.Values.cluster_type "k3s-k3d" }}
       volumes:
-        - name: local-volume
-          hostPath:
-            path: {{ $root.Values.local.diskPath }}
+      - name: local-volume-{{ $nodeNumber }}
+        hostPath:
+          path: {{ index $root.Values.local (printf "diskPath-%d" $nodeNumber) }}
       {{- else }}
       volumes:
         - name: couchdb-{{ $nodeNumber }}-claim0

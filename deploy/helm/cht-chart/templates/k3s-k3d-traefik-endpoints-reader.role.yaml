@@ -1,0 +1,11 @@
+{{- if eq .Values.cluster_type "k3s-k3d" }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: traefik-endpoints-reader
+rules:
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+{{- end }}
