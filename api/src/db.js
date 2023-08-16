@@ -136,6 +136,19 @@ if (UNIT_TEST_ENV) {
       });
   };
 
+  const saveDocs = async (db, docs) => {
+    try {
+      return await db.bulkDocs(docs);
+    } catch (err) {
+      if (err.status !== 413 || docs.length === 1) {
+        throw err;
+      }
+
+      const results = await Promise.all(docs.map(doc => db.put(doc)));
+      return results.flat();
+    }
+  };
+
   /**
    * @param {Database} db
    * @param {Array<DesignDocument>} docs
@@ -150,18 +163,7 @@ if (UNIT_TEST_ENV) {
       return [];
     }
 
-    let results;
-    try {
-      results = await db.bulkDocs(docs);
-    } catch (err) {
-      if (err.status !== 413 || docs.length === 1) {
-        throw err;
-      }
-
-      results = await Promise.all(docs.map(doc => db.put(doc)));
-      results = results.flat();
-    }
-
+    const results = await saveDocs(db, docs);
     const errors = results
       .filter(result => result.error)
       .map(result => `saving ${result.id} failed with ${result.error}`);
