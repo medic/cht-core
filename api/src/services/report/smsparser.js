@@ -212,6 +212,7 @@ const fieldParsers = {
     return parseNum(stripInvisibleCharacters(raw));
   },
   phone_number: (raw) => {
+    //standardiseDigits ensures that Nepali digits are also supported.
     raw = standardiseDigits(raw);
     const formattedAndValidatedPhone = phoneNumberParser.normalize(config.getAll(), raw);
     if (formattedAndValidatedPhone) {
