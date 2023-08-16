@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy, OnInit, TrackByFunction, ViewChild } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatDialog } from '@angular/material/dialog';
+import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -24,6 +24,8 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   @ViewChild('contentWrapper') contentWrapper;
 
   private subscriptions: Subscription = new Subscription();
+  private dialogRef: MatDialogRef<any> | undefined;
+  private bottomSheetRef: MatBottomSheetRef<any> | undefined;
 
   selectMode = false;
   useOldActionBar = false;
@@ -88,11 +90,11 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
 
     this.closeAll();
     if (this.responsiveService.isMobile()) {
-      this.matBottomSheet.open(this.contentWrapper);
+      this.bottomSheetRef = this.matBottomSheet.open(this.contentWrapper);
       return;
     }
 
-    this.matDialog.open(this.contentWrapper, {
+    this.dialogRef = this.matDialog.open(this.contentWrapper, {
       autoFocus: false,
       minWidth: 300,
       minHeight: 150,
@@ -100,8 +102,15 @@ export class FastActionButtonComponent implements OnInit, OnDestroy {
   }
 
   closeAll() {
-    this.matBottomSheet.dismiss();
-    this.matDialog.closeAll();
+    if (this.bottomSheetRef) {
+      this.bottomSheetRef.dismiss();
+      this.bottomSheetRef = undefined;
+    }
+
+    if (this.dialogRef) {
+      this.dialogRef.close();
+      this.dialogRef = undefined;
+    }
   }
 
   executeAction(action: FastAction) {

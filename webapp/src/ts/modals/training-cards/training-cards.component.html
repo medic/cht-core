@@ -14,11 +14,11 @@
     <div>{{ errorTranslationKey | translate }}</div>
   </div>
 
-  <div class="item-content " *ngIf="showConfirmExit && !loadingContent && !contentError">
+  <div class="item-content" *ngIf="showConfirmExit && !loadingContent && !contentError">
     <div>{{ 'training_cards.confirm.exit' | translate }}</div>
     <div class="modal-footer">
-      <button mat-button color="primary" (click)="confirmExit(false)">{{ 'training_cards.confirm.button.no' | translate }}</button>
-      <button mat-button color="primary" (click)="quitTraining()">{{ 'training_cards.confirm.button.yes' | translate }}</button>
+      <button test-id="cancel" mat-button color="primary" (click)="confirmExit(false)">{{ 'training_cards.confirm.button.no' | translate }}</button>
+      <button test-id="quit-training" mat-button color="primary" (click)="quitTraining()">{{ 'training_cards.confirm.button.yes' | translate }}</button>
     </div>
   </div>
 
