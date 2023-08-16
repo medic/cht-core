@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 
-const path = require('path');
+// const path = require('path');
 
 module.exports = function(grunt) {
   'use strict';
