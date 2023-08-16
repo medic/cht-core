@@ -6,14 +6,16 @@ import { Component, Input, Output, EventEmitter, HostListener, Attribute } from 
 })
 export class ModalLayoutComponent {
   @Attribute('id') id;
-  @Input() processing;
-  @Input() error;
-  @Input() titleKey;
-  @Input() submitKey;
-  @Input() submittingKey;
-  @Input() cancelKey;
-  @Input() hideFooter;
-  @Input() hasEnketoForm;
+  @Input() processing: boolean;
+  @Input() error: string;
+  @Input() titleKey: string;
+  @Input() submitKey: string;
+  @Input() submittingKey: string;
+  @Input() useSubmitFlatStyle: boolean;
+  @Input() cancelKey: string;
+  @Input() hideFooter: boolean;
+  @Input() hideCancelButton: boolean;
+  @Input() hasEnketoForm: boolean;
   @Output() onCancel: EventEmitter<any> = new EventEmitter();
   @Output() onSubmit: EventEmitter<any> = new EventEmitter();
 

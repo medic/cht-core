@@ -9,19 +9,31 @@
     <button
       mat-button
       color="primary"
-      *ngIf="cancelKey !== false"
+      *ngIf="!hideCancelButton"
       [class.disabled]="processing"
-      (click)="cancel()">
+      (click)="cancel()"
+      test-id="cancel">
       {{ (cancelKey || 'Cancel') | translate }}
     </button>
 
     <button
+      *ngIf="useSubmitFlatStyle && submitKey"
       mat-flat-button
       color="primary"
-      *ngIf="submitKey && !processing"
       [class.disabled]="processing"
       (click)="submit()"
-      [attr.test-id]="submitKey">
+      [attr.test-id]="submitKey"
+      test-id="submit">
+      {{ (processing && submittingKey ? submittingKey : submitKey) | translate }}
+    </button>
+
+    <button
+      *ngIf="!useSubmitFlatStyle && submitKey"
+      mat-button
+      color="primary"
+      [class.disabled]="processing"
+      (click)="submit()"
+      test-id="submit">
       {{ (processing && submittingKey ? submittingKey : submitKey) | translate }}
     </button>
   </div>
