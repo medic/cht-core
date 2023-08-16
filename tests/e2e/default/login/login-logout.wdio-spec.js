@@ -126,7 +126,7 @@ describe('Login page funcionality tests', () => {
       await commonPage.goToReports();
 
       expect(await (await modalPage.body()).getText()).to.equal('Your session has expired, please login to continue.');
-      await (await modalPage.submit()).click();
+      await modalPage.submit();
       expect((await browser.getUrl()).includes('/medic/login')).to.be.true;
     });
 

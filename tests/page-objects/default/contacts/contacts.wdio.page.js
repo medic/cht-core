@@ -1,7 +1,7 @@
 const ENTER = '\uE007';
 
-const genericForm = require('../enketo/generic-form.wdio.page');
-const commonPage = require('../common/common.wdio.page');
+const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
+const commonPage = require('@page-objects/default/common/common.wdio.page');
 const sentinelUtils = require('@utils/sentinel');
 const utils = require('@utils');
 const modalPage = require('@page-objects/default/common/modal.wdio.page');
@@ -292,7 +292,6 @@ const editDistrict = async (districtName, editedName) => {
 
 const openFormWithWarning = async (formId) => {
   await commonPage.clickFastActionFAB({ actionId: formId });
-  await (await modalPage.body()).waitForExist();
   return modalPage.getModalDetails();
 };
 

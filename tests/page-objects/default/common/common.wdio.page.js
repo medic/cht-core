@@ -1,3 +1,5 @@
+const modalPage = require('./modal.wdio.page');
+
 const hamburgerMenu = () => $('#header-dropdown-link');
 const userSettingsMenuOption = () => $('[test-id="user-settings-menu-option"]');
 const FAST_ACTION_TRIGGER = '.fast-action-trigger';
@@ -19,7 +21,6 @@ const getReportsButtonLabel = () => $('#reports-tab .button-label');
 const getMessagesButtonLabel = () => $('#messages-tab .button-label');
 const getTasksButtonLabel = () => $('#tasks-tab .button-label');
 const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
-const modal = require('./modal.wdio.page');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
@@ -171,20 +172,19 @@ const closeHamburgerMenu = async () => {
 const navigateToLogoutModal = async () => {
   await openHamburgerMenu();
   await (await logoutButton()).click();
-  await (await modal.body()).waitForDisplayed();
+  await (await modalPage.body()).waitForDisplayed();
 };
 
 const logout = async () => {
   await navigateToLogoutModal();
-  await (await modal.confirm()).click();
+  await modalPage.submit();
   await browser.pause(100); // wait for login page js to execute
 };
 
 const getLogoutMessage = async () => {
   await navigateToLogoutModal();
-  const body = await modal.body();
-  await body.waitForDisplayed();
-  return body.getText();
+  const modal = await modalPage.getModalDetails();
+  return modal.body;
 };
 
 const refresh = async () => {

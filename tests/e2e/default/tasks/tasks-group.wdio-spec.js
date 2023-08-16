@@ -251,7 +251,7 @@ describe('Tasks group landing page', () => {
       await expectTasksGroupLeaveModal();
 
       // cancelling keeps you on the same page
-      await (await modalPage.cancel()).click();
+      await modalPage.cancel();
       await (await modalPage.body()).waitForDisplayed({ reverse: true });
 
       await tasksPage.waitForTasksGroupLoaded();
@@ -259,7 +259,7 @@ describe('Tasks group landing page', () => {
       // submitting the modal takes us to the other task
       await taskFromOtherGroup.click();
       await expectTasksGroupLeaveModal();
-      await (await modalPage.confirm()).click();
+      await modalPage.submit();
 
       await tasksPage.waitForTaskContentLoaded('Place Home Visit');
       await tasksPage.submitTask();
@@ -285,7 +285,7 @@ describe('Tasks group landing page', () => {
       // clicking on another page displays the modal
       await commonPage.goToPeople('', false);
       await expectTasksGroupLeaveModal();
-      await (await modalPage.confirm()).click();
+      await modalPage.cancel();
       await (await contactsPage.contactList()).waitForDisplayed();
       await (await commonPage.waitForPageLoaded());
     });
