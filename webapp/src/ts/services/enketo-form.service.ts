@@ -9,7 +9,7 @@ import { DbService } from '@mm-services/db.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { EnketoTranslationService } from '@mm-services/enketo-translation.service';
 import { ExtractLineageService } from '@mm-services/extract-lineage.service';
-import { GetReportContentService } from '@mm-services/get-report-content.service';
+import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { TranslateService } from '@mm-services/translate.service';
 
@@ -23,7 +23,6 @@ export class EnketoFormService {
     private enketoPrepopulationDataService: EnketoPrepopulationDataService,
     private enketoTranslationService: EnketoTranslationService,
     private extractLineageService: ExtractLineageService,
-    private getReportContentService: GetReportContentService,
     private translateFromService: TranslateFromService,
     private translateService: TranslateService,
     private ngZone: NgZone,
@@ -488,7 +487,7 @@ export class EnketoFormService {
     record = getOuterHTML($record[0]);
 
     // remove old style content attachment
-    this.attachmentService.remove(doc, this.getReportContentService.REPORT_ATTACHMENT_NAME);
+    this.attachmentService.remove(doc, REPORT_ATTACHMENT_NAME);
     docsToStore.unshift(doc);
 
     doc.fields = this.enketoTranslationService.reportRecordToJs(record, formXml);
