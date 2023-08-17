@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { ComponentType } from '@angular/cdk/overlay';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { v4 as uuid } from 'uuid';
+
 import { ResponsiveService } from '@mm-services/responsive.service';
 
 @Injectable({
@@ -14,16 +16,25 @@ export class ModalService {
   ) { }
 
   show(component: ComponentType<any>, config?:Record<string, any>): MatDialogRef<any> {
-    this.matDialog.closeAll();
+    const oldModalRef = this.matDialog.openDialogs.find(modal => {
+      return modal.componentInstance?.constructor?.name === component.name;
+    });
+
+    if (oldModalRef) {
+      // No duplicate modals
+      return oldModalRef;
+    }
+
     const isMobile = this.responsiveService.isMobile();
 
     return this.matDialog.open(component, {
       autoFocus: false,
       disableClose: true,
+      minWidth: isMobile ? '90vw' : '400px', // Give maximum space to date picker's calendar when in mobile.
+      width: '600px',
       maxWidth: '90vw',
-      minWidth: isMobile ? '90vw' : 500, // Give maximum space to date picker's calendar when in mobile.
-      minHeight: 100,
-      ...config
+      minHeight: '100px',
+      ...config,
     });
   }
 }
