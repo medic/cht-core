@@ -46,7 +46,7 @@ const setBuildInfo = () => {
   fs.writeFileSync(path.resolve(buildInfoPath, 'version'), releaseName);
   fs.writeFileSync(path.resolve(buildInfoPath, 'base_version'), packageJson.version);
   fs.writeFileSync(path.resolve(buildInfoPath, 'time'), new Date().toISOString());
-  fs.writeFileSync(path.resolve(buildInfoPath, 'author'), `grunt on ${process.env.USER}`);
+  fs.writeFileSync(path.resolve(buildInfoPath, 'author'), `npm on ${process.env.USER}`);
 
   const buildVersionPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'version');
   fs.copyFileSync(buildVersionPath, path.resolve(buildInfoPath, 'build'));

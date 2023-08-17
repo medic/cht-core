@@ -52,12 +52,6 @@
   },
   "overrides": [
     {
-      "files": [ "Gruntfile.js" ],
-      "env": {
-        "node": true
-      }
-    },
-    {
       "files": [ "build/service-worker.js" ],
       "rules": {
         "max-len": "off",
