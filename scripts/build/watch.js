@@ -60,6 +60,7 @@ const run = (task) => {
     child.stdout.on('data', data => console.log(data.toString()));
     child.stderr.on('data', data => console.error(data.toString()));
     child.on('error', err => console.error(err));
+    child.on('close', () => console.log('Update complete.\nWaiting...'));
   }, DEBOUNCE);
 };
 
@@ -93,7 +94,7 @@ const startConfigWatcher = () => {
 const init = () => {
   startWatchers();
   startConfigWatcher();
-  console.log('watching...');
+  console.log('Waiting...');
 };
 
 (() => {
