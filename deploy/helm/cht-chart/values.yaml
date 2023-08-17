@@ -31,7 +31,7 @@ cert_source: "eks-medic" # "eks-medic" or "specify-file-path" or "my-ip-co"
 certificate_crt_file_path: "/path/to/certificate.crt" # Only required if cert_source is "specify-file-path"
 certificate_key_file_path: "/path/to/certificate.key" # Only required if cert_source is "specify-file-path"
 
-local:
+local:  #
   diskPath-1: "/var/lib/couchdb1"
   diskPath-2: "/var/lib/couchdb2"
   diskPath-3: "/var/lib/couchdb3"
@@ -45,6 +45,6 @@ nodes:
   node-3: "gamma-cht-couchdb-3" # This is the name of the third node where couchdb will be deployed
 
 remote:
-  preExistingEBS: "false"
-  preExistingEBSVolumeID: "vol-0123456789abcdefg"
-  preExistingEBSVolumeSize: "100Gi"
+  preExistingEBS: "false" # This should be false unless you want to manage the EBS volume yourself. This should be true only if you have already created the EBS volume. If so, specify the id below.
+  preExistingEBSVolumeID: "vol-0123456789abcdefg" # If the above is set to true, if you have already created the EBS volume, put the ID here.
+  preExistingEBSVolumeSize: "100Gi" # The size of the EBS volume.
