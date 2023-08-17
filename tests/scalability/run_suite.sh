@@ -22,9 +22,9 @@ echo installing node
 apt-get install nodejs npm -y
 
 cd cht-core
-npm ci
-cd webapp && npm ci && cd ../
+cd webapp && npm install eurodigit && cd ../
 cd tests/scalability
+npm install eurodigit
 echo "Changing config to match url arg"
 node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$MEDIC_URL'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});"
 echo "npm install for jmeter suite"
