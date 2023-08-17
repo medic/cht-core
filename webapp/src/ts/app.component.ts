@@ -360,7 +360,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       },
       callback: (change) => {
         if (change.id === 'service-worker-meta') {
-          this.updateServiceWorker.update(() => this.showUpdateReady());
+          this.updateServiceWorker.update(() => this.ngZone.run(() => this.showUpdateReady()));
+
         } else {
           !environment.production && this.globalActions.setSnackbarContent(`${change.id} changed`);
           this.showUpdateReady();
