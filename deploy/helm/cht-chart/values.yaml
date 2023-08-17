@@ -1,13 +1,13 @@
 project_name: <your-project-name>
-namespace: "cht-dev-namespace"
-chtversion: 4.1.1
+namespace: "<your-namespace>" # e.g. "cht-dev-namespace"
+chtversion: 4.2.2
 #cht_image_tag: 4.1.1-4.1.1 #- This is filled in automatically by the deploy script. Don't uncomment this line.
 couchdb:
   password: <password-value>
   secret: <secret-value>
   user: <user-name>
   uuid: <uuid-value>
-  clusteredCouch_enabled: true
+  clusteredCouch_enabled: false
   couchdb_node_storage_size: 100Mi
 clusteredCouch:
   noOfCouchDBNodes: 3
@@ -45,6 +45,6 @@ nodes:
   node-3: "gamma-cht-couchdb-3" # This is the name of the third node where couchdb will be deployed
 
 remote:
-  preExistingEBS: "true"
+  preExistingEBS: "false"
   preExistingEBSVolumeID: "vol-0123456789abcdefg"
   preExistingEBSVolumeSize: "100Gi"
