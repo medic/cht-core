@@ -20,6 +20,15 @@ spec:
       labels:
         cht.service: couchdb-{{ $nodeNumber }}
     spec:
+      {{- if eq $root.Values.cluster_type "k3s-k3d" }}
+      initContainers:
+      - name: init-couchdb-{{ $nodeNumber }}
+        image: busybox
+        command: ['sh', '-c', 'mkdir -p /var/lib/couchdb{{ $nodeNumber }}']
+        volumeMounts:
+        - mountPath: /var/lib
+          name: local-volume-{{ $nodeNumber }}
+      {{- end }}
       tolerations:
       - key: {{ $root.Values.toleration.key }}
         operator: {{ $root.Values.toleration.operator }}
