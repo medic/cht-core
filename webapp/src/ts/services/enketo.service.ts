@@ -89,13 +89,7 @@ export class EnketoService {
         this.getAttachment(form._id, this.MODEL_ATTACHMENT_NAME)
       ])
       .then(([html, model]) => {
-        //TODO Should be able to do this HTML work down in enkto-form... (Though maybe we avoid depending on Translate?)
         const $html = $(html);
-        $html.find('[data-i18n]').each((idx, element) => {
-          const $element = $(element);
-          $element.text(this.translateService.instant('enketo.' + $element.attr('data-i18n')));
-        });
-
         const hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
         return {
           html: $html,

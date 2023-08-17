@@ -28,11 +28,18 @@ export class EnketoFormService {
     private ngZone: NgZone,
   ) { }
 
-  readonly objUrls: string[] = [];
+  private readonly objUrls: string[] = [];
   private currentForm;
 
   getCurrentForm() {
     return this.currentForm;
+  }
+
+  private replaceDataI18nTranslations(formHtml) {
+    formHtml.find('[data-i18n]').each((idx, element) => {
+      const $element = $(element);
+      $element.text(this.translateService.instant('enketo.' + $element.attr('data-i18n')));
+    });
   }
 
   private replaceJavarosaMediaWithLoaders(formHtml) {
@@ -319,6 +326,7 @@ export class EnketoFormService {
       isFormInModal,
     } = formContext;
 
+    this.replaceDataI18nTranslations(doc.html);
     this.replaceJavarosaMediaWithLoaders(doc.html);
     const xmlFormContext: XmlFormContext = {
       doc,
