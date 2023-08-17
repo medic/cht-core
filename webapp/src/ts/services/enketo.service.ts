@@ -21,7 +21,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoFormService } from '@mm-services/enketo-form.service';
+import { EnketoFormService, EnketoFormContext } from '@mm-services/enketo-form.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
@@ -58,11 +58,6 @@ export class EnketoService {
   private readonly HTML_ATTACHMENT_NAME = 'form.html';
   private readonly MODEL_ATTACHMENT_NAME = 'model.xml';
   private inited;
-
-  private currentForm;
-  getCurrentForm() {
-    return this.currentForm;
-  }
 
   private init() {
     if (this.inited) {
@@ -163,7 +158,7 @@ export class EnketoService {
     } = formContext;
 
     try {
-      this.unload(this.currentForm);
+      this.unload(this.enketoFormService.getCurrentForm());
       const [ doc, userSettings ] = await Promise.all([
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
@@ -173,9 +168,7 @@ export class EnketoService {
       if (!await this.canAccessForm(formDoc, userContact, instanceData, contactSummary)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
-
-      this.currentForm = await this.enketoFormService.renderForm(formContext, doc, contactSummary, userSettings);
-      return this.currentForm;
+      return await this.enketoFormService.renderForm(formContext, doc, contactSummary, userSettings);
     } catch (error) {
       if (error.translationKey) {
         throw error;
@@ -315,42 +308,20 @@ export class EnketoService {
     return this.ngZone.runOutsideAngular(() => this._save(docs, geoHandle));
   }
 
-  private async _save(docs, geoHandle) {
-    docs = await this.validateAttachments(docs);
-    docs = await this.saveGeo(geoHandle, docs);
-    docs = await this.transitionsService.applyTransitions(docs);
-    docs = await this.saveDocs(docs);
-    this.servicesActions.setLastChangedDoc(docs[0]);
-    // submit by sms _after_ saveDocs so that the main doc's ID is available
-    this.submitFormBySmsService.submit(docs[0]);
-    return docs;
+  private _save(docs, geoHandle) {
+    return this.validateAttachments(docs)
+      .then((docs) => this.saveGeo(geoHandle, docs))
+      .then((docs) => this.transitionsService.applyTransitions(docs))
+      .then((docs) => this.saveDocs(docs))
+      .then((docs) => {
+        this.servicesActions.setLastChangedDoc(docs[0]);
+        // submit by sms _after_ saveDocs so that the main doc's ID is available
+        this.submitFormBySmsService.submit(docs[0]);
+        return docs;
+      });
   }
 
   unload(form) {
-    if (form !== this.currentForm) {
-      return;
-    }
-
-    $(window).off('.enketo-pagemode');
-    form?.resetView();
-    // unload blobs
-    this.enketoFormService.objUrls.forEach((url) => {
-      (window.URL || window.webkitURL).revokeObjectURL(url);
-    });
-
-    delete window.CHTCore.debugFormModel;
-    delete this.currentForm;
-    this.enketoFormService.objUrls.length = 0;
+    this.enketoFormService.unload(form);
   }
-}
-
-export interface EnketoFormContext {
-  selector: string;
-  formDoc: Record<string, any>;
-  instanceData: null|string|Record<string, any>; // String for report forms, Record<> for contact forms.
-  editedListener: () => void;
-  valuechangeListener: () => void;
-  titleKey?: string;
-  isFormInModal?: boolean;
-  userContact?: Record<string, any>;
 }

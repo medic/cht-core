@@ -5,7 +5,8 @@ import { isEqual as _isEqual } from 'lodash-es';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
-import { EnketoFormContext, EnketoService } from '@mm-services/enketo.service';
+import { EnketoService } from '@mm-services/enketo.service';
+import { EnketoFormContext } from '@mm-services/enketo-form.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';

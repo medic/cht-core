@@ -574,6 +574,23 @@ export class EnketoFormService {
     const dataString = form.getDataStr({ irrelevant: false });
     return this.xmlToDocs(doc, formDoc.xml, formDoc.doc.xmlVersion, dataString);
   }
+
+  unload(form) {
+    if (form !== this.currentForm) {
+      return;
+    }
+
+    $(window).off('.enketo-pagemode');
+    form?.resetView();
+    // unload blobs
+    this.objUrls.forEach((url) => {
+      (window.URL || window.webkitURL).revokeObjectURL(url);
+    });
+
+    delete window.CHTCore.debugFormModel;
+    delete this.currentForm;
+    this.objUrls.length = 0;
+  }
 }
 
 interface ContactSummary {
