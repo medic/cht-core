@@ -137,9 +137,9 @@ export class EnketoFormService {
     }
   }
 
-  private async getEnketoForm(wrapper, doc, instanceData, contactSummary, language) {
+  private async getEnketoForm(wrapper, doc, instanceData, contactSummary, userSettings) {
     const contactSummaryXML = this.convertContactSummaryToXML(contactSummary);
-    const instanceStr = await this.enketoPrepopulationDataService.get(doc.model, instanceData);
+    const instanceStr = await this.enketoPrepopulationDataService.get(userSettings, doc.model, instanceData);
     const options: EnketoOptions = {
       modelStr: doc.model,
       instanceStr: instanceStr,
@@ -148,17 +148,17 @@ export class EnketoFormService {
       options.external = [ contactSummaryXML ];
     }
     const form = wrapper.find('form')[0];
-    return new window.EnketoForm(form, options, { language });
+    return new window.EnketoForm(form, options, { language: userSettings.language });
   }
 
-  private renderFromXmls(xmlFormContext: XmlFormContext, language) {
+  private renderFromXmls(xmlFormContext: XmlFormContext, userSettings) {
     const { doc, instanceData, titleKey, wrapper, isFormInModal, contactSummary } = xmlFormContext;
 
     const formContainer = wrapper.find('.container').first();
     formContainer.html(doc.html.get(0)!);
 
     return this
-      .getEnketoForm(wrapper, doc, instanceData, contactSummary, language)
+      .getEnketoForm(wrapper, doc, instanceData, contactSummary, userSettings)
       .then((form) => {
         this.currentForm = form;
         const loadErrors = this.currentForm.init();
@@ -310,7 +310,7 @@ export class EnketoFormService {
       () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
   }
 
-  public async renderForm(formContext: EnketoFormContext, doc, contactSummary, language) {
+  public async renderForm(formContext: EnketoFormContext, doc, contactSummary, userSettings) {
     const {
       formDoc,
       instanceData,
@@ -328,7 +328,7 @@ export class EnketoFormService {
       isFormInModal,
       contactSummary,
     };
-    const form = await this.renderFromXmls(xmlFormContext, language);
+    const form = await this.renderFromXmls(xmlFormContext, userSettings);
     const formContainer = xmlFormContext.wrapper.find('.container').first();
     this.replaceMediaLoaders(formContainer, formDoc);
     this.registerEnketoListeners(xmlFormContext.wrapper, form, formContext);

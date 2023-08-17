@@ -14,7 +14,6 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { LanguageService } from '@mm-services/language.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { AttachmentService } from '@mm-services/attachment.service';
@@ -60,7 +59,6 @@ describe('Enketo service', () => {
   let UserSettings;
   let createObjectURL;
   let FileReader;
-  let Language;
   let TranslateFrom;
   let form;
   let AddAttachment;
@@ -95,7 +93,6 @@ describe('Enketo service', () => {
     UserSettings = sinon.stub();
     createObjectURL = sinon.stub();
     FileReader = { utf8: sinon.stub() };
-    Language = sinon.stub();
     TranslateFrom = sinon.stub();
     form = {
       validate: sinon.stub(),
@@ -164,8 +161,7 @@ describe('Enketo service', () => {
         { provide: LineageModelGeneratorService, useValue: LineageModelGenerator },
         { provide: FileReaderService, useValue: FileReader },
         { provide: UserContactService, useValue: { get: UserContact } },
-        { provide: UserSettingsService, useValue: { get: UserSettings } },
-        { provide: LanguageService, useValue: { get: Language } },
+        { provide: UserSettingsService, useValue: { getWithLanguage: UserSettings } },
         { provide: TranslateFromService, useValue: { get: TranslateFrom } },
         { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
         { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
@@ -179,7 +175,7 @@ describe('Enketo service', () => {
       ],
     });
 
-    Language.resolves('en');
+    UserSettings.resolves({ name: 'Jim', language: 'en' });
     TranslateFrom.returns('translated');
     window.CHTCore = {};
   });
@@ -370,9 +366,9 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
       EnketoPrepopulationData.resolves(data);
-      Language.resolves('sw');
+      UserSettings.resolves({ name: 'Jim', language: 'sw' });
       return service.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
-        expect(Language.callCount).to.equal(1);
+        expect(UserSettings.callCount).to.equal(1);
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][2].language).to.equal('sw');
       });
@@ -631,6 +627,43 @@ describe('Enketo service', () => {
       expect(dbGetAttachment.args[1]).to.have.members([ 'form:secondForm', 'model.xml' ]);
     });
 
+    it('should throw exception if fails to get user settings', fakeAsync(async () => {
+      UserSettings.rejects(new Error('invalid user'));
+      const data = '<data><patient_id>123</patient_id></data>';
+      UserContact.resolves({ contact_id: '123' });
+      xmlFormsService.canAccessForm.resolves(true);
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      enketoInit.returns([]);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      EnketoPrepopulationData.resolves(data);
+      const renderForm = sinon.spy(EnketoFormService.prototype, 'renderForm');
+
+      try {
+        await service.render($('<div></div>'), mockEnketoDoc('myform'), data);
+        flush();
+        expect.fail('Should throw error');
+      } catch(error) {
+        expect(error.message).to.equal('Failed during the form "myform" rendering : invalid user');
+        expect(UserContact.calledOnce).to.be.true;
+        expect(renderForm.notCalled).to.be.true;
+        expect(enketoInit.notCalled).to.be.true;
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0]).to.deep.equal([
+          'Failed during the form "myform" rendering : ',
+          'invalid user'
+        ]);
+        expect(feedbackService.submit.callCount).to.equal(1);
+        expect(feedbackService.submit.args[0]).to.deep.equal([
+          'Failed during the form "myform" rendering : invalid user',
+          false
+        ]);
+      }
+    }));
+
     it('should throw exception when user does not have access to form', fakeAsync(async () => {
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
@@ -700,7 +733,6 @@ describe('Enketo service', () => {
       trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
       dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
       UserContact.resolves({ _id: '123', phone: '555' });
-      UserSettings.resolves({ name: 'Jim' });
       return service.save('V', form).then(actual => {
         actual = actual[0];
 
@@ -734,7 +766,6 @@ describe('Enketo service', () => {
       form.validate.resolves(true);
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       UserContact.resolves({ _id: '123', phone: '555' });
-      UserSettings.resolves({ name: 'Jim' });
 
       return service
         .save('training:a_new_training', form)
@@ -772,7 +803,6 @@ describe('Enketo service', () => {
         xml: '<form/>'
       });
       UserContact.resolves({ _id: '123', phone: '555' });
-      UserSettings.resolves({ name: 'Jim' });
       return service.save('V', form).then(actual => {
         actual = actual[0];
         expect(actual.form_version).to.deep.equal({ time: '1', sha256: 'imahash' });
@@ -790,7 +820,6 @@ describe('Enketo service', () => {
         xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
 
         UserContact.resolves({ _id: '123', phone: '555' });
-        UserSettings.resolves({ name: 'Jim' });
         const geoData = {
           latitude: 1,
           longitude: 2,
@@ -834,7 +863,6 @@ describe('Enketo service', () => {
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
         xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
         UserContact.resolves({ _id: '123', phone: '555' });
-        UserSettings.resolves({ name: 'Jim' });
         const geoError = {
           code: 42,
           message: 'some bad geo'
@@ -940,7 +968,6 @@ describe('Enketo service', () => {
       form.getDataStr.returns(content);
       dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
       UserContact.resolves({ _id: '123', phone: '555' });
-      UserSettings.resolves({ name: 'Jim' });
       const geoError = {
         code: 42,
         message: 'geolocation failed for some reason'

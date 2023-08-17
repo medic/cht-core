@@ -7,7 +7,6 @@ import * as enketoConstants from './../../js/enketo/constants';
 import * as medicXpathExtensions from '../../js/enketo/medic-xpath-extensions';
 import { DbService } from '@mm-services/db.service';
 import { FileReaderService } from '@mm-services/file-reader.service';
-import { LanguageService } from '@mm-services/language.service';
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { SearchService } from '@mm-services/search.service';
 import { SubmitFormBySmsService } from '@mm-services/submit-form-by-sms.service';
@@ -23,6 +22,7 @@ import { GlobalActions } from '@mm-actions/global';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { EnketoFormService } from '@mm-services/enketo-form.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -33,11 +33,11 @@ export class EnketoService {
     private contactSummaryService: ContactSummaryService,
     private dbService: DbService,
     private fileReaderService: FileReaderService,
-    private languageService: LanguageService,
     private lineageModelGeneratorService: LineageModelGeneratorService,
     private searchService: SearchService,
     private submitFormBySmsService: SubmitFormBySmsService,
     private userContactService: UserContactService,
+    private userSettingsService:UserSettingsService,
     private xmlFormsService: XmlFormsService,
     private zScoreService: ZScoreService,
     private trainingCardsService: TrainingCardsService,
@@ -164,9 +164,9 @@ export class EnketoService {
 
     try {
       this.unload(this.currentForm);
-      const [ doc, language ] = await Promise.all([
+      const [ doc, userSettings ] = await Promise.all([
         this.transformXml(formDoc),
-        this.languageService.get()
+        this.userSettingsService.getWithLanguage()
       ]);
       const contactSummary = await this.getContactSummary(doc, instanceData);
 
@@ -174,7 +174,7 @@ export class EnketoService {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
 
-      this.currentForm = await this.enketoFormService.renderForm(formContext, doc, contactSummary, language);
+      this.currentForm = await this.enketoFormService.renderForm(formContext, doc, contactSummary, userSettings);
       return this.currentForm;
     } catch (error) {
       if (error.translationKey) {
