@@ -29,7 +29,7 @@ npm install
 
 
 echo "jmeter install"
-wget https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.4.3.tgz -O ./apache-jmeter.tgz
+wget https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-5.6.tgz -O ./apache-jmeter.tgz
 mkdir -p ./jmeter
 tar -xf apache-jmeter.tgz -C ./jmeter --strip-components=1
 
