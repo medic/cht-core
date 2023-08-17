@@ -214,7 +214,7 @@ const buildServiceImages = async () => {
   for (const service of versions.SERVICES) {
     console.log(`\n\nBuilding docker image for ${service}\n\n`);
     const tag = versions.getImageTag(service);
-    await exec('npm', ['ci', '--production'], { cwd: service });
+    await exec('npm', ['ci', '--omit=dev'], { cwd: service });
     await exec('npm', ['dedupe'], { cwd: service });
     await exec('docker', ['build', '-f', `./${service}/Dockerfile`, '--tag', tag, '.']);
   }
