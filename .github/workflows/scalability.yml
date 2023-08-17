@@ -31,4 +31,4 @@ jobs:
           aws-region: ca-central-1
       - name: Start EC2 and CHT
         if: ${{ env.INTERNAL_CONTRIBUTOR }}
-        run: cd tests/scalability && ./start-ec2-cht.sh $TAG
+        run: cd tests/scalability && ./start-ec2-cht.sh $BRANCH
