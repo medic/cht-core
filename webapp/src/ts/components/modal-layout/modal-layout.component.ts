@@ -11,7 +11,7 @@ export class ModalLayoutComponent {
   @Input() titleKey: string;
   @Input() submitKey: string;
   @Input() submittingKey: string;
-  @Input() useSubmitFlatStyle: boolean;
+  @Input() isFlatButton: boolean; // Best used for modals with forms
   @Input() cancelKey: string;
   @Input() hideFooter: boolean;
   @Input() hideCancelButton: boolean;

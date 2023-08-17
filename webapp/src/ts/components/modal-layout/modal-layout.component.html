@@ -17,7 +17,7 @@
     </button>
 
     <button
-      *ngIf="useSubmitFlatStyle && submitKey"
+      *ngIf="isFlatButton && submitKey"
       mat-flat-button
       color="primary"
       [class.disabled]="processing"
@@ -28,7 +28,7 @@
     </button>
 
     <button
-      *ngIf="!useSubmitFlatStyle && submitKey"
+      *ngIf="!isFlatButton && submitKey"
       mat-button
       color="primary"
       [class.disabled]="processing"
