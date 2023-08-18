@@ -24,8 +24,6 @@ const getAllButtonLabels = async () => await $$('.header .tabs .button-label');
 const loaders = () => $$('.container-fluid .loader');
 const syncSuccess = () => $(`${hamburgerMenuItemSelector}.sync-status .success`);
 const syncRequired = () => $(`${hamburgerMenuItemSelector}.sync-status .required`);
-const reloadModalUpdate = () => $('#update-available [test-id="Update"]');
-const reloadModalCancel = () => $('#update-available .btn.cancel:not(.disabled)');
 const jsonError = async () => (await $('pre')).getText();
 
 //languages
@@ -316,12 +314,8 @@ const syncAndWaitForFailure = async () => {
 
 const closeReloadModal = async (shouldUpdate = false, timeout = 5000) => {
   try {
-    const button = shouldUpdate ? reloadModalUpdate() : reloadModalCancel();
-    await browser.waitUntil(async () => await (await button).waitForExist({ timeout }));
-    // wait for the animation to complete
-    await browser.pause(500);
-    await (await button).click();
-    await browser.pause(500);
+    shouldUpdate ? await modalPage.submit(timeout) : await modalPage.cancel(timeout);
+    await modalPage.checkModalHasClosed();
     return true;
   } catch (err) {
     console.error('Reload modal not showed up');
