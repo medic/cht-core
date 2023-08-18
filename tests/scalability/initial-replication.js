@@ -4,6 +4,8 @@ const config = require('./config.json');
 const user = config.users[threadId % config.users.length];
 
 const rewire = require('rewire');
+const proxyquire = require('proxyquire');
+proxyquire('eurodigit', { to_non_euro: { devanagari: () => {} } });
 const rpn = require('request-promise-native');
 
 const PouchDB = require('pouchdb');
