@@ -22,7 +22,6 @@
       color="primary"
       [class.disabled]="processing"
       (click)="submit()"
-      [attr.test-id]="submitKey"
       test-id="submit">
       {{ (processing && submittingKey ? submittingKey : submitKey) | translate }}
     </button>
