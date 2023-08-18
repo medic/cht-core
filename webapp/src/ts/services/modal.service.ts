@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ComponentType } from '@angular/cdk/overlay';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { v4 as uuid } from 'uuid';
 
 import { ResponsiveService } from '@mm-services/responsive.service';
 
