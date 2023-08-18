@@ -317,7 +317,7 @@ export class EnketoFormService {
       () => this.setupNavButtons($selector, form.pages._getCurrentIndex()));
   }
 
-  public async renderForm(formContext: EnketoFormContext, doc, contactSummary, userSettings) {
+  public async renderForm(formContext: EnketoFormContext, doc, userSettings, contactSummary) {
     const {
       formDoc,
       instanceData,

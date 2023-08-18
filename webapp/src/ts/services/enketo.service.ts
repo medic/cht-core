@@ -162,7 +162,7 @@ export class EnketoService {
       if (!await this.canAccessForm(formDoc, userContact, instanceData, contactSummary)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
-      return await this.enketoFormService.renderForm(formContext, doc, contactSummary, userSettings);
+      return await this.enketoFormService.renderForm(formContext, doc, userSettings, contactSummary);
     } catch (error) {
       if (error.translationKey) {
         throw error;
