@@ -21,7 +21,10 @@ apt-get install default-jre -y
 echo installing node
 apt-get install nodejs npm -y
 
+
 cd cht-core
+npm install patch-package
+cd webapp && npm ci && ../
 cd tests/scalability
 echo "Changing config to match url arg"
 node -p "const fs = require('fs');var path = './config.json';var config = JSON.stringify({...require(path), url: '$MEDIC_URL'}, null, 2);fs.writeFileSync(path,config,{encoding:'utf8',flag:'w'});"

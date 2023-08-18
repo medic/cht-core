@@ -27,7 +27,6 @@ const localDb = new PouchDB(`scalability-test-${threadId}`, {
   auto_compaction: true
 });
 
-require('eurodigit');
 const initialReplication = rewire('../../webapp/src/js/bootstrapper/initial-replication');
 
 initialReplication.__set__('setUiStatus', () => {});
