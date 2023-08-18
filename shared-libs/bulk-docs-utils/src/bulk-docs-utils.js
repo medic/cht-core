@@ -50,7 +50,7 @@ module.exports = function(dependencies) {
         if (dedup.indexOf(doc._id) !== -1) {
           errors.push({
             error: 'conflict',
-            message : 'Duplicate documents to delete, with id ' + doc._id + '. Not deleting to avoid conflict.',
+            message: 'Duplicate documents to delete, with id ' + doc._id + '. Not deleting to avoid conflict.',
             id: doc._id
           });
         }

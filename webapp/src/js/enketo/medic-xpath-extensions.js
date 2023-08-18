@@ -1,9 +1,9 @@
 const RAW_NUMBER = /^(-?[0-9]+)(\.[0-9]+)?$/;
 const DATE_STRING = /^\d\d\d\d-\d{1,2}-\d{1,2}(?:T\d\d:\d\d:\d\d\.?\d?\d?(?:Z|[+-]\d\d:\d\d)|.*)?$/;
 const XPR = {
-  number:  v => ({ t:'num',  v }),
-  string:  v => ({ t:'str',  v }),
-  date:    v => ({ t:'date', v }),
+  number: v => ({ t: 'num',  v }),
+  string: v => ({ t: 'str',  v }),
+  date: v => ({ t: 'date', v }),
 };
 
 let zscoreUtil;
