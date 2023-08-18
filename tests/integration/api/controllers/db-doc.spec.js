@@ -448,7 +448,7 @@ describe('db-doc handler', () => {
       ];
       const docs = reportScenarios.map(scenario => scenario.doc);
       return utils
-        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
         .then(() => utils.saveDocs(docs))
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: `/${scenario.doc._id}` }, offlineRequestOptions)
@@ -766,7 +766,7 @@ describe('db-doc handler', () => {
 
         const docs = reportScenarios.map(scenario => scenario.doc);
         return utils
-          .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+          .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
           .then(() => utils.saveDocs([...patientsToDelete, ...docs, ...submittersToDelete]))
           .then(() => Promise.all(patientsToDelete.map(patient => utils.requestOnTestDb(
             _.defaults({ path: `/${patient._id}` }, offlineRequestOptions)
@@ -1073,7 +1073,7 @@ describe('db-doc handler', () => {
       };
 
       return utils
-        .updateSettings({ replication_depth: [{ role:'district_admin', depth: 2 }]}, true)
+        .updateSettings({ replication_depth: [{ role: 'district_admin', depth: 2 }]}, true)
         .then(() => utils.saveDocs([ allowedTask, deniedTask, allowedTarget, deniedTarget ]))
         .then(() => Promise.all([
           utils.requestOnTestDb(_.defaults({ path: '/task1' }, offlineRequestOptions)),
@@ -1418,7 +1418,7 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
       ];
       return utils
-        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
           _.defaults({ path: '/', body: scenario.doc }, offlineRequestOptions)
         ).catch(err => err))))
@@ -1724,9 +1724,9 @@ describe('db-doc handler', () => {
         { doc: reportForPatient('fixture:online:clinic:patient', 'online', ['patient_id'], true), allowed: false },
       ];
       return utils
-        .updateSettings({replication_depth: [{ role:'district_admin', depth:1 }]}, true)
+        .updateSettings({replication_depth: [{ role: 'district_admin', depth: 1 }]}, true)
         .then(() => Promise.all(reportScenarios.map(scenario => utils.requestOnTestDb(
-          _.defaults({ path: `/${scenario.doc._id}`, body:scenario.doc }, offlineRequestOptions)
+          _.defaults({ path: `/${scenario.doc._id}`, body: scenario.doc }, offlineRequestOptions)
         ).catch(err => err))))
         .then(results => {
           results.forEach((result, idx) => {

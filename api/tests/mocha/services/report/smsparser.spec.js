@@ -747,21 +747,21 @@ describe('sms parser', () => {
   });
 
   it('parse patient id in nepali correctly', () => {
-    const doc = {message:'०३१७७'};
+    const doc = {message: '०३१७७'};
     const def = definitions.forms.YYYT;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({patient_id: '03177'});
   });
 
   it('parse patient id in nepali and english correctly', () => {
-    const doc = {message:'०३१77'};
+    const doc = {message: '०३१77'};
     const def = definitions.forms.YYYT;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({patient_id: '03177'});
   });
 
   it('parse lmp date in nepali correclty', () => {
-    const doc = {message:'०३१77 २०८० १ १'};
+    const doc = {message: '०३१77 २०८० १ १'};
     const def = definitions.forms.YYYS;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({
@@ -772,7 +772,7 @@ describe('sms parser', () => {
   });
 
   it('parse lmp date in nepali and english correclty', () => {
-    const doc = {message:'०३१77 २०70 08 १4'};
+    const doc = {message: '०३१77 २०70 08 १4'};
     const def = definitions.forms.YYYS;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({

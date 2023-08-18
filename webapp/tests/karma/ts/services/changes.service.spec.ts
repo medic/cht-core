@@ -28,7 +28,7 @@ describe('Changes service', () => {
   beforeEach(waitForAsync(() => {
     changesCalls = {
       medic: { callCount: 0, callOptions: null, callbacks: {} },
-      meta:  { callCount: 0, callOptions: null, callbacks: {} }
+      meta: { callCount: 0, callOptions: null, callbacks: {} }
     };
 
     dbService = {

@@ -94,7 +94,7 @@ describe('Form2Sms service', () => {
     it('should parse attached code for a form', () => {
       // given
       const doc:any = aFormSubmission();
-      doc.fields = { a:1, b:2, c:3 };
+      doc.fields = { a: 1, b: 2, c: 3 };
       // and
       testFormExistsWithAttachedCode('spaced("T", doc.a, doc.b, doc.c)');
 

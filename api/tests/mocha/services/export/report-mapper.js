@@ -24,7 +24,7 @@ describe('Report mapper', () => {
       service._flatten({
         foo: [1, 2, 3],
         bar: {
-          smang:['a', 'b', 'c']
+          smang: ['a', 'b', 'c']
         }
       }).should.deep.equal({
         foo: [1, 2, 3],
