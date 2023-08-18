@@ -8,7 +8,15 @@ module.exports = {
     return search('contacts', filters, options).then(results => results.docIds);
   },
   map: () => Promise.resolve({
-    header: ['id', 'rev', 'name', 'patient_id', 'type'],
-    getRows: record => [[record._id, record._rev, record.name, record.patient_id, record.type]]
+    header: ['id', 'rev', 'name', 'patient_id', 'place_id', 'type', 'contact_type'],
+    getRows: record => [[
+      record._id,
+      record._rev,
+      record.name,
+      record.patient_id,
+      record.place_id,
+      record.type,
+      record.contact_type,
+    ]]
   })
 };

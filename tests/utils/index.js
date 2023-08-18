@@ -226,7 +226,7 @@ const saveDoc = async doc => {
   }
 };
 
-const saveDocs = async docs => {
+const saveDocs = async (docs, updateDocs = false) => {
   const waitForForms = await formDocProcessing(docs);
   const results = await requestOnTestDb({
     path: '/_bulk_docs',
@@ -239,7 +239,10 @@ const saveDocs = async docs => {
   }
 
   await waitForForms.promise();
-  return results;
+  if (!updateDocs) {
+    return results;
+  }
+  results.forEach(({ rev }, idx) => docs[idx]._rev = rev);
 };
 
 const saveDocIfNotExists = async doc => {
