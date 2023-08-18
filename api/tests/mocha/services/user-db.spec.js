@@ -77,7 +77,7 @@ describe('User DB service', () => {
         chai.expect(ddoc.views.read.reduce).to.equal('_count');
         chai.expect(ddoc.validate_doc_update).to.equal(
           'function (newDoc) {\n  if (newDoc && newDoc._deleted && newDoc.purged) {\n    ' +
-          'throw({forbidden: \'Purged documents should not be written to CouchDB!\'});\n  }\n}'
+          'throw ({forbidden: \'Purged documents should not be written to CouchDB!\'});\n  }\n}'
         );
         chai.expect(db.close.callCount).to.equal(1);
         chai.expect(db.close.args[0]).to.deep.equal([userDb]);
