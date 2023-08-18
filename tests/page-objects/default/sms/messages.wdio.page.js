@@ -64,7 +64,7 @@ const searchSelect = async (recipient, option) => {
 
 const sendMessage = async (message, recipient, entryText) => {
   await commonPage.clickFastActionFlat({ waitForList: false });
-  await (await sendMessage()).waitForDisplayed();
+  await (await sendMessageModal()).waitForDisplayed();
   await searchSelect(recipient, entryText);
   await (await messageText()).setValue(message);
   await modalPage.submit();

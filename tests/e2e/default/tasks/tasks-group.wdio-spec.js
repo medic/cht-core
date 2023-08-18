@@ -285,7 +285,7 @@ describe('Tasks group landing page', () => {
       // clicking on another page displays the modal
       await commonPage.goToPeople('', false);
       await expectTasksGroupLeaveModal();
-      await modalPage.cancel();
+      await modalPage.submit();
       await (await contactsPage.contactList()).waitForDisplayed();
       await (await commonPage.waitForPageLoaded());
     });
