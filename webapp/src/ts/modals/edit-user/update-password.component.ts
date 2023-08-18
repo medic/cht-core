@@ -59,7 +59,7 @@ export class UpdatePasswordComponent extends MmModalAbstract {
       await this.updatePasswordService.update(username, currentPassword, newPassword);
       try {
         await this.userLoginService.login(username, newPassword);
-      } catch(err) {
+      } catch (err) {
         if (err.status === 302) {
           this.setFinished();
           this.close();
@@ -71,7 +71,7 @@ export class UpdatePasswordComponent extends MmModalAbstract {
           this.windowReload();
         }
       }
-    } catch(err) {
+    } catch (err) {
       if (err.status === 0) { // offline status
         const message = await this.translateService.get('online.action.message');
         this.errors.currentPassword = message;

@@ -463,7 +463,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.reportsActions.setSelectedReports(preparedReports);
       this.globalActions.unsetComponents();
 
-    } catch(error) {
+    } catch (error) {
       console.error('Error selecting all', error);
     }
   }

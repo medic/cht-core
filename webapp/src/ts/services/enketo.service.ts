@@ -405,7 +405,7 @@ export class EnketoService {
         const targetPage = event.originalEvent.state.enketo_page_number;
         const pages = form.pages;
         const currentIndex = pages._getCurrentIndex();
-        if(targetPage > currentIndex) {
+        if (targetPage > currentIndex) {
           pages._next();
         } else {
           pages._prev();

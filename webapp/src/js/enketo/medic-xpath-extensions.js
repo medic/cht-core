@@ -70,10 +70,10 @@ const parseTimestampToDate = (value) => {
 };
 
 const asString = (r) => {
-  if(r.t !== 'arr') {
+  if (r.t !== 'arr') {
     return r.v.toString();
   }
-  if(r.v.length && !(r.v[0] === null || r.v[0] === undefined)) {
+  if (r.v.length && !(r.v[0] === null || r.v[0] === undefined)) {
     return r.v[0].textContent || '';
   }
   return '';
@@ -87,7 +87,7 @@ const asMoment = (r) => {
     date.setDate(1 + days);
     return moment(date);
   };
-  switch(r.t) {
+  switch (r.t) {
   case 'bool':
     return moment(NaN);
   case 'date':
@@ -97,12 +97,12 @@ const asMoment = (r) => {
   case 'arr':
   default: {
     r = asString(r);
-    if(RAW_NUMBER.test(r)) {
+    if (RAW_NUMBER.test(r)) {
       return dateSinceUnixEpoch(parseInt(r, 10));
     }
     const rMoment = moment(r);
-    if(DATE_STRING.test(r) && rMoment.isValid()) {
-      if(r.indexOf('T')) {
+    if (DATE_STRING.test(r) && rMoment.isValid()) {
+      if (r.indexOf('T')) {
         return rMoment;
       }
 
@@ -171,7 +171,7 @@ module.exports = {
       const d1Moment = asMoment(d1);
       const d2Moment = asMoment(d2);
 
-      if(!d1Moment.isValid() || !d2Moment.isValid()) {
+      if (!d1Moment.isValid() || !d2Moment.isValid()) {
         return XPR.string('');
       }
 
@@ -191,7 +191,7 @@ module.exports = {
   },
   process: {
     toExternalResult: function(r) {
-      if(r.t === 'date') {
+      if (r.t === 'date') {
         return {
           resultType: XPathResult.STRING_TYPE,
           numberValue: r.v.getTime(),

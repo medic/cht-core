@@ -13,17 +13,17 @@ export class SubmitFormBySmsService {
   ) {}
 
   submit(doc){
-    if(!window.medicmobile_android) {
+    if (!window.medicmobile_android) {
       console.info('Not in android wrapper.');
       return;
     }
 
-    if(!window.medicmobile_android.sms_available) {
+    if (!window.medicmobile_android.sms_available) {
       console.info('Android wrapper does not have SMS hooks.');
       return;
     }
 
-    if(!window.medicmobile_android.sms_available()) {
+    if (!window.medicmobile_android.sms_available()) {
       console.warn(
         'Android wrapper does not have SMS enabled. Check stacktrace to see why the SmsSender failed to initialise.'
       );
@@ -36,7 +36,7 @@ export class SubmitFormBySmsService {
         return this.form2SmsService
           .transform(doc)
           .then((smsContent) => {
-            if(!smsContent) {
+            if (!smsContent) {
               console.debug('Form2Sms did not return any form content for doc:', doc);
               return;
             }
@@ -45,7 +45,7 @@ export class SubmitFormBySmsService {
               .get()
               .then((settings:any) => {
                 const gatewayPhoneNumber = settings.gateway_number;
-                if(gatewayPhoneNumber) {
+                if (gatewayPhoneNumber) {
                   window.medicmobile_android.sms_send(doc._id, gatewayPhoneNumber, smsContent);
                 } else {
                   console.error('No gateway_number provided in app_settings.  Form cannot be submitted by SMS.');

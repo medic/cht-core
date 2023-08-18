@@ -40,7 +40,7 @@ export class EditUserSettingsComponent extends MmModalAbstract implements OnInit
   async ngOnInit(): Promise<void> {
     try {
       this.editUserModel = await this.determineEditUserModel();
-    } catch(err) {
+    } catch (err) {
       console.error('Error determining user model', err);
     }
     this.enabledLocales = await this.languagesService.get();

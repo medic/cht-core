@@ -258,7 +258,7 @@ describe('Enketo service', () => {
         await service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData);
         flush();
         expect.fail('Should throw error');
-      } catch(error) {
+      } catch (error) {
         expect(UserContact.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([
@@ -642,7 +642,7 @@ describe('Enketo service', () => {
         await service.render($('<div></div>'), mockEnketoDoc('myform'));
         flush();
         expect.fail('Should throw error');
-      } catch(error) {
+      } catch (error) {
         expect(UserContact.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.calledOnce).to.be.true;
         expect(xmlFormsService.canAccessForm.args[0]).to.have.deep.members([

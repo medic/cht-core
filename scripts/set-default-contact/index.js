@@ -8,7 +8,7 @@ app.use(express.json());
 const compileUrl = path => {
   try {
     return new URL(path, process.env.COUCH_URL);
-  } catch(e) {
+  } catch (e) {
     throw new Error(`Error in compileUrl() while creating URL from ${process.env.COUCH_URL}${path},` +
           ` error is: ${e.message}`);
   }
@@ -48,7 +48,7 @@ const getObjectFromMedicDb = async id => {
 };
 
 const hasDefaultContact = async user => {
-  if(typeof user.place === 'object' && typeof user.contact === 'object' &&  user.place._id  ){
+  if (typeof user.place === 'object' && typeof user.contact === 'object' &&  user.place._id  ){
     const place = await getObjectFromMedicDb(user.place._id);
     return place.contact && place.contact._id;
   }
@@ -60,7 +60,7 @@ const filterUsersForDefaultPlace = async users => {
   const filteredUsers = [];
   for (const user of users) {
     const defaultSet = await hasDefaultContact(user);
-    if(!defaultSet){
+    if (!defaultSet){
       filteredUsers.push(user);
     }
   }
@@ -71,7 +71,7 @@ const savePlace = async (placeId, contactId) => {
   const url = compileUrl('/medic/' + placeId);
   // fetch the place fresh because we need to ensure revision ID is current
   const placeObj = await getObjectFromMedicDb(placeId);
-  if(!placeObj.contact){
+  if (!placeObj.contact){
     placeObj.contact = {};
   }
   placeObj.contact._id = contactId;
