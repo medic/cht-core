@@ -166,6 +166,7 @@ const closeHamburgerMenu = async () => {
 
 const navigateToLogoutModal = async () => {
   await openHamburgerMenu();
+  await (await logoutButton()).waitForClickable();
   await (await logoutButton()).click();
   await (await modalPage.body()).waitForDisplayed();
 };
