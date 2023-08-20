@@ -13,34 +13,40 @@ setup() {
 }
 
 @test "HTTP request should redirect to HTTPS" {
-	run curl -fsm5 -I http://localhost:1080 
+	run curl -Ifsm5 --http1.1 http://localhost:1080 
 	assert_success
 	assert_line --partial --index 0 'HTTP/1.1 301 Moved Permanently'
 	assert_line --partial 'Location: https://localhost/'
 }
 
 @test "HTTP acme-challenge should not redirect" {
-	run curl -Ism5 http://localhost:1080/.well-known/acme-challenge/
+	run curl -Ism5 --http1.1 http://localhost:1080/.well-known/acme-challenge/
 	assert_success
  	refute_line --index 0 'HTTP/1.1 301 Moved Permanently'
 	assert_line --partial --index 0 'HTTP/1.1 404 Not Found'
 }
 
 @test "should recieve response from CHT api" {
-	run curl -fksm5 https://localhost:1443/
+	run curl -fksm5 --http1.1 https://localhost:1443/
 	assert_success
 	assert_output 'Hello from CHT api mock'
 
 	run curl -fksm5 https://localhost:1443/somepath
 	assert_success
 	assert_output 'Test'
+}
 
-	run curl -Iksm5 https://localhost:1443/doesnotexist
+@test "Should work with http 1.1 and 2" {
+	run curl -Iksm5 --http1.1 https://localhost:1443/doesnotexist
 	assert_line --partial --index 0 'HTTP/1.1 404 Not Found'
+
+	run curl -Iksm5 --http2 https://localhost:1443/doesnotexist
+	assert_line --partial --index 0 'HTTP/2 404'
+	
 }
 
 @test "Should return 502 on connection drop" {
-	run curl -iksm5 https://localhost:1443/error/drop
+	run curl -iksm5 --http1.1 https://localhost:1443/error/drop
 	assert_success
 	assert_line --partial --index 0 'HTTP/1.1 502 Bad Gateway'
 	assert_line '  <title>502 Bad Gateway</title>'

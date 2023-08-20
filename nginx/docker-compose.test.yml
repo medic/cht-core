@@ -16,8 +16,6 @@ services:
             - ./tests/tests.bats:/app/tests.bats
         depends_on:
             - cht-api
-        networks:
-            - cht-net
 
     cht-api:
         image: mockserver/mockserver:5.15.0
@@ -28,12 +26,7 @@ services:
             MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
         volumes:
         - ./mock-config:/config
-        networks:
-            - cht-net
 
 volumes:
     cht-ssl:
         name: cht-ssl
-networks:
-    cht-net:
-        name: cht-net
