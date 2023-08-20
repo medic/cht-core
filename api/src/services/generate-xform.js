@@ -255,7 +255,7 @@ module.exports = {
         if (!toSave.length) {
           return;
         }
-        return db.medic.bulkDocs(toSave).then(results => {
+        return db.saveDocs(db.medic, toSave).then(results => {
           const failures = results.filter(result => !result.ok);
           if (failures.length) {
             logger.error('Bulk save failed with: %o', failures);

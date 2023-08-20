@@ -190,8 +190,8 @@ describe('ongoing replication', () => {
     const docId = docs.persons[0]._id;
     //create conflict
     await browser.throttle('offline');
-    await chtDbUtils.updateDoc(docId, { local_update : 1 });
-    await chtDbUtils.updateDoc(docId, { local_update : 2 });
+    await chtDbUtils.updateDoc(docId, { local_update: 1 });
+    await chtDbUtils.updateDoc(docId, { local_update: 2 });
     let serverDoc = await utils.getDoc(docId);
     serverDoc.remote_update = 1;
     await utils.saveDoc(serverDoc);
@@ -205,7 +205,7 @@ describe('ongoing replication', () => {
     expect(localDoc.local_update).to.equal(2);
 
     await browser.throttle('offline');
-    await chtDbUtils.updateDoc(docId, { local_update : 3 });
+    await chtDbUtils.updateDoc(docId, { local_update: 3 });
     serverDoc = await utils.getDoc(docId);
     serverDoc.remote_update = 2;
     await utils.saveDoc(serverDoc);

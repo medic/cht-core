@@ -32,7 +32,7 @@ describe('MmModalAbstract', () => {
   it('should be correctly initialized', () => {
     child = new mmModalChild(bsModuleRef);
     expect(child.status).to.deep.equal({
-      processing:false,
+      processing: false,
       error: false,
       severity: false,
     });

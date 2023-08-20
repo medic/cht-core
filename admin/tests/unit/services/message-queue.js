@@ -317,7 +317,7 @@ describe('MessageQueue service', function() {
         chai.expect(translate.instant.args[0]).to.deep.equal([ 'task1', { group: 1 } ]);
 
         chai.expect(result.messages).to.deep.equal([{
-          record: { id:  'report_id1', reportedDate: 100 },
+          record: { id: 'report_id1', reportedDate: 100 },
           recipient: 'James',
           task: 'task 1 translation',
           state: 'pending',
@@ -327,7 +327,7 @@ describe('MessageQueue service', function() {
           link: true,
           error: false
         }, {
-          record: { id:  'report_id2', reportedDate: 120 },
+          record: { id: 'report_id2', reportedDate: 120 },
           recipient: 'phone2',
           task: 'task2:2',
           state: 'delivered',

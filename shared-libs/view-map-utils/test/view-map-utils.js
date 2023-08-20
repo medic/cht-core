@@ -19,7 +19,7 @@ describe('Replication Helper Views Lib', () => {
         }
       };
       lib.loadViewMaps(ddoc, 'view1', 'view2');
-      lib._getViewMapStrings().should.deep.equal({ ddoc : { view1: 'view1_map', view2: 'view2_map' }});
+      lib._getViewMapStrings().should.deep.equal({ ddoc: { view1: 'view1_map', view2: 'view2_map' }});
     });
 
     it('does not crash when view is not found', () => {
