@@ -35,8 +35,7 @@ setup() {
 	assert_success
 	assert_output 'Test'
 
-	run curl -Ifksm5 https://localhost:1443/doesnotexist
-	assert_failure
+	run curl -Iksm5 https://localhost:1443/doesnotexist
 	assert_line --partial --index 0 'HTTP/1.1 404 Not Found'
 }
 
