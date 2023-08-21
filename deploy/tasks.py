@@ -32,6 +32,7 @@ def load_values(c, f):
 
 @task
 def determine_namespace(c, f, values):
+    print("\u21B3 Checking namespace")
     namespace = values.get('namespace', '')
     if not namespace:
         print("Namespace is not specified.")
@@ -60,13 +61,13 @@ metadata:
 
 @task
 def obtain_certificate_and_key(c):
-    print("Obtaining certificate from local-ip.co...")
+    print("\u21B3 Obtaining certificate from local-ip.co...")
     subprocess.run(["curl", "http://local-ip.co/cert/server.pem", "-o", "certificate.crt"], check=True)
     subprocess.run(["curl", "http://local-ip.co/cert/server.key", "-o", "private.key"], check=True)
 
 @task
 def create_secret(c, namespace):
-    print("Checking if secret api-tls-secret already exists...")
+    print("\u21B3 Checking if secret `api-tls-secret` already exists...")
     secret_exists = subprocess.run(["kubectl", "get", "secret", "api-tls-secret", "-n", namespace], capture_output=True, text=True).returncode
     if secret_exists != 0:
         print("Secret does not exist. Creating Secret from certificate and key...")
@@ -76,10 +77,11 @@ def create_secret(c, namespace):
 
 @task
 def get_image_tag(c, chtversion):
+    print("\u21B3 Fetching cht-api image tag")       
     response = requests.get(f'https://staging.dev.medicmobile.org/_couch/builds_4/medic:medic:{chtversion}')
     response.raise_for_status()
     data = response.json()
-
+    
     for tag in data['tags']:
         if tag['container_name'] == 'cht-api':
             image_tag = tag['image'].split(':')[-1]
@@ -90,6 +92,7 @@ def get_image_tag(c, chtversion):
 def setup_etc_hosts(c, values):
     # Check if the environment is 'local'
     if values.get('environment', '') == 'local':
+        print("\u21B3 Environment is `local`. Setting up /etc/hosts")
         host = values.get('ingress', {}).get('host', '')
         proc = subprocess.Popen(['sudo', 'cat', '/etc/hosts'], stdout=subprocess.PIPE)
         lines = [line.decode('utf-8') for line in proc.stdout.readlines()]
@@ -102,7 +105,7 @@ def setup_etc_hosts(c, values):
             command = ['sudo', 'bash', '-c', f'echo "127.0.0.1 {host}" >> /etc/hosts']
             subprocess.run(command)
     else:
-        print("Environment is not local, skipping hosts setup.")
+        print("\u21B3 Environment is not local, skipping hosts setup.")
 
 @task
 def add_route53_entry(c, f):
@@ -128,10 +131,12 @@ def add_route53_entry(c, f):
 
 @task
 def helm_install_or_upgrade(c, f, namespace, values, image_tag):
+    print("\u21B3 Running helm installation")
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    chart_filename = "cht-chart-4.x.tgz"
+    chart_filename = "cht-chart"
     project_name = values.get('project_name', '')
     release_exists = subprocess.run(["helm", "list", "-n", namespace], capture_output=True, text=True).stdout
+    print(release_exists)
     if project_name in release_exists:
         print("Release exists. Performing upgrade.")
         subprocess.run(["helm", "upgrade", "--install", project_name, os.path.join(script_dir, "helm", chart_filename), "--namespace", namespace, "--values", f, "--set", f"cht_image_tag={image_tag}"], check=True)
