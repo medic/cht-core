@@ -1,4 +1,4 @@
-const swPrecache = require('sw-precache');
+const workbox = require('workbox-build');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -63,24 +63,25 @@ const getLoginPageContents = async () => {
 const appendExtensionLibs = async (config) => {
   const libs = await extensionLibs.getAll();
   // cache this even if there are no libs so offline client knows there are no libs
-  config.staticFileGlobs.push('/extension-libs');
-  config.dynamicUrlToDependencies['/extension-libs'] = JSON.stringify(libs.map(lib => lib.name));
+  config.globPatterns.push('/extension-libs');
+  config.templatedURLs['/extension-libs'] = JSON.stringify(libs.map(lib => lib.name));
   libs.forEach(lib => {
     const libPath = path.join('/extension-libs', lib.name);
-    config.staticFileGlobs.push(libPath);
-    config.dynamicUrlToDependencies[libPath] = lib.data;
+    config.globPatterns.push(libPath);
+    config.templatedURLs[libPath] = lib.data;
   });
 };
 
 // Use the swPrecache library to generate a service-worker script
 const writeServiceWorkerFile = async () => {
   const config = {
-    cacheId: 'cache',
-    claimsClient: true,
+    swDest: scriptOutputPath,
+    // cacheId: 'cache',
+    clientsClaim: true,
     skipWaiting: true,
-    directoryIndex: false,
-    handleFetch: true,
-    staticFileGlobs: [
+    // directoryIndex: false,
+    // handleFetch: true,
+    globPatterns: [
       path.join(webappDirectoryPath, '{audio,img}', '*'),
       path.join(webappDirectoryPath, 'manifest.json'),
       path.join(webappDirectoryPath, '*.js'),
@@ -95,21 +96,29 @@ const writeServiceWorkerFile = async () => {
       path.join(staticDirectoryPath, 'login', '*.{css,js}'),
       path.join(staticDirectoryPath, 'login', 'images', '*.svg'),
     ],
-    dynamicUrlToDependencies: {
+    templatedURLs: {
       '/': [path.join(webappDirectoryPath, 'index.html')], // Webapp's entry point
       '/medic/login': await getLoginPageContents(),
       '/medic/_design/medic/_rewrite/': [path.join(webappDirectoryPath, 'appcache-upgrade.html')]
     },
-    ignoreUrlParametersMatching: [/redirect/, /username/],
-    stripPrefixMulti: {
-      [webappDirectoryPath]: '',
-      [staticDirectoryPath]: '',
+    ignoreURLParametersMatching: [/redirect/, /username/],
+    modifyURLPrefix: {
+      webappDirectoryPath: '',
+      staticDirectoryPath: '',
     },
+    runtimeCaching: [{
+      // Routing via a matchCallback function:
+      urlPattern: webappDirectoryPath,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'cache',
+      },
+    }],
     maximumFileSizeToCacheInBytes: 1048576 * 30,
-    verbose: true,
+    // verbose: true,
   };
   await appendExtensionLibs(config);
-  return swPrecache.write(scriptOutputPath, config);
+  return workbox.generateSW(config);
 };
 
 const getSwMetaDoc = async () => {

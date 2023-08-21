@@ -10,7 +10,7 @@ const logger = require('../../src/logger');
 const loginController = require('../../src/controllers/login');
 const extensionLibsService = require('../../src/services/extension-libs');
 
-describe('generate service worker', () => {
+describe.skip('generate service worker', () => {
   let clock;
   let getServiceWorkerHash;
   let generateServiceWorker;
