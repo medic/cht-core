@@ -147,8 +147,7 @@ const generator = function*(db) {
               return getNextValue();
             }
           }
-        )
-      );
+        ));
     } else {
       return Promise.resolve(value);
     }

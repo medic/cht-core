@@ -79,7 +79,7 @@ export class Form2smsService {
         };
 
         if (typeof form.xml2sms === 'string') {
-          return this.parseProvider.parse(form.xml2sms)(context, { doc:doc.fields });
+          return this.parseProvider.parse(form.xml2sms)(context, { doc: doc.fields });
         } else {
           console.debug('Checking for standard odk tags in form submission...');
           return this.getReportXml(doc.form, doc).then(odkForm2sms);

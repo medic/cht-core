@@ -13,6 +13,7 @@ const smsTask = () => {
   return new Factory()
     .sequence('_id', uuid.v4)
     .attr('messages', [message().build()])
+    .attr('gateway_ref', uuid.v4)
     .attr('state', 'pending')
     .attr('state_history', [
       {
@@ -28,6 +29,7 @@ const smsScheduledTask = () => {
     .attr('group', 2)
     .attr('type', 'ANC Reminders LMP')
     .attr('messages', [message().build()])
+    .attr('gateway_ref', uuid.v4)
     .attr('state', 'scheduled')
     .attr('state_history', [
       {

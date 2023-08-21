@@ -40,7 +40,7 @@ export class SendMessageService {
       form: null,
       from: user && user.phone,
       reported_date: Date.now(),
-      tasks: [],
+      tasks: [] as any[],
       kujua_message: true,
       type: 'data_record',
       sent_by: (user && user.name) || 'unknown',

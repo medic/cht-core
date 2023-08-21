@@ -27,5 +27,4 @@ angular.module('inboxServices').factory('AddAttachment',
         content_type: contentType
       };
     };
-  }
-);
+  });

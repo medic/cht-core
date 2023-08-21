@@ -56,6 +56,10 @@ export class FeedbackService {
     const getCircularReplacer = () => {
       const seen = new WeakSet();
       return (key, value) => {
+        if (value instanceof Error) {
+          return value.stack;
+        }
+
         if (typeof value === 'object' && value !== null) {
           if (seen.has(value)) {
             return;
@@ -72,7 +76,7 @@ export class FeedbackService {
       this.options.console[level] = (...args) => {
         const logEvent = {
           level,
-          arguments: JSON.stringify(args, getCircularReplacer()),
+          arguments: JSON.stringify(args, getCircularReplacer()).substring(0, 1000),
           time: new Date().toISOString(),
         };
 
@@ -112,7 +116,7 @@ export class FeedbackService {
         url: this.getUrl(),
         version,
         source: isManual ? 'manual' : 'automatic',
-        deviceId : this.telemetryService.getUniqueDeviceId(),
+        deviceId: this.telemetryService.getUniqueDeviceId(),
       },
       info,
       log: this.getLog(),

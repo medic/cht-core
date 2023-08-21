@@ -267,5 +267,4 @@ angular.module('controllers').controller('UpgradeCtrl',
         .then(() => getCurrentUpgrade())
         .then(() => loadBuilds());
     };
-  }
-);
+  });

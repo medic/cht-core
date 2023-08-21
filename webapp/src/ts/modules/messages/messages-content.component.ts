@@ -95,8 +95,6 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
     });
     this.subscriptions.add(routeSubscription);
 
-    // Ensuring that any Bootstrap tooltip is removed when loading new conversation.
-    $('.tooltip').remove();
     this.ngZone.runOutsideAngular(() => {
       $('body')
         .on('focus', '#message-footer textarea', () => {
@@ -326,7 +324,7 @@ export class MessagesContentComponent implements OnInit, OnDestroy, AfterViewIni
       return;
     }
 
-    const recipient = { doc: null };
+    const recipient: Record<string, any> = { doc: null };
 
     if (this.selectedConversation.contact && this.selectedConversation.contact.doc) { // known contact
       recipient.doc = this.selectedConversation.contact.doc;

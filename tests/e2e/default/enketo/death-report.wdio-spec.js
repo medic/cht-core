@@ -10,6 +10,7 @@ const reportsPage = require('@page-objects/default/reports/reports.wdio.page');
 const analyticsPage = require('@page-objects/default/analytics/analytics.wdio.page');
 const genericForm = require('@page-objects/default/enketo/generic-form.wdio.page');
 const deathReportForm = require('@page-objects/default/enketo/death-report.page');
+const sentinelUtils = require('@utils/sentinel');
 
 describe('Submit a death report', () => {
   const places = placeFactory.generateHierarchy();
@@ -40,8 +41,9 @@ describe('Submit a death report', () => {
     expect(summaryDetails.deathInformation).to.equal(deathNote);
 
     await genericForm.submitForm();
-    await commonPage.waitForPageLoaded();
-    await commonPage.sync(true);
+    await commonPage.sync();
+    await sentinelUtils.waitForSentinel();
+    await commonPage.sync();
 
     expect(await contactPage.getContactDeceasedStatus()).to.equal('Deceased');
     expect(await (await contactPage.deathCard()).isDisplayed()).to.be.true;

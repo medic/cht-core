@@ -3,6 +3,22 @@
   "parserOptions": {
     "ecmaVersion": 6
   },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/node_modules_backup/**",
+    "**/pupil/**",
+    "allure-report/**",
+    "allure-report-bak/**",
+    "api/build/**/*",
+    "api/extracted-resources/**/*",
+    "api/src/enketo-transformer/**",
+    "api/src/public/login/lib-bowser.js",
+    "build/**",
+    "jsdocs/**",
+    "tests/scalability/report*/**",
+    "tests/scalability/jmeter/**",
+    "webapp/src/ts/providers/xpath-element-path.provider.ts"
+  ],
   "plugins": ["promise", "node"],
   "rules": {
     "array-bracket-newline": ["error", "consistent"],
@@ -17,6 +33,8 @@
     "func-call-spacing": ["error", "never"],
     "func-style": ["error", "expression"],
     "function-call-argument-newline": ["error", "consistent"],
+    "function-paren-newline": ["error", "consistent"],
+    "key-spacing": ["error", { "beforeColon": false, "afterColon": true }],
     "linebreak-style": ["error", "unix"],
     "lines-between-class-members": ["error", "always", { "exceptAfterSingleLine": true }],
     "no-alert": "error",
@@ -34,12 +52,6 @@
     "unicode-bom": ["error", "never"]
   },
   "overrides": [
-    {
-      "files": [ "Gruntfile.js" ],
-      "env": {
-        "node": true
-      }
-    },
     {
       "files": [ "build/service-worker.js" ],
       "rules": {
@@ -60,7 +72,9 @@
         "brace-style": "off",
         "array-bracket-newline": "off",
         "func-style": "off",
-        "function-call-argument-newline": "off"
+        "function-call-argument-newline": "off",
+        "function-paren-newline": "off",
+        "key-spacing": "off"
       }
     },
     {
@@ -68,6 +82,12 @@
       "rules": {
         "array-callback-return": "off",
         "func-style": "off"
+      }
+    },
+    {
+      "files": ["ddocs/**/*.js"],
+      "rules": {
+        "function-paren-newline": "off"
       }
     }
   ]

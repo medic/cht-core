@@ -41,10 +41,10 @@ export class HeaderTabsService {
       resourceIcon: undefined,
     },
     {
-      name:'contacts',
-      route:'contacts',
-      defaultIcon:'fa-user',
-      translation:'Contacts',
+      name: 'contacts',
+      route: 'contacts',
+      defaultIcon: 'fa-user',
+      translation: 'Contacts',
       permissions: ['can_view_contacts', 'can_view_contacts_tab'],
       icon: undefined,
       resourceIcon: undefined,
@@ -120,7 +120,7 @@ export class HeaderTabsService {
   }
 }
 
-interface HeaderTab {
+export interface HeaderTab {
   name: string;
   route: string;
   defaultIcon: string;

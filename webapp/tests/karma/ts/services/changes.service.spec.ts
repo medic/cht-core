@@ -28,7 +28,7 @@ describe('Changes service', () => {
   beforeEach(waitForAsync(() => {
     changesCalls = {
       medic: { callCount: 0, callOptions: null, callbacks: {} },
-      meta:  { callCount: 0, callOptions: null, callbacks: {} }
+      meta: { callCount: 0, callOptions: null, callbacks: {} }
     };
 
     dbService = {
@@ -138,7 +138,7 @@ describe('Changes service', () => {
   it('should call all registered callbacks', (done) => {
 
     const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
-    const results = { key1: [], key2: [] };
+    const results = { key1: [] as any[], key2: [] as any[] };
 
     service.subscribe({
       key: 'key1',
@@ -174,7 +174,7 @@ describe('Changes service', () => {
 
   it('should call the callback if filter passes', (done) => {
     const expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
-    const results = { key1: [], key2: [] };
+    const results = { key1: [] as any[], key2: [] as any[] };
 
     service.subscribe({
       key: 'key1',

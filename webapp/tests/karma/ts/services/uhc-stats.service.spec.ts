@@ -61,7 +61,7 @@ describe('UHCStats Service', () => {
   });
 
   it('should not return UHC Interval if setting arent provided', () => {
-    const result = service.getUHCInterval(null);
+    const result = service.getUHCInterval(null as any);
 
     expect(result).to.be.undefined;
   });
@@ -297,7 +297,7 @@ describe('UHCStats Service', () => {
     contactTypesService.get.returns({ count_visits: true });
     sessionService.isDbAdmin.returns(false);
 
-    const result = await service.getHomeVisitStats(null, null);
+    const result = await service.getHomeVisitStats(null, null as any);
 
     expect(result).to.equal(undefined);
     expect(authService.has.callCount).to.equal(0);

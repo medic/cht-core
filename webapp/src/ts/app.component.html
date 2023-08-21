@@ -1,5 +1,5 @@
 <div class="app-root {{currentTab}}"
-     [class.bootstrapped]="privacyPolicyAccepted"
+     [class.bootstrapped]="initialisationComplete"
      [class.select-mode]="selectMode"
      [class.sidebar-filter-active]="isSidebarFilterOpen">
   <div class="bootstrap-layer">
@@ -14,11 +14,12 @@
 
   <mm-actionbar *ngIf="useOldActionBar" [reportForms]="reportForms"></mm-actionbar>
 
-  <div class="container-fluid" *ngIf="privacyPolicyAccepted">
+  <div class="container-fluid" *ngIf="initialisationComplete">
     <mm-header
       [adminUrl]="adminUrl"
       [canLogOut]="canLogOut"
     ></mm-header>
+    
     <div class="row content">
       <router-outlet></router-outlet>
     </div>

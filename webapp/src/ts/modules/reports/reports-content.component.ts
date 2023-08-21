@@ -56,7 +56,6 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       if (params.id) {
         this.reportsActions.selectReportToOpen(this.route.snapshot.params.id);
         this.globalActions.clearNavigation();
-        $('.tooltip').remove();
         return;
       }
       this.globalActions.unsetComponents();
@@ -128,7 +127,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
             this.deselect(change.id);
             return;
           }
-          this.router.navigate([this.route.snapshot.parent.routeConfig.path]);
+          this.router.navigate([this.route.snapshot.parent?.routeConfig?.path]);
           return;
         }
 
@@ -173,6 +172,9 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   search(query) {
+    if (this.selectMode) {
+      return;
+    }
     this.searchFiltersService.freetextSearch(query);
   }
 

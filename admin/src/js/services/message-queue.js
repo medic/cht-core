@@ -341,5 +341,4 @@ angular.module('services').factory('MessageQueue',
           });
       }
     };
-  }
-);
+  });

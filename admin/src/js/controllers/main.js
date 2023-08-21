@@ -48,5 +48,4 @@ angular.module('controllers').controller('MainCtrl',
       }
       return $state.includes(state);
     };
-  }
-);
+  });

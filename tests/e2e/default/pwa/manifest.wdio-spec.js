@@ -13,7 +13,7 @@ const DEFAULT_MANIFEST = {
   theme_color: '#323232',
   icons: [
     { src: '/img/icon.png', sizes: 'any', purpose: 'any' },
-    { src: '/favicon.ico', sizes:'32x32', type: 'image' }
+    { src: '/favicon.ico', sizes: '32x32', type: 'image' }
   ]
 };
 

@@ -92,6 +92,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   reportForms;
   unreadCount = {};
   useOldActionBar = false;
+  initialisationComplete = false;
 
   constructor (
     private dbSyncService:DBSyncService,
@@ -186,7 +187,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.globalActions.updateReplicationStatus({
       disabled: false,
       lastTrigger: undefined,
-      lastSuccessTo: parseInt(window.localStorage.getItem('medic-last-replicated-date')),
+      lastSuccessTo: parseInt(window.localStorage.getItem('medic-last-replicated-date')!),
     });
 
     // Set this first because if there are any bugs in configuration
@@ -273,12 +274,18 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupPromise = Promise.resolve()
       .then(() => this.chtScriptApiService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
+      .then(() => (this.initialisationComplete = true))
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check(true))
-      .then(() => this.startRecurringProcesses());
+      .then(() => this.startRecurringProcesses())
+      .catch(err => {
+        this.initialisationComplete = true;
+        console.error('Error during initialisation', err);
+        this.router.navigate(['/error', '503' ]);
+      });
 
     this.watchBrandingChanges();
     this.watchDDocChanges();
@@ -290,7 +297,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupAndroidVersion();
     this.requestPersistentStorage();
     this.startWealthQuintiles();
-    this.enableTooltips();
     this.initAnalyticsModules();
   }
 
@@ -405,7 +411,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       callback: () => {
         if (!this.dbSyncService.isSyncInProgress()) {
           this.globalActions.updateReplicationStatus({ current: SYNC_STATUS.required });
-          this.dbSyncService.sync();
+          this.dbSyncService.sync(false, true);
         }
       },
     });
@@ -522,7 +528,8 @@ export class AppComponent implements OnInit, AfterViewInit {
                 title: translateTitle(xForm.translation_key, xForm.title),
               }))
               .sort((a, b) => a.title - b.title);
-          });
+          }
+        );
       })
       .catch(err => console.error('Failed to retrieve forms', err));
   }
@@ -590,7 +597,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     return this.rulesEngineService
       .isEnabled()
       .then(isEnabled => console.info(`RulesEngine Status: ${isEnabled ? 'Enabled' : 'Disabled'}`))
-      .catch(err => console.error('RuleEngine failed to initialize', err));
+      .catch(err => {
+        const errorMessage = 'RuleEngine failed to initialize';
+        console.error(errorMessage, err);
+        this.feedbackService.submit(errorMessage);
+      });
   }
 
   private startRecurringProcesses() {
@@ -624,35 +635,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // enables tooltips that are visible on mobile devices
-  private enableTooltips() {
-    // running this code in NgZone will end up triggering app-wide change detection on every
-    // mouseover and mouseout event over every element on the page!
-    this.ngZone.runOutsideAngular(() => {
-      $('body').on('mouseenter', '.relative-date, .autoreply', (event) => {
-        const element = $(event.currentTarget);
-        if (element.data('tooltipLoaded') !== true) {
-          element
-            .data('tooltipLoaded', true)
-            .tooltip({
-              placement: 'bottom',
-              trigger: 'manual',
-              container: element.closest('.inbox-items, .item-content, .page'),
-            })
-            .tooltip('show');
-        }
-      });
-      $('body').on('mouseleave', '.relative-date, .autoreply', (event) => {
-        const element = $(event.currentTarget);
-        if (element.data('tooltipLoaded') === true) {
-          element
-            .data('tooltipLoaded', false)
-            .tooltip('hide');
-        }
-      });
-    });
-  }
-
   private recordStartupTelemetry() {
     window.startupTimes.angularBootstrapped = performance.now();
     this.telemetryService.record(
@@ -662,17 +644,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     if (window.startupTimes.replication) {
       this.telemetryService.record('boot_time:2_1:to_replication', window.startupTimes.replication);
-    }
-
-    if (window.startupTimes.purgingFailed) {
-      this.feedbackService.submit(`Error when purging on device startup: ${window.startupTimes.purgingFailed}`);
-      this.telemetryService.record('boot_time:purging_failed');
-    } else {
-      // When: 1- Purging ran and successfully completed. 2- Purging didn't run.
-      this.telemetryService.record(`boot_time:purging:${window.startupTimes.purging}`);
-    }
-    if (window.startupTimes.purge) {
-      this.telemetryService.record('boot_time:2_2:to_purge', window.startupTimes.purge);
     }
 
     if (window.startupTimes.purgingMetaFailed) {

@@ -12,15 +12,15 @@ import { LocationService } from '@mm-services/location.service';
   providedIn: 'root'
 })
 export class SessionService {
-  userCtxCookieValue = null
-  httpOptions = { headers: new HttpHeaders({ Accept:  'application/json' }) };
+  userCtxCookieValue: any = null
+  httpOptions = { headers: new HttpHeaders({ Accept: 'application/json' }) };
 
   constructor(
     private cookieService: CookieService,
     private http: HttpClient,
     @Inject(DOCUMENT) private document: Document,
-    private location: LocationService) {
-  }
+    private location: LocationService
+  ) {}
 
   navigateToLogin() {
     console.warn('User must reauthenticate');
@@ -96,8 +96,8 @@ export class SessionService {
           this.logout();
           return;
         }
-        if (_.difference(userCtx.roles, value.userCtx.roles).length ||
-          _.difference(value.userCtx.roles, userCtx.roles).length) {
+        if (_.difference(userCtx.roles, value!.userCtx.roles).length ||
+          _.difference(value!.userCtx.roles, userCtx.roles).length) {
           return this.refreshUserCtx().then(() => true);
         }
       })

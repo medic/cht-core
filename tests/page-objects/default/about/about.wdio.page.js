@@ -11,5 +11,6 @@ const getPartnerImage = async (name) => {
 
 module.exports = {
   userName,
+  partners,
   getPartnerImage,
 };

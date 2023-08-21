@@ -147,6 +147,41 @@ form {
   text-decoration: none;
 }
 
+#password-container {
+  position: relative;
+  height: 40px;
+}
+
+#password-container #password {
+  width: 245px;
+  padding: 6px 43px 6px 10px;
+}
+
+#password-container #password-toggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  padding: 2px 10px;
+  cursor: pointer;
+}
+
+#password-container #password-toggle img {
+  width: 24px;
+  height: 100%;
+  vertical-align: middle;
+}
+
+#password-container.hidden-password .show-password-icon,
+#password-container .hide-password-icon {
+  display: inline-block;
+}
+
+#password-container .show-password-icon,
+#password-container.hidden-password .hide-password-icon {
+  display: none;
+}
+
 .hidden {
   display: none;
   visibility: hidden;

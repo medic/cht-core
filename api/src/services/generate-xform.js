@@ -75,7 +75,8 @@ const convertDynamicUrls = (original) => original.replace(
   /<a[^>]+href="([^"]*---output[^"]*)"[^>]*>(.*?)<\/a>/gm,
   '<a href="#" target="_blank" rel="noopener" class="dynamic-url">' +
   '$2<span class="url hidden">$1</span>' +
-  '</a>');
+  '</a>'
+);
 
 const convertEmbeddedHtml = (original) => original
   .replace(/&lt;\s*(\/)?\s*([\s\S]*?)\s*&gt;/gm, '<$1$2>')
@@ -254,7 +255,7 @@ module.exports = {
         if (!toSave.length) {
           return;
         }
-        return db.medic.bulkDocs(toSave).then(results => {
+        return db.saveDocs(db.medic, toSave).then(results => {
           const failures = results.filter(result => !result.ok);
           if (failures.length) {
             logger.error('Bulk save failed with: %o', failures);

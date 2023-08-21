@@ -66,5 +66,4 @@ angular.module('controllers').controller('UsersCtrl',
 
     $scope.updateList();
 
-  }
-);
+  });

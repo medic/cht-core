@@ -7,13 +7,14 @@
     <div><div class="loader"></div></div>
   </div>
 
-  <div class="item-content empty-selection" *ngIf="!targetsDisabled && !loading && !targets?.length">
+  <div class="item-content empty-selection" *ngIf="!targetsDisabled && !loading && !targets?.length && !errorStack">
     <div>{{ 'targets.no_targets' | translate }}</div>
   </div>
 
-  <div class="targets" *ngIf="!targetsDisabled && !loading && targets?.length">
-    <div class="target"
-      *ngFor="let target of targets"
+  <error-log class="targets" *ngIf="!targetsDisabled && !loading && !!errorStack" [errorStack]="errorStack" [errorFor]="'targets'"></error-log>
+
+  <div class="targets" *ngIf="!targetsDisabled && !loading && targets?.length && !errorStack">
+    <div class="target" *ngFor="let target of targets"
       [ngClass]="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value?.pass >= target.goal) || (target.value?.percent >= target.goal) }"
       attr.test-target-id="{{ target.id }}">
       <div class="heading">

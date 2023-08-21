@@ -51,7 +51,7 @@ const getRelativeDate = (date, options) => {
   const relativeDateClass = options.RelativeDate.getCssSelector();
   const dataSet = options.RelativeDate.generateDataset(date, options);
 
-  return `${options.prefix}<span class="${classes.join(' ')}" title="${absolute}">` +
+  return `${options.prefix}<span class="${classes.join(' ')}" title="${absolute}" tabindex="0">` +
     `<span class="relative-date-content ${relativeDateClass}" ${dataSet}>${relative}</span>` +
     `</span>${options.suffix}`;
 };
@@ -110,7 +110,7 @@ export class AutoreplyPipe implements PipeTransform {
 
     return getState(task.state, this.translateService).then(state => {
       const content = state + '&nbsp;' +
-        '<span class="autoreply" title="' + task.messages[0].message + '">' +
+        '<span class="autoreply" title="' + task.messages[0].message + '" tabindex="0">' +
         '<span class="autoreply-content">' + this.translateService.instant('autoreply') + '</span>' +
         '</span>&nbsp';
 
@@ -251,7 +251,7 @@ export class RelativeDatePipe implements PipeTransform {
     const options = {
       FormatDate: this.formatDateService,
       RelativeDate: this.relativeDateService,
-      raw: undefined,
+      raw: undefined as boolean | undefined
     };
 
     if (raw) {
@@ -281,7 +281,7 @@ export class RelativeDayPipe implements PipeTransform {
       FormatDate: this.formatDateService,
       RelativeDate: this.relativeDateService,
       withoutTime: true,
-      raw: undefined,
+      raw: undefined as boolean | undefined,
     };
 
     if (raw) {
@@ -392,7 +392,7 @@ export class WeeksPregnantPipe implements PipeTransform {
     if (!weeks || !weeks.number) {
       return '';
     }
-    const classes = [];
+    const classes: string[] = [];
     if (weeks.number >= 37) {
       classes.push('upcoming-edd');
     }

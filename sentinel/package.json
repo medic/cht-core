@@ -30,5 +30,8 @@
     "url-join": "^4.0.1",
     "uuid": "^8.3.2",
     "winston": "^3.8.2"
+  },
+  "overrides": {
+    "node-fetch": "$node-fetch"
   }
 }

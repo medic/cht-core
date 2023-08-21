@@ -40,5 +40,4 @@ angular.module('controllers').controller('ImportTranslationCtrl',
       $uibModalInstance.dismiss();
     };
 
-  }
-);
+  });

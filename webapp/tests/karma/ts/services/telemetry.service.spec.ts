@@ -171,8 +171,8 @@ describe('TelemetryService', () => {
       storageGetItemStub.returns('dbname');
       telemetryDb.query.resolves({
         rows: [
-          { key: 'foo', value: {sum:2876, min:581, max:2295, count:2, sumsqr:5604586} },
-          { key: 'bar', value: {sum:93, min:43, max:50, count:2, sumsqr:4349} },
+          { key: 'foo', value: {sum: 2876, min: 581, max: 2295, count: 2, sumsqr: 5604586} },
+          { key: 'bar', value: {sum: 93, min: 43, max: 50, count: 2, sumsqr: 4349} },
         ],
       });
       medicDb.info.resolves({ some: 'stats' });
@@ -181,7 +181,7 @@ describe('TelemetryService', () => {
         .withArgs('_design/medic-client')
         .resolves({
           _id: '_design/medic-client',
-          deploy_info: { version: '3.0.0' }
+          build_info: { version: '3.0.0' }
         });
       medicDb.query.resolves({
         rows: [
@@ -218,8 +218,8 @@ describe('TelemetryService', () => {
       const aggregatedDoc = metaDb.put.args[0][0];
       expect(aggregatedDoc._id).to.match(/^telemetry-2018-11-5-greg-[\w-]+$/);
       expect(aggregatedDoc.metrics).to.deep.equal({
-        foo: {sum:2876, min:581, max:2295, count:2, sumsqr:5604586},
-        bar: {sum:93, min:43, max:50, count:2, sumsqr:4349},
+        foo: {sum: 2876, min: 581, max: 2295, count: 2, sumsqr: 5604586},
+        bar: {sum: 93, min: 43, max: 50, count: 2, sumsqr: 4349},
       });
       expect(aggregatedDoc.type).to.equal('telemetry');
       expect(aggregatedDoc.metadata.year).to.equal(2018);
@@ -384,7 +384,7 @@ describe('TelemetryService', () => {
       metaDb.put.onSecondCall().resolves();
       medicDb.get.withArgs('_design/medic-client').resolves({
         _id: '_design/medic-client',
-        deploy_info: {
+        build_info: {
           version: '3.0.0'
         }
       });

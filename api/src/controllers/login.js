@@ -1,7 +1,7 @@
-const url = require('url');
 const path = require('path');
 const request = require('request-promise-native');
 const _ = require('lodash');
+const url = require('node:url');
 const auth = require('../auth');
 const environment = require('../environment');
 const config = require('../config');
@@ -22,7 +22,9 @@ const templates = {
     translationStrings: [
       'login',
       'login.error',
+      'login.hide_password',
       'login.incorrect',
+      'login.show_password',
       'login.unsupported_browser',
       'login.unsupported_browser.outdated_cht_android',
       'login.unsupported_browser.outdated_webview_apk',
@@ -72,8 +74,8 @@ const getRedirectUrl = (userCtx, requested) => {
     // invalid url - return the default
     return root;
   }
-  const parsed = url.parse(requested);
-  return parsed.path + (parsed.hash || '');
+  const parsed = new URL(requested, 'resolve://');
+  return parsed.pathname + (parsed.hash || '');
 };
 
 const getEnabledLocales = () => {
@@ -141,12 +143,7 @@ const createSession = req => {
   const user = req.body.user;
   const password = req.body.password;
   return request.post({
-    url: url.format({
-      protocol: environment.protocol,
-      hostname: environment.host,
-      port: environment.port,
-      pathname: '_session',
-    }),
+    url: new URL('/_session', environment.serverUrlNoAuth).toString(),
     json: true,
     resolveWithFullResponse: true,
     simple: false, // doesn't throw an error on non-200 responses
@@ -172,8 +169,7 @@ const setCookies = (req, res, sessionRes) => {
     throw { status: 401, error: 'Not logged in' };
   }
   const options = { headers: { Cookie: sessionCookie } };
-  return auth
-    .getUserCtx(options)
+  return getUserCtxRetry(options)
     .then(userCtx => {
       cookie.setSession(res, sessionCookie);
       setUserCtxCookie(res, userCtx);
@@ -202,6 +198,19 @@ const setCookies = (req, res, sessionRes) => {
 const renderTokenLogin = (req, res) => {
   return render('tokenLogin', req, { tokenUrl: req.url })
     .then(body => res.send(body));
+};
+
+const getUserCtxRetry = async (options, retry = 10) => {
+  try {
+    return await auth.getUserCtx(options);
+  } catch (err) {
+    // in a clustered setup, requesting session immediately after changing a password might 401
+    if (retry > 0 && err && err.code === 401) {
+      await new Promise(r => setTimeout(r, 10));
+      return getUserCtxRetry(options, --retry);
+    }
+    throw err;
+  }
 };
 
 const createSessionRetry = (req, retry=10) => {
