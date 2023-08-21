@@ -1,40 +1,53 @@
 #!/bin/bash
+cat ./medic_logo.txt
+
+BRANCH=$(git branch | grep '^*' | sed 's/* //' )
+echo "Installer version $BRANCH" | sed  -e :a -e "s/^.\{1,$(tput cols)\}$/ & /;ta" | tr -d '\n' | head -c $(tput cols)
 
 # Check if Python is installed
+echo -e "\u21B3 Checking Python3"
 if ! command -v python3 &> /dev/null ; then
     echo "Python is not installed. Please install Python 3."
     exit 1
 fi
 
 # Check if pip is installed
+echo -e "\u21B3 Checking pip"
 if ! command -v pip3 &> /dev/null ; then
     echo "pip is not installed. Please install pip for Python 3."
     exit 1
 fi
 
-# Check if Invoke is installed
-if ! python3 -c "import invoke" &> /dev/null ; then
-    echo "Invoke is not installed. Installing it..."
-    pip3 install invoke --quiet
-fi
+{
+    # Check if Invoke is installed
+    echo -e "\u21B3 Installing invoke"
+    if ! python3 -c "import invoke" &> /dev/null ; then
+        echo "Invoke is not installed. Installing it..."
+        pip3 install invoke --quiet
+    fi
+} && {
+    # Check if PyYAML is installed
+    echo -e "\u21B3 Installing PyYAML"
+    if ! python3 -c "import yaml" &> /dev/null ; then
+        echo "PyYAML is not installed. Installing it..."
+        pip3 install PyYAML --quiet
+    fi
+} && {
+    # Check if requests is installed
+    echo -e "\u21B3 Installing requests"
+    if ! python3 -c "import requests" &> /dev/null ; then
+        echo "Requests is not installed. Installing it..."
+        pip3 install requests --quiet
+    fi
+} && {
+    # Validate that -f argument is provided
+    echo -e "\u21B3 Checking values file"
+    if [[ $1 != "-f" || -z $2 ]]; then
+        echo "No values file provided. Please specify a values file using -f <file>"
+        exit 1
+    fi
+} && {
+    # Pass command line arguments to invoke script
+    invoke install "$@" # see https://github.com/koalaman/shellcheck/wiki/SC2068
+}
 
-# Check if PyYAML is installed
-if ! python3 -c "import yaml" &> /dev/null ; then
-    echo "PyYAML is not installed. Installing it..."
-    pip3 install PyYAML --quiet
-fi
-
-# Check if requests is installed
-if ! python3 -c "import requests" &> /dev/null ; then
-    echo "Requests is not installed. Installing it..."
-    pip3 install requests --quiet
-fi
-
-# Validate that -f argument is provided
-if [[ $1 != "-f" || -z $2 ]]; then
-    echo "No values file provided. Please specify a values file using -f <file>"
-    exit 1
-fi
-
-# Pass command line arguments to invoke script
-invoke install $@
