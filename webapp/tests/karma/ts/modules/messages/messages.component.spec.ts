@@ -230,19 +230,19 @@ describe('Messages Component', () => {
     const conversations =  [
       { key: 'a',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null]
+        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null]
       },
       { key: 'b',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
       },
       { key: 'c',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place', null, null]
+        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place', null, null]
       },
       { key: 'd',
         message: { inAllMessages: true },
-        lineage : []
+        lineage: []
       },
       { key: 'e',
         message: { inAllMessages: true },
@@ -290,19 +290,19 @@ describe('Messages Component', () => {
         const updatedConversations = [
           { key: 'a',
             message: { inAllMessages: true },
-            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
           },
           { key: 'b',
             message: { inAllMessages: true },
-            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
           },
           { key: 'c',
             message: { inAllMessages: true },
-            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
+            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
           },
           { key: 'd',
             message: { inAllMessages: true },
-            lineage : []
+            lineage: []
           },
           { key: 'e',
             message: { inAllMessages: true },

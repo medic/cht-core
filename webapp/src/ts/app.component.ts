@@ -274,13 +274,13 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.setupPromise = Promise.resolve()
       .then(() => this.chtScriptApiService.isInitialized())
       .then(() => this.checkPrivacyPolicy())
+      .then(() => (this.initialisationComplete = true))
       .then(() => this.initRulesEngine())
       .then(() => this.initTransitions())
       .then(() => this.initForms())
       .then(() => this.initUnreadCount())
       .then(() => this.checkDateService.check(true))
       .then(() => this.startRecurringProcesses())
-      .then(() => this.initialisationComplete = true)
       .catch(err => {
         this.initialisationComplete = true;
         console.error('Error during initialisation', err);

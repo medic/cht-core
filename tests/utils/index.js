@@ -205,7 +205,7 @@ const formDocProcessing = async (docs) => {
   const waitForForms = await Promise.all(formsWatchers);
 
   return {
-    promise:() => Promise.all(waitForForms.map(wait => wait.promise)),
+    promise: () => Promise.all(waitForForms.map(wait => wait.promise)),
     cancel: () => waitForForms.forEach(wait => wait.cancel),
   };
 };

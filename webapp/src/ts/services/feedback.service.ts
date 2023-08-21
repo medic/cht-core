@@ -116,7 +116,7 @@ export class FeedbackService {
         url: this.getUrl(),
         version,
         source: isManual ? 'manual' : 'automatic',
-        deviceId : this.telemetryService.getUniqueDeviceId(),
+        deviceId: this.telemetryService.getUniqueDeviceId(),
       },
       info,
       log: this.getLog(),

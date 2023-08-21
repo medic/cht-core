@@ -21,7 +21,7 @@ describe('Changes service', function() {
   beforeEach(function (done) {
     changesCalls = {
       medic: { callCount: 0, callOptions: null, callbacks: {} },
-      meta:  { callCount: 0, callOptions: null, callbacks: {} }
+      meta: { callCount: 0, callOptions: null, callbacks: {} }
     };
 
     log = {

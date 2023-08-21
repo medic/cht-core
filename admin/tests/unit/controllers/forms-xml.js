@@ -55,7 +55,7 @@ describe('FormsXmlCtrl controller', () => {
           AddAttachment,
           FileReader: { utf8: utf8Stub },
           JsonParse: JSON.parse,
-          ValidateForm: validateFormStub || sinon.stub().resolves({ok:true})
+          ValidateForm: validateFormStub || sinon.stub().resolves({ok: true})
         });
       };
     });

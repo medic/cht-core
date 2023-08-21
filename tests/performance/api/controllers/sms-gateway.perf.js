@@ -26,7 +26,7 @@ describe('/sms', function() {
               const seconds = (end - start) / 1000;
               fail(`It took ${seconds}s to respond to the request. The endpoint should respond in ${maxMillis}ms.`);
             }
-            expect(response).toEqual({ messages:[] });
+            expect(response).toEqual({ messages: [] });
           });
       });
 
@@ -49,7 +49,7 @@ describe('/sms', function() {
                   const seconds = (end - start) / 1000;
                   fail(`It took ${seconds}s to respond to the request. The endpoint should respond in ${maxMillis}ms.`);
                 }
-                expect(response).toEqual({ messages:[] });
+                expect(response).toEqual({ messages: [] });
               })
 
               .then(() => db.getMessageStates())

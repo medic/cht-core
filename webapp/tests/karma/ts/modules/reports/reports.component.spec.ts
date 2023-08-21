@@ -106,7 +106,7 @@ describe('Reports Component', () => {
     };
     xmlFormsService = { subscribe: sinon.stub() };
     feedbackService = { submit: sinon.stub() };
-    route = { snapshot: { queryParams: { query:'' } } };
+    route = { snapshot: { queryParams: { query: '' } } };
     router = {
       navigate: sinon.stub(),
       events: {
@@ -380,7 +380,7 @@ describe('Reports Component', () => {
           heading: 'report.subject.unknown',
           icon: undefined,
           unread: true,
-          summary:  { _id: 'one', form: 'the_form', lineage: [], contact: { _id: 'contact', name: 'person' } },
+          summary: { _id: 'one', form: 'the_form', lineage: [], contact: { _id: 'contact', name: 'person' } },
           expanded: false,
           lineage: [],
           contact: { _id: 'contact', name: 'person' }
@@ -732,7 +732,7 @@ describe('Reports Component', () => {
         lineage: [ 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area' ],
       },
       {
-        _id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage:  [ 'Chattanooga Village', 'CHW Bettys Area', null, null],
+        _id: 'a86f238a-ad81-4780-9552-c7248864d1b2', lineage: [ 'Chattanooga Village', 'CHW Bettys Area', null, null],
       },
       {
         _id: 'd2da792d-e7f1-48b3-8e53-61d331d7e899', lineage: [ 'Chattanooga Village' ],
@@ -779,7 +779,7 @@ describe('Reports Component', () => {
         },
         {
           _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage:  [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
+          lineage: [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
@@ -848,7 +848,7 @@ describe('Reports Component', () => {
         },
         {
           _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage:  [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
+          lineage: [ 'Chattanooga Village', 'CHW Bettys Area', null, null ],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,
@@ -916,7 +916,7 @@ describe('Reports Component', () => {
         },
         {
           _id: 'a86f238a-ad81-4780-9552-c7248864d1b2',
-          lineage:  [ 'Chattanooga Village' ],
+          lineage: [ 'Chattanooga Village' ],
           heading: 'report.subject.unknown',
           icon: undefined,
           summary: undefined,

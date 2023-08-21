@@ -28,7 +28,7 @@ const contact = personFactory.build({
 const offlineUser = userFactory.build({
   username: 'offlineuser',
   isOffline: true,
-  roles:['chw'],
+  roles: ['chw'],
   place: health_center._id,
   contact: contact._id,
 });
