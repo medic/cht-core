@@ -278,6 +278,100 @@ describe('validations', () => {
     });
   });
 
+
+  it('invalid phone validation should fail if invalid phone is provided', () => {
+    const config = require('../../transitions/src/config');
+    
+    const mockedGetAll = sinon.stub().returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+
+    config.getAll = mockedGetAll;
+
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'validPhone("phone_number")',
+        message: [
+          {
+            content: 'invalid phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'invalid',
+      fields: { phone_number: '+977984111'}
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 1);
+    });
+  });
+
+  it('Valid phone validation should pass if valid phone is provided', () => {
+    const config = require('../../transitions/src/config');
+
+    const mockedGetAll = sinon.stub().returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+
+    config.getAll = mockedGetAll;
+
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'validPhone("phone_number")',
+        message: [
+          {
+            content: 'invalid phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'invalid',
+      fields: { phone_number: '9841134532' }
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
+  it('Valid phone validation should pass if valid phone with extension is provided', () => {
+    const config = require('../../transitions/src/config');
+
+    const mockedGetAll = sinon.stub().returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+
+    config.getAll = mockedGetAll;
+
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'validPhone("phone_number")',
+        message: [
+          {
+            content: 'invalid phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'invalid',
+      fields: { phone_number: '+9779841134532' }
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 0);
+    });
+  });
+
   it('unique phone validation should pass if db query for phone does not return any doc', () => {
     sinon.stub(db.medic, 'query').resolves({ undefined });
     const validations = [

@@ -1,3 +1,4 @@
+require('../../../../tests/aliases');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
