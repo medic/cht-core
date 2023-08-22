@@ -76,44 +76,39 @@ const appendExtensionLibs = async (config) => {
 const writeServiceWorkerFile = async () => {
   const config = {
     swDest: scriptOutputPath,
-    // cacheId: 'cache',
+    cacheId: 'cache',
     clientsClaim: true,
     skipWaiting: true,
-    // directoryIndex: false,
-    // handleFetch: true,
+    globDirectory: staticDirectoryPath,
     globPatterns: [
-      path.join(webappDirectoryPath, '{audio,img}', '*'),
-      path.join(webappDirectoryPath, 'manifest.json'),
-      path.join(webappDirectoryPath, '*.js'),
-      path.join(webappDirectoryPath, '*.css'),
-      `!${scriptOutputPath}`, // exclude service worker path
+      `!webapp/service-worker.js`, // exclude service worker path
 
-      // Fonts
-      path.join(webappDirectoryPath, 'fontawesome-webfont.woff2'),
-      path.join(webappDirectoryPath, 'fonts', 'enketo-icons-v2.woff'),
-      path.join(webappDirectoryPath, 'fonts', 'NotoSans-Bold.ttf'),
-      path.join(webappDirectoryPath, 'fonts', 'NotoSans-Regular.ttf'),
-      path.join(staticDirectoryPath, 'login', '*.{css,js}'),
-      path.join(staticDirectoryPath, 'login', 'images', '*.svg'),
+      // webapp
+      'webapp/manifest.json',
+      'webapp/audio/*',
+      'webapp/img/*',
+      'webapp/*.js',
+      'webapp/*.css',
+      
+      // fonts
+      'webapp/fontawesome-webfont.woff2',
+      'webapp/fonts/enketo-icons-v2.woff',
+      'webapp/fonts/NotoSans-Bold.ttf',
+      'webapp/fonts/NotoSans-Regular.ttf',
+      
+      // login page
+      'login/*.{css,js}',
+      'login/images/*.svg',
     ],
     templatedURLs: {
-      '/': [path.join(webappDirectoryPath, 'index.html')], // Webapp's entry point
+      '/': ['webapp/index.html'], // Webapp's entry point
       '/medic/login': await getLoginPageContents(),
-      '/medic/_design/medic/_rewrite/': [path.join(webappDirectoryPath, 'appcache-upgrade.html')]
+      '/medic/_design/medic/_rewrite/': ['webapp/appcache-upgrade.html']
     },
     ignoreURLParametersMatching: [/redirect/, /username/],
     modifyURLPrefix: {
-      webappDirectoryPath: '',
-      staticDirectoryPath: '',
+      'webapp/': '/',
     },
-    runtimeCaching: [{
-      // Routing via a matchCallback function:
-      urlPattern: webappDirectoryPath,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'cache',
-      },
-    }],
     maximumFileSizeToCacheInBytes: 1048576 * 30,
     // verbose: true,
   };
