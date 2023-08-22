@@ -18,7 +18,7 @@ const TRANSLATIONS = {
     CONTINUE: 'Continue',
     ABORT: 'Cancel',
     SESSION_EXPIRED_TITLE: 'Session has expired',
-    SESSION_EXPIRED_DESCRIPTION: 'Your session has expired, please login to continue.',
+    SESSION_EXPIRED_DESCRIPTION: 'Your session has expired and you have been logged out. Please login to continue.',
     LOGIN: 'Login',
   },
   es: {
@@ -36,7 +36,7 @@ const TRANSLATIONS = {
     CONTINUE: 'Continuar',
     ABORT: 'Cancelar',
     SESSION_EXPIRED_TITLE: 'La sesión ha expirado',
-    SESSION_EXPIRED_DESCRIPTION: 'Su sesión ha expirado, por favor inicie sesión para continuar.',
+    SESSION_EXPIRED_DESCRIPTION: 'Su sesión ha expirado y usted ha sido desconectado. Por favor inicie sesión para continuar.', // eslint-disable-line max-len
     LOGIN: 'Iniciar sesión',
   },
   sw: {
@@ -54,7 +54,7 @@ const TRANSLATIONS = {
     CONTINUE: 'Endelea',
     ABORT: 'Sitisha',
     SESSION_EXPIRED_TITLE: 'Kipindi kimeisha',
-    SESSION_EXPIRED_DESCRIPTION: 'Kipindi chako kimeisha, tafathali ingia tena ili keundelea',
+    SESSION_EXPIRED_DESCRIPTION: 'Kipindi chako kimeisha na umeondolewa.Tafadhali ingia ili uendelee.',
     LOGIN: 'Ingia',
   },
   ne: {
@@ -72,7 +72,7 @@ const TRANSLATIONS = {
     CONTINUE: 'जारी राख्नुस',
     ABORT: 'बन्द गर्नुस',
     SESSION_EXPIRED_TITLE: 'अघिल्लो सत्रको म्याद सकियो',
-    SESSION_EXPIRED_DESCRIPTION: 'तपाईँको अघिल्लो सत्रको म्याद सकिएको छ, जारी राख्नका लागि कृपया लगिन गर्नुहोला।',
+    SESSION_EXPIRED_DESCRIPTION: 'तपाईको सेशन समाप्त भएको छ र तपाई लग आउट हुनुभएको छ। जारी राख्न कृपया लगइन गर्नुहोस्।',
     LOGIN: 'लगिन',
   },
   fr: {
@@ -90,7 +90,7 @@ const TRANSLATIONS = {
     CONTINUE: 'Continuer',
     ABORT: 'Annuler',
     SESSION_EXPIRED_TITLE: 'Session expirée',
-    SESSION_EXPIRED_DESCRIPTION: 'Votre session a expiré, veuillez vous connecter pour continuer.',
+    SESSION_EXPIRED_DESCRIPTION: 'Votre session a expiré et vous avez été déconnecté. Veuillez vous connecter pour continuer.', // eslint-disable-line max-len
     LOGIN: 'Connexion',
   },
   hi: {
@@ -108,8 +108,29 @@ const TRANSLATIONS = {
     CONTINUE: 'जारी रखें',
     ABORT: 'रद्द करें',
     SESSION_EXPIRED_TITLE: 'सेशुन समाप्त हो चुका है',
-    SESSION_EXPIRED_DESCRIPTION: 'आपका सेशुन समाप्त हो चुका है, जारी रखने के लिए कृपया लॉग इन करें',
+    SESSION_EXPIRED_DESCRIPTION: 'आपका सेशन समाप्त हो गया है और आप लॉग आउट हो गए हैं। जारी रखने के लिए कृपया लॉगिन करें।', // eslint-disable-line max-len
     LOGIN: 'लॉग',
+  },
+  id: {
+    FETCH_INFO: ({ count, total }) => `Mengambil informasi (${count} dari ${total} dokumen)…`,
+    LOAD_APP: 'Memuat aplikasi…',
+    PURGE_INIT: 'Mengecek data…',
+    PURGE_INFO: ({ count }) => `Menghapus ${count} dokument…`,
+    PURGE_META: 'Menghapus metadata…',
+    STARTING_APP: 'Memulai aplikasi…',
+    DOWNLOAD_APP: 'Mengunduh aplikasi…',
+    ERROR_MESSAGE: 'Terjadi kendala dalam memuat, tolong cek koneksi internet Anda.',
+    TRY_AGAIN: 'Coba lagi',
+    POLL_REPLICATION: 'Menyalin data ke perangkat Anda…',
+    TOO_MANY_DOCS: ({ count, limit }) => `Peringatan! Anda akan mengunduh ${count} dokumen, yang melebihi rekomendasi batasan ${limit}. Apakah Anda ingin melanjutkan?`, // eslint-disable-line max-len
+    CONTINUE: 'Lanjutkan',
+    ABORT: 'Batal',
+    SESSION_EXPIRED_TITLE: 'Sesi kadalursa',
+    SESSION_EXPIRED_DESCRIPTION: 'Sesi Anda telah berakhir dan Anda telah keluar. Silakan masuk kembali untuk melanjutkan.', // eslint-disable-line max-len
+    LOGIN: 'Login',
+  },
+  bm: {
+    SESSION_EXPIRED_DESCRIPTION: 'I ka waati tɛmɛna ani i bɔra kɛnɛ kan. Seguin ka  don a kɔnɔ walasa ka taa ɲɛ.',
   },
 };
 
