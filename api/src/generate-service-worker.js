@@ -56,7 +56,7 @@ const getLoginPageContents = async () => {
   } catch (err) {
     logger.error('Error rendering login page %o', err);
     // default to returning the file
-    return [path.join(apiSrcDirectoryPath, 'templates', 'login', 'index.html')];
+    return [path.join(apiSrcDirectoryPath, 'templates', 'login', 'index.html')]; // TODO figure out if this is right
   }
 };
 
@@ -110,10 +110,9 @@ const writeServiceWorkerFile = async () => {
       'webapp/': '/',
     },
     maximumFileSizeToCacheInBytes: 1048576 * 30,
-    // verbose: true,
   };
   await appendExtensionLibs(config);
-  return workbox.generateSW(config);
+  await workbox.generateSW(config);
 };
 
 const getSwMetaDoc = async () => {
