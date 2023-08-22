@@ -32,13 +32,13 @@ describe('ongoing replication', () => {
     await saveData(userDeniedDocs);
   });
 
-  beforeEach(async () => {
-    await browser.throttle('online');
-  });
-
   after(async () => {
     await sentinelUtils.skipToSeq();
     await sentinelUtils.waitForSentinel();
+  });
+
+  afterEach(async () => {
+    await browser.throttle('online');
   });
 
   it('should download new documents ', async () => {
