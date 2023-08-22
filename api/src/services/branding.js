@@ -14,7 +14,9 @@ const getBrandingDoc = async () => {
   try {
     return await db.medic.get('branding', { attachments: true });
   } catch(e) {
-    logger.warn('Could not find branding doc on CouchDB: %o', e);
+    if (e.status !== 404) {
+      logger.error('Error fetching branding doc from CouchDB: %o', e);
+    }
     return;
   }
 };
