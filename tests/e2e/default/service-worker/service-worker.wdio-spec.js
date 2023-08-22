@@ -101,6 +101,10 @@ describe('Service worker cache', () => {
     await loginIfNeeded();
   });
 
+  afterEach(async () => {
+    await utils.revertSettings(true);
+  });
+
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
 
