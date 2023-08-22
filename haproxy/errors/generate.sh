@@ -58,11 +58,11 @@ EOF
 
 	[[ -n "$extra_header" ]] && echo "$extra_header" >>"$error_file"
 
-	cat <<HTTPHEAD >>"$error_file"
+	cat <<EOF >>"$error_file"
 Cache-Control: no-cache
 Content-Type: application/json
 
-HTTPHEAD
+EOF
 
 	echo -n "$http_body" >>"$error_file"
 
