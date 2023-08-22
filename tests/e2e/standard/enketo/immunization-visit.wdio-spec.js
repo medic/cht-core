@@ -45,9 +45,12 @@ describe('Immunization Visit', () => {
     const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
     expect(firstReport.heading).to.equal(babyName);
     expect(firstReport.form).to.equal('New Child Registration (SMS)');
+    await commonPage.logout();
   });
   
-  it('Submit immunization visit - webapp', async () => {        
+  it('Submit immunization visit - webapp', async () => {
+    await loginPage.login(user);
+    await commonPage.waitForPageLoaded();
     await commonPage.goToPeople();
     await contactPage.contactPageDefault.selectLHSRowByText(babyName);
     babyMedicID = await contactPage.contactPageDefault.getContactMedicID();
@@ -117,13 +120,33 @@ describe('Immunization Visit', () => {
 
   it('Verify immunization report', async () => {
     await commonPage.goToReports();
-    const firstReport = await reportsPage.getListReportInfo(await reportsPage.firstReport());
+    const firstReport = await reportsPage.firstReport();
+    const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
-    expect(firstReport.heading).to.equal(babyName);
-    expect(firstReport.form).to.equal('Immunization Visit');
+    expect(firstReportInfo.heading).to.equal(babyName);
+    expect(firstReportInfo.form).to.equal('Immunization Visit');
+
+    await reportsPage.openSelectedReport(firstReport);
+    await commonPage.waitForPageLoaded();
+
+    const openReportInfo = await reportsPage.getOpenReportInfo();
+    expect(openReportInfo.patientName).to.equal(babyName);
+    expect(openReportInfo.reportName).to.equal('Immunization Visit');
+    expect(openReportInfo.senderName).to.equal(`Submitted by ${user.contact.name} `);
+    expect(openReportInfo.senderPhone).to.equal(user.contact.phone);
+
+    expect((await reportsPage.getDetailReportRowContent('chw_sms')).rowValues[0]).to.equal('Nice work, ! ' +
+      `${babyName} (${babyMedicID}) attended their immunizations visit at the health facility. ` +
+      'Keep up the good work. Thank you! Test notes');
+
+    const { rowValues } = await reportsPage.getDetailReportRowContent('vaccines_received.');
+    rowValues.map(value => expect(value).to.equal('yes'));
+
+    await commonPage.logout();
   });
 
   it('Submit immunization visit - SMS IMM form', async () => {
+    await loginPage.cookieLogin();
     const messageValue = `IMM ${babyMedicID}`;
 
     await gatewayApiUtils.api.postMessage({
@@ -154,7 +177,7 @@ describe('Immunization Visit', () => {
       { title: 'Deliveries at facility', percent: '0%', percentCount: '(0 of 0)' }, 
       { title: 'Children under 5', count: '1' }, 
       { title: 'Children registered', count: '1' }, 
-      { title: 'Vaccines given', count: '2' }, 
+      { title: 'Vaccines given', count: '1' },
       { title: 'Children vaccinated', count: '1' }, 
       { title: 'Children with no vaccines reported', count: '0' }, 
       { title: 'Children with BCG reported', percent: '100%', percentCount: '(1 of 1)' }, 

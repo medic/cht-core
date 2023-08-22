@@ -46,6 +46,9 @@ const automaticReplyMessage = () => $(`${AUTOMATIC_REPLY_SECTION} p[test-id='mes
 const automaticReplyState = () => $(`${AUTOMATIC_REPLY_SECTION} .state`);
 const automaticReplyRecipient = () => $(`${AUTOMATIC_REPLY_SECTION} .recipient`);
 
+const detailReportRowContent = (row, type) =>
+  $$(`${REPORT_BODY_DETAILS_SELECTOR} li[test-id*='${row}'] span[test-id='${type}']`);
+
 const deleteAllButton = () => $('.desktop.multiselect-bar-container .bulk-delete');
 const selectedReportsCount = () => $('.desktop.multiselect-bar-container .count-label');
 const DELETE_CONFIRM_MODAL = 'mm-modal#bulk-delete-confirm';
@@ -333,6 +336,15 @@ const getAutomaticReply = async () => {
   };
 };
 
+const getDetailReportRowContent = async (row) => {
+  const labels =  await detailReportRowContent(row, 'label').map(async label => await label.getText());
+  const values =  await detailReportRowContent(row, 'value').map(async label => await label.getText());
+  return {
+    rowLabels: labels,
+    rowValues: values,
+  };
+};
+
 const getOpenReportInfo = async () => {
   return {
     patientName: await getElementText(patientName()),
@@ -466,6 +478,7 @@ module.exports = {
   getReportDetailFieldValueByLabel,
   getRawReportContent,
   getAutomaticReply,
+  getDetailReportRowContent,
   getOpenReportInfo,
   getListReportInfo,
   resetFilter,
