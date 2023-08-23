@@ -12,7 +12,7 @@ setup() {
 	set -eu -o pipefail
 
 	DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")" >/dev/null 2>&1 && pwd)"
-	TMP_WORK_DIR="$(mktemp -d -t "$(basename "$BATS_TEST_FILENAME")")"
+	TMP_WORK_DIR="$(mktemp -d)"
 
 	ACTUAL_ERRORS_DIR="$DIR/../errors"
 	TMP_ERRORS_DIR="$TMP_WORK_DIR/errors"
