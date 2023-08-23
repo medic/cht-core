@@ -40,7 +40,7 @@ const getContent = async (file) => {
 
 const mkdirIfDoesNotExist = async (path) => {
   try {
-    await mkdir(path);
+    await mkdir(path, { recursive: true });
   } catch(e) {
     if (e.code !== 'EEXIST') {
       throw e;
