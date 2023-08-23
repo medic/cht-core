@@ -45,8 +45,8 @@ const mkdirIfDoesNotExist = async (path) => {
     if (e.code !== 'EEXIST') {
       throw e;
     }
-  };
-}
+  }
+};
 
 (async () => {
   console.log(`Build angularjs template cache from "${TEMPLATE_DIR}" to "${OUTPUT_FILE}"`);
