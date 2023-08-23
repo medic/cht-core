@@ -129,9 +129,6 @@ const TRANSLATIONS = {
     SESSION_EXPIRED_DESCRIPTION: 'Sesi Anda telah berakhir dan Anda telah keluar. Silakan masuk kembali untuk melanjutkan.', // eslint-disable-line max-len
     LOGIN: 'Login',
   },
-  bm: {
-    SESSION_EXPIRED_DESCRIPTION: 'I ka waati tɛmɛna ani i bɔra kɛnɛ kan. Seguin ka  don a kɔnɔ walasa ka taa ɲɛ.',
-  },
 };
 
 let locale;
