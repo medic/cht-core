@@ -108,7 +108,7 @@ describe('Service worker cache', () => {
   it('confirm initial list of cached resources', async () => {
     const cacheDetails = await getCachedRequests();
 
-    expect(cacheDetails.name.startsWith('cache-precache-v2-')).to.be.true;
+    expect(cacheDetails.name.startsWith('cht-precache-v2-')).to.be.true;
     expect(cacheDetails.urls.sort()).to.have.members([
       '/',
       '/audio/alert.mp3',

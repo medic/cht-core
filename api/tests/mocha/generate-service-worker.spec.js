@@ -59,9 +59,10 @@ describe('generate service worker', () => {
     chai.expect(workboxGenerate.callCount).to.deep.equal(1);
     chai.expect(workboxGenerate.args[0]).to.deep.equal([{
       swDest: '/absolute/path/to/build/static/webapp/service-worker.js',
-      cacheId: 'cache',
+      cacheId: 'cht',
       clientsClaim: true,
       skipWaiting: true,
+      cleanupOutdatedCaches: true,
       globDirectory: '/absolute/path/to/build/static/',
       globPatterns: [
         '!webapp/service-worker.js',
@@ -181,9 +182,10 @@ describe('generate service worker', () => {
       chai.expect(workboxGenerate.callCount).to.deep.equal(1);
       chai.expect(workboxGenerate.args[0]).to.deep.equal([{
         swDest: '/absolute/path/to/build/static/webapp/service-worker.js',
-        cacheId: 'cache',
+        cacheId: 'cht',
         clientsClaim: true,
         skipWaiting: true,
+        cleanupOutdatedCaches: true,
         globDirectory: '/absolute/path/to/build/static/',
         globPatterns: [
           '!webapp/service-worker.js',

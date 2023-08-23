@@ -72,14 +72,16 @@ const appendExtensionLibs = async (config) => {
   });
 };
 
-// Use the swPrecache library to generate a service-worker script
+// Use the workbox library to generate a service-worker script
 const writeServiceWorkerFile = async () => {
   const config = {
-    swDest: scriptOutputPath,
-    cacheId: 'cache',
+    cacheId: 'cht',
     clientsClaim: true,
     skipWaiting: true,
+    cleanupOutdatedCaches: true,
+    swDest: scriptOutputPath,
     globDirectory: staticDirectoryPath,
+    maximumFileSizeToCacheInBytes: 1048576 * 30,
     globPatterns: [
       `!webapp/service-worker.js`, // exclude service worker path
 
@@ -109,7 +111,6 @@ const writeServiceWorkerFile = async () => {
     modifyURLPrefix: {
       'webapp/': '/',
     },
-    maximumFileSizeToCacheInBytes: 1048576 * 30,
   };
   await appendExtensionLibs(config);
   await workbox.generateSW(config);
