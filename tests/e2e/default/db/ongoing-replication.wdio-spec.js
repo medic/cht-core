@@ -22,6 +22,8 @@ const saveData = async (hierarchy) => {
 };
 
 describe('ongoing replication', () => {
+  this.timeout(4 * 60 * 1000); // Sometimes the tests take longer to complete than the original 2 minutes timeout.
+
   before(async () => {
     await sentinelUtils.skipToSeq();
 
