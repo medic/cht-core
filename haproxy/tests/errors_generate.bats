@@ -48,7 +48,7 @@ teardown() {
 		assert_equal \
 			"$(cat "$ACTUAL_ERRORS_DIR/$filename")" \
 			"$(cat "$TMP_ERRORS_DIR/$filename")"
-		((file_count++))
+		file_count=$((file_count + 1))
 	done
-	((file_count > 0))
+	[[ file_count -gt 0 ]]
 }
