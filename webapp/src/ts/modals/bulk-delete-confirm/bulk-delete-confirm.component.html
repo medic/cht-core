@@ -2,7 +2,7 @@
   id="bulk-delete-confirm"
   [processing]="processing"
   [error]="error"
-  [titleKey]="'bulkdelete.confirm.title'"
+  [titleKey]="docs.length > 1 ? 'bulkdelete.confirm.title.plural' : 'bulkdelete.confirm.title'"
   [submitKey]="'bulkdelete.confirm.action'"
   [submittingKey]="'Deleting'"
   [cancelKey]="'Cancel'"
