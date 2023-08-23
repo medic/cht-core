@@ -2,7 +2,7 @@ version: "3.7"
 services:
     haproxy:
         build:
-            context: .
+            context: ../
         ports:
             - 127.0.0.1:5984:5984
         environment:
@@ -26,7 +26,7 @@ services:
             - ./mock-config/initializerJson.json:/config/initializerJson.json
 
     haproxy-healthcheck:
-        build: ../haproxy-healthcheck
+        build: ../../haproxy-healthcheck
         environment:
             COUCHDB_SERVERS: mock-couchdb
             COUCHDB_USER: someuser

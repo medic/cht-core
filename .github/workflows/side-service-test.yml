@@ -19,6 +19,6 @@ jobs:
           make test
         )
         (
-          cd haproxy
+          cd haproxy/tests
           make test
         )

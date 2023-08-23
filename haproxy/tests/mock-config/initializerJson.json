@@ -5,7 +5,8 @@
     },
     "httpResponse": {
       "body": {
-        "couchdb": "Welcome"
+        "couchdb": "Welcome to mock-couchdb",
+        "status": "this field is not used"
       }
     }
   },

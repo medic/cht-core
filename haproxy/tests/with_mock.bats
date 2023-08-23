@@ -15,8 +15,10 @@ setup() {
 @test "should receive response from couchdb" {
 	run bash -c "curl -fksm5 http://127.0.0.1:5984/ | jq .couchdb"
 	assert_success
-	assert_output '"Welcome"'
+	assert_output '"Welcome to mock-couchdb"'
+}
 
+@test "should receive 404 response if path doesn't exist" {
 	run curl -Ifksm5 http://127.0.0.1:5984/doesnotexist
 	assert_failure
 	assert_line --partial --index 0 'HTTP/1.1 404 Not Found'
