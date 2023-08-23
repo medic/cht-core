@@ -35,7 +35,7 @@ describe('bfcache', async () => {
 
       const modal = await modalPage.getModalDetails();
       expect(modal.header).to.equal('Session has expired');
-      expect(modal.body).to.equal('Your session has expired, please login to continue.');
+      expect(modal.body).to.equal('Your session has expired and you have been logged out. Please login to continue.');
       await modalPage.submit();
 
       await browser.waitUntil(async () => (await browser.getUrl()).includes('/login?redirect='), { timeout: 1000 });

@@ -61,7 +61,7 @@ describe('Login page funcionality tests', () => {
     it('should show a warning before log out', async () => {
       await loginPage.cookieLogin(auth);
       const warning = await commonPage.getLogoutMessage();
-      expect(warning).to.equal('Are you sure you want to log out?');
+      expect(warning).to.equal('You will need an internet connection to log back in.');
     });
   });
 
@@ -125,7 +125,8 @@ describe('Login page funcionality tests', () => {
       await browser.deleteCookies('AuthSession');
       await commonPage.goToReports();
 
-      expect(await (await modalPage.body()).getText()).to.equal('Your session has expired, please login to continue.');
+      const description = await (await modalPage.body()).getText();
+      expect(description).to.equal('Your session has expired and you have been logged out. Please login to continue.');
       await modalPage.submit();
       expect((await browser.getUrl()).includes('/medic/login')).to.be.true;
     });

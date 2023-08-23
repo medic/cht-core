@@ -252,7 +252,7 @@ describe('Tasks group landing page', () => {
 
       // cancelling keeps you on the same page
       await modalPage.cancel();
-      await (await modalPage.body()).waitForDisplayed({ reverse: true });
+      await modalPage.checkModalHasClosed();
 
       await tasksPage.waitForTasksGroupLoaded();
 
