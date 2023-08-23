@@ -1,6 +1,6 @@
 <mm-modal-layout
   id="training-cards-modal"
-  [titleKey]="modalTitleKey | translate"
+  [titleKey]="showConfirmExit ? 'training_cards.confirm.title' : modalTitleKey | translate"
   (onCancel)="confirmExit(true)"
   [hideFooter]="hideModalFooter"
   [hasEnketoForm]="true"
