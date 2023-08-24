@@ -6,6 +6,8 @@ echo "build-prepare: cleaning build directory"
 rm -rf build
 mkdir build
 
+node scripts/build/cli npmCiModules
+
 echo "build-prepare: building ddocs"
 npm run build-ddocs
 
