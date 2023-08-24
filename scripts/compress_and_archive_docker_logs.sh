@@ -31,7 +31,7 @@ rm -f /tmp/cht-docker-log-tmp/*
 
 docker stats --no-stream 1> ${tmp}/docker_stats.log
 docker ps> ${tmp}/docker_ps.log
-docker ps  --format '{{ .Names }}' | xargs -I % sh -c "docker logs %  > ${tmp}/%.log 2>&1"
+docker ps  --format '{{ .Names }}' | xargs -I % sh -c "docker logs --since 24h %  > ${tmp}/%.log 2>&1"
 
 cd /tmp/cht-docker-log-tmp
 tar -czf ${log_archive} *
