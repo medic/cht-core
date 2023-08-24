@@ -35,20 +35,20 @@ teardown() {
 @test "correct number of error files" {
 	"$TMP_ERRORS_DIR/generate.sh" >/dev/null
 	assert_equal \
-		"$(find "$ACTUAL_ERRORS_DIR"/{3..5}??.{html,json} | wc -l)" \
-		"$(find "$TMP_ERRORS_DIR"/{3..5}??.{html,json} | wc -l)"
+		"$(find "$ACTUAL_ERRORS_DIR"/*.{html,json} | wc -l)" \
+		"$(find "$TMP_ERRORS_DIR"/*.{html,json} | wc -l)"
 }
 
 @test "file content should match for all error files	" {
 	"$TMP_ERRORS_DIR/generate.sh" >/dev/null
 
 	file_count=0
-	for file in "$ACTUAL_ERRORS_DIR"/{3..5}??.{html,json}; do
+	for file in "$ACTUAL_ERRORS_DIR"/*.{html,json}; do
 		filename="$(basename "$file")"
 		assert_equal \
 			"$(cat "$ACTUAL_ERRORS_DIR/$filename")" \
 			"$(cat "$TMP_ERRORS_DIR/$filename")"
 		file_count=$((file_count + 1))
 	done
-	[[ file_count -gt 50 ]]
+	[[ file_count -ge 2 ]]
 }

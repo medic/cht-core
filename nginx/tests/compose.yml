@@ -1,7 +1,6 @@
 version: "3.7"
 services:
     cht-nginx:
-        container_name: cht-nginx
         build:
             context: ../
         ports:
@@ -18,13 +17,12 @@ services:
 
     cht-api:
         image: mockserver/mockserver:5.15.0
-        container_name: cht-api-mock
         command: -serverPort 5988
         environment:
             MOCKSERVER_PROPERTY_FILE: /config/mockserver.properties
             MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
         volumes:
-        - ./mock-config:/config
+            - ./mock-config:/config
 
 volumes:
     cht-ssl:
