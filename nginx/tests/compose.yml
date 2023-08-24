@@ -3,7 +3,7 @@ services:
     cht-nginx:
         container_name: cht-nginx
         build:
-            context: .
+            context: ../
         ports:
             - 127.0.0.1:1080:80
             - 127.0.0.1:1443:443
@@ -13,7 +13,6 @@ services:
             CERTIFICATE_MODE: SELF_SIGNED
         volumes:
             - cht-ssl:/root/.acme.sh/
-            - ./tests/tests.bats:/app/tests.bats
         depends_on:
             - cht-api
 

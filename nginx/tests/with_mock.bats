@@ -26,7 +26,7 @@ setup() {
 	assert_line --partial --index 0 'HTTP/1.1 404 Not Found'
 }
 
-@test "should recieve response from CHT api" {
+@test "should receive response from CHT api" {
 	run curl -fksm5 --http1.1 https://localhost:1443/
 	assert_success
 	assert_output 'Hello from CHT api mock'
@@ -36,10 +36,13 @@ setup() {
 	assert_output 'Test'
 }
 
-@test "Should work with http 1.1 and 2" {
+@test "Should work with http 1.1" {
 	run curl -Iksm5 --http1.1 https://localhost:1443/doesnotexist
 	assert_line --partial --index 0 'HTTP/1.1 404 Not Found'
+}
 
+
+@test "Should work with http 2" {
 	run curl -Iksm5 --http2 https://localhost:1443/doesnotexist
 	assert_line --partial --index 0 'HTTP/2 404'
 	

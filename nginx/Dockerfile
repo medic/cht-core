@@ -24,7 +24,7 @@ RUN cp shellmock /app/bash-shellmock/shellmock
 RUN chmod +x /app/bash-shellmock/shellmock
 COPY tests /app/tests
 COPY ssl-install.sh /app/tests/ssl-install.sh
-RUN bats /app/tests/tests.bats
+RUN bats /app/tests/ssl-install.bats
 
 # Final
 FROM base_nginx AS cht-nginx
