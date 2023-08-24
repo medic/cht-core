@@ -18,7 +18,7 @@
     "postinstall": "cd webapp && ng cache clean && cd ..",
     "prepare": "husky install",
     "-- DEV SCRIPTS": "-----------------------------------------------------------------------------------------------",
-    "build-dev": "npm run clean-build-dir && npm run build-ddocs && npm run css-enketo && npm run build-webapp-dev && npm run build-admin && npm run build-config && npm run copy-static-files-to-api",
+    "build-dev": "npm run clean-build-dir && npm run npm-ci-modules && npm run build-ddocs && npm run css-enketo && npm run build-webapp-dev && npm run build-admin && npm run build-config && npm run copy-static-files-to-api",
     "build-dev-watch": "npm run build-dev && cd webapp && npm run build -- --configuration=development --watch=true & node ./scripts/build/watch.js",
     "build-documentation": "npm run jsdoc-admin && npm run jsdoc-sentinel && npm run jsdoc-api && npm run jsdoc-shared-libs",
     "build-webapp-dev": "cd webapp && npm run build -- --configuration=development && npm run compile",
@@ -88,7 +88,7 @@
     "uglify-admin": "uglifyjs api/build/static/admin/js/main.js -o api/build/static/admin/js/main.js && uglifyjs api/build/static/admin/js/templates.js -o api/build/static/admin/js/templates.js",
     "uglify-api": "uglifyjs api/build/static/login/script.js -o api/build/static/login/script.js && uglifyjs api/build/static/login/lib-bowser.js -o api/build/static/login/lib-bowser.js",
     "upgrade-wdio": "wdio run ./tests/e2e/upgrade/wdio.conf.js",
-    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && npm run build-service-images && wdio run ./tests/e2e/default/wdio.conf.js --suite=all",
+    "wdio-local": "export VERSION=$(node ./scripts/build/get-version.js) && npm run build-service-images && wdio run ./tests/e2e/default/wdio.conf.js",
     "update-service-worker": "node scripts/build/cli updateServiceWorker"
   },
   "devDependencies": {
