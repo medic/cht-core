@@ -279,7 +279,7 @@ describe('validations', () => {
   });
 
 
-  it('invalid phone validation should fail if invalid phone is provided', () => {
+  it('phone validation should fail if invalid phone is provided', () => {
     const config = require('../../transitions/src/config');
     
     const mockedGetAll = sinon.stub().returns({
@@ -310,7 +310,7 @@ describe('validations', () => {
     });
   });
 
-  it('Valid phone validation should pass if valid phone is provided', () => {
+  it('phone validation should pass if valid phone is provided', () => {
     const config = require('../../transitions/src/config');
 
     const mockedGetAll = sinon.stub().returns({
@@ -341,7 +341,7 @@ describe('validations', () => {
     });
   });
 
-  it('Valid phone validation should pass if valid phone with extension is provided', () => {
+  it('phone validation should pass if valid phone with country code is provided', () => {
     const config = require('../../transitions/src/config');
 
     const mockedGetAll = sinon.stub().returns({
@@ -369,6 +369,37 @@ describe('validations', () => {
     };
     return validation.validate(doc, validations).then(errors => {
       assert.equal(errors.length, 0);
+    });
+  });
+
+  it('phone validation should fail if alphabets in phone number', () => {
+    const config = require('../../transitions/src/config');
+
+    const mockedGetAll = sinon.stub().returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+
+    config.getAll = mockedGetAll;
+
+    const validations = [
+      {
+        property: 'phone_number',
+        rule: 'validPhone("phone_number")',
+        message: [
+          {
+            content: 'invalid phone',
+            locale: 'en',
+          },
+        ],
+      },
+    ];
+    const doc = {
+      _id: 'invalid',
+      fields: { phone_number: '+97798A1134532' }
+    };
+    return validation.validate(doc, validations).then(errors => {
+      assert.equal(errors.length, 1);
     });
   });
 
