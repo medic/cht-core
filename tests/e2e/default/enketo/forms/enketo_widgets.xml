@@ -1,0 +1,469 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Enketo Widgets</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/enketo_widgets/cascading_widgets/group1/city:label">
+            <value>City</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group1/country/nl:label">
+            <value>The Netherlands</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group1/country/usa:label">
+            <value>United States</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group1/country:label">
+            <value>Country</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group1/neighborhood:label">
+            <value>Neighborhood</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group1:label">
+            <value>Cascading Selects with Radio Buttons</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group2/city2:label">
+            <value>City</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group2/country2/nl:label">
+            <value>The Netherlands</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group2/country2/usa:label">
+            <value>United States</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group2/country2:label">
+            <value>Country</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group2/neighborhood2:label">
+            <value>Neighborhood</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets/group2:label">
+            <value>Cascading Selects with Pulldowns</value>
+          </text>
+          <text id="/enketo_widgets/cascading_widgets:label">
+            <value>Cascading Select widgets</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select1_autocomplete/king:label">
+            <value>kingfisher</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select1_autocomplete/nut:label">
+            <value>nuthatch</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select1_autocomplete/pig:label">
+            <value>pigeon</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select1_autocomplete:label">
+            <value>Select one autocomplete widget</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select1_spinner/a:label">
+            <value>option a</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select1_spinner/b:label">
+            <value>option b</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select1_spinner/c:label">
+            <value>option c</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select1_spinner/d:label">
+            <value>option d</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select1_spinner:label">
+            <value>Select one: pulldown</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select_spinner/a:label">
+            <value>option a</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select_spinner/b:label">
+            <value>option b</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select_spinner/c:label">
+            <value>option c</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select_spinner/d:label">
+            <value>option d</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets/select_spinner:label">
+            <value>Select multiple: pulldown</value>
+          </text>
+          <text id="/enketo_widgets/select_widgets:label">
+            <value>Select widgets</value>
+          </text>
+          <text id="static_instance-cities-0">
+            <value>Amsterdam</value>
+          </text>
+          <text id="static_instance-cities-1">
+            <value>Denver</value>
+          </text>
+          <text id="static_instance-cities-2">
+            <value>New York City</value>
+          </text>
+          <text id="static_instance-cities-3">
+            <value>Los Angeles</value>
+          </text>
+          <text id="static_instance-cities-4">
+            <value>Rotterdam</value>
+          </text>
+          <text id="static_instance-cities-5">
+            <value>Dronten</value>
+          </text>
+          <text id="static_instance-countries-0">
+            <value>The Netherlands</value>
+          </text>
+          <text id="static_instance-countries-1">
+            <value>United States</value>
+          </text>
+          <text id="static_instance-list-0">
+            <value>option a</value>
+          </text>
+          <text id="static_instance-list-1">
+            <value>option b</value>
+          </text>
+          <text id="static_instance-list-2">
+            <value>option c</value>
+          </text>
+          <text id="static_instance-list-3">
+            <value>option d</value>
+          </text>
+          <text id="static_instance-list1-0">
+            <value>kingfisher</value>
+          </text>
+          <text id="static_instance-list1-1">
+            <value>pigeon</value>
+          </text>
+          <text id="static_instance-list1-2">
+            <value>nuthatch</value>
+          </text>
+          <text id="static_instance-neighborhoods-0">
+            <value>Bronx</value>
+          </text>
+          <text id="static_instance-neighborhoods-1">
+            <value>Harlem</value>
+          </text>
+          <text id="static_instance-neighborhoods-2">
+            <value>Bel Air</value>
+          </text>
+          <text id="static_instance-neighborhoods-3">
+            <value>Westerpark</value>
+          </text>
+          <text id="static_instance-neighborhoods-4">
+            <value>Park Hill</value>
+          </text>
+          <text id="static_instance-neighborhoods-5">
+            <value>Harbor</value>
+          </text>
+          <text id="static_instance-neighborhoods-6">
+            <value>Dam</value>
+          </text>
+          <text id="static_instance-neighborhoods-7">
+            <value>Downtown</value>
+          </text>
+          <text id="static_instance-neighborhoods-8">
+            <value>Harbor</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <enketo_widgets delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-08-25 00:00:00">
+          <select_widgets>
+            <select_spinner/>
+            <select1_spinner/>
+            <select1_autocomplete/>
+          </select_widgets>
+          <cascading_widgets>
+            <group1>
+              <country/>
+              <city/>
+              <neighborhood/>
+            </group1>
+            <group2>
+              <country2/>
+              <city2/>
+              <neighborhood2/>
+            </group2>
+          </cascading_widgets>
+          <meta tag="hidden">
+            <instanceID/>
+          </meta>
+        </enketo_widgets>
+      </instance>
+      <instance id="contact-summary"/>
+      <instance id="list1">
+        <root>
+          <item>
+            <itextId>static_instance-list1-0</itextId>
+            <name>king</name>
+          </item>
+          <item>
+            <itextId>static_instance-list1-1</itextId>
+            <name>pig</name>
+          </item>
+          <item>
+            <itextId>static_instance-list1-2</itextId>
+            <name>nut</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="cities">
+        <root>
+          <item>
+            <itextId>static_instance-cities-0</itextId>
+            <country>nl</country>
+            <name>ams</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-1</itextId>
+            <country>usa</country>
+            <name>den</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-2</itextId>
+            <country>usa</country>
+            <name>nyc</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-3</itextId>
+            <country>usa</country>
+            <name>la</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-4</itextId>
+            <country>nl</country>
+            <name>rot</name>
+          </item>
+          <item>
+            <itextId>static_instance-cities-5</itextId>
+            <country>nl</country>
+            <name>dro</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="list">
+        <root>
+          <item>
+            <itextId>static_instance-list-0</itextId>
+            <name>a</name>
+          </item>
+          <item>
+            <itextId>static_instance-list-1</itextId>
+            <name>b</name>
+          </item>
+          <item>
+            <itextId>static_instance-list-2</itextId>
+            <name>c</name>
+          </item>
+          <item>
+            <itextId>static_instance-list-3</itextId>
+            <name>d</name>
+          </item>
+        </root>
+      </instance>
+      <instance id="neighborhoods">
+        <root>
+          <item>
+            <itextId>static_instance-neighborhoods-0</itextId>
+            <country>usa</country>
+            <name>bronx</name>
+            <city>nyc</city>
+          </item>
+          <item>
+            <itextId>static_instance-neighborhoods-1</itextId>
+            <country>usa</country>
+            <name>harlem</name>
+            <city>nyc</city>
+          </item>
+          <item>
+            <itextId>static_instance-neighborhoods-2</itextId>
+            <country>usa</country>
+            <name>belair</name>
+            <city>la</city>
+          </item>
+          <item>
+            <itextId>static_instance-neighborhoods-3</itextId>
+            <country>nl</country>
+            <name>wes</name>
+            <city>ams</city>
+          </item>
+          <item>
+            <itextId>static_instance-neighborhoods-4</itextId>
+            <country>usa</country>
+            <name>parkhill</name>
+            <city>den</city>
+          </item>
+          <item>
+            <itextId>static_instance-neighborhoods-5</itextId>
+            <country>nl</country>
+            <name>haven</name>
+            <city>rot</city>
+          </item>
+          <item>
+            <itextId>static_instance-neighborhoods-6</itextId>
+            <country>nl</country>
+            <name>dam</name>
+            <city>ams</city>
+          </item>
+          <item>
+            <itextId>static_instance-neighborhoods-7</itextId>
+            <country>nl</country>
+            <name>centrum</name>
+            <city>rot</city>
+          </item>
+          <item>
+            <itextId>static_instance-neighborhoods-8</itextId>
+            <country>nl</country>
+            <name>havendr</name>
+            <city>dro</city>
+          </item>
+        </root>
+      </instance>
+      <instance id="countries">
+        <root>
+          <item>
+            <itextId>static_instance-countries-0</itextId>
+            <name>nl</name>
+          </item>
+          <item>
+            <itextId>static_instance-countries-1</itextId>
+            <name>usa</name>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/enketo_widgets/select_widgets/select_spinner" type="select"/>
+      <bind nodeset="/enketo_widgets/select_widgets/select1_spinner" type="select1"/>
+      <bind nodeset="/enketo_widgets/select_widgets/select1_autocomplete" type="select1"/>
+      <bind nodeset="/enketo_widgets/cascading_widgets/group1/country" type="select1"/>
+      <bind nodeset="/enketo_widgets/cascading_widgets/group1/city" type="select1"/>
+      <bind nodeset="/enketo_widgets/cascading_widgets/group1/neighborhood" type="select1"/>
+      <bind nodeset="/enketo_widgets/cascading_widgets/group2/country2" type="select1"/>
+      <bind nodeset="/enketo_widgets/cascading_widgets/group2/city2" type="select1"/>
+      <bind nodeset="/enketo_widgets/cascading_widgets/group2/neighborhood2" type="select1"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/enketo_widgets/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/enketo_widgets/select_widgets">
+      <label ref="jr:itext('/enketo_widgets/select_widgets:label')"/>
+      <select appearance="minimal" ref="/enketo_widgets/select_widgets/select_spinner">
+        <label ref="jr:itext('/enketo_widgets/select_widgets/select_spinner:label')"/>
+        <hint>Showing a pull-down list of options (type=select_multiple list, appearance=minimal)</hint>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select_spinner/a:label')"/>
+          <value>a</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select_spinner/b:label')"/>
+          <value>b</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select_spinner/c:label')"/>
+          <value>c</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select_spinner/d:label')"/>
+          <value>d</value>
+        </item>
+      </select>
+      <select1 appearance="minimal" ref="/enketo_widgets/select_widgets/select1_spinner">
+        <label ref="jr:itext('/enketo_widgets/select_widgets/select1_spinner:label')"/>
+        <hint>Showing a pull-down list of options (type=select_one list, appearance=minimal)</hint>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_spinner/a:label')"/>
+          <value>a</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_spinner/b:label')"/>
+          <value>b</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_spinner/c:label')"/>
+          <value>c</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_spinner/d:label')"/>
+          <value>d</value>
+        </item>
+      </select1>
+      <select1 appearance="autocomplete" ref="/enketo_widgets/select_widgets/select1_autocomplete">
+        <label ref="jr:itext('/enketo_widgets/select_widgets/select1_autocomplete:label')"/>
+        <hint>Type e.g. 'g' to filter options. 
+(type=select_one, appearance=autocomplete)</hint>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_autocomplete/king:label')"/>
+          <value>king</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_autocomplete/pig:label')"/>
+          <value>pig</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_autocomplete/nut:label')"/>
+          <value>nut</value>
+        </item>
+      </select1>
+    </group>
+    <group appearance="field-list" ref="/enketo_widgets/cascading_widgets">
+      <label ref="jr:itext('/enketo_widgets/cascading_widgets:label')"/>
+      <group ref="/enketo_widgets/cascading_widgets/group1">
+        <label ref="jr:itext('/enketo_widgets/cascading_widgets/group1:label')"/>
+        <select1 ref="/enketo_widgets/cascading_widgets/group1/country">
+          <label ref="jr:itext('/enketo_widgets/cascading_widgets/group1/country:label')"/>
+          <item>
+            <label ref="jr:itext('/enketo_widgets/cascading_widgets/group1/country/nl:label')"/>
+            <value>nl</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/enketo_widgets/cascading_widgets/group1/country/usa:label')"/>
+            <value>usa</value>
+          </item>
+        </select1>
+        <select1 ref="/enketo_widgets/cascading_widgets/group1/city">
+          <label ref="jr:itext('/enketo_widgets/cascading_widgets/group1/city:label')"/>
+          <hint>Using a choice filter to update options based on a previous answer (choice_filter: country = <output value=" /enketo_widgets/cascading_widgets/group1/country "/>)</hint>
+          <itemset nodeset="instance('cities')/root/item[country= /enketo_widgets/cascading_widgets/group1/country ]">
+            <value ref="name"/>
+            <label ref="jr:itext(itextId)"/>
+          </itemset>
+        </select1>
+        <select1 ref="/enketo_widgets/cascading_widgets/group1/neighborhood">
+          <label ref="jr:itext('/enketo_widgets/cascading_widgets/group1/neighborhood:label')"/>
+          <hint>Using a choice filter to update options based on previous answers (choice_filter: country = <output value=" /enketo_widgets/cascading_widgets/group1/country "/> and city = <output value=" /enketo_widgets/cascading_widgets/group1/city "/>)</hint>
+          <itemset nodeset="instance('neighborhoods')/root/item[country= /enketo_widgets/cascading_widgets/group1/country  and city= /enketo_widgets/cascading_widgets/group1/city ]">
+            <value ref="name"/>
+            <label ref="jr:itext(itextId)"/>
+          </itemset>
+        </select1>
+      </group>
+      <group ref="/enketo_widgets/cascading_widgets/group2">
+        <label ref="jr:itext('/enketo_widgets/cascading_widgets/group2:label')"/>
+        <select1 appearance="minimal" ref="/enketo_widgets/cascading_widgets/group2/country2">
+          <label ref="jr:itext('/enketo_widgets/cascading_widgets/group2/country2:label')"/>
+          <hint>(appearance: minimal)</hint>
+          <item>
+            <label ref="jr:itext('/enketo_widgets/cascading_widgets/group2/country2/nl:label')"/>
+            <value>nl</value>
+          </item>
+          <item>
+            <label ref="jr:itext('/enketo_widgets/cascading_widgets/group2/country2/usa:label')"/>
+            <value>usa</value>
+          </item>
+        </select1>
+        <select1 appearance="minimal" ref="/enketo_widgets/cascading_widgets/group2/city2">
+          <label ref="jr:itext('/enketo_widgets/cascading_widgets/group2/city2:label')"/>
+          <hint>Using a choice filter to update options based on a previous answer (choice_filter: country = <output value=" /enketo_widgets/cascading_widgets/group2/country2 "/>, appearance: minimal)</hint>
+          <itemset nodeset="instance('cities')/root/item[country= /enketo_widgets/cascading_widgets/group2/country2 ]">
+            <value ref="name"/>
+            <label ref="jr:itext(itextId)"/>
+          </itemset>
+        </select1>
+        <select1 appearance="minimal" ref="/enketo_widgets/cascading_widgets/group2/neighborhood2">
+          <label ref="jr:itext('/enketo_widgets/cascading_widgets/group2/neighborhood2:label')"/>
+          <hint>Using a choice filter to update options based on previous answers (choice_filter: country = <output value=" /enketo_widgets/cascading_widgets/group2/country2 "/> and city = <output value=" /enketo_widgets/cascading_widgets/group2/city2 "/>, appearance = minimal)</hint>
+          <itemset nodeset="instance('neighborhoods')/root/item[country= /enketo_widgets/cascading_widgets/group2/country2  and city= /enketo_widgets/cascading_widgets/group2/city2 ]">
+            <value ref="name"/>
+            <label ref="jr:itext(itextId)"/>
+          </itemset>
+        </select1>
+      </group>
+    </group>
+  </h:body>
+</h:html>
