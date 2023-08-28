@@ -1,4 +1,4 @@
-const _ = require('lodash/core');
+const _ = require('lodash');
 const moment = require('moment');
 const Search = require('@medic/search');
 
