@@ -1,4 +1,4 @@
-const _ = require('lodash'); // don't use eslint/core -- TODO link to issue
+const _ = require('lodash'); // #8494 don't use eslint/core as it throws an exception
 const Search = require('@medic/search');
 
 (function () {
