@@ -8,6 +8,7 @@ homeDir=
 green='\033[0;32m'   #'0;32' is Green's ANSI color code
 red='\033[0;31m'   #'0;31' is Red's ANSI color code
 noColor='\033[0m'
+stagingUrl='https://staging.dev.medicmobile.org/_couch/builds_4'
 
 get_existing_projects() {
 	find . -name "*.env" -type f | sed "s/\.\///" | sed "s/\.env//"
@@ -47,8 +48,16 @@ EOL
 }
 
 get_latest_release() {
-  latest=$(curl -s https://staging.dev.medicmobile.org/_couch/builds_4/_design/builds/_view/releases\?limit\=1\&descending\=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*')
-  echo "https://staging.dev.medicmobile.org/_couch/builds_4/${latest}"
+  latest=$(get_latest_version_string)
+  echo "${stagingUrl}/medic:medic:${latest}"
+}
+
+get_all_known_versions() {
+  curl -s "${stagingUrl}"/_design/builds/_view/releases\?descending\=true |  tr -d \\n | grep -o "medic\:medic\:[A-Za-z0-9\.\_\/\-]*" | cut -f3 -d: | sort
+}
+
+get_latest_version_string() {
+  curl -s "${stagingUrl}"/_design/builds/_view/releases\?limit\=1\&descending\=true |  tr -d \\n | grep -o 'medic\:medic\:[0-9\.]*' | cut -f3 -d:
 }
 
 create_compose_files() {
@@ -242,10 +251,25 @@ if [[ -z "$projectName" ]]; then
 		echo 'No project found, follow the prompts to create a project .env file.'
 	fi
 
+  echo
 	read -p "Would you like to initialize a new project [y/N]? " yn
 	case $yn in
 	[Yy]*)
 		while [[ -z "$projectName" ]]; do
+		  latest=$(get_latest_version_string)
+		  echo
+      read -p "Do you want to run the latest CHT Core version (${latest}) [Y/n]? " runLatest
+      case $runLatest in
+      [nN]*)
+        allKnownVersions=$(get_all_known_versions)
+        echo
+        echo "Which version to you want to run? (ctrl + c to quit)"
+        select version in $allKnownVersions; do
+          echo "$version"
+          break
+        done
+      esac
+      echo
 			read -p "How do you want to name the project? " projectName
 
 			projectName="${projectName//[^[:alnum:]]/_}"
