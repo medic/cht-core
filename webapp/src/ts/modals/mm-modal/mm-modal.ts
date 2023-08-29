@@ -66,7 +66,7 @@ export class MmModalAbstract {
   }
 
   status = {
-    processing:false,
+    processing: false,
     error: false,
     severity: false,
   };

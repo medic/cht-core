@@ -195,7 +195,7 @@ const getOrCreatePlace = place => {
       .then(resp => self.getPlace(resp.id));
   } else {
     return Promise.reject({
-      code:400,
+      code: 400,
       message: 'Place must be a new object or string identifier (UUID).'
     });
   }

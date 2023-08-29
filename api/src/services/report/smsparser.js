@@ -8,6 +8,7 @@ const textformsParser = require('./textforms-parser');
 const logger = require('../../logger');
 const moment = require('moment');
 const bs = require('bikram-sambat');
+const phoneNumberParser = require('@medic/phone-number');
 
 const MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 // matches invisible characters that can mess up our parsing
@@ -210,6 +211,20 @@ const fieldParsers = {
     // keep months integers, not their list value.
     return parseNum(stripInvisibleCharacters(raw));
   },
+  phone_number: (raw) => {
+    //standardiseDigits ensures that Nepali digits are also supported.
+    raw = standardiseDigits(raw);
+    const formattedAndValidatedPhone = phoneNumberParser.normalize(config.getAll(), raw);
+    if (formattedAndValidatedPhone) {
+      return formattedAndValidatedPhone;
+    } 
+    logger.warn(`The provided phone number ${raw} is invalid`);
+    
+    // Returning raw here becuase what to do with invalid phone 
+    // is defined in transitions so error will be thrown there if required. 
+    // Warning is logged just in case.
+    return raw;  
+  },
   bsYear: (raw) => {
     return standardiseDigits(raw);
   },
@@ -221,6 +236,7 @@ const fieldParsers = {
   }
 };
 
+//selects parser by field type and parses and validates the given data.
 exports.parseField = (field, raw, key) => {
   const parser = fieldParsers[field.type];
   if (!parser) {
