@@ -10,7 +10,6 @@ const loginController = require('./controllers/login');
 const extensionLibs = require('./services/extension-libs');
 
 const SWMETA_DOC_ID = 'service-worker-meta';
-const apiSrcDirectoryPath = __dirname;
 
 const staticDirectoryPath = environment.staticPath;
 const webappDirectoryPath = environment.webappPath;
@@ -51,13 +50,7 @@ const getServiceWorkerHash = async () => {
 };
 
 const getLoginPageContents = async () => {
-  try {
-    return await loginController.renderLogin();
-  } catch (err) {
-    logger.error('Error rendering login page %o', err);
-    // default to returning the file
-    return [path.join(apiSrcDirectoryPath, 'templates', 'login', 'index.html')]; // TODO figure out if this is right
-  }
+  return await loginController.renderLogin();
 };
 
 const appendExtensionLibs = async (config) => {
