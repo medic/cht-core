@@ -200,5 +200,8 @@
     "nools": {
       "uglify-js": ">=2.6.0"
     }
+  },
+  "dependencies": {
+    "google-libphonenumber": "^3.2.31"
   }
 }
