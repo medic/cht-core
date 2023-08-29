@@ -50,7 +50,7 @@ describe('Pregnancy danger sign follow-up form', () => {
 
   });
 
-  it('should submit and edit Pregnancy danger sign follow-up form with changes', async () => {
+  it('should submit Pregnancy danger sign follow-up form with changes', async () => {
     await commonPage.goToReports();
 
     await commonPage.openFastActionReport('pregnancy_danger_sign_follow_up', false);
@@ -64,7 +64,10 @@ describe('Pregnancy danger sign follow-up form', () => {
     const initialReport = await utils.getDoc(reportId);
 
     expect(initialReport._attachments).to.equal(undefined);
+  });
 
+  it('should edit Pregnancy danger sign follow-up form with changes', async () => {
+    const reportId = await reportsPage.getCurrentReportId();
     await reportsPage.editReport(reportId);
     await pregnancyDangerSignForm.selectPatient('jack');
     await genericForm.nextPage();
