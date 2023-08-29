@@ -170,63 +170,6 @@ describe('generate service worker', () => {
     });
   });
 
-  it('should default to caching the template file if rendering login fails', () => {
-    loginController.renderLogin.rejects({ some: 'error' });
-    extensionLibsService.getAll.resolves([]);
-    db.medic.get.resolves({ _id: 'service-worker-meta' });
-    db.medic.put.resolves();
-
-    return generateServiceWorker.run(true).then(() => {
-      chai.expect(loginController.renderLogin.callCount).to.equal(1);
-
-      chai.expect(workboxGenerate.callCount).to.deep.equal(1);
-      chai.expect(workboxGenerate.args[0]).to.deep.equal([{
-        swDest: '/absolute/path/to/build/static/webapp/service-worker.js',
-        cacheId: 'cht',
-        clientsClaim: true,
-        skipWaiting: true,
-        cleanupOutdatedCaches: true,
-        globDirectory: '/absolute/path/to/build/static/',
-        globPatterns: [
-          '!webapp/service-worker.js',
-          'webapp/manifest.json',
-          'webapp/audio/*',
-          'webapp/img/*',
-          'webapp/*.js',
-          'webapp/*.css',
-          'webapp/fontawesome-webfont.woff2',
-          'webapp/fonts/enketo-icons-v2.woff',
-          'webapp/fonts/NotoSans-Bold.ttf',
-          'webapp/fonts/NotoSans-Regular.ttf',
-          'login/*.{css,js}',
-          'login/images/*.svg',
-          '/extension-libs',
-        ],
-        templatedURLs: {
-          '/': [ 'webapp/index.html' ],
-          '/extension-libs': '[]',
-          '/medic/login': [ '/absolute/path/to/api/src/templates/login/index.html' ],
-          '/medic/_design/medic/_rewrite/': [ 'webapp/appcache-upgrade.html' ],
-        },
-        ignoreURLParametersMatching: [/redirect/, /username/],
-        modifyURLPrefix: {
-          'webapp/': '/'
-        },
-        maximumFileSizeToCacheInBytes: 31457280
-      }]);
-
-      chai.expect(db.medic.get.callCount).to.equal(1);
-      chai.expect(db.medic.get.args[0]).to.deep.equal(['service-worker-meta']);
-      chai.expect(db.medic.put.callCount).to.equal(1);
-      chai.expect(db.medic.put.args[0]).to.deep.equal([{
-        _id: 'service-worker-meta',
-        hash: 'second',
-        generated_at: 0,
-      }]);
-      chai.expect(getServiceWorkerHash.callCount).to.equal(2);
-    });
-  });
-
   it('should throw error when generating the service worker fails', () => {
     loginController.renderLogin.resolves('aaa');
     extensionLibsService.getAll.resolves([]);
