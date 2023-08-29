@@ -43,6 +43,7 @@ COUCHDB_UUID=$(openssl rand -hex 16)
 COUCHDB_DATA=$homeDir/couch
 CHT_COMPOSE_PATH=$homeDir/compose
 CHT_NETWORK=$projectName-cht-net
+PROJECT_NAME=$projectName
 EOL
 }
 
@@ -87,9 +88,15 @@ show_help_existing_stop_and_destroy() {
     echo "Stop and destroy all project data:"
     echo "    ./cht-docker-compose.sh ENV-FILE.env destroy"
     echo ""
-    echo "https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/"
+    echo "Init an an ENV-FILE.env to allow customisation before server creation"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env init"
     echo ""
+    echo "recreate server with an existing ENV-FILE.env"
+    echo "    ./cht-docker-compose.sh ENV-FILE.env recreate"
+    echo ""
+    echo "https://docs.communityhealthtoolkit.org/apps/guides/hosting/4.x/app-developer/"
 }
+
 
 get_lan_ip() {
   # init empty lan address
@@ -176,6 +183,15 @@ fi
 if [[ -n "${2-}" && -n $projectName ]]; then
 	containerIds=$(docker ps --all --filter "name=${projectName}" --quiet)
 	case $2 in
+ 	"init")
+		echo "initiating project \"${projectName}\"..."
+		init_env_file
+  		exit 0
+		;;
+	"recreate")
+		echo "initiating project \"${projectName}\"..."
+		create_compose_files
+		;;
 	"stop")
 		echo "Stopping project \"${projectName}\"..." | tr -d '\n'
 		docker kill $containerIds 1>/dev/null
@@ -221,8 +237,8 @@ if [[ -n "${2-}" && -n $projectName ]]; then
 		fi
 
 		if [[ -f "${projectName}.env" ]]; then
-			echo "Removing .env file in this directory..." | tr -d '\n'
-			rm ${projectName}.env
+			echo "Backing up .env file in this directory..." | tr -d '\n'
+			mv ${projectName}.env ${projectName}.env.bak
 			echo -e "${green} done${noColor} "
 		else
 			echo "No .env file found, skipping."
@@ -288,8 +304,14 @@ fi
 # shellcheck disable=SC1090
 source "./$projectFile"
 
-projectURL=$(get_local_ip_url "$(get_lan_ip)")
 
+
+
+if [[ -z "$COMMON_NAME" ]]; then
+	projectURL=$(get_local_ip_url "$(get_lan_ip)")
+else 
+	projectURL="https://$COMMON_NAME:$NGINX_HTTPS_PORT"
+fi
 echo ""
 docker-compose --env-file "./$projectFile" --file "$homeDir/upgrade-service.yml" up --detach
 
@@ -342,3 +364,4 @@ echo -e "${green} Have a great day!${noColor} "
 echo ""
 
 set -e
+
