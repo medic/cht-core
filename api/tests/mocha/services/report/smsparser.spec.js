@@ -97,10 +97,123 @@ describe('sms parser', () => {
     chai.expect(smsparser.getFormCode('द CDT33')).to.equal('द');
   });
 
+
+  ['full', 'none', 'partial'].forEach(validationtype => {
+    it('supports all type of phone validation', () => {
+      const doc = { message: 'NP 20 +9779841202020' };
+      const def = definitions.forms.NP;
+      sinon.stub(config, 'getAll').returns({
+        default_country_code: 977,
+        phone_validation: validationtype
+      });
+      const data = smsparser.parse(def, doc);
+      chai.expect(data.phone_number).to.equal('+9779841202020');
+    });
+  });
+
+  it('accepts phone number with extension', () => {
+    const doc = { message: 'NP 20 +9779841202020' };
+    const def = definitions.forms.NP;
+    sinon.stub(config, 'getAll').returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+    const data = smsparser.parse(def, doc);
+    chai.expect(data.phone_number).to.equal('+9779841202020');
+  });
+
+  it('accepts valid phone number in Nepali langauge and saves by converting it to english', () => {
+    const doc = { message: 'NP 20 ९८४१२३२३२३' };
+    const def = definitions.forms.NP;
+    sinon.stub(config, 'getAll').returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+    const data = smsparser.parse(def, doc);
+    chai.expect(data.phone_number).to.equal('+9779841232323');
+  });
+
+  it('accepts valid phone number with extension in Nepali langauge', () => {
+    const doc = { message: 'NP 20 +९७७९८४१२३२३२३' };
+    const def = definitions.forms.NP;
+    sinon.stub(config, 'getAll').returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+    const data = smsparser.parse(def, doc);
+    chai.expect(data.phone_number).to.equal('+9779841232323');
+  });
+
+  it('returns provided Nepali number converted ot english if number is invalid', () => {
+    // Looks counter intuitive but validation needs to be done agian in transition so it can
+    // act against the valid or invalid result. Warning is logged just in case.
+    const doc = { message: 'NP 20 ९८४१२३' };
+    const def = definitions.forms.NP;
+    sinon.stub(config, 'getAll').returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+    const data = smsparser.parse(def, doc);
+    chai.expect(data.phone_number).to.equal('984123');
+  });
+
+
+  it('accepts correct phone number without extension', () => {
+    const doc = { message: 'NP 20 9841202020' };
+    const def = definitions.forms.NP;
+    sinon.stub(config, 'getAll').returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+    const data = smsparser.parse(def, doc);
+    chai.expect(data.phone_number).to.equal('+9779841202020');
+  });
+
+  it('returns the exact invalid number if phone number is invalid for the region', () => {
+    // Looks counter intuitive but validation needs to be done agian in transition so it can
+    // act against the valid or invalid result. Warning is logged just in case.
+    const doc = { message: 'NP 20 +97712312' };
+    const def = definitions.forms.NP;
+    sinon.stub(config, 'getAll').returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+    const data = smsparser.parse(def, doc);
+    chai.expect(data.phone_number).to.equal('+97712312');
+  });
+
+  it('should add extension to given number if not provided', () => {
+    const doc = { message: 'NP 20 9841202020' };
+    const def = definitions.forms.NP;
+    sinon.stub(config, 'getAll').returns({
+      default_country_code: 977,
+      phone_validation: 'full'
+    });
+    const data = smsparser.parse(def, doc);
+    chai.expect(data.phone_number).to.equal('+9779841202020');
+  });
+
+  //India , Kenya, Tanzania Phone is accepted as contact info in Nepal region.
+  //Just in case we make cross region/borders tool
+  [['NP 20 +918750660880', '+918750660880'],
+    ['NP 20 +254773087889', '+254773087889'],
+    ['NP 20 +255712262987', '+255712262987']].forEach(phoneNumerWithParsed => {
+    it(`returns parsed number if valid phone of another the region ${phoneNumerWithParsed[1]}`, () => {
+      const doc = { message: phoneNumerWithParsed[0] };
+      const def = definitions.forms.NP;
+      sinon.stub(config, 'getAll').returns({
+        default_country_code: 977,
+        phone_validation: 'full'
+      });
+      const data = smsparser.parse(def, doc);
+      chai.expect(data.phone_number).to.equal(phoneNumerWithParsed[1]);
+    });
+  });
+
   it('parse month type', () => {
     const doc = { message: '1!FOO!10' };
     const def = {
-      meta: {code: 'FOO', label: 'Test Monthly Report'},
+      meta: { code: 'FOO', label: 'Test Monthly Report' },
       fields: {
         month: {
           labels: {
@@ -118,9 +231,9 @@ describe('sms parser', () => {
 
   it('form not found', () => {
     const doc = {
-      message:'1!X0X0!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
-      type:'sms_message',
-      form:'X0X0'
+      message: '1!X0X0!facility#2011#11#1#2#3#4#5#6#9#8#7#6#5#4',
+      type: 'sms_message',
+      form: 'X0X0'
     };
     const def = {};
     const data = smsparser.parse(def, doc);
@@ -129,9 +242,9 @@ describe('sms parser', () => {
 
   it('wrong field type', () => {
     const doc = {
-      message:'1!YYYY!facility#2011#11#yyyyy#zzzz#2#3#4#5#6#9#8#7#6#5#4',
-      type:'sms_message',
-      form:'YYYY'
+      message: '1!YYYY!facility#2011#11#yyyyy#zzzz#2#3#4#5#6#9#8#7#6#5#4',
+      type: 'sms_message',
+      form: 'YYYY'
     };
     const def = definitions.forms.YYYY;
     const data = smsparser.parse(def, doc);
@@ -161,9 +274,9 @@ describe('sms parser', () => {
 
   it('missing fields', () => {
     const doc = {
-      message:'1!YYYY!facility#2011#11#1#1#2#3',
-      type:'sms_message',
-      form:'YYYY'
+      message: '1!YYYY!facility#2011#11#1#1#2#3',
+      type: 'sms_message',
+      form: 'YYYY'
     };
     const def = definitions.forms.YYYY;
     const data = smsparser.parse(def, doc);
@@ -193,9 +306,9 @@ describe('sms parser', () => {
 
   it('extra fields', () => {
     const doc = {
-      message:'1!YYYY!facility#2011#11#0#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#',
-      type:'sms_message',
-      form:'YYYY'
+      message: '1!YYYY!facility#2011#11#0#1#2#3#1#1#1#1#1#1#1#1#1#1#####77#',
+      type: 'sms_message',
+      form: 'YYYY'
     };
     const def = definitions.forms.YYYY;
     const data = smsparser.parse(def, doc);
@@ -383,7 +496,7 @@ describe('sms parser', () => {
     };
     const data = smsparser.parse(def, sms);
     // q2 should be null. empty string attempted to be parsed as number.
-    chai.expect(data).to.deep.equal({q1: 'No', q2: null});
+    chai.expect(data).to.deep.equal({ q1: 'No', q2: null });
   });
 
   it('parse zero value list field', () => {
@@ -400,7 +513,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, sms);
-    chai.expect(data).to.deep.equal({q1: 'Yes'});
+    chai.expect(data).to.deep.equal({ q1: 'Yes' });
   });
 
   it('ignore whitespace in list field textforms', () => {
@@ -525,7 +638,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({testdate: 1331510400000});
+    chai.expect(data).to.deep.equal({ testdate: 1331510400000 });
   });
 
   it('parse date field yyyz: muvuku', () => {
@@ -543,7 +656,7 @@ describe('sms parser', () => {
     const doc = { message: 'YYYZ BIR2012-03-12' };
     const def = definitions.forms.YYYZ;
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({birthdate: 1331510400000});
+    chai.expect(data).to.deep.equal({ birthdate: 1331510400000 });
   });
 
   it('parse bsDate field: muvuku', () => {
@@ -563,7 +676,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({testdate: moment('2012-03-12').valueOf()});
+    chai.expect(data).to.deep.equal({ testdate: moment('2012-03-12').valueOf() });
   });
 
   it('parse bsDate field: compact textforms', () => {
@@ -583,7 +696,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({testdate: moment('2012-03-12').valueOf()});
+    chai.expect(data).to.deep.equal({ testdate: moment('2012-03-12').valueOf() });
   });
 
   it('parse bsDate field yyyt: muvuku', () => {
@@ -630,25 +743,25 @@ describe('sms parser', () => {
     const doc = { message: '12345 2068-11-32' };
     const def = definitions.forms.YYYT;
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({patient_id: '12345', lmp_date: null});
+    chai.expect(data).to.deep.equal({ patient_id: '12345', lmp_date: null });
   });
 
   it('parse patient id in nepali correctly', () => {
-    const doc = {message:'०३१७७'};
+    const doc = {message: '०३१७७'};
     const def = definitions.forms.YYYT;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({patient_id: '03177'});
   });
 
   it('parse patient id in nepali and english correctly', () => {
-    const doc = {message:'०३१77'};
+    const doc = {message: '०३१77'};
     const def = definitions.forms.YYYT;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({patient_id: '03177'});
   });
 
   it('parse lmp date in nepali correclty', () => {
-    const doc = {message:'०३१77 २०८० १ १'};
+    const doc = {message: '०३१77 २०८० १ १'};
     const def = definitions.forms.YYYS;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({
@@ -659,7 +772,7 @@ describe('sms parser', () => {
   });
 
   it('parse lmp date in nepali and english correclty', () => {
-    const doc = {message:'०३१77 २०70 08 १4'};
+    const doc = {message: '०३१77 २०70 08 १4'};
     const def = definitions.forms.YYYS;
     const data = smsparser.parse(def, doc);
     chai.expect(data).to.deep.equal({
@@ -735,7 +848,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({testbool: true});
+    chai.expect(data).to.deep.equal({ testbool: true });
   });
 
   it('parse boolean field: false', () => {
@@ -749,7 +862,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({testbool: false});
+    chai.expect(data).to.deep.equal({ testbool: false });
   });
 
   it('parse string field mixed: muvuku', () => {
@@ -769,7 +882,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({foo: '16A'});
+    chai.expect(data).to.deep.equal({ foo: '16A' });
   });
 
   it('parse string field mixed: textforms', () => {
@@ -789,7 +902,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({foo: '16A'});
+    chai.expect(data).to.deep.equal({ foo: '16A' });
   });
 
   it('parse string field with exlamation mark: textforms', () => {
@@ -809,7 +922,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({foo: '16A!'});
+    chai.expect(data).to.deep.equal({ foo: '16A!' });
   });
 
   it('parse string field with exlamation mark: muvuku', () => {
@@ -829,7 +942,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({foo: '16A!'});
+    chai.expect(data).to.deep.equal({ foo: '16A!' });
   });
 
   it('parse string field leading zero: textforms', () => {
@@ -849,7 +962,7 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({foo: '012345'});
+    chai.expect(data).to.deep.equal({ foo: '012345' });
   });
 
   it('parse string field leading zero: muvuku', () => {
@@ -869,14 +982,14 @@ describe('sms parser', () => {
       }
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({foo: '012345'});
+    chai.expect(data).to.deep.equal({ foo: '012345' });
   });
 
   it('smsformats unstructured', () => {
     const docs = [
       { message: 'testing one two three.' },
       { message: 'HELP ME' },
-      { message: ''} // blank message
+      { message: '' } // blank message
     ];
     docs.forEach(doc => {
       chai.expect(smsparser.parse(null, doc)).to.deep.equal({});
@@ -885,8 +998,8 @@ describe('sms parser', () => {
 
   it('smsformats structured but no form', () => {
     const docs = [
-      {message: '1!0000!1'},
-      {message: '0000 ABC 123-123-123'}
+      { message: '1!0000!1' },
+      { message: '0000 ABC 123-123-123' }
     ];
     docs.forEach(doc => {
       chai.expect(smsparser.parse(null, doc)).to.deep.equal({});
@@ -986,7 +1099,7 @@ describe('sms parser', () => {
       sent_timestamp: '12-11-11 15:00',
       from: '+15551212',
       message: 'J1!YYYY!EDO#4#ODT#5#RPM#11#L2T#2#HFI#facility#CDT#3#CDO#7#MSP#0#ZDO#6#L1O#9#RPY#2011#EOT#6#ODO#' +
-      '5#L1T#1#ZDT#4#L2O#8'
+        '5#L1T#1#ZDT#4#L2O#8'
     };
     const actual = smsparser.parse(def, doc);
     chai.expect(actual).to.deep.equal({
@@ -1269,7 +1382,7 @@ describe('sms parser', () => {
             }
           },
           position: 1,
-          length: [ 3, 100 ],
+          length: [3, 100],
           type: 'string'
         }
       }
@@ -1299,17 +1412,17 @@ describe('sms parser', () => {
     // textforms
     let doc = { message: 'ग foo 16A' };
     let data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({foo: '16A'});
+    chai.expect(data).to.deep.equal({ foo: '16A' });
 
     // compact
     doc = { message: 'ग 16A' };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({foo: '16A'});
+    chai.expect(data).to.deep.equal({ foo: '16A' });
 
     // muvuku
     doc = { message: '1!ग!16A' };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({foo: '16A'});
+    chai.expect(data).to.deep.equal({ foo: '16A' });
   });
 
   it('support textforms locale on tiny labels', () => {
@@ -1338,7 +1451,7 @@ describe('sms parser', () => {
       locale: 'sw'
     };
     let data = smsparser.parse(def, doc, doc.locale);
-    chai.expect(data).to.deep.equal({name: 'n jane'});
+    chai.expect(data).to.deep.equal({ name: 'n jane' });
 
     // textforms with locale match parses correctly
     doc = {
@@ -1346,7 +1459,7 @@ describe('sms parser', () => {
       locale: 'sw'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({name: 'jane'});
+    chai.expect(data).to.deep.equal({ name: 'jane' });
 
     // same thing but case insensitive check
     doc = {
@@ -1354,21 +1467,21 @@ describe('sms parser', () => {
       locale: 'sw'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({name: 'jane'});
+    chai.expect(data).to.deep.equal({ name: 'jane' });
 
     // compact parses correctly
     doc = {
       message: 'R jane'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({name: 'jane'});
+    chai.expect(data).to.deep.equal({ name: 'jane' });
 
     // muvuku parses correctly
     doc = {
       message: '1!R!jane'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({name: 'jane'});
+    chai.expect(data).to.deep.equal({ name: 'jane' });
   });
 
   it('support translation keys on tiny labels', () => {
@@ -1399,7 +1512,7 @@ describe('sms parser', () => {
       locale: 'sw'
     };
     let data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({name: 'jane'});
+    chai.expect(data).to.deep.equal({ name: 'jane' });
 
     // same thing but case insensitive check
     doc = {
@@ -1407,21 +1520,21 @@ describe('sms parser', () => {
       locale: 'sw'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({name: 'jane'});
+    chai.expect(data).to.deep.equal({ name: 'jane' });
 
     // compact parses correctly
     doc = {
       message: 'R jane'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({name: 'jane'});
+    chai.expect(data).to.deep.equal({ name: 'jane' });
 
     // muvuku parses correctly
     doc = {
       message: '1!R!jane'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({name: 'jane'});
+    chai.expect(data).to.deep.equal({ name: 'jane' });
   });
 
   it('support mixed case field keys', () => {
@@ -1445,21 +1558,21 @@ describe('sms parser', () => {
       message: 'R n jane',
     };
     let data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({ooOoo: 'jane'});
+    chai.expect(data).to.deep.equal({ ooOoo: 'jane' });
 
     // compact textforms
     doc = {
       message: 'R jane'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({ooOoo: 'jane'});
+    chai.expect(data).to.deep.equal({ ooOoo: 'jane' });
 
     // muvuku
     doc = {
       message: '1!R!jane'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({ooOoo: 'jane'});
+    chai.expect(data).to.deep.equal({ ooOoo: 'jane' });
   });
 
   it('support uppercase field keys', () => {
@@ -1483,21 +1596,21 @@ describe('sms parser', () => {
       message: 'R n jane',
     };
     let data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({OOOOO: 'jane'});
+    chai.expect(data).to.deep.equal({ OOOOO: 'jane' });
 
     // compact textforms
     doc = {
       message: 'R jane'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({OOOOO: 'jane'});
+    chai.expect(data).to.deep.equal({ OOOOO: 'jane' });
 
     // muvuku
     doc = {
       message: '1!R!jane'
     };
     data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({OOOOO: 'jane'});
+    chai.expect(data).to.deep.equal({ OOOOO: 'jane' });
   });
 
   it('support regex chars in form code, parser escapes them', () => {
@@ -1521,7 +1634,7 @@ describe('sms parser', () => {
       message: '.*.*  n jane'
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({name: 'jane'});
+    chai.expect(data).to.deep.equal({ name: 'jane' });
   });
 
   it('stop input values from getting translated', () => {
@@ -1553,7 +1666,7 @@ describe('sms parser', () => {
       message: 'J1!c_imm!bcg#yes#ch#no'
     };
     const data = smsparser.parse(def, doc);
-    chai.expect(data).to.deep.equal({bcg: 'yes', ch:'no'});
+    chai.expect(data).to.deep.equal({ bcg: 'yes', ch: 'no' });
     chai.expect(config.translate.callCount).to.equal(2);
   });
 

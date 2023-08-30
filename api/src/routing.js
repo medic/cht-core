@@ -177,7 +177,7 @@ app.use(
           environment.buildsUrl + '/',
           'maps.googleapis.com' // used for enketo geopoint widget
         ],
-        childSrc:  [`'self'`],
+        childSrc: [`'self'`],
         formAction: [`'self'`],
         imgSrc: [
           `'self'`,
