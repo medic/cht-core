@@ -47,9 +47,12 @@ CHT_NETWORK=$projectName-cht-net
 EOL
 }
 
-get_latest_release() {
-  latest=$(get_latest_version_string)
-  echo "${stagingUrl}/medic:medic:${latest}"
+get_compose_download_url() {
+	preferredRelease=$1
+	if [ -z "$preferredRelease" ]; then
+    preferredRelease=$(get_latest_version_string)
+  fi
+  echo "${stagingUrl}/medic:medic:${preferredRelease}"
 }
 
 get_all_known_versions() {
@@ -61,8 +64,10 @@ get_latest_version_string() {
 }
 
 create_compose_files() {
+	preferredRelease=$1
+	echo
   echo "Downloading compose files ..." | tr -d '\n'
-  stagingUrlBase=$(get_latest_release)
+  stagingUrlBase=$(get_compose_download_url "$preferredRelease")
   mkdir -p "$homeDir/couch"
   mkdir -p "$homeDir/compose"
   curl -s -o "$homeDir/upgrade-service.yml" \
@@ -256,16 +261,15 @@ if [[ -z "$projectName" ]]; then
 	case $yn in
 	[Yy]*)
 		while [[ -z "$projectName" ]]; do
-		  latest=$(get_latest_version_string)
+		  preferredRelease=$(get_latest_version_string)
 		  echo
-      read -p "Do you want to run the latest CHT Core version (${latest}) [Y/n]? " runLatest
+      read -p "Do you want to run the latest CHT Core version (${preferredRelease}) [Y/n]? " runLatest
       case $runLatest in
       [nN]*)
         allKnownVersions=$(get_all_known_versions)
         echo
         echo "Which version to you want to run? (ctrl + c to quit)"
-        select version in $allKnownVersions; do
-          echo "$version"
+        select preferredRelease in $allKnownVersions; do
           break
         done
       esac
@@ -285,7 +289,7 @@ if [[ -z "$projectName" ]]; then
 		done
 
 		init_env_file
-		create_compose_files
+		create_compose_files "$preferredRelease"
 		projects=$(get_existing_projects)
 		;;
 	esac
@@ -293,6 +297,7 @@ if [[ -z "$projectName" ]]; then
 	envCount=$(find . -name "*.env" -type f | wc -l)
 	if [ "$envCount" -gt 0 ]; then
 		while [[ -z "$projectName" ]]; do
+		  echo
 			echo "Which project do you want to use? (ctrl + c to quit) "
 			select project in $projects; do
 				projectName=$project
