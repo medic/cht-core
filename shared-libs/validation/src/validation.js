@@ -2,6 +2,8 @@ const _ = require('lodash/core');
 const moment = require('moment');
 const pupil = require('./pupil/src/pupil');
 const messages = require('@medic/message-utils');
+const config = require('../../transitions/src/config');
+const phoneNumberParser = require('@medic/phone-number');
 
 let db;
 let logger = console;
@@ -167,6 +169,11 @@ module.exports = {
       return db.medic
         .query('medic-client/contacts_by_phone', { key: doc[validation.field] })
         .then(results => !(results && results.rows && results.rows.length));
+    },
+    validPhone: (doc, validation) => {
+      const appSettings = config.getAll();
+      const validPhone = phoneNumberParser.validate(appSettings, doc[validation.field]);
+      return Promise.resolve(validPhone);
     },
     uniqueWithin: (doc, validation) => {
       const fields = [...validation.funcArgs];
