@@ -24,7 +24,6 @@
     "build-documentation": "./scripts/build/build-documentation.sh",
     "build-webapp-dev": "cd webapp && npm run build -- --configuration=development && npm run compile",
     "copy-api-resources": "cp -r api/src/public/* api/build/static/",
-    "css-admin": "",
     "default-wdio-mobile-local": "export VERSION=$(node ./scripts/build/get-version.js) && ./scripts/build/build-service-images.sh && wdio run ./tests/e2e/default-mobile/wdio.conf.js --suite=all",
     "dev-api": "./scripts/build/copy-static-files.sh && TZ=UTC nodemon --inspect=0.0.0.0:9229 --ignore 'api/build/static' --ignore 'api/build/public' --watch api --watch 'shared-libs/**/src/**' api/server.js -- --allow-cors",
     "dev-sentinel": "TZ=UTC nodemon --inspect=0.0.0.0:9228 --watch sentinel --watch 'shared-libs/**/src/**' sentinel/server.js",
