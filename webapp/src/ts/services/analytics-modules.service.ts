@@ -16,7 +16,7 @@ export class AnalyticsModulesService {
       id: 'targets',
       label: 'analytics.targets',
       route: ['/', 'analytics', 'targets'],
-      available: () => settings.tasks && settings.tasks.targets
+      available: () => !!(settings.tasks && settings.tasks.targets)
     };
   }
 
@@ -25,7 +25,7 @@ export class AnalyticsModulesService {
       id: 'target-aggregates',
       label: 'analytics.target.aggregates',
       route: ['/', 'analytics', 'target-aggregates'],
-      available: () => settings.tasks && settings.tasks.targets && canAggregateTargets
+      available: () => !!(settings.tasks && settings.tasks.targets && canAggregateTargets)
     };
   }
 
