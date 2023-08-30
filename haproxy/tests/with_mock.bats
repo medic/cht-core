@@ -19,8 +19,7 @@ setup() {
 }
 
 @test "should receive 404 response if path doesn't exist" {
-	run curl -Ifksm5 http://127.0.0.1:5984/doesnotexist
-	assert_failure
+	run curl -Iksm5 http://127.0.0.1:5984/doesnotexist
 	assert_line --partial --index 0 'HTTP/1.1 404 Not Found'
 }
 
