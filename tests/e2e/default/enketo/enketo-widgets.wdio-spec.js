@@ -28,8 +28,7 @@ describe('Enketo Widgets', () => {
   };
 
   before(async () => {
-    await utils.saveDoc(formDoc);
-    await utils.saveDocs([districtHospital]);
+    await utils.saveDocs([formDoc, districtHospital]);
     await utils.createUsers([offlineUser]);
     await loginPage.login(offlineUser);
     await commonPage.waitForPageLoaded();
@@ -41,10 +40,29 @@ describe('Enketo Widgets', () => {
     await commonPage.waitForPageLoaded();
     expect(await enketoWidgetsPage.getFormTitle()).to.equal('Enketo Widgets Test');
 
+    await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.selectMultipleDropdown());
+    await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectMultipleDropdown(), 'checkbox', 'a');
+    await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectMultipleDropdown(), 'checkbox', 'c');
+    expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectMultipleDropdown()))
+      .to.equal('2 selected');
+
+    await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.selectOneDropdown());
+    await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectOneDropdown(), 'radio', 'd');
+    expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectOneDropdown()))
+      .to.equal('option d');
+
     await genericForm.nextPage();
     await enketoWidgetsPage.selectCountryRadio();
     await enketoWidgetsPage.selectCityRadio();
     await enketoWidgetsPage.selectNeighborhoodRadio();
+    await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.countryDropdown());
+    await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.countryDropdown(), 'radio', 'usa');
+    await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.cityDropdown());
+    expect(await enketoWidgetsPage.getDropdownTotalOptions(await enketoWidgetsPage.cityDropdown())).to.equal(3);
+    await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.cityDropdown(), 'radio', 'nyc');
+    await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.neighborhoodDropdown());
+    expect(await enketoWidgetsPage.getDropdownTotalOptions(await enketoWidgetsPage.neighborhoodDropdown())).to.equal(2);
+    await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.neighborhoodDropdown(), 'radio', 'bronx');
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
 
@@ -63,9 +81,14 @@ describe('Enketo Widgets', () => {
     expect(senderPhone).to.equal(offlineUser.contact.phone);
     expect(reportName).to.equal('Enketo Widgets Test');
 
-    expect((await reportsPage.getDetailReportRowContent('group1.country')).rowValues[0]).to.equal('nl');
-    expect((await reportsPage.getDetailReportRowContent('group1.city')).rowValues[0]).to.equal('rot');
-    expect((await reportsPage.getDetailReportRowContent('group1.neighborhood')).rowValues[0]).to.equal('centrum');
+    expect((await reportsPage.getDetailReportRowContent('select_spinner')).rowValues[0]).to.equal('a c');
+    expect((await reportsPage.getDetailReportRowContent('select1_spinner')).rowValues[0]).to.equal('d');
+    expect((await reportsPage.getDetailReportRowContent('country')).rowValues[0]).to.equal('nl');
+    expect((await reportsPage.getDetailReportRowContent('city')).rowValues[0]).to.equal('rot');
+    expect((await reportsPage.getDetailReportRowContent('neighborhood')).rowValues[0]).to.equal('centrum');
+    expect((await reportsPage.getDetailReportRowContent('country2')).rowValues[0]).to.equal('usa');
+    expect((await reportsPage.getDetailReportRowContent('city2')).rowValues[0]).to.equal('nyc');
+    expect((await reportsPage.getDetailReportRowContent('neighborhood2')).rowValues[0]).to.equal('bronx');
   });
 
 });

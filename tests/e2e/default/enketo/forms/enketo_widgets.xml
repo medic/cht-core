@@ -44,49 +44,37 @@
           <text id="/enketo_widgets/cascading_widgets:label">
             <value>Cascading Select widgets</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/select1_autocomplete/king:label">
-            <value>kingfisher</value>
-          </text>
-          <text id="/enketo_widgets/select_widgets/select1_autocomplete/nut:label">
-            <value>nuthatch</value>
-          </text>
-          <text id="/enketo_widgets/select_widgets/select1_autocomplete/pig:label">
-            <value>pigeon</value>
-          </text>
-          <text id="/enketo_widgets/select_widgets/select1_autocomplete:label">
-            <value>Select one autocomplete widget</value>
-          </text>
-          <text id="/enketo_widgets/select_widgets/select1_spinner/a:label">
+          <text id="/enketo_widgets/enketo_test_select/select1_spinner/a:label">
             <value>option a</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/select1_spinner/b:label">
+          <text id="/enketo_widgets/enketo_test_select/select1_spinner/b:label">
             <value>option b</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/select1_spinner/c:label">
+          <text id="/enketo_widgets/enketo_test_select/select1_spinner/c:label">
             <value>option c</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/select1_spinner/d:label">
+          <text id="/enketo_widgets/enketo_test_select/select1_spinner/d:label">
             <value>option d</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/select1_spinner:label">
+          <text id="/enketo_widgets/enketo_test_select/select1_spinner:label">
             <value>Select one: pulldown</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/select_spinner/a:label">
+          <text id="/enketo_widgets/enketo_test_select/select_spinner/a:label">
             <value>option a</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/select_spinner/b:label">
+          <text id="/enketo_widgets/enketo_test_select/select_spinner/b:label">
             <value>option b</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/select_spinner/c:label">
+          <text id="/enketo_widgets/enketo_test_select/select_spinner/c:label">
             <value>option c</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/select_spinner/d:label">
+          <text id="/enketo_widgets/enketo_test_select/select_spinner/d:label">
             <value>option d</value>
           </text>
-          <text id="/enketo_widgets/select_widgets/select_spinner:label">
+          <text id="/enketo_widgets/enketo_test_select/select_spinner:label">
             <value>Select multiple: pulldown</value>
           </text>
-          <text id="/enketo_widgets/select_widgets:label">
+          <text id="/enketo_widgets/enketo_test_select:label">
             <value>Select widgets</value>
           </text>
           <text id="static_instance-cities-0">
@@ -125,15 +113,6 @@
           <text id="static_instance-list-3">
             <value>option d</value>
           </text>
-          <text id="static_instance-list1-0">
-            <value>kingfisher</value>
-          </text>
-          <text id="static_instance-list1-1">
-            <value>pigeon</value>
-          </text>
-          <text id="static_instance-list1-2">
-            <value>nuthatch</value>
-          </text>
           <text id="static_instance-neighborhoods-0">
             <value>Bronx</value>
           </text>
@@ -164,12 +143,11 @@
         </translation>
       </itext>
       <instance>
-        <enketo_widgets delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-08-25 00:00:00">
-          <select_widgets>
+        <enketo_widgets delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-08-30 00:00:00">
+          <enketo_test_select>
             <select_spinner/>
             <select1_spinner/>
-            <select1_autocomplete/>
-          </select_widgets>
+          </enketo_test_select>
           <cascading_widgets>
             <group1>
               <country/>
@@ -188,22 +166,6 @@
         </enketo_widgets>
       </instance>
       <instance id="contact-summary"/>
-      <instance id="list1">
-        <root>
-          <item>
-            <itextId>static_instance-list1-0</itextId>
-            <name>king</name>
-          </item>
-          <item>
-            <itextId>static_instance-list1-1</itextId>
-            <name>pig</name>
-          </item>
-          <item>
-            <itextId>static_instance-list1-2</itextId>
-            <name>nut</name>
-          </item>
-        </root>
-      </instance>
       <instance id="cities">
         <root>
           <item>
@@ -328,9 +290,8 @@
           </item>
         </root>
       </instance>
-      <bind nodeset="/enketo_widgets/select_widgets/select_spinner" type="select"/>
-      <bind nodeset="/enketo_widgets/select_widgets/select1_spinner" type="select1"/>
-      <bind nodeset="/enketo_widgets/select_widgets/select1_autocomplete" type="select1"/>
+      <bind nodeset="/enketo_widgets/enketo_test_select/select_spinner" type="select"/>
+      <bind nodeset="/enketo_widgets/enketo_test_select/select1_spinner" type="select1"/>
       <bind nodeset="/enketo_widgets/cascading_widgets/group1/country" type="select1"/>
       <bind nodeset="/enketo_widgets/cascading_widgets/group1/city" type="select1"/>
       <bind nodeset="/enketo_widgets/cascading_widgets/group1/neighborhood" type="select1"/>
@@ -341,63 +302,46 @@
     </model>
   </h:head>
   <h:body class="pages">
-    <group appearance="field-list" ref="/enketo_widgets/select_widgets">
-      <label ref="jr:itext('/enketo_widgets/select_widgets:label')"/>
-      <select appearance="minimal" ref="/enketo_widgets/select_widgets/select_spinner">
-        <label ref="jr:itext('/enketo_widgets/select_widgets/select_spinner:label')"/>
+    <group appearance="field-list" ref="/enketo_widgets/enketo_test_select">
+      <label ref="jr:itext('/enketo_widgets/enketo_test_select:label')"/>
+      <select appearance="minimal" ref="/enketo_widgets/enketo_test_select/select_spinner">
+        <label ref="jr:itext('/enketo_widgets/enketo_test_select/select_spinner:label')"/>
         <hint>Showing a pull-down list of options (type=select_multiple list, appearance=minimal)</hint>
         <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select_spinner/a:label')"/>
+          <label ref="jr:itext('/enketo_widgets/enketo_test_select/select_spinner/a:label')"/>
           <value>a</value>
         </item>
         <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select_spinner/b:label')"/>
+          <label ref="jr:itext('/enketo_widgets/enketo_test_select/select_spinner/b:label')"/>
           <value>b</value>
         </item>
         <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select_spinner/c:label')"/>
+          <label ref="jr:itext('/enketo_widgets/enketo_test_select/select_spinner/c:label')"/>
           <value>c</value>
         </item>
         <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select_spinner/d:label')"/>
+          <label ref="jr:itext('/enketo_widgets/enketo_test_select/select_spinner/d:label')"/>
           <value>d</value>
         </item>
       </select>
-      <select1 appearance="minimal" ref="/enketo_widgets/select_widgets/select1_spinner">
-        <label ref="jr:itext('/enketo_widgets/select_widgets/select1_spinner:label')"/>
+      <select1 appearance="minimal" ref="/enketo_widgets/enketo_test_select/select1_spinner">
+        <label ref="jr:itext('/enketo_widgets/enketo_test_select/select1_spinner:label')"/>
         <hint>Showing a pull-down list of options (type=select_one list, appearance=minimal)</hint>
         <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_spinner/a:label')"/>
+          <label ref="jr:itext('/enketo_widgets/enketo_test_select/select1_spinner/a:label')"/>
           <value>a</value>
         </item>
         <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_spinner/b:label')"/>
+          <label ref="jr:itext('/enketo_widgets/enketo_test_select/select1_spinner/b:label')"/>
           <value>b</value>
         </item>
         <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_spinner/c:label')"/>
+          <label ref="jr:itext('/enketo_widgets/enketo_test_select/select1_spinner/c:label')"/>
           <value>c</value>
         </item>
         <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_spinner/d:label')"/>
+          <label ref="jr:itext('/enketo_widgets/enketo_test_select/select1_spinner/d:label')"/>
           <value>d</value>
-        </item>
-      </select1>
-      <select1 appearance="autocomplete" ref="/enketo_widgets/select_widgets/select1_autocomplete">
-        <label ref="jr:itext('/enketo_widgets/select_widgets/select1_autocomplete:label')"/>
-        <hint>Type e.g. 'g' to filter options. 
-(type=select_one, appearance=autocomplete)</hint>
-        <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_autocomplete/king:label')"/>
-          <value>king</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_autocomplete/pig:label')"/>
-          <value>pig</value>
-        </item>
-        <item>
-          <label ref="jr:itext('/enketo_widgets/select_widgets/select1_autocomplete/nut:label')"/>
-          <value>nut</value>
         </item>
       </select1>
     </group>
