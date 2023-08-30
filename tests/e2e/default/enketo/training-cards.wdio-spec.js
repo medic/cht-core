@@ -34,6 +34,9 @@ describe('Training Cards', () => {
     },
   };
 
+  const expectedConfirmMessage = 'This training is not finished. ' +
+    'If you leave now, you will lose your progress and be prompted again later to complete it.';
+
   let savedFormDoc;
   before(async () => {
     await utils.saveDocs([ parent, patient ]);
@@ -49,10 +52,7 @@ describe('Training Cards', () => {
 
     const confirmMessage = await trainingCardsPage.quitTraining();
     expect(confirmMessage.header).to.equal('Leave training?');
-    expect(confirmMessage.body).to.contain(
-      'This training is not finished. ' +
-      'If you leave now, you will lose your progress and be prompted again later to complete it.'
-    );
+    expect(confirmMessage.body).to.contain(expectedConfirmMessage);
     await trainingCardsPage.confirmQuitTraining();
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
 
@@ -69,10 +69,7 @@ describe('Training Cards', () => {
     await trainingCardsPage.waitForTrainingCards();
 
     const confirmMessage = await trainingCardsPage.quitTraining();
-    expect(confirmMessage.body).to.contain(
-      'This training is not finished. ' +
-      'If you leave now, you will lose your progress and be prompted again later to complete it.'
-    );
+    expect(confirmMessage.body).to.contain(expectedConfirmMessage);
     await trainingCardsPage.confirmQuitTraining();
     await trainingCardsPage.checkTrainingCardIsNotDisplayed();
 
