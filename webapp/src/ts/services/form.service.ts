@@ -27,7 +27,7 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 @Injectable({
   providedIn: 'root'
 })
-export class EnketoService {
+export class FormService {
   constructor(
     private store: Store,
     private contactSummaryService: ContactSummaryService,

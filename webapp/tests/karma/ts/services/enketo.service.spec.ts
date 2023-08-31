@@ -19,7 +19,7 @@ import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulatio
 import { AttachmentService } from '@mm-services/attachment.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
-import { EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TransitionsService } from '@mm-services/transitions.service';
@@ -189,7 +189,7 @@ describe('Enketo service', () => {
     it('should init zscore and xpath extensions', async () => {
       sinon.stub(medicXpathExtensions, 'init');
 
-      service = TestBed.inject(EnketoService);
+      service = TestBed.inject(FormService);
       await service.init();
 
       expect(zScoreService.getScoreUtil.callCount).to.equal(1);
@@ -202,7 +202,7 @@ describe('Enketo service', () => {
       sinon.stub(medicXpathExtensions, 'init');
       zScoreService.getScoreUtil.rejects({ omg: 'error' });
 
-      service = TestBed.inject(EnketoService);
+      service = TestBed.inject(FormService);
       await service.init();
 
       expect(zScoreService.getScoreUtil.callCount).to.equal(1);
@@ -213,7 +213,7 @@ describe('Enketo service', () => {
   describe('render', () => {
 
     beforeEach(() => {
-      service = TestBed.inject(EnketoService);
+      service = TestBed.inject(FormService);
     });
 
     it('renders error when user does not have associated contact', () => {
@@ -598,7 +598,7 @@ describe('Enketo service', () => {
   describe('save', () => {
 
     beforeEach(() => {
-      service = TestBed.inject(EnketoService);
+      service = TestBed.inject(FormService);
     });
 
     it('creates report', () => {
@@ -1053,7 +1053,7 @@ describe('Enketo service', () => {
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
         // @ts-ignore
-        const saveDocsSpy = sinon.spy(EnketoService.prototype, 'saveDocs');
+        const saveDocsSpy = sinon.spy(FormService.prototype, 'saveDocs');
 
         return service
           .save('my-form', form, () => Promise.resolve(true))
@@ -1075,7 +1075,7 @@ describe('Enketo service', () => {
         dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         // @ts-ignore
-        const saveDocsStub = sinon.stub(EnketoService.prototype, 'saveDocs');
+        const saveDocsStub = sinon.stub(FormService.prototype, 'saveDocs');
         // @ts-ignore
         const xmlToDocsStub = sinon.stub(EnketoFormService.prototype, 'xmlToDocs').resolves([
           { _id: '1a' },

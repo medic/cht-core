@@ -5,7 +5,7 @@ import { combineLatest, Subscription } from 'rxjs';
 
 import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
 import { Selectors } from '@mm-selectors/index';
 import { GlobalActions } from '@mm-actions/global';
 import { GeolocationService } from '@mm-services/geolocation.service';
@@ -24,7 +24,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     private ngZone: NgZone,
     private store: Store,
     private xmlFormsService: XmlFormsService,
-    private enketoService: EnketoService,
+    private formService: FormService,
     private geolocationService: GeolocationService,
     private translateService: TranslateService,
     private telemetryService: TelemetryService,
@@ -69,7 +69,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     // see https://github.com/angular/angular/blob/10.2.x/packages/router/src/operators/activate_routes.ts#L37
     // for Angular behavior
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
-    this.enketoService.unload(this.form);
+    this.formService.unload(this.form);
     this.globalActions.clearEnketoStatus();
   }
 
@@ -96,7 +96,7 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
   private async renderForm(form) {
     try {
       const selector = `#${this.formWrapperId}`;
-      this.form = await this.enketoService.render(selector, form, null, null, this.resetFormError.bind(this), true);
+      this.form = await this.formService.render(selector, form, null, null, this.resetFormError.bind(this), true);
       this.formNoTitle = !form?.title;
       this.loadingContent = false;
       this.recordTelemetryPostRender();
@@ -165,12 +165,12 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     this.resetFormError();
 
     try {
-      const docs = await this.enketoService.save(this.trainingCardFormId, this.form, this.geoHandle);
+      const docs = await this.formService.save(this.trainingCardFormId, this.form, this.geoHandle);
       console.debug('Saved form and associated docs', docs);
       const snackText = await this.translateService.get('training_cards.form.saved');
       this.globalActions.setSnackbarContent(snackText);
       this.globalActions.setEnketoSavingStatus(false);
-      this.enketoService.unload(this.form);
+      this.formService.unload(this.form);
       this.recordTelemetryPostSave();
       this.close();
 
