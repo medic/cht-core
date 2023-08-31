@@ -11,7 +11,7 @@
 >
   <form action="" method="POST">
 
-    <fieldset *ngFor="let task of group.rows; index as index" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'">
+    <fieldset *ngFor="let task of group.rows; index as index" [disabled]="task.state !== 'scheduled' && task.state !== 'muted'"><!-- //NOSONAR -->
       <ng-container *ngIf="!task.deleted">
         <div class="form-group">
           <label>

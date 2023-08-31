@@ -599,7 +599,7 @@ const revertDb = async (except, ignoreRefresh) => {
     watcher && watcher.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
-    await watcher && watcher.promise;
+    await watcher && watcher.promise; // NOSONAR
   } else {
     watcher && watcher.cancel();
   }
