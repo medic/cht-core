@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { LineageModelGeneratorService } from '@mm-services/lineage-model-generator.service';
 import { FormService } from '@mm-services/form.service';
-import { EnketoFormContext } from '@mm-services/enketo-form.service';
+import { EnketoFormContext } from '@mm-services/enketo.service';
 import { ContactTypesService } from '@mm-services/contact-types.service';
 import { DbService } from '@mm-services/db.service';
 import { ContactSaveService } from '@mm-services/contact-save.service';

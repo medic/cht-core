@@ -29,7 +29,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoFormService } from '@mm-services/enketo-form.service';
+import { EnketoService } from '@mm-services/enketo.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -539,7 +539,7 @@ describe('Enketo service', () => {
         .onFirstCall().resolves('<div>my form</div>')
         .onSecondCall().resolves('my model');
       EnketoPrepopulationData.resolves(data);
-      const renderForm = sinon.spy(EnketoFormService.prototype, 'renderForm');
+      const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
 
       try {
         await service.render($('<div></div>'), mockEnketoDoc('myform'), data);
@@ -1077,7 +1077,7 @@ describe('Enketo service', () => {
         // @ts-ignore
         const saveDocsStub = sinon.stub(FormService.prototype, 'saveDocs');
         // @ts-ignore
-        const xmlToDocsStub = sinon.stub(EnketoFormService.prototype, 'xmlToDocs').resolves([
+        const xmlToDocsStub = sinon.stub(EnketoService.prototype, 'xmlToDocs').resolves([
           { _id: '1a' },
           { _id: '1b', _attachments: {} },
           {

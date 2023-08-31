@@ -21,7 +21,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import { GlobalActions } from '@mm-actions/global';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
-import { EnketoFormService, EnketoFormContext } from '@mm-services/enketo-form.service';
+import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
@@ -46,7 +46,7 @@ export class FormService {
     private feedbackService:FeedbackService,
     private ngZone: NgZone,
     private chtScriptApiService: CHTScriptApiService,
-    private enketoFormService: EnketoFormService
+    private enketoService: EnketoService
   ) {
     this.inited = this.init();
     this.globalActions = new GlobalActions(store);
@@ -152,7 +152,7 @@ export class FormService {
     } = formContext;
 
     try {
-      this.unload(this.enketoFormService.getCurrentForm());
+      this.unload(this.enketoService.getCurrentForm());
       const [ doc, userSettings ] = await Promise.all([
         this.transformXml(formDoc),
         this.userSettingsService.getWithLanguage()
@@ -162,7 +162,7 @@ export class FormService {
       if (!await this.canAccessForm(formDoc, userContact, instanceData, contactSummary)) {
         throw { translationKey: 'error.loading.form.no_authorized' };
       }
-      return await this.enketoFormService.renderForm(formContext, doc, userSettings, contactSummary);
+      return await this.enketoService.renderForm(formContext, doc, userSettings, contactSummary);
     } catch (error) {
       if (error.translationKey) {
         throw error;
@@ -287,11 +287,11 @@ export class FormService {
     const formDoc = await this.ngZone
       .runOutsideAngular(() => this.xmlFormsService.getDocAndFormAttachment(formInternalId));
     if (docId) {
-      return this.enketoFormService.completeExistingReport(form, formDoc, docId);
+      return this.enketoService.completeExistingReport(form, formDoc, docId);
     }
 
     const contact = await this.getUserContact();
-    return this.enketoFormService.completeNewReport(formInternalId, form, formDoc, contact);
+    return this.enketoService.completeNewReport(formInternalId, form, formDoc, contact);
   }
 
   async save(formInternalId, form, geoHandle, docId?) {
@@ -316,6 +316,6 @@ export class FormService {
   }
 
   unload(form) {
-    this.enketoFormService.unload(form);
+    this.enketoService.unload(form);
   }
 }

@@ -7,7 +7,7 @@ import { MRDTService } from '@mm-services/mrdt.service';
 import { SettingsService } from '@mm-services/settings.service';
 import { AndroidApiService } from '@mm-services/android-api.service';
 import { DbService } from '@mm-services/db.service';
-import { EnketoFormService } from '@mm-services/enketo-form.service';
+import { EnketoService } from '@mm-services/enketo.service';
 import { TranslateService } from '@mm-services/translate.service';
 
 @Injectable({
@@ -30,7 +30,7 @@ export class IntegrationApiService {
     private androidAppLauncherService:AndroidAppLauncherService,
     private languageService:LanguageService,
     private select2SearchService:Select2SearchService,
-    private enketoFormService:EnketoFormService,
+    private enketoService:EnketoService,
     private translateService:TranslateService,
     private mrdtService:MRDTService,
     private settingsService:SettingsService,
@@ -40,7 +40,7 @@ export class IntegrationApiService {
     this.AndroidAppLauncher = androidAppLauncherService;
     this.Language = languageService;
     this.Select2Search = select2SearchService;
-    this.Enketo = enketoFormService;
+    this.Enketo = enketoService;
     this.MRDT = mrdtService;
     this.Settings = settingsService;
     this.AndroidApi = androidApiService;

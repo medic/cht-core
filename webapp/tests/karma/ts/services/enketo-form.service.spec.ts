@@ -9,7 +9,7 @@ import { TranslateFromService } from '@mm-services/translate-from.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { TranslateService } from '@mm-services/translate.service';
-import { EnketoFormService } from '@mm-services/enketo-form.service';
+import { EnketoService } from '@mm-services/enketo.service';
 
 describe('Enketo Form service', () => {
   // return a mock form ready for putting in #dbContent
@@ -101,7 +101,7 @@ describe('Enketo Form service', () => {
 
   describe('renderForm', () => {
     beforeEach(() => {
-      service = TestBed.inject(EnketoFormService);
+      service = TestBed.inject(EnketoService);
     });
 
     it('return error when form initialisation fails', fakeAsync(async () => {
@@ -379,7 +379,7 @@ describe('Enketo Form service', () => {
 
   describe('completeNewReport', () => {
     beforeEach(() => {
-      service = TestBed.inject(EnketoFormService);
+      service = TestBed.inject(EnketoService);
     });
 
     it('rejects on invalid form', () => {
@@ -951,7 +951,7 @@ describe('Enketo Form service', () => {
 
   describe('completeExistingReport', () => {
     beforeEach(() => {
-      service = TestBed.inject(EnketoFormService);
+      service = TestBed.inject(EnketoService);
     });
 
     it('rejects on invalid form', () => {
@@ -1017,7 +1017,7 @@ describe('Enketo Form service', () => {
 
   describe('Saving attachments', () => {
     beforeEach(() => {
-      service = TestBed.inject(EnketoFormService);
+      service = TestBed.inject(EnketoService);
     });
 
     it('should save attachments', () => {
@@ -1122,7 +1122,7 @@ describe('Enketo Form service', () => {
       $prevBtn = $('<button class="btn previous-page"></button>');
       originalJQueryFind = $.fn.find;
       setNavigationStub = sinon
-        .stub(EnketoFormService.prototype, <any>'setNavigation')
+        .stub(EnketoService.prototype, <any>'setNavigation')
         .callThrough();
 
       form = {
@@ -1137,7 +1137,7 @@ describe('Enketo Form service', () => {
     });
 
     beforeEach(() => {
-      service = TestBed.inject(EnketoFormService);
+      service = TestBed.inject(EnketoService);
 
       $form = $(`<div></div>`);
       $form

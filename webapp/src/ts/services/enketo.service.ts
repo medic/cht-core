@@ -16,7 +16,7 @@ import { TranslateService } from '@mm-services/translate.service';
 @Injectable({
   providedIn: 'root'
 })
-export class EnketoFormService {
+export class EnketoService {
   constructor(
     private attachmentService: AttachmentService,
     private dbService: DbService,
