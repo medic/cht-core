@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "413 Request Entity Too Large",
+  "server": "nginx"
+}
