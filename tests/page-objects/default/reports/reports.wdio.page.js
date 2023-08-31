@@ -119,8 +119,9 @@ const getFieldValue = async (name) => {
   return input.getValue();
 };
 
-const submitForm = async () => {
+const submitForm = async (pause) => {
   await (await submitButton()).waitForDisplayed();
+  await browser.pause(pause);
   await (await submitButton()).click();
   await (await reportBodyDetails()).waitForDisplayed();
 };
