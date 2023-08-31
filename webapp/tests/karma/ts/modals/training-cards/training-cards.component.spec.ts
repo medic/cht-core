@@ -1,13 +1,10 @@
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { BsModalRef } from 'ngx-bootstrap/modal';
-import { Subject } from 'rxjs';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-
-import { MmModal, MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
@@ -22,11 +19,10 @@ describe('TrainingCardsComponent', () => {
   let fixture: ComponentFixture<TrainingCardsComponent>;
   let component: TrainingCardsComponent;
   let store: MockStore;
-  let bsModalRef;
-  let modalSuperCloseStub;
   let geolocationService;
   let geoHandle;
   let xmlFormsService;
+  let matDialogRef;
   let translateService;
   let enketoService;
   let globalActions;
@@ -35,16 +31,11 @@ describe('TrainingCardsComponent', () => {
   let consoleErrorMock;
 
   beforeEach(() => {
-    bsModalRef = {
-      hide: sinon.stub(),
-      onHidden: new Subject(),
-      onHide: new Subject(),
-    };
     consoleErrorMock = sinon.stub(console, 'error');
-    modalSuperCloseStub = sinon.stub(MmModalAbstract.prototype, 'close');
     geoHandle = { cancel: sinon.stub() };
     geolocationService = { init: sinon.stub().returns(geoHandle) };
     xmlFormsService = { get: sinon.stub().resolves() };
+    matDialogRef = { close: sinon.stub() };
     translateService = {
       get: sinon.stub().resolvesArg(0),
       instant: sinon.stub().returnsArg(0),
@@ -74,19 +65,17 @@ describe('TrainingCardsComponent', () => {
         imports: [
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [
-          TrainingCardsComponent,
-          MmModal,
-        ],
+        declarations: [ TrainingCardsComponent ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: BsModalRef, useValue: bsModalRef },
           { provide: GeolocationService, useValue: geolocationService },
           { provide: XmlFormsService, useValue: xmlFormsService },
           { provide: TranslateService, useValue: translateService },
           { provide: EnketoService, useValue: enketoService },
           { provide: TelemetryService, useValue: telemetryService },
           { provide: FeedbackService, useValue: feedbackService },
+          { provide: MatDialogRef, useValue: matDialogRef },
+          { provide: MAT_DIALOG_DATA, useValue: {} },
         ],
       })
       .compileComponents()
@@ -102,6 +91,12 @@ describe('TrainingCardsComponent', () => {
 
   it('should create component', () => {
     expect(component).to.exist;
+  });
+
+  it('should close modal', () => {
+    component.close();
+
+    expect(matDialogRef.close.calledOnce).to.be.true;
   });
 
   it('should unsubscribe from everything, cancel geohandle and clear enketo form', fakeAsync(() => {
@@ -132,7 +127,7 @@ describe('TrainingCardsComponent', () => {
 
     component.quitTraining();
 
-    expect(modalSuperCloseStub.calledOnce).to.be.true;
+    expect(matDialogRef.close.calledOnce).to.be.true;
     expect(geolocationService.init.calledOnce).to.be.true;
     expect(xmlFormsService.get.calledOnce).to.be.true;
     expect(xmlFormsService.get.args[0]).to.deep.equal([ 'training:a_form_id' ]);
@@ -200,7 +195,7 @@ describe('TrainingCardsComponent', () => {
       expect(globalActions.setEnketoSavingStatus.notCalled).to.be.true;
       expect(globalActions.setSnackbarContent.notCalled).to.be.true;
       expect(globalActions.setEnketoError.notCalled).to.be.true;
-      expect(modalSuperCloseStub.notCalled).to.be.true;
+      expect(matDialogRef.close.notCalled).to.be.true;
     }));
 
     it('should call enketo save, set content in snackbar and unload form', fakeAsync(() => {
@@ -246,7 +241,7 @@ describe('TrainingCardsComponent', () => {
       expect(telemetryService.record.args[1][0]).to.equal('enketo:training:a_form_id:add:user_edit_time');
       expect(telemetryService.record.args[2][0]).to.equal('enketo:training:a_form_id:add:save');
       expect(globalActions.setEnketoError.notCalled).to.be.true;
-      expect(modalSuperCloseStub.calledOnce).to.be.true;
+      expect(matDialogRef.close.calledOnce).to.be.true;
     }));
 
     it('should catch enketo saving error', fakeAsync(() => {
@@ -278,7 +273,7 @@ describe('TrainingCardsComponent', () => {
       expect(globalActions.setEnketoError.args[0]).to.deep.equal([ 'training_cards.error.save' ]);
       expect(globalActions.setEnketoSavingStatus.calledTwice).to.be.true;
       expect(globalActions.setEnketoSavingStatus.args).to.deep.equal([[ true ], [ false ]]);
-      expect(modalSuperCloseStub.notCalled).to.be.true;
+      expect(matDialogRef.close.notCalled).to.be.true;
       expect(globalActions.setSnackbarContent.notCalled).to.be.true;
     }));
   });

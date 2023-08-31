@@ -70,6 +70,7 @@ describe('- DELETE permissions disabled', async () => {
 
   it(' - Contact Tab - delete contact selected', async () => {
     await commonPage.goToPeople(contact._id);
+    await commonPage.closeReloadModal();
     await commonPage.openMoreOptionsMenu();
     expect(await commonPage.isMenuOptionEnabled('edit', 'contacts')).to.be.true;
     expect(await commonPage.isMenuOptionVisible('export', 'contacts')).to.be.false;

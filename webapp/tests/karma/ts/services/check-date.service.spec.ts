@@ -5,7 +5,7 @@ import { expect } from 'chai';
 
 import { CheckDateService } from '@mm-services/check-date.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { CheckDateComponent } from '@mm-modals/check-date/check-date.component';
 
 describe('CheckDateService', () => {
@@ -19,7 +19,7 @@ describe('CheckDateService', () => {
   beforeEach(() => {
     clock = null;
     telemetryService = { record: sinon.stub() };
-    modal = { show: sinon.stub().resolves() };
+    modal = { show: sinon.stub() };
 
     TestBed.configureTestingModule({
       imports: [ HttpClientTestingModule ],
@@ -61,8 +61,8 @@ describe('CheckDateService', () => {
     await check;
     expect(modal.show.callCount).to.equal(1);
     expect(modal.show.args[0][0]).to.equal(CheckDateComponent);
-    expect(modal.show.args[0][1].initialState.reportedLocalDate.toISOString()).to.equal('1970-01-01T00:00:00.000Z');
-    expect(modal.show.args[0][1].initialState.expectedLocalDate).to.equal(undefined);
+    expect(modal.show.args[0][1].data.reportedLocalDate.toISOString()).to.equal('1970-01-01T00:00:00.000Z');
+    expect(modal.show.args[0][1].data.expectedLocalDate).to.equal(undefined);
     expect(telemetryService.record.callCount).to.equal(0);
   });
 
@@ -99,8 +99,8 @@ describe('CheckDateService', () => {
     await check;
     expect(modal.show.callCount).to.equal(1);
     expect(modal.show.args[0][0]).to.equal(CheckDateComponent);
-    expect(modal.show.args[0][1].initialState.reportedLocalDate.toISOString()).to.equal('1970-01-01T00:00:00.000Z');
-    expect(modal.show.args[0][1].initialState.expectedLocalDate.toISOString()).to.equal(responseDate.toISOString());
+    expect(modal.show.args[0][1].data.reportedLocalDate.toISOString()).to.equal('1970-01-01T00:00:00.000Z');
+    expect(modal.show.args[0][1].data.expectedLocalDate.toISOString()).to.equal(responseDate.toISOString());
     expect(telemetryService.record.callCount).to.equal(1);
     // client is one hour ahead of server
     expect(telemetryService.record.args[0]).to.deep.equal(['client-date-offset', 60 * 60 * 1000]);
