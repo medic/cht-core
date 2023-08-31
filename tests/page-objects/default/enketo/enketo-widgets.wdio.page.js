@@ -12,6 +12,7 @@ const neighborhoodRadio = (value) => $(FORM +
 const countryDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/country2"]`);
 const cityDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/city2"]`);
 const neighborhoodDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/neighborhood2"]`);
+const phoneField = () => $('input.ignore[type="tel"]:has(+ input[name="/enketo_widgets/phone_widget/phone"])');
 
 const getFormTitle = async () => {
   const title = await formTitle();
@@ -63,6 +64,10 @@ const selectDropdownOptions = async (element, type, value) => {
   await dropdownOption.click();
 };
 
+const setPhoneNumber = async (value) => {
+  await (await phoneField()).addValue(value);
+};
+
 module.exports = {
   getFormTitle,
   selectMultipleDropdown,
@@ -77,4 +82,5 @@ module.exports = {
   getDropdownValue,
   getDropdownTotalOptions,
   selectDropdownOptions,
+  setPhoneNumber,
 };

@@ -63,6 +63,9 @@ describe('Enketo Widgets', () => {
     await enketoWidgetsPage.openDropdown(await enketoWidgetsPage.neighborhoodDropdown());
     expect(await enketoWidgetsPage.getDropdownTotalOptions(await enketoWidgetsPage.neighborhoodDropdown())).to.equal(2);
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.neighborhoodDropdown(), 'radio', 'bronx');
+
+    await genericForm.nextPage();
+    await enketoWidgetsPage.setPhoneNumber('+40766565656');
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
 
