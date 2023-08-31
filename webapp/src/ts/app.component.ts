@@ -1,4 +1,4 @@
-import { ActivationEnd, ActivationStart, Router, RouterEvent } from '@angular/router';
+import { ActivationEnd, ActivationStart, Router } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';
 import * as moment from 'moment';
 import { AfterViewInit, Component, HostListener, NgZone, OnInit } from '@angular/core';
@@ -142,7 +142,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     this.adminUrl = this.locationService.adminPath;
 
-    setBootstrapTheme('bs3');
+    setBootstrapTheme('bs4');
   }
 
   private loadTranslations() {
@@ -165,7 +165,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       return tab;
     };
 
-    this.router.events.subscribe((event:RouterEvent) => {
+    this.router.events.subscribe((event:ActivationStart|ActivationEnd) => {
       // close all select2 menus on navigation
       // https://github.com/medic/cht-core/issues/2927
       if (event instanceof ActivationStart) {
