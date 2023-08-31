@@ -24,6 +24,12 @@ import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { EnketoService, EnketoFormContext } from '@mm-services/enketo.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
 
+/**
+ * Service for interacting with forms. This is the primary entry-point for CHT code to render forms and save the
+ * results. All logic that is proper to Enketo functionality should be included in the EnektoService. Logic that is
+ * peripheral to Enketo forms (needed to support form functionality in the CHT, but not required for interacting with
+ * Enekto forms) should be included here.
+ */
 @Injectable({
   providedIn: 'root'
 })

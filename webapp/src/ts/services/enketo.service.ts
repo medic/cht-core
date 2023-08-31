@@ -13,6 +13,12 @@ import { REPORT_ATTACHMENT_NAME } from '@mm-services/get-report-content.service'
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { TranslateService } from '@mm-services/translate.service';
 
+/**
+ * Service for interacting with Enketo forms. This code is intended for displaying forms in the CHT as well as being
+ * reused by code outside the CHT (e.g. cht-conf-test-harness). All logic that is proper to Enketo functionality should
+ * be included here. Logic that is peripheral to Enketo forms (needed to support form functionality in the CHT, but not
+ * required for interacting with Enekto forms) should be included in the FormService.
+ */
 @Injectable({
   providedIn: 'root'
 })
