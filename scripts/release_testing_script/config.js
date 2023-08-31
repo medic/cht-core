@@ -13,7 +13,7 @@ const columnData = {
     name: 'In Progress',
     order: 1
   },
-  fail:{
+  fail: {
     name: 'Fail',
     order: 3
   }

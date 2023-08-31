@@ -210,12 +210,12 @@ describe('Reports Subject', () => {
     await verifyListReportContent({
       formName: 'PID_PID',
       subject: clinic.name,
-      lineage:`${healthCenter.name}${districtHospital.name}`
+      lineage: `${healthCenter.name}${districtHospital.name}`
     });
     await verifyOpenReportContent({
       formName: 'PID_PID',
       subject: clinic.name,
-      lineage:`${healthCenter.name}${districtHospital.name}`
+      lineage: `${healthCenter.name}${districtHospital.name}`
     });
   });
 

@@ -154,7 +154,7 @@ describe('TasksForContact service', () => {
         ],
       };
 
-      const tasksBreakdown = { Ready: 10, Cancelled: 12, Draft: 2, Failed:5 };
+      const tasksBreakdown = { Ready: 10, Cancelled: 12, Draft: 2, Failed: 5 };
       rulesEngineService.fetchTasksBreakdown.resolves({ ...tasksBreakdown });
 
       expect(await service.getTasksBreakdown(model)).to.deep.equal(tasksBreakdown);

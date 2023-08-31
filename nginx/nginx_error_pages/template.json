@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "__MESSAGE__",
+  "server": "nginx"
+}

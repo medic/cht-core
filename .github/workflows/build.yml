@@ -56,15 +56,10 @@ jobs:
     - name: Create logs directory
       run: mkdir tests/logs
     - run: npm ci
-    - name: Grunt Install
-      run: npm install -g grunt-cli
-    - name: Grunt CI-Compile
-      run: |
-        node --stack_size=10000 `which grunt` ci-compile-github
+    - name: Compile
+      run: npm run ci-compile
     - name: Publish for testing
-      run: |
-        node --stack_size=10000 `which grunt` publish-for-testing
-
+      run: npm run publish-for-testing
     - name: Upload docker images as artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -74,12 +69,12 @@ jobs:
 
   config-tests:
     needs: build
-    name: ${{ matrix.grunt-cmd }}
+    name: ${{ matrix.cmd }}
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: [ 'exec:test-config-standard', 'exec:test-config-default']
+        cmd: ['test-config-standard', 'test-config-default']
 
     steps:
     - uses: actions/checkout@v3
@@ -87,15 +82,13 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 16.x
-    - name: Grunt Install
-      run: npm install -g grunt-cli
     - run: npm ci
     - name: Run Tests
-      run: node --stack_size=10000 `which grunt` ${{ matrix.grunt-cmd }}
+      run: npm run ${{ matrix.cmd }}
 
   tests:
     needs: build
-    name: ${{ matrix.grunt-cmd }}-${{ matrix.suite ||'' }}
+    name: ${{ matrix.cmd }}-${{ matrix.suite || '' }}
     runs-on: ubuntu-22.04
     env:
       NODE: 16.x
@@ -103,18 +96,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        grunt-cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
+        cmd: ['ci-webdriver-standard', 'ci-e2e-integration', 'ci-webdriver-default-mobile']
         suite: [all]
         include:
-          - grunt-cmd: ci-webdriver-default
+          - cmd: ci-webdriver-default
             suite: core
-          - grunt-cmd: ci-webdriver-default
+          - cmd: ci-webdriver-default
             suite: data
-          - grunt-cmd: ci-webdriver-default
+          - cmd: ci-webdriver-default
             suite: enketo
-          - grunt-cmd: ci-webdriver-default
+          - cmd: ci-webdriver-default
             suite: lowLevel
-          - grunt-cmd: ci-webdriver-default
+          - cmd: ci-webdriver-default
             suite: workflows
 
     steps:
@@ -175,9 +168,9 @@ jobs:
     - name: Copy allure history
       run: |
         mkdir -p allure-results/history
-        cp -r build-history-data/cht-core/allure/${{ matrix.grunt-cmd }}-${{ matrix.suite}}/allure-report/history allure-results | true
-    - name: Run tests ${{ matrix.grunt-cmd }}-${{ matrix.suite}}
-      run: node --stack_size=10000 `which grunt` "${{ matrix.grunt-cmd }}" --suite=${{ matrix.suite}}
+        cp -r build-history-data/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/allure-report/history allure-results | true
+    - name: Run tests ${{ matrix.cmd }}-${{ matrix.suite }}
+      run: npm run ${{ matrix.cmd }} -- --suite=${{ matrix.suite }}
     
     - name: Fetch allure history
       if: always()
@@ -189,8 +182,8 @@ jobs:
     - name: Copy new allure history
       if: always()
       run: |
-        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}-${{ matrix.suite }}/history
-        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.grunt-cmd }}-${{ matrix.suite }}allure-report | true
+        mkdir -p build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}/history
+        cp -r allure-report/history build-history-data-new/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}allure-report | true
     - name: Upload allure report history
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       uses: actions-js/push@master
@@ -209,8 +202,8 @@ jobs:
     - name: Copy new report
       if: always()
       run: |
-        mkdir -p build-history/cht-core/allure/${{ matrix.grunt-cmd }}-${{ matrix.suite }}
-        cp -r allure-report build-history/cht-core/allure/${{ matrix.grunt-cmd }}-${{ matrix.suite }} | true
+        mkdir -p build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }}
+        cp -r allure-report build-history/cht-core/allure/${{ matrix.cmd }}-${{ matrix.suite }} | true
     - name: Upload allure report
       if: always() && github.ref == 'refs/heads/master' # whether pass or fail, but only on master
       uses: actions-js/push@master
@@ -222,7 +215,7 @@ jobs:
     - name: Archive Results
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.grunt-cmd }}-${{ matrix.suite || ''}}
+        name: ${{ matrix.cmd }}-${{ matrix.suite || ''}}
         path: |
           allure-results
           allure-report

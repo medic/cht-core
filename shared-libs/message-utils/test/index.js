@@ -694,7 +694,7 @@ describe('messageUtils', () => {
   describe('generate', () => {
 
     it('adds uuid', () => {
-      utils.__set__('uuid', { v4 : sinon.stub().returns('some-uuid') });
+      utils.__set__('uuid', { v4: sinon.stub().returns('some-uuid') });
       const config = {};
       const translate = null;
       const doc = {};

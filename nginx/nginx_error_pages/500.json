@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "500 Internal Server Error",
+  "server": "nginx"
+}

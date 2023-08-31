@@ -1,9 +1,8 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
 import { Store } from '@ngrx/store';
 import { combineLatest, Subscription } from 'rxjs';
+import { MatDialogRef } from '@angular/material/dialog';
 
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { FormService } from '@mm-services/form.service';
 import { Selectors } from '@mm-selectors/index';
@@ -17,10 +16,9 @@ import { FeedbackService } from '@mm-services/feedback.service';
   selector: 'training-cards-modal',
   templateUrl: './training-cards.component.html'
 })
-export class TrainingCardsComponent extends MmModalAbstract implements OnInit, OnDestroy {
+export class TrainingCardsComponent implements OnInit, OnDestroy {
 
   constructor(
-    bsModalRef: BsModalRef,
     private ngZone: NgZone,
     private store: Store,
     private xmlFormsService: XmlFormsService,
@@ -29,8 +27,8 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     private translateService: TranslateService,
     private telemetryService: TelemetryService,
     private feedbackService: FeedbackService,
+    private matDialogRef: MatDialogRef<TrainingCardsComponent>,
   ) {
-    super(bsModalRef);
     this.globalActions = new GlobalActions(this.store);
   }
 
@@ -152,6 +150,10 @@ export class TrainingCardsComponent extends MmModalAbstract implements OnInit, O
     this.loadingContent = false;
     this.hideModalFooter = false;
     this.contentError = true;
+  }
+
+  close() {
+    this.matDialogRef.close();
   }
 
   async saveForm() {
