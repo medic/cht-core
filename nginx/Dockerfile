@@ -16,7 +16,7 @@ COPY conf.d/ /etc/nginx/conf.d/
 COPY nginx_error_pages/ /usr/share/nginx/nginx_error_pages/
 
 # test build
-FROM alpine:3 as test_nginx
+FROM alpine:3 AS test_nginx
 RUN apk --no-cache add bats curl openssl
 RUN mkdir -p /app/bash-shellmock
 RUN curl -LJO https://raw.githubusercontent.com/capitalone/bash_shell_mock/main/bin/shellmock
