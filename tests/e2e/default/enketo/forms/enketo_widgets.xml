@@ -77,6 +77,30 @@
           <text id="/enketo_widgets/enketo_test_select:label">
             <value>Select widgets</value>
           </text>
+          <text id="/enketo_widgets/inputs/contact/_id:label">
+            <value>What is the patient's uuid?</value>
+          </text>
+          <text id="/enketo_widgets/inputs/contact/name:jr:constraintMsg">
+            <value>Name should contain more than 4 characters</value>
+          </text>
+          <text id="/enketo_widgets/inputs/contact/name:label">
+            <value>What is the patient's name?</value>
+          </text>
+          <text id="/enketo_widgets/inputs/contact/patient_id:label">
+            <value>What is the patient's id?</value>
+          </text>
+          <text id="/enketo_widgets/inputs:label">
+            <value>Patient</value>
+          </text>
+          <text id="/enketo_widgets/patient_id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/enketo_widgets/patient_name:label">
+            <value>Patient Name</value>
+          </text>
+          <text id="/enketo_widgets/patient_uuid:label">
+            <value>Patient UUID</value>
+          </text>
           <text id="static_instance-cities-0">
             <value>Amsterdam</value>
           </text>
@@ -143,7 +167,7 @@
         </translation>
       </itext>
       <instance>
-        <enketo_widgets delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-08-30 00:00:00">
+        <enketo_widgets delimiter="#" id="enketo_widgets" prefix="J1!enketo_widgets!" version="2023-08-31 00:00:00">
           <enketo_test_select>
             <select_spinner/>
             <select1_spinner/>
@@ -160,6 +184,26 @@
               <neighborhood2/>
             </group2>
           </cascading_widgets>
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <patient_id/>
+              <name/>
+            </contact>
+          </inputs>
+          <patient_uuid/>
+          <patient_id/>
+          <patient_name/>
           <meta tag="hidden">
             <instanceID/>
           </meta>
@@ -298,6 +342,15 @@
       <bind nodeset="/enketo_widgets/cascading_widgets/group2/country2" type="select1"/>
       <bind nodeset="/enketo_widgets/cascading_widgets/group2/city2" type="select1"/>
       <bind nodeset="/enketo_widgets/cascading_widgets/group2/neighborhood2" type="select1"/>
+      <bind nodeset="/enketo_widgets/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/enketo_widgets/inputs/source" type="string"/>
+      <bind nodeset="/enketo_widgets/inputs/source_id" type="string"/>
+      <bind nodeset="/enketo_widgets/inputs/contact/_id" type="string"/>
+      <bind nodeset="/enketo_widgets/inputs/contact/patient_id" type="string"/>
+      <bind constraint="string-length(.) &gt; 4" jr:constraintMsg="jr:itext('/enketo_widgets/inputs/contact/name:jr:constraintMsg')" nodeset="/enketo_widgets/inputs/contact/name" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/enketo_widgets/patient_uuid" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/enketo_widgets/patient_id" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/enketo_widgets/patient_name" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/enketo_widgets/meta/instanceID" readonly="true()" type="string"/>
     </model>
   </h:head>
@@ -407,6 +460,20 @@
             <label ref="jr:itext(itextId)"/>
           </itemset>
         </select1>
+      </group>
+    </group>
+    <group appearance="field-list" ref="/enketo_widgets/inputs">
+      <label ref="jr:itext('/enketo_widgets/inputs:label')"/>
+      <group ref="/enketo_widgets/inputs/contact">
+        <input ref="/enketo_widgets/inputs/contact/_id">
+          <label ref="jr:itext('/enketo_widgets/inputs/contact/_id:label')"/>
+        </input>
+        <input ref="/enketo_widgets/inputs/contact/patient_id">
+          <label ref="jr:itext('/enketo_widgets/inputs/contact/patient_id:label')"/>
+        </input>
+        <input ref="/enketo_widgets/inputs/contact/name">
+          <label ref="jr:itext('/enketo_widgets/inputs/contact/name:label')"/>
+        </input>
       </group>
     </group>
   </h:body>
