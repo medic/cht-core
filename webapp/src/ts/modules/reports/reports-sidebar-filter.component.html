@@ -9,101 +9,115 @@
     </div>
 
     <div class="sidebar-body">
-      <accordion [closeOthers]="true" [isAnimated]="true">
+      <mat-accordion>
         <!-- 1. Form Type -->
-        <accordion-group id="form-filter-accordion">
-          <ng-container
-            accordion-heading
-            [ngTemplateOutlet]="headerTemplate"
-            [ngTemplateOutletContext]="{
-              numSelected: filterCount.formFilter,
-              label: 'reports.sidebar.filter.form_type',
-              filters: [ 'formFilter' ]
-            }">
-          </ng-container>
-          <mm-form-type-filter
-            class="filter"
-            fieldId="formFilter"
-            (search)="applyFilters()"
-            [disabled]="disabled"
-            [inline]="true">
-          </mm-form-type-filter>
-        </accordion-group>
+        <mat-expansion-panel id="form-filter-accordion">
+          <mat-expansion-panel-header>
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{
+                numSelected: filterCount.formFilter,
+                label: 'reports.sidebar.filter.form_type',
+                filters: [ 'formFilter' ]
+              }">
+            </ng-container>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            <mm-form-type-filter
+              class="filter"
+              fieldId="formFilter"
+              (search)="applyFilters()"
+              [disabled]="disabled"
+              [inline]="true">
+            </mm-form-type-filter>
+          </mat-panel-description>
+        </mat-expansion-panel>
 
         <!-- 2. Place -->
-        <accordion-group id="place-filter-accordion">
-          <ng-container
-            accordion-heading
-            [ngTemplateOutlet]="headerTemplate"
-            [ngTemplateOutletContext]="{
-              numSelected: filterCount.placeFilter,
-              label: 'reports.sidebar.filter.place',
-              filters: [ 'placeFilter' ]
-            }">
-          </ng-container>
-          <mm-facility-filter
-            class="filter"
-            fieldId="placeFilter"
-            (search)="applyFilters()"
-            [disabled]="disabled"
-            [inline]="true">
-          </mm-facility-filter>
-        </accordion-group>
+        <mat-expansion-panel  id="place-filter-accordion">
+          <mat-expansion-panel-header>
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{
+                numSelected: filterCount.placeFilter,
+                label: 'reports.sidebar.filter.place',
+                filters: [ 'placeFilter' ]
+              }">
+            </ng-container>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            <mat-expansion-panel-header>
+              <mm-facility-filter
+                class="filter"
+                fieldId="placeFilter"
+                (search)="applyFilters()"
+                [disabled]="disabled"
+                [inline]="true">
+              </mm-facility-filter>
+            </mat-expansion-panel-header>
+          </mat-panel-description>
+        </mat-expansion-panel>
 
         <!-- 3. Date -->
-        <accordion-group id="date-filter-accordion" [class.filter-error]="dateFilterError">
-          <ng-container
-            accordion-heading
-            [ngTemplateOutlet]="headerTemplate"
-            [ngTemplateOutletContext]="{
-              numSelected: (filterCount.fromDateFilter || 0) + (filterCount.toDateFilter || 0),
-              label: 'reports.sidebar.filter.date',
-              filters: [ 'fromDateFilter', 'toDateFilter' ]
-            }">
-          </ng-container>
-          <label>{{ 'reports.sidebar.filter.from_date' | translate }}</label>
-          <mm-date-filter
-            #fromDate
-            class="filter"
-            fieldId="fromDateFilter"
-            (search)="applyFilters()"
-            (onError)="showDateFilterError($event)"
-            [disabled]="disabled"
-            [isStartDate]="true">
-          </mm-date-filter>
+        <mat-expansion-panel  id="date-filter-accordion" [class.filter-error]="dateFilterError">
+          <mat-expansion-panel-header>
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{
+                numSelected: (filterCount.fromDateFilter || 0) + (filterCount.toDateFilter || 0),
+                label: 'reports.sidebar.filter.date',
+                filters: [ 'fromDateFilter', 'toDateFilter' ]
+              }">
+            </ng-container>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            <label>{{ 'reports.sidebar.filter.from_date' | translate }}</label>
+            <mm-date-filter
+              #fromDate
+              class="filter"
+              fieldId="fromDateFilter"
+              (search)="applyFilters()"
+              (onError)="showDateFilterError($event)"
+              [disabled]="disabled"
+              [isStartDate]="true">
+            </mm-date-filter>
 
-          <label>{{ 'reports.sidebar.filter.to_date' | translate }}</label>
-          <mm-date-filter
-            #toDate
-            class="filter"
-            fieldId="toDateFilter"
-            (search)="applyFilters()"
-            (onError)="showDateFilterError($event)"
-            [disabled]="disabled">
-          </mm-date-filter>
-          <p class="filter-error-message" *ngIf="dateFilterError">{{ dateFilterError | translate }}</p>
-        </accordion-group>
+            <label>{{ 'reports.sidebar.filter.to_date' | translate }}</label>
+            <mm-date-filter
+              #toDate
+              class="filter"
+              fieldId="toDateFilter"
+              (search)="applyFilters()"
+              (onError)="showDateFilterError($event)"
+              [disabled]="disabled">
+            </mm-date-filter>
+            <p class="filter-error-message" *ngIf="dateFilterError">{{ dateFilterError | translate }}</p>
+          </mat-panel-description>
+        </mat-expansion-panel>
 
         <!-- 4. Status -->
-        <accordion-group id="status-filter-accordion">
-          <ng-container
-            accordion-heading
-            [ngTemplateOutlet]="headerTemplate"
-            [ngTemplateOutletContext]="{
-              numSelected: filterCount.statusFilter,
-              label: 'reports.sidebar.filter.status',
-              filters: [ 'statusFilter' ]
-            }">
-          </ng-container>
-          <mm-status-filter
-            class="filter"
-            fieldId="statusFilter"
-            (search)="applyFilters()"
-            [disabled]="disabled"
-            [inline]="true">
-          </mm-status-filter>
-        </accordion-group>
-      </accordion>
+        <mat-expansion-panel id="status-filter-accordion">
+          <mat-expansion-panel-header>
+            <ng-container
+              [ngTemplateOutlet]="headerTemplate"
+              [ngTemplateOutletContext]="{
+                numSelected: filterCount.statusFilter,
+                label: 'reports.sidebar.filter.status',
+                filters: [ 'statusFilter' ]
+              }">
+            </ng-container>
+          </mat-expansion-panel-header>
+          <mat-panel-description>
+            <mm-status-filter
+              class="filter"
+              fieldId="statusFilter"
+              (search)="applyFilters()"
+              [disabled]="disabled"
+              [inline]="true">
+            </mm-status-filter>
+          </mat-panel-description>
+        </mat-expansion-panel>
+      </mat-accordion>
     </div>
 
     <div class="sidebar-footer">
@@ -113,11 +127,9 @@
 </section>
 
 <ng-template #headerTemplate let-numSelected="numSelected" let-label="label" let-filters="filters">
-  <button class="btn btn-link">
-    <p class="title">{{ label | translate }}</p>
-    <div class="chip" *ngIf="numSelected" [class.disabled]="disabled">
-      <span>{{ numSelected | translate }}</span>
-      <span class="fa fa-times" (click)="clearFilters(filters); $event.stopPropagation();"></span>
-    </div>
-  </button>
+  <p class="title">{{ label | translate }}</p>
+  <div class="chip" *ngIf="numSelected" [class.disabled]="disabled">
+    <span>{{ numSelected | translate }}</span>
+    <span class="fa fa-times" (click)="clearFilters(filters); $event.stopPropagation();"></span>
+  </div>
 </ng-template>
