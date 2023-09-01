@@ -178,6 +178,7 @@ describe('Service worker cache', () => {
     await waitForLogs.promise;
 
     await commonPage.sync(true);
+    await commonPage.closeReloadModal();
     await commonPage.logout();
 
     await loginPage.changeLanguage(languageCode, 'Utilizator');
@@ -190,7 +191,7 @@ describe('Service worker cache', () => {
   });
 
   it('other translation updates do not trigger a login page refresh', async () => {
-    await commonPage.sync();
+    await commonPage.sync(true);
 
     const cacheDetails = await getCachedRequests(true);
 
@@ -200,7 +201,7 @@ describe('Service worker cache', () => {
       'some': 'thing',
     });
     await waitForLogs.promise;
-    await commonPage.sync(false);
+    await commonPage.sync(true);
 
     const updatedCacheDetails = await getCachedRequests(true);
 

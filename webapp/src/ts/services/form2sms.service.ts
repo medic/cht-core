@@ -6,6 +6,7 @@ import { GetReportContentService } from '@mm-services/get-report-content.service
 import { ParseProvider } from '@mm-providers/parse.provider';
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
+import { UserSettingsService } from '@mm-services/user-settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class Form2smsService {
     private fileReaderService: FileReaderService,
     private parseProvider:ParseProvider,
     private enketoPrepopulationDataService: EnketoPrepopulationDataService,
+    private userSettingsService:UserSettingsService,
   ) {
   }
 
@@ -51,10 +53,11 @@ export class Form2smsService {
     return Promise
       .all([
         this.getReportContentService.getReportContent(doc),
-        this.getFormModel(form)
+        this.getFormModel(form),
+        this.userSettingsService.getWithLanguage()
       ])
-      .then(([reportModel, formModel]) => {
-        return this.enketoPrepopulationDataService.get(formModel, reportModel);
+      .then(([reportModel, formModel, userSettings]) => {
+        return this.enketoPrepopulationDataService.get(userSettings, formModel, reportModel);
       });
   }
 
