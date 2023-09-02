@@ -161,7 +161,7 @@ body {
     padding-right: 5px;
 
     a {
-      width: 40px;
+      width: @header-bar-extras;
       margin-top: 10px;
       border-radius: @radius-size @radius-size 0 0;
 
@@ -188,9 +188,14 @@ body {
     height: auto;
   }
 
+  .dropdown.options.open.show {
+    display: inline !important; // Overriding BS' "display" that uses !important;
+  }
+
   .options .dropdown-menu {
-    width: 250px;
-    left: auto;
+    width: @header-dropdown-width;
+    top: 0 !important; // Overriding element.style
+    left: calc(-1 * (@header-dropdown-width - @header-bar-extras)) !important; // Overriding element.style
     margin-top: 30px;
     font-size: 0;
     a {
