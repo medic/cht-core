@@ -14,13 +14,12 @@ import { LineageModelGeneratorService } from '@mm-services/lineage-model-generat
 import { FileReaderService } from '@mm-services/file-reader.service';
 import { UserContactService } from '@mm-services/user-contact.service';
 import { UserSettingsService } from '@mm-services/user-settings.service';
-import { LanguageService } from '@mm-services/language.service';
 import { TranslateFromService } from '@mm-services/translate-from.service';
 import { EnketoPrepopulationDataService } from '@mm-services/enketo-prepopulation-data.service';
 import { AttachmentService } from '@mm-services/attachment.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { ZScoreService } from '@mm-services/z-score.service';
-import { EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
 import { ServicesActions } from '@mm-actions/services';
 import { ContactSummaryService } from '@mm-services/contact-summary.service';
 import { TransitionsService } from '@mm-services/transitions.service';
@@ -30,6 +29,7 @@ import { FeedbackService } from '@mm-services/feedback.service';
 import * as medicXpathExtensions from '../../../../src/js/enketo/medic-xpath-extensions';
 import { CHTScriptApiService } from '@mm-services/cht-script-api.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
+import { EnketoService } from '@mm-services/enketo.service';
 
 describe('Enketo service', () => {
   // return a mock form ready for putting in #dbContent
@@ -59,7 +59,6 @@ describe('Enketo service', () => {
   let UserSettings;
   let createObjectURL;
   let FileReader;
-  let Language;
   let TranslateFrom;
   let form;
   let AddAttachment;
@@ -94,7 +93,6 @@ describe('Enketo service', () => {
     UserSettings = sinon.stub();
     createObjectURL = sinon.stub();
     FileReader = { utf8: sinon.stub() };
-    Language = sinon.stub();
     TranslateFrom = sinon.stub();
     form = {
       validate: sinon.stub(),
@@ -163,8 +161,7 @@ describe('Enketo service', () => {
         { provide: LineageModelGeneratorService, useValue: LineageModelGenerator },
         { provide: FileReaderService, useValue: FileReader },
         { provide: UserContactService, useValue: { get: UserContact } },
-        { provide: UserSettingsService, useValue: { get: UserSettings } },
-        { provide: LanguageService, useValue: { get: Language } },
+        { provide: UserSettingsService, useValue: { getWithLanguage: UserSettings } },
         { provide: TranslateFromService, useValue: { get: TranslateFrom } },
         { provide: EnketoPrepopulationDataService, useValue: { get: EnketoPrepopulationData } },
         { provide: AttachmentService, useValue: { add: AddAttachment, remove: removeAttachment } },
@@ -178,7 +175,7 @@ describe('Enketo service', () => {
       ],
     });
 
-    Language.resolves('en');
+    UserSettings.resolves({ name: 'Jim', language: 'en' });
     TranslateFrom.returns('translated');
     window.CHTCore = {};
   });
@@ -192,7 +189,7 @@ describe('Enketo service', () => {
     it('should init zscore and xpath extensions', async () => {
       sinon.stub(medicXpathExtensions, 'init');
 
-      service = TestBed.inject(EnketoService);
+      service = TestBed.inject(FormService);
       await service.init();
 
       expect(zScoreService.getScoreUtil.callCount).to.equal(1);
@@ -205,7 +202,7 @@ describe('Enketo service', () => {
       sinon.stub(medicXpathExtensions, 'init');
       zScoreService.getScoreUtil.rejects({ omg: 'error' });
 
-      service = TestBed.inject(EnketoService);
+      service = TestBed.inject(FormService);
       await service.init();
 
       expect(zScoreService.getScoreUtil.callCount).to.equal(1);
@@ -216,7 +213,7 @@ describe('Enketo service', () => {
   describe('render', () => {
 
     beforeEach(() => {
-      service = TestBed.inject(EnketoService);
+      service = TestBed.inject(FormService);
     });
 
     it('renders error when user does not have associated contact', () => {
@@ -305,78 +302,6 @@ describe('Enketo service', () => {
       });
     });
 
-    it('replaces img src with obj urls', async () => {
-      UserContact.resolves({ contact_id: '123' });
-      xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
-        .onSecondCall().resolves(VISIT_MODEL)
-        .onThirdCall().resolves('myobjblob');
-      createObjectURL.returns('myobjurl');
-      enketoInit.returns([]);
-      FileReader.utf8
-        .onFirstCall().resolves('<div><img data-media-src="myimg"></div>');
-      EnketoPrepopulationData.resolves('<xml></xml>');
-      const wrapper = $('<div><div class="container"></div><form></form></div>');
-      await service.render(wrapper, mockEnketoDoc('myform'));
-      await Promise.resolve();  // need to wait for async get attachment to complete
-      const img = wrapper.find('img').first();
-      expect(img.css('visibility')).to.satisfy(val => {
-        // different browsers return different values but both are equivalent
-        return val === '' || val === 'visible';
-      });
-      expect(enketoInit.callCount).to.equal(1);
-      expect(createObjectURL.callCount).to.equal(1);
-      expect(createObjectURL.args[0][0]).to.equal('myobjblob');
-    });
-
-    it('leaves img wrapped and hides loader if failed to load', () => {
-      UserContact.resolves({ contact_id: '123' });
-      xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div><img data-media-src="myimg"></div>')
-        .onSecondCall().resolves(VISIT_MODEL)
-        .onThirdCall().rejects('not found');
-      enketoInit.returns([]);
-      FileReader.utf8
-        .onFirstCall().resolves('<div><img data-media-src="myimg"></div>');
-      EnketoPrepopulationData.resolves('<xml></xml>');
-      const wrapper = $('<div><div class="container"></div><form></form></div>');
-      return service.render(wrapper, mockEnketoDoc('myform')).then(() => {
-        const img = wrapper.find('img').first();
-        expect(img.attr('src')).to.equal(undefined);
-        expect(img.attr('data-media-src')).to.equal('myimg');
-        expect(img.css('visibility')).to.equal('hidden');
-        const loader = img.closest('div');
-        expect(loader.hasClass('loader')).to.equal(true);
-        expect(loader.is(':hidden')).to.equal(true);
-        expect(enketoInit.callCount).to.equal(1);
-        expect(createObjectURL.callCount).to.equal(0);
-        expect(consoleErrorMock.callCount).to.equal(1);
-        expect(consoleErrorMock.args[0][0]).to.equal('Error fetching media file');
-      });
-    });
-
-    it('passes users language to Enketo', () => {
-      const data = '<data><patient_id>123</patient_id></data>';
-      UserContact.resolves({ contact_id: '123' });
-      xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves('my model');
-      enketoInit.returns([]);
-      FileReader.utf8
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves('my model');
-      EnketoPrepopulationData.resolves(data);
-      Language.resolves('sw');
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
-        expect(Language.callCount).to.equal(1);
-        expect(EnketoForm.callCount).to.equal(1);
-        expect(EnketoForm.args[0][2].language).to.equal('sw');
-      });
-    });
-
     it('passes xml instance data through to Enketo', () => {
       const data = '<data><patient_id>123</patient_id></data>';
       UserContact.resolves({ contact_id: '123' });
@@ -392,35 +317,6 @@ describe('Enketo service', () => {
       return service.render($('<div></div>'), mockEnketoDoc('myform'), data).then(() => {
         expect(EnketoForm.callCount).to.equal(1);
         expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
-        expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
-      });
-    });
-
-    it('passes json instance data through to Enketo', () => {
-      const data = '<data><patient_id>123</patient_id></data>';
-      UserContact.resolves({
-        _id: '456',
-        contact_id: '123',
-        facility_id: '789'
-      });
-      xmlFormsService.canAccessForm.resolves(true);
-      dbGetAttachment
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL);
-      enketoInit.returns([]);
-      FileReader.utf8
-        .onFirstCall().resolves('<div>my form</div>')
-        .onSecondCall().resolves(VISIT_MODEL);
-      EnketoPrepopulationData.resolves(data);
-      const instanceData = {
-        inputs: {
-          patient_id: 123,
-          name: 'sharon'
-        }
-      };
-      return service.render($('<div></div>'), mockEnketoDoc('myform'), instanceData).then(() => {
-        expect(EnketoForm.callCount).to.equal(1);
-        expect(EnketoForm.args[0][1].modelStr).to.equal(VISIT_MODEL);
         expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
       });
     });
@@ -630,6 +526,43 @@ describe('Enketo service', () => {
       expect(dbGetAttachment.args[1]).to.have.members([ 'form:secondForm', 'model.xml' ]);
     });
 
+    it('should throw exception if fails to get user settings', fakeAsync(async () => {
+      UserSettings.rejects(new Error('invalid user'));
+      const data = '<data><patient_id>123</patient_id></data>';
+      UserContact.resolves({ contact_id: '123' });
+      xmlFormsService.canAccessForm.resolves(true);
+      dbGetAttachment
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      enketoInit.returns([]);
+      FileReader.utf8
+        .onFirstCall().resolves('<div>my form</div>')
+        .onSecondCall().resolves('my model');
+      EnketoPrepopulationData.resolves(data);
+      const renderForm = sinon.spy(EnketoService.prototype, 'renderForm');
+
+      try {
+        await service.render($('<div></div>'), mockEnketoDoc('myform'), data);
+        flush();
+        expect.fail('Should throw error');
+      } catch(error) {
+        expect(error.message).to.equal('Failed during the form "myform" rendering : invalid user');
+        expect(UserContact.calledOnce).to.be.true;
+        expect(renderForm.notCalled).to.be.true;
+        expect(enketoInit.notCalled).to.be.true;
+        expect(consoleErrorMock.callCount).to.equal(1);
+        expect(consoleErrorMock.args[0]).to.deep.equal([
+          'Failed during the form "myform" rendering : ',
+          'invalid user'
+        ]);
+        expect(feedbackService.submit.callCount).to.equal(1);
+        expect(feedbackService.submit.args[0]).to.deep.equal([
+          'Failed during the form "myform" rendering : invalid user',
+          false
+        ]);
+      }
+    }));
+
     it('should throw exception when user does not have access to form', fakeAsync(async () => {
       dbGetAttachment
         .onFirstCall().resolves('<div>my form</div>')
@@ -665,29 +598,7 @@ describe('Enketo service', () => {
   describe('save', () => {
 
     beforeEach(() => {
-      service = TestBed.inject(EnketoService);
-    });
-
-    it('rejects on invalid form', () => {
-      const inputRelevant = { dataset: { relevant: 'true' } };
-      const inputNonRelevant = { dataset: { relevant: 'false' } };
-      const inputNoDataset = {};
-      const toArray = sinon.stub().returns([inputRelevant, inputNoDataset, inputNonRelevant]);
-      // @ts-ignore
-      sinon.stub($.fn, 'find').returns({ toArray });
-      form.validate.resolves(false);
-      form.relevant = { update: sinon.stub() };
-      return service
-        .save('V', form)
-        .then(() => expect.fail('expected to reject'))
-        .catch(actual => {
-          expect(actual.message).to.equal('Form is invalid');
-          expect(form.validate.callCount).to.equal(1);
-          expect(inputRelevant.dataset.relevant).to.equal('true');
-          expect(inputNonRelevant.dataset.relevant).to.equal('false');
-          // @ts-ignore
-          expect(inputNoDataset.dataset).to.be.undefined;
-        });
+      service = TestBed.inject(FormService);
     });
 
     it('creates report', () => {
@@ -697,7 +608,6 @@ describe('Enketo service', () => {
       trainingCardsService.getTrainingCardDocId.returns('training:user-jim:');
       dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
       UserContact.resolves({ _id: '123', phone: '555' });
-      UserSettings.resolves({ name: 'Jim' });
       return service.save('V', form).then(actual => {
         actual = actual[0];
 
@@ -720,6 +630,8 @@ describe('Enketo service', () => {
         expect(AddAttachment.callCount).to.equal(0);
         expect(removeAttachment.callCount).to.equal(1);
         expect(removeAttachment.args[0]).excludingEvery('_rev').to.deep.equal([actual, 'content']);
+        expect(setLastChangedDoc.callCount).to.equal(1);
+        expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -731,7 +643,6 @@ describe('Enketo service', () => {
       form.validate.resolves(true);
       dbBulkDocs.callsFake(docs => Promise.resolve([ { ok: true, id: docs[0]._id, rev: '1-abc' } ]));
       UserContact.resolves({ _id: '123', phone: '555' });
-      UserSettings.resolves({ name: 'Jim' });
 
       return service
         .save('training:a_new_training', form)
@@ -759,25 +670,6 @@ describe('Enketo service', () => {
         });
     });
 
-    it('saves form version if found', () => {
-      form.validate.resolves(true);
-      const content = loadXML('sally-lmp');
-      form.getDataStr.returns(content);
-      dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-      xmlFormGetWithAttachment.resolves({
-        doc: { _id: 'abc', xmlVersion: { time: '1', sha256: 'imahash' } },
-        xml: '<form/>'
-      });
-      UserContact.resolves({ _id: '123', phone: '555' });
-      UserSettings.resolves({ name: 'Jim' });
-      return service.save('V', form).then(actual => {
-        actual = actual[0];
-        expect(actual.form_version).to.deep.equal({ time: '1', sha256: 'imahash' });
-        expect(xmlFormGetWithAttachment.callCount).to.equal(1);
-        expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
-      });
-    });
-
     describe('Geolocation recording', () => {
       it('saves geolocation data into a new report', () => {
         form.validate.resolves(true);
@@ -787,7 +679,6 @@ describe('Enketo service', () => {
         xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
 
         UserContact.resolves({ _id: '123', phone: '555' });
-        UserSettings.resolves({ name: 'Jim' });
         const geoData = {
           latitude: 1,
           longitude: 2,
@@ -831,7 +722,6 @@ describe('Enketo service', () => {
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
         xmlFormGetWithAttachment.resolves({ doc: { _id: 'V' }, xml: '<form/>' });
         UserContact.resolves({ _id: '123', phone: '555' });
-        UserSettings.resolves({ name: 'Jim' });
         const geoError = {
           code: 42,
           message: 'some bad geo'
@@ -937,7 +827,6 @@ describe('Enketo service', () => {
       form.getDataStr.returns(content);
       dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
       UserContact.resolves({ _id: '123', phone: '555' });
-      UserSettings.resolves({ name: 'Jim' });
       const geoError = {
         code: 42,
         message: 'geolocation failed for some reason'
@@ -963,34 +852,6 @@ describe('Enketo service', () => {
         expect(xmlFormGetWithAttachment.args[0][0]).to.equal('V');
         expect(AddAttachment.callCount).to.equal(0);
         expect(removeAttachment.callCount).to.equal(1);
-      });
-    });
-
-    it('creates report with hidden fields', () => {
-      form.validate.resolves(true);
-      const content = loadXML('hidden-field');
-      form.getDataStr.returns(content);
-      dbBulkDocs.resolves([{ ok: true, id: '(generated-in-service)', rev: '1-abc' }]);
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form, null, null).then(actual => {
-        actual = actual[0];
-
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-        expect(actual._id).to.match(/(\w+-)\w+/);
-        expect(actual.fields.name).to.equal('Sally');
-        expect(actual.fields.lmp).to.equal('10');
-        expect(actual.fields.secret_code_name).to.equal('S4L');
-        expect(actual.form).to.equal('V');
-        expect(actual.type).to.equal('data_record');
-        expect(actual.content_type).to.equal('xml');
-        expect(actual.contact._id).to.equal('123');
-        expect(actual.from).to.equal('555');
-        expect(actual.hidden_fields).to.deep.equal(['secret_code_name']);
-        expect(setLastChangedDoc.callCount).to.equal(1);
-        expect(setLastChangedDoc.args[0]).to.deep.equal([actual]);
       });
     });
 
@@ -1172,494 +1033,6 @@ describe('Enketo service', () => {
       });
     });
 
-    it('creates extra docs with references', () => {
-      form.validate.resolves(true);
-      const content = loadXML('extra-docs-with-references');
-      form.getDataStr.returns(content);
-      dbBulkDocs.resolves([
-        { ok: true, id: '6', rev: '1-abc' },
-        { ok: true, id: '7', rev: '1-def' },
-        { ok: true, id: '8', rev: '1-ghi' }
-      ]);
-      UserContact.resolves({ _id: '123', phone: '555' });
-
-      return service.save('V', form).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-
-        expect(actual.length).to.equal(3);
-        const reportId = actual[0]._id;
-        const doc1_id = actual[1]._id;
-        const doc2_id = actual[2]._id;
-
-        const actualReport = actual[0];
-
-        expect(actualReport._id).to.match(/(\w+-)\w+/);
-        expect(actualReport.fields.name).to.equal('Sally');
-        expect(actualReport.fields.lmp).to.equal('10');
-        expect(actualReport.fields.secret_code_name).to.equal('S4L');
-        expect(actualReport.fields.my_self_0).to.equal(reportId);
-        expect(actualReport.fields.my_child_01).to.equal(doc1_id);
-        expect(actualReport.fields.my_child_02).to.equal(doc2_id);
-        expect(actualReport.form).to.equal('V');
-        expect(actualReport.type).to.equal('data_record');
-        expect(actualReport.content_type).to.equal('xml');
-        expect(actualReport.contact._id).to.equal('123');
-        expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'doc1', 'doc2']);
-
-        expect(actualReport.fields.doc1).to.deep.equal({
-          type: 'thing_1',
-          some_property_1: 'some_value_1',
-          my_self_1: doc1_id,
-          my_parent_1: reportId,
-          my_sibling_1: doc2_id
-        });
-        expect(actualReport.fields.doc2).to.deep.equal({
-          type: 'thing_2',
-          some_property_2: 'some_value_2',
-          my_self_2: doc2_id,
-          my_parent_2: reportId,
-          my_sibling_2: doc1_id
-        });
-
-        const actualThing1 = actual[1];
-        expect(actualThing1._id).to.match(/(\w+-)\w+/);
-        expect(actualThing1.some_property_1).to.equal('some_value_1');
-        expect(actualThing1.my_self_1).to.equal(doc1_id);
-        expect(actualThing1.my_parent_1).to.equal(reportId);
-        expect(actualThing1.my_sibling_1).to.equal(doc2_id);
-
-        const actualThing2 = actual[2];
-        expect(actualThing2._id).to.match(/(\w+-)\w+/);
-        expect(actualThing2.some_property_2).to.equal('some_value_2');
-        expect(actualThing2.my_self_2).to.equal(doc2_id);
-        expect(actualThing2.my_parent_2).to.equal(reportId);
-        expect(actualThing2.my_sibling_2).to.equal(doc1_id);
-
-        expect(_.uniq(_.map(actual, '_id')).length).to.equal(3);
-      });
-    });
-
-    it('creates extra docs with repeats', () => {
-      form.validate.resolves(true);
-      const content = loadXML('extra-docs-with-repeat');
-      form.getDataStr.returns(content);
-      dbBulkDocs.resolves([
-        { ok: true, id: '6', rev: '1-abc' },
-        { ok: true, id: '7', rev: '1-def' },
-        { ok: true, id: '8', rev: '1-ghi' },
-        { ok: true, id: '9', rev: '1-ghi' }
-      ]);
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-
-        expect(actual.length).to.equal(4);
-        const reportId = actual[0]._id;
-
-        const actualReport = actual[0];
-
-        expect(actualReport._id).to.match(/(\w+-)\w+/);
-        expect(actualReport.fields.name).to.equal('Sally');
-        expect(actualReport.fields.lmp).to.equal('10');
-        expect(actualReport.fields.secret_code_name).to.equal('S4L');
-        expect(actualReport.form).to.equal('V');
-        expect(actualReport.type).to.equal('data_record');
-        expect(actualReport.content_type).to.equal('xml');
-        expect(actualReport.contact._id).to.equal('123');
-        expect(actualReport.from).to.equal('555');
-        expect(actualReport.hidden_fields).to.have.members(['secret_code_name', 'repeat_doc']);
-
-        for (let i = 1; i <= 3; ++i) {
-          const repeatDocN = actual[i];
-          expect(repeatDocN._id).to.match(/(\w+-)\w+/);
-          expect(repeatDocN.my_parent).to.equal(reportId);
-          expect(repeatDocN.some_property).to.equal('some_value_' + i);
-        }
-
-        expect(_.uniq(_.map(actual, '_id')).length).to.equal(4);
-      });
-    });
-
-    it('db-doc-ref with repeats', () => {
-      form.validate.resolves(true);
-      const content = loadXML('db-doc-ref-in-repeat');
-      form.getDataStr.returns(content);
-
-      dbBulkDocs.resolves([
-        { ok: true, id: '6', rev: '1-abc' },
-        { ok: true, id: '7', rev: '1-def' },
-        { ok: true, id: '8', rev: '1-ghi' },
-        { ok: true, id: '9', rev: '1-ghi' }
-      ]);
-      xmlFormGetWithAttachment.resolves({
-        xml: `
-          <data>
-            <repeat nodeset="/data/repeat_section"></repeat>
-          </data>
-        `,
-        doc: { _id: 'abc' }
-      });
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-
-        expect(actual.length).to.equal(4);
-        const doc = actual[0];
-
-        expect(doc).to.deep.nested.include({
-          form: 'V',
-          'fields.name': 'Sally',
-          'fields.lmp': '10',
-          'fields.secret_code_name': 'S4L',
-          'fields.repeat_section[0].extra': 'data1',
-          'fields.repeat_section[0].repeat_doc_ref': actual[1]._id,
-          'fields.repeat_section[1].extra': 'data2',
-          'fields.repeat_section[1].repeat_doc_ref': actual[2]._id,
-          'fields.repeat_section[2].extra': 'data3',
-          'fields.repeat_section[2].repeat_doc_ref': actual[3]._id,
-        });
-      });
-    });
-
-    it('db-doc-ref with deep repeats', () => {
-      form.validate.resolves(true);
-      const content = loadXML('db-doc-ref-in-deep-repeat');
-      form.getDataStr.returns(content);
-
-      dbBulkDocs.resolves([
-        { ok: true, id: '6', rev: '1-abc' },
-        { ok: true, id: '7', rev: '1-def' },
-        { ok: true, id: '8', rev: '1-ghi' },
-        { ok: true, id: '9', rev: '1-ghi' }
-      ]);
-      xmlFormGetWithAttachment.resolves({
-        xml: `
-          <data>
-            <repeat nodeset="/data/repeat_section"></repeat>
-          </data>
-        `,
-        doc: { _id: 'abc' }
-      });
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-
-        expect(actual.length).to.equal(4);
-        const doc = actual[0];
-
-        expect(doc).to.deep.nested.include({
-          form: 'V',
-          'fields.name': 'Sally',
-          'fields.lmp': '10',
-          'fields.secret_code_name': 'S4L',
-          'fields.repeat_section[0].extra': 'data1',
-          'fields.repeat_section[0].some.deep.structure.repeat_doc_ref': actual[1]._id,
-          'fields.repeat_section[1].extra': 'data2',
-          'fields.repeat_section[1].some.deep.structure.repeat_doc_ref': actual[2]._id,
-          'fields.repeat_section[2].extra': 'data3',
-          'fields.repeat_section[2].some.deep.structure.repeat_doc_ref': actual[3]._id,
-        });
-      });
-    });
-
-    it('db-doc-ref with deep repeats and non-db-doc repeats', () => {
-      form.validate.resolves(true);
-      const content = loadXML('db-doc-ref-in-deep-repeats-extra-repeats');
-      form.getDataStr.returns(content);
-
-      dbBulkDocs.resolves([
-        { ok: true, id: '6', rev: '1-abc' },
-        { ok: true, id: '7', rev: '1-def' },
-        { ok: true, id: '8', rev: '1-ghi' },
-        { ok: true, id: '9', rev: '1-ghi' }
-      ]);
-      xmlFormGetWithAttachment.resolves({
-        xml: `
-          <data>
-            <repeat nodeset="/data/repeat_section"></repeat>
-          </data>
-        `,
-        doc: { _id: 'abc' }
-      });
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-
-        expect(actual.length).to.equal(4);
-        const doc = actual[0];
-
-        expect(doc).to.deep.nested.include({
-          form: 'V',
-          'fields.name': 'Sally',
-          'fields.lmp': '10',
-          'fields.secret_code_name': 'S4L',
-          'fields.repeat_section[0].extra': 'data1',
-          'fields.repeat_section[0].some.deep.structure.repeat_doc_ref': actual[1]._id,
-          'fields.repeat_section[1].extra': 'data2',
-          'fields.repeat_section[1].some.deep.structure.repeat_doc_ref': actual[2]._id,
-          'fields.repeat_section[2].extra': 'data3',
-          'fields.repeat_section[2].some.deep.structure.repeat_doc_ref': actual[3]._id,
-        });
-      });
-    });
-
-    it('db-doc-ref with repeats and local references', () => {
-      form.validate.resolves(true);
-      const content = loadXML('db-doc-ref-in-repeats-with-local-references');
-      form.getDataStr.returns(content);
-
-      dbBulkDocs.resolves([
-        { ok: true, id: '6', rev: '1-abc' },
-        { ok: true, id: '7', rev: '1-def' },
-        { ok: true, id: '8', rev: '1-ghi' },
-        { ok: true, id: '9', rev: '1-ghi' }
-      ]);
-      xmlFormGetWithAttachment.resolves({
-        xml: `
-          <data>
-            <repeat nodeset="/data/repeat_section"></repeat>
-          </data>
-        `,
-        doc: { _id: 'abc' }
-      });
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-
-        expect(actual.length).to.equal(4);
-        const doc = actual[0];
-
-        expect(doc).to.deep.nested.include({
-          form: 'V',
-          'fields.name': 'Sally',
-          'fields.lmp': '10',
-          'fields.secret_code_name': 'S4L',
-          'fields.repeat_section[0].extra': 'data1',
-          'fields.repeat_section[0].repeat_doc_ref': actual[1]._id,
-          'fields.repeat_section[1].extra': 'data2',
-          'fields.repeat_section[1].repeat_doc_ref': actual[2]._id,
-          'fields.repeat_section[2].extra': 'data3',
-          'fields.repeat_section[2].repeat_doc_ref': actual[3]._id,
-        });
-      });
-    });
-
-    it('db-doc-ref with deep repeats and local references', () => {
-      form.validate.resolves(true);
-      const content = loadXML('db-doc-ref-in-deep-repeats-with-local-references');
-      form.getDataStr.returns(content);
-
-      dbBulkDocs.resolves([
-        { ok: true, id: '6', rev: '1-abc' },
-        { ok: true, id: '7', rev: '1-def' },
-        { ok: true, id: '8', rev: '1-ghi' },
-        { ok: true, id: '9', rev: '1-ghi' }
-      ]);
-      xmlFormGetWithAttachment.resolves({
-        xml: `
-          <data>
-            <repeat nodeset="/data/repeat_section"></repeat>
-          </data>
-        `,
-        doc: { _id: 'abc' }
-      });
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-
-        expect(actual.length).to.equal(4);
-        const doc = actual[0];
-
-        expect(doc).to.deep.nested.include({
-          form: 'V',
-          'fields.name': 'Sally',
-          'fields.lmp': '10',
-          'fields.secret_code_name': 'S4L',
-          'fields.repeat_section[0].extra': 'data1',
-          'fields.repeat_section[0].some.deep.structure.repeat_doc_ref': actual[1]._id,
-          'fields.repeat_section[1].extra': 'data2',
-          'fields.repeat_section[1].some.deep.structure.repeat_doc_ref': actual[2]._id,
-          'fields.repeat_section[2].extra': 'data3',
-          'fields.repeat_section[2].some.deep.structure.repeat_doc_ref': actual[3]._id,
-        });
-      });
-    });
-
-    it('db-doc-ref with repeats with refs outside of repeat', () => {
-      form.validate.resolves(true);
-      const content = loadXML('db-doc-ref-outside-of-repeat');
-      form.getDataStr.returns(content);
-
-      dbBulkDocs.resolves([
-        { ok: true, id: '6', rev: '1-abc' },
-        { ok: true, id: '7', rev: '1-def' },
-      ]);
-      xmlFormGetWithAttachment.resolves({
-        xml: `
-        <data>
-          <repeat nodeset="/data/repeat_section"></repeat>
-        </data>
-        `,
-        doc: { _id: 'abc' }
-      });
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-
-        expect(actual.length).to.equal(2);
-        const doc = actual[0];
-
-        expect(doc).to.deep.nested.include({
-          form: 'V',
-          'fields.name': 'Sally',
-          'fields.lmp': '10',
-          'fields.secret_code_name': 'S4L',
-          'fields.repeat_section[0].extra': 'data1',
-          'fields.repeat_section[0].repeat_doc_ref': actual[1]._id,
-          'fields.repeat_section[1].extra': 'data2',
-          'fields.repeat_section[1].repeat_doc_ref': actual[1]._id,
-          'fields.repeat_section[2].extra': 'data3',
-          'fields.repeat_section[2].repeat_doc_ref': actual[1]._id,
-        });
-      });
-    });
-
-    it('db-doc-ref with repeats with db-doc as repeat', () => {
-      form.validate.resolves(true);
-      const content = loadXML('db-doc-ref-same-as-repeat');
-      form.getDataStr.returns(content);
-
-      dbBulkDocs.resolves([
-        { ok: true, id: '6', rev: '1-abc' },
-        { ok: true, id: '7', rev: '1-def' },
-      ]);
-      xmlFormGetWithAttachment.resolves({
-        xml: `
-          <data>
-            <repeat nodeset="/data/repeat_section"></repeat>
-          </data>
-        `,
-        doc: { _id: 'abc' }
-      });
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-
-        expect(actual.length).to.equal(4);
-
-        expect(actual[0]).to.deep.nested.include({
-          form: 'V',
-          'fields.name': 'Sally',
-          'fields.lmp': '10',
-          'fields.repeat_doc_ref': actual[1]._id, // this ref is outside any repeat
-        });
-        expect(actual[1]).to.deep.include({
-          extra: 'data1',
-          type: 'repeater',
-          some_property: 'some_value_1',
-          my_parent: actual[0]._id,
-          repeat_doc_ref: actual[1]._id,
-        });
-        expect(actual[2]).to.deep.include({
-          extra: 'data2',
-          type: 'repeater',
-          some_property: 'some_value_2',
-          my_parent: actual[0]._id,
-          repeat_doc_ref: actual[2]._id,
-        });
-        expect(actual[3]).to.deep.nested.include({
-          extra: 'data3',
-          type: 'repeater',
-          some_property: 'some_value_3',
-          my_parent: actual[0]._id,
-          'child.repeat_doc_ref': actual[3]._id,
-        });
-      });
-    });
-
-    it('db-doc-ref with repeats with invalid ref', () => {
-      form.validate.resolves(true);
-      const content = loadXML('db-doc-ref-broken-ref');
-      form.getDataStr.returns(content);
-
-      dbBulkDocs.resolves([
-        { ok: true, id: '6', rev: '1-abc' },
-        { ok: true, id: '7', rev: '1-def' },
-      ]);
-      xmlFormGetWithAttachment.resolves({
-        xml: `
-          <data>
-            <repeat nodeset="/data/repeat_section"></repeat>
-          </data>
-        `,
-        doc: { _id: 'abc' }
-      });
-      UserContact.resolves({ _id: '123', phone: '555' });
-      return service.save('V', form).then(actual => {
-        expect(form.validate.callCount).to.equal(1);
-        expect(form.getDataStr.callCount).to.equal(1);
-        expect(dbBulkDocs.callCount).to.equal(1);
-        expect(UserContact.callCount).to.equal(1);
-
-        expect(actual.length).to.equal(4);
-
-        expect(actual[0]).to.deep.nested.include({
-          form: 'V',
-          'fields.name': 'Sally',
-          'fields.lmp': '10',
-        });
-        expect(actual[1]).to.deep.include({
-          extra: 'data1',
-          type: 'repeater',
-          some_property: 'some_value_1',
-          my_parent: actual[0]._id,
-          repeat_doc_ref: 'value1',
-        });
-        expect(actual[2]).to.deep.include({
-          extra: 'data2',
-          type: 'repeater',
-          some_property: 'some_value_2',
-          my_parent: actual[0]._id,
-          repeat_doc_ref: 'value2',
-        });
-        expect(actual[3]).to.deep.include({
-          extra: 'data3',
-          type: 'repeater',
-          some_property: 'some_value_3',
-          my_parent: actual[0]._id,
-          repeat_doc_ref: 'value3',
-        });
-      });
-    });
-
     describe('Saving attachments', () => {
       it('should save attachments', () => {
         const jqFind = $.fn.find;
@@ -1680,7 +1053,7 @@ describe('Enketo service', () => {
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
         // @ts-ignore
-        const saveDocsSpy = sinon.spy(EnketoService.prototype, 'saveDocs');
+        const saveDocsSpy = sinon.spy(FormService.prototype, 'saveDocs');
 
         return service
           .save('my-form', form, () => Promise.resolve(true))
@@ -1702,7 +1075,7 @@ describe('Enketo service', () => {
         dbGetAttachment.resolves('<form/>');
         UserContact.resolves({ _id: 'my-user', phone: '8989' });
         // @ts-ignore
-        const saveDocsStub = sinon.stub(EnketoService.prototype, 'saveDocs');
+        const saveDocsStub = sinon.stub(FormService.prototype, 'saveDocs');
         // @ts-ignore
         const xmlToDocsStub = sinon.stub(EnketoService.prototype, 'xmlToDocs').resolves([
           { _id: '1a' },
@@ -1733,63 +1106,6 @@ describe('Enketo service', () => {
             expect(globalActions.setSnackbarContent.calledOnce);
             expect(globalActions.setSnackbarContent.args[0]).to.have.members(['enketo.error.max_attachment_size']);
           });
-      });
-
-      it('should remove binary data from content', () => {
-        form.validate.resolves(true);
-        const content = loadXML('binary-field');
-
-        form.getDataStr.returns(content);
-        dbGetAttachment.resolves('<form/>');
-        UserContact.resolves({ _id: 'my-user', phone: '8989' });
-        dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-        return service.save('my-form', form, () => Promise.resolve(true)).then(() => {
-          expect(dbBulkDocs.args[0][0][0].fields).to.deep.equal({
-            name: 'Mary',
-            age: '10',
-            gender: 'f',
-            my_file: '',
-          });
-          expect(AddAttachment.callCount).to.equal(1);
-
-          expect(AddAttachment.args[0][1]).to.equal('user-file/my-form/my_file');
-          expect(AddAttachment.args[0][2]).to.deep.equal('some image data');
-          expect(AddAttachment.args[0][3]).to.equal('image/png');
-        });
-      });
-
-      it('should assign attachment names relative to the form name not the root node name', () => {
-        const jqFind = $.fn.find;
-        sinon.stub($.fn, 'find');
-        //@ts-ignore
-        $.fn.find.callsFake(jqFind);
-        $.fn.find
-          //@ts-ignore
-          .withArgs('input[type=file][name="/my-root-element/my_file"]')
-          .returns([{ files: [{ type: 'image', foo: 'bar' }] }]);
-        $.fn.find
-          //@ts-ignore
-          .withArgs('input[type=file][name="/my-root-element/sub_element/sub_sub_element/other_file"]')
-          .returns([{ files: [{ type: 'mytype', foo: 'baz' }] }]);
-        form.validate.resolves(true);
-        const content = loadXML('deep-file-fields');
-
-        form.getDataStr.returns(content);
-        dbGetAttachment.resolves('<form/>');
-        UserContact.resolves({ _id: 'my-user', phone: '8989' });
-        dbBulkDocs.callsFake(docs => Promise.resolve([{ ok: true, id: docs[0]._id, rev: '1-abc' }]));
-        return service.save('my-form-internal-id', form, () => Promise.resolve(true)).then(() => {
-          expect(AddAttachment.callCount).to.equal(2);
-
-          expect(AddAttachment.args[0][1]).to.equal('user-file/my-form-internal-id/my_file');
-          expect(AddAttachment.args[0][2]).to.deep.equal({ type: 'image', foo: 'bar' });
-          expect(AddAttachment.args[0][3]).to.equal('image');
-
-          expect(AddAttachment.args[1][1])
-            .to.equal('user-file/my-form-internal-id/sub_element/sub_sub_element/other_file');
-          expect(AddAttachment.args[1][2]).to.deep.equal({ type: 'mytype', foo: 'baz' });
-          expect(AddAttachment.args[1][3]).to.equal('mytype');
-        });
       });
 
       it('should pass docs to transitions and save results', () => {
@@ -1949,164 +1265,6 @@ describe('Enketo service', () => {
             ]);
         });
       });
-
-      describe('renderContactForm', () => {
-        beforeEach(() => {
-          service.setFormTitle = sinon.stub();
-          dbGetAttachment.resolves('<form/>');
-          translateService.get.callsFake((key) => `translated key ${key}`);
-          TranslateFrom.callsFake((sentence) => `translated sentence ${sentence}`);
-        });
-
-        const callbackMock = () => { };
-        const instanceData = {
-          health_center: {
-            type: 'contact',
-            contact_type: 'health_center',
-            parent: 'parent',
-          },
-        };
-        const formDoc = {
-          ...mockEnketoDoc('myform'),
-          title: 'New Area',
-        };
-
-        it('should translate titleKey when provided', async () => {
-          UserContact.resolves({ contact_id: '123-user-contact' });
-          xmlFormsService.canAccessForm.resolves(true);
-          await service.renderContactForm({
-            selector: $('<div></div>'),
-            formDoc,
-            instanceData,
-            editedListener: callbackMock,
-            valuechangeListener: callbackMock,
-            titleKey: 'contact.type.health_center.new',
-          });
-
-          expect(service.setFormTitle.callCount).to.be.equal(1);
-          expect(service.setFormTitle.args[0][1]).to.be.equal('translated key contact.type.health_center.new');
-        });
-
-        it('should fallback to translate document title when the titleKey is not available', async () => {
-          UserContact.resolves({ contact_id: '123-user-contact' });
-          xmlFormsService.canAccessForm.resolves(true);
-          await service.renderContactForm({
-            selector: $('<div></div>'),
-            formDoc,
-            instanceData,
-            editedListener: callbackMock,
-            valuechangeListener: callbackMock,
-          });
-
-          expect(service.setFormTitle.callCount).to.be.equal(1);
-          expect(service.setFormTitle.args[0][1]).to.be.equal('translated sentence New Area');
-        });
-      });
     });
-  });
-
-  describe('multimedia', () => {
-    let setNavigationStub;
-    let pauseStubs;
-    let form;
-    let $form;
-    let $nextBtn;
-    let $prevBtn;
-    let originalJQueryFind;
-
-    before(() => {
-      $nextBtn = $('<button class="btn next-page"></button>');
-      $prevBtn = $('<button class="btn previous-page"></button>');
-      originalJQueryFind = $.fn.find;
-      setNavigationStub = sinon
-        .stub(EnketoService.prototype, <any>'setNavigation')
-        .callThrough();
-
-      form = {
-        calc: { update: sinon.stub() },
-        output: { update: sinon.stub() },
-        resetView: sinon.stub(),
-        pages: {
-          _next: sinon.stub(),
-          _getCurrentIndex: sinon.stub()
-        }
-      };
-    });
-
-    beforeEach(() => {
-      service = TestBed.inject(EnketoService);
-
-      $form = $(`<div></div>`);
-      $form
-        .append($nextBtn)
-        .append($prevBtn);
-
-      pauseStubs = {};
-      sinon
-        .stub($.fn, 'find')
-        .callsFake(selector => {
-          const result = originalJQueryFind.call($form, selector);
-
-          result.each((idx, element) => {
-            if (element.pause) {
-              pauseStubs[element.id] = sinon.stub(element, 'pause');
-            }
-          });
-
-          return result;
-        });
-    });
-
-    after(() => $.fn.find = originalJQueryFind);
-
-    xit('should pause the multimedia when going to the previous page', fakeAsync(() => {
-      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
-      setNavigationStub.call(service, form, $form);
-
-      $prevBtn.trigger('click.pagemode');
-      flush();
-
-      expect(pauseStubs.video).to.not.be.undefined;
-      expect(pauseStubs.video.calledOnce).to.be.true;
-      expect(pauseStubs.audio).to.not.be.undefined;
-      expect(pauseStubs.audio.calledOnce).to.be.true;
-    }));
-
-    xit('should pause the multimedia when going to the next page', fakeAsync(() => {
-      form.pages._next.resolves(true);
-      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
-      setNavigationStub.call(service, form, $form);
-
-      $nextBtn.trigger('click.pagemode');
-      flush();
-
-      expect(pauseStubs.video).to.not.be.undefined;
-      expect(pauseStubs.video.calledOnce).to.be.true;
-      expect(pauseStubs.audio).to.not.be.undefined;
-      expect(pauseStubs.audio.calledOnce).to.be.true;
-    }));
-
-    xit('should not pause the multimedia when trying to go to the next page and form is invalid', fakeAsync(() => {
-      form.pages._next.resolves(false);
-      $form.prepend('<video id="video"></video><audio id="audio"></audio>');
-      setNavigationStub.call(service, form, $form);
-
-      $nextBtn.trigger('click.pagemode');
-      flush();
-
-      expect(pauseStubs.video).to.be.undefined;
-      expect(pauseStubs.audio).to.be.undefined;
-    }));
-
-    xit('should not call pause function when there isnt video and audio in the form wrapper', fakeAsync(() => {
-      setNavigationStub.call(service, form, $form);
-
-      $prevBtn.trigger('click.pagemode');
-      $nextBtn.trigger('click.pagemode');
-      flush();
-
-      expect(pauseStubs.video).to.be.undefined;
-      expect(pauseStubs.audio).to.be.undefined;
-    }));
   });
 });
