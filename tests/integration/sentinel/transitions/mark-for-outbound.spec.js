@@ -3,6 +3,7 @@ const { expect } = require('chai');
 const utils = require('@utils');
 const sentinelUtils = require('@utils/sentinel');
 const uuid = require('uuid').v4;
+const sinon = require('sinon');
 
 // Mock server code, consider moving this elsewhere?
 const express = require('express');
@@ -79,8 +80,13 @@ describe('mark_for_outbound', () => {
   after(() => utils.revertDb([], true));
 
   describe('when external server is up', () => {
+    let clock;
+
     beforeEach(() => startMockApp());
-    afterEach(() => stopMockApp());
+    afterEach(() => {
+      stopMockApp();
+      clock?.reset();
+    });
 
     it('correctly creates and sends an outbound request immediately', () => {
       const report = makeReport();
@@ -128,6 +134,103 @@ describe('mark_for_outbound', () => {
             'completed_tasks[0].type': 'outbound',
             'completed_tasks[0].name': 'test'
           });
+        });
+    });
+
+    it('correctly creates and sends outbound request immediately with due "cron"', () => {
+      clock = sinon.useFakeTimers(new Date('2023-08-28T01:05:00'));
+      const report = makeReport();
+      const config = {
+        transitions: {
+          mark_for_outbound: true
+        },
+        outbound: {
+          test: {
+            relevant_to: 'doc.type === "data_record" && doc.form === "test"',
+            cron: '5 1 * * *',
+            destination: {
+              base_url: utils.hostURL(server.address().port),
+              path: WORKING_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._id',
+              rev: 'doc._rev'
+            }
+          }
+        }
+      };
+
+      return utils
+        .updateSettings(config, 'sentinel')
+        .then(() => utils.saveDoc(report))
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(getTasks)
+        .then(tasks => {
+          expect(tasks).to.be.empty;
+        })
+        .then(() => utils.getDoc(report._id))
+        .then(report => {
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.have.lengthOf(1);
+          expect(workingEndpointRequests[0]).to.deep.equal({
+            id: report._id,
+            rev: report._rev
+          });
+        })
+        .then(() => sentinelUtils.getInfoDoc(report._id))
+        .then(infoDoc => {
+          expect(infoDoc).to.nested.include({
+            type: 'info',
+            doc_id: report._id,
+            'completed_tasks[0].type': 'outbound',
+            'completed_tasks[0].name': 'test'
+          });
+        });
+    });
+
+    it('correctly skips outbound request immediately with not due "cron"', () => {
+      clock = sinon.useFakeTimers(new Date('2023-08-28T01:05:00'));
+      const report = makeReport();
+      const config = {
+        transitions: {
+          mark_for_outbound: true
+        },
+        outbound: {
+          test: {
+            relevant_to: 'doc.type === "data_record" && doc.form === "test"',
+            cron: '5 2 * * *',
+            destination: {
+              base_url: utils.hostURL(server.address().port),
+              path: WORKING_ENDPOINT
+            },
+            mapping: {
+              id: 'doc._id',
+              rev: 'doc._rev'
+            }
+          }
+        }
+      };
+
+      return utils
+        .updateSettings(config, 'sentinel')
+        .then(() => utils.saveDoc(report))
+        .then(() => sentinelUtils.waitForSentinel([report._id]))
+        .then(getTasks)
+        .then(tasks => {
+          expect(tasks).to.be.empty;
+        })
+        .then(() => utils.getDoc(report._id))
+        .then(report => {
+          expect(brokenEndpointRequests).to.be.empty;
+          expect(workingEndpointRequests).to.have.lengthOf(1);
+          expect(workingEndpointRequests[0]).to.deep.equal({
+            id: report._id,
+            rev: report._rev
+          });
+        })
+        .then(() => sentinelUtils.getInfoDoc(report._id))
+        .then(response => {
+          console.log('mark-for-outbound-debug', response);
         });
     });
 
