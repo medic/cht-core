@@ -108,7 +108,7 @@ describe('db', () => {
         expect(request.post.callCount).to.equal(1);
         expect(request.post.args[0]).to.deep.equal([{
           url: 'http://admin:pass@127.0.0.1:5984/medic-db-name/_design/medic-client/_view/contacts_by_depth',
-          qs:  { skip: 100, start_key: 'thing', whatever: 'yes' },
+          qs: { skip: 100, start_key: 'thing', whatever: 'yes' },
           json: true,
           body: { keys: [1, 2, 3] },
         }]);
@@ -141,7 +141,7 @@ describe('db', () => {
         expect(request.post.callCount).to.equal(1);
         expect(request.post.args[0]).to.deep.equal([{
           url: 'http://admin:pass@127.0.0.1:5984/medic-db-name/_all_docs',
-          qs:  { start_key: JSON.stringify('thing'), start_key_doc_id: 'thing' },
+          qs: { start_key: JSON.stringify('thing'), start_key_doc_id: 'thing' },
           json: true,
           body: { keys: [4, 5, 6] },
         }]);

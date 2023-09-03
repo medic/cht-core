@@ -59,7 +59,6 @@ const _ = require('lodash/core');
         }
         return _.template(label)(scope);
       };
-    }
-  );
+    });
 
 }());

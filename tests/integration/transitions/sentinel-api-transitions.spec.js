@@ -24,7 +24,7 @@ const contacts = [
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw1',
-      parent:  { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic1', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -59,7 +59,7 @@ const contacts = [
     parent: { _id: 'health_center', parent: { _id: 'district_hospital' } },
     contact: {
       _id: 'chw2',
-      parent:  { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
+      parent: { _id: 'clinic2', parent: { _id: 'health_center', parent: { _id: 'district_hospital' } } }
     },
     reported_date: new Date().getTime()
   },
@@ -290,7 +290,7 @@ const messages = [{
 const getPostOpts = (path, body) => ({
   path: path,
   method: 'POST',
-  headers: { 'Content-Type':'application/json' },
+  headers: { 'Content-Type': 'application/json' },
   body: body
 });
 

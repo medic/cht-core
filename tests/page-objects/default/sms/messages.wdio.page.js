@@ -1,4 +1,5 @@
 const commonPage = require('../common/common.wdio.page');
+const modalPage = require('../common/modal.wdio.page');
 
 const MESSAGES_LIST = '#message-list';
 const MESSAGE_HEADER = '#message-header';
@@ -9,8 +10,8 @@ const MESSAGE_FOOTER = '#message-footer';
 const messageInList = identifier => $(`${MESSAGES_LIST} li[test-id="${identifier}"]`);
 const messagesListLeftPanel = () => $$(`${MESSAGES_LIST} li.content-row`);
 const messagesLoadingStatus = () => $(`${MESSAGES_LIST} .loading-status`);
+const sendMessageModal = () => $(SEND_MESSAGE_MODAL);
 const messageText = () => $(`${SEND_MESSAGE_MODAL} textarea[name="message"]`);
-const sendMessageModalSubmit = () => $(`${SEND_MESSAGE_MODAL} a.btn.submit:not(.ng-hide)`);
 const recipientField = () => $(`${SEND_MESSAGE_MODAL} input.select2-search__field`);
 const exportButton = () => $('.mat-mdc-menu-content .mat-mdc-menu-item[test-id="export-messages"]');
 const replyMessage = () => $(`${MESSAGE_FOOTER} textarea[name="message"]`);
@@ -61,28 +62,22 @@ const searchSelect = async (recipient, option) => {
   await (await recipientOption).click();
 };
 
-const clickModalSubmit = async () => {
-  await (await sendMessageModalSubmit()).waitForClickable();
-  await (await sendMessageModalSubmit()).click();
-  await $(SEND_MESSAGE_MODAL).waitForDisplayed({ reverse: true });
-};
-
 const sendMessage = async (message, recipient, entryText) => {
   await commonPage.clickFastActionFlat({ waitForList: false });
-  await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
+  await (await sendMessageModal()).waitForDisplayed();
   await searchSelect(recipient, entryText);
   await (await messageText()).setValue(message);
-  await clickModalSubmit();
+  await modalPage.submit();
 };
 
 const sendReplyNewRecipient = async (recipient, entryText) => {
   await searchSelect(recipient, entryText);
-  await clickModalSubmit();
+  await modalPage.submit();
 };
 
 const sendMessageToContact = async (message) => {
   await (await messageText()).setValue(message);
-  await clickModalSubmit();
+  await modalPage.submit();
 };
 
 const exportMessages = async () => {
@@ -108,7 +103,7 @@ const replyAddRecipients = async (message) => {
   await (await replyMessageActions()).waitForExist();
   await (await addRecipient()).waitForClickable();
   await (await addRecipient()).click();
-  await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
+  await (await sendMessageModal()).waitForDisplayed();
 };
 
 const getAmountOfMessagesByPhone = async () => {
@@ -118,7 +113,7 @@ const getAmountOfMessagesByPhone = async () => {
 };
 
 const getMessagesModalDetails = async () => {
-  await (await $(SEND_MESSAGE_MODAL)).waitForDisplayed();
+  await (await sendMessageModal()).waitForDisplayed();
   return {
     recipient: await $(`${SEND_MESSAGE_MODAL} .select2-selection__choice`).getText(),
     message: await messageText().getValue(),

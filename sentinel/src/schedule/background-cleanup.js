@@ -68,7 +68,8 @@ const deleteReadDocs = changes => {
 
   // can't use array.flat() or array.flatMap() until node 11
   const possibleReadDocIds = deletedDocIds.reduce(
-    (arr, id) => arr.concat(['report', 'message'].map(type => `read:${type}:${id}`)), []);
+    (arr, id) => arr.concat(['report', 'message'].map(type => `read:${type}:${id}`)), []
+  );
 
   return db.allDbs().then(dbs => {
     const userDbs = dbs.filter(dbName => dbName.startsWith(`${db.medicDbName}-user-`));

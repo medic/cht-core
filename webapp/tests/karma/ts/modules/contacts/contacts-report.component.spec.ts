@@ -9,7 +9,7 @@ import { Subject } from 'rxjs';
 
 import { ContactsReportComponent } from '@mm-modules/contacts/contacts-report.component';
 import { GlobalActions } from '@mm-actions/global';
-import { EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { Selectors } from '@mm-selectors/index';
 import { TelemetryService } from '@mm-services/telemetry.service';
@@ -22,7 +22,7 @@ describe('contacts report component', () => {
   let component: ContactsReportComponent;
   let fixture: ComponentFixture<ContactsReportComponent>;
   let store: MockStore;
-  let enketoService;
+  let formService;
   let geolocationService;
   let geoHandle;
   let telemetryService;
@@ -34,7 +34,7 @@ describe('contacts report component', () => {
   let routeSnapshot;
 
   beforeEach(() => {
-    enketoService = {
+    formService = {
       unload: sinon.stub(),
       save: sinon.stub(),
       render: sinon.stub().resolves(),
@@ -79,7 +79,7 @@ describe('contacts report component', () => {
         ],
         providers: [
           provideMockStore({ selectors: mockedSelectors }),
-          { provide: EnketoService, useValue: enketoService },
+          { provide: FormService, useValue: formService },
           { provide: GeolocationService, useValue: geolocationService },
           { provide: TelemetryService, useValue: telemetryService },
           { provide: XmlFormsService, useValue: xmlFormsService },
@@ -159,10 +159,10 @@ describe('contacts report component', () => {
       component.ngAfterViewInit();
       flush();
 
-      expect(enketoService.render.callCount).to.equal(1);
-      expect(enketoService.render.args[0][0]).to.equal('#contact-report');
-      expect(enketoService.render.args[0][1]).to.deep.equal({ title: 'formTitle' });
-      expect(enketoService.render.args[0][2]).to.deep.equal(
+      expect(formService.render.callCount).to.equal(1);
+      expect(formService.render.args[0][0]).to.equal('#contact-report');
+      expect(formService.render.args[0][1]).to.deep.equal({ title: 'formTitle' });
+      expect(formService.render.args[0][2]).to.deep.equal(
         {
           source: 'contact',
           contact: {
@@ -177,7 +177,7 @@ describe('contacts report component', () => {
       const spy = sinon.spy(component.subscription, 'unsubscribe');
       component.ngOnDestroy();
       expect(spy.callCount).to.equal(1);
-      expect(enketoService.unload.callCount).to.equal(1);
+      expect(formService.unload.callCount).to.equal(1);
     });
 
     it('should respond to url changes', fakeAsync(() => {
@@ -186,7 +186,7 @@ describe('contacts report component', () => {
 
       expect(xmlFormsService.get.callCount).to.equal(1);
       expect(xmlFormsService.get.args[0][0]).to.equal('pregnancy_danger_sign');
-      expect(enketoService.render.callCount).to.equal(1);
+      expect(formService.render.callCount).to.equal(1);
 
       routeSnapshot = {
         params: {
@@ -200,7 +200,7 @@ describe('contacts report component', () => {
         formId: 'pregnancy_home_vist',
       });
       flush();
-      expect(enketoService.render.callCount).to.equal(2);
+      expect(formService.render.callCount).to.equal(2);
       expect(xmlFormsService.get.callCount).to.equal(2);
       expect(xmlFormsService.get.args[1][0]).to.equal('pregnancy_home_vist');
     }));
@@ -211,19 +211,19 @@ describe('contacts report component', () => {
       component.enketoSaving = true;
       await component.save();
 
-      expect(enketoService.save.callCount).to.equal(0);
+      expect(formService.save.callCount).to.equal(0);
     });
 
     it('should catch save errors', fakeAsync(() => {
       const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
-      enketoService.save.rejects({ some: 'error' });
+      formService.save.rejects({ some: 'error' });
       component.save();
       flush();
 
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
-      expect(enketoService.save.callCount).to.equal(1);
+      expect(formService.save.callCount).to.equal(1);
       expect(setEnketoError.callCount).to.equal(1);
     }));
 
@@ -231,13 +231,13 @@ describe('contacts report component', () => {
       const setEnketoSavingStatus = sinon.stub(GlobalActions.prototype, 'setEnketoSavingStatus');
       const setSnackbarContent = sinon.stub(GlobalActions.prototype, 'setSnackbarContent');
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
-      enketoService.save.resolves({ docs: 'success' });
+      formService.save.resolves({ docs: 'success' });
       component.save();
       flush();
 
       expect(setEnketoSavingStatus.callCount).to.equal(2);
       expect(setEnketoSavingStatus.args).to.deep.equal([[true], [false]]);
-      expect(enketoService.save.callCount).to.equal(1);
+      expect(formService.save.callCount).to.equal(1);
       expect(router.navigate.callCount).to.equal(1);
       expect(router.navigate.args[0][0][0]).to.equal('/contacts');
       expect(router.navigate.args[0][0][1]).to.equal('random-contact');
@@ -249,7 +249,7 @@ describe('contacts report component', () => {
 
     it('should set a form error if form is invalid', fakeAsync(() => {
       const setEnketoError = sinon.stub(GlobalActions.prototype, 'setEnketoError');
-      enketoService.save.rejects({ error: 'form is invalid' });
+      formService.save.rejects({ error: 'form is invalid' });
       component.save();
       flush();
 

@@ -16,5 +16,4 @@ angular.module('filters').filter('translateFrom',
     'use strict';
     'ngInject';
     return TranslateFrom;
-  }
-);
+  });

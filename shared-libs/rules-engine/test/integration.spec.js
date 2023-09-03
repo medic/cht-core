@@ -484,7 +484,8 @@ describe(`Rules Engine Integration Tests`, () => {
           { _id: 'pregReg2', fields: {
             lmp_date_8601: TEST_START, patient_id: patientContact2.patient_id
           }, reported_date: TEST_START+2
-          });
+          }
+        );
         await db.bulkDocs([patientContact, patientContact2, pregnancyRegistrationReport, pregnancyRegistrationReport2]);
 
         sinon.spy(db, 'bulkDocs');
@@ -517,7 +518,8 @@ describe(`Rules Engine Integration Tests`, () => {
             _id: '2nd-pregReg',
             fields: { lmp_date_8601: TEST_START, patient_id: patientContact._id, },
             reported_date: TEST_START + 2
-          });
+          }
+        );
         const pregnancyRegistrationReport3 = Object.assign(
           {},
           pregnancyRegistrationReport,
@@ -525,7 +527,8 @@ describe(`Rules Engine Integration Tests`, () => {
             _id: '3rd-pregReg',
             fields: { lmp_date_8601: TEST_START - 3, patient_id: patientContact.patient_id, },
             reported_date: TEST_START - 3
-          });
+          }
+        );
 
         await db.bulkDocs([
           patientContact,

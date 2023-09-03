@@ -1,21 +1,21 @@
 import { Component } from '@angular/core';
-import { BsModalRef } from 'ngx-bootstrap/modal';
-
-import { MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'reloading-modal',
   templateUrl: './reloading.component.html'
 })
-export class ReloadingComponent extends MmModalAbstract {
-  constructor(bsModalRef: BsModalRef) {
-    super(bsModalRef);
-  }
-
+export class ReloadingComponent {
   static id = 'reloading-modal';
 
+  constructor(private matDialogRef: MatDialogRef<ReloadingComponent>) { }
+
+  close(reload = false) {
+    this.matDialogRef.close(reload);
+  }
+
   submit() {
-    this.close();
+    this.close(true);
     window.location.reload();
   }
 }

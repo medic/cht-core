@@ -13,7 +13,7 @@ import { Selectors } from '@mm-selectors/index';
 import { GeolocationService } from '@mm-services/geolocation.service';
 import { GlobalActions } from '@mm-actions/global';
 import { ReportsActions } from '@mm-actions/reports';
-import { EnketoService } from '@mm-services/enketo.service';
+import { FormService } from '@mm-services/form.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
 import { TranslateService } from '@mm-services/translate.service';
 
@@ -32,7 +32,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     private getReportContentService:GetReportContentService,
     private lineageModelGeneratorService:LineageModelGeneratorService,
     private xmlFormsService:XmlFormsService,
-    private enketoService:EnketoService,
+    private formService:FormService,
     private translateService:TranslateService,
     private router:Router,
     private route:ActivatedRoute,
@@ -194,7 +194,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private renderForm(form, reportContent, model) {
-    return this.enketoService
+    return this.formService
       .render(
         '#report-form',
         form,
@@ -218,7 +218,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
 
         this.telemetryService.record(
           `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:render`,
-          this.telemetryData.postRender - this.telemetryData.preRender);
+          this.telemetryData.postRender - this.telemetryData.preRender
+        );
       })
       .catch((err) => {
         this.setError(err);
@@ -243,7 +244,7 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     // see https://github.com/angular/angular/blob/10.2.x/packages/router/src/operators/activate_routes.ts#L37
     // for Angular behavior
     // see https://github.com/medic/cht-core/issues/2198#issuecomment-210202785 for AngularJS behavior
-    this.enketoService.unload(this.form);
+    this.formService.unload(this.form);
     this.globalActions.clearNavigation();
     this.globalActions.clearEnketoStatus();
   }
@@ -291,14 +292,15 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
     this.telemetryData.preSave = Date.now();
     this.telemetryService.record(
       `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:user_edit_time`,
-      this.telemetryData.preSave - this.telemetryData.postRender);
+      this.telemetryData.preSave - this.telemetryData.postRender
+    );
 
     this.globalActions.setEnketoSavingStatus(true);
     this.resetFormError();
     const reportId = this.selectedReport?.doc?._id;
     const formInternalId = this.selectedReport?.formInternalId;
 
-    return this.enketoService
+    return this.formService
       .save(formInternalId, this.form, this.geoHandle, reportId)
       .then((docs) => {
         console.debug('saved report and associated docs', docs);
@@ -311,7 +313,8 @@ export class ReportsAddComponent implements OnInit, OnDestroy, AfterViewInit {
         this.telemetryData.postSave = Date.now();
         this.telemetryService.record(
           `enketo:reports:${this.telemetryData.form}:${this.telemetryData.action}:save`,
-          this.telemetryData.postSave - this.telemetryData.preSave);
+          this.telemetryData.postSave - this.telemetryData.preSave
+        );
       })
       .catch((err) => {
         this.globalActions.setEnketoSavingStatus(false);

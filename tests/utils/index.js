@@ -205,7 +205,7 @@ const formDocProcessing = async (docs) => {
   const waitForForms = await Promise.all(formsWatchers);
 
   return {
-    promise:() => Promise.all(waitForForms.map(wait => wait.promise)),
+    promise: () => Promise.all(waitForForms.map(wait => wait.promise)),
     cancel: () => waitForForms.forEach(wait => wait.cancel),
   };
 };
@@ -380,8 +380,7 @@ const deleteAllDocs = (except) => {
             _rev: doc._rev,
             _deleted: true,
           };
-        })
-    )
+        }))
     .then(toDelete => {
       const ids = toDelete.map(doc => doc._id);
       if (e2eDebug) {
@@ -600,7 +599,7 @@ const revertDb = async (except, ignoreRefresh) => {
     watcher && watcher.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
-    await watcher && watcher.promise;
+    await watcher && watcher.promise; // NOSONAR
   } else {
     watcher && watcher.cancel();
   }
@@ -1072,7 +1071,7 @@ const waitForDockerLogs = (container, ...regex) => {
       console.log('Found logs', logs, 'watched for', ...regex);
       reject(new Error('Timed out looking for details in logs.'));
       killSpawnedProcess(proc);
-    }, 6000);
+    }, 10000);
 
     const checkOutput = (data) => {
       if (!firstLine) {
@@ -1197,7 +1196,7 @@ const getContainerName = (service, project = PROJECT_NAME) => {
   return `${project}${separator}${service}${separator}1`;
 };
 
-const updatePermissions = async (roles, addPermissions, removePermissions = []) => {
+const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
   const settings = await getSettings();
   addPermissions.forEach(permission => {
     if (!settings.permissions[permission]) {
@@ -1206,10 +1205,8 @@ const updatePermissions = async (roles, addPermissions, removePermissions = []) 
     settings.permissions[permission].push(...roles);
   });
 
-  removePermissions.forEach(permission => {
-    settings.permissions[permission] = [];
-  });
-  await updateSettings({ permissions: settings.permissions }, true);
+  (removePermissions || []).forEach(permission => settings.permissions[permission] = []);
+  await updateSettings({ permissions: settings.permissions }, ignoreReload);
 };
 
 module.exports = {

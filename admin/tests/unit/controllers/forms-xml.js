@@ -55,7 +55,7 @@ describe('FormsXmlCtrl controller', () => {
           AddAttachment,
           FileReader: { utf8: utf8Stub },
           JsonParse: JSON.parse,
-          ValidateForm: validateFormStub || sinon.stub().resolves({ok:true})
+          ValidateForm: validateFormStub || sinon.stub().resolves({ok: true})
         });
       };
     });
@@ -118,7 +118,8 @@ describe('FormsXmlCtrl controller', () => {
         .then(() => {
           expectStatusError(
             'Upload failed: No &lt;meta&gt;&lt;instanceID/&gt;&lt;/meta&gt; ' +
-            'node found for first child of &lt;instance&gt; element.');
+            'node found for first child of &lt;instance&gt; element.'
+          );
         });
     });
 
@@ -131,7 +132,8 @@ describe('FormsXmlCtrl controller', () => {
         .then(() => digest())
         .then(() => {
           expectStatusError(
-            'Upload failed: No ID attribute found for first child of &lt;instance&gt; element.');
+            'Upload failed: No ID attribute found for first child of &lt;instance&gt; element.'
+          );
         });
     });
 
@@ -140,7 +142,8 @@ describe('FormsXmlCtrl controller', () => {
       mockMetaUploader(['file.json']);
       createController(
         '<instance><data id="contact:clinic:edit"><meta><instanceID/></meta></data></instance>',
-        '{"internalId":"another:id"}');
+        '{"internalId":"another:id"}'
+      );
       return scope
         .upload()
         .then(() => digest())
@@ -158,7 +161,8 @@ describe('FormsXmlCtrl controller', () => {
       mockMetaUploader(['file.json']);
       createController(
         '<instance><data id="contact:clinic:edit"><meta////><instanceID/></meta></data></instance>',
-        '{"internalId":"contact:clinic:edit"}');
+        '{"internalId":"contact:clinic:edit"}'
+      );
       return scope
         .upload()
         .then(() => digest())
@@ -172,7 +176,8 @@ describe('FormsXmlCtrl controller', () => {
       mockMetaUploader(['file.json']);
       createController(
         '<instance><data id="contact:clinic:edit"><meta/><instanceID/></meta></data></instance>',
-        'not a valid JSON file');
+        'not a valid JSON file'
+      );
       return scope
         .upload()
         .then(() => digest())
@@ -203,7 +208,8 @@ describe('FormsXmlCtrl controller', () => {
       mockFormUploader(['file.xml']);
       mockMetaUploader(['file.json']);
       createController(
-        '<instance><data id="contact:clinic:edit"><meta><instanceID/></meta></data></instance>');
+        '<instance><data id="contact:clinic:edit"><meta><instanceID/></meta></data></instance>'
+      );
       return scope
         .upload()
         .then(() => digest())

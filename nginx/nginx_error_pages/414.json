@@ -1,0 +1,5 @@
+{
+  "type": "ERROR",
+  "error": "414 Request-URI Too Large",
+  "server": "nginx"
+}

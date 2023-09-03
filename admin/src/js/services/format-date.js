@@ -115,7 +115,6 @@ const moment = require('moment');
           return format(date, 'time');
         }
       };
-    }
-  );
+    });
 
 }());

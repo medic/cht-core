@@ -10,7 +10,7 @@ import { ChangesService } from '@mm-services/changes.service';
 import { MessageContactService } from '@mm-services/message-contact.service';
 import { RelativeDatePipe } from '@mm-pipes/date.pipe';
 import { SettingsService } from '@mm-services/settings.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { NavigationComponent } from '@mm-components/navigation/navigation.component';
 import { NavigationService } from '@mm-services/navigation.service';
 import { UserContactService } from '@mm-services/user-contact.service';
@@ -133,7 +133,6 @@ describe('Messages Component', () => {
 
   it('should update fast actions', async () => {
     sinon.resetHistory();
-    modalService.show.resolves();
     messageContactService.getList.resolves([
       { key: 'a', message: { inAllMessages: true } },
       { key: 'c', message: { inAllMessages: true } },
@@ -231,19 +230,19 @@ describe('Messages Component', () => {
     const conversations =  [
       { key: 'a',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null]
+        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'CHW Bettys Area', null]
       },
       { key: 'b',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
       },
       { key: 'c',
         message: { inAllMessages: true },
-        lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place', null, null]
+        lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place', null, null]
       },
       { key: 'd',
         message: { inAllMessages: true },
-        lineage : []
+        lineage: []
       },
       { key: 'e',
         message: { inAllMessages: true },
@@ -291,19 +290,19 @@ describe('Messages Component', () => {
         const updatedConversations = [
           { key: 'a',
             message: { inAllMessages: true },
-            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
           },
           { key: 'b',
             message: { inAllMessages: true },
-            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
+            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village']
           },
           { key: 'c',
             message: { inAllMessages: true },
-            lineage : [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
+            lineage: [ 'Amy Johnsons Household', 'St Elmos Concession', 'Chattanooga Village', 'Ramdom Place']
           },
           { key: 'd',
             message: { inAllMessages: true },
-            lineage : []
+            lineage: []
           },
           { key: 'e',
             message: { inAllMessages: true },

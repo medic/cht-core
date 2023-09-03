@@ -496,10 +496,12 @@ describe('outbound shared library', () => {
       // Simple reordering tests
       assert.equal(
         outbound.__get__('hash')({b: 'b', a: 'a'}),
-        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3'
+      );
       assert.equal(
         outbound.__get__('hash')({a: 'a', b: 'b'}),
-        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3'
+      );
 
       // Recursive reordering tests
       assert.equal(outbound.__get__('hash')({
@@ -529,30 +531,35 @@ describe('outbound shared library', () => {
       builtOrderOne.a = 'a';
       assert.equal(
         outbound.__get__('hash')(builtOrderOne),
-        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3'
+      );
 
       const builtOrderTwo = {};
       builtOrderTwo.a = 'a';
       builtOrderTwo.b = 'b';
       assert.equal(
         outbound.__get__('hash')(builtOrderTwo),
-        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3');
+        '5b6fc73120d59ff048925bd03a11d53e1b1837a0f637569716a97a1ca96891b3'
+      );
     });
 
     it('preserves array item ordering', () => {
       assert.equal(
         outbound.__get__('hash')({foos: ['b', 'a']}),
-        '379ad62f0fe91c34ef9d3dcc7302990fdb31bbeee7862a2718e5358dd7c8d152');
+        '379ad62f0fe91c34ef9d3dcc7302990fdb31bbeee7862a2718e5358dd7c8d152'
+      );
 
       assert.equal(
         outbound.__get__('hash')({foos: ['a', 'b']}),
-        '34b5f1c4698211dcbee90707ac204c80e90cc581e590ede5c530a7a0df05f9dc');
+        '34b5f1c4698211dcbee90707ac204c80e90cc581e590ede5c530a7a0df05f9dc'
+      );
     });
 
     it('doesnt mess up numbers or dates', () => {
       assert.equal(
         outbound.__get__('orderedStringify')({blah: new Date(Date.UTC(2020, 1, 1))}),
-        '{"blah":"2020-02-01T00:00:00.000Z"}');
+        '{"blah":"2020-02-01T00:00:00.000Z"}'
+      );
     });
   });
 });

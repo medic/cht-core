@@ -7,7 +7,7 @@ import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { TrainingCardsComponent } from '@mm-modals/training-cards/training-cards.component';
 import { DbService } from '@mm-services/db.service';
 import { GlobalActions } from '@mm-actions/global';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
 import { FeedbackService } from '@mm-services/feedback.service';
@@ -102,9 +102,7 @@ export class TrainingCardsService {
       }
 
       this.globalActions.setTrainingCardFormId(firstChronologicalTrainingCard.code);
-      this.modalService
-        .show(TrainingCardsComponent, { backdrop: 'static', keyboard: false })
-        .catch(() => {});
+      this.modalService.show(TrainingCardsComponent);
 
     } catch (error) {
       const message = 'Training Cards :: Error showing modal.';

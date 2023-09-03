@@ -31,7 +31,7 @@
     "http-proxy": "^1.18.1",
     "later": "^1.2.0",
     "locale": "^0.1.0",
-    "lodash": "4.17.19",
+    "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "morgan": "^1.10.0",
     "mustache": "^4.2.0",

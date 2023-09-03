@@ -77,8 +77,7 @@ const findToClear = (registration, reported_date, config) => {
     return tasksUnderReview.filter(({ group, type, state }) =>
       hasGroupAndType(groupTypeCombosToClear, [group, type]) &&
       // only clear tasks that are in a clearable state!
-      statesToClear.includes(state)
-    );
+      statesToClear.includes(state));
   }
 };
 
@@ -110,8 +109,7 @@ const _silenceReminders = (registration, report, config) => {
 const addRegistrationToDoc = (doc, registrations) => {
   if (registrations.length) {
     const latest = _.maxBy(registrations, registration =>
-      moment(registration.reported_date)
-    );
+      moment(registration.reported_date));
     doc.registration_id = latest._id;
   }
 };

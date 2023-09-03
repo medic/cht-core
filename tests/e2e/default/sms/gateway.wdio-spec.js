@@ -98,8 +98,7 @@ describe('sms-gateway api', () => {
     beforeEach(async () => {
       reportWithTwoMessagesToSend = smsPregancy.pregnancy().build();
       // First scheduled message is in forwarded-to-gateway state.
-      reportWithTwoMessagesToSend.scheduled_tasks[0].state =
-        'forwarded-to-gateway';
+      reportWithTwoMessagesToSend.scheduled_tasks[0].state = 'forwarded-to-gateway';
       reportWithTwoMessagesToSend.scheduled_tasks[0].state_history.push({
         state: 'forwarded-to-gateway',
         timestamp: '2016-08-05T02:24:48.569Z',
