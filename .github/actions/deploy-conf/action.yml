@@ -1,4 +1,4 @@
-name: 'Deploy with medic-conf'
+name: 'Deploy with cht-conf'
 inputs:
   directory:
     description: The path to the directory containing the configuration to be deployed.
