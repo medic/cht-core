@@ -1,0 +1,33 @@
+name: 'Deploy with medic-conf'
+inputs:
+  directory:
+    description: The path to the directory containing the configuration to be deployed.
+    required: true
+    default: '.'
+  
+  hostname:
+    description: The hostname of the instance to receive the configuration.
+    required: true
+
+  username:
+    description: The username of an administrator account on the instance at "inputs.hostname". This user will make the deployment.
+    required: true
+
+  password:
+    description: The password for user with name "inputs.username"
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+  - name: install dependencies
+    run: |
+        npm ci
+        pip install --user -U pip
+        sudo python -m pip install git+https://github.com/medic/pyxform.git@medic-conf-1.17#egg=pyxform-medic
+    shell: bash
+    working-directory: ${{ inputs.directory }}
+  - name: run cht
+    run: npx cht --url=https://${{ inputs.username }}:${{ inputs.password }}@${{ inputs.hostname }} compile-app-settings convert-app-forms convert-collect-forms convert-contact-forms upload-app-settings upload-app-forms upload-collect-forms upload-contact-forms upload-resources upload-custom-translations --force
+    shell: bash
+    working-directory: ${{ inputs.directory }}
