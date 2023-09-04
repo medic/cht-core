@@ -2,7 +2,7 @@
 The `deploy-conf` is a parameterised reusable GitHub action that deploys of CHT applications to a running CHT instance.
 
 ## CHT App Requirements
-* cht-conf@3.3 or above
+* cht-conf@3.7.0 or above
 
 ## Example GitHub Step
 
