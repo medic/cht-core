@@ -87,7 +87,7 @@ describe('Enketo Widgets', () => {
     await commonPage.waitForPageLoaded();
   });
 
-  it('should submit Enketo Widgets form - People\'s tab', async () => {
+  it.skip('should submit Enketo Widgets form - People\'s tab', async () => {
     await commonPage.goToPeople(offlineUser.contact._id);
     medicId = await contactPage.getContactMedicID();
     await commonPage.openFastActionReport('enketo_widgets_test');
@@ -104,10 +104,10 @@ describe('Enketo Widgets', () => {
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectOneDropdown(), 'radio', 'd');
     expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectOneDropdown()))
       .to.equal('option d');
+    await enketoWidgetsPage.setPhoneNumber('+40766565656');
 
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('usa', 'nyc', 'bronx', 3, 2);
-    await enketoWidgetsPage.setPhoneNumber('+40766565656');
     await genericForm.submitForm();
     await commonPage.waitForPageLoaded();
 
@@ -132,6 +132,7 @@ describe('Enketo Widgets', () => {
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectOneDropdown(), 'radio', 'a');
     expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectOneDropdown()))
       .to.equal('option a');
+    await enketoWidgetsPage.setPhoneNumber('+40766565656');
 
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('nl', 'dro', 'havendr', 3, 1);

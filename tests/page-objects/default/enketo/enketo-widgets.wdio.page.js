@@ -16,7 +16,7 @@ const patientUuid = () => $(`${FORM} input[name="/enketo_widgets/inputs/contact/
 const patientId = () => $(`${FORM} input[name="/enketo_widgets/inputs/contact/patient_id"]`);
 const patientName = () => $(`${FORM} input[name="/enketo_widgets/inputs/contact/name"]`);
 const patientNameErrorLabel = () => $(`${FORM} label.invalid-constraint`);
-const phoneField = () => $('input.ignore[type="tel"]:has(+ input[name="/enketo_widgets/phone_widget/phone"])');
+const phoneField = () => $('input.ignore[type="tel"]:has(+ input[name="/enketo_widgets/enketo_test_select/phone"])');
 
 const getFormTitle = async () => {
   const title = await formTitle();
