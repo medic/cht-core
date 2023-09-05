@@ -1,12 +1,10 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { BsModalRef } from 'ngx-bootstrap/modal';
+import { FormsModule } from '@angular/forms';
+import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import sinon from 'sinon';
 import { expect } from 'chai';
-import { FormsModule } from '@angular/forms';
-import { TranslateFakeLoader, TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { Subject } from 'rxjs';
 
-import { MmModal, MmModalAbstract } from '@mm-modals/mm-modal/mm-modal';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
 import { DeleteDocsService } from '@mm-services/delete-docs.service';
 import { TelemetryService } from '@mm-services/telemetry.service';
@@ -15,24 +13,15 @@ describe('BulkDeleteConfirmComponent', () => {
   let component: BulkDeleteConfirmComponent;
   let fixture: ComponentFixture<BulkDeleteConfirmComponent>;
   let deleteDocsService;
-  let bdModalRef;
-  let setProcessing;
-  let setFinished;
-  let setError;
   let telemetryService;
+  let matDialogRef;
+  let consoleErrorStub;
 
-  beforeEach(waitForAsync(() => {
-    bdModalRef = {
-      hide: sinon.stub(),
-      onHidden: new Subject(),
-      onHide: new Subject(),
-    };
+  beforeEach(() => {
     deleteDocsService = { delete: sinon.stub().resolves() };
     telemetryService = { record: sinon.stub() };
-
-    setProcessing = sinon.stub(MmModalAbstract.prototype, 'setProcessing');
-    setFinished = sinon.stub(MmModalAbstract.prototype, 'setFinished');
-    setError = sinon.stub(MmModalAbstract.prototype, 'setError');
+    matDialogRef = { close: sinon.stub() };
+    consoleErrorStub = sinon.stub(console, 'error');
 
     return TestBed
       .configureTestingModule({
@@ -40,14 +29,12 @@ describe('BulkDeleteConfirmComponent', () => {
           FormsModule,
           TranslateModule.forRoot({ loader: { provide: TranslateLoader, useClass: TranslateFakeLoader } }),
         ],
-        declarations: [
-          BulkDeleteConfirmComponent,
-          MmModal,
-        ],
+        declarations: [ BulkDeleteConfirmComponent ],
         providers: [
-          { provide: BsModalRef, useValue: bdModalRef },
           { provide: DeleteDocsService, useValue: deleteDocsService },
           { provide: TelemetryService, useValue: telemetryService },
+          { provide: MatDialogRef, useValue: matDialogRef },
+          { provide: MAT_DIALOG_DATA, useValue: {} },
         ]
       })
       .compileComponents()
@@ -56,111 +43,116 @@ describe('BulkDeleteConfirmComponent', () => {
         component = fixture.componentInstance;
         fixture.detectChanges();
       });
-  }));
-
-  afterEach(() => {
-    sinon.restore();
   });
+
+  afterEach(() => sinon.restore());
 
   it('should create', () => {
     expect(component).to.exist;
-    expect(component.deleteComplete).to.equal(false);
+    expect(component.processing).to.be.false;
   });
 
-  it('close() should call hide from BsModalRef', () => {
+  it('should close modal', () => {
     component.close();
 
-    expect(bdModalRef.hide.callCount).to.equal(1);
+    expect(matDialogRef.close.calledOnce).to.be.true;
   });
 
   describe('submit', () => {
-    it('should handle missing data', async() => {
-      component.model = {
-        docs: [],
-        type: '',
-      };
-      await component.submit();
-      expect(component.totalDocsSelected).to.equal(0);
-      expect(deleteDocsService.delete.callCount).to.equal(1);
-      expect(deleteDocsService.delete.args[0][0]).to.deep.equal([]);
-    });
+    it('should handle missing data', fakeAsync(() => {
+      sinon.resetHistory();
+      component.docs = [];
+      component.type = '';
 
-    it('should set correct properties and call delete service correctly', async () => {
-      component.model = {
-        docs: [
-          { _id: 'doc1', field: 1 },
-          { _id: 'doc2', field: 2 },
-          { _id: 'doc3', field: 3 },
-        ],
-        type: 'reports',
-      };
-      const promise = component.submit();
-      expect(setProcessing.callCount).to.equal(1);
-      expect(setFinished.callCount).to.equal(0);
+      component.submit(false);
+      flush();
+
+      expect(component.totalDocsSelected).to.equal(0);
+      expect(consoleErrorStub.notCalled).to.be.true;
+      expect(deleteDocsService.delete.calledOnce).to.be.true;
+      expect(deleteDocsService.delete.args[0][0]).to.deep.equal([]);
+    }));
+
+    it('should set correct properties and call delete service correctly', fakeAsync(() => {
+      sinon.resetHistory();
+      component.docs = [
+        { _id: 'doc1', field: 1 },
+        { _id: 'doc2', field: 2 },
+        { _id: 'doc3', field: 3 },
+      ];
+      component.type = 'reports';
+
+      component.submit(false);
+
+      expect(component.processing).to.be.true;
+      expect(telemetryService.record.notCalled).to.be.true;
       expect(component.totalDocsSelected).to.equal(3);
       expect(component.totalDocsDeleted).to.equal(0);
-      await promise;
-      expect(setProcessing.callCount).to.equal(1);
-      expect(setFinished.callCount).to.equal(1);
-      expect(setError.callCount).to.equal(0);
-      expect(deleteDocsService.delete.callCount).to.equal(1);
+
+      flush();
+
+      expect(component.processing).to.be.false;
+      expect(consoleErrorStub.notCalled).to.be.true;
+      expect(deleteDocsService.delete.calledOnce).to.be.true;
       expect(deleteDocsService.delete.args[0][0]).to.deep.equal([
         { _id: 'doc1', field: 1 },
         { _id: 'doc2', field: 2 },
         { _id: 'doc3', field: 3 },
       ]);
-      expect(component.deleteComplete).to.equal(true);
       expect(telemetryService.record.calledOnce).to.be.true;
       expect(telemetryService.record.args[0]).to.have.members([ 'bulk_delete:reports', 3 ]);
-    });
+    }));
 
-    it('should catch deletion errors', async () => {
+    it('should catch deletion errors', fakeAsync(() => {
+      sinon.resetHistory();
       deleteDocsService.delete.rejects({ some: 'error' });
-      component.model = {
-        docs: [
-          { _id: 'doc1', field: 'a' },
-          { _id: 'doc2', field: 'b' },
-        ],
-        type: 'reports',
-      };
-      const promise = component.submit();
-      expect(setProcessing.callCount).to.equal(1);
-      expect(setFinished.callCount).to.equal(0);
+      component.docs = [
+        { _id: 'doc1', field: 'a' },
+        { _id: 'doc2', field: 'b' },
+      ];
+      component.type = 'reports';
+
+      component.submit(false);
+
+      expect(component.processing).to.be.true;
+      expect(telemetryService.record.notCalled).to.be.true;
       expect(component.totalDocsSelected).to.equal(2);
       expect(component.totalDocsDeleted).to.equal(0);
-      await promise;
-      expect(setProcessing.callCount).to.equal(1);
-      expect(setFinished.callCount).to.equal(0);
-      expect(setError.callCount).to.equal(1);
-      expect(setError.args[0]).to.deep.equal([
+
+      flush();
+
+      expect(component.processing).to.be.false;
+      expect(consoleErrorStub.calledOnce).to.be.true;
+      expect(consoleErrorStub.args[0]).to.deep.equal([
+        'Error deleting document',
         { some: 'error' },
-        'Error deleting document'
       ]);
-      expect(deleteDocsService.delete.callCount).to.equal(1);
+      expect(deleteDocsService.delete.calledOnce).to.be.true;
       expect(deleteDocsService.delete.args[0][0]).to.deep.equal([
         { _id: 'doc1', field: 'a' },
         { _id: 'doc2', field: 'b' },
       ]);
-      expect(component.deleteComplete).to.equal(false);
       expect(telemetryService.record.notCalled).to.be.true;
-    });
+    }));
 
-    it('progress callback should work correctly', async () => {
-      component.model = {
-        docs: [
-          { _id: 'doc1', field: 'a' },
-          { _id: 'doc2', field: 'b' },
-        ],
-        type: 'reports',
-      };
-      const promise = component.submit();
+    it('should work correctly when progressing callback', fakeAsync(() => {
+      sinon.resetHistory();
+      component.docs = [
+        { _id: 'doc1', field: 'a' },
+        { _id: 'doc2', field: 'b' },
+      ];
+      component.type = 'reports';
+
+      component.submit(false);
       const callback = deleteDocsService.delete.args[0][1].progress;
+
       expect(component.totalDocsDeleted).to.equal(0);
       callback(10);
       expect(component.totalDocsDeleted).to.equal(10);
       callback(21);
       expect(component.totalDocsDeleted).to.equal(21);
-      await promise;
-    });
+
+      flush();
+    }));
   });
 });

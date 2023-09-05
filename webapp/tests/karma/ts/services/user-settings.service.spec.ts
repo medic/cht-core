@@ -6,20 +6,24 @@ import { UserSettingsService } from '@mm-services/user-settings.service';
 import { DbService } from '@mm-services/db.service';
 import { SessionService } from '@mm-services/session.service';
 import { ChangesService } from '@mm-services/changes.service';
+import { LanguageService } from '@mm-services/language.service';
 
 describe('UserSettings service', () => {
   let service:UserSettingsService;
   let get;
   let userCtx;
   let changesCallback;
+  let getLanguage;
 
   beforeEach(() => {
     userCtx = sinon.stub();
     get = sinon.stub();
+    getLanguage = sinon.stub();
 
     TestBed.configureTestingModule({
       providers: [
         { provide: ChangesService, useValue: { subscribe: (options) => changesCallback = options.callback } },
+        { provide: LanguageService, useValue: { get: getLanguage } },
         { provide: SessionService, useValue: { userCtx } },
         { provide: DbService, useValue: { get: () => ({ get }) } },
       ],
@@ -52,6 +56,21 @@ describe('UserSettings service', () => {
       expect(userCtx.callCount).to.equal(2);
       expect(get.callCount).to.equal(1);
       expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+      expect(getLanguage.callCount).to.equal(0);
+    });
+  });
+
+  it('get with language', () => {
+    userCtx.returns({ name: 'jack' });
+    get.returns(Promise.resolve({ id: 'j' }));
+    getLanguage.resolves('en');
+    return service.getWithLanguage().then((actual:any) => {
+      expect(actual.id).to.equal('j');
+      expect(actual.language).to.equal('en');
+      expect(userCtx.callCount).to.equal(2);
+      expect(get.callCount).to.equal(1);
+      expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
+      expect(getLanguage.callCount).to.equal(1);
     });
   });
 

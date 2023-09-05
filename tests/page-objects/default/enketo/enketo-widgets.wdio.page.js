@@ -12,6 +12,10 @@ const neighborhoodRadio = (value) => $(FORM +
 const countryDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/country2"]`);
 const cityDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/city2"]`);
 const neighborhoodDropdown = () => $(`${FORM} select[name="/enketo_widgets/cascading_widgets/group2/neighborhood2"]`);
+const patientUuid = () => $(`${FORM} input[name="/enketo_widgets/inputs/contact/_id"]`);
+const patientId = () => $(`${FORM} input[name="/enketo_widgets/inputs/contact/patient_id"]`);
+const patientName = () => $(`${FORM} input[name="/enketo_widgets/inputs/contact/name"]`);
+const patientNameErrorLabel = () => $(`${FORM} label.invalid-constraint`);
 const phoneField = () => $('input.ignore[type="tel"]:has(+ input[name="/enketo_widgets/phone_widget/phone"])');
 
 const getFormTitle = async () => {
@@ -64,6 +68,24 @@ const selectDropdownOptions = async (element, type, value) => {
   await dropdownOption.click();
 };
 
+const setPatientUuid = async (value = '123 456 789') => {
+  const uuid = await patientUuid();
+  await uuid.waitForDisplayed();
+  await uuid.setValue(value);
+};
+
+const setPatientId = async (value = '12345') => {
+  const id = await patientId();
+  await id.waitForDisplayed();
+  await id.setValue(value);
+};
+
+const setPatientName = async (value = 'Emilio') => {
+  const name = await patientName();
+  await name.waitForDisplayed();
+  await name.setValue(value);
+};
+
 const setPhoneNumber = async (value) => {
   await (await phoneField()).addValue(value);
 };
@@ -82,5 +104,9 @@ module.exports = {
   getDropdownValue,
   getDropdownTotalOptions,
   selectDropdownOptions,
+  setPatientUuid,
+  setPatientId,
+  setPatientName,
+  patientNameErrorLabel,
   setPhoneNumber,
 };

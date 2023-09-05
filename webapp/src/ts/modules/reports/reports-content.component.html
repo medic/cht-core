@@ -73,7 +73,7 @@
                 <span *ngIf="field?.target?.filter" [attr.test-id]="field?.label" [class.disabled]="selectMode">
                   <a (click)="search(field.target.filter)">{{field.value}}</a>
                 </span>
-                <span *ngIf="field?.target?.url">
+                <span [attr.test-id]="'value'" *ngIf="field?.target?.url">
                   <a [routerLink]="field.target.url">{{field.value}}</a>
                 </span>
                 <span [attr.test-id]="'value'" *ngIf="!field.target">{{field.value}}</span>
