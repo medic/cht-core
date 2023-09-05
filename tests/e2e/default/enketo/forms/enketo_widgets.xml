@@ -5,12 +5,6 @@
     <model>
       <itext>
         <translation lang="en">
-          <text id="/enketo_widgets/phone_widget/phone:label">
-            <value>Phone number</value>
-          </text>
-          <text id="/enketo_widgets/phone_widget:label">
-            <value>Phone widget</value>
-          </text>
           <text id="/enketo_widgets/cascading_widgets/group1/city:label">
             <value>City</value>
           </text>
@@ -49,6 +43,12 @@
           </text>
           <text id="/enketo_widgets/cascading_widgets:label">
             <value>Cascading Select widgets</value>
+          </text>
+          <text id="/enketo_widgets/enketo_test_select/phone:jr:constraintMsg">
+            <value>Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678</value>
+          </text>
+          <text id="/enketo_widgets/enketo_test_select/phone:label">
+            <value>Phone Number</value>
           </text>
           <text id="/enketo_widgets/enketo_test_select/select1_spinner/a:label">
             <value>option a</value>
@@ -177,6 +177,7 @@
           <enketo_test_select>
             <select_spinner/>
             <select1_spinner/>
+            <phone/>
           </enketo_test_select>
           <cascading_widgets>
             <group1>
@@ -342,6 +343,7 @@
       </instance>
       <bind nodeset="/enketo_widgets/enketo_test_select/select_spinner" type="select"/>
       <bind nodeset="/enketo_widgets/enketo_test_select/select1_spinner" type="select1"/>
+      <bind constraint="true()" jr:constraintMsg="jr:itext('/enketo_widgets/enketo_test_select/phone:jr:constraintMsg')" nodeset="/enketo_widgets/enketo_test_select/phone" required="true()" type="tel"/>
       <bind nodeset="/enketo_widgets/cascading_widgets/group1/country" type="select1"/>
       <bind nodeset="/enketo_widgets/cascading_widgets/group1/city" type="select1"/>
       <bind nodeset="/enketo_widgets/cascading_widgets/group1/neighborhood" type="select1"/>
@@ -404,6 +406,9 @@
           <value>d</value>
         </item>
       </select1>
+      <input ref="/enketo_widgets/enketo_test_select/phone">
+        <label ref="jr:itext('/enketo_widgets/enketo_test_select/phone:label')"/>
+      </input>
     </group>
     <group appearance="field-list" ref="/enketo_widgets/cascading_widgets">
       <label ref="jr:itext('/enketo_widgets/cascading_widgets:label')"/>
@@ -467,20 +472,6 @@
             <label ref="jr:itext(itextId)"/>
           </itemset>
         </select1>
-      </group>
-    </group>
-    <group appearance="field-list" ref="/enketo_widgets/inputs">
-      <label ref="jr:itext('/enketo_widgets/inputs:label')"/>
-      <group ref="/enketo_widgets/inputs/contact">
-        <input ref="/enketo_widgets/inputs/contact/_id">
-          <label ref="jr:itext('/enketo_widgets/inputs/contact/_id:label')"/>
-        </input>
-        <input ref="/enketo_widgets/inputs/contact/patient_id">
-          <label ref="jr:itext('/enketo_widgets/inputs/contact/patient_id:label')"/>
-        </input>
-        <input ref="/enketo_widgets/inputs/contact/name">
-          <label ref="jr:itext('/enketo_widgets/inputs/contact/name:label')"/>
-        </input>
       </group>
     </group>
   </h:body>
