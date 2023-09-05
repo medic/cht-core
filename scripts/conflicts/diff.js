@@ -38,11 +38,11 @@ const createDirectoryIfValid = (conflictDirectoryPath) => {
     try {
       fs.mkdirSync(conflictDirectoryPath);     
       return;
-    } catch(err){
+    } catch (err){
       console.error('Error when creating conflict folder', err);
     }   
   }
-  if(!isDiectoryEmpty(conflictDirectoryPath)){
+  if (!isDiectoryEmpty(conflictDirectoryPath)){
     console.error('Conflict Directory is not empty, exiting');
     process.exit();
   } 

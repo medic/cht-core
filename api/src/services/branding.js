@@ -13,7 +13,7 @@ const getInlineImage = ({ data, contentType }) => `data:${contentType};base64,${
 const getBrandingDoc = async () => {
   try {
     return await db.medic.get('branding', { attachments: true });
-  } catch(e) {
+  } catch (e) {
     logger.warn('Could not find branding doc on CouchDB: %o', e);
     return;
   }

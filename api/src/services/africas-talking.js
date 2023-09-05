@@ -77,7 +77,7 @@ const getUrl = sandbox => {
 const parseResponseBody = body => {
   try {
     return JSON.parse(body);
-  } catch(e) {
+  } catch (e) {
     return;
   }
 };

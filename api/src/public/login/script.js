@@ -175,7 +175,7 @@ const getUserCtx = function() {
   if (cookie) {
     try {
       return JSON.parse(decodeURIComponent(cookie));
-    } catch(e) {
+    } catch (e) {
       console.error('Error parsing cookie', e);
     }
   }
