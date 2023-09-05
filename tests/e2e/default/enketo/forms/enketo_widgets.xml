@@ -474,5 +474,19 @@
         </select1>
       </group>
     </group>
+    <group appearance="field-list" ref="/enketo_widgets/inputs">
+      <label ref="jr:itext('/enketo_widgets/inputs:label')"/>
+      <group ref="/enketo_widgets/inputs/contact">
+        <input ref="/enketo_widgets/inputs/contact/_id">
+          <label ref="jr:itext('/enketo_widgets/inputs/contact/_id:label')"/>
+        </input>
+        <input ref="/enketo_widgets/inputs/contact/patient_id">
+          <label ref="jr:itext('/enketo_widgets/inputs/contact/patient_id:label')"/>
+        </input>
+        <input ref="/enketo_widgets/inputs/contact/name">
+          <label ref="jr:itext('/enketo_widgets/inputs/contact/name:label')"/>
+        </input>
+      </group>
+    </group>
   </h:body>
 </h:html>
