@@ -1,8 +1,10 @@
-const packageJson = require('../../package.json');
-const path = require('path');
 const fs = require('fs');
+const spawn = require('child_process').spawn;
+const path = require('path');
 const rpn = require('request-promise-native');
 const mustache = require('mustache');
+
+const packageJson = require('../../package.json');
 const versions = require('./versions');
 
 const {
@@ -12,8 +14,10 @@ const {
   BUILD_NUMBER,
   API_PORT,
   ECR_PUBLIC_REPO,
+  INTERNAL_CONTRIBUTOR
 } = process.env;
 const DEFAULT_API_PORT = 5988;
+const MODULES = ['webapp', 'api', 'sentinel', 'admin'];
 
 const buildPath = path.resolve(__dirname, '..', '..', 'build');
 const stagingPath = path.resolve(buildPath, 'staging');
@@ -42,7 +46,7 @@ const setBuildInfo = () => {
   fs.writeFileSync(path.resolve(buildInfoPath, 'version'), releaseName);
   fs.writeFileSync(path.resolve(buildInfoPath, 'base_version'), packageJson.version);
   fs.writeFileSync(path.resolve(buildInfoPath, 'time'), new Date().toISOString());
-  fs.writeFileSync(path.resolve(buildInfoPath, 'author'), `grunt on ${process.env.USER}`);
+  fs.writeFileSync(path.resolve(buildInfoPath, 'author'), `npm on ${process.env.USER}`);
 
   const buildVersionPath = path.resolve(ddocsBuildPath, 'medic-db', 'medic', 'version');
   fs.copyFileSync(buildVersionPath, path.resolve(buildInfoPath, 'build'));
@@ -186,12 +190,82 @@ const setDdocsVersion = () => {
   });
 };
 
+const exec = async (command, args, options=({})) => {
+  options.stdio = 'inherit';
+  const ci = spawn(command, args, options);
+  await new Promise((resolve, reject) => {
+    ci.on('close', (code) => {
+      if (code === 0) {
+        return resolve();
+      }
+      return reject(`${command} exited with ${code}`);
+    }); 
+  });
+};
+
+const npmCiModules = async () => {
+  for (const cwd of MODULES) {
+    console.log(`\n\nRunning "npm ci" on ${cwd}\n\n`);
+    await exec('npm', ['ci'], { cwd });
+  }
+};
+
+const buildServiceImages = async () => {
+  for (const service of versions.SERVICES) {
+    console.log(`\n\nBuilding docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('npm', ['ci', '--omit=dev'], { cwd: service });
+    await exec('npm', ['dedupe'], { cwd: service });
+    await exec('docker', ['build', '-f', `./${service}/Dockerfile`, '--tag', tag, '.']);
+  }
+};
+
+const buildImages = async () => {
+  for (const service of versions.INFRASTRUCTURE) {
+    console.log(`\n\nBuilding docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('docker', ['build', '-f', `./Dockerfile`, '--tag', tag, '.'], { cwd: service });
+  }
+};
+
+const saveServiceImages = async () => {
+  for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
+    console.log(`\n\nSaving docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('docker', ['save', tag, '-o', `images/${service}.tar`]);
+  }
+};
+
+const pushServiceImages = async () => {
+  for (const service of [...versions.SERVICES, ...versions.INFRASTRUCTURE]) {
+    console.log(`\n\nPushing docker image for ${service}\n\n`);
+    const tag = versions.getImageTag(service);
+    await exec('docker', ['push', tag]);
+  }
+};
+
+const publishServiceImages = async () => {
+  if (!BUILD_NUMBER) {
+    return;
+  }
+
+  if (INTERNAL_CONTRIBUTOR) {
+    return await pushServiceImages();
+  }
+  return await saveServiceImages();
+};
 
 module.exports = {
-  setDdocsVersion,
-  setBuildInfo,
   createStagingDoc,
-  populateStagingDoc,
-  updateServiceWorker,
   localDockerComposeFiles,
+  npmCiModules,
+  populateStagingDoc,
+  setBuildInfo,
+  setDdocsVersion,
+  updateServiceWorker,
+  buildServiceImages,
+  buildImages,
+  saveServiceImages,
+  pushServiceImages,
+  publishServiceImages
 };

@@ -10,7 +10,7 @@ import { ReportsActions } from '@mm-actions/reports';
 import { ChangesService } from '@mm-services/changes.service';
 import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { MessageStateService } from '@mm-services/message-state.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
@@ -217,11 +217,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
       reportContentType: selectedReportDoc.content_type,
       communicationContext: {
         sendTo: await this.getReportContact(selectedReportDoc.contact._id),
-        callbackOpenSendMessage: (sendTo) => {
-          this.modalService
-            .show(SendMessageComponent, { initialState: { fields: { to: sendTo } } })
-            .catch(() => {});
-        },
+        callbackOpenSendMessage: (sendTo) => this.modalService.show(SendMessageComponent, { data: { to: sendTo } }),
       },
     });
   }
@@ -235,12 +231,7 @@ export class ReportsContentComponent implements OnInit, OnDestroy {
   }
 
   edit(report, group) {
-    return this.modalService
-      .show(
-        EditMessageGroupComponent,
-        { initialState: { model: { report, group: _.cloneDeep(group) } } },
-      )
-      .catch(() => {});
+    return this.modalService.show(EditMessageGroupComponent, { data: { report, group: _.cloneDeep(group) } });
   }
 
   isMobile() {

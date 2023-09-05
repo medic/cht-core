@@ -14,7 +14,7 @@ import { SearchFiltersService } from '@mm-services/search-filters.service';
 import { ReportsActions } from '@mm-actions/reports';
 import { GlobalActions } from '@mm-actions/global';
 import { MessageStateService } from '@mm-services/message-state.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { EditMessageGroupComponent } from '@mm-modals/edit-message-group/edit-message-group.component';
 import { ResponsiveService } from '@mm-services/responsive.service';
 import { FormIconPipe } from '@mm-pipes/form-icon.pipe';
@@ -57,7 +57,7 @@ describe('Reports Content Component', () => {
     fastActionButtonService = { getReportRightSideActions: sinon.stub() };
     medicDb = { get: sinon.stub().resolves() };
     dbService = { get: sinon.stub().returns(medicDb) };
-    modalService = { show: sinon.stub().resolves() };
+    modalService = { show: sinon.stub() };
 
     return TestBed
       .configureTestingModule({
@@ -315,9 +315,9 @@ describe('Reports Content Component', () => {
       expect(modalService.show.callCount).to.equal(1);
       expect(modalService.show.args[0]).to.deep.equal([
         EditMessageGroupComponent,
-        { initialState: { model: { report, group } } },
+        { data: { report, group } },
       ]);
-      expect(modalService.show.args[0][1].initialState.model.group).to.not.equal(group);
+      expect(modalService.show.args[0][1].data.group).to.not.equal(group);
     });
   });
 
@@ -417,7 +417,7 @@ describe('Reports Content Component', () => {
       expect(modalService.show.calledOnce).to.be.true;
       expect(modalService.show.args[0]).to.have.deep.members([
         SendMessageComponent,
-        { initialState: { fields: { to: contactWithPhone } } },
+        { data: { to: contactWithPhone } },
       ]);
     }));
 

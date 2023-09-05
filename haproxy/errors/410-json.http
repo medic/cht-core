@@ -1,0 +1,10 @@
+HTTP/1.1 410 Gone
+Content-length: 131
+Cache-Control: no-cache
+Content-Type: application/json
+
+{
+  "error": "410 Gone",
+  "reason": "The resource is no longer available and will not be available again",
+  "server": "haproxy"
+}

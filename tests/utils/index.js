@@ -599,7 +599,7 @@ const revertDb = async (except, ignoreRefresh) => {
     watcher && watcher.cancel();
     await commonElements.closeReloadModal(true);
   } else if (needsRefresh) {
-    await watcher && watcher.promise;
+    await watcher && watcher.promise; // NOSONAR
   } else {
     watcher && watcher.cancel();
   }
@@ -1196,7 +1196,7 @@ const getContainerName = (service, project = PROJECT_NAME) => {
   return `${project}${separator}${service}${separator}1`;
 };
 
-const updatePermissions = async (roles, addPermissions, removePermissions = []) => {
+const updatePermissions = async (roles, addPermissions, removePermissions, ignoreReload) => {
   const settings = await getSettings();
   addPermissions.forEach(permission => {
     if (!settings.permissions[permission]) {
@@ -1205,10 +1205,8 @@ const updatePermissions = async (roles, addPermissions, removePermissions = []) 
     settings.permissions[permission].push(...roles);
   });
 
-  removePermissions.forEach(permission => {
-    settings.permissions[permission] = [];
-  });
-  await updateSettings({ permissions: settings.permissions }, true);
+  (removePermissions || []).forEach(permission => settings.permissions[permission] = []);
+  await updateSettings({ permissions: settings.permissions }, ignoreReload);
 };
 
 module.exports = {
