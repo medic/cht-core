@@ -38,19 +38,9 @@ const getContent = async (file) => {
   );`;
 };
 
-const mkdirIfDoesNotExist = async (path) => {
-  try {
-    await mkdir(path, { recursive: true });
-  } catch(e) {
-    if (e.code !== 'EEXIST') {
-      throw e;
-    }
-  }
-};
-
 (async () => {
   console.log(`Build angularjs template cache from "${TEMPLATE_DIR}" to "${OUTPUT_FILE}"`);
-  await mkdirIfDoesNotExist(OUTPUT_DIR);
+  await mkdir(OUTPUT_DIR, { recursive: true });
   await writePrefix();
   const files = await readdir(TEMPLATE_DIR);
   for (const file of files) {
