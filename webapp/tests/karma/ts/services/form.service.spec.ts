@@ -545,7 +545,7 @@ describe('Enketo service', () => {
         await service.render($('<div></div>'), mockEnketoDoc('myform'), data);
         flush();
         expect.fail('Should throw error');
-      } catch(error) {
+      } catch (error) {
         expect(error.message).to.equal('Failed during the form "myform" rendering : invalid user');
         expect(UserContact.calledOnce).to.be.true;
         expect(renderForm.notCalled).to.be.true;
