@@ -226,7 +226,7 @@ const saveDoc = async doc => {
   }
 };
 
-const saveDocs = async (docs, updateDocs = false) => {
+const saveDocs = async (docs) => {
   const waitForForms = await formDocProcessing(docs);
   const results = await requestOnTestDb({
     path: '/_bulk_docs',
@@ -239,10 +239,13 @@ const saveDocs = async (docs, updateDocs = false) => {
   }
 
   await waitForForms.promise();
-  if (!updateDocs) {
-    return results;
-  }
+  return results;
+};
+
+const saveDocsRevs = async(docs) => {
+  const results = await saveDocs(docs);
   results.forEach(({ rev }, idx) => docs[idx]._rev = rev);
+  return results;
 };
 
 const saveDocIfNotExists = async doc => {
@@ -1231,6 +1234,7 @@ module.exports = {
   requestOnMedicDb,
   saveDoc,
   saveDocs,
+  saveDocsRevs,
   saveDocIfNotExists,
   saveMetaDocs,
   getDoc,

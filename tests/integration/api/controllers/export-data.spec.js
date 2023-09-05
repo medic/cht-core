@@ -290,7 +290,7 @@ describe('Export Data V2.0', () => {
     ];
 
     before(async () => {
-      await utils.saveDocs(contacts, true);
+      await utils.saveDocsRevs(contacts);
       await utils.saveDocs(otherDocs);
     });
 
@@ -299,15 +299,15 @@ describe('Export Data V2.0', () => {
       const rows = getRows(result);
       const hardCodedPerson = await utils.getDoc('e2e_contact_test_id');
       const expected = [
-        'id,rev,name,patient_id,place_id,type,contact_type',
-        `"john_id","${contacts[0]._rev}","john","12345",,"person",`,
-        `"mary_id","${contacts[1]._rev}","mary",,,"person",`,
-        `"jen_id","${contacts[2]._rev}","jen","123",,"contact","chw"`,
-        `"leslie_id","${contacts[3]._rev}","leslie",,,"district_hospital",`,
-        `"my_district_id","${contacts[4]._rev}","my_district",,"4568","district_hospital",`,
-        `"ny_id","${contacts[5]._rev}","new york",,"231","contact","city"`,
-        `"michael_id","${contacts[6]._rev}","michael","8894",,"contact","chw"`,
-        `"${hardCodedPerson._id}","${hardCodedPerson._rev}",,,,"person",`
+        'id,rev,name,patient_id,type,contact_type,place_id',
+        `"john_id","${contacts[0]._rev}","john","12345","person",,`,
+        `"mary_id","${contacts[1]._rev}","mary",,"person",,`,
+        `"jen_id","${contacts[2]._rev}","jen","123","contact","chw",`,
+        `"leslie_id","${contacts[3]._rev}","leslie",,"district_hospital",,`,
+        `"my_district_id","${contacts[4]._rev}","my_district",,"district_hospital",,"4568"`,
+        `"ny_id","${contacts[5]._rev}","new york",,"contact","city","231"`,
+        `"michael_id","${contacts[6]._rev}","michael","8894","contact","chw",`,
+        `"${hardCodedPerson._id}","${hardCodedPerson._rev}",,,"person",,`
       ];
       expectRows(expected, rows);
     });
@@ -326,9 +326,9 @@ describe('Export Data V2.0', () => {
       });
       const rows = getRows(result);
       const expected = [
-        'id,rev,name,patient_id,place_id,type,contact_type',
-        `"leslie_id","${contacts[3]._rev}","leslie",,,"district_hospital",`,
-        `"my_district_id","${contacts[4]._rev}","my_district",,"4568","district_hospital",`,
+        'id,rev,name,patient_id,type,contact_type,place_id',
+        `"leslie_id","${contacts[3]._rev}","leslie",,"district_hospital",,`,
+        `"my_district_id","${contacts[4]._rev}","my_district",,"district_hospital",,"4568"`,
       ];
       expectRows(expected, rows);
     });
@@ -347,10 +347,10 @@ describe('Export Data V2.0', () => {
       });
       const rows = getRows(result);
       const expected = [
-        'id,rev,name,patient_id,place_id,type,contact_type',
-        `"jen_id","${contacts[2]._rev}","jen","123",,"contact","chw"`,
-        `"ny_id","${contacts[5]._rev}","new york",,"231","contact","city"`,
-        `"michael_id","${contacts[6]._rev}","michael","8894",,"contact","chw"`,
+        'id,rev,name,patient_id,type,contact_type,place_id',
+        `"jen_id","${contacts[2]._rev}","jen","123","contact","chw",`,
+        `"ny_id","${contacts[5]._rev}","new york",,"contact","city","231"`,
+        `"michael_id","${contacts[6]._rev}","michael","8894","contact","chw",`,
       ];
       expectRows(expected, rows);
     });
@@ -367,9 +367,9 @@ describe('Export Data V2.0', () => {
       });
       const rows = getRows(result);
       const expected = [
-        'id,rev,name,patient_id,place_id,type,contact_type',
-        `"jen_id","${contacts[2]._rev}","jen","123",,"contact","chw"`,
-        `"john_id","${contacts[0]._rev}","john","12345",,"person",`,
+        'id,rev,name,patient_id,type,contact_type,place_id',
+        `"jen_id","${contacts[2]._rev}","jen","123","contact","chw",`,
+        `"john_id","${contacts[0]._rev}","john","12345","person",,`,
       ];
       expectRows(expected, rows);
     });
@@ -387,8 +387,8 @@ describe('Export Data V2.0', () => {
       });
       const rows = getRows(result);
       const expected = [
-        'id,rev,name,patient_id,place_id,type,contact_type',
-        `"jen_id","${contacts[2]._rev}","jen","123",,"contact","chw"`,
+        'id,rev,name,patient_id,type,contact_type,place_id',
+        `"jen_id","${contacts[2]._rev}","jen","123","contact","chw",`,
       ];
       expectRows(expected, rows);
     });

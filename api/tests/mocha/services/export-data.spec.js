@@ -295,11 +295,11 @@ describe('Export Data Service', () => {
         }
       ]));
 
-      const expected = 'id,rev,name,patient_id,place_id,type,contact_type\n' +
-                       '"2",,"dunedin",,,"district",\n' +
-                       '"1",,"gdawg",,,"person",\n' +
-                       '"33",,"memory","1231",,"contact","chw"\n'+
-                       '"231",,"a place",,"89654","district",\n';
+      const expected = 'id,rev,name,patient_id,type,contact_type,place_id\n' +
+                       '"2",,"dunedin",,"district",,\n' +
+                       '"1",,"gdawg",,"person",,\n' +
+                       '"33",,"memory","1231","contact","chw",\n'+
+                       '"231",,"a place",,"district",,"89654"\n';
       return mockRequest(type).then(actual => {
         actual.should.equal(expected);
       });
