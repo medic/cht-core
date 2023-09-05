@@ -11,7 +11,7 @@ spec:
   resources:
     requests:
       storage: {{ .Values.couchdb.couchdb_node_storage_size }}
-  {{- if eq .Values.remote.preExistingEBS "true" }}
+  {{- if .Values.couchdb_data.preExistingDataAvailable }}
   volumeName: couchdb-pv-{{ .Values.namespace }}
   storageClassName: ""
   {{- else }}

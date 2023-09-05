@@ -31,20 +31,28 @@ cert_source: "eks-medic" # "eks-medic" or "specify-file-path" or "my-ip-co"
 certificate_crt_file_path: "/path/to/certificate.crt" # Only required if cert_source is "specify-file-path"
 certificate_key_file_path: "/path/to/certificate.key" # Only required if cert_source is "specify-file-path"
 
-local:  #
-  diskPath-1: "/var/lib/couchdb1"
-  diskPath-2: "/var/lib/couchdb2"
-  diskPath-3: "/var/lib/couchdb3"
-
-# If using clustered couchdb, add the nodes here: node-1: name-of-first-node, node-2: name-of-second-node, etc.
-# Add equal number of nodes as specified in clusteredCouch.noOfCouchDBNodes
 nodes:
-  cht-core-node: "gamma-cht-core" # This is the name of the node where core components will be deployed
+  # If using clustered couchdb, add the nodes here: node-1: name-of-first-node, node-2: name-of-second-node, etc.
+  # Add equal number of nodes as specified in clusteredCouch.noOfCouchDBNodes
   node-1: "gamma-cht-couchdb-1" # This is the name of the first node where couchdb will be deployed
   node-2: "gamma-cht-couchdb-2" # This is the name of the second node where couchdb will be deployed
   node-3: "gamma-cht-couchdb-3" # This is the name of the third node where couchdb will be deployed
+  # For single couchdb node, use the following:
+  single_node_deploy: "gamma-cht-node" # This is the name of the node where all components will be deployed - for non-clustered configuration
 
-remote:
-  preExistingEBS: "false" # This should be false unless you want to manage the EBS volume yourself. This should be true only if you have already created the EBS volume. If so, specify the id below.
-  preExistingEBSVolumeID: "vol-0123456789abcdefg" # If the above is set to true, if you have already created the EBS volume, put the ID here.
+# -----------------------------------------
+#       Pre-existing data section
+# -----------------------------------------
+couchdb_data:
+  preExistingDataAvailable: "false" #If this is false, you don't have to fill in details in local_storage or remote.
+
+# If preExistingDataAvailable is true, fill in the details below.
+# For local_storage, fill in the details if you are using k3s-k3d cluster type.
+local_storage:  #If using k3s-k3d cluster type and you already have existing data.
+  preExistingDiskPath-1: "/var/lib/couchdb1" #If node1 has pre-existing data.
+  preExistingDiskPath-2: "/var/lib/couchdb2" #If node2 has pre-existing data.
+  preExistingDiskPath-3: "/var/lib/couchdb3" #If node3 has pre-existing data.
+# For ebs storage when using eks cluster type, fill in the details below.
+ebs:
+  preExistingEBSVolumeID: "vol-0123456789abcdefg" # If you have already created the EBS volume, put the ID here.
   preExistingEBSVolumeSize: "100Gi" # The size of the EBS volume.

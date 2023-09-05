@@ -15,7 +15,7 @@ spec:
       storage: {{ $.Values.couchdb.couchdb_node_storage_size }}
   {{- if eq $.Values.cluster_type "k3s-k3d" }}
   storageClassName: local-storage
-  volumeName: couchdb-pv-{{ $nodeNumber }}
+  volumeName: couchdb-pv-{{ $.Values.namespace }}-{{ $nodeNumber }}
   {{- else }}
   storageClassName: ebs-gp2
   {{- end }}

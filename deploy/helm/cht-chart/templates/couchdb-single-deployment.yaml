@@ -22,6 +22,11 @@ spec:
         operator: {{ .Values.toleration.operator }}
         value: {{ .Values.toleration.value | quote }}
         effect: {{ .Values.toleration.effect }}
+      # Check if .Values.nodes.single_node_deploy has a value
+      {{- if .Values.nodes.single_node_deploy }}
+      nodeSelector:
+        kubernetes.io/hostname: {{ .Values.nodes.single_node_deploy }}
+      {{- end }}
       containers:
         - env:
             - name: COUCHDB_LOG_LEVEL
