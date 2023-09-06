@@ -54,14 +54,6 @@
   },
   "overrides": [
     {
-      "files": [ "build/service-worker.js" ],
-      "rules": {
-        "max-len": "off",
-        "no-console": "off",
-        "no-var": "off"
-      }
-    },
-    {
       "files": [ "**/test/**", "**/tests/**" ],
       "rules": {
         "promise/catch-or-return": "error"
@@ -76,13 +68,6 @@
         "function-call-argument-newline": "off",
         "function-paren-newline": "off",
         "key-spacing": "off"
-      }
-    },
-    {
-      "files": ["build/service-worker.js"],
-      "rules": {
-        "array-callback-return": "off",
-        "func-style": "off"
       }
     },
     {

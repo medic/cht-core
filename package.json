@@ -39,7 +39,7 @@
     "build": "npm run clean-build-dir && npm run build-ddocs && npm run css-enketo && npm run build-webapp && npm run build-admin && npm run uglify-admin && npm run cleancss-admin && npm run build-config && npm run create-staging-doc && npm run populate-staging-doc",
     "build-webapp": "cd webapp && npm run build -- --configuration=production && npm run compile",
     "ci-compile": "npm run check-version && npm run npm-ci-modules && npm run lint && npm run build && npm run integration-api && npm run unit",
-    "ci-e2e-integration": "mocha --config tests/integration/.mocharc.js && npm run lint-service-worker",
+    "ci-e2e-integration": "mocha --config tests/integration/.mocharc.js",
     "ci-webdriver-default": "wdio run ./tests/e2e/default/wdio.conf.js",
     "ci-webdriver-default-mobile": "wdio run ./tests/e2e/default-mobile/wdio.conf.js",
     "ci-webdriver-standard": "wdio run ./tests/e2e/standard/wdio.conf.js",
@@ -76,7 +76,6 @@
     "jsdoc-api": "jsdoc -d jsdocs/api -R api/README.md api/src/**/*.js",
     "jsdoc-sentinel": "jsdoc -d jsdocs/sentinel sentinel/src/**/*.js",
     "jsdoc-shared-libs": "jsdoc -d jsdocs/shared-libs shared-libs/**/src/**/*.js",
-    "lint-service-worker": "eslint --color --cache --no-ignore -c ./.eslintrc build/service-worker.js",
     "local-images": "export VERSION=$(node ./scripts/build/get-version.js) && npm run build-service-images && npm run create-local-docker-compose-files",
     "npm-ci-modules": "node scripts/build/cli npmCiModules",
     "populate-staging-doc": "node scripts/build/cli populateStagingDoc",
@@ -201,5 +200,8 @@
     "nools": {
       "uglify-js": ">=2.6.0"
     }
+  },
+  "dependencies": {
+    "google-libphonenumber": "^3.2.31"
   }
 }
