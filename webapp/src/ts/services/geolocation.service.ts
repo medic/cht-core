@@ -81,8 +81,8 @@ export class GeolocationService {
     console.debug('Initiating new geolocation watcher');
     if (!window.navigator.geolocation) {
       return this.failure({
-        code: -1,
-        message: 'Geolocation API unavailable.',
+        code: -3,
+        message: 'Geolocation API unavailable',
       });
     }
 
