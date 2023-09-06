@@ -87,7 +87,7 @@ describe('Enketo Widgets', () => {
     await commonPage.waitForPageLoaded();
   });
 
-  it.skip('should submit Enketo Widgets form - People\'s tab', async () => {
+  it('should submit Enketo Widgets form - People\'s tab', async () => {
     await commonPage.goToPeople(offlineUser.contact._id);
     medicId = await contactPage.getContactMedicID();
     await commonPage.openFastActionReport('enketo_widgets_test');
