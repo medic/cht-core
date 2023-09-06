@@ -1,4 +1,4 @@
-const userName = () => $('dt=User name');
+const userName = () => $('label=User name');
 const partners = () => $('.partners');
 
 const getPartnerImage = async (name) => {
