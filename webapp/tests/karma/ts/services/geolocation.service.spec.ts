@@ -37,7 +37,7 @@ describe('Geolocation service', () => {
     return service.init()().then(returned => {
       expect(returned).to.deep.equal({
         code: -3,
-        message: 'Geolocation API unavailable.',
+        message: 'Geolocation API unavailable',
       });
     });
   });
