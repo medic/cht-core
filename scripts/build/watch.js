@@ -13,32 +13,36 @@ const configs = [
   // admin css
   { 
     files: [ 'admin/src/css/**/*' ],
-    task: 'exec:less',
+    task: 'css-admin',
   },
 
   // admin-js
   {
     files: [ 'admin/src/js/**/*', 'shared-libs/*/src/**/*' ],
-    task: 'exec:browserify-admin',
+    task: 'browserify-admin',
   },
 
   // admin-templates
   {
     files: [ 'admin/src/templates/**/*' ],
-    task: 'exec:compile-admin-templates',
+    task: 'compile-admin-templates',
   },
 
   // webapp-js
   // instead of watching the source files which are watched separately, watch the build folder and upload on rebuild
   {
-    files: [ 'api/build/static/webapp/**/*', '!api/build/static/webapp/service-worker.js' ],
+    files: [
+      'api/build/static/webapp/**/*',
+      '!api/build/static/webapp/service-worker.*',
+      '!api/build/static/webapp/workbox-*'
+    ],
     task: 'update-service-worker',
   },
 
   // api-public-files
   {
     files: [ 'api/src/public/**/*' ],
-    task: 'exec:copy-api-resources',
+    task: 'copy-api-resources',
   },
 
   // ddocs
@@ -56,10 +60,11 @@ const run = (task) => {
     clearTimeout(debounceCache[task]);
   }
   debounceCache[task] = setTimeout(() => {
-    const child = spawn('grunt', [ task ], { cwd: rootdir });
+    const child = spawn('npm', [ 'run', task ], { cwd: rootdir });
     child.stdout.on('data', data => console.log(data.toString()));
     child.stderr.on('data', data => console.error(data.toString()));
     child.on('error', err => console.error(err));
+    child.on('close', () => console.log('Update complete.\nWaiting...'));
   }, DEBOUNCE);
 };
 
@@ -82,7 +87,7 @@ const clearWatchers = () => {
 };
 
 const startConfigWatcher = () => {
-  const watcher = new Gaze([ 'Gruntfile.js', 'package.json' ], GAZE_OPTIONS);
+  const watcher = new Gaze([ 'package.json' ], GAZE_OPTIONS);
   watcher.on('all', (event, filepath) => {
     console.log(`${filepath} updated...`);
     clearWatchers();
@@ -93,7 +98,7 @@ const startConfigWatcher = () => {
 const init = () => {
   startWatchers();
   startConfigWatcher();
-  console.log('watching...');
+  console.log('Waiting...');
 };
 
 (() => {

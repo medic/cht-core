@@ -345,7 +345,7 @@ describe('Db Service', () => {
       try {
         await db.get('thing');
         assert.fail('should have failed');
-      } catch(err) {
+      } catch (err) {
         expect(err).to.deep.equal({ code: 404 });
       }
     }));

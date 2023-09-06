@@ -63,7 +63,7 @@ export class EnketoTranslationService {
 
   private repeatsToJs(data) {
     const repeatNode:any = this.findChildNode(data, 'repeat');
-    if(!repeatNode) {
+    if (!repeatNode) {
       return;
     }
 
@@ -71,7 +71,7 @@ export class EnketoTranslationService {
 
     this.withElements(repeatNode.childNodes).forEach((repeated:any) => {
       const key = repeated.nodeName + '_data';
-      if(!repeats[key]) {
+      if (!repeats[key]) {
         repeats[key] = [];
       }
       repeats[key].push(this.nodesToJs(repeated.childNodes));

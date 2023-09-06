@@ -6,7 +6,7 @@ import { assert, expect } from 'chai';
 import { GlobalActions } from '@mm-actions/global';
 import { DbService } from '@mm-services/db.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { TrainingCardsService } from '@mm-services/training-cards.service';
 import { SessionService } from '@mm-services/session.service';
 import { RouteSnapshotService } from '@mm-services/route-snapshot.service';
@@ -30,7 +30,7 @@ describe('TrainingCardsService', () => {
     dbService = { get: () => localDb };
     globalActions = { setTrainingCardFormId: sinon.stub(GlobalActions.prototype, 'setTrainingCardFormId') };
     xmlFormsService = { subscribe: sinon.stub() };
-    modalService = { show: sinon.stub().resolves() };
+    modalService = { show: sinon.stub() };
     sessionService = {
       userCtx: sinon.stub(),
       hasRole: sinon.spy(SessionService.prototype, 'hasRole'),

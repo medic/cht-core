@@ -11,7 +11,6 @@ env:
   MARKET_URL_READ: 'https://staging.dev.medicmobile.org'
   INTERNAL_CONTRIBUTOR: ${{ secrets.SCALABILITY_ARN && 'true' }}
   SCALABILITY_ARN: ${{ secrets.SCALABILITY_ARN }}
-  TAG: ${{ (github.ref_type == 'tag' && github.ref_name) || '' }}
   BRANCH: ${{ github.head_ref || github.ref_name }}
   BUILD_NUMBER: ${{ github.run_id }}
 
@@ -31,4 +30,4 @@ jobs:
           aws-region: ca-central-1
       - name: Start EC2 and CHT
         if: ${{ env.INTERNAL_CONTRIBUTOR }}
-        run: cd tests/scalability && ./start-ec2-cht.sh $TAG
+        run: cd tests/scalability && ./start-ec2-cht.sh $BRANCH

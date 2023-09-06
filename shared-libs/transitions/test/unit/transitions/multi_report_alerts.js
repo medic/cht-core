@@ -24,7 +24,7 @@ describe('multi report alerts', () => {
       num_reports_threshold: 3,
       message: 'hi',
       recipients: ['+254777888999'],
-      time_window_in_days : 7
+      time_window_in_days: 7
     };
   });
 
@@ -121,7 +121,7 @@ describe('multi report alerts', () => {
     config.get.returns(alerts);
     try {
       transition.init();
-    } catch(e) {
+    } catch (e) {
       assert.equal(config.get.getCall(0).args[0], 'multi_report_alerts');
       done();
     }
@@ -574,18 +574,18 @@ describe('multi report alerts', () => {
       {
         name: 'first_alert',
         is_report_counted: 'function() { return true; }',
-        num_reports_threshold : 3,
-        message : 'hi',
-        recipients : ['+254777888999'],
-        time_window_in_days : 7
+        num_reports_threshold: 3,
+        message: 'hi',
+        recipients: ['+254777888999'],
+        time_window_in_days: 7
       },
       {
         name: 'second_alert',
         is_report_counted: 'function() { return true; }',
-        num_reports_threshold : 2,
-        message : 'bye',
-        recipients : ['+254777888111', '+2562299383'],
-        time_window_in_days : 5
+        num_reports_threshold: 2,
+        message: 'bye',
+        recipients: ['+254777888111', '+2562299383'],
+        time_window_in_days: 5
       },
     ];
     config.get.returns(twoAlerts);

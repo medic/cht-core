@@ -51,7 +51,7 @@ describe('generate_patient_id_on_people', () => {
       .then(() => sentinelUtils.waitForSentinel(doc._id))
       .then(() => sentinelUtils.getInfoDoc(doc._id))
       .then(info => {
-        chai.expect(info).to.deep.nested.include({ 'transitions.generate_patient_id_on_people.ok' : true });
+        chai.expect(info).to.deep.nested.include({ 'transitions.generate_patient_id_on_people.ok': true });
       })
       .then(() => utils.getDoc(doc._id))
       .then(place => {

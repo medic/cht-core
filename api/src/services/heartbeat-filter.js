@@ -8,7 +8,7 @@
 const COUCH_DEFAULT = 60000;
 
 module.exports = string => {
-  if(string === 'true') {
+  if (string === 'true') {
     return COUCH_DEFAULT;
   }
 

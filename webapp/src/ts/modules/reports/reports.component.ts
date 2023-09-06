@@ -21,7 +21,7 @@ import { OLD_REPORTS_FILTER_PERMISSION } from '@mm-modules/reports/reports-filte
 import { UserContactService } from '@mm-services/user-contact.service';
 import { SessionService } from '@mm-services/session.service';
 import { BulkDeleteConfirmComponent } from '@mm-modals/bulk-delete-confirm/bulk-delete-confirm.component';
-import { ModalService } from '@mm-modals/mm-modal/mm-modal';
+import { ModalService } from '@mm-services/modal.service';
 import { FastAction, FastActionButtonService } from '@mm-services/fast-action-button.service';
 import { XmlFormsService } from '@mm-services/xml-forms.service';
 import { FeedbackService } from '@mm-services/feedback.service';
@@ -463,7 +463,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.reportsActions.setSelectedReports(preparedReports);
       this.globalActions.unsetComponents();
 
-    } catch(error) {
+    } catch (error) {
       console.error('Error selecting all', error);
     }
   }
@@ -490,9 +490,7 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     const docs = this.selectedReports
       .map(report => report.doc || report.summary)
       .filter(report => !!report);
-    this.modalService
-      .show(BulkDeleteConfirmComponent, { initialState: { model: { docs, type: 'reports' } } })
-      .catch(() => {});
+    this.modalService.show(BulkDeleteConfirmComponent, { data: { docs, type: 'reports' } });
   }
 
   /**

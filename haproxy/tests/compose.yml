@@ -1,0 +1,34 @@
+version: "3.7"
+services:
+    haproxy:
+        build:
+            context: ../
+        ports:
+            - 127.0.0.1:5984:5984
+        environment:
+            COUCHDB_SERVERS: mock-couchdb
+            COUCHDB_USER: someuser
+            COUCHDB_PASSWORD: insecure_pw
+            HAPROXY_IP: 0.0.0.0
+            HAPROXY_PORT: 5984
+            HEALTHCHECK_ADDR: haproxy-healthcheck
+        depends_on:
+            - mock-couchdb
+            - haproxy-healthcheck
+
+    mock-couchdb:
+        image: mockserver/mockserver:5.15.0
+        environment:
+            MOCKSERVER_SERVER_PORT: 5984
+            # MOCKSERVER_LOG_LEVEL: WARN
+            MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
+        volumes:
+            - ./mock-config/initializerJson.json:/config/initializerJson.json
+
+    haproxy-healthcheck:
+        build: ../../haproxy-healthcheck
+        environment:
+            COUCHDB_SERVERS: mock-couchdb
+            COUCHDB_USER: someuser
+            COUCHDB_PASSWORD: insecure_pw
+

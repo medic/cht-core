@@ -21,7 +21,9 @@ const saveData = async (hierarchy) => {
   await utils.saveDocs(hierarchy.reports);
 };
 
-describe('ongoing replication', () => {
+describe('ongoing replication', function() {
+  this.timeout(4 * 60 * 1000); // Sometimes the tests take longer to complete than the original 2 minutes timeout.
+
   before(async () => {
     await sentinelUtils.skipToSeq();
 
@@ -35,6 +37,10 @@ describe('ongoing replication', () => {
   after(async () => {
     await sentinelUtils.skipToSeq();
     await sentinelUtils.waitForSentinel();
+  });
+
+  afterEach(async () => {
+    await browser.throttle('online');
   });
 
   it('should download new documents ', async () => {
@@ -190,8 +196,8 @@ describe('ongoing replication', () => {
     const docId = docs.persons[0]._id;
     //create conflict
     await browser.throttle('offline');
-    await chtDbUtils.updateDoc(docId, { local_update : 1 });
-    await chtDbUtils.updateDoc(docId, { local_update : 2 });
+    await chtDbUtils.updateDoc(docId, { local_update: 1 });
+    await chtDbUtils.updateDoc(docId, { local_update: 2 });
     let serverDoc = await utils.getDoc(docId);
     serverDoc.remote_update = 1;
     await utils.saveDoc(serverDoc);
@@ -205,7 +211,7 @@ describe('ongoing replication', () => {
     expect(localDoc.local_update).to.equal(2);
 
     await browser.throttle('offline');
-    await chtDbUtils.updateDoc(docId, { local_update : 3 });
+    await chtDbUtils.updateDoc(docId, { local_update: 3 });
     serverDoc = await utils.getDoc(docId);
     serverDoc.remote_update = 2;
     await utils.saveDoc(serverDoc);

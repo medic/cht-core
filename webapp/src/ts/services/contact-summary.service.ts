@@ -57,7 +57,7 @@ export class ContactSummaryService {
     if (field && field.filter) {
       try {
         field.value = this.pipesService.transform(field.filter, field.value);
-      } catch(e) {
+      } catch (e) {
         console.error(e);
         throw new Error('Unknown filter: ' + field.filter + '. Check your configuration.');
       }

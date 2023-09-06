@@ -14,7 +14,7 @@ const argv = minimist(process.argv.slice(2), {
   }
 });
 
-if(argv.h || !argv.mode || !argv.type) {
+if (argv.h || !argv.mode || !argv.type) {
   console.log(`Display or save telemetry and feedback docs.
 
 Usage:
@@ -41,7 +41,7 @@ const db = PouchDB(couchUrl);
 const fetchNextDocs = async (startkey) => {
   const options = {
     include_docs: true,
-    limit : 100,
+    limit: 100,
     endkey: `${type}-\ufff0`,
   };
   if (startkey) {
@@ -155,7 +155,7 @@ const actionQuestions = [{
         } while (response.action !== 'quit');
       }
     }
-  } catch(err) {
+  } catch (err) {
     console.error(err);
   }
 })();

@@ -45,7 +45,7 @@ const initTransitionLib = () => {
   // loadTransitions could throw errors when some transitions are misconfigured
   try {
     transitionsLib.loadTransitions(true);
-  } catch(err) {
+  } catch (err) {
     logger.error(err);
   }
   config.setTransitionsLib(transitionsLib);
