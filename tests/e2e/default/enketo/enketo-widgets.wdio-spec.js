@@ -12,10 +12,11 @@ const contactPage = require('@page-objects/default/contacts/contacts.wdio.page')
 
 describe('Enketo Widgets', () => {
   const districtHospital = placeFactory.place().build({ _id: 'dist1', type: 'district_hospital' });
+  const phoneNumber = '+40766565656';
   const offlineUser = userFactory.build({
     place: districtHospital._id,
     roles: ['chw'],
-    contact: {_id: '987 654 321', name: 'Ben', phone: '+50689999999'}
+    contact: { _id: '987 654 321', name: 'Ben', phone: phoneNumber },
   });
   const formDoc = {
     _id: 'form:enketo_widgets_test',
@@ -52,7 +53,7 @@ describe('Enketo Widgets', () => {
     );
   };
 
-  const verifyReport = async (selectMultiple, selectOne, country, city, neighborhood, uuid, id, name) => {
+  const verifyReport = async (selectMultiple, selectOne, country, city, neighborhood, uuid, id, name, phoneNumber) => {
     const firstReport = await reportsPage.firstReport();
     const firstReportInfo = await reportsPage.getListReportInfo(firstReport);
 
@@ -78,6 +79,7 @@ describe('Enketo Widgets', () => {
     expect((await reportsPage.getDetailReportRowContent('patient_uuid')).rowValues[0]).to.equal(uuid);
     expect((await reportsPage.getDetailReportRowContent('patient_id')).rowValues[0]).to.equal(id);
     expect((await reportsPage.getDetailReportRowContent('patient_name')).rowValues[0]).to.equal(name);
+    expect((await reportsPage.getDetailReportRowContent('phone')).rowValues[0]).to.equal(phoneNumber);
   };
 
   before(async () => {
@@ -104,7 +106,7 @@ describe('Enketo Widgets', () => {
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectOneDropdown(), 'radio', 'd');
     expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectOneDropdown()))
       .to.equal('option d');
-    await enketoWidgetsPage.setPhoneNumber('+40766565656');
+    await enketoWidgetsPage.setPhoneNumber(offlineUser);
 
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('usa', 'nyc', 'bronx', 3, 2);
@@ -112,7 +114,17 @@ describe('Enketo Widgets', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await verifyReport('a c', 'd', 'usa', 'nyc', 'bronx', offlineUser.contact._id, medicId, offlineUser.contact.name);
+    await verifyReport(
+      'a c',
+      'd',
+      'usa',
+      'nyc',
+      'bronx',
+      offlineUser.contact._id,
+      medicId,
+      offlineUser.contact.name,
+      phoneNumber,
+    );
   });
 
   it('should submit Enketo Widgets form - Report\'s tab', async () => {
@@ -132,7 +144,7 @@ describe('Enketo Widgets', () => {
     await enketoWidgetsPage.selectDropdownOptions(await enketoWidgetsPage.selectOneDropdown(), 'radio', 'a');
     expect(await enketoWidgetsPage.getDropdownValue(await enketoWidgetsPage.selectOneDropdown()))
       .to.equal('option a');
-    await enketoWidgetsPage.setPhoneNumber('+40766565656');
+    await enketoWidgetsPage.setPhoneNumber(offlineUser);
 
     await genericForm.nextPage();
     await fillCascadingWidgetsSection('nl', 'dro', 'havendr', 3, 1);
@@ -151,7 +163,17 @@ describe('Enketo Widgets', () => {
     await commonPage.waitForPageLoaded();
 
     await commonPage.goToReports();
-    await verifyReport('b c d', 'a', 'nl', 'dro', 'havendr', '123 456 789', '12345', 'Elias');
+    await verifyReport(
+      'b c d',
+      'a',
+      'nl',
+      'dro',
+      'havendr',
+      '123 456 789',
+      '12345',
+      'Elias',
+      phoneNumber,
+    );
   });
 
 });
