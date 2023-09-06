@@ -197,7 +197,7 @@ describe('Geolocation service', () => {
 
       return deferred().then(error => {
         expect(error).to.deep.equal({
-          code: -1,
+          code: -2,
           message: 'Geolocation timeout exceeded'
         });
       });
