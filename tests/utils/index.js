@@ -242,7 +242,7 @@ const saveDocs = async (docs) => {
   return results;
 };
 
-const saveDocsRevs = async(docs) => {
+const saveDocsRevs = async (docs) => {
   const results = await saveDocs(docs);
   results.forEach(({ rev }, idx) => docs[idx]._rev = rev);
   return results;
